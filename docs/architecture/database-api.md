@@ -306,6 +306,9 @@ interface Exercise {
 |----------|-------------|
 | `listExercises()` | Get all exercises |
 | `getExerciseById(id)` | Get single exercise |
+| `getExerciseHistory(ids)` | One `ExerciseGhost` per (movement, unit): `last`, `best`, `at`, `bestAt`, `seasonBest` and `recent` (the newest three sessions as `SessionMark`, hero-quest sessions left out) |
+| `progressiveTarget(input)` | `db/progress.ts`. The one birthplace of the target the app asks for (see `gameplay/progression.md`, "What a slot asks tonight") |
+| `checkCapOffers(questId, slots, level)` | `db/capOffer.ts`. Slots that held the cap for 3 sessions, with the rung above |
 
 ---
 

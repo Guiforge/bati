@@ -163,6 +163,9 @@ Decisions nobody has taken yet.
 ## Settled on 2026-09-14
 
 - **Exercise**, not movement, in both languages. *Movement* survives only as a movement family.
+- **Objectif** is what the app asks tonight (the big number on a set, the progressive target);
+  **à battre** is the number that beats the record (`toBeat`, the wall's rule). Two numbers, two
+  words: the first moves with the last session, the second with the record.
 - **Objectif** for every number to reach, in French. English keeps *target* for a set and an oath
   and *goal* for an outing: both are plain English and neither collides with another term.
 - **Outing** / **sortie** wherever a reader looks, the privacy policy and the legal page included.

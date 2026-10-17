@@ -445,7 +445,7 @@ function CapAction({ offer }: { offer: CapOffer }) {
   const next = localizedName(offer.next, language);
   if (saved) {
     return (
-      <AppText fontSize={13} color="$success">
+      <AppText fontSize={13} color="$textSecondary">
         {t("progression.cap_offer_done", { next })}
       </AppText>
     );
@@ -461,7 +461,7 @@ function CapAction({ offer }: { offer: CapOffer }) {
       }}
       style={{ minHeight: 44, justifyContent: "center" }}
     >
-      <AppText fontSize={15} color="$primaryText" textDecorationLine="underline">
+      <AppText fontSize={15} color="$resourceGold" textDecorationLine="underline">
         {t("progression.cap_offer_action", { next })}
       </AppText>
     </Pressable>

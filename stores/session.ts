@@ -1777,6 +1777,11 @@ export const useSessionStore = create<SessionState>()(
       // The slot's target, unless the movement is measured the other way — same call
       // `applyQuestConfig` makes. Results already logged keep their own `exerciseId` and
       // `pricing`: they are true.
+      //
+      // ponytail: no progression here (`progressiveTarget`), and no ghost: nothing is queried
+      // mid-session, by design. Ceiling: a hero who swaps mid-session every time gets the
+      // slot's number and no "last time" on the new movement. Fix: load the catalogue's ghosts
+      // with the quest.
       const target =
         known?.target ?? retargetForMovement(slot.target, slot.exercise, exercise, get().userLevel);
       const exercises = quest.exercises.map((qex, i) =>
@@ -1789,6 +1794,8 @@ export const useSessionStore = create<SessionState>()(
               // rung the hero has just overruled.
               images: [],
               ghost: undefined,
+              // The old movement's reason for its number does not explain the new one's.
+              targetWhy: undefined,
               substitutedFor: undefined,
               setAsideServed: undefined,
               // The hero's own number travels with the target when the swap kept it (same unit),

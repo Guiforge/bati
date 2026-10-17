@@ -490,7 +490,7 @@ function resolveBase(
 ) {
   // The unit is resolved first, then the hero's number lands in it. `applySwap` drops the
   // override when the movement changes, so `targets[id]` is only ever a value for the movement
-  // standing in the slot now — after a swap that flipped the unit, a value in the *new* unit.
+  // standing in the slot now (after a swap that flipped the unit, a value in the *new* unit).
   // Retargeting second discarded exactly those: a slot swapped from a hold onto a counted
   // movement showed the level's default reps and every step of the field was thrown away on
   // the next render, which read as a frozen control. The clamp follows the resolved unit too;

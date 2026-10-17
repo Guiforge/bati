@@ -297,6 +297,9 @@ session being absent.
 
 ### 1.4 Local to a device
 
+The cap offer's swap (M-03, "Plafond puis échelon") is a quest config like any other
+(`quest:<id>:config`): local to the device, never merged, never news (`db-peer-merge`).
+
 **R34. These are never synchronised and are kept from the current device on restore
 (`DEVICE_LOCAL_PREFERENCES`):** deviceId, backupFolderUri, lastAutoBackupDay,
 protectDismissedDay, protectDismissals, backupWordsPending, passwordRemindersOn,
@@ -849,7 +852,11 @@ A banner stays neutral while there is no crest (fewer than eight practised sessi
 (`db/progress.ts`), and its filters cut sets before the fold, so a reader that cuts on a set's own
 time keeps its meaning. "Target reached" is `setMetSql`, `MIN` over a session, neutral sets filtered
 by the reader. The record bar is `previousBest` (it decides `records_json` and the session page
-shows the same number). `toBeat` is the wall's number, `ladderPosition` is where the hero stands.
+shows the same number). `toBeat` is the one "to beat" (D-21): the wall reads it off its entry, the
+set (`GhostLine`) and Home (`tonightLine`) off the ghost through `beatInputOf`, and the victory's
+record line is the same rule (a record is a strict `>` of the previous best, `value >= best + 1`);
+the wall's season and record date come from the ghost, so the three cut the season in one place.
+`ladderPosition` is where the hero stands.
 Nothing is stored and there is no SQL view (a backup holding one is refused): device sync carries
 `completed_exercises` and every device derives the same figures. Per-movement aggregates
 (`getMovementRecords`, the oath) stay direct: the session fold is 5-7x slower for them.
@@ -866,6 +873,21 @@ The village year is `floor(seasons since the first session's season / 4) + 1`, s
 most four banners. Invariant: the hemisphere never moves a banner, it only renames it. A timezone
 change can move one session to the next or previous season only if it sits near midnight on a
 season border; daylight saving is harmless, since the season is read with `getMonth`.
+
+**R115. Tonight's target is derived.** `progressiveTarget` (`db/progress.ts`) is the one birthplace
+of the number the app asks for, called by `resolveSlot` (the served movement and the written one)
+and `applyConfigToSlots` (a swapped-in movement, from the bottom of the band when it has no
+history). Inputs, all in `completed_exercises` and `completed_sessions.userLevel` (nothing is
+stored, no migration): the movement's last three sessions in this unit (`ExerciseGhost.recent`,
+sessions of a hero-authored quest left out), the record, tonight's level and the band. Double
+progression: every non-neutral set met, +1 rep (+5 s for a hold), otherwise the same, stopping at
+20 reps / 60 s; a hold is never above 75 % of its record; more than 14 days without the movement
+(any quest) lowers the next two sessions by a level, then returns to the pre-gap number; the result
+is kept inside tonight's band (raised to its floor, cut at `max(top, cap)`), except that a comeback
+is never raised. The hero's own number is laid over it and never replaced. A session of a deleted
+hero quest has `questId` NULL and reads as seeded, bounded by that clamp (`shortcut:` in
+`progressiveTarget`). Invariant: the same journal gives the same target, to beat and cap offer on
+any device, whatever the merge order (`db-peer-merge`).
 
 **R114. Entitlement is not data** (`src/plus/source.ts`, `src/plus/access.ts`). Bati+ is read from the
 store account, never written to the database, never sealed in a file, never merged. `can()` refuses

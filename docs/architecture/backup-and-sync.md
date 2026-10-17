@@ -299,6 +299,11 @@ at run start; adventure runs are not synced, so a second phone decides for itsel
   (`db/progress.ts`), so sync has nothing of its own to carry for them and a release that only
   changes how they are read does not change any device's fingerprint. It is a shared SQL fragment,
   not a view: a backup holding a view is refused (`validateBackup`).
+- **Targets and "to beat" are derived too**: the target a hero is asked for, the number to beat and
+  the cap offer are read from `completed_exercises` (M-03, `progressiveTarget`), so M-03 added
+  nothing that travels, no fingerprint segment and no migration: no device sees news because of
+  it, and a build with it merges with the build before it both ways. A quest config (hand-set
+  targets, swaps, the cap offer's swap) is not in `MERGED_PREFERENCES` and stays on its device.
 - **Transport**: WebDAV. Nextcloud signs in through the browser (Login Flow v2, a revocable app
   password; the page and poll endpoint must be on the server or on https, and the account keeps the
   address the hero typed). Any other server, behind presets (kDrive, Koofr, Round Sync for rclone),

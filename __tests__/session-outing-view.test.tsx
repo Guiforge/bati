@@ -4,6 +4,7 @@ import { TamaguiProvider } from "tamagui";
 
 import { ActiveExerciseView } from "@/components/session/ActiveExerciseView";
 import type { Quest } from "@/db/quests";
+import { DEFAULT_LIVE_VIEW } from "@/src/gps/liveFigures";
 import { useExpeditionStore } from "@/stores/expedition";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -244,6 +245,35 @@ describe("a walk, on the screen a hero stares at while walking", () => {
 
     // The cue fires from a phone in a pocket. Silence is the whole assertion.
     expect(mockPlayCue).not.toHaveBeenCalled();
+  });
+});
+
+describe("a walk in the hero's big-numbers layout", () => {
+  test("mounts no map and no picture, even once the sky gives a position", async () => {
+    useExpeditionStore.setState({ view: { ...DEFAULT_LIVE_VIEW, layout: "bigFigures" } });
+    await mountRunning(questWith(mockWalk));
+    await act(() => {
+      useExpeditionStore.setState({
+        fixes: [
+          {
+            t: NOW,
+            lat: 43.6,
+            lon: 1.44,
+            ele: 100,
+            baro: null,
+            acc: 4,
+            speed: 1.4,
+            distFromPrev: 0,
+          },
+        ],
+      });
+    });
+
+    // The panel is still the readout, at the size the layout asks for; no tile is ever requested.
+    expect(screen.getByText("Finding the sky")).toBeTruthy();
+    expect(screen.queryByTestId("live-map")).toBeNull();
+    expect(screen.getByTestId("expedition-big").props.style.fontSize).toBe(72);
+    useExpeditionStore.setState({ view: DEFAULT_LIVE_VIEW });
   });
 });
 

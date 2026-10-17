@@ -33,8 +33,10 @@ import {
   sidePhase,
 } from "@/src/perSide";
 
+import { useExpeditionStore } from "@/stores/expedition";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
+
 import { BossArena } from "./BossArena";
 import { getHpPercent, getPhaseFromHp, getPhaseLook } from "./bossPhase";
 import { CountInput } from "./CountInput";
@@ -47,6 +49,9 @@ import { SessionSwapSheet } from "./SessionSwapSheet";
 import { SwitchGlow } from "./SwitchGlow";
 import { sessionArtHeight } from "./sessionArt";
 import { TimerBar } from "./TimerBar";
+
+/** The floating HUD row's height under the status bar, kept clear when no map or picture is there. */
+const HUD_CLEARANCE = 56;
 
 /** How long before the switch the first side says it is coming. */
 const SIDE_SWITCH_WARNING_SECONDS = 5;
@@ -116,6 +121,7 @@ export function ActiveExerciseView() {
   const currentEx = quest?.exercises[currentExerciseIndex];
   /** An expedition measures ground rather than repetitions, and shows it. */
   const isOuting = isOutdoors(currentEx?.exercise.style);
+  const bigNumbers = useExpeditionStore((state) => state.view.layout === "bigFigures") && isOuting;
 
   const { remainingSeconds, elapsedSeconds, isOvertime, progress } = useSessionTimer();
   // An outing has nothing to announce. Left on the real count, this fired three ticks and a "go"
@@ -397,8 +403,14 @@ export function ActiveExerciseView() {
           </XStack>
         </BossArena>
       ) : isOuting ? (
-        // The movement's picture until the sky gives a position, then the map in its place.
-        <LiveMap minHeight={heroMinHeight} topInset={insets.top} placeholder={hero} />
+        bigNumbers ? (
+          // The hero chose big numbers: no map, no picture, no tile request. A spacer keeps the
+          // floating HUD row clear of the panel.
+          <YStack height={insets.top + HUD_CLEARANCE} />
+        ) : (
+          // The movement's picture until the sky gives a position, then the map in its place.
+          <LiveMap minHeight={heroMinHeight} topInset={insets.top} placeholder={hero} />
+        )
       ) : (
         hero
       )}

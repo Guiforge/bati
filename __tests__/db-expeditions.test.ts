@@ -307,3 +307,25 @@ describe("isWalkRunSession", () => {
     expect(isWalkRunSession(quest, goal)).toBe(expected);
   });
 });
+
+describe("displayLocomotion", () => {
+  const { displayLocomotion } = require("../db/expeditions") as typeof import("../db/expeditions");
+  const slots = (...movements: Exercise[]) => ({
+    exercises: movements.map((exercise) => ({ exercise })),
+  });
+  const ride = { ...walk, id: 4, locomotion: "ride" as const };
+  const runner = { ...run, locomotion: "run" as const };
+
+  it("reads the activity really done: a pure outing, and the walk of a walk and push-ups", () => {
+    expect(displayLocomotion(slots(walk))).toBe("walk");
+    expect(displayLocomotion(slots(runner))).toBe("run");
+    expect(displayLocomotion(slots(walk, pushUp))).toBe("walk");
+    // `outingLocomotion` says null for the mixed quest; the tab it reads is still the walk's.
+    expect(displayLocomotion(slots(ride, pushUp))).toBe("ride");
+  });
+
+  it("reads the Walk tab when nothing is outdoors", () => {
+    expect(displayLocomotion(slots(pushUp))).toBe("walk");
+    expect(displayLocomotion(slots())).toBe("walk");
+  });
+});

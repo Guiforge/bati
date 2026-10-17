@@ -23,6 +23,7 @@ import { useSessionStore } from "@/stores/session";
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/db/quests", () => ({}));
+jest.mock("@/src/outingKeepAwake", () => ({ keepAwakeSet: jest.fn(async () => []) }));
 
 // The points an interrupted outing had already filed. The card counts them; the sweep and the
 // discard read the same module, so stubbing it is also what keeps a database out of this suite.
@@ -48,6 +49,7 @@ jest.mock("@/db/preferences", () => ({
     }),
     getDistanceUnit: jest.fn(async () => "metric"),
     getHapticsEnabled: jest.fn(async () => true),
+    getOutingDisplay: jest.fn(async () => ({})),
   },
 }));
 

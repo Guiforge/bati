@@ -145,6 +145,16 @@ export function pricedLocomotion(quest: { exercises: { exercise: Moving }[] }): 
 }
 
 /**
+ * Which tab of "Affichage des sorties" an outing reads: what was really done. A mixed quest has no
+ * `outingLocomotion` but its walking is walking, and a quest with nothing outdoors reads the Walk
+ * tab. The one function that picks a tab, so the panel, the notification and the goal sheet's link
+ * cannot disagree.
+ */
+export function displayLocomotion(quest: { exercises: { exercise: Moving }[] }): Locomotion {
+  return pricedLocomotion(quest) ?? "walk";
+}
+
+/**
  * The outdoor slots' combined duration, when at least one of them is timed.
  *
  * Only a slot whose movement is the outdoor style may contribute: the goal is a promise about

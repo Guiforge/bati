@@ -395,6 +395,164 @@ describe("stores/expedition", () => {
     expect(mockSetProgress.mock.calls.at(-1)?.[0]).toMatch(/^32:04 · \d+ m$/);
   });
 
+  describe("the outing display", () => {
+    const view = (over: Record<string, unknown> = {}) => ({
+      big: "auto" as const,
+      small: ["auto", "climb", "rate"] as ["auto", "climb", "rate"],
+      layout: "map" as const,
+      locomotion: "walk" as const,
+      walkRun: false,
+      keepAwake: false,
+      ...over,
+    });
+    const lastLine = () => mockSetProgress.mock.calls.at(-1)?.[0] as string;
+    /** Thirty fixes: the flush writes the notification line once the buffer is full. */
+    const walkSome = () => {
+      for (let i = 0; i < 30; i += 1) emit(walking(i));
+    };
+
+    beforeEach(() => {
+      mockElapsedSeconds = 1924;
+    });
+
+    test("begin stores the view it is given, before any early return", async () => {
+      mockAvailable = false;
+      const given = view({ big: "rate" });
+      await store.getState().begin("s1", NOTIFICATION, false, "metric", null, true, given);
+      expect(store.getState().view).toEqual(given);
+      expect(store.getState().error).toBe("unavailable");
+    });
+
+    test("the default view keeps `clock · distance` for both goal shapes", async () => {
+      for (const goal of [
+        null,
+        { type: "time" as const, seconds: 900 },
+        { type: "distance" as const, metres: 3000 },
+      ]) {
+        mockSetProgress.mockClear();
+        await store.getState().begin("s1", NOTIFICATION, false, "metric", goal);
+        walkSome();
+        expect(lastLine()).toMatch(/^32:04 · \d+ m$/);
+        await store.getState().end();
+      }
+    });
+
+    test("a big `rate` puts the average in the line", async () => {
+      await store
+        .getState()
+        .begin("s1", NOTIFICATION, false, "metric", null, true, view({ big: "rate" }));
+      walkSome();
+      expect(lastLine()).toMatch(/^32:04 · \d+:\d\d \/km$/);
+    });
+
+    test("a ride reads km/h in the line when its tab says rate", async () => {
+      await store
+        .getState()
+        .begin(
+          "s1",
+          NOTIFICATION,
+          true,
+          "metric",
+          null,
+          true,
+          view({ big: "rate", locomotion: "ride" }),
+        );
+      walkSome();
+      expect(lastLine()).toMatch(/^32:04 · [\d.]+ km\/h$/);
+    });
+
+    test("a remaining choice gives the distance left on a distance goal", async () => {
+      await store
+        .getState()
+        .begin(
+          "s1",
+          NOTIFICATION,
+          false,
+          "metric",
+          { type: "distance", metres: 1000 },
+          true,
+          view({ big: "remaining" }),
+        );
+      walkSome();
+      const left = Number(/^32:04 · (\d+) m$/.exec(lastLine())?.[1]);
+      expect(left).toBeGreaterThan(900);
+      expect(left).toBeLessThan(1000);
+    });
+
+    // The flip pushes its own line: "remaining" has nothing left to say there, so the next figure
+    // takes its place instead of "0 m to go".
+    test("remaining drops out the moment the goal is reached, in the line the flip pushes", async () => {
+      await store
+        .getState()
+        .begin(
+          "s1",
+          NOTIFICATION,
+          false,
+          "metric",
+          { type: "distance", metres: 20 },
+          true,
+          view({ big: "remaining" }),
+        );
+      for (let i = 0; i < 30 && !store.getState().goalReached; i += 1) emit(walking(i));
+      expect(store.getState().goalReached).toBe(true);
+      expect(mockSetReached).toHaveBeenCalledTimes(1);
+      // The ground covered (a distance goal leads with it), not the 0 m still to go.
+      expect(lastLine()).toMatch(/^32:04 · (2\d) m$/);
+    });
+
+    test("a time goal's remaining is the moving time left", async () => {
+      const goal = { type: "time" as const, seconds: 900 };
+      await store
+        .getState()
+        .begin("s1", NOTIFICATION, false, "metric", goal, true, view({ big: "remaining" }));
+      walkSome();
+      expect(lastLine()).toMatch(/^32:04 · \d+:\d\d$/);
+      expect(lastLine()).not.toMatch(/^32:04 · 32:04/);
+    });
+
+    test("a time goal with big `auto` shows the first small that is not the clock", async () => {
+      await store
+        .getState()
+        .begin(
+          "s1",
+          NOTIFICATION,
+          false,
+          "metric",
+          { type: "time", seconds: 900 },
+          true,
+          view({ small: [null, "climb", "rate"] }),
+        );
+      walkSome();
+      // The fixes carry a height, so the climb (0 m so far) is the first small that is not the clock.
+      expect(lastLine()).toBe("32:04 · 0 m");
+    });
+
+    test("a walk-run never gets a rate, whatever the view asks", async () => {
+      await store
+        .getState()
+        .begin(
+          "s1",
+          NOTIFICATION,
+          false,
+          "metric",
+          null,
+          true,
+          view({ big: "rate", walkRun: true }),
+        );
+      walkSome();
+      expect(lastLine()).toMatch(/^32:04 · \d+ m$/);
+    });
+
+    test("the view is frozen: replacing the store's copy changes no later line", async () => {
+      await store
+        .getState()
+        .begin("s1", NOTIFICATION, false, "metric", null, true, view({ big: "rate" }));
+      store.setState({ view: view() });
+      walkSome();
+      expect(lastLine()).toMatch(/^32:04 · \d+:\d\d \/km$/);
+    });
+  });
+
   // A walk-run is paced by the coach: the notification has never carried a rate, and this pins
   // it so the outing display cannot add one to a walk-run later.
   test("a walk-run's notification line is a clock and a distance, never a pace", async () => {

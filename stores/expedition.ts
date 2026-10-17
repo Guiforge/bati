@@ -1,6 +1,6 @@
 import * as Haptics from "expo-haptics";
 import { create } from "zustand";
-import { formatClock, formatDistance } from "@/constants/distanceFormat";
+import { formatClock } from "@/constants/distanceFormat";
 import { hasOutdoorSlot } from "@/db/expeditions";
 import { appendPoints, pointsOf } from "@/db/gps";
 import type { DistanceUnit } from "@/db/preferences";
@@ -18,6 +18,7 @@ import {
   start as startNative,
   stop as stopNative,
 } from "@/modules/bati-location";
+import { DEFAULT_LIVE_VIEW, figureText, type LiveView, resolvePlaces } from "@/src/gps/liveFigures";
 import {
   accept,
   EMPTY,
@@ -96,6 +97,11 @@ type ExpeditionState = {
   error: string | null;
   /** Flipped once, the moment the goal was met. Read by the panel's status line. */
   goalReached: boolean;
+  /**
+   * What this outing shows, frozen by `begin` (see `LiveView`). `end()` leaves it in place, so
+   * `beginTrackingIfOuting` writes a safe one before anything is awaited.
+   */
+  view: LiveView;
   begin: (
     sessionUuid: string,
     notification: Notification,
@@ -103,6 +109,7 @@ type ExpeditionState = {
     unit: DistanceUnit,
     goal?: OutingGoal | null,
     haptics?: boolean,
+    view?: LiveView,
   ) => Promise<boolean>;
   end: () => Promise<void>;
 };
@@ -213,14 +220,35 @@ export function bindSession(bridge: SessionBridge): void {
  * through `bindSession` rather than an import: `stores/session` imports this store, and the way
  * back was a require cycle, safe only while nothing used the other side at module scope.
  */
-function progressLine(track: TrackState, unit: DistanceUnit): string {
-  const elapsed = formatClock((sessionBridge?.recordedSeconds() ?? 0) * 1000);
+function progressLine(
+  track: TrackState,
+  unit: DistanceUnit,
+  view: LiveView,
+  goal: OutingGoal | null,
+  reached: boolean,
+): string {
+  const recordedSeconds = sessionBridge?.recordedSeconds() ?? 0;
+  const elapsed = formatClock(recordedSeconds * 1000);
   // `startedAt` is set by the first fix the gate accepts, so null is exactly "no sky yet" - the
   // same test the panel's status line makes.
+  if (track.startedAt === null) return `${elapsed} · ${acquiringWord}`;
   // The notification's words come from i18n at `begin`, so its number follows the same language.
-  const ground =
-    track.startedAt === null ? acquiringWord : formatDistance(track.distanceM, unit, i18n.language);
-  return `${elapsed} · ${ground}`;
+  const ctx = {
+    track,
+    recordedSeconds,
+    recentSpeedMps: null,
+    goal,
+    goalReached: reached,
+    unit,
+    language: i18n.language,
+    locomotion: view.locomotion,
+    walkRun: view.walkRun,
+  };
+  // The clock is already on the line, so the second figure is the first one that is not it: the
+  // hero's big number, else their first small one, else the distance (today's line).
+  const places = resolvePlaces(view, ctx);
+  const second = [places.big, ...places.small].find((m) => m !== "time") ?? "distance";
+  return `${elapsed} · ${figureText(second, ctx, false)}`;
 }
 
 /**
@@ -233,10 +261,16 @@ function progressLine(track: TrackState, unit: DistanceUnit): string {
  * The state word ("Goal reached") is native's to own from here on, via `setReached` — see
  * `BatiLocationService.notification()`. This only ever pushes the figure.
  */
-function announceGoalReached(track: TrackState, unit: DistanceUnit, haptics: boolean): void {
+function announceGoalReached(
+  track: TrackState,
+  unit: DistanceUnit,
+  haptics: boolean,
+  view: LiveView,
+  goal: OutingGoal | null,
+): void {
   if (haptics) buzz("expedition.goalHaptic");
   setReached();
-  setProgress(progressLine(track, unit));
+  setProgress(progressLine(track, unit, view, goal, true));
 }
 
 /** The one haptic call in this file, so a walk cannot end up with two ways of buzzing. */
@@ -279,8 +313,17 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
   recentSpeedMps: null,
   error: null,
   goalReached: false,
+  view: DEFAULT_LIVE_VIEW,
 
-  begin: async (sessionUuid, notification, mounted, unit, goal = null, haptics = true) => {
+  begin: async (
+    sessionUuid,
+    notification,
+    mounted,
+    unit,
+    goal = null,
+    haptics = true,
+    view = DEFAULT_LIVE_VIEW,
+  ) => {
     // The previous run is closed before this one can be refused. Both early exits below used to
     // return with the last outing's reading still in state: permission revoked between two
     // sorties in the same process, and DONE credited the first walk's kilometres a second time,
@@ -299,6 +342,8 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       recentSpeedMps: null,
       error: null,
       goalReached: false,
+      // Before the early returns below, so the "unavailable" and "permission" paths render from it.
+      view,
     });
 
     if (!isAvailable()) {
@@ -372,13 +417,13 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
           error: clearedTransient(get().error),
         });
 
-        if (reached && !wasReached) announceGoalReached(track, unit, haptics);
+        if (reached && !wasReached) announceGoalReached(track, unit, haptics, view, goal);
         announceLeague(track, haptics, mounted);
 
         // Same cadence as the write, so a pocket that is never looked at costs one notification
         // update every thirty seconds rather than one a second.
         if (buffer.length >= FLUSH_EVERY) {
-          setProgress(progressLine(track, unit));
+          setProgress(progressLine(track, unit, view, goal, reached));
           flush(sessionUuid).catch((e) => reportError("expedition.flush", e));
         }
       }),
@@ -425,7 +470,8 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       // Once immediately, then on the clock. Waiting for the first tick left the notification
       // saying only "on the road" for half a minute, which is the half minute a hero is most
       // likely to look at it: they have just set off and want to see that something started.
-      const tick = () => setProgress(progressLine(get().track, unit));
+      const tick = () =>
+        setProgress(progressLine(get().track, unit, view, goal, get().goalReached));
       tick();
       progressTimer = setInterval(tick, PROGRESS_EVERY_MS);
     }

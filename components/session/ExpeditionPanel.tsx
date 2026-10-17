@@ -6,19 +6,17 @@ import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
 import { Card } from "@/components/common/Card";
 import { Mountain } from "@/components/icons";
-import {
-  formatClock,
-  formatDistance,
-  formatElevation,
-  formatRate,
-  formatRateAt,
-  rateKind,
-} from "@/constants/distanceFormat";
+import { formatDistance, rateKind } from "@/constants/distanceFormat";
+import type { OutingMetric } from "@/constants/outingDisplay";
 import { formatDuration } from "@/db/estimate";
-import { isWalkRunSession, outingLocomotion } from "@/db/expeditions";
-import type { DistanceUnit } from "@/db/preferences";
 import type { Locomotion } from "@/db/schema";
 import { useSessionTimer } from "@/hooks/useSessionTimer";
+import {
+  type FigureContext,
+  figureText,
+  resolvePlaces,
+  screenStaysOn,
+} from "@/src/gps/liveFigures";
 import type { OutingGoal, TrackState } from "@/src/gps/track";
 import { reportError } from "@/src/reportError";
 import { useExpeditionStore } from "@/stores/expedition";
@@ -54,82 +52,17 @@ function statusKey(error: string | null, track: TrackState, goalReached: boolean
  * What a hero sees while they are out.
  *
  * Numbers, under the map `LiveMap` draws in the slot the movement's picture takes on every other
- * set. The screen is still never held awake on an outing: it dominates the power draw of a
- * session far more than the GPS chip does, so the map only costs while the hero is looking. See
+ * set. The screen is off by default on an outing: it dominates the power draw of a session far
+ * more than the GPS chip does, so the map only costs while the hero is looking. A hero can keep it
+ * on for an activity (Settings, "Affichage des sorties"), see `screenStaysOn`. See
  * docs/designs/map-immersion.md § The live map.
  *
  * Everything here reads the live store rather than the fixes: `stores/expedition` folds each
  * fix through the reducer as it lands, and a second derivation on this screen would be a second
  * answer to "how far have I gone".
  */
-/**
- * The metres climbed so far, between the second figure and the pace.
- *
- * Only once the receiver has given a height: a phone that reports none would otherwise show a
- * flat "0 m" for a walk up a hill.
- */
-function Climb({
-  track,
-  unit,
-  color,
-}: {
-  track: TrackState;
-  unit: DistanceUnit;
-  color: "$text" | "$textSecondary";
-}) {
-  const { t } = useTranslation();
-  if (track.climbFrom === null) return null;
-  return (
-    <Reading label={t("session.expedition_climb")}>
-      <XStack items="center" gap="$1">
-        <Mountain size={16} color={color} />
-        <AppText
-          testID="expedition-climb"
-          fontSize={20}
-          fontWeight="700"
-          color={color}
-          style={{ fontVariant: ["tabular-nums"] }}
-        >
-          {formatElevation(track.ascentM, unit)}
-        </AppText>
-      </XStack>
-    </Reading>
-  );
-}
-
 /** How long the "you can put the phone away" line stays, in seconds of recorded walking. */
 const POCKET_HINT_SECONDS = 30;
-
-/** Under this, a reported speed is a standstill: a slow walk is 1 m/s, a stop wobbles near 0. */
-const STILL_SPEED_MPS = 0.3;
-
-/**
- * The pace (or speed) of the last twenty seconds, not of the whole outing.
- *
- * The average is a figure that stops moving: after an hour, a hard four hundred metres shifts it
- * by six seconds per kilometre, so the panel answered "how fast has this walk been" to a hero
- * asking "how fast am I going". The average is still what the recap prints, where looking back is
- * the point. Falls back to it while the window is empty, which is the first few seconds and any
- * receiver that reports no speed at all.
- *
- * And while the receiver swears to a standstill the reducer does not see. Some report a speed of
- * 0 with every fix (the emulator does, always), and the panel read "..." for a whole ride that
- * was covering ground. Standing still for real is the auto-pause's call, and once it holds the
- * instant reading is the honest one again.
- */
-function liveRate(
-  track: TrackState,
-  recentSpeedMps: number | null,
-  unit: DistanceUnit,
-  language: string,
-  locomotion: Locomotion | null,
-): string {
-  const receiverSaysStopped =
-    recentSpeedMps !== null && recentSpeedMps < STILL_SPEED_MPS && !track.paused;
-  return recentSpeedMps === null || receiverSaysStopped
-    ? formatRate(track.distanceM, track.movingMs, unit, language, locomotion)
-    : formatRateAt(recentSpeedMps, unit, language, locomotion);
-}
 
 /**
  * How far into the goal, in the unit the goal was set in. "261 m" said nothing about whether that
@@ -178,16 +111,40 @@ function GoalBar({
   );
 }
 
-/** A figure and the word for it underneath, at the size a glance from a handlebar can still read. */
+/** The word for a metric, as a locale key. The rate follows the activity read (`rateKind`). */
+function labelKey(metric: OutingMetric, locomotion: Locomotion): string {
+  switch (metric) {
+    case "time":
+      return "quests.config_duration";
+    case "distance":
+      return "session.expedition_ground";
+    case "rate":
+      return `session.expedition_${rateKind(locomotion)}`;
+    case "rateAvg":
+      return `session.expedition_${rateKind(locomotion)}_avg`;
+    case "climb":
+      return "session.expedition_climb";
+    case "remaining":
+      return "session.expedition_remaining";
+  }
+}
+
+/**
+ * A figure and the word for it underneath, at the size a glance from a handlebar can still read.
+ * `bare` is the big number the hero never chose: it has always stood without a word.
+ */
 function Reading({
   label,
   end = false,
+  bare = false,
   children,
 }: {
   label: string;
   end?: boolean;
+  bare?: boolean;
   children: ReactNode;
 }) {
+  if (bare) return <>{children}</>;
   return (
     <YStack items={end ? "flex-end" : "flex-start"} gap="$1">
       {children}
@@ -195,6 +152,60 @@ function Reading({
         {label}
       </AppText>
     </YStack>
+  );
+}
+
+/**
+ * The small figures, each with its word under it: "2:18", "0 m" and "..." side by side left a
+ * hero guessing which was the climb and what the dots were waiting for. In the big-numbers layout
+ * they stack, one per line, bigger. Moving time lives on the recap.
+ */
+function SmallFigures({
+  metrics,
+  ctx,
+  locomotion,
+  stacked,
+  color,
+}: {
+  metrics: OutingMetric[];
+  ctx: FigureContext;
+  locomotion: Locomotion;
+  stacked: boolean;
+  color: "$text" | "$textSecondary";
+}) {
+  const { t } = useTranslation();
+  return (
+    <XStack
+      justify="space-between"
+      items="flex-start"
+      flexDirection={stacked ? "column" : "row"}
+      gap={stacked ? "$3" : undefined}
+    >
+      {metrics.map((metric, index) => (
+        <Reading
+          key={metric}
+          label={t(labelKey(metric, locomotion))}
+          end={!stacked && index === metrics.length - 1 && index > 0}
+        >
+          <XStack items="center" gap="$1">
+            {metric === "climb" ? <Mountain size={16} color={color} /> : null}
+            <AppText
+              testID={`expedition-${metric}`}
+              variant="display"
+              fontSize={stacked ? 32 : index === 0 ? 24 : 20}
+              fontWeight="700"
+              color={color}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.5}
+              style={{ fontVariant: ["tabular-nums"] }}
+            >
+              {figureText(metric, ctx, true)}
+            </AppText>
+          </XStack>
+        </Reading>
+      ))}
+    </XStack>
   );
 }
 
@@ -209,18 +220,14 @@ export function ExpeditionPanel() {
   const language = useSettingsStore((state) => state.language);
   const goal = useSessionStore((state) => state.goal);
   /**
-   * The same answer the saved row's `outing` holds, so the speed read here is the shape the
-   * victory screen, the recap and the journal print afterwards. Read per slot, a ride leg of a
-   * walk-and-ride quest showed km/h live and a pace for the same outing one screen later.
+   * What this outing shows, frozen when it began (`beginTrackingIfOuting`). Its `locomotion` is
+   * the activity really done, the one the hero's tab was picked from: the word and the unit of the
+   * rate follow it for the whole outing, a ride leg of a walk-and-ride quest included. The recap
+   * keeps `outingLocomotion` (null on a mixed quest) until the pace-or-speed work reads the view
+   * there too, a named gap.
    */
-  const locomotion = useSessionStore((state) =>
-    state.quest === null ? null : outingLocomotion(state.quest),
-  );
-
-  /** A walk-run is paced by the coach's cues, so no pace is printed, resumed or not. */
-  const walkRun = useSessionStore(
-    (state) => state.quest !== null && isWalkRunSession(state.quest, state.goal),
-  );
+  const view = useExpeditionStore((state) => state.view);
+  const quest = useSessionStore((state) => state.quest);
 
   /**
    * One line, and it never lies by omission. A blank readout while the sky is being found looks
@@ -259,31 +266,37 @@ export function ExpeditionPanel() {
     if (!track.paused) setRecorded(recordedDurationSeconds());
   }, [elapsedSeconds, track.paused]);
 
-  const clock = formatClock(recorded * 1000);
-  const distance = formatDistance(track.distanceM, unit, language);
-  const pace = liveRate(track, recentSpeedMps, unit, language, locomotion);
-
-  /**
-   * The big figure carries the unit the hero set out in: metres when the goal is metres, the
-   * clock otherwise. While the sky is being found there is no distance to carry, whatever the
-   * goal says, so the clock takes the slot for everyone. `0 m` at 56px is a verdict in display
-   * type, and on a phone with no SUPL it is a verdict the hero reads for minutes.
-   */
-  const distanceLeads = !acquiring && goal?.type === "distance";
-  const [bigFigure, secondFigure, secondKey] = distanceLeads
-    ? [distance, clock, "quests.config_duration"]
-    : [clock, distance, "session.expedition_ground"];
+  const ctx: FigureContext = {
+    track,
+    recordedSeconds: recorded,
+    recentSpeedMps,
+    goal,
+    goalReached,
+    unit,
+    language,
+    locomotion: view.locomotion,
+    walkRun: view.walkRun,
+  };
+  const places = resolvePlaces(view, ctx);
+  const bigFigures = view.layout === "bigFigures";
 
   return (
     <Card p="$4" gap="$3">
-      <AppText
-        fontSize={56}
-        fontWeight="700"
-        color={figureColor}
-        style={{ fontVariant: ["tabular-nums"] }}
-      >
-        {bigFigure}
-      </AppText>
+      <Reading label={t(labelKey(places.big, view.locomotion))} bare={!places.bigLabelled}>
+        <AppText
+          testID="expedition-big"
+          variant="display"
+          fontSize={bigFigures ? 72 : 56}
+          fontWeight="700"
+          color={figureColor}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.5}
+          style={{ fontVariant: ["tabular-nums"] }}
+        >
+          {figureText(places.big, ctx, true)}
+        </AppText>
+      </Reading>
 
       {acquiring ? null : (
         // Moving seconds, the clock `goalReached` reads: the recorded total counts red lights,
@@ -296,39 +309,14 @@ export function ExpeditionPanel() {
         />
       )}
 
-      {/* Two values, never three: the total in 56px and the moving time in 24 are two durations
-          with no label between them, minutes apart on an urban walk, and nothing on the card
-          says which one the journal will keep. Moving time lives on the recap.
-
-          Each with its word under it: "2:18", "0 m" and "..." side by side left a hero guessing
-          which was the climb and what the dots were waiting for. */}
-      {acquiring ? null : (
-        <XStack justify="space-between" items="flex-start">
-          <Reading label={t(secondKey)}>
-            <AppText
-              fontSize={24}
-              fontWeight="700"
-              color={figureColor}
-              style={{ fontVariant: ["tabular-nums"] }}
-            >
-              {secondFigure}
-            </AppText>
-          </Reading>
-          <Climb track={track} unit={unit} color={figureColor} />
-          {walkRun ? null : (
-            <Reading label={t(`session.expedition_${rateKind(locomotion)}`)} end>
-              <AppText
-                testID="expedition-rate"
-                fontSize={20}
-                fontWeight="700"
-                color={figureColor}
-                style={{ fontVariant: ["tabular-nums"] }}
-              >
-                {pace}
-              </AppText>
-            </Reading>
-          )}
-        </XStack>
+      {acquiring || places.small.length === 0 ? null : (
+        <SmallFigures
+          metrics={places.small}
+          ctx={ctx}
+          locomotion={view.locomotion}
+          stacked={bigFigures}
+          color={figureColor}
+        />
       )}
 
       {/* The thin band: the status in words, and the accuracy beside it. Worth keeping while the
@@ -359,12 +347,15 @@ export function ExpeditionPanel() {
 
       {/* And the one that keeps them from deciding it broke when the screen goes dark.
 
-          Every other session in this app holds the screen awake; an outing deliberately does not,
-          so the phone sleeps in a pocket and Android locks it. Unannounced, a black screen during
+          Every other session in this app holds the screen awake; an outing does not unless the hero
+          chose it (`screenStaysOn`), so the phone sleeps in a pocket and Android locks it. Unannounced, a black screen during
           a GPS walk reads as "the tracking stopped", the hero takes the phone out to check, and
           the battery this was all for is spent on looking. Said once, early, and gone by the time
           it would be clutter. */}
-      {!acquiring && error === null && recorded < POCKET_HINT_SECONDS ? (
+      {!acquiring &&
+      error === null &&
+      recorded < POCKET_HINT_SECONDS &&
+      (quest === null || !screenStaysOn(quest, view)) ? (
         <Paragraph fontSize={13} color="$textSecondary">
           {t("session.expedition_pocket_hint")}
         </Paragraph>

@@ -11,10 +11,12 @@ import type { Quest } from "@/db/quests";
 import { computeSessionXp, MAX_SESSION_XP } from "@/db/xp";
 import { useSessionRecovery } from "@/hooks/useSessionRecovery";
 import { i18n } from "@/i18n";
+import { DEFAULT_LIVE_VIEW } from "@/src/gps/liveFigures";
 import { EMPTY } from "@/src/gps/track";
 import { bindSession, useExpeditionStore } from "@/stores/expedition";
 import { useSettingsStore } from "@/stores/settings";
 import {
+  beginTrackingIfOuting,
   FINAL_REST_SECONDS,
   holdNeedingAnswer,
   loadWarmup,
@@ -30,6 +32,12 @@ jest.mock("@/stores/expedition", () => {
   const actual = jest.requireActual("@/stores/expedition");
   return { ...actual, bindSession: jest.fn(actual.bindSession) };
 });
+
+// The phone's own keep-awake set (SecureStore in the app), swapped per case.
+const mockKeepAwakeSet = jest.fn<Promise<string[]>, []>();
+jest.mock("@/src/outingKeepAwake", () => ({
+  keepAwakeSet: () => mockKeepAwakeSet() ?? Promise.resolve([]),
+}));
 
 // Mock DB client to prevent actual SQLite initialization
 jest.mock("@/db/client", () => ({
@@ -111,6 +119,7 @@ jest.mock("@/db/preferences", () => ({
     // Read by beginTrackingIfOuting, only exercised by the outing cases below.
     getDistanceUnit: jest.fn().mockResolvedValue("metric"),
     getHapticsEnabled: jest.fn().mockResolvedValue(true),
+    getOutingDisplay: jest.fn().mockResolvedValue({}),
     getBigFeastsShown: jest.fn().mockResolvedValue([]),
   },
 }));
@@ -152,6 +161,11 @@ jest.mock("@/db/achievements", () => ({
   checkForNewAchievements: jest.fn().mockResolvedValue([]),
 }));
 
+// A `setState` on the expedition store copies a spied `begin` into a new state object, which
+// `restoreAllMocks` then never reaches. `beginTrackingIfOuting` does one (the interim view), so
+// every case starts from the real `begin`.
+const realBegin = useExpeditionStore.getState().begin;
+
 describe("useSessionStore", () => {
   const store = useSessionStore;
 
@@ -173,6 +187,7 @@ describe("useSessionStore", () => {
   } as unknown as Quest;
 
   beforeEach(() => {
+    useExpeditionStore.setState({ begin: realBegin, view: DEFAULT_LIVE_VIEW });
     store.setState({
       quest: null,
       status: "idle",
@@ -1858,8 +1873,93 @@ describe("useSessionStore", () => {
       ],
     } as unknown as Quest;
 
+    beforeEach(() => {
+      mockKeepAwakeSet.mockResolvedValue([]);
+      (preferences.getOutingDisplay as jest.Mock).mockResolvedValue({});
+    });
+
     afterEach(() => {
       jest.restoreAllMocks();
+    });
+
+    /** The walk leg plus push-ups: a mixed quest, which reads the activity really done. */
+    const mixedQuest = {
+      ...outingQuest,
+      exercises: [
+        ...outingQuest.exercises,
+        {
+          exercise: { id: 2, enName: "Push-up", muscles: [], style: "reps", locomotion: null },
+          target: { type: "reps", value: 10 },
+        },
+      ],
+    } as unknown as Quest;
+
+    const viewPassed = (beginSpy: jest.SpyInstance) => {
+      const call = beginSpy.mock.calls[0];
+      assert(call);
+      return call[6] as import("@/src/gps/liveFigures").LiveView;
+    };
+
+    test("begin gets the view of the activity really done, with the phone's screen choice", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+      (preferences.getOutingDisplay as jest.Mock).mockResolvedValue({
+        walk: { big: "rate", layout: "bigFigures" },
+        run: { big: "distance" },
+      });
+      mockKeepAwakeSet.mockResolvedValue(["walk"]);
+
+      await store.getState().startSession(mixedQuest, "medium", { goal: null });
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+
+      // Walk + push-ups reads the Walk tab, not "nothing".
+      expect(viewPassed(beginSpy)).toMatchObject({
+        big: "rate",
+        layout: "bigFigures",
+        locomotion: "walk",
+        walkRun: false,
+        keepAwake: true,
+      });
+    });
+
+    test("an activity the screen was not kept on for gets a screen that goes off", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+      mockKeepAwakeSet.mockResolvedValue(["ride"]);
+
+      await store.getState().startSession(outingQuest, "medium", { goal: null });
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+
+      expect(viewPassed(beginSpy)).toMatchObject({ locomotion: "walk", keepAwake: false });
+    });
+
+    // The last outing's view must never be read while the preferences are still loading: a lit
+    // screen carried over, or a pace on a walk-run right after a normal outing.
+    test("the previous outing's view is replaced before any read resolves", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+      useExpeditionStore.setState({
+        view: { ...DEFAULT_LIVE_VIEW, keepAwake: true, walkRun: false, big: "rate" },
+      });
+      // The reads stay pending until the test says so.
+      let release: (v: string[]) => void = () => {};
+      mockKeepAwakeSet.mockReturnValue(new Promise((resolve) => (release = resolve)));
+      const walkRunQuest = {
+        ...outingQuest,
+        exercises: [{ ...(outingQuest.exercises[0] as object), walkRun: true }],
+      } as unknown as Quest;
+      store.setState({ goal: null });
+
+      beginTrackingIfOuting(walkRunQuest, "uuid-stale", null);
+
+      // Synchronously after the call, before a single read resolved.
+      expect(useExpeditionStore.getState().view).toMatchObject({
+        keepAwake: false,
+        walkRun: true,
+        locomotion: "walk",
+      });
+      expect(beginSpy).not.toHaveBeenCalled();
+
+      release(["walk"]);
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+      expect(viewPassed(beginSpy)).toMatchObject({ keepAwake: true, walkRun: true });
     });
 
     test("the goal reaches begin by position, exactly as the door handed it over", async () => {

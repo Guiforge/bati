@@ -1,6 +1,9 @@
 {
   "dark": "Dark",
   "home": {
+    "light_week_on": "Light week until {{date}}: one round fewer on your quests.",
+    "light_week_end": "Back to the normal rhythm",
+    "pause_on": "On a break until {{date}}",
     "start": "Start",
     "details": "Details",
     "kicker_day_one": "Day one",
@@ -377,6 +380,7 @@
     "editor_delete_in_use": "This quest is a step of {{titles}}. Take it out of the adventure first."
   },
   "adventures": {
+    "editor_saved": "Adventure saved",
     "gallery_title": "Adventures",
     "gallery_subtitle": "Multi-session programs with a story and a boss fight",
     "details_title": "Adventure",
@@ -724,7 +728,7 @@
     "objective_value": "Target {{value}}",
     "ghost_to_beat_label": "to beat",
     "ghost_season_label": "Past your season best",
-    "below_last_comeback": "Back after a break: one level lighter for two sessions.",
+    "below_last_comeback": "No {{name}} for over two weeks: one level lighter for two sessions.",
     "below_last_rung": "New step: you start again from the bottom of the range.",
     "expedition_status_denied": "Bati has no access to your location",
     "expedition_open_settings": "Open settings",
@@ -2451,7 +2455,7 @@
     "pause_active": "On a break until {{date}}. Nothing is lost while you're away.",
     "pause_end": "I'm back today",
     "zone_title": "I'm sparing a zone",
-    "zone_body": "Pick one or two areas. Every exercise that works them is set aside and your quests serve something else, until the end date. Then they come back on their own.",
+    "zone_body": "Pick one or two areas. Every exercise that works them is set aside until the end date: the game's quests serve something else, quests you wrote stay as written. Then they come back on their own.",
     "zone_pick": "Areas (one or two)",
     "zone_weeks": "Weeks",
     "zone_start": "Spare this zone",

@@ -1,6 +1,7 @@
 import { and, desc, eq, gte, inArray, isNotNull, ne, sql } from "drizzle-orm";
 import { db, schema } from "./client";
 import { isWorkout } from "./completed";
+import { getActivePause } from "./pause";
 import { getPreference, setPreference } from "./preferences";
 import { setMetSql } from "./progress";
 import type { MovementPattern } from "./schema";
@@ -25,16 +26,31 @@ export const LIGHT_WEEK_DAYS = 7;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const REFUSED_KEY = "lightWeekRefusedAt";
 const ACCEPTED_KEY = "lightWeekAcceptedAt";
+/** The hero ended the week early; it counts only if it is later than the acceptance. */
+const ENDED_KEY = "lightWeekEndedAt";
 
 /** A workout as the offer reads it: when, and whether at least one of its sets missed. */
 export type LightWeekSession = { at: Date; under: boolean };
 
-export type LightWeekAnswers = { refusedAt: number | null; acceptedAt: number | null };
+export type LightWeekAnswers = {
+  refusedAt: number | null;
+  acceptedAt: number | null;
+  endedAt?: number | null;
+};
 
-/** Whether an accepted week is running at `now`. */
-export function lightWeekRunning(acceptedAt: number | null, now: Date): boolean {
-  return acceptedAt != null && now.getTime() - acceptedAt < LIGHT_WEEK_DAYS * DAY_MS;
+/** Whether an accepted week is running at `now`, and not ended early. */
+export function lightWeekRunning(
+  acceptedAt: number | null,
+  now: Date,
+  endedAt: number | null = null,
+): boolean {
+  if (acceptedAt == null || (endedAt != null && endedAt >= acceptedAt)) return false;
+  return now.getTime() - acceptedAt < LIGHT_WEEK_DAYS * DAY_MS;
 }
+
+/** The day the running week stops, for the line that says it is on. */
+export const lightWeekEndsAt = (acceptedAt: number) =>
+  new Date(acceptedAt + LIGHT_WEEK_DAYS * DAY_MS);
 
 export type LightWeekReason = "under" | "busy";
 
@@ -47,11 +63,11 @@ export type LightWeekReason = "under" | "busy";
  */
 export function lightWeekDue(
   sessions: readonly LightWeekSession[],
-  { refusedAt, acceptedAt }: LightWeekAnswers,
+  { refusedAt, acceptedAt, endedAt = null }: LightWeekAnswers,
   now: Date,
 ): LightWeekReason | null {
   const t = now.getTime();
-  if (lightWeekRunning(acceptedAt, now)) return null;
+  if (lightWeekRunning(acceptedAt, now, endedAt)) return null;
   if (refusedAt != null && t - refusedAt < REFUSAL_SILENCE_DAYS * DAY_MS) return null;
 
   const answeredAt = Math.max(refusedAt ?? 0, acceptedAt ?? 0);
@@ -83,15 +99,31 @@ async function readMs(key: string): Promise<number | null> {
 }
 
 export async function getLightWeekAnswers(): Promise<LightWeekAnswers> {
-  const [refusedAt, acceptedAt] = await Promise.all([readMs(REFUSED_KEY), readMs(ACCEPTED_KEY)]);
-  return { refusedAt, acceptedAt };
+  const [refusedAt, acceptedAt, endedAt] = await Promise.all([
+    readMs(REFUSED_KEY),
+    readMs(ACCEPTED_KEY),
+    readMs(ENDED_KEY),
+  ]);
+  return { refusedAt, acceptedAt, endedAt };
 }
 
 export const acceptLightWeek = (now: Date) => setPreference(ACCEPTED_KEY, String(now.getTime()));
 export const refuseLightWeek = (now: Date) => setPreference(REFUSED_KEY, String(now.getTime()));
 
+/** Back to the normal rhythm. The acceptance stays on record, so the offer does not return at once. */
+export const endLightWeek = (now: Date) => setPreference(ENDED_KEY, String(now.getTime()));
+
 export async function isLightWeekRunning(now: Date): Promise<boolean> {
-  return lightWeekRunning((await getLightWeekAnswers()).acceptedAt, now);
+  const { acceptedAt, endedAt } = await getLightWeekAnswers();
+  return lightWeekRunning(acceptedAt, now, endedAt);
+}
+
+/** When the running week stops, or null when none runs. */
+export async function lightWeekUntil(now: Date): Promise<Date | null> {
+  const { acceptedAt, endedAt } = await getLightWeekAnswers();
+  return acceptedAt != null && lightWeekRunning(acceptedAt, now, endedAt)
+    ? lightWeekEndsAt(acceptedAt)
+    : null;
 }
 
 /** Workouts of the last `BUSY_WEEKS` weeks, newest first, each with whether a set missed. */
@@ -123,6 +155,8 @@ async function recentWorkouts(now: Date): Promise<LightWeekSession[]> {
 }
 
 export async function lightWeekReason(now: Date): Promise<LightWeekReason | null> {
+  // A break is the rest already: offering a lighter week inside it would use up the seven days.
+  if (await getActivePause(now)) return null;
   const [sessions, answers] = await Promise.all([recentWorkouts(now), getLightWeekAnswers()]);
   return lightWeekDue(sessions, answers, now);
 }

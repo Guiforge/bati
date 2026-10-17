@@ -353,7 +353,7 @@ export default function AdventureEditor() {
     )
       .then((id) => {
         success();
-        showSuccess(t("quests.editor_saved"));
+        showSuccess(t("adventures.editor_saved"));
         router.replace(`/adventures/${id}` as never);
       })
       .catch((error: unknown) => {
@@ -423,7 +423,7 @@ export default function AdventureEditor() {
             </Text>
           </XStack>
 
-          {adventureId == null && catalogue.recent.length >= MIN_STEPS ? (
+          {adventureId == null && steps.length === 0 && catalogue.recent.length >= MIN_STEPS ? (
             <Text
               testID="editor-from-recent"
               onPress={prefill}

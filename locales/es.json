@@ -1,6 +1,9 @@
 {
   "dark": "Oscuro",
   "home": {
+    "light_week_on": "Semana ligera hasta el {{date}}: una ronda menos en tus misiones.",
+    "light_week_end": "Volver al ritmo normal",
+    "pause_on": "En pausa hasta el {{date}}",
     "start": "Empezar",
     "details": "Detalles",
     "kicker_day_one": "Primer día",
@@ -388,6 +391,7 @@
     "editor_delete_in_use": "Esta misión es una etapa de {{titles}}. Quítala primero de la aventura."
   },
   "adventures": {
+    "editor_saved": "Aventura guardada",
     "gallery_title": "Aventuras",
     "gallery_subtitle": "Programas de varias sesiones, con historia y combate contra un jefe",
     "details_title": "Aventura",
@@ -749,7 +753,7 @@
     "objective_value": "Objetivo {{value}}",
     "ghost_to_beat_label": "a superar",
     "ghost_season_label": "Por encima de tu mejor de la temporada",
-    "below_last_comeback": "Vuelves tras una pausa: un nivel más suave durante dos sesiones.",
+    "below_last_comeback": "Sin {{name}} desde hace más de dos semanas: un nivel más suave durante dos sesiones.",
     "below_last_rung": "Nueva etapa: vuelves a empezar desde abajo del rango.",
     "expedition_status_denied": "Bati no tiene acceso a tu ubicación",
     "expedition_open_settings": "Abrir ajustes",
@@ -2556,7 +2560,7 @@
     "pause_active": "En pausa hasta el {{date}}. No pierdes nada mientras estás fuera.",
     "pause_end": "Vuelvo hoy",
     "zone_title": "Cuido una zona",
-    "zone_body": "Elige una o dos zonas. Todos los ejercicios que las trabajan se apartan y tus misiones sirven otros, hasta la fecha de fin. Luego vuelven solos.",
+    "zone_body": "Elige una o dos zonas. Todos los ejercicios que las trabajan se apartan hasta la fecha de fin: las misiones del juego sirven otros, las que escribiste se quedan tal cual. Luego vuelven solos.",
     "zone_pick": "Zonas (una o dos)",
     "zone_weeks": "Semanas",
     "zone_start": "Cuidar esta zona",

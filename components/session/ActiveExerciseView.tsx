@@ -1024,7 +1024,7 @@ export function ActiveExerciseView() {
                 `targetWhy`, and so no sentence. */}
             {belowLastKey && !inSwitch ? (
               <AppText fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
-                {t(belowLastKey)}
+                {t(belowLastKey, { name: exerciseName })}
               </AppText>
             ) : null}
           </YStack>

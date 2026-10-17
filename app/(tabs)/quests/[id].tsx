@@ -14,6 +14,7 @@ import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { StatusBand } from "@/components/common/StatusBand";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
+import { LightWeekNote } from "@/components/home/LightWeekNote";
 import { ChevronLeft, Pencil, Repeat, Sparkles } from "@/components/icons";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
 import { QuestConfigCard } from "@/components/quests/QuestConfigCard";
@@ -553,16 +554,13 @@ export default function QuestDetails() {
     // anything that outranks the config here has to outrank it in there too — otherwise an outing
     // generated at medium retargets a swap at hard. Reading `effectiveLevel` here instead priced
     // medium targets with hard's multiplier for the frame between the tap and the new quest.
-    const quest = lightenRounds(
-      applyQuestConfig(
-        state.quest,
-        { ...config, level: state.questLevel },
-        indexExercises(catalogue),
-        swapJournal,
-      ),
-      config,
-      lightWeek,
+    const applied = applyQuestConfig(
+      state.quest,
+      { ...config, level: state.questLevel },
+      indexExercises(catalogue),
+      swapJournal,
     );
+    const quest = lightenRounds(applied, config, lightWeek);
     // A distance goal is estimated from a nominal pace; a duration is its own estimate. Either
     // way it is what the hero is about to run, so the XP tag below prices that same estimate
     // rather than the slot's own target — the two numbers on this screen must describe one
@@ -573,6 +571,9 @@ export default function QuestDetails() {
         : estimateQuestSeconds(quest);
     return {
       quest,
+      // The rounds before a light week took one: the stepper edits these, never the lightened
+      // figure, or one tap on "-" would save the week's number into the quest for good.
+      baseRounds: applied.rounds,
       questTitle: localizedTitle(quest, language),
       questDesc: localizedText(quest, "description", language),
       estimatedSeconds,
@@ -904,9 +905,15 @@ export default function QuestDetails() {
             </Card>
           ) : null}
 
+          {/* Only where the week really took a round: a quest whose rounds the hero set keeps them. */}
+          {lightWeek && !isOuting && config.rounds === undefined ? (
+            <LightWeekNote onHome={false} onEnded={() => setLightWeek(false)} />
+          ) : null}
+
           {quest ? (
             <QuestConfigCard
               quest={quest}
+              roundsShown={derived?.baseRounds}
               config={config}
               language={language}
               onChange={updateConfig}

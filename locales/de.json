@@ -1,6 +1,9 @@
 {
   "dark": "Dunkel",
   "home": {
+    "light_week_on": "Leichte Woche bis {{date}}: eine Runde weniger bei deinen Quests.",
+    "light_week_end": "Zurück zum normalen Rhythmus",
+    "pause_on": "Pause bis {{date}}",
     "start": "Starten",
     "details": "Details",
     "kicker_day_one": "Tag eins",
@@ -377,6 +380,7 @@
     "editor_delete_in_use": "Diese Quest ist eine Etappe von {{titles}}. Nimm sie zuerst aus dem Abenteuer."
   },
   "adventures": {
+    "editor_saved": "Abenteuer gespeichert",
     "gallery_title": "Abenteuer",
     "gallery_subtitle": "Programme über mehrere Einheiten, mit Geschichte und Bosskampf",
     "details_title": "Abenteuer",
@@ -724,7 +728,7 @@
     "objective_value": "Ziel {{value}}",
     "ghost_to_beat_label": "zu schlagen",
     "ghost_season_label": "Über deinem Saisonbestwert",
-    "below_last_comeback": "Zurück nach einer Pause: zwei Einheiten lang eine Stufe leichter.",
+    "below_last_comeback": "Seit über zwei Wochen ohne {{name}}: zwei Einheiten lang eine Stufe leichter.",
     "below_last_rung": "Neue Stufe: Du beginnst wieder unten im Bereich.",
     "expedition_status_denied": "Bati hat keinen Zugriff auf deinen Standort",
     "expedition_open_settings": "Einstellungen öffnen",
@@ -2453,7 +2457,7 @@
     "pause_active": "Pause bis {{date}}. Du verlierst nichts, solange du weg bist.",
     "pause_end": "Ich bin heute zurück",
     "zone_title": "Ich schone eine Zone",
-    "zone_body": "Wähle ein oder zwei Bereiche. Jede Übung, die sie beansprucht, wird beiseitegelegt und deine Quests bieten etwas anderes an, bis zum Enddatum. Danach kommen sie von selbst zurück.",
+    "zone_body": "Wähle ein oder zwei Bereiche. Jede Übung, die sie beansprucht, wird bis zum Enddatum beiseitegelegt: Die Quests des Spiels bieten etwas anderes an, selbst geschriebene bleiben, wie sie sind. Danach kommen sie von selbst zurück.",
     "zone_pick": "Bereiche (einer oder zwei)",
     "zone_weeks": "Wochen",
     "zone_start": "Diese Zone schonen",

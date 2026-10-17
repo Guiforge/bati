@@ -126,6 +126,7 @@
     }
   },
   "adventures": {
+    "editor_saved": "Aventure enregistrée",
     "completed_times_one": "Terminée une fois",
     "completed_times_other": "Terminée {{count}} fois",
     "completed_times_many": "Terminée {{count}} fois",
@@ -506,6 +507,9 @@
     "muscles": "Muscles"
   },
   "home": {
+    "light_week_on": "Semaine légère jusqu'au {{date}} : un tour de moins sur tes quêtes.",
+    "light_week_end": "Reprendre le rythme normal",
+    "pause_on": "En pause jusqu'au {{date}}",
     "start": "Commencer",
     "details": "Détails",
     "kicker_day_one": "Premier jour",
@@ -1197,7 +1201,7 @@
     "objective_value": "Objectif {{value}}",
     "ghost_to_beat_label": "à battre",
     "ghost_season_label": "Au-delà de ton meilleur de la saison",
-    "below_last_comeback": "Tu reprends après une pause : un niveau plus léger pendant deux séances.",
+    "below_last_comeback": "Pas de {{name}} depuis plus de deux semaines : un niveau plus léger pendant deux séances.",
     "below_last_rung": "Nouvelle étape : tu repars du bas de la fourchette.",
     "expedition_status_denied": "Bati n'a pas accès à ta position",
     "expedition_open_settings": "Ouvrir les réglages",
@@ -2556,7 +2560,7 @@
     "pause_active": "En pause jusqu'au {{date}}. Tu ne perds rien pendant ton absence.",
     "pause_end": "Je reprends aujourd'hui",
     "zone_title": "Je ménage une zone",
-    "zone_body": "Choisis une ou deux zones. Tous les exercices qui les sollicitent sont écartés et tes quêtes en servent d'autres, jusqu'à la date de fin. Ensuite ils reviennent tout seuls.",
+    "zone_body": "Choisis une ou deux zones. Tous les exercices qui les sollicitent sont écartés jusqu'à la date de fin : les quêtes du jeu en servent d'autres, celles que tu as écrites restent telles quelles. Ensuite ils reviennent tout seuls.",
     "zone_pick": "Zones (une ou deux)",
     "zone_weeks": "Semaines",
     "zone_start": "Ménager cette zone",

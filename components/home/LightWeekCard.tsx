@@ -52,11 +52,11 @@ export function LightWeekCard() {
         <AppText fontSize="$3" color="$primaryText">
           {t(reason === "under" ? "home.light_week_under" : "home.light_week_busy")}
         </AppText>
-        <XStack gap="$2">
+        <XStack gap="$2" flexWrap="wrap">
           <AppButton
             testID="home-light-week-accept"
             fullWidth={false}
-            height={40}
+            minH={40}
             onPress={() => answer(acceptLightWeek)}
           >
             {t("home.light_week_accept")}
@@ -65,7 +65,7 @@ export function LightWeekCard() {
             testID="home-light-week-refuse"
             variant="outline"
             fullWidth={false}
-            height={40}
+            minH={40}
             onPress={() => answer(refuseLightWeek)}
           >
             {t("home.light_week_refuse")}

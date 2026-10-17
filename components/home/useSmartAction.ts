@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatDurationEstimate } from "@/db/estimate";
 import { decideHomeOffer, type HomeOffer } from "@/db/homeOffer";
+import { getActivePause } from "@/db/pause";
 import { getReminderDays, WEEKDAYS, type Weekday } from "@/db/reminders";
 import { useReloadOnChange } from "@/hooks/useReloadOnChange";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
@@ -199,11 +200,13 @@ async function decideAction(
   router: Router,
   isCancelled: () => boolean,
 ): Promise<SmartActionConfig | null> {
-  const [offer, days] = await Promise.all([
+  const [offer, days, pause] = await Promise.all([
     decideHomeOffer(language, isCancelled),
     getReminderDays(),
+    getActivePause(),
   ]);
-  const yourDay = days[WEEKDAYS[new Date().getDay()] as Weekday] !== undefined;
+  // No reminder goes out during a pause (`src/reminders.ts`), so Home does not call it "your day".
+  const yourDay = !pause && days[WEEKDAYS[new Date().getDay()] as Weekday] !== undefined;
   return offer && !isCancelled() ? stageFor(offer, t, language, router, yourDay) : null;
 }
 

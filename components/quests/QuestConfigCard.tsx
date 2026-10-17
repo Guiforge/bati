@@ -130,12 +130,14 @@ function OutingGoalRow({
  */
 function ShapeSteppers({
   quest,
+  roundsShown,
   config,
   outing,
   language,
   onChange,
 }: {
   quest: Quest;
+  roundsShown: number | undefined;
   config: QuestConfig;
   outing: boolean;
   language: AppLanguage;
@@ -153,7 +155,7 @@ function ShapeSteppers({
       {outing ? null : (
         <Stepper
           label={t("quests.config_rounds")}
-          value={quest.rounds}
+          value={roundsShown ?? quest.rounds}
           min={ROUNDS_RANGE.min}
           max={ROUNDS_RANGE.max}
           onChange={(rounds) => onChange({ ...config, rounds })}
@@ -197,6 +199,11 @@ function ShapeSteppers({
 type Props = {
   /** The quest with the config already applied, so the steppers show what will actually run. */
   quest: Quest;
+  /**
+   * The rounds the stepper reads and writes, when a light week has taken one off `quest`'s: the
+   * week's figure is not the hero's to edit, and saved as a config it would outlive the week.
+   */
+  roundsShown?: number | undefined;
   config: QuestConfig;
   language: AppLanguage;
   onChange: (next: QuestConfig) => void;
@@ -205,7 +212,15 @@ type Props = {
   onSwap: (questExerciseId: number) => void;
 };
 
-export function QuestConfigCard({ quest, config, language, onChange, onReset, onSwap }: Props) {
+export function QuestConfigCard({
+  quest,
+  roundsShown,
+  config,
+  language,
+  onChange,
+  onReset,
+  onSwap,
+}: Props) {
   const { t } = useTranslation();
   // The run on this card is still the app's walk-run proposal, not a goal the hero set.
   const walkRun = proposesWalkRun(quest.exercises, config.distanceM);
@@ -271,6 +286,7 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
 
             <ShapeSteppers
               quest={quest}
+              roundsShown={roundsShown}
               config={config}
               outing={outing}
               language={language}

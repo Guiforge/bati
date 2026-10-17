@@ -91,6 +91,10 @@ jest.mock("@/db/reminders", () => ({
   WEEKDAYS: jest.requireActual("@/db/reminders").WEEKDAYS,
 }));
 
+// A pause the hero is in today, or null.
+let mockPause: { from: string; until: string } | null = null;
+jest.mock("@/db/pause", () => ({ getActivePause: async () => mockPause }));
+
 jest.mock("@/db/bossFights", () => ({
   getBossFightByAdventure: jest.fn().mockResolvedValue(null),
 }));
@@ -406,6 +410,18 @@ describe("useSmartAction", () => {
     const other = await renderHook(() => useSmartAction());
     await waitFor(() => expect(other.result.current.config).not.toBeNull());
     expect(other.result.current.config?.scene?.kicker).toBeUndefined();
+  });
+
+  it('does not say "Your day" during a pause: no reminder goes out on it', async () => {
+    const { WEEKDAYS } = jest.requireActual("@/db/reminders") as typeof import("@/db/reminders");
+    const today = WEEKDAYS[new Date().getDay()] as string;
+    mockReminderDays = { [today]: "20:00" };
+    mockPause = { from: "2026-01-01", until: "2099-01-01" };
+    const { result } = await renderHook(() => useSmartAction());
+    await waitFor(() => expect(result.current.config).not.toBeNull());
+    expect(result.current.config?.scene?.kicker).toBeUndefined();
+    mockPause = null;
+    mockReminderDays = {};
   });
 
   it("keeps day one's own kicker on a reminder day", async () => {

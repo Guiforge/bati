@@ -107,6 +107,31 @@ describe("db/lightWeek", () => {
     expect(lw().lightenRounds({ rounds: 3 }, null, false).rounds).toBe(3);
   });
 
+  test("the hero can end the week early, and the offer does not come straight back", async () => {
+    session(3, [[8, 10]]);
+    session(1, [[7, 10]]);
+    await lw().acceptLightWeek(daysAgo(0.5));
+    expect(await lw().lightWeekUntil(NOW)).toEqual(new Date(daysAgo(0.5).getTime() + 7 * DAY));
+    await lw().endLightWeek(NOW);
+    expect(await lw().isLightWeekRunning(NOW)).toBe(false);
+    expect(await lw().lightWeekUntil(NOW)).toBeNull();
+    // The two misses came before the acceptance: ending is not a way to be asked again.
+    expect(await lw().lightWeekReason(NOW)).toBeNull();
+    // Accepting again later runs a new week.
+    await lw().acceptLightWeek(new Date(NOW.getTime() + 1000));
+    expect(await lw().isLightWeekRunning(new Date(NOW.getTime() + 2000))).toBe(true);
+  });
+
+  test("no offer inside a pause: accepting would use up the seven days of the break", async () => {
+    session(3, [[8, 10]]);
+    session(1, [[7, 10]]);
+    expect(await lw().lightWeekReason(NOW)).toBe("under");
+    t.sqlite
+      .prepare("INSERT INTO user_preferences (key, value) VALUES ('pause_goal', ?)")
+      .run(JSON.stringify([{ from: "2026-10-15", until: "2026-10-25" }]));
+    expect(await lw().lightWeekReason(NOW)).toBeNull();
+  });
+
   test("hard sets: missed sets count, stretches and pattern-less movements do not", async () => {
     session(
       1,

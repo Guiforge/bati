@@ -21,10 +21,11 @@ jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockParams,
   useNavigation: () => ({ addListener: () => () => undefined, dispatch: jest.fn() }),
 }));
+const mockShowSuccess = jest.fn();
 jest.mock("@/components/common/Toast", () => ({
   useToast: () => ({
     showError: jest.fn(),
-    showSuccess: jest.fn(),
+    showSuccess: mockShowSuccess,
     showInfo: jest.fn(),
     showToast: jest.fn(),
   }),
@@ -224,6 +225,8 @@ describe("a new adventure", () => {
 
     await fireEvent.press(editor.getByTestId("adventure-save"));
     await waitFor(() => expect(hero().createHeroAdventure).toHaveBeenCalled());
+    // The toast says an adventure was saved, not a quest.
+    await waitFor(() => expect(mockShowSuccess).toHaveBeenCalledWith("Adventure saved"));
   });
 
   test("starts from the last sessions only when there are two, and fills the steps", async () => {
@@ -235,6 +238,8 @@ describe("a new adventure", () => {
     const editor = await mount();
     await fireEvent.press(await editor.findByTestId("editor-from-recent"));
     expect(editor.getByTestId("editor-step-2")).toBeTruthy();
+    // It fills an empty list; once steps are there a second press would erase their texts.
+    expect(editor.queryByTestId("editor-from-recent")).toBeNull();
     // Nothing is saved by it.
     expect(hero().createHeroAdventure).not.toHaveBeenCalled();
   });

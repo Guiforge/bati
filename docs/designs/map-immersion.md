@@ -154,6 +154,18 @@ at this run's slowest and gold at its quickest. Three rules hold it up:
 what a hero sees until they switch the tiles on, and it drops `glyphs` on purpose. A numbered
 label would draw with tiles on and vanish with them off, which is the worse of the two failures.
 
+### The route ghost
+
+A past outing on the same route is a pale line under today's: `ROUTE_GHOST_PAINT`, bone at 18 %,
+6 px, under the glow. Not gold (gold is today and the best league), not `muted` (the recap paints
+uncredited stretches `muted`), not dashed (`paths` in Braise is dashed, and maplibre-native #3636
+makes dashes go solid after a style change). The matching rule is `src/gps/route.ts`: the first
+stored fixes within 200 m, then 85 % of the sampled points inside a corridor of 50 m cells (3 x 3
+lookup: guaranteed under 50 m, never past 100 m, between the two it depends on the grid). On the
+live map today is tested alone, once 400 m are credited; on the recap the shape must follow today
+too, so half a loop is not the route. Bounds: at most 20 shapes read per outing (`routeCandidates`,
+two queries), grids memoised per shape. Opt-in per activity, off by default.
+
 ### The paper texture, deliberately not shipped
 
 The open question called a translucent paper texture "the cheap second half". It is not cheap
@@ -624,6 +636,8 @@ MapLibre only draws while the hero is actually looking.
   since that is what it becomes. No pace ramp: its ends are the run's own percentiles and they
   move with every fix, so the colours would shift under the hero's eyes. The glow and ring paints
   live in `constants/mapStyle.ts` so the two maps cannot drift.
+- With the route ghost on (opt-in), a pale line of the last outing on the same route is drawn
+  under today's, after 400 m; never during a walk-run. See "The route ghost" above.
 - Nothing is framed before the first fix: the movement's picture holds the slot until then (the
   `placeholder` prop). A camera with no centre looks at 0,0, the Gulf of Guinea, and the empty dark
   slot tried first read on a phone as a map that had failed to load.

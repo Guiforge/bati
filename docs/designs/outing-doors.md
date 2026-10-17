@@ -328,6 +328,18 @@ il serait absurde de débloquer les longues sorties sans les payer.
   - Le mot est **« Annuler le départ »**, pas « Annuler » : `common.cancel` veut dire « ne rien
     faire » partout ailleurs dans l'app, et ici le geste jette une séance et ses points.
 
+**Le fantôme de parcours (phase 3).** Réglage par activité, éteint par défaut (`routeGhost`, dans le
+blob `outingDisplay`). Il dessine en pâle la dernière sortie sur le même parcours, sous la trace du
+jour, sur la carte en direct (après 400 m crédités) et au récap, avec une ligne qui nomme la date et
+rien d'autre : ni temps, ni allure, ni écart, jamais d'or, aucune annonce. Règles du coach : jamais
+pendant une marche et course (`routeGhostAllowed`, `walkRun` figé au départ ; il est recalculé à la
+reprise après un kill, comme tout le reste de la vue), jamais pendant le serment de course (n'existe
+pas avant A-04, qui l'ajoute dans cette fonction). Le récap le dessine aussi sur une marche et
+course : `walkRun` n'est pas stocké, et la ligne n'a pas de temps. La carte en direct teste dans un
+seul sens et le récap dans les deux : un héros qui s'arrête aux deux tiers de sa boucle voit le
+fantôme pendant la sortie et pas au récap, ce n'est pas un bug (une demi-boucle n'est pas le
+parcours). Tout se calcule sur le téléphone à partir de `gps_points`, rien n'est stocké.
+
 ### La notification, seule surface d'une sortie en poche
 
 - `progressLine` (`stores/expedition.ts:112`) n'envoie que la distance, et sur une sortie sans fix

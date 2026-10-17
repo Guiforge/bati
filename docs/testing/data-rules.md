@@ -83,8 +83,8 @@ activities. No default is written (a device that never opened the screen has no 
 original writes `{}`, never a delete (a missing row reads as the peer being newer), an unknown
 activity, metric or layout reads as the default, and `setOutingDisplay` writes nothing when the stored
 value would not change (a restamp is news for every peer). Values a build cannot parse (`bigMap`,
-`lap`) travel verbatim, since the merge is text-level; an older build that edits any tab drops them
-from every tab (whole-blob rebuild, last writer wins). `db-peer-merge` holds the six tests. The
+`lap`, `routeGhost`, a boolean where an unknown value reads as off) travel verbatim, since the merge is text-level; an older build that edits any tab drops them
+from every tab (whole-blob rebuild, last writer wins). `db-peer-merge` holds the seven tests. The
 screen-on choice is not in this blob: it is the phone's (R35).
 Invariant: only these keys ever change in `user_preferences` through a merge (plus R12); `auto`
 written later wins over an older animal on the other device, in both merge directions.
@@ -166,7 +166,8 @@ Invariant: after convergence two devices hold the same `xpEarned` for one uuid, 
 
 **R16. A merged session's children are copied under new local ids.** Sets (`completed_exercises`)
 are remapped through `sess_map` and `ex_map`; `gps_points` (keyed by session uuid and `t`) are
-copied with `INSERT OR IGNORE`; `records_json` exercise ids are rewritten via `ex_map`; `questId`
+copied with `INSERT OR IGNORE` (and become route ghost candidates on the receiving device,
+`db-peer-merge`); `records_json` exercise ids are rewritten via `ex_map`; `questId`
 is remapped through `quest_map`, becoming NULL when no mapping exists. `db/merge.ts:144-168,
 336-354`; nullable column `db/schema.ts:436`.
 Invariant: after merge, every merged session has the same number of sets and gps points as at the

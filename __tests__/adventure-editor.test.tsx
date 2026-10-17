@@ -15,9 +15,16 @@ import config from "@/tamagui.config";
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 
 const mockReplace = jest.fn();
+const mockBack = jest.fn();
+const mockDismissTo = jest.fn();
 const mockParams: { id?: string } = {};
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ back: jest.fn(), replace: mockReplace, push: jest.fn() }),
+  useRouter: () => ({
+    back: mockBack,
+    dismissTo: mockDismissTo,
+    replace: mockReplace,
+    push: jest.fn(),
+  }),
   useLocalSearchParams: () => mockParams,
   useNavigation: () => ({ addListener: () => () => undefined, dispatch: jest.fn() }),
 }));
@@ -296,7 +303,8 @@ describe("an adventure being edited", () => {
         }),
       ),
     );
-    expect(mockReplace).toHaveBeenCalledWith("/adventures/9");
+    expect(mockBack).toHaveBeenCalledTimes(1);
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 
   test("a step whose quest is gone leaves the form, and saving repairs the adventure", async () => {
@@ -337,7 +345,8 @@ describe("an adventure being edited", () => {
     await fireEvent.press(await editor.findByText("Retire"));
 
     await waitFor(() => expect(hero().retireHeroAdventure).toHaveBeenCalledWith(9));
-    expect(mockReplace).toHaveBeenCalledWith("/adventures");
+    expect(mockDismissTo).toHaveBeenCalledWith("/adventures");
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 });
 

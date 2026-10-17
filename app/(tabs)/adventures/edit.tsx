@@ -366,7 +366,9 @@ export default function AdventureEditor() {
       .then((id) => {
         success();
         showSuccess(t("adventures.editor_saved"));
-        router.replace(`/adventures/${id}` as never);
+        // An existing adventure is reached from its own page: go back to it, a replace would stack a twin.
+        if (adventureId == null) router.replace(`/adventures/${id}` as never);
+        else router.back();
       })
       .catch((error: unknown) => {
         skipGuardRef.current = false;
@@ -387,7 +389,7 @@ export default function AdventureEditor() {
         setBusy(true);
         skipGuardRef.current = true;
         retireHeroAdventure(adventureId)
-          .then(() => router.replace("/adventures" as never))
+          .then(() => router.dismissTo("/adventures" as never))
           .catch((error: unknown) => {
             setBusy(false);
             skipGuardRef.current = false;

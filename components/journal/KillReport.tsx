@@ -220,7 +220,9 @@ export function KillReport({
             variant="primary"
             block
             minH={48}
-            onPress={() => router.push(`/adventures/${report.adventureId}` as never)}
+            onPress={() =>
+              router.push(`/adventures/${report.adventureId}` as never, { withAnchor: true })
+            }
           >
             {t("journal.cta_boss")}
           </NButton>

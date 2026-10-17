@@ -26,7 +26,7 @@ import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { LEVEL_CARD_HEIGHT } from "@/constants/layout";
 import { fade, rawColors } from "@/constants/rawColors";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
-import { updateSessionFeedback } from "@/db/completed";
+import { updateSessionFeedback, updateSessionNotes } from "@/db/completed";
 import { type Crest, getCrest } from "@/db/crest";
 import { COAT_RARE_KEY } from "@/db/crestEvents";
 import { countsAsDeed } from "@/db/deed";
@@ -210,6 +210,8 @@ export function VictoryView() {
   const [outroSettled, setOutroSettled] = useState(false);
   const savedRef = useRef(false);
   const feedbackTouched = useRef(false);
+  // What the open note editor holds: Continue is the only way on, and it must not drop it.
+  const noteDraft = useRef("");
   /** The bridge, once crossed: the button goes, the sentence stays. */
   const [madeQuest, setMadeQuest] = useState(false);
   // A ref rather than `madeQuest` alone: two taps land in the same frame, before any state the
@@ -428,8 +430,14 @@ export function VictoryView() {
     });
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!result) return;
+    if (noteDraft.current.trim()) {
+      await updateSessionNotes(result.sessionId, noteDraft.current).catch((e: unknown) =>
+        reportError("victory.note", e),
+      );
+      noteDraft.current = "";
+    }
     // One big feast a night. It opens over this screen and ends on `goOn`'s road itself (its
     // button, or the back gesture), so nothing is quit before it closes.
     if (bigFeast && !feastOpened) {
@@ -847,7 +855,13 @@ export function VictoryView() {
                 sessionId={result.sessionId}
                 mode="note"
                 startEditing
-                onCancel={() => setNoting(false)}
+                onDraft={(draft) => {
+                  noteDraft.current = draft;
+                }}
+                onCancel={() => {
+                  noteDraft.current = "";
+                  setNoting(false);
+                }}
               />
             ) : (
               <AppText

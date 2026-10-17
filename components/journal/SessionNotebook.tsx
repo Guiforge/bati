@@ -44,6 +44,7 @@ export function SessionNotebook({
   startEditing = false,
   onChanged,
   onCancel,
+  onDraft,
 }: {
   sessionId: number;
   mode?: "full" | "note";
@@ -51,6 +52,8 @@ export function SessionNotebook({
   onChanged?: () => void;
   /** The editor of `startEditing` was closed without saving. */
   onCancel?: () => void;
+  /** Every keystroke of the open editor, for a screen that must save what was typed on its way out. */
+  onDraft?: (draft: string) => void;
 }) {
   const { t } = useTranslation();
   const { ask, dialog } = useConfirmDialog();
@@ -192,7 +195,10 @@ export function SessionNotebook({
           <TextInput
             testID="notebook-note-input"
             value={draft}
-            onChangeText={setDraft}
+            onChangeText={(text) => {
+              setDraft(text);
+              onDraft?.(text);
+            }}
             maxLength={MAX_NOTE_CHARS}
             multiline
             autoFocus={startEditing}

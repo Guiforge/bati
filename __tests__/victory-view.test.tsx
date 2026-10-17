@@ -22,6 +22,7 @@ import config from "@/tamagui.config";
  */
 
 const mockUpdateSessionFeedback = jest.fn().mockResolvedValue(undefined);
+const mockUpdateSessionNotes = jest.fn().mockResolvedValue(undefined);
 const mockPush = jest.fn();
 const mockDismissTo = jest.fn();
 const mockQuitSession = jest.fn();
@@ -34,6 +35,14 @@ jest.mock("expo-router", () => ({
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/db/completed", () => ({
   updateSessionFeedback: (...args: unknown[]) => mockUpdateSessionFeedback(...args),
+  updateSessionNotes: (...args: unknown[]) => mockUpdateSessionNotes(...args),
+}));
+// The editor's own rules are session-notebook.test; here only what the screen does with its draft.
+jest.mock("@/components/journal/SessionNotebook", () => ({
+  SessionNotebook: ({ onDraft }: { onDraft?: (d: string) => void }) => {
+    const { Pressable } = require("react-native");
+    return <Pressable testID="stub-type-note" onPress={() => onDraft?.("  a good night ")} />;
+  },
 }));
 jest.mock("@/db/adventures-narrative", () => ({
   getAdventureStepOutroNarrative: jest.fn().mockResolvedValue(null),
@@ -476,6 +485,19 @@ describe("VictoryView continue navigation", () => {
     expect(url).toEqual(expect.stringContaining("runStepId=3"));
     expect(url).toEqual(expect.stringContaining("adventureId=7"));
     expect(options).toEqual({ withAnchor: true });
+  });
+
+  it("a note typed and not saved is written by Continue, before the screen is left (PR2-2)", async () => {
+    mockUpdateSessionNotes.mockClear();
+    const { view, release } = await mountWithPendingSave();
+    await release();
+
+    await fireEvent.press(view.getByTestId("victory-note"));
+    await fireEvent.press(view.getByTestId("stub-type-note"));
+    await fireEvent.press(view.getByTestId("session-victory-continue"));
+
+    await waitFor(() => expect(mockDismissTo).toHaveBeenCalledWith("/"));
+    expect(mockUpdateSessionNotes).toHaveBeenCalledWith(SESSION_ID, "  a good night ");
   });
 
   it("campaign finished returns to the adventure", async () => {

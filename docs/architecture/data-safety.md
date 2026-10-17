@@ -82,7 +82,9 @@ tap. Closing it is silence for 30 days, then 90, then for good (`protectDismisse
 `protectDismissals`, device-local). It is the one line under the scene: the reminder card yields to it. Protected means an
 automatic backup folder whose last copy is under 7 days old (a folder with no stamped day does not
 count: every write that lands stamps one), or a device sync that succeeded in the last 7 days. A hero with either never
-sees the card. Settings shows "last backup N days ago" under the automatic backup row, read from
+sees the card. A hero whose database file is over 20 MB (`HEAVY_DATABASE_BYTES`, photos
+and traces: Google's backup stops at 25 MB) and who is not protected gets the same card with
+another text, and its silence never becomes "for good": a month at most. Settings shows "last backup N days ago" under the automatic backup row, read from
 `lastAutoBackupDay`, which `enableAutoBackup` now stamps and `disableAutoBackup` clears.
 
 ## Not done, on purpose

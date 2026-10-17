@@ -353,6 +353,11 @@ describe("finishing an outing", () => {
       nativeEvent: { actionName: "finishOuting" },
     });
 
+    // A mixed quest holds the screen for its next exercise, so the walking leg is guarded: the
+    // action asks first (pocket-guard.test.tsx holds the rest of that), and only the answer ends it.
+    expect(useSessionStore.getState().results).toHaveLength(0);
+    await fireEvent.press(screen.getByTestId("confirm-dialog-confirm"));
+
     expect(useSessionStore.getState().results).toHaveLength(1);
     expect(useSessionStore.getState().currentExerciseIndex).toBe(1);
   });

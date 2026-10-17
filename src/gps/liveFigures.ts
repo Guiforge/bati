@@ -6,7 +6,7 @@ import {
   formatRateAt,
 } from "@/constants/distanceFormat";
 import { DEFAULT_VIEW, type OutingMetric, type OutingView } from "@/constants/outingDisplay";
-import { isOutingSession } from "@/db/expeditions";
+import { isOutdoors, isOutingSession } from "@/db/expeditions";
 import type { DistanceUnit } from "@/db/preferences";
 import type { Locomotion } from "@/db/schema";
 import type { OutingGoal, TrackState } from "@/src/gps/track";
@@ -184,4 +184,19 @@ export function screenStaysOn(
   view: Pick<LiveView, "keepAwake">,
 ): boolean {
   return !isOutingSession(quest) || view.keepAwake;
+}
+
+/**
+ * Whether ending takes a confirmation and the map ignores fingers: the screen stays on, so a
+ * pocket is awake, and the slot is a walk or a run (a ride has a handlebar and gloves). A mixed
+ * quest's walk or run leg is guarded too: its screen is held for the push-ups whatever the
+ * setting says.
+ */
+export function pocketGuarded(
+  quest: Parameters<typeof screenStaysOn>[0],
+  slot: { exercise: { style: Parameters<typeof isOutdoors>[0]; locomotion: Locomotion | null } },
+  view: Pick<LiveView, "keepAwake">,
+): boolean {
+  const onFoot = (slot.exercise.locomotion ?? "walk") !== "ride";
+  return isOutdoors(slot.exercise.style) && onFoot && screenStaysOn(quest, view);
 }

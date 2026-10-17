@@ -25,6 +25,8 @@ let mockStyleLoaded: (() => void) | undefined;
 let mockRegionWillChange:
   | ((event: { nativeEvent: { userInteraction: boolean } }) => void)
   | undefined;
+/** The finger gestures the last map was handed. */
+let mockGestures: Record<string, boolean | undefined> = {};
 /** What the phone answers when asked whether it refuses Bati the network. */
 const mockNetworkBlocked = jest.fn(() => false);
 /** Every initial view handed to the camera, in order. */
@@ -70,7 +72,15 @@ jest.mock("@maplibre/maplibre-react-native", () => {
       mapStyle,
       onDidFinishLoadingStyle,
       onRegionWillChange,
+      dragPan,
+      touchZoom,
+      doubleTapZoom,
+      doubleTapHoldZoom,
     }: {
+      dragPan?: boolean;
+      touchZoom?: boolean;
+      doubleTapZoom?: boolean;
+      doubleTapHoldZoom?: boolean;
       children?: React.ReactNode;
       mapStyle?: unknown;
       onDidFinishLoadingStyle?: () => void;
@@ -79,6 +89,7 @@ jest.mock("@maplibre/maplibre-react-native", () => {
       mockMapStyle(mapStyle);
       mockStyleLoaded = onDidFinishLoadingStyle;
       mockRegionWillChange = onRegionWillChange;
+      mockGestures = { dragPan, touchZoom, doubleTapZoom, doubleTapHoldZoom };
       return <View testID="maplibre">{children}</View>;
     },
     Camera: ({ center, initialViewState }: { center?: unknown; initialViewState?: unknown }) => {
@@ -107,13 +118,18 @@ const walking = (i: number): LocationFix => ({
   distFromPrev: i === 0 ? 0 : 1.4,
 });
 
-async function mount(fixes: LocationFix[], tiles: boolean) {
+async function mount(fixes: LocationFix[], tiles: boolean, locked = false) {
   useExpeditionStore.setState({ fixes });
   useSettingsStore.setState({ language: "en", mapTilesEnabled: tiles });
   await act(async () => {
     await render(
       <TamaguiProvider config={config} defaultTheme="dark">
-        <LiveMap minHeight={200} topInset={0} placeholder={<Text>the movement's picture</Text>} />
+        <LiveMap
+          minHeight={200}
+          topInset={0}
+          placeholder={<Text>the movement's picture</Text>}
+          locked={locked}
+        />
       </TamaguiProvider>,
     );
   });
@@ -150,6 +166,28 @@ test("a finger on the map stops the follow, and the button brings it back to the
   });
   expect(mockCenter.mock.calls.at(-1)?.[0]).toEqual([walking(2).lon, walking(2).lat]);
   expect(screen.queryByTestId("live-map-recenter")).toBeNull();
+});
+
+// The pocket guard: the screen is kept on on foot, so a pocket is awake and must not move the view.
+test("locked, no finger gesture reaches the map and the recentre button never shows", async () => {
+  await mount([walking(0), walking(1)], true, true);
+  expect(mockGestures).toEqual({
+    dragPan: false,
+    touchZoom: false,
+    doubleTapZoom: false,
+    doubleTapHoldZoom: false,
+  });
+  expect(screen.queryByTestId("live-map-recenter")).toBeNull();
+});
+
+test("unlocked, every finger gesture is on", async () => {
+  await mount([walking(0), walking(1)], true);
+  expect(mockGestures).toEqual({
+    dragPan: true,
+    touchZoom: true,
+    doubleTapZoom: true,
+    doubleTapHoldZoom: true,
+  });
 });
 
 test("says the phone blocks the network instead of crediting tiles that never arrive", async () => {

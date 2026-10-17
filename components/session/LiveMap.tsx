@@ -80,10 +80,12 @@ function Waiting({ label }: { label: string }) {
  * The camera follows the last fix, as a GPS does, until a finger moves or zooms the map; a button
  * then brings it back to the hero, at whatever zoom the fingers chose. Rotation and pitch stay
  * off: north up is the one orientation that needs no compass. A pocket can still pan it, which
- * costs one tap on the way back, and coming back from the background recentres anyway.
+ * costs one tap on the way back, and coming back from the background recentres anyway, unless the
+ * screen is kept on on foot: `locked` (the pocket guard) turns every finger gesture off then.
  *
  * This reverses "numbers only, battery decision" from docs/designs/gps-without-google.md. The
- * screen is still never held awake on an outing, and MapLibre draws nothing while it is off.
+ * screen is off on an outing unless the hero chose otherwise, and MapLibre draws nothing while
+ * it is off.
  *
  * Before the first fix it shows `placeholder`, the movement's picture. A camera centred nowhere is
  * the middle of the Gulf of Guinea, and the empty dark slot that stood in for it read as a map
@@ -93,10 +95,13 @@ export function LiveMap({
   minHeight,
   topInset,
   placeholder,
+  locked = false,
 }: {
   minHeight: number;
   topInset: number;
   placeholder: ReactNode;
+  /** The pocket guard: the map ignores fingers, so a pocket cannot move the view. */
+  locked?: boolean;
 }) {
   /**
    * Whether anyone can see the map. Starts true: this screen mounts in front of the hero.
@@ -193,6 +198,11 @@ export function LiveMap({
         compass={false}
         touchRotate={false}
         touchPitch={false}
+        // Locked: no finger moves the map, so `following` never flips and no recentre button shows.
+        dragPan={!locked}
+        touchZoom={!locked}
+        doubleTapZoom={!locked}
+        doubleTapHoldZoom={!locked}
         // Only a finger stops the follow: the camera's own one-second glides report no interaction.
         onRegionWillChange={(event) => {
           if (event.nativeEvent.userInteraction) setFollowing(false);

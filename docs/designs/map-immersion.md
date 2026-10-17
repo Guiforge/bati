@@ -566,8 +566,8 @@ points at.
 
 Added 2026-09-11, at the owner's request: *"je veux voir la carte en live"*. The outing screen
 had numbers only, on the battery argument in `gps-without-google.md`; that argument is about
-the screen being lit, and the screen is still never held awake on an outing, so MapLibre only
-draws while the hero is actually looking.
+the screen being lit, and the screen is off on an outing unless the hero chose otherwise, so
+MapLibre only draws while the hero is actually looking.
 
 - `components/session/LiveMap.tsx` takes the slot the movement's picture takes on every other
   set, with `ExerciseHero`'s size rules, so the panel and the finish button below it do not move.
@@ -578,6 +578,9 @@ draws while the hero is actually looking.
 - The camera follows the last fix at zoom 16, as a GPS does, until a finger pans or pinches;
   the recentre button then follows again at the zoom the pinch chose. A pocket can pan it too,
   which is why coming back from the background recentres without asking.
+  While the screen is kept on on foot (the hero chose it, or a mixed quest holds it), the map is
+  `locked`: pan, pinch and double-tap are off, so a pocket cannot move it and the recentre button
+  never shows. In the big-numbers layout there is no map at all and no tile is requested.
 - With the map on, `MapFootnote` asks Android whether it refuses Bati the network
   (`isNetworkBlocked` in `modules/bati-location`, `NetworkInfo.DetailedState.BLOCKED`), again on
   every return to the foreground. A per-app "Network access" switch on LineageOS or /e/OS, or a

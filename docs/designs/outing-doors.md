@@ -135,6 +135,15 @@ refaire). Ce qu'il a apporté :
 
 - **Le keep-awake inconditionnel est le vrai tueur**, pas le bouton « Terminé ». Le verrou de
   poche de l'audit combattait un problème que l'app se crée. Retenu, prémisse 7 révisée.
+  *Mis à jour (D-35, « Affichage des sorties »)* : le keep-awake reste éteint par défaut, mais le
+  héros peut le garder allumé **par activité et par téléphone** (SecureStore, jamais la base, donc
+  jamais synchronisé ni restauré). À pied avec l'écran allumé, la protection anti-poche remplace le
+  verrou de l'OS : terminer demande l'appui long **et** une confirmation (dix secondes sans réponse
+  et elle se ferme, rien n'est écrit), et la carte ignore les doigts. Une course à vélo n'est pas
+  gardée (guidon, gants). Une quête mixte garde déjà l'écran allumé pour ses pompes : sa marche ou
+  sa course est donc gardée aussi, et terminer l'étape demande confirmation, quel que soit le
+  réglage. Une seule fonction répond à « l'écran reste-t-il allumé » : `screenStaysOn`
+  (`src/gps/liveFigures.ts`), lue par `KeepAwake`, la garde et l'astuce de poche.
 - **`free` doit entrer dans `SavedSessionState`**, sinon la reprise d'une sortie tuée par l'OS
   relance `outingGoal()` et retrouve les 900 s. Le `Pick` en fait une erreur de compilation.
 - **Une sortie sans fix laissée ouverte toute la nuit** fait un journal de 9 h et prend le record
@@ -223,6 +232,9 @@ il serait absurde de débloquer les longues sorties sans les payer.
   alors qu'il colorerait en vert une cible que le héros n'a jamais choisie.
 
 ### L'écran de séance
+
+- *Le gros chiffre porte son mot dès que le héros l'a choisi* (« Affichage des sorties », D-35 Q6) :
+  pas de mot sous le gros chiffre par défaut, un mot dessous quand sa place n'est pas `auto`.
 
 - `components/session/ExpeditionPanel.tsx` : le 56 px suit `goal?.type`. `distance` → distance
   dès le premier fix ; `time` ou `null` → **`recordedDurationSeconds()`**, la fonction que

@@ -853,9 +853,10 @@ A banner stays neutral while there is no crest (fewer than eight practised sessi
 time keeps its meaning. "Target reached" is `setMetSql`, `MIN` over a session, neutral sets filtered
 by the reader. The record bar is `previousBest` (it decides `records_json` and the session page
 shows the same number). `toBeat` is the one "to beat" (D-21): the wall reads it off its entry, the
-set (`GhostLine`) and Home (`tonightLine`) off the ghost through `beatInputOf`, and the victory's
+set (`GhostLine`) off the ghost through `beatInputOf`, and the victory's
 record line is the same rule (a record is a strict `>` of the previous best, `value >= best + 1`);
-the wall's season and record date come from the ghost, so the three cut the season in one place.
+the wall's season and record date come from the ghost, so the two cut the season in one place.
+Home (`tonightLine`) says the session objective (the slot's target), not `toBeat` (D-37, PARK-1).
 `ladderPosition` is where the hero stands.
 Nothing is stored and there is no SQL view (a backup holding one is refused): device sync carries
 `completed_exercises` and every device derives the same figures. Per-movement aggregates
@@ -879,15 +880,16 @@ of the number the app asks for, called by `resolveSlot` (the served movement and
 and `applyConfigToSlots` (a swapped-in movement, from the bottom of the band when it has no
 history). Inputs, all in `completed_exercises` and `completed_sessions.userLevel` (nothing is
 stored, no migration): the movement's last three sessions in this unit (`ExerciseGhost.recent`,
-sessions of a hero-authored quest left out), the record, tonight's level and the band. Double
+sessions of a hero-authored quest left out), tonight's level and the band. Double
 progression: every non-neutral set met, +1 rep (+5 s for a hold), otherwise the same, stopping at
-20 reps / 60 s; a hold is never above 75 % of its record; more than 14 days without the movement
+20 reps / 60 s (a hold keeps its band of 67 % of its record and gains 5 s; the 75 % cap waits for a record set by a max effort, D-37 PARK-8); more than 14 days without the movement
 (any quest) lowers the next two sessions by a level, then returns to the pre-gap number; the result
 is kept inside tonight's band (raised to its floor, cut at `max(top, cap)`), except that a comeback
 is never raised. The hero's own number is laid over it and never replaced. A session of a deleted
 hero quest has `questId` NULL and reads as seeded, bounded by that clamp (`shortcut:` in
 `progressiveTarget`). Invariant: the same journal gives the same target, to beat and cap offer on
-any device, whatever the merge order (`db-peer-merge`).
+any device, whatever the merge order (`db-peer-merge`). The cap offer comes once per series of
+3 sessions at the cap (the session completing a run of 3, 6, 9...; a miss restarts the count).
 
 **R114. Entitlement is not data** (`src/plus/source.ts`, `src/plus/access.ts`). Bati+ is read from the
 store account, never written to the database, never sealed in a file, never merged. `can()` refuses

@@ -138,19 +138,18 @@ test("a number the hero set is never overwritten, and the app's line climbs unde
   expect(await getQuestConfig(questId)).toEqual(before);
 });
 
-test("a hold never gets more than 75 % of its record over five met sessions", async () => {
+test("a hold is never lowered and gains 5 s per met session, whatever its record", async () => {
   const { questId } = quest("Hold", HOLD, "time", 30, 45);
-  // The record is 30 s: a hold's record is nearly always its last target.
+  // The record is 30 s, set at its last target: no max effort is marked, so no 75 % cap applies.
   play(null, HOLD, [30], 30, 6 * DAY, "time");
-  let seen = 0;
+  let previous = 30;
   for (let n = 5; n > 0; n--) {
     const value = await asked(questId);
     assert(value !== undefined);
-    seen = Math.max(seen, value);
-    play(null, HOLD, [30], value, n * DAY, "time");
+    expect(value).toBe(previous + 5);
+    previous = value;
+    play(null, HOLD, [value], value, n * DAY, "time");
   }
-  expect(seen).toBeLessThanOrEqual(22);
-  expect(await asked(questId)).toBeLessThanOrEqual(22);
 });
 
 test("15 days without the movement lowers the next two sessions, the third is back", async () => {

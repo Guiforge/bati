@@ -111,6 +111,8 @@ export function ghostKey(exerciseId: number, type: QuestTargetType): string {
  */
 export async function getExerciseHistory(
   exerciseIds: number[],
+  /** How many sessions `recent` keeps; the cap offer counts a run and needs more than three. */
+  recentSessions: number = RECENT_SESSIONS,
 ): Promise<Map<string, ExerciseGhost>> {
   if (exerciseIds.length === 0) return new Map();
 
@@ -161,7 +163,7 @@ export async function getExerciseHistory(
       LEFT JOIN quests q ON q.id = s.questId
       WINDOW w AS (PARTITION BY b.exerciseId, b.resultType)
     )
-    WHERE rn = 1 OR (heroQuest = 0 AND rnOwn <= ${RECENT_SESSIONS})
+    WHERE rn = 1 OR (heroQuest = 0 AND rnOwn <= ${recentSessions})
     ORDER BY exerciseId, resultType, rnOwn
   `);
 

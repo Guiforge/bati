@@ -59,7 +59,7 @@ beforeEach(() => {
 
 afterAll(() => t.close());
 
-test("the wall, the set and Home give the same number, for a recent record and an old one", async () => {
+test("the wall and the set give the same number, Home the session objective, for a recent record and an old one", async () => {
   const wall = await getRecordWall(6);
   const history = await getExerciseHistory([CRUNCH, JACK]);
   const catalogue = await listExercises();
@@ -79,13 +79,13 @@ test("the wall, the set and Home give the same number, for a recent record and a
     const onSet = toBeat(beatInputOf(ghost), NOW);
     const onHome = tonightLine(
       { exercises: [{ id: 1, exercise, images: [], target: { type: "reps", value: 13 }, ghost }] },
-      NOW,
       "en",
     )?.value;
 
     expect(onWall).toBe(expected);
     expect(onSet).toBe(expected);
-    expect(onHome).toBe(expected);
+    // Home says the session objective, not the record to beat (PARK-1).
+    expect(onHome).toBe(13);
   }
 });
 

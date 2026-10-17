@@ -98,6 +98,30 @@ test("three sessions at 20 met offer the rung above", async () => {
   });
 });
 
+test("a series of three offers once: not on the 4th or 5th session, again on the 6th", async () => {
+  const { questId, slot } = quest();
+  const offered = async (n: number) => {
+    t.sqlite.exec("DELETE FROM completed_exercises; DELETE FROM completed_sessions");
+    sessions(questId, n);
+    return (await checkCapOffers(questId, [await slotOf(slot)], "medium")).length;
+  };
+  expect(await offered(3)).toBe(1);
+  expect(await offered(4)).toBe(0);
+  expect(await offered(5)).toBe(0);
+  expect(await offered(6)).toBe(1);
+  expect(await offered(9)).toBe(1);
+});
+
+test("a miss starts the count over", async () => {
+  const { questId, slot } = quest();
+  sessions(questId, 6, [3]);
+  // Newest first: three clean sessions, then the miss.
+  expect(await checkCapOffers(questId, [await slotOf(slot)], "medium")).toHaveLength(1);
+  t.sqlite.exec("DELETE FROM completed_exercises; DELETE FROM completed_sessions");
+  sessions(questId, 6, [2]);
+  expect(await checkCapOffers(questId, [await slotOf(slot)], "medium")).toEqual([]);
+});
+
 test("two sessions, or a miss among the three, offer nothing", async () => {
   const { questId, slot } = quest();
   sessions(questId, 2);

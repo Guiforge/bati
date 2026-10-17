@@ -798,7 +798,6 @@ export function progressiveSlot(input: {
     top: same ? edge("max") : range.max,
     level,
     recent: ghost?.recent ?? [],
-    record: ghost?.best ?? null,
     lastAt: ghost?.at ?? null,
     now: journal.readAt ?? Date.now(),
     range,

@@ -29,7 +29,6 @@ const ask = (over: Partial<Input> & Pick<Input, "recent">) =>
     lastAt: over.recent[0]?.at ?? null,
     start: "band",
     level: "medium",
-    record: null,
     now: NOW,
     range: RANGE,
     ...over,
@@ -56,23 +55,17 @@ describe("progressiveTarget, the worked examples", () => {
     expect(ask({ recent: [mark(25, true, 2)], top: 25 }).value).toBe(25);
   });
 
-  test("a hold never passes 75 % of its record", () => {
-    expect(ask({ type: "time", recent: [mark(30, true, 2)], record: 30 })).toEqual({
-      value: 20,
-      why: "hold_cap",
+  test("a hold gains five seconds, and a record never lowers it", () => {
+    expect(ask({ type: "time", recent: [mark(30, true, 2)], floor: 30, top: 45 })).toEqual({
+      value: 35,
+      why: "progress",
     });
   });
 
-  test("a hold gains five seconds under its cap", () => {
-    expect(
-      ask({ type: "time", recent: [mark(40, true, 2)], record: 70, floor: 30, top: 60 }),
-    ).toEqual({ value: 45, why: "progress" });
-  });
-
-  test("the hold cap holds on the band branch too, under the floor", () => {
-    expect(ask({ type: "time", recent: [], record: 30, band: 30, floor: 30, top: 45 })).toEqual({
-      value: 20,
-      why: "hold_cap",
+  test("a hold with no history is the band, as today", () => {
+    expect(ask({ type: "time", recent: [], band: 30, floor: 30, top: 45 })).toEqual({
+      value: 30,
+      why: "band",
     });
   });
 

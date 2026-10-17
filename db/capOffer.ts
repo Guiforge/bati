@@ -33,19 +33,35 @@ export type CapOffer = {
 
 type Slot = Pick<QuestExercise, "id" | "exercise" | "target" | "substitutedFor">;
 
-/** The last `CAP_SESSIONS` sessions all met a prescription at or past the cap. */
-function holdsCap(recent: readonly SessionMark[], cap: number): boolean {
-  return (
-    recent.length >= CAP_SESSIONS &&
-    recent
-      .slice(0, CAP_SESSIONS)
-      .every((m) => m.met === true && m.prescribed !== null && m.prescribed >= cap)
+/**
+ * How many sessions in a row, newest first, met a prescription at or past the cap. Unknown (null)
+ * when the run fills the window: the history ends before the run does.
+ *
+ * ponytail: the window is 60 sessions, about 20 weeks at three a week. A run that long is read as
+ * "no offer" rather than guessed; raise `RUN_WINDOW` if a hero ever sits at a cap that long.
+ */
+function capRun(recent: readonly SessionMark[], cap: number): number | null {
+  const miss = recent.findIndex(
+    (m) => !(m.met === true && m.prescribed !== null && m.prescribed >= cap),
   );
+  return miss === -1 ? (recent.length >= RUN_WINDOW ? null : recent.length) : miss;
+}
+
+/** Sessions of one movement read to count the run at the cap. */
+const RUN_WINDOW = 60;
+
+/**
+ * Once per series of `CAP_SESSIONS`: the session that completes a run of three offers, a run of
+ * four, five does not, six does again. A declined offer comes back after three new sessions at the
+ * cap, and any miss starts the count over (PARK-4).
+ */
+function completesSeries(run: number | null): boolean {
+  return run !== null && run > 0 && run % CAP_SESSIONS === 0;
 }
 
 /**
- * The slots of the quest just played whose movement held the cap (20 reps, 60 s) for the last
- * three sessions, with the rung above it. Read after the save, from the journal, like every
+ * The slots of the quest just played whose movement completed a series of three sessions at the cap
+ * (20 reps, 60 s), with the rung above it. Read after the save, from the journal, like every
  * other "what did this session change".
  *
  * No offer when: the quest is the hero's own (it runs exactly as written); the slot stands on an
@@ -71,7 +87,10 @@ export async function checkCapOffers(
   if (candidates.length === 0) return [];
 
   const [history, rows, catalogue, owned, aside, spared, config] = await Promise.all([
-    getExerciseHistory(candidates.map((s) => s.exercise.id)),
+    getExerciseHistory(
+      candidates.map((s) => s.exercise.id),
+      RUN_WINDOW,
+    ),
     fetchLadderRows(),
     listExercises(),
     preferences.getOwnedEquipment(),
@@ -90,7 +109,7 @@ export async function checkCapOffers(
     const { type } = slot.target;
     const recent = history.get(ghostKey(slot.exercise.id, type))?.recent ?? [];
     const cap = TARGET_CAP[type === "time" ? "time" : "reps"];
-    const held = holdsCap(recent, cap);
+    const held = completesSeries(capRun(recent, cap));
     const fork = held ? successorsOf(rows, slot.exercise.id) : null;
     if (!fork) continue;
     const next = [fork.next, ...fork.alsoNext]

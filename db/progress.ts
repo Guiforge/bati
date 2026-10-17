@@ -148,8 +148,6 @@ export function ladderPosition(
 export const TARGET_STEP = { reps: 1, time: 5 } as const;
 /** "Plafond": the progression stops here, and the victory offers the rung above. */
 export const TARGET_CAP = { reps: 20, time: 60 } as const;
-/** A hold is never prescribed above this share of its record. */
-export const HOLD_RECORD_FRACTION = 0.75;
 /** More than this many days without the movement is a comeback. */
 export const COMEBACK_GAP_DAYS = 14;
 /** Sessions at the cap before the victory offers the rung above. */
@@ -169,7 +167,7 @@ export type SessionMark = {
   level: DifficultyCode;
 };
 
-export type TargetWhy = "band" | "rung_start" | "progress" | "same" | "comeback" | "hold_cap";
+export type TargetWhy = "band" | "rung_start" | "progress" | "same" | "comeback";
 
 type TargetInput = Parameters<typeof progressiveTarget>[0];
 
@@ -227,17 +225,16 @@ function clampToBand(value: number, why: TargetWhy, floor: number, ceiling: numb
   return { value: clamped, why: clamped !== value && why !== "comeback" ? ("band" as const) : why };
 }
 
-/** A hold is never above 75 % of its record, on the 5 s grid, even if that is under the band. */
-function capHold(value: number, why: TargetWhy, record: number) {
-  const cap = Math.max(5, Math.floor((HOLD_RECORD_FRACTION * record) / 5) * 5);
-  return value > cap ? { value: cap, why: "hold_cap" as const } : { value, why };
-}
-
 /**
  * The one birthplace of the target the app asks for (roadmap M-03), read from the journal and
  * never stored. Double progression: every set met, one more rep (five more seconds); otherwise
- * the same. Stops at the cap; a hold never passes 75 % of its record; after more than 14 days
- * away the next two sessions are a level lower. The hero's own number is laid over this by
+ * the same. Stops at the cap; after more than 14 days
+ * away the next two sessions are a level lower.
+ *
+ * ponytail: a hold keeps today's band (67 % of its record, `generateTarget`) plus the +5 s step,
+ * and is never lowered. A 75 % cap of the record belongs to a record set by a max effort (D-37,
+ * PARK-8), and none is marked as one until the "dernière série max" lot. Add `record` and the
+ * cap back then. The hero's own number is laid over this by
  * `applyConfigToSlots` and never replaced by it.
  */
 export function progressiveTarget(input: {
@@ -255,12 +252,10 @@ export function progressiveTarget(input: {
   level: DifficultyCode;
   /** Newest first, at most 3, this movement in this unit, hero-quest sessions left out. */
   recent: readonly SessionMark[];
-  /** All-time best in this unit. */
-  record: number | null;
   now: number;
   range: { min: number; max: number };
 }): { value: number; why: TargetWhy } {
-  const { type, band, floor, top, record, range } = input;
+  const { type, band, floor, top, range } = input;
   const unit = type === "time" ? "time" : "reps";
   const s0 = input.recent[0];
   const p0 = s0?.prescribed;
@@ -279,7 +274,6 @@ export function progressiveTarget(input: {
   // Reps whole, holds on the 5 s grid `generateTarget` writes.
   value = type === "time" ? Math.max(1, Math.round(value / 5) * 5) : Math.round(value);
   if (clamp) ({ value, why } = clampToBand(value, why, floor, Math.max(top, TARGET_CAP[unit])));
-  if (type === "time" && record != null) ({ value, why } = capHold(value, why, record));
 
   if (!Number.isFinite(value)) return { value: clampToRange(band, range), why: "band" };
   return { value: clampToRange(value, range), why };

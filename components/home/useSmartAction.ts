@@ -148,7 +148,7 @@ function stageFor(
 
   const { quest, startable, seconds } = offer;
   const subtext = questSubtext(offer, t);
-  const tonight = tonightLine(quest, new Date(), language);
+  const tonight = tonightLine(quest, language);
 
   return {
     // "Start" when the tap starts, "See the quest" when it only opens the screen that does:

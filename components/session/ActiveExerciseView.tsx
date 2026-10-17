@@ -193,9 +193,7 @@ export function ActiveExerciseView() {
         ? "session.below_last_rung"
         : currentEx.targetWhy === "comeback" && ghost && targetValue < ghost.last
           ? "session.below_last_comeback"
-          : currentEx.targetWhy === "hold_cap" && ghost && targetValue < ghost.last
-            ? "session.below_last_hold"
-            : null;
+          : null;
 
   // Progress calculation
   const exercisesPerRound = quest.exercises.length;

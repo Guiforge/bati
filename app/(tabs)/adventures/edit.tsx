@@ -17,6 +17,7 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { ImageChoiceField } from "@/components/common/ImageChoiceField";
 import { StatusBand } from "@/components/common/StatusBand";
 import { useToast } from "@/components/common/Toast";
+import { useTabLeaveGuard } from "@/components/common/useTabLeaveGuard";
 import { ChevronLeft, Plus } from "@/components/icons";
 import { ImportFileButton } from "@/components/quests/QuestFileButtons";
 import { ADVENTURE_ASSETS, type AdventureAssetKey, getAdventureAsset } from "@/constants/assetMap";
@@ -201,6 +202,17 @@ export default function AdventureEditor() {
       });
     });
   }, [navigation, t, isDirty]);
+
+  useTabLeaveGuard(isDirty, skipGuardRef, (go) =>
+    setDialog({
+      title: t("quests.editor_discard_title"),
+      body: t("quests.editor_discard_body"),
+      confirmLabel: t("quests.editor_discard"),
+      cancelLabel: t("common.cancel"),
+      destructive: true,
+      onConfirm: go,
+    }),
+  );
 
   useEffect(() => {
     let cancelled = false;

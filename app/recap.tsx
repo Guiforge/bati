@@ -31,7 +31,13 @@ import {
   formatRate,
   formatRateAt,
 } from "@/constants/distanceFormat";
-import { basemapOf, LEAGUE_PIP_PAINT, TRACE_GLOW_PAINT } from "@/constants/mapStyle";
+import {
+  basemapOf,
+  LEAGUE_PIP_PAINT,
+  ROUTE_GHOST_PAINT,
+  TRACE_GLOW_PAINT,
+} from "@/constants/mapStyle";
+import { viewOf } from "@/constants/outingDisplay";
 import { rawColors } from "@/constants/rawColors";
 import { displayLocomotion } from "@/db/expeditions";
 import { outingSession, pointsOf } from "@/db/gps";
@@ -41,7 +47,15 @@ import { listQuestTemplates } from "@/db/quests";
 import type { Locomotion } from "@/db/schema";
 import { getVillageBuildings, type VillageBuilding } from "@/db/village";
 import { useRateKind } from "@/hooks/useRateKind";
+import { useRouteCandidates } from "@/hooks/useRouteCandidates";
 import type { LocationFix } from "@/modules/bati-location";
+import {
+  type RouteGhostLine,
+  type RouteShape,
+  routeGhostOf,
+  strided,
+  toGhostLine,
+} from "@/src/gps/route";
 import { toTrace } from "@/src/gps/trace";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
@@ -205,7 +219,8 @@ function SpeedLegend({
           this outing, this route and a lifetime, and the three answers are different numbers.
           It is the quickest aligned league of the run just finished, on moving time, the row the table
           lights in gold and the map draws from pip to pip. Nothing on this
-          screen compares it to the last time the same ground was covered. */}
+          screen compares it to the last time the same ground was covered: the route ghost is a
+          line with a date, no time. */}
       {best === null ? null : (
         <Text testID="recap-best-league" fontSize={11} color="$textSecondary">
           {t("recap.best_league", {
@@ -332,6 +347,71 @@ function useHighRoad(): VillageBuilding | null {
   return road;
 }
 
+/** Under today's line, drawn first: a past outing on this route, faint. Nothing when there is none. */
+function RouteGhostLayer({ ghost }: { ghost: RouteGhostLine | null }) {
+  if (ghost === null) return null;
+  return (
+    // biome-ignore lint/correctness/useUniqueElementIds: MapLibre source and layer ids are its own style namespace, not DOM ids.
+    <GeoJSONSource id="trace-route-ghost" data={ghost.line}>
+      {/* biome-ignore lint/correctness/useUniqueElementIds: same MapLibre namespace */}
+      <Layer
+        id="trace-route-ghost-line"
+        type="line"
+        layout={{ "line-cap": "round", "line-join": "round" }}
+        paint={ROUTE_GHOST_PAINT}
+      />
+    </GeoJSONSource>
+  );
+}
+
+/** One plain line naming the date. No time, no pace, no difference, no gold, no "record". */
+function RouteGhostLegend({
+  shape,
+  language,
+}: {
+  shape: RouteShape | null;
+  language: AppLanguage;
+}) {
+  const { t } = useTranslation();
+  if (shape === null) return null;
+  return (
+    <Text testID="recap-route-ghost-legend" fontSize={11} color="$textSecondary">
+      {t("recap.route_ghost_legend", {
+        date: getDateTimeFormat(language, { dateStyle: "medium" }).format(shape.performedAt),
+      })}
+    </Text>
+  );
+}
+
+/**
+ * The route ghost: the hero's last outing on the same route, if this tab has it switched on.
+ * `before` is this outing's own date, so one opened from the journal shows the outing before it,
+ * never a later one; `exclude` keeps it from matching itself.
+ */
+function useRecapRouteGhost(
+  recap: Recap | null,
+  drawn: readonly LocationFix[],
+  sessionUuid: string | undefined,
+) {
+  const ghostOn = viewOf(
+    useSettingsStore((s) => s.outingDisplay),
+    recap?.display ?? "walk",
+  ).routeGhost;
+  const start = drawn[0] ?? null;
+  const from = recap?.performedAt ?? null;
+  const wanted = ghostOn && start !== null && from !== null && !!sessionUuid;
+  const candidates = useRouteCandidates(
+    wanted ? (recap?.display ?? "walk") : null,
+    wanted ? start : null,
+    wanted ? from.getTime() : null,
+    wanted ? (sessionUuid ?? null) : null,
+  );
+  // ponytail: the recap cannot tell a walk-run (`walkRun` is not stored), so it draws the route
+  // ghost on every outing whose tab has it on. Harmless: a line and a date, no time; the walk-run
+  // recap already prints its pace. A-04 stores the fact for its intervals and can check it here.
+  return candidates ? routeGhostOf(strided(drawn), candidates, "done") : null;
+}
+
 export default function ExpeditionRecapScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -407,6 +487,9 @@ export default function ExpeditionRecapScreen() {
   const trace = toTrace(drawn);
   /** Whether the camera frames the whole trace. A finger on the map lets go, the button reframes. */
   const [framed, setFramed] = useState(true);
+
+  const ghostShape = useRecapRouteGhost(recap, drawn, sessionUuid);
+  const ghost = toGhostLine(ghostShape);
 
   // The refused style has no vector source and no `glyphs`, so MapLibre has nothing to fetch:
   // the trace is drawn on the app's own ground and that is the whole picture. See
@@ -507,6 +590,10 @@ export default function ExpeditionRecapScreen() {
               }
             >
               <Camera {...frameStop(framed, trace.bounds)} />
+
+              {/* Under today's line, drawn first. The camera keeps framing today's bounds: the
+                  ghost may run off the edge, today is the picture. */}
+              <RouteGhostLayer ghost={ghost} />
 
               {/* The glow reads the unbroken geometry, and the stroke reads the banded one. A
                   wide layer drawn from the bands beads at every join with round caps and notches
@@ -636,6 +723,8 @@ export default function ExpeditionRecapScreen() {
           unit={distanceUnit}
           locomotion={recap?.display}
         />
+
+        <RouteGhostLegend shape={ghostShape} language={language} />
 
         {/* What the ground moved, above what the ground was.
             This screen used to open on distance, moving time and pace, which is what every other

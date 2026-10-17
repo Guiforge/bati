@@ -3,6 +3,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import ExpeditionRecapScreen from "@/app/recap";
 import { ToastProvider } from "@/components/common/Toast";
+import { rawColors } from "@/constants/rawColors";
 import type { LocationFix } from "@/modules/bati-location";
 import { accept, EMPTY } from "@/src/gps/track";
 import { useSettingsStore } from "@/stores/settings";
@@ -25,10 +26,18 @@ const mockPush = jest.fn<void, [string]>();
 /** Every style handed to MapLibre, in order. The refusal is asserted on the JSON of the last. */
 const mockMapStyle = jest.fn<void, [unknown]>();
 
+const mockRouteCandidates = jest.fn();
 jest.mock("@/db/gps", () => ({
   pointsOf: (id: string) => mockPointsOf(id),
   outingSession: (id: string) => mockOutingSession(id),
+  routeCandidates: (...args: unknown[]) => mockRouteCandidates(...args),
 }));
+/** The `data` each source was last handed, the paint of each layer, the camera's last bounds. */
+const mockSources: Record<string, unknown> = {};
+const mockLayers: Record<string, unknown> = {};
+let mockCameraBounds: unknown;
+/** The session the route names. A test that reads route candidates picks its own: the hook keeps its last read. */
+let mockSession = "session-uuid";
 jest.mock("@/db/quests", () => ({ listQuestTemplates: () => mockQuestTemplates() }));
 const mockLoadConfiguredQuest = jest.fn<Promise<unknown>, [number]>();
 jest.mock("@/db/questConfig", () => ({
@@ -56,7 +65,7 @@ jest.mock("expo-router", () => ({
     back: jest.fn(),
     replace: jest.fn(),
   }),
-  useLocalSearchParams: () => ({ session: "session-uuid" }),
+  useLocalSearchParams: () => ({ session: mockSession }),
 }));
 
 // The renderer is native and there is none in jest. Everything below the `Map` is a plain view:
@@ -73,9 +82,26 @@ jest.mock("@maplibre/maplibre-react-native", () => {
       mockMapStyle(mapStyle);
       return <View testID="maplibre">{children}</View>;
     },
-    Camera: passthrough("maplibre-camera"),
-    GeoJSONSource: passthrough("maplibre-source"),
-    Layer: passthrough("maplibre-layer"),
+    Camera: ({ bounds }: { bounds?: unknown }) => {
+      mockCameraBounds = bounds;
+      return null;
+    },
+    GeoJSONSource: ({
+      id,
+      data,
+      children,
+    }: {
+      id: string;
+      data: unknown;
+      children?: React.ReactNode;
+    }) => {
+      mockSources[id] = data;
+      return <View testID={`source-${id}`}>{children}</View>;
+    },
+    Layer: ({ id, paint }: { id: string; paint: unknown }) => {
+      mockLayers[id] = paint;
+      return null;
+    },
   };
 });
 
@@ -201,6 +227,10 @@ const MILE_PACE = `${clock(Math.round(MOVING_S * (1609.344 / CREDITED_M)))} /mi`
 
 beforeEach(() => {
   mockPointsOf.mockReset();
+  mockRouteCandidates.mockReset();
+  mockSession = "session-uuid";
+  for (const k of Object.keys(mockSources)) delete mockSources[k];
+  mockCameraBounds = undefined;
   mockPush.mockClear();
   mockOutingSession.mockResolvedValue({
     id: 42,
@@ -709,5 +739,88 @@ describe("a hero who has not allowed the basemap", () => {
 
     expect(await screen.findByTestId("recap-no-trace")).toBeTruthy();
     expect(screen.queryByTestId("map-offer")).toBeNull();
+  });
+});
+
+/**
+ * The route ghost: a pale line and a date, never a time. Each test names its own session, because
+ * the candidates hook keeps its last read per session.
+ */
+describe("the route ghost", () => {
+  const past = (points: { lat: number; lon: number }[]) => ({
+    id: "past-1",
+    performedAt: new Date(Date.UTC(2026, 7, 1, 12)),
+    points,
+  });
+  const shapeOf = (fixes: LocationFix[]) =>
+    past(fixes.filter((_, i) => i % 5 === 0).map((f) => ({ lat: f.lat, lon: f.lon })));
+  const on = () => useSettingsStore.setState({ outingDisplay: { walk: { routeGhost: true } } });
+
+  test("tab on, the same ground before: the pale line under today's, and a legend with the date only", async () => {
+    mockSession = "g-recap-on";
+    on();
+    mockPointsOf.mockResolvedValue(walkThenStand());
+    mockRouteCandidates.mockResolvedValue([shapeOf(walkThenStand())]);
+    await mount();
+
+    expect(await screen.findByTestId("source-trace-route-ghost")).toBeTruthy();
+    const legend = screen.getByTestId("recap-route-ghost-legend");
+    expect(legend).toHaveTextContent(/^Pale line: your outing of Aug 1, 2026 on this route\.$/);
+    expect(legend).not.toHaveTextContent(/\d+:\d{2}/);
+    expect(
+      (mockLayers["trace-route-ghost-line"] as Record<string, unknown>)["line-color"],
+    ).not.toBe(rawColors.resourceGold);
+    // The read is bounded by this outing's own date and never matches itself.
+    expect(mockRouteCandidates).toHaveBeenCalledWith(
+      "walk",
+      expect.objectContaining({ lat: 43.6, lon: 1.44 }),
+      new Date(T0),
+      "g-recap-on",
+    );
+    // Drawn first, under the trace.
+    const ids = screen.getAllByTestId(/^source-/).map((n) => n.props.testID);
+    expect(ids.indexOf("source-trace-route-ghost")).toBeLessThan(ids.indexOf("source-trace-path"));
+  });
+
+  test("the camera frames today's trace with and without a ghost", async () => {
+    mockSession = "g-recap-cam-off";
+    mockPointsOf.mockResolvedValue(walkThenStand());
+    const first = await mount();
+    await screen.findByTestId("recap-map");
+    const without = mockCameraBounds;
+    expect(without).toBeDefined();
+    await act(() => first.unmount());
+
+    mockSession = "g-recap-cam-on";
+    on();
+    mockRouteCandidates.mockResolvedValue([
+      past([{ lat: 44.6, lon: 2.44 }, ...shapeOf(walkThenStand()).points]),
+    ]);
+    await mount();
+    await screen.findByTestId("source-trace-route-ghost");
+    expect(mockCameraBounds).toEqual(without);
+  });
+
+  test("tab off: nothing read, no line, no legend", async () => {
+    mockSession = "g-recap-off";
+    mockPointsOf.mockResolvedValue(walkThenStand());
+    await mount();
+    await screen.findByTestId("recap-map");
+    expect(mockRouteCandidates).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("source-trace-route-ghost")).toBeNull();
+    expect(screen.queryByTestId("recap-route-ghost-legend")).toBeNull();
+  });
+
+  test("a past outing that was only half of this route is not drawn", async () => {
+    mockSession = "g-recap-half";
+    on();
+    const whole = walkSlowThenQuick();
+    mockPointsOf.mockResolvedValue(whole);
+    mockRouteCandidates.mockResolvedValue([shapeOf(whole.slice(0, 1200))]);
+    await mount();
+    await screen.findByTestId("recap-map");
+    expect(mockRouteCandidates).toHaveBeenCalled();
+    expect(screen.queryByTestId("source-trace-route-ghost")).toBeNull();
+    expect(screen.queryByTestId("recap-route-ghost-legend")).toBeNull();
   });
 });

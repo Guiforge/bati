@@ -214,6 +214,71 @@ describe("useSmartAction", () => {
     expect(result.current.config?.label).toBe("See the quest");
   });
 
+  describe("the Tonight line", () => {
+    const slot = (over: Record<string, unknown>) => ({
+      id: 1,
+      exercise: { style: "strength", enName: "Push-ups", frName: "Pompes", perSide: false },
+      target: { type: "reps", value: 13 },
+      ghost: { last: 12, best: 12, at: 0, bestAt: Date.now(), seasonBest: 12, recent: [] },
+      ...over,
+    });
+    const withSlots = (...slots: unknown[]) =>
+      loadConfiguredQuest.mockImplementation(async (id: number) => ({
+        ...questNamed(id, "Chest Day"),
+        quest: { ...questNamed(id, "Chest Day").quest, exercises: slots },
+      }));
+
+    it("names the first counted movement with a history, at the number to beat", async () => {
+      withSlots(slot({}));
+      const { result } = await renderHook(() => useSmartAction());
+      await waitFor(() => expect(result.current.config).not.toBeNull());
+
+      expect(result.current.config?.scene?.tonight).toBe("Tonight: Push-ups, at least 13");
+    });
+
+    it("has no line on a movement's first session, or on a quest of holds", async () => {
+      withSlots(slot({ ghost: undefined }));
+      const first = await renderHook(() => useSmartAction());
+      await waitFor(() => expect(first.result.current.config).not.toBeNull());
+      expect(first.result.current.config?.scene?.tonight).toBeUndefined();
+
+      withSlots(slot({ target: { type: "time", value: 30 } }));
+      const holds = await renderHook(() => useSmartAction());
+      await waitFor(() => expect(holds.result.current.config).not.toBeNull());
+      expect(holds.result.current.config?.scene?.tonight).toBeUndefined();
+    });
+
+    it("skips an outing and a hold for the first counted movement after them", async () => {
+      const { NON_REP_STYLE } = require("@/db/workUnits");
+      withSlots(
+        slot({ exercise: { style: NON_REP_STYLE, enName: "Walk", frName: "Marche" } }),
+        slot({ id: 2, target: { type: "time", value: 30 } }),
+        slot({ id: 3 }),
+      );
+      const { result } = await renderHook(() => useSmartAction());
+      await waitFor(() => expect(result.current.config).not.toBeNull());
+
+      expect(result.current.config?.scene?.tonight).toBe("Tonight: Push-ups, at least 13");
+    });
+
+    it("says nothing on the adventure stage", async () => {
+      withSlots(slot({}));
+      const { getAnyActiveAdventureRun, getAdventureDetails } = require("@/db/adventures");
+      getAnyActiveAdventureRun.mockResolvedValueOnce({
+        adventureId: 4,
+        activeRun: { steps: [{ status: "completed" }, { status: "active" }] },
+      });
+      getAdventureDetails.mockResolvedValueOnce({
+        adventure: { enTitle: "The North Road", frTitle: "La route du Nord", imagePath: null },
+      });
+      const { result } = await renderHook(() => useSmartAction());
+      await waitFor(() => expect(result.current.config).not.toBeNull());
+
+      expect(result.current.config?.variant).toBe("adventure");
+      expect(result.current.config?.scene?.tonight).toBeUndefined();
+    });
+  });
+
   it("serves the oath before the weak areas, on the rung the hero is standing on", async () => {
     getOathProgress.mockResolvedValue({
       oath: { metric: "exercise_pr", exerciseId: 99 },
@@ -395,6 +460,30 @@ describe("useSmartAction", () => {
       expect(result.current.config?.startQuestId).toBe(5);
       expect(result.current.config?.scene?.title).toBe("Chop Wood");
       expect(result.current.config?.subtext).toBe("Last done 9 days ago");
+    });
+
+    it("the Tonight line says nothing on a day already done", async () => {
+      loadConfiguredQuest.mockImplementation(async (id: number) => ({
+        ...questNamed(id, "Chest Day"),
+        quest: {
+          ...questNamed(id, "Chest Day").quest,
+          exercises: [
+            {
+              id: 1,
+              exercise: { style: "strength", enName: "Push-ups", perSide: false },
+              target: { type: "reps", value: 13 },
+              ghost: { last: 12, best: 12, at: 0, bestAt: Date.now(), seasonBest: 12, recent: [] },
+            },
+          ],
+        },
+      }));
+      getStalestQuest.mockResolvedValueOnce({ questId: 5, daysAgo: 0 });
+      hasSessionToday.mockResolvedValueOnce(true);
+      const { result } = await renderHook(() => useSmartAction());
+      await waitFor(() => expect(result.current.config).not.toBeNull());
+
+      expect(result.current.config?.variant).toBe("done");
+      expect(result.current.config?.scene?.tonight).toBeUndefined();
     });
 
     it("says the singular for a quest left one day", async () => {

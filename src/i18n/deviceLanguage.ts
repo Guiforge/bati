@@ -7,7 +7,7 @@ import { getLocales } from "expo-localization";
  * names a language code: adding one here is what makes `tsc` point at every table, row and
  * branch that does not have it yet.
  */
-export const APP_LANGUAGES = ["en", "fr", "de", "es", "ru"] as const;
+export const APP_LANGUAGES = ["en", "fr", "de", "es", "ru", "zh"] as const;
 
 export type AppLanguage = (typeof APP_LANGUAGES)[number];
 
@@ -21,6 +21,7 @@ export const LANGUAGE_NAMES: Record<AppLanguage, string> = {
   de: "Deutsch",
   es: "Español",
   ru: "Русский",
+  zh: "中文",
 };
 
 /**
@@ -28,7 +29,8 @@ export const LANGUAGE_NAMES: Record<AppLanguage, string> = {
  *
  * Most of `ru.json` came from a contributor (PR #174). A model wrote the blocks that were tables
  * in the code at the time (bosses, badges, labels, rest messages) and every key added since: the
- * flag stays up until those are read too.
+ * flag stays up until those are read too. `zh.json` is a model translation of the whole file, the
+ * catalogue in English included, so its flag is up for the same reason.
  */
 export const MACHINE_TRANSLATED: Localized<boolean> = {
   en: false,
@@ -36,6 +38,7 @@ export const MACHINE_TRANSLATED: Localized<boolean> = {
   de: true,
   es: true,
   ru: true,
+  zh: true,
 };
 
 /** The language after this one, wrapping: what one tap on the settings row moves to. */

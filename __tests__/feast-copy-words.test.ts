@@ -197,6 +197,7 @@ const pushUp = {
   frName: "Pompe diamant",
   deName: "Diamant-Liegestütz",
   esName: "Flexión diamante",
+  zhName: "Flexión diamante",
 };
 const age: Age = {
   kind: "age",

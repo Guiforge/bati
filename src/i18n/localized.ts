@@ -7,7 +7,7 @@ import type { AppLanguage } from "@/stores/settings";
  * interface translated and its catalogue in English, until a migration gives it columns
  * (`docs/architecture/adding-a-language.md`, step 4) and its code is added to this list.
  */
-const SEEDED_LANGUAGES = ["en", "fr", "de", "es"] as const satisfies readonly AppLanguage[];
+const SEEDED_LANGUAGES = ["en", "fr", "de", "es", "zh"] as const satisfies readonly AppLanguage[];
 
 export type SeededLanguage = (typeof SEEDED_LANGUAGES)[number];
 
@@ -65,6 +65,7 @@ const CAPITALISED_NOUNS: Localized<boolean> = {
   de: true,
   es: false,
   ru: false,
+  zh: false,
 };
 
 /** A label written into the middle of a sentence, cased the way that language writes nouns. */

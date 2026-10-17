@@ -1,0 +1,11 @@
+{
+  "ios": {
+    "NSPhotoLibraryUsageDescription": "用于为你的英雄头像，或你创建的动作或任务挑选照片。照片留在你的设备上，只在你开启的备份或加密同步中离开它。"
+  },
+  "android": {
+    "widget_flame_label": "Bati：火焰",
+    "widget_flame_description": "你的训练火焰。",
+    "widget_weekly_label": "Bati：本周",
+    "widget_weekly_description": "本周训练与你的誓言。"
+  }
+}

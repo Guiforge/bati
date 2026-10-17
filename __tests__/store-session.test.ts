@@ -1614,6 +1614,7 @@ describe("useSessionStore", () => {
         frName: "Squat",
         deName: "",
         esName: "",
+        zhName: "",
         imagePath: "",
         target: { type: "reps" as const, value: 17 },
       };
@@ -1648,6 +1649,7 @@ describe("useSessionStore", () => {
         frName: "Squat",
         deName: "",
         esName: "",
+        zhName: "",
         imagePath: "",
         target: { type: "reps" as const, value: 17 },
       };

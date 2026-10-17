@@ -20,6 +20,7 @@ const forge: VillageBuilding = {
   frName: "La Forge",
   deName: "Die Schmiede",
   esName: "La Forja",
+  zhName: "La Forja",
   unlockCondition: "",
   relatedMuscle: def.relatedMuscle,
   driver: "muscle",

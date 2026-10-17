@@ -244,6 +244,7 @@ export function WallRow({ entry, now }: { entry: WallEntry; now: Date }) {
                 frName: entry.name.fr,
                 deName: entry.name.de,
                 esName: entry.name.es,
+                zhName: entry.name.zh,
               },
               language,
             )}

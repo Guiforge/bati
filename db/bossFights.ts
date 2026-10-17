@@ -42,6 +42,7 @@ export type BossFight = {
   frName: string;
   deName: string;
   esName: string;
+  zhName: string;
   /**
    * How many times this boss has already been beaten — 0 on the first encounter. Derived from
    * finished runs of the adventure rather than stored: a finished boss campaign IS the victory
@@ -359,6 +360,7 @@ export async function getOrCreateBossFight(
       frTitle: adventures.frTitle,
       deTitle: adventures.deTitle,
       esTitle: adventures.esTitle,
+      zhTitle: adventures.zhTitle,
     })
     .from(adventures)
     .where(eq(adventures.id, adventureId))
@@ -399,6 +401,7 @@ export async function getOrCreateBossFight(
       frName: adventure.frTitle,
       deName: adventure.deTitle,
       esName: adventure.esTitle,
+      zhName: adventure.zhTitle,
       tier,
       shiny,
     };
@@ -440,6 +443,7 @@ export async function getOrCreateBossFight(
     frName: adventure.frTitle,
     deName: adventure.deTitle,
     esName: adventure.esTitle,
+    zhName: adventure.zhTitle,
     tier,
     shiny,
   };
@@ -470,6 +474,7 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
       frTitle: adventures.frTitle,
       deTitle: adventures.deTitle,
       esTitle: adventures.esTitle,
+      zhTitle: adventures.zhTitle,
     })
     .from(bossFights)
     .innerJoin(adventures, eq(bossFights.adventureId, adventures.id))
@@ -493,6 +498,7 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
     frName: row.frTitle,
     deName: row.deTitle,
     esName: row.esTitle,
+    zhName: row.zhTitle,
     // A felled fight is named and painted at the tier it was fought at: the run that just ended
     // is already counted, and the legendary name belongs to the rematch once it starts.
     tier: Math.max(

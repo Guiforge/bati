@@ -181,10 +181,12 @@ export type QuestHead = {
   frTitle: string;
   deTitle: string;
   esTitle: string;
+  zhTitle: string;
   enDescription: string;
   frDescription: string;
   deDescription: string;
   esDescription: string;
+  zhDescription: string;
   author: ContentOwner;
   /** The quest's name off this database (0066). Null on seed quests. */
   uuid: string | null;
@@ -316,10 +318,12 @@ export async function createQuestTemplate(
       frTitle: input.frTitle,
       deTitle: input.deTitle,
       esTitle: input.esTitle,
+      zhTitle: input.zhTitle,
       enDescription: input.enDescription,
       frDescription: input.frDescription,
       deDescription: input.deDescription,
       esDescription: input.esDescription,
+      zhDescription: input.zhDescription,
       author,
       imagePath: input.imagePath ?? null,
       rounds: clampToRange(input.rounds, ROUNDS_RANGE),
@@ -383,10 +387,12 @@ export async function createQuestFromOuting(
     | "frTitle"
     | "deTitle"
     | "esTitle"
+    | "zhTitle"
     | "enDescription"
     | "frDescription"
     | "deDescription"
     | "esDescription"
+    | "zhDescription"
   > & {
     /** Widened from `Quest`, where readers have already defaulted it: null is "no cover". */
     imagePath: string | null;
@@ -411,10 +417,12 @@ export async function createQuestFromOuting(
     frTitle: quest.frTitle,
     deTitle: quest.deTitle,
     esTitle: quest.esTitle,
+    zhTitle: quest.zhTitle,
     enDescription: quest.enDescription,
     frDescription: quest.frDescription,
     deDescription: quest.deDescription,
     esDescription: quest.esDescription,
+    zhDescription: quest.zhDescription,
     author: USER_QUEST_AUTHOR,
     archetype: null,
     imagePath: quest.imagePath,
@@ -448,10 +456,12 @@ const questColumns = () => ({
   frTitle: quests.frTitle,
   deTitle: quests.deTitle,
   esTitle: quests.esTitle,
+  zhTitle: quests.zhTitle,
   enDescription: quests.enDescription,
   frDescription: quests.frDescription,
   deDescription: quests.deDescription,
   esDescription: quests.esDescription,
+  zhDescription: quests.zhDescription,
   author: quests.author,
   rounds: quests.rounds,
   restSeconds: quests.restSeconds,
@@ -467,10 +477,12 @@ type QuestHeadRow = {
   frTitle: string;
   deTitle: string;
   esTitle: string;
+  zhTitle: string;
   enDescription: string;
   frDescription: string;
   deDescription: string;
   esDescription: string;
+  zhDescription: string;
   author: ContentOwner;
   rounds: number;
   restSeconds: number;
@@ -531,10 +543,12 @@ function questHead(r: QuestHeadRow): QuestHead {
     frTitle: r.frTitle,
     deTitle: r.deTitle,
     esTitle: r.esTitle,
+    zhTitle: r.zhTitle,
     enDescription: r.enDescription,
     frDescription: r.frDescription,
     deDescription: r.deDescription,
     esDescription: r.esDescription,
+    zhDescription: r.zhDescription,
     author: r.author,
     rounds: r.rounds,
     restSeconds: r.restSeconds,
@@ -627,10 +641,12 @@ type SlotRow = {
   exFrName: string;
   exDeName: string;
   exEsName: string;
+  exZhName: string;
   exEnDescription: string;
   exFrDescription: string;
   exDeDescription: string;
   exEsDescription: string;
+  exZhDescription: string;
   exImagePath: string;
   exCreator: ContentOwner;
   exUuid: string | null;
@@ -848,10 +864,12 @@ function buildSlot(
     frName: r.exFrName,
     deName: r.exDeName,
     esName: r.exEsName,
+    zhName: r.exZhName,
     enDescription: r.exEnDescription,
     frDescription: r.exFrDescription,
     deDescription: r.exDeDescription,
     esDescription: r.exEsDescription,
+    zhDescription: r.exZhDescription,
     imagePath: r.exImagePath,
     creator: r.exCreator,
     uuid: r.exUuid,
@@ -908,6 +926,7 @@ function buildSlot(
             frName: r.exFrName,
             deName: r.exDeName,
             esName: r.exEsName,
+            zhName: r.exZhName,
             imagePath: r.exImagePath,
             ...(asWritten ? { target: asWritten } : {}),
           }
@@ -922,6 +941,7 @@ export function movementRef(e: Exercise): MovementRef {
     frName: e.frName,
     deName: e.deName,
     esName: e.esName,
+    zhName: e.zhName,
     imagePath: e.imagePath,
   };
 }
@@ -944,10 +964,12 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
       exFrName: exercises.frName,
       exDeName: exercises.deName,
       exEsName: exercises.esName,
+      exZhName: exercises.zhName,
       exEnDescription: exercises.enDescription,
       exFrDescription: exercises.frDescription,
       exDeDescription: exercises.deDescription,
       exEsDescription: exercises.esDescription,
+      exZhDescription: exercises.zhDescription,
       exImagePath: exercises.imagePath,
       exCreator: exercises.creator,
       exUuid: exercises.uuid,
@@ -1046,10 +1068,12 @@ export async function updateQuestMeta(
       | "frTitle"
       | "deTitle"
       | "esTitle"
+      | "zhTitle"
       | "enDescription"
       | "frDescription"
       | "deDescription"
       | "esDescription"
+      | "zhDescription"
       | "rounds"
       | "restSeconds"
       | "roundRestSeconds"

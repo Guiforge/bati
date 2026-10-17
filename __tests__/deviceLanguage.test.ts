@@ -73,6 +73,7 @@ describe("localizedText", () => {
     frDescription: "Tiens bon.",
     deDescription: "Tiens bon.",
     esDescription: "Tiens bon.",
+    zhDescription: "Tiens bon.",
   };
 
   it("reads the language's own column", () => {

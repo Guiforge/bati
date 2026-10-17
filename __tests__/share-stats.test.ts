@@ -169,7 +169,7 @@ describe("chronicleStats", () => {
   test("the village's label never repeats a tier's name, in any language", () => {
     // "Village" over "village", then over "your village", read as a bug on the picture of every
     // hero at tier 3: the label names the place without the word a tier could be.
-    for (const language of ["en", "fr", "de", "es", "ru"] as const) {
+    for (const language of ["en", "fr", "de", "es", "ru", "zh"] as const) {
       const label = (
         require(`../locales/${language}.json`) as { chronicle: { village: string } }
       ).chronicle.village.toLowerCase();

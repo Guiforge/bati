@@ -28,7 +28,7 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.guiforge.bati",
       "infoPlist": {
-        "CFBundleLocalizations": ["en", "fr", "de", "es", "ru"]
+        "CFBundleLocalizations": ["en", "fr", "de", "es", "ru", "zh"]
       }
     },
     "locales": {
@@ -36,7 +36,8 @@
       "fr": "./locales/native/fr.json",
       "de": "./locales/native/de.json",
       "es": "./locales/native/es.json",
-      "ru": "./locales/native/ru.json"
+      "ru": "./locales/native/ru.json",
+      "zh": "./locales/native/zh.json"
     },
     "name": "Bati",
     "orientation": "portrait",
@@ -54,8 +55,8 @@
         "expo-localization",
         {
           "supportedLocales": {
-            "ios": ["en", "fr", "de", "es", "ru"],
-            "android": ["en", "fr", "de", "es", "ru"]
+            "ios": ["en", "fr", "de", "es", "ru", "zh"],
+            "android": ["en", "fr", "de", "es", "ru", "zh"]
           }
         }
       ],

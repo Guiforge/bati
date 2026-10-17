@@ -60,9 +60,7 @@ to be; a feature that fights it will get pushed back on even if the code is good
 
 Every commit in a pull request carries a `Signed-off-by: Your Name <you@example.org>` line, which
 `git commit -s` adds. It is the [Developer Certificate of Origin](https://developercertificate.org/):
-you wrote the change, or have the right to submit it, under this repository's licence. The code is
-MIT, and MIT lets a paid edition of Bati include it, so the sign-off is also your agreement to
-that. A CI check (`.github/workflows/dco.yml`) fails the pull request when a commit has none;
+you wrote the change, or have the right to submit it, under this repository's licence. A CI check (`.github/workflows/dco.yml`) fails the pull request when a commit has none;
 `git rebase --signoff main` fixes a branch after the fact. The maintainer's own commits and
 Dependabot's are exempt (`.github/dco-maintainers.txt`).
 

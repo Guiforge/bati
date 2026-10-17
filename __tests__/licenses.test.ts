@@ -14,6 +14,11 @@ describe("third-party notices (A1)", () => {
     expect(have).toEqual(want);
   });
 
+  test("lists each name@version once (the screen uses it as the row key)", () => {
+    const keys = notices.packages.map((p) => `${p.name}@${p.version}`);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
   test("every package carries a known licence and the text of it", () => {
     for (const p of notices.packages) {
       expect(`${p.name}: ${p.license}`).not.toMatch(/UNKNOWN|UNLICENSED/);

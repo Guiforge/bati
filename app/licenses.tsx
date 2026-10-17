@@ -1,5 +1,4 @@
-import { LegendList } from "@legendapp/list/react-native";
-import { useState } from "react";
+import { LegendList, useRecyclingState } from "@legendapp/list/react-native";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Separator, Text, XStack, YStack } from "tamagui";
@@ -13,7 +12,7 @@ const Rule = () => <Separator />;
 type Pkg = (typeof notices.packages)[number];
 
 function PackageRow({ pkg }: { pkg: Pkg }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useRecyclingState(false);
   return (
     <YStack
       px="$4"

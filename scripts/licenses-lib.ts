@@ -5,7 +5,7 @@
  * link, and not an optional or platform-specific binary (`os`/`cpu`), because those are absent
  * from a given machine's node_modules and would make the asset differ per developer. A superset of
  * what Metro bundles, on purpose: a notice we did not need is harmless, a missing one is not.
- * Returns [{ dir, name, version }], sorted by name then version. `name` is the folder name, so an
+ * Each name@version appears once. Returns [{ dir, name, version }], sorted by name then version. `name` is the folder name, so an
  * npm alias (react-is-18) keeps the name it is installed under.
  */
 export type Lock = {
@@ -23,10 +23,17 @@ export type Lock = {
 };
 
 export function productionPackages(lock: Lock) {
-  return Object.entries(lock.packages)
-    .filter(([dir, p]) => dir && !p.dev && !p.link && !p.optional && !p.os && !p.cpu)
-    .map(([dir, p]) => ({ dir, name: dir.split("node_modules/").pop() ?? dir, version: p.version }))
-    .sort((a, b) => a.name.localeCompare(b.name) || a.version.localeCompare(b.version));
+  const seen = new Map<string, { dir: string; name: string; version: string }>();
+  for (const [dir, p] of Object.entries(lock.packages)) {
+    if (!dir || p.dev || p.link || p.optional || p.os || p.cpu) continue;
+    const name = dir.split("node_modules/").pop() ?? dir;
+    // One entry per name@version: nested copies share a licence, the first dir is enough.
+    if (!seen.has(`${name}@${p.version}`))
+      seen.set(`${name}@${p.version}`, { dir, name, version: p.version });
+  }
+  return [...seen.values()].sort(
+    (a, b) => a.name.localeCompare(b.name) || a.version.localeCompare(b.version),
+  );
 }
 
 /**

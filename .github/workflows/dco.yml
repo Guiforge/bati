@@ -1,6 +1,5 @@
-# Developer Certificate of Origin (CONTRIBUTING.md § Sign your commits). A contribution that
-# arrives under the MIT licence may also end up in a paid edition of the app, which MIT allows
-# but the author has to have agreed to; the sign-off is that agreement, per commit.
+# Developer Certificate of Origin (CONTRIBUTING.md § Sign your commits): the sign-off says the
+# author wrote the change or has the right to submit it under the repository's licence.
 # The maintainer's own commits and bots are exempt (.github/dco-maintainers.txt).
 name: DCO
 

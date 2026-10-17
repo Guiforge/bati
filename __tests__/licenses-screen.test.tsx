@@ -15,7 +15,9 @@ jest.mock(
 // the first rows, which is all the screen's own code decides.
 jest.mock("@legendapp/list/react-native", () => {
   const { View } = require("react-native");
+  const { useState } = require("react");
   return {
+    useRecyclingState: useState,
     LegendList: ({
       data,
       renderItem,

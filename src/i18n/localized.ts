@@ -8,6 +8,7 @@ import type { AppLanguage } from "@/stores/settings";
  * (`docs/architecture/adding-a-language.md`, step 4) and its code is added to this list.
  */
 const SEEDED_LANGUAGES = ["en", "fr", "de", "es", "ru"] as const satisfies readonly AppLanguage[];
+const SEEDED_LANGUAGES = ["en", "fr", "de", "es", "zh"] as const satisfies readonly AppLanguage[];
 
 export type SeededLanguage = (typeof SEEDED_LANGUAGES)[number];
 

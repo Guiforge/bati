@@ -121,11 +121,18 @@ export const exercises = sqliteTable(
     deName: text().notNull().default(""),
     esName: text().notNull().default(""),
     ruName: text().notNull().default(""),
+    // German and Spanish since 0058, Chinese since 0074. Empty until a row is translated, and
+    // `localizedText` reads an empty column as English, so an untranslated row is never a blank
+    // card.
+    deName: text().notNull().default(""),
+    esName: text().notNull().default(""),
+    zhName: text().notNull().default(""),
     enDescription: text().notNull(),
     frDescription: text().notNull(),
     deDescription: text().notNull().default(""),
     esDescription: text().notNull().default(""),
     ruDescription: text().notNull().default(""),
+    zhDescription: text().notNull().default(""),
 
     // Store a simple asset path; UI can map it to `require()`.
     imagePath: text().notNull().default("assets/placeholder.jpg"),
@@ -232,11 +239,13 @@ export const quests = sqliteTable(
     deTitle: text().notNull().default(""),
     esTitle: text().notNull().default(""),
     ruTitle: text().notNull().default(""),
+    zhTitle: text().notNull().default(""),
     enDescription: text().notNull(),
     frDescription: text().notNull(),
     deDescription: text().notNull().default(""),
     esDescription: text().notNull().default(""),
     ruDescription: text().notNull().default(""),
+    zhDescription: text().notNull().default(""),
 
     // Same two values as `exercises.creator`, and for the same reason: never a display name.
     author: text().notNull().default(ADMIN_CREATOR).$type<ContentOwner>(),
@@ -317,11 +326,13 @@ export const adventures = sqliteTable(
     deTitle: text().notNull().default(""),
     esTitle: text().notNull().default(""),
     ruTitle: text().notNull().default(""),
+    zhTitle: text().notNull().default(""),
     enDescription: text().notNull().default(""),
     frDescription: text().notNull().default(""),
     deDescription: text().notNull().default(""),
     esDescription: text().notNull().default(""),
     ruDescription: text().notNull().default(""),
+    zhDescription: text().notNull().default(""),
 
     // Content attribution (user id / name or "Admin" for built-in content).
     author: text().notNull().default("Admin"),
@@ -428,11 +439,13 @@ export const adventureSteps = sqliteTable(
     deNarrative: text().notNull().default(""),
     esNarrative: text().notNull().default(""),
     ruNarrative: text().notNull().default(""),
+    zhNarrative: text().notNull().default(""),
     enOutroNarrative: text().notNull().default(""),
     frOutroNarrative: text().notNull().default(""),
     deOutroNarrative: text().notNull().default(""),
     esOutroNarrative: text().notNull().default(""),
     ruOutroNarrative: text().notNull().default(""),
+    zhOutroNarrative: text().notNull().default(""),
 
     // Image for this specific step/chapter
     imagePath: text(),

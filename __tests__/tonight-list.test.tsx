@@ -481,6 +481,7 @@ describe("TonightList", () => {
             deName: "Schmiede",
             esName: "Herrería",
             ruName: "Herrería",
+            zhName: "Herrería",
             relatedMuscle: null,
             oldLevel: 5,
             newLevel: 6,
@@ -548,6 +549,7 @@ describe("TonightList", () => {
       deName: name,
       esName: name,
       ruName: name,
+      zhName: name,
       imagePath: "squat.webp",
     });
     const feasts = rank({
@@ -598,6 +600,7 @@ describe("TonightList", () => {
         deName: "Pompe diamant",
         esName: "Pompe diamant",
         ruName: "Pompe diamant",
+        zhName: "Pompe diamant",
       },
     };
     const feasts = rank(
@@ -624,6 +627,7 @@ describe("TonightList", () => {
       deName: name,
       esName: name,
       ruName: name,
+      zhName: name,
       imagePath: "squat.webp",
     });
     const feasts = rankFeasts({
@@ -844,6 +848,7 @@ describe("TonightList style", () => {
             deName: "Schmiede",
             esName: "Herrería",
             ruName: "Herrería",
+            zhName: "Herrería",
             relatedMuscle: null,
             oldLevel: 5,
             newLevel: 6,
@@ -877,6 +882,7 @@ describe("TonightList style", () => {
       deName: name,
       esName: name,
       ruName: name,
+      zhName: name,
       imagePath: "squat.webp",
     });
     const named = await show(rankFeasts({ boss: { name: "Golem" }, result: base }), "en");

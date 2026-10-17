@@ -121,6 +121,7 @@ export async function movementNames(ids: Iterable<number>): Promise<MovementName
       deName: exercises.deName,
       esName: exercises.esName,
       ruName: exercises.ruName,
+      zhName: exercises.zhName,
     })
     .from(exercises)
     .where(inArray(exercises.id, wanted));

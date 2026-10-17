@@ -19,6 +19,7 @@ export async function getAdventureStepNarrative(
       deNarrative: adventureSteps.deNarrative,
       esNarrative: adventureSteps.esNarrative,
       ruNarrative: adventureSteps.ruNarrative,
+      zhNarrative: adventureSteps.zhNarrative,
     })
     .from(adventureRunSteps)
     .innerJoin(adventureRuns, eq(adventureRuns.id, adventureRunSteps.runId))
@@ -55,6 +56,7 @@ export async function getAdventureStepOutroNarrative(
       deOutroNarrative: adventureSteps.deOutroNarrative,
       esOutroNarrative: adventureSteps.esOutroNarrative,
       ruOutroNarrative: adventureSteps.ruOutroNarrative,
+      zhOutroNarrative: adventureSteps.zhOutroNarrative,
     })
     .from(adventureRunSteps)
     .innerJoin(adventureRuns, eq(adventureRuns.id, adventureRunSteps.runId))

@@ -110,6 +110,7 @@ function received(over: Partial<QuestFile["quest"]> = {}): QuestFile {
         de: "Porch forge",
         es: "Porch forge",
         ru: "Porch forge",
+        zh: "Porch forge",
       },
       description: {
         en: "Before coffee.",
@@ -117,6 +118,7 @@ function received(over: Partial<QuestFile["quest"]> = {}): QuestFile {
         de: "Before coffee.",
         es: "Before coffee.",
         ru: "Before coffee.",
+        zh: "Before coffee.",
       },
       rounds: 3,
       restSeconds: 45,
@@ -597,6 +599,7 @@ describe("cleaning the text of a quest file", () => {
       de: "",
       es: "",
       ru: "",
+      zh: "",
     };
     const read = parse(JSON.stringify(file));
     expect(ownOf(read).name).toBe("Porch dip");
@@ -628,6 +631,7 @@ describe("cleaning the text of a quest file", () => {
       de: "Porch forge",
       es: "Porch forge",
       ru: "Porch forge",
+      zh: "Porch forge",
     });
     const description = parse(
       JSON.stringify(received({ description: { en: "Before coffee.", es: "", ru: "" } as never })),
@@ -642,6 +646,9 @@ describe("cleaning the text of a quest file", () => {
       JSON.stringify(received({ description: { en: "", fr: "", de: "", es: "", ru: "" } })),
     );
     expect(read.quest.description).toEqual({ en: "", fr: "", de: "", es: "", ru: "" });
+      JSON.stringify(received({ description: { en: "", fr: "", de: "", es: "", zh: "" } })),
+    );
+    expect(read.quest.description).toEqual({ en: "", fr: "", de: "", es: "", zh: "" });
   });
 
   // Past the editor's own limit is cut; far past it is not a quest an editor wrote, and reading
@@ -692,6 +699,7 @@ describe("editing a quest file before it is imported", () => {
         de: "Veranda",
         es: "Porche",
         ru: "Porche",
+        zh: "Porch forge",
       },
     });
 
@@ -713,6 +721,7 @@ describe("editing a quest file before it is imported", () => {
       de: "Morning bench",
       es: "Morning bench",
       ru: "Morning bench",
+      zh: "Morning bench",
     });
   });
 
@@ -767,11 +776,13 @@ describe("writing a quest file", () => {
       deTitle: "",
       esTitle: "",
       ruTitle: "",
+      zhTitle: "",
       enDescription: "",
       frDescription: "",
       deDescription: "",
       esDescription: "",
       ruDescription: "",
+      zhDescription: "",
       rounds: 1,
       restSeconds: 30,
       roundRestSeconds: null,
@@ -815,11 +826,13 @@ describe("writing a quest file", () => {
       deTitle: "Hall drill",
       esTitle: "Hall drill",
       ruTitle: "Hall drill",
+      zhTitle: "Hall drill",
       enDescription: "",
       frDescription: "",
       deDescription: "",
       esDescription: "",
       ruDescription: "",
+      zhDescription: "",
       author: quests.USER_QUEST_AUTHOR,
       rounds: 2,
       restSeconds: 30,
@@ -849,11 +862,13 @@ describe("writing a quest file", () => {
       deTitle: "Raw",
       esTitle: "Raw",
       ruTitle: "Raw",
+      zhTitle: "Raw",
       enDescription: "",
       frDescription: "",
       deDescription: "",
       esDescription: "",
       ruDescription: "",
+      zhDescription: "",
       author: quests.USER_QUEST_AUTHOR,
       rounds: 1,
       restSeconds: 30,
@@ -879,11 +894,13 @@ describe("writing a quest file", () => {
         deTitle: title,
         esTitle: title,
         ruTitle: title,
+        zhTitle: title,
         enDescription: "",
         frDescription: "",
         deDescription: "",
         esDescription: "",
         ruDescription: "",
+        zhDescription: "",
         author: quests.USER_QUEST_AUTHOR,
         rounds: 1,
         restSeconds: 30,
@@ -947,6 +964,7 @@ describe("importing a quest file", () => {
         de: "Porch forge II",
         es: "Porch forge II",
         ru: "Porch forge II",
+        zh: "Porch forge II",
       },
       rounds: 4,
     });
@@ -1159,6 +1177,7 @@ describe("importing a quest file", () => {
     const hostile = received({
       uuid: questUuid,
       title: { en: "Owned", fr: "", de: "", es: "", ru: "" },
+      title: { en: "Owned", fr: "", de: "", es: "", zh: "" },
     });
     const own = hostile.slots[1]?.movement;
     assert(own && "own" in own);
@@ -1207,6 +1226,7 @@ describe("importing a quest file", () => {
     const outcome = await file
       .importQuest(
         received({ uuid: questUuid, title: { en: "Owned", fr: "", de: "", es: "", ru: "" } }),
+        received({ uuid: questUuid, title: { en: "Owned", fr: "", de: "", es: "", zh: "" } }),
       )
       .catch((error: unknown) => error);
     const after = t.sqlite.prepare("SELECT id, enTitle FROM quests WHERE id = ?").get(seedQuest.id);

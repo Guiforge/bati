@@ -1941,6 +1941,7 @@ describe("useSessionStore", () => {
         deName: "",
         esName: "",
         ruName: "",
+        zhName: "",
         imagePath: "",
         target: { type: "reps" as const, value: 17 },
       };
@@ -1976,6 +1977,7 @@ describe("useSessionStore", () => {
         deName: "",
         esName: "",
         ruName: "",
+        zhName: "",
         imagePath: "",
         target: { type: "reps" as const, value: 17 },
       };

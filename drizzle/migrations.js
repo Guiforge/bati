@@ -81,6 +81,7 @@ import m0077 from "./0077_the_boss_gets_a_name.sql";
 import m0078 from "./0078_the_hand_written_entry.sql";
 import m0079 from "./0079_the_boss_is_a_creation.sql";
 import m0080 from "./0080_the_catalogue_in_russian.sql";
+import m0081 from "./0081_the_catalogue_in_chinese.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -167,5 +168,6 @@ export default {
     m0078,
     m0079,
     m0080,
+    m0081,
   },
 };

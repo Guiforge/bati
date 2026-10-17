@@ -39,11 +39,12 @@ column on this page yet.
 Chinese ships too, with its column on this page, and the same shape of debt as Russian: a model
 translated `zh.json` from this page and from `en.json` (French as a second source), no fluent
 speaker has read it, so the flag is up and the `zh-CN` listing ends on the same warning. Its
-catalogue is in English for the same reason: no column in the database yet. Chinese adds no
-machine-held rule of its own: it has no grammatical gender and no noun case, so neither the
-Spanish adjective check nor `inSentence()` has anything to hold there. What it does have is the
-`never` column below, because the training words (次/组/轮, 锻炼/训练/户外训练) collide the way
-*séance* and *entraînement* do.
+catalogue is translated as well: 0074 gave quests, movements, adventures and steps their `zh`
+columns and 0075 filled them, so a Chinese hero reads 侍从的觉醒 where the English says
+*The Squire's Awakening*. Chinese adds no machine-held rule of its own: it has no grammatical
+gender and no noun case, so neither the Spanish adjective check nor `inSentence()` has anything
+to hold there. What it does have is the `never` column below, because the training words
+(次/组/轮, 锻炼/训练/户外训练) collide the way *séance* and *entraînement* do.
 
 ## Register
 

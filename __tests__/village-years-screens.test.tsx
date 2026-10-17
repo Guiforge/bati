@@ -52,6 +52,7 @@ const building = (code: BuildingCode, level: number): village.VillageBuilding =>
   deName: code,
   esName: code,
   ruName: code,
+  zhName: code,
   unlockCondition: "",
   relatedMuscle: buildingDefinitions[code].relatedMuscle,
   driver: "tier",
@@ -157,6 +158,7 @@ describe("the stones in the Ramparts' sheet", () => {
       years: { stones: [...stonesFrom(13), stone(34, record)], banners: [], ages: [] },
       names: new Map([
         [7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "", ruName: "" }],
+        [7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "", zhName: "" }],
       ]),
     });
     const screen = await openRamparts();
@@ -227,6 +229,7 @@ describe("the marks on the stones", () => {
     };
     const names = new Map([
       [7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "", ruName: "" }],
+      [7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "", zhName: "" }],
     ]);
     jest.spyOn(years, "loadVillageYears").mockResolvedValue({
       years: {
@@ -283,6 +286,7 @@ describe("the marks on the stones", () => {
       },
       names: new Map([
         [7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "", ruName: "" }],
+        [7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "", zhName: "" }],
       ]),
     });
     const screen = await openRamparts();
@@ -399,6 +403,7 @@ describe("the Seasons section", () => {
       },
       names: new Map([
         [7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "", ruName: "" }],
+        [7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "", zhName: "" }],
       ]),
     });
     const screen = await renderScene();

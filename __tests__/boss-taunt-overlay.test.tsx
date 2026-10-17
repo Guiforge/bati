@@ -48,6 +48,7 @@ function makeBossFight(currentHp: number): BossFight {
     deName: "Le Gardien",
     esName: "Le Gardien",
     ruName: "Le Gardien",
+    zhName: "Le Gardien",
     tier: 0,
     shiny: false,
   };

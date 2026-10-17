@@ -186,6 +186,14 @@ export function proposesWalkRun(
   );
 }
 
+/** The session's own answer: the slots it runs and the goal it started with. */
+export function isWalkRunSession(
+  quest: { exercises: readonly { walkRun?: true; prescribed?: number }[] },
+  goal: OutingGoal | null,
+): boolean {
+  return proposesWalkRun(quest.exercises, goal?.type === "distance" ? goal.metres : null);
+}
+
 /**
  * What the hero set out to do. A distance, when they chose one on the quest screen; otherwise the
  * outdoor slots' combined duration, which is the number the steppers on that screen edit for a

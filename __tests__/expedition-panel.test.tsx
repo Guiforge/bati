@@ -461,4 +461,38 @@ describe("ExpeditionPanel", () => {
     expect(screen.getByText("Distance")).toBeTruthy();
     expect(screen.getByText("Pace")).toBeTruthy();
   });
+
+  describe("a walk-run", () => {
+    const walkRunQuest = (extra: { prescribed?: number } = {}) =>
+      ({
+        ...outing,
+        exercises: [{ ...outing.exercises[0], walkRun: true, ...extra }],
+      }) as unknown as Quest;
+
+    test("shows no pace, the coach paces it", async () => {
+      setSession({ type: "time", seconds: 900 }, 600_000);
+      useSessionStore.setState({ quest: walkRunQuest() });
+      setTrack(walked(600, 600, 2500));
+      await mount();
+      expect(screen.queryByTestId("expedition-rate")).toBeNull();
+      expect(screen.queryByText("Pace")).toBeNull();
+      expect(screen.getByText("Distance")).toBeTruthy();
+    });
+
+    test("shows it when the hero picked their own duration", async () => {
+      setSession({ type: "time", seconds: 900 }, 600_000);
+      useSessionStore.setState({ quest: walkRunQuest({ prescribed: 900 }) });
+      setTrack(walked(600, 600, 2500));
+      await mount();
+      expect(screen.getByTestId("expedition-rate")).toBeTruthy();
+    });
+
+    test("shows it on a distance goal", async () => {
+      setSession({ type: "distance", metres: 5000 }, 600_000);
+      useSessionStore.setState({ quest: walkRunQuest() });
+      setTrack(walked(600, 600, 2500));
+      await mount();
+      expect(screen.getByTestId("expedition-rate")).toBeTruthy();
+    });
+  });
 });

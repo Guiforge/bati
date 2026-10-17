@@ -15,7 +15,7 @@ import {
   rateKind,
 } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db/estimate";
-import { outingLocomotion } from "@/db/expeditions";
+import { isWalkRunSession, outingLocomotion } from "@/db/expeditions";
 import type { DistanceUnit } from "@/db/preferences";
 import type { Locomotion } from "@/db/schema";
 import { useSessionTimer } from "@/hooks/useSessionTimer";
@@ -217,6 +217,11 @@ export function ExpeditionPanel() {
     state.quest === null ? null : outingLocomotion(state.quest),
   );
 
+  /** A walk-run is paced by the coach's cues, so no pace is printed, resumed or not. */
+  const walkRun = useSessionStore(
+    (state) => state.quest !== null && isWalkRunSession(state.quest, state.goal),
+  );
+
   /**
    * One line, and it never lies by omission. A blank readout while the sky is being found looks
    * exactly like a broken one, and on a de-Googled ROM the first fix can take minutes.
@@ -310,17 +315,19 @@ export function ExpeditionPanel() {
             </AppText>
           </Reading>
           <Climb track={track} unit={unit} color={figureColor} />
-          <Reading label={t(`session.expedition_${rateKind(locomotion)}`)} end>
-            <AppText
-              testID="expedition-rate"
-              fontSize={20}
-              fontWeight="700"
-              color={figureColor}
-              style={{ fontVariant: ["tabular-nums"] }}
-            >
-              {pace}
-            </AppText>
-          </Reading>
+          {walkRun ? null : (
+            <Reading label={t(`session.expedition_${rateKind(locomotion)}`)} end>
+              <AppText
+                testID="expedition-rate"
+                fontSize={20}
+                fontWeight="700"
+                color={figureColor}
+                style={{ fontVariant: ["tabular-nums"] }}
+              >
+                {pace}
+              </AppText>
+            </Reading>
+          )}
         </XStack>
       )}
 

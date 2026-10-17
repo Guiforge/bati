@@ -287,3 +287,23 @@ describe("estimateDistanceSeconds", () => {
     expect(estimateDistanceSeconds(1000, true)).toBe(179);
   });
 });
+
+describe("isWalkRunSession", () => {
+  const { isWalkRunSession } = require("../db/expeditions") as typeof import("../db/expeditions");
+  const proposed = { exercises: [{ walkRun: true as const }] };
+
+  test.each([
+    ["the proposal on a time goal", proposed, { type: "time", seconds: 900 } as const, true],
+    ["the proposal with no goal", proposed, null, true],
+    [
+      "a duration the hero set",
+      { exercises: [{ walkRun: true as const, prescribed: 900 }] },
+      { type: "time", seconds: 900 } as const,
+      false,
+    ],
+    ["a distance goal", proposed, { type: "distance", metres: 5000 } as const, false],
+    ["a plain run", { exercises: [{}] }, null, false],
+  ])("%s", (_name, quest, goal, expected) => {
+    expect(isWalkRunSession(quest, goal)).toBe(expected);
+  });
+});

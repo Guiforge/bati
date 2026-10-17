@@ -1,11 +1,14 @@
+import assert from "node:assert/strict";
 import { act, renderHook, waitFor } from "@testing-library/react-native";
 
 import type { CompletedExerciseInput } from "@/db/completed";
+import { isWalkRunSession } from "@/db/expeditions";
 import { deletePoints } from "@/db/gps";
 import type { Quest } from "@/db/quests";
 import { useSessionRecovery } from "@/hooks/useSessionRecovery";
 import type { LocationFix } from "@/modules/bati-location";
 import { accept, credited, EMPTY } from "@/src/gps/track";
+import { useExpeditionStore } from "@/stores/expedition";
 import { useSessionStore } from "@/stores/session";
 
 /**
@@ -43,6 +46,8 @@ jest.mock("@/db/preferences", () => ({
     clearSavedSession: jest.fn(async () => {
       mockSavedSlot = null;
     }),
+    getDistanceUnit: jest.fn(async () => "metric"),
+    getHapticsEnabled: jest.fn(async () => true),
   },
 }));
 
@@ -138,7 +143,13 @@ beforeEach(() => {
   mockPoints = [];
   mockSavedSlot = null;
   jest.spyOn(Date, "now").mockReturnValue(NOW);
-  useSessionStore.setState({ quest: null, status: "idle", results: [] });
+  useSessionStore.setState({
+    quest: null,
+    status: "idle",
+    results: [],
+    goal: null,
+    sessionUuid: null,
+  });
 });
 
 afterEach(() => {
@@ -313,6 +324,36 @@ describe("useSessionRecovery", () => {
     // Consumed: recovering twice would double-count the downtime.
     expect(mockSavedSlot).toBeNull();
     expect(result.current.recoverableSession).toBeNull();
+  });
+
+  // Phase 0 of the outing display: the walk-run flag and the goal both ride in the snapshot, so a
+  // resumed walk-run is still one, and the one door that starts tracking gets them both.
+  it("brings a walk-run back as a walk-run, with the goal it started with", async () => {
+    const walkRunOuting = {
+      ...outing,
+      exercises: [{ ...(outing.exercises[0] as object), walkRun: true }],
+    } as unknown as Quest;
+    const begin = jest.fn(async () => true);
+    useExpeditionStore.setState({ begin });
+    await bankLiveSession({
+      quest: walkRunOuting,
+      sessionUuid: "uuid-walk-run",
+      goal: { type: "time", seconds: 900 },
+    });
+
+    const { result } = await renderHook(() => useSessionRecovery());
+    await waitFor(() => expect(result.current.recoverableSession).not.toBeNull());
+    await act(async () => {
+      await result.current.recoverSession();
+    });
+
+    await waitFor(() => expect(begin).toHaveBeenCalled());
+    const state = useSessionStore.getState();
+    assert(state.quest);
+    expect(isWalkRunSession(state.quest, state.goal)).toBe(true);
+    expect(begin.mock.calls[0]).toEqual(
+      expect.arrayContaining(["uuid-walk-run", { type: "time", seconds: 900 }]),
+    );
   });
 
   /**

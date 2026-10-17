@@ -395,6 +395,22 @@ describe("stores/expedition", () => {
     expect(mockSetProgress.mock.calls.at(-1)?.[0]).toMatch(/^32:04 · \d+ m$/);
   });
 
+  // A walk-run is paced by the coach: the notification has never carried a rate, and this pins
+  // it so the outing display cannot add one to a walk-run later.
+  test("a walk-run's notification line is a clock and a distance, never a pace", async () => {
+    mockElapsedSeconds = 1924;
+    await store
+      .getState()
+      .begin("s1", NOTIFICATION, false, "metric", { type: "time", seconds: 900 });
+    for (let i = 0; i < 30; i += 1) emit(walking(i));
+
+    expect(mockSetProgress.mock.calls.length).toBeGreaterThan(0);
+    for (const [line] of mockSetProgress.mock.calls) {
+      expect(line).toMatch(/^\d+:\d\d · /);
+      expect(line).not.toMatch(/\/km|\/mi|km\/h|mph/);
+    }
+  });
+
   /**
    * The line the whole feature is read through, on the walk that needs it most.
    *

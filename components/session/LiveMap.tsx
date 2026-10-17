@@ -10,9 +10,25 @@ import { AppText } from "@/components/common/AppText";
 import { MapFootnote } from "@/components/session/MapFootnote";
 import { MapRecenterButton } from "@/components/session/MapRecenterButton";
 import { HUD_HEIGHT } from "@/components/session/sessionArt";
-import { basemapOf, LEAGUE_PIP_PAINT, TRACE_GLOW_PAINT } from "@/constants/mapStyle";
+import {
+  basemapOf,
+  LEAGUE_PIP_PAINT,
+  ROUTE_GHOST_PAINT,
+  TRACE_GLOW_PAINT,
+} from "@/constants/mapStyle";
 import { rawColors } from "@/constants/rawColors";
 import type { Locomotion } from "@/db/schema";
+import { useRouteCandidates } from "@/hooks/useRouteCandidates";
+import type { LocationFix } from "@/modules/bati-location";
+import {
+  ROUTE,
+  type RouteGhostLine,
+  type RouteShape,
+  routeGhostAllowed,
+  routeGhostOf,
+  strided,
+  toGhostLine,
+} from "@/src/gps/route";
 import { toTrace } from "@/src/gps/trace";
 import { reportError } from "@/src/reportError";
 import { useExpeditionStore } from "@/stores/expedition";
@@ -74,6 +90,24 @@ function Overlay({ children }: { children: ReactNode }) {
       {children}
     </YStack>
   );
+}
+
+/**
+ * The route ghost for these fixes: none until `ROUTE.liveMinM` metres are credited (from a front
+ * door every past route looks alike), and the same object as last time when the route is the same,
+ * so MapLibre is handed nothing new.
+ */
+function ghostOf(
+  prev: RouteGhostLine | null,
+  fixes: readonly LocationFix[],
+  distanceM: number,
+  candidates: RouteShape[] | null,
+): RouteGhostLine | null {
+  const match =
+    candidates !== null && distanceM >= ROUTE.liveMinM
+      ? routeGhostOf(strided(fixes), candidates, "live")
+      : null;
+  return match?.id === prev?.id ? prev : toGhostLine(match);
 }
 
 /**
@@ -157,33 +191,59 @@ export function LiveMap({
   /** Under way: the auto-pause has not caught the hero standing, and the sky has been found. */
   const moving = useExpeditionStore((s) => s.track.startedAt !== null && !s.track.paused);
 
+  // Hooks stay above both early returns: the order never changes. The route ghost is read once per
+  // outing, and only when the hero switched it on (never during a walk-run: `routeGhostAllowed`).
+  const view = useExpeditionStore((s) => s.view);
+  const sessionUuid = useExpeditionStore((s) => s.sessionUuid);
+  /** The first stored fix: where today started, and its time bounds the history read. */
+  const first = useExpeditionStore((s) => s.fixes[0] ?? null);
+  const wanted = routeGhostAllowed(view) && first !== null && sessionUuid !== null;
+  const candidates = useRouteCandidates(
+    wanted ? view.locomotion : null,
+    wanted ? first : null,
+    wanted ? first.t : null,
+    wanted ? sessionUuid : null,
+  );
+
   /**
    * The walk, folded at most every `TRACE_EVERY_MS`. It was folded on every fix, 11 ms at one hour
    * and 34 ms at three on a desktop, a second at a time for as long as the screen is on (perf
    * audit, 2026-09-15). Remembers which array it folded, so a tick with no new fix costs nothing.
+   * It also carries the route ghost: matched here, past `ROUTE.liveMinM` credited metres, and again
+   * when the candidates arrive (the read is async), never on the 1 Hz render.
    *
    * ponytail: the whole walk is still folded each time, so a very long outing pays the three-hour
    * figure every five seconds. Fold incrementally if a measured walk shows that cost.
    */
   const [folded, setFolded] = useState(() => {
     const fixes = useExpeditionStore.getState().fixes;
-    return { fixes, trace: toTrace(fixes) };
+    return {
+      fixes,
+      candidates: null as RouteShape[] | null,
+      trace: toTrace(fixes),
+      ghost: null as RouteGhostLine | null,
+    };
   });
   useEffect(() => {
     if (!visible) return;
     const fold = () => {
-      const fixes = useExpeditionStore.getState().fixes;
-      setFolded((prev) => (prev.fixes === fixes ? prev : { fixes, trace: toTrace(fixes) }));
+      const { fixes, track } = useExpeditionStore.getState();
+      setFolded((prev) => {
+        if (prev.fixes === fixes && prev.candidates === candidates) return prev;
+        const trace = prev.fixes === fixes ? prev.trace : toTrace(fixes);
+        const ghost = ghostOf(prev.ghost, fixes, track.distanceM, candidates);
+        return { fixes, candidates, trace, ghost };
+      });
     };
     // At once on return from the background and on the first fix, then on the cadence.
     if (hasFix) fold();
     const timer = setInterval(fold, TRACE_EVERY_MS);
     return () => clearInterval(timer);
-  }, [visible, hasFix]);
+  }, [visible, hasFix, candidates]);
 
   if (!visible) return placeholder;
 
-  const { trace } = folded;
+  const { trace, ghost } = folded;
   const here: [number, number] | null = last === null ? null : [last.lon, last.lat];
   if (here === null) {
     return (
@@ -240,6 +300,20 @@ export function LiveMap({
           initialViewState={{ center: here, zoom }}
           {...(following ? { center: here, zoom, duration: FOLLOW_MS, easing: "linear" } : {})}
         />
+
+        {/* Under today's line, drawn first. */}
+        {ghost === null ? null : (
+          // biome-ignore lint/correctness/useUniqueElementIds: MapLibre source and layer ids are its own style namespace, not DOM ids.
+          <GeoJSONSource id="live-route-ghost" data={ghost.line}>
+            {/* biome-ignore lint/correctness/useUniqueElementIds: same MapLibre namespace */}
+            <Layer
+              id="live-route-ghost-line"
+              type="line"
+              layout={{ "line-cap": "round", "line-join": "round" }}
+              paint={ROUTE_GHOST_PAINT}
+            />
+          </GeoJSONSource>
+        )}
 
         {/* biome-ignore lint/correctness/useUniqueElementIds: MapLibre source and layer ids
             are its own style namespace, not DOM ids. */}

@@ -275,6 +275,13 @@ export const TRACE_GLOW_PAINT: LinePaint = {
   "line-blur": 12,
 };
 
+/** A past outing on this route: bone, faint and wide, under the gold. Never gold, never dashed. */
+export const ROUTE_GHOST_PAINT: LinePaint = {
+  "line-color": rawColors.text,
+  "line-width": 6,
+  "line-opacity": 0.18,
+};
+
 /** One hollow gold ring per completed league, on both maps. */
 export const LEAGUE_PIP_PAINT: CirclePaint = {
   "circle-radius": 3,

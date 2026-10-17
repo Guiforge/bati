@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import { TamaguiProvider, Text } from "tamagui";
 import { LiveMap } from "@/components/session/LiveMap";
+import { rawColors } from "@/constants/rawColors";
 import type { LocationFix } from "@/modules/bati-location";
 import { useExpeditionStore } from "@/stores/expedition";
 import { useSettingsStore } from "@/stores/settings";
@@ -36,7 +37,15 @@ jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }
 jest.mock("@/db", () => ({
   preferences: { setMapTilesEnabled: jest.fn().mockResolvedValue(undefined) },
 }));
-jest.mock("@/db/gps", () => ({ appendPoints: jest.fn(), pointsOf: jest.fn() }));
+const mockRouteCandidates = jest.fn();
+jest.mock("@/db/gps", () => ({
+  appendPoints: jest.fn(),
+  pointsOf: jest.fn(),
+  routeCandidates: (...args: unknown[]) => mockRouteCandidates(...args),
+}));
+/** The `data` each source was last handed, by id, and the paint of each layer. */
+const mockSources: Record<string, unknown> = {};
+const mockLayers: Record<string, unknown> = {};
 jest.mock("@/modules/bati-location", () => ({
   isAvailable: () => false,
   isNetworkBlocked: () => mockNetworkBlocked(),
@@ -63,9 +72,6 @@ jest.mock("expo-localization", () => ({
 }));
 jest.mock("@maplibre/maplibre-react-native", () => {
   const { View } = require("react-native");
-  const passthrough =
-    (testID: string) =>
-    ({ children }: { children?: React.ReactNode }) => <View testID={testID}>{children}</View>;
   return {
     Map: ({
       children,
@@ -97,8 +103,22 @@ jest.mock("@maplibre/maplibre-react-native", () => {
       mockInitialView(initialViewState);
       return null;
     },
-    GeoJSONSource: passthrough("maplibre-source"),
-    Layer: passthrough("maplibre-layer"),
+    GeoJSONSource: ({
+      id,
+      data,
+      children,
+    }: {
+      id: string;
+      data: unknown;
+      children?: React.ReactNode;
+    }) => {
+      mockSources[id] = data;
+      return <View testID={`source-${id}`}>{children}</View>;
+    },
+    Layer: ({ id, paint }: { id: string; paint: unknown }) => {
+      mockLayers[id] = paint;
+      return <View testID={`layer-${id}`} />;
+    },
   };
 });
 
@@ -356,4 +376,120 @@ test("and over the map once there is one", async () => {
   await mount([walking(0), walking(1)], true, false, { overlay: true });
   expect(screen.getByTestId("live-map")).toBeTruthy();
   expect(screen.getByTestId("live-map-big")).toBeTruthy();
+});
+
+/**
+ * The route ghost. Each test has its own session uuid: the candidates hook keeps its last read at
+ * module level, so a shared uuid would carry one test's answer into the next.
+ */
+describe("the route ghost", () => {
+  const { DEFAULT_LIVE_VIEW } =
+    require("@/src/gps/liveFigures") as typeof import("@/src/gps/liveFigures");
+  const past = (id: string) => ({
+    id,
+    performedAt: new Date(Date.UTC(2026, 8, 1)),
+    points: Array.from({ length: 200 }, (_, i) => ({ lat: 43.6 + i * 5 * 0.0000126, lon: 1.44 })),
+  });
+  const run = (n: number) => Array.from({ length: n }, (_, i) => walking(i));
+  /** The store of an outing that began: view frozen, uuid set, `metres` credited. */
+  const begun = (uuid: string, metres: number, view: Record<string, unknown> = {}) =>
+    useExpeditionStore.setState({
+      sessionUuid: uuid,
+      view: { ...DEFAULT_LIVE_VIEW, routeGhost: true, ...view },
+      track: { ...useExpeditionStore.getState().track, distanceM: metres },
+    });
+
+  beforeEach(() => {
+    mockRouteCandidates.mockReset();
+    for (const k of Object.keys(mockSources)) delete mockSources[k];
+  });
+  afterEach(() => {
+    useExpeditionStore.setState({ sessionUuid: null, view: DEFAULT_LIVE_VIEW });
+  });
+
+  test("off by default: nothing is read and nothing is drawn", async () => {
+    useExpeditionStore.setState({ sessionUuid: "g-off", view: DEFAULT_LIVE_VIEW });
+    await mount(run(60), true);
+    expect(mockRouteCandidates).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("source-live-route-ghost")).toBeNull();
+  });
+
+  test("on: nothing under 400 m, then the pale line under the gold, in the bone paint", async () => {
+    jest.useFakeTimers();
+    mockRouteCandidates.mockResolvedValue([past("p1")]);
+    begun("g-400", 399);
+    await mount(run(60), true);
+    expect(mockRouteCandidates).toHaveBeenCalledWith(
+      "walk",
+      expect.objectContaining({ lat: 43.6 }),
+      new Date(T0),
+      "g-400",
+    );
+    expect(screen.queryByTestId("source-live-route-ghost")).toBeNull();
+
+    await act(() => {
+      begun("g-400", 400);
+      useExpeditionStore.setState({ fixes: run(61) });
+    });
+    // The fold runs on the five-second cadence.
+    await act(async () => jest.advanceTimersByTime(5000));
+    expect(screen.getByTestId("source-live-route-ghost")).toBeTruthy();
+    const paint = mockLayers["live-route-ghost-line"] as Record<string, unknown>;
+    expect(paint["line-color"]).not.toBe(rawColors.resourceGold);
+    // Drawn first: under today's line.
+    const ids = screen.getAllByTestId(/^source-/).map((n) => n.props.testID);
+    expect(ids.indexOf("source-live-route-ghost")).toBeLessThan(ids.indexOf("source-live-path"));
+    jest.useRealTimers();
+  });
+
+  test("late candidates: the ghost appears with no new fix, and the walk is not folded again", async () => {
+    let resolve: (v: unknown[]) => void = () => undefined;
+    mockRouteCandidates.mockReturnValue(
+      new Promise((r) => {
+        resolve = r;
+      }),
+    );
+    begun("g-late", 600);
+    await mount(run(60), true);
+    expect(screen.queryByTestId("source-live-route-ghost")).toBeNull();
+    const folds = mockToTrace.mock.calls.length;
+
+    await act(async () => resolve([past("p2")]));
+    expect(screen.getByTestId("source-live-route-ghost")).toBeTruthy();
+    expect(mockToTrace.mock.calls.length).toBe(folds);
+  });
+
+  test("a walk-run never reads and never draws", async () => {
+    mockRouteCandidates.mockResolvedValue([past("p3")]);
+    begun("g-wr", 600, { walkRun: true });
+    await mount(run(60), true);
+    expect(mockRouteCandidates).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("source-live-route-ghost")).toBeNull();
+  });
+
+  test("background then back: no second read, the ghost is there again", async () => {
+    const { AppState } = require("react-native");
+    const addListener = jest.spyOn(AppState, "addEventListener");
+    mockRouteCandidates.mockResolvedValue([past("p4")]);
+    begun("g-bg", 600);
+    await mount(run(60), true);
+    const onChange = addListener.mock.calls.at(-1)?.[1] as (state: string) => void;
+    expect(screen.getByTestId("source-live-route-ghost")).toBeTruthy();
+
+    await act(async () => onChange("background"));
+    await act(async () => onChange("active"));
+    expect(screen.getByTestId("source-live-route-ghost")).toBeTruthy();
+    expect(mockRouteCandidates).toHaveBeenCalledTimes(1);
+  });
+
+  test("a fold that finds the same route again hands MapLibre the same data object", async () => {
+    mockRouteCandidates.mockResolvedValue([past("p5")]);
+    begun("g-same", 600);
+    await mount(run(60), true);
+    const data = mockSources["live-route-ghost"];
+    expect(data).toBeDefined();
+
+    await act(async () => useExpeditionStore.setState({ fixes: run(70) }));
+    expect(mockSources["live-route-ghost"]).toBe(data);
+  });
 });

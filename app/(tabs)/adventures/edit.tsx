@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Input, type TamaguiElement, Text, XStack, YStack } from "tamagui";
+import { balanceFacts, balanceSentence } from "@/components/adventures/balanceFacts";
+import { EditorBossVoice } from "@/components/adventures/EditorBossVoice";
 import { type EditorEnd, EditorEndSection } from "@/components/adventures/EditorEnd";
 import { type EditorStep, EditorStepCard } from "@/components/adventures/EditorStepCard";
 import { focusLabel } from "@/components/adventures/focusLabel";
@@ -26,6 +28,7 @@ import {
   suggestDifficultyFromSessions,
 } from "@/db";
 import { bossHpForQuests } from "@/db/bossFights";
+import { type HeroBossVoice, noBossLines } from "@/db/bossVoice";
 import { isOutingQuest } from "@/db/expeditions";
 import {
   createHeroAdventure,
@@ -75,6 +78,7 @@ type Fields = {
   cover: AdventureAssetKey;
   steps: EditorStep[];
   end: EditorEnd;
+  voice: HeroBossVoice;
 };
 
 const NEW_FIELDS: Fields = {
@@ -83,6 +87,7 @@ const NEW_FIELDS: Fields = {
   cover: FIRST_COVER,
   steps: [],
   end: { kind: "route" },
+  voice: { name: "", lines: noBossLines() },
 };
 
 /** What the hero wrote, as the dirty-form guard compares it (the row ids are editor-only). */
@@ -172,7 +177,7 @@ export default function AdventureEditor() {
   const scrollRef = useRef<ScrollView>(null);
   const skipGuardRef = useRef(false);
 
-  const { title, description, cover, steps, end } = fields;
+  const { title, description, cover, steps, end, voice } = fields;
   const patch = useCallback((next: Partial<Fields>) => setFields((f) => ({ ...f, ...next })), []);
   const showMessage = (heading: string, body: string) =>
     setDialog({ title: heading, body, confirmLabel: t("common.close") });
@@ -220,6 +225,7 @@ export default function AdventureEditor() {
           cover: draft.imagePath,
           steps: kept.map(toStep),
           end: draft.end,
+          voice: draft.voice,
         };
         setFields(next);
         setBaseline(snapshot(next));
@@ -335,6 +341,7 @@ export default function AdventureEditor() {
       description,
       imagePath: cover,
       end,
+      voice,
       steps: steps.map(({ questId, narrative, outro }) => ({ questId, narrative, outro })),
     };
     // A promise chain, not `try ... finally`: the React Compiler cannot lower one.
@@ -381,10 +388,17 @@ export default function AdventureEditor() {
 
   const weeks = adventureWeeksLabel(steps.length, pace, t);
   const focus = focusLabel(trainingFocus([...resolved], catalogue.exercisesById), language, t);
+  const sentences = balanceFacts(resolved, catalogue.exercisesById).map((fact) =>
+    balanceSentence(fact, language, t),
+  );
   const summary = [
     t("adventures.steps", { count: steps.length }),
     weeks,
-    monster ? t("adventures.editor_summary_boss", { name: monsterName(monster, language) }) : null,
+    monster
+      ? t("adventures.editor_summary_boss", {
+          name: voice.name.trim() || monsterName(monster, language),
+        })
+      : null,
     focus || null,
   ].filter(Boolean);
 
@@ -551,10 +565,22 @@ export default function AdventureEditor() {
             frozen={frozen}
             onChange={(next) => patch({ end: next })}
           />
+          {bossEnd ? (
+            <EditorBossVoice
+              voice={voice}
+              placeholder={monster ? monsterName(monster, language) : ""}
+              onChange={(next) => patch({ voice: next })}
+            />
+          ) : null}
 
           <Text testID="editor-summary" fontSize={13} color="$textSecondary">
             {summary.join(" · ")}
           </Text>
+          {sentences.map((sentence) => (
+            <Text key={sentence} testID="editor-balance" fontSize={13} color="$textSecondary">
+              {sentence}
+            </Text>
+          ))}
 
           {adventureId != null && !frozen ? (
             <Text

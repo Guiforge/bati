@@ -98,7 +98,7 @@ export function AdventureImport({
           <Text color="$textSecondary" fontSize={14}>
             {preview.monster
               ? t("adventures.editor_summary_boss", {
-                  name: monsterName(preview.monster, language),
+                  name: bossLabel(adventure.end, monsterName(preview.monster, language)),
                 })
               : t("adventures.editor_end_route")}
           </Text>
@@ -191,6 +191,11 @@ function StepRow({ index, step }: { index: number; step: AdventurePreview["steps
       </YStack>
     </XStack>
   );
+}
+
+/** The name the file's sender gave their boss, else the painted one's. */
+function bossLabel(end: AdventureFile["adventure"]["end"], painted: string): string {
+  return (end.kind === "boss" && end.name) || painted;
 }
 
 /** The file's cover when this version has that art, else the default cover. */

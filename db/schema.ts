@@ -339,6 +339,11 @@ export const adventures = sqliteTable(
     // The adventure's name off this database (0075), as `quests.uuid` is the quest's. A uuid v7
     // (db/uuid.ts) set by db/heroAdventures.ts and nothing else. Null on every seeded row.
     uuid: text(),
+    // The hero's words for their boss (0076), NULL on seeded rows and on a route: a name shown instead
+    // of the painted one, and lines added to its pool. Written by db/heroAdventures.ts through
+    // db/bossVoice.ts, read by db/bossFights.ts. The monster itself is still `bossImagePath`.
+    bossName: text(),
+    bossLinesJson: text(),
   },
   (table) => ({
     activeSortIdx: index("adventures_active_sort_idx").on(table.isActive, table.sortOrder),

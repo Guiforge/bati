@@ -106,6 +106,42 @@ describe("db/bossFights", () => {
     expect(await b.getBossFightByAdventure(BOSS_WITH_HP)).toMatchObject({ id: first?.id });
   });
 
+  test("the three builders carry the adventure's name and lines, and an edit is seen on the next read", async () => {
+    noCrits();
+    const b = boss();
+    const lines = '{"idle":["Again."],"crit":[],"enrage":["Enough."]}';
+    t.sqlite
+      .prepare("UPDATE adventures SET bossName = 'Nightcoil', bossLinesJson = ? WHERE id = ?")
+      .run(lines, BOSS_WITH_HP);
+    const expected = {
+      bossName: "Nightcoil",
+      bossLines: { idle: ["Again."], crit: [], enrage: ["Enough."] },
+    };
+
+    // New fight.
+    expect(await b.getOrCreateBossFight(BOSS_WITH_HP, "medium")).toMatchObject(expected);
+    // Existing fight.
+    expect(await b.getOrCreateBossFight(BOSS_WITH_HP, "medium")).toMatchObject(expected);
+    // Read without creating.
+    expect(await b.getBossFightByAdventure(BOSS_WITH_HP)).toMatchObject(expected);
+
+    // The words are the adventure's, not the fight row's: an edit applies on the next session.
+    t.sqlite
+      .prepare("UPDATE adventures SET bossName = 'Nightcoil II', bossLinesJson = NULL WHERE id = ?")
+      .run(BOSS_WITH_HP);
+    expect(await b.getOrCreateBossFight(BOSS_WITH_HP, "medium")).toMatchObject({
+      bossName: "Nightcoil II",
+      bossLines: { idle: [], crit: [], enrage: [] },
+    });
+  });
+
+  test("a game boss has no name of its own and no lines", async () => {
+    noCrits();
+    const fight = await boss().getOrCreateBossFight(BOSS_DERIVED_HP, "medium");
+    expect(fight?.bossName).toBeNull();
+    expect(fight?.bossLines).toEqual({ idle: [], crit: [], enrage: [] });
+  });
+
   test("a fight in progress is re-read at its current HP, not its total", async () => {
     noCrits();
     const b = boss();

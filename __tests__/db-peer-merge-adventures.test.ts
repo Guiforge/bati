@@ -56,14 +56,17 @@ function heroAdventure(
     kind?: "route" | "boss";
     active?: number;
     narrative?: string;
+    bossName?: string;
+    bossLinesJson?: string;
   },
 ) {
   const id = Number(
     sqlite
       .prepare(
         `INSERT INTO adventures (questId, enTitle, frTitle, deTitle, esTitle, author, sortOrder, kind, isActive,
-           imagePath, bossImagePath, bossWeaknessMuscle, bossResistanceMuscle, createdAt, updatedAt, uuid)
-         VALUES (?, ?, ?, ?, ?, 'hero', 1000, ?, ?, 'the_golem', ?, ?, ?, ?, ?, ?)`,
+           imagePath, bossImagePath, bossWeaknessMuscle, bossResistanceMuscle, createdAt, updatedAt, uuid,
+           bossName, bossLinesJson)
+         VALUES (?, ?, ?, ?, ?, 'hero', 1000, ?, ?, 'the_golem', ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(
         o.steps[0],
@@ -79,6 +82,8 @@ function heroAdventure(
         o.at,
         o.at,
         o.uuid,
+        o.bossName ?? null,
+        o.bossLinesJson ?? null,
       ).lastInsertRowid,
   );
   setSteps(sqlite, id, o.steps, o.narrative ?? "");
@@ -440,18 +445,119 @@ test("h: a new hero adventure is one change and moves only the content segment o
   expect(here[1]).toBe(`${newest}:${rows.length}`);
 });
 
-test("i: a peer on the previous build is compared without error and never merged", async () => {
+test("i: a peer on 0075 is compared without error, never merged, and its content segment is the one it had", async () => {
   const [q1, q2] = adminQuests();
   if (!q1 || !q2) throw new Error("seed quests expected");
   heroAdventure(t.sqlite, { uuid: U_X, title: "Tale", at: 200, steps: [q1, q2] });
+  const plain = await peer("plain.db");
   const file = await peer("old.db", (sqlite) => {
-    sqlite.exec(`DROP INDEX adventures_uuid_unique; DROP INDEX adventures_admin_title_unique;
-      ALTER TABLE adventures DROP COLUMN uuid;
+    sqlite.exec(`ALTER TABLE adventures DROP COLUMN bossLinesJson; ALTER TABLE adventures DROP COLUMN bossName;
       DELETE FROM __drizzle_migrations WHERE created_at = (SELECT max(created_at) FROM __drizzle_migrations);`);
+  });
+
+  const cmp = await backup().compareWithPeer(file);
+  expect(cmp).toBeDefined();
+  expect(await merge().mergePeer(file)).toEqual({ merged: false });
+  // The migration moves no row and no updatedAt, so the content segment is the same.
+  const plainCmp = await backup().compareWithPeer(plain);
+  expect(cmp.fingerprint.split("|")[1]).toBe(plainCmp.fingerprint.split("|")[1]);
+});
+
+test("i2: a peer before 0075 is compared without error and never merged", async () => {
+  const [q1, q2] = adminQuests();
+  if (!q1 || !q2) throw new Error("seed quests expected");
+  heroAdventure(t.sqlite, { uuid: U_X, title: "Tale", at: 200, steps: [q1, q2] });
+  const file = await peer("older.db", (sqlite) => {
+    sqlite.exec(`DROP INDEX adventures_uuid_unique; DROP INDEX adventures_admin_title_unique;
+      ALTER TABLE adventures DROP COLUMN bossLinesJson; ALTER TABLE adventures DROP COLUMN bossName;
+      ALTER TABLE adventures DROP COLUMN uuid;
+      DELETE FROM __drizzle_migrations WHERE created_at IN (SELECT created_at FROM __drizzle_migrations ORDER BY created_at DESC LIMIT 2);`);
   });
 
   await expect(backup().compareWithPeer(file)).resolves.toBeDefined();
   expect(await merge().mergePeer(file)).toEqual({ merged: false });
+});
+
+test("k: the boss's name and lines travel with the adventure, and a same-second edit converges", async () => {
+  const [q1, q2] = adminQuests();
+  if (!q1 || !q2) throw new Error("seed quests expected");
+  heroAdventure(t.sqlite, { uuid: U_X, title: "Tale", at: 100, steps: [q1, q2], kind: "boss" });
+  const voiceOf = () =>
+    t.sqlite.prepare("SELECT bossName, bossLinesJson FROM adventures WHERE uuid = ?").get(U_X) as {
+      bossName: string | null;
+      bossLinesJson: string | null;
+    };
+  const edit = (name: string, lines: string, at: number) => (sqlite: Database.Database) => {
+    sqlite
+      .prepare(
+        "UPDATE adventures SET bossName = ?, bossLinesJson = ?, updatedAt = ? WHERE uuid = ?",
+      )
+      .run(name, lines, at, U_X);
+  };
+
+  const newer = await peer(
+    "newer.db",
+    edit("Nightcoil the Hungry", '{"idle":["Again."],"crit":[],"enrage":[]}', 200),
+  );
+  await merge().mergePeer(newer);
+  expect(voiceOf()).toEqual({
+    bossName: "Nightcoil the Hungry",
+    bossLinesJson: '{"idle":["Again."],"crit":[],"enrage":[]}',
+  });
+  await converged(newer);
+
+  // Same second, the larger text wins on both sides.
+  const larger = await peer(
+    "larger.db",
+    edit("Nightcoil the Hungry", '{"idle":["Zzz."],"crit":[],"enrage":[]}', 200),
+  );
+  await merge().mergePeer(larger);
+  expect(voiceOf().bossLinesJson).toBe('{"idle":["Zzz."],"crit":[],"enrage":[]}');
+  await converged(larger);
+
+  const smaller = await peer(
+    "smaller.db",
+    edit("Nightcoil the Hungry", '{"idle":["Aaa."],"crit":[],"enrage":[]}', 200),
+  );
+  await merge().mergePeer(smaller);
+  expect(voiceOf().bossLinesJson).toBe('{"idle":["Zzz."],"crit":[],"enrage":[]}');
+  await converged(smaller);
+});
+
+test("l: a voice written under a run here is an edit like any other", async () => {
+  const [q1, q2] = adminQuests();
+  if (!q1 || !q2) throw new Error("seed quests expected");
+  const id = heroAdventure(t.sqlite, {
+    uuid: U_X,
+    title: "Tale",
+    at: 100,
+    steps: [q1, q2],
+    kind: "boss",
+    bossName: "Old name",
+  });
+  runOf(t.sqlite, id);
+  const runSteps = () =>
+    t.sqlite
+      .prepare("SELECT stepIndex, questId, status FROM adventure_run_steps ORDER BY id")
+      .all();
+  const before = runSteps();
+  const file = await peer("tablet.db", (sqlite) => {
+    sqlite
+      .prepare("UPDATE adventures SET bossName = 'New name', updatedAt = 300 WHERE uuid = ?")
+      .run(U_X);
+  });
+
+  await merge().mergePeer(file);
+
+  expect(
+    (
+      t.sqlite.prepare("SELECT bossName FROM adventures WHERE uuid = ?").get(U_X) as {
+        bossName: string;
+      }
+    ).bossName,
+  ).toBe("New name");
+  expect(runSteps()).toEqual(before);
+  await converged(file);
 });
 
 test("j: an adventure received from the other device is never locked on a free account", async () => {

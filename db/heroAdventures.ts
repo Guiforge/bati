@@ -6,6 +6,13 @@ import {
   getBossKey,
 } from "@/constants/assetMap";
 import { invalidateAdventures } from "./adventures";
+import {
+  bossLinesJson,
+  clip,
+  type HeroBossVoice,
+  MAX_BOSS_NAME,
+  parseBossLines,
+} from "./bossVoice";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { nextEditStamp } from "./completed";
 import { type QuestTemplate, USER_QUEST_AUTHOR } from "./quests";
@@ -33,6 +40,11 @@ export type HeroAdventureDraft = {
   description: string;
   imagePath: AdventureAssetKey;
   end: { kind: "route" } | { kind: "boss"; monster: BossAssetKey };
+  /**
+   * The hero's words for their boss. Top level and not inside `end`: it stays editable while `end`
+   * is frozen under a run, and a switch to "route" and back keeps what the hero typed. Ignored for a route.
+   */
+  voice: HeroBossVoice;
   steps: { questId: number; narrative: string; outro: string }[];
 };
 
@@ -105,7 +117,7 @@ export function worksSparedZone(quest: QuestTemplate, spared: ReadonlySet<number
   );
 }
 
-const clamp = (text: string, max: number) => text.trim().slice(0, max);
+const clamp = (text: string, max: number) => clip(text.trim(), max);
 
 type Clean = {
   title: string;
@@ -151,6 +163,18 @@ async function endColumns(end: HeroAdventureDraft["end"]) {
     bossWeaknessMuscle: monster.weakness,
     bossResistanceMuscle: monster.resistance,
   } as const;
+}
+
+/**
+ * Null for a route: a route has no boss to speak. An unnamed boss keeps the painted name (null).
+ * `kind` is the end that will be on the row after the write, never the draft's under a run.
+ */
+function voiceColumns(kind: string, voice: HeroBossVoice) {
+  if (kind !== "boss") return { bossName: null, bossLinesJson: null } as const;
+  return {
+    bossName: clamp(voice.name.replace(/\s+/g, " "), MAX_BOSS_NAME) || null,
+    bossLinesJson: bossLinesJson(voice.lines),
+  };
 }
 
 /** The hero's text sits in the four language columns, the same in each (ru reads en). */
@@ -208,13 +232,15 @@ export async function hasActiveRun(adventureId: number, exec: Exec = db): Promis
   return rows.length > 0;
 }
 
-async function assertHeroAdventure(id: number, exec: Exec = db): Promise<void> {
+/** Throws unless the row is the hero's; returns its stored end kind. */
+async function assertHeroAdventure(id: number, exec: Exec = db): Promise<string> {
   const [row] = await exec
-    .select({ author: adventures.author })
+    .select({ author: adventures.author, kind: adventures.kind })
     .from(adventures)
     .where(eq(adventures.id, id))
     .limit(1);
   if (row?.author !== USER_QUEST_AUTHOR) throw new Error("Not an adventure of the hero");
+  return row.kind;
 }
 
 /**
@@ -242,6 +268,7 @@ export async function createHeroAdventure(
       .values({
         ...titleColumns(c),
         ...end,
+        ...voiceColumns(draft.end.kind, draft.voice),
         author: USER_QUEST_AUTHOR,
         uuid: uuid ?? uuidv7(),
         questId: first.questId,
@@ -272,7 +299,8 @@ export async function createHeroAdventure(
  * helper with `createHeroAdventure`.
  *
  * With a run under way the steps and the end are frozen: the quests and the end of the draft are
- * ignored, and only the texts, the cover and the title change, the step texts by position.
+ * ignored, and only the texts, the cover, the title and the boss's voice change, the step texts by
+ * position; the voice is kept or cleared by the stored end, not the draft's.
  *
  * ponytail: a fight kept after a left partie keeps the pool of the old steps (PARK-1). Fix (c)
  * rescales it to the new pool keeping the fraction of HP already taken, if a hero reports it.
@@ -282,7 +310,7 @@ export async function updateHeroAdventure(
   draft: HeroAdventureDraft,
   exec?: Exec,
 ): Promise<void> {
-  await assertHeroAdventure(id, exec);
+  const storedKind = await assertHeroAdventure(id, exec);
   const c = clean(draft);
   const frozen = await hasActiveRun(id, exec);
   const end = frozen ? null : await endColumns(draft.end);
@@ -301,6 +329,8 @@ export async function updateHeroAdventure(
       .set({
         ...titleColumns(c),
         ...(end ? { ...end, questId: first.questId } : {}),
+        // Texts, so written under a run too; kept or cleared by the end that is really on the row.
+        ...voiceColumns(frozen ? storedKind : draft.end.kind, draft.voice),
         updatedAt: nextEditStamp(adventures.updatedAt),
       })
       .where(eq(adventures.id, id));
@@ -409,6 +439,7 @@ export async function loadHeroAdventureDraft(
     description: row.enDescription,
     imagePath: cover,
     end: monster ? { kind: "boss", monster } : { kind: "route" },
+    voice: { name: row.bossName ?? "", lines: parseBossLines(row.bossLinesJson) },
     steps: steps.map((s) => ({
       questId: s.questId,
       narrative: s.enNarrative,

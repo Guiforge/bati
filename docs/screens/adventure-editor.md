@@ -25,9 +25,20 @@ Write an adventure out of quests the hero already has or has written. One scroll
 - **The end**: a route, or a boss among the six painted ones, each with what it is weak to, what it
   resists, and about how many HP it has at the hero's level for these steps (the figure the fight will
   use). If every step is an outing, a line says outings do not hit the boss; saving stays possible.
+- **The boss's voice** (boss end only, outside the frozen part): its name (40), shown instead of the painted
+  one, and up to 3 lines (60 each, one per row) for three moments, when you hit it, on a critical hit and
+  cornered. They join the painted lines; they never replace them. A 4th line or a 61st character does not
+  appear. The name stays editable under a playthrough.
 - **Import an adventure** (new adventure only, above the form): opens the file picker, then the same
   preview screen a file tapped in a chat opens (`/quest-import`), which reads the kind from the file.
-- **Summary**: steps, weeks, the boss, what it trains.
+- **Summary**: steps, weeks, the boss (the hero's name for it once there is one), what it trains.
+- **Balance sentences**, under the summary, at most two, derived from the steps and never typed. A push
+  streak: 3 or more steps in a row that push (a push pattern slot) and do not pull. Else a pull deficit:
+  2 or more push slots and pull slots under `PULL_DEFICIT_RATIO` (the Coach's 0.5) of them; the 2 is this
+  screen's own. Then the muscles: none worked (absent), else those under `WEAK_SHARE_OF_IDEAL` (0.5) of the
+  ideal share. No muscle sentence when no slot works any muscle (all outings). A movement with no
+  pattern neither pushes nor pulls, but its muscles count. A step whose quest is gone is skipped, so the
+  steps on either side of it can join into a streak.
 - **Save** creates or updates, then opens the adventure's page. Missing name or fewer than two steps
   are said on the field.
 - **Retire this adventure** (edit mode, no run under way), after a confirmation.

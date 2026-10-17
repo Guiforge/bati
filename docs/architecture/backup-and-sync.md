@@ -332,6 +332,17 @@ tombstone.
   exists) and never merged (`mergePeer` refuses on the newest migration); the previous build reads this
   build's file as unreadable. Nothing is lost on either side.
 
+### The boss's voice (0076)
+
+Two nullable columns on `adventures`, `bossName` and `bossLinesJson`, merged with the row by the existing
+code (`authoredColumns` reads every column of the build) and part of `canonical` through `sharedColumns`;
+`bossLinesJson` has a fixed key order, so equal lines are equal text on both devices. The migration moves
+no row and no `updatedAt`, so the content segment of the fingerprint is unchanged and no answer is asked
+again; the build bump (77 migrations) re-uploads and re-judges every peer once. A peer on 0075 is compared
+and never merged; a 0075 build reads this build's file as unreadable. The newest row wins whole (R20), so a
+later title edit on another device replaces a voice written earlier elsewhere, as it would an earlier
+title: existing doctrine, not a regression.
+
 ### Adventure files
 
 Sharing an adventure as a `.bati-adventure.json` changes nothing here. An import is an ordinary write of
@@ -339,8 +350,8 @@ the hero's rows (`exercises`, `quests`, `adventures`, `adventure_steps`), all me
 uuid, so nothing in the fingerprint or in `mergePeer` was touched. The same file imported on two devices
 is the same adventure, the same quests and the same movements on both, and they converge by `updatedAt`
 (a same-second tie goes to the canonical form); a copy, or an import over a run under way, is a second
-adventure with a fresh uuid on both. There is no migration, so `newestMigration` is the same as on the
-previous build, no device re-uploads and no peer is re-judged. A build without the feature reads the file
+adventure with a fresh uuid on both. The file is version 2 only when it carries a boss's voice and version 1 otherwise, so a build before 0076
+reads every file without one and refuses a voiced file as newer. A build without the feature reads the file
 as "no Bati quest". One limit: "never rewritten" holds on the importing device. A quest the hero edited on
 device A that device B has not received yet is created new on B at `now`, newer than the edit, so the next
 merge can hand A the friend's version (`ponytail:` in `importAdventure`).

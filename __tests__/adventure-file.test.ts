@@ -236,6 +236,7 @@ function draftOf(
     description: "A tale",
     imagePath: "the_golem" as const,
     end: { kind: "route" as const },
+    voice: { name: "", lines: { idle: [], crit: [], enrage: [] } },
     steps: questIds.map((questId, i) => ({ questId, narrative: `before ${i}`, outro: "" })),
     ...over,
   };
@@ -305,7 +306,7 @@ describe("reading an adventure file", () => {
       (v: Record<string, unknown>) => ({ ...v, kind: "bati-quest" }),
       "not_an_adventure",
     ],
-    ["version 2", (v: Record<string, unknown>) => ({ ...v, version: 2 }), "newer"],
+    ["version 3", (v: Record<string, unknown>) => ({ ...v, version: 3 }), "newer"],
     ["version 0", (v: Record<string, unknown>) => ({ ...v, version: 0 }), "not_an_adventure"],
     ["version 1.5", (v: Record<string, unknown>) => ({ ...v, version: 1.5 }), "not_an_adventure"],
     [
@@ -1055,5 +1056,143 @@ describe("copy", () => {
       }
       expect(typeof get(json, "common.file_received")).toBe("string");
     }
+  });
+});
+
+// ---------------------------------------------------------------------------------------------
+// The boss's voice (version 2)
+// ---------------------------------------------------------------------------------------------
+
+describe("the boss's voice in the file", () => {
+  const readSteps = () => {
+    const [a, b] = seedQuests();
+    assert(a && b);
+    return [{ official: a.enTitle }, { official: b.enTitle }];
+  };
+  const bossEnd = async (extra: Record<string, unknown> = {}) => {
+    const monster = (await load().hero.listMonsters())[0];
+    assert(monster);
+    return { kind: "boss", monster: monster.key, ...extra };
+  };
+  const parse = (end: unknown, version = 2) =>
+    load().adv.parseAdventureData({
+      ...adventureLiteral(nextUuid(), readSteps(), {}, end),
+      version,
+    });
+  const refusal = (end: unknown) => {
+    try {
+      parse(end);
+    } catch (error) {
+      assert(error instanceof load().adv.AdventureFileError);
+      return error.reason;
+    }
+    return null;
+  };
+  const columns = (id: number) =>
+    t.sqlite
+      .prepare("SELECT kind, bossName, bossLinesJson FROM adventures WHERE id = ?")
+      .get(id) as {
+      kind: string;
+      bossName: string | null;
+      bossLinesJson: string | null;
+    };
+
+  test("each version reads back as the version it was", () => {
+    expect(parse({ kind: "route" }, 1).version).toBe(1);
+    expect(parse({ kind: "route" }, 2).version).toBe(2);
+  });
+
+  test("a voiced boss is written as version 2 and round trips; no voice stays version 1", async () => {
+    const [a, b] = seedQuests();
+    assert(a && b);
+    const { hero, adv } = load();
+    const monster = (await hero.listMonsters())[0];
+    assert(monster);
+    const draft = draftOf([a.id, b.id], { end: { kind: "boss", monster: monster.key } });
+    const voiced = await hero.createHeroAdventure({
+      ...draft,
+      voice: { name: "Nightcoil", lines: { idle: ["Again."], crit: [], enrage: ["Enough."] } },
+    });
+    const out = await adv.adventureToFile(voiced);
+    assert(out);
+    expect(out.file.version).toBe(2);
+    expect(out.file.adventure.end).toEqual({
+      kind: "boss",
+      monster: monster.key,
+      name: "Nightcoil",
+      lines: { idle: ["Again."], crit: [], enrage: ["Enough."] },
+    });
+    expect(parseJson(out.json)).toEqual(out.file);
+
+    // Lines alone are a voice too.
+    const quiet = await hero.createHeroAdventure({
+      ...draft,
+      voice: { name: "", lines: { idle: [], crit: ["Hah."], enrage: [] } },
+    });
+    expect((await adv.adventureToFile(quiet))?.file.version).toBe(2);
+
+    const plain = await hero.createHeroAdventure(draft);
+    const plainOut = await adv.adventureToFile(plain);
+    expect(plainOut?.file.version).toBe(1);
+    expect(plainOut?.file.adventure.end).toEqual({ kind: "boss", monster: monster.key });
+
+    const route = await hero.createHeroAdventure(draftOf([a.id, b.id]));
+    expect((await adv.adventureToFile(route))?.file.version).toBe(1);
+  });
+
+  test("a version 1 file with a boss still imports, with an empty voice", async () => {
+    const file = parse(await bossEnd(), 1);
+    const { id } = await load().adv.importAdventure(file, { asCopy: false });
+    expect(columns(id)).toEqual({ kind: "boss", bossName: null, bossLinesJson: null });
+  });
+
+  test("the name and the lines are cleaned and bounded", async () => {
+    expect(refusal(await bossEnd({ name: "x".repeat(161) }))).toBe("not_an_adventure");
+    expect(refusal(await bossEnd({ lines: "Again." }))).toBe("not_an_adventure");
+    expect(refusal(await bossEnd({ lines: { idle: "Again." } }))).toBe("not_an_adventure");
+
+    const end = (await bossEnd({
+      name: "Nightcoil",
+      lines: {
+        idle: ["a", "  ", "", "b", "c", "d", "e", "f", "g", "h", "i", "j"],
+        crit: ["x".repeat(70)],
+        enrage: [`${"y".repeat(59)}🔥🔥`],
+        resist: ["a later Bati's moment"],
+      },
+    })) as Record<string, unknown>;
+    const read = parse(end).adventure.end;
+    assert(read.kind === "boss");
+    // Cut to three before any element is read, so the blanks count against the three.
+    expect(read.lines?.idle).toEqual(["a"]);
+    expect(read.lines?.crit).toEqual(["x".repeat(60)]);
+    expect(read.lines?.enrage).toEqual(["y".repeat(59)]);
+    expect(Object.keys(read.lines ?? {})).toEqual(["idle", "crit", "enrage"]);
+  });
+
+  test("an unknown monster with a voice arrives as a route and writes nothing of it", async () => {
+    const file = parse({
+      kind: "boss",
+      monster: "the_future_beast",
+      name: "Nightcoil",
+      lines: { idle: ["Again."] },
+    });
+    const { id } = await load().adv.importAdventure(file, { asCopy: false });
+    expect(columns(id)).toEqual({ kind: "route", bossName: null, bossLinesJson: null });
+  });
+
+  test("a re-import updating in place replaces the voice", async () => {
+    const uuid = nextUuid();
+    const make = async (extra: Record<string, unknown>) =>
+      load().adv.parseAdventureData({
+        ...adventureLiteral(uuid, readSteps(), {}, await bossEnd(extra)),
+        version: 2,
+      });
+    const first = await load().adv.importAdventure(await make({ name: "One" }), { asCopy: false });
+    expect(columns(first.id).bossName).toBe("One");
+    const second = await load().adv.importAdventure(await make({ name: "Two" }), {
+      asCopy: false,
+    });
+    expect(second).toEqual({ id: first.id, updated: true });
+    expect(columns(first.id).bossName).toBe("Two");
   });
 });

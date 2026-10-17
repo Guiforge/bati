@@ -149,4 +149,33 @@ describe("BossTauntOverlay", () => {
     });
     expect(queryByText(GOLEM.idle.en[0])).toBeNull();
   });
+
+  it("adds the hero's lines to the pool for a hit, and never for a resisted one", async () => {
+    // The last line of the pool is the hero's.
+    jest.spyOn(Math, "random").mockReturnValue(0.999);
+    const { getByText, queryByText } = await renderOverlay();
+    const mine = { idle: ["Again."], crit: [], enrage: [] };
+
+    await act(() => {
+      useSessionStore.setState({
+        bossFight: { ...makeBossFight(100), bossLines: mine },
+        lastDamageResult: makeHit(),
+      });
+    });
+    expect(getByText("Again.")).toBeTruthy();
+
+    await act(() => {
+      useSessionStore.setState({ lastDamageResult: makeHit({ resistancePenalty: true }) });
+    });
+    expect(queryByText("Again.")).toBeNull();
+    expect(getByText(GOLEM.resist.en[GOLEM.resist.en.length - 1] ?? "")).toBeTruthy();
+  });
+
+  it("still talks for a fight saved before the hero could write lines", async () => {
+    const { getByText } = await renderOverlay();
+    await act(() => {
+      useSessionStore.setState({ lastDamageResult: makeHit() });
+    });
+    expect(getByText(GOLEM.idle.en[0])).toBeTruthy();
+  });
 });

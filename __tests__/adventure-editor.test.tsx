@@ -196,6 +196,7 @@ describe("a new adventure", () => {
         description: "",
         imagePath: expect.any(String),
         end: { kind: "boss", monster: "iron_golem" },
+        voice: { name: "", lines: { idle: [], crit: [], enrage: [] } },
         steps: [
           { questId: 1, narrative: "Cold.", outro: "" },
           { questId: 101, narrative: "", outro: "" },
@@ -251,6 +252,7 @@ describe("an adventure being edited", () => {
     description: "Once",
     imagePath: "the_golem",
     end: { kind: "route" },
+    voice: { name: "", lines: { idle: [], crit: [], enrage: [] } },
     steps: [
       { questId: 1, narrative: "a", outro: "back" },
       { questId: 2, narrative: "b", outro: "" },
@@ -331,5 +333,95 @@ describe("an adventure being edited", () => {
 
     await waitFor(() => expect(hero().retireHeroAdventure).toHaveBeenCalledWith(9));
     expect(mockReplace).toHaveBeenCalledWith("/adventures");
+  });
+});
+
+describe("the boss's voice", () => {
+  const bossDraft = (frozen: boolean) => ({
+    title: "Tale",
+    description: "",
+    imagePath: "the_golem",
+    end: { kind: "boss", monster: "iron_golem" },
+    voice: { name: "Nightcoil", lines: { idle: ["Again."], crit: [], enrage: [] } },
+    steps: [
+      { questId: 1, narrative: "", outro: "" },
+      { questId: 2, narrative: "", outro: "" },
+    ],
+    frozen,
+  });
+
+  test("the block shows for a boss only, and keeps what was typed through a switch to route", async () => {
+    const editor = await mount();
+    expect(editor.queryByTestId("editor-boss-name")).toBeNull();
+    await fireEvent.press(editor.getByTestId("editor-end-boss"));
+    await fireEvent.changeText(editor.getByTestId("editor-boss-name"), "Nightcoil");
+    await fireEvent.press(editor.getByTestId("editor-end-route"));
+    expect(editor.queryByTestId("editor-boss-name")).toBeNull();
+    await fireEvent.press(editor.getByTestId("editor-end-boss"));
+    expect(editor.getByDisplayValue("Nightcoil")).toBeTruthy();
+  });
+
+  test("a fourth line and a 61st character do not appear; save hands the writer the voice", async () => {
+    const editor = await mount();
+    await fireEvent.changeText(editor.getByTestId("adventure-name"), "Tale");
+    await pick(editor, 1, 2);
+    await fireEvent.press(editor.getByTestId("editor-end-boss"));
+    await fireEvent.changeText(editor.getByTestId("editor-boss-name"), "Nightcoil");
+    await fireEvent.changeText(editor.getByTestId("editor-boss-lines-idle"), "a\nb\nc\nd");
+    await fireEvent.changeText(editor.getByTestId("editor-boss-lines-crit"), "x".repeat(70));
+    expect(editor.getByTestId("editor-boss-lines-idle").props.value).toBe("a\nb\nc");
+    await fireEvent.press(editor.getByTestId("adventure-save"));
+    await waitFor(() =>
+      expect(hero().createHeroAdventure).toHaveBeenCalledWith(
+        expect.objectContaining({
+          voice: {
+            name: "Nightcoil",
+            lines: { idle: ["a", "b", "c"], crit: ["x".repeat(60)], enrage: [] },
+          },
+        }),
+      ),
+    );
+  });
+
+  test("under a playthrough the end is frozen and the name still edits and saves", async () => {
+    mockParams.id = "9";
+    hero().loadHeroAdventureDraft?.mockResolvedValue(bossDraft(true));
+    const editor = await mount();
+    expect(await editor.findByTestId("editor-frozen")).toBeTruthy();
+    await fireEvent.changeText(await editor.findByTestId("editor-boss-name"), "Nightcoil II");
+    await fireEvent.press(editor.getByTestId("adventure-save"));
+    await waitFor(() =>
+      expect(hero().updateHeroAdventure).toHaveBeenCalledWith(
+        9,
+        expect.objectContaining({
+          end: { kind: "boss", monster: "iron_golem" },
+          voice: expect.objectContaining({ name: "Nightcoil II" }),
+        }),
+      ),
+    );
+  });
+
+  test("the summary says the hero's name for the boss once there is one", async () => {
+    mockParams.id = "9";
+    hero().loadHeroAdventureDraft?.mockResolvedValue(bossDraft(false));
+    const editor = await mount();
+    await editor.findByDisplayValue("Tale");
+    expect(editor.getByTestId("editor-summary")).toHaveTextContent(/Nightcoil/);
+    await fireEvent.changeText(editor.getByTestId("editor-boss-name"), "");
+    expect(editor.getByTestId("editor-summary")).not.toHaveTextContent(/Nightcoil/);
+  });
+});
+
+describe("the balance sentences", () => {
+  test("three steps that only push say so under the summary", async () => {
+    const pushing = (id: number) => ({ ...quest(id, `Q${id}`), exercises: [{ exerciseId: 1 }] });
+    const db = require("@/db") as { listQuestTemplates: jest.Mock; listExercises: jest.Mock };
+    db.listQuestTemplates.mockResolvedValue([pushing(1), pushing(2)]);
+    db.listExercises.mockResolvedValue([{ id: 1, muscles: ["chest"], pattern: "push_horizontal" }]);
+    const editor = await mount();
+    await pick(editor, 1, 2, 1);
+    const [first] = await editor.findAllByTestId("editor-balance");
+    expect(first).toHaveTextContent(/^3 steps in a row push without pulling/);
+    db.listExercises.mockResolvedValue([]);
   });
 });

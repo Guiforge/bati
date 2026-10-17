@@ -497,7 +497,7 @@ everything; the old file is orphaned. `db/client.ts:16-19`, `db/schemaVersion.ts
 
 **R63. The runner skips by timestamp:** an entry runs iff `lastAppliedAt < entry.when`; so journal
 `when` must be strictly increasing and a lower `when` added later never runs. Today the journal has
-68 entries, idx 0..67 contiguous, `when` strictly increasing (checked 2026-10-05; 76 entries after 0075).
+68 entries, idx 0..67 contiguous, `when` strictly increasing (checked 2026-10-05; 77 entries after 0076).
 `db/migrate.ts:50-52`, `drizzle/meta/_journal.json`.
 Invariant: for all i, `when[i] > when[i-1]` and `idx[i] = i`.
 
@@ -557,17 +557,19 @@ the quest count unchanged; a failing import leaves counts unchanged.
 **R70b. A borrowed uuid overwrites the receiver's quest** (documented and previewed); an Admin
 quest is never overwritten (only `isUserQuest` rows match). `src/questFile.ts:525-527, 545`.
 
-**R122. Adventure file** = `{kind:'bati-adventure', version:1, adventure{uuid, title, description,
-cover, end}, steps[]}`. Each step is `{quest, narrative, outro}`, the quest a seed one by `enTitle`
+**R122. Adventure file** = `{kind:'bati-adventure', version:1 | 2, adventure{uuid, title, description,
+cover, end}, steps[]}`; the `end` of a boss may carry `name` and `lines` (R126), and only a file that does is
+version 2, so a build before 0076 still opens every other file. Each step is `{quest, narrative, outro}`, the quest a seed one by `enTitle`
 (`{official}`) or a hero one as a quest body (`{own: {quest, slots}}`, R66). The adventure's texts are
 single strings (the row repeats them in four columns). No run, victory, boss HP, weakness, resistance,
 sort order, sender or date. `src/adventureFile.ts`.
-Invariant: `parse(write(a))` equals `write(a)`.
+Invariant: `parse(write(a))` equals `write(a)`, for both versions: the reader returns the version it read.
 
 **R123. Limits on read:** the file limits of R67; 2 to 8 steps (fewer is `not_an_adventure`, more is
 `newer`, and the length is read before any element); title 1 to 60, description 280, narrative and outro
-160, cut in UTF-16 units without leaving half a surrogate pair, past 4x refused; `version` > 1 and an
-`end.kind` this build lacks give `newer`; `cover` and `end.monster` must be a bare key
+160, cut in UTF-16 units without leaving half a surrogate pair, past 4x refused; `version` > 2 and an
+`end.kind` this build lacks give `newer`; the boss's name 40 and a line 60 (name past 4x refused), 3 lines per
+moment cut before any element is read, empties dropped, a moment this build lacks ignored; `cover` and `end.monster` must be a bare key
 (`[a-z0-9_]{1,64}`), so a URL, a picture or a path is `not_an_adventure`, and a well-formed key this build
 lacks is the default cover or a route; a step has exactly one of `official` and `own`; fields are read
 one by one into a fresh object, so `__proto__` and extra keys change nothing; an embedded quest is held
@@ -960,6 +962,17 @@ early. Invariant: a run finishes only after its last step. `__tests__/db-hero-ad
 constructors read them from `adventures`, so changing the monster between two playthroughs gives the
 next hit the new monster's. The `boss_fights` columns are written at creation and read by nothing.
 Invariant: the fight's stats equal its adventure's at the next hit. `__tests__/db-hero-adventures.test.ts`.
+
+**R126. The boss's voice.** Migration 0076 gives `adventures` two nullable text columns, `bossName` and
+`bossLinesJson` (`{"idle":[],"crit":[],"enrage":[]}`, keys in that order, written by `db/bossVoice.ts`
+only). NULL on seeded rows, on a route and on a boss left unnamed and silent. They are texts, so
+`updateHeroAdventure` writes them under a run too, and the stored end kind decides whether they are kept
+or cleared, never the draft's. The three `BossFight` builders read them from the adventure, like R121, so
+an edit applies on the next session. The hero's name replaces the painted one at every tier
+(`bossDisplayName`, `getKillReport`); the hero's lines join the painted pool for idle, crit and enrage,
+never resist. Merge needs no code: both columns travel with the row. Invariant: an Admin fight's name and
+pool are unchanged. `__tests__/db-hero-adventures.test.ts`, `__tests__/boss-voice.test.ts`,
+`__tests__/db-peer-merge-adventures.test.ts`.
 
 **R115. Home's disclosure is read from the journal; the offered step is local.** `disclosure()`
 is a pure function of the journal: two devices with the same sessions show the same Home, whatever

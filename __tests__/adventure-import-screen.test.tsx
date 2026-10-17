@@ -177,7 +177,7 @@ test("with a run under way the copy is forced: the line, no chips", async () => 
 test.each([
   [
     "a newer adventure",
-    { ...raw, version: 2 },
+    { ...raw, version: 3 },
     null,
     "This adventure comes from a newer Bati. Update the app to open it.",
   ],

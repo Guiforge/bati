@@ -1,5 +1,14 @@
 import { ADVENTURE_ASSETS, type AdventureAssetKey } from "@/constants/assetMap";
 import { invalidateAdventures } from "@/db/adventures";
+import {
+  BOSS_LINE_MOMENTS,
+  clip,
+  type HeroBossLines,
+  MAX_BOSS_LINE,
+  MAX_BOSS_LINES,
+  MAX_BOSS_NAME,
+  noBossLines,
+} from "@/db/bossVoice";
 import { type TransactionTx, transactionOrFallback } from "@/db/client";
 import { invalidateExercisesCache, listExercises, officialByName } from "@/db/exercises";
 import {
@@ -51,7 +60,8 @@ import type { AppLanguage } from "@/stores/settings";
  * arrival, so every field of it is read by name into a fresh object (`parseAdventureData`).
  */
 const KIND = "bati-adventure";
-const VERSION = 1;
+/** 2 only when the file carries a boss's voice; a file without one is written as 1, so an older build opens it. */
+const VERSION = 2;
 /** A bundled art key or a boss key: never a path, never a URL. */
 const KEY_RE = /^[a-z0-9_]{1,64}$/;
 /** What a photo the file does not carry reads as, in the receiver's quest. */
@@ -59,7 +69,7 @@ const PLACEHOLDER = "assets/placeholder.jpg";
 
 export type AdventureFile = {
   kind: typeof KIND;
-  version: typeof VERSION;
+  version: 1 | 2;
   adventure: {
     /** uuid v7, the row's `adventures.uuid`. */
     uuid: string;
@@ -68,7 +78,9 @@ export type AdventureFile = {
     description: string;
     /** An `ADVENTURE_ASSETS` key, never a picture. */
     cover: string | null;
-    end: { kind: "route" } | { kind: "boss"; monster: string };
+    end:
+      | { kind: "route" }
+      | { kind: "boss"; monster: string; name?: string; lines?: HeroBossLines };
   };
   steps: {
     quest: { official: string } | { own: QuestBody };
@@ -106,18 +118,6 @@ const FROM_QUEST_REASON: Record<QuestFileError["reason"], AdventureFileError["re
   unknown_movement: "not_an_adventure",
 };
 
-/**
- * Cut to `max` UTF-16 units, the unit the editors' `maxLength` and the writer's `clamp` count in,
- * without leaving half a surrogate pair at the end. `text()` cuts by code point, which for emoji
- * is up to twice as many units as the writer then keeps.
- */
-function clip(value: string, max: number): string {
-  if (value.length <= max) return value;
-  const last = value.charCodeAt(max - 1);
-  const cut = last >= 0xd800 && last <= 0xdbff ? max - 1 : max;
-  return value.slice(0, cut).trim();
-}
-
 function key(value: unknown): string {
   if (typeof value !== "string" || !KEY_RE.test(value))
     throw new AdventureFileError("not_an_adventure");
@@ -143,7 +143,31 @@ function end(value: unknown): AdventureFile["adventure"]["end"] {
   // A kind this version lacks is a newer Bati's.
   if (value.kind !== "boss") throw new AdventureFileError("newer");
   // A well-formed key this version lacks is kept and handled at preview: it arrives as a route.
-  return { kind: "boss", monster: key(value.monster) };
+  const boss: Extract<AdventureFile["adventure"]["end"], { kind: "boss" }> = {
+    kind: "boss",
+    monster: key(value.monster),
+  };
+  // Set only when present, so `parse(write(a))` still equals `write(a)` for a file without a voice.
+  if (value.name !== undefined) boss.name = clip(text(value.name, MAX_BOSS_NAME), MAX_BOSS_NAME);
+  if (value.lines !== undefined) boss.lines = lines(value.lines);
+  return boss;
+}
+
+function lines(value: unknown): HeroBossLines {
+  if (!isRecord(value)) throw new AdventureFileError("not_an_adventure");
+  const out = noBossLines();
+  // Unknown moments (a later `resist`) are ignored.
+  for (const m of BOSS_LINE_MOMENTS) {
+    const list = value[m];
+    if (list === undefined) continue;
+    if (!Array.isArray(list)) throw new AdventureFileError("not_an_adventure");
+    // Cut before reading any element: a long array costs nothing, and a later Bati may allow more.
+    out[m] = list
+      .slice(0, MAX_BOSS_LINES)
+      .map((item) => clip(text(item, MAX_BOSS_LINE), MAX_BOSS_LINE))
+      .filter(Boolean);
+  }
+  return out;
 }
 
 function read(data: unknown): AdventureFile {
@@ -163,7 +187,7 @@ function read(data: unknown): AdventureFile {
   const a = data.adventure;
   return {
     kind: KIND,
-    version: VERSION,
+    version: data.version as 1 | 2,
     adventure: {
       uuid: uuid(a.uuid),
       title: clip(name(a.title, MAX_TITLE), MAX_TITLE),
@@ -209,6 +233,18 @@ const utf8Length = (s: string) => new TextEncoder().encode(s).length;
 
 type Picture = { stored: string; cover: boolean; refs: { image: string | null }[] };
 
+/** The end as the file carries it: version 2 only with a voice, so a file without one opens on an older build. */
+function fileEnd({ end, voice }: HeroAdventureDraft): Pick<AdventureFile, "version"> & {
+  end: AdventureFile["adventure"]["end"];
+} {
+  const voiced =
+    end.kind === "boss" &&
+    (voice.name !== "" || BOSS_LINE_MOMENTS.some((m) => voice.lines[m].length > 0));
+  return voiced
+    ? { version: 2, end: { ...end, name: voice.name, lines: voice.lines } }
+    : { version: 1, end };
+}
+
 /**
  * The hero's adventure as the file another phone reads, or null when fewer than two steps can
  * travel. Bati never writes a file its own reader would refuse (R125): each hero quest goes
@@ -250,15 +286,16 @@ export async function adventureToFile(id: number): Promise<AdventureToFile | nul
   }
   if (steps.length < MIN_STEPS) return null;
 
+  const { end, version } = fileEnd(draft);
   const file: AdventureFile = {
     kind: KIND,
-    version: VERSION,
+    version,
     adventure: {
       uuid: draft.uuid,
       title: draft.title,
       description: draft.description,
       cover: draft.imagePath,
-      end: draft.end,
+      end,
     },
     steps,
   };
@@ -491,6 +528,10 @@ export async function importAdventure(
       description: a.description,
       imagePath: cover,
       end: monster ? { kind: "boss", monster: monster.key } : { kind: "route" },
+      voice:
+        monster && e.kind === "boss"
+          ? { name: e.name ?? "", lines: e.lines ?? noBossLines() }
+          : { name: "", lines: noBossLines() },
       steps,
     };
     return fileHeroAdventure(draft, asCopy ? uuidv7() : a.uuid, tx);

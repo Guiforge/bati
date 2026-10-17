@@ -1,4 +1,5 @@
 import { and, count, eq, inArray } from "drizzle-orm";
+import { type HeroBossLines, parseBossLines } from "./bossVoice";
 import { db, schema, transactionOrFallback } from "./client";
 import type { DifficultyCode, ExerciseStyle, MuscleCode, QuestTargetType } from "./schema";
 import { USER_LEVEL_MULTIPLIER } from "./targets";
@@ -48,6 +49,10 @@ export type BossFight = {
    * (`countsAsDeed`). Absent reads as the game's.
    */
   author?: string;
+  /** The hero's name for their boss (0076), shown instead of the painted one. Absent or null: the painting's. */
+  bossName?: string | null;
+  /** The hero's lines (0076), added to the painted pool for these moments. Absent: none. */
+  bossLines?: HeroBossLines;
   /**
    * How many times this boss has already been beaten — 0 on the first encounter. Derived from
    * finished runs of the adventure rather than stored: a finished boss campaign IS the victory
@@ -354,6 +359,8 @@ export async function getOrCreateBossFight(
       bossWeaknessMuscle: adventures.bossWeaknessMuscle,
       bossResistanceMuscle: adventures.bossResistanceMuscle,
       author: adventures.author,
+      bossName: adventures.bossName,
+      bossLinesJson: adventures.bossLinesJson,
       imagePath: adventures.imagePath,
       bossImagePath: adventures.bossImagePath,
       enTitle: adventures.enTitle,
@@ -401,6 +408,8 @@ export async function getOrCreateBossFight(
       deName: adventure.deTitle,
       esName: adventure.esTitle,
       author: adventure.author,
+      bossName: adventure.bossName,
+      bossLines: parseBossLines(adventure.bossLinesJson),
       tier,
       shiny,
     };
@@ -443,6 +452,8 @@ export async function getOrCreateBossFight(
     deName: adventure.deTitle,
     esName: adventure.esTitle,
     author: adventure.author,
+    bossName: adventure.bossName,
+    bossLines: parseBossLines(adventure.bossLinesJson),
     tier,
     shiny,
   };
@@ -467,6 +478,8 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
       weaknessMuscle: adventures.bossWeaknessMuscle,
       resistanceMuscle: adventures.bossResistanceMuscle,
       author: adventures.author,
+      bossName: adventures.bossName,
+      bossLinesJson: adventures.bossLinesJson,
       defeatedAt: bossFights.defeatedAt,
       createdAt: bossFights.createdAt,
       updatedAt: bossFights.updatedAt,
@@ -500,6 +513,8 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
     deName: row.deTitle,
     esName: row.esTitle,
     author: row.author,
+    bossName: row.bossName,
+    bossLines: parseBossLines(row.bossLinesJson),
     // A felled fight is named and painted at the tier it was fought at: the run that just ended
     // is already counted, and the legendary name belongs to the rematch once it starts.
     tier: Math.max(

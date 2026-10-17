@@ -48,6 +48,7 @@ describe("db/heroAdventures", () => {
       description: "A tale",
       imagePath: "the_golem",
       end,
+      voice: { name: "", lines: { idle: [], crit: [], enrage: [] } },
       steps: questIds.map((questId, i) => ({
         questId,
         narrative: `before ${i}`,
@@ -528,6 +529,103 @@ describe("db/heroAdventures", () => {
     expect(hero.worksSparedZone(quest("hero"), new Set([7]))).toBe(true);
     expect(hero.worksSparedZone(quest("hero"), new Set([8]))).toBe(false);
     expect(hero.worksSparedZone(quest("Admin"), new Set([7]))).toBe(false);
+  });
+
+  describe("the boss's voice", () => {
+    const voice = (
+      name: string,
+      lines: Partial<Record<"idle" | "crit" | "enrage", string[]>> = {},
+    ) => ({
+      name,
+      lines: { idle: [], crit: [], enrage: [], ...lines },
+    });
+    const row = (id: number) =>
+      t.sqlite
+        .prepare("SELECT kind, bossName, bossLinesJson FROM adventures WHERE id = ?")
+        .get(id) as {
+        kind: string;
+        bossName: string | null;
+        bossLinesJson: string | null;
+      };
+    const boss = { kind: "boss" as const, monster: "iron_golem" as const };
+
+    test("a boss with a voice writes both columns, the lines in moment order", async () => {
+      const { hero } = mod();
+      const [a, b] = adminQuests();
+      if (!a || !b) throw new Error("seed quests expected");
+      const id = await hero.createHeroAdventure({
+        ...draft([a, b], boss),
+        voice: voice("  Night   coil ", { enrage: ["Enough."], idle: [" Again. ", "", "x"] }),
+      });
+      expect(row(id)).toMatchObject({
+        bossName: "Night coil",
+        bossLinesJson: '{"idle":["Again.","x"],"crit":[],"enrage":["Enough."]}',
+      });
+      const loaded = await hero.loadHeroAdventureDraft(id);
+      expect(loaded?.voice).toEqual({
+        name: "Night coil",
+        lines: { idle: ["Again.", "x"], crit: [], enrage: ["Enough."] },
+      });
+    });
+
+    test("a route with a voice in the draft writes nothing, and an empty voice is NULL", async () => {
+      const { hero } = mod();
+      const [a, b] = adminQuests();
+      if (!a || !b) throw new Error("seed quests expected");
+      const route = await hero.createHeroAdventure({
+        ...draft([a, b]),
+        voice: voice("Ghost", { idle: ["Boo."] }),
+      });
+      expect(row(route)).toMatchObject({ bossName: null, bossLinesJson: null });
+      const silent = await hero.createHeroAdventure({ ...draft([a, b], boss), voice: voice("  ") });
+      expect(row(silent)).toMatchObject({ kind: "boss", bossName: null, bossLinesJson: null });
+    });
+
+    test("under a run the voice is written, and the stored end decides, never the draft's", async () => {
+      const { hero, adv } = mod();
+      const [a, b] = adminQuests();
+      if (!a || !b) throw new Error("seed quests expected");
+      const bossId = await hero.createHeroAdventure({
+        ...draft([a, b], boss),
+        voice: voice("One"),
+      });
+      await adv.startAdventureRun({ adventureId: bossId });
+      // A draft that says route for a frozen boss cannot erase the voice.
+      await hero.updateHeroAdventure(bossId, {
+        ...draft([a, b]),
+        voice: voice("Two", { crit: ["Hah."] }),
+      });
+      expect(row(bossId)).toMatchObject({
+        kind: "boss",
+        bossName: "Two",
+        bossLinesJson: '{"idle":[],"crit":["Hah."],"enrage":[]}',
+      });
+      expect((await hero.loadHeroAdventureDraft(bossId))?.steps.map((s) => s.questId)).toEqual([
+        a,
+        b,
+      ]);
+
+      // A draft that says boss for a frozen route cannot write one.
+      const routeId = await hero.createHeroAdventure(draft([a, b]));
+      await adv.startAdventureRun({ adventureId: routeId });
+      await hero.updateHeroAdventure(routeId, { ...draft([a, b], boss), voice: voice("Sneaky") });
+      expect(row(routeId)).toMatchObject({ kind: "route", bossName: null, bossLinesJson: null });
+    });
+
+    test("changing the monster keeps the voice", async () => {
+      const { hero } = mod();
+      const [a, b] = adminQuests();
+      if (!a || !b) throw new Error("seed quests expected");
+      const id = await hero.createHeroAdventure({
+        ...draft([a, b], { kind: "boss", monster: "shadow_serpent" }),
+        voice: voice("Keeper"),
+      });
+      const loaded = await hero.loadHeroAdventureDraft(id);
+      if (!loaded) throw new Error("draft expected");
+      const { frozen: _f, uuid: _u, ...rest } = loaded;
+      await hero.updateHeroAdventure(id, { ...rest, end: boss });
+      expect(row(id)).toMatchObject({ bossName: "Keeper" });
+    });
   });
 
   test("no adventure writer asks the quota", () => {

@@ -197,6 +197,46 @@ quest at Medium, whatever had been answered
 ([audit of 11 October 2026](../design/audits/2026-10-11-onboarding.md), B3).
 `__tests__/starting-difficulty.test.ts` holds the table.
 
+## What a slot asks tonight
+
+The number a hero is asked for is derived on read from their own journal (`progressiveTarget`,
+`db/progress.ts`; nothing is stored, there is no migration). The coach's rules:
+
+| Rule | What Bati does |
+| :--- | :--- |
+| Double progression | Every non-neutral set met: +1 rep per set (+5 s for a hold). Otherwise the same target. A hold keeps its band (67 % of its record) and gains 5 s; it is never lowered. |
+| Plafond puis échelon | At 20 reps / 60 s the progression stops. The victory of the session that completes a series of 3 at the cap offers the rung above in one tap (not on the 4th or 5th, again on the 6th, a miss restarts the count) (a swap in the quest config), and the next session starts at the bottom of its band. |
+| Reprise | More than 14 days without the movement: a level lower for 2 sessions, then back to the number from before the gap. |
+
+Constants: `TARGET_STEP`, `TARGET_CAP`, `COMEBACK_GAP_DAYS`, `CAP_SESSIONS`.
+A level change still moves a learnt target by the ratio of the two levels, so the picker keeps
+meaning something after the first session. The hero's own number always wins: it is laid over the
+app's, which keeps climbing underneath it.
+
+Worked examples (each one a test in `__tests__/progressive-target.test.ts`): 12 met on every set
+asks 13; a set at 11 asks 12 again; 20 met stays 20; a hold of 30 s met asks 35 s;
+12 met then 15 days away asks 9, then 10, then 12.
+
+- **One movement, one progression, inside each quest's band.** The history is the movement's, across
+  quests, with the sessions of a hero-authored quest left out (a hero who wrote "50 squats" must not
+  see 50 in every seeded quest). The result is clamped to tonight's band: raised to its floor, cut
+  at `max(top, 20)`. A hero who only does 12-16 Squat quests and meets 16 still climbs to 20 in
+  them; one who then opens a 20-25 quest starts at its floor. Decision PARK-7 (a)+(c).
+- **Holds are never lowered.** A hold keeps today's band (67 % of its record, `generateTarget`)
+  plus the +5 s step when every set was met. A 75 % cap of the record applies only to a record set
+  by a max effort, and none is marked as one until "Dernière série max": the cap code is removed
+  until then. Decision PARK-8, D-37.
+- **A swap with no history starts at the bottom of the band**, for every swap (one rule: the config
+  cannot tell the cap offer's swap from a manual one). Easy has no level under it and takes
+  Medium's comeback step.
+- **Bosses**: a boss's hit points still come from the quest's `targetMax`, never from the served
+  target, while targets now climb up to the cap and damage follows the prescribed reps: a boss falls
+  a little faster for a hero who progresses. Intended.
+- **Home's "Ce soir" line** says the session objective (the slot's target, the big number), not
+  "à battre", which stays on the wall and the ghost line (PARK-1). It is only on a quest stage, not on the adventure stage (it shows no
+  quest) nor on a day already done, and only from a movement's second session.
+- A mid-session swap keeps the slot's number and no history (`ponytail:` in `stores/session.ts`).
+
 ## Village
 
 The village is **one illustrated scene**, not a list of buildings to manage.

@@ -136,13 +136,133 @@ test("a movement's best and last are read from the merged sets, not carried", as
 
   const { getExerciseHistory, ghostKey } =
     require("../db/personalRecords") as typeof import("../db/personalRecords");
-  expect((await getExerciseHistory([pushUp])).get(ghostKey(pushUp, "reps"))).toEqual({
+  expect((await getExerciseHistory([pushUp])).get(ghostKey(pushUp, "reps"))).toMatchObject({
     last: 9,
     best: 15,
     at: 3_000_000,
     bestAt: 2_000_000,
+    // The tablet's two sessions are the two newest marks, here's the oldest.
+    recent: [{ at: 3_000_000 }, { at: 2_000_000 }, { at: 1_000_000 }],
   });
   await converged(file);
+});
+
+/** One session of one movement with a prescription, on a quest or none. Returns its uuid. */
+function playOf(
+  sqlite: Database.Database,
+  o: { at: number; exerciseId: number; sets: number[]; prescribed: number; questId?: number },
+): string {
+  const uuid = addSession(sqlite, o.at);
+  sqlite
+    .prepare("UPDATE completed_sessions SET questId = ? WHERE uuid = ?")
+    .run(o.questId ?? null, uuid);
+  const id = (
+    sqlite.prepare("SELECT id FROM completed_sessions WHERE uuid = ?").get(uuid) as { id: number }
+  ).id;
+  o.sets.forEach((value, round) => {
+    sqlite
+      .prepare(
+        `INSERT INTO completed_exercises (sessionId, exerciseId, roundIndex, sortOrder, resultType, resultValue, targetType, targetValue, prescribedValue, performedAt)
+         VALUES (?, ?, ?, 0, 'reps', ?, 'reps', ?, ?, ?)`,
+      )
+      .run(id, o.exerciseId, round, value, o.prescribed, o.prescribed, o.at);
+  });
+  return uuid;
+}
+
+/** A seeded quest of one slot on this device, for the target tests below. */
+function seededQuest(exerciseId: number): number {
+  const questId = Number(
+    t.sqlite
+      .prepare(
+        "INSERT INTO quests (enTitle, frTitle, enDescription, frDescription, author) VALUES ('Q', 'Q', '', '', 'Admin')",
+      )
+      .run().lastInsertRowid,
+  );
+  t.sqlite
+    .prepare(
+      "INSERT INTO quest_exercises (questId, exerciseId, sortOrder, targetType, targetMin, targetMax) VALUES (?, ?, 0, 'reps', 10, 14)",
+    )
+    .run(questId, exerciseId);
+  return questId;
+}
+
+async function askedTonight(questId: number): Promise<number | undefined> {
+  const { loadConfiguredQuest } =
+    require("../db/questConfig") as typeof import("../db/questConfig");
+  return (await loadConfiguredQuest(questId, "medium"))?.quest.exercises[0]?.target.value;
+}
+
+const CRUNCH = 6;
+const dayAgo = (days: number) => Math.floor(Date.now() / 1000) - days * 86_400;
+
+test("a hero-quest session stays out of tonight's target after a merge", async () => {
+  const questId = seededQuest(CRUNCH);
+  playOf(t.sqlite, { at: dayAgo(2), exerciseId: CRUNCH, sets: [12, 12], prescribed: 12 });
+  expect(await askedTonight(questId)).toBe(13);
+
+  const file = await peer("tablet.db", (sqlite) => {
+    const mine = heroQuest(sqlite, "Fifty", 100, U1);
+    playOf(sqlite, {
+      at: dayAgo(1),
+      exerciseId: CRUNCH,
+      sets: [50, 50],
+      prescribed: 50,
+      questId: mine,
+    });
+  });
+  await merge().mergePeer(file);
+
+  // The session arrived, on the hero quest remapped through the quest map, and counts for the
+  // movement's last and best but never for the app's progression.
+  const { getExerciseHistory, ghostKey } =
+    require("../db/personalRecords") as typeof import("../db/personalRecords");
+  const ghost = (await getExerciseHistory([CRUNCH])).get(ghostKey(CRUNCH, "reps"));
+  expect(ghost).toMatchObject({ last: 50, best: 50 });
+  expect(ghost?.recent.map((m) => m.prescribed)).toEqual([12]);
+  expect(await askedTonight(questId)).toBe(13);
+  await converged(file);
+});
+
+test("tonight's target is read from the merged sets, not carried", async () => {
+  const questId = seededQuest(CRUNCH);
+  playOf(t.sqlite, { at: dayAgo(3), exerciseId: CRUNCH, sets: [12, 12], prescribed: 12 });
+  const file = await peer("tablet.db", (sqlite) => {
+    // A later session on the tablet: asked 13, one set short.
+    playOf(sqlite, { at: dayAgo(1), exerciseId: CRUNCH, sets: [13, 12], prescribed: 13 });
+  });
+
+  await merge().mergePeer(file);
+
+  const { getExerciseHistory, ghostKey } =
+    require("../db/personalRecords") as typeof import("../db/personalRecords");
+  const ghost = (await getExerciseHistory([CRUNCH])).get(ghostKey(CRUNCH, "reps"));
+  expect(ghost?.recent.map((m) => [m.prescribed, m.met])).toEqual([
+    [13, false],
+    [12, true],
+  ]);
+  // The tablet's mark is the newest: asked 13, not met, so the same again.
+  expect(await askedTonight(questId)).toBe(13);
+  await converged(file);
+});
+
+test("a swap written by the cap offer stays on its device and is never news", async () => {
+  const questId = seededQuest(CRUNCH);
+  const file = await peer("tablet.db", (sqlite) => {
+    setPref(
+      sqlite,
+      `quest:${questId}:config`,
+      JSON.stringify({ level: "medium", swaps: { 1: 30 } }),
+      5_000,
+    );
+  });
+
+  expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 0 });
+  await merge().mergePeer(file);
+
+  expect(
+    t.sqlite.prepare("SELECT key FROM user_preferences WHERE key LIKE 'quest:%'").all(),
+  ).toEqual([]);
 });
 
 test("a movement the other build numbered differently still lands on the same movement", async () => {

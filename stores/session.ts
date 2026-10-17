@@ -13,6 +13,7 @@ import {
   persistSessionDamage,
   TRIUMPH_XP_BONUS,
 } from "@/db/bossFights";
+import { type CapOffer, checkCapOffers } from "@/db/capOffer";
 import {
   addBonusXpToSession,
   type CompletedExerciseInput,
@@ -242,6 +243,8 @@ export type SaveResult = {
    */
   standing: SessionStanding | null;
   newRungs: VariationStep[];
+  /** Slots that held the cap for three sessions, with the rung above on offer (`db/capOffer`). */
+  capOffers: CapOffer[];
   newAchievements: NewAchievementResult[];
   fulfilledOath: OathProgress | null;
   oathBonusXp: number;
@@ -1774,6 +1777,11 @@ export const useSessionStore = create<SessionState>()(
       // The slot's target, unless the movement is measured the other way — same call
       // `applyQuestConfig` makes. Results already logged keep their own `exerciseId` and
       // `pricing`: they are true.
+      //
+      // ponytail: no progression here (`progressiveTarget`), and no ghost: nothing is queried
+      // mid-session, by design. Ceiling: a hero who swaps mid-session every time gets the
+      // slot's number and no "last time" on the new movement. Fix: load the catalogue's ghosts
+      // with the quest.
       const target =
         known?.target ?? retargetForMovement(slot.target, slot.exercise, exercise, get().userLevel);
       const exercises = quest.exercises.map((qex, i) =>
@@ -1786,6 +1794,8 @@ export const useSessionStore = create<SessionState>()(
               // rung the hero has just overruled.
               images: [],
               ghost: undefined,
+              // The old movement's reason for its number does not explain the new one's.
+              targetWhy: undefined,
               substitutedFor: undefined,
               setAsideServed: undefined,
               // The hero's own number travels with the target when the swap kept it (same unit),
@@ -2151,6 +2161,14 @@ export const useSessionStore = create<SessionState>()(
       // The variations tonight's sets just unlocked. Same question as the records above — what
       // did *this* session change — so it is answered in the same place, from the journal.
       const newRungs = await checkForNewRungs(sessionId);
+      // And the slots that held the cap for three sessions: the rung above, one tap away.
+      // Never fails a logged session: a quest that cannot be read just offers nothing.
+      const capOffers = await checkCapOffers(quest.id, quest.exercises, userLevel).catch(
+        (e: unknown) => {
+          reportError("session.capOffers", e);
+          return [];
+        },
+      );
 
       // Update streak cache
       await updateStreakAfterSession();
@@ -2241,6 +2259,7 @@ export const useSessionStore = create<SessionState>()(
         newRecords,
         standing,
         newRungs,
+        capOffers,
         newAchievements,
         fulfilledOath,
         oathBonusXp,

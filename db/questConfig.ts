@@ -4,6 +4,7 @@ import { workoutsBeforeToday } from "./completed";
 import { type Exercise, listExercises } from "./exercises";
 import { isOutingSession } from "./expeditions";
 import { isLightWeekRunning, lightenRounds } from "./lightWeek";
+import { getExerciseHistory, ghostKey } from "./personalRecords";
 import {
   deletePreference,
   getAllPreferences,
@@ -17,8 +18,10 @@ import {
   getQuestById,
   listQuestTemplates,
   movementRef,
+  progressiveSlot,
   type Quest,
   type QuestExercise,
+  type SlotJournal,
   USER_QUEST_AUTHOR,
 } from "./quests";
 import {
@@ -33,6 +36,7 @@ import {
   targetRangeFor,
   type UserLevel,
 } from "./targets";
+import { NON_REP_STYLE } from "./workUnits";
 import { sparedExerciseIds } from "./zone";
 
 /**
@@ -396,13 +400,32 @@ export function applyQuestConfig(
   quest: Quest,
   config: QuestConfig | null,
   exercisesById: Record<number, Exercise>,
+  journal: SwapJournal,
 ): Quest {
   if (!hasQuestOverrides(config) || !config) return quest;
 
   return {
     ...quest,
     ...resolveTemplateOverrides(quest, config),
-    exercises: applyConfigToSlots(quest.exercises, config, exercisesById),
+    exercises: applyConfigToSlots(quest.exercises, config, exercisesById, journal),
+  };
+}
+
+/**
+ * What a swapped-in movement is progressed on: its own history, which the quest's journal does not
+ * hold (it was read for the movements the quest writes). **Required** by `applyConfigToSlots`, for
+ * the reason `exercisesById` is: optional, a caller would compile and silently skip the
+ * progression on every swapped slot.
+ */
+export type SwapJournal = Pick<SlotJournal, "history" | "readAt">;
+
+/** The swapped-in movements' history, free when the quest has no swap. */
+export async function loadSwapJournal(
+  config: Pick<QuestConfig, "swaps"> | null,
+): Promise<SwapJournal> {
+  return {
+    history: await getExerciseHistory(Object.values(config?.swaps ?? {})),
+    readAt: Date.now(),
   };
 }
 
@@ -433,6 +456,58 @@ function pinOver(
 }
 
 /**
+ * A swapped-in movement is progressed on its own history, from the bottom of the band when it has
+ * none ("on repart en bas de la fourchette"). A pin already carries the written movement's
+ * progressive target, an outing has no progression, and a hero's own quest has no band
+ * (`substitute` was false when it was built).
+ */
+function swappedProgress(input: {
+  qex: QuestExercise;
+  substitute: Exercise | undefined;
+  pin: Pick<QuestExercise, "pinnedOver">;
+  retargeted: QuestExercise["target"];
+  config: QuestConfig;
+  journal: SwapJournal;
+}) {
+  const { qex, substitute, pin, retargeted, config, journal } = input;
+  if (!substitute || pin.pinnedOver || !qex.band || substitute.style === NON_REP_STYLE) {
+    return undefined;
+  }
+  return progressiveSlot({
+    base: qex.band,
+    fallback: retargeted,
+    exercise: substitute,
+    level: config.level,
+    journal,
+    start: "floor",
+  });
+}
+
+function resolveBase(
+  qex: QuestExercise,
+  substitute: Exercise | undefined,
+  config: QuestConfig,
+  journal: SwapJournal,
+) {
+  // The unit is resolved first, then the hero's number lands in it. `applySwap` drops the
+  // override when the movement changes, so `targets[id]` is only ever a value for the movement
+  // standing in the slot now (after a swap that flipped the unit, a value in the *new* unit).
+  // Retargeting second discarded exactly those: a slot swapped from a hold onto a counted
+  // movement showed the level's default reps and every step of the field was thrown away on
+  // the next render, which read as a frozen control. The clamp follows the resolved unit too;
+  // on the old order it measured reps against the range for seconds.
+  // A pin has a better answer than a retarget: the target the quest wrote for that movement.
+  const pin = pinOver(qex, substitute);
+  const retargeted =
+    substitute === undefined
+      ? qex.target
+      : (pin.pinnedOver && qex.substitutedFor?.target) ||
+        retargetForMovement(qex.target, qex.exercise, substitute, config.level);
+  const swapped = swappedProgress({ qex, substitute, pin, retargeted, config, journal });
+  return { pin, swapped, base: swapped?.target ?? retargeted };
+}
+
+/**
  * The hero's per-slot overrides, applied to slots that are already resolved for their level.
  *
  * Split out of `applyQuestConfig` so the gallery's synchronous preview reads the saved config
@@ -444,6 +519,7 @@ export function applyConfigToSlots(
   slots: readonly QuestExercise[],
   config: QuestConfig | null,
   exercisesById: Record<number, Exercise>,
+  journal: SwapJournal,
 ): QuestExercise[] {
   if (!hasQuestOverrides(config) || !config) return [...slots];
 
@@ -458,20 +534,7 @@ export function applyConfigToSlots(
       swappedId === undefined || swappedId === qex.exercise.id
         ? undefined
         : exercisesById[swappedId];
-    // The unit is resolved first, then the hero's number lands in it. `applySwap` drops the
-    // override when the movement changes, so `targets[id]` is only ever a value for the movement
-    // standing in the slot now — after a swap that flipped the unit, a value in the *new* unit.
-    // Retargeting second discarded exactly those: a slot swapped from a hold onto a counted
-    // movement showed the level's default reps and every step of the field was thrown away on
-    // the next render, which read as a frozen control. The clamp follows the resolved unit too;
-    // on the old order it measured reps against the range for seconds.
-    // A pin has a better answer than a retarget: the target the quest wrote for that movement.
-    const pin = pinOver(qex, substitute);
-    const base =
-      substitute === undefined
-        ? qex.target
-        : (pin.pinnedOver && qex.substitutedFor?.target) ||
-          retargetForMovement(qex.target, qex.exercise, substitute, config.level);
+    const { pin, swapped, base } = resolveBase(qex, substitute, config, journal);
     const raw = targets[key];
     // The style follows the resolved unit, for the same reason the unit follows the swap: an
     // hour is a hold's ceiling and a walk is not a hold, so a slot standing on an expedition
@@ -482,29 +545,40 @@ export function applyConfigToSlots(
 
     if (substitute === undefined && value === undefined) return qex;
 
+    const own = ownTarget(base, value);
+    // The swap's own "why", or the slot's when nothing was swapped; the hero's number has none.
+    const why = substitute === undefined ? qex.targetWhy : swapped?.why;
     return {
       ...qex,
-      ...ownTarget(base, value),
+      ...own,
+      targetWhy: own.prescribed === undefined ? why : undefined,
       ...pin,
-      ...(substitute === undefined
-        ? {}
-        : {
-            exercise: substitute,
-            // `images` is the quest's own art *of the movement that used to be here*, off
-            // `quest_exercises.imagesJson`. Kept, the card illustrates the wrong exercise.
-            images: [],
-            // The ghost belongs to the slot's old movement too, and the substitute's own
-            // history is not in this object — better silent than wrong.
-            ghost: undefined,
-            // An explicit swap outranks the rung substitution `getQuestById` may have made, so
-            // the "we served you an easier rung" caption has to go with it. Left behind, the
-            // screen would explain a substitution that is no longer on the slot.
-            substitutedFor: undefined,
-            // Same for "set aside, served anyway": the swap runs something else.
-            setAsideServed: undefined,
-          }),
+      ...(substitute === undefined ? {} : swapFields(substitute, journal, base.type)),
     };
   });
+}
+
+/** What a slot loses and gains when another movement stands in it. */
+function swapFields(
+  substitute: Exercise,
+  journal: SwapJournal,
+  type: QuestExercise["target"]["type"],
+) {
+  return {
+    exercise: substitute,
+    // `images` is the quest's own art *of the movement that used to be here*, off
+    // `quest_exercises.imagesJson`. Kept, the card illustrates the wrong exercise.
+    images: [],
+    // The ghost belongs to the slot's old movement: the substitute's own, in the unit it now
+    // runs in, is read from the swap journal.
+    ghost: journal.history.get(ghostKey(substitute.id, type)),
+    // An explicit swap outranks the rung substitution `getQuestById` may have made, so the "we
+    // served you an easier rung" caption has to go with it. Left behind, the screen would explain
+    // a substitution that is no longer on the slot.
+    substitutedFor: undefined,
+    // Same for "set aside, served anyway": the swap runs something else.
+    setAsideServed: undefined,
+  };
 }
 
 /**
@@ -537,6 +611,7 @@ export async function loadConfiguredQuest(
   const wanted = chosen ?? (await loadDefaultLevels())(questId);
   const quest = await getQuestById(questId, wanted);
   if (!quest) return null;
+  const swapJournal = await loadSwapJournal(saved);
   // An outing has no level (`resolveSlot`): the default must not hand it one.
   const effective = chosen === undefined && isOutingSession(quest) ? Difficulty.Medium : wanted;
   const config = saved === null ? null : { ...saved, level: effective };
@@ -544,7 +619,7 @@ export async function loadConfiguredQuest(
   return {
     // A light week takes a round off; the quest screen does the same through `lightenRounds`.
     quest: lightenRounds(
-      applyQuestConfig(quest, config, indexExercises(exercises)),
+      applyQuestConfig(quest, config, indexExercises(exercises), swapJournal),
       config,
       lightWeek,
     ),

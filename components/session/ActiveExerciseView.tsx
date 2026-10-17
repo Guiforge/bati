@@ -148,6 +148,8 @@ export function ActiveExerciseView() {
     side?.phase === "second" && secondSideSeconds - side.seconds < SECOND_SIDE_GRACE_SECONDS;
   useSideSwitch(remainingSeconds, secondSideSeconds, SIDE_SWITCH_SECONDS, perSideHold);
   const [adjustedReps, setAdjustedReps] = useState(targetValue);
+  // Read once, not per tick: it decides whether the record has aged (`toBeat`).
+  const [openedAt] = useState(() => new Date());
   // The last set of a session with nothing logged cannot be skipped (`skipExercise`), and the
   // tap used to do nothing at all, at the one moment a hero says they could not do any of it.
   // The answer takes the hint line's place, so nothing on the screen moves.
@@ -183,6 +185,15 @@ export function ActiveExerciseView() {
   );
 
   const exerciseName = localizedName(currentEx.exercise, language);
+
+  const belowLastKey =
+    isOuting || currentEx.prescribed !== undefined
+      ? null
+      : currentEx.targetWhy === "rung_start"
+        ? "session.below_last_rung"
+        : currentEx.targetWhy === "comeback" && ghost && targetValue < ghost.last
+          ? "session.below_last_comeback"
+          : null;
 
   // Progress calculation
   const exercisesPerRound = quest.exercises.length;
@@ -809,6 +820,12 @@ export function ActiveExerciseView() {
                   </YStack>
                 ) : (
                   <YStack items="center" gap="$2">
+                    {/* The target, kept on screen: the numeral below follows the hero's taps. */}
+                    <AppText fontSize={12} color="$textSecondary">
+                      {adjustedReps === targetValue
+                        ? t("session.objective_label")
+                        : t("session.objective_value", { value: targetValue })}
+                    </AppText>
                     <XStack items="center" gap="$4">
                       <Button
                         size="$4"
@@ -969,9 +986,19 @@ export function ActiveExerciseView() {
                 ghost={ghost}
                 type={currentEx.target.type}
                 live={liveValue}
+                objective={targetValue}
+                now={openedAt}
                 perSide={currentEx.exercise.perSide}
                 reducedMotion={reducedMotion}
               />
+            ) : null}
+            {/* One sentence when the objective sits under what the hero did last time, so the
+                drop is explained instead of read as a mistake. A number the hero set has no
+                `targetWhy`, and so no sentence. */}
+            {belowLastKey && !inSwitch ? (
+              <AppText fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+                {t(belowLastKey)}
+              </AppText>
             ) : null}
           </YStack>
         </YStack>

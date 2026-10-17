@@ -31,6 +31,15 @@ function resolveCover(config: SmartActionConfig | null): ImageSourcePropType {
   return config?.variant === "quest" ? getQuestAsset(path) : getAdventureAsset(path);
 }
 
+function TonightNote({ text }: { text: string | undefined }) {
+  if (!text) return null;
+  return (
+    <AppText testID="home-tonight" fontSize={12} color="$textSecondary">
+      {text}
+    </AppText>
+  );
+}
+
 /**
  * The one thing Home asks the hero to do tonight, shown as the thing itself.
  *
@@ -211,6 +220,10 @@ export function HomeStage({ oathStrip }: { oathStrip: boolean | null }) {
                 </AppText>
               </XStack>
             ) : null}
+
+            {/* The same number as the set's "to beat" and the wall's target. One line, so the
+                stage's height budget (`STAGE_MIN_HEIGHT`) is not touched. */}
+            <TonightNote text={scene?.tonight} />
           </YStack>
         </YStack>
 

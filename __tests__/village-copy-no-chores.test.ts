@@ -650,6 +650,15 @@ const ALLOWED_COUNTS: Record<string, Allowed> = {
     why: "fait",
     de: "Von dir gewählt. Deine Einheiten dagegen verteilen sich: {{list}}.",
   },
+  // The cap offer after three sessions at 20 reps or 60 s: what the journal says, a fact the hero
+  // earned and the reason the next step is on offer. Nothing is asked of them.
+  "progression.cap_offer_body": {
+    why: "fait",
+    fr: "Trois séances à {{value}} sur {{name}}. L'étape suivante repart du bas de la fourchette.",
+    en: "Three sessions at {{value}} on {{name}}. The next step starts at the bottom of its range.",
+    de: "Drei Einheiten mit {{value}} bei {{name}}. Die nächste Stufe beginnt unten in ihrem Bereich.",
+    es: "Tres sesiones con {{value}} en {{name}}. La siguiente etapa empieza por abajo de su rango.",
+  },
   // A rung the hero has passed: the name of the movement, a fact.
   "progression.new_rung_from": {
     why: "fait",

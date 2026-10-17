@@ -9,6 +9,7 @@ import { useReloadOnChange } from "@/hooks/useReloadOnChange";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
 import { useSettingsStore } from "@/stores/settings";
+import { tonightLine } from "./tonightLine";
 
 /** What the stage shows: a scene to walk into, whether it is an adventure or tonight's quest. */
 export type SmartScene = {
@@ -20,6 +21,8 @@ export type SmartScene = {
   meta?: string;
   /** Why this scene when it is not the usual one: "Day one", "Adventure". */
   kicker?: string;
+  /** Quests only, from the movement's second session: "Tonight: Push-ups, at least 13". */
+  tonight?: string;
 };
 
 export type SmartActionConfig = {
@@ -145,6 +148,7 @@ function stageFor(
 
   const { quest, startable, seconds } = offer;
   const subtext = questSubtext(offer, t);
+  const tonight = tonightLine(quest, language);
 
   return {
     // "Start" when the tap starts, "See the quest" when it only opens the screen that does:
@@ -164,6 +168,9 @@ function stageFor(
           : yourDay
             ? t("home.kicker_your_day")
             : undefined,
+      ...(tonight
+        ? { tonight: t("home.tonight_line", { name: tonight.name, value: tonight.label }) }
+        : {}),
       meta: [
         t("quests.exercises", {
           count: quest.exercises.length,

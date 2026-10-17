@@ -27,6 +27,7 @@
     "pick_next": "Wähle deine nächste Quest",
     "done_today": "Für heute geschafft.",
     "next_session": "Deine nächste Einheit: {{quest}}, {{duration}}",
+    "tonight_line": "Heute Abend: {{name}}, mindestens {{value}}",
     "last_done_one": "Zuletzt gestern",
     "last_done_other": "Zuletzt vor {{count}} Tagen",
     "play": "Spielen",
@@ -208,7 +209,10 @@
   },
   "progression": {
     "new_rung_from": "Gemeistert: {{name}}",
-    "rung_also_leads_to": "Dieselbe Stufe führt auch zu {{names}}."
+    "rung_also_leads_to": "Dieselbe Stufe führt auch zu {{names}}.",
+    "cap_offer_body": "Drei Einheiten mit {{value}} bei {{name}}. Die nächste Stufe beginnt unten in ihrem Bereich.",
+    "cap_offer_action": "Nächstes Mal zu {{next}} wechseln",
+    "cap_offer_done": "Gespeichert: {{next}} ab deiner nächsten Einheit."
   },
   "quests": {
     "written_for_beginner": "Einsteiger",
@@ -607,8 +611,13 @@
     "hold_check_keep": "Behalten",
     "hold_check_target": "Ziel eintragen",
     "ghost_last_label": "Letztes Mal",
-    "ghost_best_label": "Rekord",
     "ghost_record_label": "Über deinem Rekord",
+    "objective_label": "Ziel",
+    "objective_value": "Ziel {{value}}",
+    "ghost_to_beat_label": "zu schlagen",
+    "ghost_season_label": "Über deinem Saisonbestwert",
+    "below_last_comeback": "Zurück nach einer Pause: zwei Einheiten lang eine Stufe leichter.",
+    "below_last_rung": "Neue Stufe: Du beginnst wieder unten im Bereich.",
     "expedition_status_denied": "Bati hat keinen Zugriff auf deinen Standort",
     "expedition_open_settings": "Einstellungen öffnen",
     "expedition_acquiring_hint": "Die erste Position kann ein paar Minuten dauern. Geh trotzdem los, die Spur holt auf.",

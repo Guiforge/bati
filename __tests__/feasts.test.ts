@@ -316,6 +316,14 @@ describe("rankFeasts", () => {
     });
   });
 
+  test("a cap offer is a medium card, after the rungs", () => {
+    const offer = { questExerciseId: 1 } as never;
+    expect(sizes(facts({ newRungs: [{} as never], capOffers: [offer] }))).toEqual([
+      "rung:medium",
+      "cap:medium",
+    ]);
+  });
+
   test("every fact is said once, with its own id", () => {
     const list: Feast[] = rankFeasts(
       facts({

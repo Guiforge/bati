@@ -4,6 +4,7 @@ import { XStack } from "tamagui";
 import { AppText } from "@/components/common/AppText";
 import { GameIcon } from "@/components/common/GameIcon";
 import type { ExerciseGhost } from "@/db/personalRecords";
+import { beatInputOf, isOldRecord, toBeat } from "@/db/progress";
 import type { QuestTargetType } from "@/db/schema";
 import { formatTarget, perSideLabel } from "@/db/targets";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -18,6 +19,11 @@ import { useSettingsStore } from "@/stores/settings";
  * was untestable while it lived there. It is also the only node on that screen that changes
  * height mid-set, which is a thing to keep in one place.
  *
+ * "Last time" is always there: the target above it is where tonight starts, and what the hero did
+ * last time is the number that target is read against. The other half is the "to beat" of the
+ * record wall (`toBeat`, one rule for the wall, the set and Home), and the stamp replaces only that
+ * half.
+ *
  * The record half is the whole point of the component. Everything needed to say "this beats your
  * best" was already on this screen: the counter says 50s, the line under it says best 45s, and
  * the app stayed silent until the victory screen four movements later, where a reward is
@@ -27,6 +33,8 @@ export function GhostLine({
   ghost,
   type,
   live,
+  objective,
+  now,
   perSide = false,
   reducedMotion,
 }: {
@@ -40,6 +48,10 @@ export function GhostLine({
    * taps the reps back down has not set a record.
    */
   live: number;
+  /** What the app asks tonight, already the big number on the screen: not repeated when equal. */
+  objective: number;
+  /** Read once by the screen, not per tick: it decides whether the record has aged. */
+  now: Date;
   /**
    * One side then the other (`0068`): every figure here is one side's, as the line above the
    * counter says. Said once, after the last figure, so the line stays one line at a large font.
@@ -51,7 +63,9 @@ export function GhostLine({
   const language = useSettingsStore((s) => s.language);
   const { success } = useHaptics();
 
-  const beatsBest = live > ghost.best;
+  const beat = toBeat(beatInputOf(ghost), now);
+  const beatsBest = live >= beat;
+  const aged = isOldRecord(beatInputOf(ghost), now);
 
   // The phone is on the floor under a plank, so the crossing gets a buzz as well as a stamp.
   //
@@ -72,11 +86,22 @@ export function GhostLine({
     // one rule is that nothing may move under the hero's thumb. `flexWrap` still lets a narrow
     // screen grow past it.
     <XStack items="baseline" justify="center" gap="$2" flexWrap="wrap" minH={30}>
+      {/* The labels stay quiet; the numbers step up a size and take the full text colour. */}
+      <AppText fontSize={12} color="$textSecondary">
+        {t("session.ghost_last_label")}
+      </AppText>
+      <AppText fontSize={15} fontWeight="700" color="$text">
+        {perSideLabel(
+          formatTarget({ type, value: ghost.last }, language),
+          perSide && !beatsBest && beat === objective,
+          language,
+        )}
+      </AppText>
       {beatsBest ? (
         // The same register as `DamageBurst`: a bordered pill over the screen's own ground,
-        // entering once, silent under reduced motion. It replaces the line it beats instead of
-        // being stacked over it, so nothing covers the counter or the button, and the number the
-        // hero was chasing turns into the number they now hold, in the same place.
+        // entering once, silent under reduced motion. It replaces the "to beat" half and nothing
+        // else, so nothing covers the counter or the button and "last time" stays where the
+        // hero reads their target against it.
         //
         // Gold is never the only signal here: the trophy and the word carry it for a reader who
         // cannot see the colour.
@@ -97,60 +122,28 @@ export function GhostLine({
         >
           <GameIcon name="trophy" size={14} color="$resourceGold" />
           {/* "Past your best", not "New record". The number here is the one the set *would* log,
-              and a hero who taps the reps back down has set nothing: the word the victory screen
-              spends on a record that actually happened is worth more if this screen does not
-              spend it first on a promise. True in both units and at both moments, which is the
-              other half of it, because a hold past its best has already done the thing while a
-              rep count past it has not. */}
+              and a hero who taps the reps back down has set nothing. Past an aged record it is
+              the season's best that was passed, and the word says so. */}
           <AppText fontSize={12} fontWeight="700" color="$resourceGold">
-            {t("session.ghost_record_label")}
+            {t(aged ? "session.ghost_season_label" : "session.ghost_record_label")}
           </AppText>
           <AppText fontSize={15} fontWeight="700" color="$text">
             {perSideLabel(formatTarget({ type, value: live }, language), perSide, language)}
           </AppText>
         </XStack>
-      ) : (
+      ) : beat !== objective ? (
         <>
-          {/* The word and the number no longer weigh the same. This used to be one flat grey
-              sentence at 12px, so "La dernière fois 12 · record 15" asked the hero to read a
-              line to find two figures, mid-set, which is the one moment reading is expensive.
-              The labels stay quiet; the numbers step up a size and take the full text colour,
-              and the best takes the gold this app already spends on progression everywhere
-              else.
-
-              Composed rather than interpolated, which is also why the two phrasings collapsed
-              into one. On a first-ever session `last` and `best` are the same number and
-              "last time 12 · best 12" reads like a bug, so the best half simply does not
-              render, instead of a second sentence existing to say the same thing. */}
+          <AppText fontSize={12} color="$textSecondary" opacity={0.5}>
+            ·
+          </AppText>
           <AppText fontSize={12} color="$textSecondary">
-            {t("session.ghost_last_label")}
+            {t("session.ghost_to_beat_label")}
           </AppText>
-          <AppText fontSize={15} fontWeight="700" color="$text">
-            {perSideLabel(
-              formatTarget({ type, value: ghost.last }, language),
-              perSide && ghost.best <= ghost.last,
-              language,
-            )}
+          <AppText fontSize={15} fontWeight="700" color="$resourceGold">
+            {perSideLabel(formatTarget({ type, value: beat }, language), perSide, language)}
           </AppText>
-          {ghost.best > ghost.last ? (
-            <>
-              <AppText fontSize={12} color="$textSecondary" opacity={0.5}>
-                ·
-              </AppText>
-              <AppText fontSize={12} color="$textSecondary">
-                {t("session.ghost_best_label")}
-              </AppText>
-              <AppText fontSize={15} fontWeight="700" color="$resourceGold">
-                {perSideLabel(
-                  formatTarget({ type, value: ghost.best }, language),
-                  perSide,
-                  language,
-                )}
-              </AppText>
-            </>
-          ) : null}
         </>
-      )}
+      ) : null}
     </XStack>
   );
 }

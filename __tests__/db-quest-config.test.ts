@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 
+import type { ExerciseGhost } from "@/db/personalRecords";
 import type { Quest } from "@/db/quests";
 import { Difficulty, targetRangeFor } from "@/db/targets";
 import { clientMock, createTestDb, ownEveryRung } from "./helpers/testDb";
@@ -77,7 +78,7 @@ function makeQuest(): Quest {
         // Quest-specific art *of this movement* — the thing a substitution has to drop.
         images: ["assets/squat_a.webp"],
         target: { type: "reps", value: 10 },
-        ghost: { last: 18, best: 25, at: 0, bestAt: 0 },
+        ghost: { last: 18, best: 25, at: 0, bestAt: 0, seasonBest: 25, recent: [] },
       },
       { id: 12, exercise, images: [], target: { type: "time", value: 30 } },
     ],
@@ -112,6 +113,8 @@ const dip: Quest["exercises"][number]["exercise"] = {
 };
 
 const CATALOGUE = indexExercises([dip]);
+/** No swapped-in movement has a history unless a test gives it one. */
+const NO_SWAPS = { history: new Map<string, ExerciseGhost>() };
 
 describe("db/questConfig", () => {
   afterAll(() => {
@@ -146,14 +149,14 @@ describe("db/questConfig", () => {
     const config = { level: Difficulty.Medium, roundRestSeconds: 120 };
 
     expect(hasQuestOverrides(config)).toBe(true);
-    expect(applyQuestConfig(quest, config, CATALOGUE).roundRestSeconds).toBe(120);
+    expect(applyQuestConfig(quest, config, CATALOGUE, NO_SWAPS).roundRestSeconds).toBe(120);
   });
 
   test("a level-only config changes nothing about the quest", () => {
     const quest = makeQuest();
     expect(hasQuestOverrides({ level: Difficulty.Hard })).toBe(false);
-    expect(applyQuestConfig(quest, { level: Difficulty.Hard }, CATALOGUE)).toBe(quest);
-    expect(applyQuestConfig(quest, null, CATALOGUE)).toBe(quest);
+    expect(applyQuestConfig(quest, { level: Difficulty.Hard }, CATALOGUE, NO_SWAPS)).toBe(quest);
+    expect(applyQuestConfig(quest, null, CATALOGUE, NO_SWAPS)).toBe(quest);
   });
 
   test("overrides replace rounds, both rests and the targets they name", () => {
@@ -168,6 +171,7 @@ describe("db/questConfig", () => {
         targets: { 12: 60, 999: 5 },
       },
       CATALOGUE,
+      NO_SWAPS,
     );
 
     expect(configured.rounds).toBe(5);
@@ -207,6 +211,7 @@ describe("db/questConfig", () => {
       quest,
       { level: Difficulty.Medium, swaps: { 11: dip.id } },
       CATALOGUE,
+      NO_SWAPS,
     );
 
     const slot = configured.exercises[0];
@@ -236,6 +241,7 @@ describe("db/questConfig", () => {
       makeQuest(),
       { level: Difficulty.Medium, swaps: { 11: 3 } },
       indexExercises([superman]),
+      NO_SWAPS,
     );
 
     expect(out.exercises[0]?.exercise.enName).toBe("Superman");
@@ -251,6 +257,7 @@ describe("db/questConfig", () => {
       makeQuest(),
       { level: Difficulty.Medium, targets: { 11: 3 } },
       CATALOGUE,
+      NO_SWAPS,
     );
 
     expect(out.exercises[0]?.target.value).toBe(3);
@@ -278,8 +285,12 @@ describe("db/questConfig", () => {
       const slot = quest.exercises[0];
       assert(slot);
       slot.substitutedFor = substitutedFor;
-      return applyQuestConfig(quest, { level: Difficulty.Medium, swaps: { 11: dip.id } }, CATALOGUE)
-        .exercises[0];
+      return applyQuestConfig(
+        quest,
+        { level: Difficulty.Medium, swaps: { 11: dip.id } },
+        CATALOGUE,
+        NO_SWAPS,
+      ).exercises[0];
     };
 
     const pinned = stepped(written);
@@ -331,6 +342,7 @@ describe("db/questConfig", () => {
       quest,
       { level: Difficulty.Medium, swaps: { 11: catCow.id } },
       indexExercises([catCow]),
+      NO_SWAPS,
     );
 
     expect(out.exercises[0]?.target).toEqual({ type: "reps", value: 10 });
@@ -349,6 +361,7 @@ describe("db/questConfig", () => {
       makeQuest(),
       { level: Difficulty.Medium, targets: { 12: 25 }, swaps: { 12: 4 } },
       indexExercises([pushUp]),
+      NO_SWAPS,
     );
 
     expect(out.exercises[1]?.exercise.enName).toBe("Push-Up");
@@ -363,6 +376,7 @@ describe("db/questConfig", () => {
       makeQuest(),
       { level: Difficulty.Medium, targets: { 12: 300 }, swaps: { 12: 4 } },
       indexExercises([pushUp]),
+      NO_SWAPS,
     );
 
     expect(out.exercises[1]?.target.type).toBe("reps");
@@ -377,6 +391,7 @@ describe("db/questConfig", () => {
       // content updates rewrite `quest_exercises` rows and retire exercises.
       { level: Difficulty.Medium, swaps: { 11: 4242, 999: 2 } },
       CATALOGUE,
+      NO_SWAPS,
     );
 
     expect(configured.exercises[0]?.exercise.enName).toBe("Squat");
@@ -389,6 +404,7 @@ describe("db/questConfig", () => {
       quest,
       { level: Difficulty.Medium, swaps: { 11: dip.id }, targets: { 12: 45 } },
       CATALOGUE,
+      NO_SWAPS,
     );
 
     expect(configured.exercises[0]?.exercise.enName).toBe("Dip");

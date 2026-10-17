@@ -280,6 +280,10 @@ describe("useSmartAction", () => {
 
       expect(result.current.config?.variant).toBe("adventure");
       expect(result.current.config?.scene?.tonight).toBeUndefined();
+
+      // Anchored, so a never-opened Adventures tab holds [index, id] and its list stays reachable.
+      result.current.config?.onPress();
+      expect(mockPush).toHaveBeenCalledWith("/adventures/4", { withAnchor: true });
     });
   });
 

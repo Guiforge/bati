@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "tamagui";
 import { TabLabel } from "@/components/common/TabLabel";
+import { interceptTabPress } from "@/components/common/useTabLeaveGuard";
 import { Castle, Home, Map as MapIcon, Scroll, Sparkles } from "@/components/icons";
 
 export default function TabsLayout() {
@@ -12,6 +13,10 @@ export default function TabsLayout() {
 
   return (
     <Tabs
+      screenListeners={({ navigation }) => ({
+        // An open editor with unsaved edits asks before another tab takes over (see the hook).
+        tabPress: (e) => interceptTabPress(e, navigation),
+      })}
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: theme.primaryText?.val,

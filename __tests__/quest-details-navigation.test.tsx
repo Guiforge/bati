@@ -170,7 +170,7 @@ describe("quests/[id] chevron", () => {
 
     await fireEvent.press(getByLabelText("Go back"));
 
-    expect(mockNavigate).toHaveBeenCalledWith("/adventures/12");
+    expect(mockNavigate).toHaveBeenCalledWith("/adventures/12", { withAnchor: true });
     // The quest leaves this tab's stack first, or the Quests tab reopens on it.
     expect(mockDismissTo).toHaveBeenCalledWith("/quests");
   });
@@ -227,7 +227,7 @@ describe("quests/[id] chevron", () => {
 
     await fireEvent.press(getByLabelText("Go back"));
 
-    expect(mockNavigate).toHaveBeenCalledWith("/adventures/12");
+    expect(mockNavigate).toHaveBeenCalledWith("/adventures/12", { withAnchor: true });
   });
 
   test("from a Journal detail, both backs return to that detail", async () => {
@@ -259,6 +259,6 @@ describe("quests/[id] chevron", () => {
 
     const press = backHandlerSpy.mock.calls.at(-1)?.[1] as () => boolean;
     expect(press()).toBe(true);
-    expect(mockNavigate).toHaveBeenCalledWith("/adventures/12");
+    expect(mockNavigate).toHaveBeenCalledWith("/adventures/12", { withAnchor: true });
   });
 });

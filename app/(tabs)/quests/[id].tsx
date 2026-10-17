@@ -436,16 +436,18 @@ export default function QuestDetails() {
   const goToGallery = useCallback(() => {
     // Every door that leaves for another tab first unwinds this one to the gallery: left on the
     // stack, the quest was what the Quests tab reopened on, and its back jumped to that tab.
-    const leaveTo = (href: string) => {
+    const leaveTo = (href: string, withAnchor = false) => {
       router.dismissTo("/quests");
-      router.navigate(href as never);
+      if (withAnchor) router.navigate(href as never, { withAnchor });
+      else router.navigate(href as never);
     };
     const raw = rawAdventure;
     const adventureId = Number(raw);
     // A malformed deep link (literal "undefined", non-numeric garbage) is truthy but not a real
     // id — Number.isFinite catches it, same guard as questId/adventureId above in this file.
     if (raw && Number.isFinite(adventureId)) {
-      leaveTo(`/adventures/${adventureId}`);
+      // Anchored: an adventures tab never opened would otherwise hold the page alone.
+      leaveTo(`/adventures/${adventureId}`, true);
       return;
     }
     // The band's Set up shortcut: the hero was on Home a tap ago, and it is a detour on the way

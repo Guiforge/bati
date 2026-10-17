@@ -106,7 +106,9 @@ function stageFor(
       variant: "adventure",
       // The step's own screen starts it: it has a narrative to tell first.
       startQuestId: null,
-      onPress: () => router.push(`/adventures/${offer.adventureId}` as never),
+      // withAnchor: if the tab was never opened, the stack must hold [index, id], or the tab
+      // reopens on this page for good and the list is unreachable.
+      onPress: () => router.push(`/adventures/${offer.adventureId}` as never, { withAnchor: true }),
       scene: {
         title: offer.title ?? t("home.resume_journey"),
         imagePath: offer.imagePath,

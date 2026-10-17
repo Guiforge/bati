@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react-native";
+import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider, Theme } from "tamagui";
@@ -6,9 +6,10 @@ import SessionDetailScreen from "@/app/(tabs)/journal/[id]";
 import { rawColors } from "@/constants/rawColors";
 import config from "@/tamagui.config";
 
+const mockBack = jest.fn();
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ back: jest.fn(), push: jest.fn() }),
+  useRouter: () => ({ back: mockBack, push: jest.fn() }),
   useLocalSearchParams: () => ({ id: "1" }),
 }));
 jest.mock("@/components/journal/QuestLog", () => ({ QuestLog: () => null }));
@@ -45,4 +46,31 @@ test("Remove from the journal is an outline AppButton, in the family's face", as
   expect(button.borderBottomWidth).not.toBe(3);
   // Under the Journal theme, which greys `$error`: the red edge is the raw colour.
   expect(button.borderTopColor).toBe(rawColors.error);
+});
+
+/** The hero's own back button scrolls away with the page; a fixed one must take over then. */
+test("a back button stays reachable once the hero is scrolled away", async () => {
+  await act(async () => {
+    await render(
+      <SafeAreaProvider
+        initialMetrics={{
+          frame: { x: 0, y: 0, width: 390, height: 844 },
+          insets: { top: 0, left: 0, right: 0, bottom: 0 },
+        }}
+      >
+        <TamaguiProvider config={config} defaultTheme="dark">
+          <Theme name="journal">
+            <SessionDetailScreen />
+          </Theme>
+        </TamaguiProvider>
+      </SafeAreaProvider>,
+    );
+  });
+  expect(screen.queryByTestId("journal-fixed-back")).toBeNull();
+  const scroll = screen.getByTestId("journal-detail-scroll");
+  await fireEvent.scroll(scroll, { nativeEvent: { contentOffset: { y: 600 } } });
+  await fireEvent.press(screen.getByTestId("journal-fixed-back"));
+  expect(mockBack).toHaveBeenCalledTimes(1);
+  await fireEvent.scroll(scroll, { nativeEvent: { contentOffset: { y: 0 } } });
+  expect(screen.queryByTestId("journal-fixed-back")).toBeNull();
 });

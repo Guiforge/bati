@@ -1,13 +1,19 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Skeleton } from "@/components/common/Skeleton";
 import { KillReport } from "@/components/journal/KillReport";
-import { NButton, NMuted, NPageHeader, NStatusScrim } from "@/components/journal/nocturne";
+import {
+  NBackButton,
+  NButton,
+  NMuted,
+  NPageHeader,
+  NStatusScrim,
+} from "@/components/journal/nocturne";
 import { QuestLog } from "@/components/journal/QuestLog";
 import { type LoadedSession, readSession } from "@/components/journal/sessionLog";
 import { useConfirmForget } from "@/components/journal/useConfirmForget";
@@ -25,6 +31,9 @@ const parseId = (raw?: string | string[]): number | null => {
  * One session: the quest log, or the kill report when this is the session that felled a boss.
  * Same route for both, so the history row and the boss list open the same page for the same kill.
  */
+/** Past this the hero (and the back button it carries) has left the screen. */
+const HERO_SCROLL_OFF = 160;
+
 export default function SessionDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -33,6 +42,8 @@ export default function SessionDetailScreen() {
   const { confirmForget, dialog } = useConfirmForget();
   const language = useSettingsStore((s) => s.language);
   const sessionId = parseId(params.id);
+  // The hero's own back button scrolls away with the page; once it has, a fixed one takes over.
+  const [pastHero, setPastHero] = useState(false);
   const [loaded, setLoaded] = useState<LoadedSession>({ status: "loading" });
 
   const load = useCallback(
@@ -87,8 +98,11 @@ export default function SessionDetailScreen() {
   return (
     <YStack flex={1} bg="$bgDark">
       <ScrollView
+        testID="journal-detail-scroll"
         contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
         showsVerticalScrollIndicator={false}
+        scrollEventThrottle={100}
+        onScroll={(e) => setPastHero(e.nativeEvent.contentOffset.y > HERO_SCROLL_OFF)}
       >
         {loaded.kill && params.view !== "log" ? (
           <KillReport
@@ -113,6 +127,16 @@ export default function SessionDetailScreen() {
           </AppButton>
         </YStack>
       </ScrollView>
+      {pastHero ? (
+        <View style={{ position: "absolute", top: insets.top + 11, left: 11 }}>
+          <NBackButton
+            testID="journal-fixed-back"
+            onPress={() => router.back()}
+            label={t("common.go_back")}
+            veiled
+          />
+        </View>
+      ) : null}
       <NStatusScrim />
       {dialog}
     </YStack>

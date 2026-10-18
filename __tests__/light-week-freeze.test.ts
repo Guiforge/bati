@@ -130,12 +130,13 @@ describe("a running light week freezes the ladder and the target", () => {
     expect(flags.map((f) => f.n)).toEqual([1, 0]);
   });
 
-  test("lightenRounds marks only a quest that really lost a round", () => {
+  test("lightenRounds takes one round and marks only a quest that really lost it", () => {
     const { lightenRounds } = lw();
     expect(lightenRounds({ rounds: 3 }, null, true, false)).toEqual({ rounds: 2, lightened: true });
-    expect(lightenRounds({ rounds: 3 }, null, true, true).lightened).toBeUndefined();
-    expect(lightenRounds({ rounds: 3 }, { rounds: 3 }, true, false).lightened).toBeUndefined();
-    expect(lightenRounds({ rounds: 1 }, null, true, false).lightened).toBeUndefined();
+    expect(lightenRounds({ rounds: 3 }, null, true, true)).toEqual({ rounds: 3 });
+    expect(lightenRounds({ rounds: 3 }, { rounds: 3 }, true, false)).toEqual({ rounds: 3 });
+    expect(lightenRounds({ rounds: 3 }, null, false, false)).toEqual({ rounds: 3 });
+    expect(lightenRounds({ rounds: 1 }, null, true, false)).toEqual({ rounds: 1 });
   });
 
   test("unlightened clean sessions leave the ladder frozen during the week, then count", async () => {

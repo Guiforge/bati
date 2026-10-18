@@ -142,10 +142,6 @@ describe("db/lightWeek", () => {
     // A session begun before the tap and saved after it is not in the week.
     expect(await lw().isLightWeekRunning(new Date(NOW.getTime() - 1000))).toBe(false);
     expect(lw().lightWeekRunning(NOW.getTime(), new Date(NOW.getTime() - 1))).toBe(false);
-    expect(lw().lightenRounds({ rounds: 3 }, null, true, false).rounds).toBe(2);
-    expect(lw().lightenRounds({ rounds: 1 }, null, true, false).rounds).toBe(1);
-    expect(lw().lightenRounds({ rounds: 3 }, { rounds: 3 }, true, false).rounds).toBe(3);
-    expect(lw().lightenRounds({ rounds: 3 }, null, false, false).rounds).toBe(3);
   });
 
   test("the hero can end the week early, and the offer does not come straight back", async () => {

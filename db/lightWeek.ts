@@ -60,8 +60,9 @@ export type LightWeekReason = "under" | "busy";
  * Why Home proposes the week, or null when it does not. `sessions` are workouts, newest first.
  *
  * Under-target counts only sessions after the hero's last answer (for an accepted week, its end
- * or `endedAt`, not the tap), so an answered offer needs two new ones. The busy-weeks trigger reads seven-day windows ending now; after an accepted week it
- * waits five weeks, or the next window would re-offer the rest the hero just took.
+ * or `endedAt`, not the tap), so an answered offer needs two new ones. The busy-weeks trigger
+ * reads seven-day windows ending now; after an accepted week it waits five weeks, or the next
+ * window would re-offer the rest the hero just took.
  */
 export function lightWeekDue(
   sessions: readonly LightWeekSession[],
@@ -72,8 +73,8 @@ export function lightWeekDue(
   if (lightWeekRunning(acceptedAt, now, endedAt)) return null;
   if (refusedAt != null && t - refusedAt < REFUSAL_SILENCE_DAYS * DAY_MS) return null;
 
-  // An accepted week answers until it ends: its own sessions are judged again (D-52, a hero-written
-  // quest keeps all its rounds), and two misses inside it must not offer the next week on day 8.
+  // An accepted week answers until it ends: only sessions whose rounds were lightened are neutral
+  // (D-52); the rest, hero-written, hand-set or 1-round quests, are judged normally, and two misses inside it must not offer the next week on day 8.
   const weekEnd =
     acceptedAt == null
       ? 0
@@ -96,6 +97,7 @@ export function lightWeekDue(
 /**
  * One round fewer, never under the floor, never over a number the hero set by hand, and never on
  * a quest the hero wrote: it runs exactly as written, like zone, global rest and the rung offer.
+ * When it takes a round off it sets the `lightened` marker that createCompletedSession reads.
  */
 export function lightenRounds<Q extends { rounds: number }>(
   quest: Q,

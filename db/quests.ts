@@ -230,7 +230,7 @@ export type QuestTemplate = QuestHead & {
 export type Quest = QuestHead & {
   exercises: QuestExercise[];
   /** Set by `lightenRounds` when a light week took a round off: only such a session is neutral (D-52). */
-  lightened?: boolean;
+  lightened?: true;
 };
 
 /** What a session trains — the answer to "is this arms or legs?" without reading its exercises. */

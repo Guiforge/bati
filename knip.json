@@ -13,7 +13,6 @@
     "expo-dev-client",
     "@react-navigation/bottom-tabs",
     "@react-navigation/elements",
-    "@react-navigation/native",
     "expo-updates",
     "@tamagui/babel-plugin",
     "babel-plugin-transform-remove-console",

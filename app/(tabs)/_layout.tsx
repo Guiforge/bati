@@ -1,3 +1,4 @@
+import { StackActions } from "@react-navigation/native";
 import { Tabs } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -13,7 +14,14 @@ export default function TabsLayout() {
 
   return (
     <Tabs
-      screenListeners={({ navigation }) => ({
+      screenListeners={({ navigation, route }) => ({
+        // `popToTopOnBlur` only runs after a tab-bar transition, so a deep link (bati://village)
+        // left a dirty editor mounted under the next visit. Unwind whatever moved the tab.
+        blur: () => {
+          if (route.name !== "quests" && route.name !== "adventures") return;
+          const key = navigation.getState().routes.find((r) => r.key === route.key)?.state?.key;
+          if (key) navigation.dispatch({ ...StackActions.popToTop(), target: key });
+        },
         // An open editor with unsaved edits asks before another tab takes over (see the hook).
         tabPress: (e) => interceptTabPress(e, navigation),
       })}

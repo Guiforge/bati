@@ -63,6 +63,8 @@ export function ExerciseHero({
   const side = Math.min(band.w, band.h);
   // Dead space either side of the square: 0 on a phone, where the square fills the band.
   const gutter = Math.max(0, (band.w - side) / 2);
+  // The récitatif follows the square only when the square can hold a name; a 95 dp one split words.
+  const inset = side >= 240 ? gutter : 0;
   const scaleX = mirrored ? -1 : 1;
   // Through zero, so it reads as a card turning over rather than a jump cut. Reduced motion gets
   // the cut, as a plain style.
@@ -174,7 +176,7 @@ export function ExerciseHero({
 
       {/* The name sits in a récitatif, bottom-left of the square, so it never starts
           outside the picture on a wide band. */}
-      <YStack position="absolute" b="$3" l={gutter} r={gutter} px="$4">
+      <YStack position="absolute" b="$3" l={inset} r={inset} px="$4">
         <Recitatif numberOfLines={2} testID="exercise-hero-name">
           {name}
         </Recitatif>

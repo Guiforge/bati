@@ -3,7 +3,7 @@ import { questHeaderHeight, WARMUP_PICTURE_MIN_HEIGHT } from "@/constants/layout
 
 describe("questHeaderHeight", () => {
   it("keeps the 16:9 on a phone", () => {
-    expect(questHeaderHeight(411, 891)).toBe(Math.round((411 * 9) / 16));
+    expect(questHeaderHeight(411, 891)).toBe(Math.round(((411 - 40) * 9) / 16));
   });
 
   it("caps at 30% of a landscape tablet window", () => {
@@ -11,7 +11,7 @@ describe("questHeaderHeight", () => {
   });
 
   it("measures the column, not a wide window, in portrait", () => {
-    expect(questHeaderHeight(800, 1280)).toBe(293);
+    expect(questHeaderHeight(800, 1280)).toBe(270);
   });
 });
 

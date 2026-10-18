@@ -41,7 +41,8 @@ export function narrativeArtHeight(windowWidth: number, windowHeight: number) {
  * under the fold. Phones from 675 dp of height up are unchanged, the cap is above their 16:9.
  */
 export function questHeaderHeight(windowWidth: number, windowHeight: number) {
-  const column = Math.min(windowWidth, CONTENT_MAX_WIDTH);
+  // The screen pads its column by $5 (20 dp) a side; the picture sits inside that padding.
+  const column = Math.min(windowWidth, CONTENT_MAX_WIDTH) - 40;
   return Math.min(Math.round((column * 9) / 16), Math.round(windowHeight * 0.3));
 }
 

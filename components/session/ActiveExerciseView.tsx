@@ -362,8 +362,6 @@ export function ActiveExerciseView() {
   return (
     <YStack
       flex={1}
-      // The hero is the only elastic child; once capped, the rest centres instead of pooling below.
-      justify="center"
       bg={screenBg}
       pb={insets.bottom + 16}
       transition={reducedMotion ? undefined : "quick"}
@@ -538,7 +536,14 @@ export function ActiveExerciseView() {
           factor instead of by content, which is how the CTA ended up below the fold.
           The boss branch is no exception: the arena grows (`flexGrow`, floored at its art cut), so
           the slack lands in the monster's painting, not as a void around the counter. */}
-      <YStack px="$4" pt="$4" gap="$4" style={{ flexShrink: 1, minHeight: 0 }}>
+      <YStack
+        px="$4"
+        pt="$4"
+        gap="$4"
+        // Once the hero is capped the slack splits around this block, not around the picture, so
+        // the art stays pinned under the HUD.
+        style={{ flexShrink: 1, minHeight: 0, marginVertical: "auto" }}
+      >
         {/* An outing replaces the countdown entirely: what a hero wants at kilometre three is
             how far they have gone, not how much of a prescribed duration is left. The clock is
             still running underneath — `completeExercise` records the elapsed seconds either

@@ -243,6 +243,13 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
   // clocks and different days, and 0038 backfilled the older half from `performedAt`.
   const performedAt = input.performedAt ?? new Date();
 
+  // A session played in a light week is neutral for every ladder reader (rung, M-03 +1, cap
+  // series): the hero resumes where they were the day they accepted it. Read before the
+  // transaction, like the device id. Required on use: lightWeek imports this file.
+  const lightWeek = await (
+    require("./lightWeek") as typeof import("./lightWeek")
+  ).isLightWeekRunning(performedAt);
+
   return transactionOrFallback(async (tx) => {
     const inserted = await tx
       .insert(completedQuest)
@@ -322,7 +329,7 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
           typeof ex.prescribed === "number" && Number.isFinite(ex.prescribed)
             ? Math.max(1, Math.floor(ex.prescribed))
             : null,
-        ladderNeutral: neutral[index] ?? false,
+        ladderNeutral: lightWeek || (neutral[index] ?? false),
         notes: ex.notes ?? "",
         performedAt: ex.performedAt ?? input.performedAt ?? new Date(),
       };

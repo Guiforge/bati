@@ -51,13 +51,60 @@ describe("a running light week freezes the ladder and the target", () => {
     return nameOf((await loadSlotJournal([plank])).served.get(plank));
   };
 
-  test("a clean session during the week promotes nobody; ending the week gives it back", async () => {
+  test("a clean session during the week promotes nobody, and stays neutral after it", async () => {
     await lw().acceptLightWeek(new Date(Date.now() - DAY));
     await cleanPlank();
     expect(await servedPlank()).toBe("Dead Bug");
 
     await lw().endLightWeek(new Date());
+    expect(await servedPlank()).toBe("Dead Bug");
+  });
+
+  test("three clean week sessions serve nothing; only the normal session after them counts", async () => {
+    await lw().acceptLightWeek(new Date(Date.now() - DAY));
+    for (let i = 0; i < 3; i++) await cleanPlank();
+    await lw().endLightWeek(new Date());
+    expect(await servedPlank()).toBe("Dead Bug");
+    // The ladder serves a rung on the first clean session in its window: this one is that session.
+    await cleanPlank();
     expect(await servedPlank()).toBe("Plank");
+  });
+
+  test("week sessions are stored neutral, a normal one is not", async () => {
+    await lw().acceptLightWeek(new Date(Date.now() - DAY));
+    await cleanPlank();
+    await lw().endLightWeek(new Date());
+    await cleanPlank();
+    const flags = t.sqlite
+      .prepare("SELECT ladderNeutral AS n FROM completed_exercises ORDER BY id")
+      .all() as { n: number }[];
+    expect(flags.map((f) => f.n)).toEqual([1, 0]);
+  });
+
+  test("the +1 resumes from the pre-week target", async () => {
+    const plank = idOf("Plank");
+    const { loadSlotJournal, progressiveSlot } =
+      require("../db/quests") as typeof import("../db/quests");
+    await repsSessionAt(plank, 10, 10);
+    await lw().acceptLightWeek(new Date(Date.now() - 5 * DAY));
+    for (const d of [3, 2, 1]) await repsSessionAt(plank, d, 14);
+    await lw().endLightWeek(new Date());
+    const journal = await loadSlotJournal([plank]);
+    const { target } = progressiveSlot({
+      base: { type: "reps", min: 6, max: 14 },
+      fallback: { type: "reps", value: 8 },
+      exercise: { id: plank, style: "standard" } as never,
+      level: "medium",
+      journal,
+    });
+    // Without the week the three clean 14s would have pushed it to the cap; it stays at 14.
+    expect(target.value).toBe(14);
+  });
+
+  test("a hero quest keeps its rounds in a light week", () => {
+    const { lightenRounds } = lw();
+    expect(lightenRounds({ rounds: 3, author: "hero" }, null, true).rounds).toBe(3);
+    expect(lightenRounds({ rounds: 3, author: "Admin" }, null, true).rounds).toBe(2);
   });
 
   test("the exercise page's next step does not announce a rung the quest does not serve", async () => {
@@ -193,6 +240,6 @@ describe("a running light week freezes the ladder and the target", () => {
     expect(chain?.position).toBe(1);
 
     await lw().endLightWeek(new Date());
-    expect((await getChainTo(plank))?.position).toBe(2);
+    expect((await getChainTo(plank))?.position).toBe(1);
   });
 });

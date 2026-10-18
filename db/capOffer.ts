@@ -41,11 +41,14 @@ type Slot = Pick<QuestExercise, "id" | "exercise" | "target" | "substitutedFor">
  * ponytail: the window is 60 sessions, about 20 weeks at three a week. A run that long is read as
  * "no offer" rather than guessed; raise `RUN_WINDOW` if a hero ever sits at a cap that long.
  */
-function capRun(recent: readonly SessionMark[], cap: number): number | null {
+function capRun(marks: readonly SessionMark[], cap: number): number | null {
+  // A neutral session (a light week's, a lowered target) is judged by nobody: it neither counts
+  // nor breaks the run.
+  const recent = marks.filter((m) => m.met !== null);
   const miss = recent.findIndex(
     (m) => !(m.met === true && m.prescribed !== null && m.prescribed >= cap),
   );
-  return miss === -1 ? (recent.length >= RUN_WINDOW ? null : recent.length) : miss;
+  return miss === -1 ? (marks.length >= RUN_WINDOW ? null : recent.length) : miss;
 }
 
 /** Sessions of one movement read to count the run at the cap. */

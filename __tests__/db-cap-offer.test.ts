@@ -122,6 +122,25 @@ test("a miss starts the count over", async () => {
   expect(await checkCapOffers(questId, [await slotOf(slot)], "medium")).toEqual([]);
 });
 
+test("neutral sessions (a light week's) neither advance the series nor break it", async () => {
+  const { questId, slot } = quest();
+  // Newest first: one clean, two neutral, two clean. The neutral ones are skipped, so the run is 3.
+  sessions(questId, 5);
+  t.sqlite.exec(
+    `UPDATE completed_exercises SET ladderNeutral = 1
+     WHERE performedAt IN (${NOW - 2 * DAY}, ${NOW - 3 * DAY})`,
+  );
+  expect(await checkCapOffers(questId, [await slotOf(slot)], "medium")).toHaveLength(1);
+  // Two neutral sessions on top of two clean ones: the run is 2, no offer.
+  t.sqlite.exec("DELETE FROM completed_exercises; DELETE FROM completed_sessions");
+  sessions(questId, 4);
+  t.sqlite.exec(
+    `UPDATE completed_exercises SET ladderNeutral = 1
+     WHERE performedAt IN (${NOW - DAY}, ${NOW - 2 * DAY})`,
+  );
+  expect(await checkCapOffers(questId, [await slotOf(slot)], "medium")).toEqual([]);
+});
+
 test("two sessions, or a miss among the three, offer nothing", async () => {
   const { questId, slot } = quest();
   sessions(questId, 2);

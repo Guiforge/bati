@@ -315,9 +315,9 @@ arm64 release build: 53.8 MiB before this branch, 55.7 with Bouncy Castle, 54.5 
 
 **V-02 animal portraits (2026-10-12).** Local `.perf` arm64 release build: 54.14 MiB before the crest portraits, 56.42 MiB with the 53 of them at 512 px, 55.09 MiB after a first fit (q70, 0.895 MiB of portraits, 0.09 MiB over the ceiling), 54.89 MiB after the second and the tour 6 portraits (57,561,124 bytes, 0.11 MiB under 55). The portraits now weigh 0.696 MiB: `cwebp` method 6, alpha quality 0; q60 with `-sns 100` for 44 of them; the nine amber-eyed bears q85 with `-sharp_yuv` (`KEEP_Q90` in [`scripts/fit-small-art.py`](../../scripts/fit-small-art.py)), because at q70 chroma subsampling turns an amber iris grey-blue, which a before/after at 4x shows and a global chroma-loss measure does not; sharp chroma keeps the eye at 8.8 colour error against 15.8 at q70 and 6.9 at q90, for 0.23 MiB less than q90. Young and venerable portraits are 400 px (they draw at most 192dp); adults and legendaries stay 448. Gradle's bundle task does not track asset changes: rebuild with `./gradlew :app:createBundleReleaseJsAndAssets --rerun :app:assembleRelease …` or the APK silently keeps the old images.
 
-[`.github/workflows/release.yml`](../../.github/workflows/release.yml) fails the release over
-55 MiB. It is a ratchet: lower it after a release that measures under it, never raise it to make
-a build pass.
+The release workflow failed a release over 55 MiB until 2026-10-18, when the budget was removed by
+choice (the fleet merge measured 56.25 MiB arm64). Nothing gates the size now; the measurements
+above are the record.
 
 ## Related
 

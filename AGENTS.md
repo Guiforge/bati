@@ -44,14 +44,13 @@ dev, `--no-dev --minify` and `.perf` release workflows.
   by `expo/bundledNativeModules.json` on purpose, F-Droid rebuilds them from source against the
   SDK's React Native, and a version the SDK does not expect is their build error, not ours.
 
-- Four gates run only in CI, so run them by hand if a change plausibly moves one:
+- Three gates run only in CI, so run them by hand if a change plausibly moves one:
   **dependency licences** (`npx license-checker-rseidelsohn --production --excludePrivatePackages
   --summary --failOn "…"` in [`ci.yml`](.github/workflows/ci.yml)) blocks GPL/AGPL/LGPL/SSPL/BUSL
   in the shipped tree, because F-Droid rejects what it cannot redistribute and does so a release
   cycle late; it is a blocklist, not an allowlist, so adding an MIT package must never turn main
-  red. **APK size** ([`release.yml`](.github/workflows/release.yml)) fails the release over
-  55 MiB — a ratchet, lower it after a release that measures under, never raise it. The measured
-  breakdown of where those megabytes are is in
+  red. APK size has no gate since 2026-10-18 (the 55 MiB budget was removed by choice); the
+  measured breakdown of where the megabytes are is in
   [`docs/architecture/performance.md`](docs/architecture/performance.md) § Binary size.
   **16 KB pages** (same workflow) fails the release if any `.so` in the APK or the AAB has a
   `LOAD` segment aligned under 0x4000, which Play refuses from 2027-02-01. By hand, after

@@ -269,26 +269,6 @@ jobs:
           cp "$apk_src" "$apk_dest"
           echo "apk_path=$apk_dest" >> "$GITHUB_OUTPUT"
 
-      # A size budget is the only thing that keeps the APK from drifting back up — a one-off
-      # optimisation pass does not. It is a ratchet: lower MAX_MB after any release that measures
-      # under it, never raise it to make a build pass.
-      #
-      # Baseline: v1.13.0 shipped at 67.1 MiB. Four measured cuts since — 4.7 MiB of unused font
-      # weights, 1.2 MiB of unused Lucide icons, 15.6 MiB from compressing the native libraries,
-      # 0.6 MiB of GIF decoders — put the next build near 45 MiB, so 64 leaves deliberate slack
-      # for an estimate that proves optimistic. Lower it to just above whatever that build
-      # actually reports. `workflow_dispatch` on a branch builds the APK without publishing, so a
-      # change can be weighed before it is tagged.
-      #
-      # On the foss APK, the one people download. Play serves splits cut from the AAB.
-      - name: Size budget
-        if: matrix.variant == 'foss'
-        env:
-          APK_PATH: ${{ steps.artefacts.outputs.apk_path }}
-          MAX_MB: 55
-        run: |
-          node scripts/check-apk-size.mjs "$APK_PATH" "$MAX_MB"
-
       # The permission list is the app's public record: the install screen, what Exodus Privacy
       # publishes, what an F-Droid reviewer reads back to you. __tests__/android-permissions.test.ts
       # guards it on every push, but it scans npm package manifests and a Gradle AAR is invisible

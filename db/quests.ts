@@ -715,6 +715,11 @@ export type SlotJournal = {
   /** When `history` was read, ms: what "more than 14 days ago" is measured from. Defaults to now. */
   readAt?: number;
   /**
+   * A running light week froze the ladder and tonight's target at this instant (ms): sessions
+   * from then on neither promote a rung (`served`) nor move a target (`progressiveSlot`).
+   */
+  freezeAt?: number;
+  /**
    * The hero's month of running, which is what a run slot is proposed from (`proposedRunSeconds`).
    * Absent means nobody asked: the slot runs at its seeded duration, which is right for a hero's
    * own quest and for a caller with no run to resolve.
@@ -730,9 +735,20 @@ export const QUEST_AS_WRITTEN: SlotJournal = {
   history: new Map(),
 };
 
+/**
+ * When a running light week froze the ladder and the targets, or null. Required on use:
+ * lightWeek -> pause -> setAside -> questConfig -> this file is a cycle at load time.
+ */
+const frozenAt = () =>
+  (require("./lightWeek") as typeof import("./lightWeek")).lightWeekSince(new Date());
+
 /** Every read at once, for every movement a set of quests can put on screen. */
 export async function loadSlotJournal(exerciseIds: number[]): Promise<SlotJournal> {
-  const served = await currentRungFor(exerciseIds);
+  const freezeAt = await frozenAt();
+  const served = await currentRungFor(
+    exerciseIds,
+    freezeAt == null ? undefined : new Date(freezeAt),
+  );
   const setAside = await loadSetAsideIds();
   const replaced = await loadReplacements(exerciseIds, served, setAside);
   const history = await getExerciseHistory([
@@ -743,7 +759,15 @@ export async function loadSlotJournal(exerciseIds: number[]): Promise<SlotJourna
   const ids = new Set(exerciseIds);
   const hasRun = (await listExercises()).some((e) => ids.has(e.id) && e.locomotion === "run");
   const runHabit = hasRun ? await getOutingHabit("run") : undefined;
-  return { served, replaced, setAside, history, readAt, ...(runHabit ? { runHabit } : {}) };
+  return {
+    served,
+    replaced,
+    setAside,
+    history,
+    readAt,
+    ...(freezeAt == null ? {} : { freezeAt }),
+    ...(runHabit ? { runHabit } : {}),
+  };
 }
 
 async function loadSetAsideIds(): Promise<Set<number>> {
@@ -790,7 +814,7 @@ export function progressiveSlot(input: {
   fallback: Target;
   exercise: Pick<Exercise, "id" | "style">;
   level: UserLevel;
-  journal: Pick<SlotJournal, "history" | "readAt">;
+  journal: Pick<SlotJournal, "history" | "readAt" | "freezeAt">;
   start?: "band" | "floor";
 }): { target: Target; why: TargetWhy; ghost: ExerciseGhost | undefined } {
   const { base, fallback, exercise, level, journal } = input;
@@ -799,6 +823,14 @@ export function progressiveSlot(input: {
     generateTarget({ ...base, min: base[e], max: base[e] }, level).value;
   const same = fallback.type === base.type;
   const ghost = journal.history.get(ghostKey(exercise.id, fallback.type));
+  // Frozen (light week): only what was done before the week moves the target.
+  const recent = (ghost?.recent ?? []).filter(
+    (m) => journal.freezeAt == null || m.at < journal.freezeAt,
+  );
+  const lastAt =
+    journal.freezeAt == null || (ghost?.at ?? 0) < journal.freezeAt
+      ? (ghost?.at ?? null)
+      : (recent[0]?.at ?? null);
   const { value, why } = progressiveTarget({
     type: fallback.type,
     band: fallback.value,
@@ -806,8 +838,8 @@ export function progressiveSlot(input: {
     floor: same ? edge("min") : range.min,
     top: same ? edge("max") : range.max,
     level,
-    recent: ghost?.recent ?? [],
-    lastAt: ghost?.at ?? null,
+    recent,
+    lastAt,
     now: journal.readAt ?? Date.now(),
     range,
   });
@@ -1132,6 +1164,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
   // thing left to ask the journal for is the ghost.
   const substitute = !isUserQuest(first);
   const ids = rows.map((r) => r.exId);
+  const userFreezeAt = substitute ? null : await frozenAt();
   const journal = substitute
     ? await loadSlotJournal(ids)
     : {
@@ -1139,6 +1172,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
         // Not substituted, but still read: the slot has to say when it runs a set-aside exercise.
         setAside: await loadSetAsideIds(),
         history: await getExerciseHistory([...new Set(ids)]),
+        ...(userFreezeAt == null ? {} : { freezeAt: userFreezeAt }),
       };
 
   // A substituted slot needs the whole movement, not the four fields the ladder carries: the

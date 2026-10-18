@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gte, inArray, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { workoutsBeforeToday } from "./completed";
 import { writeContentTombstone } from "./contentTombstone";
@@ -651,7 +651,9 @@ export function forgetEverEarned(): void {
   everEarnedCache = null;
 }
 
-async function everEarnedMovements(): Promise<Set<number>> {
+async function everEarnedMovements(before?: Date): Promise<Set<number>> {
+  // A frozen standing (light week) is read from the journal as it was; it is not the cached one.
+  if (before) return readEverEarnedMovements(before);
   const [journal] = await db.all<{ rows: number; lastId: number | null }>(
     sql`SELECT COUNT(*) AS rows, MAX(id) AS lastId FROM completed_exercises`,
   );
@@ -667,7 +669,9 @@ async function everEarnedMovements(): Promise<Set<number>> {
   return everEarnedCache.earned;
 }
 
-async function readEverEarnedMovements(): Promise<Set<number>> {
+async function readEverEarnedMovements(before?: Date): Promise<Set<number>> {
+  // `performedAt` is in seconds, and a raw read does not go through the column's mapper.
+  const upTo = before ? sql`AND performedAt < ${Math.floor(before.getTime() / 1000)}` : sql``;
   const rows = await db.all<{ exerciseId: number }>(sql`
     SELECT DISTINCT exerciseId FROM (
       SELECT exerciseId, met,
@@ -678,7 +682,7 @@ async function readEverEarnedMovements(): Promise<Set<number>> {
         SELECT exerciseId, sessionId, MIN(performedAt) AS at,
                MIN(${setMetSql}) AS met
         FROM completed_exercises
-        WHERE ladderNeutral = 0
+        WHERE ladderNeutral = 0 ${upTo}
         GROUP BY exerciseId, sessionId
       )
     )
@@ -698,7 +702,11 @@ async function readEverEarnedMovements(): Promise<Set<number>> {
  * This is the same seek `recentMetFlags` does, hoisted out of the per-movement loop because
  * `currentRungFor` needs it for every rung of every slot of a quest.
  */
-export async function recentMetFlagsBatch(exerciseIds: number[]): Promise<Map<number, boolean[]>> {
+export async function recentMetFlagsBatch(
+  exerciseIds: number[],
+  /** Sessions from this instant on are ignored: a standing frozen by a light week. */
+  before?: Date,
+): Promise<Map<number, boolean[]>> {
   if (exerciseIds.length === 0) return new Map();
 
   const since = new Date(Date.now() - PROGRESSION_WINDOW_DAYS * 24 * 60 * 60 * 1000);
@@ -712,6 +720,7 @@ export async function recentMetFlagsBatch(exerciseIds: number[]): Promise<Map<nu
       and(
         inArray(schema.completedExercises.exerciseId, exerciseIds),
         gte(schema.completedExercises.performedAt, since),
+        ...(before ? [lt(schema.completedExercises.performedAt, before)] : []),
         eq(schema.completedExercises.ladderNeutral, false),
       ),
     )
@@ -745,7 +754,11 @@ export async function recentMetFlagsBatch(exerciseIds: number[]): Promise<Map<nu
  * A movement off the ladder, or one whose chain is fully earned, maps to itself — callers can
  * treat the result as a total function and never special-case.
  */
-export async function currentRungFor(exerciseIds: number[]): Promise<Map<number, number>> {
+export async function currentRungFor(
+  exerciseIds: number[],
+  /** Read the standing as it was at this instant: a running light week promotes nobody. */
+  before?: Date,
+): Promise<Map<number, number>> {
   const wanted = [...new Set(exerciseIds)];
   if (wanted.length === 0) return new Map();
 
@@ -769,8 +782,8 @@ export async function currentRungFor(exerciseIds: number[]): Promise<Map<number,
   }
 
   const [flags, everEarned] = await Promise.all([
-    recentMetFlagsBatch([...new Set([...chains.values()].flat())]),
-    everEarnedMovements(),
+    recentMetFlagsBatch([...new Set([...chains.values()].flat())], before),
+    everEarnedMovements(before),
   ]);
 
   const result = new Map<number, number>();

@@ -167,4 +167,18 @@ describe("a running light week freezes the ladder and the target", () => {
     expect(await checkForNewRungs(sessionId)).toEqual([]);
     expect(await checkCapOffers(1, [], "medium")).toEqual([]);
   });
+
+  test("the chain position follows the rung the quest serves, not the live ladder", async () => {
+    await lw().acceptLightWeek(new Date(Date.now() - DAY));
+    await cleanPlank();
+    const { getChainTo } = require("../db/exercises") as typeof import("../db/exercises");
+    const plank = idOf("Plank");
+    const chain = await getChainTo(plank);
+    const served = await servedPlank();
+    expect(chain?.rungs[(chain?.position ?? 1) - 1]?.exercise.enName).toBe(served);
+    expect(chain?.position).toBe(1);
+
+    await lw().endLightWeek(new Date());
+    expect((await getChainTo(plank))?.position).toBe(2);
+  });
 });

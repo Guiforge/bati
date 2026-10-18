@@ -605,7 +605,14 @@ export async function getChainTo(exerciseId: number): Promise<Chain | null> {
   if (chain.length < 2) return null;
 
   const ids = chain.map((row) => row.id);
-  const [flags, everEarned] = await Promise.all([recentMetFlagsBatch(ids), everEarnedMovements()]);
+  // A running light week freezes the standing here too, as in `currentRungFor`: the oath strip and
+  // the exercise page must name the rung the quest serves.
+  const frozen = await lightWeekFreeze();
+  const before = frozen == null ? undefined : new Date(frozen);
+  const [flags, everEarned] = await Promise.all([
+    recentMetFlagsBatch(ids, before),
+    everEarnedMovements(before),
+  ]);
 
   const rungs = chain.map((row): ChainRung => {
     const metTarget = streakOf(flags.get(row.id) ?? []);

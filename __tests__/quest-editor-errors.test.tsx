@@ -132,6 +132,39 @@ describe("quest editor, a new quest", () => {
 
     expect(editor.getAllByText(/^45/)).toHaveLength(2);
   });
+
+  it("opens on 30 s when the hero set none", async () => {
+    delete mockParams.id;
+    const editor = await mountEditor();
+
+    expect(editor.getAllByText(/^30/)).toHaveLength(2);
+  });
+
+  it("leaves an existing quest on its own rest, whatever Settings say", async () => {
+    const dbm = require("@/db") as {
+      preferences: { getRestDefault: jest.Mock };
+      getQuestTemplateById: jest.Mock;
+    };
+    dbm.preferences.getRestDefault.mockResolvedValue(45);
+    dbm.getQuestTemplateById.mockResolvedValue({
+      id: 7,
+      enTitle: "Porch forge",
+      frTitle: "Porch forge",
+      enDescription: "",
+      frDescription: "",
+      rounds: 1,
+      restSeconds: 20,
+      roundRestSeconds: null,
+      imagePath: null,
+      exercises: [],
+    });
+    mockParams.id = "7";
+    const editor = await mountEditor();
+    dbm.preferences.getRestDefault.mockResolvedValue(null);
+
+    expect(editor.queryAllByText(/^45/)).toHaveLength(0);
+    expect(editor.getAllByText(/^20/)).toHaveLength(2);
+  });
 });
 
 // A quest an adventure names cannot be deleted: the dialog says so, and nothing is written.

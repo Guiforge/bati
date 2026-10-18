@@ -1,11 +1,11 @@
 import fs from "node:fs";
 
-// F2: the LCEN (art. 6-III) notice. Its unknown fields are placeholders the publisher fills in,
-// so this does not fail on them; it holds that the page exists, names the three parties and is
-// linked from every page of the site.
-test("the legal notice names publisher, host and contact, and the footer links it", () => {
+// F2: the LCEN (art. 6-III) notice is kept as a draft (owner decision of 18/10): Pages does not
+// build it and nothing links to it until the publisher fills in the unknown fields.
+test("the legal notice is a draft that Pages skips and no page links", () => {
   const page = fs.readFileSync("docs/legal/mentions-legales.md", "utf8");
-  expect(page).toContain("permalink: /mentions-legales/");
+  expect(page).toContain("status: draft");
+  expect(page).toContain("published: false");
   for (const needle of [
     "## Éditeur",
     "## Hébergeur du site",
@@ -14,7 +14,11 @@ test("the legal notice names publisher, host and contact, and the footer links i
   ]) {
     expect(page).toContain(needle);
   }
-  expect(fs.readFileSync("docs/legal/_layouts/default.html", "utf8")).toContain(
-    'href="/mentions-legales/"',
-  );
+  for (const f of [
+    "docs/legal/_layouts/default.html",
+    "docs/legal/index.html",
+    "docs/legal/privacy.md",
+  ]) {
+    expect(fs.readFileSync(f, "utf8")).not.toContain("mentions-legales");
+  }
 });

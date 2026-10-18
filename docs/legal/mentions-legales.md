@@ -5,7 +5,8 @@ title: Mentions légales
 head_title: "Mentions légales de Bati"
 description: "Éditeur, hébergeur et contact du site getbati.app et de l'application Bati."
 type: legal
-status: active
+status: draft
+published: false
 updated: 2026-10-17
 permalink: /mentions-legales/
 ---

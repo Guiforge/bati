@@ -741,6 +741,13 @@ export async function recentMetFlagsBatch(
 }
 
 /**
+ * When a running light week froze the ladder, or null. Required on use: lightWeek -> pause ->
+ * setAside -> questConfig -> quests -> this file is a cycle at load time.
+ */
+export const lightWeekFreeze = () =>
+  (require("./lightWeek") as typeof import("./lightWeek")).lightWeekSince(new Date());
+
+/**
  * For each movement asked about, the one the hero is actually working: the rung just above the
  * highest one behind them (`ladderPosition`), or the movement itself once everything below it is.
  *
@@ -756,11 +763,15 @@ export async function recentMetFlagsBatch(
  */
 export async function currentRungFor(
   exerciseIds: number[],
-  /** Read the standing as it was at this instant: a running light week promotes nobody. */
-  before?: Date,
+  /** Read the standing as it was at this instant. Default: the running light week's start, if any. */
+  beforeArg?: Date,
 ): Promise<Map<number, number>> {
   const wanted = [...new Set(exerciseIds)];
   if (wanted.length === 0) return new Map();
+  // A running light week promotes nobody, whoever asks: the warm-up, a replacement and the quest
+  // must all stand on the same rung.
+  const frozen = beforeArg ? null : await lightWeekFreeze();
+  const before = beforeArg ?? (frozen == null ? undefined : new Date(frozen));
 
   const rows = await fetchLadderRows();
   const byId = new Map(rows.map((r) => [r.id, r]));
@@ -822,6 +833,9 @@ export async function countClimbedPaths(): Promise<number> {
  * otherwise every subsequent session would re-announce the same step.
  */
 export async function checkForNewRungs(sessionId: number): Promise<VariationStep[]> {
+  // The rung is frozen for the week (`currentRungFor`): announcing it now would promise a variant
+  // the next quest does not serve.
+  if ((await lightWeekFreeze()) != null) return [];
   const [rows, sessionRows] = await Promise.all([
     fetchLadderRows(),
     db

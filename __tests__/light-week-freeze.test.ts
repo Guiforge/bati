@@ -100,4 +100,71 @@ describe("a running light week freezes the ladder and the target", () => {
     expect(run()).toBe(12);
     expect(run(now - 2 * DAY)).toBe(11);
   });
+
+  async function repsSessionAt(exerciseId: number, daysAgo: number, reps: number) {
+    const { createCompletedSession } =
+      require("../db/completed") as typeof import("../db/completed");
+    await createCompletedSession({
+      performedAt: new Date(Date.now() - daysAgo * DAY),
+      exercises: [
+        {
+          exerciseId,
+          roundIndex: 0,
+          sortOrder: 0,
+          result: { type: "reps", value: reps },
+          target: { type: "reps", value: reps },
+          prescribed: reps,
+        },
+      ],
+    });
+  }
+  const frozenSlot = async (squat: number, freezeAt: number) => {
+    const { loadSlotJournal, progressiveSlot } =
+      require("../db/quests") as typeof import("../db/quests");
+    await lw().acceptLightWeek(new Date(freezeAt));
+    const journal = await loadSlotJournal([squat]);
+    return progressiveSlot({
+      base: { type: "reps", min: 6, max: 14 },
+      fallback: { type: "reps", value: 8 },
+      exercise: { id: squat, style: "standard" } as never,
+      level: "medium",
+      journal,
+    });
+  };
+
+  test("three sessions inside the week do not push the frozen target back to the band", async () => {
+    const squat = idOf("Plank");
+    await repsSessionAt(squat, 12, 10);
+    await repsSessionAt(squat, 10, 11);
+    for (const d of [3, 2, 1]) await repsSessionAt(squat, d, 12);
+    const { target, why } = await frozenSlot(squat, Date.now() - 5 * DAY);
+    expect(why).not.toBe("band");
+    expect(target.value).toBe(12);
+  });
+
+  test("a session since the freeze is not a return from a break", async () => {
+    const squat = idOf("Plank");
+    await repsSessionAt(squat, 15, 10);
+    await repsSessionAt(squat, 1, 12);
+    const { why } = await frozenSlot(squat, Date.now() - 5 * DAY);
+    expect(why).not.toBe("comeback");
+  });
+
+  test("the warm-up, the cap offer and the victory read the frozen ladder", async () => {
+    await lw().acceptLightWeek(new Date(Date.now() - DAY));
+    await cleanPlank();
+    const { unavailableExerciseIds, checkForNewRungs } =
+      require("../db/exercises") as typeof import("../db/exercises");
+    const { checkCapOffers } = require("../db/capOffer") as typeof import("../db/capOffer");
+    const plank = idOf("Plank");
+    // Same answer as the quest (`servedPlank`): Plank itself is behind the rung not yet earned.
+    expect((await unavailableExerciseIds()).has(plank)).toBe(true);
+    const sessionId = (
+      t.sqlite.prepare("SELECT max(id) AS id FROM completed_sessions").get() as {
+        id: number;
+      }
+    ).id;
+    expect(await checkForNewRungs(sessionId)).toEqual([]);
+    expect(await checkCapOffers(1, [], "medium")).toEqual([]);
+  });
 });

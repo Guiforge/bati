@@ -425,7 +425,11 @@ export async function loadSwapJournal(
 ): Promise<SwapJournal> {
   const freezeAt = await lightWeekSince(new Date());
   return {
-    history: await getExerciseHistory(Object.values(config?.swaps ?? {})),
+    history: await getExerciseHistory(
+      Object.values(config?.swaps ?? {}),
+      undefined,
+      freezeAt ?? undefined,
+    ),
     readAt: Date.now(),
     ...(freezeAt == null ? {} : { freezeAt }),
   };

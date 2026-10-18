@@ -751,9 +751,11 @@ export async function loadSlotJournal(exerciseIds: number[]): Promise<SlotJourna
   );
   const setAside = await loadSetAsideIds();
   const replaced = await loadReplacements(exerciseIds, served, setAside);
-  const history = await getExerciseHistory([
-    ...new Set([...exerciseIds, ...served.values(), ...replaced.values()]),
-  ]);
+  const history = await getExerciseHistory(
+    [...new Set([...exerciseIds, ...served.values(), ...replaced.values()])],
+    undefined,
+    freezeAt ?? undefined,
+  );
   const readAt = Date.now();
   // Read only when a run is among them. `listExercises` is promise-cached, so asking is free.
   const ids = new Set(exerciseIds);
@@ -840,7 +842,8 @@ export function progressiveSlot(input: {
     level,
     recent,
     lastAt,
-    now: journal.readAt ?? Date.now(),
+    // The gap is measured from the freeze: a session since then is not a return.
+    now: Math.min(journal.readAt ?? Date.now(), journal.freezeAt ?? Infinity),
     range,
   });
   return { target: { type: fallback.type, value }, why, ghost };
@@ -1171,7 +1174,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
         ...QUEST_AS_WRITTEN,
         // Not substituted, but still read: the slot has to say when it runs a set-aside exercise.
         setAside: await loadSetAsideIds(),
-        history: await getExerciseHistory([...new Set(ids)]),
+        history: await getExerciseHistory([...new Set(ids)], undefined, userFreezeAt ?? undefined),
         ...(userFreezeAt == null ? {} : { freezeAt: userFreezeAt }),
       };
 

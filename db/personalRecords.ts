@@ -113,6 +113,11 @@ export async function getExerciseHistory(
   exerciseIds: number[],
   /** How many sessions `recent` keeps; the cap offer counts a run and needs more than three. */
   recentSessions: number = RECENT_SESSIONS,
+  /**
+   * A light week froze the targets at this instant (ms): the `recentSessions` kept are the newest
+   * ones from before it, so a few sessions inside the week cannot push them all out of the window.
+   */
+  frozenAt?: number,
 ): Promise<Map<string, ExerciseGhost>> {
   if (exerciseIds.length === 0) return new Map();
 
@@ -123,6 +128,8 @@ export async function getExerciseHistory(
 
   // `performedAt` is stored in seconds, and a raw read does not go through the column's mapper.
   const seasonCut = Math.floor((Date.now() - SEASON_DAYS * 24 * 60 * 60 * 1000) / 1000);
+  // In-week sessions rank after every earlier one (`recent` is cut by rank, then filtered by time).
+  const inWeek = frozenAt == null ? sql`0` : sql`(b.at >= ${Math.ceil(frozenAt / 1000)})`;
   const rows = await db.all<{
     exerciseId: number;
     resultType: QuestTargetType;
@@ -153,7 +160,7 @@ export async function getExerciseHistory(
              ) AS rn,
              ROW_NUMBER() OVER (
                PARTITION BY b.exerciseId, b.resultType, (q.author IS ${USER_EXERCISE_CREATOR})
-               ORDER BY b.at DESC, b.sessionId DESC
+               ORDER BY ${inWeek}, b.at DESC, b.sessionId DESC
              ) AS rnOwn
       FROM (
         SELECT * FROM (${sessionBestsSql(sql`exerciseId IN (${ids})`)})

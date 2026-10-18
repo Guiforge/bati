@@ -4,6 +4,7 @@ import { canDo } from "./equipment";
 import {
   type Exercise,
   fetchLadderRows,
+  lightWeekFreeze,
   listExercises,
   type MovementRef,
   successorsOf,
@@ -60,6 +61,20 @@ function completesSeries(run: number | null): boolean {
 }
 
 /**
+ * No offer for a missing quest or the hero's own (it runs exactly as written), nor during a light
+ * week: the card promises the same variants, so there is no step to offer until it ends.
+ */
+async function offersOff(questId: number): Promise<boolean> {
+  if ((await lightWeekFreeze()) != null) return true;
+  const [quest] = await db
+    .select({ author: schema.quests.author })
+    .from(schema.quests)
+    .where(eq(schema.quests.id, questId))
+    .limit(1);
+  return !quest || quest.author === USER_QUEST_AUTHOR;
+}
+
+/**
  * The slots of the quest just played whose movement completed a series of three sessions at the cap
  * (20 reps, 60 s), with the rung above it. Read after the save, from the journal, like every
  * other "what did this session change".
@@ -76,12 +91,7 @@ export async function checkCapOffers(
   slots: readonly Slot[],
   level: UserLevel,
 ): Promise<CapOffer[]> {
-  const [quest] = await db
-    .select({ author: schema.quests.author })
-    .from(schema.quests)
-    .where(eq(schema.quests.id, questId))
-    .limit(1);
-  if (!quest || quest.author === USER_QUEST_AUTHOR) return [];
+  if (await offersOff(questId)) return [];
 
   const candidates = slots.filter((s) => !s.substitutedFor && s.exercise.style !== NON_REP_STYLE);
   if (candidates.length === 0) return [];

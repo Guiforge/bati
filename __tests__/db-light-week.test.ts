@@ -63,8 +63,39 @@ describe("db/lightWeek", () => {
     session(1, [
       [10, 10],
       [7, 10],
+      [6, 10],
     ]);
     expect(await lw().lightWeekReason(NOW)).toBe("under");
+  });
+
+  test("a session is under only when more than half of its strength sets missed", async () => {
+    session(3, [[8, 10]]);
+    // Exactly half missed: not under.
+    session(1, [
+      [10, 10],
+      [7, 10],
+    ]);
+    expect(await lw().lightWeekReason(NOW)).toBeNull();
+  });
+
+  test("mobility sets do not count toward under: met stretches cannot hide missed strength", async () => {
+    session(3, [[8, 10]]);
+    const id = session(1, [[7, 10]]);
+    for (let i = 1; i <= 3; i++)
+      t.sqlite
+        .prepare(
+          `INSERT INTO completed_exercises
+             (sessionId, exerciseId, roundIndex, sortOrder, resultType, resultValue, targetValue, performedAt)
+           VALUES (?, ?, 0, ?, 'time', 30, 30, 0)`,
+        )
+        .run(id, exerciseWith("mobility"), i);
+    expect(await lw().lightWeekReason(NOW)).toBe("under");
+  });
+
+  test("a session of only mobility sets is never under", async () => {
+    session(3, [[8, 10]]);
+    session(1, [[10, 30]], exerciseWith("mobility"));
+    expect(await lw().lightWeekReason(NOW)).toBeNull();
   });
 
   test("one clean session in between breaks the run", async () => {

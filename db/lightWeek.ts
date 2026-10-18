@@ -29,7 +29,7 @@ const ACCEPTED_KEY = "lightWeekAcceptedAt";
 /** The hero ended the week early; it counts only if it is later than the acceptance. */
 const ENDED_KEY = "lightWeekEndedAt";
 
-/** A workout as the offer reads it: when, and whether at least one of its sets missed. */
+/** A workout as the offer reads it: when, and whether more than half of its strength sets missed. */
 export type LightWeekSession = { at: Date; under: boolean };
 
 export type LightWeekAnswers = {
@@ -118,6 +118,15 @@ export async function isLightWeekRunning(now: Date): Promise<boolean> {
   return lightWeekRunning(acceptedAt, now, endedAt);
 }
 
+/**
+ * When the running week began, or null when none runs: the instant the ladder and tonight's
+ * target are frozen at. Same answer as `isLightWeekRunning`, since both go through `lightWeekRunning`.
+ */
+export async function lightWeekSince(now: Date): Promise<number | null> {
+  const { acceptedAt, endedAt } = await getLightWeekAnswers();
+  return acceptedAt != null && lightWeekRunning(acceptedAt, now, endedAt) ? acceptedAt : null;
+}
+
 /** When the running week stops, or null when none runs. */
 export async function lightWeekUntil(now: Date): Promise<Date | null> {
   const { acceptedAt, endedAt } = await getLightWeekAnswers();
@@ -126,7 +135,7 @@ export async function lightWeekUntil(now: Date): Promise<Date | null> {
     : null;
 }
 
-/** Workouts of the last `BUSY_WEEKS` weeks, newest first, each with whether a set missed. */
+/** Workouts of the last `BUSY_WEEKS` weeks, newest first, each with whether it was under. */
 async function recentWorkouts(now: Date): Promise<LightWeekSession[]> {
   const since = new Date(now.getTime() - BUSY_WEEKS * 7 * DAY_MS);
   const rows = await db
@@ -135,10 +144,15 @@ async function recentWorkouts(now: Date): Promise<LightWeekSession[]> {
     .where(and(isWorkout(), gte(completedQuest.performedAt, since)))
     .orderBy(desc(completedQuest.performedAt));
   if (rows.length === 0) return [];
-  // A neutral set (a lowered target, a movement left) is neither met nor missed: filtered out,
-  // like every other reader of `setMetSql`. A session left with no set is not under.
-  const met = await db
-    .select({ id: completedExercises.sessionId, met: sql<number>`MIN(${setMetSql})` })
+  // Only strength sets vote: a neutral set (a lowered target, a movement left) is neither met nor
+  // missed, and a stretch is not a target the week is meant to ease. A session is under when more
+  // than half of its remaining sets missed; one left with none is not under.
+  const votes = await db
+    .select({
+      id: completedExercises.sessionId,
+      sets: sql<number>`COUNT(*)`,
+      missed: sql<number>`SUM(1 - ${setMetSql})`,
+    })
     .from(completedExercises)
     .where(
       and(
@@ -147,10 +161,13 @@ async function recentWorkouts(now: Date): Promise<LightWeekSession[]> {
           rows.map((r) => r.id),
         ),
         eq(completedExercises.ladderNeutral, false),
+        sql`${completedExercises.exerciseId} NOT IN (SELECT id FROM exercises WHERE pattern = 'mobility')`,
       ),
     )
     .groupBy(completedExercises.sessionId);
-  const under = new Set(met.filter((m) => Number(m.met) === 0).map((m) => m.id));
+  const under = new Set(
+    votes.filter((v) => Number(v.missed) * 2 > Number(v.sets)).map((v) => v.id),
+  );
   return rows.map((r) => ({ at: r.at, under: under.has(r.id) }));
 }
 

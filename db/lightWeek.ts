@@ -72,7 +72,15 @@ export function lightWeekDue(
   if (lightWeekRunning(acceptedAt, now, endedAt)) return null;
   if (refusedAt != null && t - refusedAt < REFUSAL_SILENCE_DAYS * DAY_MS) return null;
 
-  const answeredAt = Math.max(refusedAt ?? 0, acceptedAt ?? 0);
+  // An accepted week answers until it ends: its own sessions are judged again (D-52, a hero-written
+  // quest keeps all its rounds), and two misses inside it must not offer the next week on day 8.
+  const weekEnd =
+    acceptedAt == null
+      ? 0
+      : endedAt != null && endedAt >= acceptedAt
+        ? endedAt
+        : lightWeekEndsAt(acceptedAt).getTime();
+  const answeredAt = Math.max(refusedAt ?? 0, weekEnd);
   const fresh = sessions.filter((s) => s.at.getTime() > answeredAt).slice(0, UNDER_IN_A_ROW);
   if (fresh.length === UNDER_IN_A_ROW && fresh.every((s) => s.under)) return "under";
 

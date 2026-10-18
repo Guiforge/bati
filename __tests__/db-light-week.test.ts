@@ -116,6 +116,13 @@ describe("db/lightWeek", () => {
     expect(await lw().lightWeekReason(NOW)).toBeNull();
   });
 
+  test("two missed sessions inside an accepted week do not offer the next one on day 8", async () => {
+    await lw().acceptLightWeek(daysAgo(7.5));
+    session(5, [[5, 10]]);
+    session(4, [[5, 10]]);
+    expect(await lw().lightWeekReason(NOW)).toBeNull();
+  });
+
   test("a refusal silences the card for 14 days, then it can speak again", async () => {
     session(3, [[8, 10]]);
     session(1, [[7, 10]]);

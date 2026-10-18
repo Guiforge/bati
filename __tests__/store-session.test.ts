@@ -1085,6 +1085,23 @@ describe("useSessionStore", () => {
       );
     });
 
+    test("a hero-written quest is saved as userQuest, so a light week judges it (D-52)", async () => {
+      const completed = require("@/db/completed") as { createCompletedSession: jest.Mock };
+      completed.createCompletedSession.mockClear();
+      for (const author of ["hero", "Admin"]) {
+        store.setState({ status: "idle" });
+        await store.getState().startSession({ ...mockQuest, author } as Quest, "medium");
+        store.setState({
+          results: [{ exerciseId: 1, sortOrder: 0, result: { type: "reps", value: 10 } }],
+        });
+        await store.getState().saveSession(null);
+      }
+      expect(completed.createCompletedSession.mock.calls.map((c) => c[0].userQuest)).toEqual([
+        true,
+        false,
+      ]);
+    });
+
     /**
      * saveSession is a dozen awaits long and is not one transaction, so a failure halfway
      * through leaves the session row written — and the victory screen offers a retry button for

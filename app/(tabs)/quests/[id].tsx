@@ -4,7 +4,7 @@ import type { TFunction } from "i18next";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
-import { BackHandler, ScrollView } from "react-native";
+import { BackHandler, ScrollView, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { type ColorTokens, H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
@@ -25,6 +25,7 @@ import { SetAsideToggle } from "@/components/quests/SetAsideToggle";
 import { WarmupPreview } from "@/components/quests/WarmupPreview";
 import { getQuestAsset } from "@/constants/assetMap";
 import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
+import { questHeaderHeight } from "@/constants/layout";
 import { DIFFICULTY_TEXT_TOKENS } from "@/constants/rawColors";
 import {
   applyQuestConfig,
@@ -178,6 +179,7 @@ function LevelChip({
 export default function QuestDetails() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const { showError } = useToast();
   const params = useLocalSearchParams<{
     id?: string | string[];
@@ -760,7 +762,7 @@ export default function QuestDetails() {
           {headerImage ? (
             <YStack
               width="100%"
-              aspectRatio={16 / 9}
+              height={questHeaderHeight(windowWidth, windowHeight)}
               bg="$surface"
               borderWidth={1}
               borderColor="$borderStrong"
@@ -990,7 +992,7 @@ export default function QuestDetails() {
       {quest ? (
         <YStack
           p="$4"
-          pb={insets.bottom + 16}
+          pb="$4"
           bg="$bgDark"
           borderTopWidth={1}
           borderColor="$borderStrong"

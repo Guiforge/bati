@@ -51,3 +51,19 @@ export function useTabLeaveGuard(
     };
   }, [dirty, skipRef, confirm]);
 }
+
+/**
+ * Whether an editor's `beforeRemove` lets the removal through without asking.
+ *
+ * A removal while the tab is not focused is `popToTopOnBlur` tidying a tab the hero already left
+ * (a deep link, the home CTA), not the hero leaving the editor. Asking there blocked the pop, so the
+ * abandoned draft sat in the stack and the Quests tab reopened on it. The tab bar asks before a
+ * press (`interceptTabPress`), so a blurred removal has nothing left to ask.
+ */
+export function leavesWithoutAsking(
+  navigation: { isFocused: () => boolean },
+  dirty: boolean,
+  skipRef: RefObject<boolean>,
+) {
+  return skipRef.current || !dirty || !navigation.isFocused();
+}

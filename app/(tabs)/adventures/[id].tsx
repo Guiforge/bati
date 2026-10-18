@@ -548,7 +548,7 @@ export default function AdventureDetailsScreen() {
 
   return (
     <YStack flex={1} bg="$background">
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + (run ? 160 : 100) }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: run ? 160 : 100 }}>
         <YStack p="$5" pt={insets.top + 12} gap="$4">
           <XStack items="center" justify="space-between" gap="$2">
             {/* Same rule as the exercises header: only the title gives way. Yoga's flexShrink
@@ -775,7 +775,7 @@ export default function AdventureDetailsScreen() {
       {details ? (
         <YStack
           p="$4"
-          pb={insets.bottom + 16}
+          pb="$4"
           bg="$bgDark"
           borderTopWidth={1}
           borderColor="$borderStrong"

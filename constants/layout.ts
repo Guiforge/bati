@@ -34,3 +34,16 @@ export function narrativeArtHeight(windowWidth: number, windowHeight: number) {
   const column = Math.min(windowWidth, CONTENT_MAX_WIDTH);
   return Math.min(Math.round((column * 3) / 4), Math.round(windowHeight * 0.45));
 }
+
+/**
+ * The quest detail's picture: 16:9 against the column as before, never more than 30% of the window.
+ * In landscape on a tablet it took half of the visible height and pushed the quest's exercises
+ * under the fold. Phones from 675 dp of height up are unchanged, the cap is above their 16:9.
+ */
+export function questHeaderHeight(windowWidth: number, windowHeight: number) {
+  const column = Math.min(windowWidth, CONTENT_MAX_WIDTH);
+  return Math.min(Math.round((column * 9) / 16), Math.round(windowHeight * 0.3));
+}
+
+/** The window height from which the warm-up wait shows the full picture, not the 64 dp thumbnail. */
+export const WARMUP_PICTURE_MIN_HEIGHT = 800;

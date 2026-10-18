@@ -362,6 +362,8 @@ export function ActiveExerciseView() {
   return (
     <YStack
       flex={1}
+      // The hero is the only elastic child; once capped, the rest centres instead of pooling below.
+      justify="center"
       bg={screenBg}
       pb={insets.bottom + 16}
       transition={reducedMotion ? undefined : "quick"}

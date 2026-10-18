@@ -61,6 +61,8 @@ export function ExerciseHero({
   // source is never cropped on either axis. 0 until measured: the first frame paints the bg.
   const [band, setBand] = useState({ w: 0, h: 0 });
   const side = Math.min(band.w, band.h);
+  // Dead space either side of the square: 0 on a phone, where the square fills the band.
+  const gutter = Math.max(0, (band.w - side) / 2);
   const scaleX = mirrored ? -1 : 1;
   // Through zero, so it reads as a card turning over rather than a jump cut. Reduced motion gets
   // the cut, as a plain style.
@@ -102,6 +104,26 @@ export function ExerciseHero({
           contentFit="cover"
           transition={150}
         />
+        {/* The square has hard side edges when the band is wider than it is tall; fade them into
+            the screen like the bottom one. */}
+        {gutter > 0 ? (
+          <>
+            <LinearGradient
+              colors={[fadeTo, "transparent"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ position: "absolute", top: 0, bottom: 0, left: gutter, width: 32 }}
+              pointerEvents="none"
+            />
+            <LinearGradient
+              colors={["transparent", fadeTo]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ position: "absolute", top: 0, bottom: 0, right: gutter, width: 32 }}
+              pointerEvents="none"
+            />
+          </>
+        ) : null}
       </Animated.View>
 
       {/* Top scrim: the status bar's own band, and barely past it.
@@ -150,8 +172,9 @@ export function ExerciseHero({
         pointerEvents="none"
       />
 
-      {/* The name sits in a récitatif, bottom-left: legible on any art without a text shadow. */}
-      <YStack position="absolute" b="$3" l="$4" r="$4">
+      {/* The name sits in a récitatif, bottom-left of the square, so it never starts
+          outside the picture on a wide band. */}
+      <YStack position="absolute" b="$3" l={gutter} r={gutter} px="$4">
         <Recitatif numberOfLines={2} testID="exercise-hero-name">
           {name}
         </Recitatif>

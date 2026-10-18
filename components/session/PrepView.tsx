@@ -1,11 +1,12 @@
 import { Image } from "expo-image";
 import { useTranslation } from "react-i18next";
-import { ScrollView } from "react-native";
+import { ScrollView, useWindowDimensions } from "react-native";
 import { H1, H3, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
 import { FONT_CAPS } from "@/components/common/fontCaps";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
+import { WARMUP_PICTURE_MIN_HEIGHT } from "@/constants/layout";
 import { useFontScaled } from "@/hooks/useFontScaled";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import type { SessionInstruction } from "@/hooks/useSessionInstructions";
@@ -212,6 +213,7 @@ export function PrepView({
   pinned = false,
 }: PrepViewProps) {
   const { t } = useTranslation();
+  const { height } = useWindowDimensions();
 
   const movement = (
     <>
@@ -232,7 +234,8 @@ export function PrepView({
         // Pinned, the full picture left the name, the dose and the instruction under the fold of
         // a 640dp screen: the thumbnail keeps all three in view, and the movement's own screen
         // shows the picture whole ten seconds later.
-        compact={compact || pinned}
+        // A tall window has the room for the picture: the thumbnail sat alone in the void.
+        compact={compact || (pinned && height < WARMUP_PICTURE_MIN_HEIGHT)}
       />
 
       {instruction?.description ? (

@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import { Keyboard, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Input, type TamaguiElement, Text, XStack, YStack } from "tamagui";
 import { balanceFacts, balanceSentence } from "@/components/adventures/balanceFacts";
@@ -17,7 +17,7 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { ImageChoiceField } from "@/components/common/ImageChoiceField";
 import { StatusBand } from "@/components/common/StatusBand";
 import { useToast } from "@/components/common/Toast";
-import { useTabLeaveGuard } from "@/components/common/useTabLeaveGuard";
+import { leavesWithoutAsking, useTabLeaveGuard } from "@/components/common/useTabLeaveGuard";
 import { ChevronLeft, Plus } from "@/components/icons";
 import { ImportFileButton } from "@/components/quests/QuestFileButtons";
 import { ADVENTURE_ASSETS, type AdventureAssetKey, getAdventureAsset } from "@/constants/assetMap";
@@ -192,7 +192,7 @@ export default function AdventureEditor() {
   const navigation = useNavigation();
   useEffect(() => {
     return navigation.addListener("beforeRemove", (e) => {
-      if (skipGuardRef.current || !isDirty) return;
+      if (leavesWithoutAsking(navigation, isDirty, skipGuardRef)) return;
       e.preventDefault();
       setDialog({
         title: t("quests.editor_discard_title"),
@@ -200,7 +200,12 @@ export default function AdventureEditor() {
         confirmLabel: t("quests.editor_discard"),
         cancelLabel: t("common.cancel"),
         destructive: true,
-        onConfirm: () => navigation.dispatch(e.data.action),
+        onConfirm: () => {
+          // The field that was being typed in is about to unmount; without this the keyboard
+          // outlives it and sits over the screen the hero lands on.
+          Keyboard.dismiss();
+          navigation.dispatch(e.data.action);
+        },
       });
     });
   }, [navigation, t, isDirty]);

@@ -661,7 +661,7 @@ export function VictoryView() {
                 {result?.outing && durationSeconds - result.outing.seconds >= 60 ? (
                   <AppText fontSize={11} color="$textSecondary">
                     {t("session.total_time_moving", {
-                      moving: formatDurationEstimate(result.outing.seconds, language),
+                      moving: formatTime(result.outing.seconds),
                     })}
                   </AppText>
                 ) : null}

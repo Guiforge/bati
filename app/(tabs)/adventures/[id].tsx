@@ -4,7 +4,7 @@ import type { TFunction } from "i18next";
 import { memo, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
-import { ScrollView } from "react-native";
+import { BackHandler, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { type ColorTokens, H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { BossPanel } from "@/components/adventures/BossPanel";
@@ -260,7 +260,7 @@ const AdventureStepRow = memo(function AdventureStepRow({
 export default function AdventureDetailsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<{ id?: string | string[] }>();
+  const params = useLocalSearchParams<{ id?: string | string[]; from?: string | string[] }>();
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const pace = useReminderPace();
@@ -276,6 +276,27 @@ export default function AdventureDetailsScreen() {
     const n = Number(v);
     return Number.isFinite(n) ? n : null;
   }, [params]);
+
+  // Home's "Continue the adventure" is a detour, not a visit to the Adventures list: back (the
+  // chevron and the system one) returns to Home, like the quest screen does for `from=home`. The
+  // tab is unwound first, so it does not reopen on this page (`popToTopOnBlur` does the rest).
+  const fromParam = Array.isArray(params.from) ? params.from[0] : params.from;
+  const fromHome = fromParam === "home";
+  const goBack = useCallback(() => {
+    if (!fromHome) return router.back();
+    router.dismissTo("/adventures");
+    router.navigate("/" as never);
+  }, [router, fromHome]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!fromHome) return;
+      const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+        goBack();
+        return true;
+      });
+      return () => sub.remove();
+    }, [fromHome, goBack]),
+  );
 
   const [state, setState] = useState<LoadState>({
     status: "loading",
@@ -524,7 +545,7 @@ export default function AdventureDetailsScreen() {
                 its caption off the screen edge, across the title. */}
             <XStack items="center" gap="$3" flex={1} minW={0}>
               <AppIconButton
-                onPress={() => router.back()}
+                onPress={goBack}
                 accessibilityRole="button"
                 accessibilityLabel={t("quests.go_back")}
               >

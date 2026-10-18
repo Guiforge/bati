@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { fireEvent, render, waitFor, within } from "@testing-library/react-native";
+import { BackHandler } from "react-native";
 import { TamaguiProvider } from "tamagui";
 
 import AdventureDetailsScreen from "@/app/(tabs)/adventures/[id]";
@@ -11,6 +12,10 @@ import config from "@/tamagui.config";
 // "Fight Boss" while step 1 (a regular warm-up step) is what's actually next.
 
 const mockPush = jest.fn();
+const mockBack = jest.fn();
+const mockNavigate = jest.fn();
+const mockDismissTo = jest.fn();
+let mockParams: Record<string, string> = { id: "1" };
 
 // The hero's reminder days set the weeks chip's pace (adventure-weeks-label.test.ts); none here.
 jest.mock("@/db/reminders", () => ({ getReminderDays: async () => ({}) }));
@@ -19,8 +24,13 @@ jest.mock("@/db/preferences", () => ({
 }));
 jest.mock("@/db/questConfig", () => ({ startingDifficulty: () => "medium" }));
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ push: mockPush, back: jest.fn() }),
-  useLocalSearchParams: () => ({ id: "1" }),
+  useRouter: () => ({
+    push: mockPush,
+    back: mockBack,
+    navigate: mockNavigate,
+    dismissTo: mockDismissTo,
+  }),
+  useLocalSearchParams: () => mockParams,
   // The screen loads on focus; in tests "focused" is simply "mounted".
   useFocusEffect: (effect: () => undefined | (() => void)) => {
     const { useEffect } = require("react");
@@ -554,5 +564,58 @@ describe("sharing an adventure the hero wrote", () => {
     );
     await screen.findByText("Tale");
     expect(screen.queryByTestId("adventure-share")).toBeNull();
+  });
+});
+
+// Home's "Continue the adventure" passes from=home: back, by the chevron and by the system, goes
+// to Home. Unwinding the tab first is what keeps the stuck-Adventures-tab bug (R4-D2) away; any
+// other door keeps the plain pop.
+describe("back from an adventure opened from Home", () => {
+  afterEach(() => {
+    mockParams = { id: "1" };
+    mockBack.mockClear();
+    mockNavigate.mockClear();
+    mockDismissTo.mockClear();
+  });
+
+  const mount = () =>
+    render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <AdventureDetailsScreen />
+      </TamaguiProvider>,
+    );
+
+  test("the chevron unwinds the tab and lands on Home", async () => {
+    mockParams = { id: "1", from: "home" };
+    const { findByLabelText } = await mount();
+
+    await fireEvent.press(await findByLabelText("Go back"));
+
+    expect(mockDismissTo).toHaveBeenCalledWith("/adventures");
+    expect(mockNavigate).toHaveBeenCalledWith("/");
+    expect(mockBack).not.toHaveBeenCalled();
+  });
+
+  test("the system back does the same, and is consumed", async () => {
+    mockParams = { id: "1", from: "home" };
+    const spy = jest.spyOn(BackHandler, "addEventListener");
+    const { findByText } = await mount();
+    await findByText("Start Adventure");
+
+    const handler = spy.mock.calls.find(([name]) => name === "hardwareBackPress")?.[1];
+    spy.mockRestore();
+    assert(handler);
+    expect((handler as () => boolean)()).toBe(true);
+    expect(mockDismissTo).toHaveBeenCalledWith("/adventures");
+    expect(mockNavigate).toHaveBeenCalledWith("/");
+  });
+
+  test("opened any other way, the chevron still pops", async () => {
+    const { findByLabelText } = await mount();
+
+    await fireEvent.press(await findByLabelText("Go back"));
+
+    expect(mockBack).toHaveBeenCalledTimes(1);
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 });

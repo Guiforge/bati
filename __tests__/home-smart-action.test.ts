@@ -283,7 +283,7 @@ describe("useSmartAction", () => {
 
       // Anchored, so a never-opened Adventures tab holds [index, id] and its list stays reachable.
       result.current.config?.onPress();
-      expect(mockPush).toHaveBeenCalledWith("/adventures/4", { withAnchor: true });
+      expect(mockPush).toHaveBeenCalledWith("/adventures/4?from=home", { withAnchor: true });
     });
   });
 

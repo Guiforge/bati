@@ -108,7 +108,8 @@ function stageFor(
       startQuestId: null,
       // withAnchor: if the tab was never opened, the stack must hold [index, id], or the tab
       // reopens on this page for good and the list is unreachable.
-      onPress: () => router.push(`/adventures/${offer.adventureId}` as never, { withAnchor: true }),
+      onPress: () =>
+        router.push(`/adventures/${offer.adventureId}?from=home` as never, { withAnchor: true }),
       scene: {
         title: offer.title ?? t("home.resume_journey"),
         imagePath: offer.imagePath,

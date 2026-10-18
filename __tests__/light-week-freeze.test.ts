@@ -29,12 +29,12 @@ describe("a running light week freezes the ladder and the target", () => {
     (t.sqlite.prepare("SELECT enName FROM exercises WHERE id = ?").get(id) as { enName: string })
       .enName;
 
-  async function cleanPlank(): Promise<void> {
+  async function clean(name: string): Promise<void> {
     const { createCompletedSession } =
       require("../db/completed") as typeof import("../db/completed");
     const sets: CompletedExerciseInput[] = [
       {
-        exerciseId: idOf("Plank"),
+        exerciseId: idOf(name),
         roundIndex: 0,
         sortOrder: 0,
         result: { type: "time", value: 30 },
@@ -44,6 +44,8 @@ describe("a running light week freezes the ladder and the target", () => {
     ];
     await createCompletedSession({ exercises: sets });
   }
+  const cleanPlank = () => clean("Plank");
+  const cleanDeadBug = () => clean("Dead Bug");
   const lw = () => require("../db/lightWeek") as typeof import("../db/lightWeek");
   const servedPlank = async () => {
     const { loadSlotJournal } = require("../db/quests") as typeof import("../db/quests");
@@ -60,13 +62,26 @@ describe("a running light week freezes the ladder and the target", () => {
     expect(await servedPlank()).toBe("Dead Bug");
   });
 
-  test("three clean week sessions serve nothing; only the normal session after them counts", async () => {
+  test("three clean week sessions on the served rung earn nothing; the series restarts after", async () => {
     await lw().acceptLightWeek(new Date(Date.now() - DAY));
-    for (let i = 0; i < 3; i++) await cleanPlank();
+    for (let i = 0; i < 3; i++) await cleanDeadBug();
     await lw().endLightWeek(new Date());
     expect(await servedPlank()).toBe("Dead Bug");
-    // The ladder serves a rung on the first clean session in its window: this one is that session.
-    await cleanPlank();
+    // One normal session is one of the three, not the end of the week's three.
+    await cleanDeadBug();
+    expect(await servedPlank()).toBe("Dead Bug");
+    await cleanDeadBug();
+    await cleanDeadBug();
+    expect(await servedPlank()).toBe("Plank");
+  });
+
+  test("week sessions are neutral, not erased: the series spans the week", async () => {
+    for (let i = 0; i < 2; i++) await cleanDeadBug();
+    await lw().acceptLightWeek(new Date(Date.now() - DAY));
+    for (let i = 0; i < 3; i++) await cleanDeadBug();
+    await lw().endLightWeek(new Date());
+    expect(await servedPlank()).toBe("Dead Bug");
+    await cleanDeadBug();
     expect(await servedPlank()).toBe("Plank");
   });
 

@@ -449,7 +449,11 @@ const PROGRESSION_WINDOW_DAYS = 56;
  */
 const sessionMetSql = () => sql<number>`min(${setMetSql})`;
 
-async function recentMetFlags(exerciseId: number, limit: number): Promise<boolean[]> {
+async function recentMetFlags(
+  exerciseId: number,
+  limit: number,
+  before?: Date,
+): Promise<boolean[]> {
   const since = new Date(Date.now() - PROGRESSION_WINDOW_DAYS * 24 * 60 * 60 * 1000);
 
   const met = sessionMetSql();
@@ -462,6 +466,7 @@ async function recentMetFlags(exerciseId: number, limit: number): Promise<boolea
       and(
         eq(schema.completedExercises.exerciseId, exerciseId),
         gte(schema.completedExercises.performedAt, since),
+        ...(before ? [lt(schema.completedExercises.performedAt, before)] : []),
         eq(schema.completedExercises.ladderNeutral, false),
       ),
     )
@@ -506,8 +511,9 @@ export function successorsOf(
 async function buildStep(
   from: LadderRow,
   fork: { next: LadderRow; alsoNext: MovementRef[] },
+  before?: Date,
 ): Promise<VariationStep> {
-  const flags = await recentMetFlags(from.id, PROGRESSION_SESSIONS_REQUIRED);
+  const flags = await recentMetFlags(from.id, PROGRESSION_SESSIONS_REQUIRED, before);
   const metTarget = streakOf(flags);
 
   return {
@@ -537,7 +543,10 @@ export async function getNextProgression(exerciseId: number): Promise<NextProgre
   const fork = successorsOf(rows, exerciseId);
   if (!from || !fork) return null;
 
-  const step = await buildStep(from, fork);
+  // A running light week freezes the standing, as in `getChainTo`: the card must not promise a
+  // variant the quest does not serve.
+  const before = await frozenBefore();
+  const step = await buildStep(from, fork, before);
   if (step.isEarned) return step;
 
   // The hero already stands on `next` or above it: the Wall Sit screen told a hero who trains Squat
@@ -553,8 +562,8 @@ export async function getNextProgression(exerciseId: number): Promise<NextProgre
     }
   }
   const [flags, everEarned] = await Promise.all([
-    recentMetFlagsBatch(above),
-    everEarnedMovements(),
+    recentMetFlagsBatch(above, before),
+    everEarnedMovements(before),
   ]);
   const standsAbove = above.some((id) => everEarned.has(id) || flags.get(id)?.some(Boolean));
   return standsAbove ? { ...step, metTarget: PROGRESSION_SESSIONS_REQUIRED, isEarned: true } : step;
@@ -607,8 +616,7 @@ export async function getChainTo(exerciseId: number): Promise<Chain | null> {
   const ids = chain.map((row) => row.id);
   // A running light week freezes the standing here too, as in `currentRungFor`: the oath strip and
   // the exercise page must name the rung the quest serves.
-  const frozen = await lightWeekFreeze();
-  const before = frozen == null ? undefined : new Date(frozen);
+  const before = await frozenBefore();
   const [flags, everEarned] = await Promise.all([
     recentMetFlagsBatch(ids, before),
     everEarnedMovements(before),
@@ -754,6 +762,12 @@ export async function recentMetFlagsBatch(
 export const lightWeekFreeze = () =>
   (require("./lightWeek") as typeof import("./lightWeek")).lightWeekSince(new Date());
 
+/** The instant a running light week froze the standing, as the `before` the readers take. */
+export async function frozenBefore(): Promise<Date | undefined> {
+  const frozen = await lightWeekFreeze();
+  return frozen == null ? undefined : new Date(frozen);
+}
+
 /**
  * For each movement asked about, the one the hero is actually working: the rung just above the
  * highest one behind them (`ladderPosition`), or the movement itself once everything below it is.
@@ -777,8 +791,7 @@ export async function currentRungFor(
   if (wanted.length === 0) return new Map();
   // A running light week promotes nobody, whoever asks: the warm-up, a replacement and the quest
   // must all stand on the same rung.
-  const frozen = beforeArg ? null : await lightWeekFreeze();
-  const before = beforeArg ?? (frozen == null ? undefined : new Date(frozen));
+  const before = beforeArg ?? (await frozenBefore());
 
   const rows = await fetchLadderRows();
   const byId = new Map(rows.map((r) => [r.id, r]));

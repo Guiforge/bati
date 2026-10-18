@@ -60,6 +60,20 @@ describe("a running light week freezes the ladder and the target", () => {
     expect(await servedPlank()).toBe("Plank");
   });
 
+  test("the exercise page's next step does not announce a rung the quest does not serve", async () => {
+    const { getNextProgression } = require("../db/exercises") as typeof import("../db/exercises");
+    const deadBug = idOf("Dead Bug");
+    await cleanPlank();
+    expect((await getNextProgression(deadBug))?.isEarned).toBe(true);
+
+    // The week began a day ago: the session before it is gone from the standing, as for the quest.
+    await t.sqlite.exec("DELETE FROM completed_exercises");
+    await t.sqlite.exec("DELETE FROM completed_sessions");
+    await lw().acceptLightWeek(new Date(Date.now() - DAY));
+    await cleanPlank();
+    expect((await getNextProgression(deadBug))?.isEarned).toBe(false);
+  });
+
   test("a session before the week still counts", async () => {
     await cleanPlank();
     await lw().acceptLightWeek(new Date(Date.now() + 1000));

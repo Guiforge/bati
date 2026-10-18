@@ -1,4 +1,3 @@
-import { StackActions } from "@react-navigation/native";
 import { Tabs } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -19,8 +18,12 @@ export default function TabsLayout() {
         // left a dirty editor mounted under the next visit. Unwind whatever moved the tab.
         blur: () => {
           if (route.name !== "quests" && route.name !== "adventures") return;
-          const key = navigation.getState().routes.find((r) => r.key === route.key)?.state?.key;
-          if (key) navigation.dispatch({ ...StackActions.popToTop(), target: key });
+          const tabs = navigation.getState();
+          // A root screen pushed over the tabs blurs this tab too; only a real tab change unwinds.
+          if (tabs.routes[tabs.index]?.key === route.key) return;
+          const key = tabs.routes.find((r) => r.key === route.key)?.state?.key;
+          // Plain action: importing StackActions pulls @react-navigation/native, which Expo Router 56+ refuses.
+          if (key) navigation.dispatch({ type: "POP_TO_TOP", target: key });
         },
         // An open editor with unsaved edits asks before another tab takes over (see the hook).
         tabPress: (e) => interceptTabPress(e, navigation),

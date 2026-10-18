@@ -51,8 +51,8 @@ during a long walk is not corrected.
 
 ## How long an outing lasted
 
-**What its trace can prove**: first fix to last, capped by moving seconds plus twenty minutes of
-stops. Not the session's own clock, which cannot answer for a walk the OS killed — recovery banks
+**What its trace can prove**: from the tap on start to the last fix (the wait for the sky counts, D-58), capped by moving seconds plus twenty minutes of
+stops. Not the session's own wall clock, which cannot answer for a walk the OS killed — recovery banks
 every second of the downtime as pause, so a walk killed at 45 minutes and resumed for ten more
 read ten. The duration on the victory screen, the one in the journal and the effort the XP ceiling
 is bounded by all read that one definition (`sessionClock`, `stores/session.ts`).

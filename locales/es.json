@@ -718,6 +718,7 @@
     "victory_note": "¿Unas palabras sobre esta noche?",
     "target_reached": "¡Objetivo cumplido!",
     "total_time": "Tiempo total",
+    "total_time_moving": "de los cuales {{moving}} en movimiento",
     "up_next": "A continuación",
     "victory_title": "¡Misión cumplida!",
     "village_growth_cta": "Ver tu aldea",

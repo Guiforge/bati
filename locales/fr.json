@@ -1165,6 +1165,7 @@
     "victory_note": "Un mot sur ce soir ?",
     "target_reached": "Objectif atteint !",
     "total_time": "Temps total",
+    "total_time_moving": "dont {{moving}} en mouvement",
     "up_next": "À suivre",
     "victory_title": "Quête accomplie !",
     "village_growth_cta": "Voir ton village",

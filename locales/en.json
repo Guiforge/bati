@@ -693,6 +693,7 @@
     "victory_note": "A word about tonight?",
     "target_reached": "Target reached!",
     "total_time": "Total Time",
+    "total_time_moving": "of which {{moving}} moving",
     "up_next": "Up Next",
     "victory_title": "Quest Complete!",
     "village_growth_cta": "View your village",

@@ -693,6 +693,7 @@
     "victory_note": "Ein Wort zum heutigen Abend?",
     "target_reached": "Ziel erreicht!",
     "total_time": "Gesamtzeit",
+    "total_time_moving": "davon {{moving}} in Bewegung",
     "up_next": "Als Nächstes",
     "victory_title": "Quest geschafft!",
     "village_growth_cta": "Dein Dorf ansehen",

@@ -378,10 +378,12 @@ export function accept(state: TrackState, fix: LocationFix): TrackState {
 
 /**
  * What a finished outing credited: ground for the road, moving seconds for the XP ceiling, and
- * the span its own trace witnessed — first fix to last.
+ * the span from the tap on start to the last fix (D-58: the wait for the sky counts as time out).
  *
  * `elapsedSeconds` is the outing's clock, and the definition is deliberate: **an outing lasted
- * what its trace can prove it lasted**, not what the session's wall clock says. The two disagree
+ * what its trace can prove it lasted**, not what the session's wall clock says. The tap is the
+ * session's own `startTime`, which a recovery restores untouched, so the trace still answers for
+ * a walk the OS killed. The two disagree
  * the moment the process dies mid-walk. `useSessionRecovery` banks the whole downtime as pause,
  * so the session clock of a walk killed at 45 minutes and resumed for 10 more reads 10 minutes —
  * while the reducer, replaying the points from `gps_points`, reads 55 of moving time. One screen
@@ -410,7 +412,7 @@ export type Credit = {
  * A phone left outside with a working GPS is *not* this case and must not become it: the gate
  * opens within seconds and the reducer then credits no moving time, which is a real zero.
  */
-export function credited(track: TrackState): Credit | null {
+export function credited(track: TrackState, tappedAt: number | null = null): Credit | null {
   if (track.startedAt === null) return null;
 
   return {
@@ -418,12 +420,17 @@ export function credited(track: TrackState): Credit | null {
     movingSeconds: Math.floor(track.movingMs / 1000),
     // A phone that never gave a height has no opinion about the hill, and zero would be one.
     ascentM: track.climbFrom === null ? null : Math.round(track.ascentM),
-    // The minutes spent finding the sky are not in here: the gate opens on the first fix good
-    // enough to trust, and nothing before it was witnessed. Under-counting the wait is the same
-    // choice as under-counting the ramp out of a stop.
+    // From the tap on start (D-58), not from the first fix good enough to trust: the minutes spent
+    // finding the sky are time the hero was out. They are not moving time, so `movingSeconds` and
+    // the XP ceiling are untouched. Without a tap (or one after the fix, from a skewed clock) the
+    // trace's own first fix is the start, as before.
     elapsedSeconds: Math.max(
       0,
-      Math.floor(((track.lastAt ?? track.startedAt) - track.startedAt) / 1000),
+      Math.floor(
+        ((track.lastAt ?? track.startedAt) -
+          Math.min(tappedAt ?? track.startedAt, track.startedAt)) /
+          1000,
+      ),
     ),
   };
 }

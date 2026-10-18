@@ -105,6 +105,8 @@ export type CompletedSessionInput = {
   performedAt?: Date;
   /** The quest's round count, so a final round skipped whole is seen as one (`ladderNeutralSets`). */
   rounds?: number;
+  /** A quest the hero wrote keeps all its rounds in a light week, so it is judged normally (D-52). */
+  userQuest?: boolean;
 
   exercises: CompletedExerciseInput[];
 };
@@ -329,7 +331,7 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
           typeof ex.prescribed === "number" && Number.isFinite(ex.prescribed)
             ? Math.max(1, Math.floor(ex.prescribed))
             : null,
-        ladderNeutral: lightWeek || (neutral[index] ?? false),
+        ladderNeutral: (lightWeek && !input.userQuest) || (neutral[index] ?? false),
         notes: ex.notes ?? "",
         performedAt: ex.performedAt ?? input.performedAt ?? new Date(),
       };

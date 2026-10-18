@@ -100,26 +100,55 @@ describe("a running light week freezes the ladder and the target", () => {
     const plank = idOf("Plank");
     const { loadSlotJournal, progressiveSlot } =
       require("../db/quests") as typeof import("../db/quests");
+    const targetNow = async () =>
+      progressiveSlot({
+        base: { type: "reps", min: 6, max: 14 },
+        fallback: { type: "reps", value: 8 },
+        exercise: { id: plank, style: "standard" } as never,
+        level: "medium",
+        journal: await loadSlotJournal([plank]),
+      }).target.value;
     await repsSessionAt(plank, 10, 10);
     await lw().acceptLightWeek(new Date(Date.now() - 5 * DAY));
-    for (const d of [3, 2, 1]) await repsSessionAt(plank, d, 14);
+    // The frozen target the week serves, read rather than hard-coded: the 10 moves on to 11.
+    const frozen = await targetNow();
+    expect(frozen).toBe(11);
+    for (const d of [3, 2, 1]) await repsSessionAt(plank, d, frozen);
+    expect(await targetNow()).toBe(frozen);
     await lw().endLightWeek(new Date());
-    const journal = await loadSlotJournal([plank]);
-    const { target } = progressiveSlot({
-      base: { type: "reps", min: 6, max: 14 },
-      fallback: { type: "reps", value: 8 },
-      exercise: { id: plank, style: "standard" } as never,
-      level: "medium",
-      journal,
-    });
-    // Without the week the three clean 14s would have pushed it to the cap; it stays at 14.
-    expect(target.value).toBe(14);
+    // Without neutrality the three clean 11s would have pushed it on (the cap is 20).
+    expect(await targetNow()).toBe(frozen);
+  });
+
+  test("a hero-written quest is judged in a light week; a lightened one is neutral (D-52)", async () => {
+    await lw().acceptLightWeek(new Date(Date.now() - DAY));
+    const { createCompletedSession } =
+      require("../db/completed") as typeof import("../db/completed");
+    for (const userQuest of [true, false]) {
+      await createCompletedSession({
+        userQuest,
+        exercises: [
+          {
+            exerciseId: idOf("Plank"),
+            roundIndex: 0,
+            sortOrder: 0,
+            result: { type: "time", value: 30 },
+            target: { type: "time", value: 30 },
+            prescribed: 30,
+          },
+        ],
+      });
+    }
+    const flags = t.sqlite
+      .prepare("SELECT ladderNeutral AS n FROM completed_exercises ORDER BY id")
+      .all() as { n: number }[];
+    expect(flags.map((f) => f.n)).toEqual([0, 1]);
   });
 
   test("a hero quest keeps its rounds in a light week", () => {
     const { lightenRounds } = lw();
-    expect(lightenRounds({ rounds: 3, author: "hero" }, null, true).rounds).toBe(3);
-    expect(lightenRounds({ rounds: 3, author: "Admin" }, null, true).rounds).toBe(2);
+    expect(lightenRounds({ rounds: 3 }, null, true, true).rounds).toBe(3);
+    expect(lightenRounds({ rounds: 3 }, null, true, false).rounds).toBe(2);
   });
 
   test("the exercise page's next step does not announce a rung the quest does not serve", async () => {

@@ -65,7 +65,7 @@ import type { DistanceUnit } from "@/db/preferences";
 import { preferences } from "@/db/preferences";
 import { clearShortLivedQueries } from "@/db/queryCache";
 import { dropSlotSwap } from "@/db/questConfig";
-import { invalidateQuestTemplates, type Quest, type QuestExercise } from "@/db/quests";
+import { invalidateQuestTemplates, isUserQuest, type Quest, type QuestExercise } from "@/db/quests";
 import type {
   DifficultyCode,
   ExerciseStyle,
@@ -2133,6 +2133,7 @@ export const useSessionStore = create<SessionState>()(
 
       const sessionId = await ensureSessionRow({
         questId: quest.id,
+        userQuest: isUserQuest(quest),
         userLevel,
         // The name the session has carried since its first second. Without it the row would be
         // minted a second one at save time, and the GPS points filed under the first would

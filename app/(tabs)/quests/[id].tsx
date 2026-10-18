@@ -574,7 +574,7 @@ export default function QuestDetails() {
       indexExercises(catalogue),
       swapJournal,
     );
-    const quest = lightenRounds(applied, config, lightWeek);
+    const quest = lightenRounds(applied, config, lightWeek, isUserQuest(applied));
     // A distance goal is estimated from a nominal pace; a duration is its own estimate. Either
     // way it is what the hero is about to run, so the XP tag below prices that same estimate
     // rather than the slot's own target — the two numbers on this screen must describe one

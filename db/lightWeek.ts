@@ -4,7 +4,6 @@ import { isWorkout } from "./completed";
 import { getActivePause } from "./pause";
 import { getPreference, setPreference } from "./preferences";
 import { setMetSql } from "./progress";
-import { USER_QUEST_AUTHOR } from "./quests";
 import type { MovementPattern } from "./schema";
 import { ROUNDS_RANGE } from "./targets";
 
@@ -46,6 +45,8 @@ export function lightWeekRunning(
   endedAt: number | null = null,
 ): boolean {
   if (acceptedAt == null || (endedAt != null && endedAt >= acceptedAt)) return false;
+  // Before the acceptance is not in the week: a session begun earlier and saved after the tap.
+  if (now.getTime() < acceptedAt) return false;
   return now.getTime() - acceptedAt < LIGHT_WEEK_DAYS * DAY_MS;
 }
 
@@ -88,12 +89,13 @@ export function lightWeekDue(
  * One round fewer, never under the floor, never over a number the hero set by hand, and never on
  * a quest the hero wrote: it runs exactly as written, like zone, global rest and the rung offer.
  */
-export function lightenRounds<Q extends { rounds: number; author?: string }>(
+export function lightenRounds<Q extends { rounds: number }>(
   quest: Q,
   config: { rounds?: number } | null,
   running: boolean,
+  userQuest: boolean,
 ): Q {
-  if (!running || config?.rounds !== undefined || quest.author === USER_QUEST_AUTHOR) return quest;
+  if (!running || config?.rounds !== undefined || userQuest) return quest;
   return { ...quest, rounds: Math.max(ROUNDS_RANGE.min, quest.rounds - 1) };
 }
 

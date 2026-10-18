@@ -16,6 +16,7 @@ import {
 } from "./preferences";
 import {
   getQuestById,
+  isUserQuest,
   listQuestTemplates,
   movementRef,
   progressiveSlot,
@@ -628,6 +629,7 @@ export async function loadConfiguredQuest(
       applyQuestConfig(quest, config, indexExercises(exercises), swapJournal),
       config,
       lightWeek,
+      isUserQuest(quest),
     ),
     level: effective,
     // The config itself, not only the quest it shaped. `applyQuestConfig` folds the hero's

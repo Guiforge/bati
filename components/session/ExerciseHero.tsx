@@ -72,6 +72,9 @@ export function ExerciseHero({
   // The récitatif follows the square only when the square can hold a name; a 95 dp one split words.
   const inset = side >= NAME_MIN_SIDE ? gutter : 0;
   const nameBelow = nameBelowSmall && titleBelowPicture(side);
+  // The title under the picture takes its room from the picture, not from the button below.
+  const [titleH, setTitleH] = useState(0);
+  const give = nameBelow ? titleH : 0;
   const scaleX = mirrored ? -1 : 1;
   // Through zero, so it reads as a card turning over rather than a jump cut. Reduced motion gets
   // the cut, as a plain style.
@@ -86,8 +89,8 @@ export function ExerciseHero({
         // Plain RN flex, not Tamagui's `flex={1}`: without a `styleCompat`, Tamagui expands that to
         // `flexBasis: auto`, and the hero then sizes to its content instead of to the column.
         style={{ flex: 1 }}
-        minH={topInset + HUD_HEIGHT + minHeight}
-        maxH={topInset + HUD_HEIGHT + Math.max(minHeight, exerciseArtMaxHeight(width))}
+        minH={topInset + HUD_HEIGHT + minHeight - give}
+        maxH={topInset + HUD_HEIGHT + Math.max(minHeight, exerciseArtMaxHeight(width)) - give}
         width="100%"
         position="relative"
         bg="$bgDark"
@@ -196,7 +199,11 @@ export function ExerciseHero({
       </YStack>
       {/* Under a picture too small to carry it, in the flow: the hero above gives it the room. */}
       {nameBelow ? (
-        <YStack testID="exercise-hero-name-below" px="$4">
+        <YStack
+          testID="exercise-hero-name-below"
+          px="$4"
+          onLayout={(e) => setTitleH(Math.round(e.nativeEvent.layout.height))}
+        >
           <Recitatif numberOfLines={2} testID="exercise-hero-name">
             {name}
           </Recitatif>

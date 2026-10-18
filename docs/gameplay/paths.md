@@ -106,14 +106,15 @@ Some sets the ladder does not judge at all, neither clean nor missed
   (`swappedIn`). The slot remembers it for the whole session (`QuestExercise.swaps`), because a
   movement swapped in and skipped was still due in that round, however many swaps follow. The
   movement the quest handed over is never marked, swapped away from and back to or not.
-- **Every set of a session played in a running light week, except a quest the hero wrote.** The ladder and tonight's +1 are
-  frozen for the seven days: the hero resumes where they stood the day they accepted. A neutral
-  session neither advances nor breaks the cap series, and a neutral session at the head of it
-  completes nothing. A quest the hero wrote keeps all its rounds in the week, so it is judged
-  normally and is not neutral (D-52). That covers every quest the hero wrote, not only the lightened
-  ones: a quest whose rounds the hero set by hand, or already at the floor, is stored neutral. A
-  rung earned by clean sessions inside the week is not announced (`checkForNewRungs` answers nothing
-  while the ladder is frozen); the next session sees it already met.
+- **Every set of a session that ran lightened in a running light week.** The ladder and tonight's
+  +1 are frozen for the seven days: the hero resumes where they stood the day they accepted. A
+  neutral session neither advances nor breaks the cap series, and a neutral session at the head of
+  it completes nothing. Only a quest that really lost a round is neutral (`lightenRounds` marks it
+  `lightened`, and the marker travels with the session). A quest the hero wrote, one whose rounds
+  the hero set by hand, and one already at a single round keep their full volume, so they are
+  judged normally (D-52): their clean sessions wait out the week and count after it. A rung earned
+  by clean sessions inside the week is not announced (`checkForNewRungs` answers nothing while the
+  ladder is frozen); the next session sees it already met.
 
 A swap made mid-session keeps what the app had prescribed when it keeps the hero's number (same
 unit). Otherwise the lowered number would become "what was asked" on the new movement.

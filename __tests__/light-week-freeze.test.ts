@@ -29,7 +29,7 @@ describe("a running light week freezes the ladder and the target", () => {
     (t.sqlite.prepare("SELECT enName FROM exercises WHERE id = ?").get(id) as { enName: string })
       .enName;
 
-  async function clean(name: string): Promise<void> {
+  async function clean(name: string, lightened = true): Promise<void> {
     const { createCompletedSession } =
       require("../db/completed") as typeof import("../db/completed");
     const sets: CompletedExerciseInput[] = [
@@ -42,7 +42,7 @@ describe("a running light week freezes the ladder and the target", () => {
         prescribed: 30,
       },
     ];
-    await createCompletedSession({ exercises: sets });
+    await createCompletedSession({ lightened, exercises: sets });
   }
   const cleanPlank = () => clean("Plank");
   const cleanDeadBug = () => clean("Dead Bug");
@@ -120,35 +120,30 @@ describe("a running light week freezes the ladder and the target", () => {
     expect(await targetNow()).toBe(frozen);
   });
 
-  test("a hero-written quest is judged in a light week; a lightened one is neutral (D-52)", async () => {
+  test("only a lightened session is neutral in a light week (D-52)", async () => {
     await lw().acceptLightWeek(new Date(Date.now() - DAY));
-    const { createCompletedSession } =
-      require("../db/completed") as typeof import("../db/completed");
-    for (const userQuest of [true, false]) {
-      await createCompletedSession({
-        userQuest,
-        exercises: [
-          {
-            exerciseId: idOf("Plank"),
-            roundIndex: 0,
-            sortOrder: 0,
-            result: { type: "time", value: 30 },
-            target: { type: "time", value: 30 },
-            prescribed: 30,
-          },
-        ],
-      });
-    }
+    // lightened; hand-set rounds, a 1-round quest or a hero quest (never marked)
+    for (const lightened of [true, false]) await clean("Plank", lightened);
     const flags = t.sqlite
       .prepare("SELECT ladderNeutral AS n FROM completed_exercises ORDER BY id")
       .all() as { n: number }[];
-    expect(flags.map((f) => f.n)).toEqual([0, 1]);
+    expect(flags.map((f) => f.n)).toEqual([1, 0]);
   });
 
-  test("a hero quest keeps its rounds in a light week", () => {
+  test("lightenRounds marks only a quest that really lost a round", () => {
     const { lightenRounds } = lw();
-    expect(lightenRounds({ rounds: 3 }, null, true, true).rounds).toBe(3);
-    expect(lightenRounds({ rounds: 3 }, null, true, false).rounds).toBe(2);
+    expect(lightenRounds({ rounds: 3 }, null, true, false)).toEqual({ rounds: 2, lightened: true });
+    expect(lightenRounds({ rounds: 3 }, null, true, true).lightened).toBeUndefined();
+    expect(lightenRounds({ rounds: 3 }, { rounds: 3 }, true, false).lightened).toBeUndefined();
+    expect(lightenRounds({ rounds: 1 }, null, true, false).lightened).toBeUndefined();
+  });
+
+  test("unlightened clean sessions leave the ladder frozen during the week, then count", async () => {
+    await lw().acceptLightWeek(new Date(Date.now() - DAY));
+    for (let i = 0; i < 3; i++) await clean("Dead Bug", false);
+    expect(await servedPlank()).toBe("Dead Bug");
+    await lw().endLightWeek(new Date());
+    expect(await servedPlank()).toBe("Plank");
   });
 
   test("the exercise page's next step does not announce a rung the quest does not serve", async () => {
@@ -210,6 +205,7 @@ describe("a running light week freezes the ladder and the target", () => {
     const { createCompletedSession } =
       require("../db/completed") as typeof import("../db/completed");
     await createCompletedSession({
+      lightened: true,
       performedAt: new Date(Date.now() - daysAgo * DAY),
       exercises: [
         {

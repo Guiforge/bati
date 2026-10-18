@@ -59,8 +59,8 @@ export type LightWeekReason = "under" | "busy";
 /**
  * Why Home proposes the week, or null when it does not. `sessions` are workouts, newest first.
  *
- * Under-target counts only sessions after the hero's last answer, so an answered offer needs two
- * new ones. The busy-weeks trigger reads seven-day windows ending now; after an accepted week it
+ * Under-target counts only sessions after the hero's last answer (for an accepted week, its end
+ * or `endedAt`, not the tap), so an answered offer needs two new ones. The busy-weeks trigger reads seven-day windows ending now; after an accepted week it
  * waits five weeks, or the next window would re-offer the rest the hero just took.
  */
 export function lightWeekDue(
@@ -102,9 +102,11 @@ export function lightenRounds<Q extends { rounds: number }>(
   config: { rounds?: number } | null,
   running: boolean,
   userQuest: boolean,
-): Q {
+): Q & { lightened?: true } {
   if (!running || config?.rounds !== undefined || userQuest) return quest;
-  return { ...quest, rounds: Math.max(ROUNDS_RANGE.min, quest.rounds - 1) };
+  const rounds = Math.max(ROUNDS_RANGE.min, quest.rounds - 1);
+  // A quest already at the floor keeps its volume, so it is not lightened and stays judged.
+  return rounds === quest.rounds ? quest : { ...quest, rounds, lightened: true };
 }
 
 async function readMs(key: string): Promise<number | null> {

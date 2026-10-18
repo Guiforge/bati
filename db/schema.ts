@@ -629,7 +629,7 @@ export const completedExercises = sqliteTable(
     prescribedValue: int(),
     // A set the ladder must not judge, neither clean nor missed (`0070`): a lowered target not
     // reached at the prescribed value, a movement left mid-session, or any set of a session
-    // played in a running light week (a hero-written quest excepted). `createCompletedSession`
+    // played in a running light week (a quest run at full volume excepted, D-52). `createCompletedSession`
     // is its one writer.
     ladderNeutral: int({ mode: "boolean" }).notNull().default(false),
 

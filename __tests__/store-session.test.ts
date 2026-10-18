@@ -1085,18 +1085,18 @@ describe("useSessionStore", () => {
       );
     });
 
-    test("a hero-written quest is saved as userQuest, so a light week judges it (D-52)", async () => {
+    test("only a lightened quest is saved as lightened, so a light week judges the rest (D-52)", async () => {
       const completed = require("@/db/completed") as { createCompletedSession: jest.Mock };
       completed.createCompletedSession.mockClear();
-      for (const author of ["hero", "Admin"]) {
+      for (const lightened of [true, undefined]) {
         store.setState({ status: "idle" });
-        await store.getState().startSession({ ...mockQuest, author } as Quest, "medium");
+        await store.getState().startSession({ ...mockQuest, lightened } as Quest, "medium");
         store.setState({
           results: [{ exerciseId: 1, sortOrder: 0, result: { type: "reps", value: 10 } }],
         });
         await store.getState().saveSession(null);
       }
-      expect(completed.createCompletedSession.mock.calls.map((c) => c[0].userQuest)).toEqual([
+      expect(completed.createCompletedSession.mock.calls.map((c) => c[0].lightened)).toEqual([
         true,
         false,
       ]);

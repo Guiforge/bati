@@ -105,8 +105,8 @@ export type CompletedSessionInput = {
   performedAt?: Date;
   /** The quest's round count, so a final round skipped whole is seen as one (`ladderNeutralSets`). */
   rounds?: number;
-  /** A quest the hero wrote keeps all its rounds in a light week, so it is judged normally (D-52). */
-  userQuest?: boolean;
+  /** The quest ran with a round off (`lightenRounds`): only then is a light-week session neutral (D-52). */
+  lightened?: boolean;
 
   exercises: CompletedExerciseInput[];
 };
@@ -245,9 +245,10 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
   // clocks and different days, and 0038 backfilled the older half from `performedAt`.
   const performedAt = input.performedAt ?? new Date();
 
-  // A session played in a light week is neutral for every ladder reader (rung, M-03 +1, cap
-  // series): the hero resumes where they were the day they accepted it. Read before the
-  // transaction, like the device id. Required on use: lightWeek imports this file.
+  // A lightened session played in a light week is neutral for every ladder reader (rung, M-03 +1,
+  // cap series): the hero resumes where they were the day they accepted it. Any other quest is
+  // judged normally (D-52). Read before the transaction, like the device id. Required on use:
+  // lightWeek imports this file.
   const lightWeek = await (
     require("./lightWeek") as typeof import("./lightWeek")
   ).isLightWeekRunning(performedAt);
@@ -331,7 +332,7 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
           typeof ex.prescribed === "number" && Number.isFinite(ex.prescribed)
             ? Math.max(1, Math.floor(ex.prescribed))
             : null,
-        ladderNeutral: (lightWeek && !input.userQuest) || (neutral[index] ?? false),
+        ladderNeutral: (lightWeek && input.lightened === true) || (neutral[index] ?? false),
         notes: ex.notes ?? "",
         performedAt: ex.performedAt ?? input.performedAt ?? new Date(),
       };

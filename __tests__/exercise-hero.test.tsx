@@ -1,8 +1,8 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
-
 import { ExerciseHero } from "@/components/session/ExerciseHero";
+import { PrepView } from "@/components/session/PrepView";
 import { titleBelowPicture } from "@/components/session/sessionArt";
 import config from "@/tamagui.config";
 
@@ -14,7 +14,7 @@ jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }
  * under the picture. Every other screen keeps the caption over the art.
  */
 
-const mount = (nameBelowSmall: boolean) =>
+const mount = (nameBelowSmall: boolean, onNameBelowChange?: (below: boolean) => void) =>
   render(
     <SafeAreaProvider
       initialMetrics={{
@@ -30,6 +30,7 @@ const mount = (nameBelowSmall: boolean) =>
           fadeTo="#000"
           topInset={0}
           nameBelowSmall={nameBelowSmall}
+          onNameBelowChange={onNameBelowChange}
         />
       </TamaguiProvider>
     </SafeAreaProvider>,
@@ -73,5 +74,46 @@ describe("the title of the intro screen", () => {
 
     expect(screen.queryByTestId("exercise-hero-name-below")).toBeNull();
     expect(screen.getByTestId("exercise-hero-name")).toBeTruthy();
+  });
+});
+
+describe("D-60, the description of the intro at a small size", () => {
+  test("the hero tells its screen when the title went under the picture", async () => {
+    const onChange = jest.fn();
+    await mount(true, onChange);
+    await measure(360, 100);
+
+    expect(onChange).toHaveBeenLastCalledWith(true);
+  });
+
+  test("it says false for a picture big enough, so a normal phone keeps its description", async () => {
+    const onChange = jest.fn();
+    await mount(true, onChange);
+    await measure(360, 300);
+
+    expect(onChange).toHaveBeenLastCalledWith(false);
+  });
+
+  test("PrepView clamps the description to the lines it is given, and only then", async () => {
+    const view = (descriptionLines?: number) => (
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <PrepView
+          kicker="First"
+          instruction={{ name: "Chop wood", imagePath: "", description: "A long text." }}
+          fallbackName="Chop wood"
+          target={null}
+          remainingSeconds={null}
+          onGo={jest.fn()}
+          goTestID="go"
+          compact
+          descriptionLines={descriptionLines}
+        />
+      </TamaguiProvider>
+    );
+    const { rerender } = await render(view(2));
+    expect(screen.getByText("A long text.").props.numberOfLines).toBe(2);
+
+    await rerender(view(undefined));
+    expect(screen.getByText("A long text.").props.numberOfLines).toBeUndefined();
   });
 });

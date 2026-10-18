@@ -30,15 +30,24 @@ const DESCRIPTION_STYLE = { flexGrow: 0, flexShrink: 0 } as const;
 export function MovementDescription({
   text,
   uncapped = false,
+  lines,
 }: {
   text: string;
   uncapped?: boolean;
+  /** D-60: a hard line count, for a screen whose picture needs the room back. */
+  lines?: number;
 }) {
   // 120 dp is six lines at font scale 1; the cap follows the scale so a large-text hero gets six
   // lines too, not four and a half cut through the middle.
   const maxHeight = useFontScaled(120);
   const body = (
-    <AppText fontSize={14} color="$textSecondary" lineHeight={20} style={{ textAlign: "center" }}>
+    <AppText
+      fontSize={14}
+      color="$textSecondary"
+      lineHeight={20}
+      numberOfLines={lines}
+      style={{ textAlign: "center" }}
+    >
       {text}
     </AppText>
   );
@@ -187,6 +196,8 @@ type PrepViewProps = {
    * scrolled, and read as a movement already running (audit 2026-10-11, F3).
    */
   pinned?: boolean;
+  /** D-60: clamp the description to this many lines. Only the intro at a small size asks. */
+  descriptionLines?: number;
 };
 
 /**
@@ -211,6 +222,7 @@ export function PrepView({
   goTestID,
   compact = false,
   pinned = false,
+  descriptionLines,
 }: PrepViewProps) {
   const { t } = useTranslation();
   const { height } = useWindowDimensions();
@@ -239,7 +251,11 @@ export function PrepView({
       />
 
       {instruction?.description ? (
-        <MovementDescription text={instruction.description} uncapped={pinned} />
+        <MovementDescription
+          text={instruction.description}
+          uncapped={pinned}
+          lines={descriptionLines}
+        />
       ) : null}
     </>
   );

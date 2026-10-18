@@ -341,7 +341,7 @@ describe("VictoryView, the walk it just celebrated", () => {
       outing: { seconds: 720, effortSeconds: 720, locomotion: "walk" },
     });
 
-    expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(/of which 12 min moving/);
+    expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(/of which 12:00 moving/);
   });
 
   /**

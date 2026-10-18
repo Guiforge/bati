@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { type ImageSourcePropType, useWindowDimensions } from "react-native";
 import Animated, { useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { YStack } from "tamagui";
@@ -34,6 +34,8 @@ type ExerciseHeroProps = {
    * it under the picture instead of over it. Only the intro screen asks; the rest keep the caption.
    */
   nameBelowSmall?: boolean;
+  /** D-60: told whenever the title is, or stops being, under the picture, so the screen can make room. */
+  onNameBelowChange?: (below: boolean) => void;
 };
 
 /** Long enough to be seen turning, short enough to be done before the hero is down. */
@@ -60,6 +62,7 @@ export function ExerciseHero({
   accessibilityLabel,
   mirrored = false,
   nameBelowSmall = false,
+  onNameBelowChange,
 }: ExerciseHeroProps) {
   const reducedMotion = useReducedMotion();
   const { width } = useWindowDimensions();
@@ -72,6 +75,9 @@ export function ExerciseHero({
   // The récitatif follows the square only when the square can hold a name; a 95 dp one split words.
   const inset = side >= NAME_MIN_SIDE ? gutter : 0;
   const nameBelow = nameBelowSmall && titleBelowPicture(side);
+  useEffect(() => {
+    onNameBelowChange?.(nameBelow);
+  }, [nameBelow, onNameBelowChange]);
   // The title under the picture takes its room from the picture, not from the button below.
   const [titleH, setTitleH] = useState(0);
   const give = nameBelow ? titleH : 0;

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -67,6 +67,9 @@ export function CountdownView() {
   const shownAt = useRef(Date.now());
   // No clock is a wait for GO (`prepTimer` in stores/session.ts), and its zero is not an ending.
   const timed = timerStartTimestamp !== null;
+  // D-60: with the title under a small picture, two lines of description give the picture its room.
+  // shortcut: a screen right at the 240 dp edge could flip between the two, when one shows up.
+  const [titleBelow, setTitleBelow] = useState(false);
 
   // A light tick on the seconds that beep. It ticked on every second when there were three of
   // them; on ten, a phone tapping the palm the whole way down reads as a call coming in.
@@ -128,6 +131,7 @@ export function CountdownView() {
         fadeTo={screenBgRaw}
         topInset={insets.top}
         nameBelowSmall
+        onNameBelowChange={setTitleBelow}
       />
 
       <XStack
@@ -177,6 +181,7 @@ export function CountdownView() {
             finishCountdown();
           }}
           goTestID="session-start-go"
+          descriptionLines={titleBelow ? 2 : undefined}
         />
       </YStack>
     </YStack>

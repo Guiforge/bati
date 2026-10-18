@@ -43,15 +43,15 @@ export function useLivePanelProps() {
    * and the journal both said 45 min. `recordedDurationSeconds()` reads the trace, and it is the
    * one rule those two already read. One rule, three readers.
    *
-   * Frozen while the auto-pause holds: `credited` counts elapsed time from the last fix, and a
-   * standing hero still gets fixes, so without this the big figure keeps climbing under the words
-   * "Standing still" and cancels them.
+   * Not frozen by the auto-pause (D-61): the clock keeps showing the time since the start, as the
+   * summary does (D-58), and "Standing still" plus the dimmed figures say the pause. Moving time
+   * and XP are the reducer's and stay as they were.
    */
   const { elapsedSeconds } = useSessionTimer();
   const [recorded, setRecorded] = useState(recordedDurationSeconds);
   // biome-ignore lint/correctness/useExhaustiveDependencies: the timer is the pulse, not the value, so the body deliberately never reads it
   useEffect(() => {
-    if (!track.paused) setRecorded(recordedDurationSeconds());
+    setRecorded(recordedDurationSeconds());
   }, [elapsedSeconds, track.paused]);
 
   return {

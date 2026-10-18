@@ -42,6 +42,7 @@ import type { Exercise } from "@/db/exercises";
 import type { QuestTargetType } from "@/db/schema";
 import { DEFAULT_TARGET_VALUE, SECONDS_SUFFIX } from "@/db/targets";
 import { useHaptics } from "@/hooks/useHaptics";
+import { useKeyboardShown } from "@/hooks/useKeyboardShown";
 import { formatList } from "@/src/i18n/list";
 import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -135,9 +136,7 @@ export default function QuestEditor() {
   const showMessage = (title: string, body: string) =>
     setDialog({ title, body, confirmLabel: t("common.close") });
   const nextUid = useRef(0);
-  // The absolute save bar overlapped the "add an exercise" button by ~75px, so taps meant for
-  // it fired the save instead. Measured, not guessed: the bar's height moves with the inset.
-  const [saveBarHeight, setSaveBarHeight] = useState(0);
+  const typing = useKeyboardShown();
   const { showSuccess } = useToast();
   const { success } = useHaptics();
 
@@ -471,7 +470,8 @@ export default function QuestEditor() {
           // gesture and gives the child the tap it was aimed at. Same value the exercise
           // picker sheet already uses.
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: saveBarHeight + 24 }}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 24 }}
         >
           <YStack p="$5" pt={insets.top + 12} gap="$4">
             <XStack items="center" justify="space-between">
@@ -714,12 +714,10 @@ export default function QuestEditor() {
           translucent, and the form scrolling under it read through as ghost headings. */}
         <YStack
           p="$4"
-          pb={insets.bottom + 16}
+          pb={typing ? 16 : insets.bottom + 16}
           bg="$bgDark"
           borderTopWidth={1}
           borderColor="$borderStrong"
-          style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
-          onLayout={(e) => setSaveBarHeight(e.nativeEvent.layout.height)}
         >
           <AppButton testID="quest-save" height={56} disabled={busy} onPress={save}>
             {t("quests.editor_save")}

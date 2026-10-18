@@ -49,6 +49,7 @@ import { preferences } from "@/db/preferences";
 import { getAllQuestConfigs, startingDifficulty } from "@/db/questConfig";
 import { type QuestTemplate, trainingFocus } from "@/db/quests";
 import { useHaptics } from "@/hooks/useHaptics";
+import { useKeyboardShown } from "@/hooks/useKeyboardShown";
 import { adventureWeeksLabel, useReminderPace } from "@/hooks/useReminderPace";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
@@ -172,7 +173,7 @@ export default function AdventureEditor() {
   const [dialog, setDialog] = useState<DialogState | null>(null);
   const [nameMissing, setNameMissing] = useState(false);
   const [stepsMissing, setStepsMissing] = useState(false);
-  const [saveBarHeight, setSaveBarHeight] = useState(0);
+  const typing = useKeyboardShown();
   const nextUid = useRef(0);
   const nameRef = useRef<TamaguiElement>(null);
   const scrollRef = useRef<ScrollView>(null);
@@ -427,7 +428,8 @@ export default function AdventureEditor() {
         <ScrollView
           ref={scrollRef}
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: saveBarHeight + 24 }}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 24 }}
         >
           <YStack p="$5" pt={insets.top + 12} gap="$4">
             <XStack items="center" gap="$3">
@@ -631,12 +633,10 @@ export default function AdventureEditor() {
 
         <YStack
           p="$4"
-          pb={insets.bottom + 16}
+          pb={typing ? 16 : insets.bottom + 16}
           bg="$bgDark"
           borderTopWidth={1}
           borderColor="$borderStrong"
-          style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
-          onLayout={(e) => setSaveBarHeight(e.nativeEvent.layout.height)}
         >
           <AppButton testID="adventure-save" height={56} disabled={busy} onPress={save}>
             {t("adventures.editor_save")}

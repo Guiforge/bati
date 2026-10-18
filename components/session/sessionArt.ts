@@ -40,6 +40,15 @@ export function sessionArtHeight(
 }
 
 /**
+ * The ceiling of the exercise hero's picture band: a square-ish painting never needs more than
+ * the column is wide (plus a tenth), and a tall window gives the rest to the counter block.
+ * `sessionArtHeight` is only the floor; this is what the hero obeys going up.
+ */
+export function exerciseArtMaxHeight(width: number): number {
+  return Math.round(Math.min(width, CONTENT_MAX_WIDTH) * 1.1);
+}
+
+/**
  * The rest screen's top block, which is the arena's counterpart there.
  *
  * A rest looks the same whether or not a boss is being fought: the monster owns the screen where

@@ -64,3 +64,11 @@ export function exerciseArtMaxHeight(width: number): number {
  * of this neither of them can hard-code.
  */
 export const REST_HEADER_HEIGHT = 102;
+
+/** A picture narrower than this cannot hold a name without hiding most of itself. */
+export const NAME_MIN_SIDE = 240;
+
+/** Whether a measured picture of this side is too small for the name to sit on it. 0 is not measured yet. */
+export function titleBelowPicture(side: number): boolean {
+  return side > 0 && side < NAME_MIN_SIDE;
+}

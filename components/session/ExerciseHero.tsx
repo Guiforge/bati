@@ -7,7 +7,7 @@ import { YStack } from "tamagui";
 import { Recitatif } from "@/components/common/Recitatif";
 import { rawColors } from "@/constants/rawColors";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { exerciseArtMaxHeight, HUD_HEIGHT } from "./sessionArt";
+import { exerciseArtMaxHeight, HUD_HEIGHT, NAME_MIN_SIDE, titleBelowPicture } from "./sessionArt";
 
 type ExerciseHeroProps = {
   source: ImageSourcePropType;
@@ -29,6 +29,11 @@ type ExerciseHeroProps = {
    * says "switch" to someone who only glances at the screen.
    */
   mirrored?: boolean;
+  /**
+   * D-57: when the picture is too small to hold the name (around 100 dp at 360x640 and 130 %), set
+   * it under the picture instead of over it. Only the intro screen asks; the rest keep the caption.
+   */
+  nameBelowSmall?: boolean;
 };
 
 /** Long enough to be seen turning, short enough to be done before the hero is down. */
@@ -54,6 +59,7 @@ export function ExerciseHero({
   onPress,
   accessibilityLabel,
   mirrored = false,
+  nameBelowSmall = false,
 }: ExerciseHeroProps) {
   const reducedMotion = useReducedMotion();
   const { width } = useWindowDimensions();
@@ -64,7 +70,8 @@ export function ExerciseHero({
   // Dead space either side of the square: 0 on a phone, where the square fills the band.
   const gutter = Math.max(0, (band.w - side) / 2);
   // The récitatif follows the square only when the square can hold a name; a 95 dp one split words.
-  const inset = side >= 240 ? gutter : 0;
+  const inset = side >= NAME_MIN_SIDE ? gutter : 0;
+  const nameBelow = nameBelowSmall && titleBelowPicture(side);
   const scaleX = mirrored ? -1 : 1;
   // Through zero, so it reads as a card turning over rather than a jump cut. Reduced motion gets
   // the cut, as a plain style.
@@ -74,61 +81,64 @@ export function ExerciseHero({
   );
 
   return (
-    <YStack
-      // Plain RN flex, not Tamagui's `flex={1}`: without a `styleCompat`, Tamagui expands that to
-      // `flexBasis: auto`, and the hero then sizes to its content instead of to the column.
-      style={{ flex: 1 }}
-      minH={topInset + HUD_HEIGHT + minHeight}
-      maxH={topInset + HUD_HEIGHT + Math.max(minHeight, exerciseArtMaxHeight(width))}
-      width="100%"
-      position="relative"
-      bg="$bgDark"
-      pt={topInset + HUD_HEIGHT}
-      onPress={onPress}
-      pressStyle={onPress ? { opacity: 0.92 } : undefined}
-      accessibilityRole={onPress ? "button" : undefined}
-      accessibilityLabel={accessibilityLabel}
-    >
-      {/* ponytail: the exercise art ships at 1024x768, so a full-bleed hero upscales it ~1.2x on
+    <>
+      <YStack
+        // Plain RN flex, not Tamagui's `flex={1}`: without a `styleCompat`, Tamagui expands that to
+        // `flexBasis: auto`, and the hero then sizes to its content instead of to the column.
+        style={{ flex: 1 }}
+        minH={topInset + HUD_HEIGHT + minHeight}
+        maxH={topInset + HUD_HEIGHT + Math.max(minHeight, exerciseArtMaxHeight(width))}
+        width="100%"
+        position="relative"
+        bg="$bgDark"
+        pt={topInset + HUD_HEIGHT}
+        onPress={onPress}
+        pressStyle={onPress ? { opacity: 0.92 } : undefined}
+        accessibilityRole={onPress ? "button" : undefined}
+        accessibilityLabel={accessibilityLabel}
+      >
+        {/* ponytail: the exercise art ships at 1024x768, so a full-bleed hero upscales it ~1.2x on
           a 3x screen and `cover` crops the sides. Re-export the assets wider (and as WebP, see
           docs/architecture/performance.md rule #2) if the softness ever reads as blur. */}
-      <Animated.View
-        testID="exercise-hero-art"
-        onLayout={(e) => setBand({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}
-        style={[
-          { width: "100%", height: "100%", alignItems: "center", justifyContent: "center" },
-          reducedMotion ? { transform: [{ scaleX }] } : flip,
-        ]}
-      >
-        <Image
-          source={source}
-          style={{ width: side, height: side }}
-          contentFit="cover"
-          transition={150}
-        />
-        {/* The square has hard side edges when the band is wider than it is tall; fade them into
+        <Animated.View
+          testID="exercise-hero-art"
+          onLayout={(e) =>
+            setBand({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })
+          }
+          style={[
+            { width: "100%", height: "100%", alignItems: "center", justifyContent: "center" },
+            reducedMotion ? { transform: [{ scaleX }] } : flip,
+          ]}
+        >
+          <Image
+            source={source}
+            style={{ width: side, height: side }}
+            contentFit="cover"
+            transition={150}
+          />
+          {/* The square has hard side edges when the band is wider than it is tall; fade them into
             the screen like the bottom one. */}
-        {gutter > 0 ? (
-          <>
-            <LinearGradient
-              colors={[fadeTo, "transparent"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={{ position: "absolute", top: 0, bottom: 0, left: gutter, width: 32 }}
-              pointerEvents="none"
-            />
-            <LinearGradient
-              colors={["transparent", fadeTo]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={{ position: "absolute", top: 0, bottom: 0, right: gutter, width: 32 }}
-              pointerEvents="none"
-            />
-          </>
-        ) : null}
-      </Animated.View>
+          {gutter > 0 ? (
+            <>
+              <LinearGradient
+                colors={[fadeTo, "transparent"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{ position: "absolute", top: 0, bottom: 0, left: gutter, width: 32 }}
+                pointerEvents="none"
+              />
+              <LinearGradient
+                colors={["transparent", fadeTo]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{ position: "absolute", top: 0, bottom: 0, right: gutter, width: 32 }}
+                pointerEvents="none"
+              />
+            </>
+          ) : null}
+        </Animated.View>
 
-      {/* Top scrim: the status bar's own band, and barely past it.
+        {/* Top scrim: the status bar's own band, and barely past it.
 
           It used to run `topInset + 80` — around 120dp on a punch-hole phone, opaque to ~48dp.
           The exercise art is 1280x1280 in a slot that is nearly square, so `cover` crops about 5%
@@ -143,14 +153,14 @@ export function ExerciseHero({
           What it cannot fix: the head sits *inside* the status bar band, because the artwork runs
           full-bleed under it. No scrim setting reveals those pixels — that one is a layout
           decision, not a gradient. */}
-      <LinearGradient
-        colors={[rawColors.bgDark, rawColors.bgOverlay, "transparent"]}
-        locations={[0, 0.6, 1]}
-        style={{ position: "absolute", top: 0, left: 0, right: 0, height: topInset + 28 }}
-        pointerEvents="none"
-      />
+        <LinearGradient
+          colors={[rawColors.bgDark, rawColors.bgOverlay, "transparent"]}
+          locations={[0, 0.6, 1]}
+          style={{ position: "absolute", top: 0, left: 0, right: 0, height: topInset + 28 }}
+          pointerEvents="none"
+        />
 
-      {/* Bottom scrim: ends on the screen's own background, so the artwork has no visible edge —
+        {/* Bottom scrim: ends on the screen's own background, so the artwork has no visible edge —
           which is the whole point of dropping the border.
 
           It used to cover 60% of the hero and reach full `fadeTo` at 85% of that, so on a 354dp
@@ -161,26 +171,37 @@ export function ExerciseHero({
           holding contrast for the title *and* dissolving the edge. The title sits in a
           récitatif now, so this only has the edge left to do — 38% of the hero, solid for the last tenth of
           itself, which is all it takes to hide a seam. About 78dp of painting handed back. */}
-      <LinearGradient
-        colors={["transparent", fadeTo]}
-        locations={[0, 0.9]}
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: 120,
-        }}
-        pointerEvents="none"
-      />
+        <LinearGradient
+          colors={["transparent", fadeTo]}
+          locations={[0, 0.9]}
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 120,
+          }}
+          pointerEvents="none"
+        />
 
-      {/* The name sits in a récitatif, bottom-left of the square, so it never starts
+        {/* The name sits in a récitatif, bottom-left of the square, so it never starts
           outside the picture on a wide band. */}
-      <YStack position="absolute" b="$3" l={inset} r={inset} px="$4">
-        <Recitatif numberOfLines={2} testID="exercise-hero-name">
-          {name}
-        </Recitatif>
+        {nameBelow ? null : (
+          <YStack position="absolute" b="$3" l={inset} r={inset} px="$4">
+            <Recitatif numberOfLines={2} testID="exercise-hero-name">
+              {name}
+            </Recitatif>
+          </YStack>
+        )}
       </YStack>
-    </YStack>
+      {/* Under a picture too small to carry it, in the flow: the hero above gives it the room. */}
+      {nameBelow ? (
+        <YStack testID="exercise-hero-name-below" px="$4">
+          <Recitatif numberOfLines={2} testID="exercise-hero-name">
+            {name}
+          </Recitatif>
+        </YStack>
+      ) : null}
+    </>
   );
 }

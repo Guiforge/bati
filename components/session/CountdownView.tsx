@@ -127,6 +127,7 @@ export function CountdownView() {
         )}
         fadeTo={screenBgRaw}
         topInset={insets.top}
+        nameBelowSmall
       />
 
       <XStack

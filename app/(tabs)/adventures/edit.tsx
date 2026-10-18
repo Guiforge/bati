@@ -177,6 +177,7 @@ export default function AdventureEditor() {
   const nextUid = useRef(0);
   const nameRef = useRef<TamaguiElement>(null);
   const scrollRef = useRef<ScrollView>(null);
+  const nameCardY = useRef(0);
   const skipGuardRef = useRef(false);
 
   const { title, description, cover, steps, end, voice } = fields;
@@ -342,7 +343,7 @@ export default function AdventureEditor() {
       setNameMissing(missing === "name");
       setStepsMissing(missing === "steps");
       if (missing === "name") {
-        scrollRef.current?.scrollTo({ y: 0, animated: true });
+        scrollRef.current?.scrollTo({ y: Math.max(0, nameCardY.current - 16), animated: true });
         nameRef.current?.focus();
       } else {
         scrollRef.current?.scrollToEnd({ animated: true });
@@ -478,7 +479,11 @@ export default function AdventureEditor() {
               photos={false}
             />
 
-            <Card>
+            <Card
+              onLayout={(e) => {
+                nameCardY.current = e.nativeEvent.layout.y;
+              }}
+            >
               <YStack gap="$3">
                 <YStack gap="$2">
                   <Text fontWeight="700" fontSize={14} color="$textSecondary">

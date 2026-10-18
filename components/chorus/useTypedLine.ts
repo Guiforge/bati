@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { MOMENT_CAST, TYPE_MS_PER_CHAR } from "@/constants/villagers";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -13,12 +14,19 @@ import type { Cameo } from "@/stores/chorus";
  * transparent, so the line is its final size from the first character.
  */
 export function useTypedLine(current: Cameo | null): {
+  /** The whole line, resolved in the language the screen is in now. */
+  line: string;
   shown: string;
   rest: string;
   done: boolean;
 } {
   const reducedMotion = useReducedMotion();
-  const line = current?.line ?? "";
+  const { t } = useTranslation();
+  const line = current
+    ? current.lineKey
+      ? t(current.lineKey, { defaultValue: current.line })
+      : current.line
+    : "";
   const types = !!current && MOMENT_CAST[current.moment].priority !== "ambient" && !reducedMotion;
   // Keyed on the cameo: a count left over from the previous line is not this line's, or a new guide
   // would be drawn for one frame with as many characters as the last line had, then blanked.
@@ -42,6 +50,7 @@ export function useTypedLine(current: Cameo | null): {
   const revealed = !types ? line.length : typed.id === current?.id ? typed.count : 0;
 
   return {
+    line,
     shown: line.slice(0, revealed),
     rest: line.slice(revealed),
     done: revealed >= line.length,

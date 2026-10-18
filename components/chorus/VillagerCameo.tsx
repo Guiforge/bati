@@ -47,7 +47,7 @@ export function VillagerCameo({ band }: { band: CameoBand | null }) {
   // Only the Village's own cue, and only while the Village is focused: tab screens stay mounted,
   // and an unfocused Village used to type (re-render every 24 ms) and dismiss other screens' cues.
   const mine = focused && current?.owner === "village" ? current : null;
-  const { shown, rest, done } = useTypedLine(mine);
+  const { line, shown, rest, done } = useTypedLine(mine);
   // Only once there is room to draw it: with no band the figure dismisses itself below.
   useGuideSeen(band ? mine : null);
   const name = mine ? t(`villagers.names.${mine.villager}`) : "";
@@ -62,10 +62,10 @@ export function VillagerCameo({ band }: { band: CameoBand | null }) {
     if (!(mine && done)) return;
     const leaving = setTimeout(
       () => dismiss(mine.id),
-      cameoLingerMs(mine.line, MOMENT_CAST[mine.moment].priority),
+      cameoLingerMs(line, MOMENT_CAST[mine.moment].priority),
     );
     return () => clearTimeout(leaving);
-  }, [mine, done, dismiss]);
+  }, [mine, line, done, dismiss]);
 
   if (!(mine && band)) return null;
   const current_ = mine;
@@ -97,7 +97,7 @@ export function VillagerCameo({ band }: { band: CameoBand | null }) {
         // The whole sentence, not the part typed so far: a label that changes every 24ms is
         // unusable, and a screen reader should get the line at once. In the label, not the hint,
         // because a user with hints off must still hear what was said.
-        accessibilityLabel={`${name}. ${current_.line}`}
+        accessibilityLabel={`${name}. ${line}`}
         accessibilityHint={t("villagers.send_away")}
         style={{ paddingHorizontal: 12, height: "100%", justifyContent: "flex-end" }}
       >

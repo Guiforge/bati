@@ -3,6 +3,7 @@ import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
+import { narrativeArtHeight } from "@/constants/layout";
 import config from "@/tamagui.config";
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
@@ -52,5 +53,16 @@ describe("NarrativeModal is a panel", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
     await fireEvent.press(screen.getByTestId("narrative-dismiss"));
     expect(onDismiss).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("narrativeArtHeight", () => {
+  it("keeps the phone path at 4:3 of the screen width", () => {
+    expect(narrativeArtHeight(390, 844)).toBe(293);
+    expect(narrativeArtHeight(360, 640)).toBe(270);
+  });
+
+  it("stays under half the window on a landscape tablet", () => {
+    expect(narrativeArtHeight(1280, 800)).toBeLessThan(400);
   });
 });

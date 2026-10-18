@@ -133,6 +133,7 @@ export default function QuestEditor() {
   const [exercisesMissing, setExercisesMissing] = useState(false);
   const nameRef = useRef<TamaguiElement>(null);
   const scrollRef = useRef<ScrollView>(null);
+  const nameCardY = useRef(0);
   const showMessage = (title: string, body: string) =>
     setDialog({ title, body, confirmLabel: t("common.close") });
   const nextUid = useRef(0);
@@ -321,11 +322,9 @@ export default function QuestEditor() {
     if (missing) {
       setNameMissing(missing === "name");
       setExercisesMissing(missing === "exercises");
-      // shortcut: the field is at the top and the exercises line at the bottom of one column, so
-      // the scroll goes to either end rather than measuring; re-measure if a section is added
-      // between them.
+      // The name card is measured; the exercises line is the bottom of the column.
       if (missing === "name") {
-        scrollRef.current?.scrollTo({ y: 0, animated: true });
+        scrollRef.current?.scrollTo({ y: Math.max(0, nameCardY.current - 16), animated: true });
         nameRef.current?.focus();
       } else {
         scrollRef.current?.scrollToEnd({ animated: true });
@@ -523,7 +522,11 @@ export default function QuestEditor() {
               aspect={[4, 3]}
             />
 
-            <Card>
+            <Card
+              onLayout={(e) => {
+                nameCardY.current = e.nativeEvent.layout.y;
+              }}
+            >
               <YStack gap="$3">
                 <YStack gap="$2">
                   <Text fontWeight="700" fontSize={14} color="$textSecondary">

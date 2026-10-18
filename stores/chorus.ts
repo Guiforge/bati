@@ -101,7 +101,14 @@ export type Cameo = {
   moment: CueMoment;
   villager: VillagerId;
   pose: VillagerPose;
+  /** The line as it read when the cue fired; kept for a cameo built without a key. */
   line: string;
+  /**
+   * Where the line lives in the catalogue. Screens resolve it at render (`useTypedLine`): the cue
+   * can fire before the stored language replaces the device's, and a line resolved then stays in
+   * the wrong language while the villager's name, resolved at render, switches.
+   */
+  lineKey?: string;
 };
 
 interface ChorusState {
@@ -204,7 +211,7 @@ function selectLine(
   villager: VillagerId,
   moment: CueMoment,
   recent: Set<string>,
-): { line: string; key: string } | null {
+): { line: string; key: string; lineKey: string } | null {
   // Keyed on the villager as well as the moment, so the smith not repeating himself does not also
   // stop the champion from saying her first line.
   const poolKey = `villagers.${villager}.${moment}`;
@@ -218,7 +225,7 @@ function selectLine(
     // in a speech bubble.
     if (!line || line === `${poolKey}.${index}`) return null;
 
-    return { line, key: `${poolKey}:${index}` };
+    return { line, key: `${poolKey}:${index}`, lineKey: `${poolKey}.${index}` };
   } catch (error) {
     reportError("chorus.selectLine", error);
     return null;
@@ -284,7 +291,15 @@ export const useChorusStore = create<ChorusState>((set, get) => ({
 
     const recentKeys = [...state.recentKeys, selected.key].slice(-RECENT_MEMORY);
     set({
-      current: { id: nextCameoId++, owner, moment, villager, pose: rule.pose, line: selected.line },
+      current: {
+        id: nextCameoId++,
+        owner,
+        moment,
+        villager,
+        pose: rule.pose,
+        line: selected.line,
+        lineKey: selected.lineKey,
+      },
       recentKeys,
       lastVillager: villager,
       lastCameoAt: now,

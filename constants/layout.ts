@@ -23,3 +23,14 @@ export const CONTENT_MAX_WIDTH = 520;
  * ponytail: a font scale past ~1.3 grows the card beyond this and nudges once; measure if it matters.
  */
 export const LEVEL_CARD_HEIGHT = 62;
+
+/**
+ * The painting's height: 4:3 against the column, never more than 45% of the window. The modal sits
+ * outside the content column, so on a landscape tablet a 4:3 against the window was taller than
+ * the window and pushed the words and both buttons off it. A portrait phone is unchanged, 4:3 is
+ * already under 45% of a screen taller than 1.67 times its width.
+ */
+export function narrativeArtHeight(windowWidth: number, windowHeight: number) {
+  const column = Math.min(windowWidth, CONTENT_MAX_WIDTH);
+  return Math.min(Math.round((column * 3) / 4), Math.round(windowHeight * 0.45));
+}

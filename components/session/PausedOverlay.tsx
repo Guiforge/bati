@@ -102,6 +102,9 @@ export function PausedOverlay() {
           the page's own margin, so it also clears the bar when it does fit. */}
       <ScrollView
         testID="paused-overlay-scroll"
+        // Bounded by the overlay: without it the ScrollView is as tall as its card, the overlay
+        // clips it, and nothing ever scrolls.
+        style={{ flex: 1 }}
         contentContainerStyle={{
           flexGrow: 1,
           alignItems: "center",

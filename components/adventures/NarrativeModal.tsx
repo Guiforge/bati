@@ -2,11 +2,12 @@ import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
-import { Modal } from "react-native";
+import { Modal, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, ScrollView, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Recitatif } from "@/components/common/Recitatif";
+import { CONTENT_MAX_WIDTH, narrativeArtHeight } from "@/constants/layout";
 import { fade, rawColors } from "@/constants/rawColors";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
@@ -43,6 +44,7 @@ export function NarrativeModal({
   const dismiss = onDismiss ?? onClose;
   const reducedMotion = useReducedMotion();
   const insets = useSafeAreaInsets();
+  const { width, height } = useWindowDimensions();
 
   return (
     <Modal
@@ -53,52 +55,54 @@ export function NarrativeModal({
       navigationBarTranslucent
     >
       <YStack flex={1} bg="$bgDark">
-        {image ? (
-          // 4:3 like a quest cover; the gradient melts the foot of the painting into the ground.
-          <YStack width="100%" aspectRatio={4 / 3} bg="$surface2">
-            <Image
-              source={image}
-              style={{ width: "100%", height: "100%" }}
-              contentFit="cover"
-              accessible={false}
-            />
-            <LinearGradient
-              colors={["transparent", fade(rawColors.bgDark, 0.55), rawColors.bgDark]}
-              locations={[0.5, 0.8, 1]}
-              style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}
-            />
-            <YStack position="absolute" b={0} l={0} r={0} px="$5">
+        <YStack flex={1} width="100%" maxW={CONTENT_MAX_WIDTH} self="center">
+          {image ? (
+            // 4:3 like a quest cover; the gradient melts the foot of the painting into the ground.
+            <YStack width="100%" height={narrativeArtHeight(width, height)} bg="$surface2">
+              <Image
+                source={image}
+                style={{ width: "100%", height: "100%" }}
+                contentFit="cover"
+                accessible={false}
+              />
+              <LinearGradient
+                colors={["transparent", fade(rawColors.bgDark, 0.55), rawColors.bgDark]}
+                locations={[0.5, 0.8, 1]}
+                style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}
+              />
+              <YStack position="absolute" b={0} l={0} r={0} px="$5">
+                <Recitatif>{title}</Recitatif>
+              </YStack>
+            </YStack>
+          ) : (
+            <YStack px="$5" pt={insets.top + 24}>
               <Recitatif>{title}</Recitatif>
             </YStack>
-          </YStack>
-        ) : (
-          <YStack px="$5" pt={insets.top + 24}>
-            <Recitatif>{title}</Recitatif>
-          </YStack>
-        )}
+          )}
 
-        <YStack flex={1} px="$5" pt="$4" pb={insets.bottom + 24} gap="$4">
-          {/* Scrolls rather than pushing the action off the screen. */}
-          <ScrollView flex={1}>
-            <Paragraph fontFamily="$body" size="$5" lineHeight={30} color="$text">
-              {text}
-            </Paragraph>
-          </ScrollView>
+          <YStack flex={1} px="$5" pt="$4" pb={insets.bottom + 24} gap="$4">
+            {/* Scrolls rather than pushing the action off the screen. */}
+            <ScrollView flex={1}>
+              <Paragraph fontFamily="$body" size="$5" lineHeight={30} color="$text">
+                {text}
+              </Paragraph>
+            </ScrollView>
 
-          <AppButton testID="narrative-confirm" onPress={onClose}>
-            {type === "intro" ? t("common.begin_adventure") : t("common.continue")}
-          </AppButton>
-
-          {type === "intro" && onDismiss ? (
-            <AppButton
-              testID="narrative-dismiss"
-              variant="outline"
-              accessibilityLabel={t("common.not_now")}
-              onPress={onDismiss}
-            >
-              {t("common.not_now")}
+            <AppButton testID="narrative-confirm" onPress={onClose}>
+              {type === "intro" ? t("common.begin_adventure") : t("common.continue")}
             </AppButton>
-          ) : null}
+
+            {type === "intro" && onDismiss ? (
+              <AppButton
+                testID="narrative-dismiss"
+                variant="outline"
+                accessibilityLabel={t("common.not_now")}
+                onPress={onDismiss}
+              >
+                {t("common.not_now")}
+              </AppButton>
+            ) : null}
+          </YStack>
         </YStack>
       </YStack>
     </Modal>

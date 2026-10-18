@@ -3,7 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView } from "react-native";
+import { BackHandler, KeyboardAvoidingView, Platform, Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
@@ -304,6 +304,14 @@ export function VictoryView() {
   }, [saveSession, success, showError, t]);
 
   const tooShort = durationSeconds < TRIVIAL_SESSION_SECONDS && keepShort !== true;
+
+  // System back on the question is not an answer: it used to pop the screen and drop the session
+  // unsaved without a word. The question stays up, and Keep or Discard are the only ways out.
+  useEffect(() => {
+    if (!tooShort) return;
+    const subscription = BackHandler.addEventListener("hardwareBackPress", () => true);
+    return () => subscription.remove();
+  }, [tooShort]);
 
   useEffect(() => {
     if (savedRef.current || tooShort) return;

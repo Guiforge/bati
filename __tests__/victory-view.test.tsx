@@ -1,5 +1,6 @@
+import assert from "node:assert/strict";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
-import { processColor, StyleSheet, type ViewStyle } from "react-native";
+import { BackHandler, processColor, StyleSheet, type ViewStyle } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import { VictoryView } from "@/components/session/VictoryView";
@@ -567,6 +568,20 @@ describe("VictoryView, a session too short to be one", () => {
     expect(saveSession).not.toHaveBeenCalled();
     // Home, not back: back from here is the session that just ended.
     expect(mockDismissTo).toHaveBeenCalledWith("/");
+  });
+
+  it("system back on the question keeps it up: nothing is discarded or saved behind the hero", async () => {
+    const spy = jest.spyOn(BackHandler, "addEventListener");
+    const { view, saveSession } = await mountWithPendingSave(null, 5);
+
+    const handler = spy.mock.calls.find(([name]) => name === "hardwareBackPress")?.[1];
+    spy.mockRestore();
+    assert(handler);
+    expect((handler as () => boolean)()).toBe(true);
+    expect(mockQuitSession).not.toHaveBeenCalled();
+    expect(mockDismissTo).not.toHaveBeenCalled();
+    expect(saveSession).not.toHaveBeenCalled();
+    expect(view.getByText("session.summary_too_short_title")).toBeTruthy();
   });
 
   it("keeping it lets the save through", async () => {

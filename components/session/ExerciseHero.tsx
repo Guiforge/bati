@@ -92,6 +92,7 @@ export function ExerciseHero({
           source={source}
           style={{ width: "100%", height: "100%" }}
           contentFit="cover"
+          contentPosition="top"
           transition={150}
         />
       </Animated.View>

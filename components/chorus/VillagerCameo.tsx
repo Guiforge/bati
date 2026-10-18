@@ -5,6 +5,7 @@ import { Pressable, useWindowDimensions } from "react-native";
 import { Paragraph, Text, View, XStack, YStack } from "tamagui";
 
 import { getVillagerAsset } from "@/constants/assetMap";
+import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { cameoLingerMs, MOMENT_CAST } from "@/constants/villagers";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useChorusStore } from "@/stores/chorus";
@@ -71,6 +72,7 @@ export function VillagerCameo({ band }: { band: CameoBand | null }) {
 
   const figureHeight = band.figureHeight;
   const figureWidth = Math.round(figureHeight * 0.75);
+  const columnWidth = Math.min(width, CONTENT_MAX_WIDTH);
 
   return (
     <YStack
@@ -113,7 +115,7 @@ export function VillagerCameo({ band }: { band: CameoBand | null }) {
             bg="$parchment"
             p="$3"
             rounded="$1"
-            maxW={Math.min(width - figureWidth - 40, Math.round(width * 0.42))}
+            maxW={Math.min(columnWidth - figureWidth - 40, Math.round(columnWidth * 0.42))}
             // Pinned to the top of the band while the figure keeps its place: on day one the line
             // points at the cabin roof, and a bubble at the figure's feet sat on it. Narrow and
             // to the right, so the painting's centre stays clear: a wide bubble hid the capital's

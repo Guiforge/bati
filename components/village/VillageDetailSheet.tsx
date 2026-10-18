@@ -25,6 +25,7 @@ import { QuestLink } from "@/components/village/VillageLists";
 import { withStones } from "@/components/village/yearsText";
 import { getAdventureAsset, getBossAsset, getBuildingIconAsset } from "@/constants/assetMap";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
+import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { rawColors } from "@/constants/rawColors";
 import { type FinishedAdventureSummary, listFinishedRunSummaries } from "@/db/adventures";
 import { type ContributingSession, getRecentContributingSessions } from "@/db/completed";
@@ -203,6 +204,9 @@ export function VillageDetailSheet({
       />
       {/* What does not fit scrolls: eighty stones are taller than a phone. */}
       <Sheet.Frame
+        width="100%"
+        maxW={CONTENT_MAX_WIDTH}
+        self="center"
         bg="$surface"
         style={{ maxHeight: Math.round(height * 0.9) }}
         borderTopLeftRadius="$6"

@@ -9,6 +9,7 @@ import { MineCaption } from "@/components/exercises/MineCaption";
 import { Check, Search, X } from "@/components/icons";
 import { getExerciseThumb } from "@/constants/assetMap";
 import { filterExercises, NO_EXERCISE_FILTERS } from "@/constants/exerciseFilters";
+import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { ADMIN_CREATOR, type Exercise } from "@/db/exercises";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { localizedName } from "@/src/i18n/localized";
@@ -154,7 +155,14 @@ export function ExercisePickerSheet({
           `height={frameSize}` before spreading these props. The stranding this once tried to fix
           by dropping a `flex` was the pane drift above, and `VillageDetailSheet` was never the
           reference — it is `snapPointsMode="fit"` with no ScrollView, so no pan to lose to. */}
-      <Sheet.Frame bg="$surface" borderTopLeftRadius="$6" borderTopRightRadius="$6">
+      <Sheet.Frame
+        width="100%"
+        maxW={CONTENT_MAX_WIDTH}
+        self="center"
+        bg="$surface"
+        borderTopLeftRadius="$6"
+        borderTopRightRadius="$6"
+      >
         <YStack px="$4" pt="$4" pb="$3" gap="$3">
           <XStack items="center" justify="space-between">
             <Text fontWeight="700" fontSize={18} color="$text">

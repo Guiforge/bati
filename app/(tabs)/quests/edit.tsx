@@ -2,7 +2,7 @@ import { Image } from "expo-image";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Input, Separator, type TamaguiElement, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
@@ -457,262 +457,275 @@ export default function QuestEditor() {
 
   return (
     <YStack flex={1} bg="$background">
-      <ScrollView
-        ref={scrollRef}
-        // With the keyboard up, the default ("never") spends the first tap on any control in
-        // here dismissing it — react-native#4087, and the reason a button on a screen you
-        // type into has to be pressed twice. "handled" keeps the dismiss-on-empty-space
-        // gesture and gives the child the tap it was aimed at. Same value the exercise
-        // picker sheet already uses.
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingBottom: saveBarHeight + 24 }}
+      {/* The window does not resize under the keyboard here (edge-to-edge), so without this the
+          focused field and the save bar sat under it. Same pairing as journal/[id]. */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
-        <YStack p="$5" pt={insets.top + 12} gap="$4">
-          <XStack items="center" justify="space-between">
-            <XStack items="center" gap="$3" flex={1}>
-              <AppIconButton
-                onPress={() => router.back()}
-                accessibilityRole="button"
-                accessibilityLabel={t("quests.go_back")}
-              >
-                <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
-              </AppIconButton>
-              <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
-                {questId == null ? t("quests.editor_new_title") : t("quests.editor_edit_title")}
-              </Text>
+        <ScrollView
+          ref={scrollRef}
+          // With the keyboard up, the default ("never") spends the first tap on any control in
+          // here dismissing it — react-native#4087, and the reason a button on a screen you
+          // type into has to be pressed twice. "handled" keeps the dismiss-on-empty-space
+          // gesture and gives the child the tap it was aimed at. Same value the exercise
+          // picker sheet already uses.
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: saveBarHeight + 24 }}
+        >
+          <YStack p="$5" pt={insets.top + 12} gap="$4">
+            <XStack items="center" justify="space-between">
+              <XStack items="center" gap="$3" flex={1}>
+                <AppIconButton
+                  onPress={() => router.back()}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("quests.go_back")}
+                >
+                  <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
+                </AppIconButton>
+                <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
+                  {questId == null ? t("quests.editor_new_title") : t("quests.editor_edit_title")}
+                </Text>
+              </XStack>
+
+              {questId != null ? (
+                <AppIconButton
+                  onPress={confirmDelete}
+                  disabled={busy}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("quests.editor_delete")}
+                >
+                  <Trash2 size={20} color="$danger" strokeWidth={2.5} />
+                </AppIconButton>
+              ) : null}
             </XStack>
 
-            {questId != null ? (
-              <AppIconButton
-                onPress={confirmDelete}
-                disabled={busy}
-                accessibilityRole="button"
-                accessibilityLabel={t("quests.editor_delete")}
-              >
-                <Trash2 size={20} color="$danger" strokeWidth={2.5} />
-              </AppIconButton>
-            ) : null}
-          </XStack>
-
-          {/* Before the form, on a new quest only: a hero holding a quest someone sent them should
+            {/* Before the form, on a new quest only: a hero holding a quest someone sent them should
               not have to scroll past an empty form to find where it goes. */}
-          {questId == null ? (
-            <ImportFileButton
-              label="quests.import_quest"
-              hint="quests.import_hint"
-              failed="quests.import_failed"
-              testID="quest-import"
-            />
-          ) : null}
+            {questId == null ? (
+              <ImportFileButton
+                label="quests.import_quest"
+                hint="quests.import_hint"
+                failed="quests.import_failed"
+                testID="quest-import"
+              />
+            ) : null}
 
-          {/* The cover leads, as it does in the movement editor: a quest is a card in a gallery
+            {/* The cover leads, as it does in the movement editor: a quest is a card in a gallery
             long before anyone reads its rounds. Seed quests carry authored art; a hero picks
             from the same set or brings a photo. */}
-          <ImageChoiceField
-            value={imagePath}
-            onChange={setImagePath}
-            choices={QUEST_CHOICES}
-            resolve={getQuestAsset}
-            resolveThumb={getQuestAsset}
-            aspect={[4, 3]}
-          />
+            <ImageChoiceField
+              value={imagePath}
+              onChange={setImagePath}
+              choices={QUEST_CHOICES}
+              resolve={getQuestAsset}
+              resolveThumb={getQuestAsset}
+              aspect={[4, 3]}
+            />
 
-          <Card>
-            <YStack gap="$3">
-              <YStack gap="$2">
-                <Text fontWeight="700" fontSize={14} color="$textSecondary">
-                  {t("quests.editor_name")}
-                </Text>
-                <Input
-                  value={title}
-                  onChangeText={(next) => {
-                    setTitle(next);
-                    setNameMissing(false);
-                  }}
-                  ref={nameRef}
-                  testID="quest-name"
-                  placeholder={t("quests.editor_name_placeholder")}
-                  bg="$background"
-                  borderColor={nameMissing ? "$error" : "$borderStrong"}
-                  color="$text"
-                />
-                {nameMissing ? (
-                  <Text
-                    testID="quest-name-error"
-                    accessibilityLiveRegion="polite"
-                    fontSize={13}
-                    color="$error"
-                  >
-                    {t("quests.editor_incomplete_name")}
+            <Card>
+              <YStack gap="$3">
+                <YStack gap="$2">
+                  <Text fontWeight="700" fontSize={14} color="$textSecondary">
+                    {t("quests.editor_name")}
                   </Text>
-                ) : null}
-              </YStack>
-
-              <YStack gap="$2">
-                <Text fontWeight="700" fontSize={14} color="$textSecondary">
-                  {t("quests.editor_description")}
-                </Text>
-                <Input
-                  value={description}
-                  onChangeText={setDescription}
-                  placeholder={t("quests.editor_description_placeholder")}
-                  bg="$background"
-                  borderColor="$borderStrong"
-                  color="$text"
-                />
-              </YStack>
-
-              <Separator borderColor="$borderStrong" />
-
-              <Stepper
-                label={t("quests.config_rounds")}
-                value={rounds}
-                min={ROUNDS_RANGE.min}
-                max={ROUNDS_RANGE.max}
-                onChange={setRounds}
-              />
-              {/* The label renders on one line, so which rest is which goes in the hint. */}
-              <Stepper
-                label={t("quests.config_rest")}
-                hint={t("quests.config_rest_hint")}
-                value={rest}
-                min={REST_RANGE.min}
-                max={REST_RANGE.max}
-                step={REST_STEP}
-                suffix={SECONDS_SUFFIX[language]}
-                onChange={setRest}
-              />
-              <Stepper
-                label={t("quests.config_round_rest")}
-                hint={t("quests.config_round_rest_hint")}
-                value={roundRest}
-                min={REST_RANGE.min}
-                max={REST_RANGE.max}
-                step={REST_STEP}
-                suffix={SECONDS_SUFFIX[language]}
-                onChange={setRoundRest}
-              />
-            </YStack>
-          </Card>
-
-          <Text fontWeight="700" fontSize={18} color="$text">
-            {t("quests.exercises_list")}
-          </Text>
-
-          {picked.map((p, i) => {
-            const exercise = exercisesById[p.exerciseId];
-            if (!exercise) return null;
-
-            return (
-              <Card key={p.uid}>
-                <YStack gap="$3">
-                  <XStack items="center" gap="$3">
-                    <YStack width={48} height={48} rounded="$4" overflow="hidden" bg="$background">
-                      <Image
-                        source={assetByExerciseId.get(exercise.id)}
-                        style={{ width: "100%", height: "100%" }}
-                        contentFit="cover"
-                        transition={0}
-                      />
-                    </YStack>
-                    <Text flex={1} fontWeight="700" fontSize={16} color="$text">
-                      {i + 1}. {exerciseName(exercise)}
+                  <Input
+                    value={title}
+                    onChangeText={(next) => {
+                      setTitle(next);
+                      setNameMissing(false);
+                    }}
+                    ref={nameRef}
+                    testID="quest-name"
+                    placeholder={t("quests.editor_name_placeholder")}
+                    bg="$background"
+                    borderColor={nameMissing ? "$error" : "$borderStrong"}
+                    color="$text"
+                  />
+                  {nameMissing ? (
+                    <Text
+                      testID="quest-name-error"
+                      accessibilityLiveRegion="polite"
+                      fontSize={13}
+                      color="$error"
+                    >
+                      {t("quests.editor_incomplete_name")}
                     </Text>
-                    <Button
-                      size="$2"
-                      circular
-                      hitSlop={12}
-                      icon={<X size={14} />}
-                      accessibilityRole="button"
-                      accessibilityLabel={t("quests.editor_remove")}
-                      onPress={() => removeExercise(p.uid)}
-                    />
-                  </XStack>
+                  ) : null}
+                </YStack>
 
-                  <XStack gap="$2">
-                    <Chip
-                      label={t("quests.config_reps")}
-                      tone={p.type === "reps" ? "primary" : "default"}
-                      onPress={() =>
-                        patchExercise(p.uid, { type: "reps", value: DEFAULT_TARGET_VALUE.reps })
-                      }
-                    />
-                    <Chip
-                      label={t("quests.config_seconds")}
-                      tone={p.type === "time" ? "primary" : "default"}
-                      onPress={() =>
-                        patchExercise(p.uid, { type: "time", value: DEFAULT_TARGET_VALUE.time })
-                      }
-                    />
-                  </XStack>
-
-                  <Stepper
-                    label={t("quests.editor_target")}
-                    value={p.value}
-                    min={targetRangeFor(p.type, exercise?.style).min}
-                    max={targetRangeFor(p.type, exercise?.style).max}
-                    step={p.type === "time" ? REST_STEP : 1}
-                    suffix={p.type === "time" ? SECONDS_SUFFIX[language] : ""}
-                    onChange={(value) => patchExercise(p.uid, { value })}
+                <YStack gap="$2">
+                  <Text fontWeight="700" fontSize={14} color="$textSecondary">
+                    {t("quests.editor_description")}
+                  </Text>
+                  <Input
+                    value={description}
+                    onChangeText={setDescription}
+                    placeholder={t("quests.editor_description_placeholder")}
+                    bg="$background"
+                    borderColor="$borderStrong"
+                    color="$text"
                   />
                 </YStack>
-              </Card>
-            );
-          })}
 
-          {/* The trigger lives here, not in the sheet: its label names *this* screen's action,
-              and substitution opens the same sheet from a row with a different one. */}
-          <AppButton
-            variant="outline"
-            icon={<Plus size={20} color="$text" strokeWidth={2.5} />}
-            onPress={() => setPickerOpen(true)}
-            accessibilityLabel={t("quests.editor_add_exercise")}
-          >
-            {t("quests.editor_add_exercise")}
-          </AppButton>
-          {exercisesMissing ? (
-            <Text
-              testID="quest-exercises-error"
-              accessibilityLiveRegion="polite"
-              fontSize={13}
-              color="$error"
-            >
-              {t("quests.editor_incomplete_exercises")}
+                <Separator borderColor="$borderStrong" />
+
+                <Stepper
+                  label={t("quests.config_rounds")}
+                  value={rounds}
+                  min={ROUNDS_RANGE.min}
+                  max={ROUNDS_RANGE.max}
+                  onChange={setRounds}
+                />
+                {/* The label renders on one line, so which rest is which goes in the hint. */}
+                <Stepper
+                  label={t("quests.config_rest")}
+                  hint={t("quests.config_rest_hint")}
+                  value={rest}
+                  min={REST_RANGE.min}
+                  max={REST_RANGE.max}
+                  step={REST_STEP}
+                  suffix={SECONDS_SUFFIX[language]}
+                  onChange={setRest}
+                />
+                <Stepper
+                  label={t("quests.config_round_rest")}
+                  hint={t("quests.config_round_rest_hint")}
+                  value={roundRest}
+                  min={REST_RANGE.min}
+                  max={REST_RANGE.max}
+                  step={REST_STEP}
+                  suffix={SECONDS_SUFFIX[language]}
+                  onChange={setRoundRest}
+                />
+              </YStack>
+            </Card>
+
+            <Text fontWeight="700" fontSize={18} color="$text">
+              {t("quests.exercises_list")}
             </Text>
-          ) : null}
 
-          <ExercisePickerSheet
-            exercises={pickable}
-            pickedIds={pickedIds}
-            language={language}
-            open={pickerOpen}
-            onOpenChange={setPickerOpen}
-            title={t("quests.editor_add_exercise")}
-            onPick={addExercise}
-            pickAction={<Plus size={20} color="$primaryText" strokeWidth={2.5} />}
-            bottomInset={insets.bottom}
-          />
-        </YStack>
-      </ScrollView>
+            {picked.map((p, i) => {
+              const exercise = exercisesById[p.exerciseId];
+              if (!exercise) return null;
 
-      {/* Content scrolls edge-to-edge; this keeps the status bar readable over it. */}
-      <StatusBand />
+              return (
+                <Card key={p.uid}>
+                  <YStack gap="$3">
+                    <XStack items="center" gap="$3">
+                      <YStack
+                        width={48}
+                        height={48}
+                        rounded="$4"
+                        overflow="hidden"
+                        bg="$background"
+                      >
+                        <Image
+                          source={assetByExerciseId.get(exercise.id)}
+                          style={{ width: "100%", height: "100%" }}
+                          contentFit="cover"
+                          transition={0}
+                        />
+                      </YStack>
+                      <Text flex={1} fontWeight="700" fontSize={16} color="$text">
+                        {i + 1}. {exerciseName(exercise)}
+                      </Text>
+                      <Button
+                        size="$2"
+                        circular
+                        hitSlop={12}
+                        icon={<X size={14} />}
+                        accessibilityRole="button"
+                        accessibilityLabel={t("quests.editor_remove")}
+                        onPress={() => removeExercise(p.uid)}
+                      />
+                    </XStack>
 
-      {/* `$bgDark`, opaque like the quest screen's Start bar: the theme's `$background` is
+                    <XStack gap="$2">
+                      <Chip
+                        label={t("quests.config_reps")}
+                        tone={p.type === "reps" ? "primary" : "default"}
+                        onPress={() =>
+                          patchExercise(p.uid, { type: "reps", value: DEFAULT_TARGET_VALUE.reps })
+                        }
+                      />
+                      <Chip
+                        label={t("quests.config_seconds")}
+                        tone={p.type === "time" ? "primary" : "default"}
+                        onPress={() =>
+                          patchExercise(p.uid, { type: "time", value: DEFAULT_TARGET_VALUE.time })
+                        }
+                      />
+                    </XStack>
+
+                    <Stepper
+                      label={t("quests.editor_target")}
+                      value={p.value}
+                      min={targetRangeFor(p.type, exercise?.style).min}
+                      max={targetRangeFor(p.type, exercise?.style).max}
+                      step={p.type === "time" ? REST_STEP : 1}
+                      suffix={p.type === "time" ? SECONDS_SUFFIX[language] : ""}
+                      onChange={(value) => patchExercise(p.uid, { value })}
+                    />
+                  </YStack>
+                </Card>
+              );
+            })}
+
+            {/* The trigger lives here, not in the sheet: its label names *this* screen's action,
+              and substitution opens the same sheet from a row with a different one. */}
+            <AppButton
+              variant="outline"
+              icon={<Plus size={20} color="$text" strokeWidth={2.5} />}
+              onPress={() => setPickerOpen(true)}
+              accessibilityLabel={t("quests.editor_add_exercise")}
+            >
+              {t("quests.editor_add_exercise")}
+            </AppButton>
+            {exercisesMissing ? (
+              <Text
+                testID="quest-exercises-error"
+                accessibilityLiveRegion="polite"
+                fontSize={13}
+                color="$error"
+              >
+                {t("quests.editor_incomplete_exercises")}
+              </Text>
+            ) : null}
+
+            <ExercisePickerSheet
+              exercises={pickable}
+              pickedIds={pickedIds}
+              language={language}
+              open={pickerOpen}
+              onOpenChange={setPickerOpen}
+              title={t("quests.editor_add_exercise")}
+              onPick={addExercise}
+              pickAction={<Plus size={20} color="$primaryText" strokeWidth={2.5} />}
+              bottomInset={insets.bottom}
+            />
+          </YStack>
+        </ScrollView>
+
+        {/* Content scrolls edge-to-edge; this keeps the status bar readable over it. */}
+        <StatusBand />
+
+        {/* `$bgDark`, opaque like the quest screen's Start bar: the theme's `$background` is
           translucent, and the form scrolling under it read through as ghost headings. */}
-      <YStack
-        p="$4"
-        pb={insets.bottom + 16}
-        bg="$bgDark"
-        borderTopWidth={1}
-        borderColor="$borderStrong"
-        style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
-        onLayout={(e) => setSaveBarHeight(e.nativeEvent.layout.height)}
-      >
-        <AppButton testID="quest-save" height={56} disabled={busy} onPress={save}>
-          {t("quests.editor_save")}
-        </AppButton>
-      </YStack>
+        <YStack
+          p="$4"
+          pb={insets.bottom + 16}
+          bg="$bgDark"
+          borderTopWidth={1}
+          borderColor="$borderStrong"
+          style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
+          onLayout={(e) => setSaveBarHeight(e.nativeEvent.layout.height)}
+        >
+          <AppButton testID="quest-save" height={56} disabled={busy} onPress={save}>
+            {t("quests.editor_save")}
+          </AppButton>
+        </YStack>
+      </KeyboardAvoidingView>
       <ConfirmDialog
         open={dialog !== null}
         title={dialog?.title ?? ""}

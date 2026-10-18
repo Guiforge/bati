@@ -1,3 +1,5 @@
+import { CONTENT_MAX_WIDTH } from "@/constants/layout";
+
 /**
  * How tall a session's top artwork is, capped against *both* window axes so a short screen still
  * leaves the primary action room.
@@ -32,7 +34,9 @@ export function sessionArtHeight(
   height: number,
   kind: SessionArtKind = "exercise",
 ): number {
-  return Math.min(Math.round(height * ART_FACTOR[kind]), Math.round(width * 1.1));
+  // The art fills the content column, not the window: on a tablet the window is wider than it.
+  const column = Math.min(width, CONTENT_MAX_WIDTH);
+  return Math.min(Math.round(height * ART_FACTOR[kind]), Math.round(column * 1.1));
 }
 
 /**

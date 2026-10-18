@@ -23,7 +23,7 @@ describe("every screen title is in the title font", () => {
     ["app/safety.tsx", 't("safety.title")'],
     ["app/recap.tsx", 'recap.title ?? t("recap.title")'],
     ["app/exercises/index.tsx", 't("exercises.catalogue_title")'],
-    ["app/exercises/new.tsx", '{editingId === null ? t("exercise_editor.title_new")'],
+    ["app/exercises/new.tsx", "{editingId === null\n"],
     ["app/exercises/[id].tsx", "          {title}\n"],
     ["app/(tabs)/quests/[id].tsx", 't("quests.details_title")'],
     ["app/(tabs)/adventures/[id].tsx", 't("adventures.details_title")}\n'],

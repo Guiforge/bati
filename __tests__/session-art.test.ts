@@ -13,6 +13,16 @@ import { REST_HEADER_HEIGHT, sessionArtHeight } from "@/components/session/sessi
  * reproduces.
  */
 describe("session art geometry", () => {
+  it("sizes against the content column on a wide window, and leaves a phone alone", () => {
+    // Phone: unchanged, min(height * 0.34, width * 1.1).
+    expect(sessionArtHeight(411, 916)).toBe(
+      Math.min(Math.round(916 * 0.34), Math.round(411 * 1.1)),
+    );
+    // Tablet: same as a window exactly one column wide.
+    expect(sessionArtHeight(1280, 800, "boss")).toBe(sessionArtHeight(520, 800, "boss"));
+    expect(sessionArtHeight(800, 2400, "boss")).toBe(Math.round(520 * 1.1));
+  });
+
   // A tall phone, a short phone, and a wide one where the width cap is what bites.
   const SCREENS = [
     { width: 411, height: 916 },

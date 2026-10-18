@@ -53,6 +53,12 @@ import { ADMIN_CREATOR } from "@/db/schema";
 import { formatCount } from "@/db/targets";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { adventureWeeksLabel, useReminderPace } from "@/hooks/useReminderPace";
+import {
+  type AdventureOrigin,
+  originRoute,
+  parseAdventureOrigin,
+  questOriginQuery,
+} from "@/src/adventureOrigin";
 import { localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
@@ -146,6 +152,7 @@ const AdventureStepRow = memo(function AdventureStepRow({
   step,
   status,
   adventureId,
+  origin,
   isFirst,
   isLast,
   onContinue,
@@ -154,6 +161,7 @@ const AdventureStepRow = memo(function AdventureStepRow({
   step: AdventureStepTemplate;
   status: "locked" | "active" | "completed";
   adventureId: number;
+  origin: AdventureOrigin | null;
   isFirst: boolean;
   isLast: boolean;
   onContinue: () => void;
@@ -176,9 +184,12 @@ const AdventureStepRow = memo(function AdventureStepRow({
     locked: undefined,
     active: onContinue,
     completed: () =>
-      router.push(`/quests/${step.questId}?adventureId=${adventureId}` as never, {
-        withAnchor: true,
-      }),
+      router.push(
+        `/quests/${step.questId}?adventureId=${adventureId}${questOriginQuery(origin)}` as never,
+        {
+          withAnchor: true,
+        },
+      ),
   }[status];
 
   const narrative = localizedText(step, "narrative", langKey);
@@ -280,22 +291,22 @@ export default function AdventureDetailsScreen() {
   // Home's "Continue the adventure" is a detour, not a visit to the Adventures list: back (the
   // chevron and the system one) returns to Home, like the quest screen does for `from=home`. The
   // tab is unwound first, so it does not reopen on this page (`popToTopOnBlur` does the rest).
-  const fromParam = Array.isArray(params.from) ? params.from[0] : params.from;
-  const fromHome = fromParam === "home";
+  // The Journal's boss doors do the same with their own page (`adventureOrigin`).
+  const origin = parseAdventureOrigin(params.from);
   const goBack = useCallback(() => {
-    if (!fromHome) return router.back();
+    if (!origin) return router.back();
     router.dismissTo("/adventures");
-    router.navigate("/" as never);
-  }, [router, fromHome]);
+    router.navigate(originRoute(origin) as never);
+  }, [router, origin]);
   useFocusEffect(
     useCallback(() => {
-      if (!fromHome) return;
+      if (!origin) return;
       const sub = BackHandler.addEventListener("hardwareBackPress", () => {
         goBack();
         return true;
       });
       return () => sub.remove();
-    }, [fromHome, goBack]),
+    }, [origin, goBack]),
   );
 
   const [state, setState] = useState<LoadState>({
@@ -511,7 +522,7 @@ export default function AdventureDetailsScreen() {
 
         const level = nextRun.run.difficultyOverride ?? suggestedDifficulty;
         router.push(
-          `/quests/${step.questId}?level=${encodeURIComponent(level)}&runStepId=${step.id}&adventureId=${adventureId}` as never,
+          `/quests/${step.questId}?level=${encodeURIComponent(level)}&runStepId=${step.id}&adventureId=${adventureId}${questOriginQuery(origin)}` as never,
           { withAnchor: true },
         );
       })
@@ -520,7 +531,7 @@ export default function AdventureDetailsScreen() {
         reportError("adventure.start", e);
         showError(t("adventures.start_error"));
       });
-  }, [adventureId, details, isStarting, router, run, showError, suggestedDifficulty, t]);
+  }, [adventureId, details, isStarting, origin, router, run, showError, suggestedDifficulty, t]);
 
   if (!adventureId) {
     return (
@@ -740,6 +751,7 @@ export default function AdventureDetailsScreen() {
                             : "locked")
                       }
                       adventureId={adventureId}
+                      origin={origin}
                       zone={worksSparedZone(s.quest, state.spared)}
                       isFirst={i === 0}
                       isLast={i === effectiveSteps.length - 1}

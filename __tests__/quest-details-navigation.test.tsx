@@ -16,7 +16,13 @@ const backHandlerSpy = jest.spyOn(
   "addEventListener",
 ) as jest.SpyInstance;
 let mockFocused = true;
-let mockParams: { id?: string; adventureId?: string; from?: string; session?: string } = {
+let mockParams: {
+  id?: string;
+  adventureId?: string;
+  adventureFrom?: string;
+  from?: string;
+  session?: string;
+} = {
   id: "5",
 };
 
@@ -173,6 +179,24 @@ describe("quests/[id] chevron", () => {
     expect(mockNavigate).toHaveBeenCalledWith("/adventures/12", { withAnchor: true });
     // The quest leaves this tab's stack first, or the Quests tab reopens on it.
     expect(mockDismissTo).toHaveBeenCalledWith("/quests");
+  });
+
+  test("an adventure opened from Home gets its origin back, so its own back reaches Home", async () => {
+    mockParams = { id: "5", adventureId: "12", adventureFrom: "home" };
+    const { getByLabelText } = await renderQuestDetails();
+
+    await fireEvent.press(getByLabelText("Go back"));
+
+    expect(mockNavigate).toHaveBeenCalledWith("/adventures/12?from=home", { withAnchor: true });
+  });
+
+  test("an unknown adventure origin is dropped, not forwarded", async () => {
+    mockParams = { id: "5", adventureId: "12", adventureFrom: "https://evil.example" };
+    const { getByLabelText } = await renderQuestDetails();
+
+    await fireEvent.press(getByLabelText("Go back"));
+
+    expect(mockNavigate).toHaveBeenCalledWith("/adventures/12", { withAnchor: true });
   });
 
   test("with no adventureId, the chevron dismisses to the gallery", async () => {

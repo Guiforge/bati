@@ -41,5 +41,5 @@ test("the boss CTA pushes the campaign with withAnchor", async () => {
     </TamaguiProvider>,
   );
   await fireEvent.press(screen.getByTestId("journal-cta-boss"));
-  expect(mockPush).toHaveBeenCalledWith("/adventures/7", { withAnchor: true });
+  expect(mockPush).toHaveBeenCalledWith("/adventures/7?from=%2Fjournal%2F1", { withAnchor: true });
 });

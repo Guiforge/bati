@@ -59,6 +59,7 @@ import type { DifficultyCode, EquipmentCode } from "@/db/schema";
 import { formatCount, formatTargetValue } from "@/db/targets";
 import { outingXpPerMinute } from "@/db/xp";
 import { useSetAside } from "@/hooks/useSetAside";
+import { adventureHref, parseAdventureOrigin } from "@/src/adventureOrigin";
 import { localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { keepIfSame } from "@/src/sameContent";
@@ -183,6 +184,7 @@ export default function QuestDetails() {
     level?: string;
     runStepId?: string;
     adventureId?: string | string[];
+    adventureFrom?: string | string[];
     from?: string | string[];
     session?: string | string[];
   }>();
@@ -447,7 +449,7 @@ export default function QuestDetails() {
     // id — Number.isFinite catches it, same guard as questId/adventureId above in this file.
     if (raw && Number.isFinite(adventureId)) {
       // Anchored: an adventures tab never opened would otherwise hold the page alone.
-      leaveTo(`/adventures/${adventureId}`, true);
+      leaveTo(adventureHref(adventureId, parseAdventureOrigin(params.adventureFrom)), true);
       return;
     }
     // The band's Set up shortcut: the hero was on Home a tap ago, and it is a detour on the way
@@ -467,7 +469,7 @@ export default function QuestDetails() {
       return;
     }
     router.dismissTo("/quests");
-  }, [router, rawAdventure, fromHome, journalBack]);
+  }, [router, rawAdventure, params.adventureFrom, fromHome, journalBack]);
 
   // Hardware back, which is structural: the stack is anchored on the gallery
   // (`app/(tabs)/quests/_layout.tsx`), so popping lands there whatever the chevron does. Left

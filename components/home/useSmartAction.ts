@@ -7,6 +7,7 @@ import { decideHomeOffer, type HomeOffer } from "@/db/homeOffer";
 import { getActivePause } from "@/db/pause";
 import { getReminderDays, WEEKDAYS, type Weekday } from "@/db/reminders";
 import { useReloadOnChange } from "@/hooks/useReloadOnChange";
+import { adventureHref } from "@/src/adventureOrigin";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
 import { useSettingsStore } from "@/stores/settings";
@@ -109,7 +110,7 @@ function stageFor(
       // withAnchor: if the tab was never opened, the stack must hold [index, id], or the tab
       // reopens on this page for good and the list is unreachable.
       onPress: () =>
-        router.push(`/adventures/${offer.adventureId}?from=home` as never, { withAnchor: true }),
+        router.push(adventureHref(offer.adventureId, "home") as never, { withAnchor: true }),
       scene: {
         title: offer.title ?? t("home.resume_journey"),
         imagePath: offer.imagePath,

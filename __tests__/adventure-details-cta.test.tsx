@@ -610,6 +610,40 @@ describe("back from an adventure opened from Home", () => {
     expect(mockNavigate).toHaveBeenCalledWith("/");
   });
 
+  test("from the Journal's bosses, the chevron returns there", async () => {
+    mockParams = { id: "1", from: "/journal/bosses" };
+    const { findByLabelText } = await mount();
+
+    await fireEvent.press(await findByLabelText("Go back"));
+
+    expect(mockDismissTo).toHaveBeenCalledWith("/adventures");
+    expect(mockNavigate).toHaveBeenCalledWith("/journal/bosses");
+  });
+
+  test("an origin that is not Home or the Journal is ignored", async () => {
+    mockParams = { id: "1", from: "/settings" };
+    const { findByLabelText } = await mount();
+
+    await fireEvent.press(await findByLabelText("Go back"));
+
+    expect(mockBack).toHaveBeenCalledTimes(1);
+  });
+
+  test("the quests it opens carry the origin, so Home > adventure > quest > back > back is Home", async () => {
+    mockParams = { id: "1", from: "home" };
+    mockPush.mockClear();
+    const { findByText } = await mount();
+
+    await fireEvent.press(await findByText("Start Adventure"));
+
+    await waitFor(() =>
+      expect(mockPush).toHaveBeenCalledWith(
+        expect.stringMatching(/adventureId=1&adventureFrom=home$/),
+        { withAnchor: true },
+      ),
+    );
+  });
+
   test("opened any other way, the chevron still pops", async () => {
     const { findByLabelText } = await mount();
 

@@ -141,6 +141,27 @@ test("neutral sessions (a light week's) neither advance the series nor break it"
   expect(await checkCapOffers(questId, [await slotOf(slot)], "medium")).toEqual([]);
 });
 
+test("a neutral session after a series does not bring the declined offer back", async () => {
+  const { questId, slot } = quest();
+  const offers = async () => (await checkCapOffers(questId, [await slotOf(slot)], "medium")).length;
+  sessions(questId, 3);
+  expect(await offers()).toBe(1);
+  // A neutral session on top: the run is still 3 behind it, but nothing judged it.
+  t.sqlite.exec("DELETE FROM completed_exercises; DELETE FROM completed_sessions");
+  sessions(questId, 4);
+  t.sqlite.exec(
+    `UPDATE completed_exercises SET ladderNeutral = 1 WHERE performedAt = ${NOW - DAY}`,
+  );
+  expect(await offers()).toBe(0);
+  // Three more judged sessions complete the next series.
+  t.sqlite.exec("DELETE FROM completed_exercises; DELETE FROM completed_sessions");
+  sessions(questId, 7);
+  t.sqlite.exec(
+    `UPDATE completed_exercises SET ladderNeutral = 1 WHERE performedAt = ${NOW - 4 * DAY}`,
+  );
+  expect(await offers()).toBe(1);
+});
+
 test("two sessions, or a miss among the three, offer nothing", async () => {
   const { questId, slot } = quest();
   sessions(questId, 2);

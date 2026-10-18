@@ -43,7 +43,9 @@ type Slot = Pick<QuestExercise, "id" | "exercise" | "target" | "substitutedFor">
  */
 function capRun(marks: readonly SessionMark[], cap: number): number | null {
   // A neutral session (a light week's, a lowered target) is judged by nobody: it neither counts
-  // nor breaks the run.
+  // nor breaks the run. Only a judged session completes a series, so a neutral newest one never
+  // brings back an offer the hero just declined (PARK-4).
+  if (marks[0]?.met === null) return 0;
   const recent = marks.filter((m) => m.met !== null);
   const miss = recent.findIndex(
     (m) => !(m.met === true && m.prescribed !== null && m.prescribed >= cap),

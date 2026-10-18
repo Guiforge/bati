@@ -536,7 +536,7 @@ export function ActiveExerciseView() {
           factor instead of by content, which is how the CTA ended up below the fold.
           The boss branch is no exception: the arena grows (`flexGrow`, floored at its art cut), so
           the slack lands in the monster's painting, not as a void around the counter. */}
-      <YStack px="$4" pt="$4" gap="$4">
+      <YStack px="$4" pt="$4" gap="$4" style={{ flexShrink: 1, minHeight: 0 }}>
         {/* An outing replaces the countdown entirely: what a hero wants at kilometre three is
             how far they have gone, not how much of a prescribed duration is left. The clock is
             still running underneath — `completeExercise` records the elapsed seconds either

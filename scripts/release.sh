@@ -22,6 +22,14 @@ if [ "$branch" != "main" ]; then
   exit 1
 fi
 
+# FLAME_PIVOT must be the tag's date (see constants/flame.ts and the release skill).
+pivot="$(sed -n 's/^export const FLAME_PIVOT = new Date(\([0-9]*\), \([0-9]*\), \([0-9]*\));/\1 \2 \3/p' constants/flame.ts)"
+read -r py pm pd <<<"$pivot"
+if [ "$(printf '%04d-%02d-%02d' "$py" "$((pm + 1))" "$pd")" != "$(date +%F)" ]; then
+  echo "FLAME_PIVOT in constants/flame.ts ($pivot) is not today. Set it to the tag date, commit, retry." >&2
+  exit 1
+fi
+
 git fetch --quiet origin main
 if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
   echo "main is not in sync with origin. Pull or push first." >&2

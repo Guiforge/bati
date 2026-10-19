@@ -85,13 +85,24 @@ function isPrepMode(value: string | null): value is PrepMode {
   return value === "timer" || value === "tap";
 }
 
-/** One set-aside exercise: which, and since when (epoch ms). */
-export type SetAsideExercise = { id: number; at: number };
+/**
+ * One set-aside exercise: which, and since when (epoch ms). A zone the hero spares (M-04) sets
+ * aside what works it with `reason: "zone"` and an `until` (epoch ms): past it the entry is
+ * not there any more, which is how the exercises come back with no gesture. No `until` is the
+ * hero's own hand, and nothing but the hero's hand ends it.
+ */
+export type SetAsideExercise = { id: number; at: number; until?: number; reason?: "zone" };
 
 function isSetAsideExercise(value: unknown): value is SetAsideExercise {
   if (typeof value !== "object" || value === null) return false;
-  const { id, at } = value as Record<string, unknown>;
-  return Number.isInteger(id) && typeof at === "number" && Number.isFinite(at);
+  const { id, at, until, reason } = value as Record<string, unknown>;
+  return (
+    Number.isInteger(id) &&
+    typeof at === "number" &&
+    Number.isFinite(at) &&
+    (until === undefined || (typeof until === "number" && Number.isFinite(until))) &&
+    (reason === undefined || reason === "zone")
+  );
 }
 
 /**
@@ -351,6 +362,22 @@ export const preferences = {
   },
 
   /**
+   * The rest between exercises the hero wants on every quest that has not been tuned on its own,
+   * or `null` for what each quest was written with. Raw: `db/quests.ts` clamps on write and is
+   * the only caller that reads it into a quest.
+   */
+  async getRestDefault(): Promise<number | null> {
+    const value = await getPreference("restDefault");
+    const n = value === null ? Number.NaN : Number(value);
+    return Number.isFinite(n) ? n : null;
+  },
+
+  async setRestDefault(seconds: number | null): Promise<void> {
+    if (seconds === null) await deletePreference("restDefault");
+    else await setPreference("restDefault", String(seconds));
+  },
+
+  /**
    * The Storage Access Framework tree the hero chose for automatic backups, or `null` when the
    * feature is off. Off is the only default: writing files into someone's storage is not
    * something an app gets to assume.
@@ -424,13 +451,16 @@ export const preferences = {
    * carry a different id on another device (`db/merge.ts`). Two devices keep two lists. Switch to
    * `enName` and merge it the day someone asks for the list to follow them.
    */
-  async getSetAsideExercises(): Promise<SetAsideExercise[]> {
+  async getSetAsideExercises(now = Date.now()): Promise<SetAsideExercise[]> {
     const raw = await getPreference("setAsideExercises");
     if (raw === null) return [];
 
     try {
       const parsed: unknown = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed.filter(isSetAsideExercise) : [];
+      // An entry past its `until` is simply not read: the one place that lets a zone end by itself.
+      return Array.isArray(parsed)
+        ? parsed.filter(isSetAsideExercise).filter((e) => e.until === undefined || e.until > now)
+        : [];
     } catch (error) {
       reportError("preferences.setAside.parse", error);
       return [];

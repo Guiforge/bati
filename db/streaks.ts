@@ -1,6 +1,7 @@
 import { startOfDay } from "date-fns";
 import { desc, sql } from "drizzle-orm";
-import { ETERNAL_FLAME_DAYS } from "@/constants/flame";
+import { ETERNAL_FLAME_DAYS, FLAME_DORMANT_DAYS, FLAME_PIVOT } from "@/constants/flame";
+import { isPausedOn, PAUSE_KEY, type PausePeriod, parsePausePeriods } from "@/constants/pause";
 import { DEFAULT_WEEKLY_QUOTA } from "@/constants/weeklyTargets";
 import { db, schema } from "./client";
 import { countsAsSession } from "./completed";
@@ -16,6 +17,10 @@ const STREAK_CACHED_ON_KEY = "streak_cached_on";
 const STREAK_QUOTA_KEY = "streak_quota";
 /** Sessions in the trailing week, cached beside the flame it explains (added 2026-09-11). */
 const STREAK_WINDOW_KEY = "streak_window";
+/** The sleeping count, cached beside the flame it belongs to (added with the dormant flame). */
+const STREAK_DORMANT_KEY = "streak_dormant";
+/** The pauses the cached flame was walked under: a pause started today changes today's answer. */
+const STREAK_PAUSE_KEY = "streak_pause";
 
 const WINDOW_DAYS = 7;
 
@@ -33,6 +38,12 @@ export type StreakInfo = {
    */
   inWindow: number;
   quota: number;
+  /**
+   * The count of a flame that is out today but not forgotten: 0 when it is lit, or when it has
+   * been out 56 days with no session. `current` stays 0 meanwhile, so `isActive`, the village fire
+   * and `litUntil` do not change.
+   */
+  dormant: number;
 };
 
 export type FlameLevel = 0 | 1 | 2 | 3 | 4 | 5;
@@ -86,6 +97,16 @@ export async function getWeeklyQuota(): Promise<number> {
   }
 }
 
+/** Every pause the hero declared (M-04), read from the preference the way the quota reads the oath. */
+export async function getPausePeriods(): Promise<PausePeriod[]> {
+  const rows = await db
+    .select({ value: userPreferences.value })
+    .from(userPreferences)
+    .where(sql`${userPreferences.key} = ${PAUSE_KEY}`)
+    .limit(1);
+  return parsePausePeriods(rows[0]?.value);
+}
+
 /** Sessions per day, keyed by local midnight — the unit every window below counts in. */
 function groupByDay(performedAt: Date[]): Map<number, number> {
   const byDay = new Map<number, number>();
@@ -122,15 +143,45 @@ const LIT_FORECAST_DAYS = WINDOW_DAYS * 2;
  * five years of journal that was some fifty thousand `Date`s on the JS thread every time the
  * Journal opened (perf audit, 2026-09-15). Day indices are rounded, not floored, because a day
  * that crosses a clock change is 23 or 25 hours long.
+ *
+ * A paused day (M-04) is not on the timeline at all: the indices below count the days that are
+ * not paused, so a week is seven of them, the days either side of a pause touch, and the idle
+ * counter never sees it. A session logged on a paused day lands on the day before it. `realOf`
+ * and `slotOf` convert between the two; with no pause both are the identity.
  */
-function flameTimeline(performedAt: Date[], quota: number, now: Date) {
+function flameTimeline(
+  performedAt: Date[],
+  quota: number,
+  now: Date,
+  pauses: readonly PausePeriod[] = [],
+) {
   let first = Number.POSITIVE_INFINITY;
   for (const date of performedAt) first = Math.min(first, date.getTime());
   const firstDay = startOfDay(new Date(first)).getTime();
-  const indexOf = (date: Date) => Math.round((startOfDay(date).getTime() - firstDay) / DAY_MS);
+  const rawIndexOf = (date: Date) => Math.round((startOfDay(date).getTime() - firstDay) / DAY_MS);
 
-  const today = indexOf(now);
+  // The first session's own day is never skipped: the timeline needs a day to start on.
+  const paused = (raw: number) =>
+    raw > 0 && pauses.length > 0 && isPausedOn(pauses, dayKey(shiftDays(new Date(firstDay), raw)));
+  const slotOf: number[] = [];
+  const realOf: number[] = [];
+  const addDay = (raw: number) => {
+    if (!paused(raw)) realOf.push(raw);
+    slotOf.push(Math.max(realOf.length - 1, 0));
+  };
+
+  const rawToday = rawIndexOf(now);
+  let raw = 0;
+  for (; raw <= Math.max(rawToday, 0); raw++) addDay(raw);
+  const today = rawToday < 0 ? rawToday : (slotOf[rawToday] ?? 0);
   const length = Math.max(today, 0) + LIT_FORECAST_DAYS + 1;
+  // Ends: a pause is finite, so the forecast reaches `length` days that are not paused.
+  while (realOf.length < length) addDay(raw++);
+
+  const slotFor = (rawDay: number) =>
+    rawDay < 0 ? rawDay : rawDay < slotOf.length ? (slotOf[rawDay] ?? 0) : rawDay - raw + length;
+  const indexOf = (date: Date) => slotFor(rawIndexOf(date));
+
   const totals = new Int32Array(length + 1);
   for (const date of performedAt) {
     const day = indexOf(date);
@@ -149,59 +200,102 @@ function flameTimeline(performedAt: Date[], quota: number, now: Date) {
     today,
     indexOf,
     inWindow,
+    /** Did a session that counts fall on this day? */
+    hasSession: (day: number) =>
+      day >= 0 && day < length && (totals[day + 1] ?? 0) - (totals[day] ?? 0) > 0,
     /** Is the flame lit on this day? Either this week is over quota, or the week before it was. */
     isLit: (day: number) => inWindow(day) >= quota || inWindow(day - WINDOW_DAYS) >= quota,
-    dateOf: (day: number) => shiftDays(new Date(firstDay), day),
+    dateOf: (day: number) => shiftDays(new Date(firstDay), realOf[day] ?? day),
   };
 }
 
 type FlameTimeline = ReturnType<typeof flameTimeline>;
 
+/** Days out with no session in a row, once `day` (which is out) is counted: a session resets it. */
+function idleAfter(flame: FlameTimeline, day: number, idle: number): number {
+  return flame.hasSession(day) ? 0 : idle + 1;
+}
+
+/** Lit days among the last thirty, today included, from `start` on. */
+function litDaysLast30(flame: FlameTimeline, start: number): number {
+  let count = 0;
+  for (let day = Math.max(start, flame.today - 29, 0); day <= flame.today; day++) {
+    if (flame.isLit(day)) count++;
+  }
+  return count;
+}
+
 /**
  * One pass from the first session to today: the runs, and where the best one ended. `start` skips
  * the days before it without changing whether a day is lit: a run that crosses it is cut, not
  * recomputed.
+ *
+ * An unlit day does not end the run: it falls asleep. `idle` counts the unlit days with no session
+ * in a row, and the run is only wiped when it reaches `FLAME_DORMANT_DAYS`. A gap is bridged only
+ * if the day that relights it is after `pivot`; a gap closed on or before it stays a break. The
+ * gap's own days are never counted, so the run still counts lit days only.
  */
-function walkFlame(flame: FlameTimeline, start = 0) {
+function walkFlame(flame: FlameTimeline, pivot: Date, start = 0) {
+  const pivotDay = flame.indexOf(pivot);
   let run = 0;
+  let idle = 0;
+  let gap = false;
+  let lastLit = -1;
   let best = 0;
   let bestEnd = -1;
   let litDays = 0;
-  let litDaysLast30 = 0;
   for (let day = Math.max(start, 0); day <= flame.today; day++) {
     if (!flame.isLit(day)) {
-      run = 0;
+      gap = true;
+      idle = idleAfter(flame, day, idle);
+      if (idle >= FLAME_DORMANT_DAYS) run = 0;
       continue;
     }
+    if (gap && day <= pivotDay) run = 0;
+    gap = false;
+    idle = 0;
     run++;
     litDays++;
-    if (day > flame.today - 30) litDaysLast30++;
+    lastLit = day;
     // `>=` so a tie keeps the latest run: it is the one the hero remembers.
     if (run >= best) {
       best = run;
       bestEnd = day;
     }
   }
+  const lit = flame.isLit(flame.today);
   // Nothing before the first session is lit, so the run still going today is the current one.
-  const current = flame.isLit(flame.today) ? run : 0;
-  return { current, best, bestEnd, litDays, litDaysLast30 };
+  const current = lit ? run : 0;
+  // Before the pivot nothing sleeps: the relight would not be bridged either.
+  const dormant = !lit && flame.today > pivotDay ? run : 0;
+  return {
+    current,
+    dormant,
+    best,
+    bestEnd,
+    lastLit,
+    litDays,
+    litDaysLast30: litDaysLast30(flame, start),
+  };
 }
 
 export function calculateStreakFromSessions(
   performedAt: Date[],
   quota: number,
   now: Date = new Date(),
-): { current: number; best: number; isActive: boolean; inWindow: number } {
+  pivot: Date = FLAME_PIVOT,
+  pauses: readonly PausePeriod[] = [],
+): { current: number; best: number; isActive: boolean; inWindow: number; dormant: number } {
   if (performedAt.length === 0) {
-    return { current: 0, best: 0, isActive: false, inWindow: 0 };
+    return { current: 0, best: 0, isActive: false, inWindow: 0, dormant: 0 };
   }
 
-  const flame = flameTimeline(performedAt, quota, now);
-  const { current, best } = walkFlame(flame);
+  const flame = flameTimeline(performedAt, quota, now, pauses);
+  const { current, best, dormant } = walkFlame(flame, pivot);
 
   // What today's flame is standing on, and what tomorrow's will be judged by. `isLit` reads the
   // same window, so this is the count behind the answer rather than a second opinion about it.
-  return { current, best, isActive: current > 0, inWindow: flame.inWindow(flame.today) };
+  return { current, best, dormant, isActive: current > 0, inWindow: flame.inWindow(flame.today) };
 }
 
 /**
@@ -214,10 +308,12 @@ export function longestFlameSince(
   quota: number,
   since: Date,
   now: Date,
+  pivot: Date = FLAME_PIVOT,
+  pauses: readonly PausePeriod[] = [],
 ): number {
   if (performedAt.length === 0) return 0;
-  const flame = flameTimeline(performedAt, quota, now);
-  return walkFlame(flame, flame.indexOf(since)).best;
+  const flame = flameTimeline(performedAt, quota, now, pauses);
+  return walkFlame(flame, pivot, flame.indexOf(since)).best;
 }
 
 /**
@@ -240,12 +336,18 @@ export async function getCachedStreak(): Promise<StreakInfo | null> {
     // A cache written before the window key existed is a miss, not a partial hit. Serving it
     // with a missing figure meant the card stayed silent about the week until the hero logged
     // a session, which on a device with a same-day cache is the one thing they have not done.
-    cache[STREAK_WINDOW_KEY] === undefined
+    cache[STREAK_WINDOW_KEY] === undefined ||
+    // Same for the sleeping count: a cache from before it existed would read "lit 0".
+    cache[STREAK_DORMANT_KEY] === undefined
   ) {
     return null;
   }
   if (cache[STREAK_CACHED_ON_KEY] !== dayKey(new Date())) return null;
   if (cache[STREAK_QUOTA_KEY] !== String(await getWeeklyQuota())) return null;
+  // Written under another set of pauses, or before there were any: a pause begun today moves it.
+  if ((cache[STREAK_PAUSE_KEY] ?? "") !== pauseSignature(parsePausePeriods(cache[PAUSE_KEY]))) {
+    return null;
+  }
 
   const current = Number.parseInt(cache[STREAK_CURRENT_KEY], 10) || 0;
 
@@ -255,10 +357,14 @@ export async function getCachedStreak(): Promise<StreakInfo | null> {
     isActive: current > 0,
     lastWorkoutDate: cache[STREAK_LAST_DATE_KEY] || null,
     inWindow: Number.parseInt(cache[STREAK_WINDOW_KEY], 10) || 0,
+    dormant: Number.parseInt(cache[STREAK_DORMANT_KEY], 10) || 0,
     // Guarded above: the cache is a miss unless this matches the quota in force right now.
     quota: Number.parseInt(cache[STREAK_QUOTA_KEY] ?? "", 10) || 0,
   };
 }
+
+const pauseSignature = (periods: readonly PausePeriod[]) =>
+  periods.length === 0 ? "" : JSON.stringify(periods);
 
 async function saveStreakCache(
   current: number,
@@ -266,6 +372,8 @@ async function saveStreakCache(
   lastDate: string | null,
   quota: number,
   inWindow: number,
+  dormant: number,
+  pauses: readonly PausePeriod[],
 ): Promise<void> {
   await db
     .insert(userPreferences)
@@ -276,6 +384,8 @@ async function saveStreakCache(
       { key: STREAK_CACHED_ON_KEY, value: dayKey(new Date()) },
       { key: STREAK_QUOTA_KEY, value: String(quota) },
       { key: STREAK_WINDOW_KEY, value: String(inWindow) },
+      { key: STREAK_DORMANT_KEY, value: String(dormant) },
+      { key: STREAK_PAUSE_KEY, value: pauseSignature(pauses) },
     ])
     .onConflictDoUpdate({
       target: userPreferences.key,
@@ -287,8 +397,9 @@ async function saveStreakCache(
  * Calculate streak from database and update cache
  */
 export async function calculateAndCacheStreak(): Promise<StreakInfo> {
-  const [quota, rows] = await Promise.all([
+  const [quota, pauses, rows] = await Promise.all([
     getWeeklyQuota(),
+    getPausePeriods(),
     db
       .select({ performedAt: completedQuest.performedAt })
       .from(completedQuest)
@@ -299,14 +410,30 @@ export async function calculateAndCacheStreak(): Promise<StreakInfo> {
   ]);
 
   if (rows.length === 0) {
-    return { current: 0, best: 0, isActive: false, lastWorkoutDate: null, inWindow: 0, quota };
+    return {
+      current: 0,
+      best: 0,
+      isActive: false,
+      lastWorkoutDate: null,
+      inWindow: 0,
+      quota,
+      dormant: 0,
+    };
   }
 
   const performedAt = rows.map((r) => r.performedAt);
-  const result = calculateStreakFromSessions(performedAt, quota);
+  const result = calculateStreakFromSessions(performedAt, quota, new Date(), FLAME_PIVOT, pauses);
   const lastDate = dayKey(new Date(Math.max(...performedAt.map((d) => d.getTime()))));
 
-  await saveStreakCache(result.current, result.best, lastDate, quota, result.inWindow);
+  await saveStreakCache(
+    result.current,
+    result.best,
+    lastDate,
+    quota,
+    result.inWindow,
+    result.dormant,
+    pauses,
+  );
 
   return { ...result, lastWorkoutDate: lastDate, quota };
 }
@@ -374,7 +501,11 @@ export type FlameDetail = {
   best: number;
   /** The last lit day of the best run. Null with no run at all. */
   bestEndedOn: Date | null;
-  /** True when the best run is the one still burning: "ended" would be a lie about it. */
+  /** The count asleep: see `StreakInfo.dormant`. */
+  dormant: number;
+  /**
+   * True when the best run is the one still burning, or asleep: "ended" would be a lie about it.
+   */
   bestIsCurrent: boolean;
   inWindow: number;
   quota: number;
@@ -396,10 +527,17 @@ export type FlameDetail = {
  * about which day burned: this only reads further (when the best run ended, when the current one
  * will) where that one stops at three numbers.
  */
-export function describeFlame(performedAt: Date[], quota: number, now = new Date()): FlameDetail {
+export function describeFlame(
+  performedAt: Date[],
+  quota: number,
+  now = new Date(),
+  pivot: Date = FLAME_PIVOT,
+  pauses: readonly PausePeriod[] = [],
+): FlameDetail {
   if (performedAt.length === 0) {
     return {
       current: 0,
+      dormant: 0,
       best: 0,
       inWindow: 0,
       quota,
@@ -411,8 +549,11 @@ export function describeFlame(performedAt: Date[], quota: number, now = new Date
     };
   }
 
-  const flame = flameTimeline(performedAt, quota, now);
-  const { current, best, bestEnd, litDays, litDaysLast30 } = walkFlame(flame);
+  const flame = flameTimeline(performedAt, quota, now, pauses);
+  const { current, dormant, best, bestEnd, lastLit, litDays, litDaysLast30 } = walkFlame(
+    flame,
+    pivot,
+  );
 
   let litUntil: Date | null = null;
   if (current > 0) {
@@ -424,11 +565,12 @@ export function describeFlame(performedAt: Date[], quota: number, now = new Date
 
   return {
     current,
+    dormant,
     best,
     inWindow: flame.inWindow(flame.today),
     quota,
     bestEndedOn: bestEnd >= 0 ? flame.dateOf(bestEnd) : null,
-    bestIsCurrent: current > 0 && bestEnd === flame.today,
+    bestIsCurrent: (current > 0 && bestEnd === flame.today) || (dormant > 0 && bestEnd === lastLit),
     litUntil,
     litDays,
     litDaysLast30,
@@ -440,8 +582,9 @@ export function describeFlame(performedAt: Date[], quota: number, now = new Date
  * purpose, and the cache only knows three of the numbers it needs.
  */
 export async function getFlameDetail(now = new Date()): Promise<FlameDetail> {
-  const [quota, rows] = await Promise.all([
+  const [quota, pauses, rows] = await Promise.all([
     getWeeklyQuota(),
+    getPausePeriods(),
     db
       .select({ performedAt: completedQuest.performedAt })
       .from(completedQuest)
@@ -451,5 +594,7 @@ export async function getFlameDetail(now = new Date()): Promise<FlameDetail> {
     rows.map((r) => r.performedAt),
     quota,
     now,
+    FLAME_PIVOT,
+    pauses,
   );
 }

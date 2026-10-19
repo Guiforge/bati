@@ -51,6 +51,11 @@ jest.mock("@/db/oaths", () => ({
   oathNeedsWeeklyTarget: (m: string) => m === "weekly_sessions",
 }));
 
+// The flame the screen warns about is not what these tests are about: nothing held, no warning.
+jest.mock("@/db/streaks", () => ({
+  getStreakInfo: jest.fn().mockResolvedValue({ current: 0, dormant: 0, quota: 2 }),
+}));
+
 jest.mock("@/db/exercises", () => ({
   listExercises: jest.fn().mockResolvedValue([]),
   officialByName: jest.fn(),

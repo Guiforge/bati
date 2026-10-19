@@ -80,7 +80,12 @@ jest.mock("@/hooks/useHaptics", () => ({
 jest.mock("@/components/common/Toast", () => ({
   useToast: () => ({ showError: jest.fn(), showSuccess: jest.fn() }),
 }));
-jest.mock("@/components/session/ProgressionChart", () => ({ ProgressionChart: () => null }));
+jest.mock("@/components/session/ProgressionChart", () => ({
+  ProgressionChart: () => {
+    const { View } = require("react-native");
+    return <View testID="progression-chart" />;
+  },
+}));
 
 const SESSION_ID = 42;
 
@@ -204,12 +209,17 @@ describe("VictoryView, when its next building rises", () => {
     mockFeeds.mockResolvedValue({ muscle: { chest: [60, 40] }, style: {}, outing: [] });
   });
 
-  it("says nothing before the save, then PROCHAIN under the feeling question", async () => {
+  it("says nothing before the save, and nothing until the hero asks to see everything", async () => {
     const { view, release } = await mountWithPendingSave();
     expect(view.queryByTestId("victory-next")).toBeNull();
     expect(mockBuildings).not.toHaveBeenCalled();
 
     await release();
+    // The milestone reads the journal, so it is not even mounted on the common path.
+    expect(view.queryByTestId("victory-next")).toBeNull();
+    expect(mockBuildings).not.toHaveBeenCalled();
+
+    await fireEvent.press(view.getByTestId("victory-see-all"));
 
     await waitFor(() => expect(view.getByTestId("victory-next")).toBeTruthy());
     expect(view.getByText("SESSION.NEXT_TITLE")).toBeTruthy();
@@ -220,9 +230,62 @@ describe("VictoryView, when its next building rises", () => {
     mockFeeds.mockResolvedValue({ muscle: {}, style: {}, outing: [] });
     const { view, release } = await mountWithPendingSave();
     await release();
+    await fireEvent.press(view.getByTestId("victory-see-all"));
 
     await waitFor(() => expect(mockFeeds).toHaveBeenCalled());
     expect(view.queryByTestId("victory-next")).toBeNull();
+  });
+});
+
+/**
+ * Time and XP, then "Tonight", then the feeling, then "See everything". Everything below it is one
+ * tap away and nothing it hides is gone.
+ */
+describe("VictoryView order and fold", () => {
+  const position = (view: { toJSON: () => unknown }, testID: string) =>
+    JSON.stringify(view.toJSON()).indexOf(`"testID":"${testID}"`);
+
+  it("reads time and XP, Tonight, the feeling, then See everything", async () => {
+    const { view, release } = await mountWithPendingSave(null, 12 * 60, {
+      standing: null,
+      newRungs: [],
+      newAchievements: [],
+      tierUp: { oldTier: 2, newTier: 3 },
+    });
+    await release();
+
+    const order = [
+      "victory-stat-row",
+      "tonight-view-village",
+      "feedback-glyph-easy",
+      "victory-see-all",
+    ];
+    const at = order.map((id) => position(view, id));
+    expect(at.every((i) => i >= 0)).toBe(true);
+    expect(at).toEqual([...at].sort((a, b) => a - b));
+  });
+
+  it("keeps the chart and the forget link behind See everything, and shows both after", async () => {
+    const { view, release } = await mountWithPendingSave();
+    await release();
+
+    expect(view.queryByTestId("session-victory-forget")).toBeNull();
+    expect(view.queryByTestId("progression-chart")).toBeNull();
+
+    await fireEvent.press(view.getByTestId("victory-see-all"));
+
+    expect(view.getByTestId("session-victory-forget")).toBeTruthy();
+    expect(view.getByTestId("progression-chart")).toBeTruthy();
+    // One way: the link has done its job and goes.
+    expect(view.queryByTestId("victory-see-all")).toBeNull();
+  });
+
+  it("shows the retry of a failed save without expanding", async () => {
+    const { view, fail } = await mountWithPendingSave();
+    await fail();
+
+    await waitFor(() => expect(view.getByText("common.retry")).toBeTruthy());
+    expect(view.queryByTestId("progression-chart")).toBeNull();
   });
 });
 

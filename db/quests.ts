@@ -2,6 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { setAsideReplacement } from "@/constants/exerciseFilters";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { workoutsBeforeToday } from "./completed";
+import { writeContentTombstone } from "./contentTombstone";
 import { canDo } from "./equipment";
 import {
   currentRungFor,
@@ -41,6 +42,7 @@ import {
 } from "./targets";
 import { uuidv7 } from "./uuid";
 import { NON_REP_STYLE } from "./workUnits";
+import { sparedExerciseIds } from "./zone";
 
 const { exercises, exerciseMuscles, questExercises, quests } = schema;
 
@@ -523,7 +525,11 @@ function templateSlot(r: {
 }
 
 /** A quest without its slots, from any row a `questColumns` read returned. */
-function questHead(r: QuestHeadRow): QuestHead {
+function questHead(r: QuestHeadRow, restDefault: number | null): QuestHead {
+  // The hero's global rest stands in for the template's, never for a quest they wrote, nor for one
+  // that has no rest (an outing). The round rest is pinned to what it was: with a null one, the
+  // session would fall back to `restSeconds` and the setting would move a rest it does not name.
+  const rest = restDefault !== null && !isUserQuest(r) && r.restSeconds > 0 ? restDefault : null;
   return {
     id: r.questId,
     uuid: r.uuid,
@@ -537,11 +543,20 @@ function questHead(r: QuestHeadRow): QuestHead {
     esDescription: r.esDescription,
     author: r.author,
     rounds: r.rounds,
-    restSeconds: r.restSeconds,
-    roundRestSeconds: r.roundRestSeconds,
+    restSeconds: rest ?? r.restSeconds,
+    roundRestSeconds: rest === null ? r.roundRestSeconds : (r.roundRestSeconds ?? r.restSeconds),
     archetype: r.archetype ?? null,
     imagePath: r.imagePath ?? "assets/placeholder.jpg",
   };
+}
+
+/**
+ * The hero's rest between exercises (Settings), or null to leave every quest as written. The one
+ * writer: it also drops the cached quests, which carry the number.
+ */
+export async function setRestDefault(seconds: number | null): Promise<void> {
+  await preferences.setRestDefault(seconds === null ? null : clampToRange(seconds, REST_RANGE));
+  invalidateQuestTemplates();
 }
 
 // The gallery is read far more often than it is written, so every screen that mounts it shares one
@@ -565,11 +580,12 @@ async function fetchQuestTemplates(): Promise<QuestTemplate[]> {
     .leftJoin(questExercises, eq(questExercises.questId, quests.id))
     .orderBy(quests.id, questExercises.sortOrder);
 
+  const restDefault = await preferences.getRestDefault();
   const byId = new Map<number, QuestTemplate>();
 
   for (const r of rows) {
     if (!byId.has(r.questId)) {
-      byId.set(r.questId, { ...questHead(r), exercises: [] });
+      byId.set(r.questId, { ...questHead(r, restDefault), exercises: [] });
     }
 
     const slot = templateSlot(r);
@@ -604,7 +620,7 @@ export async function getQuestTemplateById(id: number): Promise<QuestTemplate | 
   if (!first) return null;
 
   const quest: QuestTemplate = {
-    ...questHead(first),
+    ...questHead(first, await preferences.getRestDefault()),
     exercises: [],
   };
 
@@ -716,12 +732,21 @@ async function loadReplacements(
   const replaced = new Map<number, number>();
   if (setAside.size === 0) return replaced;
 
-  const [catalogue, unavailable] = await Promise.all([listExercises(), unavailableExerciseIds()]);
+  const [catalogue, unavailable, spared] = await Promise.all([
+    listExercises(),
+    unavailableExerciseIds(),
+    sparedExerciseIds(),
+  ]);
   const byId = new Map(catalogue.map((e) => [e.id, e] as const));
   for (const id of new Set(exerciseIds)) {
     const current = byId.get(served.get(id) ?? id);
     if (!current || !setAside.has(current.id)) continue;
-    const replacement = setAsideReplacement(catalogue, current, unavailable);
+    const replacement = setAsideReplacement(
+      catalogue,
+      current,
+      unavailable,
+      spared.has(current.id),
+    );
     if (replacement) replaced.set(id, replacement.id);
   }
   return replaced;
@@ -1003,7 +1028,7 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
     : {};
 
   const quest: Quest = {
-    ...questHead(first),
+    ...questHead(first, await preferences.getRestDefault()),
     exercises: [],
   };
 
@@ -1032,8 +1057,16 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
   return quest;
 }
 
+/** The row, no tombstone: the half `honourTombstones` shares with `deleteQuest`. */
+export async function removeQuest(id: number, exec: typeof db | TransactionTx = db): Promise<void> {
+  await exec.delete(quests).where(eq(quests.id, id));
+}
+
 export async function deleteQuest(id: number): Promise<void> {
-  await db.delete(quests).where(eq(quests.id, id));
+  await transactionOrFallback(async (tx) => {
+    await writeContentTombstone(tx, "quests", id);
+    await removeQuest(id, tx);
+  });
   invalidateQuestTemplates(id);
 }
 
@@ -1094,6 +1127,9 @@ export async function writeQuestSlots(
   questId: number,
   next: readonly QuestSlotDraft[],
 ): Promise<void> {
+  // The slots belong to the quest row for sync: without a newer date here the other device
+  // keeps its copy of the old ones.
+  await exec.update(quests).set({ updatedAt: new Date() }).where(eq(quests.id, questId));
   await exec.delete(questExercises).where(eq(questExercises.questId, questId));
   if (next.length === 0) return;
   await exec.insert(questExercises).values(

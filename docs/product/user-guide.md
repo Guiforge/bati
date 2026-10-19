@@ -258,6 +258,7 @@ Preferences:
 **Purpose:** acknowledgements.
 
 - **Credits** (`/credits`)
+- **Open source licences** (`/licenses`), reached from Credits: every library with its licence.
 
 ### Dev tools (internal)
 
@@ -265,6 +266,19 @@ Preferences:
 
 - **Dev** (`/dev`)
   - Not intended for normal users.
+
+---
+
+## Why no calories? (Pourquoi pas de calories ?)
+
+Bati shows no calorie count, no meal log and no weight goal. A calorie number is the mechanic most
+likely to hurt someone who has a difficult relationship with food, and it is a poor measure of a
+bodyweight session anyway. Bati counts what you did (reps, time, distance) and what it earned you.
+The roadmap refuses it on purpose, see the body-image guardrail.
+
+*Pourquoi pas de calories ? Bati n'affiche ni calories, ni repas, ni objectif de poids : ce chiffre
+fait du mal à ceux qui ont un rapport difficile à la nourriture, et il dit peu d'une séance au
+poids du corps. Bati compte ce que tu as fait.*
 
 ---
 

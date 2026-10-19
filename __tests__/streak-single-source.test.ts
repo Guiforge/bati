@@ -107,6 +107,7 @@ describe("useStreakInfo", () => {
         isActive: true,
         lastWorkoutDate: "2026-08-23",
         inWindow: 3,
+        dormant: 0,
         quota: 2,
       });
       await Promise.resolve();

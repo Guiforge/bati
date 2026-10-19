@@ -452,7 +452,7 @@ interface Quest {
 | `createQuestTemplate(data)` | Create new quest |
 | `updateQuestMeta(id, updates)` | Update quest metadata |
 | `setQuestExercises(questId, exercises)` | Set quest exercises |
-| `deleteQuest(id)` | Delete a quest |
+| `deleteQuest(id)` | Delete a quest (a hero quest leaves a `deleted_content` tombstone, 0074) |
 | `generateTarget(exercise, difficulty)` | Generate rep/time target |
 
 ---

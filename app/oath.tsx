@@ -34,6 +34,7 @@ import {
 } from "@/db/oaths";
 import { preferences } from "@/db/preferences";
 import type { EquipmentCode } from "@/db/schema";
+import { getStreakInfo } from "@/db/streaks";
 import { targetRangeFor } from "@/db/targets";
 import { NON_REP_STYLE } from "@/db/workUnits";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -123,11 +124,14 @@ function PresetRow({
   preset,
   label,
   standing,
+  recount,
   onSwear,
 }: {
   preset: OathPreset;
   label: string;
   standing: PresetStanding | undefined;
+  /** The sessions a week the flame would be recounted at, or null when swearing leaves it be. */
+  recount: number | null;
   onSwear: (preset: OathPreset) => void;
 }) {
   const { t } = useTranslation();
@@ -153,6 +157,12 @@ function PresetRow({
                 trackColor="$gold800"
               />
             </>
+          ) : null}
+          {/* A preset swears at the tap, so the warning has to be here, before it. */}
+          {recount !== null ? (
+            <Text testID="oath-flame-recount" fontSize={12} color="$textSecondary">
+              {t("oath.flame_recount", { count: recount })}
+            </Text>
           ) : null}
         </YStack>
         <ChevronRight size={20} color="$text" opacity={0.5} />
@@ -296,11 +306,16 @@ export default function OathScreen() {
   const [error, setError] = useState<string | null>(null);
   const [showCustom, setShowCustom] = useState(false);
   const [standings, setStandings] = useState<Map<string, PresetStanding>>(new Map());
+  // The flame the quota decides: swearing a higher one recounts the whole journal at it.
+  const [flame, setFlame] = useState<{ quota: number; held: boolean } | null>(null);
   const { showError, showSuccess } = useToast();
   const { success } = useHaptics();
   const { ask, dialog } = useConfirmDialog();
 
   useEffect(() => {
+    getStreakInfo()
+      .then((info) => setFlame({ quota: info.quota, held: info.current > 0 || info.dormant > 0 }))
+      .catch((e) => reportError("oath.flame", e));
     getOathProgress()
       .then(setExisting)
       .catch((e) => {
@@ -387,6 +402,10 @@ export default function OathScreen() {
       cancelled = true;
     };
   }, [eligiblePresets]);
+
+  /** The quota the flame would be recounted at if `weekly` were sworn, when that changes it. */
+  const recountAt = (weekly: number | undefined): number | null =>
+    flame?.held && weekly !== undefined && weekly > flame.quota ? weekly : null;
 
   const presetRows = useMemo(
     () =>
@@ -568,6 +587,11 @@ export default function OathScreen() {
                   preset={row.preset}
                   label={row.label}
                   standing={standings.get(row.preset.id)}
+                  recount={
+                    row.preset.metric === "weekly_sessions"
+                      ? recountAt(row.preset.weeklyTarget)
+                      : null
+                  }
                   onSwear={swearPreset}
                 />
               ))}
@@ -632,6 +656,11 @@ export default function OathScreen() {
                       />
                     ))}
                   </XStack>
+                  {recountAt(weeklyTarget) !== null ? (
+                    <Text testID="oath-flame-recount" fontSize={12} color="$textSecondary">
+                      {t("oath.flame_recount", { count: weeklyTarget })}
+                    </Text>
+                  ) : null}
                 </YStack>
               )}
 

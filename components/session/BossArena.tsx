@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { AnimatePresence, Text, XStack, YStack } from "tamagui";
+import { AnimatePresence, XStack, YStack } from "tamagui";
+import { AppText } from "@/components/common/AppText";
 import { GameIcon } from "@/components/common/GameIcon";
 import { ImageViewer } from "@/components/common/ImageViewer";
 import { Shield, Swords, Target, Zap } from "@/components/icons";
@@ -304,7 +305,7 @@ export function BossArena({
 
       <YStack position="absolute" b="$3" l="$4" r="$4" gap="$2">
         <XStack items="flex-end" gap="$2">
-          <Text
+          <AppText
             flex={1}
             fontFamily="$heading"
             fontWeight="700"
@@ -314,7 +315,7 @@ export function BossArena({
             numberOfLines={2}
           >
             {bossName}
-          </Text>
+          </AppText>
         </XStack>
 
         {/* The boss's health: one gauge, shared with the campaign's boss panel. */}
@@ -400,9 +401,9 @@ function StatusLine({
     return (
       <XStack items="center" gap="$1" height={16}>
         <Swords size={13} color="$resourceGold" />
-        <Text fontSize={11} fontWeight="700" color="$resourceGold" textTransform="uppercase">
+        <AppText fontSize={11} fontWeight="700" color="$resourceGold" textTransform="uppercase">
           {t("boss.defeated")}
-        </Text>
+        </AppText>
       </XStack>
     );
   }
@@ -411,9 +412,9 @@ function StatusLine({
     return (
       <XStack items="center" gap="$1" height={16}>
         <GameIcon name="flame" size={13} color="$error" />
-        <Text fontSize={11} fontWeight="700" color="$error" textTransform="uppercase">
+        <AppText fontSize={11} fontWeight="700" color="$error" textTransform="uppercase">
           {t("boss.enraged")}
-        </Text>
+        </AppText>
       </XStack>
     );
   }
@@ -431,17 +432,17 @@ function StatusLine({
         {!!weaknessMuscle && (
           <XStack items="center" gap="$1">
             <Target size={12} color="$primaryText" />
-            <Text fontSize={11} fontWeight="700" color="$primaryText" numberOfLines={1}>
+            <AppText fontSize={11} fontWeight="700" color="$primaryText" numberOfLines={1}>
               {t(`muscles.${weaknessMuscle}`)}
-            </Text>
+            </AppText>
           </XStack>
         )}
         {!!resistanceMuscle && (
           <XStack items="center" gap="$1">
             <Shield size={12} color="$textSecondary" />
-            <Text fontSize={11} fontWeight="700" color="$textSecondary" numberOfLines={1}>
+            <AppText fontSize={11} fontWeight="700" color="$textSecondary" numberOfLines={1}>
               {t(`muscles.${resistanceMuscle}`)}
-            </Text>
+            </AppText>
           </XStack>
         )}
       </XStack>
@@ -487,13 +488,13 @@ function DamageBurst({
       exitStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.8 }}
     >
       {isCritical ? <Zap size={20} color="$error" /> : <Swords size={16} color="$primaryText" />}
-      <Text
+      <AppText
         fontWeight="700"
         fontSize={isCritical ? 28 : 22}
         color={isCritical ? "$error" : "$text"}
       >
         {isCritical ? `${t("common.crit")} ` : ""}−{damage}
-      </Text>
+      </AppText>
       {!!weaknessBonus && <Target size={16} color="$primaryText" />}
       {!!resistancePenalty && <Shield size={16} color="$textSecondary" />}
     </XStack>

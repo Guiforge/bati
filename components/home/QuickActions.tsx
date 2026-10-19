@@ -4,8 +4,9 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Linking, ScrollView, StyleSheet, useWindowDimensions } from "react-native";
-import { getTokens, Text, XStack, YStack } from "tamagui";
+import { getTokens, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { AppText } from "@/components/common/AppText";
 import { SectionLabel } from "@/components/common/SectionLabel";
 import { RotateCcw, SlidersHorizontal } from "@/components/icons";
 import { OutingGoalSheet } from "@/components/quests/OutingGoalSheet";
@@ -86,9 +87,9 @@ function BandNotice({
     // Polite, never an alert: neither of the two is an error, and both appear under the thumb
     // that just tapped, where a screen reader has to be told something changed.
     <YStack px="$4" gap="$2" pb="$1" accessibilityLiveRegion="polite">
-      <Text fontSize={13} color="$textSecondary">
+      <AppText fontSize={13} color="$textSecondary">
         {text}
-      </Text>
+      </AppText>
       <AppButton
         fullWidth={false}
         variant="outline"
@@ -125,8 +126,11 @@ function BandNotice({
  * to run before running it. The goal chip, or a long press on the tile, opens the same sheet the
  * quest screen uses and saves the answer there: the "Set up" toggle this replaced switched every
  * tile into an invisible mode, and it took five taps to leave with a number.
+ *
+ * `showGoals` is the journal's answer (`db/disclosure.ts`): the chips wait for the first victory,
+ * and a long press on the tile opens the goal sheet whatever it says. Null while it is read.
  */
-export function QuickActions() {
+export function QuickActions({ showGoals }: { showGoals: boolean | null }) {
   const { t } = useTranslation();
   // The row runs to the physical screen edge: the tile that does not fit is cut by the screen,
   // which reads as "there is more", instead of in mid-air inside a margin. The inset comes back as
@@ -312,9 +316,16 @@ export function QuickActions() {
     <YStack pt="$2.5" pb="$2" gap="$2">
       <XStack px="$4" items="baseline" justify="space-between" gap="$3">
         <SectionLabel>{t("home.quick_actions")}</SectionLabel>
-        <Text flex={1} text="right" fontSize={10} color="$textSecondary" numberOfLines={1}>
+        <AppText
+          variant="label"
+          flex={1}
+          text="right"
+          fontSize={10}
+          color="$textSecondary"
+          numberOfLines={1}
+        >
           {t("home.quick_hint")}
-        </Text>
+        </AppText>
       </XStack>
 
       {/* One slot, one occupant: the why is a question still open, so it holds the strip until it
@@ -385,7 +396,8 @@ export function QuickActions() {
                 style={StyleSheet.absoluteFill}
               />
               <YStack flex={1} justify="flex-end" p="$2" gap={4}>
-                <Text
+                <AppText
+                  variant="label"
                   fontSize={11}
                   fontWeight="700"
                   color="$text"
@@ -397,28 +409,30 @@ export function QuickActions() {
                   android_hyphenationFrequency="none"
                 >
                   {name}
-                </Text>
+                </AppText>
                 {/* The goal, and the way to change it: 20 dp tall, 44 with its slop. */}
-                <XStack
-                  self="flex-start"
-                  height={20}
-                  px={7}
-                  gap={4}
-                  items="center"
-                  rounded={10}
-                  borderWidth={1}
-                  borderColor="$borderStrong"
-                  hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
-                  onPress={() => setGoalFor(quest.id)}
-                  pressStyle={{ opacity: 0.7 }}
-                  accessibilityRole="button"
-                  accessibilityLabel={t("home.goal_a11y", { quest: name, goal: label })}
-                >
-                  <SlidersHorizontal size={10} color="$textSecondary" />
-                  <Text fontSize={10} fontWeight="700" color="$textSecondary">
-                    {label}
-                  </Text>
-                </XStack>
+                {showGoals ? (
+                  <XStack
+                    self="flex-start"
+                    height={20}
+                    px={7}
+                    gap={4}
+                    items="center"
+                    rounded={10}
+                    borderWidth={1}
+                    borderColor="$borderStrong"
+                    hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+                    onPress={() => setGoalFor(quest.id)}
+                    pressStyle={{ opacity: 0.7 }}
+                    accessibilityRole="button"
+                    accessibilityLabel={t("home.goal_a11y", { quest: name, goal: label })}
+                  >
+                    <SlidersHorizontal size={10} color="$textSecondary" />
+                    <AppText variant="label" fontSize={10} fontWeight="700" color="$textSecondary">
+                      {label}
+                    </AppText>
+                  </XStack>
+                ) : null}
               </YStack>
             </YStack>
           );
@@ -444,12 +458,12 @@ export function QuickActions() {
             accessibilityLabel={t("home.replay_a11y", { quest: replay.title })}
           >
             <RotateCcw size={16} color="$primaryText" />
-            <Text fontSize={10} fontWeight="700" color="$textSecondary">
+            <AppText variant="label" fontSize={10} fontWeight="700" color="$textSecondary">
               {t("home.replay")}
-            </Text>
-            <Text fontSize={11} fontWeight="700" color="$text" numberOfLines={1}>
+            </AppText>
+            <AppText variant="label" fontSize={11} fontWeight="700" color="$text" numberOfLines={1}>
               {replay.title}
-            </Text>
+            </AppText>
           </YStack>
         ) : null}
       </ScrollView>

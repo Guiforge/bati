@@ -115,6 +115,7 @@
           "options": {
             "skip": [
               "AppButton",
+              "AppText",
               "Button",
               "H1",
               "H2",
@@ -146,6 +147,35 @@
     }
   },
   "overrides": [
+    {
+      "includes": [
+        "components/home/**",
+        "components/session/**",
+        "app/(tabs)/index.tsx",
+        "app/session.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "tamagui": {
+                    "importNames": ["Text"],
+                    "message": "Use AppText (components/common/AppText.tsx): it carries the font-size cap (caps in fontCaps.ts). H1-H6 and Paragraph stay, and a big figure takes maxFontSizeMultiplier={FONT_CAPS.display}."
+                  },
+                  "react-native": {
+                    "importNames": ["Text"],
+                    "message": "Use AppText (components/common/AppText.tsx): it carries the font-size cap."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     {
       "includes": ["app/**", "*.config.ts", "*.config.js"],
       "linter": {

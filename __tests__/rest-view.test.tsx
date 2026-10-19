@@ -1,5 +1,6 @@
+import assert from "node:assert/strict";
 import { act, fireEvent, render, within } from "@testing-library/react-native";
-import { StyleSheet } from "react-native";
+import { BackHandler, StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import { RestView } from "@/components/session/RestView";
@@ -16,14 +17,53 @@ import config from "@/tamagui.config";
  * from the button. The next exercise never started unless the hero tapped "skip rest".
  */
 
+jest.mock("@/hooks/useSetAside");
+// Options are printed after the key, so the counts on the position line can be read.
+jest.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (key: string, options?: Record<string, unknown>) =>
+      options ? `${key}:${Object.values(options).join("/")}` : key,
+  }),
+  initReactI18next: { type: "3rdParty", init: () => {} },
+}));
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/db/quests", () => ({}));
+// What the swap sheet loads: the catalogue it ranks, the equipment and the set-aside list. The store
+// is the real one: the swap, the pause and the resume below are not stubbed.
+const mockCatalogue = [
+  {
+    id: 99,
+    enName: "Wall Push-Up",
+    frName: "Pompe au mur",
+    enDescription: null,
+    frDescription: null,
+    imagePath: "assets/images/exercises/walk.webp",
+    creator: "Admin",
+    difficulty: "easy",
+    equipment: "none",
+    style: "strength",
+    secondsPerRep: 2,
+    muscles: ["chest"],
+    pattern: null,
+    prerequisiteExerciseId: null,
+    retiredAt: null,
+  },
+];
+jest.mock("@/db/exercises", () => ({
+  listExercises: () => Promise.resolve(mockCatalogue),
+  officialByName: () => undefined,
+  pickableExercises: (all: unknown[]) => all,
+  checkForNewRungs: jest.fn(),
+  ADMIN_CREATOR: "Admin",
+}));
 jest.mock("@/db/preferences", () => ({
   preferences: {
     getSavedSession: jest.fn().mockResolvedValue(null),
     setSavedSession: jest.fn().mockResolvedValue(undefined),
     clearSavedSession: jest.fn().mockResolvedValue(undefined),
     getWarmupEnabled: jest.fn().mockResolvedValue(false),
+    getOwnedEquipment: jest.fn().mockResolvedValue(null),
+    getSetAsideExercises: jest.fn().mockResolvedValue([]),
   },
 }));
 jest.mock("@/db", () => ({ preferences: {} }));
@@ -108,6 +148,107 @@ describe("RestView", () => {
 
   afterEach(() => {
     jest.useRealTimers();
+  });
+
+  describe("where the hero is, and the way to replace what comes next", () => {
+    it("says the round and the exercise about to start, on a move rest", async () => {
+      const view = await mountRest();
+      expect(view.getByTestId("rest-position")).toHaveTextContent(
+        "session.round_label:1/2 · session.exercise_label:2/2",
+      );
+    });
+
+    it("says the next round and its first exercise, on a round rest", async () => {
+      await act(() => {
+        useSessionStore.setState({ currentRoundIndex: 1, currentExerciseIndex: 0 });
+      });
+      const view = await mountRest();
+      expect(view.getByTestId("rest-position")).toHaveTextContent(
+        "session.round_label:2/2 · session.exercise_label:1/2",
+      );
+    });
+
+    it("says nothing of the sort, and offers no swap, on the final rest", async () => {
+      useSessionStore.setState({
+        currentRoundIndex: 1,
+        currentExerciseIndex: mockQuest.exercises.length,
+        timerDuration: FINAL_REST_SECONDS,
+      });
+      const view = await mountRest();
+      expect(view.queryByTestId("rest-position")).toBeNull();
+      expect(view.queryByTestId("rest-swap")).toBeNull();
+    });
+
+    it("offers no swap for an outing's slot", async () => {
+      const [first, second] = mockQuest.exercises;
+      assert(first && second);
+      useSessionStore.setState({
+        quest: {
+          ...mockQuest,
+          exercises: [first, { ...second, exercise: { ...second.exercise, style: "expedition" } }],
+        } as unknown as Quest,
+      });
+      const view = await mountRest();
+      expect(view.queryByTestId("rest-swap")).toBeNull();
+    });
+
+    it("pauses the clock while the sheet is open, and a pick changes the movement that comes next", async () => {
+      const view = await mountRest();
+
+      await fireEvent.press(view.getByTestId("rest-swap"));
+      expect(useSessionStore.getState().status).toBe("paused");
+
+      await fireEvent.press(await view.findByLabelText("Wall Push-Up"));
+
+      // Real store: the pick resumed first (a paused session refuses a swap), then swapped.
+      const state = useSessionStore.getState();
+      expect(state.status).toBe("resting");
+      expect(state.quest?.exercises[state.currentExerciseIndex]?.exercise.id).toBe(99);
+      expect(within(view.getByTestId("rest-up-next")).getByText("Wall Push-Up")).toBeTruthy();
+    });
+
+    it("closing the sheet without a pick resumes the rest and changes nothing", async () => {
+      const view = await mountRest();
+      await fireEvent.press(view.getByTestId("rest-swap"));
+
+      await fireEvent.press(await view.findByLabelText("common.close"));
+
+      const state = useSessionStore.getState();
+      expect(state.status).toBe("resting");
+      expect(state.quest?.exercises[1]?.exercise.id).toBe(2);
+    });
+
+    // Android back with the sheet open used to reach the session screen's own handler, which lets
+    // the navigation go back from a paused session: out of the session, from a sheet.
+    it("hardware back with the sheet open closes it and resumes, without leaving", async () => {
+      const handlers: (() => boolean)[] = [];
+      const add = jest.spyOn(BackHandler, "addEventListener").mockImplementation((_event, fn) => {
+        handlers.push(fn as () => boolean);
+        return { remove: () => handlers.splice(handlers.indexOf(fn as () => boolean), 1) } as never;
+      });
+      const view = await mountRest();
+      expect(handlers).toHaveLength(0);
+
+      await fireEvent.press(view.getByTestId("rest-swap"));
+      expect(handlers.length).toBeGreaterThan(0);
+
+      // The last subscriber is asked first, and it has handled the press.
+      let handled = false;
+      await act(() => {
+        handled = handlers[handlers.length - 1]?.() ?? false;
+      });
+
+      expect(handled).toBe(true);
+      expect(useSessionStore.getState().status).toBe("resting");
+      expect(view.getByTestId("rest-timer")).toBeTruthy();
+      add.mockRestore();
+    });
+  });
+
+  // 112 px at 130 % is wider than a 360 dp screen: the one figure known to overflow.
+  it("caps the timer's font scale at 1", async () => {
+    const view = await mountRest();
+    expect(view.getByTestId("rest-timer").props.maxFontSizeMultiplier).toBe(1);
   });
 
   // A villager moved +10s/+30s up and the set stepper down about 50 dp: the column was centred and

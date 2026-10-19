@@ -28,6 +28,7 @@ const backup = () => require("../db/backup") as typeof import("../db/backup");
 const merge = () => require("../db/merge") as typeof import("../db/merge");
 const completed = () => require("../db/completed") as typeof import("../db/completed");
 const exercisesDb = () => require("../db/exercises") as typeof import("../db/exercises");
+const questsDb = () => require("../db/quests") as typeof import("../db/quests");
 const oaths = () => require("../db/oaths") as typeof import("../db/oaths");
 const prefs = () => require("../db/preferences") as typeof import("../db/preferences");
 
@@ -117,4 +118,27 @@ test("equipment set back to all here is not undone by the device that still hold
   await merge().mergePeer(tablet);
 
   expect(await prefs().preferences.getOwnedEquipment()).toBeNull();
+});
+
+test("changing a hero quest's slots is news for the other device", async () => {
+  const exerciseId = (
+    t.sqlite.prepare("SELECT id FROM exercises WHERE creator = 'Admin' LIMIT 1").get() as {
+      id: number;
+    }
+  ).id;
+  const questId = Number(
+    t.sqlite
+      .prepare(
+        `INSERT INTO quests (uuid, enTitle, frTitle, enDescription, frDescription, author, rounds, restSeconds, createdAt, updatedAt)
+         VALUES ('0193b000-0000-7000-8000-000000000002', 'My circuit', 'Mon circuit', '', '', 'hero', 1, 30, 100, 100)`,
+      )
+      .run().lastInsertRowid,
+  );
+  const tablet = await peer("tablet.db");
+
+  await questsDb().setQuestExercises(questId, [
+    { exerciseId, images: [], baseTarget: { type: "reps", min: 8, max: 12 }, style: "standard" },
+  ] as never);
+
+  expect(await backup().compareWithPeer(tablet)).toMatchObject({ localChanges: 1 });
 });

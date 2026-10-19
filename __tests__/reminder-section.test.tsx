@@ -74,6 +74,7 @@ jest.mock("@/db/reminders", () => ({
   },
 }));
 jest.mock("@/db/oaths", () => ({ getOath: async () => mockOath }));
+jest.mock("@/db/pause", () => ({ getActivePause: async () => null }));
 let mockQuota = 2;
 jest.mock("@/db/streaks", () => ({ getWeeklyQuota: async () => mockQuota }));
 jest.mock("@/src/deviceSync", () => ({ syncAccount: async () => null }));

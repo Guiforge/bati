@@ -15,11 +15,12 @@ import config from "@/tamagui.config";
  * screen's capture handler is asked on every move, and a yes terminates the pressable's press.
  */
 
-// The reminders' line under the scene reads the database and the native module; it has its own
-// test (reminder-card.test.tsx), and a drag over Home is not about it.
-jest.mock("@/components/home/ReminderCard", () => ({ ReminderCard: () => null }));
-jest.mock("@/components/home/ProtectCard", () => ({ ProtectCard: () => null }));
-jest.mock("@/components/home/PasswordCheckCard", () => ({ PasswordCheckCard: () => null }));
+// The notice above the scene reads the database and the native module; it has its own test
+// (notice-slot.test.tsx), and a drag over Home is not about it.
+jest.mock("@/components/home/NoticeSlot", () => ({ NoticeSlot: () => null }));
+// Home reads what it may show from the journal; a drag over it is not about that read.
+jest.mock("@/db/disclosure", () => ({ disclosure: () => Promise.resolve() }));
+jest.mock("@/hooks/useReloadOnChange", () => ({ useReloadOnChange: () => {} }));
 jest.mock("@/components/chorus/screenCues", () => ({
   useScreenGuide: () => {},
   useComebackCue: () => {},
@@ -28,12 +29,6 @@ jest.mock("@/components/chorus/VillagerLine", () => ({ VillagerLine: () => null 
 jest.mock("@/components/home/HomeHeader", () => ({ HomeHeader: () => null }));
 jest.mock("@/components/home/HomeStage", () => ({ HomeStage: () => null }));
 jest.mock("@/components/home/QuickActions", () => ({ QuickActions: () => null }));
-jest.mock("@/components/home/UpdateCard", () => ({ UpdateCard: () => null }));
-jest.mock("@/components/home/SyncCard", () => ({ SyncCard: () => null }));
-jest.mock("@/components/home/WhatsNewCard", () => ({ WhatsNewCard: () => null }));
-jest.mock("@/components/session/SessionRecoveryCard", () => ({
-  SessionRecoveryBanner: () => null,
-}));
 
 let clock = 1;
 

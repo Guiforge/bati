@@ -1,4 +1,5 @@
 import { and, asc, count, desc, eq, sql } from "drizzle-orm";
+import { FIRST_QUEST_TITLE } from "@/constants/onboarding";
 import { getBossFightByAdventure, resetBossFight } from "./bossFights";
 import { db, schema } from "./client";
 import { listExercises } from "./exercises";
@@ -8,10 +9,17 @@ import {
   type TrainingFocus,
   trainingFocus,
 } from "./quests";
-import type { DifficultyCode } from "./schema";
+import { ADMIN_CREATOR, type DifficultyCode } from "./schema";
 
-const { adventureRuns, adventureRunSteps, adventures, adventureSteps, questExercises, quests } =
-  schema;
+const {
+  adventureRuns,
+  adventureRunSteps,
+  adventures,
+  adventureSteps,
+  completedQuest,
+  questExercises,
+  quests,
+} = schema;
 
 function safeParseImages(value: string): string[] {
   try {
@@ -527,6 +535,12 @@ export async function getAnyActiveAdventureRun(): Promise<{
   return { adventureId: first.adventureId, activeRun };
 }
 
+/** Adventures the hero has ever started: a run of one, active or finished, makes it theirs (P-04.2). */
+export async function startedAdventureIds(): Promise<Set<number>> {
+  const rows = await db.selectDistinct({ id: adventureRuns.adventureId }).from(adventureRuns);
+  return new Set(rows.map((r) => r.id));
+}
+
 /** How many times each adventure has been completed — feeds the gallery's replay stars. */
 export async function getFinishedRunCountsByAdventure(): Promise<Map<number, number>> {
   const rows = await db
@@ -629,6 +643,58 @@ async function insertWithFallback(input: {
   return id;
 }
 
+/** Whether this quest row is the seeded on-ramp, by its title and author, never by its id. */
+async function isOnRampQuest(questId: number): Promise<boolean> {
+  const rows = await db
+    .select({ id: quests.id })
+    .from(quests)
+    .where(
+      and(
+        eq(quests.id, questId),
+        eq(quests.enTitle, FIRST_QUEST_TITLE),
+        eq(quests.author, ADMIN_CREATOR),
+      ),
+    )
+    .limit(1);
+  return rows.length > 0;
+}
+
+/**
+ * "Le progrès offert" (P-05): the first session the hero ever did, when it was the on-ramp, counts
+ * as step 1 of the adventure that starts with it. Read from the journal, never stored: this answers
+ * `{ performedAt }` of that session, or null.
+ *
+ * One source, two doors: `startAdventureRun` writes the step as done, and the adventure screen
+ * before a run exists draws it as done and previews the next one, so what the screen announces is
+ * the session "Commencer" opens. All three must hold:
+ *
+ * 1. this adventure never had a run (a replay starts at step 0, as it always did);
+ * 2. its step 0 is the seeded on-ramp quest, and it has a step after it;
+ * 3. the hero's oldest session is that quest, matched by the seeded title and not by id, because a
+ *    journal that arrived by sync carries the other device's quest ids.
+ */
+export async function offeredFirstStep(adventureId: number): Promise<{ performedAt: Date } | null> {
+  const ran = await db
+    .select({ id: adventureRuns.id })
+    .from(adventureRuns)
+    .where(eq(adventureRuns.adventureId, adventureId))
+    .limit(1);
+  if (ran.length > 0) return null;
+
+  const details = await getAdventureDetails(adventureId);
+  const first = details?.steps.find((s) => s.stepIndex === 0);
+  if (!details || !first || details.steps.length < 2) return null;
+  if (!(await isOnRampQuest(first.questId))) return null;
+
+  const [oldest] = await db
+    .select({ questId: completedQuest.questId, performedAt: completedQuest.performedAt })
+    .from(completedQuest)
+    .orderBy(asc(completedQuest.performedAt), asc(completedQuest.id))
+    .limit(1);
+  if (!oldest || oldest.questId == null || !(await isOnRampQuest(oldest.questId))) return null;
+  return { performedAt: oldest.performedAt };
+}
+
 export async function startAdventureRun(input: {
   adventureId: number;
   difficultyOverride?: DifficultyCode | null;
@@ -639,22 +705,37 @@ export async function startAdventureRun(input: {
   const details = await getAdventureDetails(input.adventureId);
   if (!details) throw new Error("Adventure not found");
 
+  // Before the run row exists: the first condition is that this adventure never had one.
+  const offered = await offeredFirstStep(input.adventureId);
+
   const runId = await insertWithFallback({
     adventureId: input.adventureId,
     difficultyOverride: input.difficultyOverride ?? null,
   });
 
   const now = new Date();
+  // An offered step 0 is done, at the moment of the session that earned it, and tied to no
+  // session: `completedSessionId` stays null (a state the schema allows), so deleting that first
+  // session is never refused for belonging to a step. `completeAdventureRunStep` is what ties a
+  // session to a step, and nothing ever needs to for this one.
+  const activeIndex = offered ? 1 : 0;
   await db.insert(adventureRunSteps).values(
-    details.steps.map((s) => ({
-      runId,
-      stepIndex: s.stepIndex,
-      questId: s.questId,
-      status: (s.stepIndex === 0 ? "active" : "locked") as "active" | "locked",
-      completedSessionId: null,
-      startedAt: s.stepIndex === 0 ? now : null,
-      completedAt: null,
-    })),
+    details.steps.map((s) => {
+      const done = offered !== null && s.stepIndex === 0;
+      const active = s.stepIndex === activeIndex;
+      return {
+        runId,
+        stepIndex: s.stepIndex,
+        questId: s.questId,
+        status: (done ? "completed" : active ? "active" : "locked") as
+          | "completed"
+          | "active"
+          | "locked",
+        completedSessionId: null,
+        startedAt: done ? offered.performedAt : active ? now : null,
+        completedAt: done ? offered.performedAt : null,
+      };
+    }),
   );
 
   // A replay of a beaten boss campaign is a rematch: the boss comes back, one tier up. This is

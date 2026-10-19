@@ -134,6 +134,11 @@ export type PlanInput = {
    */
   sessionActive: boolean;
   state: { resumeDate: string | null; log: readonly ReminderLogEntry[] };
+  /**
+   * The day the hero said they would train again (M-04, `db/pause.ts`). The plan starts there, the
+   * same as after "Pause 7 days" on a notification: the later of the two dates wins.
+   */
+  pausedUntil?: string | null;
   offer: HomeOffer;
   oath: Oath | null;
   language: AppLanguage;
@@ -304,7 +309,10 @@ export function planReminders(input: PlanInput): ReminderPlan {
   const workouts = sessions.filter(isWorkoutRow).map((s) => s.performedAt);
   const trainedToday = workouts.some((w) => dayKey(w) === today);
   const reminded = new Set(state.log.map((entry) => entry.date));
-  const start = state.resumeDate && state.resumeDate > today ? state.resumeDate : today;
+  const start = [state.resumeDate, input.pausedUntil].reduce<string>(
+    (latest, date) => (date && date > latest ? date : latest),
+    today,
+  );
   const weekDone = weeklyOathDone(input);
   const sentence = sentenceFor(offer, input.language);
   let previous = lastPostedVariant(state.log);

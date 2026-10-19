@@ -13,8 +13,9 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Text, XStack, YStack } from "tamagui";
+import { XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { AppText } from "@/components/common/AppText";
 import { headingFont } from "@/components/common/headingFont";
 import { ChevronRight } from "@/components/icons";
 import { AnimalPortrait } from "@/components/village/AnimalPortrait";
@@ -62,7 +63,7 @@ const TEXT_VEIL = 0.2;
 
 function Kicker({ children }: { children: string }) {
   return (
-    <Text
+    <AppText
       testID="big-feast-kicker"
       fontFamily="$body"
       fontWeight="700"
@@ -72,13 +73,13 @@ function Kicker({ children }: { children: string }) {
       style={{ textAlign: "center" }}
     >
       {children.toUpperCase()}
-    </Text>
+    </AppText>
   );
 }
 
 function Title({ children }: { children: string }) {
   return (
-    <Text
+    <AppText
       testID="big-feast-title"
       fontFamily={headingFont(children)}
       fontWeight="700"
@@ -87,7 +88,7 @@ function Title({ children }: { children: string }) {
       style={{ textAlign: "center" }}
     >
       {children}
-    </Text>
+    </AppText>
   );
 }
 
@@ -102,14 +103,14 @@ function Line({
   fact?: boolean;
 }) {
   return (
-    <Text
+    <AppText
       testID={testID}
       fontSize={fact ? 16 : 15}
       color={fact ? "$text" : "$textSecondary"}
       style={{ textAlign: "center" }}
     >
       {children}
-    </Text>
+    </AppText>
   );
 }
 
@@ -150,9 +151,9 @@ function WhyLink({
       style={{ minHeight: 44, justifyContent: "center" }}
     >
       <XStack items="center" gap="$1">
-        <Text fontSize={15} fontWeight="600" color="$primaryText">
+        <AppText fontSize={15} fontWeight="600" color="$primaryText">
           {t(`village.crest_why_title_${animal}`)}
-        </Text>
+        </AppText>
         <ChevronRight size={16} color="$primaryText" />
       </XStack>
     </Pressable>
@@ -283,7 +284,7 @@ function FeastText({
         <Kicker>{t("session.feast_tier_kicker")}</Kicker>
         <Title>{tierSentence(t, feast.tier, villageName, language, true)}</Title>
         {sessions !== null && feast.level !== null ? (
-          <Text
+          <AppText
             testID="big-feast-level"
             fontFamily="$body"
             fontSize={16}
@@ -291,7 +292,7 @@ function FeastText({
             style={{ textAlign: "center" }}
           >
             {t("session.feast_tier_level", { level: feast.level, count: sessions })}
-          </Text>
+          </AppText>
         ) : null}
         <Line testID="big-feast-body">
           {[

@@ -32,6 +32,7 @@ import {
   getFinishedRunCountsByAdventure,
   getRecentSessionHistory,
   listExercises,
+  offeredFirstStep,
   previewQuest,
   startAdventureRun,
   suggestDifficultyFromSessions,
@@ -46,6 +47,7 @@ import { formatCount } from "@/db/targets";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { adventureWeeksLabel, useReminderPace } from "@/hooks/useReminderPace";
 import { localizedText, localizedTitle } from "@/src/i18n/localized";
+import { can } from "@/src/plus/access";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -60,6 +62,8 @@ function resolveImage(
 /** What every branch of LoadState carries, so a new field cannot be added to only one of three. */
 type LoadedData = {
   activeRun: ActiveAdventureRun | null;
+  /** The first session already counts as step 1 (db `offeredFirstStep`): null when it does not. */
+  offeredFirst: { performedAt: Date } | null;
   exercisesById: Record<number, Exercise>;
   suggestedDifficulty: "easy" | "medium" | "hard";
   /** Whether the hero's post-session feedback moved that suggestion off their own choices. */
@@ -74,6 +78,11 @@ type LoadedData = {
    * hero moves the difficulty, which no journal read answers.
    */
   journal: SlotJournal;
+  /**
+   * A Bati+ adventure the hero never started (P-04.2): no Start here, and the first step opens its
+   * quest alone. Read with the rest so it lands in the same commit as `details`.
+   */
+  locked: boolean;
 };
 
 type LoadState =
@@ -254,11 +263,13 @@ export default function AdventureDetailsScreen() {
     status: "loading",
     details: null,
     activeRun: null,
+    offeredFirst: null,
     exercisesById: {},
     suggestedDifficulty: "medium",
     feedbackAdjusted: false,
     bossFight: null,
     journal: QUEST_AS_WRITTEN,
+    locked: false,
   });
 
   const load = useCallback(
@@ -270,6 +281,7 @@ export default function AdventureDetailsScreen() {
       await Promise.all([
         getAdventureDetails(id),
         getActiveAdventureRun(id),
+        offeredFirstStep(id),
         listExercises(),
         getRecentSessionHistory(10),
         getFinishedRunCountsByAdventure(),
@@ -277,51 +289,68 @@ export default function AdventureDetailsScreen() {
         // campaign never browsed and never started has nothing here and shows no panel.
         getBossFightByAdventure(id),
         preferences.getTrainingLevel(),
+        can({ kind: "startAdventure", adventureId: id }),
       ])
-        .then(([details, activeRun, exercises, history, finishedCounts, bossFight, answer]) => {
-          if (isStale()) return;
-          setFinishedCount(finishedCounts.get(id) ?? 0);
-
-          if (!details) {
-            setState({
-              status: "error",
-              details: null,
-              activeRun: null,
-              exercisesById: {},
-              suggestedDifficulty: "medium",
-              feedbackAdjusted: false,
-              bossFight: null,
-              journal: QUEST_AS_WRITTEN,
-              message: t("adventures.not_found"),
-            });
-            return;
-          }
-
-          const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
-          const suggestion = suggestDifficultyFromSessions(history, {
-            maxSessions: 10,
-            // A hero with no session yet starts a campaign where every other door starts them.
-            defaultDifficulty: startingDifficulty(answer, history.length),
-          });
-
-          // One read for every movement of every step, so the head card can price the step at the
-          // rung the hero actually works. A promise chain, like the load above it.
-          return loadSlotJournal(
-            details.steps.flatMap((s) => s.quest.exercises.map((qex) => qex.exerciseId)),
-          ).then((journal) => {
+        .then(
+          ([
+            details,
+            activeRun,
+            offeredFirst,
+            exercises,
+            history,
+            finishedCounts,
+            bossFight,
+            answer,
+            allowed,
+          ]) => {
             if (isStale()) return;
-            setState({
-              status: "ready",
-              details,
-              activeRun,
-              exercisesById,
-              suggestedDifficulty: suggestion.level,
-              feedbackAdjusted: suggestion.adjusted,
-              bossFight,
-              journal,
+            setFinishedCount(finishedCounts.get(id) ?? 0);
+
+            if (!details) {
+              setState({
+                status: "error",
+                details: null,
+                activeRun: null,
+                offeredFirst: null,
+                exercisesById: {},
+                suggestedDifficulty: "medium",
+                feedbackAdjusted: false,
+                bossFight: null,
+                journal: QUEST_AS_WRITTEN,
+                locked: false,
+                message: t("adventures.not_found"),
+              });
+              return;
+            }
+
+            const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
+            const suggestion = suggestDifficultyFromSessions(history, {
+              maxSessions: 10,
+              // A hero with no session yet starts a campaign where every other door starts them.
+              defaultDifficulty: startingDifficulty(answer, history.length),
             });
-          });
-        })
+
+            // One read for every movement of every step, so the head card can price the step at the
+            // rung the hero actually works. A promise chain, like the load above it.
+            return loadSlotJournal(
+              details.steps.flatMap((s) => s.quest.exercises.map((qex) => qex.exerciseId)),
+            ).then((journal) => {
+              if (isStale()) return;
+              setState({
+                status: "ready",
+                details,
+                activeRun,
+                offeredFirst,
+                exercisesById,
+                suggestedDifficulty: suggestion.level,
+                feedbackAdjusted: suggestion.adjusted,
+                bossFight,
+                journal,
+                locked: !allowed,
+              });
+            });
+          },
+        )
         .catch((e: unknown) => {
           if (isStale()) return;
           reportError("adventure.load", e);
@@ -352,6 +381,7 @@ export default function AdventureDetailsScreen() {
 
   const details = state.details;
   const run = state.activeRun;
+  const locked = state.locked;
   const suggestedDifficulty = state.suggestedDifficulty;
   const feedbackAdjusted = state.feedbackAdjusted;
   // `difficultyOverride` still pins a campaign when it is set, and runs started before the
@@ -371,6 +401,10 @@ export default function AdventureDetailsScreen() {
   const effectiveSteps = details?.steps ?? [];
   const weeksLabel = adventureWeeksLabel(effectiveSteps.length, pace, t);
   const activeStep = run?.activeStep ?? null;
+  // With no run yet, the first session may already count as step 1: the list and the preview show
+  // the step "Commencer" will really open, which is the second.
+  const offered = run ? null : state.offeredFirst;
+  const firstOpenIndex = offered ? 1 : 0;
 
   // One Map instead of a run.steps.find() per row (O(n²) over the step list).
   const stepStatusByIndex = useMemo(() => {
@@ -386,8 +420,8 @@ export default function AdventureDetailsScreen() {
   const activeTemplateStep = useMemo(() => {
     if (!details) return null;
     if (activeStep) return effectiveSteps.find((s) => s.stepIndex === activeStep.stepIndex) ?? null;
-    return effectiveSteps[0] ?? null;
-  }, [activeStep, details, effectiveSteps]);
+    return effectiveSteps.find((s) => s.stepIndex === firstOpenIndex) ?? effectiveSteps[0] ?? null;
+  }, [activeStep, details, effectiveSteps, firstOpenIndex]);
 
   // A "boss" adventure is a multi-step campaign that culminates in the boss fight, not a boss
   // fight from step one — the CTA should only read "Fight Boss" once that final step is next.
@@ -411,7 +445,8 @@ export default function AdventureDetailsScreen() {
   }, [activeTemplateStep, state.exercisesById, state.journal, effectiveDifficulty]);
 
   const handleStartOrContinue = useCallback(async () => {
-    if (!details || adventureId == null || isStarting) return;
+    // The page stops offering Start when locked; this is for a render that went stale.
+    if (!details || adventureId == null || isStarting || locked) return;
 
     setIsStarting(true);
     // `run` or a new one, then its step: a promise chain rather than `try`, see `load`.
@@ -439,7 +474,7 @@ export default function AdventureDetailsScreen() {
         reportError("adventure.start", e);
         showError(t("adventures.start_error"));
       });
-  }, [adventureId, details, isStarting, router, run, showError, suggestedDifficulty, t]);
+  }, [adventureId, details, isStarting, locked, router, run, showError, suggestedDifficulty, t]);
 
   if (!adventureId) {
     return (
@@ -638,12 +673,24 @@ export default function AdventureDetailsScreen() {
                       step={s}
                       status={
                         stepStatusByIndex.get(s.stepIndex) ??
-                        (s.stepIndex === 0 ? "active" : "locked")
+                        (offered && s.stepIndex === 0
+                          ? "completed"
+                          : s.stepIndex === firstOpenIndex
+                            ? "active"
+                            : "locked")
                       }
                       adventureId={adventureId}
                       isFirst={i === 0}
                       isLast={i === effectiveSteps.length - 1}
                       onContinue={() => {
+                        // Locked: no campaign to advance, so the row opens its quest alone, the
+                        // way a completed step does (no runStepId, no level).
+                        if (locked) {
+                          router.push(`/quests/${s.questId}?adventureId=${adventureId}` as never, {
+                            withAnchor: true,
+                          });
+                          return;
+                        }
                         handleStartOrContinue().catch(() => {
                           // Error already handled via showError in handleStartOrContinue
                         });
@@ -669,30 +716,36 @@ export default function AdventureDetailsScreen() {
           borderColor="$borderStrong"
           style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
         >
-          <AppButton
-            testID="adventure-start"
-            onPress={() => {
-              handleStartOrContinue().catch(() => {
-                // Error already handled via showError above
-              });
-            }}
-            disabled={isStarting}
-            opacity={isStarting ? 0.6 : 1}
-            variant="primary"
-            fullWidth
-            height={60}
-            borderWidth={0}
-          >
-            {isStarting
-              ? t("quests.starting")
-              : isNextStepBossFight
-                ? t("adventures.fight_boss")
-                : run?.activeStep
-                  ? t("adventures.continue")
-                  : finishedCount > 0
-                    ? t("adventures.cta_replay")
-                    : t("adventures.start")}
-          </AppButton>
+          {locked ? (
+            <Text testID="adventure-plus-locked" fontSize={13} color="$textSecondary">
+              {t("adventures.plus_locked")}
+            </Text>
+          ) : (
+            <AppButton
+              testID="adventure-start"
+              onPress={() => {
+                handleStartOrContinue().catch(() => {
+                  // Error already handled via showError above
+                });
+              }}
+              disabled={isStarting}
+              opacity={isStarting ? 0.6 : 1}
+              variant="primary"
+              fullWidth
+              height={60}
+              borderWidth={0}
+            >
+              {isStarting
+                ? t("quests.starting")
+                : isNextStepBossFight
+                  ? t("adventures.fight_boss")
+                  : run?.activeStep
+                    ? t("adventures.continue")
+                    : finishedCount > 0
+                      ? t("adventures.cta_replay")
+                      : t("adventures.start")}
+            </AppButton>
+          )}
         </YStack>
       ) : null}
     </YStack>

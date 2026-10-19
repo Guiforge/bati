@@ -3,7 +3,8 @@ import { getChangeVersion } from "@/db/changeVersion";
 import { getSessionAggregates } from "@/db/completed";
 import { dayKey } from "@/db/dates";
 import { decideHomeOffer } from "@/db/homeOffer";
-import { getOath } from "@/db/oaths";
+import { getOath, isOathFrozen } from "@/db/oaths";
+import { getActivePause } from "@/db/pause";
 import { preferences } from "@/db/preferences";
 import {
   getReminderDays,
@@ -19,11 +20,8 @@ import {
 import { i18n } from "@/i18n";
 import * as Reminders from "@/modules/bati-reminders";
 import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
-import { protectCardVisible } from "@/src/protectHero";
 import { type SessionStatus, useSessionStore } from "@/stores/session";
 import { reportError } from "./reportError";
-import { checkForUpdate } from "./updateCheck";
-import { hasUnseenNotes } from "./whatsNew";
 
 /**
  * Hands the native reminders a fresh plan (docs/designs/rappels.md): the days, the journal, the
@@ -48,11 +46,12 @@ export async function replanReminders(sessionHeld: boolean): Promise<void> {
   const language = resolveAppLanguage(await preferences.getLanguage());
   const t = (key: string, options?: Record<string, unknown>) =>
     i18n.t(key, { ...options, lng: language });
-  const [days, sessions, offer, oath] = await Promise.all([
+  const [days, sessions, offer, oath, pause] = await Promise.all([
     getReminderDays(),
     getReminderSessions(now),
     decideHomeOffer(language),
     getOath(),
+    getActivePause(now),
   ]);
   if (!offer || mine !== replans) return;
 
@@ -62,8 +61,10 @@ export async function replanReminders(sessionHeld: boolean): Promise<void> {
     sessions,
     sessionActive: sessionHeld,
     state,
+    pausedUntil: pause?.until ?? null,
     offer,
-    oath,
+    // A frozen oath is not counted down in a notification (db/oaths.ts `isOathFrozen`).
+    oath: oath && (await isOathFrozen(oath, now)) ? null : oath,
     language,
     t,
   });
@@ -139,18 +140,14 @@ export function keepRemindersInStep(): { remove(): void } {
 export type ReminderCardKind = "check" | "offer" | null;
 
 /**
- * Which reminder card, if any. One card of this family at a time on Home, and never beside the
- * update or the release notes (docs/designs/rappels.md, "Où on le propose"):
+ * Which reminder card is due, if any. Whether it gets the
+ * slot is `NoticeSlot`'s call (components/home/noticeOrder.ts), which shows one notice at a time:
  *
  * - `check`: three reminders in a row went by untouched, and Home has not asked this month;
  * - `offer`: the hero has logged a session, never chose days, and did not close this before.
  */
 export async function reminderCardKind(now = new Date()): Promise<ReminderCardKind> {
   if (!Reminders.isAvailable()) return null;
-  if ((await hasUnseenNotes()) || (await checkForUpdate()) !== null) return null;
-  // One line under the scene at a time, and the one about losing a hero outranks the one about
-  // reminders: the reminder waits, and comes back the day the other is closed or answered.
-  if (await protectCardVisible(now)) return null;
 
   const state = Reminders.getState();
   const today = dayKey(now);

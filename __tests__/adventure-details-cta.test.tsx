@@ -17,6 +17,12 @@ jest.mock("@/db/reminders", () => ({ getReminderDays: async () => ({}) }));
 jest.mock("@/db/preferences", () => ({
   preferences: { getTrainingLevel: async () => "regular" },
 }));
+// The rule itself is proven on a real database in plus-access.test.ts; here only the wiring.
+jest.mock("@/src/plus/access", () => ({
+  can: jest.fn(async () => true),
+  lockedAdventures: jest.fn(async () => new Set()),
+  quotaRefusal: jest.fn(async () => null),
+}));
 jest.mock("@/db/questConfig", () => ({ startingDifficulty: () => "medium" }));
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn() }),
@@ -79,6 +85,7 @@ jest.mock("@/db", () => ({
     steps: [mockStep(0), mockStep(1)],
   }),
   getActiveAdventureRun: jest.fn().mockResolvedValue(null),
+  offeredFirstStep: jest.fn().mockResolvedValue(null),
   getFinishedRunCountsByAdventure: jest.fn().mockResolvedValue(new Map()),
   listExercises: jest.fn().mockResolvedValue([]),
   getRecentSessionHistory: jest.fn().mockResolvedValue([]),
@@ -234,4 +241,89 @@ describe("the caption under the tag", () => {
     await findByText("Hard");
     expect(queryByText("From your feedback")).toBeNull();
   });
+});
+
+// Bati+ adventures the hero never started (P-04.2): no Start, and the first step opens its quest
+// alone, the way a completed step does. Nothing on this page may start a run.
+describe("a locked adventure page", () => {
+  const access = () => require("@/src/plus/access") as { can: jest.Mock };
+  const renderScreen = () =>
+    render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <AdventureDetailsScreen />
+      </TamaguiProvider>,
+    );
+
+  beforeEach(() => {
+    mockPush.mockClear();
+    access().can.mockResolvedValue(false);
+  });
+  afterEach(() => {
+    access().can.mockResolvedValue(true);
+  });
+
+  test("shows the line instead of Start, and the first row opens its quest alone", async () => {
+    const db = require("@/db") as { startAdventureRun: jest.Mock };
+    db.startAdventureRun.mockClear();
+    const { getByText, queryByTestId, findByTestId } = await renderScreen();
+
+    expect(await findByTestId("adventure-plus-locked")).toBeTruthy();
+    expect(queryByTestId("adventure-start")).toBeNull();
+
+    await fireEvent.press(await waitFor(() => getByText("Step 1: Step 0")));
+    expect(mockPush).toHaveBeenCalledWith("/quests/100?adventureId=1", { withAnchor: true });
+    expect(db.startAdventureRun).not.toHaveBeenCalled();
+
+    // The second row stays inert: pressing it pushes nothing.
+    mockPush.mockClear();
+    await fireEvent.press(getByText("Step 2: Step 1"));
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+});
+
+// "Le progrès offert": with no run yet, the first session may already count as step 1. The screen
+// asks the same read `startAdventureRun` does, so what it announces is what "Commencer" opens: the
+// first row done, the second one active, and the preview that of the second.
+test("with the first session offered, the list and the preview show step 2 as the one to play", async () => {
+  const db = require("@/db") as {
+    offeredFirstStep: jest.Mock;
+    previewQuest: jest.Mock;
+    startAdventureRun: jest.Mock;
+  };
+  db.offeredFirstStep.mockResolvedValueOnce({ performedAt: new Date(1_000) });
+  db.previewQuest.mockClear();
+  mockPush.mockClear();
+
+  const { findByTestId, getByTestId } = await render(
+    <TamaguiProvider config={config} defaultTheme="dark">
+      <AdventureDetailsScreen />
+    </TamaguiProvider>,
+  );
+
+  expect(await findByTestId("adventure-step-0-completed")).toBeTruthy();
+  expect(await findByTestId("adventure-step-1-active")).toBeTruthy();
+  await waitFor(() =>
+    expect(db.previewQuest).toHaveBeenLastCalledWith(
+      expect.objectContaining({ enTitle: "Step 1" }),
+      expect.anything(),
+      null,
+      expect.anything(),
+      expect.anything(),
+    ),
+  );
+
+  // And "Start" opens the quest `startAdventureRun` made active, which is step 1's.
+  const active = { id: 43, stepIndex: 1, questId: 101, status: "active" };
+  db.startAdventureRun.mockResolvedValue({
+    run: { id: 7, adventureId: 1, status: "active", difficultyOverride: null },
+    steps: [{ id: 42, stepIndex: 0, questId: 100, status: "completed" }, active],
+    activeStep: active,
+  });
+  await fireEvent.press(getByTestId("adventure-start"));
+  await waitFor(() =>
+    expect(mockPush).toHaveBeenCalledWith(
+      expect.stringMatching(/^\/quests\/101\?level=\w+&runStepId=43&adventureId=1$/),
+      { withAnchor: true },
+    ),
+  );
 });

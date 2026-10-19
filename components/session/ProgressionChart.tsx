@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { Paragraph, XStack, YStack } from "tamagui";
+import { AppText } from "@/components/common/AppText";
 import { Card } from "@/components/common/Card";
 import { Skeleton } from "@/components/common/Skeleton";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
@@ -98,10 +99,10 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
     return (
       <Card>
         <YStack gap="$2" items="center" py="$2">
-          <Text fontSize={24}>😵</Text>
-          <Text fontWeight="700" fontSize={14} color="$text">
+          <AppText fontSize={24}>😵</AppText>
+          <AppText fontWeight="700" fontSize={14} color="$text">
             {t("chart.error")}
-          </Text>
+          </AppText>
           <Paragraph color="$text" opacity={0.6} size="$2">
             {t("errors.generic")}
           </Paragraph>
@@ -114,10 +115,10 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
     return (
       <Card>
         <YStack gap="$2" items="center" py="$4">
-          <Text fontSize={32}>📈</Text>
-          <Text fontWeight="700" fontSize={14} color="$text">
+          <AppText fontSize={32}>📈</AppText>
+          <AppText fontWeight="700" fontSize={14} color="$text">
             {t("chart.no_data")}
-          </Text>
+          </AppText>
           <Paragraph color="$text" opacity={0.6} size="$2" style={{ textAlign: "center" }}>
             {t("chart.complete_more")}
           </Paragraph>
@@ -177,9 +178,9 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
       <YStack gap="$4">
         {/* Title */}
         <YStack gap="$1">
-          <Text fontFamily="$heading" fontWeight="700" fontSize={16} color="$text">
+          <AppText fontFamily="$heading" fontWeight="700" fontSize={16} color="$text">
             {title || t("chart.progression_title")}
-          </Text>
+          </AppText>
           <Paragraph color="$text" opacity={0.6} size="$2">
             {/* The figures below are over this window, never over every run: "10 workouts, 262
                 total mins" sat above a session that was the quest's 10th of 15. */}
@@ -192,28 +193,28 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
         {/* Stats Row */}
         <XStack gap="$4" justify="space-around">
           <YStack items="center">
-            <Text fontWeight="700" fontSize={24} color="$text">
+            <AppText fontWeight="700" fontSize={24} color="$text">
               {sessions.length}
-            </Text>
-            <Text fontSize={12} color="$text" opacity={0.6}>
+            </AppText>
+            <AppText fontSize={12} color="$text" opacity={0.6}>
               {t("chart.workouts")}
-            </Text>
+            </AppText>
           </YStack>
           <YStack items="center">
-            <Text fontWeight="700" fontSize={24} color="$text">
+            <AppText fontWeight="700" fontSize={24} color="$text">
               {totalMinutes}
-            </Text>
-            <Text fontSize={12} color="$text" opacity={0.6}>
+            </AppText>
+            <AppText fontSize={12} color="$text" opacity={0.6}>
               {t("chart.total_mins")}
-            </Text>
+            </AppText>
           </YStack>
           <YStack items="center">
-            <Text fontWeight="700" fontSize={24} color="$text">
+            <AppText fontWeight="700" fontSize={24} color="$text">
               {avgMinutes}
-            </Text>
-            <Text fontSize={12} color="$text" opacity={0.6}>
+            </AppText>
+            <AppText fontSize={12} color="$text" opacity={0.6}>
               {t("chart.avg_mins")}
-            </Text>
+            </AppText>
           </YStack>
         </XStack>
 
@@ -259,9 +260,9 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
                 rounded={6}
                 style={{ backgroundColor: DIFFICULTY_COLORS[level] }}
               />
-              <Text fontSize={11} color="$text" opacity={0.7}>
+              <AppText fontSize={11} color="$text" opacity={0.7}>
                 {t(`quests.level_${level}`)}
-              </Text>
+              </AppText>
             </XStack>
           ))}
         </XStack>

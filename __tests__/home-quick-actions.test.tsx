@@ -147,7 +147,7 @@ const CHOP = {
 function renderRow() {
   return render(
     <TamaguiProvider config={config} defaultTheme="dark">
-      <QuickActions />
+      <QuickActions showGoals />
     </TamaguiProvider>,
   );
 }
@@ -374,4 +374,16 @@ it("says why before Android asks, and only for the first tap of the process", as
 
   await waitFor(() => expect(mockRequestPermission).toHaveBeenCalledTimes(2));
   expect(screen.queryByText(WHY)).toBeNull();
+});
+
+it("shows no goal chip while the journal says it is day one, and the tile still starts", async () => {
+  await render(
+    <TamaguiProvider config={config} defaultTheme="dark">
+      <QuickActions showGoals={false} />
+    </TamaguiProvider>,
+  );
+
+  await screen.findByText("Course du Messager");
+  expect(screen.queryByLabelText(/^Goal for/)).toBeNull();
+  expect(tile("Course du Messager")).toBeTruthy();
 });

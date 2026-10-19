@@ -1,7 +1,7 @@
 import { listExercises } from "./exercises";
-import { preferences } from "./preferences";
+import { preferences, type SetAsideExercise } from "./preferences";
 import { clearCached } from "./queryCache";
-import { getAllQuestConfigs, saveQuestConfig } from "./questConfig";
+import { getAllQuestConfigs, type QuestConfig, saveQuestConfig } from "./questConfig";
 import { listQuestTemplates } from "./quests";
 import { ADMIN_CREATOR } from "./schema";
 
@@ -21,8 +21,18 @@ import { ADMIN_CREATOR } from "./schema";
  * The configs first and the list last, so a write that fails halfway leaves the exercise off the
  * list and the next attempt does the whole thing again.
  */
-export async function setExerciseAside(exerciseId: number, now = Date.now()): Promise<void> {
-  const [configs, templates] = await Promise.all([getAllQuestConfigs(), listQuestTemplates()]);
+export async function setExerciseAside(
+  exerciseId: number,
+  now = Date.now(),
+  /** A zone's end date (epoch ms): set aside until then, as `reason: "zone"` (M-04). */
+  until?: number,
+): Promise<void> {
+  // A zone is a loan: the swaps and targets it would drop are only hidden from the readers while
+  // it lasts (`db/questConfig.ts`), so they are still there when the exercise comes back.
+  const [configs, templates] =
+    until === undefined
+      ? await Promise.all([getAllQuestConfigs({ raw: true }), listQuestTemplates()])
+      : [new Map<number, QuestConfig>(), []];
   const writtenBy = new Map(
     templates.flatMap((q) => q.exercises.map((s) => [String(s.id), s.exerciseId] as const)),
   );
@@ -40,20 +50,43 @@ export async function setExerciseAside(exerciseId: number, now = Date.now()): Pr
     ) {
       continue;
     }
-    await saveQuestConfig(questId, {
-      ...config,
-      swaps: Object.keys(keptSwaps).length > 0 ? keptSwaps : undefined,
-      targets: Object.keys(keptTargets).length > 0 ? keptTargets : undefined,
-    });
+    await saveQuestConfig(
+      questId,
+      {
+        ...config,
+        swaps: Object.keys(keptSwaps).length > 0 ? keptSwaps : undefined,
+        targets: Object.keys(keptTargets).length > 0 ? keptTargets : undefined,
+      },
+      { raw: true },
+    );
   }
 
-  const list = await preferences.getSetAsideExercises();
-  if (!list.some((e) => e.id === exerciseId)) {
-    await preferences.setSetAsideExercises([...list, { id: exerciseId, at: now }]);
-  }
+  const list = await preferences.getSetAsideExercises(now);
+  const next = withExercise(list, exerciseId, now, until);
+  if (next) await preferences.setSetAsideExercises(next);
 
   // A quest detail painted from cache would show the exercise for one frame, then swap.
   clearCached("quest:");
+}
+
+/**
+ * The list with the exercise set aside, or null when it already says so. The hero's own hand
+ * outranks a zone, both ways: a zone never turns a hand-made entry into one that expires, and a
+ * hand set aside during a zone makes the entry the hero's, which stays.
+ */
+function withExercise(
+  list: SetAsideExercise[],
+  id: number,
+  at: number,
+  until: number | undefined,
+): SetAsideExercise[] | null {
+  const held = list.find((e) => e.id === id);
+  const entry: SetAsideExercise =
+    until === undefined ? { id, at } : { id, at, until, reason: "zone" };
+  if (!held) return [...list, entry];
+  if (held.until === undefined) return null;
+  if (until === undefined) return list.map((e) => (e === held ? entry : e));
+  return until > held.until ? list.map((e) => (e === held ? { ...held, until } : e)) : null;
 }
 
 /**

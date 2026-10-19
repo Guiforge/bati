@@ -9,6 +9,7 @@ import { getTokenValue, XStack, YStack } from "tamagui";
 import { useAmbientVisit, useScreenGuide } from "@/components/chorus/screenCues";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
 import { Skeleton } from "@/components/common/Skeleton";
+import { OathStrip } from "@/components/home/OathStrip";
 import { Scroll } from "@/components/icons";
 import { NButton, NMuted, NSeg, NText, NTitle } from "@/components/journal/nocturne";
 import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard";
@@ -321,6 +322,9 @@ export default function JournalScreen() {
               screen while the cards slid under it, and its line is about the numbers, so above
               the History list it spoke about something that was not there. */}
           <VillagerLine owner="journal" />
+          {/* The oath line Home keeps back until the third session (db/disclosure.ts): the door to
+              swear one stays a tab away from the first day, whatever the count. */}
+          <OathStrip />
           <ChronicleDoor window={stats?.chronicle ?? null} />
           {stats ? <StatsView stats={stats} /> : <StatsSkeleton />}
         </ScrollView>

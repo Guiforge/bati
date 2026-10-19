@@ -616,7 +616,7 @@ skewed clock, #5738); do not count on Android background sync, sync at launch an
    missing `updatedAt` bumps. Sources are copied, never
    recomputed: `completed_sessions` (its `xpEarned` already carries the day's, Triumph's and the
    oath's bonuses), `completed_exercises`, `gps_points`, `deleted_sessions`, hero exercises and
-   quests, `HERO_PREFERENCES`, quest configs, `unlocked_achievements` (a union). XP, level and the
+   quests, `HERO_PREFERENCES`, quest configs, `unlocked_achievements` (local). XP, level and the
    village are pure queries over them; the streak has `calculateAndCacheStreak`. **Local ids never
    change; only the peer's rows get new ids**, through temporary maps: sessions, exercises (Admin
    ones by `enName`, since seeds after 0035 got different ids on different devices), quests,

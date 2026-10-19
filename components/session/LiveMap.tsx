@@ -5,7 +5,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, AppState } from "react-native";
-import { Text, XStack, YStack } from "tamagui";
+import { XStack, YStack } from "tamagui";
+import { AppText } from "@/components/common/AppText";
 import { MapFootnote } from "@/components/session/MapFootnote";
 import { MapRecenterButton } from "@/components/session/MapRecenterButton";
 import { HUD_HEIGHT } from "@/components/session/sessionArt";
@@ -59,9 +60,9 @@ function Waiting({ label }: { label: string }) {
         bg="$surface"
       >
         <ActivityIndicator size="small" color={rawColors.resourceGold} />
-        <Text fontSize={13} color="$text">
+        <AppText fontSize={13} color="$text">
           {label}
-        </Text>
+        </AppText>
       </XStack>
     </YStack>
   );

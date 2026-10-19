@@ -10,7 +10,7 @@ import { getChainTo } from "./exercises";
 import { hasOutdoorSlot } from "./expeditions";
 import { MUSCLE_LABELS } from "./labels";
 import { getSuggestedQuestsForWeakAreas } from "./muscleBalance";
-import { getOathProgress, oathNeedsExercise } from "./oaths";
+import { getOathProgress, isOathFrozen, oathNeedsExercise } from "./oaths";
 import { listOutings } from "./outings";
 import { loadConfiguredQuest } from "./questConfig";
 import { findQuestWithExercise, listQuestTemplates } from "./quests";
@@ -111,8 +111,13 @@ export async function decideHomeOffer(
   // 2. The oath the hero swore, walked one rung at a time. Above the weak-area rule on purpose —
   //    balance is the app's opinion, the oath is theirs.
   const oath = await getOathProgress();
+  // A frozen oath (pause, or a zone on its exercise) is not served tonight: the stage falls through
+  // to the rules below, which already know what to say.
+  const oathFrozen = oath ? await isOathFrozen(oath.oath) : false;
   const oathExerciseId =
-    oath && !oath.isFulfilled && oathNeedsExercise(oath.oath.metric) ? oath.oath.exerciseId : null;
+    oath && !oathFrozen && !oath.isFulfilled && oathNeedsExercise(oath.oath.metric)
+      ? oath.oath.exerciseId
+      : null;
 
   if (oathExerciseId !== null && !isCancelled()) {
     const chain = await getChainTo(oathExerciseId);
@@ -145,7 +150,13 @@ export async function decideHomeOffer(
   // 2b. An oath in leagues names no exercise, so the chain above cannot serve it, and the
   //     muscle rule below never will: an outing carries no muscles by design (0041). The
   //     first door out is the answer; the hero picks the duration on the quest screen.
-  if (oath && !oath.isFulfilled && oath.oath.metric === "leagues" && !isCancelled()) {
+  if (
+    oath &&
+    !oathFrozen &&
+    !oath.isFulfilled &&
+    oath.oath.metric === "leagues" &&
+    !isCancelled()
+  ) {
     const outing = (await listOutings())[0];
     const offer = outing ? await questOffer(outing.quest.id) : null;
     if (offer && !isCancelled()) {

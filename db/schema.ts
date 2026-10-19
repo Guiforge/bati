@@ -1100,6 +1100,12 @@ export const deletedSessions = sqliteTable("deleted_sessions", {
   deletedAt: int({ mode: "timestamp" }).notNull(),
 });
 
+/** Hero quests and movements deleted on this device, by uuid (0074). See `deleted_sessions`. */
+export const deletedContent = sqliteTable("deleted_content", {
+  uuid: text().primaryKey(),
+  deletedAt: int({ mode: "timestamp" }).notNull(),
+});
+
 export const gpsPoints = sqliteTable(
   "gps_points",
   {

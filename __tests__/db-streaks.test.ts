@@ -1,5 +1,8 @@
+import { sql } from "drizzle-orm";
+import { FLAME_DORMANT_DAYS, FLAME_PIVOT } from "../constants/flame";
 import { DEFAULT_WEEKLY_QUOTA, WEEKLY_TARGETS } from "../constants/weeklyTargets";
 import * as schema from "../db/schema";
+import { GOLDEN_NOW } from "./helpers/goldenHero";
 import { clientMock, createTestDb } from "./helpers/testDb";
 
 const { completedQuest, userPreferences } = schema;
@@ -12,9 +15,21 @@ const { completedQuest, userPreferences } = schema;
 describe("db/streaks", () => {
   const t = createTestDb();
 
+  // The pivot the database-level tests below run under, set by each one: none of them may depend
+  // on where the real clock sits relative to the real pivot.
+  let pivot = new Date(2100, 0, 1);
+
   beforeAll(() => {
     jest.resetModules();
     jest.doMock("../db/client", () => clientMock(t));
+    // A live getter, so each test can move the pivot the module under test reads per call.
+    jest.doMock("../constants/flame", () =>
+      Object.defineProperty(
+        { ...jest.requireActual("../constants/flame"), __esModule: true },
+        "FLAME_PIVOT",
+        { get: () => pivot, enumerable: true },
+      ),
+    );
   });
 
   afterAll(() => {
@@ -22,6 +37,7 @@ describe("db/streaks", () => {
   });
 
   beforeEach(() => {
+    pivot = new Date(2100, 0, 1);
     t.db.delete(completedQuest).run();
     t.db.delete(userPreferences).run();
   });
@@ -186,5 +202,128 @@ describe("db/streaks", () => {
   test("no weekly target the oath offers sits under the quota the crest measures its flame at", () => {
     // db/crest.ts reads the longest flame at DEFAULT_WEEKLY_QUOTA; a lower oath would say "flame 0".
     expect(Math.min(...WEEKLY_TARGETS)).toBeGreaterThanOrEqual(DEFAULT_WEEKLY_QUOTA);
+  });
+
+  test("the pivot is after the golden hero's frozen clock, so its figures cannot move", () => {
+    expect(FLAME_PIVOT.getTime()).toBeGreaterThan(GOLDEN_NOW);
+  });
+
+  test("swearing 3 a week recounts a sleeping flame, and the crest's quota of 2 does not move", async () => {
+    pivot = new Date(2000, 0, 1);
+    await addSessionOnDate(40);
+    await addSessionOnDate(39);
+    expect((await streaks().calculateAndCacheStreak()).dormant).toBeGreaterThan(0);
+
+    swearWeekly(3);
+    const recounted = await streaks().calculateAndCacheStreak();
+    // Two sessions a week never light a bar of three: the whole journal reads at it.
+    expect(recounted).toMatchObject({ current: 0, dormant: 0, best: 0 });
+
+    // The crest reads at the baseline, sleeping counts included, whatever the oath says.
+    const dates = [40, 39].map((n) => new Date(Date.now() - n * 86_400_000));
+    expect(
+      streaks().calculateStreakFromSessions(dates, DEFAULT_WEEKLY_QUOTA, new Date(), pivot).best,
+    ).toBeGreaterThan(0);
+  });
+
+  test("the sleeping count is cached with the flame, and a cache without it is a miss", async () => {
+    pivot = new Date(2000, 0, 1);
+    // Quota met 40 and 39 days ago, then nothing: asleep since, 26 days out.
+    await addSessionOnDate(40);
+    await addSessionOnDate(39);
+
+    const fresh = await streaks().calculateAndCacheStreak();
+    expect(fresh.current).toBe(0);
+    expect(fresh.dormant).toBeGreaterThan(0);
+    expect(await streaks().getCachedStreak()).toEqual(fresh);
+
+    t.db.delete(userPreferences).where(sql`${userPreferences.key} = 'streak_dormant'`).run();
+    expect(await streaks().getCachedStreak()).toBeNull();
+  });
+});
+
+/**
+ * The flame sleeps instead of falling to zero. Every call below names its own `now` and pivot,
+ * so no result depends on the real clock: `early` is a pivot before every journal here (gaps are
+ * bridged), `late` one after all of them (nothing is, the old rule).
+ */
+describe("the dormant flame", () => {
+  const t = createTestDb();
+  const early = new Date(2025, 11, 1);
+  const late = new Date(2100, 0, 1);
+
+  beforeAll(() => {
+    jest.resetModules();
+    jest.doMock("../db/client", () => clientMock(t));
+  });
+  afterAll(() => t.close());
+
+  const day = (n: number) => new Date(2026, 0, 1 + n, 12);
+  const streaks = () => require("../db/streaks") as typeof import("../db/streaks");
+  const read = (sessions: number[], now: number, pivot: Date, quota = 2) =>
+    streaks().describeFlame(sessions.map(day), quota, day(now), pivot);
+
+  // These four sessions light the flame without a break from day 1 to day 19: 19 lit days, then out.
+  const first = [0, 1, 6, 7];
+  const k = 19;
+
+  test("the first flame is what the other tests count against", () => {
+    expect(read(first, 19, early)).toMatchObject({ current: k, dormant: 0 });
+    expect(read(first, 25, early)).toMatchObject({ current: 0, dormant: k, best: k });
+  });
+
+  test("the quota again within a week carries the count on, the gap days not counted", () => {
+    expect(read([...first, 40, 46], 46, early)).toMatchObject({ current: k + 1, dormant: 0 });
+  });
+
+  test("one session short of the quota leaves it asleep", () => {
+    expect(read([...first, 40, 47], 47, early)).toMatchObject({ current: 0, dormant: k });
+  });
+
+  test("a session a week for ten weeks, under the quota, keeps the count", () => {
+    const weekly = Array.from({ length: 10 }, (_, i) => 40 + 7 * i);
+    expect(read([...first, ...weekly], 110, early)).toMatchObject({ current: 0, dormant: k });
+  });
+
+  test("56 days out with no session wipe it, and best does not move", () => {
+    const last = k + FLAME_DORMANT_DAYS;
+    expect(read(first, last - 1, early)).toMatchObject({ dormant: k });
+    expect(read(first, last, early)).toMatchObject({ current: 0, dormant: 0, best: k });
+    // And what relights it after that starts from one.
+    expect(read([...first, last + 5, last + 6], last + 6, early).current).toBe(1);
+  });
+
+  test("while asleep, the best flame is the current one: it did not end", () => {
+    expect(read(first, 30, early).bestIsCurrent).toBe(true);
+    expect(read(first, k + FLAME_DORMANT_DAYS, early).bestIsCurrent).toBe(false);
+  });
+
+  test("a gap closed before the pivot stays a break: current and best are what they were", () => {
+    const sessions = [...first, 40, 41];
+    // `late` is the old rule: nothing bridged, nothing asleep.
+    expect(read(sessions, 46, late)).toMatchObject({ current: 6, best: k, dormant: 0 });
+    // Pivot after the relighting day (41): same answer. Before it: bridged.
+    expect(read(sessions, 46, day(45))).toMatchObject({ current: 6, best: k, dormant: 0 });
+    expect(read(sessions, 46, day(39))).toMatchObject({ current: k + 6, best: k + 6 });
+  });
+
+  test("out for 20 days with no session at the pivot: asleep after it, not before", () => {
+    const pivot = day(44);
+    expect(read(first, 44, pivot).dormant).toBe(0);
+    expect(read(first, 50, pivot)).toMatchObject({ current: 0, dormant: k, best: k });
+    // The relighting day is after the pivot: the count carries on.
+    expect(read([...first, 51, 52], 52, pivot).current).toBe(k + 1);
+  });
+
+  test("the journal and the widget read one count: the cache holds what describeFlame says", () => {
+    const sessions = first.map(day);
+    const info = streaks().calculateStreakFromSessions(sessions, 2, day(50), early);
+    expect(info.dormant).toBe(read(first, 50, early).dormant);
+  });
+
+  test("longestFlameSince bridges the same way", () => {
+    const sessions = [...first, 40, 46].map(day);
+    expect(streaks().longestFlameSince(sessions, 2, day(0), day(46), early)).toBe(k + 1);
+    expect(streaks().longestFlameSince(sessions, 2, day(0), day(46), late)).toBe(k);
   });
 });

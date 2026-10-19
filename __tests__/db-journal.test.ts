@@ -23,12 +23,15 @@ afterAll(() => t.close());
 const describeFlame: typeof import("../db/streaks").describeFlame = (...args) =>
   (require("../db/streaks") as typeof import("../db/streaks")).describeFlame(...args);
 
+// A pivot nowhere near the real clock: these tests are about the lit days, not the sleeping ones.
+const NEVER_BRIDGED = new Date(2100, 0, 1);
+
 describe("describeFlame", () => {
   test("a rest day is lit, and says until when", () => {
     // Two sessions three and two days ago: the trailing week holds both until the older one
     // leaves it, three days from now. The forgiving clause needs both inside the *previous* week,
     // which never happens here, so the flame goes out on the fourth day.
-    const flame = describeFlame([daysAgo(3), daysAgo(2)], 2);
+    const flame = describeFlame([daysAgo(3), daysAgo(2)], 2, new Date(), NEVER_BRIDGED);
     assert(flame.litUntil);
     expect(flame.current).toBeGreaterThan(0);
     const until = Math.round((flame.litUntil.getTime() - daysAgo(0, 0).getTime()) / DAY);
@@ -37,7 +40,7 @@ describe("describeFlame", () => {
 
   test("the best run's end is the day it went out, not today", () => {
     const old = [daysAgo(60), daysAgo(59)];
-    const flame = describeFlame(old, 2);
+    const flame = describeFlame(old, 2, new Date(), NEVER_BRIDGED);
     expect(flame.current).toBe(0);
     expect(flame.litUntil).toBeNull();
     // Two runs of six: the week that holds both sessions, then the forgiven week after it, with

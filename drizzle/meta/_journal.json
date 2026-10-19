@@ -519,6 +519,13 @@
       "when": 1792108800000,
       "tag": "0073_the_back_that_pulls_back",
       "breakpoints": true
+    },
+    {
+      "idx": 74,
+      "version": "6",
+      "when": 1792540800000,
+      "tag": "0074_the_content_let_go",
+      "breakpoints": true
     }
   ]
 }

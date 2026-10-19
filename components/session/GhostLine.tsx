@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Text, XStack } from "tamagui";
+import { XStack } from "tamagui";
+import { AppText } from "@/components/common/AppText";
 import { GameIcon } from "@/components/common/GameIcon";
 import type { ExerciseGhost } from "@/db/personalRecords";
 import type { QuestTargetType } from "@/db/schema";
@@ -101,12 +102,12 @@ export function GhostLine({
               spend it first on a promise. True in both units and at both moments, which is the
               other half of it, because a hold past its best has already done the thing while a
               rep count past it has not. */}
-          <Text fontSize={12} fontWeight="700" color="$resourceGold">
+          <AppText fontSize={12} fontWeight="700" color="$resourceGold">
             {t("session.ghost_record_label")}
-          </Text>
-          <Text fontSize={15} fontWeight="700" color="$text">
+          </AppText>
+          <AppText fontSize={15} fontWeight="700" color="$text">
             {perSideLabel(formatTarget({ type, value: live }, language), perSide, language)}
-          </Text>
+          </AppText>
         </XStack>
       ) : (
         <>
@@ -121,31 +122,31 @@ export function GhostLine({
               into one. On a first-ever session `last` and `best` are the same number and
               "last time 12 · best 12" reads like a bug, so the best half simply does not
               render, instead of a second sentence existing to say the same thing. */}
-          <Text fontSize={12} color="$textSecondary">
+          <AppText fontSize={12} color="$textSecondary">
             {t("session.ghost_last_label")}
-          </Text>
-          <Text fontSize={15} fontWeight="700" color="$text">
+          </AppText>
+          <AppText fontSize={15} fontWeight="700" color="$text">
             {perSideLabel(
               formatTarget({ type, value: ghost.last }, language),
               perSide && ghost.best <= ghost.last,
               language,
             )}
-          </Text>
+          </AppText>
           {ghost.best > ghost.last ? (
             <>
-              <Text fontSize={12} color="$textSecondary" opacity={0.5}>
+              <AppText fontSize={12} color="$textSecondary" opacity={0.5}>
                 ·
-              </Text>
-              <Text fontSize={12} color="$textSecondary">
+              </AppText>
+              <AppText fontSize={12} color="$textSecondary">
                 {t("session.ghost_best_label")}
-              </Text>
-              <Text fontSize={15} fontWeight="700" color="$resourceGold">
+              </AppText>
+              <AppText fontSize={15} fontWeight="700" color="$resourceGold">
                 {perSideLabel(
                   formatTarget({ type, value: ghost.best }, language),
                   perSide,
                   language,
                 )}
-              </Text>
+              </AppText>
             </>
           ) : null}
         </>

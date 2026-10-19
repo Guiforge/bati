@@ -81,7 +81,7 @@ describe("db/bossFights", () => {
     return row.total;
   }
 
-  /** Crit odds are capped at MAX_CRIT_CHANCE; roll above it so damage numbers are exact. */
+  /** Crit odds are 15 % at most; roll above it so damage numbers are exact. */
   function noCrits() {
     jest.spyOn(Math, "random").mockReturnValue(0.99);
   }
@@ -283,29 +283,27 @@ describe("db/bossFights", () => {
     // One rep over twelve is 15 % odds, which 0.1 clears. Double damage.
     expect(roll(13, 12)).toMatchObject({ isCritical: true, damage: 26 });
 
-    // Two reps is 30 %: at 0.2 one rep does not crit, two do.
+    // Two reps is no better: at 0.2 neither crits.
     jest.spyOn(Math, "random").mockReturnValue(0.2);
     expect(roll(13, 12).isCritical).toBe(false);
-    expect(roll(14, 12).isCritical).toBe(true);
+    expect(roll(14, 12).isCritical).toBe(false);
 
     // ...and never beyond the ceiling, however heroic the set.
-    jest.spyOn(Math, "random").mockReturnValue(b.MAX_CRIT_CHANCE);
+    jest.spyOn(Math, "random").mockReturnValue(b.CRIT_CHANCE_ONE_REP);
     expect(roll(500, 12).isCritical).toBe(false);
   });
 
   // The rule the fight states under the counter, figure for figure. It used to scale with the
   // overshoot, which paid for the grinding reps the safety page says to leave in reserve, made
   // the easy level the one that critted, and on a target lowered to 1 made two reps a sure thing.
-  test("crit odds are one rep or two, the same at every target, and never on a hold", () => {
+  test("crit odds are one rep and no more, the same at every target, and never on a hold", () => {
     const b = boss();
 
     expect(b.critChance(12, 12)).toBe(0);
     expect(b.critChance(13, 12)).toBe(0.15);
-    expect(b.critChance(14, 12)).toBe(0.3);
-    expect(b.critChance(17, 12)).toBe(b.critChance(14, 12));
-    expect(b.critChance(22, 20)).toBe(b.critChance(14, 12));
-
-    // Under eight prescribed reps a second extra one is a big jump: only the first counts.
+    expect(b.critChance(14, 12)).toBe(0.15);
+    expect(b.critChance(17, 12)).toBe(0.15);
+    expect(b.critChance(22, 20)).toBe(0.15);
     expect(b.critChance(7, 5)).toBe(0.15);
 
     expect(b.critChance(90, 30, "time")).toBe(0);

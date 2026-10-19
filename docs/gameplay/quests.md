@@ -80,7 +80,7 @@ rungs below are not yet behind the hero, the push-up slot runs as Wall Push-Up. 
 and the swap sheet is one tap away for anyone who wants the written movement anyway.
 
 Where the hero stands is the same reading the exercise screen shows, one function for both
-(`rungsBehind`, [paths.md](paths.md) § Owning a rung): a rung is behind the hero once it was owned
+(`ladderPosition`, [paths.md](paths.md) § Owning a rung): a rung is behind the hero once it was owned
 ever, or once a rung above it was owned ever or has one on-target session in the 56-day window. So
 the app never prescribes something it is simultaneously telling the hero to work up to, and a hero
 who climbed to push-ups is not served wall push-ups again once those old sessions age out of the

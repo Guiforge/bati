@@ -355,6 +355,50 @@ describe("db/exercises — variation ladder", () => {
       expect(earned.map((a) => a.code)).toContain("path_climbed");
     });
 
+    test("three paths: a hero who already holds path_climbed sees 2/3, then 3/3 and the unlock", async () => {
+      const achievements = require("../db/achievements") as typeof import("../db/achievements");
+      const summits = (
+        t.sqlite
+          .prepare(
+            `SELECT e.id FROM exercises e
+             WHERE e.prerequisiteExerciseId IS NOT NULL
+               AND NOT EXISTS (SELECT 1 FROM exercises o WHERE o.prerequisiteExerciseId = e.id)
+             ORDER BY e.id`,
+          )
+          .all() as { id: number }[]
+      ).map((r) => r.id);
+      expect(summits.length).toBeGreaterThanOrEqual(3);
+      const climb = (id: number) => {
+        for (let i = 0; i < 3; i++) logSet(id, 12, 12);
+      };
+      const check = () =>
+        achievements.checkForNewAchievements({
+          durationSeconds: 600,
+          xpEarned: 50,
+          performedAt: new Date(new Date().setHours(12, 0, 0, 0)),
+          questId: null,
+          outing: null,
+        });
+      const progress = async () =>
+        (await achievements.getAllAchievementsWithProgress()).find(
+          (a) => a.code === "three_paths_climbed",
+        );
+      t.sqlite.exec("DELETE FROM user_preferences WHERE key = 'unlocked_achievements'");
+
+      climb(summits[0] as number);
+      expect((await check()).map((a) => a.code)).toContain("path_climbed");
+      expect((await progress())?.currentValue).toBe(1);
+
+      climb(summits[1] as number);
+      expect((await check()).map((a) => a.code)).not.toContain("three_paths_climbed");
+      expect((await progress())?.currentValue).toBe(2);
+      expect((await progress())?.targetValue).toBe(3);
+
+      climb(summits[2] as number);
+      expect((await check()).map((a) => a.code)).toContain("three_paths_climbed");
+      expect((await progress())?.currentValue).toBe(3);
+    });
+
     test("time passing does not take it back either", async () => {
       for (const name of ["Dead Bug", "Hollow Body Hold", "Dragon Flag"]) {
         for (let i = 0; i < 3; i++) logSet(idOf(name), 12, 12, 400 + i);

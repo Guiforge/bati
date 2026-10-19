@@ -285,8 +285,20 @@ and opens the sheet's `unlock` mode, not `enable`.
 - Guarded by `__tests__/BackupSecurityRows.test.tsx` (a locked row opens `unlock`, never `enable`) and
   `__tests__/EncryptionSheetUnlock.test.tsx`.
 
+## What P-05 (the showcase) adds to sync
+
+Nothing that is merged: no preference, no table, no migration, and the fingerprint and the version
+gate are unchanged. Home's notices are per device (`DEVICE_LOCAL_PREFERENCES`), while `disclosure()`
+reads the merged journal, so two synced phones show the same Home but not necessarily the same
+notice. The offered first step is local adventure state, decided per device from the merged journal
+at run start; adventure runs are not synced, so a second phone decides for itself.
+
 ## Device sync
 
+- **Progress is derived, never stored**: bests, records and rungs are read from `completed_exercises`
+  (`db/progress.ts`), so sync has nothing of its own to carry for them and a release that only
+  changes how they are read does not change any device's fingerprint. It is a shared SQL fragment,
+  not a view: a backup holding a view is refused (`validateBackup`).
 - **Transport**: WebDAV. Nextcloud signs in through the browser (Login Flow v2, a revocable app
   password; the page and poll endpoint must be on the server or on https, and the account keeps the
   address the hero typed). Any other server, behind presets (kDrive, Koofr, Round Sync for rclone),
@@ -324,15 +336,19 @@ and opens the sheet's `unlock` mode, not `enable`.
   `waiting` and says nothing.
 - **What each side lacks** (`compareWithPeer`, on real SQLite): sessions by uuid, sessions both
   hold that one side edited later (`setsEditedAt`, `feedbackEditedAt`, 0072: a corrected set, a
-  late feedback), deletions
-  by the `deleted_sessions` tombstones (0064), and the hero's own content (hero exercises and quests,
+  late feedback), a session's larger XP, deletions
+  by the `deleted_sessions` tombstones (0064) and, for hero quests and movements, by the
+  `deleted_content` ones (0074), and the hero's own content (hero exercises and quests,
   village name, avatar, level, equipment, oath, reminder days). Derived caches are ignored, and so are favourites
   and quest configs, which name quest ids and are not merged: what the merge leaves out, the
   comparison must not count, or two merged devices would read as diverged forever.
 - **Merged, not asked** (`db/merge.ts`). An `ahead` or `diverged` device is merged into this one:
   its sessions with their sets and GPS points, the sets and feedback of a session it edited
-  later, its deletions, its hero exercises and quests (the
-  newer edit wins), its preferences (the newer wins; a device with nothing of its own yet takes
+  later, the larger XP of a session (earned XP is never taken away), its deletions (a hero quest
+  or movement it deleted goes here too, unless this device edited it after: a newer edit survives
+  a deletion, and a movement still used here stays, with its tombstone), its hero exercises and
+  quests (the newer edit wins; two edits of one second go to the larger content, the same on both
+  devices), its preferences (the newer wins; a device with nothing of its own yet takes
   them all). This device's rows keep their ids, the other's get new ones through temporary maps,
   Admin content is matched by seed name, timestamps are copied verbatim so a second comparison
   finds nothing, and one transaction rolls back whole on anything unmapped. The app then reloads
@@ -343,6 +359,14 @@ and opens the sheet's `unlock` mode, not `enable`.
   another build is not merged; the hero chooses as before, and a refusal is remembered by that
   device's content fingerprint. Verified on the emulator: 14 sessions each, one unique on each
   side, became 15 on both, with the newer village name, one reload, and no second merge after.
+- **Fingerprint** (`stateFingerprint`, `compareWithPeer`): four segments, `sessions|content|session
+  tombstones|x`, where `x` is the sum of `xpEarned`, then the count and newest date of
+  `deleted_content`. A hero's answer ("keep mine", "Not mine") given before merge v2 has three
+  segments and is matched on the first three of the new ones (`judge`), so it expires on real news only. The
+  update itself bumps the newest migration, so every device uploads once and judges every peer once.
+  The terms merge v2 added (XP, content tombstones, the same-second tie) count only when both
+  newest migrations are equal: a peer on the previous build is judged as that build judged it, and
+  `mergePeer` refuses it anyway.
 - **Uploads**: an unchanged history is not re-uploaded unless the key changed (a vault joined, a
   new password), or the other devices would be left with a file they cannot open.
 - **Listen before speaking.** Peers are judged before this device uploads. It sends nothing while
@@ -393,24 +417,27 @@ and opens the sheet's `unlock` mode, not `enable`.
 - Dropbox, OneDrive and Google Drive by their own APIs. Dropbox needs an app registered to this
   project (PKCE, no secret, app folder); Drive needs brand verification and a second signing
   certificate for the F-Droid build. Round Sync covers them through WebDAV meanwhile.
-- Merging campaigns, boss fights, quest configs and favourites, and hero content deleted on one
-  device coming back from the other (roadmap 4.18, item 4).
-- **The two limits of the merge, as of this release** (identical to 2.9.0, and frozen by tests; the version that
-  closes them is roadmap 4.18b):
-  - A hero quest or movement deleted on one device **comes back** when the device that still has it is merged. A
-    deleted **session** never does: it leaves a tombstone, honoured by every merge, and a campaign that has moved on
-    past it is the only thing that keeps it.
-  - The first copy of a session wins. What changes on a session after the other device copied it (a bonus of the
-    oath or of the Triumph, the feeling on the victory screen) stays on the device where it happened. The window is
-    small: the bonuses are paid inside the saving of the session, before the victory screen appears, and the
-    feeling can only change while that screen is open; the other device can have copied the session in between
-    only if a sync uploaded it then (a launch sync, "Sync now", or a prompt answered on the victory screen).
-    Two devices can then show different XP for one session, so a different level.
+- Merging campaigns, boss fights, quest configs and favourites (roadmap 4.18, item 4).
+- **What remains of the limits of merge v2** (roadmap 4.18b): `ownedEquipment` is still last writer wins,
+  because a union cannot carry a removal and the roadmap does not say what `""` (everything) means in
+  one (parked, a product question). A movement deleted on one device comes back there when the other
+  device used it (its sets or a quest slot name it): it stays on both, with its tombstone. Used only
+  by a saved quest choice, it stays on the device that holds the choice and is gone on the other.
+  Two kept copies of a dead movement are never written again, so they can differ, and both read `level`.
 - Joining by scanning a QR code from the other device (the audit's scout: four typed fields
   become one gesture). expo-camera's scanner is Play Services' code scanner and ML Kit, both
   proprietary, which F-Droid refuses; it needs a ZXing-based scanner module of our own.
 - An "ignore certificate errors" switch, as Joplin has. It turns the check off for every host; the
   private-authority case it is used for is covered by trusting the hero's own authority (below).
+
+### Bati+ never touches what travels
+
+Whether a hero has Bati+ is store-account state (`src/plus/source.ts`), never in the database or the
+sealed file, so the sync fingerprint does not move and a peer on the previous version merges as before.
+Quotas refuse creating only: a merge or a restore that brings 12 hero exercises to a free account
+lands all 12, and they stay listed, editable and playable. An adventure run brought by a restore or a
+hand-off makes that adventure the hero's (it is never locked). Rule R114 in
+[`../testing/data-rules.md`](../testing/data-rules.md).
 
 ### When it does not connect
 

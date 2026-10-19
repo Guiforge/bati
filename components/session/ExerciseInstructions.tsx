@@ -1,8 +1,9 @@
 import { Image } from "expo-image";
 import { useTranslation } from "react-i18next";
 import { Modal, ScrollView } from "react-native";
-import { Text, YStack } from "tamagui";
+import { YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { AppText } from "@/components/common/AppText";
 import { Card } from "@/components/common/Card";
 import { getExerciseAsset } from "@/constants/assetMap";
 import { useFontScaled } from "@/hooks/useFontScaled";
@@ -38,7 +39,7 @@ export function ExerciseInstructionsBody({
         style={{ width: artSize, height: artSize, borderRadius: 12 }}
         contentFit="cover"
       />
-      <Text
+      <AppText
         fontFamily="$heading"
         fontWeight="700"
         fontSize={20}
@@ -46,7 +47,7 @@ export function ExerciseInstructionsBody({
         style={{ textAlign: "center" }}
       >
         {instruction.name}
-      </Text>
+      </AppText>
       {/* Scrolls rather than grows: a long movement would otherwise push whatever sits below —
           "resume", or the modal's own close — off the bottom of a small screen. 160 is what the
           paused card can spare on a 640dp phone, and the modal has no reason to want more. */}
@@ -55,9 +56,9 @@ export function ExerciseInstructionsBody({
         style={{ maxHeight, width: "100%" }}
         showsVerticalScrollIndicator={false}
       >
-        <Text fontSize={14} color="$textSecondary" lineHeight={20}>
+        <AppText fontSize={14} color="$textSecondary" lineHeight={20}>
           {instruction.description}
-        </Text>
+        </AppText>
       </ScrollView>
     </YStack>
   );

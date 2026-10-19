@@ -110,6 +110,8 @@
     "metric_streak_other": "{{count, number}}-day flame",
     "preset_lsit_30": "{{count, number}} s L-Sit hold",
     "preset_standing": "Now at {{current, number}} / {{target, number}}",
+    "flame_recount_one": "Your flame will be recounted at {{count}} session a week.",
+    "flame_recount_other": "Your flame will be recounted at {{count}} sessions a week.",
     "presets_title": "READY-MADE OATHS",
     "custom_toggle": "Custom oath",
     "empty_cta": "Swear an oath",
@@ -141,6 +143,9 @@
     "prep_mode": "Before each exercise",
     "prep_timer": "10 s",
     "prep_tap": "Wait for GO",
+    "rest_default": "Rest between exercises",
+    "rest_default_own": "Per quest",
+    "rest_default_value": "{{seconds}} s",
     "equipment": "Equipment",
     "starting_point": "Starting point",
     "starting_point_note": "Sets which quests are offered and the difficulty of quests you have never done.",
@@ -193,7 +198,9 @@
     "workout_guide": "workout-guide",
     "workout_guide_subtitle": "Pose drawings by Bryl Lim",
     "cc_by_sa_40": "Creative Commons BY-SA 4.0",
-    "cc_by_sa_40_subtitle": "Licence terms: share-alike"
+    "cc_by_sa_40_subtitle": "Licence terms: share-alike",
+    "licenses_title": "Open source licences",
+    "licenses_body": "Every library Bati ships with, and the licence it is released under."
   },
   "progression": {
     "new_rung_from": "Mastered: {{name}}",
@@ -292,7 +299,6 @@
     "editor_target": "Target",
     "editor_remove": "Remove",
     "editor_save": "Save quest",
-    "editor_incomplete_title": "Almost there",
     "editor_incomplete_exercises": "Add at least one exercise.",
     "editor_incomplete_name": "Your quest needs a name.",
     "editor_delete": "Delete",
@@ -376,7 +382,11 @@
     "kind_event": "EVENT",
     "kind_boss": "BOSS",
     "empty_title": "No adventures yet",
-    "empty_subtitle": "Come back soon. The village is preparing adventures."
+    "empty_subtitle": "Come back soon. The village is preparing adventures.",
+    "plus_section": "With Bati+",
+    "plus_more_one": "One more adventure with Bati+",
+    "plus_more_other": "{{count}} more adventures with Bati+",
+    "plus_locked": "This adventure comes with Bati+. Each of its quests plays on its own, from Quests."
   },
   "boss": {
     "hp": "HP",
@@ -508,7 +518,6 @@
     "fight_target_changed_one": "Target changed: the boss counts up to {{count}} rep.",
     "fight_target_changed_other": "Target changed: the boss counts up to {{count}} reps.",
     "fight_target_changed_time": "Target changed: the boss counts up to {{seconds}} s.",
-    "crit_rule": "Critical hit: {{one}}% at one rep more, {{two}}% at two, no further.",
     "crit_rule_one": "Critical hit: {{one}}% at one rep more, no further.",
     "pain_rule": "Sharp pain? Stop there. Skipping costs nothing.",
     "pain_rule_last": "Sharp pain? Stop there.",
@@ -560,6 +569,7 @@
     "summary_too_short_keep": "Keep it",
     "summary_too_short_discard": "Discard",
     "summary_forget": "Don't keep this session",
+    "victory_see_all": "See everything",
     "target_reached": "Target reached!",
     "total_time": "Total Time",
     "up_next": "Up Next",
@@ -799,6 +809,8 @@
     "lead_nothing_month": "Nothing trained in {{month}} yet.",
     "lead_record": "A new {{movement}} record {{when}}.",
     "lead_rest_lit": "Nothing today, and nothing lost: the flame holds until {{day}}.",
+    "lead_rest_dormant_one": "Nothing today. Your {{days}}-day flame is dormant.",
+    "lead_rest_dormant_other": "Nothing today. Your {{days}}-day flame is dormant.",
     "lead_rest_out_one": "Nothing today. {{count}} session in seven days lights the flame again.",
     "lead_rest_out_other": "Nothing today. {{count}} sessions in seven days light the flame again.",
     "lead_veteran_since": "Nothing has fallen since {{month}}.",
@@ -825,6 +837,8 @@
     "flame_lit_one": "day lit",
     "flame_lit_other": "days lit",
     "flame_best_now": "This is your best flame.",
+    "flame_dormant": "dormant",
+    "flame_dormant_note": "Every session or outing keeps it dormant.",
     "flame_best_ended_one": "Best flame: {{days}} day, ended {{date}}.",
     "flame_best_ended_other": "Best flame: {{days}} days, ended {{date}}.",
     "month_so_far": "{{month}} so far",
@@ -1037,27 +1051,27 @@
       },
       "streak_3": {
         "title": "Sprouting",
-        "description": "Keep your flame lit for 3 days"
+        "description": "Collect 3 days of flame"
       },
       "streak_7": {
         "title": "Weekly Warrior",
-        "description": "Keep your flame lit for 7 days"
+        "description": "Collect 7 days of flame"
       },
       "streak_14": {
         "title": "Two Week Wonder",
-        "description": "Keep your flame lit for 14 days"
+        "description": "Collect 14 days of flame"
       },
       "streak_30": {
         "title": "Monthly Master",
-        "description": "Keep your flame lit for 30 days"
+        "description": "Collect 30 days of flame"
       },
       "streak_60": {
         "title": "Unstoppable",
-        "description": "Keep your flame lit for 60 days"
+        "description": "Collect 60 days of flame"
       },
       "streak_100": {
         "title": "Centurion",
-        "description": "Keep your flame lit for 100 days"
+        "description": "Collect 100 days of flame"
       },
       "xp_100": {
         "title": "XP Hunter",
@@ -1098,6 +1112,10 @@
       "path_climbed": {
         "title": "Path Climbed",
         "description": "Own every rung of one path"
+      },
+      "three_paths_climbed": {
+        "title": "Three Paths",
+        "description": "Climb three paths"
       },
       "first_outing": {
         "title": "Out the Gate",
@@ -2206,6 +2224,7 @@
     "empty": "Nothing set aside. On an exercise's page, \"Don't suggest again\" takes it out of your quests and warm-ups.",
     "browse": "Browse exercises",
     "since": "Since {{date}}",
+    "until": "Until {{date}}",
     "limits": "Quests of your own stay as you made them. Setting a rung aside stops its path climbing there.",
     "all_jumps": "Set every jump aside",
     "not_for_me": "Don't suggest this again",
@@ -2214,6 +2233,29 @@
     "served_own_quest": "Set aside, your quest keeps it as you wrote it",
     "stops_path": "Your path stops climbing at this rung.",
     "oath_stalls": "Your oath is on this exercise: it won't move while it is set aside."
+  },
+  "pause": {
+    "title": "Pause and zone",
+    "row_off": "Off",
+    "row_pause": "Break until {{date}}",
+    "row_zone": "Sparing {{zones}}",
+    "pause_title": "I'm taking a break",
+    "pause_body": "Pick the day you'll be back, up to 8 weeks. Your flame waits for you, your oath and adventure stand still, and reminders stay quiet until then.",
+    "pause_weeks": "Weeks away",
+    "pause_back_on": "Back on {{date}}",
+    "pause_start": "Start the break",
+    "pause_active": "On a break until {{date}}. Nothing is lost while you're away.",
+    "pause_end": "I'm back today",
+    "zone_title": "I'm sparing a zone",
+    "zone_body": "Pick one or two areas. Every exercise that works them is set aside and your quests serve something else, until the end date. Then they come back on their own.",
+    "zone_pick": "Areas (one or two)",
+    "zone_weeks": "Weeks",
+    "zone_start": "Spare this zone",
+    "zone_active": "Sparing {{zones}} until {{date}}.",
+    "zone_line": "Resting: {{zones}}. We train the rest.",
+    "zone_end": "Bring them back now",
+    "safety": "This isn't medical advice. If something hurts, see someone who can tell you what's wrong.",
+    "safety_link": "Read Train safely"
   },
   "chronicle": {
     "title": "Chronicle",
@@ -2612,5 +2654,11 @@
         "line": "Four straight heavy weeks. This is the week to go lighter, not the week to stop."
       }
     ]
+  },
+  "plus": {
+    "exercise_quota_one": "You already have {{count}} exercise of your own. Creating more takes Bati+.",
+    "exercise_quota_other": "You already have {{count}} exercises of your own. Creating more takes Bati+.",
+    "quest_quota_one": "You already have {{count}} quest of your own. Creating more takes Bati+. Quests saved from an outing don't count.",
+    "quest_quota_other": "You already have {{count}} quests of your own. Creating more takes Bati+. Quests saved from an outing don't count."
   }
 }

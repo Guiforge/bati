@@ -32,7 +32,9 @@ export default function SetAsideScreen() {
   const router = useRouter();
   const language = useSettingsStore((s) => s.language);
   const { putBack } = useSetAside();
-  const [rows, setRows] = useState<{ exercise: Exercise; at: number }[] | null>(null);
+  const [rows, setRows] = useState<{ exercise: Exercise; at: number; until?: number }[] | null>(
+    null,
+  );
 
   // Whether a seeded jump is still being served: what the one group action below is for.
   const [jumpsLeft, setJumpsLeft] = useState(false);
@@ -52,10 +54,10 @@ export default function SetAsideScreen() {
             catalogue.some((e) => e.impact && e.creator === ADMIN_CREATOR && !aside.has(e.id)),
           );
           setRows(
-            list.flatMap(({ id, at }) => {
+            list.flatMap(({ id, at, until }) => {
               const exercise = byId.get(id);
               // An exercise deleted since it was set aside has nothing left to put back.
-              return exercise ? [{ exercise, at }] : [];
+              return exercise ? [{ exercise, at, until }] : [];
             }),
           );
         })
@@ -131,7 +133,7 @@ export default function SetAsideScreen() {
           </Card>
         ) : (
           <>
-            {rows.map(({ exercise, at }) => (
+            {rows.map(({ exercise, at, until }) => (
               <ExerciseRow
                 key={exercise.id}
                 exercise={exercise}
@@ -140,7 +142,9 @@ export default function SetAsideScreen() {
                 accessibilityLabel={localizedName(exercise, language)}
                 caption={
                   <Text fontSize={12} color="$textSecondary" numberOfLines={1}>
-                    {t("setAside.since", { date: shortDate(language, new Date(at)) })}
+                    {until === undefined
+                      ? t("setAside.since", { date: shortDate(language, new Date(at)) })
+                      : t("setAside.until", { date: shortDate(language, new Date(until)) })}
                   </Text>
                 }
                 onPress={() => router.push(`/exercises/${exercise.id}` as never)}

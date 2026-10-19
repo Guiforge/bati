@@ -110,6 +110,8 @@
     "metric_streak_other": "Eine Flamme von {{count, number}} Tagen",
     "preset_lsit_30": "L-Sit, {{count, number}} s gehalten",
     "preset_standing": "Aktuell {{current, number}} / {{target, number}}",
+    "flame_recount_one": "Deine Flamme wird mit {{count}} Einheit pro Woche neu gezählt.",
+    "flame_recount_other": "Deine Flamme wird mit {{count}} Einheiten pro Woche neu gezählt.",
     "presets_title": "FERTIGE SCHWÜRE",
     "custom_toggle": "Eigener Schwur",
     "empty_cta": "Einen Schwur leisten",
@@ -141,6 +143,9 @@
     "prep_mode": "Vor jeder Übung",
     "prep_timer": "10 s",
     "prep_tap": "Auf LOS warten",
+    "rest_default": "Pause zwischen Übungen",
+    "rest_default_own": "Je Quest",
+    "rest_default_value": "{{seconds}} s",
     "equipment": "Geräte",
     "starting_point": "Ausgangspunkt",
     "starting_point_note": "Bestimmt die vorgeschlagenen Quests und die Schwierigkeit der Quests, die du noch nie gemacht hast.",
@@ -193,7 +198,9 @@
     "workout_guide": "workout-guide",
     "workout_guide_subtitle": "Posenzeichnungen von Bryl Lim",
     "cc_by_sa_40": "Creative Commons BY-SA 4.0",
-    "cc_by_sa_40_subtitle": "Lizenzbedingungen: Weitergabe unter gleichen Bedingungen"
+    "cc_by_sa_40_subtitle": "Lizenzbedingungen: Weitergabe unter gleichen Bedingungen",
+    "licenses_title": "Open-Source-Lizenzen",
+    "licenses_body": "Jede Bibliothek, die mit Bati ausgeliefert wird, und die Lizenz, unter der sie veröffentlicht ist."
   },
   "progression": {
     "new_rung_from": "Gemeistert: {{name}}",
@@ -292,7 +299,6 @@
     "editor_target": "Ziel",
     "editor_remove": "Entfernen",
     "editor_save": "Quest speichern",
-    "editor_incomplete_title": "Fast geschafft",
     "editor_incomplete_exercises": "Füge mindestens eine Übung hinzu.",
     "editor_incomplete_name": "Deine Quest braucht einen Namen.",
     "editor_delete": "Löschen",
@@ -376,7 +382,11 @@
     "kind_event": "EREIGNIS",
     "kind_boss": "BOSS",
     "empty_title": "Noch keine Abenteuer",
-    "empty_subtitle": "Schau bald wieder vorbei. Das Dorf bereitet Abenteuer vor."
+    "empty_subtitle": "Schau bald wieder vorbei. Das Dorf bereitet Abenteuer vor.",
+    "plus_section": "Mit Bati+",
+    "plus_more_one": "Noch ein Abenteuer mit Bati+",
+    "plus_more_other": "Noch {{count}} Abenteuer mit Bati+",
+    "plus_locked": "Dieses Abenteuer gehört zu Bati+. Jede seiner Quests spielst du auch einzeln, unter Quests."
   },
   "boss": {
     "hp": "LP",
@@ -508,7 +518,6 @@
     "fight_target_changed_one": "Ziel geändert: Der Boss zählt bis {{count}} Wiederholung.",
     "fight_target_changed_other": "Ziel geändert: Der Boss zählt bis {{count}} Wiederholungen.",
     "fight_target_changed_time": "Ziel geändert: Der Boss zählt bis {{seconds}} s.",
-    "crit_rule": "Kritischer Treffer: {{one}} % bei einer Wiederholung mehr, {{two}} % bei zwei, nicht darüber.",
     "crit_rule_one": "Kritischer Treffer: {{one}} % bei einer Wiederholung mehr, nicht darüber.",
     "pain_rule": "Stechender Schmerz? Hör hier auf. Überspringen kostet nichts.",
     "pain_rule_last": "Stechender Schmerz? Hör hier auf.",
@@ -560,6 +569,7 @@
     "summary_too_short_keep": "Behalten",
     "summary_too_short_discard": "Verwerfen",
     "summary_forget": "Diese Einheit nicht behalten",
+    "victory_see_all": "Alles anzeigen",
     "target_reached": "Ziel erreicht!",
     "total_time": "Gesamtzeit",
     "up_next": "Als Nächstes",
@@ -799,6 +809,8 @@
     "lead_nothing_month": "Im {{month}} noch kein Training.",
     "lead_record": "Neuer Rekord {{when}} bei {{movement}}.",
     "lead_rest_lit": "Heute nichts, und nichts verloren: Die Flamme hält bis {{day}}.",
+    "lead_rest_dormant_one": "Heute nichts. Deine Flamme von {{days}} Tag ruht.",
+    "lead_rest_dormant_other": "Heute nichts. Deine Flamme von {{days}} Tagen ruht.",
     "lead_rest_out_one": "Heute nichts. {{count}} Einheit in sieben Tagen entzündet die Flamme wieder.",
     "lead_rest_out_other": "Heute nichts. {{count}} Einheiten in sieben Tagen entzünden die Flamme wieder.",
     "lead_veteran_since": "Seit {{month}} ist kein Rekord gefallen.",
@@ -826,6 +838,8 @@
     "flame_lit_one": "Tag in Flammen",
     "flame_lit_other": "Tage in Flammen",
     "flame_best_now": "Das ist deine beste Flamme.",
+    "flame_dormant": "in Ruhe",
+    "flame_dormant_note": "Jede Einheit oder Tour hält sie in Ruhe.",
     "flame_best_ended_one": "Beste Flamme: {{days}} Tag (zu Ende am {{date}}).",
     "flame_best_ended_other": "Beste Flamme: {{days}} Tage (zu Ende am {{date}}).",
     "month_so_far": "{{month}} bisher",
@@ -1037,27 +1051,27 @@
       },
       "streak_3": {
         "title": "Erster Keim",
-        "description": "Lass deine Flamme 3 Tage lang brennen"
+        "description": "Sammle 3 Tage Flamme"
       },
       "streak_7": {
         "title": "Wochenkrieger",
-        "description": "Lass deine Flamme 7 Tage lang brennen"
+        "description": "Sammle 7 Tage Flamme"
       },
       "streak_14": {
         "title": "Zwei Wochen Feuer",
-        "description": "Lass deine Flamme 14 Tage lang brennen"
+        "description": "Sammle 14 Tage Flamme"
       },
       "streak_30": {
         "title": "Monatsmeister",
-        "description": "Lass deine Flamme 30 Tage lang brennen"
+        "description": "Sammle 30 Tage Flamme"
       },
       "streak_60": {
         "title": "Unaufhaltsam",
-        "description": "Lass deine Flamme 60 Tage lang brennen"
+        "description": "Sammle 60 Tage Flamme"
       },
       "streak_100": {
         "title": "Zenturio",
-        "description": "Lass deine Flamme 100 Tage lang brennen"
+        "description": "Sammle 100 Tage Flamme"
       },
       "xp_100": {
         "title": "XP-Jäger",
@@ -1098,6 +1112,10 @@
       "path_climbed": {
         "title": "Pfad erklommen",
         "description": "Meistere jede Stufe eines Pfads"
+      },
+      "three_paths_climbed": {
+        "title": "Drei Wege erklommen",
+        "description": "Erklimme drei Wege"
       },
       "first_outing": {
         "title": "Vor den Toren",
@@ -2208,6 +2226,7 @@
     "empty": "Nichts beiseitegelegt. Auf der Seite einer Übung nimmt „Nicht mehr vorschlagen“ sie aus deinen Quests und dem Aufwärmen.",
     "browse": "Übungen ansehen",
     "since": "Seit dem {{date}}",
+    "until": "Bis {{date}}",
     "limits": "Eigene Quests bleiben, wie du sie gebaut hast. Eine beiseitegelegte Stufe hält ihren Pfad dort an.",
     "all_jumps": "Alle Sprünge beiseitelegen",
     "not_for_me": "Nicht mehr vorschlagen",
@@ -2216,6 +2235,29 @@
     "served_own_quest": "Beiseitegelegt, deine Quest behält die Übung, wie du sie geschrieben hast",
     "stops_path": "Dein Pfad bleibt auf dieser Stufe stehen.",
     "oath_stalls": "Dein Schwur gilt dieser Übung: Er kommt nicht voran, solange sie beiseitegelegt ist."
+  },
+  "pause": {
+    "title": "Pause und Schonzone",
+    "row_off": "Aus",
+    "row_pause": "Pause bis {{date}}",
+    "row_zone": "Geschont: {{zones}}",
+    "pause_title": "Ich mache Pause",
+    "pause_body": "Wähle den Tag deiner Rückkehr, höchstens 8 Wochen. Deine Flamme wartet auf dich, dein Schwur und dein Abenteuer bleiben stehen, und die Erinnerungen schweigen bis dahin.",
+    "pause_weeks": "Wochen weg",
+    "pause_back_on": "Zurück am {{date}}",
+    "pause_start": "Pause beginnen",
+    "pause_active": "Pause bis {{date}}. Du verlierst nichts, solange du weg bist.",
+    "pause_end": "Ich bin heute zurück",
+    "zone_title": "Ich schone eine Zone",
+    "zone_body": "Wähle ein oder zwei Bereiche. Jede Übung, die sie beansprucht, wird beiseitegelegt und deine Quests bieten etwas anderes an, bis zum Enddatum. Danach kommen sie von selbst zurück.",
+    "zone_pick": "Bereiche (einer oder zwei)",
+    "zone_weeks": "Wochen",
+    "zone_start": "Diese Zone schonen",
+    "zone_active": "Geschont: {{zones}}, bis {{date}}.",
+    "zone_line": "Geschont: {{zones}}. Den Rest trainieren wir.",
+    "zone_end": "Jetzt zurückholen",
+    "safety": "Das ist keine medizinische Beratung. Wenn etwas wehtut, such dir jemanden, der sagen kann, was los ist.",
+    "safety_link": "Sicher trainieren lesen"
   },
   "chronicle": {
     "title": "Chronik",
@@ -2621,5 +2663,11 @@
         "line": "Vier harte Wochen in Folge. Diese Woche heißt es: leichter trainieren, nicht aufhören."
       }
     ]
+  },
+  "plus": {
+    "exercise_quota_one": "Du hast schon {{count}} eigene Übung. Für weitere brauchst du Bati+.",
+    "exercise_quota_other": "Du hast schon {{count}} eigene Übungen. Für weitere brauchst du Bati+.",
+    "quest_quota_one": "Du hast schon {{count}} eigene Quest. Für weitere brauchst du Bati+. Quests aus einer Tour zählen nicht.",
+    "quest_quota_other": "Du hast schon {{count}} eigene Quests. Für weitere brauchst du Bati+. Quests aus einer Tour zählen nicht."
   }
 }

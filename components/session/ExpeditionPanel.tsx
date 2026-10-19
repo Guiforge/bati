@@ -1,8 +1,9 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Linking } from "react-native";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { Paragraph, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { AppText } from "@/components/common/AppText";
 import { Card } from "@/components/common/Card";
 import { Mountain } from "@/components/icons";
 import {
@@ -82,7 +83,7 @@ function Climb({
     <Reading label={t("session.expedition_climb")}>
       <XStack items="center" gap="$1">
         <Mountain size={16} color={color} />
-        <Text
+        <AppText
           testID="expedition-climb"
           fontSize={20}
           fontWeight="700"
@@ -90,7 +91,7 @@ function Climb({
           style={{ fontVariant: ["tabular-nums"] }}
         >
           {formatElevation(track.ascentM, unit)}
-        </Text>
+        </AppText>
       </XStack>
     </Reading>
   );
@@ -170,9 +171,9 @@ function GoalBar({
           opacity={reached ? 1 : 0.55}
         />
       </YStack>
-      <Text fontSize={15} color="$textSecondary">
+      <AppText fontSize={15} color="$textSecondary">
         {t("session.expedition_goal_of", { goal: label })}
-      </Text>
+      </AppText>
     </YStack>
   );
 }
@@ -190,9 +191,9 @@ function Reading({
   return (
     <YStack items={end ? "flex-end" : "flex-start"} gap="$1">
       {children}
-      <Text fontSize={13} color="$textSecondary">
+      <AppText fontSize={13} color="$textSecondary">
         {label}
-      </Text>
+      </AppText>
     </YStack>
   );
 }
@@ -270,14 +271,14 @@ export function ExpeditionPanel() {
 
   return (
     <Card p="$4" gap="$3">
-      <Text
+      <AppText
         fontSize={56}
         fontWeight="700"
         color={figureColor}
         style={{ fontVariant: ["tabular-nums"] }}
       >
         {bigFigure}
-      </Text>
+      </AppText>
 
       {acquiring ? null : (
         // Moving seconds, the clock `goalReached` reads: the recorded total counts red lights,
@@ -299,18 +300,18 @@ export function ExpeditionPanel() {
       {acquiring ? null : (
         <XStack justify="space-between" items="flex-start">
           <Reading label={t(secondKey)}>
-            <Text
+            <AppText
               fontSize={24}
               fontWeight="700"
               color={figureColor}
               style={{ fontVariant: ["tabular-nums"] }}
             >
               {secondFigure}
-            </Text>
+            </AppText>
           </Reading>
           <Climb track={track} unit={unit} color={figureColor} />
           <Reading label={t(`session.expedition_${rateKind(locomotion)}`)} end>
-            <Text
+            <AppText
               testID="expedition-rate"
               fontSize={20}
               fontWeight="700"
@@ -318,7 +319,7 @@ export function ExpeditionPanel() {
               style={{ fontVariant: ["tabular-nums"] }}
             >
               {pace}
-            </Text>
+            </AppText>
           </Reading>
         </XStack>
       )}
@@ -327,9 +328,9 @@ export function ExpeditionPanel() {
           sky is being found, it is the one thing on screen that visibly improves. 15 px, not 13:
           it is the line that says the clock stopped on purpose, read at arm's length. */}
       <XStack items="center" gap="$2" flexWrap="wrap">
-        <Text fontSize={15} color={track.paused || error !== null ? "$textSecondary" : "$text"}>
+        <AppText fontSize={15} color={track.paused || error !== null ? "$textSecondary" : "$text"}>
           {status}
-        </Text>
+        </AppText>
         {lastFix ? (
           <Paragraph fontSize={15} color="$textSecondary">
             {/* Through the same formatter as the distance above, and for the same reason: a hero

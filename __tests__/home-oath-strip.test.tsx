@@ -79,11 +79,11 @@ const oath = (over: Record<string, unknown> = {}) => ({
   ...over,
 });
 
-async function mount() {
+async function mount(swornOnly = false) {
   await act(async () => {
     const tree = render(
       <TamaguiProvider config={config} defaultTheme="dark">
-        <OathStrip />
+        <OathStrip swornOnly={swornOnly} />
       </TamaguiProvider>,
     );
     await Promise.resolve();
@@ -148,4 +148,18 @@ test("with no oath sworn, the same strip is the way to swear one", async () => {
   expect(strip()).toHaveTextContent(/Swear an oath/);
   await userEvent.press(strip());
   expect(mockPush).toHaveBeenCalledWith("/oath");
+});
+
+test("swornOnly with no oath draws nothing: the invitation waits for the third session", async () => {
+  mockGetOathProgress.mockResolvedValue(null);
+
+  await mount(true);
+
+  expect(screen.queryByTestId("home-oath-card")).toBeNull();
+});
+
+test("swornOnly keeps an oath the hero already swore", async () => {
+  await mount(true);
+
+  expect(strip()).toHaveTextContent(/Pull-ups/);
 });

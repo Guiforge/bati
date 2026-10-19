@@ -49,6 +49,9 @@ jest.mock("@/db/oaths", () => ({
   oathNeedsWeeklyTarget: (m: string) => m === "weekly_sessions",
 }));
 
+jest.mock("@/db/streaks", () => ({
+  getStreakInfo: jest.fn().mockResolvedValue({ current: 0, dormant: 0, quota: 2 }),
+}));
 jest.mock("@/db/exercises", () => ({ listExercises: jest.fn().mockResolvedValue([]) }));
 
 jest.mock("@/db/preferences", () => ({

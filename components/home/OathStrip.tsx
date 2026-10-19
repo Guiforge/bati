@@ -1,7 +1,8 @@
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Text, XStack, YStack } from "tamagui";
+import { XStack, YStack } from "tamagui";
+import { AppText } from "@/components/common/AppText";
 import { ProgressBar } from "@/components/common/ProgressBar";
 // A rosette, not game-icons' star: at this size its prominences read as a cog, the second gear on
 // a screen whose avatar is already the way to settings.
@@ -106,12 +107,12 @@ function SwornStrip({ oath }: { oath: OathProgress }) {
   return (
     <>
       <Award size={16} color="$resourceGold" />
-      <Text flex={1} fontSize={13} lineHeight={18} color="$text" numberOfLines={2}>
+      <AppText flex={1} fontSize={13} lineHeight={18} color="$text" numberOfLines={2}>
         {label}
         {/* The detail travels as one piece with its dot: "5 / 50" split over two lines reads as
             two numbers, and a dot left at the end of a line reads as a stray mark. */}
-        <Text color="$textSecondary">{` ·\u00A0${detail.replaceAll(" ", "\u00A0")}`}</Text>
-      </Text>
+        <AppText color="$textSecondary">{` ·\u00A0${detail.replaceAll(" ", "\u00A0")}`}</AppText>
+      </AppText>
       {climbing && chain && path?.name ? (
         <Rungs chain={chain} climbed={path.isClimbed} />
       ) : (
@@ -135,8 +136,12 @@ function SwornStrip({ oath }: { oath: OathProgress }) {
  * When none is sworn it becomes the way to swear one, in the same place and at the same height:
  * this is the only entry to the feature from Home, so it must not hide, and an empty card the size
  * of the scene was too much for something half the heroes use once.
+ *
+ * `swornOnly` is Home before the third session (`db/disclosure.ts`): the invitation to swear waits,
+ * and a hero who already swore one (Settings has a door) keeps their strip. The Journal's own copy
+ * is never `swornOnly`, so the swear door stays one tab away.
  */
-export function OathStrip() {
+export function OathStrip({ swornOnly = false }: { swornOnly?: boolean }) {
   const { t } = useTranslation();
   const router = useRouter();
   const [oath, setOath] = useState<OathProgress | null>(null);
@@ -159,6 +164,7 @@ export function OathStrip() {
   );
 
   if (isLoading) return <YStack minH={STRIP_MIN_HEIGHT} />;
+  if (swornOnly && oath === null) return null;
 
   return (
     <XStack
@@ -180,9 +186,9 @@ export function OathStrip() {
       ) : (
         <>
           <Award size={16} color="$textSecondary" />
-          <Text flex={1} fontSize={13} lineHeight={18} color="$textSecondary" numberOfLines={2}>
+          <AppText flex={1} fontSize={13} lineHeight={18} color="$textSecondary" numberOfLines={2}>
             {`${t("oath.empty_cta")} · ${t("oath.empty_hint")}`}
-          </Text>
+          </AppText>
           <ChevronRight size={16} color="$textSecondary" />
         </>
       )}

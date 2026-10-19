@@ -243,7 +243,7 @@ Dernier rappel : mardi à 20:04
 2. **Au serment hebdo**, une ligne.
 3. **Sur le Home, après la 1re séance enregistrée**, une seule fois : un **lien texte** sous la scène (famille `UpdateCard` / `WhatsNewCard` : un lien, une croix), jamais un bouton plein à côté de Commencer. Pas si tes jours sont déjà réglés.
 
-**Une seule carte de ce genre sur le Home à la fois**, dans cet ordre : carte de mise à jour, puis question des rappels ignorés, puis proposition de rappel. Jamais dans l'onboarding, jamais pendant une séance, jamais sur l'écran de victoire.
+**Un seul avis sur le Home à la fois** : `NoticeSlot` donne la place au premier de `NOTICE_ORDER` (`components/home/noticeOrder.ts`) ; le rappel est l'avant-dernier, devant la vérification du mot de passe. Jamais dans l'onboarding, jamais pendant une séance, jamais sur l'écran de victoire.
 
 ## Synchro et sauvegarde
 
@@ -452,10 +452,9 @@ depuis). Fichiers et numéros de ligne sont justes. Ce qui suit corrige ou préc
   compteurs (« Rappels postés · séances dans les 2 h · reportés · pauses ») vont dans le corps du
   mail de rapport de bug (`buildBugReportMailto`, `src/crashLog.ts:235`), que le joueur envoie
   lui-même.
-- **Une carte à la fois** : le Home empile déjà `SessionRecoveryBanner`, `UpdateCard`, `SyncCard`,
-  `WhatsNewCard` sans arbitre. On n'en crée pas un : les deux cartes du rappel (question des rappels
-  ignorés, puis proposition) s'excluent entre elles et se taisent tant qu'une carte de mise à jour
-  ou de nouveautés est visible.
+- **Une carte à la fois** : `NoticeSlot` (P-05) arbitre le Home, un seul avis, dans l'ordre de
+  `components/home/noticeOrder.ts`. Les cartes du rappel ne se taisent plus d'elles-mêmes : elles
+  attendent leur tour (reprise, synchro, nouveautés, mise à jour, sauvegarde, puis rappel).
 - **Kicker « Ton jour » (PR 4)** : seulement si le Home n'a pas déjà un kicker (« Aventure »,
   « Premier jour »).
 - **Jours et interrupteur coupé (PR 4)** : les jours survivent à l'interrupteur coupé et arrivent

@@ -1,8 +1,9 @@
 import * as Linking from "expo-linking";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, Paragraph, Text, XStack } from "tamagui";
+import { Button, Paragraph, XStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { AppText } from "@/components/common/AppText";
 import { Card } from "@/components/common/Card";
 import { ExternalLink, X } from "@/components/icons";
 import { preferences } from "@/db/preferences";
@@ -61,9 +62,9 @@ export function UpdateCard() {
   return (
     <Card mx="$4" mt="$3" gap="$3">
       <XStack items="flex-start" gap="$2">
-        <Text flex={1} fontSize="$5" fontWeight="700" color="$text">
+        <AppText flex={1} fontSize="$5" fontWeight="700" color="$text">
           {t("home.update_title", { version })}
-        </Text>
+        </AppText>
         <Button
           testID="home-update-dismiss"
           size="$2"

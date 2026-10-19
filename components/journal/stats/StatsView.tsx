@@ -33,11 +33,12 @@ import { dayKey } from "@/db/dates";
 import type { DayActivity, WallEntry } from "@/db/journal";
 import { MUSCLE_LABELS } from "@/db/labels";
 import { behindMuscles } from "@/db/muscleBalance";
+import { STALE_RECORD_DAYS, toBeat } from "@/db/progress";
 import { formatCount, formatTargetValue, perSideLabel } from "@/db/targets";
 import { inSentence, localizedName, localizedTitle } from "@/src/i18n/localized";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 import type { JournalStats } from "./useJournalStats";
-import { STALE_RECORD_DAYS, wallSub, wallTarget } from "./wall";
+import { wallSub } from "./wall";
 import { workVerdict } from "./workVerdict";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -99,6 +100,16 @@ function veteranLead(t: TFunction, language: AppLanguage, stats: JournalStats): 
 
 function restLead(t: TFunction, language: AppLanguage, stats: JournalStats): LeadText {
   const { flame, now } = stats;
+  // Out today, but the count sleeps: the flame is not gone, and the line must not say it is.
+  if (flame.dormant > 0) {
+    return {
+      plain: t("journal.lead_rest_dormant", {
+        count: flame.dormant,
+        days: number(language, flame.dormant),
+      }),
+      accent: "",
+    };
+  }
   if (flame.litUntil == null) {
     return { plain: t("journal.lead_rest_out", { count: flame.quota }), accent: "" };
   }
@@ -146,7 +157,7 @@ function regularLead(t: TFunction, language: AppLanguage, stats: JournalStats): 
  * The sentence at the top: a template with holes, filled from numbers already read. One story per
  * mode, so a rest day never reads like a regular day that forgot to train.
  */
-function Lead({ stats, mode }: { stats: JournalStats; mode: Mode }) {
+export function Lead({ stats, mode }: { stats: JournalStats; mode: Mode }) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const { plain, accent, tail } =
@@ -215,7 +226,7 @@ export function WallRow({ entry, now }: { entry: WallEntry; now: Date }) {
   const age = entry.recordAt ? ageOf(entry.recordAt, now).kind : null;
   // A record that fell today or yesterday is still news: ringed, and tagged.
   const fresh = age === "today" || age === "yesterday";
-  const target = wallTarget(entry, now);
+  const target = toBeat(entry, now);
   const sub = wallSub(t, language, entry, now);
   const recordSession = entry.recordSessionId;
   return (
@@ -324,7 +335,7 @@ function Wall({ stats, mode }: { stats: JournalStats; mode: Mode }) {
   );
 }
 
-function FlameBlock({ stats }: { stats: JournalStats }) {
+export function FlameBlock({ stats }: { stats: JournalStats }) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const { flame, now } = stats;
@@ -347,6 +358,9 @@ function FlameBlock({ stats }: { stats: JournalStats }) {
   // after a first session told a new hero she had failed, not that one more would do it.
   const note = [
     t("journal.flame_window", { count: flame.inWindow }),
+    // The playable half of the rule, said before "N more": without it "45 asleep" over "4 more"
+    // reads as "four sessions this week or I lose everything".
+    flame.dormant > 0 ? t("journal.flame_dormant_note") : "",
     flame.inWindow < flame.quota
       ? t("journal.flame_more", { count: flame.quota - flame.inWindow })
       : t("journal.flame_quota", { count: flame.quota }),
@@ -361,7 +375,14 @@ function FlameBlock({ stats }: { stats: JournalStats }) {
         <Flame size={18} color={flame.litUntil ? "$resourceGold" : "$muted"} strokeWidth={2.5} />
         {/* "0 days lit" beside today's gold dot told a hero with one session that nothing counted.
             Until the flame is lit, the dots and the note below say where she stands. */}
-        {flame.current === 0 && flame.inWindow > 0 ? null : (
+        {/* Asleep comes before the guard below: the hero back once a week, with a session in
+            the window and the flame still out, is the one who most needs to see the count. */}
+        {flame.dormant > 0 ? (
+          <NNum fontSize={19} lineHeight={24}>
+            {number(language, flame.dormant)}
+            <NMuted fontSize={12}> {t("journal.flame_dormant")}</NMuted>
+          </NNum>
+        ) : flame.current === 0 && flame.inWindow > 0 ? null : (
           <NNum fontSize={19} lineHeight={24}>
             {number(language, flame.current)}
             <NMuted fontSize={12}> {t("journal.flame_lit", { count: flame.current })}</NMuted>

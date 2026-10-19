@@ -426,10 +426,10 @@ export default function QuestDetails() {
   }, [fromHome, router]);
 
   const updateConfig = useCallback(
-    (next: QuestConfig) => {
+    (next: QuestConfig, replace?: "targets" | "all") => {
       setConfig(next);
       if (questId == null) return;
-      saveQuestConfig(questId, next).catch((error) => {
+      saveQuestConfig(questId, next, { replace }).catch((error) => {
         // Persisting is best-effort: the session still runs with what is on screen. But the
         // config card promises "it comes back next time" — a failed write breaks that promise,
         // so it must at least be reported.
@@ -445,13 +445,13 @@ export default function QuestDetails() {
       // Easy should serve, and a hold pinned by hand stops following the hero's record. Swaps
       // are about the movement, not the level, and stay.
       const { targets: _tuned, ...rest } = config;
-      updateConfig({ ...rest, level: nextLevel });
+      updateConfig({ ...rest, level: nextLevel }, "targets");
     },
     [config, updateConfig],
   );
 
   const resetConfig = useCallback(() => {
-    updateConfig({ level: config.level });
+    updateConfig({ level: config.level }, "all");
   }, [config.level, updateConfig]);
 
   const applySwap = useCallback(

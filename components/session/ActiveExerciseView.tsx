@@ -1,37 +1,28 @@
 import { Image } from "expo-image";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, useWindowDimensions } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, Paragraph, Text, XStack, YStack } from "tamagui";
+import { Button, H1, Paragraph, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { AppText } from "@/components/common/AppText";
+import { FONT_CAPS } from "@/components/common/fontCaps";
 import { GameIcon } from "@/components/common/GameIcon";
 import { Crosshair, Minus, Pause, Plus } from "@/components/icons";
 import { formatShare } from "@/components/journal/journalFormat";
-import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
-import { SetAsideToggle } from "@/components/quests/SetAsideToggle";
 import { slotCaption } from "@/components/quests/substitutionCaption";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
-import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
 import { fade, rawColors } from "@/constants/rawColors";
-import {
-  CRIT_CHANCE_ONE_REP,
-  critChance,
-  DAMAGE_REPS_PAST_TARGET,
-  MAX_CRIT_CHANCE,
-} from "@/db/bossFights";
-import { type Exercise, listExercises, pickableExercises } from "@/db/exercises";
+import { CRIT_CHANCE_ONE_REP, DAMAGE_REPS_PAST_TARGET } from "@/db/bossFights";
 import { isOutdoors, isOutingSession } from "@/db/expeditions";
-import { preferences } from "@/db/preferences";
 import { formatSlotTarget, prescribedValue, TARGET_RANGE } from "@/db/targets";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useSessionInstructions } from "@/hooks/useSessionInstructions";
 import { formatOvertime, formatTime, useSessionTimer } from "@/hooks/useSessionTimer";
-import { useSetAside } from "@/hooks/useSetAside";
 import { useSideSwitch } from "@/hooks/useSideSwitch";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import {
@@ -42,7 +33,6 @@ import {
   sidePhase,
 } from "@/src/perSide";
 
-import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { BossArena } from "./BossArena";
@@ -53,6 +43,7 @@ import { ExerciseInstructionsModal } from "./ExerciseInstructions";
 import { ExpeditionPanel } from "./ExpeditionPanel";
 import { GhostLine } from "./GhostLine";
 import { LiveMap } from "./LiveMap";
+import { SessionSwapSheet } from "./SessionSwapSheet";
 import { SwitchGlow } from "./SwitchGlow";
 import { sessionArtHeight } from "./sessionArt";
 import { TimerBar } from "./TimerBar";
@@ -112,34 +103,7 @@ export function ActiveExerciseView() {
   const skipExercise = useSessionStore((s) => s.skipExercise);
   const swapCurrentExercise = useSessionStore((s) => s.swapCurrentExercise);
 
-  // Loaded when the session screen mounts, not when the sheet opens: the moment a hero reaches
-  // for this is the moment they are stuck, and a spinner there is the worst possible time.
-  // `listExercises()` is promise-cached, so this is free after the first read anywhere in the app.
-  const [catalogue, setCatalogue] = useState<Exercise[]>([]);
-  const [owned, setOwned] = useState<ReadonlySet<string> | null>(null);
-  const [setAsideIds, setSetAsideIds] = useState<ReadonlySet<number>>(new Set());
   const [swapOpen, setSwapOpen] = useState(false);
-  const [leaveOut, setLeaveOut] = useState(false);
-  const { setAside } = useSetAside();
-
-  useEffect(() => {
-    let alive = true;
-    Promise.all([
-      listExercises(),
-      preferences.getOwnedEquipment(),
-      preferences.getSetAsideExercises(),
-    ])
-      .then(([all, equipment, aside]) => {
-        if (!alive) return;
-        setCatalogue(all);
-        setOwned(equipment === null ? null : new Set(equipment));
-        setSetAsideIds(new Set(aside.map((e) => e.id)));
-      })
-      .catch((e) => reportError("session.catalogue", e));
-    return () => {
-      alive = false;
-    };
-  }, []);
   const pauseSession = useSessionStore((s) => s.pauseSession);
   const resumeSession = useSessionStore((s) => s.resumeSession);
   const nextSide = useSessionStore((s) => s.nextSide);
@@ -287,26 +251,6 @@ export function ActiveExerciseView() {
     if (useSessionStore.getState() === before) setSkipRefused(true);
   };
 
-  // Ladder rungs first, then the same pattern, then the family — `rankSwapCandidates` already
-  // encodes that order for the quest screen, and a hero stuck mid-set wants the easier rung at
-  // the top of the list.
-  // What the hero set aside is never offered back as a replacement.
-  const swapCandidates = swapOpen
-    ? rankSwapCandidates(pickableExercises(catalogue), currentEx.exercise, owned as never).filter(
-        // After the ranking: a set-aside rung removed first would cut the ladder walk at the gap.
-        (c) => !setAsideIds.has(c.exercise.id),
-      )
-    : [];
-  const swapReasons = new Map(swapCandidates.map((c) => [c.exercise.id, c.reason] as const));
-
-  const swapReasonLabel = (reason: SwapReason | null | undefined): string | null => {
-    if (reason === "easier") return t("quests.swap_reason_easier");
-    if (reason === "harder") return t("quests.swap_reason_harder");
-    if (reason === "same_pattern") return t("quests.swap_reason_pattern");
-    if (reason === "same_family") return t("quests.swap_reason_family");
-    return null;
-  };
-
   const handleAdjustReps = (delta: number) => {
     selection();
     setStepCount((n) => n + 1);
@@ -439,15 +383,15 @@ export function ActiveExerciseView() {
                 transition={150}
               />
             </YStack>
-            <Text flex={1} fontWeight="700" fontSize={16} color="$text" numberOfLines={1}>
+            <AppText flex={1} fontWeight="700" fontSize={16} color="$text" numberOfLines={1}>
               {exerciseName}
-            </Text>
+            </AppText>
             {!!targetMuscle && (
               <XStack items="center" gap="$1">
                 <Crosshair size={12} color="$textSecondary" />
-                <Text fontSize={12} color="$textSecondary">
+                <AppText fontSize={12} color="$textSecondary">
                   {t(`muscles.${targetMuscle}`)}
-                </Text>
+                </AppText>
               </XStack>
             )}
           </XStack>
@@ -472,7 +416,7 @@ export function ActiveExerciseView() {
               of one, and the percentage beside it measures a target the panel below already
               refuses to print, because on an outing the target is a suggestion. The quest's own
               name is the one thing the row can say that the hero does not already know. */}
-          <Text
+          <AppText
             color="$text"
             fontSize={12}
             fontWeight="700"
@@ -493,10 +437,10 @@ export function ActiveExerciseView() {
                   count: currentExerciseIndex + 1,
                   total: exercisesPerRound,
                 })}`}
-          </Text>
+          </AppText>
           <XStack items="center" gap="$2">
             {isOuting ? null : (
-              <Text
+              <AppText
                 fontSize={12}
                 fontWeight="700"
                 color="$textSecondary"
@@ -505,7 +449,7 @@ export function ActiveExerciseView() {
                 textShadowRadius={6}
               >
                 {formatShare(language, progressPercent)}
-              </Text>
+              </AppText>
             )}
             <Button
               testID="session-pause"
@@ -593,9 +537,9 @@ export function ActiveExerciseView() {
                 (issue #33). Named here too: mid-session is where the substitution is felt, and
                 a hero who thinks the app got it wrong is a hero who logs a lie. */}
               {slotCaption(t, currentEx, language) ? (
-                <Text fontSize={12} color="$textSecondary" fontFamily="$body" text="center">
+                <AppText fontSize={12} color="$textSecondary" fontFamily="$body" text="center">
                   {slotCaption(t, currentEx, language)}
-                </Text>
+                </AppText>
               ) : null}
 
               {/* The written half of "how do I do this?". The picture is the other half, and it
@@ -619,9 +563,9 @@ export function ActiveExerciseView() {
                     accessibilityRole="button"
                     accessibilityLabel={t("session.how_to_do_it")}
                   >
-                    <Text py="$2" fontSize={12} fontWeight="700" color="$textSecondary">
+                    <AppText py="$2" fontSize={12} fontWeight="700" color="$textSecondary">
                       {t("session.how_to_do_it")}
-                    </Text>
+                    </AppText>
                   </Pressable>
                 ) : null}
 
@@ -631,9 +575,9 @@ export function ActiveExerciseView() {
                     {/* Each dot travels with the link after it, so a row that wraps at a large
                         font never leaves one dangling at the end of a line. */}
                     <XStack items="center" gap="$3">
-                      <Text fontSize={12} color="$textSecondary" opacity={0.5}>
+                      <AppText fontSize={12} color="$textSecondary" opacity={0.5}>
                         ·
-                      </Text>
+                      </AppText>
                       <Pressable
                         testID="session-swap-exercise"
                         hitSlop={12}
@@ -644,7 +588,7 @@ export function ActiveExerciseView() {
                         accessibilityRole="button"
                         accessibilityLabel={t("quests.swap_exercise")}
                       >
-                        <Text
+                        <AppText
                           py="$2"
                           fontSize={12}
                           fontWeight="700"
@@ -652,14 +596,14 @@ export function ActiveExerciseView() {
                           numberOfLines={1}
                         >
                           {t("session.swap_short")}
-                        </Text>
+                        </AppText>
                       </Pressable>
                     </XStack>
 
                     <XStack items="center" gap="$3">
-                      <Text fontSize={12} color="$textSecondary" opacity={0.5}>
+                      <AppText fontSize={12} color="$textSecondary" opacity={0.5}>
                         ·
-                      </Text>
+                      </AppText>
                       <Pressable
                         testID="session-skip-exercise"
                         hitSlop={12}
@@ -667,7 +611,7 @@ export function ActiveExerciseView() {
                         accessibilityRole="button"
                         accessibilityLabel={t("session.skip_exercise")}
                       >
-                        <Text
+                        <AppText
                           py="$2"
                           fontSize={12}
                           fontWeight="700"
@@ -675,7 +619,7 @@ export function ActiveExerciseView() {
                           numberOfLines={1}
                         >
                           {t("session.skip_exercise")}
-                        </Text>
+                        </AppText>
                       </Pressable>
                     </XStack>
 
@@ -696,9 +640,9 @@ export function ActiveExerciseView() {
                           side?.phase === "first" ? "auto" : "no-hide-descendants"
                         }
                       >
-                        <Text fontSize={12} color="$textSecondary" opacity={0.5}>
+                        <AppText fontSize={12} color="$textSecondary" opacity={0.5}>
                           ·
-                        </Text>
+                        </AppText>
                         <Pressable
                           testID="session-next-side"
                           hitSlop={12}
@@ -710,7 +654,7 @@ export function ActiveExerciseView() {
                           accessibilityRole="button"
                           accessibilityLabel={t("session.next_side")}
                         >
-                          <Text
+                          <AppText
                             py="$2"
                             fontSize={12}
                             fontWeight="700"
@@ -718,7 +662,7 @@ export function ActiveExerciseView() {
                             numberOfLines={1}
                           >
                             {t("session.next_side")}
-                          </Text>
+                          </AppText>
                         </Pressable>
                       </XStack>
                     ) : null}
@@ -756,12 +700,13 @@ export function ActiveExerciseView() {
                         {/* Overtime display - counting UP */}
                         <XStack items="center" gap="$2">
                           <GameIcon name="flame" size={16} color="$success" />
-                          <Text fontSize={14} fontWeight="700" color="$textSecondary">
+                          <AppText fontSize={14} fontWeight="700" color="$textSecondary">
                             {t("session.overtime")}
-                          </Text>
+                          </AppText>
                           <GameIcon name="flame" size={16} color="$success" />
                         </XStack>
                         <H1
+                          maxFontSizeMultiplier={FONT_CAPS.display}
                           fontSize={72}
                           lineHeight={80}
                           fontWeight="700"
@@ -782,6 +727,7 @@ export function ActiveExerciseView() {
                             the time to turn in a small line nobody read from the floor. */}
                         {inSwitch && side ? (
                           <H1
+                            maxFontSizeMultiplier={FONT_CAPS.display}
                             testID="session-switch-count"
                             fontSize={72}
                             lineHeight={80}
@@ -795,6 +741,7 @@ export function ActiveExerciseView() {
                         ) : (
                           // Normal countdown
                           <H1
+                            maxFontSizeMultiplier={FONT_CAPS.display}
                             fontSize={72}
                             lineHeight={80}
                             fontWeight="700"
@@ -813,7 +760,7 @@ export function ActiveExerciseView() {
                             side", and the line under the numeral already says what they are. */}
                         {/* The same component in every phase, so the line keeps its height. */}
                         {inSwitch ? (
-                          <Text
+                          <AppText
                             testID="session-switch-title"
                             fontSize={22}
                             lineHeight={28}
@@ -822,7 +769,7 @@ export function ActiveExerciseView() {
                             textTransform="uppercase"
                           >
                             {t("session.switch_sides")}
-                          </Text>
+                          </AppText>
                         ) : (
                           <Paragraph lineHeight={28} fontWeight="700" color="$textSecondary">
                             {t("session.seconds_left_of", {
@@ -840,7 +787,7 @@ export function ActiveExerciseView() {
                             the screen, so a line that grows or leaves makes the whole picture jump
                             while the hero is changing sides. */}
                         {side ? (
-                          <Text
+                          <AppText
                             testID="session-side"
                             lineHeight={28}
                             // Bigger when it announces something: it is read from the floor.
@@ -855,7 +802,7 @@ export function ActiveExerciseView() {
                                 : secondSideStarting
                                   ? t("session.side_two_go")
                                   : t("session.side_of", { side: side.phase === "first" ? 1 : 2 })}
-                          </Text>
+                          </AppText>
                         ) : null}
                       </>
                     )}
@@ -912,35 +859,47 @@ export function ActiveExerciseView() {
                       </Button>
                     </XStack>
                     {adjustedReps !== targetValue && (
-                      <Text fontSize={12} color="$textSecondary">
+                      <AppText fontSize={12} color="$textSecondary">
                         {t("session.adjust_reps_hint")}
-                      </Text>
+                      </AppText>
                     )}
-                    {/* In a fight the ± control *is* the decision, so say what it buys: the whole
-                  rule, one rep or two and no further, rather than a percentage that climbed with
-                  every tap and paid for the reps the line below says to keep. Outside a fight,
-                  intensity as reps-in-reserve rather than "go to failure" — the safer and more
-                  teachable framing, and one the app can give as a cue instead of collecting as
-                  data. A target the hero changed still fights on the prescribed one, so the line
-                  says where the boss stops counting instead of promising odds on their number. */}
-                    <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
-                      {skipRefused
-                        ? t("session.pain_rule_last")
-                        : !fightLive
-                          ? t("session.reserve_hint")
-                          : targetChanged
-                            ? t("session.fight_target_changed", {
-                                count: prescribed + DAMAGE_REPS_PAST_TARGET,
-                              })
-                            : critChance(prescribed + 2, prescribed) === MAX_CRIT_CHANCE
-                              ? t("session.crit_rule", {
-                                  one: Math.round(CRIT_CHANCE_ONE_REP * 100),
-                                  two: Math.round(MAX_CRIT_CHANCE * 100),
+                    {/* In a fight the ± control *is* the decision, so say what it buys: the rule,
+                  one rep more and no further, rather than a percentage that climbed with every
+                  tap. The reserve line stays above it: the target is the middle of the quest's
+                  range, not a record, so "one more" only counts if it leaves margin, and the
+                  two read that way stacked. A refused skip keeps the pain rule alone. A target
+                  the hero changed still fights on the prescribed one, so the line says where the
+                  boss stops counting instead of promising odds on their number. */}
+                    {skipRefused ? (
+                      <AppText fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+                        {t("session.pain_rule_last")}
+                      </AppText>
+                    ) : (
+                      <>
+                        <AppText
+                          fontSize={12}
+                          color="$textSecondary"
+                          style={{ textAlign: "center" }}
+                        >
+                          {t("session.reserve_hint")}
+                        </AppText>
+                        {fightLive ? (
+                          <AppText
+                            fontSize={12}
+                            color="$textSecondary"
+                            style={{ textAlign: "center" }}
+                          >
+                            {targetChanged
+                              ? t("session.fight_target_changed", {
+                                  count: prescribed + DAMAGE_REPS_PAST_TARGET,
                                 })
                               : t("session.crit_rule_one", {
                                   one: Math.round(CRIT_CHANCE_ONE_REP * 100),
                                 })}
-                    </Text>
+                          </AppText>
+                        ) : null}
+                      </>
+                    )}
                   </YStack>
                 )}
               </YStack>
@@ -954,7 +913,7 @@ export function ActiveExerciseView() {
                 first side it is wrong too (there is no beep to let go at, the switch comes), so
                 it says what comes next. */}
             {isTimeBased && !isOuting && (
-              <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+              <AppText fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
                 {/* Kept, blank, during the switch and the second side up to its target: a line
                     that leaves lets the art above grow, and "keep going past the target" wraps to
                     two lines at a large font, so either one jumps the screen under a hero who is
@@ -970,19 +929,19 @@ export function ActiveExerciseView() {
                         : targetChanged
                           ? t("session.fight_target_changed_time", { seconds: prescribed })
                           : t("session.hold_fight_hint")}
-              </Text>
+              </AppText>
             )}
 
             {bossFight && !fightLive ? (
-              <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+              <AppText fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
                 {t("session.boss_down", { boss: bossDisplayName(bossFight, language) })}
-              </Text>
+              </AppText>
             ) : null}
 
             {/* Which way this set lands, when the monster cares. One line, in the colour of what
                 it does: braise for a weak point, ash for armour. */}
             {setStanding ? (
-              <Text
+              <AppText
                 fontSize={12}
                 fontWeight="700"
                 color={
@@ -991,7 +950,7 @@ export function ActiveExerciseView() {
                 style={{ textAlign: "center" }}
               >
                 {setStanding}
-              </Text>
+              </AppText>
             ) : null}
 
             {/* What the hero already did on this movement, and the moment they pass it. Outside
@@ -1045,42 +1004,12 @@ export function ActiveExerciseView() {
         onClose={handleCloseHowTo}
       />
 
-      <ExercisePickerSheet
-        exercises={swapCandidates.map((c) => c.exercise)}
-        pickedIds={[currentEx.exercise.id]}
-        language={language}
+      <SessionSwapSheet
         open={swapOpen}
-        onOpenChange={(next) => {
-          setSwapOpen(next);
-          if (!next) setLeaveOut(false);
-        }}
-        title={t("quests.swap_exercise")}
-        header={
-          <SetAsideToggle exercise={currentEx.exercise} checked={leaveOut} onToggle={setLeaveOut} />
-        }
-        onPick={(exercise) => {
-          if (leaveOut) {
-            const left = currentEx.exercise;
-            // Offered again in this sheet when it is not set aside after all: the write failed,
-            // or the toast's "Put back" undid it. The swap itself stands, it was a choice of its own.
-            const offerAgain = () =>
-              setSetAsideIds((prev) => new Set([...prev].filter((id) => id !== left.id)));
-            setSetAsideIds((prev) => new Set([...prev, left.id]));
-            setAside(left, offerAgain)
-              .then((ok) => {
-                if (!ok) offerAgain();
-              })
-              .catch(() => {
-                // Reported by `useSetAside`, which never rejects.
-              });
-          }
-          swapCurrentExercise(exercise);
-          setSwapOpen(false);
-          setLeaveOut(false);
-        }}
-        captionFor={(exercise) => swapReasonLabel(swapReasons.get(exercise.id))}
-        bottomInset={insets.bottom}
-        pickAction={null}
+        onOpenChange={setSwapOpen}
+        slot={currentEx}
+        language={language}
+        onPick={swapCurrentExercise}
       />
 
       {/* Last, so it lies over everything, and touches nothing. */}
@@ -1135,9 +1064,9 @@ function OutingFinishButton({ onFinish }: { onFinish: () => void }) {
   // 20 and not 24: "Maintiens pour terminer" is the long form, and it has to hold one line on a
   // 320dp screen.
   const holdLabel = (color: "$onPrimary" | "$bgDark") => (
-    <Text color={color} fontFamily="$heading" fontSize={20} fontWeight="700" numberOfLines={1}>
+    <AppText color={color} fontFamily="$heading" fontSize={20} fontWeight="700" numberOfLines={1}>
       {t("session.expedition_hold_to_finish")}
-    </Text>
+    </AppText>
   );
 
   return (

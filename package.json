@@ -177,6 +177,7 @@
     "deadcode": "knip",
     "format": "biome check --write .",
     "ios": "expo run:ios",
+    "licenses": "node scripts/generate-licenses.mjs",
     "maestro": "bash scripts/maestro.sh",
     "postinstall": "node scripts/strip-play-services.mjs",
     "prepare": "prek install",

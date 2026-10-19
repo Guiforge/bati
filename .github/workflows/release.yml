@@ -287,12 +287,7 @@ jobs:
           APK_PATH: ${{ steps.artefacts.outputs.apk_path }}
           MAX_MB: 55
         run: |
-          mb=$(( $(stat -c%s "$APK_PATH") / 1048576 ))
-          echo "APK: ${mb} MiB (budget ${MAX_MB} MiB)" >> "$GITHUB_STEP_SUMMARY"
-          if (( mb > MAX_MB )); then
-            echo "::error::APK is ${mb} MiB, over the ${MAX_MB} MiB budget"
-            exit 1
-          fi
+          node scripts/check-apk-size.mjs "$APK_PATH" "$MAX_MB"
 
       # The permission list is the app's public record: the install screen, what Exodus Privacy
       # publishes, what an F-Droid reviewer reads back to you. __tests__/android-permissions.test.ts

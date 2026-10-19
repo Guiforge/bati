@@ -182,6 +182,7 @@
     },
     "flame": {
       "current": 1092,
+      "dormant": 0,
       "best": 1092,
       "inWindow": 4,
       "quota": 2,
@@ -958,6 +959,12 @@
         "isUnlocked": true,
         "currentValue": 1,
         "targetValue": 1
+      },
+      {
+        "code": "three_paths_climbed",
+        "isUnlocked": true,
+        "currentValue": 3,
+        "targetValue": 3
       },
       {
         "code": "first_outing",

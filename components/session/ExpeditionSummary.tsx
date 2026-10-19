@@ -1,7 +1,8 @@
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Text, XStack } from "tamagui";
+import { XStack } from "tamagui";
+import { AppText } from "@/components/common/AppText";
 import { Card } from "@/components/common/Card";
 import { Figure } from "@/components/common/Figure";
 import { ChevronRight, Map as MapIcon } from "@/components/icons";
@@ -82,14 +83,14 @@ export function ExpeditionSummary({
       </XStack>
 
       {road ? (
-        <Text
+        <AppText
           testID="victory-expedition-road"
           fontSize={13}
           color="$textSecondary"
           style={{ textAlign: "center" }}
         >
           {roadLine(road, language, t)}
-        </Text>
+        </AppText>
       ) : null}
 
       {/* The same door the Journal draws, in the same shape, so the map is one component family
@@ -103,9 +104,9 @@ export function ExpeditionSummary({
         >
           <XStack items="center" gap="$3">
             <MapIcon size={20} color="$resourceGold" strokeWidth={2.5} />
-            <Text flex={1} fontWeight="700" fontSize={16} color="$text">
+            <AppText flex={1} fontWeight="700" fontSize={16} color="$text">
               {t("recap.open")}
-            </Text>
+            </AppText>
             <ChevronRight size={20} color="$textSecondary" />
           </XStack>
         </Card>

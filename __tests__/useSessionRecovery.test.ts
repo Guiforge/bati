@@ -386,6 +386,35 @@ describe("useSessionRecovery", () => {
     expect(useSessionStore.getState().totalPausedTime).toBe(90 * 60_000);
   });
 
+  // Paused at a crossing, resumed, then killed forty minutes on: the forty minutes were walked.
+  it("an outing without GPS resumed before it died counts the downtime as walked", async () => {
+    useExpeditionStore.setState({ begin: jest.fn(async () => true) });
+    await bankLiveSession({
+      quest: outing,
+      sessionUuid: "0192-crossing",
+      gps: false,
+      currentRoundIndex: 0,
+      currentExerciseIndex: 0,
+    });
+    await act(() => {
+      useSessionStore.setState({ status: "paused", prePauseStatus: "running" });
+    });
+    jest.spyOn(Date, "now").mockReturnValue(NOW + 60_000);
+    await act(() => {
+      useSessionStore.setState({ status: "running", totalPausedTime: 60_000 });
+    });
+    await waitFor(() => expect(JSON.parse(mockSavedSlot as string).status).toBe("running"));
+    jest.spyOn(Date, "now").mockReturnValue(NOW + 41 * 60_000);
+
+    const { result } = await renderHook(() => useSessionRecovery());
+    await waitFor(() => expect(result.current.recoverableSession).not.toBeNull());
+    await act(async () => {
+      await result.current.recoverSession();
+    });
+
+    expect(useSessionStore.getState().totalPausedTime).toBe(60_000);
+  });
+
   // Phase 0 of the outing display: the walk-run flag and the goal both ride in the snapshot, so a
   // resumed walk-run is still one, and the one door that starts tracking gets them both.
   it("brings a walk-run back as a walk-run, with the goal it started with", async () => {

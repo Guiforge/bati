@@ -2461,7 +2461,9 @@ useSessionStore.subscribe(
       warmupShortened(curr, prev) ||
       curr.longHoldKept !== prev.longHoldKept ||
       curr.firstSideSeconds !== prev.firstSideSeconds ||
-      curr.status === "paused";
+      curr.status === "paused" ||
+      // Leaving the pause too: a recovery reads a paused snapshot as a session still paused.
+      prev.status === "paused";
 
     if (hasProgressed) {
       try {

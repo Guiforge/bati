@@ -308,7 +308,7 @@ function oathLine(input: PlanInput, date: string, done: number | null): string {
  * The next `REMINDER_PLAN_DAYS` days of reminders, from today or from the end of a pause.
  *
  * A chosen day gets one entry, unless:
- * - a workout (`isWorkout`, a walk does not count) is already logged on it;
+ * - it is today and the hero trained on it (`trainedOn`: a workout, or any session written down);
  * - the rest advice for that day, at that hour, is acute;
  * - it is today and it already rang (the journal has it), whatever the hour says now;
  * - it is today and its hour is more than `REMINDER_LATE_MINUTES` gone.

@@ -345,7 +345,7 @@ function withHandMark(t: TFunction, text: string, entries: number): string {
   if (!(entries > 0)) return text;
   const mark = t("past_session.hand_mark_count", { count: entries });
   const stop = /[.。]$/.exec(text)?.[0] ?? "";
-  return `${text.slice(0, text.length - stop.length)}${t("common.sentence_sep")}${mark}${stop}`;
+  return `${text.slice(0, text.length - stop.length)} ${mark}${stop}`;
 }
 
 export function FlameBlock({ stats }: { stats: JournalStats }) {

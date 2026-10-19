@@ -52,7 +52,7 @@ dev, `--no-dev --minify` and `.perf` release workflows.
   red. APK size has no gate since 2026-10-18 (the 55 MiB budget was removed by choice); the
   measured breakdown of where the megabytes are is in
   [`docs/architecture/performance.md`](docs/architecture/performance.md) § Binary size.
-  **16 KB pages** (same workflow) fails the release if any `.so` in the APK or the AAB has a
+  **16 KB pages** ([`release.yml`](.github/workflows/release.yml)) fails the release if any `.so` in the APK or the AAB has a
   `LOAD` segment aligned under 0x4000, which Play refuses from 2027-02-01. By hand, after
   adding a native dependency: `unzip -o <apk> 'lib/*' -d /tmp/so && readelf -lW /tmp/so/lib/*/*.so
   | grep LOAD`, every last column `0x4000` or more.

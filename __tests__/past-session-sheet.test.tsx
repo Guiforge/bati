@@ -22,8 +22,7 @@ const mockCorrect = jest.fn();
 const mockSetDistance = jest.fn();
 const mockRefusal = jest.fn();
 jest.mock("@/db/handEntries", () => ({
-  getHandDefaults: () =>
-    Promise.resolve({ kind: "workout", durationSeconds: null, label: null, freeDay: null }),
+  getHandDefaults: () => Promise.resolve({ kind: "workout", durationSeconds: null, label: null }),
   loadHandContext: () => Promise.resolve({ handDays: new Set<string>(), measured: [] }),
   refusalFor: (...a: unknown[]) => mockRefusal(...a),
   createHandEntry: (...a: unknown[]) => mockCreate(...a),

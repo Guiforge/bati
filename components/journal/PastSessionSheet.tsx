@@ -22,13 +22,14 @@ import {
   toastKey,
 } from "@/components/journal/pastSessionForm";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
-import { formatDistance, formatRate } from "@/constants/distanceFormat";
+import { formatDistance, formatRate, METRES_PER_TYPED_UNIT } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db";
 import { dayKey } from "@/db/dates";
 import {
   correctHandEntry,
   createHandEntry,
   getHandDefaults,
+  HAND_LABEL_MAX,
   type HandDefaults,
   type HandInput,
   type HandResult,
@@ -72,14 +73,12 @@ type Props = {
   onSaved?: (result: Extract<HandResult, { ok: true }>, distanceM: number | null) => void;
 };
 
-const METRES_PER_UNIT = { metric: 1000, imperial: 1609.344 } as const;
 const KINDS: HandKind[] = ["workout", "walk", "run", "ride"];
 const KIND_LABEL: Record<Locomotion, string> = {
   walk: "outing_display.tab_walk",
   run: "outing_display.tab_run",
   ride: "outing_display.tab_ride",
 };
-const MAX_LABEL = 40;
 
 type Fields = {
   kind: HandKind;
@@ -214,7 +213,7 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
   const toast = useToast();
   const language = useSettingsStore((s) => s.language);
   const unit = useSettingsStore((s) => s.distanceUnit);
-  const metresPerUnit = METRES_PER_UNIT[unit];
+  const metresPerUnit = METRES_PER_TYPED_UNIT[unit];
   const unitWord = unit === "imperial" ? "mi" : "km";
   const distanceOnly = mode === "distance";
 
@@ -255,7 +254,7 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
     endTouched.current = false;
     (async () => {
       const [defaults, context, templates] = await Promise.all([
-        getHandDefaults(now),
+        getHandDefaults(),
         loadHandContext(target?.id ?? null, now),
         listQuestTemplates().catch(() => []),
       ]);
@@ -535,10 +534,10 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
             testID="past-session-name"
             minH={44}
             value={label}
-            onChangeText={(v) => setLabel(v.slice(0, MAX_LABEL))}
+            onChangeText={(v) => setLabel(v.slice(0, HAND_LABEL_MAX))}
             placeholder={t("past_session.name_hint")}
             accessibilityLabel={t("past_session.name")}
-            maxLength={MAX_LABEL}
+            maxLength={HAND_LABEL_MAX}
             bg="$background"
             borderColor="$borderStrong"
             color="$text"

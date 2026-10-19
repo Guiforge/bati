@@ -110,6 +110,14 @@ function withoutGps(saved: SavedSessionState): boolean {
 }
 
 /**
+ * Whether the time the app was dead counts as walked: an outing without GPS that was moving. A
+ * paused one stays paused, and its snapshot was written as the pause began.
+ */
+function deadTimeWalked(saved: SavedSessionState): boolean {
+  return withoutGps(saved) && saved.status !== "paused";
+}
+
+/**
  * The snapshot, back in the session store.
  *
  * Shared by resume and finish, which differ only in what happens to the walk afterwards: one
@@ -153,7 +161,7 @@ function restoreSnapshot(saved: SavedSessionState): void {
     // An outing without GPS keeps the dead time as time out (`gps` is the saved state's, not the
     // preference's): the OS kills an app with no foreground service in a pocket, and the walk went
     // on. It is bounded by the four hours of an unwitnessed outing and the day's two paid hours.
-    totalPausedTime: saved.totalPausedTime + (withoutGps(saved) ? 0 : pauseDuration),
+    totalPausedTime: saved.totalPausedTime + (deadTimeWalked(saved) ? 0 : pauseDuration),
     lastPauseTimestamp: now,
     timerStartTimestamp,
     // JSON has no Date, so every `performedAt` came back as a string.
@@ -213,7 +221,7 @@ async function findRecoverableSession(language: AppLanguage): Promise<Recoverabl
       // An outing without GPS counts the dead time, as `restoreSnapshot` does: up to now, not up
       // to the snapshot, which an outing writes once at the start.
       elapsedTime: Math.floor(
-        ((withoutGps(saved) ? Date.now() : saved.savedAt) -
+        ((deadTimeWalked(saved) ? Date.now() : saved.savedAt) -
           (saved.startTime ?? saved.savedAt) -
           saved.totalPausedTime) /
           1000,

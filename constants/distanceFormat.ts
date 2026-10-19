@@ -21,6 +21,12 @@ const M_PER_MILE = 1609.344;
 const M_PER_FOOT = 0.3048;
 const FEET_PER_MILE = 5280;
 
+/** The metres in one unit a hero types a distance in: km, or miles. */
+export const METRES_PER_TYPED_UNIT: Record<DistanceUnit, number> = {
+  metric: 1000,
+  imperial: M_PER_MILE,
+};
+
 /**
  * Rounding happens before the threshold, not after: 999.6 m is "1.00 km", never "1000 m".
  * The imperial cut-over is `5280 ft`, which is exactly one mile — the same comparison, done in

@@ -20,6 +20,7 @@ import { type LoadedSession, readSession } from "@/components/journal/sessionLog
 import { useConfirmForget } from "@/components/journal/useConfirmForget";
 import { rawColors } from "@/constants/rawColors";
 import type { CompletedSession } from "@/db/completed";
+import { takesHandDistance, withinHandWindow } from "@/db/handEntryRules";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -208,6 +209,8 @@ function HandActions({
 }) {
   const { t } = useTranslation();
   if (session.byHand === "session") {
+    // Past the window the writer refuses any correction, so none is offered; forgetting still is.
+    if (!withinHandWindow(session.performedAt, new Date())) return null;
     return (
       <AppButton testID="journal-correct" variant="outline" onPress={onCorrect}>
         {t("journal.correct")}
@@ -215,7 +218,7 @@ function HandActions({
     );
   }
   // Only an outing with no trace: a measured distance is not the hero's to type over.
-  if (session.outing == null || session.movingSeconds !== null) return null;
+  if (!takesHandDistance(session)) return null;
   if (session.byHand !== "distance") {
     return (
       <AppButton testID="journal-add-distance" variant="outline" onPress={onDistance}>

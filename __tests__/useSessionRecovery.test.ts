@@ -361,6 +361,31 @@ describe("useSessionRecovery", () => {
     expect((begin.mock.calls as unknown[][]).at(-1)?.[7]).toBe(gps);
   });
 
+  // The snapshot is written as the pause begins: a lunch in the middle of a walk is not walked.
+  it("an outing without GPS that died paused banks the downtime as pause", async () => {
+    useExpeditionStore.setState({ begin: jest.fn(async () => true) });
+    await bankLiveSession({
+      quest: outing,
+      sessionUuid: "0192-lunch",
+      gps: false,
+      status: "paused",
+      prePauseStatus: "running",
+      lastPauseTimestamp: NOW,
+      currentRoundIndex: 0,
+      currentExerciseIndex: 0,
+    });
+    jest.spyOn(Date, "now").mockReturnValue(NOW + 90 * 60_000);
+
+    const { result } = await renderHook(() => useSessionRecovery());
+    await waitFor(() => expect(result.current.recoverableSession).not.toBeNull());
+    expect(result.current.recoverableSession?.elapsedTime).toBe(600);
+    await act(async () => {
+      await result.current.recoverSession();
+    });
+
+    expect(useSessionStore.getState().totalPausedTime).toBe(90 * 60_000);
+  });
+
   // Phase 0 of the outing display: the walk-run flag and the goal both ride in the snapshot, so a
   // resumed walk-run is still one, and the one door that starts tracking gets them both.
   it("brings a walk-run back as a walk-run, with the goal it started with", async () => {

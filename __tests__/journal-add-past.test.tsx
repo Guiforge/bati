@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react-nativ
 import { TamaguiProvider } from "tamagui";
 
 import JournalScreen from "@/app/(tabs)/journal/index";
+import { dayKey } from "@/db/dates";
 import "@/i18n";
 import { consumePastSessionLink } from "@/src/pastSessionLink";
 import config from "@/tamagui.config";
@@ -57,6 +58,10 @@ jest.mock("@/db/gps", () => ({ previewPathsFor: jest.fn().mockResolvedValue(new 
 jest.mock("@/db/journal", () => ({ getJournalVersion: jest.fn().mockReturnValue("v0") }));
 jest.mock("@/db/quests", () => ({ listQuestTemplates: jest.fn().mockResolvedValue([]) }));
 jest.mock("@/db/sessionPhotos", () => ({ photoSummaries: jest.fn().mockResolvedValue(new Map()) }));
+let mockHandDays = new Set<string>();
+jest.mock("@/db/handEntries", () => ({
+  loadHandContext: () => Promise.resolve({ handDays: mockHandDays, measured: [] }),
+}));
 
 // The sheet has its own suite; here it is the props the Journal hands it.
 const mockSheet = jest.fn();
@@ -82,6 +87,7 @@ beforeEach(() => {
   mockSetParams.mockClear();
   mockParams = {};
   mockStatus = "idle";
+  mockHandDays = new Set();
   // A link consumed by an earlier test must not hold this one back: no link resets the memory.
   consumePastSessionLink({});
 });
@@ -103,6 +109,19 @@ test("the reminder's link opens History and the sheet on the day it names, then 
   await waitFor(() => expect(lastSheet()).toMatchObject({ open: true, day: "2026-10-16" }));
   expect(mockSetParams).toHaveBeenCalledWith({ add: undefined, day: undefined });
   expect(await screen.findByTestId("journal-add-past")).toBeTruthy();
+});
+
+// The activity keeps the link as its intent, so a remount after the save hands it back.
+test("the link of a day already written down opens History and no sheet", async () => {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const day = dayKey(yesterday);
+  mockHandDays = new Set([day]);
+  mockParams = { add: "past", day };
+  await mount();
+  expect(await screen.findByTestId("journal-add-past")).toBeTruthy();
+  expect(mockSetParams).toHaveBeenCalledWith({ add: undefined, day: undefined });
+  expect(lastSheet().open).toBe(false);
 });
 
 test("while a session is running the link does nothing but clear itself", async () => {

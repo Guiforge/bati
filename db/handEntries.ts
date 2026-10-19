@@ -14,6 +14,7 @@ import {
   type HandKind,
   type HandRefusal,
   type MeasuredSpan,
+  takesHandDistance,
 } from "./handEntryRules";
 import { checkOathFulfilled, OATH_XP_BONUS } from "./oaths";
 import type { Locomotion } from "./schema";
@@ -86,6 +87,13 @@ export async function loadHandContext(ignoreId: number | null, now: Date): Promi
   return { handDays: new Set(hands.map((h) => dayKey(h.performedAt))), measured };
 }
 
+/** The name as stored: a workout's, trimmed and capped, or null. An outing keeps none. */
+function labelOf(input: HandInput): string | null {
+  const label =
+    input.kind === "workout" ? (input.label?.trim().slice(0, HAND_LABEL_MAX) ?? "") : "";
+  return label === "" ? null : label;
+}
+
 function draftOf(input: HandInput): HandEntryDraft {
   return {
     kind: input.kind,
@@ -155,13 +163,11 @@ export async function createHandEntry(
   if (refusal) return { ok: false, refusal };
 
   const endedAt = draft.endedAt > now ? now : draft.endedAt;
-  const label =
-    input.kind === "workout" ? (input.label?.trim().slice(0, HAND_LABEL_MAX) ?? "") : "";
   const id = await createCompletedSession({
     byHand: "session",
     outing: input.kind === "workout" ? null : input.kind,
     leaguesM: draft.distanceM,
-    label: label === "" ? null : label,
+    label: labelOf(input),
     durationSeconds: draft.durationSeconds,
     xpEarned: HAND_ENTRY_XP,
     performedAt: addSeconds(endedAt, -draft.durationSeconds),
@@ -197,8 +203,6 @@ export async function correctHandEntry(
 
   const endedAt = draft.endedAt > now ? now : draft.endedAt;
   const performedAt = addSeconds(endedAt, -draft.durationSeconds);
-  const label =
-    input.kind === "workout" ? (input.label?.trim().slice(0, HAND_LABEL_MAX) ?? "") : "";
   // `xpEarned` is not here, on purpose: the oath bonus sits on the same row, and sync keeps the
   // larger XP of a row, so a lower one could not travel.
   await db
@@ -206,7 +210,7 @@ export async function correctHandEntry(
     .set({
       outing: input.kind === "workout" ? null : input.kind,
       leaguesM: draft.distanceM,
-      label: label === "" ? null : label,
+      label: labelOf(input),
       durationSeconds: draft.durationSeconds,
       performedAt,
       tzOffsetMin: 0 - performedAt.getTimezoneOffset(),
@@ -234,12 +238,13 @@ export async function setHandDistance(id: number, distanceM: number | null): Pro
       byHand: completedQuest.byHand,
       durationSeconds: completedQuest.durationSeconds,
       movingSeconds: completedQuest.movingSeconds,
+      leaguesM: completedQuest.leaguesM,
       xpEarned: completedQuest.xpEarned,
     })
     .from(completedQuest)
     .where(eq(completedQuest.id, id))
     .limit(1);
-  if (!row?.outing || row.byHand === "session" || row.movingSeconds !== null) {
+  if (!row?.outing || !takesHandDistance(row)) {
     throw new Error("Only an outing with no trace can be given a distance");
   }
   const metres = distanceM === null || distanceM <= 0 ? null : Math.round(distanceM);
@@ -264,16 +269,14 @@ export async function setHandDistance(id: number, distanceM: number | null): Pro
   };
 }
 
-/** What the sheet opens on: the last entry's type, duration and name, and the day to propose. */
+/** What the sheet opens on: the last entry's type, duration and name. */
 export type HandDefaults = {
   kind: HandKind;
   durationSeconds: number | null;
   label: string | null;
-  /** The most recent day, today first, with no entry written down. Null when none of the eight has room. */
-  freeDay: string | null;
 };
 
-export async function getHandDefaults(now: Date = new Date()): Promise<HandDefaults> {
+export async function getHandDefaults(): Promise<HandDefaults> {
   const [last] = await db
     .select({
       outing: completedQuest.outing,
@@ -284,20 +287,10 @@ export async function getHandDefaults(now: Date = new Date()): Promise<HandDefau
     .where(eq(completedQuest.byHand, "session"))
     .orderBy(desc(completedQuest.performedAt), desc(completedQuest.id))
     .limit(1);
-  const { handDays } = await loadHandContext(null, now);
-  let freeDay: string | null = null;
-  for (let back = 0; back <= HAND_MAX_DAYS_BACK; back++) {
-    const day = dayKey(subDays(now, back));
-    if (!handDays.has(day)) {
-      freeDay = day;
-      break;
-    }
-  }
   return {
     kind: (last?.outing as Locomotion | null | undefined) ?? "workout",
     durationSeconds: last?.durationSeconds ?? null,
     label: last?.label ?? null,
-    freeDay,
   };
 }
 

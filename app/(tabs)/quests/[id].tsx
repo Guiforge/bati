@@ -677,8 +677,9 @@ export default function QuestDetails() {
       // Awaited on purpose: startSession loads the boss fight and the warm-up preference before it
       // populates the store, and the session screen redirects home if it mounts on an empty one.
       // The last "GPS : oui / non" (the chip on the goal sheet): an outing measured by GPS begins as
-      // it always did, the other one asks for no position. A workout has no such choice.
-      const gps = willReadPosition
+      // it always did, the other one asks for no position. A workout has no such choice, and
+      // neither has a mixed quest: its row keeps no `outing`, so a typed distance has nowhere to go.
+      const gps = isOutingSession(quest)
         ? await preferences.getOutingGps().catch((e: unknown) => {
             reportError("quest.outingGps", e);
             return true;
@@ -1033,7 +1034,7 @@ export default function QuestDetails() {
               In the pinned bar rather than in the page: it lived under the config panel, and on a
               Fairphone 6 that put it below the fold while this button stayed on screen the whole
               time. A hero who tapped straight away never read it, which is the entire job it had. */}
-          {willReadPosition && outingGps ? (
+          {willReadPosition && (outingGps || !(quest && isOutingSession(quest))) ? (
             <Text testID="quest-location-notice" fontSize={13} color="$textSecondary">
               {t("quests.location_notice")}
             </Text>

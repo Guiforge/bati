@@ -6,6 +6,8 @@ import {
   type MeasuredSpan,
   maxHandDistanceM,
   parseClock,
+  takesHandDistance,
+  withinHandWindow,
 } from "../db/handEntryRules";
 import { HAND_ENTRY_XP, outingXpPerMinute } from "../db/xp";
 
@@ -146,5 +148,37 @@ describe("the distance of an outing timed without GPS", () => {
     expect(checkHandDistance("ride", 300, 5000)).toMatchObject({ key: "implausible" });
     expect(checkHandDistance("walk", 142, 200)).toBeNull();
     expect(checkHandDistance("walk", 0, 1000)).toMatchObject({ key: "implausible" });
+  });
+});
+
+describe("which outing takes a typed distance", () => {
+  const row = (over: Partial<Parameters<typeof takesHandDistance>[0]> = {}) => ({
+    outing: "walk" as const,
+    byHand: null,
+    movingSeconds: null,
+    leaguesM: null,
+    ...over,
+  });
+
+  test("one Bati measured nothing of, or one already typed", () => {
+    expect(takesHandDistance(row())).toBe(true);
+    expect(takesHandDistance(row({ byHand: "distance", leaguesM: 3000 }))).toBe(true);
+  });
+
+  test("never a GPS walk saved before 0046, whose moving time is null beside its distance", () => {
+    expect(takesHandDistance(row({ leaguesM: 5200 }))).toBe(false);
+  });
+
+  test("never a measured outing, a workout or a session written down", () => {
+    expect(takesHandDistance(row({ movingSeconds: 1800 }))).toBe(false);
+    expect(takesHandDistance(row({ outing: null }))).toBe(false);
+    expect(takesHandDistance(row({ byHand: "session" }))).toBe(false);
+  });
+});
+
+describe("the window a session can be written down or corrected in", () => {
+  test("seven calendar days back, the eighth is past it", () => {
+    expect(withinHandWindow(new Date(2026, 9, 11, 23, 0), NOW)).toBe(true);
+    expect(withinHandWindow(new Date(2026, 9, 10, 23, 0), NOW)).toBe(false);
   });
 });

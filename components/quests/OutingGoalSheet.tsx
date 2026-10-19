@@ -8,7 +8,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Chip } from "@/components/common/Chip";
 import { X } from "@/components/icons";
 import { GpsSetting } from "@/components/quests/GpsSetting";
-import { formatDistance } from "@/constants/distanceFormat";
+import { formatDistance, METRES_PER_TYPED_UNIT } from "@/constants/distanceFormat";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { formatDuration } from "@/db/estimate";
 import { getOutingHabit } from "@/db/outingHabit";
@@ -50,12 +50,6 @@ const DISTANCE_PRESETS_M: Record<Locomotion, Record<DistanceUnit, number[]>> = {
 /** A habit read back as a goal: a tenth of a kilometre or a whole minute, not "5.23 km". */
 const roundMetres = (metres: number) => Math.max(100, Math.round(metres / 100) * 100);
 const roundSeconds = (seconds: number) => Math.max(60, Math.round(seconds / 60) * 60);
-
-/**
- * ponytail: second copy of the mile, `constants/distanceFormat.ts` holds the first and owns the
- * conversion. Export `M_PER_MILE` from there and delete this the next time that file is open.
- */
-const METRES_PER_TYPED_UNIT: Record<DistanceUnit, number> = { metric: 1000, imperial: 1609.344 };
 
 type Props = {
   open: boolean;

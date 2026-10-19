@@ -80,6 +80,11 @@ function implausible(
   };
 }
 
+/** Whether a session begun at `startedAt` can still be written down or corrected. */
+export function withinHandWindow(startedAt: Date, now: Date): boolean {
+  return differenceInCalendarDays(now, startedAt) <= HAND_MAX_DAYS_BACK;
+}
+
 /** The first rule the draft breaks, in the order of the sheet, or null. */
 export function checkHandEntry(
   draft: HandEntryDraft,
@@ -90,7 +95,7 @@ export function checkHandEntry(
   const startedAt = new Date(endedAt.getTime() - draft.durationSeconds * 1000);
   const day = dayKey(startedAt);
 
-  if (differenceInCalendarDays(now, startedAt) > HAND_MAX_DAYS_BACK) return { key: "too_old" };
+  if (!withinHandWindow(startedAt, now)) return { key: "too_old" };
   if (context.handDays.has(day)) return { key: "one_per_day", day };
   if (draft.durationSeconds < HAND_MIN_SECONDS || draft.durationSeconds > HAND_MAX_SECONDS) {
     return { key: "duration" };
@@ -114,6 +119,20 @@ export function checkHandDistance(
 ): Extract<HandRefusal, { key: "implausible" }> | null {
   // The real duration, not the ten minutes an entry needs: a short outing is still an outing.
   return implausible(kind, Math.max(durationSeconds, 1), distanceM);
+}
+
+/**
+ * Whether the hero may type an outing's distance: Bati measured none. `movingSeconds` alone is not
+ * the witness, every outing saved before 0046 has it null beside a GPS-measured `leaguesM`.
+ */
+export function takesHandDistance(row: {
+  outing: Locomotion | null;
+  byHand: string | null;
+  movingSeconds: number | null;
+  leaguesM: number | null;
+}): boolean {
+  if (row.outing == null || row.byHand === "session" || row.movingSeconds !== null) return false;
+  return row.leaguesM === null || row.byHand === "distance";
 }
 
 /**

@@ -395,7 +395,7 @@ function weeklyOathDone({ oath, sessions, now, language }: PlanInput): number | 
 /**
  * Days in a row, most recent last, the hero let a reminder pass: posted (a snooze counts once), not
  * tapped, no pause asked. Today never counts, it is not over. The run starts again after any
- * workout, after a day the hero tapped or paused (they answered it), and after any change to the
+ * day trained (`trainedOn`), after a day the hero tapped or paused (they answered it), and after any change to the
  * reminder settings (`streakFrom`, a day key: only the days after it count). A day that never rang
  * because the phone killed the alarm is not in the journal, and so does not count either.
  */
@@ -406,7 +406,7 @@ export function ignoredStreak(
   streakFrom: string | null,
 ): number {
   const lastWorkout = sessions
-    .filter(isWorkoutRow)
+    .filter(trainedOn)
     .map((s) => dayKey(s.performedAt))
     .filter((day) => day < today)
     .sort()
@@ -589,7 +589,7 @@ export function describeDay({ days, now, sessions, state }: PlanInput): DayNote 
  * that kills alarms (Xiaomi, Huawei, some Samsung, see dontkillmyapp.com) is only visible this way:
  * the plan was there, nothing was posted. Days before `since` (the switch turned on, the settings
  * changed), during a pause ending `pausedUntil`, past the horizon of the plan made `plannedOn`, and
- * a day with a workout or acute rest never rang on purpose, so none of them count.
+ * a day trained (`trainedOn`) or acute rest never rang on purpose, so none of them count.
  */
 export function missedReminder(
   days: ReminderDays,
@@ -601,6 +601,7 @@ export function missedReminder(
   plannedOn: string | null,
 ): string | null {
   const workouts = sessions.filter(isWorkoutRow).map((s) => s.performedAt);
+  const trained = new Set(sessions.filter(trainedOn).map((s) => dayKey(s.performedAt)));
   const posted = new Set(log.map((e) => e.date));
   for (let back = 0; back < 7; back++) {
     const date = dayKey(subDays(now, back));
@@ -609,7 +610,7 @@ export function missedReminder(
     const hour = at(date, time);
     if (hour.getTime() + REMINDER_LATE_MINUTES * 60_000 > now.getTime()) continue;
     if (since !== null && date <= since) return null;
-    if (pausedOn(date, pausedUntil) || silentOnPurpose(workouts, date, hour)) return null;
+    if (pausedOn(date, pausedUntil) || silentOnPurpose(trained, workouts, date, hour)) return null;
     return posted.has(date) ? null : date;
   }
   return null;
@@ -627,19 +628,25 @@ function pausedOn(date: string, pausedUntil: string | null): boolean {
 }
 
 /** A day that never rang on purpose: trained, or acute rest at its hour. */
-function silentOnPurpose(workouts: readonly Date[], date: string, hour: Date): boolean {
-  return workouts.some((w) => dayKey(w) === date) || restsOn(workouts, hour);
+function silentOnPurpose(
+  trained: ReadonlySet<string>,
+  workouts: readonly Date[],
+  date: string,
+  hour: Date,
+): boolean {
+  return trained.has(date) || restsOn(workouts, hour);
 }
 
 /**
  * The counts a tester can paste into a bug report, and nothing leaves on its own: reminders posted
- * in the journal, how many were followed by a workout within two hours, snoozed, paused.
+ * in the journal, how many were followed within two hours by a session `trainedOn` counts,
+ * snoozed, paused.
  */
 export function reminderStats(
   log: readonly ReminderLogEntry[],
   sessions: readonly ReminderSession[],
 ): { posted: number; followed: number; snoozed: number; paused: number } {
-  const workouts = sessions.filter(isWorkoutRow).map((s) => s.performedAt.getTime());
+  const workouts = sessions.filter(trainedOn).map((s) => s.performedAt.getTime());
   let followed = 0;
   for (const entry of log) {
     if (!entry.postedAt) continue;

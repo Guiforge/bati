@@ -13,6 +13,7 @@ import { OathStrip } from "@/components/home/OathStrip";
 import { Plus, Scroll } from "@/components/icons";
 import { NButton, NMuted, NSeg, NText, NTitle } from "@/components/journal/nocturne";
 import { PastSessionSheet } from "@/components/journal/PastSessionSheet";
+import { dayFromLink } from "@/components/journal/pastSessionForm";
 import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard";
 import { StatsView } from "@/components/journal/stats/StatsView";
 import { useJournalStats } from "@/components/journal/stats/useJournalStats";
@@ -22,8 +23,10 @@ import { rawColors } from "@/constants/rawColors";
 import type { ChronicleWindow } from "@/db/chronicle";
 import type { StoredRecord } from "@/db/completed";
 import { listCompletedSessions } from "@/db/completed";
+import { dayKey } from "@/db/dates";
 import { listExercises } from "@/db/exercises";
 import { previewPathsFor } from "@/db/gps";
+import { loadHandContext } from "@/db/handEntries";
 import { getJournalVersion } from "@/db/journal";
 import { listQuestTemplates } from "@/db/quests";
 import { photoSummaries } from "@/db/sessionPhotos";
@@ -253,16 +256,24 @@ export default function JournalScreen() {
 
   // "Fait ailleurs ?" on the reminder: History, and the sheet open on the day it names.
   // Ignored while a session is running (it is not in the journal yet, so the overlap refusal could
-  // not see it), and the link is cleared either way so a remount does not open it twice.
+  // not see it), and the link is cleared either way so a remount does not open it twice. A day
+  // already written down opens nothing: the activity keeps the link as its intent, so a remount
+  // can hand back the one just saved, and it looks exactly like a second tap.
   useEffect(() => {
     const link = consumePastSessionLink({ add, day: dayParam });
     if (link === null) return;
-    const { status } = useSessionStore.getState();
-    if (status === "idle" || status === "finished") {
-      setActiveTab("history");
-      setSheet({ open: true, day: link.day });
-    }
     router.setParams({ add: undefined, day: undefined });
+    const { status } = useSessionStore.getState();
+    if (status !== "idle" && status !== "finished") return;
+    setActiveTab("history");
+    const now = new Date();
+    loadHandContext(null, now)
+      .then((context) => {
+        if (!context.handDays.has(dayKey(dayFromLink(link.day, now)))) {
+          setSheet({ open: true, day: link.day });
+        }
+      })
+      .catch((error: unknown) => reportError("journal.pastSessionLink", error));
   }, [add, dayParam, router]);
 
   const refreshControl = (

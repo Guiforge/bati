@@ -121,6 +121,11 @@ describe("missedReminder", () => {
     expect(missedReminder(monOnly, [], trained, tuesday, null, null, null)).toBeNull();
   });
 
+  test("nor is a day the hero wrote a session down for", () => {
+    const typed = [{ ...workout(new Date(2026, 0, 12, 18)), byHand: "session" as const }];
+    expect(missedReminder(monOnly, [], typed, tuesday, null, null, null)).toBeNull();
+  });
+
   test("before the switch was on, or during a pause, it was never due", () => {
     expect(missedReminder(monOnly, [], [], tuesday, "2026-01-12", null, null)).toBeNull();
     expect(missedReminder(monOnly, [], [], tuesday, null, "2026-01-19", null)).toBeNull();

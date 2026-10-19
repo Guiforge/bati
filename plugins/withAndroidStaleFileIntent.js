@@ -21,12 +21,17 @@ const { withMainActivity } = require("expo/config-plugins");
  */
 const MARKER = "bati-stale-file-intent";
 const ANCHOR = "    super.onCreate(null)\n";
+const NEW_INTENT_ANCHOR = "\n  /**\n   * Returns the name of the main component";
 
 module.exports = function withAndroidStaleFileIntent(config) {
   return withMainActivity(config, (cfg) => {
     let src = cfg.modResults.contents;
     if (src.includes(MARKER)) return cfg;
-    if (!src.includes(ANCHOR) || !src.includes("import android.os.Bundle\n")) {
+    if (
+      !src.includes(ANCHOR) ||
+      !src.includes("import android.os.Bundle\n") ||
+      !src.includes(NEW_INTENT_ANCHOR)
+    ) {
       throw new Error(
         "withAndroidStaleFileIntent: MainActivity.kt no longer has the expected shape",
       );
@@ -53,7 +58,7 @@ ${ANCHOR}`,
     // Keeping it as the activity's intent lets getInitialURL find it; the guard above still sees
     // the system's own intent in onCreate, so a task restored later forgets it.
     src = src.replace(
-      "\n  /**\n   * Returns the name of the main component",
+      NEW_INTENT_ANCHOR,
       `
   // ${MARKER}: the link of a notification that restarts a dead process.
   override fun onNewIntent(intent: Intent) {

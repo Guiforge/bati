@@ -17,7 +17,15 @@ export function Figure({ label, value, testID }: { label: string; value: string;
       <Text fontSize={11} letterSpacing={2} color="$textSecondary" textTransform="uppercase">
         {label}
       </Text>
-      <Text testID={testID} fontSize={22} fontWeight="700" color="$text">
+      {/* One line, shrunk if it must: at 130% a speed broke as "34,4 km/" over "h". */}
+      <Text
+        testID={testID}
+        fontSize={22}
+        fontWeight="700"
+        color="$text"
+        numberOfLines={1}
+        adjustsFontSizeToFit
+      >
         {value}
       </Text>
     </YStack>

@@ -199,7 +199,9 @@ export default function OutingDisplayScreen() {
     ...([0, 1, 2] as const).map((i) => ({
       id: i,
       label: t("outing_display.small", { n: i + 1 }),
-      value: view.small[i] ?? null,
+      // What the panel shows: it drops a small place that repeats the big one (`liveFigures`).
+      // "auto" is not a repeat: small, it is whichever of time and distance the big is not.
+      value: view.small[i] === view.big && view.big !== "auto" ? null : (view.small[i] ?? null),
     })),
   ];
   const options: (Place | null)[] = [

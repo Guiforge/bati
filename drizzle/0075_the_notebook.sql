@@ -16,7 +16,7 @@
 -- photo stays as a row with `deletedAt` set and `image` emptied: that row is what tells the other
 -- device to drop it.
 --
--- multi-migration-ok: 0074 (merge v2) and 0075 ship together, 0074 is not in any tag yet, and a release with both splits sync across builds once and not twice (mergePeer refuses another newest migration).
+-- multi-migration-ok: 0074 (merge v2) and every migration after it ship together, none is in any tag yet, and one release splits sync across builds once and not once per migration (mergePeer refuses another newest migration). 0077 names the rest.
 ALTER TABLE `completed_sessions` ADD `notesEditedAt` integer;--> statement-breakpoint
 CREATE TABLE `session_photos` (
 	`uuid` text PRIMARY KEY NOT NULL,

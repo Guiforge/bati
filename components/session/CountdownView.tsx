@@ -6,6 +6,7 @@ import { Button, XStack, YStack } from "tamagui";
 import { AppText } from "@/components/common/AppText";
 import { Pause } from "@/components/icons";
 import { getBossAsset, getExerciseAsset, getQuestAsset } from "@/constants/assetMap";
+import { bossDisplayName } from "@/constants/bosses";
 import { fade, rawColors } from "@/constants/rawColors";
 import { formatSlotTarget } from "@/db/targets";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
@@ -114,7 +115,7 @@ export function CountdownView() {
     : quest.imagePath
       ? getQuestAsset(quest.imagePath)
       : getExerciseAsset(first.exercise.imagePath);
-  const title = bossFight ? localizedName(bossFight, language) : localizedTitle(quest, language);
+  const title = bossFight ? bossDisplayName(bossFight, language) : localizedTitle(quest, language);
 
   return (
     <YStack flex={1} bg={screenBg} pb={insets.bottom + 16} gap="$3">

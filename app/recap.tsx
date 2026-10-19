@@ -586,9 +586,11 @@ export default function ExpeditionRecapScreen() {
               compass={false}
               touchRotate={false}
               touchPitch={false}
-              onRegionWillChange={(event) =>
-                setFramed((was) => was && !event.nativeEvent.userInteraction)
-              }
+              onRegionWillChange={(event) => {
+                // Read now: the updater runs later, once the native event is already released.
+                const byHand = event.nativeEvent.userInteraction;
+                setFramed((was) => was && !byHand);
+              }}
             >
               <Camera {...frameStop(framed, trace.bounds)} />
 

@@ -361,7 +361,7 @@ describe("the boss's voice", () => {
     expect(editor.getByDisplayValue("Nightcoil")).toBeTruthy();
   });
 
-  test("a fourth line and a 61st character do not appear; save hands the writer the voice", async () => {
+  test("a fourth line shows and warns, a 61st character does not appear; save keeps three", async () => {
     const editor = await mount();
     await fireEvent.changeText(editor.getByTestId("adventure-name"), "Tale");
     await pick(editor, 1, 2);
@@ -369,7 +369,8 @@ describe("the boss's voice", () => {
     await fireEvent.changeText(editor.getByTestId("editor-boss-name"), "Nightcoil");
     await fireEvent.changeText(editor.getByTestId("editor-boss-lines-idle"), "a\nb\nc\nd");
     await fireEvent.changeText(editor.getByTestId("editor-boss-lines-crit"), "x".repeat(70));
-    expect(editor.getByTestId("editor-boss-lines-idle").props.value).toBe("a\nb\nc");
+    // Kept in the field: cutting it there ate the Enter and glued the next words onto line 3.
+    expect(editor.getByTestId("editor-boss-lines-idle").props.value).toBe("a\nb\nc\nd");
     await fireEvent.press(editor.getByTestId("adventure-save"));
     await waitFor(() =>
       expect(hero().createHeroAdventure).toHaveBeenCalledWith(

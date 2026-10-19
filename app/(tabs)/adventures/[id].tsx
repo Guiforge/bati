@@ -560,20 +560,6 @@ export default function AdventureDetailsScreen() {
               </XStack>
             </XStack>
 
-            {isOwn && adventureId !== null ? (
-              <>
-                <ShareAdventureButton adventureId={adventureId} ask={ask} />
-                <AppIconButton
-                  testID="adventure-edit"
-                  onPress={() => router.push(`/adventures/edit?id=${adventureId}` as never)}
-                  accessibilityRole="button"
-                  accessibilityLabel={t("adventures.edit")}
-                >
-                  <Pencil size={20} color="$text" />
-                </AppIconButton>
-              </>
-            ) : null}
-
             <YStack items="flex-end" gap="$1">
               <Tag
                 testID="adventure-level-tag"
@@ -660,6 +646,21 @@ export default function AdventureDetailsScreen() {
                     >
                       {starsFor(finishedCount)}
                     </Text>
+                  ) : null}
+                  {/* Beside the adventure's own title, which wraps: in the header they squeezed
+                      its label to "Ave…" at 130%. */}
+                  {isOwn && adventureId !== null ? (
+                    <>
+                      <ShareAdventureButton adventureId={adventureId} ask={ask} />
+                      <AppIconButton
+                        testID="adventure-edit"
+                        onPress={() => router.push(`/adventures/edit?id=${adventureId}` as never)}
+                        accessibilityRole="button"
+                        accessibilityLabel={t("adventures.edit")}
+                      >
+                        <Pencil size={20} color="$text" />
+                      </AppIconButton>
+                    </>
                   ) : null}
                 </XStack>
 

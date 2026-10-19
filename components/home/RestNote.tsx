@@ -34,7 +34,9 @@ export function RestNote() {
   // `reason` is never "none" here — getRestSuggestion() only sets suggestion when shouldRest is
   // true — but destructuring it keeps that guarantee visible to the compiler below instead of
   // relying on a cast.
-  if (!suggestion || suggestion.reason === "none") return null;
+  // A deload is the light-week card's to offer (E-03): said twice here, and still said after the
+  // hero answered "Not now" there.
+  if (!suggestion || suggestion.reason === "none" || suggestion.reason === "deload") return null;
   const { reason } = suggestion;
 
   // Both counts feed the same `{{count}}` slot, and which one the sentence means depends on the

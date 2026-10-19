@@ -5,7 +5,7 @@ import { AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { ChevronDown, ChevronUp, X } from "@/components/icons";
 import { getQuestAsset } from "@/constants/assetMap";
-import { formatDuration } from "@/db/estimate";
+import { formatDurationEstimate } from "@/db/estimate";
 import { MAX_STEP_TEXT } from "@/db/heroAdventures";
 import type { QuestTemplate } from "@/db/quests";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
@@ -75,38 +75,39 @@ export function EditorStepCard({
             </Text>
             {quest ? (
               <Text fontSize={12} color="$textSecondary">
-                {formatDuration(seconds, language)}
+                {formatDurationEstimate(seconds, language)}
               </Text>
             ) : null}
           </YStack>
-          {frozen ? null : (
-            <XStack gap="$1">
-              <AppIconButton
-                disabled={index === 0}
-                onPress={() => onMove(-1)}
-                accessibilityRole="button"
-                accessibilityLabel={t("adventures.editor_step_up", { n })}
-              >
-                <ChevronUp size={18} color="$text" />
-              </AppIconButton>
-              <AppIconButton
-                disabled={isLast}
-                onPress={() => onMove(1)}
-                accessibilityRole="button"
-                accessibilityLabel={t("adventures.editor_step_down", { n })}
-              >
-                <ChevronDown size={18} color="$text" />
-              </AppIconButton>
-              <AppIconButton
-                onPress={onRemove}
-                accessibilityRole="button"
-                accessibilityLabel={t("adventures.editor_step_remove", { n })}
-              >
-                <X size={18} color="$text" />
-              </AppIconButton>
-            </XStack>
-          )}
         </XStack>
+        {/* A row of their own: beside the title, three 44 dp buttons left it one word at 130%. */}
+        {frozen ? null : (
+          <XStack gap="$1" justify="flex-end">
+            <AppIconButton
+              disabled={index === 0}
+              onPress={() => onMove(-1)}
+              accessibilityRole="button"
+              accessibilityLabel={t("adventures.editor_step_up", { n })}
+            >
+              <ChevronUp size={18} color="$text" />
+            </AppIconButton>
+            <AppIconButton
+              disabled={isLast}
+              onPress={() => onMove(1)}
+              accessibilityRole="button"
+              accessibilityLabel={t("adventures.editor_step_down", { n })}
+            >
+              <ChevronDown size={18} color="$text" />
+            </AppIconButton>
+            <AppIconButton
+              onPress={onRemove}
+              accessibilityRole="button"
+              accessibilityLabel={t("adventures.editor_step_remove", { n })}
+            >
+              <X size={18} color="$text" />
+            </AppIconButton>
+          </XStack>
+        )}
 
         <YStack gap="$2">
           <Text fontWeight="700" fontSize={14} color="$textSecondary">

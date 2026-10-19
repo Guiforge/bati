@@ -28,7 +28,7 @@ import {
   suggestDifficultyFromSessions,
 } from "@/db";
 import { bossHpForQuests } from "@/db/bossFights";
-import { type HeroBossVoice, noBossLines } from "@/db/bossVoice";
+import { cleanBossLines, type HeroBossVoice, noBossLines } from "@/db/bossVoice";
 import { isOutingQuest } from "@/db/expeditions";
 import {
   createHeroAdventure,
@@ -341,7 +341,8 @@ export default function AdventureEditor() {
       description,
       imagePath: cover,
       end,
-      voice,
+      // The field keeps a fourth line while it is typed (EditorBossVoice); the draft never does.
+      voice: { ...voice, lines: cleanBossLines(voice.lines) },
       steps: steps.map(({ questId, narrative, outro }) => ({ questId, narrative, outro })),
     };
     // A promise chain, not `try ... finally`: the React Compiler cannot lower one.

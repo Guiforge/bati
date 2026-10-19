@@ -23,6 +23,9 @@ type Props = {
  */
 export function EditorBossVoice({ voice, placeholder, onChange }: Props) {
   const { t } = useTranslation();
+  const tooMany = BOSS_LINE_MOMENTS.some(
+    (m) => voice.lines[m].filter((l) => l.trim()).length > MAX_BOSS_LINES,
+  );
   return (
     <YStack gap="$3">
       <YStack gap="$2">
@@ -31,6 +34,9 @@ export function EditorBossVoice({ voice, placeholder, onChange }: Props) {
         </Text>
         <Input
           testID="editor-boss-name"
+          // The size token's fixed height clipped the text's top at 130%: grow with the font.
+          height="auto"
+          minH={44}
           value={voice.name}
           onChangeText={(name) => onChange({ ...voice, name })}
           maxLength={MAX_BOSS_NAME}
@@ -53,10 +59,9 @@ export function EditorBossVoice({ voice, placeholder, onChange }: Props) {
                 ...voice,
                 lines: {
                   ...voice.lines,
-                  [m]: s
-                    .split("\n")
-                    .slice(0, MAX_BOSS_LINES)
-                    .map((l) => clip(l, MAX_BOSS_LINE)),
+                  // No cut to MAX_BOSS_LINES here: it ate the fourth Enter and glued what followed
+                  // onto line 3. The save keeps the first three (`cleanBossLines`), the hint warns.
+                  [m]: s.split("\n").map((l) => clip(l, MAX_BOSS_LINE)),
                 },
               })
             }
@@ -67,7 +72,7 @@ export function EditorBossVoice({ voice, placeholder, onChange }: Props) {
           />
         </YStack>
       ))}
-      <Text fontSize={13} color="$textSecondary">
+      <Text fontSize={13} color={tooMany ? "$warning" : "$textSecondary"}>
         {t("adventures.editor_boss_lines_hint")}
       </Text>
     </YStack>

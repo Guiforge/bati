@@ -104,7 +104,7 @@ function view(d: Device) {
            JOIN adventures a ON a.id = s.adventureId JOIN quests q ON q.id = s.questId
           WHERE a.uuid = ? ORDER BY s.stepIndex`,
       )
-      .all(adv.uuid),
+      .all(adv.uuid) as { quest: string; enTitle: string; enNarrative: string }[],
   }));
 }
 const count = (d: Device, table: string, where = "1") =>

@@ -1,6 +1,10 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { REST_HEADER_HEIGHT, sessionArtHeight } from "@/components/session/sessionArt";
+import {
+  exerciseArtMaxHeight,
+  REST_HEADER_HEIGHT,
+  sessionArtHeight,
+} from "@/components/session/sessionArt";
 
 /**
  * Two numbers shared by components that cannot measure each other, so what is worth testing is
@@ -13,6 +17,31 @@ import { REST_HEADER_HEIGHT, sessionArtHeight } from "@/components/session/sessi
  * reproduces.
  */
 describe("session art geometry", () => {
+  it("sizes against the content column on a wide window, and leaves a phone alone", () => {
+    // Phone: unchanged, min(height * 0.34, width * 1.1).
+    expect(sessionArtHeight(411, 916)).toBe(
+      Math.min(Math.round(916 * 0.34), Math.round(411 * 1.1)),
+    );
+    // Tablet: same as a window exactly one column wide.
+    expect(sessionArtHeight(1280, 800, "boss")).toBe(sessionArtHeight(520, 800, "boss"));
+    expect(sessionArtHeight(800, 2400, "boss")).toBe(Math.round(520 * 1.1));
+  });
+
+  it("caps the exercise hero by the column, above the floor on every screen", () => {
+    expect(exerciseArtMaxHeight(411)).toBe(Math.round(411 * 1.1));
+    expect(exerciseArtMaxHeight(1280)).toBe(Math.round(520 * 1.1));
+    for (const [w, h] of [
+      [411, 916],
+      [360, 640],
+      [800, 600],
+      [520, 751],
+    ] as const) {
+      expect(exerciseArtMaxHeight(w)).toBeGreaterThanOrEqual(
+        Math.round(sessionArtHeight(w, h) * 0.6),
+      );
+    }
+  });
+
   // A tall phone, a short phone, and a wide one where the width cap is what bites.
   const SCREENS = [
     { width: 411, height: 916 },

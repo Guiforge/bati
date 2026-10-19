@@ -36,6 +36,7 @@ export default function SessionScreen() {
   const prePauseStatus = useSessionStore((s) => s.prePauseStatus);
   const quest = useSessionStore((s) => s.quest);
   const pauseSession = useSessionStore((s) => s.pauseSession);
+  const resumeSession = useSessionStore((s) => s.resumeSession);
   const currentRoundIndex = useSessionStore((s) => s.currentRoundIndex);
   const currentExerciseIndex = useSessionStore((s) => s.currentExerciseIndex);
   const view = useExpeditionStore((s) => s.view);
@@ -52,13 +53,20 @@ export default function SessionScreen() {
         pauseSession();
         return true; // Prevent default behavior (exit)
       }
-      // If already paused or finished, allow back button to work (or let the overlay handle navigation)
+      // Paused: leaving the screen would leave the session open in the background (a quest's
+      // timers, an outing's GPS) with nothing on Home to say so. A session ends by a button;
+      // back on the pause overlay is "resume".
+      if (status === "paused") {
+        resumeSession();
+        return true;
+      }
+      // Finished: let the victory screen handle navigation.
       return false;
     };
 
     const subscription = BackHandler.addEventListener("hardwareBackPress", onBackPress);
     return () => subscription.remove();
-  }, [status, pauseSession]);
+  }, [status, pauseSession, resumeSession]);
 
   // Safety check: Redirect if no active quest (e.g. user navigated here manually or reload)
   // We allow "finished" status to stay so the Victory screen persists.

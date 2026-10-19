@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { fireEvent, render, waitFor, within } from "@testing-library/react-native";
+import { BackHandler } from "react-native";
 import { TamaguiProvider } from "tamagui";
 
 import AdventureDetailsScreen from "@/app/(tabs)/adventures/[id]";
@@ -11,22 +12,25 @@ import config from "@/tamagui.config";
 // "Fight Boss" while step 1 (a regular warm-up step) is what's actually next.
 
 const mockPush = jest.fn();
+const mockBack = jest.fn();
+const mockNavigate = jest.fn();
+const mockDismissTo = jest.fn();
+let mockParams: Record<string, string> = { id: "1" };
 
 // The hero's reminder days set the weeks chip's pace (adventure-weeks-label.test.ts); none here.
 jest.mock("@/db/reminders", () => ({ getReminderDays: async () => ({}) }));
 jest.mock("@/db/preferences", () => ({
   preferences: { getTrainingLevel: async () => "regular" },
 }));
-// The rule itself is proven on a real database in plus-access.test.ts; here only the wiring.
-jest.mock("@/src/plus/access", () => ({
-  can: jest.fn(async () => true),
-  lockedAdventures: jest.fn(async () => new Set()),
-  quotaRefusal: jest.fn(async () => null),
-}));
 jest.mock("@/db/questConfig", () => ({ startingDifficulty: () => "medium" }));
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ push: mockPush, back: jest.fn() }),
-  useLocalSearchParams: () => ({ id: "1" }),
+  useRouter: () => ({
+    push: mockPush,
+    back: mockBack,
+    navigate: mockNavigate,
+    dismissTo: mockDismissTo,
+  }),
+  useLocalSearchParams: () => mockParams,
   // The screen loads on focus; in tests "focused" is simply "mounted".
   useFocusEffect: (effect: () => undefined | (() => void)) => {
     const { useEffect } = require("react");
@@ -254,44 +258,6 @@ describe("the caption under the tag", () => {
   });
 });
 
-// Bati+ adventures the hero never started (P-04.2): no Start, and the first step opens its quest
-// alone, the way a completed step does. Nothing on this page may start a run.
-describe("a locked adventure page", () => {
-  const access = () => require("@/src/plus/access") as { can: jest.Mock };
-  const renderScreen = () =>
-    render(
-      <TamaguiProvider config={config} defaultTheme="dark">
-        <AdventureDetailsScreen />
-      </TamaguiProvider>,
-    );
-
-  beforeEach(() => {
-    mockPush.mockClear();
-    access().can.mockResolvedValue(false);
-  });
-  afterEach(() => {
-    access().can.mockResolvedValue(true);
-  });
-
-  test("shows the line instead of Start, and the first row opens its quest alone", async () => {
-    const db = require("@/db") as { startAdventureRun: jest.Mock };
-    db.startAdventureRun.mockClear();
-    const { getByText, queryByTestId, findByTestId } = await renderScreen();
-
-    expect(await findByTestId("adventure-plus-locked")).toBeTruthy();
-    expect(queryByTestId("adventure-start")).toBeNull();
-
-    await fireEvent.press(await waitFor(() => getByText("Step 1: Step 0")));
-    expect(mockPush).toHaveBeenCalledWith("/quests/100?adventureId=1", { withAnchor: true });
-    expect(db.startAdventureRun).not.toHaveBeenCalled();
-
-    // The second row stays inert: pressing it pushes nothing.
-    mockPush.mockClear();
-    await fireEvent.press(getByText("Step 2: Step 1"));
-    expect(mockPush).not.toHaveBeenCalled();
-  });
-});
-
 // "Le progrès offert": with no run yet, the first session may already count as step 1. The screen
 // asks the same read `startAdventureRun` does, so what it announces is what "Commencer" opens: the
 // first row done, the second one active, and the preview that of the second.
@@ -344,7 +310,6 @@ test("with the first session offered, the list and the preview show step 2 as th
 describe("leaving the playthrough", () => {
   type Db = { getActiveAdventureRun: jest.Mock; leaveAdventureRun: jest.Mock };
   const db = () => require("@/db") as Db;
-  const access = () => require("@/src/plus/access") as { can: jest.Mock };
   const renderScreen = () =>
     render(
       <TamaguiProvider config={config} defaultTheme="dark">
@@ -398,18 +363,10 @@ describe("leaving the playthrough", () => {
     expect(db().leaveAdventureRun).not.toHaveBeenCalled();
   });
 
-  test("is absent without a run, and when the adventure is locked", async () => {
+  test("is absent without a run", async () => {
     const first = await renderScreen();
     await first.findByTestId("adventure-start");
     expect(first.queryByTestId("adventure-leave")).toBeNull();
-    await first.unmount();
-
-    db().getActiveAdventureRun.mockResolvedValue(underWay);
-    access().can.mockResolvedValue(false);
-    const locked = await renderScreen();
-    await locked.findByTestId("adventure-plus-locked");
-    expect(locked.queryByTestId("adventure-leave")).toBeNull();
-    access().can.mockResolvedValue(true);
   });
 });
 
@@ -607,5 +564,92 @@ describe("sharing an adventure the hero wrote", () => {
     );
     await screen.findByText("Tale");
     expect(screen.queryByTestId("adventure-share")).toBeNull();
+  });
+});
+
+// Home's "Continue the adventure" passes from=home: back, by the chevron and by the system, goes
+// to Home. Unwinding the tab first is what keeps the stuck-Adventures-tab bug (R4-D2) away; any
+// other door keeps the plain pop.
+describe("back from an adventure opened from Home", () => {
+  afterEach(() => {
+    mockParams = { id: "1" };
+    mockBack.mockClear();
+    mockNavigate.mockClear();
+    mockDismissTo.mockClear();
+  });
+
+  const mount = () =>
+    render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <AdventureDetailsScreen />
+      </TamaguiProvider>,
+    );
+
+  test("the chevron unwinds the tab and lands on Home", async () => {
+    mockParams = { id: "1", from: "home" };
+    const { findByLabelText } = await mount();
+
+    await fireEvent.press(await findByLabelText("Go back"));
+
+    expect(mockDismissTo).toHaveBeenCalledWith("/adventures");
+    expect(mockNavigate).toHaveBeenCalledWith("/");
+    expect(mockBack).not.toHaveBeenCalled();
+  });
+
+  test("the system back does the same, and is consumed", async () => {
+    mockParams = { id: "1", from: "home" };
+    const spy = jest.spyOn(BackHandler, "addEventListener");
+    const { findByText } = await mount();
+    await findByText("Start Adventure");
+
+    const handler = spy.mock.calls.find(([name]) => name === "hardwareBackPress")?.[1];
+    spy.mockRestore();
+    assert(handler);
+    expect((handler as () => boolean)()).toBe(true);
+    expect(mockDismissTo).toHaveBeenCalledWith("/adventures");
+    expect(mockNavigate).toHaveBeenCalledWith("/");
+  });
+
+  test("from the Journal's bosses, the chevron returns there", async () => {
+    mockParams = { id: "1", from: "/journal/bosses" };
+    const { findByLabelText } = await mount();
+
+    await fireEvent.press(await findByLabelText("Go back"));
+
+    expect(mockDismissTo).toHaveBeenCalledWith("/adventures");
+    expect(mockNavigate).toHaveBeenCalledWith("/journal/bosses");
+  });
+
+  test("an origin that is not Home or the Journal is ignored", async () => {
+    mockParams = { id: "1", from: "/settings" };
+    const { findByLabelText } = await mount();
+
+    await fireEvent.press(await findByLabelText("Go back"));
+
+    expect(mockBack).toHaveBeenCalledTimes(1);
+  });
+
+  test("the quests it opens carry the origin, so Home > adventure > quest > back > back is Home", async () => {
+    mockParams = { id: "1", from: "home" };
+    mockPush.mockClear();
+    const { findByText } = await mount();
+
+    await fireEvent.press(await findByText("Start Adventure"));
+
+    await waitFor(() =>
+      expect(mockPush).toHaveBeenCalledWith(
+        expect.stringMatching(/adventureId=1&adventureFrom=home$/),
+        { withAnchor: true },
+      ),
+    );
+  });
+
+  test("opened any other way, the chevron still pops", async () => {
+    const { findByLabelText } = await mount();
+
+    await fireEvent.press(await findByLabelText("Go back"));
+
+    expect(mockBack).toHaveBeenCalledTimes(1);
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 });

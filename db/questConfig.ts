@@ -3,7 +3,7 @@ import { db, schema } from "./client";
 import { workoutsBeforeToday } from "./completed";
 import { type Exercise, listExercises } from "./exercises";
 import { isOutingSession } from "./expeditions";
-import { isLightWeekRunning, lightenRounds } from "./lightWeek";
+import { isLightWeekRunning, lightenRounds, lightWeekSince } from "./lightWeek";
 import { getExerciseHistory, ghostKey } from "./personalRecords";
 import {
   deletePreference,
@@ -16,6 +16,7 @@ import {
 } from "./preferences";
 import {
   getQuestById,
+  isUserQuest,
   listQuestTemplates,
   movementRef,
   progressiveSlot,
@@ -417,15 +418,21 @@ export function applyQuestConfig(
  * the reason `exercisesById` is: optional, a caller would compile and silently skip the
  * progression on every swapped slot.
  */
-export type SwapJournal = Pick<SlotJournal, "history" | "readAt">;
+export type SwapJournal = Pick<SlotJournal, "history" | "readAt" | "freezeAt">;
 
 /** The swapped-in movements' history, free when the quest has no swap. */
 export async function loadSwapJournal(
   config: Pick<QuestConfig, "swaps"> | null,
 ): Promise<SwapJournal> {
+  const freezeAt = await lightWeekSince(new Date());
   return {
-    history: await getExerciseHistory(Object.values(config?.swaps ?? {})),
+    history: await getExerciseHistory(
+      Object.values(config?.swaps ?? {}),
+      undefined,
+      freezeAt ?? undefined,
+    ),
     readAt: Date.now(),
+    ...(freezeAt == null ? {} : { freezeAt }),
   };
 }
 
@@ -622,6 +629,7 @@ export async function loadConfiguredQuest(
       applyQuestConfig(quest, config, indexExercises(exercises), swapJournal),
       config,
       lightWeek,
+      isUserQuest(quest),
     ),
     level: effective,
     // The config itself, not only the quest it shaped. `applyQuestConfig` folds the hero's

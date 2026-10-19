@@ -23,3 +23,28 @@ export const CONTENT_MAX_WIDTH = 520;
  * ponytail: a font scale past ~1.3 grows the card beyond this and nudges once; measure if it matters.
  */
 export const LEVEL_CARD_HEIGHT = 62;
+
+/**
+ * The painting's height: 4:3 against the column, never more than 45% of the window. The modal sits
+ * outside the content column, so on a landscape tablet a 4:3 against the window was taller than
+ * the window and pushed the words and both buttons off it. A portrait phone is unchanged, 4:3 is
+ * already under 45% of a screen taller than 1.67 times its width.
+ */
+export function narrativeArtHeight(windowWidth: number, windowHeight: number) {
+  const column = Math.min(windowWidth, CONTENT_MAX_WIDTH);
+  return Math.min(Math.round((column * 3) / 4), Math.round(windowHeight * 0.45));
+}
+
+/**
+ * The quest detail's picture: 16:9 against the column as before, never more than 30% of the window.
+ * In landscape on a tablet it took half of the visible height and pushed the quest's exercises
+ * under the fold. Phones from 675 dp of height up are unchanged, the cap is above their 16:9.
+ */
+export function questHeaderHeight(windowWidth: number, windowHeight: number) {
+  // The screen pads its column by $5 (20 dp) a side; the picture sits inside that padding.
+  const column = Math.min(windowWidth, CONTENT_MAX_WIDTH) - 40;
+  return Math.min(Math.round((column * 9) / 16), Math.round(windowHeight * 0.3));
+}
+
+/** The window height from which the warm-up wait shows the full picture, not the 64 dp thumbnail. */
+export const WARMUP_PICTURE_MIN_HEIGHT = 800;

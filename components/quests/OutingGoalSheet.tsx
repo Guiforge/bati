@@ -8,6 +8,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Chip } from "@/components/common/Chip";
 import { X } from "@/components/icons";
 import { formatDistance } from "@/constants/distanceFormat";
+import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { formatDuration } from "@/db/estimate";
 import { getOutingHabit } from "@/db/outingHabit";
 import { LONGEST_RUN_CEILING, NO_HABIT, type OutingHabit } from "@/db/outingRule";
@@ -216,7 +217,14 @@ export function OutingGoalSheet({
       />
       {/* No handle, for the same reason the picker has none: with the drag off it would promise
           a gesture that answers nothing. The X and hardware back are the way out. */}
-      <Sheet.Frame bg="$surface" borderTopLeftRadius="$6" borderTopRightRadius="$6">
+      <Sheet.Frame
+        width="100%"
+        maxW={CONTENT_MAX_WIDTH}
+        self="center"
+        bg="$surface"
+        borderTopLeftRadius="$6"
+        borderTopRightRadius="$6"
+      >
         <YStack px="$4" pt="$4" pb={insets.bottom + 16} gap="$4">
           <XStack items="center" justify="space-between" gap="$3">
             <Text flex={1} fontWeight="700" fontSize={18} color="$text">

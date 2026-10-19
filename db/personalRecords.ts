@@ -75,6 +75,13 @@ export type ExerciseGhost = {
    * app's. `last`, `at` and the records still read every session.
    */
   recent: SessionMark[];
+  /**
+   * Under a light week (`frozenAt`), when the last set was logged before the week began, in any
+   * quest (ms). The comeback gap reads it once `at` falls inside the week: `recent` leaves the
+   * hero's own quests out, so it would date their last session too early. Null when nothing is
+   * frozen or nothing came before the week.
+   */
+  atBeforeFreeze?: number | null;
 };
 
 /**
@@ -113,6 +120,11 @@ export async function getExerciseHistory(
   exerciseIds: number[],
   /** How many sessions `recent` keeps; the cap offer counts a run and needs more than three. */
   recentSessions: number = RECENT_SESSIONS,
+  /**
+   * A light week froze the targets at this instant (ms): the `recentSessions` kept are the newest
+   * ones from before it, so a few sessions inside the week cannot push them all out of the window.
+   */
+  frozenAt?: number,
 ): Promise<Map<string, ExerciseGhost>> {
   if (exerciseIds.length === 0) return new Map();
 
@@ -123,6 +135,10 @@ export async function getExerciseHistory(
 
   // `performedAt` is stored in seconds, and a raw read does not go through the column's mapper.
   const seasonCut = Math.floor((Date.now() - SEASON_DAYS * 24 * 60 * 60 * 1000) / 1000);
+  // In-week sessions rank after every earlier one (`recent` is cut by rank, then filtered by time).
+  const inWeek = frozenAt == null ? sql`0` : sql`(b.at >= ${Math.ceil(frozenAt / 1000)})`;
+  const beforeFreeze =
+    frozenAt == null ? sql`NULL` : sql`MAX(CASE WHEN NOT ${inWeek} THEN b.at END) OVER w * 1000`;
   const rows = await db.all<{
     exerciseId: number;
     resultType: QuestTargetType;
@@ -137,9 +153,10 @@ export async function getExerciseHistory(
     rn: number;
     rnOwn: number;
     heroQuest: number;
+    atBeforeFreeze: number | null;
   }>(sql`
     SELECT exerciseId, resultType, sessionBest, best, at, bestAt, seasonBest, prescribed, met,
-           userLevel, rn, rnOwn, heroQuest
+           userLevel, rn, rnOwn, heroQuest, atBeforeFreeze
     FROM (
       SELECT b.exerciseId, b.resultType, b.best AS sessionBest, b.at, b.prescribed, b.met,
              s.userLevel, (q.author IS ${USER_EXERCISE_CREATOR}) AS heroQuest,
@@ -148,12 +165,13 @@ export async function getExerciseHistory(
                PARTITION BY b.exerciseId, b.resultType ORDER BY b.best DESC, b.at ASC
              ) AS bestAt,
              MAX(CASE WHEN b.at >= ${seasonCut} THEN b.best END) OVER w AS seasonBest,
+             ${beforeFreeze} AS atBeforeFreeze,
              ROW_NUMBER() OVER (
                PARTITION BY b.exerciseId, b.resultType ORDER BY b.at DESC, b.sessionId DESC
              ) AS rn,
              ROW_NUMBER() OVER (
                PARTITION BY b.exerciseId, b.resultType, (q.author IS ${USER_EXERCISE_CREATOR})
-               ORDER BY b.at DESC, b.sessionId DESC
+               ORDER BY ${inWeek}, b.at DESC, b.sessionId DESC
              ) AS rnOwn
       FROM (
         SELECT * FROM (${sessionBestsSql(sql`exerciseId IN (${ids})`)})
@@ -179,6 +197,7 @@ export async function getExerciseHistory(
         bestAt: r.bestAt * 1000,
         seasonBest: r.seasonBest,
         recent: [],
+        atBeforeFreeze: r.atBeforeFreeze,
       };
       ghosts.set(key, ghost);
     }

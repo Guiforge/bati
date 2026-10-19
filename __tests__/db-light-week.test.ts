@@ -63,8 +63,39 @@ describe("db/lightWeek", () => {
     session(1, [
       [10, 10],
       [7, 10],
+      [6, 10],
     ]);
     expect(await lw().lightWeekReason(NOW)).toBe("under");
+  });
+
+  test("a session is under only when more than half of its strength sets missed", async () => {
+    session(3, [[8, 10]]);
+    // Exactly half missed: not under.
+    session(1, [
+      [10, 10],
+      [7, 10],
+    ]);
+    expect(await lw().lightWeekReason(NOW)).toBeNull();
+  });
+
+  test("mobility sets do not count toward under: met stretches cannot hide missed strength", async () => {
+    session(3, [[8, 10]]);
+    const id = session(1, [[7, 10]]);
+    for (let i = 1; i <= 3; i++)
+      t.sqlite
+        .prepare(
+          `INSERT INTO completed_exercises
+             (sessionId, exerciseId, roundIndex, sortOrder, resultType, resultValue, targetValue, performedAt)
+           VALUES (?, ?, 0, ?, 'time', 30, 30, 0)`,
+        )
+        .run(id, exerciseWith("mobility"), i);
+    expect(await lw().lightWeekReason(NOW)).toBe("under");
+  });
+
+  test("a session of only mobility sets is never under", async () => {
+    session(3, [[8, 10]]);
+    session(1, [[10, 30]], exerciseWith("mobility"));
+    expect(await lw().lightWeekReason(NOW)).toBeNull();
   });
 
   test("one clean session in between breaks the run", async () => {
@@ -85,6 +116,13 @@ describe("db/lightWeek", () => {
     expect(await lw().lightWeekReason(NOW)).toBeNull();
   });
 
+  test("two missed sessions inside an accepted week do not offer the next one on day 8", async () => {
+    await lw().acceptLightWeek(daysAgo(7.5));
+    session(5, [[5, 10]]);
+    session(4, [[5, 10]]);
+    expect(await lw().lightWeekReason(NOW)).toBeNull();
+  });
+
   test("a refusal silences the card for 14 days, then it can speak again", async () => {
     session(3, [[8, 10]]);
     session(1, [[7, 10]]);
@@ -101,10 +139,34 @@ describe("db/lightWeek", () => {
     await lw().acceptLightWeek(NOW);
     expect(await lw().isLightWeekRunning(new Date(NOW.getTime() + 6 * DAY))).toBe(true);
     expect(await lw().isLightWeekRunning(new Date(NOW.getTime() + 8 * DAY))).toBe(false);
-    expect(lw().lightenRounds({ rounds: 3 }, null, true).rounds).toBe(2);
-    expect(lw().lightenRounds({ rounds: 1 }, null, true).rounds).toBe(1);
-    expect(lw().lightenRounds({ rounds: 3 }, { rounds: 3 }, true).rounds).toBe(3);
-    expect(lw().lightenRounds({ rounds: 3 }, null, false).rounds).toBe(3);
+    // A session begun before the tap and saved after it is not in the week.
+    expect(await lw().isLightWeekRunning(new Date(NOW.getTime() - 1000))).toBe(false);
+    expect(lw().lightWeekRunning(NOW.getTime(), new Date(NOW.getTime() - 1))).toBe(false);
+  });
+
+  test("the hero can end the week early, and the offer does not come straight back", async () => {
+    session(3, [[8, 10]]);
+    session(1, [[7, 10]]);
+    await lw().acceptLightWeek(daysAgo(0.5));
+    expect(await lw().lightWeekUntil(NOW)).toEqual(new Date(daysAgo(0.5).getTime() + 7 * DAY));
+    await lw().endLightWeek(NOW);
+    expect(await lw().isLightWeekRunning(NOW)).toBe(false);
+    expect(await lw().lightWeekUntil(NOW)).toBeNull();
+    // The two misses came before the acceptance: ending is not a way to be asked again.
+    expect(await lw().lightWeekReason(NOW)).toBeNull();
+    // Accepting again later runs a new week.
+    await lw().acceptLightWeek(new Date(NOW.getTime() + 1000));
+    expect(await lw().isLightWeekRunning(new Date(NOW.getTime() + 2000))).toBe(true);
+  });
+
+  test("no offer inside a pause: accepting would use up the seven days of the break", async () => {
+    session(3, [[8, 10]]);
+    session(1, [[7, 10]]);
+    expect(await lw().lightWeekReason(NOW)).toBe("under");
+    t.sqlite
+      .prepare("INSERT INTO user_preferences (key, value) VALUES ('pause_goal', ?)")
+      .run(JSON.stringify([{ from: "2026-10-15", until: "2026-10-25" }]));
+    expect(await lw().lightWeekReason(NOW)).toBeNull();
   });
 
   test("hard sets: missed sets count, stretches and pattern-less movements do not", async () => {

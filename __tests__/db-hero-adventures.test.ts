@@ -627,17 +627,4 @@ describe("db/heroAdventures", () => {
       expect(row(id)).toMatchObject({ bossName: "Keeper" });
     });
   });
-
-  test("no adventure writer asks the quota", () => {
-    const fs = require("node:fs") as typeof import("node:fs");
-    for (const file of [
-      "db/heroAdventures.ts",
-      "app/(tabs)/adventures/edit.tsx",
-      "components/adventures/QuestPickerSheet.tsx",
-    ]) {
-      expect(fs.readFileSync(`${process.cwd()}/${file}`, "utf8")).not.toMatch(
-        /\bcan\(|canDo\(|FREE_HERO/,
-      );
-    }
-  });
 });

@@ -1085,6 +1085,23 @@ describe("useSessionStore", () => {
       );
     });
 
+    test("only a lightened quest is saved as lightened, so a light week judges the rest (D-52)", async () => {
+      const completed = require("@/db/completed") as { createCompletedSession: jest.Mock };
+      completed.createCompletedSession.mockClear();
+      for (const lightened of [true, undefined]) {
+        store.setState({ status: "idle" });
+        await store.getState().startSession({ ...mockQuest, lightened } as Quest, "medium");
+        store.setState({
+          results: [{ exerciseId: 1, sortOrder: 0, result: { type: "reps", value: 10 } }],
+        });
+        await store.getState().saveSession(null);
+      }
+      expect(completed.createCompletedSession.mock.calls.map((c) => c[0].lightened)).toEqual([
+        true,
+        false,
+      ]);
+    });
+
     /**
      * saveSession is a dozen awaits long and is not one transaction, so a failure halfway
      * through leaves the session row written — and the victory screen offers a retry button for

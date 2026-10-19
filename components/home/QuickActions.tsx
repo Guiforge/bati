@@ -12,6 +12,7 @@ import { RotateCcw, SlidersHorizontal } from "@/components/icons";
 import { OutingGoalSheet } from "@/components/quests/OutingGoalSheet";
 import { getQuestThumb } from "@/constants/assetMap";
 import { formatDistance } from "@/constants/distanceFormat";
+import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { fade, rawColors } from "@/constants/rawColors";
 import { getRecentSessionHistory } from "@/db/completed";
 import { formatDurationEstimate } from "@/db/estimate";
@@ -136,7 +137,7 @@ export function QuickActions({ showGoals }: { showGoals: boolean | null }) {
   // which reads as "there is more", instead of in mid-air inside a margin. The inset comes back as
   // the scroll's own padding, from the token so it lines up with the stage above.
   const pageInset = getTokens().space.$4.val;
-  const { height: screenHeight } = useWindowDimensions();
+  const { width: windowWidth, height: screenHeight } = useWindowDimensions();
   const tileHeight = screenHeight < SHORT_SCREEN ? TILE_HEIGHT_SHORT : TILE_HEIGHT;
   const router = useRouter();
   const language = useSettingsStore((s) => s.language);
@@ -358,7 +359,13 @@ export function QuickActions({ showGoals }: { showGoals: boolean | null }) {
         showsHorizontalScrollIndicator={false}
         // The goal sheet's field raises a keyboard over this row; its first tap is a tile's.
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ gap: 8, paddingHorizontal: pageInset }}
+        // Centred past the column: on a tablet nothing scrolls and the tiles hugged the left edge.
+        // flexGrow only matters when the content is narrower than the row, so a phone is unchanged.
+        contentContainerStyle={{
+          gap: 8,
+          paddingHorizontal: pageInset,
+          ...(windowWidth > CONTENT_MAX_WIDTH ? { flexGrow: 1, justifyContent: "center" } : null),
+        }}
       >
         {outings.map(({ quest, exercise }) => {
           const name = localizedName(exercise, language);

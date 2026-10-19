@@ -77,12 +77,14 @@ jest.mock("@/db/preferences", () => ({
 jest.mock("@/db/completed", () => ({ countSessions: jest.fn().mockResolvedValue(118) }));
 
 const mockReplace = jest.fn();
+const mockDismissTo = jest.fn();
 const mockBack = jest.fn();
 const mockPush = jest.fn();
 let mockCanGoBack = true;
 jest.mock("expo-router", () => ({
   useRouter: () => ({
     replace: mockReplace,
+    dismissTo: mockDismissTo,
     back: mockBack,
     push: mockPush,
     canGoBack: () => mockCanGoBack,
@@ -812,7 +814,8 @@ describe("the big-feast route", () => {
     expect(handled).toBe(true);
     expect(mockBack).toHaveBeenCalledTimes(1);
     expect(quit).toHaveBeenCalledTimes(1);
-    expect(mockReplace).toHaveBeenCalledWith("/quests/9?runStepId=4&adventureId=3", {
+    expect(mockDismissTo).toHaveBeenCalledWith("/");
+    expect(mockPush).toHaveBeenCalledWith("/quests/9?runStepId=4&adventureId=3", {
       withAnchor: true,
     });
     spy.mockRestore();
@@ -825,6 +828,7 @@ describe("the big-feast route", () => {
     expect(quit).not.toHaveBeenCalled();
     expect(mockBack).toHaveBeenCalledTimes(1);
     expect(mockReplace).not.toHaveBeenCalled();
+    expect(mockDismissTo).not.toHaveBeenCalled();
   });
 
   test("a session under way is not quit by the link", async () => {

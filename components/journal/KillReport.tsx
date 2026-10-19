@@ -24,6 +24,7 @@ import type { CompletedSession } from "@/db/completed";
 import type { KillReport as KillReportData } from "@/db/journal";
 import { formatCount, formatTargetValue } from "@/db/targets";
 import { BUILDING_LABELS } from "@/db/village";
+import { adventureHref } from "@/src/adventureOrigin";
 import type { Localized } from "@/src/i18n/deviceLanguage";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
@@ -220,7 +221,11 @@ export function KillReport({
             variant="primary"
             block
             minH={48}
-            onPress={() => router.push(`/adventures/${report.adventureId}` as never)}
+            onPress={() =>
+              router.push(adventureHref(report.adventureId, `/journal/${session.id}`) as never, {
+                withAnchor: true,
+              })
+            }
           >
             {t("journal.cta_boss")}
           </NButton>

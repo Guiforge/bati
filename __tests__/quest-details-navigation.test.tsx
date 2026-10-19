@@ -15,7 +15,16 @@ const backHandlerSpy = jest.spyOn(
   require("react-native").BackHandler,
   "addEventListener",
 ) as jest.SpyInstance;
-let mockParams: { id?: string; adventureId?: string; from?: string } = { id: "5" };
+let mockFocused = true;
+let mockParams: {
+  id?: string;
+  adventureId?: string;
+  adventureFrom?: string;
+  from?: string;
+  session?: string;
+} = {
+  id: "5",
+};
 
 // Setting aside is not what this file is about.
 jest.mock("@/db/questConfig", () => ({
@@ -40,7 +49,7 @@ jest.mock("expo-router", () => ({
   // The screen loads on focus; in tests "focused" is simply "mounted".
   useFocusEffect: (effect: () => undefined | (() => void)) => {
     const { useEffect } = require("react");
-    useEffect(effect, [effect]);
+    useEffect(() => (mockFocused ? effect() : undefined), [effect]);
   },
 }));
 
@@ -146,6 +155,19 @@ describe("quests/[id] chevron", () => {
     mockNavigate.mockClear();
     mockDismissTo.mockClear();
     backHandlerSpy.mockClear();
+    mockFocused = true;
+  });
+
+  test("a screen left behind holds no hardware back (R2-D1): from the Journal it must not capture back elsewhere", async () => {
+    mockFocused = false;
+    mockParams = { id: "5", from: "journal", session: "42" };
+    await render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <QuestDetails />
+      </TamaguiProvider>,
+    );
+    const backs = backHandlerSpy.mock.calls.filter(([event]) => event === "hardwareBackPress");
+    expect(backs).toHaveLength(0);
   });
 
   test("with an adventureId, the chevron navigates back to that adventure", async () => {
@@ -154,8 +176,27 @@ describe("quests/[id] chevron", () => {
 
     await fireEvent.press(getByLabelText("Go back"));
 
-    expect(mockNavigate).toHaveBeenCalledWith("/adventures/12");
-    expect(mockDismissTo).not.toHaveBeenCalled();
+    expect(mockNavigate).toHaveBeenCalledWith("/adventures/12", { withAnchor: true });
+    // The quest leaves this tab's stack first, or the Quests tab reopens on it.
+    expect(mockDismissTo).toHaveBeenCalledWith("/quests");
+  });
+
+  test("an adventure opened from Home gets its origin back, so its own back reaches Home", async () => {
+    mockParams = { id: "5", adventureId: "12", adventureFrom: "home" };
+    const { getByLabelText } = await renderQuestDetails();
+
+    await fireEvent.press(getByLabelText("Go back"));
+
+    expect(mockNavigate).toHaveBeenCalledWith("/adventures/12?from=home", { withAnchor: true });
+  });
+
+  test("an unknown adventure origin is dropped, not forwarded", async () => {
+    mockParams = { id: "5", adventureId: "12", adventureFrom: "https://evil.example" };
+    const { getByLabelText } = await renderQuestDetails();
+
+    await fireEvent.press(getByLabelText("Go back"));
+
+    expect(mockNavigate).toHaveBeenCalledWith("/adventures/12", { withAnchor: true });
   });
 
   test("with no adventureId, the chevron dismisses to the gallery", async () => {
@@ -190,7 +231,7 @@ describe("quests/[id] chevron", () => {
     // called on and does nothing at all when the target is not in it. Verified on a device, where
     // the screen simply did not move.
     expect(mockNavigate).toHaveBeenCalledWith("/");
-    expect(mockDismissTo).not.toHaveBeenCalled();
+    expect(mockDismissTo).toHaveBeenCalledWith("/quests");
   });
 
   test("and so does the hardware back, so the two never disagree", async () => {
@@ -210,6 +251,38 @@ describe("quests/[id] chevron", () => {
 
     await fireEvent.press(getByLabelText("Go back"));
 
-    expect(mockNavigate).toHaveBeenCalledWith("/adventures/12");
+    expect(mockNavigate).toHaveBeenCalledWith("/adventures/12", { withAnchor: true });
+  });
+
+  test("from a Journal detail, both backs return to that detail", async () => {
+    mockParams = { id: "5", from: "journal", session: "42" };
+    const { getByLabelText } = await renderQuestDetails();
+
+    await fireEvent.press(getByLabelText("Go back"));
+    expect(mockNavigate).toHaveBeenLastCalledWith("/journal/42");
+
+    mockNavigate.mockClear();
+    const press = backHandlerSpy.mock.calls.at(-1)?.[1] as () => boolean;
+    expect(press()).toBe(true);
+    expect(mockNavigate).toHaveBeenCalledWith("/journal/42");
+    expect(mockDismissTo).toHaveBeenCalledWith("/quests");
+  });
+
+  test("from the Journal without a session (Stats suggestions), back lands on the Journal", async () => {
+    mockParams = { id: "5", from: "journal" };
+    const { getByLabelText } = await renderQuestDetails();
+
+    await fireEvent.press(getByLabelText("Go back"));
+
+    expect(mockNavigate).toHaveBeenCalledWith("/journal");
+  });
+
+  test("from an adventure step, the hardware back agrees with the chevron", async () => {
+    mockParams = { id: "5", adventureId: "12" };
+    await renderQuestDetails();
+
+    const press = backHandlerSpy.mock.calls.at(-1)?.[1] as () => boolean;
+    expect(press()).toBe(true);
+    expect(mockNavigate).toHaveBeenCalledWith("/adventures/12", { withAnchor: true });
   });
 });

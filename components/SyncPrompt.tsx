@@ -103,7 +103,8 @@ export function SyncPrompt() {
       .then(([restored, notice]) => {
         const said = restored ? restoredWords(t, restored) : notice ? mergedWords(t, notice) : null;
         if (said !== null) showSuccess(said);
-        if (notice !== null && notice.returnTo !== "/") router.push(notice.returnTo as Href);
+        if (notice !== null && notice.returnTo !== "/")
+          router.push(notice.returnTo as Href, { withAnchor: true });
       })
       .catch((e) => reportError("sync.mergeNotice", e));
   }, [showSuccess, t]);

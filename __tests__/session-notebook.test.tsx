@@ -6,6 +6,19 @@ jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k: string) => k }),
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
+type Leave = { preventDefault: () => void; data: { action: unknown } };
+let mockLeaveListeners: ((e: Leave) => void)[] = [];
+const mockDispatch = jest.fn();
+const mockNavigation = {
+  addListener: (_name: string, fn: (e: Leave) => void) => {
+    mockLeaveListeners.push(fn);
+    return () => {
+      mockLeaveListeners = mockLeaveListeners.filter((l) => l !== fn);
+    };
+  },
+  dispatch: (action: unknown) => mockDispatch(action),
+};
+jest.mock("expo-router", () => ({ useNavigation: () => mockNavigation }));
 jest.mock("@/db/client", () => ({ db: {}, schema: {} }));
 jest.mock("@/src/reportError", () => ({ reportError: jest.fn() }));
 
@@ -99,4 +112,63 @@ test("note mode opens on the editor and shows no photo controls", async () => {
   await mount({ mode: "note", startEditing: true });
   expect(screen.getByTestId("notebook-note-input")).toBeTruthy();
   expect(screen.queryByTestId("notebook-photo-add")).toBeNull();
+});
+
+describe("leaving with an unsaved note", () => {
+  const leave = async () => {
+    const e = { preventDefault: jest.fn(), data: { action: { type: "GO_BACK" } } };
+    await act(() => {
+      for (const l of mockLeaveListeners) l(e);
+    });
+    return e;
+  };
+
+  beforeEach(() => {
+    mockLeaveListeners = [];
+  });
+
+  test("is stopped and asked about once the text differs from the saved note", async () => {
+    mockNotes = "Rain";
+    await mount();
+    await act(async () => {
+      await fireEvent.press(screen.getByTestId("notebook-note-edit"));
+    });
+    // Opened but untouched: nothing to lose, nothing asked.
+    expect((await leave()).preventDefault).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await fireEvent.changeText(screen.getByTestId("notebook-note-input"), "Rain, strong legs");
+    });
+    expect((await leave()).preventDefault).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("quests.editor_discard_title")).toBeTruthy();
+    expect(mockDispatch).not.toHaveBeenCalled();
+
+    // "Discard" lets the very same exit through.
+    await act(async () => {
+      await fireEvent.press(screen.getByText("quests.editor_discard"));
+    });
+    expect(mockDispatch).toHaveBeenCalledWith({ type: "GO_BACK" });
+  });
+
+  test("lets a saved note go without a question", async () => {
+    await mount();
+    await act(async () => {
+      await fireEvent.press(screen.getByTestId("notebook-note-edit"));
+    });
+    await act(async () => {
+      await fireEvent.changeText(screen.getByTestId("notebook-note-input"), "Done");
+    });
+    await act(async () => {
+      await fireEvent.press(screen.getByTestId("notebook-note-save"));
+    });
+    expect((await leave()).preventDefault).not.toHaveBeenCalled();
+  });
+
+  test("the victory screen's composer is not guarded", async () => {
+    await mount({ mode: "note", startEditing: true });
+    await act(async () => {
+      await fireEvent.changeText(screen.getByTestId("notebook-note-input"), "Typing");
+    });
+    expect((await leave()).preventDefault).not.toHaveBeenCalled();
+  });
 });

@@ -1,4 +1,4 @@
-import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render } from "@testing-library/react-native";
 import { Alert, StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
@@ -17,14 +17,7 @@ jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }
 jest.mock("@/i18n", () => ({ i18n: { changeLanguage: jest.fn(), t: (key: string) => key } }));
 jest.mock("@/src/i18n/deviceLanguage", () => ({ getDevicePreferredAppLanguage: () => "en" }));
 
-// The rule is proven on a real database in plus-access.test.ts; here only the wiring.
-const mockQuotaRefusal = jest.fn(async (_kind?: string) => null as number | null);
-jest.mock("@/src/plus/access", () => ({
-  quotaRefusal: (kind: string) => mockQuotaRefusal(kind),
-}));
-
 const mockCreate = jest.fn();
-const mockParams: { id?: string } = {};
 jest.mock("@/db", () => ({
   adventuresUsingQuest: jest.fn().mockResolvedValue([]),
   clearQuestConfig: jest.fn(),
@@ -35,6 +28,7 @@ jest.mock("@/db", () => ({
   heroFirst: (rows: unknown[]) => rows,
   listExercises: jest.fn().mockResolvedValue([]),
   pickableExercises: (rows: unknown[]) => rows,
+  preferences: { getRestDefault: jest.fn().mockResolvedValue(null) },
   REST_RANGE: { min: 5, max: 300 },
   ROUNDS_RANGE: { min: 1, max: 10 },
   saveQuestConfig: jest.fn(),
@@ -45,6 +39,7 @@ jest.mock("@/db", () => ({
   updateQuestMeta: jest.fn(),
 }));
 
+const mockParams: { id?: string } = {};
 jest.mock("expo-router", () => ({
   useRouter: () => ({ back: jest.fn(), replace: jest.fn(), push: jest.fn() }),
   useLocalSearchParams: () => mockParams,
@@ -128,35 +123,47 @@ describe("quest editor, saving an incomplete quest", () => {
   });
 });
 
-// Bati+ quota (P-04.2): only creating is refused, and the import door stays open on the refusal.
-describe("quest editor, quota", () => {
-  beforeEach(() => {
-    mockQuotaRefusal.mockReset().mockResolvedValue(null);
+describe("quest editor, a new quest", () => {
+  it("opens on the rest the hero set in Settings, for both rests", async () => {
+    const prefs = (require("@/db") as { preferences: { getRestDefault: jest.Mock } }).preferences;
+    prefs.getRestDefault.mockResolvedValueOnce(45);
     delete mockParams.id;
-  });
-
-  it("shows the refusal with the import button instead of the form, and writes nothing", async () => {
-    mockQuotaRefusal.mockResolvedValue(3);
     const editor = await mountEditor();
-    await waitFor(() => expect(editor.getByTestId("quota-panel-text")).toBeTruthy());
-    expect(editor.getByText("plus.quest_quota")).toBeTruthy();
-    expect(editor.queryByTestId("quest-name")).toBeNull();
-    expect(editor.getByTestId("quest-import")).toBeTruthy();
-    expect(mockCreate).not.toHaveBeenCalled();
+
+    expect(editor.getAllByText(/^45/)).toHaveLength(2);
   });
 
-  it("keeps the form when creating is allowed", async () => {
+  it("opens on 30 s when the hero set none", async () => {
+    delete mockParams.id;
     const editor = await mountEditor();
-    expect(editor.getByTestId("quest-name")).toBeTruthy();
-    expect(mockQuotaRefusal).toHaveBeenCalledWith("createQuest");
+
+    expect(editor.getAllByText(/^30/)).toHaveLength(2);
   });
 
-  it("never asks the quota in edit mode", async () => {
+  it("leaves an existing quest on its own rest, whatever Settings say", async () => {
+    const dbm = require("@/db") as {
+      preferences: { getRestDefault: jest.Mock };
+      getQuestTemplateById: jest.Mock;
+    };
+    dbm.preferences.getRestDefault.mockResolvedValue(45);
+    dbm.getQuestTemplateById.mockResolvedValue({
+      id: 7,
+      enTitle: "Porch forge",
+      frTitle: "Porch forge",
+      enDescription: "",
+      frDescription: "",
+      rounds: 1,
+      restSeconds: 20,
+      roundRestSeconds: null,
+      imagePath: null,
+      exercises: [],
+    });
     mockParams.id = "7";
-    mockQuotaRefusal.mockResolvedValue(9);
     const editor = await mountEditor();
-    expect(editor.getByTestId("quest-name")).toBeTruthy();
-    expect(mockQuotaRefusal).not.toHaveBeenCalled();
+    dbm.preferences.getRestDefault.mockResolvedValue(null);
+
+    expect(editor.queryAllByText(/^45/)).toHaveLength(0);
+    expect(editor.getAllByText(/^20/)).toHaveLength(2);
   });
 });
 

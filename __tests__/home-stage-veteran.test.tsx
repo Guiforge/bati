@@ -14,6 +14,7 @@ import config from "@/tamagui.config";
 let mockOffer: unknown = null;
 
 jest.mock("@/db/homeOffer", () => ({ decideHomeOffer: async () => mockOffer }));
+jest.mock("@/db/pause", () => ({ getActivePause: async () => null }));
 jest.mock("@/db/reminders", () => ({
   getReminderDays: async () => ({}),
   WEEKDAYS: ["sun", "mon", "tue", "wed", "thu", "fri", "sat"],

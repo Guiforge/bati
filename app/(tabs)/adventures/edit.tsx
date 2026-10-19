@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView } from "react-native";
+import { Keyboard, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Input, type TamaguiElement, Text, XStack, YStack } from "tamagui";
 import { balanceFacts, balanceSentence } from "@/components/adventures/balanceFacts";
@@ -17,6 +17,7 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { ImageChoiceField } from "@/components/common/ImageChoiceField";
 import { StatusBand } from "@/components/common/StatusBand";
 import { useToast } from "@/components/common/Toast";
+import { leavesWithoutAsking, useTabLeaveGuard } from "@/components/common/useTabLeaveGuard";
 import { ChevronLeft, Plus } from "@/components/icons";
 import { ImportFileButton } from "@/components/quests/QuestFileButtons";
 import { ADVENTURE_ASSETS, type AdventureAssetKey, getAdventureAsset } from "@/constants/assetMap";
@@ -48,6 +49,7 @@ import { preferences } from "@/db/preferences";
 import { getAllQuestConfigs, startingDifficulty } from "@/db/questConfig";
 import { type QuestTemplate, trainingFocus } from "@/db/quests";
 import { useHaptics } from "@/hooks/useHaptics";
+import { useKeyboardShown } from "@/hooks/useKeyboardShown";
 import { adventureWeeksLabel, useReminderPace } from "@/hooks/useReminderPace";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
@@ -171,10 +173,11 @@ export default function AdventureEditor() {
   const [dialog, setDialog] = useState<DialogState | null>(null);
   const [nameMissing, setNameMissing] = useState(false);
   const [stepsMissing, setStepsMissing] = useState(false);
-  const [saveBarHeight, setSaveBarHeight] = useState(0);
+  const typing = useKeyboardShown();
   const nextUid = useRef(0);
   const nameRef = useRef<TamaguiElement>(null);
   const scrollRef = useRef<ScrollView>(null);
+  const nameCardY = useRef(0);
   const skipGuardRef = useRef(false);
 
   const { title, description, cover, steps, end, voice } = fields;
@@ -189,7 +192,7 @@ export default function AdventureEditor() {
   const navigation = useNavigation();
   useEffect(() => {
     return navigation.addListener("beforeRemove", (e) => {
-      if (skipGuardRef.current || !isDirty) return;
+      if (leavesWithoutAsking(navigation, isDirty, skipGuardRef)) return;
       e.preventDefault();
       setDialog({
         title: t("quests.editor_discard_title"),
@@ -197,10 +200,26 @@ export default function AdventureEditor() {
         confirmLabel: t("quests.editor_discard"),
         cancelLabel: t("common.cancel"),
         destructive: true,
-        onConfirm: () => navigation.dispatch(e.data.action),
+        onConfirm: () => {
+          // The field that was being typed in is about to unmount; without this the keyboard
+          // outlives it and sits over the screen the hero lands on.
+          Keyboard.dismiss();
+          navigation.dispatch(e.data.action);
+        },
       });
     });
   }, [navigation, t, isDirty]);
+
+  useTabLeaveGuard(isDirty, skipGuardRef, (go) =>
+    setDialog({
+      title: t("quests.editor_discard_title"),
+      body: t("quests.editor_discard_body"),
+      confirmLabel: t("quests.editor_discard"),
+      cancelLabel: t("common.cancel"),
+      destructive: true,
+      onConfirm: go,
+    }),
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -329,7 +348,7 @@ export default function AdventureEditor() {
       setNameMissing(missing === "name");
       setStepsMissing(missing === "steps");
       if (missing === "name") {
-        scrollRef.current?.scrollTo({ y: 0, animated: true });
+        scrollRef.current?.scrollTo({ y: Math.max(0, nameCardY.current - 16), animated: true });
         nameRef.current?.focus();
       } else {
         scrollRef.current?.scrollToEnd({ animated: true });
@@ -354,8 +373,10 @@ export default function AdventureEditor() {
     )
       .then((id) => {
         success();
-        showSuccess(t("quests.editor_saved"));
-        router.replace(`/adventures/${id}` as never);
+        showSuccess(t("adventures.editor_saved"));
+        // An existing adventure is reached from its own page: go back to it, a replace would stack a twin.
+        if (adventureId == null) router.replace(`/adventures/${id}` as never);
+        else router.back();
       })
       .catch((error: unknown) => {
         skipGuardRef.current = false;
@@ -376,7 +397,7 @@ export default function AdventureEditor() {
         setBusy(true);
         skipGuardRef.current = true;
         retireHeroAdventure(adventureId)
-          .then(() => router.replace("/adventures" as never))
+          .then(() => router.dismissTo("/adventures" as never))
           .catch((error: unknown) => {
             setBusy(false);
             skipGuardRef.current = false;
@@ -405,224 +426,234 @@ export default function AdventureEditor() {
 
   return (
     <YStack flex={1} bg="$background">
-      <ScrollView
-        ref={scrollRef}
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingBottom: saveBarHeight + 24 }}
+      {/* The window does not resize under the keyboard here (edge-to-edge), so without this the
+          focused field and the save bar sat under it. Same pairing as journal/[id]. */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
-        <YStack p="$5" pt={insets.top + 12} gap="$4">
-          <XStack items="center" gap="$3">
-            <AppIconButton
-              onPress={() => router.back()}
-              accessibilityRole="button"
-              accessibilityLabel={t("quests.go_back")}
-            >
-              <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
-            </AppIconButton>
-            <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
-              {adventureId == null ? t("adventures.editor_title_new") : t("adventures.edit")}
-            </Text>
-          </XStack>
+        <ScrollView
+          ref={scrollRef}
+          keyboardShouldPersistTaps="handled"
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 24 }}
+        >
+          <YStack p="$5" pt={insets.top + 12} gap="$4">
+            <XStack items="center" gap="$3">
+              <AppIconButton
+                onPress={() => router.back()}
+                accessibilityRole="button"
+                accessibilityLabel={t("quests.go_back")}
+              >
+                <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
+              </AppIconButton>
+              <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
+                {adventureId == null ? t("adventures.editor_title_new") : t("adventures.edit")}
+              </Text>
+            </XStack>
 
-          {adventureId == null && catalogue.recent.length >= MIN_STEPS ? (
-            <Text
-              testID="editor-from-recent"
-              onPress={prefill}
-              minH={44}
-              fontWeight="700"
-              color="$primaryText"
-              accessibilityRole="button"
-            >
-              {t("adventures.editor_from_recent")}
-            </Text>
-          ) : null}
+            {adventureId == null && steps.length === 0 && catalogue.recent.length >= MIN_STEPS ? (
+              <Text
+                testID="editor-from-recent"
+                onPress={prefill}
+                minH={44}
+                fontWeight="700"
+                color="$primaryText"
+                accessibilityRole="button"
+              >
+                {t("adventures.editor_from_recent")}
+              </Text>
+            ) : null}
 
-          {/* Before the form, on a new adventure only, as the new-quest editor does. */}
-          {adventureId == null ? (
-            <ImportFileButton
-              label="adventures.import_adventure"
-              hint="adventures.import_hint"
-              failed="adventures.import_failed"
-              testID="adventure-import"
-            />
-          ) : null}
-
-          <ImageChoiceField
-            value={cover}
-            onChange={(next) => patch({ cover: next as AdventureAssetKey })}
-            choices={COVER_CHOICES}
-            resolve={getAdventureAsset}
-            resolveThumb={getAdventureAsset}
-            aspect={[4, 3]}
-            photos={false}
-          />
-
-          <Card>
-            <YStack gap="$3">
-              <YStack gap="$2">
-                <Text fontWeight="700" fontSize={14} color="$textSecondary">
-                  {t("adventures.editor_name")}
-                </Text>
-                <Input
-                  ref={nameRef}
-                  testID="adventure-name"
-                  value={title}
-                  onChangeText={(next) => {
-                    patch({ title: next });
-                    setNameMissing(false);
-                  }}
-                  maxLength={MAX_TITLE}
-                  bg="$background"
-                  borderColor={nameMissing ? "$error" : "$borderStrong"}
-                  color="$text"
-                />
-                {nameMissing ? (
-                  <Text
-                    testID="adventure-name-error"
-                    accessibilityLiveRegion="polite"
-                    fontSize={13}
-                    color="$error"
-                  >
-                    {t("adventures.editor_name_missing")}
-                  </Text>
-                ) : null}
-              </YStack>
-
-              <YStack gap="$2">
-                <Text fontWeight="700" fontSize={14} color="$textSecondary">
-                  {t("adventures.editor_description")}
-                </Text>
-                <Input
-                  value={description}
-                  onChangeText={(next) => patch({ description: next })}
-                  maxLength={MAX_DESCRIPTION}
-                  multiline
-                  bg="$background"
-                  borderColor="$borderStrong"
-                  color="$text"
-                />
-              </YStack>
-            </YStack>
-          </Card>
-
-          <Text fontWeight="700" fontSize={18} color="$text">
-            {t("adventures.editor_steps")}
-          </Text>
-          {frozen ? (
-            <Text testID="editor-frozen" fontSize={13} color="$textSecondary">
-              {t("adventures.editor_frozen")}
-            </Text>
-          ) : null}
-
-          {steps.map((step, i) => {
-            const quest = catalogue.questsById.get(step.questId) ?? null;
-            return (
-              <EditorStepCard
-                key={step.uid}
-                index={i}
-                isLast={i === steps.length - 1}
-                step={step}
-                quest={quest}
-                seconds={catalogue.seconds.get(step.questId) ?? 0}
-                language={language}
-                frozen={frozen}
-                onChange={(change) => patchStep(step.uid, change)}
-                onMove={(direction) => moveStep(i, direction)}
-                onRemove={() => patch({ steps: steps.filter((s) => s.uid !== step.uid) })}
+            {/* Before the form, on a new adventure only, as the new-quest editor does. */}
+            {adventureId == null ? (
+              <ImportFileButton
+                label="adventures.import_adventure"
+                hint="adventures.import_hint"
+                failed="adventures.import_failed"
+                testID="adventure-import"
               />
-            );
-          })}
+            ) : null}
 
-          {steps.length < MAX_STEPS && !frozen ? (
-            <AppButton
-              testID="editor-add-step"
-              variant="outline"
-              icon={<Plus size={20} color="$text" strokeWidth={2.5} />}
-              onPress={() => setPickerOpen(true)}
-            >
-              {t("adventures.editor_add_step")}
-            </AppButton>
-          ) : null}
-          {stepsMissing ? (
-            <Text
-              testID="adventure-steps-error"
-              accessibilityLiveRegion="polite"
-              fontSize={13}
-              color="$error"
-            >
-              {t("adventures.editor_steps_missing")}
-            </Text>
-          ) : null}
-
-          <Text fontWeight="700" fontSize={18} color="$text">
-            {t("adventures.editor_end")}
-          </Text>
-          <EditorEndSection
-            end={end}
-            monsters={catalogue.monsters}
-            language={language}
-            hp={hp}
-            outingsOnly={outingsOnly}
-            frozen={frozen}
-            onChange={(next) => patch({ end: next })}
-          />
-          {bossEnd ? (
-            <EditorBossVoice
-              voice={voice}
-              placeholder={monster ? monsterName(monster, language) : ""}
-              onChange={(next) => patch({ voice: next })}
+            <ImageChoiceField
+              value={cover}
+              onChange={(next) => patch({ cover: next as AdventureAssetKey })}
+              choices={COVER_CHOICES}
+              resolve={getAdventureAsset}
+              resolveThumb={getAdventureAsset}
+              aspect={[4, 3]}
+              photos={false}
             />
-          ) : null}
 
-          <Text testID="editor-summary" fontSize={13} color="$textSecondary">
-            {summary.join(" · ")}
-          </Text>
-          {sentences.map((sentence) => (
-            <Text key={sentence} testID="editor-balance" fontSize={13} color="$textSecondary">
-              {sentence}
-            </Text>
-          ))}
-
-          {adventureId != null && !frozen ? (
-            <Text
-              testID="editor-retire"
-              onPress={confirmRetire}
-              minH={44}
-              fontWeight="700"
-              color="$textSecondary"
-              accessibilityRole="button"
+            <Card
+              onLayout={(e) => {
+                nameCardY.current = e.nativeEvent.layout.y;
+              }}
             >
-              {t("adventures.editor_retire")}
+              <YStack gap="$3">
+                <YStack gap="$2">
+                  <Text fontWeight="700" fontSize={14} color="$textSecondary">
+                    {t("adventures.editor_name")}
+                  </Text>
+                  <Input
+                    ref={nameRef}
+                    testID="adventure-name"
+                    value={title}
+                    onChangeText={(next) => {
+                      patch({ title: next });
+                      setNameMissing(false);
+                    }}
+                    maxLength={MAX_TITLE}
+                    bg="$background"
+                    borderColor={nameMissing ? "$error" : "$borderStrong"}
+                    color="$text"
+                  />
+                  {nameMissing ? (
+                    <Text
+                      testID="adventure-name-error"
+                      accessibilityLiveRegion="polite"
+                      fontSize={13}
+                      color="$error"
+                    >
+                      {t("adventures.editor_name_missing")}
+                    </Text>
+                  ) : null}
+                </YStack>
+
+                <YStack gap="$2">
+                  <Text fontWeight="700" fontSize={14} color="$textSecondary">
+                    {t("adventures.editor_description")}
+                  </Text>
+                  <Input
+                    value={description}
+                    onChangeText={(next) => patch({ description: next })}
+                    maxLength={MAX_DESCRIPTION}
+                    multiline
+                    bg="$background"
+                    borderColor="$borderStrong"
+                    color="$text"
+                  />
+                </YStack>
+              </YStack>
+            </Card>
+
+            <Text fontWeight="700" fontSize={18} color="$text">
+              {t("adventures.editor_steps")}
             </Text>
-          ) : null}
+            {frozen ? (
+              <Text testID="editor-frozen" fontSize={13} color="$textSecondary">
+                {t("adventures.editor_frozen")}
+              </Text>
+            ) : null}
 
-          <QuestPickerSheet
-            quests={catalogue.quests}
-            seconds={catalogue.seconds}
-            language={language}
-            open={pickerOpen}
-            onOpenChange={setPickerOpen}
-            onPick={addStep}
-            bottomInset={insets.bottom}
-          />
+            {steps.map((step, i) => {
+              const quest = catalogue.questsById.get(step.questId) ?? null;
+              return (
+                <EditorStepCard
+                  key={step.uid}
+                  index={i}
+                  isLast={i === steps.length - 1}
+                  step={step}
+                  quest={quest}
+                  seconds={catalogue.seconds.get(step.questId) ?? 0}
+                  language={language}
+                  frozen={frozen}
+                  onChange={(change) => patchStep(step.uid, change)}
+                  onMove={(direction) => moveStep(i, direction)}
+                  onRemove={() => patch({ steps: steps.filter((s) => s.uid !== step.uid) })}
+                />
+              );
+            })}
+
+            {steps.length < MAX_STEPS && !frozen ? (
+              <AppButton
+                testID="editor-add-step"
+                variant="outline"
+                icon={<Plus size={20} color="$text" strokeWidth={2.5} />}
+                onPress={() => setPickerOpen(true)}
+              >
+                {t("adventures.editor_add_step")}
+              </AppButton>
+            ) : null}
+            {stepsMissing ? (
+              <Text
+                testID="adventure-steps-error"
+                accessibilityLiveRegion="polite"
+                fontSize={13}
+                color="$error"
+              >
+                {t("adventures.editor_steps_missing")}
+              </Text>
+            ) : null}
+
+            <Text fontWeight="700" fontSize={18} color="$text">
+              {t("adventures.editor_end")}
+            </Text>
+            <EditorEndSection
+              end={end}
+              monsters={catalogue.monsters}
+              language={language}
+              hp={hp}
+              outingsOnly={outingsOnly}
+              frozen={frozen}
+              onChange={(next) => patch({ end: next })}
+            />
+            {bossEnd ? (
+              <EditorBossVoice
+                voice={voice}
+                placeholder={monster ? monsterName(monster, language) : ""}
+                onChange={(next) => patch({ voice: next })}
+              />
+            ) : null}
+
+            <Text testID="editor-summary" fontSize={13} color="$textSecondary">
+              {summary.join(" · ")}
+            </Text>
+            {sentences.map((sentence) => (
+              <Text key={sentence} testID="editor-balance" fontSize={13} color="$textSecondary">
+                {sentence}
+              </Text>
+            ))}
+
+            {adventureId != null && !frozen ? (
+              <Text
+                testID="editor-retire"
+                onPress={confirmRetire}
+                minH={44}
+                fontWeight="700"
+                color="$textSecondary"
+                accessibilityRole="button"
+              >
+                {t("adventures.editor_retire")}
+              </Text>
+            ) : null}
+
+            <QuestPickerSheet
+              quests={catalogue.quests}
+              seconds={catalogue.seconds}
+              language={language}
+              open={pickerOpen}
+              onOpenChange={setPickerOpen}
+              onPick={addStep}
+              bottomInset={insets.bottom}
+            />
+          </YStack>
+        </ScrollView>
+
+        <StatusBand />
+
+        <YStack
+          p="$4"
+          pb={typing ? 16 : insets.bottom + 16}
+          bg="$bgDark"
+          borderTopWidth={1}
+          borderColor="$borderStrong"
+        >
+          <AppButton testID="adventure-save" height={56} disabled={busy} onPress={save}>
+            {t("adventures.editor_save")}
+          </AppButton>
         </YStack>
-      </ScrollView>
-
-      <StatusBand />
-
-      <YStack
-        p="$4"
-        pb={insets.bottom + 16}
-        bg="$bgDark"
-        borderTopWidth={1}
-        borderColor="$borderStrong"
-        style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
-        onLayout={(e) => setSaveBarHeight(e.nativeEvent.layout.height)}
-      >
-        <AppButton testID="adventure-save" height={56} disabled={busy} onPress={save}>
-          {t("adventures.editor_save")}
-        </AppButton>
-      </YStack>
+      </KeyboardAvoidingView>
       <ConfirmDialog
         open={dialog !== null}
         title={dialog?.title ?? ""}

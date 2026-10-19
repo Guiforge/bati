@@ -4,7 +4,7 @@ import type { TFunction } from "i18next";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
-import { BackHandler, ScrollView } from "react-native";
+import { BackHandler, ScrollView, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { type ColorTokens, H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
@@ -14,6 +14,7 @@ import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { StatusBand } from "@/components/common/StatusBand";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
+import { LightWeekNote } from "@/components/home/LightWeekNote";
 import { ChevronLeft, Pencil, Repeat, Sparkles } from "@/components/icons";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
 import { QuestConfigCard } from "@/components/quests/QuestConfigCard";
@@ -24,6 +25,7 @@ import { SetAsideToggle } from "@/components/quests/SetAsideToggle";
 import { WarmupPreview } from "@/components/quests/WarmupPreview";
 import { getQuestAsset } from "@/constants/assetMap";
 import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
+import { questHeaderHeight } from "@/constants/layout";
 import { DIFFICULTY_TEXT_TOKENS } from "@/constants/rawColors";
 import {
   applyQuestConfig,
@@ -58,6 +60,7 @@ import type { DifficultyCode, EquipmentCode } from "@/db/schema";
 import { formatCount, formatTargetValue } from "@/db/targets";
 import { outingXpPerMinute } from "@/db/xp";
 import { useSetAside } from "@/hooks/useSetAside";
+import { adventureHref, parseAdventureOrigin } from "@/src/adventureOrigin";
 import { localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { keepIfSame } from "@/src/sameContent";
@@ -176,13 +179,16 @@ function LevelChip({
 export default function QuestDetails() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const { showError } = useToast();
   const params = useLocalSearchParams<{
     id?: string | string[];
     level?: string;
     runStepId?: string;
     adventureId?: string | string[];
+    adventureFrom?: string | string[];
     from?: string | string[];
+    session?: string | string[];
   }>();
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
@@ -259,6 +265,7 @@ export default function QuestDetails() {
   // ceiling is one frame; the fix is to load the swap's history inside `applySwap`.
   const [swapJournal, setSwapJournal] = useState<SwapJournal>({ history: new Map() });
   const swaps = config.swaps;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `lightWeek` is the re-read trigger: the journal is read frozen while a week runs, and live once it ends.
   useEffect(() => {
     let live = true;
     loadSwapJournal({ swaps })
@@ -269,7 +276,7 @@ export default function QuestDetails() {
     return () => {
       live = false;
     };
-  }, [swaps]);
+  }, [swaps, lightWeek]);
   const [owned, setOwned] = useState<ReadonlySet<EquipmentCode> | null>(null);
   const [setAsideIds, setSetAsideIds] = useState<ReadonlySet<number>>(new Set());
   const [leaveOut, setLeaveOut] = useState(false);
@@ -414,15 +421,38 @@ export default function QuestDetails() {
   // adventure isn't on this tab's stack to begin with, it lives on the adventures tab's own stack.
   // Where the hero came from, when it changes where "back" means. Only the band's Set up
   // shortcut sets it; every other door leaves it absent and keeps the gallery.
-  const fromHome = (Array.isArray(params.from) ? params.from[0] : params.from) === "home";
+  const fromParam = Array.isArray(params.from) ? params.from[0] : params.from;
+  const fromHome = fromParam === "home";
+  // The Journal's "do this again" doors (a session's detail, the Stats suggestions). `session`
+  // names the detail to come back to; without it, the Journal's own landing page.
+  const sessionParam = Array.isArray(params.session) ? params.session[0] : params.session;
+  const journalBack =
+    fromParam === "journal"
+      ? Number.isFinite(Number(sessionParam)) && sessionParam
+        ? `/journal/${Number(sessionParam)}`
+        : "/journal"
+      : null;
+
+  const rawAdventure = Array.isArray(params.adventureId)
+    ? params.adventureId[0]
+    : params.adventureId;
+  const fromAdventure = Boolean(rawAdventure) && Number.isFinite(Number(rawAdventure));
 
   const goToGallery = useCallback(() => {
-    const raw = Array.isArray(params.adventureId) ? params.adventureId[0] : params.adventureId;
+    // Every door that leaves for another tab first unwinds this one to the gallery: left on the
+    // stack, the quest was what the Quests tab reopened on, and its back jumped to that tab.
+    const leaveTo = (href: string, withAnchor = false) => {
+      router.dismissTo("/quests");
+      if (withAnchor) router.navigate(href as never, { withAnchor });
+      else router.navigate(href as never);
+    };
+    const raw = rawAdventure;
     const adventureId = Number(raw);
     // A malformed deep link (literal "undefined", non-numeric garbage) is truthy but not a real
     // id — Number.isFinite catches it, same guard as questId/adventureId above in this file.
     if (raw && Number.isFinite(adventureId)) {
-      router.navigate(`/adventures/${adventureId}` as never);
+      // Anchored: an adventures tab never opened would otherwise hold the page alone.
+      leaveTo(adventureHref(adventureId, parseAdventureOrigin(params.adventureFrom)), true);
       return;
     }
     // The band's Set up shortcut: the hero was on Home a tap ago, and it is a detour on the way
@@ -432,23 +462,33 @@ export default function QuestDetails() {
       // `navigate`, not `dismissTo`: Home is not on this tab's stack, so there is nothing here to
       // unwind to and `dismissTo` simply does nothing. Same reason the adventure case above uses
       // it, and the same mistake the comment there was already warning about.
-      router.navigate("/");
+      leaveTo("/");
+      return;
+    }
+    // `navigate` for the same reason: the Journal is another tab's stack, and its detail (or
+    // list) is already on it.
+    if (journalBack) {
+      leaveTo(journalBack);
       return;
     }
     router.dismissTo("/quests");
-  }, [router, params.adventureId, fromHome]);
+  }, [router, rawAdventure, params.adventureFrom, fromHome, journalBack]);
 
   // Hardware back, which is structural: the stack is anchored on the gallery
   // (`app/(tabs)/quests/_layout.tsx`), so popping lands there whatever the chevron does. Left
   // alone the two would disagree again, which is the exact bug the anchor was added to fix.
-  useEffect(() => {
-    if (!fromHome) return;
-    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-      router.navigate("/");
-      return true;
-    });
-    return () => sub.remove();
-  }, [fromHome, router]);
+  // Only while focused: the screen stays mounted in its tab's stack after the hero leaves, and a
+  // listener that outlives the focus captures back everywhere in the app.
+  useFocusEffect(
+    useCallback(() => {
+      if (!fromHome && !journalBack && !fromAdventure) return;
+      const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+        goToGallery();
+        return true;
+      });
+      return () => sub.remove();
+    }, [fromHome, journalBack, fromAdventure, goToGallery]),
+  );
 
   const updateConfig = useCallback(
     (next: QuestConfig, replace?: "targets" | "all") => {
@@ -531,16 +571,13 @@ export default function QuestDetails() {
     // anything that outranks the config here has to outrank it in there too — otherwise an outing
     // generated at medium retargets a swap at hard. Reading `effectiveLevel` here instead priced
     // medium targets with hard's multiplier for the frame between the tap and the new quest.
-    const quest = lightenRounds(
-      applyQuestConfig(
-        state.quest,
-        { ...config, level: state.questLevel },
-        indexExercises(catalogue),
-        swapJournal,
-      ),
-      config,
-      lightWeek,
+    const applied = applyQuestConfig(
+      state.quest,
+      { ...config, level: state.questLevel },
+      indexExercises(catalogue),
+      swapJournal,
     );
+    const quest = lightenRounds(applied, config, lightWeek, isUserQuest(applied));
     // A distance goal is estimated from a nominal pace; a duration is its own estimate. Either
     // way it is what the hero is about to run, so the XP tag below prices that same estimate
     // rather than the slot's own target — the two numbers on this screen must describe one
@@ -551,6 +588,9 @@ export default function QuestDetails() {
         : estimateQuestSeconds(quest);
     return {
       quest,
+      // The rounds before a light week took one: the stepper edits these, never the lightened
+      // figure, or one tap on "-" would save the week's number into the quest for good.
+      baseRounds: applied.rounds,
       questTitle: localizedTitle(quest, language),
       questDesc: localizedText(quest, "description", language),
       estimatedSeconds,
@@ -723,7 +763,7 @@ export default function QuestDetails() {
           {headerImage ? (
             <YStack
               width="100%"
-              aspectRatio={16 / 9}
+              height={questHeaderHeight(windowWidth, windowHeight)}
               bg="$surface"
               borderWidth={1}
               borderColor="$borderStrong"
@@ -882,9 +922,24 @@ export default function QuestDetails() {
             </Card>
           ) : null}
 
+          {/* Only where the week really took a round: a quest whose rounds the hero set keeps them. */}
+          {!isOuting && quest?.lightened ? (
+            <LightWeekNote
+              onHome={false}
+              onEnded={() => {
+                setLightWeek(false);
+                // The rungs and targets on screen were read frozen: read them again live.
+                load(questId, effectiveLevel).catch(() => {
+                  // `load` reports its own errors.
+                });
+              }}
+            />
+          ) : null}
+
           {quest ? (
             <QuestConfigCard
               quest={quest}
+              roundsShown={derived?.baseRounds}
               config={config}
               language={language}
               onChange={updateConfig}
@@ -947,7 +1002,7 @@ export default function QuestDetails() {
       {quest ? (
         <YStack
           p="$4"
-          pb={insets.bottom + 16}
+          pb="$4"
           bg="$bgDark"
           borderTopWidth={1}
           borderColor="$borderStrong"

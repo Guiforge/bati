@@ -120,6 +120,8 @@ Nothing else leaves the phone. [Privacy policy](https://getbati.app/privacy/).
 
 ## Install it
 
+Bati is for people aged 16 and over.
+
 All of this is also on [the site](https://getbati.app/#install), in English, French, German and Spanish.
 
 ### F-Droid, the one that updates itself

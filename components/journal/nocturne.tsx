@@ -363,13 +363,16 @@ export function NBackButton({
   onPress,
   label,
   veiled,
+  testID,
 }: {
   onPress: () => void;
   label: string;
   veiled?: boolean;
+  testID?: string;
 }) {
   return (
     <YStack
+      testID={testID}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}

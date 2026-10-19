@@ -32,6 +32,8 @@ const OUTING: { exercises: Slot[] } = { exercises: [{ exercise: { style: "expedi
 const WORKOUT: { exercises: Slot[] } = { exercises: [{ exercise: { style: "reps" } }] };
 
 const mockQuit = jest.fn();
+const mockPause = jest.fn();
+const mockResume = jest.fn();
 let mockSession: Record<string, unknown> = {};
 jest.mock("@/stores/session", () => ({
   useSessionStore: (selector: (s: Record<string, unknown>) => unknown) => selector(mockSession),
@@ -61,7 +63,8 @@ function setSession(quest: unknown, goal: unknown, startedMsAgo = 0) {
     // The banner only claims a walk this screen started. Fresh by default, because that is what
     // every case below is about; the one that resumes an old walk says so.
     startTime: Date.now() - startedMsAgo,
-    pauseSession: jest.fn(),
+    pauseSession: mockPause,
+    resumeSession: mockResume,
     quitSession: mockQuit,
     currentRoundIndex: 0,
     currentExerciseIndex: 0,
@@ -232,5 +235,34 @@ describe("the session screen, on an outing", () => {
   test("gives the close cross a thumb-sized target", async () => {
     await mount();
     expect(screen.getByLabelText("common.close")).toHaveStyle({ width: 44, height: 44 });
+  });
+});
+
+describe("the session screen, hardware back", () => {
+  beforeEach(() => {
+    mockPause.mockClear();
+    mockResume.mockClear();
+    mockExpedition = { sessionUuid: null, error: null, view: { keepAwake: false } };
+  });
+
+  test("pauses a running session", async () => {
+    setSession(WORKOUT, null);
+    const spy = jest.spyOn(require("react-native").BackHandler, "addEventListener");
+    await mount();
+    const handler = spy.mock.calls.at(-1)?.[1] as () => boolean;
+    spy.mockRestore();
+    expect(handler()).toBe(true);
+    expect(mockPause).toHaveBeenCalled();
+  });
+
+  test("on the pause overlay it resumes instead of leaving a session open behind Home", async () => {
+    setSession(WORKOUT, null);
+    mockSession = { ...mockSession, status: "paused", prePauseStatus: "running" };
+    const spy = jest.spyOn(require("react-native").BackHandler, "addEventListener");
+    await mount();
+    const handler = spy.mock.calls.at(-1)?.[1] as () => boolean;
+    spy.mockRestore();
+    expect(handler()).toBe(true);
+    expect(mockResume).toHaveBeenCalled();
   });
 });

@@ -1,16 +1,16 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Input, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { ImageChoiceField } from "@/components/common/ImageChoiceField";
-import { QuotaPanel } from "@/components/common/QuotaPanel";
 import { Stepper } from "@/components/common/Stepper";
 import { useToast } from "@/components/common/Toast";
+import { useDiscardGuard } from "@/components/common/useDiscardGuard";
 import { Check, ChevronDown, ChevronLeft, ChevronUp } from "@/components/icons";
 import { EXERCISE_THUMB_ASSETS, getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import {
@@ -32,7 +32,6 @@ import {
   muscleCodes,
   questTargetTypes,
 } from "@/db/schema";
-import { quotaRefusal } from "@/src/plus/access";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -73,22 +72,13 @@ export default function ExerciseEditor() {
   const [details, setDetails] = useState<Details>(DEFAULT_USER_EXERCISE_DRAFT);
   const [showDetails, setShowDetails] = useState(false);
   const [saving, setSaving] = useState(false);
-  // How many the hero holds once creating is refused. The form shows until the answer says
-  // otherwise, so nothing changes a frame where nothing is refused, and edit mode never asks.
-  const [refusedAt, setRefusedAt] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (editingId !== null) return;
-    let cancelled = false;
-    quotaRefusal("createExercise")
-      .then((held) => {
-        if (!cancelled) setRefusedAt(held);
-      })
-      .catch((error: unknown) => reportError("exercises.editor.quota", error));
-    return () => {
-      cancelled = true;
-    };
-  }, [editingId]);
+  // What the form held when it opened (or finished loading): leaving with anything else asks first.
+  const [baseline, setBaseline] = useState(() =>
+    JSON.stringify(["", "", DEFAULT_USER_EXERCISE_DRAFT]),
+  );
+  const { dialog: discardDialog, allowLeave } = useDiscardGuard(
+    JSON.stringify([name, description, details]) !== baseline,
+  );
 
   useEffect(() => {
     if (editingId === null) return;
@@ -97,9 +87,7 @@ export default function ExerciseEditor() {
     getExerciseById(editingId)
       .then((ex) => {
         if (cancelled || !ex || !isUserExercise(ex)) return;
-        setName(ex.enName);
-        setDescription(ex.enDescription);
-        setDetails({
+        const loaded = {
           muscles: ex.muscles,
           style: ex.style,
           difficulty: ex.difficulty,
@@ -109,7 +97,11 @@ export default function ExerciseEditor() {
           perSide: ex.perSide,
           secondsPerRep: ex.secondsPerRep,
           imagePath: ex.imagePath,
-        });
+        };
+        setName(ex.enName);
+        setDescription(ex.enDescription);
+        setDetails(loaded);
+        setBaseline(JSON.stringify([ex.enName, ex.enDescription, loaded]));
       })
       .catch((error: unknown) => reportError("exercises.editor.load", error));
 
@@ -142,7 +134,10 @@ export default function ExerciseEditor() {
     // catch never rethrows, so `setSaving(false)` runs on both paths.
     setSaving(true);
     await (editingId === null ? createUserExercise(draft) : updateUserExercise(editingId, draft))
-      .then(() => router.back())
+      .then(() => {
+        allowLeave();
+        router.back();
+      })
       .catch((error: unknown) => {
         reportError("exercises.editor.save", error);
         // No name-collision branch: `0036` dropped the hero-side unique index, so there is no
@@ -151,257 +146,258 @@ export default function ExerciseEditor() {
         showError(t("exercise_editor.save_failed"));
       });
     setSaving(false);
-  }, [details, description, editingId, name, router, showError, t]);
-
-  if (refusedAt !== null) {
-    return (
-      <YStack flex={1} bg="$background" p={20} pt={insets.top + 12} gap="$4">
-        <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
-          {t("exercise_editor.title_new")}
-        </Text>
-        <QuotaPanel text={t("plus.exercise_quota", { count: refusedAt })} />
-      </YStack>
-    );
-  }
+  }, [allowLeave, details, description, editingId, name, router, showError, t]);
 
   return (
     <YStack flex={1} bg="$background">
-      <ScrollView
-        // With the keyboard up, the default ("never") spends the first tap on any control in
-        // here dismissing it — react-native#4087, and the reason a button on a screen you
-        // type into has to be pressed twice. "handled" keeps the dismiss-on-empty-space
-        // gesture and gives the child the tap it was aimed at. Same value the exercise
-        // picker sheet already uses.
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{
-          padding: 20,
-          paddingTop: insets.top + 12,
-          paddingBottom: insets.bottom + 32,
-          gap: 16,
-        }}
+      {/* The window does not resize under the keyboard here (edge-to-edge), so without this the
+          focused field and the save bar sat under it. Same pairing as journal/[id]. */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
-        <XStack items="center" gap="$3">
-          <AppIconButton
-            onPress={() => router.back()}
-            accessibilityRole="button"
-            accessibilityLabel={t("quests.go_back")}
-          >
-            <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
-          </AppIconButton>
-          <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
-            {editingId === null ? t("exercise_editor.title_new") : t("exercise_editor.title_edit")}
-          </Text>
-        </XStack>
+        <ScrollView
+          // With the keyboard up, the default ("never") spends the first tap on any control in
+          // here dismissing it — react-native#4087, and the reason a button on a screen you
+          // type into has to be pressed twice. "handled" keeps the dismiss-on-empty-space
+          // gesture and gives the child the tap it was aimed at. Same value the exercise
+          // picker sheet already uses.
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{
+            padding: 20,
+            paddingTop: insets.top + 12,
+            paddingBottom: insets.bottom + 32,
+            gap: 16,
+          }}
+        >
+          <XStack items="center" gap="$3">
+            <AppIconButton
+              onPress={() => router.back()}
+              accessibilityRole="button"
+              accessibilityLabel={t("quests.go_back")}
+            >
+              <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
+            </AppIconButton>
+            <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
+              {editingId === null
+                ? t("exercise_editor.title_new")
+                : t("exercise_editor.title_edit")}
+            </Text>
+          </XStack>
 
-        {/* The picture leads. A movement is a card before it is a form — the hero sees it in a
+          {/* The picture leads. A movement is a card before it is a form — the hero sees it in a
           session, in the catalogue and on its own page long before anyone reads the muscles —
           so the editor opens on that card forming rather than on two text fields. */}
-        <ImageChoiceField
-          value={details.imagePath}
-          onChange={(imagePath) => setDetails((d) => ({ ...d, imagePath }))}
-          choices={EXERCISE_CHOICES}
-          resolve={getExerciseAsset}
-          resolveThumb={getExerciseThumb}
-          aspect={[1, 1]}
-        />
+          <ImageChoiceField
+            value={details.imagePath}
+            onChange={(imagePath) => setDetails((d) => ({ ...d, imagePath }))}
+            choices={EXERCISE_CHOICES}
+            resolve={getExerciseAsset}
+            resolveThumb={getExerciseThumb}
+            aspect={[1, 1]}
+          />
 
-        <Card>
-          <YStack gap="$3">
-            <Text fontWeight="700" fontSize={13} color="$textSecondary">
-              {t("exercise_editor.name_label")}
-            </Text>
-            <Input
-              testID="exercise-name"
-              value={name}
-              onChangeText={setName}
-              placeholder={t("exercise_editor.name_placeholder")}
-            />
-
-            <Text fontWeight="700" fontSize={13} color="$textSecondary">
-              {t("exercise_editor.description_label")}
-            </Text>
-            <Input
-              testID="exercise-description"
-              value={description}
-              onChangeText={setDescription}
-              placeholder={t("exercise_editor.description_placeholder")}
-              multiline
-              numberOfLines={4}
-              height={110}
-            />
-          </YStack>
-        </Card>
-
-        <Card>
-          <Pressable
-            testID="exercise-details-toggle"
-            hitSlop={12}
-            onPress={() => setShowDetails((v) => !v)}
-            accessibilityRole="button"
-            accessibilityState={{ expanded: showDetails }}
-            accessibilityLabel={t("exercise_editor.details")}
-          >
-            <XStack items="center" justify="space-between">
+          <Card>
+            <YStack gap="$3">
               <Text fontWeight="700" fontSize={13} color="$textSecondary">
-                {t("exercise_editor.details")}
+                {t("exercise_editor.name_label")}
               </Text>
-              {showDetails ? (
-                <ChevronUp size={16} color="$textSecondary" />
-              ) : (
-                <ChevronDown size={16} color="$textSecondary" />
-              )}
-            </XStack>
-          </Pressable>
+              <Input
+                testID="exercise-name"
+                value={name}
+                onChangeText={setName}
+                placeholder={t("exercise_editor.name_placeholder")}
+              />
 
-          <Text fontSize={12} color="$textSecondary" opacity={0.8} pt="$2">
-            {t("exercise_editor.details_hint")}
-          </Text>
-
-          {showDetails ? (
-            <YStack gap="$4" pt="$3">
-              <YStack gap="$2">
-                <Text fontSize={12} color="$textSecondary">
-                  {t("exercise_editor.muscles")}
-                </Text>
-                <XStack gap="$2" flexWrap="wrap">
-                  {muscleCodes.map((muscle) => (
-                    <Chip
-                      key={muscle}
-                      testID={`exercise-muscle-${muscle}`}
-                      label={MUSCLE_LABELS[muscle][language]}
-                      tone={details.muscles.includes(muscle) ? "primary" : "default"}
-                      onPress={() => toggleMuscle(muscle)}
-                    />
-                  ))}
-                </XStack>
-              </YStack>
-
-              <YStack gap="$2">
-                <Text fontSize={12} color="$textSecondary">
-                  {t("exercise_editor.style")}
-                </Text>
-                <XStack gap="$2" flexWrap="wrap">
-                  {exerciseStyles.map((style) => (
-                    <Chip
-                      key={style}
-                      testID={`exercise-style-${style}`}
-                      label={t(`exercise_editor.style_${style}`)}
-                      tone={details.style === style ? "primary" : "default"}
-                      onPress={() => setDetails((d) => ({ ...d, style }))}
-                    />
-                  ))}
-                </XStack>
-              </YStack>
-
-              <YStack gap="$2">
-                <Text fontSize={12} color="$textSecondary">
-                  {t("exercise_editor.difficulty")}
-                </Text>
-                <XStack gap="$2" flexWrap="wrap">
-                  {difficultyCodes.map((difficulty) => (
-                    <Chip
-                      key={difficulty}
-                      testID={`exercise-difficulty-${difficulty}`}
-                      label={t(`exercise_editor.difficulty_${difficulty}`)}
-                      tone={details.difficulty === difficulty ? "primary" : "default"}
-                      onPress={() => setDetails((d) => ({ ...d, difficulty }))}
-                    />
-                  ))}
-                </XStack>
-              </YStack>
-
-              <YStack gap="$2">
-                <Text fontSize={12} color="$textSecondary">
-                  {t("exercise_editor.equipment")}
-                </Text>
-                <XStack gap="$2" flexWrap="wrap">
-                  {equipmentCodes.map((equipment) => (
-                    <Chip
-                      key={equipment}
-                      testID={`exercise-equipment-${equipment}`}
-                      label={EQUIPMENT_LABELS[equipment][language]}
-                      tone={details.equipment === equipment ? "primary" : "default"}
-                      onPress={() => setDetails((d) => ({ ...d, equipment }))}
-                    />
-                  ))}
-                </XStack>
-              </YStack>
-
-              <YStack gap="$2">
-                <Text fontSize={12} color="$textSecondary">
-                  {t("exercise_editor.measure")}
-                </Text>
-                <XStack gap="$2">
-                  {questTargetTypes.map((measure) => (
-                    <Chip
-                      key={measure}
-                      testID={`exercise-measure-${measure}`}
-                      label={t(measure === "reps" ? "quests.config_reps" : "quests.config_seconds")}
-                      tone={details.measure === measure ? "primary" : "default"}
-                      onPress={() => setDetails((d) => ({ ...d, measure }))}
-                    />
-                  ))}
-                </XStack>
-              </YStack>
-
-              {/* Not offered on an outing, which has no sides; the writer refuses it there too. */}
-              {details.style === "expedition" ? null : (
-                <SidesPicker
-                  perSide={details.perSide}
-                  onChange={(perSide) => setDetails((d) => ({ ...d, perSide }))}
-                />
-              )}
-
-              <YStack gap="$2">
-                <Text fontSize={12} color="$textSecondary">
-                  {t("exercise_editor.pattern")}
-                </Text>
-                <XStack gap="$2" flexWrap="wrap">
-                  <Chip
-                    testID="exercise-pattern-none"
-                    label={t("exercise_editor.pattern_none")}
-                    tone={details.pattern === null ? "primary" : "default"}
-                    onPress={() => setDetails((d) => ({ ...d, pattern: null }))}
-                  />
-                  {movementPatterns.map((pattern) => (
-                    <Chip
-                      key={pattern}
-                      testID={`exercise-pattern-${pattern}`}
-                      label={t(`patterns.${pattern}`)}
-                      tone={details.pattern === pattern ? "primary" : "default"}
-                      onPress={() => setDetails((d) => ({ ...d, pattern }))}
-                    />
-                  ))}
-                </XStack>
-              </YStack>
-
-              {/* A held movement is counted in seconds already: a tempo per rep means nothing for it.
-                  The stored value stays whatever it was (the default 3), which is always valid. */}
-              {details.measure === "reps" ? (
-                <Stepper
-                  label={t("exercise_editor.seconds_per_rep")}
-                  hint={t("exercise_editor.seconds_per_rep_hint")}
-                  value={details.secondsPerRep}
-                  min={SECONDS_PER_REP_RANGE.min}
-                  max={SECONDS_PER_REP_RANGE.max}
-                  onChange={(secondsPerRep) => setDetails((d) => ({ ...d, secondsPerRep }))}
-                />
-              ) : null}
+              <Text fontWeight="700" fontSize={13} color="$textSecondary">
+                {t("exercise_editor.description_label")}
+              </Text>
+              <Input
+                testID="exercise-description"
+                value={description}
+                onChangeText={setDescription}
+                placeholder={t("exercise_editor.description_placeholder")}
+                multiline
+                numberOfLines={4}
+                height={110}
+              />
             </YStack>
-          ) : null}
-        </Card>
+          </Card>
 
-        <AppButton
-          testID="exercise-save"
-          variant="primary"
-          disabled={saving}
-          onPress={handleSave}
-          accessibilityRole="button"
-          accessibilityLabel={t("exercise_editor.save")}
-        >
-          {t("exercise_editor.save")}
-        </AppButton>
-      </ScrollView>
+          <Card>
+            <Pressable
+              testID="exercise-details-toggle"
+              hitSlop={12}
+              onPress={() => setShowDetails((v) => !v)}
+              accessibilityRole="button"
+              accessibilityState={{ expanded: showDetails }}
+              accessibilityLabel={t("exercise_editor.details")}
+            >
+              <XStack items="center" justify="space-between">
+                <Text fontWeight="700" fontSize={13} color="$textSecondary">
+                  {t("exercise_editor.details")}
+                </Text>
+                {showDetails ? (
+                  <ChevronUp size={16} color="$textSecondary" />
+                ) : (
+                  <ChevronDown size={16} color="$textSecondary" />
+                )}
+              </XStack>
+            </Pressable>
+
+            <Text fontSize={12} color="$textSecondary" opacity={0.8} pt="$2">
+              {t("exercise_editor.details_hint")}
+            </Text>
+
+            {showDetails ? (
+              <YStack gap="$4" pt="$3">
+                <YStack gap="$2">
+                  <Text fontSize={12} color="$textSecondary">
+                    {t("exercise_editor.muscles")}
+                  </Text>
+                  <XStack gap="$2" flexWrap="wrap">
+                    {muscleCodes.map((muscle) => (
+                      <Chip
+                        key={muscle}
+                        testID={`exercise-muscle-${muscle}`}
+                        label={MUSCLE_LABELS[muscle][language]}
+                        tone={details.muscles.includes(muscle) ? "primary" : "default"}
+                        onPress={() => toggleMuscle(muscle)}
+                      />
+                    ))}
+                  </XStack>
+                </YStack>
+
+                <YStack gap="$2">
+                  <Text fontSize={12} color="$textSecondary">
+                    {t("exercise_editor.style")}
+                  </Text>
+                  <XStack gap="$2" flexWrap="wrap">
+                    {exerciseStyles.map((style) => (
+                      <Chip
+                        key={style}
+                        testID={`exercise-style-${style}`}
+                        label={t(`exercise_editor.style_${style}`)}
+                        tone={details.style === style ? "primary" : "default"}
+                        onPress={() => setDetails((d) => ({ ...d, style }))}
+                      />
+                    ))}
+                  </XStack>
+                </YStack>
+
+                <YStack gap="$2">
+                  <Text fontSize={12} color="$textSecondary">
+                    {t("exercise_editor.difficulty")}
+                  </Text>
+                  <XStack gap="$2" flexWrap="wrap">
+                    {difficultyCodes.map((difficulty) => (
+                      <Chip
+                        key={difficulty}
+                        testID={`exercise-difficulty-${difficulty}`}
+                        label={t(`exercise_editor.difficulty_${difficulty}`)}
+                        tone={details.difficulty === difficulty ? "primary" : "default"}
+                        onPress={() => setDetails((d) => ({ ...d, difficulty }))}
+                      />
+                    ))}
+                  </XStack>
+                </YStack>
+
+                <YStack gap="$2">
+                  <Text fontSize={12} color="$textSecondary">
+                    {t("exercise_editor.equipment")}
+                  </Text>
+                  <XStack gap="$2" flexWrap="wrap">
+                    {equipmentCodes.map((equipment) => (
+                      <Chip
+                        key={equipment}
+                        testID={`exercise-equipment-${equipment}`}
+                        label={EQUIPMENT_LABELS[equipment][language]}
+                        tone={details.equipment === equipment ? "primary" : "default"}
+                        onPress={() => setDetails((d) => ({ ...d, equipment }))}
+                      />
+                    ))}
+                  </XStack>
+                </YStack>
+
+                <YStack gap="$2">
+                  <Text fontSize={12} color="$textSecondary">
+                    {t("exercise_editor.measure")}
+                  </Text>
+                  <XStack gap="$2">
+                    {questTargetTypes.map((measure) => (
+                      <Chip
+                        key={measure}
+                        testID={`exercise-measure-${measure}`}
+                        label={t(
+                          measure === "reps" ? "quests.config_reps" : "quests.config_seconds",
+                        )}
+                        tone={details.measure === measure ? "primary" : "default"}
+                        onPress={() => setDetails((d) => ({ ...d, measure }))}
+                      />
+                    ))}
+                  </XStack>
+                </YStack>
+
+                {/* Not offered on an outing, which has no sides; the writer refuses it there too. */}
+                {details.style === "expedition" ? null : (
+                  <SidesPicker
+                    perSide={details.perSide}
+                    onChange={(perSide) => setDetails((d) => ({ ...d, perSide }))}
+                  />
+                )}
+
+                <YStack gap="$2">
+                  <Text fontSize={12} color="$textSecondary">
+                    {t("exercise_editor.pattern")}
+                  </Text>
+                  <XStack gap="$2" flexWrap="wrap">
+                    <Chip
+                      testID="exercise-pattern-none"
+                      label={t("exercise_editor.pattern_none")}
+                      tone={details.pattern === null ? "primary" : "default"}
+                      onPress={() => setDetails((d) => ({ ...d, pattern: null }))}
+                    />
+                    {movementPatterns.map((pattern) => (
+                      <Chip
+                        key={pattern}
+                        testID={`exercise-pattern-${pattern}`}
+                        label={t(`patterns.${pattern}`)}
+                        tone={details.pattern === pattern ? "primary" : "default"}
+                        onPress={() => setDetails((d) => ({ ...d, pattern }))}
+                      />
+                    ))}
+                  </XStack>
+                </YStack>
+
+                {/* A held movement is counted in seconds already: a tempo per rep means nothing for it.
+                  The stored value stays whatever it was (the default 3), which is always valid. */}
+                {details.measure === "reps" ? (
+                  <Stepper
+                    label={t("exercise_editor.seconds_per_rep")}
+                    hint={t("exercise_editor.seconds_per_rep_hint")}
+                    value={details.secondsPerRep}
+                    min={SECONDS_PER_REP_RANGE.min}
+                    max={SECONDS_PER_REP_RANGE.max}
+                    onChange={(secondsPerRep) => setDetails((d) => ({ ...d, secondsPerRep }))}
+                  />
+                ) : null}
+              </YStack>
+            ) : null}
+          </Card>
+
+          <AppButton
+            testID="exercise-save"
+            variant="primary"
+            disabled={saving}
+            onPress={handleSave}
+            accessibilityRole="button"
+            accessibilityLabel={t("exercise_editor.save")}
+          >
+            {t("exercise_editor.save")}
+          </AppButton>
+        </ScrollView>
+      </KeyboardAvoidingView>
+      {discardDialog}
     </YStack>
   );
 }

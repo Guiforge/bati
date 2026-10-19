@@ -2133,6 +2133,7 @@ export const useSessionStore = create<SessionState>()(
 
       const sessionId = await ensureSessionRow({
         questId: quest.id,
+        lightened: quest.lightened === true,
         userLevel,
         // The name the session has carried since its first second. Without it the row would be
         // minted a second one at save time, and the GPS points filed under the first would

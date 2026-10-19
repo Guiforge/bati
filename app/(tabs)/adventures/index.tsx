@@ -41,7 +41,6 @@ import { USER_QUEST_AUTHOR } from "@/db/quests";
 import { formatCount } from "@/db/targets";
 import { adventureWeeksLabel, useReminderPace } from "@/hooks/useReminderPace";
 import { localizedText, localizedTitle } from "@/src/i18n/localized";
-import { lockedAdventures } from "@/src/plus/access";
 import { reportError } from "@/src/reportError";
 import { keepIfSame } from "@/src/sameContent";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
@@ -55,8 +54,6 @@ function resolveCoverImage(path?: string | null): ImageSourcePropType | null {
 type GalleryData = {
   adventures: Adventure[];
   previews: ReadonlyMap<number, QuestPreview>;
-  /** Bati+ adventures this hero never started (P-04.2): grouped after the others, still tappable. */
-  locked: ReadonlySet<number>;
 };
 
 type LoadState =
@@ -324,28 +321,20 @@ function AdventureCard({
 }
 
 // Hoisted so the list doesn't get a fresh function identity on every parent render.
-/** "With Bati+" and how many are still behind it, once, above the locked posters. */
-type PlusHeaderRow = { plusHeader: true; count: number };
 /** "Tes aventures", above the hero's own posters. */
 type YoursHeaderRow = { yoursHeader: true };
 /** The way to write one: after the hero's own, or after the game's when there are none. */
 type WriteRowItem = { writeRow: true };
-type GalleryItem = AdventureRow | PlusHeaderRow | YoursHeaderRow | WriteRowItem;
+type GalleryItem = AdventureRow | YoursHeaderRow | WriteRowItem;
 
 const adventureKey = (item: GalleryItem) =>
-  "plusHeader" in item
-    ? "plus-header"
-    : "yoursHeader" in item
-      ? "yours-header"
-      : "writeRow" in item
-        ? "write-row"
-        : String(item.adventure.id);
-const itemType = (item: GalleryItem) =>
-  "plusHeader" in item || "yoursHeader" in item
-    ? "header"
+  "yoursHeader" in item
+    ? "yours-header"
     : "writeRow" in item
-      ? "write"
-      : "poster";
+      ? "write-row"
+      : String(item.adventure.id);
+const itemType = (item: GalleryItem) =>
+  "yoursHeader" in item ? "header" : "writeRow" in item ? "write" : "poster";
 
 function YoursHeader() {
   const { t } = useTranslation();
@@ -369,19 +358,6 @@ function WriteRow({ onWrite }: { onWrite: () => void }) {
   );
 }
 
-function PlusHeader({ count }: { count: number }) {
-  const { t } = useTranslation();
-  return (
-    <YStack testID="adventures-plus-header" px="$5" pt="$3" gap="$1">
-      <Text fontFamily="$heading" fontWeight="700" fontSize={18} color="$text">
-        {t("adventures.plus_section")}
-      </Text>
-      <Text color="$textSecondary" fontSize={13}>
-        {t("adventures.plus_more", { count })}
-      </Text>
-    </YStack>
-  );
-}
 const ListGap = () => <YStack height={12} />;
 
 function StatusMessage({
@@ -470,7 +446,6 @@ export default function AdventuresGallery() {
     status: "loading",
     adventures: [],
     previews: new Map(),
-    locked: new Set(),
   });
   const [activeProgress, setActiveProgress] = useState<AdventureProgress | null>(null);
   const [finishedCounts, setFinishedCounts] = useState<Map<number, number>>(new Map());
@@ -490,21 +465,10 @@ export default function AdventuresGallery() {
       getAllQuestConfigs(),
       getRecentSessionHistory(10),
       preferences.getTrainingLevel(),
-      lockedAdventures(),
       activeRunAdventureIds(),
     ])
       .then(
-        ([
-          adventures,
-          exercises,
-          activeRun,
-          finished,
-          questConfigs,
-          history,
-          answer,
-          locked,
-          running,
-        ]) => {
+        ([adventures, exercises, activeRun, finished, questConfigs, history, answer, running]) => {
           const progress: AdventureProgress | null = activeRun
             ? {
                 adventureId: activeRun.adventureId,
@@ -536,7 +500,6 @@ export default function AdventuresGallery() {
               status: "ready",
               adventures,
               previews: keepIfSame(s.previews, previews),
-              locked: keepIfSame(s.locked, locked),
             }));
           });
         },
@@ -560,7 +523,6 @@ export default function AdventuresGallery() {
   const adventures = state.adventures;
   const previews = state.previews;
 
-  const locked = state.locked;
   const rows = useMemo(() => {
     const build = (a: Adventure) =>
       buildAdventureRow(
@@ -572,7 +534,7 @@ export default function AdventuresGallery() {
         pace,
       );
     // Ordered before the rows are built, so the sort reads the adventures themselves rather
-    // than the display strings derived from them. Locked ones keep seed order, under a header.
+    // than the display strings derived from them.
     // Under way first (every run, not only the newest), then the rest in `adventureOrder`.
     // ponytail: the progress chip stays with the newest run only (`getAnyActiveAdventureRun`);
     // per-run progress on each poster is the fix if two runs at once turns out to be common.
@@ -586,13 +548,11 @@ export default function AdventuresGallery() {
     const own = adventures
       .filter((a) => a.author === USER_QUEST_AUTHOR && (a.isActive === 1 || runningIds.has(a.id)))
       .sort((a, b) => (b.updatedAt?.getTime() ?? 0) - (a.updatedAt?.getTime() ?? 0));
-    const rows: GalleryItem[] = order(game.filter((a) => !locked.has(a.id))).map(build);
+    const rows: GalleryItem[] = order(game).map(build);
     if (own.length > 0) rows.push({ yoursHeader: true }, ...order(own).map(build));
     rows.push({ writeRow: true });
-    if (locked.size === 0) return rows;
-    const header: PlusHeaderRow = { plusHeader: true, count: locked.size };
-    return [...rows, header, ...game.filter((a) => locked.has(a.id)).map(build)];
-  }, [adventures, locked, finishedCounts, runningIds, language, t, previews, activeProgress, pace]);
+    return rows;
+  }, [adventures, finishedCounts, runningIds, language, t, previews, activeProgress, pace]);
 
   const title = t("adventures.gallery_title");
 
@@ -600,9 +560,7 @@ export default function AdventuresGallery() {
   const onWrite = () => router.push("/adventures/edit" as never);
 
   const renderItem = ({ item }: { item: GalleryItem }) =>
-    "plusHeader" in item ? (
-      <PlusHeader count={item.count} />
-    ) : "yoursHeader" in item ? (
+    "yoursHeader" in item ? (
       <YoursHeader />
     ) : "writeRow" in item ? (
       <WriteRow onWrite={onWrite} />

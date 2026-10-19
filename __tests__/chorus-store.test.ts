@@ -248,4 +248,13 @@ describe("what the chorus remembers", () => {
     // the same line, so the memory has to survive the switch.
     expect(useChorusStore.getState().current?.line).toBe(fr.villagers.watcher.boss_defeated[1]);
   });
+
+  test("the cue stores the line's key, so a screen resolves it in the language it is in", async () => {
+    useChorusStore.getState().cue("boss_defeated");
+    const key = useChorusStore.getState().current?.lineKey;
+
+    expect(key).toMatch(/^villagers\.watcher\.boss_defeated\.\d$/);
+    await i18n.changeLanguage("fr");
+    expect(i18n.t(key as string)).not.toBe(useChorusStore.getState().current?.line);
+  });
 });

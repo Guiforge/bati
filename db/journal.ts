@@ -23,6 +23,7 @@ import { dayKey } from "./dates";
 import { DEED_ADVENTURE } from "./deed";
 import {
   fetchLadderRows,
+  frozenBefore,
   recentMetFlagsBatch,
   successorsOf,
   type VariationStep,
@@ -871,7 +872,9 @@ export async function isLatestSession(session: CompletedSession): Promise<boolea
 export async function getSessionRung(session: CompletedSession): Promise<VariationStep | null> {
   const ids = [...new Set(session.exercises.map((ex) => ex.exercise.id))];
   if (ids.length === 0) return null;
-  const [rows, flags] = await Promise.all([fetchLadderRows(), recentMetFlagsBatch(ids)]);
+  // Frozen by a running light week, like the exercise page's cards.
+  const before = await frozenBefore();
+  const [rows, flags] = await Promise.all([fetchLadderRows(), recentMetFlagsBatch(ids, before)]);
   const ref = ({ prerequisiteExerciseId: _, ...movement }: (typeof rows)[number]) => movement;
   let best: VariationStep | null = null;
   for (const id of ids) {

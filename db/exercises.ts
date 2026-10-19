@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gte, inArray, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { workoutsBeforeToday } from "./completed";
 import { writeContentTombstone } from "./contentTombstone";
@@ -449,7 +449,11 @@ const PROGRESSION_WINDOW_DAYS = 56;
  */
 const sessionMetSql = () => sql<number>`min(${setMetSql})`;
 
-async function recentMetFlags(exerciseId: number, limit: number): Promise<boolean[]> {
+async function recentMetFlags(
+  exerciseId: number,
+  limit: number,
+  before?: Date,
+): Promise<boolean[]> {
   const since = new Date(Date.now() - PROGRESSION_WINDOW_DAYS * 24 * 60 * 60 * 1000);
 
   const met = sessionMetSql();
@@ -462,6 +466,7 @@ async function recentMetFlags(exerciseId: number, limit: number): Promise<boolea
       and(
         eq(schema.completedExercises.exerciseId, exerciseId),
         gte(schema.completedExercises.performedAt, since),
+        ...(before ? [lt(schema.completedExercises.performedAt, before)] : []),
         eq(schema.completedExercises.ladderNeutral, false),
       ),
     )
@@ -506,8 +511,9 @@ export function successorsOf(
 async function buildStep(
   from: LadderRow,
   fork: { next: LadderRow; alsoNext: MovementRef[] },
+  before?: Date,
 ): Promise<VariationStep> {
-  const flags = await recentMetFlags(from.id, PROGRESSION_SESSIONS_REQUIRED);
+  const flags = await recentMetFlags(from.id, PROGRESSION_SESSIONS_REQUIRED, before);
   const metTarget = streakOf(flags);
 
   return {
@@ -537,7 +543,10 @@ export async function getNextProgression(exerciseId: number): Promise<NextProgre
   const fork = successorsOf(rows, exerciseId);
   if (!from || !fork) return null;
 
-  const step = await buildStep(from, fork);
+  // A running light week freezes the standing, as in `getChainTo`: the card must not promise a
+  // variant the quest does not serve.
+  const before = await frozenBefore();
+  const step = await buildStep(from, fork, before);
   if (step.isEarned) return step;
 
   // The hero already stands on `next` or above it: the Wall Sit screen told a hero who trains Squat
@@ -553,8 +562,8 @@ export async function getNextProgression(exerciseId: number): Promise<NextProgre
     }
   }
   const [flags, everEarned] = await Promise.all([
-    recentMetFlagsBatch(above),
-    everEarnedMovements(),
+    recentMetFlagsBatch(above, before),
+    everEarnedMovements(before),
   ]);
   const standsAbove = above.some((id) => everEarned.has(id) || flags.get(id)?.some(Boolean));
   return standsAbove ? { ...step, metTarget: PROGRESSION_SESSIONS_REQUIRED, isEarned: true } : step;
@@ -605,7 +614,13 @@ export async function getChainTo(exerciseId: number): Promise<Chain | null> {
   if (chain.length < 2) return null;
 
   const ids = chain.map((row) => row.id);
-  const [flags, everEarned] = await Promise.all([recentMetFlagsBatch(ids), everEarnedMovements()]);
+  // A running light week freezes the standing here too, as in `currentRungFor`: the oath strip and
+  // the exercise page must name the rung the quest serves.
+  const before = await frozenBefore();
+  const [flags, everEarned] = await Promise.all([
+    recentMetFlagsBatch(ids, before),
+    everEarnedMovements(before),
+  ]);
 
   const rungs = chain.map((row): ChainRung => {
     const metTarget = streakOf(flags.get(row.id) ?? []);
@@ -651,7 +666,9 @@ export function forgetEverEarned(): void {
   everEarnedCache = null;
 }
 
-async function everEarnedMovements(): Promise<Set<number>> {
+async function everEarnedMovements(before?: Date): Promise<Set<number>> {
+  // A frozen standing (light week) is read from the journal as it was; it is not the cached one.
+  if (before) return readEverEarnedMovements(before);
   const [journal] = await db.all<{ rows: number; lastId: number | null }>(
     sql`SELECT COUNT(*) AS rows, MAX(id) AS lastId FROM completed_exercises`,
   );
@@ -667,7 +684,9 @@ async function everEarnedMovements(): Promise<Set<number>> {
   return everEarnedCache.earned;
 }
 
-async function readEverEarnedMovements(): Promise<Set<number>> {
+async function readEverEarnedMovements(before?: Date): Promise<Set<number>> {
+  // `performedAt` is in seconds, and a raw read does not go through the column's mapper.
+  const upTo = before ? sql`AND performedAt < ${Math.floor(before.getTime() / 1000)}` : sql``;
   const rows = await db.all<{ exerciseId: number }>(sql`
     SELECT DISTINCT exerciseId FROM (
       SELECT exerciseId, met,
@@ -678,7 +697,7 @@ async function readEverEarnedMovements(): Promise<Set<number>> {
         SELECT exerciseId, sessionId, MIN(performedAt) AS at,
                MIN(${setMetSql}) AS met
         FROM completed_exercises
-        WHERE ladderNeutral = 0
+        WHERE ladderNeutral = 0 ${upTo}
         GROUP BY exerciseId, sessionId
       )
     )
@@ -698,7 +717,11 @@ async function readEverEarnedMovements(): Promise<Set<number>> {
  * This is the same seek `recentMetFlags` does, hoisted out of the per-movement loop because
  * `currentRungFor` needs it for every rung of every slot of a quest.
  */
-export async function recentMetFlagsBatch(exerciseIds: number[]): Promise<Map<number, boolean[]>> {
+export async function recentMetFlagsBatch(
+  exerciseIds: number[],
+  /** Sessions from this instant on are ignored: a standing frozen by a light week. */
+  before?: Date,
+): Promise<Map<number, boolean[]>> {
   if (exerciseIds.length === 0) return new Map();
 
   const since = new Date(Date.now() - PROGRESSION_WINDOW_DAYS * 24 * 60 * 60 * 1000);
@@ -712,6 +735,7 @@ export async function recentMetFlagsBatch(exerciseIds: number[]): Promise<Map<nu
       and(
         inArray(schema.completedExercises.exerciseId, exerciseIds),
         gte(schema.completedExercises.performedAt, since),
+        ...(before ? [lt(schema.completedExercises.performedAt, before)] : []),
         eq(schema.completedExercises.ladderNeutral, false),
       ),
     )
@@ -732,6 +756,19 @@ export async function recentMetFlagsBatch(exerciseIds: number[]): Promise<Map<nu
 }
 
 /**
+ * When a running light week froze the ladder, or null. Required on use: lightWeek -> pause ->
+ * setAside -> questConfig -> quests -> this file is a cycle at load time.
+ */
+export const lightWeekFreeze = () =>
+  (require("./lightWeek") as typeof import("./lightWeek")).lightWeekSince(new Date());
+
+/** The instant a running light week froze the standing, as the `before` the readers take. */
+export async function frozenBefore(): Promise<Date | undefined> {
+  const frozen = await lightWeekFreeze();
+  return frozen == null ? undefined : new Date(frozen);
+}
+
+/**
  * For each movement asked about, the one the hero is actually working: the rung just above the
  * highest one behind them (`ladderPosition`), or the movement itself once everything below it is.
  *
@@ -745,9 +782,16 @@ export async function recentMetFlagsBatch(exerciseIds: number[]): Promise<Map<nu
  * A movement off the ladder, or one whose chain is fully earned, maps to itself — callers can
  * treat the result as a total function and never special-case.
  */
-export async function currentRungFor(exerciseIds: number[]): Promise<Map<number, number>> {
+export async function currentRungFor(
+  exerciseIds: number[],
+  /** Read the standing as it was at this instant. Default: the running light week's start, if any. */
+  beforeArg?: Date,
+): Promise<Map<number, number>> {
   const wanted = [...new Set(exerciseIds)];
   if (wanted.length === 0) return new Map();
+  // A running light week promotes nobody, whoever asks: the warm-up, a replacement and the quest
+  // must all stand on the same rung.
+  const before = beforeArg ?? (await frozenBefore());
 
   const rows = await fetchLadderRows();
   const byId = new Map(rows.map((r) => [r.id, r]));
@@ -769,8 +813,8 @@ export async function currentRungFor(exerciseIds: number[]): Promise<Map<number,
   }
 
   const [flags, everEarned] = await Promise.all([
-    recentMetFlagsBatch([...new Set([...chains.values()].flat())]),
-    everEarnedMovements(),
+    recentMetFlagsBatch([...new Set([...chains.values()].flat())], before),
+    everEarnedMovements(before),
   ]);
 
   const result = new Map<number, number>();
@@ -809,6 +853,9 @@ export async function countClimbedPaths(): Promise<number> {
  * otherwise every subsequent session would re-announce the same step.
  */
 export async function checkForNewRungs(sessionId: number): Promise<VariationStep[]> {
+  // The rung is frozen for the week (`currentRungFor`): announcing it now would promise a variant
+  // the next quest does not serve.
+  if ((await lightWeekFreeze()) != null) return [];
   const [rows, sessionRows] = await Promise.all([
     fetchLadderRows(),
     db

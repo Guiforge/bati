@@ -168,55 +168,63 @@ export function WarmupView() {
           goTestID="session-prep-go"
         />
       ) : (
-        // Scrolls rather than overlaps: at a 130% font on a 360x640 screen the movement, its
-        // description and the countdown are taller than the space between the header and the step
-        // controls, and a centred box spilled over both. `flexGrow` keeps it centred while it fits.
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
-          <YStack style={{ flexGrow: 1 }} items="center" justify="center" gap="$4">
-            {exercise ? (
-              <Image
-                source={getExerciseAsset(exercise.imagePath)}
-                // The second side faces the other way, as in a quest's per-side hold (`ExerciseHero`).
-                style={{
-                  width: 180,
-                  height: 180,
-                  borderRadius: 16,
-                  transform: [{ scaleX: switched ? -1 : 1 }],
-                }}
-                contentFit="cover"
-              />
-            ) : null}
+        <>
+          {/* Scrolls rather than overlaps: at a 130% font on a 360x640 screen the movement and its
+              description are taller than the space between the header and the step controls, and
+              a centred box spilled over both. `flexGrow` keeps it centred while it fits. */}
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
+            <YStack style={{ flexGrow: 1 }} items="center" justify="center" gap="$4">
+              {exercise ? (
+                <Image
+                  source={getExerciseAsset(exercise.imagePath)}
+                  // The second side faces the other way, as in a quest's per-side hold (`ExerciseHero`).
+                  style={{
+                    width: 180,
+                    height: 180,
+                    borderRadius: 16,
+                    transform: [{ scaleX: switched ? -1 : 1 }],
+                  }}
+                  contentFit="cover"
+                />
+              ) : null}
 
-            <YStack items="center" gap="$1">
-              <AppText
-                testID="warmup-name"
-                fontFamily="$heading"
-                fontWeight="700"
-                fontSize={20}
-                color="$text"
-                style={{ textAlign: "center" }}
-              >
-                {label}
-              </AppText>
-              {eachSide ? (
+              <YStack items="center" gap="$1">
                 <AppText
-                  testID="warmup-sides"
-                  fontSize={15}
+                  testID="warmup-name"
+                  fontFamily="$heading"
                   fontWeight="700"
-                  color={switched ? "$warning" : "$textSecondary"}
+                  fontSize={20}
+                  color="$text"
+                  style={{ textAlign: "center" }}
                 >
-                  {switched ? t("session.switch_sides") : t("session.each_side", { seconds: half })}
+                  {label}
                 </AppText>
+                {eachSide ? (
+                  <AppText
+                    testID="warmup-sides"
+                    fontSize={15}
+                    fontWeight="700"
+                    color={switched ? "$warning" : "$textSecondary"}
+                  >
+                    {switched
+                      ? t("session.switch_sides")
+                      : t("session.each_side", { seconds: half })}
+                  </AppText>
+                ) : null}
+              </YStack>
+
+              {/* Still here during the movement: the wait showed it, and a glance mid-movement is
+              cheaper than a pause. */}
+              {instruction?.description ? (
+                <MovementDescription text={instruction.description} />
               ) : null}
             </YStack>
-
-            {/* Still here during the movement: the wait showed it, and a glance mid-movement is
-              cheaper than a pause. */}
-            {instruction?.description ? (
-              <MovementDescription text={instruction.description} />
-            ) : null}
-
+          </ScrollView>
+          {/* Pinned under the scroll, not inside it: at 360x640 and a 130% font the picture and the
+            description fill the scroll, and the countdown was only reachable by swiping. */}
+          <YStack items="center" gap="$4">
             <H1
+              testID="warmup-clock"
               maxFontSizeMultiplier={FONT_CAPS.display}
               color="$text"
               fontFamily="$body"
@@ -229,7 +237,7 @@ export function WarmupView() {
 
             <TimerBar value={progress} fill="$primary" bg="$surface" />
           </YStack>
-        </ScrollView>
+        </>
       )}
 
       <XStack items="center" justify="center" gap="$5">

@@ -1,6 +1,9 @@
 {
   "dark": "Oscuro",
   "home": {
+    "light_week_on": "Semana ligera hasta el {{date}}: una ronda menos en tus misiones.",
+    "light_week_end": "Volver al ritmo normal",
+    "pause_on": "En pausa hasta el {{date}}",
     "start": "Empezar",
     "details": "Detalles",
     "kicker_day_one": "Primer día",
@@ -154,6 +157,7 @@
     "prep_timer": "10 s",
     "prep_tap": "Esperar al «YA»",
     "rest_default": "Descanso entre ejercicios",
+    "rest_default_note": "Las misiones que escribiste conservan su propio descanso.",
     "rest_default_own": "Según la misión",
     "rest_default_value": "{{seconds}} s",
     "equipment": "Material",
@@ -211,7 +215,7 @@
     "illustrations_title": "Ilustraciones de ejercicios",
     "mr_yoga": "Mr. Yoga",
     "mr_yoga_subtitle": "Fotografía usada como modelo de pose, Wikimedia Commons",
-    "illustrations_note": "Las ilustraciones de ejercicios están generadas con IA mediante FLUX (Black Forest Labs) y elegidas una a una. Muchas parten de una pose dibujada por Bryl Lim para el proyecto workout-guide, basado en los estudios anatómicos de Everkinetic, y otras de una fotografía de Mr. Yoga o de fotos del desarrollador de Bati. Todas se publican bajo CC BY-SA 4.0.",
+    "illustrations_note": "Las ilustraciones de ejercicios son obras adaptadas. FLUX (Black Forest Labs) las redibujó y las modificó a partir de una pose de Bryl Lim para el proyecto workout-guide (basado a su vez en los estudios anatómicos de Everkinetic), de una fotografía de Mr. Yoga o de fotos del desarrollador de Bati, y cada una se eligió a mano. Los originales fueron modificados. El resultado se publica bajo CC BY-SA 4.0.",
     "everkinetic": "Everkinetic",
     "everkinetic_subtitle": "Dibujos anatómicos originales",
     "workout_guide": "workout-guide",
@@ -220,6 +224,9 @@
     "cc_by_sa_40_subtitle": "Condiciones de la licencia: compartir igual",
     "licenses_title": "Licencias de código abierto",
     "licenses_body": "Cada biblioteca que incluye Bati y la licencia con la que se publica.",
+    "licenses_icons_title": "Autores de los iconos",
+    "licenses_icons_body": "Iconos de game-icons.net con licencia CC BY 3.0, atribuidos a sus autores. Solo se listan los iconos que usa Bati.",
+    "licenses_icons_by": "Iconos de {{author}}",
     "map_styles_title": "Estilos de mapa",
     "map_styles_note": "Los estilos Noche y Fiordo vienen de OpenFreeMap, que se basa en los estilos de OpenMapTiles. Su aviso sigue, como pide su licencia.",
     "openfreemap_styles": "Estilos de OpenFreeMap",
@@ -385,6 +392,7 @@
     "editor_delete_in_use": "Esta misión es una etapa de {{titles}}. Quítala primero de la aventura."
   },
   "adventures": {
+    "editor_saved": "Aventura guardada",
     "gallery_title": "Aventuras",
     "gallery_subtitle": "Programas de varias sesiones, con historia y combate contra un jefe",
     "details_title": "Aventura",
@@ -428,11 +436,6 @@
     "kind_boss": "JEFE",
     "empty_title": "Aún no hay aventuras",
     "empty_subtitle": "Vuelve pronto. La aldea está preparando aventuras.",
-    "plus_section": "Con Bati+",
-    "plus_more_one": "Una aventura más con Bati+",
-    "plus_more_other": "{{count}} aventuras más con Bati+",
-    "plus_more_many": "{{count}} aventuras más con Bati+",
-    "plus_locked": "Esta aventura viene con Bati+. Cada una de sus misiones se juega sola, desde Misiones.",
     "yours_section": "Tus aventuras",
     "write": "Escribir una aventura",
     "by_you": "Escrita por ti",
@@ -751,7 +754,7 @@
     "objective_value": "Objetivo {{value}}",
     "ghost_to_beat_label": "a superar",
     "ghost_season_label": "Por encima de tu mejor de la temporada",
-    "below_last_comeback": "Vuelves tras una pausa: un nivel más suave durante dos sesiones.",
+    "below_last_comeback": "Vuelta a {{name}}: un nivel más suave durante dos sesiones.",
     "below_last_rung": "Nueva etapa: vuelves a empezar desde abajo del rango.",
     "expedition_status_denied": "Bati no tiene acceso a tu ubicación",
     "expedition_open_settings": "Abrir ajustes",
@@ -1802,26 +1805,30 @@
     "during_title": "Durante el esfuerzo",
     "during_body": "Un dolor agudo no es esfuerzo: pare. Mareo, dolor en el pecho o falta de aliento significan parar y consultar a un médico. Cada objetivo aquí es una sugerencia: mejor terminar una serie con una o dos repeticiones en reserva que perseguir una cifra perdiendo la técnica.",
     "not_a_coach_title": "Bati no es un entrenador",
-    "not_a_coach_body": "Esta app cuenta lo que hace y le pone una historia. No ve su técnica y no es consejo médico. Para un diagnóstico, una lesión o un plan adaptado a su cuerpo, acuda a un profesional cualificado."
+    "not_a_coach_body": "Esta app cuenta lo que hace y le pone una historia. No ve su técnica y no es consejo médico. Para un diagnóstico, una lesión o un plan adaptado a su cuerpo, acuda a un profesional cualificado.",
+    "outdoors_title": "Al aire libre",
+    "outdoors_body": "En una salida, la carretera va antes que la pantalla. Atienda al tráfico y cruce solo donde sea seguro, deje un oído libre y deténgase en un lugar seguro antes de mirar el teléfono. Si el trayecto es largo, avise a alguien de adónde va."
   },
   "privacy": {
     "title": "Privacidad",
     "summary": "Bati no recoge nada. La app funciona sin conexión, con tres excepciones, desactivadas por defecto las tres: el mapa bajo una salida, una consulta diaria sobre nuevas versiones de la app y la sincronización de dispositivos. Con el mapa activado, el teléfono pide a un servidor de mapas la zona por la que ha pasado, lo que le indica más o menos dónde estuvo. La comprobación de versión pregunta a GitHub si ha salido un Bati más reciente, y solo le indica su dirección IP y la hora. La sincronización envía el historial de cada dispositivo, cifrado en el teléfono, a un servidor Nextcloud o WebDAV que usted indica y que no puede leerlo. Todo lo demás que hace aquí se queda en su teléfono, salvo que decida enviarlo, a propósito, por correo.",
     "storage_title": "Dónde viven sus sesiones",
-    "storage_body": "Cada sesión, serie, misión, aventura, logro y ajuste se escribe en una base de datos dentro del almacenamiento privado de esta app, en su dispositivo. Nunca se nos envía: no hay ningún servidor nuestro ni ninguna cuenta. Solo sale del teléfono en una copia de seguridad que usted hace, o por la sincronización de dispositivos, desactivada hasta que la active y cifrada en el teléfono antes de ir a un servidor que usted indica. Desinstalar la app lo borra del teléfono. La copia de seguridad de su teléfono (la de Google, o Seedvault) puede conservar una copia, hecha por el sistema y no por Bati, y así un teléfono nuevo recupera a su héroe: puede desactivarla en los ajustes del teléfono.",
+    "storage_body": "Cada sesión, serie, misión, aventura, logro y ajuste se escribe en una base de datos dentro del almacenamiento privado de esta app, en su dispositivo. Nunca se nos envía: no hay ningún servidor nuestro ni ninguna cuenta. Solo sale del teléfono en una copia de seguridad que usted hace, en un archivo de misión o de aventura que usted comparte (sin cifrar, lleva los ejercicios que creó para ella y sus fotos), o por la sincronización de dispositivos, desactivada hasta que la active y cifrada en el teléfono antes de ir a un servidor que usted indica. Desinstalar la app lo borra del teléfono. La copia de seguridad de su teléfono (la de Google, o Seedvault) puede conservar una copia, hecha por el sistema y no por Bati, y así un teléfono nuevo recupera a su héroe: puede desactivarla en los ajustes del teléfono.",
     "backups_title": "Las copias de seguridad que usted hace",
     "backups_body": "«Guardar un archivo» escribe su base de datos en un archivo que usted nombra, donde la pantalla «Guardar como» de Android se lo permita (este dispositivo, una app de nube instalada, una memoria USB); un pequeño enlace al lado entrega el archivo a otra app. En ambos casos Bati no lo envía a ningún sitio por sí misma. Ese archivo no está cifrado salvo que configure «Contraseña de las copias»: sin eso, cualquiera que lo abra puede leer su historial de entrenamiento. Con ello, solo se abre con su contraseña o sus doce palabras de recuperación, y sin una de las dos nadie puede abrirlo ni recuperarlo por usted. Restaurar lo sustituye todo; la base de datos que tenía se conserva en el dispositivo como copia de rescate.",
     "never_title": "Lo que Bati nunca hace",
     "never_body": "Sin cuenta, sin registro, sin analíticas, sin telemetría, sin publicidad, sin identificadores de seguimiento y sin ningún SDK de terceros que recoja nada. Nada de la base de datos se envía nunca a un sitio donde pueda leerse. La app usa la red en tres puntos únicamente, y solo donde usted lo permite. Primero, el mapa bajo la ruta de una salida está desactivado hasta que lo active en Ajustes. Activado, el teléfono pide a OpenFreeMap (datos de OpenStreetMap servidos desde tiles.openfreemap.org) teselas, las imágenes cuadradas de las que se compone un mapa, de la zona de la salida, mientras ocurre, en su resumen y para su imagen en el diario, a veces mucho después. Esas peticiones le indican al servidor más o menos dónde está usted mientras se mueve, junto con su dirección IP y la hora. El servidor puede deducir la zona y más o menos cuándo la cruzó. La ruta al metro, el ritmo, el entrenamiento y quién es usted se quedan con usted. Desactivado, o desactivado de nuevo con un toque, la app no hace ninguna petición de red y la ruta se dibuja sobre un fondo liso. Segundo, Buscar actualizaciones, al final de Ajustes, también desactivado hasta que usted lo active. Activado, la app pregunta una vez al día a api.github.com si ha salido una versión más reciente. Esa petición no lleva ningún identificador ni nada de la base de datos; GitHub solo obtiene una dirección IP y una hora, igual que de cualquiera que abra la página de versiones en un navegador. No se descarga ni se instala nada: la tarjeta que aparece en la pantalla de inicio abre esa página en su propio navegador, y lo que pase después lo decide usted. Tercero, «Sincronizar mis dispositivos», desactivado hasta que lo active, y solo con el cifrado activado. Activado, cada dispositivo envía su historial, sellado en el teléfono, al servidor Nextcloud o WebDAV al que se conecta, y lee el de los demás al abrir la app. Ese servidor conoce su dirección IP, la hora, el tamaño de cada archivo, cuántos dispositivos sincroniza y un identificador aleatorio por instalación, y nada de su contenido. O bien elige una carpeta que Syncthing mantiene al día con sus otros dispositivos, y Bati no hace por sí mismo ninguna petición de red para la sincronización. El código se revisa automáticamente, y una llamada de red en cualquier otro sitio hace fallar la compilación.",
     "permissions_title": "Permisos",
-    "permissions_body": "Fotos: solo si elige una para su avatar, un ejercicio, una misión o una sesión; un avatar se queda en su dispositivo, y una foto dada a un ejercicio, una misión o una sesión se reduce y se guarda sin la ubicación ni los datos de la cámara en la base de datos, así que sigue a sus copias de seguridad y a una sincronización cifrada. El widget de Android lee su llama en la misma base de datos local. Ubicación: solo durante una salida, y solo la ubicación precisa, porque un recorrido no se puede medir con una aproximada. Su ruta se escribe en este teléfono y solo sale de él en una copia de seguridad que usted haga o en una sincronización cifrada. En un teléfono con barómetro, la presión del aire mide su desnivel; Android no pide ningún permiso para ello, y las lecturas se quedan con la ruta. Una salida muestra además una notificación permanente: es lo que mantiene vivo el seguimiento, y por eso la pantalla puede apagarse a mitad de camino sin que nada se detenga. Internet: para el mapa, la comprobación de versión y la sincronización de dispositivos, cada uno solo mientras su interruptor esté activado en Ajustes; los tres empiezan desactivados, y lo que revela cada petición está explicado más arriba. Biometría: solo para volver a mostrar su clave de recuperación, tras su huella; Android hace la comprobación y Bati nunca la ve. Notificaciones e inicio del teléfono: solo si activa el recordatorio de entrenamiento. Android lo programa en este teléfono, sus días a su hora; un reinicio borra las alarmas, así que Bati recibe aviso cuando el teléfono ha arrancado, para volver a programarlo. El teléfono guarda los últimos diez días en que sonó un recordatorio, para actuar sobre sus botones; ese registro no se envía a ningún sitio.",
+    "permissions_body": "Fotos: solo si elige una para su avatar, un ejercicio, una misión o una sesión; un avatar se queda en su dispositivo, y una foto dada a un ejercicio, una misión o una sesión se reduce y se guarda sin la ubicación ni los datos de la cámara en la base de datos, así que sigue a sus copias de seguridad y a una sincronización cifrada, y viaja sin cifrar en un archivo de misión o de aventura que usted comparte. El widget de Android lee su llama en la misma base de datos local. Ubicación: solo durante una salida, y solo la ubicación precisa, porque un recorrido no se puede medir con una aproximada. Su ruta se escribe en este teléfono y solo sale de él en una copia de seguridad que usted haga o en una sincronización cifrada. En un teléfono con barómetro, la presión del aire mide su desnivel; Android no pide ningún permiso para ello, y las lecturas se quedan con la ruta. Una salida muestra además una notificación permanente: es lo que mantiene vivo el seguimiento, y por eso la pantalla puede apagarse a mitad de camino sin que nada se detenga. Internet: para el mapa, la comprobación de versión y la sincronización de dispositivos, cada uno solo mientras su interruptor esté activado en Ajustes; los tres empiezan desactivados, y lo que revela cada petición está explicado más arriba. Biometría: solo para volver a mostrar su clave de recuperación, tras su huella; Android hace la comprobación y Bati nunca la ve. Notificaciones e inicio del teléfono: solo si activa el recordatorio de entrenamiento. Android lo programa en este teléfono, sus días a su hora; un reinicio borra las alarmas, así que Bati recibe aviso cuando el teléfono ha arrancado, para volver a programarlo. El teléfono guarda los últimos diez días en que sonó un recordatorio, para actuar sobre sus botones; ese registro no se envía a ningún sitio.",
     "crashes_title": "Informes de cierres inesperados",
     "crashes_body": "Si la app se cierra inesperadamente, el error se escribe solo en su dispositivo. Cuando una función falla sin cerrarse (una copia que no se pudo escribir, por ejemplo), su mensaje de error se guarda igual; ese mensaje puede incluir el nombre de una carpeta o de un archivo que usted eligió, o la dirección de su servidor de sincronización. Nada se envía automáticamente. La fila «Una opinión, una idea, un error» de Ajustes abre su propia app de correo con el informe ya escrito, para que pueda leerlo, editarlo o borrarlo antes de enviarlo. Si nunca lo envía, nunca sale de su teléfono.",
+    "sharing_title": "Imágenes que comparte",
+    "sharing_body": "Un resumen, una tarjeta de salida o el balance del año se pueden compartir como imagen. Bati la dibuja en su teléfono con sus propios datos, mapa de la ruta incluido con su crédito de OpenStreetMap, y la entrega al menú de compartir del teléfono. Bati no la envía a ningún sitio por sí misma, y solo va adonde usted decide enviarla. Una vez enviada, quien la recibe la conserva, y lo que haga con ella es cosa suya.",
     "children_title": "Menores",
-    "children_body": "Bati es una app de deporte para todos los públicos y no está dirigida a menores de 13 años. No recoge datos personales de nadie, de ninguna edad.",
+    "children_body": "Bati está pensada para personas de {{age}} años o más y no se dirige a menores. No recoge datos personales de nadie, de ninguna edad.",
     "contact_title": "Preguntas",
     "contact_body": "Escriba a contact@getbati.app sobre esta política, y sobre un error, una idea o una función que eche en falta. Como la app no guarda ningún dato sobre usted, no tenemos nada que exportar ni borrar en su nombre: desinstalarla borra cada registro de este teléfono. Las copias que usted pidió siguen donde las puso: la copia del teléfono, los archivos guardados y su carpeta de sincronización.",
-    "updated": "Última actualización: 27 de septiembre de 2026"
+    "updated": "Última actualización: 17 de octubre de 2026"
   },
   "feedback": {
     "subject": "Bati {{version}}: comentarios",
@@ -2554,7 +2561,7 @@
     "pause_active": "En pausa hasta el {{date}}. No pierdes nada mientras estás fuera.",
     "pause_end": "Vuelvo hoy",
     "zone_title": "Cuido una zona",
-    "zone_body": "Elige una o dos zonas. Todos los ejercicios que las trabajan se apartan y tus misiones sirven otros, hasta la fecha de fin. Luego vuelven solos.",
+    "zone_body": "Elige una o dos zonas. Todos los ejercicios que las trabajan se apartan hasta la fecha de fin: las misiones del juego sirven otros, las que escribiste se quedan tal cual. Luego vuelven solos.",
     "zone_pick": "Zonas (una o dos)",
     "zone_weeks": "Semanas",
     "zone_start": "Cuidar esta zona",
@@ -2979,13 +2986,5 @@
         "line": "Cuatro semanas intensas seguidas. Esta semana toca aligerar, no parar."
       }
     ]
-  },
-  "plus": {
-    "exercise_quota_one": "Ya tienes {{count}} ejercicio propio. Para crear más, necesitas Bati+.",
-    "exercise_quota_other": "Ya tienes {{count}} ejercicios propios. Para crear más, necesitas Bati+.",
-    "exercise_quota_many": "Ya tienes {{count}} ejercicios propios. Para crear más, necesitas Bati+.",
-    "quest_quota_one": "Ya tienes {{count}} misión propia. Para crear más, necesitas Bati+. Las misiones nacidas de una salida no cuentan.",
-    "quest_quota_other": "Ya tienes {{count}} misiones propias. Para crear más, necesitas Bati+. Las misiones nacidas de una salida no cuentan.",
-    "quest_quota_many": "Ya tienes {{count}} misiones propias. Para crear más, necesitas Bati+. Las misiones nacidas de una salida no cuentan."
   }
 }

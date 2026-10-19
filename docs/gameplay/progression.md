@@ -205,7 +205,7 @@ The number a hero is asked for is derived on read from their own journal (`progr
 | Rule | What Bati does |
 | :--- | :--- |
 | Double progression | Every non-neutral set met: +1 rep per set (+5 s for a hold). Otherwise the same target. A hold keeps its band (67 % of its record) and gains 5 s; it is never lowered. |
-| Plafond puis échelon | At 20 reps / 60 s the progression stops. The victory of the session that completes a series of 3 at the cap offers the rung above in one tap (not on the 4th or 5th, again on the 6th, a miss restarts the count) (a swap in the quest config), and the next session starts at the bottom of its band. |
+| Plafond puis échelon | At 20 reps / 60 s the progression stops. The victory of the session that completes a series of 3 at the cap offers the rung above in one tap (not on the 4th or 5th, again on the 6th, a miss restarts the count) (a swap in the quest config), and the next session starts at the bottom of its band. A neutral session (light week, lowered target, movement left) neither counts nor breaks the series, and one at the head of it completes nothing. |
 | Reprise | More than 14 days without the movement: a level lower for 2 sessions, then back to the number from before the gap. |
 
 Constants: `TARGET_STEP`, `TARGET_CAP`, `COMEBACK_GAP_DAYS`, `CAP_SESSIONS`.

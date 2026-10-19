@@ -1,3 +1,5 @@
+import { CONTENT_MAX_WIDTH } from "@/constants/layout";
+
 /**
  * How tall a session's top artwork is, capped against *both* window axes so a short screen still
  * leaves the primary action room.
@@ -32,7 +34,18 @@ export function sessionArtHeight(
   height: number,
   kind: SessionArtKind = "exercise",
 ): number {
-  return Math.min(Math.round(height * ART_FACTOR[kind]), Math.round(width * 1.1));
+  // The art fills the content column, not the window: on a tablet the window is wider than it.
+  const column = Math.min(width, CONTENT_MAX_WIDTH);
+  return Math.min(Math.round(height * ART_FACTOR[kind]), Math.round(column * 1.1));
+}
+
+/**
+ * The ceiling of the exercise hero's picture band: a square-ish painting never needs more than
+ * the column is wide (plus a tenth), and a tall window gives the rest to the counter block.
+ * `sessionArtHeight` is only the floor; this is what the hero obeys going up.
+ */
+export function exerciseArtMaxHeight(width: number): number {
+  return Math.round(Math.min(width, CONTENT_MAX_WIDTH) * 1.1);
 }
 
 /**

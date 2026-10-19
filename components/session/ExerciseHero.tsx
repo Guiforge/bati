@@ -1,12 +1,13 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import type { ImageSourcePropType } from "react-native";
+import { useState } from "react";
+import { type ImageSourcePropType, useWindowDimensions } from "react-native";
 import Animated, { useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { YStack } from "tamagui";
 import { Recitatif } from "@/components/common/Recitatif";
 import { rawColors } from "@/constants/rawColors";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { HUD_HEIGHT } from "./sessionArt";
+import { exerciseArtMaxHeight, HUD_HEIGHT } from "./sessionArt";
 
 type ExerciseHeroProps = {
   source: ImageSourcePropType;
@@ -55,6 +56,15 @@ export function ExerciseHero({
   mirrored = false,
 }: ExerciseHeroProps) {
   const reducedMotion = useReducedMotion();
+  const { width } = useWindowDimensions();
+  // The art band as laid out; the picture is a centred square of its shorter side, so a 1:1
+  // source is never cropped on either axis. 0 until measured: the first frame paints the bg.
+  const [band, setBand] = useState({ w: 0, h: 0 });
+  const side = Math.min(band.w, band.h);
+  // Dead space either side of the square: 0 on a phone, where the square fills the band.
+  const gutter = Math.max(0, (band.w - side) / 2);
+  // The récitatif follows the square only when the square can hold a name; a 95 dp one split words.
+  const inset = side >= 240 ? gutter : 0;
   const scaleX = mirrored ? -1 : 1;
   // Through zero, so it reads as a card turning over rather than a jump cut. Reduced motion gets
   // the cut, as a plain style.
@@ -69,6 +79,7 @@ export function ExerciseHero({
       // `flexBasis: auto`, and the hero then sizes to its content instead of to the column.
       style={{ flex: 1 }}
       minH={topInset + HUD_HEIGHT + minHeight}
+      maxH={topInset + HUD_HEIGHT + Math.max(minHeight, exerciseArtMaxHeight(width))}
       width="100%"
       position="relative"
       bg="$bgDark"
@@ -83,17 +94,38 @@ export function ExerciseHero({
           docs/architecture/performance.md rule #2) if the softness ever reads as blur. */}
       <Animated.View
         testID="exercise-hero-art"
+        onLayout={(e) => setBand({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}
         style={[
-          { width: "100%", height: "100%" },
+          { width: "100%", height: "100%", alignItems: "center", justifyContent: "center" },
           reducedMotion ? { transform: [{ scaleX }] } : flip,
         ]}
       >
         <Image
           source={source}
-          style={{ width: "100%", height: "100%" }}
+          style={{ width: side, height: side }}
           contentFit="cover"
           transition={150}
         />
+        {/* The square has hard side edges when the band is wider than it is tall; fade them into
+            the screen like the bottom one. */}
+        {gutter > 0 ? (
+          <>
+            <LinearGradient
+              colors={[fadeTo, "transparent"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ position: "absolute", top: 0, bottom: 0, left: gutter, width: 32 }}
+              pointerEvents="none"
+            />
+            <LinearGradient
+              colors={["transparent", fadeTo]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ position: "absolute", top: 0, bottom: 0, right: gutter, width: 32 }}
+              pointerEvents="none"
+            />
+          </>
+        ) : null}
       </Animated.View>
 
       {/* Top scrim: the status bar's own band, and barely past it.
@@ -142,8 +174,9 @@ export function ExerciseHero({
         pointerEvents="none"
       />
 
-      {/* The name sits in a récitatif, bottom-left: legible on any art without a text shadow. */}
-      <YStack position="absolute" b="$3" l="$4" r="$4">
+      {/* The name sits in a récitatif, bottom-left of the square, so it never starts
+          outside the picture on a wide band. */}
+      <YStack position="absolute" b="$3" l={inset} r={inset} px="$4">
         <Recitatif numberOfLines={2} testID="exercise-hero-name">
           {name}
         </Recitatif>

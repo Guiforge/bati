@@ -17,9 +17,9 @@ import { reportError } from "@/src/reportError";
 /**
  * The offer of a light week (E-03): one round fewer, same variations, and a no that is heard.
  * Either answer takes the card down at once; the writes are `db/lightWeek.ts`'s, the choice of who
- * gets the slot is `NoticeSlot`'s.
+ * gets the slot is `NoticeSlot`'s. `onAnswered` fires once the write landed, so Home reads the week again.
  */
-export function LightWeekCard() {
+export function LightWeekCard({ onAnswered }: { onAnswered?: () => void }) {
   const { t } = useTranslation();
   const haptics = useHaptics();
   const [reason, setReason] = useState<LightWeekReason | null>(null);
@@ -43,7 +43,9 @@ export function LightWeekCard() {
   const answer = (write: (now: Date) => Promise<void>) => {
     haptics.selection();
     setReason(null);
-    write(new Date()).catch((error: unknown) => reportError("lightWeek.answer", error));
+    write(new Date())
+      .then(() => onAnswered?.())
+      .catch((error: unknown) => reportError("lightWeek.answer", error));
   };
 
   return (
@@ -52,11 +54,11 @@ export function LightWeekCard() {
         <AppText fontSize="$3" color="$primaryText">
           {t(reason === "under" ? "home.light_week_under" : "home.light_week_busy")}
         </AppText>
-        <XStack gap="$2">
+        <XStack gap="$2" flexWrap="wrap">
           <AppButton
             testID="home-light-week-accept"
             fullWidth={false}
-            height={40}
+            minH={40}
             onPress={() => answer(acceptLightWeek)}
           >
             {t("home.light_week_accept")}
@@ -65,7 +67,7 @@ export function LightWeekCard() {
             testID="home-light-week-refuse"
             variant="outline"
             fullWidth={false}
-            height={40}
+            minH={40}
             onPress={() => answer(refuseLightWeek)}
           >
             {t("home.light_week_refuse")}

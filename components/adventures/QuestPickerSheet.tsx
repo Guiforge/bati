@@ -7,6 +7,7 @@ import { heroQuestsFirst } from "@/components/adventures/heroQuestsFirst";
 import { AppButton } from "@/components/common/AppButton";
 import { Plus, X } from "@/components/icons";
 import { getQuestAsset } from "@/constants/assetMap";
+import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { formatDuration } from "@/db/estimate";
 import type { QuestTemplate } from "@/db/quests";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -79,7 +80,14 @@ export function QuestPickerSheet({
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}
       />
-      <Sheet.Frame bg="$surface" borderTopLeftRadius="$6" borderTopRightRadius="$6">
+      <Sheet.Frame
+        width="100%"
+        maxW={CONTENT_MAX_WIDTH}
+        self="center"
+        bg="$surface"
+        borderTopLeftRadius="$6"
+        borderTopRightRadius="$6"
+      >
         <YStack px="$4" pt="$4" pb="$3" gap="$3">
           <XStack items="center" justify="space-between">
             <Text fontWeight="700" fontSize={18} color="$text">

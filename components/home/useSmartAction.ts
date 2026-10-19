@@ -4,8 +4,10 @@ import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatDurationEstimate } from "@/db/estimate";
 import { decideHomeOffer, type HomeOffer } from "@/db/homeOffer";
+import { getActivePause } from "@/db/pause";
 import { getReminderDays, WEEKDAYS, type Weekday } from "@/db/reminders";
 import { useReloadOnChange } from "@/hooks/useReloadOnChange";
+import { adventureHref } from "@/src/adventureOrigin";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
 import { useSettingsStore } from "@/stores/settings";
@@ -105,7 +107,10 @@ function stageFor(
       variant: "adventure",
       // The step's own screen starts it: it has a narrative to tell first.
       startQuestId: null,
-      onPress: () => router.push(`/adventures/${offer.adventureId}` as never),
+      // withAnchor: if the tab was never opened, the stack must hold [index, id], or the tab
+      // reopens on this page for good and the list is unreachable.
+      onPress: () =>
+        router.push(adventureHref(offer.adventureId, "home") as never, { withAnchor: true }),
       scene: {
         title: offer.title ?? t("home.resume_journey"),
         imagePath: offer.imagePath,
@@ -199,11 +204,13 @@ async function decideAction(
   router: Router,
   isCancelled: () => boolean,
 ): Promise<SmartActionConfig | null> {
-  const [offer, days] = await Promise.all([
+  const [offer, days, pause] = await Promise.all([
     decideHomeOffer(language, isCancelled),
     getReminderDays(),
+    getActivePause(),
   ]);
-  const yourDay = days[WEEKDAYS[new Date().getDay()] as Weekday] !== undefined;
+  // No reminder goes out during a pause (`src/reminders.ts`), so Home does not call it "your day".
+  const yourDay = !pause && days[WEEKDAYS[new Date().getDay()] as Weekday] !== undefined;
   return offer && !isCancelled() ? stageFor(offer, t, language, router, yourDay) : null;
 }
 

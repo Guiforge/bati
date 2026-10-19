@@ -981,16 +981,6 @@ describe("importing an adventure file", () => {
     expect(counts()).toEqual(before);
   });
 
-  test("it never asks the quota, on the play source or any other", async () => {
-    const access = require("../src/plus/access") as typeof import("../src/plus/access");
-    const can = jest.spyOn(access, "can");
-    const quota = jest.spyOn(access, "quotaRefusal");
-    const { file } = brought();
-    await load().adv.importAdventure(file, { asCopy: false });
-    expect(can).not.toHaveBeenCalled();
-    expect(quota).not.toHaveBeenCalled();
-  });
-
   test("the gallery and the detail show it without a restart", async () => {
     const { adventures } = load();
     await adventures.listAdventures();

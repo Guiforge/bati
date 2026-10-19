@@ -41,14 +41,14 @@ export function VillagerLine({ owner, reserve }: { owner: CueOwner; reserve?: nu
   const current = useChorusStore((s) => s.current);
   const focused = useCueOwner(owner);
   const speaking = focused && current?.owner === owner ? current : null;
-  const { shown, rest } = useTypedLine(speaking);
+  const { line, shown, rest } = useTypedLine(speaking);
   useGuideSeen(speaking);
 
   const block = speaking ? (
     <XStack
       testID="villager-line-block"
       accessible
-      accessibilityLabel={`${t(`villagers.names.${speaking.villager}`)}. ${speaking.line}`}
+      accessibilityLabel={`${t(`villagers.names.${speaking.villager}`)}. ${line}`}
       gap="$2"
       items="flex-start"
     >

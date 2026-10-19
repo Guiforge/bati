@@ -43,15 +43,21 @@ jest.mock("@/db/exercises", () => ({
   },
 }));
 
-// The rule is proven on a real database in plus-access.test.ts; here only the wiring.
-const mockQuotaRefusal = jest.fn(async (_kind?: string) => null as number | null);
-jest.mock("@/src/plus/access", () => ({
-  quotaRefusal: (kind: string) => mockQuotaRefusal(kind),
-}));
-
 const mockBack = jest.fn();
 const mockParams: { id?: string } = {};
+type Leave = { preventDefault: () => void; data: { action: unknown } };
+let mockLeaveListeners: ((e: Leave) => void)[] = [];
+const mockNavigation = {
+  addListener: (_name: string, fn: (e: Leave) => void) => {
+    mockLeaveListeners.push(fn);
+    return () => {
+      mockLeaveListeners = mockLeaveListeners.filter((l) => l !== fn);
+    };
+  },
+  dispatch: jest.fn(),
+};
 jest.mock("expo-router", () => ({
+  useNavigation: () => mockNavigation,
   useRouter: () => ({
     back: (...args: unknown[]) => mockBack(...args),
     replace: jest.fn(),
@@ -96,50 +102,33 @@ describe("exercise editor", () => {
     mockUpdate.mockClear();
     mockShowError.mockClear();
     mockGetById.mockResolvedValue(null);
-    mockQuotaRefusal.mockReset().mockResolvedValue(null);
     delete mockParams.id;
+    mockLeaveListeners = [];
   });
 
-  // Bati+ quota (P-04.2): only creating is refused, and the form is there until the answer says no.
-  it("shows the form while the quota is unanswered, and asks it for a new exercise", async () => {
-    mockQuotaRefusal.mockReturnValue(new Promise(() => undefined));
-    const editor = await mountEditor();
-    expect(editor.getByTestId("exercise-name")).toBeTruthy();
-    expect(mockQuotaRefusal).toHaveBeenCalledWith("createExercise");
-  });
-
-  it("swaps the form for the refusal when the hero is at the quota, and never saves", async () => {
-    mockQuotaRefusal.mockResolvedValue(5);
-    const editor = await mountEditor();
-    await waitFor(() => expect(editor.getByTestId("quota-panel-text")).toBeTruthy());
-    expect(editor.getByText("plus.exercise_quota")).toBeTruthy();
-    expect(editor.queryByTestId("exercise-name")).toBeNull();
-    expect(mockCreate).not.toHaveBeenCalled();
-  });
-
-  it("never asks the quota in edit mode, and saves through the update", async () => {
-    mockQuotaRefusal.mockResolvedValue(9);
-    mockParams.id = "7";
-    mockGetById.mockResolvedValue({
-      creator: "hero",
-      enName: "Mine",
-      enDescription: "",
-      muscles: [],
-      style: "strength",
-      difficulty: "medium",
-      equipment: "none",
-      pattern: null,
-      measure: "reps",
-      perSide: false,
-      secondsPerRep: 3,
-      imagePath: "assets/placeholder.webp",
+  const leave = async () => {
+    const e = { preventDefault: jest.fn(), data: { action: { type: "GO_BACK" } } };
+    await act(() => {
+      for (const l of mockLeaveListeners) l(e);
     });
+    return e;
+  };
+
+  it("asks before dropping a typed name, and not before an untouched form", async () => {
     const editor = await mountEditor();
-    await waitFor(() => expect(editor.getByTestId("exercise-name").props.value).toBe("Mine"));
+    expect((await leave()).preventDefault).not.toHaveBeenCalled();
+
+    await act(async () => fireEvent.changeText(editor.getByTestId("exercise-name"), "Archer"));
+    expect((await leave()).preventDefault).toHaveBeenCalledTimes(1);
+    expect(editor.getByText("quests.editor_discard_title")).toBeTruthy();
+  });
+
+  it("lets its own save leave without asking", async () => {
+    const editor = await mountEditor();
+    await act(async () => fireEvent.changeText(editor.getByTestId("exercise-name"), "Archer"));
     await act(async () => fireEvent.press(editor.getByTestId("exercise-save")));
-    await waitFor(() => expect(mockUpdate).toHaveBeenCalledWith(7, expect.anything()));
-    expect(mockQuotaRefusal).not.toHaveBeenCalled();
-    expect(mockCreate).not.toHaveBeenCalled();
+    await waitFor(() => expect(mockBack).toHaveBeenCalled());
+    expect((await leave()).preventDefault).not.toHaveBeenCalled();
   });
 
   it("saves with nothing but a name and a how-to", async () => {

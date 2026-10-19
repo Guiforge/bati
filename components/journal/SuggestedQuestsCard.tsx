@@ -41,7 +41,9 @@ export function SuggestedQuestsCard() {
               gap={11}
               py={8}
               minH={48}
-              onPress={() => router.push(`/quests/${quest.id}` as never, { withAnchor: true })}
+              onPress={() =>
+                router.push(`/quests/${quest.id}?from=journal` as never, { withAnchor: true })
+              }
               accessibilityRole="button"
               pressStyle={{ opacity: 0.8 }}
             >

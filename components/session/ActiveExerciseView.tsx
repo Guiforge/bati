@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, useWindowDimensions } from "react-native";
+import { Pressable, ScrollView, useWindowDimensions } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, Paragraph, XStack, YStack } from "tamagui";
@@ -536,180 +536,197 @@ export function ActiveExerciseView() {
           factor instead of by content, which is how the CTA ended up below the fold.
           The boss branch is no exception: the arena grows (`flexGrow`, floored at its art cut), so
           the slack lands in the monster's painting, not as a void around the counter. */}
-      <YStack px="$4" pt="$4" gap="$4">
+      <YStack
+        px="$4"
+        pt="$4"
+        gap="$4"
+        // Once the hero is capped the slack splits around this block, not around the picture, so
+        // the art stays pinned under the HUD.
+        style={{ flexShrink: 1, minHeight: 0, marginVertical: "auto" }}
+      >
         {/* An outing replaces the countdown entirely: what a hero wants at kilometre three is
             how far they have gone, not how much of a prescribed duration is left. The clock is
             still running underneath — `completeExercise` records the elapsed seconds either
             way — but it is not what the screen is about. */}
-        {isOuting ? <ExpeditionPanel bigOnMap={bigOnMap} /> : null}
+        {/* Scrolls only when the column does not fit (a 360x640 screen at a 130% font): it shrinks
+            before the hero's floor does, and the CTA below stays pinned. Where it fits it is the
+            same content-sized column as before. Top-aligned, so nothing is clipped at the head. */}
+        <ScrollView
+          testID="session-content-scroll"
+          style={{ flexShrink: 1 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <YStack gap="$4">
+            {isOuting ? <ExpeditionPanel bigOnMap={bigOnMap} /> : null}
 
-        {/* Within-exercise timer progress (only for time-based exercises) */}
-        {isTimeBased && !isOuting && (
-          <YStack gap="$2">
-            {/* No label row: the numeral below is the same figure at 72px. */}
-            <TimerBar
-              // The phase in progress, like the numeral: each side fills from empty, and the switch
-              // drains its own eight seconds. On the whole clock the switch barely moved, and the
-              // second side opened at two thirds full.
-              value={sideBarValue(side, progress, targetValue, secondSideSeconds)}
-              fill={isOvertime ? "$success" : inSwitch ? "$warning" : "$primary"}
-              fillOpacity={isOvertime ? 0.9 : 1}
-              bg="$surface2"
-            />
-          </YStack>
-        )}
+            {/* Within-exercise timer progress (only for time-based exercises) */}
+            {isTimeBased && !isOuting && (
+              <YStack gap="$2">
+                {/* No label row: the numeral below is the same figure at 72px. */}
+                <TimerBar
+                  // The phase in progress, like the numeral: each side fills from empty, and the switch
+                  // drains its own eight seconds. On the whole clock the switch barely moved, and the
+                  // second side opened at two thirds full.
+                  value={sideBarValue(side, progress, targetValue, secondSideSeconds)}
+                  fill={isOvertime ? "$success" : inSwitch ? "$warning" : "$primary"}
+                  fillOpacity={isOvertime ? 0.9 : 1}
+                  bg="$surface2"
+                />
+              </YStack>
+            )}
 
-        {/* Main Content — its own height, no scroll. It used to be a centred ScrollView, and
+            {/* Main Content — its own height, no scroll. It used to be a centred ScrollView, and
           centring inside a ScrollView clips the *top* of anything taller than the viewport, so
           the counter lost its head instead of gaining a scrollbar. The hero above is the
           elastic sibling now; if this ever overflows again, it is the hero's floor to lower,
           not a scroll to bring back.
           ponytail: a 640dp screen on a boss fight (fixed-height arena) in overtime with a ghost
           line is the ceiling. Past it, drop the ghost line or shrink the numeral. */}
-        <YStack justify="center">
-          <YStack items="center" justify="center" gap="$2">
-            {/* The exercise's name is on the artwork either way now — the hero paints it, and in a
+            <YStack justify="center">
+              <YStack items="center" justify="center" gap="$2">
+                {/* The exercise's name is on the artwork either way now — the hero paints it, and in a
               fight the arena carries it on its own scrim. Nothing repeats it here. */}
-            <YStack items="center" gap="$2" width="100%">
-              {/* The template named a harder movement and the hero is not on that rung yet
+                <YStack items="center" gap="$2" width="100%">
+                  {/* The template named a harder movement and the hero is not on that rung yet
                 (issue #33). Named here too: mid-session is where the substitution is felt, and
                 a hero who thinks the app got it wrong is a hero who logs a lie. */}
-              {slotCaption(t, currentEx, language) ? (
-                <AppText fontSize={12} color="$textSecondary" fontFamily="$body" text="center">
-                  {slotCaption(t, currentEx, language)}
-                </AppText>
-              ) : null}
+                  {slotCaption(t, currentEx, language) ? (
+                    <AppText fontSize={12} color="$textSecondary" fontFamily="$body" text="center">
+                      {slotCaption(t, currentEx, language)}
+                    </AppText>
+                  ) : null}
 
-              {/* The written half of "how do I do this?". The picture is the other half, and it
+                  {/* The written half of "how do I do this?". The picture is the other half, and it
                   is why this opens a modal instead of unfolding text under the counter — the art
                   is already on screen but cropped into a hero, and an accordion could not show
                   it. Tapping the art itself does the same thing; this row is what makes that
                   discoverable. */}
-              {/* Three links about the movement, on one row under its name.
+                  {/* Three links about the movement, on one row under its name.
                   "Replace" and "I couldn't do this one" used to sit one line above the
                   full-width Done button, in the landing zone of the thumb that hammers Done
                   between two sets: a mis-tap there swapped the exercise or wrote a failure. They
                   belong with "How to do it", which is the other thing a hero asks about the
                   movement rather than about the set, and the counter now stands between all
                   three and the button. */}
-              <XStack items="center" justify="center" gap="$3" opacity={0.7} flexWrap="wrap">
-                {instruction?.description ? (
-                  <Pressable
-                    testID="session-how-to"
-                    onPress={handleShowHowTo}
-                    hitSlop={12}
-                    accessibilityRole="button"
-                    accessibilityLabel={t("session.how_to_do_it")}
-                  >
-                    <AppText py="$2" fontSize={12} fontWeight="700" color="$textSecondary">
-                      {t("session.how_to_do_it")}
-                    </AppText>
-                  </Pressable>
-                ) : null}
+                  <XStack items="center" justify="center" gap="$3" opacity={0.7} flexWrap="wrap">
+                    {instruction?.description ? (
+                      <Pressable
+                        testID="session-how-to"
+                        onPress={handleShowHowTo}
+                        hitSlop={12}
+                        accessibilityRole="button"
+                        accessibilityLabel={t("session.how_to_do_it")}
+                      >
+                        <AppText py="$2" fontSize={12} fontWeight="700" color="$textSecondary">
+                          {t("session.how_to_do_it")}
+                        </AppText>
+                      </Pressable>
+                    ) : null}
 
-                {/* Not on an outing: a walk has no movement to swap and no set to fail. */}
-                {isOuting ? null : (
-                  <>
-                    {/* Each dot travels with the link after it, so a row that wraps at a large
+                    {/* Not on an outing: a walk has no movement to swap and no set to fail. */}
+                    {isOuting ? null : (
+                      <>
+                        {/* Each dot travels with the link after it, so a row that wraps at a large
                         font never leaves one dangling at the end of a line. */}
-                    <XStack items="center" gap="$3">
-                      <AppText fontSize={12} color="$textSecondary" opacity={0.5}>
-                        ·
-                      </AppText>
-                      <Pressable
-                        testID="session-swap-exercise"
-                        hitSlop={12}
-                        onPress={() => {
-                          selection();
-                          setSwapOpen(true);
-                        }}
-                        accessibilityRole="button"
-                        accessibilityLabel={t("quests.swap_exercise")}
-                      >
-                        <AppText
-                          py="$2"
-                          fontSize={12}
-                          fontWeight="700"
-                          color="$textSecondary"
-                          numberOfLines={1}
-                        >
-                          {t("session.swap_short")}
-                        </AppText>
-                      </Pressable>
-                    </XStack>
+                        <XStack items="center" gap="$3">
+                          <AppText fontSize={12} color="$textSecondary" opacity={0.5}>
+                            ·
+                          </AppText>
+                          <Pressable
+                            testID="session-swap-exercise"
+                            hitSlop={12}
+                            onPress={() => {
+                              selection();
+                              setSwapOpen(true);
+                            }}
+                            accessibilityRole="button"
+                            accessibilityLabel={t("quests.swap_exercise")}
+                          >
+                            <AppText
+                              py="$2"
+                              fontSize={12}
+                              fontWeight="700"
+                              color="$textSecondary"
+                              numberOfLines={1}
+                            >
+                              {t("session.swap_short")}
+                            </AppText>
+                          </Pressable>
+                        </XStack>
 
-                    <XStack items="center" gap="$3">
-                      <AppText fontSize={12} color="$textSecondary" opacity={0.5}>
-                        ·
-                      </AppText>
-                      <Pressable
-                        testID="session-skip-exercise"
-                        hitSlop={12}
-                        onPress={handleSkip}
-                        accessibilityRole="button"
-                        accessibilityLabel={t("session.skip_exercise")}
-                      >
-                        <AppText
-                          py="$2"
-                          fontSize={12}
-                          fontWeight="700"
-                          color="$textSecondary"
-                          numberOfLines={1}
-                        >
-                          {t("session.skip_exercise")}
-                        </AppText>
-                      </Pressable>
-                    </XStack>
+                        <XStack items="center" gap="$3">
+                          <AppText fontSize={12} color="$textSecondary" opacity={0.5}>
+                            ·
+                          </AppText>
+                          <Pressable
+                            testID="session-skip-exercise"
+                            hitSlop={12}
+                            onPress={handleSkip}
+                            accessibilityRole="button"
+                            accessibilityLabel={t("session.skip_exercise")}
+                          >
+                            <AppText
+                              py="$2"
+                              fontSize={12}
+                              fontWeight="700"
+                              color="$textSecondary"
+                              numberOfLines={1}
+                            >
+                              {t("session.skip_exercise")}
+                            </AppText>
+                          </Pressable>
+                        </XStack>
 
-                    {/* The first side gave out before its target: go to the switch now instead of
+                        {/* The first side gave out before its target: go to the switch now instead of
                     waiting on a clock for a side that is over. Here with the other links, away
                     from Done, which would end the whole set and never offer the second side. */}
-                    {/* Mounted for the whole per-side set and live on the first side only: a link that
+                        {/* Mounted for the whole per-side set and live on the first side only: a link that
                     left at the switch would shorten this row and move the counter and Done. Last in
                     the row, so once hidden it leaves no gap between two dots. */}
-                    {perSideHold ? (
-                      <XStack
-                        items="center"
-                        gap="$3"
-                        opacity={side?.phase === "first" ? 1 : 0}
-                        pointerEvents={side?.phase === "first" ? "auto" : "none"}
-                        accessibilityElementsHidden={side?.phase !== "first"}
-                        importantForAccessibility={
-                          side?.phase === "first" ? "auto" : "no-hide-descendants"
-                        }
-                      >
-                        <AppText fontSize={12} color="$textSecondary" opacity={0.5}>
-                          ·
-                        </AppText>
-                        <Pressable
-                          testID="session-next-side"
-                          hitSlop={12}
-                          disabled={side?.phase !== "first"}
-                          onPress={() => {
-                            selection();
-                            nextSide();
-                          }}
-                          accessibilityRole="button"
-                          accessibilityLabel={t("session.next_side")}
-                        >
-                          <AppText
-                            py="$2"
-                            fontSize={12}
-                            fontWeight="700"
-                            color="$textSecondary"
-                            numberOfLines={1}
+                        {perSideHold ? (
+                          <XStack
+                            items="center"
+                            gap="$3"
+                            opacity={side?.phase === "first" ? 1 : 0}
+                            pointerEvents={side?.phase === "first" ? "auto" : "none"}
+                            accessibilityElementsHidden={side?.phase !== "first"}
+                            importantForAccessibility={
+                              side?.phase === "first" ? "auto" : "no-hide-descendants"
+                            }
                           >
-                            {t("session.next_side")}
-                          </AppText>
-                        </Pressable>
-                      </XStack>
-                    ) : null}
-                  </>
-                )}
-              </XStack>
-            </YStack>
+                            <AppText fontSize={12} color="$textSecondary" opacity={0.5}>
+                              ·
+                            </AppText>
+                            <Pressable
+                              testID="session-next-side"
+                              hitSlop={12}
+                              disabled={side?.phase !== "first"}
+                              onPress={() => {
+                                selection();
+                                nextSide();
+                              }}
+                              accessibilityRole="button"
+                              accessibilityLabel={t("session.next_side")}
+                            >
+                              <AppText
+                                py="$2"
+                                fontSize={12}
+                                fontWeight="700"
+                                color="$textSecondary"
+                                numberOfLines={1}
+                              >
+                                {t("session.next_side")}
+                              </AppText>
+                            </Pressable>
+                          </XStack>
+                        ) : null}
+                      </>
+                    )}
+                  </XStack>
+                </YStack>
 
-            {/* Big Counter — the loudest thing on the screen. The numerals set their own
+                {/* Big Counter — the loudest thing on the screen. The numerals set their own
               lineHeight: the heading default at this size leaves ~50dp of air between the
               figure and its unit label, which read as two separate things. so it needs no outline to be found,
               and on second thought no surface either. The border went first, then this: the box
@@ -729,275 +746,281 @@ export function ActiveExerciseView() {
               a 72px countdown that did not pause while the panel's own moving clock did, then
               turned green and said OVERTIME at the target mark, a verdict on a walk the hero
               was still halfway through. The panel above is the readout. */}
-            {isOuting ? null : (
-              <YStack width="100%" items="center" justify="center">
-                {isTimeBased ? (
-                  <YStack items="center" gap="$2">
-                    {isOvertime ? (
-                      <>
-                        {/* Overtime display - counting UP */}
-                        <XStack items="center" gap="$2">
-                          <GameIcon name="flame" size={16} color="$success" />
-                          <AppText fontSize={14} fontWeight="700" color="$textSecondary">
-                            {t("session.overtime")}
-                          </AppText>
-                          <GameIcon name="flame" size={16} color="$success" />
-                        </XStack>
-                        <H1
-                          maxFontSizeMultiplier={FONT_CAPS.display}
-                          fontSize={72}
-                          lineHeight={80}
-                          fontWeight="700"
-                          fontFamily="$body"
-                          fontVariant={["tabular-nums"]}
-                          color="$success"
-                        >
-                          {formatOvertime(overtimeSeconds)}
-                        </H1>
-                        <Paragraph fontWeight="700" color="$textSecondary">
-                          {t("session.target_reached")}
-                        </Paragraph>
-                      </>
-                    ) : (
-                      <>
-                        {/* The switch keeps the big figure and counts its own seconds down, bare
+                {isOuting ? null : (
+                  <YStack width="100%" items="center" justify="center">
+                    {isTimeBased ? (
+                      <YStack items="center" gap="$2">
+                        {isOvertime ? (
+                          <>
+                            {/* Overtime display - counting UP */}
+                            <XStack items="center" gap="$2">
+                              <GameIcon name="flame" size={16} color="$success" />
+                              <AppText fontSize={14} fontWeight="700" color="$textSecondary">
+                                {t("session.overtime")}
+                              </AppText>
+                              <GameIcon name="flame" size={16} color="$success" />
+                            </XStack>
+                            <H1
+                              maxFontSizeMultiplier={FONT_CAPS.display}
+                              fontSize={72}
+                              lineHeight={80}
+                              fontWeight="700"
+                              fontFamily="$body"
+                              fontVariant={["tabular-nums"]}
+                              color="$success"
+                            >
+                              {formatOvertime(overtimeSeconds)}
+                            </H1>
+                            <Paragraph fontWeight="700" color="$textSecondary">
+                              {t("session.target_reached")}
+                            </Paragraph>
+                          </>
+                        ) : (
+                          <>
+                            {/* The switch keeps the big figure and counts its own seconds down, bare
                             and orange so it never reads as a side's 0:08. A word in its place left
                             the time to turn in a small line nobody read from the floor. */}
-                        {inSwitch && side ? (
-                          <H1
-                            maxFontSizeMultiplier={FONT_CAPS.display}
-                            testID="session-switch-count"
-                            fontSize={72}
-                            lineHeight={80}
-                            fontWeight="700"
-                            fontFamily="$body"
-                            fontVariant={["tabular-nums"]}
-                            color="$warning"
-                          >
-                            {String(side.seconds)}
-                          </H1>
-                        ) : (
-                          // Normal countdown
-                          <H1
-                            maxFontSizeMultiplier={FONT_CAPS.display}
-                            fontSize={72}
-                            lineHeight={80}
-                            fontWeight="700"
-                            fontFamily="$body"
-                            fontVariant={["tabular-nums"]}
-                            color="$text"
-                          >
-                            {formatTime(sideRemainingSeconds)}
-                          </H1>
-                        )}
-                        {/* Not "Seconds". The number counts *down* to the target, and the hint
+                            {inSwitch && side ? (
+                              <H1
+                                maxFontSizeMultiplier={FONT_CAPS.display}
+                                testID="session-switch-count"
+                                fontSize={72}
+                                lineHeight={80}
+                                fontWeight="700"
+                                fontFamily="$body"
+                                fontVariant={["tabular-nums"]}
+                                color="$warning"
+                              >
+                                {String(side.seconds)}
+                              </H1>
+                            ) : (
+                              // Normal countdown
+                              <H1
+                                maxFontSizeMultiplier={FONT_CAPS.display}
+                                fontSize={72}
+                                lineHeight={80}
+                                fontWeight="700"
+                                fontFamily="$body"
+                                fontVariant={["tabular-nums"]}
+                                color="$text"
+                              >
+                                {formatTime(sideRemainingSeconds)}
+                              </H1>
+                            )}
+                            {/* Not "Seconds". The number counts *down* to the target, and the hint
                             below it talks about carrying on past that target, so a caption that
                             only named the unit left the two readings of 0:24 (elapsed? left?)
                             equally available. The audit of 2026-09-10 read it as counting up. */}
-                        {/* Not during the switch: its five seconds are not "left of 20 s per
+                            {/* Not during the switch: its five seconds are not "left of 20 s per
                             side", and the line under the numeral already says what they are. */}
-                        {/* The same component in every phase, so the line keeps its height. */}
-                        {inSwitch ? (
-                          <AppText
-                            testID="session-switch-title"
-                            fontSize={22}
-                            lineHeight={28}
-                            fontWeight="700"
-                            color="$warning"
-                            textTransform="uppercase"
-                          >
-                            {t("session.switch_sides")}
-                          </AppText>
-                        ) : (
-                          <Paragraph lineHeight={28} fontWeight="700" color="$textSecondary">
-                            {t("session.seconds_left_of", {
-                              target: formatSlotTarget(
-                                {
-                                  target: { ...currentEx.target, value: secondSideSeconds },
-                                  exercise: currentEx.exercise,
-                                },
-                                language,
-                              ),
-                            })}
-                          </Paragraph>
-                        )}
-                        {/* One line height whatever it says: the art above is the elastic part of
+                            {/* The same component in every phase, so the line keeps its height. */}
+                            {inSwitch ? (
+                              <AppText
+                                testID="session-switch-title"
+                                fontSize={22}
+                                lineHeight={28}
+                                fontWeight="700"
+                                color="$warning"
+                                textTransform="uppercase"
+                              >
+                                {t("session.switch_sides")}
+                              </AppText>
+                            ) : (
+                              <Paragraph lineHeight={28} fontWeight="700" color="$textSecondary">
+                                {t("session.seconds_left_of", {
+                                  target: formatSlotTarget(
+                                    {
+                                      target: { ...currentEx.target, value: secondSideSeconds },
+                                      exercise: currentEx.exercise,
+                                    },
+                                    language,
+                                  ),
+                                })}
+                              </Paragraph>
+                            )}
+                            {/* One line height whatever it says: the art above is the elastic part of
                             the screen, so a line that grows or leaves makes the whole picture jump
                             while the hero is changing sides. */}
-                        {side ? (
-                          <AppText
-                            testID="session-side"
-                            lineHeight={28}
-                            // Bigger when it announces something: it is read from the floor.
-                            fontSize={switchSoon || secondSideStarting ? 20 : 14}
-                            fontWeight="700"
-                            color={switchSoon || secondSideStarting ? "$warning" : "$text"}
-                          >
-                            {inSwitch
-                              ? t("session.side_two_next")
-                              : switchSoon
-                                ? t("session.side_switch_soon")
-                                : secondSideStarting
-                                  ? t("session.side_two_go")
-                                  : t("session.side_of", { side: side.phase === "first" ? 1 : 2 })}
-                          </AppText>
-                        ) : null}
-                      </>
-                    )}
-                  </YStack>
-                ) : (
-                  <YStack items="center" gap="$2">
-                    {/* The target, kept on screen: the numeral below follows the hero's taps. */}
-                    <AppText fontSize={12} color="$textSecondary">
-                      {adjustedReps === targetValue
-                        ? t("session.objective_label")
-                        : t("session.objective_value", { value: targetValue })}
-                    </AppText>
-                    <XStack items="center" gap="$4">
-                      <Button
-                        size="$4"
-                        circular
-                        bg="$surface2"
-                        borderWidth={0}
-                        onPress={() => handleAdjustReps(-1)}
-                        pressStyle={{ opacity: 0.8, scale: 0.95 }}
-                        disabled={adjustedReps <= 1}
-                        opacity={adjustedReps <= 1 ? 0.4 : 1}
-                        accessibilityLabel={t("session.decrease_reps_accessibility")}
-                        accessibilityRole="button"
-                      >
-                        <Minus size={24} color="$text" strokeWidth={2.5} />
-                      </Button>
-                      <YStack
-                        items="center"
-                        key={reducedMotion ? undefined : stepCount}
-                        transition={reducedMotion ? undefined : "bouncy"}
-                        enterStyle={reducedMotion ? undefined : { scale: 1.15 }}
-                        scale={1}
-                      >
-                        <CountInput
-                          testID="session-reps-input"
-                          value={adjustedReps}
-                          onChange={setAdjustedReps}
-                          max={TARGET_RANGE.max}
-                          fontSize={80}
-                          accessibilityLabel={t("session.reps_count_accessibility")}
-                        />
-                        <Paragraph fontWeight="700" color="$textSecondary">
-                          {currentEx.exercise.perSide
-                            ? t("session.reps_per_side")
-                            : t("session.reps")}
-                        </Paragraph>
+                            {side ? (
+                              <AppText
+                                testID="session-side"
+                                lineHeight={28}
+                                // Bigger when it announces something: it is read from the floor.
+                                fontSize={switchSoon || secondSideStarting ? 20 : 14}
+                                fontWeight="700"
+                                color={switchSoon || secondSideStarting ? "$warning" : "$text"}
+                              >
+                                {inSwitch
+                                  ? t("session.side_two_next")
+                                  : switchSoon
+                                    ? t("session.side_switch_soon")
+                                    : secondSideStarting
+                                      ? t("session.side_two_go")
+                                      : t("session.side_of", {
+                                          side: side.phase === "first" ? 1 : 2,
+                                        })}
+                              </AppText>
+                            ) : null}
+                          </>
+                        )}
                       </YStack>
-                      <Button
-                        size="$4"
-                        circular
-                        bg="$surface2"
-                        borderWidth={0}
-                        onPress={() => handleAdjustReps(1)}
-                        pressStyle={{ opacity: 0.8, scale: 0.95 }}
-                        accessibilityLabel={t("session.increase_reps_accessibility")}
-                        accessibilityRole="button"
-                      >
-                        <Plus size={24} color="$text" strokeWidth={2.5} />
-                      </Button>
-                    </XStack>
-                    {adjustedReps !== targetValue && (
-                      <AppText fontSize={12} color="$textSecondary">
-                        {t("session.adjust_reps_hint")}
-                      </AppText>
-                    )}
-                    {/* In a fight the ± control *is* the decision, so say what it buys: the rule,
+                    ) : (
+                      <YStack items="center" gap="$2">
+                        {/* The target, kept on screen: the numeral below follows the hero's taps. */}
+                        <AppText fontSize={12} color="$textSecondary">
+                          {adjustedReps === targetValue
+                            ? t("session.objective_label")
+                            : t("session.objective_value", { value: targetValue })}
+                        </AppText>
+                        <XStack items="center" gap="$4">
+                          <Button
+                            size="$4"
+                            circular
+                            bg="$surface2"
+                            borderWidth={0}
+                            onPress={() => handleAdjustReps(-1)}
+                            pressStyle={{ opacity: 0.8, scale: 0.95 }}
+                            disabled={adjustedReps <= 1}
+                            opacity={adjustedReps <= 1 ? 0.4 : 1}
+                            accessibilityLabel={t("session.decrease_reps_accessibility")}
+                            accessibilityRole="button"
+                          >
+                            <Minus size={24} color="$text" strokeWidth={2.5} />
+                          </Button>
+                          <YStack
+                            items="center"
+                            key={reducedMotion ? undefined : stepCount}
+                            transition={reducedMotion ? undefined : "bouncy"}
+                            enterStyle={reducedMotion ? undefined : { scale: 1.15 }}
+                            scale={1}
+                          >
+                            <CountInput
+                              testID="session-reps-input"
+                              value={adjustedReps}
+                              onChange={setAdjustedReps}
+                              max={TARGET_RANGE.max}
+                              fontSize={80}
+                              accessibilityLabel={t("session.reps_count_accessibility")}
+                            />
+                            <Paragraph fontWeight="700" color="$textSecondary">
+                              {currentEx.exercise.perSide
+                                ? t("session.reps_per_side")
+                                : t("session.reps")}
+                            </Paragraph>
+                          </YStack>
+                          <Button
+                            size="$4"
+                            circular
+                            bg="$surface2"
+                            borderWidth={0}
+                            onPress={() => handleAdjustReps(1)}
+                            pressStyle={{ opacity: 0.8, scale: 0.95 }}
+                            accessibilityLabel={t("session.increase_reps_accessibility")}
+                            accessibilityRole="button"
+                          >
+                            <Plus size={24} color="$text" strokeWidth={2.5} />
+                          </Button>
+                        </XStack>
+                        {adjustedReps !== targetValue && (
+                          <AppText fontSize={12} color="$textSecondary">
+                            {t("session.adjust_reps_hint")}
+                          </AppText>
+                        )}
+                        {/* In a fight the ± control *is* the decision, so say what it buys: the rule,
                   one rep more and no further, rather than a percentage that climbed with every
                   tap. The reserve line stays above it: the target is the middle of the quest's
                   range, not a record, so "one more" only counts if it leaves margin, and the
                   two read that way stacked. A refused skip keeps the pain rule alone. A target
                   the hero changed still fights on the prescribed one, so the line says where the
                   boss stops counting instead of promising odds on their number. */}
-                    {skipRefused ? (
-                      <AppText fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
-                        {t("session.pain_rule_last")}
-                      </AppText>
-                    ) : (
-                      <>
-                        <AppText
-                          fontSize={12}
-                          color="$textSecondary"
-                          style={{ textAlign: "center" }}
-                        >
-                          {t("session.reserve_hint")}
-                        </AppText>
-                        {fightLive ? (
+                        {skipRefused ? (
                           <AppText
                             fontSize={12}
                             color="$textSecondary"
                             style={{ textAlign: "center" }}
                           >
-                            {targetChanged
-                              ? t("session.fight_target_changed", {
-                                  count: prescribed + DAMAGE_REPS_PAST_TARGET,
-                                })
-                              : t("session.crit_rule_one", {
-                                  one: Math.round(CRIT_CHANCE_ONE_REP * 100),
-                                })}
+                            {t("session.pain_rule_last")}
                           </AppText>
-                        ) : null}
-                      </>
+                        ) : (
+                          <>
+                            <AppText
+                              fontSize={12}
+                              color="$textSecondary"
+                              style={{ textAlign: "center" }}
+                            >
+                              {t("session.reserve_hint")}
+                            </AppText>
+                            {fightLive ? (
+                              <AppText
+                                fontSize={12}
+                                color="$textSecondary"
+                                style={{ textAlign: "center" }}
+                              >
+                                {targetChanged
+                                  ? t("session.fight_target_changed", {
+                                      count: prescribed + DAMAGE_REPS_PAST_TARGET,
+                                    })
+                                  : t("session.crit_rule_one", {
+                                      one: Math.round(CRIT_CHANCE_ONE_REP * 100),
+                                    })}
+                              </AppText>
+                            ) : null}
+                          </>
+                        )}
+                      </YStack>
                     )}
                   </YStack>
                 )}
-              </YStack>
-            )}
 
-            {/* Hint for time-based exercises: let go at the beep. It used to say the clock keeps
+                {/* Hint for time-based exercises: let go at the beep. It used to say the clock keeps
                 running past the target, and in a fight that every second past it could crit,
                 which paid for holding on after the position had gone. A hold lands whole at its
                 target now and nothing more after it. */}
-            {/* Not during the switch: the line speaks of a side being timed, and none is. On the
+                {/* Not during the switch: the line speaks of a side being timed, and none is. On the
                 first side it is wrong too (there is no beep to let go at, the switch comes), so
                 it says what comes next. */}
-            {isTimeBased && !isOuting && (
-              <AppText fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
-                {/* Kept, blank, during the switch and the second side up to its target: a line
+                {isTimeBased && !isOuting && (
+                  <AppText fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+                    {/* Kept, blank, during the switch and the second side up to its target: a line
                     that leaves lets the art above grow, and "keep going past the target" wraps to
                     two lines at a large font, so either one jumps the screen under a hero who is
                     getting into the second side. It comes back once the target is reached. */}
-                {skipRefused
-                  ? t("session.pain_rule_last")
-                  : inSwitch || (side?.phase === "second" && !isOvertime && !fightLive)
-                    ? " "
-                    : side?.phase === "first" && !fightLive
-                      ? t("session.side_switch_ahead", { seconds: SIDE_SWITCH_SECONDS })
-                      : !fightLive
-                        ? t("session.hold_release_hint")
-                        : targetChanged
-                          ? t("session.fight_target_changed_time", { seconds: prescribed })
-                          : t("session.hold_fight_hint")}
-              </AppText>
-            )}
+                    {skipRefused
+                      ? t("session.pain_rule_last")
+                      : inSwitch || (side?.phase === "second" && !isOvertime && !fightLive)
+                        ? " "
+                        : side?.phase === "first" && !fightLive
+                          ? t("session.side_switch_ahead", { seconds: SIDE_SWITCH_SECONDS })
+                          : !fightLive
+                            ? t("session.hold_release_hint")
+                            : targetChanged
+                              ? t("session.fight_target_changed_time", { seconds: prescribed })
+                              : t("session.hold_fight_hint")}
+                  </AppText>
+                )}
 
-            {bossFight && !fightLive ? (
-              <AppText fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
-                {t("session.boss_down", { boss: bossDisplayName(bossFight, language) })}
-              </AppText>
-            ) : null}
+                {bossFight && !fightLive ? (
+                  <AppText fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+                    {t("session.boss_down", { boss: bossDisplayName(bossFight, language) })}
+                  </AppText>
+                ) : null}
 
-            {/* Which way this set lands, when the monster cares. One line, in the colour of what
+                {/* Which way this set lands, when the monster cares. One line, in the colour of what
                 it does: braise for a weak point, ash for armour. */}
-            {setStanding ? (
-              <AppText
-                fontSize={12}
-                fontWeight="700"
-                color={
-                  bossFight?.weaknessMuscle === targetMuscle ? "$primaryText" : "$textSecondary"
-                }
-                style={{ textAlign: "center" }}
-              >
-                {setStanding}
-              </AppText>
-            ) : null}
+                {setStanding ? (
+                  <AppText
+                    fontSize={12}
+                    fontWeight="700"
+                    color={
+                      bossFight?.weaknessMuscle === targetMuscle ? "$primaryText" : "$textSecondary"
+                    }
+                    style={{ textAlign: "center" }}
+                  >
+                    {setStanding}
+                  </AppText>
+                ) : null}
 
-            {/* What the hero already did on this movement, and the moment they pass it. Outside
+                {/* What the hero already did on this movement, and the moment they pass it. Outside
                 the reps/time ternary above so one line serves both units, and read straight off
                 the quest — `getQuestById` put it there, so nothing is queried mid-workout and a
                 recovered session keeps it.
@@ -1008,27 +1031,29 @@ export function ActiveExerciseView() {
                 Not on an outing: `formatTarget` speaks the units of a prescribed set, so a walk
                 got "last time 900s", a duration nobody set out to beat, under a panel that
                 measures ground. */}
-            {ghost && !isOuting ? (
-              <GhostLine
-                ghost={ghost}
-                type={currentEx.target.type}
-                live={liveValue}
-                objective={targetValue}
-                now={openedAt}
-                perSide={currentEx.exercise.perSide}
-                reducedMotion={reducedMotion}
-              />
-            ) : null}
-            {/* One sentence when the objective sits under what the hero did last time, so the
+                {ghost && !isOuting ? (
+                  <GhostLine
+                    ghost={ghost}
+                    type={currentEx.target.type}
+                    live={liveValue}
+                    objective={targetValue}
+                    now={openedAt}
+                    perSide={currentEx.exercise.perSide}
+                    reducedMotion={reducedMotion}
+                  />
+                ) : null}
+                {/* One sentence when the objective sits under what the hero did last time, so the
                 drop is explained instead of read as a mistake. A number the hero set has no
                 `targetWhy`, and so no sentence. */}
-            {belowLastKey && !inSwitch ? (
-              <AppText fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
-                {t(belowLastKey)}
-              </AppText>
-            ) : null}
+                {belowLastKey && !inSwitch ? (
+                  <AppText fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+                    {t(belowLastKey, { name: exerciseName })}
+                  </AppText>
+                ) : null}
+              </YStack>
+            </YStack>
           </YStack>
-        </YStack>
+        </ScrollView>
 
         {/* Footer Action */}
         {isOuting ? (

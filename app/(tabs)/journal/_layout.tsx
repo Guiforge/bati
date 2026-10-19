@@ -2,6 +2,11 @@ import { Stack } from "expo-router";
 import { Theme } from "tamagui";
 import { rawColors } from "@/constants/rawColors";
 
+// Anchor the stack: a detail opened from outside the list (cold bati://journal/<id>, a sync
+// returnTo) would otherwise be the only route and back would fall through to Home (firstRoute).
+// biome-ignore lint/style/useComponentExportOnlyModules: expo-router reads this export from route files
+export const unstable_settings = { initialRouteName: "index" };
+
 /**
  * The Journal's theme (`dark_journal`, tamagui.config.ts): Bati's ground and gold, with the gold
  * as the one accent every shared component on this tab resolves `$primary` to.

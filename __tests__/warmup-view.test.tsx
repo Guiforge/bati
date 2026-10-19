@@ -327,3 +327,23 @@ describe("WarmupView movement name", () => {
     expect(style.fontFamily).toBe(config.fonts.heading.face[700].normal);
   });
 });
+
+describe("WarmupView countdown", () => {
+  it("sits outside the scrolling area, so a small screen at a large font never hides it", async () => {
+    useSessionStore.setState({
+      status: "warmup",
+      warmupSequence: WARMUP_SEQUENCE,
+      warmupIndex: 0,
+      warmupPrep: false,
+      timerStartTimestamp: Date.now(),
+      timerDuration: WARMUP_SEQUENCE[0].seconds,
+    });
+    const { getByTestId } = await mountWarmup();
+
+    type Node = { type: unknown; parent: Node | null };
+    const inScroll = (node: Node | null): boolean =>
+      node !== null && (String(node.type).includes("ScrollView") || inScroll(node.parent));
+    expect(inScroll(getByTestId("warmup-name"))).toBe(true);
+    expect(inScroll(getByTestId("warmup-clock"))).toBe(false);
+  });
+});

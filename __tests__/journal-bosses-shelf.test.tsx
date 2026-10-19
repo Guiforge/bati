@@ -60,7 +60,9 @@ test("an empty shelf shows the bosses still standing, and a press opens that cam
   expect(screen.queryByText("Fire Dragon")).toBeNull();
 
   await fireEvent.press(rows[1] as (typeof rows)[number]);
-  expect(mockPush).toHaveBeenCalledWith("/adventures/12");
+  expect(mockPush).toHaveBeenCalledWith("/adventures/12?from=%2Fjournal%2Fbosses", {
+    withAnchor: true,
+  });
 });
 
 test("a screen reader is not told the name the silhouette hides, only what the press does", async () => {

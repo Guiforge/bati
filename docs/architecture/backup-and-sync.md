@@ -527,15 +527,6 @@ merge can hand A the friend's version (`ponytail:` in `importAdventure`).
 - An "ignore certificate errors" switch, as Joplin has. It turns the check off for every host; the
   private-authority case it is used for is covered by trusting the hero's own authority (below).
 
-### Bati+ never touches what travels
-
-Whether a hero has Bati+ is store-account state (`src/plus/source.ts`), never in the database or the
-sealed file, so the sync fingerprint does not move and a peer on the previous version merges as before.
-Quotas refuse creating only: a merge or a restore that brings 12 hero exercises to a free account
-lands all 12, and they stay listed, editable and playable. An adventure run brought by a restore or a
-hand-off makes that adventure the hero's (it is never locked). Rule R114 in
-[`../testing/data-rules.md`](../testing/data-rules.md).
-
 ### When it does not connect
 
 The toast after a refusal names the layer (`failureOf`: credentials, storage, server, certificate,

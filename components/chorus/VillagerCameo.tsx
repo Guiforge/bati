@@ -5,6 +5,7 @@ import { Pressable, useWindowDimensions } from "react-native";
 import { Paragraph, Text, View, XStack, YStack } from "tamagui";
 
 import { getVillagerAsset } from "@/constants/assetMap";
+import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { cameoLingerMs, MOMENT_CAST } from "@/constants/villagers";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useChorusStore } from "@/stores/chorus";
@@ -46,7 +47,7 @@ export function VillagerCameo({ band }: { band: CameoBand | null }) {
   // Only the Village's own cue, and only while the Village is focused: tab screens stay mounted,
   // and an unfocused Village used to type (re-render every 24 ms) and dismiss other screens' cues.
   const mine = focused && current?.owner === "village" ? current : null;
-  const { shown, rest, done } = useTypedLine(mine);
+  const { line, shown, rest, done } = useTypedLine(mine);
   // Only once there is room to draw it: with no band the figure dismisses itself below.
   useGuideSeen(band ? mine : null);
   const name = mine ? t(`villagers.names.${mine.villager}`) : "";
@@ -61,16 +62,17 @@ export function VillagerCameo({ band }: { band: CameoBand | null }) {
     if (!(mine && done)) return;
     const leaving = setTimeout(
       () => dismiss(mine.id),
-      cameoLingerMs(mine.line, MOMENT_CAST[mine.moment].priority),
+      cameoLingerMs(line, MOMENT_CAST[mine.moment].priority),
     );
     return () => clearTimeout(leaving);
-  }, [mine, done, dismiss]);
+  }, [mine, line, done, dismiss]);
 
   if (!(mine && band)) return null;
   const current_ = mine;
 
   const figureHeight = band.figureHeight;
   const figureWidth = Math.round(figureHeight * 0.75);
+  const columnWidth = Math.min(width, CONTENT_MAX_WIDTH);
 
   return (
     <YStack
@@ -95,7 +97,7 @@ export function VillagerCameo({ band }: { band: CameoBand | null }) {
         // The whole sentence, not the part typed so far: a label that changes every 24ms is
         // unusable, and a screen reader should get the line at once. In the label, not the hint,
         // because a user with hints off must still hear what was said.
-        accessibilityLabel={`${name}. ${current_.line}`}
+        accessibilityLabel={`${name}. ${line}`}
         accessibilityHint={t("villagers.send_away")}
         style={{ paddingHorizontal: 12, height: "100%", justifyContent: "flex-end" }}
       >
@@ -113,7 +115,7 @@ export function VillagerCameo({ band }: { band: CameoBand | null }) {
             bg="$parchment"
             p="$3"
             rounded="$1"
-            maxW={Math.min(width - figureWidth - 40, Math.round(width * 0.42))}
+            maxW={Math.min(columnWidth - figureWidth - 40, Math.round(columnWidth * 0.42))}
             // Pinned to the top of the band while the figure keeps its place: on day one the line
             // points at the cabin roof, and a bubble at the figure's feet sat on it. Narrow and
             // to the right, so the painting's centre stays clear: a wide bubble hid the capital's

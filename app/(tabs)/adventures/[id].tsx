@@ -4,7 +4,7 @@ import type { TFunction } from "i18next";
 import { memo, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
-import { ScrollView } from "react-native";
+import { BackHandler, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { type ColorTokens, H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { BossPanel } from "@/components/adventures/BossPanel";
@@ -53,8 +53,13 @@ import { ADMIN_CREATOR } from "@/db/schema";
 import { formatCount } from "@/db/targets";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { adventureWeeksLabel, useReminderPace } from "@/hooks/useReminderPace";
+import {
+  type AdventureOrigin,
+  originRoute,
+  parseAdventureOrigin,
+  questOriginQuery,
+} from "@/src/adventureOrigin";
 import { localizedText, localizedTitle } from "@/src/i18n/localized";
-import { can } from "@/src/plus/access";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -85,11 +90,6 @@ type LoadedData = {
    * hero moves the difficulty, which no journal read answers.
    */
   journal: SlotJournal;
-  /**
-   * A Bati+ adventure the hero never started (P-04.2): no Start here, and the first step opens its
-   * quest alone. Read with the rest so it lands in the same commit as `details`.
-   */
-  locked: boolean;
   /** Step indexes whose quest is gone: a run cannot start on them, and the page says why. */
   missing: number[];
   /** The exercises a zone is sparing now, for the line under a hero step that would work it. */
@@ -152,6 +152,7 @@ const AdventureStepRow = memo(function AdventureStepRow({
   step,
   status,
   adventureId,
+  origin,
   isFirst,
   isLast,
   onContinue,
@@ -160,6 +161,7 @@ const AdventureStepRow = memo(function AdventureStepRow({
   step: AdventureStepTemplate;
   status: "locked" | "active" | "completed";
   adventureId: number;
+  origin: AdventureOrigin | null;
   isFirst: boolean;
   isLast: boolean;
   onContinue: () => void;
@@ -182,9 +184,12 @@ const AdventureStepRow = memo(function AdventureStepRow({
     locked: undefined,
     active: onContinue,
     completed: () =>
-      router.push(`/quests/${step.questId}?adventureId=${adventureId}` as never, {
-        withAnchor: true,
-      }),
+      router.push(
+        `/quests/${step.questId}?adventureId=${adventureId}${questOriginQuery(origin)}` as never,
+        {
+          withAnchor: true,
+        },
+      ),
   }[status];
 
   const narrative = localizedText(step, "narrative", langKey);
@@ -266,7 +271,7 @@ const AdventureStepRow = memo(function AdventureStepRow({
 export default function AdventureDetailsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<{ id?: string | string[] }>();
+  const params = useLocalSearchParams<{ id?: string | string[]; from?: string | string[] }>();
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const pace = useReminderPace();
@@ -283,6 +288,27 @@ export default function AdventureDetailsScreen() {
     return Number.isFinite(n) ? n : null;
   }, [params]);
 
+  // Home's "Continue the adventure" is a detour, not a visit to the Adventures list: back (the
+  // chevron and the system one) returns to Home, like the quest screen does for `from=home`. The
+  // tab is unwound first, so it does not reopen on this page (`popToTopOnBlur` does the rest).
+  // The Journal's boss doors do the same with their own page (`adventureOrigin`).
+  const origin = parseAdventureOrigin(params.from);
+  const goBack = useCallback(() => {
+    if (!origin) return router.back();
+    router.dismissTo("/adventures");
+    router.navigate(originRoute(origin) as never);
+  }, [router, origin]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!origin) return;
+      const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+        goBack();
+        return true;
+      });
+      return () => sub.remove();
+    }, [origin, goBack]),
+  );
+
   const [state, setState] = useState<LoadState>({
     status: "loading",
     details: null,
@@ -293,7 +319,6 @@ export default function AdventureDetailsScreen() {
     feedbackAdjusted: false,
     bossFight: null,
     journal: QUEST_AS_WRITTEN,
-    locked: false,
     missing: [],
     spared: new Set(),
   });
@@ -315,7 +340,6 @@ export default function AdventureDetailsScreen() {
         // campaign never browsed and never started has nothing here and shows no panel.
         getBossFightByAdventure(id),
         preferences.getTrainingLevel(),
-        can({ kind: "startAdventure", adventureId: id }),
         missingStepQuests(id),
         sparedExerciseIds(),
       ])
@@ -329,7 +353,6 @@ export default function AdventureDetailsScreen() {
             finishedCounts,
             bossFight,
             answer,
-            allowed,
             missing,
             spared,
           ]) => {
@@ -347,7 +370,6 @@ export default function AdventureDetailsScreen() {
                 feedbackAdjusted: false,
                 bossFight: null,
                 journal: QUEST_AS_WRITTEN,
-                locked: false,
                 missing: [],
                 spared: new Set(),
                 message: t("adventures.not_found"),
@@ -378,7 +400,6 @@ export default function AdventureDetailsScreen() {
                 feedbackAdjusted: suggestion.adjusted,
                 bossFight,
                 journal,
-                locked: !allowed,
                 missing,
                 spared,
               });
@@ -415,7 +436,6 @@ export default function AdventureDetailsScreen() {
 
   const details = state.details;
   const run = state.activeRun;
-  const locked = state.locked;
   // A step whose quest is gone makes a run end at a false victory, so none starts (a run under way
   // copied its quests and carries on). Hero adventures can be repaired from the editor.
   const unplayable = state.missing.length > 0 && !run;
@@ -483,8 +503,7 @@ export default function AdventureDetailsScreen() {
   }, [activeTemplateStep, state.exercisesById, state.journal, effectiveDifficulty]);
 
   const handleStartOrContinue = useCallback(async () => {
-    // The page stops offering Start when locked; this is for a render that went stale.
-    if (!details || adventureId == null || isStarting || locked) return;
+    if (!details || adventureId == null || isStarting) return;
 
     setIsStarting(true);
     // `run` or a new one, then its step: a promise chain rather than `try`, see `load`.
@@ -503,7 +522,7 @@ export default function AdventureDetailsScreen() {
 
         const level = nextRun.run.difficultyOverride ?? suggestedDifficulty;
         router.push(
-          `/quests/${step.questId}?level=${encodeURIComponent(level)}&runStepId=${step.id}&adventureId=${adventureId}` as never,
+          `/quests/${step.questId}?level=${encodeURIComponent(level)}&runStepId=${step.id}&adventureId=${adventureId}${questOriginQuery(origin)}` as never,
           { withAnchor: true },
         );
       })
@@ -512,7 +531,7 @@ export default function AdventureDetailsScreen() {
         reportError("adventure.start", e);
         showError(t("adventures.start_error"));
       });
-  }, [adventureId, details, isStarting, locked, router, run, showError, suggestedDifficulty, t]);
+  }, [adventureId, details, isStarting, origin, router, run, showError, suggestedDifficulty, t]);
 
   if (!adventureId) {
     return (
@@ -529,7 +548,7 @@ export default function AdventureDetailsScreen() {
 
   return (
     <YStack flex={1} bg="$background">
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + (run ? 160 : 100) }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: run ? 160 : 100 }}>
         <YStack p="$5" pt={insets.top + 12} gap="$4">
           <XStack items="center" justify="space-between" gap="$2">
             {/* Same rule as the exercises header: only the title gives way. Yoga's flexShrink
@@ -537,7 +556,7 @@ export default function AdventureDetailsScreen() {
                 its caption off the screen edge, across the title. */}
             <XStack items="center" gap="$3" flex={1} minW={0}>
               <AppIconButton
-                onPress={() => router.back()}
+                onPress={goBack}
                 accessibilityRole="button"
                 accessibilityLabel={t("quests.go_back")}
               >
@@ -733,18 +752,11 @@ export default function AdventureDetailsScreen() {
                             : "locked")
                       }
                       adventureId={adventureId}
+                      origin={origin}
                       zone={worksSparedZone(s.quest, state.spared)}
                       isFirst={i === 0}
                       isLast={i === effectiveSteps.length - 1}
                       onContinue={() => {
-                        // Locked: no campaign to advance, so the row opens its quest alone, the
-                        // way a completed step does (no runStepId, no level).
-                        if (locked) {
-                          router.push(`/quests/${s.questId}?adventureId=${adventureId}` as never, {
-                            withAnchor: true,
-                          });
-                          return;
-                        }
                         handleStartOrContinue().catch(() => {
                           // Error already handled via showError in handleStartOrContinue
                         });
@@ -764,7 +776,7 @@ export default function AdventureDetailsScreen() {
       {details ? (
         <YStack
           p="$4"
-          pb={insets.bottom + 16}
+          pb="$4"
           bg="$bgDark"
           borderTopWidth={1}
           borderColor="$borderStrong"
@@ -773,10 +785,6 @@ export default function AdventureDetailsScreen() {
           {unplayable ? (
             <Text testID="adventure-missing-quest" fontSize={13} color="$textSecondary">
               {t(isOwn ? "adventures.missing_quest_own" : "adventures.missing_quest")}
-            </Text>
-          ) : locked ? (
-            <Text testID="adventure-plus-locked" fontSize={13} color="$textSecondary">
-              {t("adventures.plus_locked")}
             </Text>
           ) : (
             <AppButton
@@ -804,7 +812,7 @@ export default function AdventureDetailsScreen() {
                       : t("adventures.start")}
             </AppButton>
           )}
-          {run && adventureId != null && !locked && !isStarting ? (
+          {run && adventureId != null && !isStarting ? (
             <AppButton
               testID="adventure-leave"
               variant="outline"

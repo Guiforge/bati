@@ -794,6 +794,7 @@ export const DEVICE_LOCAL_PREFERENCES = [
   // Home's light-week answers (db/lightWeek.ts): the offer and the week are this phone's.
   "lightWeekRefusedAt",
   "lightWeekAcceptedAt",
+  "lightWeekEndedAt",
 ] as const;
 
 /**

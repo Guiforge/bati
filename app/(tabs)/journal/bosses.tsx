@@ -7,6 +7,7 @@ import { NBlock, NImage, NKicker, NMuted, NPage, NText } from "@/components/jour
 import { getBossAsset } from "@/constants/assetMap";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { type BossKill, getBossKills, getStandingBosses, type StandingBoss } from "@/db/journal";
+import { adventureHref } from "@/src/adventureOrigin";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -77,7 +78,11 @@ export default function BossesScreen() {
               testID="journal-boss-standing"
               // The title names the monster, which the silhouette hides: say what a press does.
               accessibilityLabel={t("journal.boss_standing_label")}
-              onPress={() => router.push(`/adventures/${boss.adventureId}` as never)}
+              onPress={() =>
+                router.push(adventureHref(boss.adventureId, "/journal/bosses") as never, {
+                  withAnchor: true,
+                })
+              }
             >
               <XStack items="center" gap={11}>
                 {/* The painting nearly dark: a shape, not a name. */}

@@ -562,23 +562,6 @@ test("l: a voice written under a run here is an edit like any other", async () =
   await converged(file);
 });
 
-test("j: an adventure received from the other device is never locked on a free account", async () => {
-  const [q1, q2] = adminQuests();
-  if (!q1 || !q2) throw new Error("seed quests expected");
-  jest.doMock("@/src/plus/source", () => ({
-    readEntitlements: jest.fn(() => ({ source: "play", plus: false })),
-  }));
-  const file = await peer("tablet.db", (sqlite) => {
-    heroAdventure(sqlite, { uuid: U_X, title: "Tale", at: 200, steps: [q1, q2] });
-  });
-  await merge().mergePeer(file);
-  const received = adventureByUuid(U_X);
-  const { lockedAdventures } = require("@/src/plus/access") as typeof import("@/src/plus/access");
-  expect((await lockedAdventures()).has(received?.id as number)).toBe(false);
-  const run = await adventures().startAdventureRun({ adventureId: received?.id as number });
-  expect(run.activeStep?.stepIndex).toBe(0);
-});
-
 test("two hero quests named by one adventure arrive together", async () => {
   const [q1] = adminQuests();
   if (!q1) throw new Error("seed quest expected");

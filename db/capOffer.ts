@@ -4,6 +4,7 @@ import { canDo } from "./equipment";
 import {
   type Exercise,
   fetchLadderRows,
+  lightWeekFreeze,
   listExercises,
   type MovementRef,
   successorsOf,
@@ -40,11 +41,16 @@ type Slot = Pick<QuestExercise, "id" | "exercise" | "target" | "substitutedFor">
  * ponytail: the window is 60 sessions, about 20 weeks at three a week. A run that long is read as
  * "no offer" rather than guessed; raise `RUN_WINDOW` if a hero ever sits at a cap that long.
  */
-function capRun(recent: readonly SessionMark[], cap: number): number | null {
+function capRun(marks: readonly SessionMark[], cap: number): number | null {
+  // A neutral session (a light week's, a lowered target) is judged by nobody: it neither counts
+  // nor breaks the run. Only a judged session completes a series, so a neutral newest one never
+  // brings back an offer the hero just declined (PARK-4).
+  if (marks[0]?.met === null) return 0;
+  const recent = marks.filter((m) => m.met !== null);
   const miss = recent.findIndex(
     (m) => !(m.met === true && m.prescribed !== null && m.prescribed >= cap),
   );
-  return miss === -1 ? (recent.length >= RUN_WINDOW ? null : recent.length) : miss;
+  return miss === -1 ? (marks.length >= RUN_WINDOW ? null : recent.length) : miss;
 }
 
 /** Sessions of one movement read to count the run at the cap. */
@@ -57,6 +63,20 @@ const RUN_WINDOW = 60;
  */
 function completesSeries(run: number | null): boolean {
   return run !== null && run > 0 && run % CAP_SESSIONS === 0;
+}
+
+/**
+ * No offer for a missing quest or the hero's own (it runs exactly as written), nor during a light
+ * week: the card promises the same variants, so there is no step to offer until it ends.
+ */
+async function offersOff(questId: number): Promise<boolean> {
+  if ((await lightWeekFreeze()) != null) return true;
+  const [quest] = await db
+    .select({ author: schema.quests.author })
+    .from(schema.quests)
+    .where(eq(schema.quests.id, questId))
+    .limit(1);
+  return !quest || quest.author === USER_QUEST_AUTHOR;
 }
 
 /**
@@ -76,12 +96,7 @@ export async function checkCapOffers(
   slots: readonly Slot[],
   level: UserLevel,
 ): Promise<CapOffer[]> {
-  const [quest] = await db
-    .select({ author: schema.quests.author })
-    .from(schema.quests)
-    .where(eq(schema.quests.id, questId))
-    .limit(1);
-  if (!quest || quest.author === USER_QUEST_AUTHOR) return [];
+  if (await offersOff(questId)) return [];
 
   const candidates = slots.filter((s) => !s.substitutedFor && s.exercise.style !== NON_REP_STYLE);
   if (candidates.length === 0) return [];

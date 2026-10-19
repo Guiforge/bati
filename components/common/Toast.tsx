@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
-import { AccessibilityInfo, Pressable } from "react-native";
+import { AccessibilityInfo, Pressable, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AnimatePresence, Text, XStack, YStack } from "tamagui";
 import { AlertCircle, Check, Info } from "@/components/icons";
+import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 type ToastType = "success" | "error" | "info";
@@ -37,6 +38,9 @@ const WITH_ACTION_MS = 6000;
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const insets = useSafeAreaInsets();
+  // 16 on a phone ($4); on a wide window the toast sits over the content column, not the gutters.
+  const { width } = useWindowDimensions();
+  const side = Math.max(16, (width - CONTENT_MAX_WIDTH) / 2 + 16);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const reducedMotion = useReducedMotion();
   // What is on screen *now*, for the handlers: a toast on its way out still renders during its
@@ -129,8 +133,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       <YStack
         position="absolute"
         t={insets.top + 72}
-        l="$4"
-        r="$4"
+        l={side}
+        r={side}
         z={9999}
         pointerEvents="box-none"
         gap="$2"

@@ -633,12 +633,6 @@ export async function missingStepQuests(adventureId: number): Promise<number[]> 
   return rows.filter((r) => r.questId === null).map((r) => r.stepIndex);
 }
 
-/** Adventures the hero has ever started: a run of one, active or finished, makes it theirs (P-04.2). */
-export async function startedAdventureIds(): Promise<Set<number>> {
-  const rows = await db.selectDistinct({ id: adventureRuns.adventureId }).from(adventureRuns);
-  return new Set(rows.map((r) => r.id));
-}
-
 /** How many times each adventure has been completed — feeds the gallery's replay stars. */
 export async function getFinishedRunCountsByAdventure(): Promise<Map<number, number>> {
   const rows = await db

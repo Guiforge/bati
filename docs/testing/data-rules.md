@@ -971,16 +971,6 @@ hero quest has `questId` NULL and reads as seeded, bounded by that clamp (`short
 any device, whatever the merge order (`db-peer-merge`). The cap offer comes once per series of
 3 sessions at the cap (the session completing a run of 3, 6, 9...; a miss restarts the count).
 
-**R114. Entitlement is not data** (`src/plus/source.ts`, `src/plus/access.ts`). Bati+ is read from the
-store account, never written to the database, never sealed in a file, never merged. `can()` refuses
-creating only: a 6th hero exercise, a 4th counted hero quest (an outing quest does not count), starting
-a Bati+ adventure the hero never started. Merge, restore, import of a session and everything that
-edits, retires, deletes or plays never ask it. Invariants: after a merge the hero rows are the union as
-before, whatever the source; `lockedAdventures()` never contains an adventure with a row in
-`adventure_runs`; a locked adventure page starts no run from any of its controls. Source `none` (every
-build without a billing module) answers `true` before reading the database.
-`__tests__/plus-access.test.ts`, `__tests__/db-peer-merge.test.ts`.
-
 **R116. Deleting a session of a left run never revives the run.** It is "locked" only when a newer
 run of that adventure is finished; otherwise "deleted", with the boss refund, and the step's
 `completedSessionId` set to NULL (status kept). Invariant: no write ever sets a `left` run back to

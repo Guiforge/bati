@@ -618,7 +618,12 @@ export function QuestLog({ data, onChanged }: { data: QuestLogData; onChanged: (
               block
               minH={48}
               onPress={() =>
-                router.push(`/quests/${session.questId}` as never, { withAnchor: true })
+                router.push(
+                  `/quests/${session.questId}?from=journal&session=${session.id}` as never,
+                  {
+                    withAnchor: true,
+                  },
+                )
               }
             >
               {t(outing ? "journal.cta_outing" : "journal.cta_quest")}

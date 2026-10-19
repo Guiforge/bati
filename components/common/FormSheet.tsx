@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Sheet, Text, XStack, YStack } from "tamagui";
 import { headingFont } from "@/components/common/headingFont";
 import { X } from "@/components/icons";
+import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 type Props = {
@@ -72,6 +73,9 @@ export function FormSheet({ open, title, onClose, children }: Props) {
         exitStyle={{ opacity: 0 }}
       />
       <Sheet.Frame
+        width="100%"
+        maxW={CONTENT_MAX_WIDTH}
+        self="center"
         bg="$surface"
         // A full sheet would rise under the status bar; what does not fit scrolls.
         style={{ maxHeight: height - insets.top - 16 }}

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "tamagui";
 import { TabLabel } from "@/components/common/TabLabel";
+import { interceptTabPress } from "@/components/common/useTabLeaveGuard";
 import { Castle, Home, Map as MapIcon, Scroll, Sparkles } from "@/components/icons";
 
 export default function TabsLayout() {
@@ -12,6 +13,21 @@ export default function TabsLayout() {
 
   return (
     <Tabs
+      screenListeners={({ navigation, route }) => ({
+        // `popToTopOnBlur` only runs after a tab-bar transition, so a deep link (bati://village)
+        // left a dirty editor mounted under the next visit. Unwind whatever moved the tab.
+        blur: () => {
+          if (route.name !== "quests" && route.name !== "adventures") return;
+          const tabs = navigation.getState();
+          // A root screen pushed over the tabs blurs this tab too; only a real tab change unwinds.
+          if (tabs.routes[tabs.index]?.key === route.key) return;
+          const key = tabs.routes.find((r) => r.key === route.key)?.state?.key;
+          // Plain action: importing StackActions pulls @react-navigation/native, which Expo Router 56+ refuses.
+          if (key) navigation.dispatch({ type: "POP_TO_TOP", target: key });
+        },
+        // An open editor with unsaved edits asks before another tab takes over (see the hook).
+        tabPress: (e) => interceptTabPress(e, navigation),
+      })}
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: theme.primaryText?.val,
@@ -50,6 +66,9 @@ export default function TabsLayout() {
         options={{
           tabBarButtonTestID: "tab-adventures",
           title: t("tabs.adventures"),
+          // Home's "Continue the adventure" opens a sheet on this stack from outside the tab; left
+          // there, the tab reopened on that sheet and its back went to a gallery nobody visited.
+          popToTopOnBlur: true,
           tabBarIcon: ({ focused, size }) => (
             <Sparkles
               color={focused ? "$primaryText" : "$text"}

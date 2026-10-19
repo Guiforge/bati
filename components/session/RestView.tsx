@@ -261,6 +261,9 @@ export function RestView() {
             flexGrow: 1,
             justifyContent: "flex-start",
             paddingTop: 24,
+            // Room under the villager's bubble: it ended flush with the scroll's edge, which
+            // clipped its bottom corner square.
+            paddingBottom: 16,
             gap: 28,
           }}
         >
@@ -384,9 +387,31 @@ export function RestView() {
               transition={reducedMotion ? undefined : "bouncy"}
               enterStyle={reducedMotion ? undefined : { opacity: 0, x: 30 }}
             >
-              <AppText color="$textSecondary" fontSize={12} fontWeight="700">
-                {t("session.up_next")}
-              </AppText>
+              {/* The swap link sits on the label's row, inside the card: below it, in landscape, it
+                  fell under the fold. Its own Pressable answers the press, not the card. */}
+              <XStack items="center" justify="space-between">
+                <AppText color="$textSecondary" fontSize={12} fontWeight="700">
+                  {t("session.up_next")}
+                </AppText>
+                {nextEx && !isOutdoors(nextEx.exercise.style) ? (
+                  <Pressable
+                    testID="rest-swap"
+                    hitSlop={12}
+                    onPress={handleOpenSwap}
+                    accessibilityRole="button"
+                    accessibilityLabel={t("quests.swap_exercise")}
+                  >
+                    <AppText
+                      fontSize={12}
+                      fontWeight="700"
+                      color="$textSecondary"
+                      numberOfLines={1}
+                    >
+                      {t("session.swap_short")}
+                    </AppText>
+                  </Pressable>
+                ) : null}
+              </XStack>
               <XStack gap="$3" items="center">
                 <YStack
                   width={50}
@@ -416,30 +441,6 @@ export function RestView() {
                 </YStack>
               </XStack>
             </YStack>
-
-            {/* Beside the card, not inside it: the card opens the how-to on a press, and a link in
-                its press area would answer both. Not on an outing's slot: a walk has no movement
-                to swap, same predicate as the running screen. */}
-            {nextEx && !isOutdoors(nextEx.exercise.style) ? (
-              <Pressable
-                testID="rest-swap"
-                hitSlop={12}
-                onPress={handleOpenSwap}
-                accessibilityRole="button"
-                accessibilityLabel={t("quests.swap_exercise")}
-                style={{ alignSelf: "flex-start" }}
-              >
-                <AppText
-                  py="$2"
-                  fontSize={12}
-                  fontWeight="700"
-                  color="$textSecondary"
-                  numberOfLines={1}
-                >
-                  {t("session.swap_short")}
-                </AppText>
-              </Pressable>
-            ) : null}
           </YStack>
 
           {/* A villager, if one came: last, so nothing the hero aims at depends on whether anyone

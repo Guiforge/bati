@@ -14,6 +14,8 @@ Bati is built for solo lifters at the gym who want their workouts to feel like a
 
 The same person also walks, runs or rides, and expeditions exist so those outings land in the same journal rather than in a second app. Outdoors the phone is in a pocket, not in a hand: an expedition asks for one tap on the way out and one on the way back, and says the rest through a notification.
 
+Bati is for people aged 16 and over (`src/minimumAge.ts`). There is no age gate, because the app collects nothing to check an age against.
+
 ## Product Purpose
 
 Bati turns strength training into an RPG so people stay consistent. Quests are workouts, boss fights turn reps into damage, and muscle work earns resources that build out a village. Success is a logged workout streak: the user keeps showing up because each session advances an adventure, not just a spreadsheet.

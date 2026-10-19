@@ -1,5 +1,6 @@
+import assert from "node:assert/strict";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
-import { processColor, StyleSheet, type ViewStyle } from "react-native";
+import { BackHandler, processColor, StyleSheet, type ViewStyle } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import { VictoryView } from "@/components/session/VictoryView";
@@ -22,18 +23,27 @@ import config from "@/tamagui.config";
  */
 
 const mockUpdateSessionFeedback = jest.fn().mockResolvedValue(undefined);
+const mockUpdateSessionNotes = jest.fn().mockResolvedValue(undefined);
 const mockPush = jest.fn();
-const mockReplace = jest.fn();
+const mockDismissTo = jest.fn();
 const mockQuitSession = jest.fn();
 const mockMarkBigFeastShown = jest.fn().mockResolvedValue(undefined);
 
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ push: mockPush, replace: mockReplace, back: jest.fn() }),
+  useRouter: () => ({ push: mockPush, dismissTo: mockDismissTo, back: jest.fn() }),
   useIsFocused: () => true,
 }));
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/db/completed", () => ({
   updateSessionFeedback: (...args: unknown[]) => mockUpdateSessionFeedback(...args),
+  updateSessionNotes: (...args: unknown[]) => mockUpdateSessionNotes(...args),
+}));
+// The editor's own rules are session-notebook.test; here only what the screen does with its draft.
+jest.mock("@/components/journal/SessionNotebook", () => ({
+  SessionNotebook: ({ onDraft }: { onDraft?: (d: string) => void }) => {
+    const { Pressable } = require("react-native");
+    return <Pressable testID="stub-type-note" onPress={() => onDraft?.("  a good night ")} />;
+  },
 }));
 jest.mock("@/db/adventures-narrative", () => ({
   getAdventureStepOutroNarrative: jest.fn().mockResolvedValue(null),
@@ -452,7 +462,8 @@ describe("VictoryView village navigation", () => {
  */
 describe("VictoryView continue navigation", () => {
   beforeEach(() => {
-    mockReplace.mockClear();
+    mockDismissTo.mockClear();
+    mockPush.mockClear();
     mockQuitSession.mockClear();
   });
 
@@ -469,11 +480,39 @@ describe("VictoryView continue navigation", () => {
     await fireEvent.press(view.getByTestId("session-victory-continue"));
 
     expect(mockQuitSession).toHaveBeenCalled();
-    const [url, options] = mockReplace.mock.calls[0] ?? [];
+    expect(mockDismissTo).toHaveBeenCalledWith("/");
+    const [url, options] = mockPush.mock.calls[0] ?? [];
     expect(url).toEqual(expect.stringContaining("/quests/9"));
     expect(url).toEqual(expect.stringContaining("runStepId=3"));
     expect(url).toEqual(expect.stringContaining("adventureId=7"));
     expect(options).toEqual({ withAnchor: true });
+  });
+
+  it("a note typed and not saved is written by Continue, before the screen is left (PR2-2)", async () => {
+    mockUpdateSessionNotes.mockClear();
+    const { view, release } = await mountWithPendingSave();
+    await release();
+
+    await fireEvent.press(view.getByTestId("victory-note"));
+    await fireEvent.press(view.getByTestId("stub-type-note"));
+    await fireEvent.press(view.getByTestId("session-victory-continue"));
+
+    await waitFor(() => expect(mockDismissTo).toHaveBeenCalledWith("/"));
+    expect(mockUpdateSessionNotes).toHaveBeenCalledWith(SESSION_ID, "  a good night ");
+  });
+
+  it("a note typed and not saved is written when the screen goes away by the system back", async () => {
+    mockUpdateSessionNotes.mockClear();
+    const { view, release } = await mountWithPendingSave();
+    await release();
+
+    await fireEvent.press(view.getByTestId("victory-note"));
+    await fireEvent.press(view.getByTestId("stub-type-note"));
+    await view.unmount();
+
+    await waitFor(() =>
+      expect(mockUpdateSessionNotes).toHaveBeenCalledWith(SESSION_ID, "  a good night "),
+    );
   });
 
   it("campaign finished returns to the adventure", async () => {
@@ -488,14 +527,15 @@ describe("VictoryView continue navigation", () => {
 
     await fireEvent.press(view.getByTestId("session-victory-continue"));
 
-    expect(mockReplace).toHaveBeenCalledWith("/adventures/7", { withAnchor: true });
+    expect(mockDismissTo).toHaveBeenCalledWith("/");
+    expect(mockPush).toHaveBeenCalledWith("/adventures/7", { withAnchor: true });
   });
 });
 
 describe("VictoryView, a session too short to be one", () => {
   beforeEach(() => {
     mockQuitSession.mockClear();
-    mockReplace.mockClear();
+    mockDismissTo.mockClear();
   });
 
   // A time set records whatever the clock said when the hero tapped done, so five seconds
@@ -527,7 +567,21 @@ describe("VictoryView, a session too short to be one", () => {
     expect(mockQuitSession).toHaveBeenCalled();
     expect(saveSession).not.toHaveBeenCalled();
     // Home, not back: back from here is the session that just ended.
-    expect(mockReplace).toHaveBeenCalledWith("/");
+    expect(mockDismissTo).toHaveBeenCalledWith("/");
+  });
+
+  it("system back on the question keeps it up: nothing is discarded or saved behind the hero", async () => {
+    const spy = jest.spyOn(BackHandler, "addEventListener");
+    const { view, saveSession } = await mountWithPendingSave(null, 5);
+
+    const handler = spy.mock.calls.find(([name]) => name === "hardwareBackPress")?.[1];
+    spy.mockRestore();
+    assert(handler);
+    expect((handler as () => boolean)()).toBe(true);
+    expect(mockQuitSession).not.toHaveBeenCalled();
+    expect(mockDismissTo).not.toHaveBeenCalled();
+    expect(saveSession).not.toHaveBeenCalled();
+    expect(view.getByText("session.summary_too_short_title")).toBeTruthy();
   });
 
   it("keeping it lets the save through", async () => {
@@ -872,7 +926,7 @@ describe("VictoryView tonight", () => {
     // The bar's button is there and still, on the same label it will keep.
     expect(view.getByText("session.continue")).toBeTruthy();
     await fireEvent.press(view.getByTestId("session-victory-continue"));
-    expect(mockReplace).not.toHaveBeenCalled();
+    expect(mockDismissTo).not.toHaveBeenCalled();
     // The time and the XP are empty values, not a zero.
     expect(view.queryByText("quests.reward_xp")).toBeNull();
   });
@@ -1049,7 +1103,7 @@ describe("VictoryView tonight", () => {
   describe("the big feast", () => {
     beforeEach(() => {
       mockPush.mockClear();
-      mockReplace.mockClear();
+      mockDismissTo.mockClear();
       mockQuitSession.mockClear();
     });
 
@@ -1068,7 +1122,7 @@ describe("VictoryView tonight", () => {
       await fireEvent.press(view.getByTestId("session-victory-continue"));
 
       expect(mockQuitSession).not.toHaveBeenCalled();
-      expect(mockReplace).not.toHaveBeenCalled();
+      expect(mockDismissTo).not.toHaveBeenCalled();
       // The link carries nothing: the route reads the feast from the finished session.
       expect(mockPush).toHaveBeenCalledTimes(1);
       expect(mockPush).toHaveBeenCalledWith("/big-feast");
@@ -1084,7 +1138,7 @@ describe("VictoryView tonight", () => {
       await fireEvent.press(view.getByTestId("session-victory-continue"));
       expect(mockPush).toHaveBeenCalledTimes(1);
       expect(mockQuitSession).toHaveBeenCalledTimes(1);
-      expect(mockReplace).toHaveBeenCalledWith("/");
+      expect(mockDismissTo).toHaveBeenCalledWith("/");
     });
 
     it("does not open when there is none, or when this phone has shown the tier", async () => {
@@ -1092,10 +1146,10 @@ describe("VictoryView tonight", () => {
       await plain.release();
       await fireEvent.press(plain.view.getByTestId("session-victory-continue"));
       expect(mockPush).not.toHaveBeenCalled();
-      expect(mockReplace).toHaveBeenCalledWith("/");
+      expect(mockDismissTo).toHaveBeenCalledWith("/");
       await plain.view.unmount();
 
-      mockReplace.mockClear();
+      mockDismissTo.mockClear();
       const seen = await mountWithPendingSave(null, 12 * 60, {
         tierUp: { oldTier: 2, newTier: 3 },
         bigFeastsShown: ["tier:3"],
@@ -1103,7 +1157,7 @@ describe("VictoryView tonight", () => {
       await seen.release();
       await fireEvent.press(seen.view.getByTestId("session-victory-continue"));
       expect(mockPush).not.toHaveBeenCalled();
-      expect(mockReplace).toHaveBeenCalledWith("/");
+      expect(mockDismissTo).toHaveBeenCalledWith("/");
     });
 
     it("leaves the full screen to the epilogue: nothing opens and Tonight does not list it", async () => {
@@ -1115,8 +1169,9 @@ describe("VictoryView tonight", () => {
       await release();
       expect(view.queryByText("session.tonight_badge_after")).toBeNull();
       await fireEvent.press(view.getByTestId("session-victory-continue"));
-      expect(mockPush).not.toHaveBeenCalled();
-      expect(mockReplace).toHaveBeenCalledWith("/adventures/3", { withAnchor: true });
+      expect(mockPush).not.toHaveBeenCalledWith("/big-feast");
+      expect(mockDismissTo).toHaveBeenCalledWith("/");
+      expect(mockPush).toHaveBeenCalledWith("/adventures/3", { withAnchor: true });
     });
 
     describe("the epilogue line in Tonight", () => {

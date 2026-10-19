@@ -1,4 +1,10 @@
-import { buildWarmup, WARMUP_SEQUENCE, type WarmupQuest } from "@/constants/warmup";
+import {
+  buildWarmup,
+  secondsAhead,
+  transitionSeconds,
+  WARMUP_SEQUENCE,
+  type WarmupQuest,
+} from "@/constants/warmup";
 import type { ExerciseStyle, MovementPattern, QuestArchetype } from "@/db/schema";
 
 /**
@@ -337,4 +343,26 @@ test("a hero who sets nothing aside keeps exactly the rotation they had", () => 
     "Glute Bridge",
     "Jump Squat",
   ]);
+});
+
+// Issue #198: what the quest screen announces and what the warm-up counts down are one sum.
+describe("warm-up transitions", () => {
+  test("auto is ten seconds for the first three sessions, then five", () => {
+    expect([0, 1, 2, 3, 40].map((n) => transitionSeconds("auto", n))).toEqual([10, 10, 10, 5, 5]);
+  });
+
+  test("a wait for GO and no gap put no clock between movements", () => {
+    expect(transitionSeconds("tap", 0)).toBe(0);
+    expect(transitionSeconds("off", 0)).toBe(0);
+  });
+
+  test("the time ahead counts one transition before each movement", () => {
+    const steps = [
+      { exerciseName: "A", seconds: 30 },
+      { exerciseName: "B", seconds: 30 },
+    ];
+    expect(secondsAhead(steps, "10", 9)).toBe(80);
+    expect(secondsAhead(steps, "auto", 9)).toBe(70);
+    expect(secondsAhead([], "5", 0)).toBe(0);
+  });
 });

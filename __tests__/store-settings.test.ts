@@ -49,6 +49,7 @@ const prefs = {
   getMapStyle: jest.fn<Promise<"ember" | "dark" | "fiord">, []>(),
   getUpdateCheckEnabled: jest.fn<Promise<boolean>, []>(),
   getPrepMode: jest.fn<Promise<"timer" | "tap">, []>(),
+  getWarmupTransition: jest.fn<Promise<"auto" | "5" | "10" | "tap" | "off" | null>, []>(),
   getLanguageChosenOn: jest.fn<Promise<string | null>, []>(),
   getOutingDisplay: jest.fn<Promise<unknown>, []>(),
   setOutingDisplay: jest.fn().mockResolvedValue(undefined),
@@ -64,6 +65,7 @@ const prefs = {
   setMapStyle: jest.fn().mockResolvedValue(undefined),
   setUpdateCheckEnabled: jest.fn().mockResolvedValue(undefined),
   setPrepMode: jest.fn().mockResolvedValue(undefined),
+  setWarmupTransition: jest.fn().mockResolvedValue(undefined),
 };
 
 beforeAll(() => {
@@ -116,6 +118,7 @@ function storedSettings() {
   prefs.getMapStyle.mockResolvedValue("fiord");
   prefs.getUpdateCheckEnabled.mockResolvedValue(true);
   prefs.getPrepMode.mockResolvedValue("tap");
+  prefs.getWarmupTransition.mockResolvedValue("10");
   prefs.getOutingDisplay.mockResolvedValue({ ride: { big: "rate" } });
   keepAwake.keepAwakeSet.mockResolvedValue(["ride"]);
   // Chosen on this very device answer: the stored language stands.
@@ -136,6 +139,7 @@ const DEFAULTS = {
   mapStyle: "ember" as const,
   updateCheckEnabled: false,
   prepMode: "timer" as const,
+  warmupTransition: "auto" as const,
   outingDisplay: {},
   outingKeepAwake: [],
   isLoaded: false,
@@ -165,11 +169,33 @@ describe("useSettingsStore", () => {
       mapStyle: "fiord",
       updateCheckEnabled: true,
       prepMode: "tap",
+      warmupTransition: "10",
       outingDisplay: { ride: { big: "rate" } },
       outingKeepAwake: ["ride"],
       isLoaded: true,
     });
+    // A choice already made is never rewritten by the default.
+    expect(prefs.setWarmupTransition).not.toHaveBeenCalled();
   });
+
+  // Issue #198: a hero who never chose gets auto, unless they already asked every wait to
+  // be theirs, in which case a clock appearing between movements would overrule them.
+  test.each([
+    ["timer", "auto"],
+    ["tap", "tap"],
+  ] as const)(
+    "a warm-up transition never chosen follows a %s first wait: %s",
+    async (prep, expected) => {
+      storedSettings();
+      prefs.getPrepMode.mockResolvedValue(prep);
+      prefs.getWarmupTransition.mockResolvedValue(null);
+
+      await settingsStore().getState().loadFromDatabase();
+
+      expect(settingsStore().getState().warmupTransition).toBe(expected);
+      expect(prefs.setWarmupTransition).toHaveBeenCalledWith(expected);
+    },
+  );
 
   test("the outing display is written before the state says it, and a failed write says nothing", async () => {
     await settingsStore()
@@ -473,6 +499,7 @@ describe("useSettingsStore", () => {
     await s().setMapStyle("dark");
     await s().setUpdateCheckEnabled(true);
     await s().setPrepMode("tap");
+    await s().setWarmupTransition("off");
 
     expect(s()).toMatchObject({
       language: "fr",
@@ -486,6 +513,7 @@ describe("useSettingsStore", () => {
       mapStyle: "dark",
       updateCheckEnabled: true,
       prepMode: "tap",
+      warmupTransition: "off",
     });
 
     expect(prefs.setLanguage).toHaveBeenCalledWith("fr", "fr");
@@ -499,6 +527,7 @@ describe("useSettingsStore", () => {
     expect(prefs.setMapStyle).toHaveBeenCalledWith("dark");
     expect(prefs.setUpdateCheckEnabled).toHaveBeenCalledWith(true);
     expect(prefs.setPrepMode).toHaveBeenCalledWith("tap");
+    expect(prefs.setWarmupTransition).toHaveBeenCalledWith("off");
   });
 
   /**

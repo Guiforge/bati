@@ -75,16 +75,26 @@ function deviceDistanceUnit(): DistanceUnit {
 }
 
 /**
- * How a session waits before a movement: ten seconds that run on their own, or until GO.
- *
- * One answer for every wait, the warm-up's transitions and the screen before the first exercise
- * alike: a hero who wants to be asked wants it everywhere, and a hero whose phone is on the floor
- * wants nothing to touch anywhere.
+ * How a session waits before its first movement, the warm-up's first one or the first exercise:
+ * ten seconds that run on their own, or until GO. The warm-up's later movements have their own
+ * answer, `WarmupTransition`.
  */
 export type PrepMode = "timer" | "tap";
 
 function isPrepMode(value: string | null): value is PrepMode {
   return value === "timer" || value === "tap";
+}
+
+/**
+ * The gap between two warm-up movements (issue #198): time to change position, from a plank on
+ * the floor to a wall sit, not time to read, since the movement's description stays on screen
+ * while it runs. `"auto"` is ten seconds while the movements are new, five once they are known
+ * (`transitionSeconds`). `"off"` chains them with no gap, which is what the warm-up did from #154 on.
+ */
+export type WarmupTransition = "auto" | "5" | "10" | "tap" | "off";
+
+function isWarmupTransition(value: string | null): value is WarmupTransition {
+  return value === "auto" || value === "5" || value === "10" || value === "tap" || value === "off";
 }
 
 /**
@@ -361,6 +371,16 @@ export const preferences = {
 
   async setPrepMode(mode: PrepMode): Promise<void> {
     await setPreference("prepMode", mode);
+  },
+
+  // Null when never chosen: the default depends on `prepMode`, which the settings store holds.
+  async getWarmupTransition(): Promise<WarmupTransition | null> {
+    const value = await getPreference("warmupTransition");
+    return isWarmupTransition(value) ? value : null;
+  },
+
+  async setWarmupTransition(value: WarmupTransition): Promise<void> {
+    await setPreference("warmupTransition", value);
   },
 
   /**

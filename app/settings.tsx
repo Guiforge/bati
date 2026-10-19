@@ -51,7 +51,9 @@ import { SettingRow } from "@/components/settings/SettingRow";
 import { StartingPointRow } from "@/components/settings/StartingPointRow";
 import { VillageNameRow } from "@/components/settings/VillageNameRow";
 import { AVATARS, type AvatarId, getAvatarSource } from "@/constants/avatars";
+import { LEARNING_SESSIONS } from "@/constants/warmup";
 import { preferences } from "@/db";
+import type { WarmupTransition } from "@/db/preferences";
 import type { EquipmentCode } from "@/db/schema";
 import { useBackup } from "@/hooks/useBackup";
 import { useBugReport, versionLabel } from "@/hooks/useBugReport";
@@ -178,8 +180,8 @@ function DevFooter() {
 }
 
 /**
- * Every wait before a movement: the warm-up's transitions and the screen before the first
- * exercise. One answer for both, read by the session store at each one (`prepTimer`).
+ * The wait before a session's first movement: the warm-up's first one, or the screen before the
+ * first exercise. One answer for both, read by the session store at each one (`prepTimer`).
  */
 function PrepModeRow() {
   const { t } = useTranslation();
@@ -200,6 +202,59 @@ function PrepModeRow() {
         });
       }}
     />
+  );
+}
+
+const NEXT_TRANSITION: Record<WarmupTransition, WarmupTransition> = {
+  auto: "5",
+  "5": "10",
+  "10": "tap",
+  tap: "off",
+  off: "auto",
+};
+
+/**
+ * The gap between two warm-up movements (issue #198), cycled in place like the rows around it.
+ * Hidden with the warm-up: it would set something that never plays. Its own `null` rather than
+ * a condition in the screen, which sits one point under Biome's complexity ceiling.
+ */
+function WarmupTransitionRow({ warmupEnabled }: { warmupEnabled: boolean }) {
+  const { t } = useTranslation();
+  const haptics = useHaptics();
+  const transition = useSettingsStore((s) => s.warmupTransition);
+  const setWarmupTransition = useSettingsStore((s) => s.setWarmupTransition);
+
+  if (!warmupEnabled) return null;
+
+  const labels: Record<WarmupTransition, string> = {
+    auto: t("settings.warmup_transition_auto"),
+    "5": t("settings.warmup_transition_5"),
+    "10": t("settings.warmup_transition_10"),
+    tap: t("settings.prep_tap"),
+    off: t("settings.warmup_transition_off"),
+  };
+
+  return (
+    <YStack gap="$1">
+      <SettingRow
+        testID="settings-warmup-transition"
+        icon={<Timer size={22} color="$text" />}
+        label={t("settings.warmup_transition")}
+        value={labels[transition]}
+        onPress={() => {
+          haptics.selection();
+          setWarmupTransition(NEXT_TRANSITION[transition]).catch((error) => {
+            reportError("settings.warmupTransitionWrite", error);
+          });
+        }}
+      />
+      {/* Auto changes length on its own at the fourth session: say so, or it reads as a bug. */}
+      {transition === "auto" ? (
+        <Text testID="settings-warmup-transition-note" fontSize="$2" color="$textSecondary" px="$3">
+          {t("settings.warmup_transition_auto_note", { sessions: LEARNING_SESSIONS })}
+        </Text>
+      ) : null}
+    </YStack>
   );
 }
 
@@ -542,6 +597,8 @@ export default function SettingsScreen() {
               });
             }}
           />
+
+          <WarmupTransitionRow warmupEnabled={warmupEnabled} />
 
           <PrepModeRow />
 

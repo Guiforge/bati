@@ -716,9 +716,33 @@ describe("useSessionStore", () => {
       getTrainingLevel: jest.Mock;
     };
 
+    beforeEach(() => {
+      useSettingsStore.setState({ warmupTransition: "5" });
+    });
+
     afterEach(() => {
       prefs.getWarmupEnabled.mockResolvedValue(false);
-      useSettingsStore.setState({ prepMode: "timer" });
+      useSettingsStore.setState({ prepMode: "timer", warmupTransition: "5" });
+    });
+
+    // Auto: ten seconds while the movements are new, then five. The count is the journal's
+    // before this session, held for the whole warm-up.
+    test.each([
+      [0, 10],
+      [2, 10],
+      [3, 5],
+    ])("an auto transition after %i sessions runs %i seconds", async (sessions, seconds) => {
+      const db = require("@/db/completed") as { getSessionAggregates: jest.Mock };
+      db.getSessionAggregates.mockResolvedValueOnce({ totalSessions: sessions });
+      useSettingsStore.setState({ warmupTransition: "auto" });
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+      await store.getState().startSession(mockQuest, "medium");
+
+      store.getState().nextWarmupStep();
+
+      expect(store.getState().warmupSessionsBefore).toBe(sessions);
+      expect(store.getState().warmupPrep).toBe(true);
+      expect(store.getState().timerDuration).toBe(seconds);
     });
 
     // The report, four times over: the first movement's thirty seconds started on the tap on
@@ -745,9 +769,93 @@ describe("useSessionStore", () => {
       expect(store.getState().timerDuration).toBe(WARMUP_SEQUENCE[0].seconds);
     });
 
-    // Only the first movement has a wait: a get-ready countdown before each one made a
-    // continuous warm-up a series of standing waits (audit 2026-10-03).
-    test("it walks the sequence straight from movement to movement, then opens the start screen", async () => {
+    // Issue #198: with no gap the hero paused by hand to get from a plank to a wall sit. Each
+    // movement after the first opens on a transition, five seconds unless Settings says otherwise.
+    test("it walks the sequence through a transition before each movement, then opens the start screen", async () => {
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+      await store.getState().startSession(mockQuest, "medium");
+
+      for (let i = 1; i < WARMUP_SEQUENCE.length; i++) {
+        store.getState().startWarmupMove();
+        store.getState().nextWarmupStep();
+        expect(store.getState().warmupIndex).toBe(i);
+        expect(store.getState().warmupPrep).toBe(true);
+        expect(store.getState().timerDuration).toBe(5);
+        expect(store.getState().timerStartTimestamp).not.toBeNull();
+      }
+
+      store.getState().nextWarmupStep();
+      expect(store.getState().status).toBe("countdown");
+      expect(store.getState().timerDuration).toBe(PREP_SECONDS);
+    });
+
+    test("a transition hands over to the movement with its whole clock", async () => {
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+      await store.getState().startSession(mockQuest, "medium");
+      store.getState().startWarmupMove();
+      store.getState().nextWarmupStep();
+
+      store.getState().startWarmupMove();
+
+      expect(store.getState().warmupIndex).toBe(1);
+      expect(store.getState().warmupPrep).toBe(false);
+      expect(store.getState().timerDuration).toBe(WARMUP_SEQUENCE[1]?.seconds);
+    });
+
+    test("a ten-second transition runs ten seconds", async () => {
+      useSettingsStore.setState({ warmupTransition: "10" });
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+      await store.getState().startSession(mockQuest, "medium");
+
+      store.getState().nextWarmupStep();
+
+      expect(store.getState().warmupPrep).toBe(true);
+      expect(store.getState().timerDuration).toBe(10);
+    });
+
+    // The first wait follows `prepMode`, the ones after it their own setting: a timer before the
+    // first movement does not make the transitions run on one.
+    test("a transition set to GO has no clock, whatever the first wait does", async () => {
+      useSettingsStore.setState({ warmupTransition: "tap" });
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+      await store.getState().startSession(mockQuest, "medium");
+      expect(store.getState().timerDuration).toBe(PREP_SECONDS);
+
+      store.getState().startWarmupMove();
+      store.getState().nextWarmupStep();
+
+      expect(store.getState().warmupPrep).toBe(true);
+      expect(store.getState().timerStartTimestamp).toBeNull();
+
+      store.getState().pauseSession();
+      store.getState().resumeSession();
+      expect(store.getState().warmupPrep).toBe(true);
+      expect(store.getState().timerStartTimestamp).toBeNull();
+    });
+
+    test("a transition paused halfway resumes with what was left of it", async () => {
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+      await store.getState().startSession(mockQuest, "medium");
+      store.getState().nextWarmupStep();
+      const startedAt = store.getState().timerStartTimestamp;
+      assert(startedAt !== null);
+
+      const now = jest.spyOn(Date, "now").mockReturnValue(startedAt + 2_000);
+      store.getState().pauseSession();
+      now.mockReturnValue(startedAt + 62_000);
+      store.getState().resumeSession();
+      now.mockRestore();
+
+      expect(store.getState().status).toBe("warmup");
+      expect(store.getState().warmupPrep).toBe(true);
+      expect(store.getState().timerStartTimestamp).toBe(startedAt + 60_000);
+      expect(store.getState().timerDuration).toBe(5);
+    });
+
+    // A get-ready countdown before each movement made a continuous warm-up a series of standing
+    // waits (audit 2026-10-03): "off" keeps that chaining for whoever wants it.
+    test("with transitions off it walks straight from movement to movement", async () => {
+      useSettingsStore.setState({ warmupTransition: "off" });
       prefs.getWarmupEnabled.mockResolvedValue(true);
       await store.getState().startSession(mockQuest, "medium");
 
@@ -765,14 +873,14 @@ describe("useSessionStore", () => {
       expect(store.getState().timerDuration).toBe(PREP_SECONDS);
     });
 
-    test("Next on the first wait passes that movement for the second, already running", async () => {
+    test("Next on the first wait passes that movement for the second's transition", async () => {
       prefs.getWarmupEnabled.mockResolvedValue(true);
       await store.getState().startSession(mockQuest, "medium");
 
       store.getState().nextWarmupStep();
 
       expect(store.getState().warmupIndex).toBe(1);
-      expect(store.getState().warmupPrep).toBe(false);
+      expect(store.getState().warmupPrep).toBe(true);
       expect(store.getState().timerStartTimestamp).not.toBeNull();
     });
 
@@ -821,19 +929,19 @@ describe("useSessionStore", () => {
       const shown = await loadWarmup(mockQuest);
       await store.getState().startSession(mockQuest, "medium");
 
-      expect(shown.length).toBeGreaterThan(0);
-      expect(store.getState().warmupSequence).toEqual(shown);
+      expect(shown.steps.length).toBeGreaterThan(0);
+      expect(store.getState().warmupSequence).toEqual(shown.steps);
     });
 
     test("the quest screen shows no warm-up when it is switched off", async () => {
       prefs.getWarmupEnabled.mockResolvedValue(false);
 
-      expect(await loadWarmup(mockQuest)).toEqual([]);
+      expect((await loadWarmup(mockQuest)).steps).toEqual([]);
     });
 
     // "Not for me" (issue #145): the movement in front of the hero, and every other step the
     // hero just set aside with it, leave what is left of this warm-up.
-    test("dropping steps takes them out of what is left and starts the next", async () => {
+    test("dropping steps takes them out of what is left and opens the next one's transition", async () => {
       prefs.getWarmupEnabled.mockResolvedValue(true);
       await store.getState().startSession(mockQuest, "medium");
       const before = store.getState().warmupSequence.map((s) => s.exerciseName);
@@ -848,8 +956,8 @@ describe("useSessionStore", () => {
         before.filter((name) => name !== first && name !== last),
       );
       expect(store.getState().warmupIndex).toBe(0);
-      expect(store.getState().warmupPrep).toBe(false);
-      expect(store.getState().timerDuration).toBe(store.getState().warmupSequence[0]?.seconds);
+      expect(store.getState().warmupPrep).toBe(true);
+      expect(store.getState().timerDuration).toBe(5);
     });
 
     test("a step already passed goes too, so Previous cannot walk back onto it", async () => {
@@ -894,7 +1002,8 @@ describe("useSessionStore", () => {
       expect(store.getState().results).toEqual([]);
     });
 
-    test("stepping back returns to the previous movement, running", async () => {
+    // The first movement included: its longer wait was for reading it, and the hero has.
+    test("stepping back returns to the previous movement's transition", async () => {
       prefs.getWarmupEnabled.mockResolvedValue(true);
       await store.getState().startSession(mockQuest, "medium");
 
@@ -905,8 +1014,8 @@ describe("useSessionStore", () => {
 
       expect(store.getState().status).toBe("warmup");
       expect(store.getState().warmupIndex).toBe(0);
-      expect(store.getState().warmupPrep).toBe(false);
-      expect(store.getState().timerDuration).toBe(WARMUP_SEQUENCE[0]?.seconds);
+      expect(store.getState().warmupPrep).toBe(true);
+      expect(store.getState().timerDuration).toBe(5);
     });
 
     test("stepping back on the first movement does nothing", async () => {

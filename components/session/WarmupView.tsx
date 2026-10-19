@@ -9,6 +9,7 @@ import { AppText } from "@/components/common/AppText";
 import { FONT_CAPS } from "@/components/common/fontCaps";
 import { Pause, SkipBack, SkipForward } from "@/components/icons";
 import { getExerciseAsset } from "@/constants/assetMap";
+import { secondsAhead } from "@/constants/warmup";
 import { type Exercise, listExercises, officialByName } from "@/db/exercises";
 import { SECONDS_SUFFIX } from "@/db/targets";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
@@ -25,10 +26,10 @@ import { TimerBar } from "./TimerBar";
 /**
  * The dynamic warm-up, before the start screen (roadmap §14 H2).
  *
- * The first movement is two screens: the wait, which shows what the movement is before its clock
- * runs, then the movement itself. The ones after it start on their clock at once. The wait is
- * ten seconds or a tap on GO, whichever the hero chose in Settings, and nothing advances by touch
- * otherwise: a phone on the floor gets the whole warm-up hands-free.
+ * Every movement is two screens: the wait, which shows what the movement is before its clock
+ * runs, then the movement itself. The first wait is ten seconds or GO (`prepMode`), the ones
+ * after it the transition chosen in Settings (`warmupTransition`, issue #198), which can also be
+ * off. Nothing advances by touch otherwise: a phone on the floor gets the whole warm-up hands-free.
  *
  * Movements come from the seeded catalogue, so their names and art are already bilingual and on
  * disk — nothing here is a second kind of content. Nothing is journaled either: the hero's
@@ -39,6 +40,8 @@ export function WarmupView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const language = useSettingsStore((s) => s.language);
+  const transition = useSettingsStore((s) => s.warmupTransition);
+  const sessionsBefore = useSessionStore((s) => s.warmupSessionsBefore);
   const { selection } = useHaptics();
 
   const warmupIndex = useSessionStore((s) => s.warmupIndex);
@@ -123,9 +126,10 @@ export function WarmupView() {
   const switched = sided && remainingSeconds <= half;
 
   // The whole warm-up still ahead, so "2 of 6" says how long it is rather than how many. The wait
-  // is not warm-up: counted in, the line ticked down before anything had started and the screen
-  // read as a movement already running (audit 2026-10-11, F3).
-  const later = warmupSequence.slice(warmupIndex + 1).reduce((sum, next) => sum + next.seconds, 0);
+  // on screen is not counted: counted in, the line ticked down before anything had started and the
+  // screen read as a movement already running (audit 2026-10-11, F3). The transitions still ahead
+  // are, so the line starts on the length the quest screen announced (`WarmupPreview`).
+  const later = secondsAhead(warmupSequence.slice(warmupIndex + 1), transition, sessionsBefore);
   const left = (warmupPrep ? step.seconds : Math.max(0, remainingSeconds)) + later;
 
   const isFirst = warmupIndex === 0;

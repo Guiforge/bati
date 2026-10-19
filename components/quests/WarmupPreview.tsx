@@ -6,7 +6,7 @@ import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { ChevronDown, ChevronUp, Flame } from "@/components/icons";
 import { getExerciseThumb } from "@/constants/assetMap";
-import { buildWarmup, PREP_SECONDS, type WarmupQuest } from "@/constants/warmup";
+import { buildWarmup, PREP_SECONDS, secondsAhead, type WarmupQuest } from "@/constants/warmup";
 import { formatDurationEstimate } from "@/db/estimate";
 import { type Exercise, officialByName } from "@/db/exercises";
 import { localizedName } from "@/src/i18n/localized";
@@ -36,6 +36,7 @@ export function WarmupPreview({
   const { t } = useTranslation();
   const router = useRouter();
   const prepMode = useSettingsStore((s) => s.prepMode);
+  const transition = useSettingsStore((s) => s.warmupTransition);
   const [context, setContext] = useState<Awaited<ReturnType<typeof loadWarmupContext>> | null>(
     null,
   );
@@ -71,9 +72,12 @@ export function WarmupPreview({
   // Off in Settings, or an outing: nothing will play, so nothing is announced.
   if (steps.length === 0) return null;
 
-  // Only the first movement has a wait, and only when it runs on a clock.
+  // The waits that run on a clock: the first movement's, then a transition before each of the
+  // others. A wait for GO is the hero's own time and is not announced.
+  const [first, ...rest] = steps;
   const firstWait = prepMode === "timer" ? PREP_SECONDS : 0;
-  const seconds = steps.reduce((sum, step) => sum + step.seconds, firstWait);
+  const seconds =
+    firstWait + (first?.seconds ?? 0) + secondsAhead(rest, transition, context?.totalSessions ?? 0);
 
   return (
     <Card testID="quest-warmup" gap="$3">

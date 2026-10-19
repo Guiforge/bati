@@ -13,7 +13,9 @@ import { useSettingsStore } from "@/stores/settings";
 /**
  * What the hero set up for the weeks, said on Home: a pause that is running (with its end date,
  * opening the screen that ends it), else a light week that is. A pause outranks the week: the
- * offer is not made inside one (`lightWeekReason`), and a week accepted before it is on hold.
+ * offer is not made inside one (`lightWeekReason`). A week accepted before the pause keeps
+ * running and still lightens quests; only Home stops saying so, and the quest screen's own note
+ * still offers the way back.
  */
 export function RhythmLine({ onLightWeekEnded }: { onLightWeekEnded?: () => void }) {
   const { t } = useTranslation();

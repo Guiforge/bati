@@ -202,10 +202,16 @@ describe("a running light week freezes the ladder and the target", () => {
     expect(run(now - 2 * DAY)).toBe(11);
   });
 
-  async function repsSessionAt(exerciseId: number, daysAgo: number, reps: number) {
+  async function repsSessionAt(
+    exerciseId: number,
+    daysAgo: number,
+    reps: number,
+    questId: number | null = null,
+  ) {
     const { createCompletedSession } =
       require("../db/completed") as typeof import("../db/completed");
     await createCompletedSession({
+      questId,
       lightened: true,
       performedAt: new Date(Date.now() - daysAgo * DAY),
       exercises: [
@@ -250,6 +256,29 @@ describe("a running light week freezes the ladder and the target", () => {
     await repsSessionAt(squat, 1, 12);
     const { why } = await frozenSlot(squat, Date.now() - 5 * DAY);
     expect(why).not.toBe("comeback");
+  });
+
+  test("a week session does not date the last one before it from the app's quests only", async () => {
+    const squat = idOf("Plank");
+    const mine = Number(
+      t.sqlite
+        .prepare(
+          "INSERT INTO quests (enTitle, frTitle, enDescription, frDescription, author) VALUES ('Mine', 'Mine', '', '', 'hero')",
+        )
+        .run().lastInsertRowid,
+    );
+    try {
+      await repsSessionAt(squat, 25, 10);
+      // Three days before the week, in the hero's own quest: not a break.
+      await repsSessionAt(squat, 8, 10, mine);
+      await repsSessionAt(squat, 1, 10);
+      const { why } = await frozenSlot(squat, Date.now() - 5 * DAY);
+      expect(why).not.toBe("comeback");
+    } finally {
+      t.sqlite.exec("DELETE FROM completed_exercises");
+      t.sqlite.exec("DELETE FROM completed_sessions");
+      t.sqlite.prepare("DELETE FROM quests WHERE id = ?").run(mine);
+    }
   });
 
   test("the warm-up, the cap offer and the victory read the frozen ladder", async () => {

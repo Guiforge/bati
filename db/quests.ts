@@ -834,7 +834,7 @@ export function progressiveSlot(input: {
   const lastAt =
     journal.freezeAt == null || (ghost?.at ?? 0) < journal.freezeAt
       ? (ghost?.at ?? null)
-      : (recent[0]?.at ?? null);
+      : (ghost?.atBeforeFreeze ?? recent[0]?.at ?? null);
   const { value, why } = progressiveTarget({
     type: fallback.type,
     band: fallback.value,

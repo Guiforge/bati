@@ -265,6 +265,7 @@ export default function QuestDetails() {
   // ceiling is one frame; the fix is to load the swap's history inside `applySwap`.
   const [swapJournal, setSwapJournal] = useState<SwapJournal>({ history: new Map() });
   const swaps = config.swaps;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `lightWeek` is the re-read trigger: the journal is read frozen while a week runs, and live once it ends.
   useEffect(() => {
     let live = true;
     loadSwapJournal({ swaps })
@@ -275,7 +276,7 @@ export default function QuestDetails() {
     return () => {
       live = false;
     };
-  }, [swaps]);
+  }, [swaps, lightWeek]);
   const [owned, setOwned] = useState<ReadonlySet<EquipmentCode> | null>(null);
   const [setAsideIds, setSetAsideIds] = useState<ReadonlySet<number>>(new Set());
   const [leaveOut, setLeaveOut] = useState(false);
@@ -922,8 +923,17 @@ export default function QuestDetails() {
           ) : null}
 
           {/* Only where the week really took a round: a quest whose rounds the hero set keeps them. */}
-          {lightWeek && !isOuting && config.rounds === undefined ? (
-            <LightWeekNote onHome={false} onEnded={() => setLightWeek(false)} />
+          {!isOuting && quest?.lightened ? (
+            <LightWeekNote
+              onHome={false}
+              onEnded={() => {
+                setLightWeek(false);
+                // The rungs and targets on screen were read frozen: read them again live.
+                load(questId, effectiveLevel).catch(() => {
+                  // `load` reports its own errors.
+                });
+              }}
+            />
           ) : null}
 
           {quest ? (

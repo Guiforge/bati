@@ -3,7 +3,7 @@ title: Journal
 type: screen
 route: /journal
 status: active
-updated: 2026-09-15
+updated: 2026-10-18
 related: [session-details.md, session.md, ../gameplay/statistics-progress.md, ../design/audits/2026-09-10-stats.md]
 sources: ["app/(tabs)/journal/index.tsx", "app/(tabs)/journal/_layout.tsx", components/journal/stats/StatsView.tsx, components/journal/nocturne.tsx, db/journal.ts]
 ---
@@ -89,6 +89,15 @@ reads back everything already scrolled through, so a return from a session keeps
 Nothing is read before the tab is first shown. A row is the cover, the title with its record in a gold kicker (no filled
 plate), the date, and one line of details (duration or ground, XP in gold, difficulty): the icon and three tags it
 had cost the emulator's GPU enough to scroll History at 26 ms a frame.
+The list opens on one quiet row, "+ Ajouter une séance passée" (44 dp, in the voice of the empty
+state), which opens `PastSessionSheet`: the header and the Stats keep the shape they had. A session
+written down shows the name the hero gave it (else "Séance ailleurs"), an empty square for a cover,
+no difficulty and no record, and "saisie à la main" on its own line under the details (the details
+line is one line and would cut it). The reminder's link `bati:///journal?add=past&day=yyyy-MM-dd`
+opens History and the sheet on that day, once (`src/pastSessionLink.ts`), unless a session is
+running; `day` is read strictly, and `plugins/withAndroidStaleFileIntent.js` drops the link when
+the task is restored from recents. The Stats say "(1 saisie à la main)" after the two counts that
+include entries, the flame's window and the outings.
 An empty history is "An empty page", never a button that sends the hero elsewhere.
 
 ## What left the page

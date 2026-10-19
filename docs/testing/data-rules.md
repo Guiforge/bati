@@ -2,7 +2,7 @@
 title: Data rules, as the code implements them
 type: technical
 status: current
-updated: 2026-10-17
+updated: 2026-10-18
 related: [../architecture/backup-and-sync.md, ../architecture/data-safety.md]
 ---
 
@@ -162,8 +162,22 @@ Invariant: a set corrected on A reaches B at B's next merge with A, and B's reco
 feedback changed later on B does not carry B's older sets over A's correction.
 Invariant: two different corrections of one session stamped in the same second converge on the larger sets text (R9).
 
+**R14a. A session written down is corrected on its own stamp (0078).** `byHandEditedAt` joins the
+edit stamps (`STAMP_COLUMNS`, `db/backup.ts`), so a correction, or a distance typed on an outing
+nothing measured, or taken back, moves the first fingerprint segment and makes the comparison
+asymmetric. In the merge a later stamp (equal ones go to the larger `handCanon` text,
+`json_array(performedAt, durationSeconds, outing, leaguesM, label, byHand)`, the same text on both
+sides) takes those fields, `tzOffsetMin` and the stamp, and nothing else (`takeEditedHand`,
+`db/merge.ts`). `xpEarned` is not among them: the larger one wins as always (R14), which is why a
+correction never recomputes it. A session written down has no `completed_exercises`, so
+`redecideSessions` has nothing to decide. Known limit, kept: the one-entry-per-day refusal is local,
+so two phones that each wrote a session down for the same day hold two after the merge (150 XP);
+the merge copies, it does not recompute (`db/merge.ts`).
+Invariant: a correction made later on either device wins on both, and the earlier one never wins
+back; the XP of the row is the larger of the two.
+
 **R15. Only the edits that stamp the session propagate.** `correctLoggedSet` (`setsEditedAt`,
-written before the value, in one transaction), `updateSessionFeedback` (`feedbackEditedAt`) and `updateSessionNotes` (`notesEditedAt`, 0075) do. `addBonusXpToSession` and `markSessionWithNewRecords` run inside the
+written before the value, in one transaction), `updateSessionFeedback` (`feedbackEditedAt`) and `updateSessionNotes` (`notesEditedAt`, 0075), `correctHandEntry` and `setHandDistance` (`byHandEditedAt`, 0078) do. `addBonusXpToSession` and `markSessionWithNewRecords` run inside the
 save, before any snapshot can carry the session, and do not; neither merge nor fingerprint see a
 later change to them in R14's stamps, but the larger XP wins (R14) and the fourth fingerprint segment moves (R10).
 Invariant: after convergence two devices hold the same `xpEarned` for one uuid, the larger.

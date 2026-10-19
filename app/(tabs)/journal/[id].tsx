@@ -45,6 +45,9 @@ export default function SessionDetailScreen() {
   // The hero's own back button scrolls away with the page; once it has, a fixed one takes over.
   const [pastHero, setPastHero] = useState(false);
   const [loaded, setLoaded] = useState<LoadedSession>({ status: "loading" });
+  // Set once the row is gone: the page drops the notebook first, so its unsaved-note guard is
+  // unmounted before back runs instead of asking about a note on a deleted session.
+  const [forgotten, setForgotten] = useState(false);
 
   const load = useCallback(
     async (id: number) => {
@@ -64,6 +67,10 @@ export default function SessionDetailScreen() {
   useEffect(() => {
     if (sessionId) load(sessionId).catch((e) => reportError("journal.detail", e));
   }, [sessionId, load]);
+
+  useEffect(() => {
+    if (forgotten) router.back();
+  }, [forgotten, router]);
 
   if (!sessionId || loaded.status === "error") {
     return (
@@ -85,7 +92,7 @@ export default function SessionDetailScreen() {
     );
   }
 
-  if (loaded.status === "loading") {
+  if (loaded.status === "loading" || forgotten) {
     return (
       <YStack flex={1} bg="$bgDark" pt={insets.top} px={11} gap={6}>
         <Skeleton height={150} bg="$surface2" />
@@ -128,7 +135,7 @@ export default function SessionDetailScreen() {
               testID="journal-forget-session"
               variant="outline"
               borderColor={rawColors.error as never}
-              onPress={() => confirmForget(sessionId, () => router.back())}
+              onPress={() => confirmForget(sessionId, () => setForgotten(true))}
             >
               {t("journal.forget")}
             </AppButton>

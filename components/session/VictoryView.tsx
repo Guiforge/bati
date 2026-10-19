@@ -236,6 +236,9 @@ export function VictoryView() {
   // A ref rather than `madeQuest` alone: two taps land in the same frame, before any state the
   // first one sets has come back, and the hero would find two identical quests in their gallery.
   const makingQuest = useRef(false);
+  // Same for Continue: it awaits the note write, and a second tap in that window pushed the next
+  // page twice.
+  const leaving = useRef(false);
 
   // Defeated *today*, not defeated ever. `currentHp <= 0` alone is true for every remaining
   // session of the campaign, so the sword, the boss copy and the 120-particle burst replayed on
@@ -458,7 +461,8 @@ export function VictoryView() {
   };
 
   const handleContinue = async () => {
-    if (!result) return;
+    if (!result || leaving.current) return;
+    leaving.current = true;
     await saveNoteDraft(noteDraft, result.sessionId).catch((e: unknown) =>
       reportError("victory.note", e),
     );
@@ -467,6 +471,7 @@ export function VictoryView() {
     if (bigFeast && !feastOpened) {
       setFeastOpened(true);
       router.push("/big-feast" as never);
+      leaving.current = false;
       return;
     }
     goOn(router, result);
@@ -900,6 +905,10 @@ export function VictoryView() {
                   startEditing
                   onDraft={(draft) => {
                     noteDraft.current = draft;
+                  }}
+                  // Saved by its own button: nothing left for Continue to write again.
+                  onChanged={() => {
+                    noteDraft.current = "";
                   }}
                   onCancel={() => {
                     noteDraft.current = "";

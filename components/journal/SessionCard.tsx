@@ -1,10 +1,12 @@
 import { Image } from "expo-image";
+import type { TFunction } from "i18next";
 import { memo, type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
 import { XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Trophy } from "@/components/icons";
+import { HandMark } from "@/components/journal/HandMark";
 import { NKicker, NMuted, NText } from "@/components/journal/nocturne";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatDistance } from "@/constants/distanceFormat";
@@ -58,6 +60,13 @@ export interface JournalEntry {
    */
   firstPhotoUuid?: string | null;
   hasNewRecords?: boolean;
+  /**
+   * Which part is the hero's word (`0078`): `'session'` for a session written down, `'distance'`
+   * for an outing whose distance was typed. Absent or null: everything was measured.
+   */
+  byHand?: "session" | "distance" | null;
+  /** The name a session written down was given ("gym"). */
+  label?: string | null;
   /**
    * What the badge broke, when the row knows: the movement's name, or the record's own word.
    *
@@ -114,11 +123,68 @@ function CardPhoto({ uuid, photoUuid }: { uuid: string; photoUuid: string }) {
   );
 }
 
+/**
+ * The 64 px square at the start of a row. Blank (`blank`) for a session written down: there is no
+ * run to draw and no cover to show, and the empty square is the honest picture of it.
+ */
+function Thumb({ entry, blank }: { entry: JournalEntry; blank: boolean }) {
+  return (
+    <YStack
+      width={64}
+      height={64}
+      bg="$surface2"
+      rounded="$4"
+      borderWidth={1}
+      borderColor="$borderStrong"
+      items="center"
+      justify="center"
+      overflow="hidden"
+    >
+      {/* The run itself, when there is one. The three seeded outings share three pictures, so
+              a page of walks was a column of identical thumbnails - the same complaint the
+              trophy below records, one row further in. A line is never the same twice. */}
+      {/* One segment: `previewPathsFor` downsamples and drops the clock, so a row cannot know
+              where the run broke. The detail screen behind it draws the real stretches. */}
+      {blank ? null : entry.tracePoints.length > 1 ? (
+        <TraceThumb segments={[entry.tracePoints]} size={64} mapKey={entry.uuid ?? undefined} />
+      ) : entry.cover ? (
+        <Image
+          source={entry.cover}
+          recyclingKey={String(entry.id)}
+          style={COVER_STYLE}
+          contentFit="cover"
+          accessible={false}
+        />
+      ) : (
+        // A hero-authored quest has no cover, and the trophy is the honest stand-in: it says
+        // "a session happened" without pretending to be a picture of one.
+        <Trophy size={24} color="$resourceGold" />
+      )}
+    </YStack>
+  );
+}
+
+/** A session written down is named by the hero, or "Session elsewhere"; any other by its quest. */
+function rowTitle(entry: JournalEntry, t: TFunction): string {
+  return entry.byHand === "session"
+    ? (entry.label ?? t("past_session.default_name"))
+    : entry.questTitle;
+}
+
+/** No difficulty on a walk, nor on a session the hero wrote down: nobody chose a level for it. */
+function levelOf(entry: JournalEntry, t: TFunction): string | null {
+  return entry.outing || entry.byHand === "session"
+    ? null
+    : t(`quests.level_${entry.userLevel}`, entry.userLevel);
+}
+
 export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: SessionCardProps) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const unit = useSettingsStore((s) => s.distanceUnit);
   const onPress = onPressEntry ? () => onPressEntry(entry.id) : undefined;
+  const writtenDown = entry.byHand === "session";
+  const title = rowTitle(entry, t);
 
   // The year only when it is not this one: a veteran's history runs back two years, and "Sun, Sep
   // 15" from 2024 read as last Sunday.
@@ -149,7 +215,7 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
         {t("quests.reward_xp", { count: formatCount(language, entry.xpEarned) })}
       </NText>
     ) : null,
-    entry.outing ? null : t(`quests.level_${entry.userLevel}`, entry.userLevel),
+    levelOf(entry, t),
   ].filter(Boolean);
 
   return (
@@ -167,51 +233,16 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
             A ring in the quest's own colour was tried and dropped: `accent` is the same token for
             every key, and `bg`'s pastels resolve to near-identical plums against `$surface2`, so
             it was an ornament that looked like information. */}
-          <YStack
-            width={64}
-            height={64}
-            bg="$surface2"
-            rounded="$4"
-            borderWidth={1}
-            borderColor="$borderStrong"
-            items="center"
-            justify="center"
-            overflow="hidden"
-          >
-            {/* The run itself, when there is one. The three seeded outings share three pictures, so
-              a page of walks was a column of identical thumbnails - the same complaint the
-              trophy below records, one row further in. A line is never the same twice. */}
-            {/* One segment: `previewPathsFor` downsamples and drops the clock, so a row cannot know
-              where the run broke. The detail screen behind it draws the real stretches. */}
-            {entry.tracePoints.length > 1 ? (
-              <TraceThumb
-                segments={[entry.tracePoints]}
-                size={64}
-                mapKey={entry.uuid ?? undefined}
-              />
-            ) : entry.cover ? (
-              <Image
-                source={entry.cover}
-                recyclingKey={String(entry.id)}
-                style={COVER_STYLE}
-                contentFit="cover"
-                accessible={false}
-              />
-            ) : (
-              // A hero-authored quest has no cover, and the trophy is the honest stand-in: it says
-              // "a session happened" without pretending to be a picture of one.
-              <Trophy size={24} color="$resourceGold" />
-            )}
-          </YStack>
+          <Thumb entry={entry} blank={writtenDown} />
 
           <YStack flex={1} gap="$1">
             <XStack gap="$2" items="center">
               <NText fontWeight="500" fontSize={16} lineHeight={22} numberOfLines={1} flex={1}>
-                {entry.questTitle}
+                {title}
               </NText>
               {/* A gold word, the wall's own kicker, where a filled badge was: no plate, no border,
                 nothing more for the GPU to draw per row than the text it already draws. */}
-              {!!entry.hasNewRecords && (
+              {!!entry.hasNewRecords && !writtenDown && (
                 <NKicker numberOfLines={1} style={{ flexShrink: 1, maxWidth: "40%" }}>
                   {entry.recordLabel ?? t("journal.pr_badge")}
                 </NKicker>
@@ -229,6 +260,8 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
             <NText fontSize={12} lineHeight={17} numberOfLines={1}>
               {parts.flatMap((part, i) => (i ? [" · ", part] : [part]))}
             </NText>
+            {/* On its own line: the details line is one line, and the mark was cut at its end. */}
+            {entry.byHand ? <HandMark what={writtenDown ? "entry" : "distance"} /> : null}
           </YStack>
         </XStack>
         {entry.photoCount && entry.uuid && entry.firstPhotoUuid ? (

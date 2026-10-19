@@ -74,7 +74,11 @@ export async function replanReminders(sessionHeld: boolean): Promise<void> {
     pauseDays: REMINDER_PAUSE_DAYS,
     lateMinutes: REMINDER_LATE_MINUTES,
     channelName: t("reminders.channel"),
-    actionLabels: { snooze: t("reminders.snooze"), pause: t("reminders.pause") },
+    actionLabels: {
+      elsewhere: t("reminders.elsewhere"),
+      snooze: t("reminders.snooze"),
+      pause: t("reminders.pause"),
+    },
   });
 }
 

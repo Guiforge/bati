@@ -14,10 +14,12 @@ import {
   NPageHeader,
   NStatusScrim,
 } from "@/components/journal/nocturne";
+import { PastSessionSheet, type PastSessionTarget } from "@/components/journal/PastSessionSheet";
 import { QuestLog } from "@/components/journal/QuestLog";
 import { type LoadedSession, readSession } from "@/components/journal/sessionLog";
 import { useConfirmForget } from "@/components/journal/useConfirmForget";
 import { rawColors } from "@/constants/rawColors";
+import type { CompletedSession } from "@/db/completed";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -34,12 +36,26 @@ const parseId = (raw?: string | string[]): number | null => {
 /** Past this the hero (and the back button it carries) has left the screen. */
 const HERO_SCROLL_OFF = 160;
 
+/** The session as the sheet edits it: what it was, and when it ended. */
+function targetOf(session: CompletedSession): PastSessionTarget {
+  const seconds = session.durationSeconds ?? 0;
+  return {
+    id: session.id,
+    kind: session.outing ?? "workout",
+    endedAt: new Date(session.performedAt.getTime() + seconds * 1000),
+    durationSeconds: seconds,
+    label: session.label,
+    distanceM: session.leaguesM,
+  };
+}
+
 export default function SessionDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ id?: string | string[]; view?: string }>();
   const { t } = useTranslation();
-  const { confirmForget, dialog } = useConfirmForget();
+  const { confirmForget, confirmDropDistance, dialog } = useConfirmForget();
+  const [sheet, setSheet] = useState<"entry" | "distance" | null>(null);
   const language = useSettingsStore((s) => s.language);
   const sessionId = parseId(params.id);
   // The hero's own back button scrolls away with the page; once it has, a fixed one takes over.
@@ -127,7 +143,13 @@ export default function SessionDetailScreen() {
           ) : (
             <QuestLog data={loaded.log} onChanged={() => load(sessionId)} />
           )}
-          <YStack px={11} mt={24}>
+          <YStack px={11} mt={24} gap={8}>
+            <HandActions
+              session={loaded.log.session}
+              onCorrect={() => setSheet("entry")}
+              onDistance={() => setSheet("distance")}
+              onDropDistance={() => confirmDropDistance(sessionId, () => load(sessionId))}
+            />
             {/* An outline AppButton like every other secondary action. The red stays on the edge as
               the raw colour (the Journal theme folds `$error` into its inks); the label stays
               bone, in the family's face. */}
@@ -135,7 +157,11 @@ export default function SessionDetailScreen() {
               testID="journal-forget-session"
               variant="outline"
               borderColor={rawColors.error as never}
-              onPress={() => confirmForget(sessionId, () => setForgotten(true))}
+              onPress={() =>
+                confirmForget(sessionId, () => setForgotten(true), {
+                  byHand: loaded.log.session.byHand === "session",
+                })
+              }
             >
               {t("journal.forget")}
             </AppButton>
@@ -154,6 +180,62 @@ export default function SessionDetailScreen() {
       ) : null}
       <NStatusScrim />
       {dialog}
+      <PastSessionSheet
+        open={sheet !== null}
+        mode={sheet === "distance" ? "distance" : "entry"}
+        target={sheet === null ? null : targetOf(loaded.log.session)}
+        onClose={() => setSheet(null)}
+        onSaved={() => load(sessionId).catch((e) => reportError("journal.detail", e))}
+      />
     </YStack>
+  );
+}
+
+/**
+ * What a typed row can do besides go: a session written down is corrected; an outing nothing
+ * witnessed gets a distance, and a typed one is corrected or taken back. A measured one offers none.
+ */
+function HandActions({
+  session,
+  onCorrect,
+  onDistance,
+  onDropDistance,
+}: {
+  session: CompletedSession;
+  onCorrect: () => void;
+  onDistance: () => void;
+  onDropDistance: () => void;
+}) {
+  const { t } = useTranslation();
+  if (session.byHand === "session") {
+    return (
+      <AppButton testID="journal-correct" variant="outline" onPress={onCorrect}>
+        {t("journal.correct")}
+      </AppButton>
+    );
+  }
+  // Only an outing with no trace: a measured distance is not the hero's to type over.
+  if (session.outing == null || session.movingSeconds !== null) return null;
+  if (session.byHand !== "distance") {
+    return (
+      <AppButton testID="journal-add-distance" variant="outline" onPress={onDistance}>
+        {t("session.add_distance")}
+      </AppButton>
+    );
+  }
+  return (
+    <>
+      <AppButton testID="journal-correct-distance" variant="outline" onPress={onDistance}>
+        {t("journal.correct_distance")}
+      </AppButton>
+      <AppButton
+        testID="journal-drop-distance"
+        variant="outline"
+        borderColor={rawColors.error as never}
+        onPress={onDropDistance}
+      >
+        {t("past_session.drop_distance")}
+      </AppButton>
+    </>
   );
 }

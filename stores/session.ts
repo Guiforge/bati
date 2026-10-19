@@ -23,6 +23,8 @@ import {
   getSessionAggregates,
   markSessionWithNewRecords,
   outingSecondsToday,
+  UNTRACED_PAID_SECONDS_PER_DAY,
+  untracedSecondsToday,
 } from "@/db/completed";
 import { type Crest, getCrest } from "@/db/crest";
 import {
@@ -422,6 +424,15 @@ interface SessionState {
    * to survive being rebuilt from disk.
    */
   goal: OutingGoal | null;
+  /**
+   * Whether this outing is measured by GPS. False when the hero chose to go out without it: no
+   * permission was asked, nothing is tracked, and the outing is timed by the clock alone.
+   *
+   * In state, and in `SavedSessionState`, so a session resumed after the OS killed the app keeps
+   * the choice it began with and not the preference the hero may have flipped since (it would ask
+   * a permission nobody wanted, or leave a tracked outing untracked). True for every workout.
+   */
+  gps: boolean;
   savedSessionId: number | null;
   /**
    * The crest as the FIRST pass of `saveSession` read it, before the row existed. A retry finds
@@ -462,6 +473,8 @@ interface SessionState {
        * every workout indoors and is the one thing to remember when a third door is written.
        */
       goal?: OutingGoal | null;
+      /** False to go out without GPS (`outing_gps`, the door reads the hero's last choice). */
+      gps?: boolean;
     },
   ) => Promise<void>;
   /** From a movement's wait to the movement: GO, or the wait's clock running out. */
@@ -582,6 +595,7 @@ export type SavedSessionState = Pick<
   | "firstSideSeconds"
   | "sessionUuid"
   | "goal"
+  | "gps"
 > & { savedAt: number };
 
 /**
@@ -930,6 +944,15 @@ async function outingLedger(
   // Excludes this session: a retry finds the row the first attempt wrote, and would otherwise
   // read it as its own predecessor and pay the second band for the first band's work.
   const prior = await outingSecondsToday(savedSessionId);
+  // Time nothing witnessed (no GPS, or no fix ever locked) is paid up to two hours a day. Going
+  // out without GPS is a button now; a timer left running on a table must not pay four hours.
+  if (ground.movingSeconds === null) {
+    const room = Math.max(
+      0,
+      UNTRACED_PAID_SECONDS_PER_DAY - (await untracedSecondsToday(savedSessionId)),
+    );
+    outing.seconds = Math.min(outing.seconds, room);
+  }
 
   return {
     outing,
@@ -1273,6 +1296,7 @@ export function beginTrackingIfOuting(
   quest: Quest,
   sessionUuid: string | null,
   goal: OutingGoal | null,
+  gps = true,
 ): void {
   if (!isExpedition(quest)) return;
 
@@ -1341,7 +1365,7 @@ export function beginTrackingIfOuting(
       };
       return useExpeditionStore
         .getState()
-        .begin(sessionUuid, notification, isMountedOuting(quest), unit, goal, haptics, view);
+        .begin(sessionUuid, notification, isMountedOuting(quest), unit, goal, haptics, view, gps);
     })
     .catch((error: unknown) => reportError("session.beginTracking", error));
 }
@@ -1376,6 +1400,7 @@ export const useSessionStore = create<SessionState>()(
     results: [],
     lastSetSkipped: false,
     goal: null,
+    gps: true,
     savedSessionId: null,
     crestSeenBefore: null,
     savedResult: null,
@@ -1445,6 +1470,7 @@ export const useSessionStore = create<SessionState>()(
         results: [],
         lastSetSkipped: false,
         goal: options?.goal ?? null,
+        gps: options?.gps ?? true,
         savedSessionId: null,
         crestSeenBefore: null,
         savedResult: null,
@@ -1453,7 +1479,7 @@ export const useSessionStore = create<SessionState>()(
 
       // An outing measures ground; a workout in a room does not. Called after the state is set
       // so the uuid the points are filed under is already the one the session will keep.
-      beginTrackingIfOuting(quest, get().sessionUuid, options?.goal ?? null);
+      beginTrackingIfOuting(quest, get().sessionUuid, options?.goal ?? null, get().gps);
     },
 
     startWarmupMove: () => {
@@ -2467,6 +2493,7 @@ useSessionStore.subscribe(
           longHoldKept: state.longHoldKept,
           firstSideSeconds: state.firstSideSeconds,
           goal: state.goal,
+          gps: state.gps,
           savedAt: Date.now(),
         };
         await preferences.setSavedSession(JSON.stringify(savedState));

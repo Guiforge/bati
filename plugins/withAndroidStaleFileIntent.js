@@ -1,7 +1,10 @@
 const { withMainActivity } = require("expo/config-plugins");
 
 /**
- * Forget the quest file a task was started with, once that task is brought back.
+ * Forget the quest file a task was started with, once that task is brought back. The same goes for
+ * the reminder's "Fait ailleurs ?" link (`bati:///journal?add=past`): a form opened from a
+ * notification must not open again when the task is restored from recents after the process died,
+ * and the store that says "already opened" died with the process.
  *
  * A quest file tapped in a chat starts Bati's task with an ACTION_VIEW intent carrying the file's
  * `content://` URI (`app/+native-intent.tsx`), and Android keeps that intent as the task's root.
@@ -38,11 +41,29 @@ module.exports = function withAndroidStaleFileIntent(config) {
         ANCHOR,
         `    // ${MARKER}: see plugins/withAndroidStaleFileIntent.js.
     val fromHistory = (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0
-    if ((savedInstanceState != null || fromHistory) && intent.data?.scheme == "content") {
+    val data = intent.data
+    val stale = data != null && (data.scheme == "content" || (data.scheme == "bati" && data.getQueryParameter("add") != null))
+    if ((savedInstanceState != null || fromHistory) && stale) {
       intent = Intent(intent).setData(null)
     }
 ${ANCHOR}`,
       );
+    // A task alive in recents but with a dead process is recreated on its old MAIN intent, and the
+    // notification's link arrives in onNewIntent while React Native has no context to give it to.
+    // Keeping it as the activity's intent lets getInitialURL find it; the guard above still sees
+    // the system's own intent in onCreate, so a task restored later forgets it.
+    src = src.replace(
+      "\n  /**\n   * Returns the name of the main component",
+      `
+  // ${MARKER}: the link of a notification that restarts a dead process.
+  override fun onNewIntent(intent: Intent) {
+    setIntent(intent)
+    super.onNewIntent(intent)
+  }
+
+  /**
+   * Returns the name of the main component`,
+    );
     cfg.modResults.contents = src;
     return cfg;
   });

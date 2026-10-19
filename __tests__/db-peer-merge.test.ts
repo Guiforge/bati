@@ -1878,3 +1878,107 @@ describe("the notebook merges", () => {
     expect(withNote[4]).toBe(withPhoto[4]);
   });
 });
+
+describe("a session written down merges (0078)", () => {
+  function addHand(sqlite: Database.Database, at: number, label: string, xp = 75): string {
+    const uuid = addSession(sqlite, at);
+    sqlite
+      .prepare(
+        `UPDATE completed_sessions SET byHand = 'session', label = ?, durationSeconds = 2700,
+           xpEarned = ? WHERE uuid = ?`,
+      )
+      .run(label, xp, uuid);
+    return uuid;
+  }
+  const correct = (sqlite: Database.Database, uuid: string, label: string, at: number) =>
+    sqlite
+      .prepare(
+        "UPDATE completed_sessions SET label = ?, durationSeconds = 3600, byHandEditedAt = ? WHERE uuid = ?",
+      )
+      .run(label, at, uuid);
+  const handOf = (uuid: string) =>
+    t.sqlite
+      .prepare(
+        `SELECT byHand, label, durationSeconds AS d, byHandEditedAt AS at, xpEarned AS xp
+         FROM completed_sessions WHERE uuid = ?`,
+      )
+      .get(uuid);
+
+  test("an entry written on the other device arrives with its marker and its name", async () => {
+    let fresh = "";
+    const file = await peer("tablet.db", (sqlite) => {
+      fresh = addHand(sqlite, 2_000, "salle");
+    });
+    await merge().mergePeer(file);
+    expect(handOf(fresh)).toMatchObject({ byHand: "session", label: "salle", xp: 75 });
+    await converged(file);
+  });
+
+  test("a correction made later wins, the earlier one never wins back, both converge", async () => {
+    const uuid = addHand(t.sqlite, 1_000, "gym");
+    t.sqlite.prepare("UPDATE completed_sessions SET byHandEditedAt = 500 WHERE uuid = ?").run(uuid);
+    const later = await peer("later.db", (sqlite) => correct(sqlite, uuid, "foot", 600));
+    expect(await backup().compareWithPeer(later)).toMatchObject({
+      peerChanges: expect.any(Number),
+    });
+    expect((await backup().compareWithPeer(later)).peerChanges).toBeGreaterThan(0);
+    await merge().mergePeer(later);
+    expect(handOf(uuid)).toMatchObject({ label: "foot", d: 3600, at: 600 });
+    await converged(later);
+
+    const older = await peer("older.db", (sqlite) => correct(sqlite, uuid, "stale", 550));
+    await merge().mergePeer(older);
+    expect(handOf(uuid)).toMatchObject({ label: "foot", at: 600 });
+    await converged(older);
+  });
+
+  test("a correction never lowers the XP and the larger XP still travels", async () => {
+    const uuid = addHand(t.sqlite, 1_000, "gym", 75);
+    const file = await peer("tablet.db", (sqlite) => {
+      correct(sqlite, uuid, "foot", 600);
+      sqlite.prepare("UPDATE completed_sessions SET xpEarned = 325 WHERE uuid = ?").run(uuid);
+    });
+    await merge().mergePeer(file);
+    expect(handOf(uuid)).toMatchObject({ label: "foot", xp: 325 });
+    await converged(file);
+  });
+
+  test("two corrections stamped in the same second converge on the larger content", async () => {
+    const uuid = addHand(t.sqlite, 1_000, "gym");
+    t.sqlite.prepare("UPDATE completed_sessions SET byHandEditedAt = 500 WHERE uuid = ?").run(uuid);
+    const file = await peer("tablet.db", (sqlite) => correct(sqlite, uuid, "zzz", 500));
+    await merge().mergePeer(file);
+    expect(handOf(uuid)).toMatchObject({ label: "zzz", at: 500 });
+    await converged(file);
+  });
+
+  test("a distance typed on the other device for an outing both hold arrives, and so does its removal", async () => {
+    const uuid = addSession(t.sqlite, 1_000, undefined, { outing: "walk", leaguesM: 0 });
+    t.sqlite.prepare("UPDATE completed_sessions SET leaguesM = NULL WHERE uuid = ?").run(uuid);
+    const typed = await peer("typed.db", (sqlite) =>
+      sqlite
+        .prepare(
+          "UPDATE completed_sessions SET leaguesM = 3800, byHand = 'distance', byHandEditedAt = 700 WHERE uuid = ?",
+        )
+        .run(uuid),
+    );
+    await merge().mergePeer(typed);
+    expect(
+      t.sqlite.prepare("SELECT leaguesM, byHand FROM completed_sessions WHERE uuid = ?").get(uuid),
+    ).toEqual({ leaguesM: 3800, byHand: "distance" });
+    await converged(typed);
+
+    const removed = await peer("removed.db", (sqlite) =>
+      sqlite
+        .prepare(
+          "UPDATE completed_sessions SET leaguesM = NULL, byHand = NULL, byHandEditedAt = 800 WHERE uuid = ?",
+        )
+        .run(uuid),
+    );
+    await merge().mergePeer(removed);
+    expect(
+      t.sqlite.prepare("SELECT leaguesM, byHand FROM completed_sessions WHERE uuid = ?").get(uuid),
+    ).toEqual({ leaguesM: null, byHand: null });
+    await converged(removed);
+  });
+});

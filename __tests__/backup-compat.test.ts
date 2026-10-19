@@ -28,6 +28,8 @@ import { clientMock, createTestDb } from "./helpers/testDb";
 const HERO_ADVENTURES_IDX = 76;
 /** The one that let the hero name their boss. */
 const BOSS_VOICE_IDX = 77;
+/** The one that let a session be written down: `byHand`, `label`, `byHandEditedAt`. */
+const HAND_ENTRY_IDX = 80;
 
 type Journal = { entries: { idx: number; when: number }[] };
 const journal: Journal = JSON.parse(
@@ -99,6 +101,16 @@ function play(sqlite: Database.Database, idx: number) {
         .run(adventure, stepIndex, quest.id);
     }
   }
+  // A session written down, only where `byHand` exists (0078): a row with no exercise at all.
+  if (idx >= HAND_ENTRY_IDX) {
+    sqlite
+      .prepare(
+        `INSERT INTO completed_sessions
+           (userLevel, xpEarned, performedAt, durationSeconds, byHand, label, byHandEditedAt)
+         VALUES ('medium', 75, ?, 2700, 'session', 'salle', 9)`,
+      )
+      .run(at + 1000);
+  }
   return { hasExercise: exercise !== undefined };
 }
 
@@ -152,9 +164,28 @@ describe("a backup from any earlier migration point", () => {
           restored.prepare("SELECT value FROM user_preferences WHERE key = 'language'").get(),
         ).toEqual({ value: "fr" });
         // `performedAt` rather than `xpEarned`, which a migration deliberately recomputes.
-        expect(restored.prepare("SELECT performedAt FROM completed_sessions").all()).toEqual([
+        expect(
+          restored.prepare("SELECT performedAt FROM completed_sessions ORDER BY performedAt").all(),
+        ).toEqual([
           { performedAt: 1_750_000_000 },
+          ...(idx >= HAND_ENTRY_IDX ? [{ performedAt: 1_750_001_000 }] : []),
         ]);
+        if (idx >= HAND_ENTRY_IDX) {
+          // The session written down comes back whole, with no exercise to hold it up.
+          expect(
+            restored
+              .prepare(
+                "SELECT byHand, label, byHandEditedAt AS at FROM completed_sessions WHERE byHand IS NOT NULL",
+              )
+              .all(),
+          ).toEqual([{ byHand: "session", label: "salle", at: 9 }]);
+        } else {
+          expect(
+            restored
+              .prepare("SELECT count(*) AS n FROM completed_sessions WHERE byHand IS NOT NULL")
+              .get(),
+          ).toEqual({ n: 0 });
+        }
         expect(restored.prepare("SELECT resultValue FROM completed_exercises").all()).toEqual(
           hasExercise ? [{ resultValue: 12 }] : [],
         );
@@ -219,5 +250,37 @@ describe("the notebook", () => {
     } finally {
       source.close();
     }
+  });
+});
+
+describe("migration 0078", () => {
+  test("adds three columns and leaves every existing row as it was: NULL means measured", async () => {
+    const before = new Database(":memory:");
+    await migrate(before, HAND_ENTRY_IDX - 1);
+    before
+      .prepare(
+        `INSERT INTO completed_sessions (userLevel, xpEarned, performedAt, durationSeconds, outing, leaguesM)
+         VALUES ('medium', 120, 1750000000, 1800, 'walk', 2400)`,
+      )
+      .run();
+    await migrate(before);
+    expect(
+      before
+        .prepare(
+          "SELECT xpEarned, durationSeconds, outing, leaguesM, byHand, label, byHandEditedAt FROM completed_sessions",
+        )
+        .all(),
+    ).toEqual([
+      {
+        xpEarned: 120,
+        durationSeconds: 1800,
+        outing: "walk",
+        leaguesM: 2400,
+        byHand: null,
+        label: null,
+        byHandEditedAt: null,
+      },
+    ]);
+    before.close();
   });
 });

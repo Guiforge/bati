@@ -384,7 +384,7 @@ export function LiveMap({
       />
 
       <YStack position="absolute" b="$3" l="$4" r="$4">
-        <MapFootnote quiet={moving} />
+        <MapFootnote quiet={moving} compact />
       </YStack>
 
       {overlay === undefined ? null : <Overlay>{overlay}</Overlay>}

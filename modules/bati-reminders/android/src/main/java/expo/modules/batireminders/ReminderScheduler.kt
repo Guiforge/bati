@@ -209,6 +209,13 @@ internal object ReminderScheduler {
         .setCategory(NotificationCompat.CATEGORY_REMINDER)
         .setTimeoutAfter(maxOf(0, LocalDay.endOf(due.date) - System.currentTimeMillis()))
     if (body.isNotEmpty()) builder.setContentText(body)
+    // First, and the only one of the three that answers the question the reminder asks: the session
+    // was done somewhere Bati did not see. It opens the form for that day, and does not take the
+    // reminder away: saving does (`clearToday`), and a sheet closed unsaved leaves it standing.
+    val elsewhere = labels?.optString("elsewhere").orEmpty()
+    if (elsewhere.isNotEmpty()) {
+      builder.addAction(0, elsewhere, elsewhereIntent(context, due.date))
+    }
     // One snooze a day: the second reminder offers only the pause.
     if (!due.snooze && hour < LAST_SNOOZE_HOUR) {
       builder.addAction(0, labels?.optString("snooze").orEmpty(), actionIntent(context, ACTION_SNOOZE, due.date))
@@ -308,6 +315,29 @@ internal object ReminderScheduler {
       context,
       notificationId(date),
       launch,
+      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+    )
+  }
+
+  /**
+   * An explicit `ACTION_VIEW`, not a copy of `tapIntent`: React Native reads a URL only from a VIEW
+   * intent, and the tap's `MAIN` launcher intent drops its data on the floor (it works because
+   * `bati:///` is the default screen). `singleTask` delivers this one to `onNewIntent` when the app
+   * is up, and as the root intent when it is not. The day is validated on the other side: anyone
+   * can launch this URL.
+   */
+  private fun elsewhereIntent(
+    context: Context,
+    date: String,
+  ): PendingIntent {
+    val intent =
+      Intent(Intent.ACTION_VIEW, "bati:///journal?add=past&day=$date".toUri())
+        .setPackage(context.packageName)
+        .putExtra(EXTRA_DATE, date)
+    return PendingIntent.getActivity(
+      context,
+      notificationId(date) % 100_000 * 10 + 3,
+      intent,
       PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
     )
   }

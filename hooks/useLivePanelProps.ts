@@ -33,6 +33,8 @@ export function useLivePanelProps() {
   const view = useExpeditionStore((state) => state.view);
   const lapFromMs = useExpeditionStore((state) => state.lap.fromMs);
   const quest = useSessionStore((state) => state.quest);
+  /** The hero went out without GPS: the panel is a clock and a badge, never a distance of zero. */
+  const noGps = useSessionStore((state) => !state.gps);
 
   /**
    * How long the session will be *recorded* as, which is not what the session timer reads.
@@ -63,6 +65,7 @@ export function useLivePanelProps() {
     goal,
     goalReached,
     recordedSeconds: recorded,
+    noGps,
     lapFromMs,
     showPocketHint: quest === null || !screenStaysOn(quest, view),
   };

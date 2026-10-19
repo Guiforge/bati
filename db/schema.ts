@@ -508,6 +508,19 @@ export const completedQuest = sqliteTable(
     // same reason. Null when nobody did.
     notesEditedAt: int({ mode: "timestamp" }),
 
+    /**
+     * Which part of the row is the hero's word, not Bati's measure (`0078`). Null: everything was
+     * measured. `'session'`: a session written down after the fact, no exercises. `'distance'`: an
+     * outing whose `leaguesM` was typed. Every reader that means *measured* filters on it
+     * (`isMeasured`, `isWorkout` in `db/completed.ts`).
+     */
+    byHand: text().$type<"session" | "distance">(),
+    // The name the hero gave a session written down ("gym"). Null otherwise (`0078`).
+    label: text(),
+    // When the hero last corrected a hand-written part after saving (`0078`), on its own stamp so
+    // device sync takes the typed fields from the side that wrote them later.
+    byHandEditedAt: int({ mode: "timestamp" }),
+
     // When the session was performed.
     performedAt: int({ mode: "timestamp" })
       .notNull()
@@ -519,7 +532,8 @@ export const completedQuest = sqliteTable(
     // the `$defaultFn` is what actually guarantees it, on every Drizzle insert.
     //
     // A net, not the writer: it cannot see `performedAt`, so it names the row after the moment
-    // it was saved. `createCompletedSession` overrides it with the moment it was *performed*,
+    // it was saved. (A hand entry whose day was corrected keeps its uuid, so `ORDER BY uuid` no
+    // longer equals `ORDER BY performedAt` for it: nothing but a tie-break reads that order.) `createCompletedSession` overrides it with the moment it was *performed*,
     // which is what the 0038 backfill wrote and what keeps `ORDER BY uuid` sorting the journal.
     uuid: text().$defaultFn(() => uuidv7()),
 

@@ -23,6 +23,20 @@ describe("db/completed", () => {
     ).rejects.toThrow("must have exercises");
   });
 
+  test("a session written down is the one kind that may have no exercises", async () => {
+    const completed = require("../db/completed") as typeof import("../db/completed");
+
+    const id = await completed.createCompletedSession({
+      byHand: "session",
+      label: "salle",
+      durationSeconds: 2700,
+      xpEarned: 75,
+      exercises: [],
+    });
+    const full = await completed.getCompletedSessionById(id);
+    expect(full).toMatchObject({ byHand: "session", label: "salle", exercises: [] });
+  });
+
   test("create/list/get completed session", async () => {
     const completed = require("../db/completed") as typeof import("../db/completed");
     const exercises = require("../db/exercises") as typeof import("../db/exercises");

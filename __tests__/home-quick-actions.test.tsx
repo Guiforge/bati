@@ -114,6 +114,19 @@ jest.mock("@/db/completed", () => ({
   getRecentSessionHistory: () => mockRecentSessions(),
 }));
 
+// The last choice of "GPS : oui / non" (`outing_gps`), which the tap reads and the dead end sets.
+let mockGps = true;
+const mockSetOutingGps = jest.fn().mockResolvedValue(undefined);
+jest.mock("@/db/preferences", () => ({
+  preferences: {
+    getOutingGps: () => Promise.resolve(mockGps),
+    setOutingGps: (...a: unknown[]) => {
+      mockGps = a[0] as boolean;
+      return mockSetOutingGps(...a);
+    },
+  },
+}));
+
 const mockStartSession = jest.fn().mockResolvedValue(undefined);
 const mockSession = { status: "idle", startSession: mockStartSession };
 const mockRequestPermission = jest.fn();
@@ -168,6 +181,8 @@ function tapTile(name: string) {
 }
 
 beforeEach(() => {
+  mockGps = true;
+  mockSetOutingGps.mockClear();
   mockPermissionStatus.mockReset().mockResolvedValue({ granted: true, canAskAgain: false });
   mockPush.mockClear();
   mockStartSession.mockClear();
@@ -225,6 +240,7 @@ it("starts the outing with no goal on it, position asked before notification", a
   expect(mockLoadConfiguredQuest).toHaveBeenCalledWith(2, "medium");
   expect(mockStartSession).toHaveBeenCalledWith({ id: 2, exercises: [] }, "medium", {
     goal: null,
+    gps: true,
   });
   // `null` is the whole of "a walk with no number on it" — an absent key would be the same
   // thing today and stop being it the day the store reads a saved goal instead.
@@ -272,8 +288,45 @@ it("starts nothing when the position is refused, and says where the grant lives"
   await waitFor(() => expect(screen.getByText("Bati has no access to your location")).toBeTruthy());
   expect(mockStartSession).not.toHaveBeenCalled();
   expect(mockPush).not.toHaveBeenCalled();
-  // The grant lives in Android's settings and nothing in the app can ask a second time.
-  expect(screen.getByText("Open settings")).toBeTruthy();
+  // The dead end is a door now: the action is the outing without GPS, and the grant lives on in
+  // the goal sheet's rule for the hero who wants it.
+  expect(screen.getByText("Go out without GPS")).toBeTruthy();
+  expect(screen.queryByText("Open settings")).toBeNull();
+});
+
+it("'Go out without GPS' remembers the choice and starts the outing with no permission asked again", async () => {
+  mockRequestPermission.mockResolvedValue({ granted: false });
+  await renderRow();
+  await screen.findByText("Course du Messager");
+  await tapTile("Course du Messager");
+  await waitFor(() => expect(screen.getByText("Go out without GPS")).toBeTruthy());
+  mockRequestPermission.mockClear();
+  mockRequestNotificationPermission.mockClear();
+
+  await fireEvent.press(screen.getByText("Go out without GPS"));
+
+  await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
+  expect(mockSetOutingGps).toHaveBeenCalledWith(false);
+  expect(mockStartSession.mock.calls[0]?.[2]).toEqual({ goal: null, gps: false });
+  expect(mockRequestPermission).not.toHaveBeenCalled();
+  expect(mockRequestNotificationPermission).not.toHaveBeenCalled();
+  expect(mockPush).toHaveBeenCalledWith("/session");
+});
+
+it("with GPS off, the tap asks no permission, explains nothing, and starts without GPS", async () => {
+  mockGps = false;
+  mockPermissionStatus.mockResolvedValue({ granted: false, canAskAgain: true });
+  await renderRow();
+  await screen.findByText("Course du Messager");
+  await tapTile("Course du Messager");
+
+  await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
+  expect(mockStartSession.mock.calls[0]?.[2]).toEqual({ goal: null, gps: false });
+  expect(mockPermissionStatus).not.toHaveBeenCalled();
+  expect(mockRequestPermission).not.toHaveBeenCalled();
+  expect(mockRequestNotificationPermission).not.toHaveBeenCalled();
+  expect(screen.queryByText(WHY)).toBeNull();
+  expect(mockPush).toHaveBeenCalledWith("/session");
 });
 
 it("writes the goal on the tile, and changes it from the tile without leaving", async () => {
@@ -361,9 +414,9 @@ it("says why before Android asks, and only for the first tap of the process", as
   await waitFor(() => expect(mockRequestPermission).toHaveBeenCalledTimes(1));
 
   // A why explains the dialog, it does not answer it: a refusal is exactly as final as it was,
-  // and the strip says where the grant lives instead.
+  // and the strip offers the outing without GPS instead.
   await waitFor(() => expect(screen.getByText("Bati has no access to your location")).toBeTruthy());
-  expect(screen.getByText("Open settings")).toBeTruthy();
+  expect(screen.getByText("Go out without GPS")).toBeTruthy();
   expect(screen.queryByText(WHY)).toBeNull();
   expect(mockStartSession).not.toHaveBeenCalled();
   expect(mockPush).not.toHaveBeenCalled();

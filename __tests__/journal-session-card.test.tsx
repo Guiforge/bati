@@ -128,4 +128,54 @@ describe("SessionCard", () => {
     expect(screen.queryByText(/·\s*$/)).toBeNull();
     expect(screen.getByText(new RegExp(formatDistance(4580, "metric", "en")))).toBeTruthy();
   });
+
+  describe("a session written down", () => {
+    const hand: JournalEntry = {
+      ...baseEntry,
+      id: 9,
+      questTitle: "",
+      durationSeconds: 45 * 60,
+      xpEarned: 75,
+      byHand: "session",
+      label: "gym",
+    };
+
+    it("is titled by the name the hero gave it, with the mark on its own line", async () => {
+      await mount(hand);
+      expect(await screen.findByText("gym")).toBeTruthy();
+      expect(screen.getByText("past_session.hand_mark")).toBeTruthy();
+      // The details line does not carry it: it is one line and would cut the mark.
+      expect(screen.getByText(/45 min/).props.children.join("")).not.toMatch(/hand_mark/);
+    });
+
+    it("says 'Session elsewhere' when it has no name, and shows no difficulty", async () => {
+      await mount({ ...hand, label: null });
+      expect(await screen.findByText("past_session.default_name")).toBeTruthy();
+      expect(screen.queryByText(/medium/i)).toBeNull();
+    });
+
+    it("shows no record badge and no thumbnail art", async () => {
+      await mount({ ...hand, hasNewRecords: true, recordLabel: "x" });
+      expect(screen.queryByText("PR")).toBeNull();
+      expect(screen.queryByText("x")).toBeNull();
+    });
+
+    it("a measured row says nothing of it", async () => {
+      await mount(baseEntry);
+      expect(screen.queryByText("past_session.hand_mark")).toBeNull();
+    });
+
+    it("an outing whose distance was typed keeps its title and marks the distance alone", async () => {
+      await mount({
+        ...baseEntry,
+        outing: "walk",
+        leaguesM: 3800,
+        durationSeconds: 42 * 60,
+        byHand: "distance",
+      });
+      expect(await screen.findByText(/3\.80 km/)).toBeTruthy();
+      expect(screen.getByText("past_session.hand_mark_distance")).toBeTruthy();
+      expect(screen.getByText("Test Quest")).toBeTruthy();
+    });
+  });
 });

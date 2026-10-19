@@ -378,7 +378,13 @@
     "import_none_kept": "Wähle mindestens eine Übung.",
     "import_confirm": "Zu meinen Quests hinzufügen",
     "import_confirm_update": "Meine Quest aktualisieren",
-    "editor_delete_in_use": "Diese Quest ist eine Etappe von {{titles}}. Nimm sie zuerst aus dem Abenteuer."
+    "editor_delete_in_use": "Diese Quest ist eine Etappe von {{titles}}. Nimm sie zuerst aus dem Abenteuer.",
+    "gps_label": "GPS",
+    "gps_on": "GPS: ja",
+    "gps_off": "GPS: nein",
+    "gps_distance_note": "Ohne GPS lässt sich ein Streckenziel nicht messen.",
+    "gps_allow_location": "Standort erlauben",
+    "go_without_gps": "Ohne GPS losgehen"
   },
   "adventures": {
     "editor_saved": "Abenteuer gespeichert",
@@ -869,7 +875,10 @@
     "tonight_epilogue": "Deine Kampagne ist abgeschlossen.",
     "tonight_anniversary_one": "Dein Dorf ist ein Jahr alt.",
     "tonight_anniversary_other": "Dein Dorf ist {{count}} Jahre alt.",
-    "expedition_lap": "Aktuelle Wegstunde"
+    "expedition_lap": "Aktuelle Wegstunde",
+    "no_gps_badge": "Ohne GPS",
+    "add_distance": "Strecke hinzufügen",
+    "no_gps_pocket": "Du kannst das Handy wegstecken, die Zeit läuft weiter."
   },
   "muscles": {
     "arms": "Arme",
@@ -1160,7 +1169,13 @@
     "work_early_other": "Noch zu früh: Dafür braucht es {{count}} Einheiten in dreißig Tagen.",
     "hard_sets_title": "Harte Sätze",
     "hard_sets_line_one": "{{pattern}}: {{count}} harter Satz diese Woche",
-    "hard_sets_line_other": "{{pattern}}: {{count}} harte Sätze diese Woche"
+    "hard_sets_line_other": "{{pattern}}: {{count}} harte Sätze diese Woche",
+    "correct": "Korrigieren",
+    "correct_distance": "Strecke korrigieren",
+    "drop_distance_title": "Strecke entfernen?",
+    "drop_distance_body": "Die Wegstunden, die sie der Straße gebracht hat, gehen mit ihr.",
+    "drop_distance_confirm": "Entfernen",
+    "forget_body_by_hand": "Die XP, die sie dir gebracht hat, gehen mit ihr, und sie zählt nicht mehr für deine Flamme und deinen Schwur. Das lässt sich nicht rückgängig machen."
   },
   "achievements": {
     "progress": "{{unlocked}} / {{total}} freigeschaltet",
@@ -2336,7 +2351,7 @@
     "oath_more_other": "Noch {{count}} Einheiten, und der Schwur hält diese Woche.",
     "channel": "Trainingserinnerungen",
     "snooze": "In 1 Std.",
-    "pause": "7 Tage Pause",
+    "pause": "7 T. Pause",
     "section": "ERINNERUNG",
     "switch": "Erinnere mich ans Training",
     "rule": "Du wählst deine Tage und deine Uhrzeit. Bati erinnert dich an diesen Tagen einmal, außer deine Einheit ist erledigt oder Bati rät dir zur Erholung. Du kannst die Erinnerung um eine Stunde verschieben oder pausieren.",
@@ -2373,7 +2388,8 @@
     "check_change": "Meine Tage ändern",
     "check_off": "Ausschalten",
     "check_fine": "Passt so",
-    "pause_row": "Pausieren"
+    "pause_row": "Pausieren",
+    "elsewhere": "Woanders gemacht?"
   },
   "setAside": {
     "leave_out": "{{name}} nicht mehr vorschlagen",
@@ -2873,5 +2889,51 @@
         "line": "Vier harte Wochen in Folge. Diese Woche heißt es: leichter trainieren, nicht aufhören."
       }
     ]
+  },
+  "past_session": {
+    "title": "Vergangene Einheit hinzufügen",
+    "title_edit": "Einheit korrigieren",
+    "title_distance": "Strecke hinzufügen",
+    "add_row": "Vergangene Einheit hinzufügen",
+    "type_workout": "Training",
+    "when": "Wann",
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "other_day": "Anderer Tag",
+    "ended_at": "Fertig gegen",
+    "duration": "Dauer",
+    "duration_custom": "Andere",
+    "minutes": "Min.",
+    "name": "Name (optional)",
+    "name_hint": "Fitnessstudio",
+    "default_name": "Einheit woanders",
+    "distance": "Strecke (optional)",
+    "distance_a11y": "Strecke in {{unit}}",
+    "rule_link": "Was es bringt",
+    "rule": "Eine Einheit woanders hält die Flamme am Leben und zählt für den Schwur, bringt die XP von 15 Minuten in Bati und trifft den Boss nicht.",
+    "save": "Speichern",
+    "toast_flame": "Flamme gehalten, +{{xp}} XP",
+    "toast_corrected": "Einheit korrigiert",
+    "toast_noted": "Einheit notiert, +{{xp}} XP",
+    "toast_oath": "Schwur gehalten, +{{xp}} XP",
+    "refuse_too_old": "Du kannst bis zu 7 Tage zurück eintragen: Wähle einen näheren Tag.",
+    "refuse_one_per_day_today": "Deine Einheit woanders von heute ist schon notiert. Zum Ändern öffne sie im Tagebuch.",
+    "refuse_one_per_day_yesterday": "Deine Einheit woanders von gestern ist schon notiert. Zum Ändern öffne sie im Tagebuch.",
+    "refuse_one_per_day_weekday": "Deine Einheit woanders vom {{weekday}} ist schon notiert. Zum Ändern öffne sie im Tagebuch.",
+    "refuse_duration": "Eine Einheit woanders zählt zwischen 10 Minuten und 4 Stunden.",
+    "refuse_overlap": "Um {{time}} hat Bati dich bei „{{name}}“ gesehen. Verschiebe die Uhrzeit oder kürze die Dauer.",
+    "overlap_unknown": "eine andere Einheit",
+    "refuse_implausible": "{{distance}} in {{duration}} wären {{speed}} {{way}}. Meintest du {{fix}}?",
+    "refuse_implausible_nofix": "{{distance}} in {{duration}} wären {{speed}} {{way}}. Prüfe die Strecke oder nimm sie heraus.",
+    "way_walk": "zu Fuß",
+    "way_run": "beim Laufen",
+    "way_ride": "mit dem Rad",
+    "fix_distance": "{{fix}} eintragen",
+    "drop_distance": "Strecke entfernen",
+    "rule_no_gps": "Ohne GPS zählt deine Tour nach Zeit: Flamme, XP, aber keine Wegstunden, bis du die Strecke ergänzt.",
+    "hand_mark": "von Hand eingetragen",
+    "hand_mark_distance": "Strecke von Hand eingetragen",
+    "hand_mark_count_one": "({{count}} von Hand eingetragen)",
+    "hand_mark_count_other": "({{count}} von Hand eingetragen)"
   }
 }

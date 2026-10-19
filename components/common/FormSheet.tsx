@@ -1,5 +1,5 @@
 import { usePathname } from "expo-router";
-import { type ReactNode, useEffect, useRef } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Keyboard, Pressable, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -15,6 +15,11 @@ type Props = {
   /** Called on the X, the scrim, hardware back, and when the screen underneath changes. */
   onClose: () => void;
   children: ReactNode;
+  /**
+   * Pinned under the scrolling body, outside it: a button that must stay in reach while the form
+   * above scrolls or the keyboard is up. Absent for the sheets that never needed one.
+   */
+  footer?: ReactNode;
 };
 
 /**
@@ -31,13 +36,27 @@ type Props = {
  * - closing when the route changes: a modal sheet is portalled above the navigator, and one left
  *   open while a row underneath navigated stayed painted over the next screen.
  */
-export function FormSheet({ open, title, onClose, children }: Props) {
+export function FormSheet({ open, title, onClose, children, footer }: Props) {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const pathname = usePathname();
   const shownOn = useRef(pathname);
+  // The sheet rides up by the keyboard's height (`moveOnKeyboardChange`), so its own height must
+  // give that much back or the footer ends under the keys.
+  const [keyboardH, setKeyboardH] = useState(0);
+
+  useEffect(() => {
+    const show = Keyboard.addListener("keyboardDidShow", (e) =>
+      setKeyboardH(e.endCoordinates.height),
+    );
+    const hide = Keyboard.addListener("keyboardDidHide", () => setKeyboardH(0));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
 
   const close = () => {
     Keyboard.dismiss();
@@ -78,7 +97,7 @@ export function FormSheet({ open, title, onClose, children }: Props) {
         self="center"
         bg="$surface"
         // A full sheet would rise under the status bar; what does not fit scrolls.
-        style={{ maxHeight: height - insets.top - 16 }}
+        style={{ maxHeight: height - insets.top - 16 - keyboardH }}
         borderTopLeftRadius="$6"
         borderTopRightRadius="$6"
       >
@@ -91,8 +110,10 @@ export function FormSheet({ open, title, onClose, children }: Props) {
         <Sheet.ScrollView
           keyboardShouldPersistTaps="handled"
           onMoveShouldSetResponder={() => false}
+          // With a footer the body gives way to it instead of pushing it off the sheet.
+          flexShrink={footer ? 1 : undefined}
         >
-          <YStack px="$4" pt="$4" pb={insets.bottom + 16} gap="$3">
+          <YStack px="$4" pt="$4" pb={footer ? 8 : insets.bottom + 16} gap="$3">
             <XStack items="center" justify="space-between" gap="$3">
               <Text
                 flex={1}
@@ -115,6 +136,11 @@ export function FormSheet({ open, title, onClose, children }: Props) {
             {children}
           </YStack>
         </Sheet.ScrollView>
+        {footer ? (
+          <YStack px="$4" pt="$2" pb={insets.bottom + 16} gap="$2" bg="$surface">
+            {footer}
+          </YStack>
+        ) : null}
       </Sheet.Frame>
     </Sheet>
   );

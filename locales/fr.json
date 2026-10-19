@@ -864,7 +864,13 @@
     "hard_sets_title": "Séries dures",
     "hard_sets_line_one": "{{pattern}} : {{count}} série dure cette semaine",
     "hard_sets_line_many": "{{pattern}} : {{count}} séries dures cette semaine",
-    "hard_sets_line_other": "{{pattern}} : {{count}} séries dures cette semaine"
+    "hard_sets_line_other": "{{pattern}} : {{count}} séries dures cette semaine",
+    "correct": "Corriger",
+    "correct_distance": "Corriger la distance",
+    "drop_distance_title": "Retirer la distance ?",
+    "drop_distance_body": "Les lieues qu'elle a données à la route repartent avec elle.",
+    "drop_distance_confirm": "Retirer",
+    "forget_body_by_hand": "L'XP qu'elle t'a rapporté repart avec elle, et elle ne compte plus pour ta flamme ni pour ton serment. C'est irréversible."
   },
   "language": "Langue",
   "light": "Clair",
@@ -1056,7 +1062,13 @@
     "import_none_kept": "Garde au moins un exercice.",
     "import_confirm": "Ajouter à mes quêtes",
     "import_confirm_update": "Mettre ma quête à jour",
-    "editor_delete_in_use": "Cette quête est une étape de {{titles}}. Retire-la de l'aventure d'abord."
+    "editor_delete_in_use": "Cette quête est une étape de {{titles}}. Retire-la de l'aventure d'abord.",
+    "gps_label": "GPS",
+    "gps_on": "GPS : oui",
+    "gps_off": "GPS : non",
+    "gps_distance_note": "Sans GPS, un objectif de distance ne se mesure pas.",
+    "gps_allow_location": "Autoriser la position",
+    "go_without_gps": "Sortir sans GPS"
   },
   "recovery": {
     "description": "Une séance s'est arrêtée en cours de route.",
@@ -1343,7 +1355,10 @@
     "tonight_anniversary_one": "Ton village a un an.",
     "tonight_anniversary_other": "Ton village a {{count}} ans.",
     "tonight_anniversary_many": "Ton village a {{count}} d'ans.",
-    "expedition_lap": "Lieue en cours"
+    "expedition_lap": "Lieue en cours",
+    "no_gps_badge": "Sans GPS",
+    "add_distance": "Ajouter la distance",
+    "no_gps_pocket": "Tu peux ranger le téléphone, le chrono continue."
   },
   "settings": {
     "avatar": "AVATAR",
@@ -2434,8 +2449,8 @@
     "oath_more_many": "Encore {{count}} séances et le serment tient cette semaine.",
     "oath_more_other": "Encore {{count}} séances et le serment tient cette semaine.",
     "channel": "Rappels d'entraînement",
-    "snooze": "Dans 1 h",
-    "pause": "Pause 7 jours",
+    "snooze": "+1 h",
+    "pause": "Pause 7 j",
     "section": "RAPPEL",
     "switch": "Me rappeler de m'entraîner",
     "rule": "Tu choisis tes jours et ton heure. Bati te rappelle une fois ces jours-là, sauf si ta séance est faite ou s'il te conseille du repos. Tu peux le repousser d'une heure ou le mettre en pause.",
@@ -2476,7 +2491,8 @@
     "check_change": "Changer mes jours",
     "check_off": "Couper",
     "check_fine": "Ils me vont",
-    "pause_row": "Mettre en pause"
+    "pause_row": "Mettre en pause",
+    "elsewhere": "Fait ailleurs ?"
   },
   "setAside": {
     "leave_out": "Ne plus me proposer : {{name}}",
@@ -2988,5 +3004,52 @@
         "line": "Quatre semaines chargées d'affilée. Cette semaine, on allège, on ne s'arrête pas."
       }
     ]
+  },
+  "past_session": {
+    "title": "Ajouter une séance passée",
+    "title_edit": "Corriger la séance",
+    "title_distance": "Ajouter la distance",
+    "add_row": "Ajouter une séance passée",
+    "type_workout": "Entraînement",
+    "when": "Quand",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "other_day": "Autre jour",
+    "ended_at": "Fini vers",
+    "duration": "Durée",
+    "duration_custom": "Autre",
+    "minutes": "min",
+    "name": "Nom (facultatif)",
+    "name_hint": "salle",
+    "default_name": "Séance ailleurs",
+    "distance": "Distance (facultatif)",
+    "distance_a11y": "Distance en {{unit}}",
+    "rule_link": "Ce que ça rapporte",
+    "rule": "Une séance ailleurs garde la flamme et compte dans le serment, rapporte l'XP de 15 minutes dans Bati, et ne frappe pas le boss.",
+    "save": "Enregistrer",
+    "toast_flame": "Flamme entretenue, +{{xp}} XP",
+    "toast_corrected": "Séance corrigée",
+    "toast_noted": "Séance notée, +{{xp}} XP",
+    "toast_oath": "Serment tenu, +{{xp}} XP",
+    "refuse_too_old": "Tu peux noter jusqu'à 7 jours en arrière : choisis un jour plus proche.",
+    "refuse_one_per_day_today": "Ta séance ailleurs d'aujourd'hui est déjà notée. Pour la changer, ouvre-la dans le Journal.",
+    "refuse_one_per_day_yesterday": "Ta séance ailleurs d'hier est déjà notée. Pour la changer, ouvre-la dans le Journal.",
+    "refuse_one_per_day_weekday": "Ta séance ailleurs de {{weekday}} est déjà notée. Pour la changer, ouvre-la dans le Journal.",
+    "refuse_duration": "Une séance ailleurs compte entre 10 minutes et 4 heures.",
+    "refuse_overlap": "À {{time}}, Bati te voyait sur « {{name}} ». Décale l'heure ou raccourcis la durée.",
+    "overlap_unknown": "une autre séance",
+    "refuse_implausible": "{{distance}} en {{duration}}, ça ferait {{speed}} {{way}}. Tu voulais dire {{fix}} ?",
+    "refuse_implausible_nofix": "{{distance}} en {{duration}}, ça ferait {{speed}} {{way}}. Vérifie la distance, ou retire-la.",
+    "way_walk": "à pied",
+    "way_run": "en courant",
+    "way_ride": "à vélo",
+    "fix_distance": "Mettre {{fix}}",
+    "drop_distance": "Retirer la distance",
+    "rule_no_gps": "Sans GPS, ta sortie compte au temps : flamme, XP, mais pas de lieues tant que tu n'ajoutes pas la distance.",
+    "hand_mark": "saisie à la main",
+    "hand_mark_distance": "distance saisie à la main",
+    "hand_mark_count_one": "({{count}} saisie à la main)",
+    "hand_mark_count_many": "({{count}} saisies à la main)",
+    "hand_mark_count_other": "({{count}} saisies à la main)"
   }
 }

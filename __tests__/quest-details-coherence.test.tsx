@@ -109,6 +109,7 @@ jest.mock("@/db/preferences", () => ({
   preferences: {
     getOwnedEquipment: jest.fn().mockResolvedValue(null),
     getSetAsideExercises: jest.fn().mockResolvedValue([]),
+    getOutingGps: jest.fn().mockResolvedValue(true),
   },
 }));
 

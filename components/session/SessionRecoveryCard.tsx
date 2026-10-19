@@ -108,14 +108,17 @@ export function SessionRecoveryCard({
               it is in `gps_points` whether or not the app was there to see the rest. */}
           {session.leaguesM === null ? (
             <>
-              <AppText fontSize="$3" color="$text" opacity={0.7}>
-                {t("recovery.progress", {
-                  round: session.round,
-                  roundTotal: session.roundTotal,
-                  exercise: session.exercise,
-                  exerciseTotal: session.exerciseTotal,
-                })}
-              </AppText>
+              {/* An outing without a fix has no rounds worth naming, only the time out. */}
+              {session.isOuting ? null : (
+                <AppText fontSize="$3" color="$text" opacity={0.7}>
+                  {t("recovery.progress", {
+                    round: session.round,
+                    roundTotal: session.roundTotal,
+                    exercise: session.exercise,
+                    exerciseTotal: session.exerciseTotal,
+                  })}
+                </AppText>
+              )}
               <AppText fontSize="$3" color="$text" opacity={0.7}>
                 {t("recovery.elapsed", { time: formatTime(session.elapsedTime) })}
               </AppText>

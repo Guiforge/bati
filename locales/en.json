@@ -378,7 +378,13 @@
     "import_none_kept": "Pick at least one exercise.",
     "import_confirm": "Add to my quests",
     "import_confirm_update": "Update my quest",
-    "editor_delete_in_use": "This quest is a step of {{titles}}. Take it out of the adventure first."
+    "editor_delete_in_use": "This quest is a step of {{titles}}. Take it out of the adventure first.",
+    "gps_label": "GPS",
+    "gps_on": "GPS: yes",
+    "gps_off": "GPS: no",
+    "gps_distance_note": "Without GPS, a distance goal cannot be measured.",
+    "gps_allow_location": "Allow location",
+    "go_without_gps": "Go out without GPS"
   },
   "adventures": {
     "editor_saved": "Adventure saved",
@@ -869,7 +875,10 @@
     "tonight_epilogue": "Your campaign is complete.",
     "tonight_anniversary_one": "Your village is one year old.",
     "tonight_anniversary_other": "Your village is {{count}} years old.",
-    "expedition_lap": "Current league"
+    "expedition_lap": "Current league",
+    "no_gps_badge": "No GPS",
+    "add_distance": "Add the distance",
+    "no_gps_pocket": "You can put your phone away, the timer keeps going."
   },
   "muscles": {
     "arms": "Arms",
@@ -1160,7 +1169,13 @@
     "work_early_other": "Too early to tell: {{count}} sessions in thirty days give a balance.",
     "hard_sets_title": "Hard sets",
     "hard_sets_line_one": "{{pattern}}: {{count}} hard set this week",
-    "hard_sets_line_other": "{{pattern}}: {{count}} hard sets this week"
+    "hard_sets_line_other": "{{pattern}}: {{count}} hard sets this week",
+    "correct": "Correct",
+    "correct_distance": "Correct the distance",
+    "drop_distance_title": "Remove the distance?",
+    "drop_distance_body": "The leagues it gave the road go with it.",
+    "drop_distance_confirm": "Remove",
+    "forget_body_by_hand": "The XP it earned goes with it, and it no longer counts for your flame or your oath. This cannot be undone."
   },
   "achievements": {
     "progress": "{{unlocked}} / {{total}} unlocked",
@@ -2334,7 +2349,7 @@
     "oath_more_other": "{{count}} more and the oath holds this week.",
     "channel": "Training reminders",
     "snooze": "In 1 hour",
-    "pause": "Pause 7 days",
+    "pause": "Pause 7 d",
     "section": "REMINDER",
     "switch": "Remind me to train",
     "rule": "You choose your days and your hour. Bati reminds you once on those days, unless your session is done or it advises rest. You can push it back an hour or pause it.",
@@ -2371,7 +2386,8 @@
     "check_change": "Change my days",
     "check_off": "Turn off",
     "check_fine": "They're fine",
-    "pause_row": "Pause"
+    "pause_row": "Pause",
+    "elsewhere": "Done elsewhere?"
   },
   "setAside": {
     "leave_out": "Don't suggest {{name}} again",
@@ -2864,5 +2880,51 @@
         "line": "Four straight heavy weeks. This is the week to go lighter, not the week to stop."
       }
     ]
+  },
+  "past_session": {
+    "title": "Add a past session",
+    "title_edit": "Correct the session",
+    "title_distance": "Add the distance",
+    "add_row": "Add a past session",
+    "type_workout": "Workout",
+    "when": "When",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "other_day": "Another day",
+    "ended_at": "Finished around",
+    "duration": "Duration",
+    "duration_custom": "Other",
+    "minutes": "min",
+    "name": "Name (optional)",
+    "name_hint": "gym",
+    "default_name": "Session elsewhere",
+    "distance": "Distance (optional)",
+    "distance_a11y": "Distance in {{unit}}",
+    "rule_link": "What it earns",
+    "rule": "A session elsewhere keeps the flame and counts toward the oath, earns the XP of 15 minutes in Bati, and does not hit the boss.",
+    "save": "Save",
+    "toast_flame": "Flame kept, +{{xp}} XP",
+    "toast_corrected": "Session corrected",
+    "toast_noted": "Session noted, +{{xp}} XP",
+    "toast_oath": "Oath kept, +{{xp}} XP",
+    "refuse_too_old": "You can note up to 7 days back: pick a closer day.",
+    "refuse_one_per_day_today": "Your session elsewhere today is already noted. To change it, open it in the Journal.",
+    "refuse_one_per_day_yesterday": "Your session elsewhere yesterday is already noted. To change it, open it in the Journal.",
+    "refuse_one_per_day_weekday": "Your session elsewhere on {{weekday}} is already noted. To change it, open it in the Journal.",
+    "refuse_duration": "A session elsewhere counts between 10 minutes and 4 hours.",
+    "refuse_overlap": "At {{time}}, Bati saw you on \"{{name}}\". Move the time or shorten the duration.",
+    "overlap_unknown": "another session",
+    "refuse_implausible": "{{distance}} in {{duration}} would be {{speed}} {{way}}. Did you mean {{fix}}?",
+    "refuse_implausible_nofix": "{{distance}} in {{duration}} would be {{speed}} {{way}}. Check the distance, or take it out.",
+    "way_walk": "on foot",
+    "way_run": "running",
+    "way_ride": "by bike",
+    "fix_distance": "Use {{fix}}",
+    "drop_distance": "Remove the distance",
+    "rule_no_gps": "Without GPS, your outing counts by time: flame, XP, but no leagues until you add the distance.",
+    "hand_mark": "typed by hand",
+    "hand_mark_distance": "distance typed by hand",
+    "hand_mark_count_one": "({{count}} typed by hand)",
+    "hand_mark_count_other": "({{count}} typed by hand)"
   }
 }

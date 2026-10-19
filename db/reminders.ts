@@ -65,6 +65,8 @@ export const DEFAULT_REMINDER_TIME = "18:00";
 export type ReminderSession = {
   performedAt: Date;
   outing: string | null;
+  /** The hero's word, not Bati's measure (`0078`); null when everything was measured. */
+  byHand?: string | null;
   movingSeconds: number | null;
   durationSeconds: number | null;
 };
@@ -73,8 +75,16 @@ export type ReminderSession = {
  * `isWorkout()` for a row already in memory: training, never an outing. Kept beside the SQL one in
  * `db/completed.ts`, and `__tests__/reminders-session-rows.test.ts` holds the two to one answer.
  */
-export function isWorkoutRow(row: Pick<ReminderSession, "outing">): boolean {
-  return row.outing === null;
+export function isWorkoutRow(row: Pick<ReminderSession, "outing" | "byHand">): boolean {
+  return row.outing === null && (row.byHand ?? null) === null;
+}
+
+/**
+ * Whether the row quiets its day: a workout, or any session the hero wrote down, whatever its
+ * type (a walk without the phone is the answer to the reminder, a measured walk is not).
+ */
+export function trainedOn(row: Pick<ReminderSession, "outing" | "byHand">): boolean {
+  return isWorkoutRow(row) || row.byHand === "session";
 }
 
 /** `countsAsSession()` for a row in memory: a workout, or ten minutes on the road. */
@@ -307,7 +317,7 @@ export function planReminders(input: PlanInput): ReminderPlan {
   const { days, now, sessions, sessionActive, state, offer, t } = input;
   const today = dayKey(now);
   const workouts = sessions.filter(isWorkoutRow).map((s) => s.performedAt);
-  const trainedToday = workouts.some((w) => dayKey(w) === today);
+  const trainedToday = sessions.some((s) => trainedOn(s) && dayKey(s.performedAt) === today);
   const reminded = new Set(state.log.map((entry) => entry.date));
   const start = [state.resumeDate, input.pausedUntil].reduce<string>(
     (latest, date) => (date && date > latest ? date : latest),
@@ -534,6 +544,7 @@ export async function getReminderSessions(now: Date): Promise<ReminderSession[]>
     .select({
       performedAt: completedQuest.performedAt,
       outing: completedQuest.outing,
+      byHand: completedQuest.byHand,
       movingSeconds: completedQuest.movingSeconds,
       durationSeconds: completedQuest.durationSeconds,
     })
@@ -564,7 +575,7 @@ export function describeDay({ days, now, sessions, state }: PlanInput): DayNote 
   // A day that already rang has nothing left to explain: "last reminder" says the rest.
   const rang = state.log.some((e) => e.date === today);
   if (todayTime !== null && !rang) {
-    if (workouts.some((w) => dayKey(w) === today)) todayNote = "done";
+    if (sessions.some((x) => trainedOn(x) && dayKey(x.performedAt) === today)) todayNote = "done";
     else if (restsOn(workouts, at(today, todayTime))) todayNote = "rest";
   }
   return {

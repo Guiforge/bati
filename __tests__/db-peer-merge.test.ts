@@ -31,14 +31,19 @@ const backup = () => require("../db/backup") as typeof import("../db/backup");
 const merge = () => require("../db/merge") as typeof import("../db/merge");
 
 let n = 0;
-function addSession(sqlite: Database.Database, performedAt: number, exerciseId?: number): string {
+function addSession(
+  sqlite: Database.Database,
+  performedAt: number,
+  exerciseId?: number,
+  outing?: { outing: string; leaguesM: number },
+): string {
   n += 1;
   const uuid = `0190b000-0000-7000-8000-${String(n).padStart(12, "0")}`;
   const { lastInsertRowid } = sqlite
     .prepare(
-      "INSERT INTO completed_sessions (uuid, userLevel, xpEarned, performedAt) VALUES (?, 'medium', 10, ?)",
+      "INSERT INTO completed_sessions (uuid, userLevel, xpEarned, performedAt, outing, leaguesM) VALUES (?, 'medium', 10, ?, ?, ?)",
     )
-    .run(uuid, performedAt);
+    .run(uuid, performedAt, outing?.outing ?? null, outing?.leaguesM ?? null);
   if (exerciseId !== undefined) {
     sqlite
       .prepare(
@@ -136,13 +141,133 @@ test("a movement's best and last are read from the merged sets, not carried", as
 
   const { getExerciseHistory, ghostKey } =
     require("../db/personalRecords") as typeof import("../db/personalRecords");
-  expect((await getExerciseHistory([pushUp])).get(ghostKey(pushUp, "reps"))).toEqual({
+  expect((await getExerciseHistory([pushUp])).get(ghostKey(pushUp, "reps"))).toMatchObject({
     last: 9,
     best: 15,
     at: 3_000_000,
     bestAt: 2_000_000,
+    // The tablet's two sessions are the two newest marks, here's the oldest.
+    recent: [{ at: 3_000_000 }, { at: 2_000_000 }, { at: 1_000_000 }],
   });
   await converged(file);
+});
+
+/** One session of one movement with a prescription, on a quest or none. Returns its uuid. */
+function playOf(
+  sqlite: Database.Database,
+  o: { at: number; exerciseId: number; sets: number[]; prescribed: number; questId?: number },
+): string {
+  const uuid = addSession(sqlite, o.at);
+  sqlite
+    .prepare("UPDATE completed_sessions SET questId = ? WHERE uuid = ?")
+    .run(o.questId ?? null, uuid);
+  const id = (
+    sqlite.prepare("SELECT id FROM completed_sessions WHERE uuid = ?").get(uuid) as { id: number }
+  ).id;
+  o.sets.forEach((value, round) => {
+    sqlite
+      .prepare(
+        `INSERT INTO completed_exercises (sessionId, exerciseId, roundIndex, sortOrder, resultType, resultValue, targetType, targetValue, prescribedValue, performedAt)
+         VALUES (?, ?, ?, 0, 'reps', ?, 'reps', ?, ?, ?)`,
+      )
+      .run(id, o.exerciseId, round, value, o.prescribed, o.prescribed, o.at);
+  });
+  return uuid;
+}
+
+/** A seeded quest of one slot on this device, for the target tests below. */
+function seededQuest(exerciseId: number): number {
+  const questId = Number(
+    t.sqlite
+      .prepare(
+        "INSERT INTO quests (enTitle, frTitle, enDescription, frDescription, author) VALUES ('Q', 'Q', '', '', 'Admin')",
+      )
+      .run().lastInsertRowid,
+  );
+  t.sqlite
+    .prepare(
+      "INSERT INTO quest_exercises (questId, exerciseId, sortOrder, targetType, targetMin, targetMax) VALUES (?, ?, 0, 'reps', 10, 14)",
+    )
+    .run(questId, exerciseId);
+  return questId;
+}
+
+async function askedTonight(questId: number): Promise<number | undefined> {
+  const { loadConfiguredQuest } =
+    require("../db/questConfig") as typeof import("../db/questConfig");
+  return (await loadConfiguredQuest(questId, "medium"))?.quest.exercises[0]?.target.value;
+}
+
+const CRUNCH = 6;
+const dayAgo = (days: number) => Math.floor(Date.now() / 1000) - days * 86_400;
+
+test("a hero-quest session stays out of tonight's target after a merge", async () => {
+  const questId = seededQuest(CRUNCH);
+  playOf(t.sqlite, { at: dayAgo(2), exerciseId: CRUNCH, sets: [12, 12], prescribed: 12 });
+  expect(await askedTonight(questId)).toBe(13);
+
+  const file = await peer("tablet.db", (sqlite) => {
+    const mine = heroQuest(sqlite, "Fifty", 100, U1);
+    playOf(sqlite, {
+      at: dayAgo(1),
+      exerciseId: CRUNCH,
+      sets: [50, 50],
+      prescribed: 50,
+      questId: mine,
+    });
+  });
+  await merge().mergePeer(file);
+
+  // The session arrived, on the hero quest remapped through the quest map, and counts for the
+  // movement's last and best but never for the app's progression.
+  const { getExerciseHistory, ghostKey } =
+    require("../db/personalRecords") as typeof import("../db/personalRecords");
+  const ghost = (await getExerciseHistory([CRUNCH])).get(ghostKey(CRUNCH, "reps"));
+  expect(ghost).toMatchObject({ last: 50, best: 50 });
+  expect(ghost?.recent.map((m) => m.prescribed)).toEqual([12]);
+  expect(await askedTonight(questId)).toBe(13);
+  await converged(file);
+});
+
+test("tonight's target is read from the merged sets, not carried", async () => {
+  const questId = seededQuest(CRUNCH);
+  playOf(t.sqlite, { at: dayAgo(3), exerciseId: CRUNCH, sets: [12, 12], prescribed: 12 });
+  const file = await peer("tablet.db", (sqlite) => {
+    // A later session on the tablet: asked 13, one set short.
+    playOf(sqlite, { at: dayAgo(1), exerciseId: CRUNCH, sets: [13, 12], prescribed: 13 });
+  });
+
+  await merge().mergePeer(file);
+
+  const { getExerciseHistory, ghostKey } =
+    require("../db/personalRecords") as typeof import("../db/personalRecords");
+  const ghost = (await getExerciseHistory([CRUNCH])).get(ghostKey(CRUNCH, "reps"));
+  expect(ghost?.recent.map((m) => [m.prescribed, m.met])).toEqual([
+    [13, false],
+    [12, true],
+  ]);
+  // The tablet's mark is the newest: asked 13, not met, so the same again.
+  expect(await askedTonight(questId)).toBe(13);
+  await converged(file);
+});
+
+test("a swap written by the cap offer stays on its device and is never news", async () => {
+  const questId = seededQuest(CRUNCH);
+  const file = await peer("tablet.db", (sqlite) => {
+    setPref(
+      sqlite,
+      `quest:${questId}:config`,
+      JSON.stringify({ level: "medium", swaps: { 1: 30 } }),
+      5_000,
+    );
+  });
+
+  expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 0 });
+  await merge().mergePeer(file);
+
+  expect(
+    t.sqlite.prepare("SELECT key FROM user_preferences WHERE key LIKE 'quest:%'").all(),
+  ).toEqual([]);
 });
 
 test("a movement the other build numbered differently still lands on the same movement", async () => {
@@ -177,6 +302,29 @@ test("GPS points come with their session", async () => {
   });
   await merge().mergePeer(file);
   expect(t.sqlite.prepare("SELECT count(*) AS n FROM gps_points").get()).toEqual({ n: 1 });
+});
+
+test("a merged outing is a route ghost candidate here", async () => {
+  const file = await peer("run.db", (sqlite) => {
+    const uuid = addSession(sqlite, 2_000, undefined, { outing: "run", leaguesM: 3000 });
+    const insert = sqlite.prepare(
+      "INSERT INTO gps_points (sessionId, t, latE7, lonE7, accDm, distFromPrevCm) VALUES (?, ?, ?, ?, 50, 0)",
+    );
+    for (let k = 1; k <= 50; k++) insert.run(uuid, k, 488566000 + k * 90, 23522000);
+  });
+  const theirs = `0190b000-0000-7000-8000-${String(n).padStart(12, "0")}`;
+  await merge().mergePeer(file);
+
+  const { routeCandidates } = require("../db/gps") as typeof import("../db/gps");
+  // performedAt is raw seconds in the INSERT, so `before` is 5 000 s in milliseconds.
+  const got = await routeCandidates(
+    "run",
+    { lat: 48.8566, lon: 2.3522 },
+    new Date(5_000 * 1000),
+    "some-other-uuid",
+  );
+  expect(got.map((c) => c.id)).toEqual([theirs]);
+  expect(got[0]?.points).toHaveLength(10);
 });
 
 test("deletions travel both ways, and a merge never brings back what was deleted", async () => {
@@ -377,7 +525,19 @@ test("a device on another migration is not merged at all", async () => {
 });
 
 test("merging the same device twice changes nothing the second time", async () => {
-  const file = await peer("tablet.db", (sqlite) => addSession(sqlite, 2_000, adminExercise()));
+  const here = addSession(t.sqlite, 1_000, adminExercise());
+  addPhoto(t.sqlite, here, "p-gone", 400, 450);
+  const file = await peer("tablet.db", (sqlite) => {
+    const theirs = addSession(sqlite, 2_000, adminExercise());
+    setNote(sqlite, here, "from the tablet", 600);
+    addPhoto(sqlite, theirs, "p-live", 500);
+    // A removal writes `image = ''`, the other case of the upsert.
+    sqlite
+      .prepare(
+        "UPDATE session_photos SET image = x'', deletedAt = 700, updatedAt = 700 WHERE uuid = 'p-gone'",
+      )
+      .run();
+  });
   await merge().mergePeer(file);
   expect(await merge().mergePeer(file)).toEqual({ merged: true, sessions: 0, changes: 0 });
 });
@@ -820,6 +980,136 @@ describe("the crest follows the journal, not the device", () => {
     await converged(laterAuto);
   });
 
+  test("outingDisplay: the newer blob wins, either way", async () => {
+    addSession(t.sqlite, 1_000);
+    setPref(t.sqlite, "outingDisplay", '{"run":{"big":"distance"}}', 3_000);
+    const older = await peer("older-display.db", (sqlite) =>
+      setPref(sqlite, "outingDisplay", '{"run":{"big":"rate"}}', 2_000),
+    );
+    await merge().mergePeer(older);
+    expect(prefValue("outingDisplay")).toBe('{"run":{"big":"distance"}}');
+    await converged(older);
+
+    setPref(t.sqlite, "outingDisplay", '{"run":{"big":"distance"}}', 2_000);
+    const newer = await peer("newer-display.db", (sqlite) =>
+      setPref(sqlite, "outingDisplay", '{"run":{"big":"rate"}}', 3_000),
+    );
+    await merge().mergePeer(newer);
+    expect(prefValue("outingDisplay")).toBe('{"run":{"big":"rate"}}');
+    await converged(newer);
+  });
+
+  test("outingDisplay: a reset written later beats an older setting, either way", async () => {
+    addSession(t.sqlite, 1_000);
+    setPref(t.sqlite, "outingDisplay", "{}", 3_000);
+    const olderSetting = await peer("older-setting.db", (sqlite) =>
+      setPref(sqlite, "outingDisplay", '{"run":{"big":"rate"}}', 2_000),
+    );
+    await merge().mergePeer(olderSetting);
+    expect(prefValue("outingDisplay")).toBe("{}");
+    await converged(olderSetting);
+
+    setPref(t.sqlite, "outingDisplay", '{"run":{"big":"rate"}}', 2_000);
+    const laterReset = await peer("later-reset.db", (sqlite) =>
+      setPref(sqlite, "outingDisplay", "{}", 3_000),
+    );
+    await merge().mergePeer(laterReset);
+    expect(prefValue("outingDisplay")).toBe("{}");
+    await converged(laterReset);
+  });
+
+  test("outingDisplay: a route ghost switched on travels as text, and is news once", async () => {
+    addSession(t.sqlite, 1_000);
+    setPref(t.sqlite, "outingDisplay", '{"run":{"big":"distance"}}', 2_000);
+    const theirs = '{"run":{"routeGhost":true}}';
+    const file = await peer("ghost-display.db", (sqlite) =>
+      setPref(sqlite, "outingDisplay", theirs, 3_000),
+    );
+    expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 1 });
+
+    await merge().mergePeer(file);
+    const row = () =>
+      t.sqlite
+        .prepare("SELECT value, updatedAt FROM user_preferences WHERE key = 'outingDisplay'")
+        .get();
+    expect(row()).toEqual({ value: theirs, updatedAt: 3_000 });
+    // Byte for byte what the peer holds, so neither side has anything left to send.
+    expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 0, localChanges: 0 });
+  });
+
+  test("outingDisplay carries values this build may not read, verbatim", async () => {
+    addSession(t.sqlite, 1_000);
+    const theirs = '{"run":{"layout":"bigMap","small":["lap",null,null]}}';
+    setPref(t.sqlite, "outingDisplay", '{"run":{"big":"distance"}}', 2_000);
+    const peerFile = await peer("phase2-display.db", (sqlite) =>
+      setPref(sqlite, "outingDisplay", theirs, 3_000),
+    );
+    await merge().mergePeer(peerFile);
+    // The merge is text-level: a build that cannot parse bigMap or lap still carries them.
+    expect(prefValue("outingDisplay")).toBe(theirs);
+    await converged(peerFile);
+  });
+
+  test("mapStyle is the device's: never news, never merged", async () => {
+    addSession(t.sqlite, 1_000);
+    const dark = await peer("peer-map-style.db", (sqlite) =>
+      setPref(sqlite, "mapStyle", "dark", 3_000),
+    );
+    expect(await backup().compareWithPeer(dark)).toMatchObject({
+      peerChanges: 0,
+      localChanges: 0,
+    });
+    await merge().mergePeer(dark);
+    expect(prefValue("mapStyle")).toBeUndefined();
+
+    setPref(t.sqlite, "mapStyle", "fiord", 1_000);
+    await merge().mergePeer(dark);
+    expect(prefValue("mapStyle")).toBe("fiord");
+  });
+
+  test("outingDisplay is news once, then level", async () => {
+    addSession(t.sqlite, 1_000);
+    const withRow = await peer("with-display.db", (sqlite) =>
+      setPref(sqlite, "outingDisplay", '{"ride":{"big":"rate"}}', 2_000),
+    );
+    expect(await backup().compareWithPeer(withRow)).toMatchObject({
+      peerChanges: 1,
+      localChanges: 0,
+    });
+    await merge().mergePeer(withRow);
+    expect(await backup().compareWithPeer(withRow)).toMatchObject({
+      peerChanges: 0,
+      localChanges: 0,
+    });
+    expect(await backup().stateFingerprint()).toBe(
+      (await backup().compareWithPeer(withRow)).fingerprint,
+    );
+  });
+
+  test("a peer on the previous build (no row) leaves this device's display and reads as behind", async () => {
+    addSession(t.sqlite, 1_000);
+    setPref(t.sqlite, "outingDisplay", '{"ride":{"big":"rate"}}', 2_000);
+    const old = await peer("old-build.db", (sqlite) =>
+      sqlite.prepare("DELETE FROM user_preferences WHERE key = 'outingDisplay'").run(),
+    );
+    expect(await backup().compareWithPeer(old)).toMatchObject({
+      localChanges: 1,
+      peerChanges: 0,
+    });
+    await merge().mergePeer(old);
+    expect(prefValue("outingDisplay")).toBe('{"ride":{"big":"rate"}}');
+  });
+
+  test("a device that never opened the screen has no row, and two such devices are level", async () => {
+    addSession(t.sqlite, 1_000);
+    const fresh = await peer("fresh-display.db");
+    expect(prefValue("outingDisplay")).toBeUndefined();
+    expect(await backup().compareWithPeer(fresh)).toMatchObject({
+      peerChanges: 0,
+      localChanges: 0,
+    });
+  });
+
   test("crestMotto: a none written later beats an older motto, either way", async () => {
     addSession(t.sqlite, 1_000);
     setPref(t.sqlite, "crestMotto", "none", 3_000);
@@ -895,6 +1185,38 @@ describe("the crest follows the journal, not the device", () => {
     await merge().mergePeer(file);
 
     expect(prefValue("bigFeastsShown")).toBe('["reveal"]');
+  });
+
+  test("a run left here is never carried, and never news", async () => {
+    addSession(t.sqlite, 1_000);
+    t.sqlite.exec("INSERT INTO adventure_runs (id, adventureId, status) VALUES (900, 1, 'active')");
+    const before = await backup().stateFingerprint();
+    // Left there, active here, and the other way round: neither side learns anything.
+    const leftThere = await peer("left-there.db", (sqlite) =>
+      sqlite.exec("UPDATE adventure_runs SET status = 'left' WHERE id = 900"),
+    );
+    expect(await backup().compareWithPeer(leftThere)).toMatchObject({
+      peerChanges: 0,
+      localChanges: 0,
+    });
+    await merge().mergePeer(leftThere);
+    const runStatus = () =>
+      (
+        t.sqlite.prepare("SELECT status FROM adventure_runs WHERE id = 900").get() as {
+          status: string;
+        }
+      ).status;
+    expect(runStatus()).toBe("active");
+
+    const activeThere = await peer("active-there.db");
+    t.sqlite.exec("UPDATE adventure_runs SET status = 'left' WHERE id = 900");
+    expect(await backup().stateFingerprint()).toEqual(before);
+    expect(await backup().compareWithPeer(activeThere)).toMatchObject({
+      peerChanges: 0,
+      localChanges: 0,
+    });
+    await merge().mergePeer(activeThere);
+    expect(runStatus()).toBe("left");
   });
 
   test("the release notes this phone showed are never carried, and never news", async () => {
@@ -1343,7 +1665,7 @@ test("two set corrections and two feedbacks stamped in the same second converge 
   await converged(file);
 });
 
-test("a bonus changes the fingerprint's last segment and leaves the first three alone", async () => {
+test("a bonus changes the fingerprint's fourth segment and leaves the first three alone", async () => {
   const uuid = addSession(t.sqlite, 1_000);
   const before = await backup().stateFingerprint();
   t.sqlite
@@ -1353,6 +1675,7 @@ test("a bonus changes the fingerprint's last segment and leaves the first three 
 
   expect(after).not.toBe(before);
   expect(after.split("|").slice(0, 3)).toEqual(before.split("|").slice(0, 3));
+  expect(after.split("|")[4]).toBe(before.split("|")[4]);
 });
 
 // Entitlement is store state, not data (P-04.2): a free account on a store source is refused
@@ -1403,5 +1726,206 @@ describe("Bati+ quotas never stop a merge", () => {
     expect(heroQuests()).toHaveLength(5);
     expect(await access().can({ kind: "createQuest" })).toBe(false);
     await converged(file);
+  });
+});
+
+// The notebook (0075): a note on its own stamp, photos by uuid.
+function addPhoto(
+  sqlite: Database.Database,
+  sessionUuid: string,
+  uuid: string,
+  at: number,
+  deletedAt: number | null = null,
+) {
+  sqlite
+    .prepare(
+      `INSERT INTO session_photos (uuid, sessionUuid, sortOrder, image, updatedAt, deletedAt)
+       VALUES (?, ?, 0, ?, ?, ?)`,
+    )
+    .run(
+      uuid,
+      sessionUuid,
+      deletedAt === null ? Buffer.from([1, 2, 3]) : Buffer.alloc(0),
+      at,
+      deletedAt,
+    );
+}
+const setNote = (sqlite: Database.Database, uuid: string, text: string, at: number) =>
+  sqlite
+    .prepare("UPDATE completed_sessions SET notes = ?, notesEditedAt = ? WHERE uuid = ?")
+    .run(text, at, uuid);
+const noteOf = (uuid: string) =>
+  t.sqlite
+    .prepare("SELECT notes, notesEditedAt AS at FROM completed_sessions WHERE uuid = ?")
+    .get(uuid);
+const photosOf = (sessionUuid: string) =>
+  (
+    t.sqlite
+      .prepare(
+        "SELECT uuid FROM session_photos WHERE sessionUuid = ? AND deletedAt IS NULL ORDER BY uuid",
+      )
+      .all(sessionUuid) as { uuid: string }[]
+  ).map((r) => r.uuid);
+const photoRow = (uuid: string) =>
+  t.sqlite
+    .prepare(
+      "SELECT length(image) AS size, deletedAt, updatedAt FROM session_photos WHERE uuid = ?",
+    )
+    .get(uuid);
+
+describe("the notebook merges", () => {
+  test("a note edited later on the other device wins, and the earlier one never wins back", async () => {
+    const uuid = addSession(t.sqlite, 1_000);
+    setNote(t.sqlite, uuid, "mine", 500);
+    const later = await peer("later.db", (sqlite) => setNote(sqlite, uuid, "theirs", 600));
+    await merge().mergePeer(later);
+    expect(noteOf(uuid)).toEqual({ notes: "theirs", at: 600 });
+    await converged(later);
+
+    const older = await peer("older.db", (sqlite) => setNote(sqlite, uuid, "stale", 550));
+    await merge().mergePeer(older);
+    expect(noteOf(uuid)).toEqual({ notes: "theirs", at: 600 });
+    await converged(older);
+  });
+
+  test("a note edited later carries neither that device's sets nor its feedback", async () => {
+    const uuid = addSession(t.sqlite, 1_000, adminExercise());
+    t.sqlite
+      .prepare(
+        "UPDATE completed_sessions SET feedback = 'hard', feedbackEditedAt = 900, setsEditedAt = 900 WHERE uuid = ?",
+      )
+      .run(uuid);
+    const file = await peer("tablet.db", (sqlite) => {
+      sqlite
+        .prepare(
+          "UPDATE completed_sessions SET feedback = 'easy', feedbackEditedAt = 100, setsEditedAt = 100 WHERE uuid = ?",
+        )
+        .run(uuid);
+      setNote(sqlite, uuid, "words", 600);
+    });
+    await merge().mergePeer(file);
+    expect(noteOf(uuid)).toEqual({ notes: "words", at: 600 });
+    expect(
+      t.sqlite.prepare("SELECT feedback FROM completed_sessions WHERE uuid = ?").get(uuid),
+    ).toEqual({ feedback: "hard" });
+    expect(setsOf(uuid)).toHaveLength(1);
+  });
+
+  test("two notes stamped in the same second converge on the larger text", async () => {
+    const uuid = addSession(t.sqlite, 1_000);
+    setNote(t.sqlite, uuid, "aaa", 500);
+    const file = await peer("tablet.db", (sqlite) => setNote(sqlite, uuid, "bbb", 500));
+    await merge().mergePeer(file);
+    expect(noteOf(uuid)).toEqual({ notes: "bbb", at: 500 });
+    await converged(file);
+  });
+
+  test("a photo taken on the other device arrives, on a session both hold and on a new one", async () => {
+    const both = addSession(t.sqlite, 1_000);
+    let fresh = "";
+    const file = await peer("tablet.db", (sqlite) => {
+      fresh = addSession(sqlite, 2_000);
+      addPhoto(sqlite, both, "p-both", 500);
+      addPhoto(sqlite, fresh, "p-fresh", 500);
+    });
+    await merge().mergePeer(file);
+    expect(photosOf(both)).toEqual(["p-both"]);
+    expect(photosOf(fresh)).toEqual(["p-fresh"]);
+    await converged(file);
+  });
+
+  test("a photo removed on the other device disappears here", async () => {
+    const uuid = addSession(t.sqlite, 1_000);
+    addPhoto(t.sqlite, uuid, "p1", 500);
+    const file = await peer("tablet.db", (sqlite) =>
+      sqlite
+        .prepare("UPDATE session_photos SET image = x'', deletedAt = 600, updatedAt = 600")
+        .run(),
+    );
+    await merge().mergePeer(file);
+    expect(photosOf(uuid)).toEqual([]);
+    expect(photoRow("p1")).toEqual({ size: 0, deletedAt: 600, updatedAt: 600 });
+    await converged(file);
+  });
+
+  test("a photo removed here is never brought back by a device that still holds it", async () => {
+    const uuid = addSession(t.sqlite, 1_000);
+    addPhoto(t.sqlite, uuid, "p1", 500);
+    const file = await peer("tablet.db");
+    t.sqlite
+      .prepare("UPDATE session_photos SET image = x'', deletedAt = 600, updatedAt = 600")
+      .run();
+    await merge().mergePeer(file);
+    expect(photosOf(uuid)).toEqual([]);
+    expect(await merge().mergePeer(file)).toMatchObject({ changes: 0 });
+  });
+
+  test("a removal and a live copy of the same second: the removal wins, both ways", async () => {
+    const uuid = addSession(t.sqlite, 1_000);
+    addPhoto(t.sqlite, uuid, "p1", 500);
+    const removed = await peer("removed.db", (sqlite) =>
+      sqlite.prepare("UPDATE session_photos SET image = x'', deletedAt = 500").run(),
+    );
+    await merge().mergePeer(removed);
+    expect(photosOf(uuid)).toEqual([]);
+
+    const other = await peer("other.db"); // holds the removal
+    t.sqlite.prepare("DELETE FROM session_photos").run();
+    addPhoto(t.sqlite, uuid, "p1", 500);
+    // This side is live at 500, the other removed at 500.
+    await merge().mergePeer(other);
+    expect(photosOf(uuid)).toEqual([]);
+  });
+
+  test("photos of a session deleted here are not brought back", async () => {
+    const uuid = addSession(t.sqlite, 1_000);
+    const file = await peer("tablet.db", (sqlite) => addPhoto(sqlite, uuid, "p1", 500));
+    t.sqlite.prepare("DELETE FROM completed_sessions WHERE uuid = ?").run(uuid);
+    t.sqlite.prepare("INSERT INTO deleted_sessions (uuid, deletedAt) VALUES (?, 600)").run(uuid);
+    await merge().mergePeer(file);
+    expect(photosOf(uuid)).toEqual([]);
+    expect(photoRow("p1")).toBeUndefined();
+  });
+
+  test("a session deleted on the other device takes its photos here", async () => {
+    const uuid = addSession(t.sqlite, 1_000);
+    addPhoto(t.sqlite, uuid, "p1", 500);
+    const file = await peer("tablet.db", (sqlite) => {
+      sqlite.prepare("DELETE FROM completed_sessions WHERE uuid = ?").run(uuid);
+      sqlite.prepare("DELETE FROM session_photos").run();
+      sqlite.prepare("INSERT INTO deleted_sessions (uuid, deletedAt) VALUES (?, 600)").run(uuid);
+    });
+    await merge().mergePeer(file);
+    await merge().honourTombstones();
+    expect(photoRow("p1")).toBeUndefined();
+  });
+
+  test("two devices adding two photos each to one session keep all four", async () => {
+    const uuid = addSession(t.sqlite, 1_000);
+    addPhoto(t.sqlite, uuid, "a1", 500);
+    addPhoto(t.sqlite, uuid, "a2", 501);
+    const file = await peer("tablet.db", (sqlite) => {
+      sqlite.prepare("DELETE FROM session_photos").run();
+      addPhoto(sqlite, uuid, "b1", 502);
+      addPhoto(sqlite, uuid, "b2", 503);
+    });
+    await merge().mergePeer(file);
+    expect(photosOf(uuid)).toEqual(["a1", "a2", "b1", "b2"]);
+    await converged(file);
+  });
+
+  test("a photo moves the fifth segment and leaves the first four alone, a note moves the first", async () => {
+    const uuid = addSession(t.sqlite, 1_000);
+    const before = (await backup().stateFingerprint()).split("|");
+    expect(before).toHaveLength(5);
+    expect(before[4]).toBe("0:0");
+    addPhoto(t.sqlite, uuid, "p1", 500);
+    const withPhoto = (await backup().stateFingerprint()).split("|");
+    expect(withPhoto.slice(0, 4)).toEqual(before.slice(0, 4));
+    expect(withPhoto[4]).toBe("1:500");
+    setNote(t.sqlite, uuid, "hi", 700);
+    const withNote = (await backup().stateFingerprint()).split("|");
+    expect(withNote[0]).not.toBe(withPhoto[0]);
+    expect(withNote[4]).toBe(withPhoto[4]);
   });
 });

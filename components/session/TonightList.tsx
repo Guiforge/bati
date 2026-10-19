@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 import type { i18n as I18n, TFunction } from "i18next";
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable } from "react-native";
 import { XStack, YStack } from "tamagui";
@@ -19,6 +19,7 @@ import { ANIMAL_PORTRAITS } from "@/constants/animalPortraits";
 import { getExerciseThumb, getVillageTierAsset } from "@/constants/assetMap";
 import { ETERNAL_FLAME_DAYS } from "@/constants/flame";
 import { TRIUMPH_XP_BONUS } from "@/db/bossFights";
+import { acceptCapOffer, type CapOffer } from "@/db/capOffer";
 import type { Crest as CrestRead } from "@/db/crest";
 import type { Animal } from "@/db/crestRules";
 import { OATH_XP_BONUS } from "@/db/oaths";
@@ -29,6 +30,7 @@ import { getLevelTitle } from "@/db/userLevel";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { formatList } from "@/src/i18n/list";
 import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
+import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 import {
   ageBody,
@@ -46,7 +48,14 @@ import { formatRecordValue, recordTitle } from "./recordText";
 type Badge = "after" | "record";
 /** `text` may hold `<b>…</b>` runs: the figure the line is about, set in bold. */
 type Line = { id: string; text: string; badge?: Badge; art?: ReactNode };
-type CardData = { id: string; title: string; body?: string[]; art: ReactNode };
+type CardData = {
+  id: string;
+  title: string;
+  body?: string[];
+  art: ReactNode;
+  /** One pressable line under the body, for the card that asks something of the hero. */
+  action?: ReactNode;
+};
 
 const shield = (animal: Animal, size: 24 | 48 = 48) => (
   <Crest
@@ -76,6 +85,17 @@ const portraitArt = (slug: string, animal: Animal) => {
  * same night (rare, then winter, then base), the shield when the base has not shipped. The box is
  * reserved while the coat is read, so nothing on the card moves.
  */
+/** The boss card's second line: the final blow, or the Triumph with its XP when the game pays one. */
+function bossLine(
+  t: TFunction,
+  f: { finalBlow?: boolean; own?: boolean },
+  language: AppLanguage,
+): string {
+  if (f.finalBlow) return t("boss.final_blow");
+  if (f.own) return t("boss.triumph_own");
+  return t("boss.triumph_subtitle", { xp: formatCount(language, TRIUMPH_XP_BONUS) });
+}
+
 function LegendaryArt({ animal, longestFlame }: { animal: Animal; longestFlame: FlameLevel }) {
   const slug = usePortraitSlug(animal, "legendary", longestFlame);
   if (!(`${animal}-legendary` in ANIMAL_PORTRAITS)) return shield(animal);
@@ -311,10 +331,10 @@ function cardOf(
         title: t("boss.victory_title"),
         body: [
           f.name,
-          f.finalBlow
-            ? t("boss.final_blow")
-            : t("boss.triumph_subtitle", { xp: formatCount(language, TRIUMPH_XP_BONUS) }),
-        ],
+          bossLine(t, f, language),
+          // An adventure the hero wrote pays its sessions and nothing more: said once, here.
+          f.own ? t("boss.own_pays_sessions") : null,
+        ].filter((line) => line !== null),
         art: <GameIcon name="sword" size={32} color="$resourceGold" />,
       };
     case "oath":
@@ -356,6 +376,25 @@ function cardOf(
             contentFit="cover"
           />
         ),
+      };
+    case "cap":
+      return {
+        id: f.id,
+        title: localizedName(f.offer.next, language),
+        body: [
+          t("progression.cap_offer_body", {
+            value: formatTarget({ type: f.offer.type, value: f.offer.value }, language),
+            name: localizedName(f.offer.from, language),
+          }),
+        ],
+        art: (
+          <Image
+            source={getExerciseThumb(f.offer.next.imagePath)}
+            style={{ width: 48, height: 48, borderRadius: 8 }}
+            contentFit="cover"
+          />
+        ),
+        action: <CapAction offer={f.offer} />,
       };
     case "achievement":
       return {
@@ -406,9 +445,49 @@ function LineRow({ line }: { line: Line }) {
   );
 }
 
+/**
+ * The cap offer's one line: a tap writes the swap, and the line becomes its own confirmation. A
+ * failed write says nothing new and leaves the tap available (`reportError` holds the cause).
+ */
+function CapAction({ offer }: { offer: CapOffer }) {
+  const { t } = useTranslation();
+  const language = useSettingsStore((s) => s.language);
+  const [saved, setSaved] = useState(false);
+  const next = localizedName(offer.next, language);
+  if (saved) {
+    return (
+      <AppText fontSize={13} color="$textSecondary">
+        {t("progression.cap_offer_done", { next })}
+      </AppText>
+    );
+  }
+  return (
+    <Pressable
+      testID="tonight-cap-offer"
+      accessibilityRole="button"
+      onPress={() => {
+        acceptCapOffer(offer)
+          .then(() => setSaved(true))
+          .catch((e: unknown) => reportError("session.capOffer", e));
+      }}
+      style={{ minHeight: 44, justifyContent: "center" }}
+    >
+      <AppText fontSize={15} color="$resourceGold" textDecorationLine="underline">
+        {t("progression.cap_offer_action", { next })}
+      </AppText>
+    </Pressable>
+  );
+}
+
 function CardRow({ card }: { card: CardData }) {
   return (
-    <Card bg="$background" p="$3" accessible accessibilityLabel={spoken(card)}>
+    // A card with a button in it cannot be one accessibility element: the button would be unreachable.
+    <Card
+      bg="$background"
+      p="$3"
+      accessible={!card.action}
+      accessibilityLabel={card.action ? undefined : spoken(card)}
+    >
       <XStack items="center" gap="$3">
         <YStack minW={64} items="center" importantForAccessibility="no-hide-descendants">
           {card.art}
@@ -427,6 +506,7 @@ function CardRow({ card }: { card: CardData }) {
               {line}
             </AppText>
           ))}
+          {card.action}
         </YStack>
       </XStack>
     </Card>

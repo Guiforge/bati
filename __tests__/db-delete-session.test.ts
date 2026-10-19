@@ -134,3 +134,83 @@ describe("deleteSession", () => {
     ).toBe(0);
   });
 });
+
+describe("deleteSession, a session of a left run", () => {
+  const t = createTestDb();
+
+  beforeAll(() => {
+    jest.resetModules();
+    jest.doMock("../db/client", () => clientMock(t));
+  });
+
+  afterAll(() => {
+    t.close();
+  });
+
+  const completed = () => require("../db/completed") as typeof import("../db/completed");
+  const adventures = () => require("../db/adventures") as typeof import("../db/adventures");
+
+  /** A step 0 completed by a session, then the run left. */
+  async function leftRun() {
+    const adv = (await adventures().listAdventures()).find((a) => a.kind !== "boss");
+    if (!adv) throw new Error("Expected a seeded campaign");
+    t.sqlite.prepare("DELETE FROM adventure_runs WHERE adventureId = ?").run(adv.id);
+    const run = await adventures().startAdventureRun({ adventureId: adv.id });
+    const step0 = run.activeStep;
+    if (!step0) throw new Error("Expected an active step");
+    const id = await completed().createCompletedSession({
+      questId: step0.questId,
+      durationSeconds: 600,
+      xpEarned: 40,
+      exercises: [{ exerciseId: 1, sortOrder: 0, result: { type: "reps", value: 10 } }],
+    });
+    await adventures().completeAdventureRunStep({ runStepId: step0.id, completedSessionId: id });
+    await adventures().leaveAdventureRun(adv.id);
+    return { adv, run, step0, id };
+  }
+
+  const statusOf = (runId: number) =>
+    (
+      t.sqlite.prepare("SELECT status FROM adventure_runs WHERE id = ?").get(runId) as {
+        status: string;
+      }
+    ).status;
+
+  test("is deleted without reviving the run, and the step forgets the session", async () => {
+    const { run, step0, id } = await leftRun();
+
+    expect(await completed().deleteSession(id)).toBe("deleted");
+
+    expect(statusOf(run.run.id)).toBe("left");
+    expect(
+      t.sqlite
+        .prepare("SELECT status, completedSessionId FROM adventure_run_steps WHERE id = ?")
+        .get(step0.id),
+    ).toEqual({ status: "completed", completedSessionId: null });
+  });
+
+  test("is deleted too when a newer run is under way", async () => {
+    const { adv, id } = await leftRun();
+    await adventures().startAdventureRun({ adventureId: adv.id });
+
+    expect(await completed().deleteSession(id)).toBe("deleted");
+  });
+
+  test("is locked once a newer run of the adventure is finished", async () => {
+    const { adv, id } = await leftRun();
+    t.sqlite
+      .prepare(
+        "INSERT INTO adventure_runs (adventureId, status, finishedAt) VALUES (?, 'finished', 1)",
+      )
+      .run(adv.id);
+
+    expect(await completed().deleteSession(id)).toBe("locked");
+    expect(
+      (
+        t.sqlite.prepare("SELECT count(*) n FROM completed_sessions WHERE id = ?").get(id) as {
+          n: number;
+        }
+      ).n,
+    ).toBe(1);
+  });
+});

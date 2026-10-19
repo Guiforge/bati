@@ -48,6 +48,9 @@ jest.mock("@/db/preferences", () => ({
   },
 }));
 
+let mockBytes = 0;
+jest.mock("@/src/databaseSize", () => ({ databaseBytes: () => mockBytes }));
+
 let mockAccount: object | null = null;
 let mockLastSyncAt: number | null = null;
 jest.mock("@/src/deviceSync", () => ({
@@ -56,7 +59,7 @@ jest.mock("@/src/deviceSync", () => ({
 }));
 
 import { ProtectCard } from "@/components/home/ProtectCard";
-import { dismissProtectCard, protectCardVisible } from "@/src/protectHero";
+import { dismissProtectCard, protectCardKind, protectCardVisible } from "@/src/protectHero";
 import config from "@/tamagui.config";
 
 const ago = (days: number) => format(subDays(new Date(), days), "yyyy-MM-dd");
@@ -65,6 +68,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockPrefs.clear();
   mockSessions = 5;
+  mockBytes = 0;
   mockAccount = null;
   mockLastSyncAt = null;
 });
@@ -145,6 +149,45 @@ describe("protectCardVisible", () => {
     expect(await protectCardVisible()).toBe(false);
     mockPrefs.set("protectDismissedDay", ago(30));
     expect(await protectCardVisible()).toBe(true);
+  });
+});
+
+const HEAVY = 21 * 1024 * 1024;
+
+describe("a heavy database", () => {
+  test("changes the card's text, and only for a hero with no backup of their own", async () => {
+    expect(await protectCardKind()).toBe("plain");
+    mockBytes = HEAVY;
+    expect(await protectCardKind()).toBe("heavy");
+    mockBytes = 19 * 1024 * 1024;
+    expect(await protectCardKind()).toBe("plain");
+
+    mockBytes = HEAVY;
+    mockPrefs.set("backupFolderUri", "content://tree");
+    mockPrefs.set("lastAutoBackupDay", ago(1));
+    expect(await protectCardKind()).toBeNull();
+  });
+
+  test("never goes quiet for good: closed three times, it is back within a month", async () => {
+    mockBytes = HEAVY;
+    mockPrefs.set("protectDismissals", "3");
+    mockPrefs.set("protectDismissedDay", ago(29));
+    expect(await protectCardKind()).toBeNull();
+    mockPrefs.set("protectDismissedDay", ago(30));
+    expect(await protectCardKind()).toBe("heavy");
+  });
+
+  test("a first close keeps it quiet for thirty days, not ninety", async () => {
+    mockBytes = HEAVY;
+    mockPrefs.set("protectDismissals", "2");
+    mockPrefs.set("protectDismissedDay", ago(30));
+    expect(await protectCardKind()).toBe("heavy");
+  });
+
+  test("the card shows the heavy text", async () => {
+    mockBytes = HEAVY;
+    await mount();
+    await waitFor(() => expect(screen.getByText("backup.protectHeavyTitle")).toBeTruthy());
   });
 });
 

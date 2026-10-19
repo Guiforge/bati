@@ -2,7 +2,7 @@
 title: Backups, encryption and device sync
 type: technical
 status: active
-updated: 2026-09-25
+updated: 2026-10-17
 related: [README.md, ../planning/roadmap.md, ../legal/privacy.md]
 ---
 
@@ -43,7 +43,14 @@ build wrote so no device renames itself on update.
 **Android's backup carries three files and nothing else**: `bati.v<N>.db` and its `-wal` and `-shm` sidecars (the database is in WAL mode, so there is no `-journal`). The
 same directory holds decrypted imports, another device's history opened for comparison, the
 pre-restore `.bak`; naming the three keeps all of those out of Google's copy and under the 25 MB
-quota past which Android backs up nothing at all. The `.gpx` files in `gps-tracks/` stay out too:
+quota past which Android backs up nothing at all. Photos (J-01, BLOBs in `session_photos`) and raw
+GPS points share that file, and a regular hero reaches the quota within a year: Settings says
+"Your hero: X MB, of which photos Y MB", and past 20 MB with no backup of their own the protect
+card returns with its own text. Removing a photo empties its row but does not shrink the file.
+The 256 MiB ceiling on another device's file and the whole-file re-upload per change now weigh on
+photos too. When this build takes a file from a device on the previous build (0074), its photos
+and note stamps are lost as the content tombstones are; the kept copy and the pre-restore `.bak`
+hold them. The `.gpx` files in `gps-tracks/` stay out too:
 they are exports, rebuilt from `gps_points` whenever a recap shares one.
 
 **The folder picker does not reach the classic clouds.** Google Drive, OneDrive and Proton never
@@ -293,12 +300,101 @@ reads the merged journal, so two synced phones show the same Home but not necess
 notice. The offered first step is local adventure state, decided per device from the merged journal
 at run start; adventure runs are not synced, so a second phone decides for itself.
 
+## What leaving a run adds to sync
+
+Nothing merged, no migration, fingerprint unchanged: `adventure_runs` is local, so a `left` run
+travels only in a whole-file restore or hand-off, like an active or finished one. A previous app
+version reads `left` as neither active nor finished and ignores the run, except in three writers: its
+`reopenCampaignStep` would flip the run back to `active`, its `completeAdventureRunStep` would finish
+it from a stale step id (none can arrive, R34), and its `startAdventureRun` resets a felled boss
+without checking the previous run, so a boss felled in a left run loses its Lair banner at the next
+start there. Narrow, accepted: a migration would make the old build refuse the file outright.
+
+## What the hero's adventures add to sync
+
+Migration 0076 gives `adventures` a `uuid`, and `adventures` and `adventure_steps` become merged
+tables for the hero's own rows (`author = 'hero'`); the game's are mapped by `enTitle`, as quests
+are. A third `AuthoredSpec` in `db/merge.ts` follows quests and movements: matched by uuid, the newer
+`updatedAt` replacing the row and all its steps, the cover `questId` of the row translated inline
+through `quest_map` (it is NOT NULL). Retiring is an edit (`isActive = 0`), so there is no adventure
+tombstone.
+
+- **The quests a step names.** A hero quest deleted here that an incoming step names is brought back
+  (`bringNamedQuests`, the quest twin of `resurrect`) and mapped, and its tombstone stays: the quest is
+  dead but in use on both devices, as a movement is. `honourTombstones` keeps a dead quest while an
+  active adventure or a run under way names it (`adventuresUsingQuest`), and removes it on the next
+  sync once nothing does.
+- **A quest gone on both devices.** A retired adventure may lose a step quest, so a step naming a
+  quest the other device itself lacks is written with `questId = 0` instead of rolling the merge back
+  (it would roll back on every sync, for good). The run guard makes such an adventure unplayable until
+  the hero repairs it in the editor. `0` names no row, which holds because a device runs with
+  `foreign_keys` OFF (`db/client.ts`).
+- **Runs, fights and damage stay local.** An edit under a run carries on: the run copied its quests,
+  and a step whose quest changed shows no narrative (`getAdventureStepNarrative` joins on the quest).
+- **The fingerprint** keeps its four segments. A device with no hero adventure adds no row to the
+  content segment, so its name is what it was and no answer the hero gave is asked again. Writing,
+  editing or retiring an adventure moves that segment. The update bumps the newest migration, so every
+  device re-uploads and re-judges every peer once (R10), on purpose.
+- **A peer on the previous build** is compared without error (`adventures.uuid` is read only where it
+  exists) and never merged (`mergePeer` refuses on the newest migration); the previous build reads this
+  build's file as unreadable. Nothing is lost on either side.
+
+### The boss's voice (0077)
+
+Two nullable columns on `adventures`, `bossName` and `bossLinesJson`, merged with the row by the existing
+code (`authoredColumns` reads every column of the build) and part of `canonical` through `sharedColumns`;
+`bossLinesJson` has a fixed key order, so equal lines are equal text on both devices. The migration moves
+no row and no `updatedAt`, so the content segment of the fingerprint is unchanged and no answer is asked
+again; the build bump (78 migrations) re-uploads and re-judges every peer once. A peer on 0076 is compared
+and never merged; a 0076 build reads this build's file as unreadable. The newest row wins whole (R20), so a
+later title edit on another device replaces a voice written earlier elsewhere, as it would an earlier
+title: existing doctrine, not a regression.
+
+### Adventure files
+
+Sharing an adventure as a `.bati-adventure.json` changes nothing here. An import is an ordinary write of
+the hero's rows (`exercises`, `quests`, `adventures`, `adventure_steps`), all merged tables matched by
+uuid, so nothing in the fingerprint or in `mergePeer` was touched. The same file imported on two devices
+is the same adventure, the same quests and the same movements on both, and they converge by `updatedAt`
+(a same-second tie goes to the canonical form); a copy, or an import over a run under way, is a second
+adventure with a fresh uuid on both. The file is version 2 only when it carries a boss's voice and version 1 otherwise, so a build before 0077
+reads every file without one and refuses a voiced file as newer. A build without the feature reads the file
+as "no Bati quest". One limit: "never rewritten" holds on the importing device. A quest the hero edited on
+device A that device B has not received yet is created new on B at `now`, newer than the edit, so the next
+merge can hand A the friend's version (`ponytail:` in `importAdventure`).
+
 ## Device sync
 
 - **Progress is derived, never stored**: bests, records and rungs are read from `completed_exercises`
   (`db/progress.ts`), so sync has nothing of its own to carry for them and a release that only
   changes how they are read does not change any device's fingerprint. It is a shared SQL fragment,
   not a view: a backup holding a view is refused (`validateBackup`).
+- **Targets and "to beat" are derived too**: the target a hero is asked for, the number to beat and
+  the cap offer are read from `completed_exercises` (M-03, `progressiveTarget`), so M-03 added
+  nothing that travels, no fingerprint segment and no migration: no device sees news because of
+  it, and a build with it merges with the build before it both ways. A quest config (hand-set
+  targets, swaps, the cap offer's swap) is not in `MERGED_PREFERENCES` and stays on its device.
+- **The map style** (`mapStyle`) is carried by the backup and never merged, like `mapTiles`: the
+  tile consent is per device, and so is its look. It is outside `MERGED_PREFERENCES`, so changing it
+  moves no fingerprint and uploads nothing. A value an older build wrote is read by a newer one as
+  the default (`ember`) if unknown.
+- **The route ghost** is derived from `gps_points` at read time (`routeCandidates` in `db/gps.ts`)
+  and never stored. A merged session's points (R16) make the other phone's routes candidates here.
+  Nothing about routes is sent anywhere, and the setting rides in the `outingDisplay` blob.
+- **The outing display** (`outingDisplay`) is a merged preference: one JSON blob, last writer wins,
+  back to the original writes `{}` and never deletes the row. The blob also holds `bigMap` (layout)
+  and `lap` (metric) since phase 2; a phase 1 build reads them as defaults, and **its edit of any
+  tab drops them from every tab** (`withActivity` rebuilds the whole blob from what it parsed, and
+  last writer wins spreads that). Phase 3 adds `routeGhost` (per activity, a boolean, default off)
+  with the same limit: an older build reads it as off and its edit of any tab drops it everywhere.
+  Phases 2 and 3 added no merged key, no table and no migration, so `localState` and every
+  fingerprint are unchanged on update. It needed no migration, which is what
+  keeps a phone on the previous version merging with one on this version (`validateBackup` and
+  `mergePeer` refuse only a newer migration). `localState` ends with the list of merged keys for the
+  same reason `CIPHER_READS` is in it: an updated phone drops its cached verdicts and re-judges
+  its peers once. Whether the screen stays on during an outing is not synced and not in the
+  database: it is a SecureStore item (`src/outingKeepAwake.ts`), so a new phone starts with the
+  screen going off.
 - **Transport**: WebDAV. Nextcloud signs in through the browser (Login Flow v2, a revocable app
   password; the page and poll endpoint must be on the server or on https, and the account keeps the
   address the hero typed). Any other server, behind presets (kDrive, Koofr, Round Sync for rclone),
@@ -354,8 +450,9 @@ at run start; adventure runs are not synced, so a second phone decides for itsel
   finds nothing, and one transaction rolls back whole on anything unmapped. The app then reloads
   (every cache read the old database) and says what arrived. The first merge with a device uploads
   this one's history as `bati-<id>-kept-<time>.batb`, which no device reads as a peer. Left local
-  in this version: campaigns and boss fights (random crits cannot be replayed; the other device's
-  campaign sessions count as training), quest configs, favourites, achievements. A device on
+  in this version: campaign runs and boss fights (random crits cannot be replayed; the other device's
+  campaign sessions count as training), quest configs, favourites, achievements. The hero's own
+  adventures do travel (above). A device on
   another build is not merged; the hero chooses as before, and a refusal is remembered by that
   device's content fingerprint. Verified on the emulator: 14 sessions each, one unique on each
   side, became 15 on both, with the newer village name, one reload, and no second merge after.
@@ -417,7 +514,7 @@ at run start; adventure runs are not synced, so a second phone decides for itsel
 - Dropbox, OneDrive and Google Drive by their own APIs. Dropbox needs an app registered to this
   project (PKCE, no secret, app folder); Drive needs brand verification and a second signing
   certificate for the F-Droid build. Round Sync covers them through WebDAV meanwhile.
-- Merging campaigns, boss fights, quest configs and favourites (roadmap 4.18, item 4).
+- Merging campaign runs, boss fights, quest configs and favourites (roadmap 4.18, item 4). The hero's own adventures merge.
 - **What remains of the limits of merge v2** (roadmap 4.18b): `ownedEquipment` is still last writer wins,
   because a union cannot carry a removal and the roadmap does not say what `""` (everything) means in
   one (parked, a product question). A movement deleted on one device comes back there when the other

@@ -526,6 +526,27 @@
       "when": 1792540800000,
       "tag": "0074_the_content_let_go",
       "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "6",
+      "when": 1792627200000,
+      "tag": "0075_the_notebook",
+      "breakpoints": true
+    },
+    {
+      "idx": 76,
+      "version": "6",
+      "when": 1792713600000,
+      "tag": "0076_the_hero_tells_a_tale",
+      "breakpoints": true
+    },
+    {
+      "idx": 77,
+      "version": "6",
+      "when": 1792800000000,
+      "tag": "0077_the_boss_gets_a_name",
+      "breakpoints": true
     }
   ]
 }

@@ -1,3 +1,4 @@
+import type { CapOffer } from "@/db/capOffer";
 import { legendaryKey } from "@/db/crestEvents";
 import type { VillageGrowth, VillageTier } from "@/db/village";
 import type { AgeNews, AnniversaryNews } from "@/db/villageNewsRules";
@@ -22,7 +23,7 @@ export type FeastFacts = {
   > &
     // Optional only for the fixtures that predate them: `saveSession` always sets these (null or
     // empty when there is nothing to announce). `savedResult` is never persisted.
-    Partial<Pick<SaveResult, "rareCoat" | "crestLegendary">>;
+    Partial<Pick<SaveResult, "rareCoat" | "crestLegendary" | "capOffers">>;
   /**
    * The campaign ended with this session: its epilogue is already full screen, so it holds the
    * place of the one big feast and says nothing in "Tonight" (its own screen says it).
@@ -31,7 +32,7 @@ export type FeastFacts = {
   /** The big feasts this phone has shown (`bigFeastsShown`); one in it is a card, not a screen. */
   shown?: string[];
   /** The boss this session felled, by name. */
-  boss?: { name: string; finalBlow?: boolean } | null;
+  boss?: { name: string; finalBlow?: boolean; own?: boolean } | null;
   /** The newest Age not shown yet (`result.age`): `tonight` fills it in. */
   age?: AgeNews | null;
   /** The village's anniversary not shown yet (`result.anniversary`). */
@@ -59,13 +60,14 @@ export type Feast =
   | Of<"coat", NonNullable<Result["rareCoat"]>>
   | Of<"secondJoins", NonNullable<Result["crestEvents"]["secondJoins"]>>
   | Of<"stageUp", Result["crestEvents"]["stageUp"][number]>
-  | Of<"boss", { name: string; finalBlow?: boolean }>
+  | Of<"boss", { name: string; finalBlow?: boolean; own?: boolean }>
   | Of<"oath", { progress: NonNullable<Result["fulfilledOath"]>; bonusXp: number }>
   | Of<"level", { level: number }>
   | Of<"growth", { building: VillageGrowth }>
   | Of<"record", { record: Result["newRecords"][number] }>
   | Of<"standing", { standing: NonNullable<Result["standing"]> }>
   | Of<"rung", { step: Result["newRungs"][number] }>
+  | Of<"cap", { offer: CapOffer }>
   | Of<"achievement", { achievement: Result["newAchievements"][number] }>;
 
 type Built<T> = T extends Feast ? Omit<T, "size" | "id"> : never;
@@ -154,6 +156,7 @@ function cardOnes({ result: r, boss }: FeastFacts): Built<Feast>[] {
     cards.push({ kind: "stageUp", ...up });
   }
   for (const step of r.newRungs) cards.push({ kind: "rung", step });
+  for (const offer of r.capOffers ?? []) cards.push({ kind: "cap", offer });
   for (const achievement of r.newAchievements) cards.push({ kind: "achievement", achievement });
   return cards;
 }

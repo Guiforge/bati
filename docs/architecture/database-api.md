@@ -116,6 +116,7 @@ interface AdventureRun {
 | `listAdventures()` | Get all available adventures |
 | `getAdventureDetails(id)` | Get adventure with all steps |
 | `startAdventureRun(adventureId)` | Start a new adventure run |
+| `leaveAdventureRun(adventureId)` | Leave the active run (`left`); the boss keeps its HP |
 | `getActiveAdventureRun(adventureId)` | Get active run for adventure |
 | `getAnyActiveAdventureRun()` | Get any active adventure run |
 | `completeAdventureRunStep(runId, sessionId)` | Mark step complete |
@@ -306,6 +307,9 @@ interface Exercise {
 |----------|-------------|
 | `listExercises()` | Get all exercises |
 | `getExerciseById(id)` | Get single exercise |
+| `getExerciseHistory(ids)` | One `ExerciseGhost` per (movement, unit): `last`, `best`, `at`, `bestAt`, `seasonBest` and `recent` (the newest three sessions as `SessionMark`, hero-quest sessions left out) |
+| `progressiveTarget(input)` | `db/progress.ts`. The one birthplace of the target the app asks for (see `gameplay/progression.md`, "What a slot asks tonight") |
+| `checkCapOffers(questId, slots, level)` | `db/capOffer.ts`. Slots that held the cap for 3 sessions, with the rung above |
 
 ---
 

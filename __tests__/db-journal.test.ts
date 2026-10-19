@@ -314,7 +314,7 @@ describe("db/journal", () => {
     const squat = exerciseId("Squat");
     const quest = t.sqlite.prepare("SELECT id FROM quests LIMIT 1").get() as { id: number };
     t.sqlite.exec(`
-      INSERT INTO adventures (id, questId, kind, enTitle, frTitle, sortOrder) VALUES (900, ${quest.id}, 'boss', 'The Golem', 'Le Golem', 0);
+      INSERT INTO adventures (id, questId, kind, enTitle, frTitle, sortOrder) VALUES (900, ${quest.id}, 'boss', 'Test Golem', 'Le Golem', 0);
       INSERT INTO adventure_runs (id, adventureId, status, startedAt, finishedAt) VALUES (1, 900, 'finished', ${seconds(daysAgo(9))}, ${seconds(daysAgo(1))});
       INSERT INTO boss_fights (id, adventureId, totalHp, currentHp, defeatedAt) VALUES (1, 900, 100, 0, ${seconds(daysAgo(1))});
     `);
@@ -347,6 +347,35 @@ describe("db/journal", () => {
     const kills = await journal().getBossKills();
     expect(kills).toHaveLength(1);
     expect(kills[0]?.sessionId).toBe(11);
+  });
+
+  test("a hero boss with a name is reported under that name, in every language", async () => {
+    const quest = t.sqlite.prepare("SELECT id FROM quests LIMIT 1").get() as { id: number };
+    t.sqlite.exec(`
+      DELETE FROM adventures WHERE id IN (900, 901, 902);
+      INSERT INTO adventures (id, questId, kind, author, enTitle, frTitle, bossImagePath, bossName, sortOrder) VALUES
+        (901, ${quest.id}, 'boss', 'hero', 'My tale', 'Mon conte', 'fire_dragon.webp', 'Nightcoil', 1000);
+      INSERT INTO adventure_runs (id, adventureId, status, startedAt, finishedAt) VALUES (1, 901, 'finished', ${seconds(daysAgo(9))}, ${seconds(daysAgo(1))});
+      INSERT INTO boss_fights (id, adventureId, totalHp, currentHp, defeatedAt) VALUES (1, 901, 100, 0, ${seconds(daysAgo(1))});
+    `);
+    session(10, daysAgo(1));
+    t.sqlite.exec(`
+      INSERT INTO adventure_run_steps (runId, stepIndex, questId, status, completedSessionId) VALUES (1, 0, ${quest.id}, 'completed', 10);
+      INSERT INTO boss_damage_log (bossFightId, completedSessionId, damageDealt, roundIndex) VALUES (1, 10, 100, 0);
+    `);
+    const { getCompletedSessionById } =
+      require("../db/completed") as typeof import("../db/completed");
+    const killing = await getCompletedSessionById(10);
+    assert(killing);
+    const report = await journal().getKillReport(killing);
+    assert(report);
+    expect(report.title).toEqual({
+      en: "Nightcoil",
+      fr: "Nightcoil",
+      de: "Nightcoil",
+      es: "Nightcoil",
+      ru: "Nightcoil",
+    });
   });
 
   test("a kill is reported under the boss's name at the tier it was fought at, never the adventure's", async () => {

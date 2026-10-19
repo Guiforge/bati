@@ -214,6 +214,71 @@ describe("useSmartAction", () => {
     expect(result.current.config?.label).toBe("See the quest");
   });
 
+  describe("the Tonight line", () => {
+    const slot = (over: Record<string, unknown>) => ({
+      id: 1,
+      exercise: { style: "strength", enName: "Push-ups", frName: "Pompes", perSide: false },
+      target: { type: "reps", value: 13 },
+      ghost: { last: 12, best: 12, at: 0, bestAt: Date.now(), seasonBest: 12, recent: [] },
+      ...over,
+    });
+    const withSlots = (...slots: unknown[]) =>
+      loadConfiguredQuest.mockImplementation(async (id: number) => ({
+        ...questNamed(id, "Chest Day"),
+        quest: { ...questNamed(id, "Chest Day").quest, exercises: slots },
+      }));
+
+    it("names the first counted movement with a history, at the number to beat", async () => {
+      withSlots(slot({}));
+      const { result } = await renderHook(() => useSmartAction());
+      await waitFor(() => expect(result.current.config).not.toBeNull());
+
+      expect(result.current.config?.scene?.tonight).toBe("Tonight: Push-ups, at least 13");
+    });
+
+    it("has no line on a movement's first session, or on a quest of holds", async () => {
+      withSlots(slot({ ghost: undefined }));
+      const first = await renderHook(() => useSmartAction());
+      await waitFor(() => expect(first.result.current.config).not.toBeNull());
+      expect(first.result.current.config?.scene?.tonight).toBeUndefined();
+
+      withSlots(slot({ target: { type: "time", value: 30 } }));
+      const holds = await renderHook(() => useSmartAction());
+      await waitFor(() => expect(holds.result.current.config).not.toBeNull());
+      expect(holds.result.current.config?.scene?.tonight).toBeUndefined();
+    });
+
+    it("skips an outing and a hold for the first counted movement after them", async () => {
+      const { NON_REP_STYLE } = require("@/db/workUnits");
+      withSlots(
+        slot({ exercise: { style: NON_REP_STYLE, enName: "Walk", frName: "Marche" } }),
+        slot({ id: 2, target: { type: "time", value: 30 } }),
+        slot({ id: 3 }),
+      );
+      const { result } = await renderHook(() => useSmartAction());
+      await waitFor(() => expect(result.current.config).not.toBeNull());
+
+      expect(result.current.config?.scene?.tonight).toBe("Tonight: Push-ups, at least 13");
+    });
+
+    it("says nothing on the adventure stage", async () => {
+      withSlots(slot({}));
+      const { getAnyActiveAdventureRun, getAdventureDetails } = require("@/db/adventures");
+      getAnyActiveAdventureRun.mockResolvedValueOnce({
+        adventureId: 4,
+        activeRun: { steps: [{ status: "completed" }, { status: "active" }] },
+      });
+      getAdventureDetails.mockResolvedValueOnce({
+        adventure: { enTitle: "The North Road", frTitle: "La route du Nord", imagePath: null },
+      });
+      const { result } = await renderHook(() => useSmartAction());
+      await waitFor(() => expect(result.current.config).not.toBeNull());
+
+      expect(result.current.config?.variant).toBe("adventure");
+      expect(result.current.config?.scene?.tonight).toBeUndefined();
+    });
+  });
+
   it("serves the oath before the weak areas, on the rung the hero is standing on", async () => {
     getOathProgress.mockResolvedValue({
       oath: { metric: "exercise_pr", exerciseId: 99 },
@@ -397,6 +462,30 @@ describe("useSmartAction", () => {
       expect(result.current.config?.subtext).toBe("Last done 9 days ago");
     });
 
+    it("the Tonight line says nothing on a day already done", async () => {
+      loadConfiguredQuest.mockImplementation(async (id: number) => ({
+        ...questNamed(id, "Chest Day"),
+        quest: {
+          ...questNamed(id, "Chest Day").quest,
+          exercises: [
+            {
+              id: 1,
+              exercise: { style: "strength", enName: "Push-ups", perSide: false },
+              target: { type: "reps", value: 13 },
+              ghost: { last: 12, best: 12, at: 0, bestAt: Date.now(), seasonBest: 12, recent: [] },
+            },
+          ],
+        },
+      }));
+      getStalestQuest.mockResolvedValueOnce({ questId: 5, daysAgo: 0 });
+      hasSessionToday.mockResolvedValueOnce(true);
+      const { result } = await renderHook(() => useSmartAction());
+      await waitFor(() => expect(result.current.config).not.toBeNull());
+
+      expect(result.current.config?.variant).toBe("done");
+      expect(result.current.config?.scene?.tonight).toBeUndefined();
+    });
+
     it("says the singular for a quest left one day", async () => {
       getStalestQuest.mockResolvedValueOnce({ questId: 5, daysAgo: 1 });
       const { result } = await renderHook(() => useSmartAction());
@@ -539,5 +628,90 @@ describe("decideHomeOffer", () => {
 
   it("answers null once the read is abandoned", async () => {
     expect(await decideHomeOffer("en", () => true)).toBeNull();
+  });
+
+  // The hero's own adventures come right after the oath; the game's keep their place before it.
+  describe("a run of the hero's own adventure", () => {
+    const { getOathProgress, isOathFrozen } = require("@/db/oaths");
+    const { getChainTo } = require("@/db/exercises");
+    const { findQuestWithExercise } = require("@/db/quests");
+
+    const run = (adventureId: number) => ({
+      adventureId,
+      activeRun: { steps: [{ status: "completed" }, { status: "active" }] },
+    });
+    /** One run per population, as `getAnyActiveAdventureRun(owner)` answers. */
+    const runs = (byOwner: { game?: number; hero?: number }) =>
+      getAnyActiveAdventureRun.mockImplementation((owner?: "game" | "hero") => {
+        const id = owner ? byOwner[owner] : (byOwner.hero ?? byOwner.game);
+        return Promise.resolve(id === undefined ? null : run(id));
+      });
+    const dueOath = () => {
+      getOathProgress.mockResolvedValue({
+        oath: { metric: "exercise_pr", exerciseId: 99 },
+        isFulfilled: false,
+        exerciseName: { en: "Pull-ups", fr: "Tractions" },
+      });
+      getChainTo.mockResolvedValue({
+        position: 1,
+        rungs: [{ exercise: { id: 99, enName: "Pull-ups", frName: "Tractions" } }],
+      });
+      findQuestWithExercise.mockResolvedValue(7);
+    };
+
+    afterEach(() => {
+      getOathProgress.mockResolvedValue(null);
+      isOathFrozen.mockResolvedValue(false);
+      getChainTo.mockResolvedValue(null);
+      findQuestWithExercise.mockResolvedValue(null);
+    });
+
+    it("comes after a due oath", async () => {
+      runs({ hero: 9 });
+      dueOath();
+      expect(await decideHomeOffer("en")).toMatchObject({ kind: "oath_exercise" });
+    });
+
+    it("a game adventure under way still comes before that oath", async () => {
+      runs({ game: 4 });
+      dueOath();
+      expect(await decideHomeOffer("en")).toMatchObject({ kind: "adventure", adventureId: 4 });
+    });
+
+    it("an older game run and a newer hero run with an oath due: the game adventure", async () => {
+      runs({ game: 4, hero: 9 });
+      dueOath();
+      expect(await decideHomeOffer("en")).toMatchObject({ kind: "adventure", adventureId: 4 });
+    });
+
+    it("is offered when the oath is frozen, or fulfilled, or there is none", async () => {
+      runs({ hero: 9 });
+      dueOath();
+      isOathFrozen.mockResolvedValue(true);
+      expect(await decideHomeOffer("en")).toMatchObject({ kind: "adventure", adventureId: 9 });
+
+      isOathFrozen.mockResolvedValue(false);
+      getOathProgress.mockResolvedValue({
+        oath: { metric: "exercise_pr", exerciseId: 99 },
+        isFulfilled: true,
+        exerciseName: null,
+      });
+      expect(await decideHomeOffer("en")).toMatchObject({ kind: "adventure", adventureId: 9 });
+
+      getOathProgress.mockResolvedValue(null);
+      expect(await decideHomeOffer("en")).toMatchObject({ kind: "adventure", adventureId: 9 });
+    });
+
+    it("is still offered once retired elsewhere, while its run is under way here", async () => {
+      runs({ hero: 9 });
+      getAdventureDetails.mockResolvedValue({
+        adventure: { enTitle: "Retired", frTitle: "Retirée", imagePath: null, isActive: 0 },
+      });
+      expect(await decideHomeOffer("en")).toMatchObject({
+        kind: "adventure",
+        adventureId: 9,
+        title: "Retired",
+      });
+    });
   });
 });

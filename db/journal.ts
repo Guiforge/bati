@@ -20,6 +20,7 @@ import type { AchievementProgress } from "./achievements";
 import { db, schema } from "./client";
 import { type CompletedSession, isWorkout, parseRecords, type StoredRecord } from "./completed";
 import { dayKey } from "./dates";
+import { DEED_ADVENTURE } from "./deed";
 import {
   fetchLadderRows,
   recentMetFlagsBatch,
@@ -110,14 +111,11 @@ export type WallEntry = {
   /** The session that first reached it, so the wall can open the day the record fell. */
   recordSessionId: number | null;
   /**
-   * The best of the last `SEASON_DAYS`, null when the movement was not trained in them. An old
+   * The best of the last `SEASON_DAYS` (`db/progress.ts`), null when the movement was not trained in them. An old
    * record is beaten from here: a peak from two years ago is not a target for tonight.
    */
   seasonBest: number | null;
 };
-
-/** How far back "this season" reaches, for a movement whose record has aged. */
-export const SEASON_DAYS = 90;
 
 /**
  * The movements trained most recently, each with its record, the day it was set, and what the hero
@@ -133,52 +131,33 @@ export const SEASON_DAYS = 90;
 export async function getRecordWall(limit = 4): Promise<WallEntry[]> {
   const records = await getMovementRecords(limit);
   if (records.length === 0) return [];
-  const ids = records.map((record) => record.exerciseId);
   const key = (exerciseId: number, type: string) => `${exerciseId}:${type}`;
 
-  // Two grouped reads for the whole wall rather than two per movement.
-  const [firsts, seasons] = await Promise.all([
-    db
-      .select({
-        exerciseId: completedExercises.exerciseId,
-        type: completedExercises.resultType,
-        at: sql<Date>`MIN(${completedExercises.performedAt})`.mapWith(
-          completedExercises.performedAt,
-        ),
-        // A bare column beside a lone MIN() is read from the row that holds the minimum: SQLite
-        // documents this, and it is what names the session without a second, per-movement read.
-        sessionId: completedExercises.sessionId,
-      })
-      .from(completedExercises)
-      .where(
-        or(
-          ...records.map((record) =>
-            and(
-              eq(completedExercises.exerciseId, record.exerciseId),
-              eq(completedExercises.resultType, record.type),
-              gte(completedExercises.resultValue, record.best),
-            ),
+  // The record's session comes from one grouped read. Its date and the season's best come from
+  // the ghost (`getMovementRecords`), so the wall, the set and Home cut the season in one place.
+  const firsts = await db
+    .select({
+      exerciseId: completedExercises.exerciseId,
+      type: completedExercises.resultType,
+      // A bare column beside a lone MIN() is read from the row that holds the minimum: SQLite
+      // documents this, and it is what names the session without a second, per-movement read.
+      sessionId: completedExercises.sessionId,
+      at: sql`MIN(${completedExercises.performedAt})`,
+    })
+    .from(completedExercises)
+    .where(
+      or(
+        ...records.map((record) =>
+          and(
+            eq(completedExercises.exerciseId, record.exerciseId),
+            eq(completedExercises.resultType, record.type),
+            gte(completedExercises.resultValue, record.best),
           ),
         ),
-      )
-      .groupBy(completedExercises.exerciseId, completedExercises.resultType),
-    db
-      .select({
-        exerciseId: completedExercises.exerciseId,
-        type: completedExercises.resultType,
-        best: sql<number | null>`MAX(${completedExercises.resultValue})`,
-      })
-      .from(completedExercises)
-      .where(
-        and(
-          inArray(completedExercises.exerciseId, ids),
-          gte(completedExercises.performedAt, new Date(Date.now() - SEASON_DAYS * DAY_MS)),
-        ),
-      )
-      .groupBy(completedExercises.exerciseId, completedExercises.resultType),
-  ]);
+      ),
+    )
+    .groupBy(completedExercises.exerciseId, completedExercises.resultType);
   const first = new Map(firsts.map((row) => [key(row.exerciseId, row.type), row]));
-  const seasonBest = new Map(seasons.map((row) => [key(row.exerciseId, row.type), row.best]));
 
   return records.map((record) => ({
     exerciseId: record.exerciseId,
@@ -188,9 +167,9 @@ export async function getRecordWall(limit = 4): Promise<WallEntry[]> {
     perSide: record.perSide,
     best: record.best,
     last: record.last,
-    recordAt: first.get(key(record.exerciseId, record.type))?.at ?? record.at,
+    recordAt: record.bestAt,
     recordSessionId: first.get(key(record.exerciseId, record.type))?.sessionId ?? null,
-    seasonBest: seasonBest.get(key(record.exerciseId, record.type)) ?? null,
+    seasonBest: record.seasonBest,
   }));
 }
 
@@ -573,6 +552,8 @@ export async function getBossKills(): Promise<BossKill[]> {
       and(
         eq(adventureRuns.status, "finished"),
         eq(adventures.kind, "boss"),
+        // Deeds count the game's adventures only (R2).
+        DEED_ADVENTURE,
         isNotNull(adventureRuns.finishedAt),
       ),
     )
@@ -1039,7 +1020,7 @@ export async function getStandingBosses(): Promise<StandingBoss[]> {
       bossImagePath: adventures.bossImagePath,
     })
     .from(adventures)
-    .where(and(eq(adventures.kind, "boss"), eq(adventures.isActive, 1)))
+    .where(and(eq(adventures.kind, "boss"), eq(adventures.isActive, 1), DEED_ADVENTURE))
     .orderBy(adventures.sortOrder, adventures.id);
   return bosses
     .filter((a) => !wonIds.has(a.id))
@@ -1084,6 +1065,7 @@ export async function getKillReport(session: CompletedSession): Promise<KillRepo
       esTitle: adventures.esTitle,
       imagePath: adventures.imagePath,
       bossImagePath: adventures.bossImagePath,
+      bossName: adventures.bossName,
     })
     .from(adventureRunSteps)
     .innerJoin(adventureRuns, eq(adventureRuns.id, adventureRunSteps.runId))
@@ -1165,13 +1147,21 @@ export async function getKillReport(session: CompletedSession): Promise<KillRepo
 
   return {
     adventureId: step.adventureId,
-    title: bossLocalizedName(step.bossImagePath ?? step.imagePath, foughtAtTier, {
-      en: step.enTitle,
-      fr: step.frTitle,
-      de: step.deTitle,
-      es: step.esTitle,
-      ru: step.enTitle,
-    }),
+    title: step.bossName
+      ? {
+          en: step.bossName,
+          fr: step.bossName,
+          de: step.bossName,
+          es: step.bossName,
+          ru: step.bossName,
+        }
+      : bossLocalizedName(step.bossImagePath ?? step.imagePath, foughtAtTier, {
+          en: step.enTitle,
+          fr: step.frTitle,
+          de: step.deTitle,
+          es: step.esTitle,
+          ru: step.enTitle,
+        }),
     bossImagePath: step.bossImagePath ?? step.imagePath,
     felledAt,
     steps: runSteps.length,
@@ -1214,13 +1204,15 @@ export function nextOnShelf(progress: readonly AchievementProgress[]): Achieveme
  * day moves every window.
  */
 export async function getJournalVersion(): Promise<string> {
-  const [[sessions], preferences] = await Promise.all([
+  const [[sessions], preferences, [photos]] = await Promise.all([
     db
       .select({
         count: count(),
         last: sql<number | null>`MAX(${completedQuest.id})`,
         xp: sql<number | null>`SUM(${completedQuest.xpEarned})`,
         records: sql<number | null>`SUM(${completedQuest.hasNewRecords})`,
+        // A note typed from the detail grows its stamp, so the list refreshes behind it (0075).
+        notes: sql<number | null>`TOTAL(${completedQuest.notesEditedAt})`,
       })
       .from(completedQuest),
     db
@@ -1228,12 +1220,22 @@ export async function getJournalVersion(): Promise<string> {
       .from(schema.userPreferences)
       .where(inArray(schema.userPreferences.key, ["oath", "unlocked_achievements"]))
       .orderBy(schema.userPreferences.key),
+    // A photo added or removed moves the count or the sum of the stamps (a removal grows one).
+    db
+      .select({
+        count: count(),
+        stamps: sql<number | null>`TOTAL(${schema.sessionPhotos.updatedAt})`,
+      })
+      .from(schema.sessionPhotos),
   ]);
   return [
     sessions?.count,
     sessions?.last,
     sessions?.xp,
     sessions?.records,
+    sessions?.notes,
+    photos?.count,
+    photos?.stamps,
     ...preferences.map((row) => row.value),
     dayKey(new Date()),
   ].join("|");

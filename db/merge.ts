@@ -5,13 +5,14 @@ import {
   canonical,
   canonicalColumns,
   MERGED_PREFERENCES,
+  photosWon,
   setsCanon,
 } from "./backup";
 import { db, type IsolatedConnection, withWritableConnection } from "./client";
 import { deleteSession, parseRecords } from "./completed";
 import { getExerciseUsage, invalidateExercisesCache, removeExercise } from "./exercises";
 import { type MovedMovement, redecideAfterChange, redecideSessions } from "./personalRecords";
-import { invalidateQuestTemplates, removeQuest } from "./quests";
+import { adventuresUsingQuest, invalidateQuestTemplates, removeQuest } from "./quests";
 import { sqlString } from "./sql";
 
 /**
@@ -34,7 +35,8 @@ const PEER = "merge_peer";
  * included; its sets, its GPS points and its records come with it. XP, level, the village and the
  * streak are read from sessions, so they follow on their own. A session both hold takes the other
  * device's sets if it corrected them later, and its feedback if it changed that later, each on its
- * own stamp (0072); only records are then decided again, because the later sessions they were
+ * own stamp (0072), and its note on a third (`notesEditedAt`, 0075); photos (0075) merge by uuid, the
+ * later `updatedAt` winning and a removal winning a tie; only records are then decided again, because the later sessions they were
  * judged against are this device's.
  *
  * **This device's rows keep their ids; only the other device's get new ones**, through temporary
@@ -47,8 +49,14 @@ const PEER = "merge_peer";
  * **Timestamps are copied verbatim**, so the two devices agree afterwards on what is newer and a
  * second comparison finds nothing: a merge stamped with "now" would bounce between them forever.
  *
- * **Left local in this version**: campaigns and boss fights (random crits cannot be replayed; the
- * other device's campaign sessions count as training), quest configs and favourites (they name
+ * **The hero's adventures travel** (0076), matched by uuid like quests, the newer `updatedAt`
+ * replacing the row and all its steps. Their quest ids are translated through `quest_map`, and a
+ * quest the hero deleted that an incoming step still names is brought back (`bringNamedQuests`), the
+ * way a movement in use is. A step naming a quest the other device itself lacks is written with
+ * `questId = 0`: rolling the merge back would repeat on every sync, for good.
+ *
+ * **Left local in this version**: campaign runs and boss fights (random crits cannot be replayed;
+ * the other device's campaign sessions count as training), quest configs and favourites (they name
  * quest ids, and `compareWithPeer` leaves them out for that reason), achievements (derived).
  *
  * ponytail: a hero row renamed on one device *before* 0066 reached both still has two uuids
@@ -77,6 +85,9 @@ export async function mergePeer(path: string): Promise<MergeOutcome> {
     }
   });
   if (!("moved" in merged)) return merged;
+  // The cached quests and adventures were read before this commit (the adventure caches follow the
+  // quest cache by identity, db/adventures.ts).
+  invalidateQuestTemplates();
   // After the commit, on the app's own connection: the records of what came after an edited
   // session were judged against the figure it replaced, here, and only this device has them all.
   // Their failure is reported, not thrown: the merge is in, and a rejection would tell the hero
@@ -124,6 +135,8 @@ type AuthoredSpec = {
   map: string;
   /** Columns naming the other device's ids, written empty and translated by the caller. */
   deferred?: string[];
+  /** Columns of the row itself naming another table's other-device ids, translated inline. */
+  remap?: Record<string, string>;
   children: { table: string; key: string; remap?: Record<string, string> };
 };
 
@@ -146,18 +159,30 @@ const QUESTS: AuthoredSpec = {
   children: { table: "quest_exercises", key: "questId", remap: { exerciseId: "ex_map" } },
 };
 
+const ADVENTURES: AuthoredSpec = {
+  table: "adventures",
+  owner: "author",
+  admin: "enTitle",
+  hero: "enTitle",
+  map: "adv_map",
+  remap: { questId: "quest_map" },
+  children: { table: "adventure_steps", key: "adventureId", remap: { questId: "quest_map" } },
+};
+
 async function mergeInto(
   conn: IsolatedConnection,
 ): Promise<{ sessions: number; changes: number; moved: MovedMovement[]; edited: number[] }> {
   let changes = 0;
   await conn.execAsync(`
     DROP TABLE IF EXISTS temp.ex_map; DROP TABLE IF EXISTS temp.quest_map;
+    DROP TABLE IF EXISTS temp.adv_map;
     DROP TABLE IF EXISTS temp.fresh; DROP TABLE IF EXISTS temp.sess_map;
     DROP TABLE IF EXISTS temp.written; DROP TABLE IF EXISTS temp.edited;
     CREATE TEMP TABLE written (tbl TEXT, local INTEGER);
     CREATE TEMP TABLE edited (peer INTEGER PRIMARY KEY, local INTEGER);
     CREATE TEMP TABLE ex_map (peer INTEGER PRIMARY KEY, local INTEGER);
     CREATE TEMP TABLE quest_map (peer INTEGER PRIMARY KEY, local INTEGER);
+    CREATE TEMP TABLE adv_map (peer INTEGER PRIMARY KEY, local INTEGER);
     CREATE TEMP TABLE fresh (uuid TEXT PRIMARY KEY);
     CREATE TEMP TABLE sess_map (peer INTEGER PRIMARY KEY, local INTEGER);`);
 
@@ -166,7 +191,8 @@ async function mergeInto(
   const fresh =
     (await count(conn, "SELECT 1 FROM main.completed_sessions")) === 0 &&
     (await count(conn, "SELECT 1 FROM main.exercises WHERE creator = 'hero'")) === 0 &&
-    (await count(conn, "SELECT 1 FROM main.quests WHERE author = 'hero'")) === 0;
+    (await count(conn, "SELECT 1 FROM main.quests WHERE author = 'hero'")) === 0 &&
+    (await count(conn, "SELECT 1 FROM main.adventures WHERE author = 'hero'")) === 0;
 
   // Deletions of hero content first, as a union keeping the later stamp: from here on
   // `main.deleted_content` alone says what is gone, and `mergeAuthored` skips what it kills.
@@ -182,6 +208,9 @@ async function mergeInto(
   const canon = await canonicalColumns(conn, PEER);
   changes += await mergeAuthored(conn, EXERCISES, canon);
   changes += await mergeAuthored(conn, QUESTS, canon);
+  // After the quests, so `quest_map` is full (a quest brought back for a step also maps the other
+  // device's sessions of it), and before the sessions.
+  changes += await mergeAuthored(conn, ADVENTURES, canon);
 
   // Sessions this device neither has nor deleted.
   await conn.execAsync(`INSERT INTO temp.fresh SELECT uuid FROM ${PEER}.completed_sessions
@@ -208,6 +237,7 @@ async function mergeInto(
   );
   const moved = await takeEditedSets(conn);
   changes += await takeEditedFeedback(conn);
+  changes += await takeEditedNotes(conn);
   changes += await takeLargerXp(conn);
   const edited = await count(conn, "SELECT 1 FROM temp.edited");
   if (sessions > 0 || edited > 0) {
@@ -232,6 +262,9 @@ async function mergeInto(
     await remapRecords(conn);
     changes += sessions + edited;
   }
+
+  // After the fresh sessions are in, so a photo of a session that just arrived lands with it.
+  changes += await mergePhotos(conn);
 
   // Written empty by `mergeAuthored`, since it names the other device's id and that row may not
   // exist here yet: now every row, resurrected ones included, has its local id, the other device's
@@ -357,6 +390,41 @@ async function takeEditedFeedback(conn: IsolatedConnection): Promise<number> {
 }
 
 /**
+ * Sessions both hold whose note the other device wrote later (`notesEditedAt`, 0075): the note and
+ * its stamp, nothing else, so a note typed there never carries that device's older sets or
+ * feedback. Same stamp rule as the feedback. Returns how many.
+ */
+async function takeEditedNotes(conn: IsolatedConnection): Promise<number> {
+  const later = `SELECT l.id FROM ${PEER}.completed_sessions p
+    JOIN main.completed_sessions l ON l.uuid = p.uuid
+    WHERE ${editedLater("notesEditedAt", (_schema, alias) => `ifnull(${alias}.notes, '')`)}`;
+  const taken = await count(conn, later);
+  if (taken > 0) {
+    await conn.execAsync(`UPDATE main.completed_sessions SET (notes, notesEditedAt) =
+      (SELECT p.notes, p.notesEditedAt FROM ${PEER}.completed_sessions p
+        WHERE p.uuid = main.completed_sessions.uuid)
+      WHERE id IN (${later})`);
+  }
+  return taken;
+}
+
+/** Photos by uuid, copied as they are (never re-encoded). Returns how many were taken. */
+async function mergePhotos(conn: IsolatedConnection): Promise<number> {
+  const theirs = photosWon(PEER, "main", "SELECT uuid FROM main.deleted_sessions");
+  const taken = await count(conn, theirs);
+  if (taken > 0) {
+    // The outer SELECT carries the WHERE: without one SQLite reads `ON` of the conflict clause as
+    // a join constraint (same trap as `deleted_content` above).
+    await conn.execAsync(`INSERT INTO main.session_photos
+        (uuid, sessionUuid, sortOrder, image, updatedAt, deletedAt)
+      SELECT uuid, sessionUuid, sortOrder, image, updatedAt, deletedAt FROM (${theirs}) WHERE true
+      ON CONFLICT(uuid) DO UPDATE SET sortOrder = excluded.sortOrder, image = excluded.image,
+        updatedAt = excluded.updatedAt, deletedAt = excluded.deletedAt`);
+  }
+  return taken;
+}
+
+/**
  * Sessions both hold where the other device has more XP (a bonus added after the copy, 0073 on):
  * the larger wins and XP that was earned is never taken away. No stamp: a maximum is commutative
  * and idempotent, so both devices reach the same value in any order, and both writers keep it under
@@ -409,6 +477,7 @@ async function mergeAuthored(
       continue;
     }
     const theirs = id === null || (await takesPeer(conn, spec, canon, row, id, local));
+    written += await bringQuestsNamedBy(conn, spec, row.id, theirs);
     if (id === null) {
       id = await insertPeerRow(conn, spec, cols, values, row.id);
     } else if (theirs) {
@@ -472,7 +541,7 @@ async function takesPeer(
   if (theirs !== ours) return theirs > ours;
   // Compared by SQLite, as the comparison in backup.ts does: its BINARY order (UTF-8 bytes) is not
   // the order of JS strings (UTF-16 units), and two devices must read one order.
-  const table = spec.table as "exercises" | "quests";
+  const table = spec.table as "exercises" | "quests" | "adventures";
   const r = await conn.getFirstAsync<{ r: number | null }>(
     `SELECT ${canonical(PEER, table, "p", canon[table])} > ${canonical("main", table, "l", canon[table])} AS r
       FROM ${PEER}.${table} p, main.${table} l WHERE p.id = ${row.id} AND l.id = ${localId}`,
@@ -482,11 +551,18 @@ async function takesPeer(
 
 async function authoredColumns(conn: IsolatedConnection, spec: AuthoredSpec) {
   const cols = await columnsOf(conn, spec.table, ["id"]);
-  const values = selectList(
-    cols,
-    "p",
-    Object.fromEntries((spec.deferred ?? []).map((column) => [column, "NULL"])),
-  );
+  const values = selectList(cols, "p", {
+    ...Object.fromEntries((spec.deferred ?? []).map((column) => [column, "NULL"])),
+    // A quest this device no longer has, nor does the other (a retired adventure may lose one),
+    // is written as 0 (see `mergePeer`): it names no row, and the run guard makes the adventure
+    // unplayable until the hero repairs it, as on the device that deleted the quest.
+    ...Object.fromEntries(
+      Object.entries(spec.remap ?? {}).map(([column, map]) => [
+        column,
+        `ifnull((SELECT local FROM temp.${map} WHERE peer = p."${column}"), 0)`,
+      ]),
+    ),
+  });
   return { cols, values };
 }
 
@@ -524,6 +600,58 @@ async function resurrect(conn: IsolatedConnection, named: string): Promise<numbe
     await replaceChildren(conn, EXERCISES.children, peerId, id);
   }
   return rows.length;
+}
+
+/** The quests an incoming adventure names, before the row that names them is written. */
+async function bringQuestsNamedBy(
+  conn: IsolatedConnection,
+  spec: AuthoredSpec,
+  peerId: number,
+  theirs: boolean,
+): Promise<number> {
+  if (!(theirs && spec.remap?.questId)) return 0;
+  return await bringNamedQuests(
+    conn,
+    `SELECT questId FROM ${PEER}.${spec.table} WHERE id = ${peerId}
+     UNION SELECT questId FROM ${PEER}.${spec.children.table} WHERE ${spec.children.key} = ${peerId}`,
+  );
+}
+
+/**
+ * The twin of `resurrect` for quests: hero quests of the other device that an incoming adventure
+ * names but that were skipped as deleted. A quest deleted here is only deleted when no adventure
+ * names it, and the other device may have written one since. It is mapped to this device's copy
+ * when one is still here (a dead copy kept in use), else inserted after all with its slots, and
+ * `honourTombstones` keeps it while an active adventure or run names it. The tombstone stays: the
+ * quest is dead but in use on both devices, as a movement is. `named` selects the other device's
+ * quest ids. Returns how many it inserted.
+ */
+async function bringNamedQuests(conn: IsolatedConnection, named: string): Promise<number> {
+  const rows = await conn.getAllAsync<{ id: number; uuid: string | null }>(
+    `SELECT id, uuid FROM ${PEER}.quests WHERE author = 'hero' AND id IN (${named})
+      AND id NOT IN (SELECT peer FROM temp.quest_map)`,
+  );
+  if (rows.length === 0) return 0;
+  const { cols, values } = await authoredColumns(conn, QUESTS);
+  let brought = 0;
+  for (const { id: peerId, uuid } of rows) {
+    const kept =
+      uuid === null
+        ? null
+        : await conn.getFirstAsync<{ id: number | null }>(
+            `SELECT min(id) AS id FROM main.quests WHERE author = 'hero' AND uuid = ${sqlString(uuid)}`,
+          );
+    if (kept?.id != null) {
+      await conn.execAsync(`INSERT INTO temp.quest_map VALUES (${peerId}, ${kept.id})`);
+      continue;
+    }
+    const id = await insertPeerRow(conn, QUESTS, cols, values, peerId);
+    await conn.execAsync(`INSERT INTO temp.quest_map VALUES (${peerId}, ${id})`);
+    await conn.execAsync(`INSERT INTO temp.written VALUES ('quests', ${id})`);
+    await replaceChildren(conn, QUESTS.children, peerId, id);
+    brought++;
+  }
+  return brought;
 }
 
 type HeroRow = {
@@ -589,12 +717,22 @@ async function replaceChildren(
         `SELECT exerciseId FROM ${PEER}.${table} WHERE ${key} = ${peerId}`,
       );
     }
+    if (column === "questId") {
+      resurrected += await bringNamedQuests(
+        conn,
+        `SELECT questId FROM ${PEER}.${table} WHERE ${key} = ${peerId}`,
+      );
+    }
+    // A quest the other device itself lacks is not a failure to map (`questId = 0`, see `mergePeer`):
+    // only a row it still has and this device cannot map is.
+    const lacksIt = column === "questId" ? ` AND ${column} IN (SELECT id FROM ${PEER}.quests)` : "";
     const unmapped = await count(
       conn,
-      `SELECT 1 FROM ${PEER}.${table} WHERE ${key} = ${peerId} AND ${column} NOT IN (SELECT peer FROM temp.${map})`,
+      `SELECT 1 FROM ${PEER}.${table} WHERE ${key} = ${peerId} AND ${column} NOT IN (SELECT peer FROM temp.${map})${lacksIt}`,
     );
     if (unmapped > 0) throw new Error(`Merge: ${table} of ${peerId} names rows this device lacks`);
-    replaced[column] = `(SELECT local FROM temp.${map} WHERE peer = p.${column})`;
+    const local = `(SELECT local FROM temp.${map} WHERE peer = p.${column})`;
+    replaced[column] = column === "questId" ? `ifnull(${local}, 0)` : local;
   }
   await conn.execAsync(`DELETE FROM main.${table} WHERE ${key} = ${localId}`);
   await conn.execAsync(`INSERT INTO main.${table} (${columnList(cols)})
@@ -648,6 +786,8 @@ export async function honourTombstones(): Promise<number> {
     sql.raw(`SELECT id FROM ${table} r WHERE ${owner} = 'hero' AND EXISTS
       (SELECT 1 FROM deleted_content d WHERE d.uuid = r.uuid AND d.deletedAt >= ifnull(r.updatedAt, 0))`);
   for (const { id } of await db.all<{ id: number }>(dead("quests", "author"))) {
+    // Kept while an active adventure or a run names it, as a movement in use is (R32).
+    if ((await adventuresUsingQuest(id)).length > 0) continue;
     await removeQuest(id);
     removed++;
   }

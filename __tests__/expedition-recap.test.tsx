@@ -3,6 +3,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import ExpeditionRecapScreen from "@/app/recap";
 import { ToastProvider } from "@/components/common/Toast";
+import { rawColors } from "@/constants/rawColors";
 import type { LocationFix } from "@/modules/bati-location";
 import { accept, EMPTY } from "@/src/gps/track";
 import { useSettingsStore } from "@/stores/settings";
@@ -25,11 +26,23 @@ const mockPush = jest.fn<void, [string]>();
 /** Every style handed to MapLibre, in order. The refusal is asserted on the JSON of the last. */
 const mockMapStyle = jest.fn<void, [unknown]>();
 
+const mockRouteCandidates = jest.fn();
 jest.mock("@/db/gps", () => ({
   pointsOf: (id: string) => mockPointsOf(id),
   outingSession: (id: string) => mockOutingSession(id),
+  routeCandidates: (...args: unknown[]) => mockRouteCandidates(...args),
 }));
+/** The `data` each source was last handed, the paint of each layer, the camera's last bounds. */
+const mockSources: Record<string, unknown> = {};
+const mockLayers: Record<string, unknown> = {};
+let mockCameraBounds: unknown;
+/** The session the route names. A test that reads route candidates picks its own: the hook keeps its last read. */
+let mockSession = "session-uuid";
 jest.mock("@/db/quests", () => ({ listQuestTemplates: () => mockQuestTemplates() }));
+const mockLoadConfiguredQuest = jest.fn<Promise<unknown>, [number]>();
+jest.mock("@/db/questConfig", () => ({
+  loadConfiguredQuest: (id: number) => mockLoadConfiguredQuest(id),
+}));
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 // The recap names what the leagues moved now, which is one read of the village. These tests are
 // about the map and its numbers, so the road is simply absent and the line draws nothing.
@@ -52,7 +65,7 @@ jest.mock("expo-router", () => ({
     back: jest.fn(),
     replace: jest.fn(),
   }),
-  useLocalSearchParams: () => ({ session: "session-uuid" }),
+  useLocalSearchParams: () => ({ session: mockSession }),
 }));
 
 // The renderer is native and there is none in jest. Everything below the `Map` is a plain view:
@@ -69,9 +82,26 @@ jest.mock("@maplibre/maplibre-react-native", () => {
       mockMapStyle(mapStyle);
       return <View testID="maplibre">{children}</View>;
     },
-    Camera: passthrough("maplibre-camera"),
-    GeoJSONSource: passthrough("maplibre-source"),
-    Layer: passthrough("maplibre-layer"),
+    Camera: ({ bounds }: { bounds?: unknown }) => {
+      mockCameraBounds = bounds;
+      return null;
+    },
+    GeoJSONSource: ({
+      id,
+      data,
+      children,
+    }: {
+      id: string;
+      data: unknown;
+      children?: React.ReactNode;
+    }) => {
+      mockSources[id] = data;
+      return <View testID={`source-${id}`}>{children}</View>;
+    },
+    Layer: ({ id, paint }: { id: string; paint: unknown }) => {
+      mockLayers[id] = paint;
+      return null;
+    },
   };
 });
 
@@ -197,6 +227,10 @@ const MILE_PACE = `${clock(Math.round(MOVING_S * (1609.344 / CREDITED_M)))} /mi`
 
 beforeEach(() => {
   mockPointsOf.mockReset();
+  mockRouteCandidates.mockReset();
+  mockSession = "session-uuid";
+  for (const k of Object.keys(mockSources)) delete mockSources[k];
+  mockCameraBounds = undefined;
   mockPush.mockClear();
   mockOutingSession.mockResolvedValue({
     id: 42,
@@ -205,13 +239,20 @@ beforeEach(() => {
     leaguesM: CREDITED_M,
     movingSeconds: MOVING_S,
   });
+  mockLoadConfiguredQuest.mockResolvedValue(null);
   mockQuestTemplates.mockResolvedValue([
     { id: 7, enTitle: "The Warden's Round", frTitle: "La Ronde du Veilleur" },
   ]);
   mockMapStyle.mockClear();
   // Accepted, because everything else in this file is about a screen with a basemap on it. The
   // refusal is the default in the app and has its own describe block below.
-  useSettingsStore.setState({ distanceUnit: "metric", language: "en", mapTilesEnabled: true });
+  useSettingsStore.setState({
+    distanceUnit: "metric",
+    language: "en",
+    mapTilesEnabled: true,
+    mapStyle: "ember",
+    outingDisplay: {},
+  });
 });
 
 describe("a session that left the walls", () => {
@@ -310,6 +351,36 @@ describe("a session that left the walls", () => {
     // The screen's own name is the fallback, never the title of a walk that has one.
     expect(screen.queryByText("The ground covered")).toBeNull();
     expect(screen.getByTestId("recap-date")).toBeTruthy();
+  });
+
+  test("a walk the hero reads in km/h reads km/h here too", async () => {
+    useSettingsStore.setState({ outingDisplay: { walk: { rate: "speed" } } });
+    await mount();
+    expect(await screen.findByTestId("recap-pace")).toHaveTextContent(/km\/h/);
+    expect(screen.getByTestId("recap-pace")).not.toHaveTextContent("/km");
+  });
+
+  // A mixed quest stores no activity: the recap reads the tab of the leg it was priced as, the
+  // same one the panel and the goal sheet read, not the Walk tab.
+  test("a ride plus indoor quest reads the Ride tab here, km/h by default", async () => {
+    mockOutingSession.mockResolvedValue({
+      id: 42,
+      questId: 7,
+      performedAt: new Date(T0),
+      leaguesM: CREDITED_M,
+      movingSeconds: MOVING_S,
+      outing: null,
+    });
+    mockLoadConfiguredQuest.mockResolvedValue({
+      quest: {
+        exercises: [
+          { exercise: { style: "expedition", locomotion: "ride" } },
+          { exercise: { style: "strength", locomotion: null } },
+        ],
+      },
+    });
+    await mount();
+    expect(await screen.findByTestId("recap-pace")).toHaveTextContent(/km\/h/);
   });
 
   test("the unit comes from the setting, which is only possible through the format helpers", async () => {
@@ -438,6 +509,91 @@ describe("an outing long and varied enough to have a story", () => {
   });
 });
 
+/** Legs at their own speed, one fix a second, east; `baro` rises 10 m per kilometre when asked. */
+function legs(spec: { metres: number; mps: number }[], baro: boolean): LocationFix[] {
+  const lonPerMetre = 1 / (111_320 * Math.cos((43.6 * Math.PI) / 180));
+  const out: LocationFix[] = [fix({ t: T0, acc: 5 })];
+  let metres = 0;
+  for (const leg of spec) {
+    const count = Math.round(leg.metres / leg.mps);
+    for (let i = 0; i < count; i++) {
+      metres += leg.metres / count;
+      out.push(
+        fix({
+          t: T0 + out.length * 1000,
+          lon: 1.44 + metres * lonPerMetre,
+          acc: 4,
+          speed: leg.mps,
+          distFromPrev: leg.metres / count,
+          ele: null,
+          baro: baro ? metres / 100 : null,
+        }),
+      );
+    }
+  }
+  return out;
+}
+
+describe("the leagues table", () => {
+  const THREE = [
+    { metres: 1010, mps: 2 },
+    { metres: 1000, mps: 4 },
+    { metres: 1000, mps: 3 },
+    { metres: 400, mps: 3 },
+  ];
+
+  test("one row per league, the quickest in gold with its word, and the legend agrees", async () => {
+    mockPointsOf.mockResolvedValue(legs(THREE, true));
+    await mount();
+    await screen.findByTestId("recap-map");
+
+    for (const n of [1, 2, 3, 4]) expect(screen.getByTestId(`recap-league-${n}`)).toBeTruthy();
+    expect(screen.queryByTestId("recap-league-5")).toBeNull();
+    expect(screen.getByTestId("recap-league-best")).toHaveTextContent("Quickest");
+    expect(screen.getByTestId("recap-league-2")).toContainElement(
+      screen.getByTestId("recap-league-best"),
+    );
+    // League 2 at 4 m/s is about 4:10 /km, and the legend prints the very same figure.
+    expect(screen.getByTestId("recap-league-2")).toHaveTextContent(/4:1\d \/km/);
+    const pace = /\d:\d\d \/km/.exec(
+      String(screen.getByTestId("recap-best-league").props.children),
+    );
+    expect(screen.getByTestId("recap-league-2")).toHaveTextContent(
+      new RegExp(pace?.[0] ?? "no pace"),
+    );
+    // The climb column exists because the barometer measured it.
+    expect(screen.getByTestId("recap-league-1")).toHaveTextContent(/\d m$/);
+  });
+
+  test("no table under one league", async () => {
+    mockPointsOf.mockResolvedValue(legs([{ metres: 900, mps: 2 }], false));
+    await mount();
+    await screen.findByTestId("recap-map");
+    expect(screen.queryByTestId("recap-leagues")).toBeNull();
+  });
+
+  test("no climb column when no barometer measured the rows", async () => {
+    mockPointsOf.mockResolvedValue(legs(THREE, false));
+    await mount();
+    await screen.findByTestId("recap-leagues");
+    expect(screen.getByTestId("recap-league-1")).not.toHaveTextContent(/ m$/);
+  });
+
+  test("a GPS-height row prints a dash, and imperial keeps leagues with the note", async () => {
+    mockPointsOf.mockResolvedValue(
+      legs(THREE, true).map((f, i, all) =>
+        i > all.length - 160 ? { ...f, baro: null, ele: 100 } : f,
+      ),
+    );
+    useSettingsStore.setState({ distanceUnit: "imperial" });
+    await mount();
+    await screen.findByTestId("recap-map");
+    expect(screen.getByTestId("recap-league-4")).toHaveTextContent(/-$/);
+    expect(screen.getByTestId("recap-league-2")).toHaveTextContent(/\/mi/);
+    expect(screen.getByText("A league is 1 km, even in miles.")).toBeTruthy();
+  });
+});
+
 describe("a session that never left the walls", () => {
   beforeEach(() => {
     mockOutingSession.mockResolvedValue({
@@ -519,6 +675,25 @@ describe("a hero who has not allowed the basemap", () => {
     expect(style).toContain('"sources":{}');
   });
 
+  test("and a chosen style does not change that: no tiles, no fetch, whatever the look", async () => {
+    useSettingsStore.setState({ mapStyle: "dark" });
+    await mount();
+    expect(await screen.findByTestId("recap-map")).toBeTruthy();
+    const style = JSON.stringify(mockMapStyle.mock.calls.at(-1)?.[0]);
+    expect(style).not.toMatch(/https?:\/\//);
+    expect(style).toContain('"sources":{}');
+  });
+
+  test("with the tiles on, the chosen style is the one MapLibre gets", async () => {
+    useSettingsStore.setState({ mapTilesEnabled: true, mapStyle: "dark" });
+    await mount();
+    expect(await screen.findByTestId("recap-map")).toBeTruthy();
+    const style = JSON.stringify(mockMapStyle.mock.calls.at(-1)?.[0]);
+    // OpenFreeMap's own dark ground and its sprite, which Braise does not carry.
+    expect(style).toContain("rgb(12,12,12)");
+    expect(style).toContain("tiles.openfreemap.org/sprites");
+  });
+
   test("the whole style comes back once the hero has said yes", async () => {
     useSettingsStore.setState({ mapTilesEnabled: true });
     await mount();
@@ -564,5 +739,88 @@ describe("a hero who has not allowed the basemap", () => {
 
     expect(await screen.findByTestId("recap-no-trace")).toBeTruthy();
     expect(screen.queryByTestId("map-offer")).toBeNull();
+  });
+});
+
+/**
+ * The route ghost: a pale line and a date, never a time. Each test names its own session, because
+ * the candidates hook keeps its last read per session.
+ */
+describe("the route ghost", () => {
+  const past = (points: { lat: number; lon: number }[]) => ({
+    id: "past-1",
+    performedAt: new Date(Date.UTC(2026, 7, 1, 12)),
+    points,
+  });
+  const shapeOf = (fixes: LocationFix[]) =>
+    past(fixes.filter((_, i) => i % 5 === 0).map((f) => ({ lat: f.lat, lon: f.lon })));
+  const on = () => useSettingsStore.setState({ outingDisplay: { walk: { routeGhost: true } } });
+
+  test("tab on, the same ground before: the pale line under today's, and a legend with the date only", async () => {
+    mockSession = "g-recap-on";
+    on();
+    mockPointsOf.mockResolvedValue(walkThenStand());
+    mockRouteCandidates.mockResolvedValue([shapeOf(walkThenStand())]);
+    await mount();
+
+    expect(await screen.findByTestId("source-trace-route-ghost")).toBeTruthy();
+    const legend = screen.getByTestId("recap-route-ghost-legend");
+    expect(legend).toHaveTextContent(/^Pale line: your outing of Aug 1, 2026 on this route\.$/);
+    expect(legend).not.toHaveTextContent(/\d+:\d{2}/);
+    expect(
+      (mockLayers["trace-route-ghost-line"] as Record<string, unknown>)["line-color"],
+    ).not.toBe(rawColors.resourceGold);
+    // The read is bounded by this outing's own date and never matches itself.
+    expect(mockRouteCandidates).toHaveBeenCalledWith(
+      "walk",
+      expect.objectContaining({ lat: 43.6, lon: 1.44 }),
+      new Date(T0),
+      "g-recap-on",
+    );
+    // Drawn first, under the trace.
+    const ids = screen.getAllByTestId(/^source-/).map((n) => n.props.testID);
+    expect(ids.indexOf("source-trace-route-ghost")).toBeLessThan(ids.indexOf("source-trace-path"));
+  });
+
+  test("the camera frames today's trace with and without a ghost", async () => {
+    mockSession = "g-recap-cam-off";
+    mockPointsOf.mockResolvedValue(walkThenStand());
+    const first = await mount();
+    await screen.findByTestId("recap-map");
+    const without = mockCameraBounds;
+    expect(without).toBeDefined();
+    await act(() => first.unmount());
+
+    mockSession = "g-recap-cam-on";
+    on();
+    mockRouteCandidates.mockResolvedValue([
+      past([{ lat: 44.6, lon: 2.44 }, ...shapeOf(walkThenStand()).points]),
+    ]);
+    await mount();
+    await screen.findByTestId("source-trace-route-ghost");
+    expect(mockCameraBounds).toEqual(without);
+  });
+
+  test("tab off: nothing read, no line, no legend", async () => {
+    mockSession = "g-recap-off";
+    mockPointsOf.mockResolvedValue(walkThenStand());
+    await mount();
+    await screen.findByTestId("recap-map");
+    expect(mockRouteCandidates).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("source-trace-route-ghost")).toBeNull();
+    expect(screen.queryByTestId("recap-route-ghost-legend")).toBeNull();
+  });
+
+  test("a past outing that was only half of this route is not drawn", async () => {
+    mockSession = "g-recap-half";
+    on();
+    const whole = walkSlowThenQuick();
+    mockPointsOf.mockResolvedValue(whole);
+    mockRouteCandidates.mockResolvedValue([shapeOf(whole.slice(0, 1200))]);
+    await mount();
+    await screen.findByTestId("recap-map");
+    expect(mockRouteCandidates).toHaveBeenCalled();
+    expect(screen.queryByTestId("source-trace-route-ghost")).toBeNull();
+    expect(screen.queryByTestId("recap-route-ghost-legend")).toBeNull();
   });
 });

@@ -1,7 +1,8 @@
 import type { TFunction } from "i18next";
 import { formatHoursMinutes } from "@/components/journal/journalFormat";
 import { HIDDEN_ENDS_M, trimEnds } from "@/components/journal/tracePreview";
-import { formatDistance, formatElevation, formatRate, rateKind } from "@/constants/distanceFormat";
+import { formatDistance, formatElevation, formatRate } from "@/constants/distanceFormat";
+import type { RateKind } from "@/constants/outingDisplay";
 import { formatDuration } from "@/db";
 import type { Chronicle } from "@/db/chronicle";
 import type { CompletedSession } from "@/db/completed";
@@ -27,6 +28,7 @@ function outingStats(
   t: TFunction,
   language: AppLanguage,
   unit: DistanceUnit,
+  rate: RateKind,
 ): Stats {
   const metres = session.leaguesM ?? 0;
   const moving = session.movingSeconds ?? session.durationSeconds ?? 0;
@@ -41,8 +43,8 @@ function outingStats(
       : null,
     paced
       ? {
-          value: formatRate(metres, moving * 1000, unit, language, session.outing),
-          label: t(`journal.ground_${rateKind(session.outing)}`),
+          value: formatRate(metres, moving * 1000, unit, language, rate),
+          label: t(`journal.ground_${rate}`),
         }
       : null,
     ascent > 0
@@ -72,10 +74,11 @@ export function shareStats(
   t: TFunction,
   language: AppLanguage,
   unit: DistanceUnit,
+  rate: RateKind,
 ): ShareStat[] {
   const stats =
     session.outing != null
-      ? outingStats(session, t, language, unit)
+      ? outingStats(session, t, language, unit, rate)
       : workoutStats(session, t, language);
   return stats.filter((s): s is ShareStat => s !== null);
 }

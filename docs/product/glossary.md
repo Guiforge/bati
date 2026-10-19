@@ -2,7 +2,7 @@
 title: Glossary
 type: reference
 status: draft
-updated: 2026-10-15
+updated: 2026-10-17
 related: [writing.md, ../design/audits/2026-09-10-french-copy.md]
 ---
 
@@ -68,6 +68,8 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 | difficulty | Easy, Medium, Hard, chosen per quest | Easy / Medium / Hard | Facile / Moyen / Difficile |  | Leicht / Mittel / Schwer | Fácil / Media / Difícil |
 | written for | Who a quest was written for, the tag on its card | Beginner / Regular / Advanced | Débutant / Régulier / Confirmé |  | Einsteiger / Regelmäßig / Fortgeschritten | Principiante / Habitual / Avanzado |
 | chronicle | The year's recap, a picture to share, offered in December and January | chronicle | chronique | bilan (a bilan is a report, the chronicle is the year told) | Chronik | crónica |
+| light week | A week offered after two sessions in a row under the target, or five weeks at four sessions or more: one round fewer, same variations, a quest with rounds the hero set by hand left alone. Refusable, and a no silences the offer for 14 days. An accepted week lasts 7 days (`db/lightWeek.ts`) | light week | semaine légère | semaine de repos (it is a lighter week, not a rest) | leichte Woche | semana ligera |
+| hard set | Every logged set of a workout movement whose pattern is not mobility, missed sets included; a hero's own movement with no pattern is out. The Stats count them per movement pattern over seven days | hard set | série dure | série (a set that was warm-up or a stretch is not hard) | harter Satz | serie dura |
 
 ## Progression
 
@@ -79,7 +81,8 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 | record | A result beaten on one movement, in its own unit | record | record | a session's best | Rekord | récord |
 | mark | A session's best: longest, most XP, longest outing | best | marque | record | Bestwert | mejor marca |
 | badge on an old row | A best whose kind the row did not keep | PR | exploit |  | Bestwert | Marca (not Hazaña, the deed family) |
-| ghost | What the hero did on this movement last time, shown during the set | last time / best | la dernière fois / record |  | letztes Mal / Rekord | la última vez / récord |
+| ghost | What the hero did on this movement last time, shown during the set (a set; for a route see route ghost) | last time / best | la dernière fois / record |  | letztes Mal / Rekord | la última vez / récord |
+| route ghost | The pale line of the hero's last outing on the same route, on the outing map and its recap | route ghost | fantôme de parcours | trace fantôme | Streckengeist (not Geist alone) | fantasma de recorrido |
 | XP | Experience, one rep is one | XP | XP |  | XP | XP |
 | level | The hero's level, from XP | level | niveau |  | Level | nivel |
 | starting point | The hero's answer to "where are you at", which sets where a quest never played starts | starting point | point de départ | niveau (the hero's, from XP) | Ausgangspunkt | punto de partida |
@@ -102,6 +105,7 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 |---|---|---|---|---|---|---|
 | adventure | A chain of quests that ends on a boss | adventure (campaign in a heading) | aventure (campagne in a heading) |  | Abenteuer (Kampagne in a heading) | aventura (campaña in a heading) |
 | step | One quest inside an adventure | step | étape | marche | Etappe | etapa |
+| playthrough | One go at an adventure, from its first step to its end, or until the hero leaves it | playthrough (not run: an outing is "a walk, a run or a ride") | partie | course (an outing's word), campagne (the adventure's heading word), abandon | Durchgang (not Lauf, a jog) | partida (not carrera, a race) |
 | boss | The monster at the end of an adventure | boss | boss |  | Boss | jefe |
 | HP | The boss's health pool for the campaign | HP | PV |  | LP | PV |
 | weakness / resistance | A muscle that deals 50% more, or half, the damage | weakness / resistance | faiblesse / résistance |  | Schwäche / Resistenz | debilidad / resistencia |
@@ -163,6 +167,9 @@ Decisions nobody has taken yet.
 ## Settled on 2026-09-14
 
 - **Exercise**, not movement, in both languages. *Movement* survives only as a movement family.
+- **Objectif** is what the app asks tonight (the big number on a set, the progressive target);
+  **à battre** is the number that beats the record (`toBeat`, the wall's rule). Two numbers, two
+  words: the first moves with the last session, the second with the record.
 - **Objectif** for every number to reach, in French. English keeps *target* for a set and an oath
   and *goal* for an outing: both are plain English and neither collides with another term.
 - **Outing** / **sortie** wherever a reader looks, the privacy policy and the legal page included.
@@ -181,6 +188,12 @@ Decisions nobody has taken yet.
 - **Mon héros à l'abri** / *My hero, safe* for the single place where the daily copy and device sync
   are chosen. **Enregistrer un fichier** / *Save a file* for Android's Save as, **Envoyer à une autre
   app** / *Send to another app* for the share sheet.
+
+## Settled on 2026-10-17
+
+- **Partie** / *playthrough* / *Durchgang* / *partida* / ru *прохождение*, D-34. The hero *leaves* a
+  playthrough ("Laisser la partie"), never abandons or fails it, and a left playthrough is shown
+  nowhere. The code keeps its word, `adventure_runs`/`run`.
 
 ## Related
 

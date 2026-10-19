@@ -10,8 +10,16 @@ import config from "@/tamagui.config";
 // The second audit: "up to +N XP" is gold on the list card and was neutral here, and the
 // difficulty tag ignored the palette every other difficulty marker uses.
 
-jest.mock("@/db/questConfig", () => ({ loadDefaultLevels: async () => () => "medium" }));
+jest.mock("@/db/questConfig", () => ({
+  loadDefaultLevels: async () => () => "medium",
+  loadSwapJournal: async () => ({ history: new Map() }),
+}));
 jest.mock("@/hooks/useSetAside");
+// The rule is db-light-week.test.ts's; these suites read the screen with no light week running.
+jest.mock("@/db/lightWeek", () => ({
+  isLightWeekRunning: async () => false,
+  lightenRounds: (quest: unknown) => quest,
+}));
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({

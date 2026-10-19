@@ -37,9 +37,14 @@ jest.mock("@/stores/session", () => ({
   useSessionStore: (selector: (s: Record<string, unknown>) => unknown) => selector(mockSession),
 }));
 
-let mockExpedition: { sessionUuid: string | null; error: string | null } = {
+let mockExpedition: {
+  sessionUuid: string | null;
+  error: string | null;
+  view: { keepAwake: boolean };
+} = {
   sessionUuid: null,
   error: null,
+  view: { keepAwake: false },
 };
 jest.mock("@/stores/expedition", () => ({
   useExpeditionStore: (selector: (s: typeof mockExpedition) => unknown) => selector(mockExpedition),
@@ -93,7 +98,7 @@ describe("the session screen, on an outing", () => {
     jest.useFakeTimers();
     mockUseKeepAwake.mockClear();
     mockQuit.mockClear();
-    mockExpedition = { sessionUuid: "s1", error: null };
+    mockExpedition = { sessionUuid: "s1", error: null, view: { keepAwake: false } };
     setSession(OUTING, null);
   });
 
@@ -110,6 +115,13 @@ describe("the session screen, on an outing", () => {
   test("does not hold the screen awake", async () => {
     await mount();
     expect(mockUseKeepAwake).not.toHaveBeenCalled();
+  });
+
+  // Off by default, on when the hero chose it for this activity on this phone (D-35 Q3).
+  test("holds the screen awake once the hero chose it for the activity", async () => {
+    mockExpedition = { ...mockExpedition, view: { keepAwake: true } };
+    await mount();
+    expect(mockUseKeepAwake).toHaveBeenCalled();
   });
 
   test("holds the screen awake for a workout, as it always has", async () => {
@@ -189,7 +201,7 @@ describe("the session screen, on an outing", () => {
    * store to settle - a uuid, or an error - which is exactly when the last dialog closes.
    */
   test("does not start counting while the permission dialogs are still up", async () => {
-    mockExpedition = { sessionUuid: null, error: null };
+    mockExpedition = { sessionUuid: null, error: null, view: { keepAwake: false } };
     await mount();
     await act(() => {
       jest.advanceTimersByTime(30_000);

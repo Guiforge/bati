@@ -1,6 +1,7 @@
 import * as Haptics from "expo-haptics";
 import { create } from "zustand";
-import { formatClock, formatDistance } from "@/constants/distanceFormat";
+import { formatClock } from "@/constants/distanceFormat";
+import type { BuzzEvery } from "@/constants/outingDisplay";
 import { hasOutdoorSlot } from "@/db/expeditions";
 import { appendPoints, pointsOf } from "@/db/gps";
 import type { DistanceUnit } from "@/db/preferences";
@@ -18,6 +19,15 @@ import {
   start as startNative,
   stop as stopNative,
 } from "@/modules/bati-location";
+import {
+  DEFAULT_LIVE_VIEW,
+  figureText,
+  LAP_START,
+  type Lap,
+  type LiveView,
+  nextLap,
+  resolvePlaces,
+} from "@/src/gps/liveFigures";
 import {
   accept,
   EMPTY,
@@ -96,6 +106,13 @@ type ExpeditionState = {
   error: string | null;
   /** Flipped once, the moment the goal was met. Read by the panel's status line. */
   goalReached: boolean;
+  /**
+   * What this outing shows, frozen by `begin` (see `LiveView`). `end()` leaves it in place, so
+   * `beginTrackingIfOuting` writes a safe one before anything is awaited.
+   */
+  view: LiveView;
+  /** Where the current league started on the moving clock (the "Lieue en cours" figure). */
+  lap: Lap;
   begin: (
     sessionUuid: string,
     notification: Notification,
@@ -103,6 +120,7 @@ type ExpeditionState = {
     unit: DistanceUnit,
     goal?: OutingGoal | null,
     haptics?: boolean,
+    view?: LiveView,
   ) => Promise<boolean>;
   end: () => Promise<void>;
 };
@@ -213,14 +231,39 @@ export function bindSession(bridge: SessionBridge): void {
  * through `bindSession` rather than an import: `stores/session` imports this store, and the way
  * back was a require cycle, safe only while nothing used the other side at module scope.
  */
-function progressLine(track: TrackState, unit: DistanceUnit): string {
-  const elapsed = formatClock((sessionBridge?.recordedSeconds() ?? 0) * 1000);
+function progressLine(
+  track: TrackState,
+  unit: DistanceUnit,
+  view: LiveView,
+  goal: OutingGoal | null,
+  reached: boolean,
+): string {
+  const recordedSeconds = sessionBridge?.recordedSeconds() ?? 0;
+  const elapsed = formatClock(recordedSeconds * 1000);
   // `startedAt` is set by the first fix the gate accepts, so null is exactly "no sky yet" - the
   // same test the panel's status line makes.
+  if (track.startedAt === null) return `${elapsed} · ${acquiringWord}`;
   // The notification's words come from i18n at `begin`, so its number follows the same language.
-  const ground =
-    track.startedAt === null ? acquiringWord : formatDistance(track.distanceM, unit, i18n.language);
-  return `${elapsed} · ${ground}`;
+  const ctx = {
+    track,
+    recordedSeconds,
+    recentSpeedMps: null,
+    goal,
+    goalReached: reached,
+    unit,
+    language: i18n.language,
+    rate: view.rate,
+    walkRun: view.walkRun,
+    lapFromMs: null,
+  };
+  // The clock is already on the line, so the second figure is the first one that is not it: the
+  // hero's big number, else their first small one, else the distance (today's line). The lap is a
+  // clock too: `32:04 · 3:12` is two unlabelled clocks, the confusion that removed moving time
+  // from the panel. That is why `lapFromMs` is null here and the line skips it.
+  const places = resolvePlaces(view, ctx);
+  const second =
+    [places.big, ...places.small].find((m) => m !== "time" && m !== "lap") ?? "distance";
+  return `${elapsed} · ${figureText(second, ctx, false)}`;
 }
 
 /**
@@ -233,10 +276,16 @@ function progressLine(track: TrackState, unit: DistanceUnit): string {
  * The state word ("Goal reached") is native's to own from here on, via `setReached` — see
  * `BatiLocationService.notification()`. This only ever pushes the figure.
  */
-function announceGoalReached(track: TrackState, unit: DistanceUnit, haptics: boolean): void {
+function announceGoalReached(
+  track: TrackState,
+  unit: DistanceUnit,
+  haptics: boolean,
+  view: LiveView,
+  goal: OutingGoal | null,
+): void {
   if (haptics) buzz("expedition.goalHaptic");
   setReached();
-  setProgress(progressLine(track, unit));
+  setProgress(progressLine(track, unit, view, goal, true));
 }
 
 /** The one haptic call in this file, so a walk cannot end up with two ways of buzzing. */
@@ -258,13 +307,13 @@ function buzz(context: string): void {
  * window takes back what it advanced (`RULES.pauseAfterMs`), so a hero who stops just past the
  * ninth league would otherwise be buzzed a second time for the same kilometre on the way back up.
  *
- * Every fifth on a mount: at twenty kilometres an hour a buzz per league is one every three
- * minutes, which stops being news and starts being the phone fidgeting in a bag.
+ * How often is the hero's choice, frozen with the view when the outing begins (`LiveView`): by
+ * default every league on foot and every fifth on a mount, because at twenty kilometres an hour a
+ * buzz per league is one every three minutes, which stops being news and starts being the phone
+ * fidgeting in a bag. 0 is "at the goal only": the goal's own buzz is another function.
  */
-const LEAGUES_PER_BUZZ = { onFoot: 1, mounted: 5 } as const;
-
-function announceLeague(track: TrackState, haptics: boolean, mounted: boolean): void {
-  const step = mounted ? LEAGUES_PER_BUZZ.mounted : LEAGUES_PER_BUZZ.onFoot;
+function announceLeague(track: TrackState, haptics: boolean, step: BuzzEvery): void {
+  if (step === 0) return;
   const leagues = Math.floor(leaguesOf(track) / step) * step;
   if (leagues <= leaguesCrossed) return;
   leaguesCrossed = leagues;
@@ -279,8 +328,18 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
   recentSpeedMps: null,
   error: null,
   goalReached: false,
+  view: DEFAULT_LIVE_VIEW,
+  lap: LAP_START,
 
-  begin: async (sessionUuid, notification, mounted, unit, goal = null, haptics = true) => {
+  begin: async (
+    sessionUuid,
+    notification,
+    mounted,
+    unit,
+    goal = null,
+    haptics = true,
+    view = DEFAULT_LIVE_VIEW,
+  ) => {
     // The previous run is closed before this one can be refused. Both early exits below used to
     // return with the last outing's reading still in state: permission revoked between two
     // sorties in the same process, and DONE credited the first walk's kilometres a second time,
@@ -299,6 +358,9 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       recentSpeedMps: null,
       error: null,
       goalReached: false,
+      // Before the early returns below, so the "unavailable" and "permission" paths render from it.
+      view,
+      lap: LAP_START,
     });
 
     if (!isAvailable()) {
@@ -342,7 +404,14 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       reportError("expedition.resumeTrack", e);
       return [] as LocationFix[];
     });
-    const resumed = priorFixes.reduce(accept, EMPTY);
+    // One loop for the track and the lap: a walk killed at 3.4 km resumes with the lap that
+    // started at its 3 km crossing, not at zero.
+    let resumed = EMPTY;
+    let resumedLap = LAP_START;
+    for (const fix of priorFixes) {
+      resumed = accept(resumed, fix);
+      resumedLap = nextLap(resumedLap, resumed);
+    }
     // The replayed ground is already behind the hero: seeding the mark from it is what keeps a
     // walk the OS killed at eight kilometres from buzzing eight times on the way back in.
     leaguesCrossed = leaguesOf(resumed);
@@ -350,6 +419,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
     set({
       sessionUuid,
       track: resumed,
+      lap: resumedLap,
       lastFix: priorFixes[priorFixes.length - 1] ?? null,
       fixes: priorFixes,
       error: null,
@@ -365,6 +435,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
         const reached = wasReached || goalReached(goal, track);
         set({
           track,
+          lap: nextLap(get().lap, track),
           lastFix: fix,
           fixes: [...get().fixes, fix],
           recentSpeedMps: meanSpeed(fix.t),
@@ -372,13 +443,13 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
           error: clearedTransient(get().error),
         });
 
-        if (reached && !wasReached) announceGoalReached(track, unit, haptics);
-        announceLeague(track, haptics, mounted);
+        if (reached && !wasReached) announceGoalReached(track, unit, haptics, view, goal);
+        announceLeague(track, haptics, view.buzzEvery);
 
         // Same cadence as the write, so a pocket that is never looked at costs one notification
         // update every thirty seconds rather than one a second.
         if (buffer.length >= FLUSH_EVERY) {
-          setProgress(progressLine(track, unit));
+          setProgress(progressLine(track, unit, view, goal, reached));
           flush(sessionUuid).catch((e) => reportError("expedition.flush", e));
         }
       }),
@@ -425,7 +496,8 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       // Once immediately, then on the clock. Waiting for the first tick left the notification
       // saying only "on the road" for half a minute, which is the half minute a hero is most
       // likely to look at it: they have just set off and want to see that something started.
-      const tick = () => setProgress(progressLine(get().track, unit));
+      const tick = () =>
+        setProgress(progressLine(get().track, unit, view, goal, get().goalReached));
       tick();
       progressTimer = setInterval(tick, PROGRESS_EVERY_MS);
     }

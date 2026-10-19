@@ -42,7 +42,7 @@ const slot = (over: Partial<QuestExercise> = {}): QuestExercise =>
     exercise,
     images: [],
     target: { type: "time", value: 45 },
-    ghost: { last: 39, best: 52 },
+    ghost: { last: 39, best: 52, at: 0, bestAt: 0, seasonBest: 52, recent: [] },
     ...over,
   }) as unknown as QuestExercise;
 

@@ -287,3 +287,45 @@ describe("estimateDistanceSeconds", () => {
     expect(estimateDistanceSeconds(1000, true)).toBe(179);
   });
 });
+
+describe("isWalkRunSession", () => {
+  const { isWalkRunSession } = require("../db/expeditions") as typeof import("../db/expeditions");
+  const proposed = { exercises: [{ walkRun: true as const }] };
+
+  test.each([
+    ["the proposal on a time goal", proposed, { type: "time", seconds: 900 } as const, true],
+    ["the proposal with no goal", proposed, null, true],
+    [
+      "a duration the hero set",
+      { exercises: [{ walkRun: true as const, prescribed: 900 }] },
+      { type: "time", seconds: 900 } as const,
+      false,
+    ],
+    ["a distance goal", proposed, { type: "distance", metres: 5000 } as const, false],
+    ["a plain run", { exercises: [{}] }, null, false],
+  ])("%s", (_name, quest, goal, expected) => {
+    expect(isWalkRunSession(quest, goal)).toBe(expected);
+  });
+});
+
+describe("displayLocomotion", () => {
+  const { displayLocomotion } = require("../db/expeditions") as typeof import("../db/expeditions");
+  const slots = (...movements: Exercise[]) => ({
+    exercises: movements.map((exercise) => ({ exercise })),
+  });
+  const ride = { ...walk, id: 4, locomotion: "ride" as const };
+  const runner = { ...run, locomotion: "run" as const };
+
+  it("reads the activity really done: a pure outing, and the walk of a walk and push-ups", () => {
+    expect(displayLocomotion(slots(walk))).toBe("walk");
+    expect(displayLocomotion(slots(runner))).toBe("run");
+    expect(displayLocomotion(slots(walk, pushUp))).toBe("walk");
+    // `outingLocomotion` says null for the mixed quest; the tab it reads is still the walk's.
+    expect(displayLocomotion(slots(ride, pushUp))).toBe("ride");
+  });
+
+  it("reads the Walk tab when nothing is outdoors", () => {
+    expect(displayLocomotion(slots(pushUp))).toBe("walk");
+    expect(displayLocomotion(slots())).toBe("walk");
+  });
+});

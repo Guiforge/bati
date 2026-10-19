@@ -1,5 +1,7 @@
 import { and, eq, sql } from "drizzle-orm";
 import { getLocales } from "expo-localization";
+import { MAP_STYLE_IDS, type MapStyleId } from "@/constants/mapStyle";
+import { type OutingDisplay, parseOutingDisplay } from "@/constants/outingDisplay";
 import { reportError } from "../src/reportError";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import type { CrestCoat } from "./crestCoat";
@@ -500,6 +502,29 @@ export const preferences = {
   },
 
   /**
+   * What the hero chose to see on the live outing panel, per activity (`constants/outingDisplay`).
+   * A sparse JSON blob: nothing writes a default, so a device that never opened the screen has no
+   * row and two such devices are level in a sync. Back to the original writes `{}`, never a
+   * delete: a missing row reads as the other device being newer (`db/merge.ts`).
+   */
+  async getOutingDisplay(): Promise<OutingDisplay> {
+    return parseOutingDisplay(await getPreference("outingDisplay"));
+  },
+
+  /**
+   * Writes only when something changes: `setPreference` restamps `updatedAt` even for an equal
+   * value, and tapping the choice already made would send the peer a news item it merges (and
+   * reloads the app for) over nothing. An absent row and `{}` are the same answer here, so a reset
+   * on a device that never set anything writes nothing either.
+   */
+  async setOutingDisplay(display: OutingDisplay): Promise<void> {
+    const next = JSON.stringify(display);
+    const current = JSON.stringify(parseOutingDisplay(await getPreference("outingDisplay")));
+    if (next === current) return;
+    await setPreference("outingDisplay", next);
+  },
+
+  /**
    * The motto shown under the shield in the crest sheet and nowhere else, from the closed list in `db/crestMotto.ts`.
    * Nothing writes a default; a missing or unknown value reads as `none`.
    */
@@ -593,6 +618,20 @@ export const preferences = {
 
   async setMapTilesEnabled(enabled: boolean): Promise<void> {
     await setPreference("mapTiles", String(enabled));
+  },
+
+  /**
+   * Which basemap look the hero chose, per device like `mapTiles` (not merged, not in
+   * `DEVICE_LOCAL_PREFERENCES`: the backup carries it). No default is written; a value this build
+   * does not know, from a newer one, reads as the default.
+   */
+  async getMapStyle(): Promise<MapStyleId> {
+    const stored = await getPreference("mapStyle");
+    return MAP_STYLE_IDS.find((id) => id === stored) ?? "ember";
+  },
+
+  async setMapStyle(id: MapStyleId): Promise<void> {
+    await setPreference("mapStyle", id);
   },
 
   /**

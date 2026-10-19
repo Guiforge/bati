@@ -135,6 +135,15 @@ refaire). Ce qu'il a apporté :
 
 - **Le keep-awake inconditionnel est le vrai tueur**, pas le bouton « Terminé ». Le verrou de
   poche de l'audit combattait un problème que l'app se crée. Retenu, prémisse 7 révisée.
+  *Mis à jour (D-35, « Affichage des sorties »)* : le keep-awake reste éteint par défaut, mais le
+  héros peut le garder allumé **par activité et par téléphone** (SecureStore, jamais la base, donc
+  jamais synchronisé ni restauré). À pied avec l'écran allumé, la protection anti-poche remplace le
+  verrou de l'OS : terminer demande l'appui long **et** une confirmation (dix secondes sans réponse
+  et elle se ferme, rien n'est écrit), et la carte ignore les doigts. Une course à vélo n'est pas
+  gardée (guidon, gants). Une quête mixte garde déjà l'écran allumé pour ses pompes : sa marche ou
+  sa course est donc gardée aussi, et terminer l'étape demande confirmation, quel que soit le
+  réglage. Une seule fonction répond à « l'écran reste-t-il allumé » : `screenStaysOn`
+  (`src/gps/liveFigures.ts`), lue par `KeepAwake`, la garde et l'astuce de poche.
 - **`free` doit entrer dans `SavedSessionState`**, sinon la reprise d'une sortie tuée par l'OS
   relance `outingGoal()` et retrouve les 900 s. Le `Pick` en fait une erreur de compilation.
 - **Une sortie sans fix laissée ouverte toute la nuit** fait un journal de 9 h et prend le record
@@ -224,6 +233,32 @@ il serait absurde de débloquer les longues sorties sans les payer.
 
 ### L'écran de séance
 
+- *« Affichage des sorties »* (`app/outing-display.tsx`, entrée sous la carte dans Réglages et lien
+  sous les objectifs) : trois onglets Marche, Course, Vélo (la randonnée partage Marche, et une quête
+  mixte lit l'activité réellement faite, `displayLocomotion`). Un gros chiffre et trois petits tirés
+  d'un catalogue fermé (`constants/outingDisplay.ts`), la carte ou les chiffres en grand, l'écran
+  qui s'éteint ou reste allumé, et sur Vélo un préréglage « Sur un guidon » sans état propre. Tout
+  s'écrit au tap. La vue est figée au départ de la sortie : un réglage changé en route ne l'atteint
+  pas, une reprise après un kill la relit.
+- *Allure ou vitesse, vibrations, aperçu* (phase 1b) : le héros choisit par activité Allure
+  (min/km) ou Vitesse (km/h), par défaut l'allure à pied et la vitesse à vélo. `rateKind(locomotion,
+  display)` (`constants/outingDisplay.ts`) est la seule réponse, `formatRate` prend le `kind`
+  obligatoire : un appel oublié ne compile pas. Panneau, notification et victoire lisent la vue figée ; le récap lit l'onglet de
+  `displayLocomotion` de la quête de la ligne (repli Marche), le journal et la carte partagée celui de
+  l'activité stockée : une quête mixte n'y montre aucun rythme. La cadence de vibration (`buzzEvery` : chaque lieue, toutes les 5, ou à l'objectif
+  seulement) est lue par `announceLeague` dans la vue figée ; le défaut garde le comportement
+  d'avant (5 sur une monture, 1 à pied). L'aperçu en tête d'onglet est `ExpeditionPanelView`
+  (la vue à props du panneau) nourrie par `lastOutingOf` : rien d'inventé, des tirets sans sortie.
+- *Phase 2* : une troisième disposition **Carte en grand** (`bigMap`) : le panneau lâche son gros
+  chiffre (`hideBig`), la carte prend la place et le gros chiffre flotte dessus (`MapBigFigure`,
+  même source que le panneau, `useLivePanelProps`) ; pendant un combat de boss l'arène garde la
+  place et le panneau garde son gros chiffre. Le catalogue gagne **Lieue en cours** (`lap`) : le
+  temps en mouvement depuis la dernière borne, une marque O(1) du store rejouée à la reprise ; la
+  notification ne l'affiche jamais (deux horloges sans étiquette). Le zoom de suivi est 16 à pied,
+  15 à vélo, sans réglage.
+- *Le gros chiffre porte son mot dès que le héros l'a choisi* (« Affichage des sorties », D-35 Q6) :
+  pas de mot sous le gros chiffre par défaut, un mot dessous quand sa place n'est pas `auto`.
+
 - `components/session/ExpeditionPanel.tsx` : le 56 px suit `goal?.type`. `distance` → distance
   dès le premier fix ; `time` ou `null` → **`recordedDurationSeconds()`**, la fonction que
   `stores/session.ts` exporte déjà pour que la victoire et le journal ne racontent pas deux
@@ -292,6 +327,18 @@ il serait absurde de débloquer les longues sorties sans les payer.
     jamais `role="alert"` : ce n'est pas une erreur.
   - Le mot est **« Annuler le départ »**, pas « Annuler » : `common.cancel` veut dire « ne rien
     faire » partout ailleurs dans l'app, et ici le geste jette une séance et ses points.
+
+**Le fantôme de parcours (phase 3).** Réglage par activité, éteint par défaut (`routeGhost`, dans le
+blob `outingDisplay`). Il dessine en pâle la dernière sortie sur le même parcours, sous la trace du
+jour, sur la carte en direct (après 400 m crédités) et au récap, avec une ligne qui nomme la date et
+rien d'autre : ni temps, ni allure, ni écart, jamais d'or, aucune annonce. Règles du coach : jamais
+pendant une marche et course (`routeGhostAllowed`, `walkRun` figé au départ ; il est recalculé à la
+reprise après un kill, comme tout le reste de la vue), jamais pendant le serment de course (n'existe
+pas avant A-04, qui l'ajoute dans cette fonction). Le récap le dessine aussi sur une marche et
+course : `walkRun` n'est pas stocké, et la ligne n'a pas de temps. La carte en direct teste dans un
+seul sens et le récap dans les deux : un héros qui s'arrête aux deux tiers de sa boucle voit le
+fantôme pendant la sortie et pas au récap, ce n'est pas un bug (une demi-boucle n'est pas le
+parcours). Tout se calcule sur le téléphone à partir de `gps_points`, rien n'est stocké.
 
 ### La notification, seule surface d'une sortie en poche
 

@@ -279,12 +279,53 @@ test("a session with more XP on one side is news for the other", async () => {
 });
 
 describe("a device on the previous build", () => {
-  // No `deleted_content` and a newest migration this build has already passed.
-  const previous = (sqlite: Database.Database) => {
+  // Merge v2 (0074) and the notebook (0075) are both missing: no `deleted_content`, no photos, no
+  // note stamp, and a newest migration this build has already passed.
+  const dropNewest = (sqlite: Database.Database, rows: number) =>
     sqlite.exec(
-      "DROP TABLE deleted_content; DELETE FROM __drizzle_migrations WHERE created_at = (SELECT max(created_at) FROM __drizzle_migrations)",
+      `DELETE FROM __drizzle_migrations WHERE id IN (SELECT id FROM __drizzle_migrations ORDER BY created_at DESC LIMIT ${rows})`,
     );
+  const before0075 = (sqlite: Database.Database) => {
+    sqlite.exec(
+      "DROP TABLE session_photos; ALTER TABLE completed_sessions DROP COLUMN notesEditedAt",
+    );
+    dropNewest(sqlite, 1);
   };
+  const previous = (sqlite: Database.Database) => {
+    before0075(sqlite);
+    sqlite.exec("DROP TABLE deleted_content");
+    dropNewest(sqlite, 1);
+  };
+
+  test("a build on 0074 reads photo terms as 0, and its notes as news only when stamped", async () => {
+    const uuid = addSession(t.sqlite, 1_000);
+    t.sqlite
+      .prepare(
+        "INSERT INTO session_photos (uuid, sessionUuid, sortOrder, image, updatedAt) VALUES ('p', ?, 0, x'01', 5)",
+      )
+      .run(uuid);
+    t.sqlite.prepare("UPDATE completed_sessions SET notes = 'hi', notesEditedAt = 9").run();
+    const file = await peer("v0074.db", before0075);
+    const comparison = await backup().compareWithPeer(file);
+    expect(comparison).toMatchObject({ peerChanges: 0 });
+    expect(comparison.fingerprint.split("|")[4]).toBe("0:0");
+    // This side's stamped note is news for a peer that lacks the column.
+    expect(comparison.localChanges).toBe(1);
+  });
+
+  test("a same-build peer with a newer photo is news, and none after the merge", async () => {
+    const uuid = addSession(t.sqlite, 1_000);
+    const file = await peer("tablet.db", (sqlite) => {
+      sqlite
+        .prepare(
+          "INSERT INTO session_photos (uuid, sessionUuid, sortOrder, image, updatedAt) VALUES ('p', ?, 0, x'01', 5)",
+        )
+        .run(uuid);
+    });
+    expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 1, localChanges: 0 });
+    await require("../db/merge").mergePeer(file);
+    expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 0, localChanges: 0 });
+  });
 
   test("has no content tombstones and is still read", async () => {
     heroQuest(t.sqlite, 100);

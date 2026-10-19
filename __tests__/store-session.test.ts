@@ -11,10 +11,12 @@ import type { Quest } from "@/db/quests";
 import { computeSessionXp, MAX_SESSION_XP } from "@/db/xp";
 import { useSessionRecovery } from "@/hooks/useSessionRecovery";
 import { i18n } from "@/i18n";
+import { DEFAULT_LIVE_VIEW } from "@/src/gps/liveFigures";
 import { EMPTY } from "@/src/gps/track";
 import { bindSession, useExpeditionStore } from "@/stores/expedition";
 import { useSettingsStore } from "@/stores/settings";
 import {
+  beginTrackingIfOuting,
   FINAL_REST_SECONDS,
   holdNeedingAnswer,
   loadWarmup,
@@ -30,6 +32,12 @@ jest.mock("@/stores/expedition", () => {
   const actual = jest.requireActual("@/stores/expedition");
   return { ...actual, bindSession: jest.fn(actual.bindSession) };
 });
+
+// The phone's own keep-awake set (SecureStore in the app), swapped per case.
+const mockKeepAwakeSet = jest.fn<Promise<string[]>, []>();
+jest.mock("@/src/outingKeepAwake", () => ({
+  keepAwakeSet: () => mockKeepAwakeSet() ?? Promise.resolve([]),
+}));
 
 // Mock DB client to prevent actual SQLite initialization
 jest.mock("@/db/client", () => ({
@@ -111,6 +119,7 @@ jest.mock("@/db/preferences", () => ({
     // Read by beginTrackingIfOuting, only exercised by the outing cases below.
     getDistanceUnit: jest.fn().mockResolvedValue("metric"),
     getHapticsEnabled: jest.fn().mockResolvedValue(true),
+    getOutingDisplay: jest.fn().mockResolvedValue({}),
     getBigFeastsShown: jest.fn().mockResolvedValue([]),
   },
 }));
@@ -152,6 +161,11 @@ jest.mock("@/db/achievements", () => ({
   checkForNewAchievements: jest.fn().mockResolvedValue([]),
 }));
 
+// A `setState` on the expedition store copies a spied `begin` into a new state object, which
+// `restoreAllMocks` then never reaches. `beginTrackingIfOuting` does one (the interim view), so
+// every case starts from the real `begin`.
+const realBegin = useExpeditionStore.getState().begin;
+
 describe("useSessionStore", () => {
   const store = useSessionStore;
 
@@ -173,6 +187,7 @@ describe("useSessionStore", () => {
   } as unknown as Quest;
 
   beforeEach(() => {
+    useExpeditionStore.setState({ begin: realBegin, view: DEFAULT_LIVE_VIEW });
     store.setState({
       quest: null,
       status: "idle",
@@ -1408,6 +1423,36 @@ describe("useSessionStore", () => {
       expect(store.getState().felledByFinalBlow).toBe(false);
     });
 
+    test.each([
+      ["a fight restored from the previous build (no author)", undefined, true],
+      ["an adventure of the game", "Admin", true],
+      ["an adventure the hero wrote", "hero", false],
+    ])("the Triumph of %s pays its bonus: %s", async (_name, author, pays) => {
+      const completed = require("@/db/completed") as { addBonusXpToSession: jest.Mock };
+      const bossFights = require("@/db/bossFights") as { finishBossFight: jest.Mock };
+      const dbMock = require("@/db") as { completeAdventureRunStep: jest.Mock };
+      completed.addBonusXpToSession.mockClear();
+      store.setState({
+        adventureRunStepId: 5,
+        bossFight: { ...boss, currentHp: 10, ...(author ? { author } : {}) } as never,
+        bossStartHp: 10,
+        triumphBonusPaid: false,
+      });
+      dbMock.completeAdventureRunStep.mockResolvedValueOnce({
+        adventureId: 42,
+        runId: 9,
+        isFinished: true,
+        nextRunStepId: null,
+        nextQuestId: null,
+      });
+      bossFights.finishBossFight.mockResolvedValueOnce(false);
+
+      await store.getState().completeExercise(10);
+      await store.getState().saveSession(null);
+
+      expect(completed.addBonusXpToSession.mock.calls.length > 0).toBe(pays);
+    });
+
     test("a final-blow kill is not a Triumph and pays no bonus", async () => {
       const completed = require("@/db/completed") as { addBonusXpToSession: jest.Mock };
       const dbMock = require("@/db") as { completeAdventureRunStep: jest.Mock };
@@ -1858,8 +1903,155 @@ describe("useSessionStore", () => {
       ],
     } as unknown as Quest;
 
+    beforeEach(() => {
+      mockKeepAwakeSet.mockResolvedValue([]);
+      (preferences.getOutingDisplay as jest.Mock).mockResolvedValue({});
+    });
+
     afterEach(() => {
       jest.restoreAllMocks();
+    });
+
+    /** The walk leg plus push-ups: a mixed quest, which reads the activity really done. */
+    const mixedQuest = {
+      ...outingQuest,
+      exercises: [
+        ...outingQuest.exercises,
+        {
+          exercise: { id: 2, enName: "Push-up", muscles: [], style: "reps", locomotion: null },
+          target: { type: "reps", value: 10 },
+        },
+      ],
+    } as unknown as Quest;
+
+    const viewPassed = (beginSpy: jest.SpyInstance) => {
+      const call = beginSpy.mock.calls[0];
+      assert(call);
+      return call[6] as import("@/src/gps/liveFigures").LiveView;
+    };
+
+    test("begin gets the view of the activity really done, with the phone's screen choice", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+      (preferences.getOutingDisplay as jest.Mock).mockResolvedValue({
+        walk: { big: "rate", layout: "bigFigures" },
+        run: { big: "distance" },
+      });
+      mockKeepAwakeSet.mockResolvedValue(["walk"]);
+
+      await store.getState().startSession(mixedQuest, "medium", { goal: null });
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+
+      // Walk + push-ups reads the Walk tab, not "nothing".
+      expect(viewPassed(beginSpy)).toMatchObject({
+        big: "rate",
+        layout: "bigFigures",
+        locomotion: "walk",
+        walkRun: false,
+        keepAwake: true,
+      });
+    });
+
+    /** A ride: the seed movement that makes the outing mounted, and reads the Ride tab. */
+    const rideQuest = {
+      ...outingQuest,
+      exercises: [
+        {
+          exercise: {
+            id: 31,
+            enName: "Outrider's Ride",
+            creator: "Admin",
+            muscles: [],
+            style: "expedition",
+            locomotion: "ride",
+          },
+          target: { type: "time", value: 900 },
+        },
+      ],
+    } as unknown as Quest;
+
+    test("pace or speed and the buzz cadence are frozen into the view, per activity", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+      (preferences.getOutingDisplay as jest.Mock).mockResolvedValue({
+        walk: { rate: "speed", buzzEvery: 0 },
+      });
+
+      await store.getState().startSession(outingQuest, "medium", { goal: null });
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+
+      expect(viewPassed(beginSpy)).toMatchObject({ rate: "speed", buzzEvery: 0 });
+    });
+
+    test("a hero who set nothing keeps the original on foot: a pace and every league", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+
+      await store.getState().startSession(outingQuest, "medium", { goal: null });
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+      expect(viewPassed(beginSpy)).toMatchObject({ rate: "pace", buzzEvery: 1 });
+    });
+
+    test("and on a ride: a speed and every fifth league", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+
+      await store.getState().startSession(rideQuest, "medium", { goal: null });
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+      expect(viewPassed(beginSpy)).toMatchObject({
+        locomotion: "ride",
+        rate: "speed",
+        buzzEvery: 5,
+      });
+    });
+
+    test("a ride the hero set to buzz at the goal only, and to read a pace, does", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+      (preferences.getOutingDisplay as jest.Mock).mockResolvedValue({
+        ride: { rate: "pace", buzzEvery: 0 },
+      });
+
+      await store.getState().startSession(rideQuest, "medium", { goal: null });
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+
+      expect(viewPassed(beginSpy)).toMatchObject({ rate: "pace", buzzEvery: 0 });
+    });
+
+    test("an activity the screen was not kept on for gets a screen that goes off", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+      mockKeepAwakeSet.mockResolvedValue(["ride"]);
+
+      await store.getState().startSession(outingQuest, "medium", { goal: null });
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+
+      expect(viewPassed(beginSpy)).toMatchObject({ locomotion: "walk", keepAwake: false });
+    });
+
+    // The last outing's view must never be read while the preferences are still loading: a lit
+    // screen carried over, or a pace on a walk-run right after a normal outing.
+    test("the previous outing's view is replaced before any read resolves", async () => {
+      const beginSpy = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+      useExpeditionStore.setState({
+        view: { ...DEFAULT_LIVE_VIEW, keepAwake: true, walkRun: false, big: "rate" },
+      });
+      // The reads stay pending until the test says so.
+      let release: (v: string[]) => void = () => {};
+      mockKeepAwakeSet.mockReturnValue(new Promise((resolve) => (release = resolve)));
+      const walkRunQuest = {
+        ...outingQuest,
+        exercises: [{ ...(outingQuest.exercises[0] as object), walkRun: true }],
+      } as unknown as Quest;
+      store.setState({ goal: null });
+
+      beginTrackingIfOuting(walkRunQuest, "uuid-stale", null);
+
+      // Synchronously after the call, before a single read resolved.
+      expect(useExpeditionStore.getState().view).toMatchObject({
+        keepAwake: false,
+        walkRun: true,
+        locomotion: "walk",
+      });
+      expect(beginSpy).not.toHaveBeenCalled();
+
+      release(["walk"]);
+      await waitFor(() => expect(beginSpy).toHaveBeenCalled());
+      expect(viewPassed(beginSpy)).toMatchObject({ keepAwake: true, walkRun: true });
     });
 
     test("the goal reaches begin by position, exactly as the door handed it over", async () => {

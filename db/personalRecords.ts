@@ -10,11 +10,17 @@ import {
 } from "./completed";
 import { forgetEverEarned } from "./exercises";
 import { hasGround } from "./expeditions";
-import { sessionBestsSql } from "./progress";
+import { SEASON_DAYS, type SessionMark, sessionBestsSql } from "./progress";
 import { clearCached } from "./queryCache";
-import type { QuestTargetType } from "./schema";
+import { type DifficultyCode, type QuestTargetType, USER_EXERCISE_CREATOR } from "./schema";
 import { targetRangeFor } from "./targets";
 import { NON_REP_STYLE } from "./workUnits";
+
+/** How many sessions `ExerciseGhost.recent` keeps: the comeback window needs three. */
+const RECENT_SESSIONS = 3;
+// ponytail: the comeback's inner gaps (s0-s1, s1-s2) are measured on seeded-quest sessions only,
+// while the gap before tonight reads any quest. Ceiling: a hero who alternates own and seeded
+// quests sees a false gap. Fix: carry any-quest session times in `recent`.
 
 const { completedQuest, completedExercises, exercises } = schema;
 
@@ -56,7 +62,20 @@ export type NewRecordResult = {
  * `at` is when the *last* set was logged, in ms; `bestAt` is the evening the standing best was
  * first reached, the same question the record wall answers ("Record 1:00 · 10 months ago").
  */
-export type ExerciseGhost = { last: number; best: number; at: number; bestAt: number };
+export type ExerciseGhost = {
+  last: number;
+  best: number;
+  at: number;
+  bestAt: number;
+  /** Best of the sessions whose last set falls in the last `SEASON_DAYS`; null when none does. */
+  seasonBest: number | null;
+  /**
+   * The newest sessions on this movement in this unit, newest first, at most 3, with the sessions
+   * of a hero-authored quest left out: their numbers are the hero's own and must not become the
+   * app's. `last`, `at` and the records still read every session.
+   */
+  recent: SessionMark[];
+};
 
 /**
  * Reps and seconds share `resultValue` and nothing in the column says which one it holds, so a
@@ -92,6 +111,8 @@ export function ghostKey(exerciseId: number, type: QuestTargetType): string {
  */
 export async function getExerciseHistory(
   exerciseIds: number[],
+  /** How many sessions `recent` keeps; the cap offer counts a run and needs more than three. */
+  recentSessions: number = RECENT_SESSIONS,
 ): Promise<Map<string, ExerciseGhost>> {
   if (exerciseIds.length === 0) return new Map();
 
@@ -101,37 +122,80 @@ export async function getExerciseHistory(
   );
 
   // `performedAt` is stored in seconds, and a raw read does not go through the column's mapper.
+  const seasonCut = Math.floor((Date.now() - SEASON_DAYS * 24 * 60 * 60 * 1000) / 1000);
   const rows = await db.all<{
     exerciseId: number;
     resultType: QuestTargetType;
-    last: number;
+    sessionBest: number;
     best: number;
     at: number;
     bestAt: number;
+    seasonBest: number | null;
+    prescribed: number | null;
+    met: number | null;
+    userLevel: DifficultyCode;
+    rn: number;
+    rnOwn: number;
+    heroQuest: number;
   }>(sql`
-    SELECT exerciseId, resultType, last, best, at, bestAt FROM (
-      SELECT exerciseId, resultType, best AS last, at,
-             MAX(best) OVER (PARTITION BY exerciseId, resultType) AS best,
-             FIRST_VALUE(at) OVER (
-               PARTITION BY exerciseId, resultType ORDER BY best DESC, at ASC
+    SELECT exerciseId, resultType, sessionBest, best, at, bestAt, seasonBest, prescribed, met,
+           userLevel, rn, rnOwn, heroQuest
+    FROM (
+      SELECT b.exerciseId, b.resultType, b.best AS sessionBest, b.at, b.prescribed, b.met,
+             s.userLevel, (q.author IS ${USER_EXERCISE_CREATOR}) AS heroQuest,
+             MAX(b.best) OVER w AS best,
+             FIRST_VALUE(b.at) OVER (
+               PARTITION BY b.exerciseId, b.resultType ORDER BY b.best DESC, b.at ASC
              ) AS bestAt,
+             MAX(CASE WHEN b.at >= ${seasonCut} THEN b.best END) OVER w AS seasonBest,
              ROW_NUMBER() OVER (
-               PARTITION BY exerciseId, resultType ORDER BY at DESC, sessionId DESC
-             ) AS rn
+               PARTITION BY b.exerciseId, b.resultType ORDER BY b.at DESC, b.sessionId DESC
+             ) AS rn,
+             ROW_NUMBER() OVER (
+               PARTITION BY b.exerciseId, b.resultType, (q.author IS ${USER_EXERCISE_CREATOR})
+               ORDER BY b.at DESC, b.sessionId DESC
+             ) AS rnOwn
       FROM (
         SELECT * FROM (${sessionBestsSql(sql`exerciseId IN (${ids})`)})
         WHERE best > 0
-      )
+      ) b
+      JOIN completed_sessions s ON s.id = b.sessionId
+      LEFT JOIN quests q ON q.id = s.questId
+      WINDOW w AS (PARTITION BY b.exerciseId, b.resultType)
     )
-    WHERE rn = 1
+    WHERE rn = 1 OR (heroQuest = 0 AND rnOwn <= ${recentSessions})
+    ORDER BY exerciseId, resultType, rnOwn
   `);
 
-  return new Map(
-    rows.map((r) => [
-      ghostKey(r.exerciseId, r.resultType),
-      { last: r.last, best: r.best, at: r.at * 1000, bestAt: r.bestAt * 1000 },
-    ]),
-  );
+  const ghosts = new Map<string, ExerciseGhost>();
+  for (const r of rows) {
+    const key = ghostKey(r.exerciseId, r.resultType);
+    let ghost = ghosts.get(key);
+    if (!ghost) {
+      ghost = {
+        last: r.sessionBest,
+        best: r.best,
+        at: r.at * 1000,
+        bestAt: r.bestAt * 1000,
+        seasonBest: r.seasonBest,
+        recent: [],
+      };
+      ghosts.set(key, ghost);
+    }
+    if (r.rn === 1) {
+      ghost.last = r.sessionBest;
+      ghost.at = r.at * 1000;
+    }
+    if (r.heroQuest === 0) {
+      ghost.recent.push({
+        prescribed: r.prescribed,
+        met: r.met === null ? null : r.met === 1,
+        at: r.at * 1000,
+        level: r.userLevel,
+      });
+    }
+  }
+  return ghosts;
 }
 
 /** One movement's standing best, and what the hero last did on it. */
@@ -147,8 +211,12 @@ export type MovementRecord = {
   type: QuestTargetType;
   best: number;
   last: number;
-  /** When the last set was logged. The best's own date is not tracked. */
+  /** When the last set was logged. */
   at: Date;
+  /** The evening the standing best was first reached (the ghost's `bestAt`). */
+  bestAt: Date;
+  /** The best of the last `SEASON_DAYS`, null when the movement was not trained in them. */
+  seasonBest: number | null;
 };
 
 /**
@@ -211,6 +279,8 @@ export async function getMovementRecords(limit = 6): Promise<MovementRecord[]> {
         best,
         last: ghost?.last ?? best,
         at,
+        bestAt: ghost ? new Date(ghost.bestAt) : at,
+        seasonBest: ghost?.seasonBest ?? null,
       },
     ];
   });

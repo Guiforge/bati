@@ -40,6 +40,9 @@ import {
 import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
 import { BackupSecurityRows } from "@/components/settings/BackupSecurityRows";
 import { CrestAnimalRow } from "@/components/settings/CrestAnimalRow";
+import { HeroSizeLine } from "@/components/settings/HeroSizeLine";
+import { MapStyleRow } from "@/components/settings/MapStyleRow";
+import { OutingDisplayRow } from "@/components/settings/OutingDisplayRow";
 import { PauseRow } from "@/components/settings/PauseRow";
 import { ReminderSection } from "@/components/settings/ReminderSection";
 import { SetAsideRow } from "@/components/settings/SetAsideRow";
@@ -629,6 +632,10 @@ export default function SettingsScreen() {
             {t("settings.map_tiles_note")}
           </Text>
 
+          <MapStyleRow />
+
+          <OutingDisplayRow />
+
           <SettingRow
             icon={<Dumbbell size={22} color="$text" />}
             label={t("settings.equipment")}
@@ -694,6 +701,8 @@ export default function SettingsScreen() {
               {t("backup.export")}
             </Text>
           </BackupSecurityRows>
+
+          <HeroSizeLine />
 
           <SettingRow
             testID="settings-import-backup"

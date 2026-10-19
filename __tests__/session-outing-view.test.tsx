@@ -4,6 +4,7 @@ import { TamaguiProvider } from "tamagui";
 
 import { ActiveExerciseView } from "@/components/session/ActiveExerciseView";
 import type { Quest } from "@/db/quests";
+import { DEFAULT_LIVE_VIEW } from "@/src/gps/liveFigures";
 import { useExpeditionStore } from "@/stores/expedition";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
@@ -113,7 +114,7 @@ function questWith(exercise: typeof mockWalk): Quest {
       {
         exercise,
         target: { type: "time", value: 900 },
-        ghost: { last: 900, best: 1200, at: 0 },
+        ghost: { last: 900, best: 1200, at: 0, bestAt: 0, seasonBest: 1200, recent: [] },
       },
     ],
   } as unknown as Quest;
@@ -247,6 +248,94 @@ describe("a walk, on the screen a hero stares at while walking", () => {
   });
 });
 
+describe("a walk in the hero's big-numbers layout", () => {
+  test("mounts no map and no picture, even once the sky gives a position", async () => {
+    useExpeditionStore.setState({ view: { ...DEFAULT_LIVE_VIEW, layout: "bigFigures" } });
+    await mountRunning(questWith(mockWalk));
+    await act(() => {
+      useExpeditionStore.setState({
+        fixes: [
+          {
+            t: NOW,
+            lat: 43.6,
+            lon: 1.44,
+            ele: 100,
+            baro: null,
+            acc: 4,
+            speed: 1.4,
+            distFromPrev: 0,
+          },
+        ],
+      });
+    });
+
+    // The panel is still the readout, at the size the layout asks for; no tile is ever requested.
+    expect(screen.getByText("Finding the sky")).toBeTruthy();
+    expect(screen.queryByTestId("live-map")).toBeNull();
+    expect(screen.getByTestId("expedition-big").props.style.fontSize).toBe(72);
+    useExpeditionStore.setState({ view: DEFAULT_LIVE_VIEW });
+  });
+});
+
+describe("a walk in the hero's big-map layout", () => {
+  const FIX = {
+    t: NOW,
+    lat: 43.6,
+    lon: 1.44,
+    ele: 100,
+    baro: null,
+    acc: 4,
+    speed: 1.4,
+    distFromPrev: 0,
+  };
+
+  test("the map takes the slack and the big figure floats on it, not in the panel", async () => {
+    useExpeditionStore.setState({ view: { ...DEFAULT_LIVE_VIEW, layout: "bigMap" } });
+    await mountRunning(questWith(mockWalk));
+    // Before the first fix the figure already sits over the picture (the clock then).
+    expect(screen.getByTestId("live-map-big")).toBeTruthy();
+    await act(() => {
+      useExpeditionStore.setState({ fixes: [FIX] });
+    });
+
+    expect(screen.getByTestId("live-map")).toBeTruthy();
+    expect(screen.getByTestId("live-map-big")).toBeTruthy();
+    expect(screen.queryByTestId("expedition-big")).toBeNull();
+    useExpeditionStore.setState({ view: DEFAULT_LIVE_VIEW });
+  });
+
+  test("in a boss fight the arena owns the slot, so the panel keeps its big figure", async () => {
+    useExpeditionStore.setState({ view: { ...DEFAULT_LIVE_VIEW, layout: "bigMap" } });
+    await mountRunning(questWith(mockWalk));
+    await act(() => {
+      useSessionStore.setState({
+        bossFight: {
+          id: 1,
+          adventureId: 1,
+          totalHp: 100,
+          currentHp: 80,
+          weaknessMuscle: null,
+          resistanceMuscle: null,
+          defeatedAt: null,
+          createdAt: new Date(NOW),
+          updatedAt: new Date(NOW),
+          imagePath: "assets/images/exercises/walk.webp",
+          enName: "Boss",
+          frName: "Boss",
+          deName: "Boss",
+          esName: "Boss",
+          tier: 0,
+          shiny: false,
+        } as never,
+      });
+    });
+
+    expect(screen.queryByTestId("live-map-big")).toBeNull();
+    expect(screen.getByTestId("expedition-big")).toBeTruthy();
+    useExpeditionStore.setState({ view: DEFAULT_LIVE_VIEW });
+  });
+});
+
 describe("a plain hold, which still has a duration to count", () => {
   // Same reason as above: one mount, and the three things a workout still owes the hero.
   test("keeps the countdown, its rounds and its beeps", async () => {
@@ -322,6 +411,11 @@ describe("finishing an outing", () => {
     await fireEvent(screen.getByTestId("session-complete-exercise"), "accessibilityAction", {
       nativeEvent: { actionName: "finishOuting" },
     });
+
+    // A mixed quest holds the screen for its next exercise, so the walking leg is guarded: the
+    // action asks first (pocket-guard.test.tsx holds the rest of that), and only the answer ends it.
+    expect(useSessionStore.getState().results).toHaveLength(0);
+    await fireEvent.press(screen.getByTestId("confirm-dialog-confirm"));
 
     expect(useSessionStore.getState().results).toHaveLength(1);
     expect(useSessionStore.getState().currentExerciseIndex).toBe(1);

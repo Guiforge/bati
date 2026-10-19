@@ -61,6 +61,7 @@ jest.mock("@/db", () => ({
   previewQuests: () => Promise.resolve(new Map()),
   listAdventures: () => mockAdventures(),
   getAnyActiveAdventureRun: () => Promise.resolve(null),
+  activeRunAdventureIds: () => Promise.resolve(new Set()),
   getFinishedRunCountsByAdventure: () => Promise.resolve(new Map()),
   getRecentSessionHistory: () => Promise.resolve([]),
 }));

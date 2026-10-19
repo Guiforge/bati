@@ -5,39 +5,57 @@ import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Input, Paragraph, Spinner, Text, XStack, YStack } from "tamagui";
+import { AdventureImport } from "@/components/adventures/AdventureImport";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { useToast } from "@/components/common/Toast";
 import { Check, ChevronLeft, Download, Info } from "@/components/icons";
 import { getExerciseThumb, getQuestThumb } from "@/constants/assetMap";
+import { MIN_STEPS } from "@/db/heroAdventures";
 import type { QuestTemplate } from "@/db/quests";
 import { formatTarget } from "@/db/targets";
+import {
+  type AdventureFile,
+  AdventureFileError,
+  type AdventurePreview,
+  parseAdventureData,
+  previewAdventure,
+} from "@/src/adventureFile";
 import { localizedName, localizedTitle, seededLanguage } from "@/src/i18n/localized";
 import { incomingFile, releaseIncomingFile } from "@/src/incomingFile";
 import {
   editQuestFile,
   type ImportedQuest,
   importQuest,
+  isRecord,
   type PreviewSlot,
+  parseQuestData,
   previewQuest,
   type QuestFile,
   QuestFileError,
   type QuestPreview,
-  readQuestFile,
+  readBatiFile,
 } from "@/src/questFile";
 import { reportError } from "@/src/reportError";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
+/** What the file turned out to be. Null while that is unknown: a refusal before the kind is read. */
+type FileKind = "quest" | "adventure";
+
 type Loaded =
   | { status: "loading" }
-  | { status: "refused"; reason: QuestFileError["reason"] }
-  | { status: "ready"; file: QuestFile; preview: QuestPreview };
+  // `message` is an i18n key: the sentence depends on the kind, which a size or a read can refuse before it is known.
+  | { status: "refused"; kind: FileKind | null; message: string }
+  | { status: "ready"; file: QuestFile; preview: QuestPreview }
+  | { status: "adventure"; file: AdventureFile; preview: AdventurePreview };
 
 /**
- * A quest someone sent, shown before it is filed with the hero's own.
+ * A quest or an adventure someone sent, shown before it is filed with the hero's own. The file
+ * says which it is (`kind`), and the screen shows the matching preview: this one for a quest,
+ * `AdventureImport` for an adventure.
  *
- * Every door to an import ends here: the editor's button (`ImportQuestButton`, through the
+ * Every door to an import ends here: the editor's button (`ImportFileButton`, through the
  * picker) and a file tapped in a chat or a download, which Android opens Bati with
  * (`app/+native-intent.tsx`). One screen, one writer (`importQuest`).
  *
@@ -70,7 +88,7 @@ export default function QuestImportScreen() {
     // A second file opened over this screen starts from nothing, not from the first one's choices.
     setLoaded({ status: "loading" });
     setAsCopy(false);
-    load(incomingFile(n))
+    load(incomingFile(n), useSettingsStore.getState().language)
       .then((result) => {
         if (!alive) return;
         if (result.status === "ready") {
@@ -88,8 +106,10 @@ export default function QuestImportScreen() {
     };
   }, [n]);
 
-  // Opened from a chat, there is nothing under this screen to go back to.
-  const leave = () => (router.canGoBack() ? router.back() : router.replace("/quests" as never));
+  // Opened from a chat, there is nothing under this screen to go back to: the gallery of the
+  // file's kind (a kind never learned goes to the quests).
+  const leave = () =>
+    router.canGoBack() ? router.back() : router.replace(galleryOf(loaded) as never);
 
   const kept = keep.filter(Boolean).length;
   const canImport = loaded.status === "ready" && kept > 0 && title.trim() !== "" && !busy;
@@ -132,18 +152,12 @@ export default function QuestImportScreen() {
         <XStack flex={1} items="center" gap="$2">
           <Download size={20} color="$primaryText" />
           <Text fontFamily="$heading" fontSize={22} fontWeight="700" color="$text">
-            {t("quests.import_title")}
+            {t(headerTitle(loaded))}
           </Text>
         </XStack>
       </XStack>
 
-      {loaded.status === "loading" ? (
-        <YStack p="$6" items="center">
-          <Spinner testID="quest-import-loading" size="large" color="$primaryText" />
-        </YStack>
-      ) : null}
-
-      {loaded.status === "refused" ? <Refused reason={loaded.reason} onLeave={leave} /> : null}
+      <OtherStates loaded={loaded} language={language} onLeave={leave} />
 
       {loaded.status === "ready" ? (
         <>
@@ -220,20 +234,109 @@ export default function QuestImportScreen() {
   );
 }
 
-/** The file at `uri` and what importing it would do, or why it is refused. Never rejects. */
-async function load(uri: string | null): Promise<Loaded> {
+/** Everything but the quest preview: the spinner, a refusal, and the adventure preview. */
+function OtherStates({
+  loaded,
+  language,
+  onLeave,
+}: {
+  loaded: Loaded;
+  language: AppLanguage;
+  onLeave: () => void;
+}) {
+  if (loaded.status === "loading") {
+    return (
+      <YStack p="$6" items="center">
+        <Spinner testID="quest-import-loading" size="large" color="$primaryText" />
+      </YStack>
+    );
+  }
+  if (loaded.status === "refused") return <Refused message={loaded.message} onLeave={onLeave} />;
+  if (loaded.status === "adventure") {
+    return <AdventureImport file={loaded.file} preview={loaded.preview} language={language} />;
+  }
+  return null;
+}
+
+function galleryOf(loaded: Loaded): string {
+  const adventure =
+    loaded.status === "adventure" || (loaded.status === "refused" && loaded.kind === "adventure");
+  return adventure ? "/adventures" : "/quests";
+}
+
+/** The header names the file once it is known, never the door that opened the screen. */
+function headerTitle(loaded: Loaded): string {
+  if (loaded.status === "ready") return "quests.import_title";
+  if (loaded.status === "adventure") return "adventures.import_title";
+  if (loaded.status !== "refused") return "common.file_received";
+  if (loaded.kind === "quest") return "quests.import_title";
+  return loaded.kind === "adventure" ? "adventures.import_title" : "common.file_received";
+}
+
+const refused = (kind: FileKind | null, message: string): Loaded => ({
+  status: "refused",
+  kind,
+  message,
+});
+
+/**
+ * The file at `uri` and what importing it would do, or why it is refused. Never rejects. The read
+ * can refuse before the kind is known (not JSON, too big), so its two sentences hold for both.
+ */
+async function load(uri: string | null, language: AppLanguage): Promise<Loaded> {
+  if (!uri) return refused(null, "adventures.import_unreadable");
+  let data: unknown;
   try {
-    if (!uri) throw new QuestFileError("unreadable");
-    const file = await readQuestFile(uri);
+    data = await readBatiFile(uri);
+  } catch (error) {
+    if (error instanceof QuestFileError) {
+      return refused(
+        null,
+        error.reason === "unreadable"
+          ? "adventures.import_unreadable"
+          : "adventures.import_not_an_adventure",
+      );
+    }
+    // Not the file's fault: a provider that failed.
+    reportError("quests.import.read", error);
+    return refused(null, "adventures.import_unreadable");
+  }
+  if (isRecord(data) && data.kind === "bati-adventure") return loadAdventure(data, language);
+  if (isRecord(data) && data.kind === "bati-quest") return loadQuest(data);
+  return refused(null, "adventures.import_not_an_adventure");
+}
+
+async function loadAdventure(data: unknown, language: AppLanguage): Promise<Loaded> {
+  try {
+    const file = parseAdventureData(data);
+    const preview = await previewAdventure(file, language);
+    // Too few of its steps exist here: say what would fix it instead of a preview to nothing.
+    if (preview.steps.filter((s) => s.status !== "missing").length < MIN_STEPS) {
+      throw new AdventureFileError("unknown_quest");
+    }
+    return { status: "adventure", file, preview };
+  } catch (error) {
+    if (error instanceof AdventureFileError) {
+      return refused("adventure", `adventures.import_${error.reason}`);
+    }
+    // A database that did not answer.
+    reportError("quests.import.read", error);
+    return refused("adventure", "adventures.import_unreadable");
+  }
+}
+
+async function loadQuest(data: unknown): Promise<Loaded> {
+  try {
+    const file = parseQuestData(data);
     const preview = await previewQuest(file);
     // Nothing left to tick is a dead end: say what would fix it instead.
     if (!preview.slots.some((s) => s.available)) throw new QuestFileError("unknown_movement");
     return { status: "ready", file, preview };
   } catch (error) {
-    if (error instanceof QuestFileError) return { status: "refused", reason: error.reason };
-    // Not the file's fault: a provider that failed, a database that did not answer.
+    if (error instanceof QuestFileError) return refused("quest", `quests.import_${error.reason}`);
+    // Not the file's fault: a database that did not answer.
     reportError("quests.import.read", error);
-    return { status: "refused", reason: "unreadable" };
+    return refused("quest", "quests.import_unreadable");
   }
 }
 
@@ -299,13 +402,13 @@ async function save(file: QuestFile): Promise<ImportedQuest | { error: string }>
   }
 }
 
-function Refused({ reason, onLeave }: { reason: QuestFileError["reason"]; onLeave: () => void }) {
+function Refused({ message, onLeave }: { message: string; onLeave: () => void }) {
   const { t } = useTranslation();
   return (
     <YStack p="$4" gap="$3">
       <Card gap="$3">
         <Paragraph testID="quest-import-refused" color="$text">
-          {t(`quests.import_${reason}`)}
+          {t(message)}
         </Paragraph>
       </Card>
       <AppButton variant="outline" onPress={onLeave}>

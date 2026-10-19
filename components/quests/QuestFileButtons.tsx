@@ -58,11 +58,23 @@ export function ShareQuestButton({ questId }: { questId: number }) {
 }
 
 /**
- * A quest someone sent, read from a file and filed with the hero's own. Lives in the new-quest
- * editor, because receiving a quest is one more way to get a new one, and the gallery's "+" is
- * already where a hero goes for that.
+ * A quest or an adventure someone sent, read from a file and filed with the hero's own. Lives in
+ * the new-quest and the new-adventure editors, because receiving one is one more way to get a new
+ * one, and the gallery's "+" is already where a hero goes for that. Either button opens either
+ * kind: the preview screen reads the kind from the file, and decides where the import lands.
  */
-export function ImportQuestButton() {
+export function ImportFileButton({
+  label,
+  hint,
+  failed,
+  testID,
+}: {
+  /** i18n keys, not sentences: the button translates them. */
+  label: string;
+  hint: string;
+  failed: string;
+  testID: string;
+}) {
   const { t } = useTranslation();
   const router = useRouter();
   const { showError } = useToast();
@@ -88,7 +100,7 @@ export function ImportQuestButton() {
     setBusy(true);
     await run().catch((error: unknown) => {
       reportError("quests.import", error);
-      showError(t("quests.import_failed"));
+      showError(t(failed));
     });
     working.current = false;
     setBusy(false);
@@ -97,7 +109,7 @@ export function ImportQuestButton() {
   return (
     <YStack gap="$2">
       <AppButton
-        testID="quest-import"
+        testID={testID}
         variant="outline"
         fontSize={16}
         icon={<Download size={18} color="$text" strokeWidth={2.5} />}
@@ -106,16 +118,16 @@ export function ImportQuestButton() {
           onPress().catch((error: unknown) => reportError("quests.import", error));
         }}
       >
-        {t("quests.import_quest")}
+        {t(label)}
       </AppButton>
       {/* What the other side gets, said once under the button: the session pages explain theirs. */}
       <Text
-        testID="quest-import-hint"
+        testID={`${testID}-hint`}
         fontSize={13}
         color="$textSecondary"
         style={{ textAlign: "center" }}
       >
-        {t("quests.import_hint")}
+        {t(hint)}
       </Text>
     </YStack>
   );

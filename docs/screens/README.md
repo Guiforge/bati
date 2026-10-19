@@ -30,6 +30,7 @@ Maintained per the [wiki protocol](../meta/wiki-protocol.md).
 **Adventures (campaign)**
 - [adventures.md](adventures.md) — browse campaigns → Adventure Details
 - [adventure-details.md](adventure-details.md) — steps + progress → Quest Details
+- [adventure-editor.md](adventure-editor.md) — write, edit or retire an adventure of one's own
 
 **Progression & rewards**
 - [village.md](village.md) — visual reward layer (village growth)

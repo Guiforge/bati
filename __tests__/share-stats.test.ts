@@ -42,6 +42,7 @@ describe("shareStats", () => {
       t,
       "en",
       "metric",
+      "pace",
     );
     expect(stats.map((s) => s.label)).toEqual([
       "share.distance",
@@ -52,18 +53,36 @@ describe("shareStats", () => {
     ]);
   });
 
+  test("a pace or a speed, as the hero chose, is the one on the card", () => {
+    const walk = session({ outing: "walk", leaguesM: 5000, movingSeconds: 3000 });
+    const at = (rate: "pace" | "speed") =>
+      shareStats(walk, t, "en", "metric", rate).find((s) => s.label.startsWith("journal.ground_p"));
+    expect(at("pace")).toEqual({ value: "10:00 /km", label: "journal.ground_pace" });
+    const ride = session({ outing: "ride", leaguesM: 5000, movingSeconds: 3000 });
+    expect(
+      shareStats(ride, t, "en", "metric", "speed").find((s) => s.label === "journal.ground_speed"),
+    ).toEqual({ value: "6.0 km/h", label: "journal.ground_speed" });
+  });
+
   test("a flat outing does not boast of climbing nothing", () => {
     const stats = shareStats(
       session({ outing: "walk", leaguesM: 5000, movingSeconds: 3000, ascentM: 0 }),
       t,
       "en",
       "metric",
+      "pace",
     );
     expect(stats.map((s) => s.label)).not.toContain("journal.ground_climbed");
   });
 
   test("an outing that measured no ground gives no ground figure", () => {
-    const stats = shareStats(session({ outing: "walk", leaguesM: null }), t, "en", "metric");
+    const stats = shareStats(
+      session({ outing: "walk", leaguesM: null }),
+      t,
+      "en",
+      "metric",
+      "pace",
+    );
     expect(stats.map((s) => s.label)).toEqual(["journal.ground_moving", "share.xp"]);
   });
 
@@ -74,6 +93,7 @@ describe("shareStats", () => {
       t,
       "en",
       "metric",
+      "pace",
     );
     expect(stats.map((s) => [s.label, s.value])).toEqual([
       ["share.duration", expect.any(String)],

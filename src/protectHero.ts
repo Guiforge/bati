@@ -3,6 +3,7 @@ import { getSessionAggregates } from "@/db/completed";
 import { dayKey } from "@/db/dates";
 import { preferences } from "@/db/preferences";
 import { dayOf } from "@/db/reminders";
+import { databaseBytes } from "@/src/databaseSize";
 import { syncAccount, syncHealth } from "@/src/deviceSync";
 
 /**
@@ -26,6 +27,16 @@ export const PROTECT_SILENCE_DAYS = [30, 90] as const;
 
 /** A backup older than this is not protecting anyone: the daily run stopped. */
 export const BACKUP_STALE_DAYS = 7;
+
+/**
+ * Past this size the hero is heading for Google's 25 MB limit on Android's automatic backup, past
+ * which it copies nothing new. Photos (J-01) and outing traces fill it; the warning leaves room to
+ * act before the copy freezes.
+ */
+export const HEAVY_DATABASE_BYTES = 20 * 1024 * 1024;
+
+/** A heavy hero is asked about once a month at most, whatever the earlier cards were told. */
+export const HEAVY_SILENCE_DAYS = 30;
 
 /** Whole days between `day` (a `yyyy-MM-dd` key) and `now`, never negative. */
 export function daysSince(day: string, now: Date): number {
@@ -59,17 +70,36 @@ export async function heroIsProtected(now: Date = new Date()): Promise<boolean> 
   return false;
 }
 
-export async function protectCardVisible(now: Date = new Date()): Promise<boolean> {
-  const { totalSessions } = await getSessionAggregates();
-  if (totalSessions < PROTECT_AFTER_SESSIONS) return false;
+/**
+ * Which card to show, if any. `"heavy"` is the same card with another text, for a hero whose
+ * database is above `HEAVY_DATABASE_BYTES` with no backup of their own: the one case where the
+ * silence after a third close must not be for good, because the cost of ignoring it grows with
+ * every photo. It returns monthly instead.
+ */
+export type ProtectCardKind = "plain" | "heavy";
 
+export async function protectCardKind(now: Date = new Date()): Promise<ProtectCardKind | null> {
+  const { totalSessions } = await getSessionAggregates();
+  if (totalSessions < PROTECT_AFTER_SESSIONS) return null;
+  if (await heroIsProtected(now)) return null;
+
+  const heavy = databaseBytes() > HEAVY_DATABASE_BYTES;
   const closed = await preferences.getProtectDismissedDay();
   if (closed !== null) {
-    const silence = PROTECT_SILENCE_DAYS[(await closings()) - 1];
-    if (silence === undefined || daysSince(closed, now) < silence) return false;
+    const silence = heavy
+      ? Math.min(
+          HEAVY_SILENCE_DAYS,
+          PROTECT_SILENCE_DAYS[(await closings()) - 1] ?? HEAVY_SILENCE_DAYS,
+        )
+      : PROTECT_SILENCE_DAYS[(await closings()) - 1];
+    if (silence === undefined || daysSince(closed, now) < silence) return null;
   }
+  return heavy ? "heavy" : "plain";
+}
 
-  return !(await heroIsProtected(now));
+/** Whether Home has a card to show for this: the notice slot only needs the yes or no. */
+export async function protectCardVisible(now: Date = new Date()): Promise<boolean> {
+  return (await protectCardKind(now)) !== null;
 }
 
 /** How many times it was closed. A day with no count is a close from before the count existed. */

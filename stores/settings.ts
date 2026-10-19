@@ -1,8 +1,11 @@
 import { AccessibilityInfo } from "react-native";
 import { create } from "zustand";
 import { type AvatarId, avatarIds, isAvatarId } from "@/constants/avatars";
+import type { MapStyleId } from "@/constants/mapStyle";
+import type { OutingDisplay } from "@/constants/outingDisplay";
 import { preferences } from "@/db";
 import type { DistanceUnit, PrepMode } from "@/db/preferences";
+import type { Locomotion } from "@/db/schema";
 import { i18n } from "@/i18n";
 import { portLegacyAvatar } from "@/src/customAvatar";
 import {
@@ -10,6 +13,7 @@ import {
   getDevicePreferredAppLanguage,
   resolveAppLanguage,
 } from "@/src/i18n/deviceLanguage";
+import { keepAwakeSet, setKeepAwake } from "@/src/outingKeepAwake";
 import { reportError } from "@/src/reportError";
 import { requestWidgetsUpdate } from "@/src/widget";
 
@@ -31,6 +35,8 @@ interface SettingsState {
   distanceUnit: DistanceUnit;
   /** Whether the recap may fetch its basemap. One of two network calls, and it starts off. */
   mapTilesEnabled: boolean;
+  /** Which basemap look, under the tiles consent above; per device. */
+  mapStyle: MapStyleId;
   /**
    * Whether the app may ask GitHub, once a day, whether a newer version has been published. The
    * other network call, off until asked for the same reason. See `src/updateCheck.ts`.
@@ -42,6 +48,10 @@ interface SettingsState {
    * wait, and a recovered session needs no copy of it in its snapshot.
    */
   prepMode: PrepMode;
+  /** What the hero chose to see on the outing panel, per activity. Synced; see constants/outingDisplay. */
+  outingDisplay: OutingDisplay;
+  /** The activities whose screen stays on during an outing. This phone only: src/outingKeepAwake. */
+  outingKeepAwake: Locomotion[];
   isLoaded: boolean;
 
   setLanguage: (language: AppLanguage) => Promise<void>;
@@ -52,8 +62,11 @@ interface SettingsState {
   setVillagersEnabled: (enabled: boolean) => Promise<void>;
   setDistanceUnit: (unit: DistanceUnit) => Promise<void>;
   setMapTilesEnabled: (enabled: boolean) => Promise<void>;
+  setMapStyle: (id: MapStyleId) => Promise<void>;
   setUpdateCheckEnabled: (enabled: boolean) => Promise<void>;
   setPrepMode: (mode: PrepMode) => Promise<void>;
+  setOutingDisplay: (display: OutingDisplay) => Promise<void>;
+  setOutingKeepAwake: (locomotion: Locomotion, on: boolean) => Promise<void>;
 
   loadFromDatabase: () => Promise<void>;
   /** Re-reads the language when the device's changes; see `components/LanguageWatch.tsx`. */
@@ -162,8 +175,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   // Off, and the same default the DB read returns for a key nobody has written: these two are
   // what reaches a third party, so an unanswered question is a no. Both of them.
   mapTilesEnabled: false,
+  mapStyle: "ember",
   updateCheckEnabled: false,
   prepMode: "timer",
+  outingDisplay: {},
+  outingKeepAwake: [],
   isLoaded: false,
 
   setLanguage: async (language) => {
@@ -216,6 +232,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     await preferences.setMapTilesEnabled(enabled);
   },
 
+  setMapStyle: async (id) => {
+    set({ mapStyle: id });
+    await preferences.setMapStyle(id);
+  },
+
   setUpdateCheckEnabled: async (enabled) => {
     set({ updateCheckEnabled: enabled });
     await preferences.setUpdateCheckEnabled(enabled);
@@ -224,6 +245,25 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   setPrepMode: async (mode) => {
     set({ prepMode: mode });
     await preferences.setPrepMode(mode);
+  },
+
+  // Written first, state after: a failed write must not leave the screen saying a choice that the
+  // next launch will not find.
+  setOutingDisplay: async (display) => {
+    try {
+      await preferences.setOutingDisplay(display);
+      set({ outingDisplay: display });
+    } catch (error) {
+      reportError("settings.outingDisplay", error);
+    }
+  },
+
+  setOutingKeepAwake: async (locomotion, on) => {
+    try {
+      set({ outingKeepAwake: await setKeepAwake(locomotion, on) });
+    } catch (error) {
+      reportError("settings.outingKeepAwake", error);
+    }
   },
 
   loadFromDatabase: async () => {
@@ -243,8 +283,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         soundEnabled,
         distanceUnit,
         mapTilesEnabled,
+        mapStyle,
         updateCheckEnabled,
         prepMode,
+        outingDisplay,
+        outingKeepAwake,
       ] = await Promise.all([
         loadLanguage(),
         preferences.getAvatarId(),
@@ -255,8 +298,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         preferences.getSoundEnabled(),
         preferences.getDistanceUnit(),
         preferences.getMapTilesEnabled(),
+        preferences.getMapStyle(),
         preferences.getUpdateCheckEnabled(),
         preferences.getPrepMode(),
+        preferences.getOutingDisplay(),
+        keepAwakeSet(),
       ]);
 
       // The OS is the only source. There used to be a stored override read here and preferred
@@ -278,8 +324,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         soundEnabled,
         distanceUnit,
         mapTilesEnabled,
+        mapStyle,
         updateCheckEnabled,
         prepMode,
+        outingDisplay,
+        outingKeepAwake,
         isLoaded: true,
       });
 

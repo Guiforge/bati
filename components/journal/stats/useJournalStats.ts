@@ -20,6 +20,7 @@ import {
   type RecordMention,
   type WallEntry,
 } from "@/db/journal";
+import { hardSetsByPattern } from "@/db/lightWeek";
 import { getMuscleBalance, type MuscleBalance } from "@/db/muscleBalance";
 import { type FlameDetail, getFlameDetail } from "@/db/streaks";
 import { getUserLevelInfo, type UserLevelInfo } from "@/db/userLevel";
@@ -51,6 +52,8 @@ export type JournalStats = {
   latestRecord: RecordMention | null;
   firstSessionAt: Date | null;
   balance: MuscleBalance;
+  /** Hard sets per movement pattern over the last seven days (D-30), most first. */
+  hardSets: Awaited<ReturnType<typeof hardSetsByPattern>>;
   reps30: number;
   level: UserLevelInfo;
   xpPerSession: number | null;
@@ -83,6 +86,7 @@ async function loadJournalStats(): Promise<JournalStats> {
     achievements,
     kills,
     chronicle,
+    hardSets,
   ] = await Promise.all([
     getRecordWall(4),
     getFlameDetail(now),
@@ -99,6 +103,7 @@ async function loadJournalStats(): Promise<JournalStats> {
     getAllAchievementsWithProgress(),
     getBossKills(),
     chronicleToOpen(now),
+    hardSetsByPattern(weekFrom),
   ]);
 
   const isFirstDay = firstSessionAt == null;
@@ -137,6 +142,7 @@ async function loadJournalStats(): Promise<JournalStats> {
     latestRecord,
     firstSessionAt,
     balance,
+    hardSets,
     reps30,
     level,
     xpPerSession,

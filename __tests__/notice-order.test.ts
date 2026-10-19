@@ -12,6 +12,7 @@ describe("pickNotice", () => {
     expect(seen).toEqual([
       "recovery",
       "sync",
+      "lightWeek",
       "whatsNew",
       "update",
       "protect",

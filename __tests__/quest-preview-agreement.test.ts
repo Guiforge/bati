@@ -91,7 +91,12 @@ describe("a quest card and its screen quote the same numbers", () => {
           : defaults(template.id));
       const raw = await quests.getQuestById(template.id, level);
       if (!raw) throw new Error(`quest ${template.id} vanished`);
-      const screen = config.applyQuestConfig(raw, saved, catalogue);
+      const screen = config.applyQuestConfig(
+        raw,
+        saved,
+        catalogue,
+        await config.loadSwapJournal(saved),
+      );
 
       const card = cards.get(template.id);
       const seconds = estimate.estimateQuestSeconds(screen);

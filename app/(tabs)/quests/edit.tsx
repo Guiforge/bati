@@ -16,9 +16,10 @@ import { Stepper } from "@/components/common/Stepper";
 import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, Plus, Trash2, X } from "@/components/icons";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
-import { ImportQuestButton } from "@/components/quests/QuestFileButtons";
+import { ImportFileButton } from "@/components/quests/QuestFileButtons";
 import { getExerciseThumb, getQuestAsset, QUEST_ASSETS } from "@/constants/assetMap";
 import {
+  adventuresUsingQuest,
   clearQuestConfig,
   createQuestTemplate,
   deleteQuest,
@@ -40,10 +41,11 @@ import type { Exercise } from "@/db/exercises";
 import type { QuestTargetType } from "@/db/schema";
 import { DEFAULT_TARGET_VALUE, SECONDS_SUFFIX } from "@/db/targets";
 import { useHaptics } from "@/hooks/useHaptics";
+import { formatList } from "@/src/i18n/list";
 import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
 import { quotaRefusal } from "@/src/plus/access";
 import { reportError } from "@/src/reportError";
-import { useSettingsStore } from "@/stores/settings";
+import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
 /** What the in-app dialog says; `onConfirm` and `cancelLabel` left out make it a plain message. */
 type DialogState = {
@@ -92,6 +94,13 @@ const QUEST_CHOICES = Object.keys(QUEST_ASSETS);
 const DEFAULT_ROUNDS = 3;
 const DEFAULT_REST = 30;
 const REST_STEP = 5;
+
+/** A title between the quotation marks its language writes. */
+function quoted(title: string, language: AppLanguage): string {
+  if (language === "en") return `\u201C${title}\u201D`;
+  if (language === "de") return `\u201E${title}\u201C`;
+  return `\u00AB\u00A0${title}\u00A0\u00BB`;
+}
 
 export default function QuestEditor() {
   const router = useRouter();
@@ -379,6 +388,24 @@ export default function QuestEditor() {
   const confirmDelete = () => {
     if (questId == null) return;
 
+    // A quest an adventure still names cannot go (`deleteQuest` refuses too): the dialog says which.
+    adventuresUsingQuest(questId)
+      .then((using) => {
+        if (using.length === 0) return askDelete(questId);
+        const titles = using.map((a) => quoted(localizedTitle(a, language), language));
+        setDialog({
+          title: t("quests.editor_delete_title"),
+          body: t("quests.editor_delete_in_use", { titles: formatList(titles, language) }),
+          confirmLabel: t("common.close"),
+        });
+      })
+      .catch((e: unknown) => {
+        reportError("quest.editorDeleteCheck", e);
+        showMessage(t("common.error"), t("errors.generic"));
+      });
+  };
+
+  const askDelete = (questId: number) => {
     setDialog({
       title: t("quests.editor_delete_title"),
       body: t("quests.editor_delete_body"),
@@ -406,7 +433,12 @@ export default function QuestEditor() {
     return (
       <YStack flex={1} bg="$background" p="$5" pt={insets.top + 12} gap="$4">
         <QuotaPanel text={t("plus.quest_quota", { count: refusedAt })}>
-          <ImportQuestButton />
+          <ImportFileButton
+            label="quests.import_quest"
+            hint="quests.import_hint"
+            failed="quests.import_failed"
+            testID="quest-import"
+          />
         </QuotaPanel>
       </YStack>
     );
@@ -453,7 +485,14 @@ export default function QuestEditor() {
 
           {/* Before the form, on a new quest only: a hero holding a quest someone sent them should
               not have to scroll past an empty form to find where it goes. */}
-          {questId == null ? <ImportQuestButton /> : null}
+          {questId == null ? (
+            <ImportFileButton
+              label="quests.import_quest"
+              hint="quests.import_hint"
+              failed="quests.import_failed"
+              testID="quest-import"
+            />
+          ) : null}
 
           {/* The cover leads, as it does in the movement editor: a quest is a card in a gallery
             long before anyone reads its rounds. Seed quests carry authored art; a hero picks

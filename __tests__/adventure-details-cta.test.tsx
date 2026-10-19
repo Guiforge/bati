@@ -46,9 +46,16 @@ jest.mock("@/stores/settings", () => ({
   },
 }));
 
+const mockShowError = jest.fn();
 jest.mock("@/components/common/Toast", () => ({
-  useToast: () => ({ showError: jest.fn(), showSuccess: jest.fn(), showInfo: jest.fn() }),
+  useToast: () => ({ showError: mockShowError, showSuccess: jest.fn(), showInfo: jest.fn() }),
 }));
+// The file itself is proven in adventure-file.test.ts; here only what the share button says.
+jest.mock("@/src/adventureFile", () => ({
+  adventureToFile: jest.fn(),
+  shareAdventure: jest.fn().mockResolvedValue(undefined),
+}));
+jest.mock("@/src/reportError", () => ({ reportError: jest.fn() }));
 
 function mockStep(stepIndex: number, questId = 100 + stepIndex) {
   return {
@@ -90,8 +97,12 @@ jest.mock("@/db", () => ({
   listExercises: jest.fn().mockResolvedValue([]),
   getRecentSessionHistory: jest.fn().mockResolvedValue([]),
   startAdventureRun: jest.fn(),
+  leaveAdventureRun: jest.fn().mockResolvedValue(undefined),
   suggestDifficultyFromSessions: jest.fn().mockReturnValue({ level: "medium", adjusted: false }),
   previewQuest: jest.fn().mockReturnValue({ seconds: 300, xp: 60 }),
+  missingStepQuests: jest.fn().mockResolvedValue([]),
+  sparedExerciseIds: jest.fn().mockResolvedValue(new Set()),
+  worksSparedZone: jest.fn().mockReturnValue(false),
 }));
 
 // The screen reads the hero's ladder and records once for every step, so the head card prices a
@@ -326,4 +337,275 @@ test("with the first session offered, the list and the preview show step 2 as th
       { withAnchor: true },
     ),
   );
+});
+
+// "Laisser la partie" (D-34): a secondary button under the CTA, only with a run under way, behind
+// a confirmation. Judged on the db call and the reloaded page, not on a route.
+describe("leaving the playthrough", () => {
+  type Db = { getActiveAdventureRun: jest.Mock; leaveAdventureRun: jest.Mock };
+  const db = () => require("@/db") as Db;
+  const access = () => require("@/src/plus/access") as { can: jest.Mock };
+  const renderScreen = () =>
+    render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <AdventureDetailsScreen />
+      </TamaguiProvider>,
+    );
+  const activeStep = { id: 42, stepIndex: 0, questId: 100, status: "active" };
+  const underWay = {
+    run: { id: 7, adventureId: 1, status: "active", difficultyOverride: null },
+    steps: [activeStep, { id: 43, stepIndex: 1, questId: 101, status: "locked" }],
+    activeStep,
+  };
+
+  beforeEach(() => {
+    db().leaveAdventureRun.mockClear();
+    (
+      require("@/db") as { getFinishedRunCountsByAdventure: jest.Mock }
+    ).getFinishedRunCountsByAdventure.mockResolvedValue(new Map());
+  });
+  afterEach(() => {
+    db().getActiveAdventureRun.mockReset().mockResolvedValue(null);
+  });
+
+  test("confirming leaves the run, reloads, and the CTA offers a fresh start", async () => {
+    let left = false;
+    db().getActiveAdventureRun.mockImplementation(() => Promise.resolve(left ? null : underWay));
+    db().leaveAdventureRun.mockImplementation(() => {
+      left = true;
+      return Promise.resolve();
+    });
+    const { findByTestId, findByText, getByTestId, queryByTestId } = await renderScreen();
+    expect(await findByText("Continue")).toBeTruthy();
+
+    await fireEvent.press(await findByTestId("adventure-leave"));
+    // Asking changes nothing by itself.
+    expect(db().leaveAdventureRun).not.toHaveBeenCalled();
+    await fireEvent.press(getByTestId("confirm-dialog-confirm"));
+
+    await waitFor(() => expect(db().leaveAdventureRun).toHaveBeenCalledWith(1));
+    expect(await findByText("Start Adventure")).toBeTruthy();
+    await waitFor(() => expect(queryByTestId("adventure-leave")).toBeNull());
+  });
+
+  test("cancelling leaves nothing", async () => {
+    db().getActiveAdventureRun.mockResolvedValue(underWay);
+    const { findByTestId, getByTestId } = await renderScreen();
+
+    await fireEvent.press(await findByTestId("adventure-leave"));
+    await fireEvent.press(getByTestId("confirm-dialog-cancel"));
+
+    expect(db().leaveAdventureRun).not.toHaveBeenCalled();
+  });
+
+  test("is absent without a run, and when the adventure is locked", async () => {
+    const first = await renderScreen();
+    await first.findByTestId("adventure-start");
+    expect(first.queryByTestId("adventure-leave")).toBeNull();
+    await first.unmount();
+
+    db().getActiveAdventureRun.mockResolvedValue(underWay);
+    access().can.mockResolvedValue(false);
+    const locked = await renderScreen();
+    await locked.findByTestId("adventure-plus-locked");
+    expect(locked.queryByTestId("adventure-leave")).toBeNull();
+    access().can.mockResolvedValue(true);
+  });
+});
+
+// The hero's own adventures (adventure-builder): the pencil, the step that lost its quest, and the
+// line under a step that would work the zone they are sparing.
+describe("an adventure the hero wrote", () => {
+  const db = () =>
+    require("@/db") as {
+      getAdventureDetails: jest.Mock;
+      missingStepQuests: jest.Mock;
+      worksSparedZone: jest.Mock;
+    };
+  const details = (author: string) => ({
+    adventure: {
+      kind: "route",
+      author,
+      enTitle: "Tale",
+      frTitle: "Tale",
+      enDescription: "",
+      frDescription: "",
+      imagePath: null,
+    },
+    steps: [mockStep(0), mockStep(1)],
+  });
+  const renderScreen = () =>
+    render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <AdventureDetailsScreen />
+      </TamaguiProvider>,
+    );
+
+  afterEach(() => {
+    db().missingStepQuests.mockResolvedValue([]);
+    db().worksSparedZone.mockReturnValue(false);
+  });
+
+  test("the pencil leads to the editor, and the game's adventures have none", async () => {
+    mockPush.mockClear();
+    db().getAdventureDetails.mockResolvedValueOnce(details("hero"));
+    const own = await renderScreen();
+    await own.findByText("Tale");
+    await fireEvent.press(own.getByTestId("adventure-edit"));
+    expect(mockPush).toHaveBeenCalledWith("/adventures/edit?id=1");
+    await own.unmount();
+
+    db().getAdventureDetails.mockResolvedValueOnce(details("Admin"));
+    const game = await renderScreen();
+    await game.findByText("Tale");
+    expect(game.queryByTestId("adventure-edit")).toBeNull();
+  });
+
+  test("a step without its quest hides Start and says why, for the hero's and the game's", async () => {
+    db().missingStepQuests.mockResolvedValue([1]);
+    db().getAdventureDetails.mockResolvedValueOnce(details("hero"));
+    const own = await renderScreen();
+    expect(
+      await own.findByText("A step has lost its quest. Edit the adventure to play it again."),
+    ).toBeTruthy();
+    expect(own.queryByTestId("adventure-start")).toBeNull();
+    await own.unmount();
+
+    db().getAdventureDetails.mockResolvedValueOnce(details("Admin"));
+    const game = await renderScreen();
+    expect(await game.findByText("A step has lost its quest.")).toBeTruthy();
+    expect(game.queryByTestId("adventure-start")).toBeNull();
+  });
+
+  test("a step that works the spared zone wears its line", async () => {
+    db().worksSparedZone.mockImplementation(
+      (quest: { enTitle: string }) => quest.enTitle === "Step 1",
+    );
+    db().getAdventureDetails.mockResolvedValueOnce(details("hero"));
+    const { findByTestId, queryByTestId } = await renderScreen();
+    expect(await findByTestId("adventure-step-1-zone")).toBeTruthy();
+    expect(queryByTestId("adventure-step-0-zone")).toBeNull();
+  });
+});
+
+// Sharing an adventure: a dialog always says what leaves before the share sheet opens.
+describe("sharing an adventure the hero wrote", () => {
+  const file = () =>
+    require("@/src/adventureFile") as { adventureToFile: jest.Mock; shareAdventure: jest.Mock };
+  const db = () => require("@/db") as { getAdventureDetails: jest.Mock };
+  const written = (over: Record<string, number>) => ({
+    json: '{"kind":"bati-adventure"}',
+    file: { adventure: { title: "Tale" } },
+    photos: 0,
+    leftOut: 0,
+    stepsLeft: 0,
+    ...over,
+  });
+  const open = async () => {
+    db().getAdventureDetails.mockResolvedValueOnce({
+      adventure: {
+        kind: "route",
+        author: "hero",
+        enTitle: "Tale",
+        frTitle: "Tale",
+        enDescription: "",
+        frDescription: "",
+        imagePath: null,
+      },
+      steps: [mockStep(0), mockStep(1)],
+    });
+    const screen = await render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <AdventureDetailsScreen />
+      </TamaguiProvider>,
+    );
+    await screen.findByText("Tale");
+    return screen;
+  };
+
+  beforeEach(() => {
+    file().adventureToFile.mockReset();
+    file().shareAdventure.mockClear();
+    mockShowError.mockClear();
+  });
+
+  test("the dialog holds the three sentences in order, and Share sends the written file", async () => {
+    file().adventureToFile.mockResolvedValue(written({ photos: 2, leftOut: 1, stepsLeft: 1 }));
+    const screen = await open();
+    await fireEvent.press(screen.getByTestId("adventure-share"));
+
+    expect(await screen.findByText("Share this adventure")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "The file holds 2 photos. 1 step stays out of the file: its quest is gone, or one of its texts is too long. 1 photo cannot travel in the file and stays on your phone.",
+      ),
+    ).toBeTruthy();
+    expect(file().shareAdventure).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByText("Share"));
+    expect(file().shareAdventure).toHaveBeenCalledWith('{"kind":"bati-adventure"}', "Tale");
+  });
+
+  test("with nothing left out and no photo, only the no-photo sentence", async () => {
+    file().adventureToFile.mockResolvedValue(written({}));
+    const screen = await open();
+    await fireEvent.press(screen.getByTestId("adventure-share"));
+    expect(
+      await screen.findByText("The file holds your adventure and its quests, with no photo."),
+    ).toBeTruthy();
+  });
+
+  test("cancel does not share", async () => {
+    file().adventureToFile.mockResolvedValue(written({ photos: 1 }));
+    const screen = await open();
+    await fireEvent.press(screen.getByTestId("adventure-share"));
+    await screen.findByText("The file holds 1 photo.");
+    await fireEvent.press(screen.getByText("Cancel"));
+    expect(file().shareAdventure).not.toHaveBeenCalled();
+  });
+
+  test("under two steps that can travel it toasts and opens no dialog", async () => {
+    file().adventureToFile.mockResolvedValue(null);
+    const screen = await open();
+    await fireEvent.press(screen.getByTestId("adventure-share"));
+    await waitFor(() =>
+      expect(mockShowError).toHaveBeenCalledWith(
+        "Fewer than 2 steps can travel in a file. Check their quests first.",
+      ),
+    );
+    expect(screen.queryByText("Share this adventure")).toBeNull();
+  });
+
+  test("a file that cannot be written is reported and said", async () => {
+    const boom = new Error("fails its own reader");
+    file().adventureToFile.mockRejectedValue(boom);
+    const screen = await open();
+    await fireEvent.press(screen.getByTestId("adventure-share"));
+    await waitFor(() =>
+      expect(mockShowError).toHaveBeenCalledWith("The file could not be written. Try again."),
+    );
+    const { reportError } = require("@/src/reportError") as { reportError: jest.Mock };
+    expect(reportError).toHaveBeenCalledWith("adventures.share", boom);
+  });
+
+  test("the game's adventures have no share button", async () => {
+    db().getAdventureDetails.mockResolvedValueOnce({
+      adventure: {
+        kind: "route",
+        author: "Admin",
+        enTitle: "Tale",
+        frTitle: "Tale",
+        enDescription: "",
+        frDescription: "",
+        imagePath: null,
+      },
+      steps: [mockStep(0), mockStep(1)],
+    });
+    const screen = await render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <AdventureDetailsScreen />
+      </TamaguiProvider>,
+    );
+    await screen.findByText("Tale");
+    expect(screen.queryByTestId("adventure-share")).toBeNull();
+  });
 });

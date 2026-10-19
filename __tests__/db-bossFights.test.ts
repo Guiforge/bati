@@ -27,16 +27,18 @@ describe("db/bossFights", () => {
     // A boss with a declared HP pool and a weakness/resistance pair.
     t.sqlite
       .prepare(
-        `INSERT INTO adventures (id, questId, kind, bossTotalHp, bossWeaknessMuscle, bossResistanceMuscle, imagePath)
-         VALUES (?, 1, 'boss', 100, 'chest', 'back', 'assets/boss.jpg')`,
+        `INSERT INTO adventures (id, questId, kind, enTitle, bossTotalHp, bossWeaknessMuscle, bossResistanceMuscle, imagePath)
+         VALUES (?, 1, 'boss', 'Boss ' || ?, 100, 'chest', 'back', 'assets/boss.jpg')`,
       )
-      .run(BOSS_WITH_HP);
+      .run(BOSS_WITH_HP, BOSS_WITH_HP);
 
     // No declared HP: the pool is derived from the steps' exercise targets.
     // Quest 1 appears twice on purpose — a repeated step must count twice.
     t.sqlite
-      .prepare(`INSERT INTO adventures (id, questId, kind, imagePath) VALUES (?, 1, 'boss', NULL)`)
-      .run(BOSS_DERIVED_HP);
+      .prepare(
+        `INSERT INTO adventures (id, questId, kind, enTitle, imagePath) VALUES (?, 1, 'boss', 'Boss ' || ?, NULL)`,
+      )
+      .run(BOSS_DERIVED_HP, BOSS_DERIVED_HP);
     t.sqlite
       .prepare(
         `INSERT INTO adventure_steps (adventureId, stepIndex, questId) VALUES (?, 0, 1), (?, 1, 1)`,
@@ -44,12 +46,16 @@ describe("db/bossFights", () => {
       .run(BOSS_DERIVED_HP, BOSS_DERIVED_HP);
 
     t.sqlite
-      .prepare(`INSERT INTO adventures (id, questId, kind) VALUES (?, 1, 'boss')`)
-      .run(BOSS_NO_STEPS);
+      .prepare(
+        `INSERT INTO adventures (id, questId, kind, enTitle) VALUES (?, 1, 'boss', 'Boss ' || ?)`,
+      )
+      .run(BOSS_NO_STEPS, BOSS_NO_STEPS);
 
     t.sqlite
-      .prepare(`INSERT INTO adventures (id, questId, kind) VALUES (?, 1, 'route')`)
-      .run(ROUTE_ADVENTURE);
+      .prepare(
+        `INSERT INTO adventures (id, questId, kind, enTitle) VALUES (?, 1, 'route', 'Route ' || ?)`,
+      )
+      .run(ROUTE_ADVENTURE, ROUTE_ADVENTURE);
   });
 
   afterEach(() => {
@@ -98,6 +104,42 @@ describe("db/bossFights", () => {
     expect(first?.currentHp).toBe(100);
     expect(first?.weaknessMuscle).toBe("chest");
     expect(await b.getBossFightByAdventure(BOSS_WITH_HP)).toMatchObject({ id: first?.id });
+  });
+
+  test("the three builders carry the adventure's name and lines, and an edit is seen on the next read", async () => {
+    noCrits();
+    const b = boss();
+    const lines = '{"idle":["Again."],"crit":[],"enrage":["Enough."]}';
+    t.sqlite
+      .prepare("UPDATE adventures SET bossName = 'Nightcoil', bossLinesJson = ? WHERE id = ?")
+      .run(lines, BOSS_WITH_HP);
+    const expected = {
+      bossName: "Nightcoil",
+      bossLines: { idle: ["Again."], crit: [], enrage: ["Enough."] },
+    };
+
+    // New fight.
+    expect(await b.getOrCreateBossFight(BOSS_WITH_HP, "medium")).toMatchObject(expected);
+    // Existing fight.
+    expect(await b.getOrCreateBossFight(BOSS_WITH_HP, "medium")).toMatchObject(expected);
+    // Read without creating.
+    expect(await b.getBossFightByAdventure(BOSS_WITH_HP)).toMatchObject(expected);
+
+    // The words are the adventure's, not the fight row's: an edit applies on the next session.
+    t.sqlite
+      .prepare("UPDATE adventures SET bossName = 'Nightcoil II', bossLinesJson = NULL WHERE id = ?")
+      .run(BOSS_WITH_HP);
+    expect(await b.getOrCreateBossFight(BOSS_WITH_HP, "medium")).toMatchObject({
+      bossName: "Nightcoil II",
+      bossLines: { idle: [], crit: [], enrage: [] },
+    });
+  });
+
+  test("a game boss has no name of its own and no lines", async () => {
+    noCrits();
+    const fight = await boss().getOrCreateBossFight(BOSS_DERIVED_HP, "medium");
+    expect(fight?.bossName).toBeNull();
+    expect(fight?.bossLines).toEqual({ idle: [], crit: [], enrage: [] });
   });
 
   test("a fight in progress is re-read at its current HP, not its total", async () => {

@@ -114,7 +114,10 @@ export function isUserExercise(ex: Pick<Exercise, "creator">): boolean {
  * `db/oaths.ts` stores an id and `db/paths.ts` walks `prerequisiteExerciseId`, which no hero row
  * carries — neither goes through a name, so neither needs this.
  */
-export function officialByName(catalogue: Exercise[], enName: string): Exercise | undefined {
+export function officialByName(
+  catalogue: readonly Exercise[],
+  enName: string,
+): Exercise | undefined {
   return catalogue.find((e) => e.enName === enName && e.creator === ADMIN_CREATOR);
 }
 

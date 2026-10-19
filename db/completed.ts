@@ -1,5 +1,5 @@
 import { differenceInCalendarDays } from "date-fns";
-import { and, count, countDistinct, desc, eq, gt, gte, lt, ne, sql, sum } from "drizzle-orm";
+import { and, asc, count, countDistinct, desc, eq, gt, gte, lt, ne, sql, sum } from "drizzle-orm";
 import type { SQLiteColumn } from "drizzle-orm/sqlite-core";
 import { reportError } from "@/src/reportError";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
@@ -418,6 +418,18 @@ export async function updateSessionFeedback(
     .where(eq(completedQuest.id, sessionId));
 }
 
+export const MAX_NOTE_CHARS = 500;
+
+/** Write or clear the note of a saved session. Clearing is an edit too: it is stamped and travels. */
+export async function updateSessionNotes(sessionId: number, notes: string): Promise<void> {
+  const text = notes.trim();
+  if (text.length > MAX_NOTE_CHARS) throw new Error("Note too long");
+  await db
+    .update(completedQuest)
+    .set({ notes: text, notesEditedAt: nextEditStamp(completedQuest.notesEditedAt) })
+    .where(eq(completedQuest.id, sessionId));
+}
+
 /**
  * The stamp of an edit to a saved session (`0072`): now, or one second past the stamp already
  * there when that is later. Sync keeps the later stamp and fingerprints their sum, so a stamp must
@@ -426,6 +438,26 @@ export async function updateSessionFeedback(
  */
 export function nextEditStamp(column: SQLiteColumn) {
   return sql<Date>`max(unixepoch(), ifnull(${column}, 0) + 1)`;
+}
+
+/**
+ * The run step after this one: the next real one, never `stepIndex + 1`, so a gap in the indexes
+ * (a step a hero adventure lost) never ends a run early. Here and not in `adventures.ts`, which
+ * reaches this file through `quests.ts` and would close a cycle.
+ */
+export async function nextRunStep(
+  exec: typeof db | TransactionTx,
+  runId: number,
+  stepIndex: number,
+): Promise<{ id: number; questId: number } | null> {
+  const { adventureRunSteps } = schema;
+  const [next] = await exec
+    .select({ id: adventureRunSteps.id, questId: adventureRunSteps.questId })
+    .from(adventureRunSteps)
+    .where(and(eq(adventureRunSteps.runId, runId), gt(adventureRunSteps.stepIndex, stepIndex)))
+    .orderBy(asc(adventureRunSteps.stepIndex))
+    .limit(1);
+  return next ?? null;
 }
 
 /**
@@ -440,6 +472,9 @@ export function nextEditStamp(column: SQLiteColumn) {
  * a newer run of that adventure exists (a rematch resets the boss, so this session's hits no
  * longer belong to the fight on the page). Reopening a step under either would leave a run with a
  * hole in it. A session the victory screen discards can never be locked: nothing came after it.
+ *
+ * A left run is never revived by this: its step only forgets the session, and it is `"locked"`
+ * only once a newer run of that adventure is finished.
  *
  * Achievements and a fulfilled oath stay: neither is ever taken back, by design.
  * ponytail: another session's XP priced against this one (the day's first-session bonus, the
@@ -465,6 +500,7 @@ export async function deleteSession(sessionId: number): Promise<"deleted" | "loc
     await tx.delete(completedQuest).where(eq(completedQuest.id, sessionId));
     if (row.uuid) {
       await tx.delete(gpsPoints).where(eq(gpsPoints.sessionId, row.uuid));
+      await tx.delete(schema.sessionPhotos).where(eq(schema.sessionPhotos.sessionUuid, row.uuid));
       // Remembered, so device sync does not read another device's copy as newer (0064).
       await tx
         .insert(schema.deletedSessions)
@@ -492,6 +528,7 @@ async function reopenCampaignStep(tx: TransactionTx, sessionId: number): Promise
         runId: adventureRunSteps.runId,
         stepIndex: adventureRunSteps.stepIndex,
         adventureId: adventureRuns.adventureId,
+        runStatus: adventureRuns.status,
       })
       .from(adventureRunSteps)
       .innerJoin(adventureRuns, eq(adventureRuns.id, adventureRunSteps.runId))
@@ -499,6 +536,30 @@ async function reopenCampaignStep(tx: TransactionTx, sessionId: number): Promise
       .limit(1)
   )[0];
   if (!step) return true;
+
+  // A left run is never resumed, so it has no step to put back. Locked only once a newer run of this
+  // adventure has finished: the fight may have been reset since, and the refund would land on the rematch.
+  // ponytail: that "locked" reuses journal.forget_locked, whose copy ("you have already played the next
+  // steps") is inaccurate for a left run; own copy if a hero ever reports it.
+  if (step.runStatus === "left") {
+    const [settled] = await tx
+      .select({ n: count() })
+      .from(adventureRuns)
+      .where(
+        and(
+          eq(adventureRuns.adventureId, step.adventureId),
+          gt(adventureRuns.id, step.runId),
+          eq(adventureRuns.status, "finished"),
+        ),
+      );
+    if ((settled?.n ?? 0) > 0) return false;
+    // Foreign keys are off on devices: unhook the step from the session about to be deleted, status untouched.
+    await tx
+      .update(adventureRunSteps)
+      .set({ completedSessionId: null })
+      .where(eq(adventureRunSteps.id, step.id));
+    return true;
+  }
 
   const [later] = await tx
     .select({ n: count() })
@@ -520,15 +581,13 @@ async function reopenCampaignStep(tx: TransactionTx, sessionId: number): Promise
     .update(adventureRunSteps)
     .set({ status: "active", completedSessionId: null, completedAt: null })
     .where(eq(adventureRunSteps.id, step.id));
-  await tx
-    .update(adventureRunSteps)
-    .set({ status: "locked", startedAt: null })
-    .where(
-      and(
-        eq(adventureRunSteps.runId, step.runId),
-        eq(adventureRunSteps.stepIndex, step.stepIndex + 1),
-      ),
-    );
+  const following = await nextRunStep(tx, step.runId, step.stepIndex);
+  if (following) {
+    await tx
+      .update(adventureRunSteps)
+      .set({ status: "locked", startedAt: null })
+      .where(eq(adventureRunSteps.id, following.id));
+  }
   await tx
     .update(adventureRuns)
     .set({ status: "active", finishedAt: null })

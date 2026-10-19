@@ -3,7 +3,14 @@ import type { Localized } from "@/src/i18n/deviceLanguage";
 import { db, schema } from "./client";
 import { isWorkout } from "./completed";
 import { MUSCLE_LABELS } from "./labels";
-import { isMovementPattern, PATTERN_LABELS, PULL_PATTERNS, PUSH_PATTERNS } from "./patterns";
+import {
+  isMovementPattern,
+  PATTERN_LABELS,
+  PULL_DEFICIT_RATIO,
+  PULL_PATTERNS,
+  PUSH_PATTERNS,
+  WEAK_SHARE_OF_IDEAL,
+} from "./patterns";
 import { shortLivedQuery } from "./queryCache";
 import { getEligibleQuestIds } from "./quests";
 import { type MovementPattern, type MuscleCode, movementPatterns, muscleCodes } from "./schema";
@@ -147,7 +154,7 @@ async function computeMuscleBalance(period: BalancePeriod = "30d"): Promise<Musc
   // Identify weak and strong areas
   // A balanced distribution would be ~16.7% per muscle (6 muscles)
   const idealPercentage = 100 / muscleCodes.length;
-  const weakThreshold = idealPercentage * 0.5; // Less than 50% of ideal
+  const weakThreshold = idealPercentage * WEAK_SHARE_OF_IDEAL; // Less than 50% of ideal
   const strongThreshold = idealPercentage * 1.5; // More than 150% of ideal
 
   const weakAreas: MuscleCode[] = [];
@@ -286,15 +293,6 @@ async function computePatternBalance(period: BalancePeriod): Promise<PatternBala
     pullPerPush: pushVolume > 0 ? pullVolume / pushVolume : null,
   };
 }
-
-/**
- * Pulling should not sit far below pushing. Below half is the point where it is worth saying
- * something — the hero is not "a bit unbalanced", they are building a posture problem.
- *
- * ponytail: one flat ratio, not a per-pattern model. The research gives a direction, not a
- * number; refine it if heroes start reporting the nudge as noise.
- */
-const PULL_DEFICIT_RATIO = 0.5;
 
 /** Enough push volume that the ratio means something — one warm-up's worth would not. */
 const MIN_PUSH_VOLUME_TO_JUDGE = 100;

@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray, or } from "drizzle-orm";
 import { setAsideReplacement } from "@/constants/exerciseFilters";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { workoutsBeforeToday } from "./completed";
@@ -16,6 +16,7 @@ import { getOutingHabit } from "./outingHabit";
 import { type OutingHabit, proposedRunSeconds } from "./outingRule";
 import { type ExerciseGhost, getExerciseHistory, ghostKey } from "./personalRecords";
 import { isStartingOut, preferences, startsGently, type TrainingLevel } from "./preferences";
+import { progressiveTarget, type TargetWhy } from "./progress";
 import { clearCached, setCached } from "./queryCache";
 import {
   ADMIN_CREATOR,
@@ -44,7 +45,16 @@ import { uuidv7 } from "./uuid";
 import { NON_REP_STYLE } from "./workUnits";
 import { sparedExerciseIds } from "./zone";
 
-const { exercises, exerciseMuscles, questExercises, quests } = schema;
+const {
+  adventureRuns,
+  adventureRunSteps,
+  adventures,
+  adventureSteps,
+  exercises,
+  exerciseMuscles,
+  questExercises,
+  quests,
+} = schema;
 
 // ------------------------------------------------------------
 // Types
@@ -103,6 +113,20 @@ export interface QuestExercise {
    * then serves the written movement by itself.
    */
   pinnedOver?: MovementRef;
+
+  /**
+   * The template's raw band, set on a slot the app may swap (`substitute`) so that
+   * `applyConfigToSlots` can progress a swapped-in movement from the bottom of the same band.
+   * Optional so a session saved before it existed still loads.
+   */
+  band?: { type: QuestTargetType; min: number; max: number };
+
+  /**
+   * Why the target is what it is (`progressiveTarget`), for the one sentence the session owes when
+   * it sits under what the hero did last time. Gone when the hero's own number is on the slot.
+   * Optional so a session saved before it existed still loads.
+   */
+  targetWhy?: TargetWhy;
 
   /**
    * What the app prescribed here before the hero set their own number (`0070`). Absent when the
@@ -688,6 +712,8 @@ export type SlotJournal = {
   setAside: ReadonlySet<number>;
   /** `ghostKey` -> what they did last time, which is also where a hold is prescribed from. */
   history: ReadonlyMap<string, ExerciseGhost>;
+  /** When `history` was read, ms: what "more than 14 days ago" is measured from. Defaults to now. */
+  readAt?: number;
   /**
    * The hero's month of running, which is what a run slot is proposed from (`proposedRunSeconds`).
    * Absent means nobody asked: the slot runs at its seeded duration, which is right for a hero's
@@ -712,11 +738,12 @@ export async function loadSlotJournal(exerciseIds: number[]): Promise<SlotJourna
   const history = await getExerciseHistory([
     ...new Set([...exerciseIds, ...served.values(), ...replaced.values()]),
   ]);
+  const readAt = Date.now();
   // Read only when a run is among them. `listExercises` is promise-cached, so asking is free.
   const ids = new Set(exerciseIds);
   const hasRun = (await listExercises()).some((e) => ids.has(e.id) && e.locomotion === "run");
   const runHabit = hasRun ? await getOutingHabit("run") : undefined;
-  return { served, replaced, setAside, history, ...(runHabit ? { runHabit } : {}) };
+  return { served, replaced, setAside, history, readAt, ...(runHabit ? { runHabit } : {}) };
 }
 
 async function loadSetAsideIds(): Promise<Set<number>> {
@@ -750,6 +777,85 @@ async function loadReplacements(
     if (replacement) replaced.set(id, replacement.id);
   }
   return replaced;
+}
+
+/**
+ * `progressiveTarget` for one slot: the band's edges at tonight's level, the movement's own
+ * journal. `fallback` is today's rule (`generateTarget`, retargeted), which is also what a
+ * movement with nothing in the journal is asked. A flipped unit has no band of its own, so
+ * nothing is clamped around it.
+ */
+export function progressiveSlot(input: {
+  base: { type: QuestTargetType; min: number; max: number };
+  fallback: Target;
+  exercise: Pick<Exercise, "id" | "style">;
+  level: UserLevel;
+  journal: Pick<SlotJournal, "history" | "readAt">;
+  start?: "band" | "floor";
+}): { target: Target; why: TargetWhy; ghost: ExerciseGhost | undefined } {
+  const { base, fallback, exercise, level, journal } = input;
+  const range = targetRangeFor(fallback.type, exercise.style);
+  const edge = (e: "min" | "max") =>
+    generateTarget({ ...base, min: base[e], max: base[e] }, level).value;
+  const same = fallback.type === base.type;
+  const ghost = journal.history.get(ghostKey(exercise.id, fallback.type));
+  const { value, why } = progressiveTarget({
+    type: fallback.type,
+    band: fallback.value,
+    start: input.start ?? "band",
+    floor: same ? edge("min") : range.min,
+    top: same ? edge("max") : range.max,
+    level,
+    recent: ghost?.recent ?? [],
+    lastAt: ghost?.at ?? null,
+    now: journal.readAt ?? Date.now(),
+    range,
+  });
+  return { target: { type: fallback.type, value }, why, ghost };
+}
+
+function runProposal(
+  substitute: boolean,
+  exercise: Exercise,
+  generated: Target,
+  journal: SlotJournal,
+) {
+  return substitute &&
+    exercise.locomotion === "run" &&
+    generated.type === "time" &&
+    journal.runHabit
+    ? proposedRunSeconds(journal.runHabit)
+    : null;
+}
+
+/** The served movement's progressive target, and the written movement's own ("Do X instead"). */
+function progressedSlots(input: {
+  base: { type: QuestTargetType; min: number; max: number };
+  generated: Target;
+  exercise: Exercise;
+  written: Exercise;
+  replacement: Exercise | undefined;
+  level: UserLevel;
+  userLevel: UserLevel;
+  journal: SlotJournal;
+}) {
+  const { base, generated, exercise, written, replacement, level, userLevel, journal } = input;
+  const served = progressiveSlot({ base, fallback: generated, exercise, level, journal });
+  const writtenSlot =
+    exercise.id === written.id || replacement !== undefined
+      ? undefined
+      : progressiveSlot({
+          base,
+          fallback: generateTarget(
+            base,
+            userLevel,
+            journal.history.get(ghostKey(written.id, "time"))?.best,
+          ),
+          exercise: written,
+          level: userLevel,
+          journal,
+        });
+  return { served, writtenSlot };
 }
 
 /**
@@ -787,6 +893,8 @@ export function resolveSlot(input: {
   walkRun: boolean;
   /** The written movement's own target, when another movement is served in its place. */
   asWritten: Target | undefined;
+  /** Why `target` is what it is, when the progression decided it. */
+  targetWhy: TargetWhy | undefined;
 } {
   const { base, written, userLevel, journal, catalogue, substitute } = input;
 
@@ -821,11 +929,25 @@ export function resolveSlot(input: {
   // run. Runs only. A walk or a ride keeps its band, and so does a hero's own quest, which has no
   // `runHabit` to read. The one place this is decided, so the gallery card, the Home tile and the
   // quest screen cannot show three durations for one run.
-  const proposal =
-    substitute && exercise.locomotion === "run" && generated.type === "time" && journal.runHabit
-      ? proposedRunSeconds(journal.runHabit)
-      : null;
-  const target = proposal ? { ...generated, value: proposal.seconds } : generated;
+  const proposal = runProposal(substitute, exercise, generated, journal);
+  // The one birthplace of the number a hero is asked for: what they did last time, not only the
+  // middle of the band. Never for an outing or a hero's own quest, which run as written.
+  const progressed =
+    substitute && !outing
+      ? progressedSlots({
+          base,
+          generated,
+          exercise,
+          written,
+          replacement,
+          level,
+          userLevel,
+          journal,
+        })
+      : undefined;
+  const target = proposal
+    ? { ...generated, value: proposal.seconds }
+    : (progressed?.served.target ?? generated);
 
   return {
     exercise,
@@ -838,10 +960,8 @@ export function resolveSlot(input: {
     // Only for a rung served in the written movement's place. A set-aside slot never offers the
     // written movement back that way, and an outing is neither stepped down nor prescribed off a
     // record, so both get nothing rather than a number computed under the wrong rules.
-    asWritten:
-      exercise.id === written.id || replacement !== undefined || outing
-        ? undefined
-        : generateTarget(base, userLevel, journal.history.get(ghostKey(written.id, "time"))?.best),
+    asWritten: progressed?.writtenSlot?.target,
+    targetWhy: proposal ? undefined : progressed?.served.why,
     walkRun: proposal?.walkRun === true,
     // In the target's own unit: a movement trained both ways has two records, and showing the
     // hold next to a rep target would be a number the hero cannot act on.
@@ -896,14 +1016,15 @@ function buildSlot(
     muscles: [],
   };
 
-  const { exercise, target, ghost, setAsideFrom, stillSetAside, walkRun, asWritten } = resolveSlot({
-    base: { type: r.targetType, min: r.targetMin, max: r.targetMax },
-    written,
-    userLevel: ctx.userLevel,
-    journal: ctx.journal,
-    catalogue: ctx.catalogue,
-    substitute: ctx.substitute,
-  });
+  const { exercise, target, ghost, setAsideFrom, stillSetAside, walkRun, asWritten, targetWhy } =
+    resolveSlot({
+      base: { type: r.targetType, min: r.targetMin, max: r.targetMax },
+      written,
+      userLevel: ctx.userLevel,
+      journal: ctx.journal,
+      catalogue: ctx.catalogue,
+      substitute: ctx.substitute,
+    });
   const isSubstituted = exercise.id !== r.exId;
 
   return {
@@ -920,6 +1041,8 @@ function buildSlot(
     images: isSubstituted ? [] : safeParseImages(r.imagesJson),
     target,
     ghost,
+    ...(ctx.substitute ? { band: { type: r.targetType, min: r.targetMin, max: r.targetMax } } : {}),
+    ...(targetWhy ? { targetWhy } : {}),
     ...(walkRun ? { walkRun: true as const } : {}),
     // What the template asked for, when that is not what runs — the screens owe the hero an
     // explanation and a way back, and nothing else in the object can tell them. A set-aside slot
@@ -1057,13 +1180,64 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
   return quest;
 }
 
-/** The row, no tombstone: the half `honourTombstones` shares with `deleteQuest`. */
+/**
+ * Adventures that name this quest: active ones, and any with a run under way (a retired adventure
+ * with an active run still plays its copied steps). A retired adventure with no run never blocks a
+ * quest. Returns the four titles of each, for the refusal sentence. Lives here and not in
+ * `db/adventures.ts` because that file imports this one.
+ */
+export async function adventuresUsingQuest(
+  questId: number,
+  exec: typeof db | TransactionTx = db,
+): Promise<{ enTitle: string; frTitle: string; deTitle: string; esTitle: string }[]> {
+  const named = exec
+    .select({ id: adventureSteps.adventureId })
+    .from(adventureSteps)
+    .where(eq(adventureSteps.questId, questId));
+  const running = exec
+    .select({ id: adventureRuns.adventureId })
+    .from(adventureRuns)
+    .innerJoin(adventureRunSteps, eq(adventureRunSteps.runId, adventureRuns.id))
+    .where(and(eq(adventureRuns.status, "active"), eq(adventureRunSteps.questId, questId)));
+  return await exec
+    .select({
+      enTitle: adventures.enTitle,
+      frTitle: adventures.frTitle,
+      deTitle: adventures.deTitle,
+      esTitle: adventures.esTitle,
+    })
+    .from(adventures)
+    .where(
+      or(
+        and(eq(adventures.isActive, 1), inArray(adventures.id, named)),
+        inArray(adventures.id, running),
+      ),
+    );
+}
+
+/** A quest an adventure still names cannot be deleted (the editor says which one). */
+export class QuestInUseError extends Error {
+  constructor() {
+    super("Quest is a step of an adventure");
+    this.name = "QuestInUseError";
+  }
+}
+
+/**
+ * The row, no tombstone: the half `honourTombstones` shares with `deleteQuest`.
+ *
+ * ponytail: a retired adventure, its steps, runs and fight survive this delete only because the app
+ * runs with foreign_keys OFF (db/client.ts), while the schema says ON DELETE CASCADE on
+ * adventures/adventure_steps/adventure_run_steps.questId. Turning the pragma on would erase them.
+ * Fix by a migration dropping those three cascades before anyone does.
+ */
 export async function removeQuest(id: number, exec: typeof db | TransactionTx = db): Promise<void> {
   await exec.delete(quests).where(eq(quests.id, id));
 }
 
 export async function deleteQuest(id: number): Promise<void> {
   await transactionOrFallback(async (tx) => {
+    if ((await adventuresUsingQuest(id, tx)).length > 0) throw new QuestInUseError();
     await writeContentTombstone(tx, "quests", id);
     await removeQuest(id, tx);
   });

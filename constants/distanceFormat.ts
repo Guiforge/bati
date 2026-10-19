@@ -1,5 +1,5 @@
+import type { RateKind } from "@/constants/outingDisplay";
 import type { DistanceUnit } from "@/db/preferences";
-import type { Locomotion } from "@/db/schema";
 import { RULES } from "@/src/gps/track";
 
 /**
@@ -100,9 +100,10 @@ function formatSpeed(metres: number, movingMs: number, unit: DistanceUnit, langu
 }
 
 /**
- * How fast an outing went, in the shape its kind of hero thinks in: a pace for feet ("5:12 /km"),
- * a speed for wheels ("18.4 km/h"). A cyclist reads min/km the way a runner reads km/h, as a
- * number to convert first. `null` is a mixed quest, which `outingLocomotion` leaves unnamed.
+ * How fast an outing went, in the shape the hero reads it in: a pace ("5:12 /km") or a speed
+ * ("18.4 km/h"). Which one is their choice per activity, a pace for feet and a speed for wheels
+ * until they say otherwise (`rateKind`, `constants/outingDisplay.ts`). Mandatory, so a caller
+ * that forgets to ask does not compile.
  *
  * Both shapes divide the same two numbers, so they never disagree about what a kilometre is.
  */
@@ -111,9 +112,9 @@ export function formatRate(
   movingMs: number,
   unit: DistanceUnit,
   language: string,
-  locomotion: Locomotion | null,
+  kind: RateKind,
 ): string {
-  return locomotion === "ride"
+  return kind === "speed"
     ? formatSpeed(metres, movingMs, unit, language)
     : formatPace(metres, movingMs, unit);
 }
@@ -132,14 +133,9 @@ export function formatRateAt(
   metresPerSecond: number,
   unit: DistanceUnit,
   language: string,
-  locomotion: Locomotion | null,
+  kind: RateKind,
 ): string {
-  return formatRate(metresPerSecond * 3600, 3_600_000, unit, language, locomotion);
-}
-
-/** What the figure `formatRate` printed is called, as the last word of a locale key. */
-export function rateKind(locomotion: Locomotion | null): "pace" | "speed" {
-  return locomotion === "ride" ? "speed" : "pace";
+  return formatRate(metresPerSecond * 3600, 3_600_000, unit, language, kind);
 }
 
 /**

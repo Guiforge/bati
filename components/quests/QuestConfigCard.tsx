@@ -18,6 +18,7 @@ import {
 } from "@/db";
 import { formatDuration } from "@/db/estimate";
 import {
+  displayLocomotion,
   isOutingSession,
   outingGoal,
   outingLocomotion,
@@ -305,6 +306,7 @@ export function QuestConfigCard({ quest, config, language, onChange, onReset, on
                     goal={goal}
                     unit={unit}
                     locomotion={outingLocomotion(quest)}
+                    displayLocomotion={displayLocomotion(quest)}
                     walkRun={walkRun}
                     onPick={setGoal}
                   />

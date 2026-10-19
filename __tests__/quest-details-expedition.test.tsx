@@ -14,8 +14,16 @@ import config from "@/tamagui.config";
 // nothing was hidden from it.
 
 // Setting aside is not what this file is about.
-jest.mock("@/db/questConfig", () => ({ loadDefaultLevels: async () => () => "medium" }));
+jest.mock("@/db/questConfig", () => ({
+  loadDefaultLevels: async () => () => "medium",
+  loadSwapJournal: async () => ({ history: new Map() }),
+}));
 jest.mock("@/hooks/useSetAside");
+// The rule is db-light-week.test.ts's; these suites read the screen with no light week running.
+jest.mock("@/db/lightWeek", () => ({
+  isLightWeekRunning: async () => false,
+  lightenRounds: (quest: unknown) => quest,
+}));
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({
@@ -102,7 +110,7 @@ function expeditionQuest() {
         id: 11,
         images: [],
         substitutedFor: null,
-        ghost: { last: 720, best: 900, at: 0 },
+        ghost: { last: 720, best: 900, at: 0, bestAt: 0, seasonBest: 900, recent: [] },
         target: { type: "time", value: 900 },
         exercise: movement({ style: "expedition" }),
       },

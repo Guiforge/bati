@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { act, render } from "@testing-library/react-native";
+import { act, fireEvent, render } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { TamaguiProvider } from "tamagui";
 import { oathText } from "@/components/oath/useOathText";
@@ -17,6 +17,9 @@ import { useSettingsStore } from "@/stores/settings";
 import config from "@/tamagui.config";
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
+// `mock`-prefixed: jest lifts the factory above every other declaration.
+const mockAccept = jest.fn(async (_offer: unknown) => undefined);
+jest.mock("@/db/capOffer", () => ({ acceptCapOffer: (offer: unknown) => mockAccept(offer) }));
 
 type Lang = "fr" | "en" | "de" | "es";
 async function show(
@@ -480,6 +483,28 @@ describe("TonightList", () => {
     expect(queryByText(/\+100 XP/)).toBeNull();
   });
 
+  test("a hero's own boss says it pays its sessions and no Triumph XP", async () => {
+    const triumph = await show(rankFeasts({ boss: { name: "Golem", own: true }, result: base }));
+    expect(triumph.getByText("Triomphe ! Il tombe sous tes coups.")).toBeTruthy();
+    expect(triumph.getByText(/^Une aventure écrite par toi ne rapporte que l'XP/)).toBeTruthy();
+    expect(triumph.queryByText(/\+100/)).toBeNull();
+    await triumph.unmount();
+
+    const blow = await show(
+      rankFeasts({ boss: { name: "Golem", finalBlow: true, own: true }, result: base }),
+    );
+    expect(blow.getByText("Abattu par ton coup final !")).toBeTruthy();
+    expect(blow.getByText(/^Une aventure écrite par toi ne rapporte que l'XP/)).toBeTruthy();
+  });
+
+  test("a game boss's Triumph still shows its +100 XP and no such line", async () => {
+    const { getByText, queryByText } = await show(
+      rankFeasts({ boss: { name: "Golem" }, result: base }),
+    );
+    expect(getByText(/\+100/)).toBeTruthy();
+    expect(queryByText(/Une aventure écrite par toi/)).toBeNull();
+  });
+
   test("a rung card keeps the other doors the step leads to", async () => {
     const m = (name: string) => ({
       id: 1,
@@ -836,5 +861,43 @@ describe("TonightList style", () => {
       "en",
     );
     expect(hold.getByText("Push-ups 45s")).toBeTruthy();
+  });
+});
+
+describe("TonightList cap offer", () => {
+  const move = (id: number, name: string) => ({
+    id,
+    enName: name,
+    frName: name,
+    deName: name,
+    esName: name,
+    imagePath: "squat.webp",
+  });
+  const offer = {
+    questId: 3,
+    questExerciseId: 9,
+    from: move(6, "Crunch"),
+    next: move(30, "Russian Twist"),
+    type: "reps",
+    value: 20,
+    level: "medium",
+  } as never;
+
+  test("the card names the successor, and one tap saves it and says so", async () => {
+    mockAccept.mockClear();
+    const view = await show(rank({ capOffers: [offer] }), "en");
+    expect(view.getByText("Russian Twist")).toBeTruthy();
+    expect(
+      view.getByText(
+        "Three sessions at 20 reps on Crunch. The next step starts at the bottom of its range.",
+      ),
+    ).toBeTruthy();
+
+    await fireEvent.press(view.getByTestId("tonight-cap-offer"));
+    await act(async () => {});
+
+    expect(mockAccept).toHaveBeenCalledWith(offer);
+    expect(view.getByText("Saved: Russian Twist from your next session.")).toBeTruthy();
+    expect(view.queryByTestId("tonight-cap-offer")).toBeNull();
   });
 });

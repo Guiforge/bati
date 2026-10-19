@@ -1,5 +1,13 @@
 import { sql } from "drizzle-orm";
-import { index, int, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import {
+  customType,
+  index,
+  int,
+  primaryKey,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from "drizzle-orm/sqlite-core";
 import { uuidv7 } from "./uuid";
 
 // ------------------------------------------------------------
@@ -335,16 +343,31 @@ export const adventures = sqliteTable(
 
     createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
     updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
+
+    // The adventure's name off this database (0076), as `quests.uuid` is the quest's. A uuid v7
+    // (db/uuid.ts) set by db/heroAdventures.ts and nothing else. Null on every seeded row.
+    uuid: text(),
+    // The hero's words for their boss (0077), NULL on seeded rows and on a route: a name shown instead
+    // of the painted one, and lines added to its pool. Written by db/heroAdventures.ts through
+    // db/bossVoice.ts, read by db/bossFights.ts. The monster itself is still `bossImagePath`.
+    bossName: text(),
+    bossLinesJson: text(),
   },
   (table) => ({
     activeSortIdx: index("adventures_active_sort_idx").on(table.isActive, table.sortOrder),
+    uuidUnique: uniqueIndex("adventures_uuid_unique").on(table.uuid),
+    // Two populations, two namespaces (0076): the game's titles are unique among themselves only.
+    adminTitleUnique: uniqueIndex("adventures_admin_title_unique")
+      .on(table.enTitle)
+      .where(sql`${table.author} = 'Admin'`),
   }),
 );
 
 export const adventureStepStatuses = ["locked", "active", "completed"] as const;
 export type AdventureStepStatus = (typeof adventureStepStatuses)[number];
 
-export const adventureRunStatuses = ["active", "finished"] as const;
+// `left`: the hero left the run (phase 0, D-34). Read by nothing that counts, never set back to active.
+export const adventureRunStatuses = ["active", "finished", "left"] as const;
 export type AdventureRunStatus = (typeof adventureRunStatuses)[number];
 
 export const adventureSteps = sqliteTable(
@@ -481,6 +504,9 @@ export const completedQuest = sqliteTable(
     // correction made on the other.
     setsEditedAt: int({ mode: "timestamp" }),
     feedbackEditedAt: int({ mode: "timestamp" }),
+    // When the hero last wrote or cleared the note after saving (`0075`), on its own stamp for the
+    // same reason. Null when nobody did.
+    notesEditedAt: int({ mode: "timestamp" }),
 
     // When the session was performed.
     performedAt: int({ mode: "timestamp" })
@@ -642,9 +668,10 @@ export const bossFights = sqliteTable(
     totalHp: int().notNull(),
     // Current HP remaining (persists across sessions)
     currentHp: int().notNull(),
-    // Muscle group that deals bonus damage (1.5x)
+    // Muscle group that deals bonus damage (1.5x). Written at creation and read by nothing: the
+    // fight reads the adventure's (`adventures.bossWeaknessMuscle`), which a hero can change.
     weaknessMuscle: text().$type<MuscleCode>(),
-    // Muscle group that deals reduced damage (0.5x)
+    // Muscle group that deals reduced damage (0.5x). Same as above.
     resistanceMuscle: text().$type<MuscleCode>(),
     // Timestamp when boss was defeated (null if still alive)
     defeatedAt: int({ mode: "timestamp" }),
@@ -1105,6 +1132,30 @@ export const deletedContent = sqliteTable("deleted_content", {
   uuid: text().primaryKey(),
   deletedAt: int({ mode: "timestamp" }).notNull(),
 });
+
+/** A BLOB column, as the bytes the driver hands over (`Uint8Array`: expo-sqlite, and a Buffer in tests). */
+const bytes = customType<{ data: Uint8Array; driverData: Uint8Array }>({
+  dataType: () => "blob",
+});
+
+/**
+ * Photos of a session or an outing (0075), by the session's uuid. A removed one keeps its row, with
+ * `image` empty, so the other device learns of it. `updatedAt` and `deletedAt` are epoch seconds,
+ * plain ints: compared in SQL with `unixepoch()` stamps.
+ */
+export const sessionPhotos = sqliteTable(
+  "session_photos",
+  {
+    uuid: text().primaryKey(),
+    sessionUuid: text().notNull(),
+    sortOrder: int().notNull(),
+    /** The JPEG, re-encoded by `encodePhoto` (no EXIF). Empty once removed. */
+    image: bytes().notNull(),
+    updatedAt: int().notNull(),
+    deletedAt: int(),
+  },
+  (table) => ({ sessionIdx: index("session_photos_session_idx").on(table.sessionUuid) }),
+);
 
 export const gpsPoints = sqliteTable(
   "gps_points",

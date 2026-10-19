@@ -49,9 +49,10 @@ import {
   outingGoal,
   pricedLocomotion,
 } from "@/db/expeditions";
+import { isLightWeekRunning, lightenRounds } from "@/db/lightWeek";
 import { preferences } from "@/db/preferences";
 import { getCached } from "@/db/queryCache";
-import { loadDefaultLevels } from "@/db/questConfig";
+import { loadDefaultLevels, loadSwapJournal, type SwapJournal } from "@/db/questConfig";
 import type { Quest } from "@/db/quests";
 import type { DifficultyCode, EquipmentCode } from "@/db/schema";
 import { formatCount, formatTargetValue } from "@/db/targets";
@@ -226,6 +227,8 @@ export default function QuestDetails() {
    * renders of a 900-line screen for one open.
    */
   const [configRead, setConfigRead] = useState(false);
+  // An accepted light week takes a round off a quest whose rounds the hero never set (db/lightWeek).
+  const [lightWeek, setLightWeek] = useState(false);
   /**
    * Every slot is an outing, so the screen is presenting a way out rather than a workout.
    *
@@ -250,6 +253,23 @@ export default function QuestDetails() {
   // Loaded with the quest rather than in their own effect, so a swapped slot never paints its
   // original movement for a frame first.
   const [catalogue, setCatalogue] = useState<Exercise[]>([]);
+  // What a swapped-in movement is progressed on (`applyConfigToSlots`). Reloaded when the swaps
+  // change, so it reads the same history `loadConfiguredQuest` reads for Home.
+  // ponytail: a fresh swap renders on the slot's own number for one frame, until this lands. The
+  // ceiling is one frame; the fix is to load the swap's history inside `applySwap`.
+  const [swapJournal, setSwapJournal] = useState<SwapJournal>({ history: new Map() });
+  const swaps = config.swaps;
+  useEffect(() => {
+    let live = true;
+    loadSwapJournal({ swaps })
+      .then((journal) => {
+        if (live) setSwapJournal(journal);
+      })
+      .catch((e: unknown) => reportError("quest.swap_journal", e));
+    return () => {
+      live = false;
+    };
+  }, [swaps]);
   const [owned, setOwned] = useState<ReadonlySet<EquipmentCode> | null>(null);
   const [setAsideIds, setSetAsideIds] = useState<ReadonlySet<number>>(new Set());
   const [leaveOut, setLeaveOut] = useState(false);
@@ -346,9 +366,14 @@ export default function QuestDetails() {
       let cancelled = false;
 
       // With nothing saved and no level in the route, the quest opens where Home would start it.
-      Promise.all([getQuestConfig(questId), params.level ? null : loadDefaultLevels()])
-        .then(([saved, defaults]) => {
+      Promise.all([
+        getQuestConfig(questId),
+        params.level ? null : loadDefaultLevels(),
+        isLightWeekRunning(new Date()),
+      ])
+        .then(([saved, defaults, light]) => {
           if (cancelled) return;
+          setLightWeek(light);
           const next = saved ?? { level: defaults?.(questId) ?? initialLevel };
           const applyRouteLevel = Boolean(params.level) && !routeLevelConsumed.current;
           if (params.level) routeLevelConsumed.current = true;
@@ -506,10 +531,15 @@ export default function QuestDetails() {
     // anything that outranks the config here has to outrank it in there too — otherwise an outing
     // generated at medium retargets a swap at hard. Reading `effectiveLevel` here instead priced
     // medium targets with hard's multiplier for the frame between the tap and the new quest.
-    const quest = applyQuestConfig(
-      state.quest,
-      { ...config, level: state.questLevel },
-      indexExercises(catalogue),
+    const quest = lightenRounds(
+      applyQuestConfig(
+        state.quest,
+        { ...config, level: state.questLevel },
+        indexExercises(catalogue),
+        swapJournal,
+      ),
+      config,
+      lightWeek,
     );
     // A distance goal is estimated from a nominal pace; a duration is its own estimate. Either
     // way it is what the hero is about to run, so the XP tag below prices that same estimate
@@ -529,7 +559,16 @@ export default function QuestDetails() {
         ? estimateOutingXp(quest, state.questLevel, estimatedSeconds)
         : estimateQuestXp(quest, state.questLevel),
     };
-  }, [state.quest, state.questLevel, config, language, isOuting, catalogue]);
+  }, [
+    state.quest,
+    state.questLevel,
+    config,
+    language,
+    isOuting,
+    catalogue,
+    lightWeek,
+    swapJournal,
+  ]);
 
   // The slot being replaced, and what can go in it. Ranked here rather than inside the sheet:
   // the sheet renders the order it is given, which is what lets the editor and this screen share

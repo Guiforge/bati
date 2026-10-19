@@ -1,6 +1,6 @@
 import { File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
-import { transactionOrFallback } from "@/db/client";
+import { type TransactionTx, transactionOrFallback } from "@/db/client";
 import {
   createUserExercise,
   type Exercise,
@@ -61,7 +61,7 @@ const MAX_NAME = 120;
 /** Twice the editor's own photos (`MAX_PHOTO_WIDTH`): 4 MB decoded at most, per picture. */
 const MAX_IMAGE_SIDE = 1_024;
 const MAX_SLOTS = 40;
-const MAX_FILE_BYTES = 8_000_000;
+export const MAX_FILE_BYTES = 8_000_000;
 
 type Text4 = { en: string; fr: string; de: string; es: string };
 
@@ -185,24 +185,25 @@ export function questToFile(quest: QuestTemplate, catalogue: readonly Exercise[]
   };
 }
 
-/** Writes the quest to a file and hands it to the share sheet. */
-export async function shareQuest(questId: number): Promise<void> {
-  const [quest, catalogue] = await Promise.all([getQuestTemplateById(questId), listExercises()]);
-  if (!quest) throw new Error(`Quest ${questId} not found`);
-  if (!(await Sharing.isAvailableAsync())) throw new Error("No share sheet available");
+/**
+ * The title as a file name, which is what the receiver sees in their chat, so it says which file
+ * it is. Cut at 50 letters: a file name is 255 bytes on Android, and four-byte letters plus the
+ * longest suffix (`.bati-adventure.json`, 20 bytes) reach it at 58.
+ */
+export function fileStem(title: string, fallback: string): string {
+  return (
+    [...title.replace(/[^\p{L}\p{N}]+/gu, "-")].slice(0, 50).join("").replace(/^-|-$/g, "") ||
+    fallback
+  );
+}
 
-  // The title is the file name the receiver sees in their chat, so it says which quest it is.
-  // Cut at 50 letters: a file name is 255 bytes on Android, and four-byte letters plus the
-  // 16-byte suffix reach it at 60.
-  const stem =
-    [...quest.enTitle.replace(/[^\p{L}\p{N}]+/gu, "-")]
-      .slice(0, 50)
-      .join("")
-      .replace(/^-|-$/g, "") || "quest";
-  const file = new File(Paths.cache, `${stem}.bati-quest.json`);
+/** Writes `json` to the cache under `fileName` and hands it to the share sheet. */
+export async function shareJsonFile(fileName: string, json: string): Promise<void> {
+  if (!(await Sharing.isAvailableAsync())) throw new Error("No share sheet available");
+  const file = new File(Paths.cache, fileName);
   if (file.exists) file.delete();
   file.create();
-  file.write(JSON.stringify(questToFile(quest, catalogue)));
+  file.write(json);
 
   await Sharing.shareAsync(file.uri, {
     mimeType: "application/json",
@@ -211,11 +212,21 @@ export async function shareQuest(questId: number): Promise<void> {
   });
 }
 
+/** Writes the quest to a file and hands it to the share sheet. */
+export async function shareQuest(questId: number): Promise<void> {
+  const [quest, catalogue] = await Promise.all([getQuestTemplateById(questId), listExercises()]);
+  if (!quest) throw new Error(`Quest ${questId} not found`);
+  await shareJsonFile(
+    `${fileStem(quest.enTitle, "quest")}.bati-quest.json`,
+    JSON.stringify(questToFile(quest, catalogue)),
+  );
+}
+
 // ---------------------------------------------------------------------------------------------
 // Reading. Everything below reads a file from someone else, so nothing in it is trusted.
 // ---------------------------------------------------------------------------------------------
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
@@ -234,7 +245,7 @@ const INVISIBLE = /(?!\n|\t|\u{200C}|\u{200D})[\p{Cc}\p{Cf}]/gu;
  * and `\t` become spaces); a description keeps its line breaks. Far past `max` is not a quest an
  * editor wrote, and is refused rather than cut.
  */
-function text(value: unknown, max: number, multiline = false): string {
+export function text(value: unknown, max: number, multiline = false): string {
   if (typeof value !== "string" || value.length > max * 4) throw new QuestFileError("not_a_quest");
   const flat = multiline ? value : value.replace(/[\n\t]/g, " ");
   // By code point: a cut through a surrogate pair leaves half an emoji at the end.
@@ -242,7 +253,7 @@ function text(value: unknown, max: number, multiline = false): string {
 }
 
 /** A text the row cannot do without: an empty title or name is a file no editor wrote. */
-function name(value: unknown, max = MAX_NAME): string {
+export function name(value: unknown, max = MAX_NAME): string {
   const clean = text(value, max);
   if (clean === "") throw new QuestFileError("not_a_quest");
   return clean;
@@ -253,13 +264,13 @@ function name(value: unknown, max = MAX_NAME): string {
  * (`createQuestTemplate`, `createUserExercise`); this is so the preview never shows a hero
  * "1000000 rounds" that the quest will not have.
  */
-function count(value: unknown, range: { min: number; max: number }): number {
+export function count(value: unknown, range: { min: number; max: number }): number {
   if (typeof value !== "number" || !Number.isFinite(value)) throw new QuestFileError("not_a_quest");
   return clampToRange(value, range);
 }
 
 /** A uuid v7, lowercase, as `db/uuid.ts` writes them: the key of a row, so nothing looser. */
-function uuid(value: unknown): string {
+export function uuid(value: unknown): string {
   if (typeof value !== "string" || !UUID_V7_RE.test(value)) throw new QuestFileError("not_a_quest");
   return value;
 }
@@ -268,7 +279,7 @@ function uuid(value: unknown): string {
  * A code from one of the app's lists. A string this version does not know is a list a newer one
  * grew, so the hero is told to update rather than that the file is not a quest.
  */
-function oneOf<T extends string>(values: readonly T[], value: unknown): T {
+export function oneOf<T extends string>(values: readonly T[], value: unknown): T {
   if (values.includes(value as T)) return value as T;
   throw new QuestFileError(typeof value === "string" ? "newer" : "not_a_quest");
 }
@@ -403,28 +414,17 @@ function slot(value: unknown): Slot {
   return { movement, target: { type, min: Math.min(min, max), max: Math.max(min, max) } };
 }
 
-/** The file's text, checked field by field. Throws a `QuestFileError` saying why it is refused. */
-export function parseQuestFile(raw: string): QuestFile {
-  let data: unknown;
-  try {
-    data = JSON.parse(raw);
-  } catch {
-    throw new QuestFileError("unreadable");
-  }
-  if (!isRecord(data) || data.kind !== KIND || !isRecord(data.quest)) {
-    throw new QuestFileError("not_a_quest");
-  }
-  if (typeof data.version !== "number" || !Number.isInteger(data.version) || data.version < 1) {
-    throw new QuestFileError("not_a_quest");
-  }
-  if (data.version > VERSION) throw new QuestFileError("newer");
+/** What a quest file and an adventure's embedded quest share: the quest and its slots. */
+export type QuestBody = Pick<QuestFile, "quest" | "slots">;
+
+/** The `quest` and `slots` of a file, checked field by field (R66 to R68). */
+export function parseQuestBody(data: unknown): QuestBody {
+  if (!isRecord(data) || !isRecord(data.quest)) throw new QuestFileError("not_a_quest");
   if (!Array.isArray(data.slots) || data.slots.length === 0 || data.slots.length > MAX_SLOTS) {
     throw new QuestFileError("not_a_quest");
   }
   const q = data.quest;
   return {
-    kind: KIND,
-    version: VERSION,
     quest: {
       uuid: uuid(q.uuid),
       title: text4(q.title, MAX_NAME, true),
@@ -436,6 +436,29 @@ export function parseQuestFile(raw: string): QuestFile {
     },
     slots: data.slots.map(slot),
   };
+}
+
+/** A parsed JSON value, checked field by field. Throws a `QuestFileError` saying why it is refused. */
+export function parseQuestData(data: unknown): QuestFile {
+  if (!isRecord(data) || data.kind !== KIND || !isRecord(data.quest)) {
+    throw new QuestFileError("not_a_quest");
+  }
+  if (typeof data.version !== "number" || !Number.isInteger(data.version) || data.version < 1) {
+    throw new QuestFileError("not_a_quest");
+  }
+  if (data.version > VERSION) throw new QuestFileError("newer");
+  return { kind: KIND, version: VERSION, ...parseQuestBody(data) };
+}
+
+/** The file's text, checked field by field. */
+export function parseQuestFile(raw: string): QuestFile {
+  let data: unknown;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    throw new QuestFileError("unreadable");
+  }
+  return parseQuestData(data);
 }
 
 /** One slot of a file, as the preview shows it: the movement it lands on, if this phone has it. */
@@ -537,19 +560,52 @@ export type ImportedQuest = { id: number; updated: boolean };
 export async function importQuest(file: QuestFile): Promise<ImportedQuest> {
   if (file.slots.length === 0) throw new QuestFileError("not_a_quest");
   const [catalogue, templates] = await Promise.all([listExercises(), listQuestTemplates()]);
+  const existing = templates.find((q) => isUserQuest(q) && q.uuid === file.quest.uuid);
 
-  const officials = file.slots.map((s) =>
-    "official" in s.movement ? officialByName(catalogue, s.movement.official) : undefined,
-  );
-  if (file.slots.some((s, i) => "official" in s.movement && !officials[i])) {
+  // A seed movement this version lacks is checked before the transaction opens, and again by the
+  // writer: nothing is written for a file that cannot be written whole.
+  if (
+    file.slots.some(
+      (s) => "official" in s.movement && !officialByName(catalogue, s.movement.official),
+    )
+  ) {
     throw new QuestFileError("unknown_movement");
   }
+  const write = transactionOrFallback((tx) =>
+    // A file naming one movement twice gets one row, not two.
+    writeImportedQuest(tx, file, { catalogue, existing, written: new Map() }),
+  );
 
+  // After the transaction, whatever its outcome: the writers invalidate as they go, so a read in
+  // between may have cached rows a rollback then took back.
+  const id = await write.finally(() => {
+    invalidateExercisesCache();
+    invalidateQuestTemplates();
+  });
+  return { id, updated: existing !== undefined };
+}
+
+/**
+ * The transaction body of an import: the movements a quest brings, then the quest, written in `tx`.
+ * `existing` is the hero's quest with this uuid, updated in place; none creates it. `written` maps
+ * a movement uuid to the row already made for it, shared by the quests of one adventure file so a
+ * movement two of them name is one row. The caller owns the transaction and the cache
+ * invalidation (`invalidateExercisesCache`, `invalidateQuestTemplates`).
+ */
+export async function writeImportedQuest(
+  tx: TransactionTx,
+  body: QuestBody,
+  ctx: {
+    catalogue: readonly Exercise[];
+    existing: QuestTemplate | undefined;
+    written: Map<string, number>;
+  },
+): Promise<number> {
+  const { catalogue, existing, written } = ctx;
   const mine = new Map(
     catalogue.flatMap((e) => (isUserExercise(e) && e.uuid !== null ? [[e.uuid, e] as const] : [])),
   );
-  const existing = templates.find((q) => isUserQuest(q) && q.uuid === file.quest.uuid);
-  const q = file.quest;
+  const q = body.quest;
   const head = {
     enTitle: q.title.en,
     frTitle: q.title.fr,
@@ -565,74 +621,62 @@ export async function importQuest(file: QuestFile): Promise<ImportedQuest> {
     imagePath: q.image,
   };
 
-  const write = transactionOrFallback(async (tx) => {
-    // A file naming one movement twice gets one row, not two.
-    const written = new Map<string, number>();
-    const slots: QuestSlotDraft[] = [];
-    for (const [i, s] of file.slots.entries()) {
-      const official = officials[i];
-      if (official) {
-        slots.push({
-          exerciseId: official.id,
-          images: [],
-          baseTarget: s.target,
-          style: official.style,
-        });
-        continue;
-      }
-      if (!("own" in s.movement)) continue;
-      const own = s.movement.own;
-      const here = mine.get(own.uuid);
-      if (here?.retiredAt) await unretireUserExercise(here.id, tx);
-      const exerciseId =
-        written.get(own.uuid) ??
-        here?.id ??
-        (await createUserExercise(
-          {
-            name: own.name,
-            description: own.description,
-            imagePath: own.image,
-            muscles: own.muscles,
-            style: own.style,
-            difficulty: own.difficulty,
-            equipment: own.equipment,
-            pattern: own.pattern,
-            measure: own.measure,
-            perSide: own.perSide,
-            secondsPerRep: own.secondsPerRep,
-          },
-          { uuid: own.uuid, exec: tx },
-        ));
-      written.set(own.uuid, exerciseId);
-      slots.push({ exerciseId, images: [], baseTarget: s.target, style: here?.style ?? own.style });
+  const slots: QuestSlotDraft[] = [];
+  for (const s of body.slots) {
+    if ("official" in s.movement) {
+      const official = officialByName(catalogue, s.movement.official);
+      if (!official) throw new QuestFileError("unknown_movement");
+      slots.push({
+        exerciseId: official.id,
+        images: [],
+        baseTarget: s.target,
+        style: official.style,
+      });
+      continue;
     }
+    const own = s.movement.own;
+    const here = mine.get(own.uuid);
+    if (here?.retiredAt) await unretireUserExercise(here.id, tx);
+    const exerciseId =
+      written.get(own.uuid) ??
+      here?.id ??
+      (await createUserExercise(
+        {
+          name: own.name,
+          description: own.description,
+          imagePath: own.image,
+          muscles: own.muscles,
+          style: own.style,
+          difficulty: own.difficulty,
+          equipment: own.equipment,
+          pattern: own.pattern,
+          measure: own.measure,
+          perSide: own.perSide,
+          secondsPerRep: own.secondsPerRep,
+        },
+        { uuid: own.uuid, exec: tx },
+      ));
+    written.set(own.uuid, exerciseId);
+    slots.push({ exerciseId, images: [], baseTarget: s.target, style: here?.style ?? own.style });
+  }
 
-    if (existing) {
-      await updateQuestMeta(existing.id, head, tx);
-      await writeQuestSlots(tx, existing.id, slots);
-      return existing.id;
-    }
-    return createQuestTemplate(
-      { ...head, author: USER_QUEST_AUTHOR, uuid: q.uuid, exercises: slots },
-      tx,
-    );
-  });
-
-  // After the transaction, whatever its outcome: the writers invalidate as they go, so a read in
-  // between may have cached rows a rollback then took back.
-  const id = await write.finally(() => {
-    invalidateExercisesCache();
-    invalidateQuestTemplates();
-  });
-  return { id, updated: existing !== undefined };
+  if (existing) {
+    await updateQuestMeta(existing.id, head, tx);
+    await writeQuestSlots(tx, existing.id, slots);
+    return existing.id;
+  }
+  return createQuestTemplate(
+    { ...head, author: USER_QUEST_AUTHOR, uuid: q.uuid, exercises: slots },
+    tx,
+  );
 }
 
 /**
- * Reads a quest file at `uri`: one the picker returned, or one another app opened Bati with (a
+ * Reads a Bati file (a quest or an adventure) at `uri` as parsed JSON, nothing checked yet: one the picker returned, or one another app opened Bati with (a
  * `content://` from a chat or from Files). Read at once, the grant to a
  * `content://` lasts as long as the activity that received it.
  */
-export async function readQuestFile(uri: string): Promise<QuestFile> {
+export async function readBatiFile(uri: string): Promise<unknown> {
   // A provider's URI only. Both doors hand one over (the picker and a tapped file), and a path
   // into the filesystem could be `/dev/zero`, which reports no size and never ends.
   // ponytail: Android only. iOS's picker hands over a `file://` copy, which this refuses; the
@@ -646,7 +690,16 @@ export async function readQuestFile(uri: string): Promise<QuestFile> {
   if (file.size != null && file.size > MAX_FILE_BYTES) throw new QuestFileError("not_a_quest");
   const raw = await file.text();
   if (raw.length > MAX_FILE_BYTES) throw new QuestFileError("not_a_quest");
-  return parseQuestFile(raw);
+  try {
+    return JSON.parse(raw);
+  } catch {
+    throw new QuestFileError("unreadable");
+  }
+}
+
+/** A quest file at `uri`, read and checked. */
+export async function readQuestFile(uri: string): Promise<QuestFile> {
+  return parseQuestData(await readBatiFile(uri));
 }
 
 /**

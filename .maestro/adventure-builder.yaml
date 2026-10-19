@@ -1,0 +1,103 @@
+# Maestro E2E Test - Writing an adventure ("Écrire une aventure")
+#
+# Write a two-step route from the gallery: step 1 a strength quest, step 2 an outing, then play
+# step 1 and assert, through the testIDs that carry each step's status, that the adventure moved.
+# The outing is step 2 on purpose and the flow never plays it: an outing on the emulator needs a
+# simulated GPS that stays at speed 0 (`geo fix`), so playing it would never finish cleanly.
+#
+# The adventure is found again by the name typed here, which is the hero's own text and so not
+# translated. The outing is picked by its English title unless the run passes another with
+# `-e WALK_QUEST_TITLE=...`, as the other flows pass VILLAGE_NAME.
+#
+# Taps on tabs cap `waitToSettleTimeoutMs`: the village's embers and the Home flame never stop
+# moving, and an uncapped tap waits Maestro's full ceiling (see subflows/run-a-session.yaml).
+
+appId: com.guiforge.bati.dev
+---
+- launchApp:
+    clearState: true
+
+- runFlow: subflows/complete-onboarding.yaml
+
+# --- Open the editor from the gallery ----------------------------------------
+
+- tapOn:
+    id: "tab-adventures"
+    waitToSettleTimeoutMs: 500
+- assertVisible:
+    id: "adventures-screen"
+- scrollUntilVisible:
+    element:
+      id: "adventures-write"
+    direction: DOWN
+- tapOn:
+    id: "adventures-write"
+
+# --- Write it ----------------------------------------------------------------
+
+- tapOn:
+    id: "adventure-name"
+- inputText: "Maestro tale"
+- hideKeyboard
+
+# Step 1: the first quest of the list (a strength quest on a cleared state).
+- scrollUntilVisible:
+    element:
+      id: "editor-add-step"
+    direction: DOWN
+- tapOn:
+    id: "editor-add-step"
+- tapOn:
+    id: "quest-pick-.*"
+    index: 0
+
+# Step 2: the outing, found by its name.
+- tapOn:
+    id: "quest-picker-search"
+- inputText: "${typeof WALK_QUEST_TITLE === 'undefined' ? 'Word Must Travel' : WALK_QUEST_TITLE}"
+- hideKeyboard
+- tapOn:
+    id: "quest-pick-.*"
+    index: 0
+- tapOn:
+    text: "Done|Terminé|Fertig|Hecho|Готово"
+
+- scrollUntilVisible:
+    element:
+      id: "adventure-save"
+    direction: DOWN
+- tapOn:
+    id: "adventure-save"
+
+# --- It opens on its own page, and plays ------------------------------------
+
+- assertVisible:
+    id: "adventure-start"
+- scrollUntilVisible:
+    element:
+      id: "adventure-step-0-active"
+    direction: DOWN
+- tapOn:
+    id: "adventure-step-0-active"
+- runFlow: subflows/complete-a-session.yaml
+
+# --- The adventure moved: asserted on the step statuses, not on the next screen ----
+
+- tapOn:
+    id: "tab-adventures"
+    waitToSettleTimeoutMs: 500
+- scrollUntilVisible:
+    element:
+      text: "Maestro tale"
+    direction: DOWN
+- tapOn:
+    text: "Maestro tale"
+- scrollUntilVisible:
+    element:
+      id: "adventure-step-0-completed"
+    direction: DOWN
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: "adventure-step-1-active"
+    direction: DOWN

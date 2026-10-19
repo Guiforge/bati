@@ -1,6 +1,7 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
 import { XStack, YStack } from "tamagui";
@@ -29,6 +30,15 @@ function resolveCover(config: SmartActionConfig | null): ImageSourcePropType {
   if (!path) return ADVENTURE_ASSETS.squire_path;
   if (path.startsWith("http")) return { uri: path };
   return config?.variant === "quest" ? getQuestAsset(path) : getAdventureAsset(path);
+}
+
+function TonightNote({ text }: { text: string | undefined }) {
+  if (!text) return null;
+  return (
+    <AppText testID="home-tonight" fontSize={12} color="$textSecondary">
+      {text}
+    </AppText>
+  );
 }
 
 /**
@@ -102,6 +112,7 @@ export function HomeStage({ oathStrip }: { oathStrip: boolean | null }) {
   const { t } = useTranslation();
   const { config, isLoading } = useSmartAction();
   const startQuest = useStartQuest();
+  const [titleHeight, setTitleHeight] = useState(0);
 
   if (isLoading) {
     // Reserve the stage so the frame doesn't jump when the scene lands.
@@ -173,8 +184,11 @@ export function HomeStage({ oathStrip }: { oathStrip: boolean | null }) {
         {/* The picture and its title are a door too: they open where the scene leads, the
             adventure or the quest screen, and never the session, so a thumb resting on the art
             cannot start a workout. The buttons and the oath below keep their own taps. */}
+        {/* Grows, never shrinks under its lines, and starts below the title painted over it: with
+            flex={1} a notice and a rest line at 130% pushed the meta line up under the title. */}
         <YStack
-          flex={1}
+          grow={1}
+          pt={titleHeight}
           justify="flex-end"
           onPress={effectiveConfig.onPress}
           pressStyle={{ opacity: 0.85 }}
@@ -211,6 +225,10 @@ export function HomeStage({ oathStrip }: { oathStrip: boolean | null }) {
                 </AppText>
               </XStack>
             ) : null}
+
+            {/* The same number as the set's "to beat" and the wall's target. One line, so the
+                stage's height budget (`STAGE_MIN_HEIGHT`) is not touched. */}
+            <TonightNote text={scene?.tonight} />
           </YStack>
         </YStack>
 
@@ -252,7 +270,15 @@ export function HomeStage({ oathStrip }: { oathStrip: boolean | null }) {
       {/* Why this scene, when it is not the usual one: a first day, an adventure under way. Last,
           so it paints over the art, and deaf to touch, so a tap on it lands on the scene. */}
       {/* One column for the kicker and the title's récitatif, so they stack and cannot overlap. */}
-      <YStack position="absolute" t="$3" l="$4" r="$4" gap="$2" pointerEvents="none">
+      <YStack
+        position="absolute"
+        t="$3"
+        l="$4"
+        r="$4"
+        gap="$2"
+        pointerEvents="none"
+        onLayout={(e) => setTitleHeight(e.nativeEvent.layout.y + e.nativeEvent.layout.height + 8)}
+      >
         {scene?.kicker ? (
           <XStack
             self="flex-start"

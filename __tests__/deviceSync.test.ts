@@ -37,6 +37,8 @@ const mockDownloads: string[] = [];
 const mockModified = new Map<string, number>();
 const mockCipher = { status: "on", header: "vault-1", format: 2 as 2 | 3 | null, reads: 3 };
 let mockFingerprint = "local-1";
+/** The preferences this build compares; a release that adds one pushes it here. */
+const mockMerged: string[] = ["crestCoat"];
 let mockListingFails = false;
 /** The server refuses the app password, as the client says it (DavAuthError). */
 let mockListingRefused = false;
@@ -287,6 +289,10 @@ jest.mock("@/db/merge", () => ({
 }));
 jest.mock("@/db/backup", () => ({
   BUILD_MIGRATIONS: 64,
+  // A getter: the factory runs before the const above exists.
+  get MERGED_PREFERENCES() {
+    return mockMerged;
+  },
   stateFingerprint: () => Promise.resolve(mockFingerprint),
   validateBackup: (path: string) => {
     mockValidated.push(path);
@@ -392,6 +398,8 @@ beforeEach(async () => {
   mockCipher.header = "vault-1";
   mockCipher.format = 2;
   mockCipher.reads = 3;
+  mockMerged.length = 0;
+  mockMerged.push("crestCoat");
   mockFingerprint = "local-1";
   mockListingFails = false;
   mockListingRefused = false;
@@ -639,17 +647,50 @@ test("an answer holds until that device has news, whatever its file's etag does"
 
 test("an answer given before merge v2 still holds, and is asked again only when the first three segments move", async () => {
   mockServer.set(TABLET, "t1");
-  mockPeers[TABLET] = { open: "opened", peerChanges: 1, localChanges: 1, fingerprint: "s|c|g|x" };
+  mockPeers[TABLET] = {
+    open: "opened",
+    peerChanges: 1,
+    localChanges: 1,
+    fingerprint: "s|c|g|x|0:0",
+  };
   await rememberAnswer({ name: TABLET, comparison: { fingerprint: "s|c|g" } });
   expect((await syncNow({ snapshotFirst: false })).peers[0]?.state).toBe("level");
 
   // A larger XP or a content deletion only moves the fourth segment: still the answer given.
   mockServer.set(TABLET, "t2");
-  mockPeers[TABLET] = { ...mockPeers[TABLET], fingerprint: "s|c|g|y" };
+  mockPeers[TABLET] = { ...mockPeers[TABLET], fingerprint: "s|c|g|y|0:0" };
   expect((await syncNow({ snapshotFirst: false })).peers[0]?.state).toBe("level");
 
   mockServer.set(TABLET, "t3");
-  mockPeers[TABLET] = { ...mockPeers[TABLET], fingerprint: "s2|c|g|y" };
+  mockPeers[TABLET] = { ...mockPeers[TABLET], fingerprint: "s2|c|g|y|0:0" };
+  expect((await syncNow({ snapshotFirst: false })).peers[0]?.state).toBe("diverged");
+});
+
+test("an answer given before the notebook holds while that device has no photo, and not after", async () => {
+  mockServer.set(TABLET, "t1");
+  mockPeers[TABLET] = {
+    open: "opened",
+    peerChanges: 1,
+    localChanges: 1,
+    fingerprint: "s|c|g|x|0:0",
+  };
+  await rememberAnswer({ name: TABLET, comparison: { fingerprint: "s|c|g|x" } });
+  expect((await syncNow({ snapshotFirst: false })).peers[0]?.state).toBe("level");
+
+  mockServer.set(TABLET, "t2");
+  mockPeers[TABLET] = { ...mockPeers[TABLET], fingerprint: "s|c|g|x|1:600" };
+  expect((await syncNow({ snapshotFirst: false })).peers[0]?.state).toBe("diverged");
+});
+
+test("an answer given before merge v2 does not hold once that device has a photo", async () => {
+  mockServer.set(TABLET, "t1");
+  mockPeers[TABLET] = {
+    open: "opened",
+    peerChanges: 1,
+    localChanges: 1,
+    fingerprint: "s|c|g|x|1:600",
+  };
+  await rememberAnswer({ name: TABLET, comparison: { fingerprint: "s|c|g" } });
   expect((await syncNow({ snapshotFirst: false })).peers[0]?.state).toBe("diverged");
 });
 
@@ -740,6 +781,31 @@ describe("peers of another format", () => {
     mockPeers[TABLET] = { open: "opened", format: 2 };
     expect(states((await syncNow({ snapshotFirst: true })).peers)).toEqual({ [TABLET]: "level" });
     expect(mockDownloads).toEqual([TABLET, TABLET]);
+  });
+
+  // The outing display was added with no migration, no cipher change and no fingerprint change on a
+  // device that never set it: only the list of compared preferences moved. Without it in the
+  // stamp, an updated phone would keep a cached "level" for a peer whose file now carries news.
+  test("a build that compares one more preference sends its file once more and judges every peer again", async () => {
+    mockServer.set(TABLET, "t1");
+    mockPeers[TABLET] = { open: "opened", format: 2 };
+    expect(states((await syncNow({ snapshotFirst: true })).peers)).toEqual({ [TABLET]: "level" });
+    const uploadsBefore = mockUploads.length;
+    const downloadsBefore = mockDownloads.length;
+
+    // Same fingerprint, header, migrations and cipher reads: only the list grew.
+    mockMerged.push("outingDisplay");
+    const again = await syncNow({ snapshotFirst: true });
+    expect(states(again.peers)).toEqual({ [TABLET]: "level" });
+    expect(again.uploaded).toBe(true);
+    expect(mockUploads.length).toBe(uploadsBefore + 1);
+    expect(mockDownloads.length).toBe(downloadsBefore + 1);
+
+    // And then nothing: the verdict is cached again and nothing is sent.
+    const settled = await syncNow({ snapshotFirst: true });
+    expect(settled.uploaded).toBe(false);
+    expect(mockUploads.length).toBe(uploadsBefore + 1);
+    expect(mockDownloads.length).toBe(downloadsBefore + 1);
   });
 
   test("a vault of a higher format is to be joined, however old its file", async () => {

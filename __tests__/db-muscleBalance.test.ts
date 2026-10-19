@@ -258,6 +258,20 @@ describe("db/muscleBalance", () => {
     expect(offer.startable).toBe(true);
   });
 
+  test("an adventure the hero left is no longer Home's offer", async () => {
+    const { decideHomeOffer } = require("../db/homeOffer") as typeof import("../db/homeOffer");
+    const adventures = require("../db/adventures") as typeof import("../db/adventures");
+    const adv = (await adventures.listAdventures()).find((a) => a.kind !== "boss");
+    assert(adv);
+    await adventures.startAdventureRun({ adventureId: adv.id });
+    expect((await decideHomeOffer("en"))?.kind).toBe("adventure");
+
+    await adventures.leaveAdventureRun(adv.id);
+
+    expect((await decideHomeOffer("en"))?.kind).not.toBe("adventure");
+    t.sqlite.exec(`DELETE FROM adventure_runs`);
+  });
+
   test("a hero with no session at all still gets the day-one on-ramp", async () => {
     const { decideHomeOffer } = require("../db/homeOffer") as typeof import("../db/homeOffer");
     expect((await decideHomeOffer("en"))?.kind).toBe("first_day");

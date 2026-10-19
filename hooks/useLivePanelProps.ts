@@ -43,7 +43,7 @@ export function useLivePanelProps() {
    * and the journal both said 45 min. `recordedDurationSeconds()` reads the trace, and it is the
    * one rule those two already read. One rule, three readers.
    *
-   * Not frozen by the auto-pause (D-61): the clock keeps showing the time since the start, as the
+   * Not frozen by the auto-pause (D-65): the clock keeps showing the time since the start, as the
    * summary does (D-58), and "Standing still" plus the dimmed figures say the pause. Moving time
    * and XP are the reducer's and stay as they were.
    */

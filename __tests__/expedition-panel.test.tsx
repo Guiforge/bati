@@ -370,7 +370,7 @@ describe("ExpeditionPanel", () => {
   });
 
   /**
-   * D-61. The auto-pause says it in words and by dimming; the clock does not stop with it. It keeps
+   * D-65. The auto-pause says it in words and by dimming; the clock does not stop with it. It keeps
    * showing the time since the start, the same figure the summary reads (D-58), so a red light does
    * not make the big number disagree with the bilan.
    */

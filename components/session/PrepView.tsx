@@ -34,7 +34,7 @@ export function MovementDescription({
 }: {
   text: string;
   uncapped?: boolean;
-  /** D-60: a hard line count, for a screen whose picture needs the room back. */
+  /** D-64: a hard line count, for a screen whose picture needs the room back. */
   lines?: number;
 }) {
   // 120 dp is six lines at font scale 1; the cap follows the scale so a large-text hero gets six
@@ -196,7 +196,7 @@ type PrepViewProps = {
    * scrolled, and read as a movement already running (audit 2026-10-11, F3).
    */
   pinned?: boolean;
-  /** D-60: clamp the description to this many lines. Only the intro at a small size asks. */
+  /** D-64: clamp the description to this many lines. Only the intro at a small size asks. */
   descriptionLines?: number;
 };
 

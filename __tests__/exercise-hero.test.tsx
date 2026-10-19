@@ -77,7 +77,7 @@ describe("the title of the intro screen", () => {
   });
 });
 
-describe("D-60, the description of the intro at a small size", () => {
+describe("D-64, the description of the intro at a small size", () => {
   test("the hero tells its screen when the title went under the picture", async () => {
     const onChange = jest.fn();
     await mount(true, onChange);

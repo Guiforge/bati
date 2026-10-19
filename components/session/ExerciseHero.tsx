@@ -34,7 +34,7 @@ type ExerciseHeroProps = {
    * it under the picture instead of over it. Only the intro screen asks; the rest keep the caption.
    */
   nameBelowSmall?: boolean;
-  /** D-60: told whenever the title is, or stops being, under the picture, so the screen can make room. */
+  /** D-64: told whenever the title is, or stops being, under the picture, so the screen can make room. */
   onNameBelowChange?: (below: boolean) => void;
 };
 

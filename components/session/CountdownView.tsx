@@ -67,7 +67,7 @@ export function CountdownView() {
   const shownAt = useRef(Date.now());
   // No clock is a wait for GO (`prepTimer` in stores/session.ts), and its zero is not an ending.
   const timed = timerStartTimestamp !== null;
-  // D-60: with the title under a small picture, two lines of description give the picture its room.
+  // D-64: with the title under a small picture, two lines of description give the picture its room.
   // shortcut: a screen right at the 240 dp edge could flip between the two, when one shows up.
   const [titleBelow, setTitleBelow] = useState(false);
 

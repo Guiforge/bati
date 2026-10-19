@@ -370,11 +370,11 @@ describe("ExpeditionPanel", () => {
   });
 
   /**
-   * Dimming says "this stopped"; a figure that keeps climbing under the words says the opposite,
-   * and the words lose. `credited` counts elapsed time from the last fix, and a hero standing at
-   * a crossing keeps receiving fixes, so the freeze has to be deliberate.
+   * D-65. The auto-pause says it in words and by dimming; the clock does not stop with it. It keeps
+   * showing the time since the start, the same figure the summary reads (D-58), so a red light does
+   * not make the big number disagree with the bilan.
    */
-  test("the big figure freezes with the auto-pause instead of climbing under the word", async () => {
+  test("the big figure keeps counting through the auto-pause, under the word", async () => {
     setTrack(walked(600, 600, 1200));
     await mount();
     expect(figureSize("10:00")).toBe(56);
@@ -383,7 +383,7 @@ describe("ExpeditionPanel", () => {
       setTrack({ ...walked(900, 600, 1200), paused: true });
     });
 
-    expect(figureSize("10:00")).toBe(56);
+    expect(figureSize("15:00")).toBe(56);
     expect(screen.getByText("Standing still")).toBeTruthy();
   });
 

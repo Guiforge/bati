@@ -119,7 +119,7 @@ function restoreSnapshot(saved: SavedSessionState): void {
   // gone on for another hour with the app already gone, and the snapshot cannot say, because
   // an expedition is one round of one movement and the subscriber writes it exactly once, at
   // the start. So an outing's clock does not read this at all: `sessionClock` in
-  // `stores/session.ts` times a walk by its own trace, first fix to last. Left as it is on
+  // `stores/session.ts` times a walk by its own trace, tap on start to last fix. Left as it is on
   // purpose — the timer on screen and every strength quest still need it.
   const now = Date.now();
   const pauseDuration = now - saved.savedAt;

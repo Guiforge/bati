@@ -656,6 +656,15 @@ export function VictoryView() {
                 >
                   {result ? formatTime(durationSeconds) : "\u00A0"}
                 </AppText>
+                {/* The wait for the sky and the red lights are in the total (D-58); the moving time is
+                  what XP is paid in, said once the two differ by a minute. */}
+                {result?.outing && durationSeconds - result.outing.seconds >= 60 ? (
+                  <AppText fontSize={11} color="$textSecondary">
+                    {t("session.total_time_moving", {
+                      moving: formatTime(result.outing.seconds),
+                    })}
+                  </AppText>
+                ) : null}
               </Card>
               <Card
                 testID="victory-xp-rules"

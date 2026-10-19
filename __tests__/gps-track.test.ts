@@ -456,17 +456,26 @@ describe("what a run credits", () => {
     expect(credit?.movingSeconds).toBe(0);
   });
 
-  test("times the outing by its own trace, first fix to last", () => {
+  test("times the outing by its own trace, first fix to last, when nothing says it began earlier", () => {
     // The half this file owns of the bug the victory screen showed: a walk the OS killed at 45
-    // minutes and resumed for ten more has a session clock that reads ten — recovery banks the
-    // downtime as pause — and a trace that reads the whole thing. `saveSession` reads this.
+    // minutes and resumed for ten more has a session clock that reads ten - recovery banks the
+    // downtime as pause - and a trace that reads the whole thing. `saveSession` reads this.
     const state = walked(1.4, 600);
     expect(credited(state)?.elapsedSeconds).toBe(600);
-    // And it is the trace's own span, not the wall clock's: a session that started ten minutes
-    // before the first fix locked is not credited those ten minutes.
     expect(credited(state)?.elapsedSeconds).toBe(
       Math.floor(((state.lastAt ?? 0) - (state.startedAt ?? 0)) / 1000),
     );
+  });
+
+  test("counts from the tap on start when the first fix lands late (D-58)", () => {
+    // Five minutes finding the sky, then ten minutes of walking: the outing lasted fifteen.
+    const state = walked(1.4, 600);
+    const tapped = (state.startedAt ?? 0) - 300_000;
+    expect(credited(state, tapped)?.elapsedSeconds).toBe(900);
+    // The moving time is the trace's alone, so the wait is not walked.
+    expect(credited(state, tapped)?.movingSeconds).toBe(credited(state)?.movingSeconds);
+    // A tap recorded after the fix (clock skew, a restored snapshot) never shortens the trace.
+    expect(credited(state, (state.startedAt ?? 0) + 60_000)?.elapsedSeconds).toBe(600);
   });
 
   test("is metres and whole seconds once the hero is walking", () => {

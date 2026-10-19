@@ -710,17 +710,17 @@ function setTimer(slot: { target: Target; exercise: Pick<Exercise, "perSide"> } 
  * - `movingSeconds` is what XP is paid in, and it is a witness a windowsill cannot fake: the
  *   auto-pause stops crediting the moment displacement does, so an outing can be paid for the
  *   time it actually took where a hold has to be clamped to its prescription.
- * - `elapsedSeconds` is how long the outing lasted, first fix to last. The session's own clock
+ * - `elapsedSeconds` is how long the outing lasted, tap on start to last fix. The session's own clock
  *   cannot answer that for a walk the OS killed: recovery banks the downtime as pause, so the
  *   clock reads the ten minutes since the hero pressed resume while the trace reads the whole
  *   hour. Both halves of `sessionClock` read the trace now. See `src/gps/track.ts`.
  */
-function measureGround(quest: Quest | null): Ground {
+function measureGround(quest: Quest | null, startTime: number | null): Ground {
   if (!isExpedition(quest)) return NO_GROUND;
 
   // Null from `credited` means the run had no witness at all - no fix ever locked - so the app
   // has no opinion and the clock decides, exactly as it does for a workout. See `src/gps/track`.
-  return credited(useExpeditionStore.getState().track) ?? NO_GROUND;
+  return credited(useExpeditionStore.getState().track, startTime) ?? NO_GROUND;
 }
 
 const NO_GROUND: Ground = {
@@ -758,7 +758,7 @@ type Ground = {
  * left open on a bus keeps accruing neither.
  *
  * And an outing is *measured* by its witness too, both halves from the same reading: **a walk
- * lasted what its trace says it lasted**, first fix to last, capped by the moving time plus the
+ * lasted what its trace says it lasted**, tap on start to last fix, capped by the moving time plus the
  * stops that moving time is allowed to hide. The session's clock is not consulted, because it
  * cannot answer for a walk the OS killed: `useSessionRecovery` banks the whole downtime as pause,
  * so a walk killed at 45 minutes and resumed for 10 measured ten minutes on the clock and 55 on
@@ -829,7 +829,7 @@ export function recordedDurationSeconds(): number {
 
   return sessionClock({
     quest,
-    ground: measureGround(quest),
+    ground: measureGround(quest, startTime),
     measuredSeconds: clockSeconds(startTime, endTime, totalPausedTime),
     restTakenSeconds,
   }).durationSeconds;
@@ -2040,7 +2040,7 @@ export const useSessionStore = create<SessionState>()(
       // This, not a sum over `gps_points`, is what the road is paid in: the raw sum counts drift
       // while the hero stood still and counts the length of a teleport the reducer broke the line
       // at, so the village would grow by a number the recap never showed. See `db/gps.ts`.
-      const ground = measureGround(get().quest);
+      const ground = measureGround(get().quest, get().startTime);
 
       // The ground stopped being covered when the session ended, which is earlier than this: the
       // subscriber at the bottom of this file ends the tracking the moment `status` becomes

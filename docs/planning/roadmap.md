@@ -190,11 +190,10 @@ Not tidiness. Each line is a gate that does not close, or a risk with a date on 
   before a release. Deliberately not a CI job: the behaviours they used to be the only check on
   (the two-minute session guard, the quit and restart confirmations, swearing an oath) are now
   component tests.
-- **P3 — The APK is 53.2 MiB** (`gh release view v2.5.3 --json assets`: 55 792 525 bytes), under
-  the 55 MiB budget that `release.yml` fails a release on. It was measured and cut since this line
-  said nobody had looked; where the megabytes go is
-  [../architecture/performance.md](../architecture/performance.md) § Binary size. What is left is
-  the ratchet's own rule: lower `MAX_MB` after a release that measures under it, never raise it.
+- **P3 — The APK is 53.2 MiB** (`gh release view v2.5.3 --json assets`: 55 792 525 bytes). It was
+  measured and cut since this line said nobody had looked; where the megabytes go is
+  [../architecture/performance.md](../architecture/performance.md) § Binary size. The 55 MiB
+  budget `release.yml` used to fail a release on was removed on 2026-10-18 (D-54).
 - **P3 — Bundle-size and performance profiling on a release build**, never in dev
   ([../architecture/performance.md](../architecture/performance.md), rule 1). Startup, memory,
   frame rate under animation.

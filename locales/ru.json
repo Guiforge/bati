@@ -742,6 +742,7 @@
     "victory_note": "Пара слов об этом вечере?",
     "target_reached": "Цель достигнута!",
     "total_time": "Общее время",
+    "total_time_moving": "из них {{moving}} в движении",
     "up_next": "Далее",
     "victory_title": "Задание выполнено!",
     "village_growth_cta": "Посмотреть деревню",

@@ -2831,6 +2831,20 @@ describe("what a session may claim it walked", () => {
     jest.restoreAllMocks();
   });
 
+  test("the outing lasted from the tap on start, not from the first fix (D-58)", async () => {
+    // Ten minutes of trace, whose first fix locked five minutes after the hero tapped start.
+    witnessed(600, 600);
+    await useSessionStore.getState().startSession(outingQuest(1), "medium", {});
+    const firstFix = useExpeditionStore.getState().track.startedAt ?? 0;
+    useSessionStore.setState({
+      startTime: firstFix - 300_000,
+      totalPausedTime: 0,
+      restTakenSeconds: 0,
+    });
+
+    expect(recordedDurationSeconds()).toBe(900);
+  });
+
   test("the trace bounds it - forty minutes on a bus is ten minutes of walking", async () => {
     witnessed(600, 2400);
     await useSessionStore.getState().startSession(outingQuest(1), "medium", {});

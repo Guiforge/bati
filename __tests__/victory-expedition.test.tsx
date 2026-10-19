@@ -324,6 +324,26 @@ describe("VictoryView, the walk it just celebrated", () => {
     expect(screen.queryByText("52:00")).toBeNull();
   });
 
+  test("says how much of the total was moving once the two differ (D-58)", async () => {
+    const setOff = Date.now() - 52 * 60_000;
+    useExpeditionStore.setState({
+      track: {
+        ...EMPTY,
+        startedAt: setOff,
+        lastAt: setOff + 52 * 60_000,
+        distanceM: 1500,
+        movingMs: 720_000,
+      },
+    });
+
+    await mountVictory({
+      sessionSeconds: 52 * 60,
+      outing: { seconds: 720, effortSeconds: 720, locomotion: "walk" },
+    });
+
+    expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(/of which 12:00 moving/);
+  });
+
   /**
    * The rate, said out loud. A hero who walks an hour and reads "+300" has no way to know why,
    * and the research this app's progression is built on is explicit that a reward read as

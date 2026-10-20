@@ -7,7 +7,6 @@ import { HomeHeader } from "@/components/home/HomeHeader";
 import { HomeStage } from "@/components/home/HomeStage";
 import { NoticeSlot } from "@/components/home/NoticeSlot";
 import { QuickActions } from "@/components/home/QuickActions";
-import { RhythmLine } from "@/components/home/RhythmLine";
 import { type Disclosure, disclosure } from "@/db/disclosure";
 import { useReloadOnChange } from "@/hooks/useReloadOnChange";
 
@@ -78,9 +77,10 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* One notice at a time, the first in noticeOrder.ts: an interrupted session outranks
-            sync, the notes, an update, the backup and the reminders. */}
-        <NoticeSlot onLightWeekAnswered={weekChanged} />
-        <RhythmLine key={weekRev} onLightWeekEnded={weekChanged} />
+            sync, the notes, an update, the backup and the reminders. Keyed on the week: an
+            answer must re-read the slot, and the React Compiler drops a dependency the focus
+            callback does not read, so a prop in its deps never re-ran it. */}
+        <NoticeSlot key={weekRev} onLightWeekAnswered={weekChanged} />
 
         {/* Tonight's scene, one action that starts it, the rest advice and the oath under it */}
         <HomeStage key={weekRev} oathStrip={disclosed?.oathStrip ?? null} />

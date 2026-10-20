@@ -48,7 +48,7 @@ export function MapFootnote({
   compact = false,
 }: {
   quiet?: boolean;
-  /** The live map: only the offer's button, the sentence that confirms it stays on the recap. */
+  /** The live map: only the offer's button and the credit, the sentences that confirm it stay on the recap. */
   compact?: boolean;
 }) {
   const { t } = useTranslation();
@@ -89,7 +89,10 @@ export function MapFootnote({
         color="$muted"
         style={{ textAlign: "center" }}
       >
-        {MAP_ATTRIBUTION} {t("recap.privacy")}
+        {/* The live map is a short strip: the credit alone, the privacy sentence is the recap's.
+            Both together took three lines at 130 % and covered the trace (persona audit 109). */}
+        {MAP_ATTRIBUTION}
+        {compact ? null : ` ${t("recap.privacy")}`}
       </AppText>
     );
   }

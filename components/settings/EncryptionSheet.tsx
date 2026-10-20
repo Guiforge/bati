@@ -258,7 +258,14 @@ export function EncryptionSheet({
       <VerifyView
         words={words ?? ""}
         onBack={() => setStep("words")}
-        onChecked={() => actions.wordsChecked().then(() => setStep("done"))}
+        // The twelve words were typed with the keyboard up, and the next step has no field: put it
+        // away, or its buttons open under the keys (PR #208, open case 4).
+        onChecked={() =>
+          actions.wordsChecked().then(() => {
+            Keyboard.dismiss();
+            setStep("done");
+          })
+        }
       />
     ),
     noWords: (

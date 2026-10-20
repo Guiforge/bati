@@ -5,12 +5,14 @@ import { type NoticeKind, pickNotice } from "@/components/home/noticeOrder";
 import { PasswordCheckCard } from "@/components/home/PasswordCheckCard";
 import { ProtectCard } from "@/components/home/ProtectCard";
 import { ReminderCard } from "@/components/home/ReminderCard";
+import { RhythmLine } from "@/components/home/RhythmLine";
 import { SyncCard } from "@/components/home/SyncCard";
 import { syncNoticeKind } from "@/components/home/syncNoticeKind";
 import { UpdateCard } from "@/components/home/UpdateCard";
 import { WhatsNewCard } from "@/components/home/WhatsNewCard";
 import { SessionRecoveryCard } from "@/components/session/SessionRecoveryCard";
-import { lightWeekReason } from "@/db/lightWeek";
+import { lightWeekReason, lightWeekUntil } from "@/db/lightWeek";
+import { getActivePause } from "@/db/pause";
 import { useSessionRecovery } from "@/hooks/useSessionRecovery";
 import { lastMerge, lostSync, syncHealth } from "@/src/deviceSync";
 import { passwordCheckDue } from "@/src/passwordReminders";
@@ -60,28 +62,45 @@ export function NoticeSlot({ onLightWeekAnswered }: { onLightWeekAnswered?: () =
         reminderCardKind(),
         passwordCheckDue(),
         lightWeekReason(new Date()),
+        getActivePause(),
+        lightWeekUntil(new Date()),
       ])
-        .then(([lost, health, merge, notes, update, protect, reminder, password, lightWeek]) => {
-          if (cancelled) return;
-          const sync = syncNoticeKind({
+        .then(
+          ([
             lost,
-            waitingPassword,
-            failure,
-            failingSince: health.failingSince,
+            health,
             merge,
-            now: Date.now(),
-          });
-          const due: [NoticeKind, boolean][] = [
-            ["sync", sync !== null],
-            ["lightWeek", lightWeek !== null],
-            ["whatsNew", notes && releaseNotes(language).length > 0],
-            ["update", update !== null],
-            ["protect", protect],
-            ["reminder", reminder !== null],
-            ["passwordCheck", password],
-          ];
-          setPresent(new Set(due.filter(([, on]) => on).map(([kind]) => kind)));
-        })
+            notes,
+            update,
+            protect,
+            reminder,
+            password,
+            lightWeek,
+            pause,
+            weekUntil,
+          ]) => {
+            if (cancelled) return;
+            const sync = syncNoticeKind({
+              lost,
+              waitingPassword,
+              failure,
+              failingSince: health.failingSince,
+              merge,
+              now: Date.now(),
+            });
+            const due: [NoticeKind, boolean][] = [
+              ["sync", sync !== null],
+              ["lightWeek", lightWeek !== null],
+              ["rhythm", pause !== null || weekUntil !== null],
+              ["whatsNew", notes && releaseNotes(language).length > 0],
+              ["update", update !== null],
+              ["protect", protect],
+              ["reminder", reminder !== null],
+              ["passwordCheck", password],
+            ];
+            setPresent(new Set(due.filter(([, on]) => on).map(([kind]) => kind)));
+          },
+        )
         .catch((error: unknown) => reportError("notice.slot", error));
       return () => {
         cancelled = true;
@@ -108,6 +127,10 @@ export function NoticeSlot({ onLightWeekAnswered }: { onLightWeekAnswered?: () =
     case "lightWeek":
       return (
         <LightWeekCard {...(onLightWeekAnswered ? { onAnswered: onLightWeekAnswered } : {})} />
+      );
+    case "rhythm":
+      return (
+        <RhythmLine {...(onLightWeekAnswered ? { onLightWeekEnded: onLightWeekAnswered } : {})} />
       );
     case "whatsNew":
       return <WhatsNewCard />;

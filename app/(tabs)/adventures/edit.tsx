@@ -475,16 +475,8 @@ export default function AdventureEditor() {
               />
             ) : null}
 
-            <ImageChoiceField
-              value={cover}
-              onChange={(next) => patch({ cover: next as AdventureAssetKey })}
-              choices={COVER_CHOICES}
-              resolve={getAdventureAsset}
-              resolveThumb={getAdventureAsset}
-              aspect={[4, 3]}
-              photos={false}
-            />
-
+            {/* The name is the one required field: above the cover picker, so at a large font it is not
+                the thing under the save bar (persona audit 81). */}
             <Card
               onLayout={(e) => {
                 nameCardY.current = e.nativeEvent.layout.y;
@@ -537,6 +529,16 @@ export default function AdventureEditor() {
                 </YStack>
               </YStack>
             </Card>
+
+            <ImageChoiceField
+              value={cover}
+              onChange={(next) => patch({ cover: next as AdventureAssetKey })}
+              choices={COVER_CHOICES}
+              resolve={getAdventureAsset}
+              resolveThumb={getAdventureAsset}
+              aspect={[4, 3]}
+              photos={false}
+            />
 
             <Text fontWeight="700" fontSize={18} color="$text">
               {t("adventures.editor_steps")}

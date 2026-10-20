@@ -323,7 +323,7 @@ function AdventureCard({
 // Hoisted so the list doesn't get a fresh function identity on every parent render.
 /** "Tes aventures", above the hero's own posters. */
 type YoursHeaderRow = { yoursHeader: true };
-/** The way to write one: after the hero's own, or after the game's when there are none. */
+/** The way to write one: the first row of the gallery. */
 type WriteRowItem = { writeRow: true };
 type GalleryItem = AdventureRow | YoursHeaderRow | WriteRowItem;
 
@@ -548,9 +548,9 @@ export default function AdventuresGallery() {
     const own = adventures
       .filter((a) => a.author === USER_QUEST_AUTHOR && (a.isActive === 1 || runningIds.has(a.id)))
       .sort((a, b) => (b.updatedAt?.getTime() ?? 0) - (a.updatedAt?.getTime() ?? 0));
-    const rows: GalleryItem[] = order(game).map(build);
+    // The write button leads: at the foot of fifteen posters nobody found it (persona audit, 80).
+    const rows: GalleryItem[] = [{ writeRow: true }, ...order(game).map(build)];
     if (own.length > 0) rows.push({ yoursHeader: true }, ...order(own).map(build));
-    rows.push({ writeRow: true });
     return rows;
   }, [adventures, finishedCounts, runningIds, language, t, previews, activeProgress, pace]);
 

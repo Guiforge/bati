@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Sheet, Text, XStack, YStack } from "tamagui";
 import { headingFont } from "@/components/common/headingFont";
+import { RevealContext } from "@/components/common/revealInSheet";
 import { useKeyboardHeight } from "@/components/common/useKeyboardHeight";
 import { X } from "@/components/icons";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
@@ -54,6 +55,22 @@ export function FormSheet({ open, title, onClose, children, footer, endOnKeyboar
   const shownOn = useRef(pathname);
   const scroll = useRef<ScrollView>(null);
   const keyboardH = useKeyboardHeight(endOnKeyboard ? scroll : undefined);
+
+  const reveal = (node: unknown) => {
+    const target = node as { measureLayout?: (...args: unknown[]) => void } | null;
+    const inner = (
+      scroll.current as { getInnerViewRef?: () => unknown } | null
+    )?.getInnerViewRef?.();
+    if (!target?.measureLayout || !inner) return;
+    // A frame later: the node has no layout yet in the commit that mounted it.
+    requestAnimationFrame(() =>
+      target.measureLayout?.(
+        inner,
+        (_x: number, y: number) => scroll.current?.scrollTo({ y: Math.max(0, y - 24) }),
+        () => undefined, // not measurable: the field stays where it is
+      ),
+    );
+  };
 
   const close = () => {
     Keyboard.dismiss();
@@ -143,7 +160,7 @@ export function FormSheet({ open, title, onClose, children, footer, endOnKeyboar
                 <X size={20} color="$textSecondary" />
               </Pressable>
             </XStack>
-            {children}
+            <RevealContext.Provider value={reveal}>{children}</RevealContext.Provider>
           </YStack>
         </Sheet.ScrollView>
         {footer ? (

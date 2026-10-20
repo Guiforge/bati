@@ -38,6 +38,7 @@ const mockReads = {
   reminder: "offer" as string | null,
   password: false,
   lightWeek: "under" as string | null,
+  rhythm: false,
 };
 jest.mock("@/src/deviceSync", () => ({
   lostSync: async () => mockReads.lost,
@@ -51,7 +52,11 @@ jest.mock("@/src/whatsNew", () => ({
 jest.mock("@/src/updateCheck", () => ({ checkForUpdate: async () => mockReads.update }));
 jest.mock("@/src/protectHero", () => ({ protectCardVisible: async () => mockReads.protect }));
 jest.mock("@/src/reminders", () => ({ reminderCardKind: async () => mockReads.reminder }));
-jest.mock("@/db/lightWeek", () => ({ lightWeekReason: async () => mockReads.lightWeek }));
+jest.mock("@/db/lightWeek", () => ({
+  lightWeekReason: async () => mockReads.lightWeek,
+  lightWeekUntil: async () => (mockReads.rhythm ? new Date() : null),
+}));
+jest.mock("@/db/pause", () => ({ getActivePause: async () => null }));
 jest.mock("@/src/passwordReminders", () => ({ passwordCheckDue: async () => mockReads.password }));
 
 // The cards are stubs: what is asked is who gets the slot, each card has its own test.
@@ -63,6 +68,7 @@ jest.mock("@/components/session/SessionRecoveryCard", () => ({
   },
 }));
 jest.mock("@/components/home/LightWeekCard", () => ({ LightWeekCard: stub("home-light-week") }));
+jest.mock("@/components/home/RhythmLine", () => ({ RhythmLine: stub("home-rhythm") }));
 jest.mock("@/components/home/SyncCard", () => ({ SyncCard: stub("home-sync-lost") }));
 jest.mock("@/components/home/WhatsNewCard", () => ({ WhatsNewCard: stub("home-whats-new-open") }));
 jest.mock("@/components/home/UpdateCard", () => ({ UpdateCard: stub("home-update-dismiss") }));
@@ -79,6 +85,7 @@ const ALL = [
   "home-recovery",
   "home-sync-lost",
   "home-light-week",
+  "home-rhythm",
   "home-whats-new-open",
   "home-update-dismiss",
   "home-protect",
@@ -105,6 +112,7 @@ beforeEach(() => {
     reminder: "offer",
     password: true,
     lightWeek: "under",
+    rhythm: false,
   });
   useSettingsStore.setState({ updateCheckEnabled: true });
 });
@@ -137,6 +145,19 @@ describe("NoticeSlot", () => {
       await waitFor(() => expect(shown()).toEqual([expected]));
       await screen.unmount();
     }
+  });
+
+  test("a running week takes the slot ahead of the backup card, never beside it", async () => {
+    mockRecovery.recoverableSession = null;
+    Object.assign(mockReads, {
+      lost: null,
+      lightWeek: null,
+      rhythm: true,
+      notes: false,
+      update: null,
+    });
+    await mount();
+    await waitFor(() => expect(shown()).toEqual(["home-rhythm"]));
   });
 
   test("an update the hero did not ask to hear about is not a notice", async () => {

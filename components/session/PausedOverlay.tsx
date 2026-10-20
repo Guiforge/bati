@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView } from "react-native";
+import { Platform, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
@@ -116,7 +116,9 @@ export function PausedOverlay() {
           alignItems: "center",
           justifyContent: "center",
           paddingTop: insets.top + 24,
-          paddingBottom: insets.bottom + 24,
+          // The gesture bar: an overlay over a translucent system bar can read 0 insets, and the
+          // last button ("Quitter") slid under it (persona audit 40). Same floor as the galleries.
+          paddingBottom: Math.max(insets.bottom, Platform.OS === "android" ? 24 : 0) + 24,
           paddingHorizontal: 24,
         }}
       >

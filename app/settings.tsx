@@ -51,7 +51,7 @@ import { SettingRow } from "@/components/settings/SettingRow";
 import { StartingPointRow } from "@/components/settings/StartingPointRow";
 import { VillageNameRow } from "@/components/settings/VillageNameRow";
 import { AVATARS, type AvatarId, getAvatarSource } from "@/constants/avatars";
-import { LEARNING_SESSIONS } from "@/constants/warmup";
+import { LEARNING_SESSIONS, transitionSeconds } from "@/constants/warmup";
 import { preferences } from "@/db";
 import type { WarmupTransition } from "@/db/preferences";
 import type { EquipmentCode } from "@/db/schema";
@@ -228,9 +228,12 @@ function WarmupTransitionRow({ warmupEnabled }: { warmupEnabled: boolean }) {
   if (!warmupEnabled) return null;
 
   const labels: Record<WarmupTransition, string> = {
-    auto: t("settings.warmup_transition_5"),
-    "5": t("settings.warmup_transition_5"),
-    "10": t("settings.warmup_transition_10"),
+    // Read through `transitionSeconds`, so a duration changed there cannot leave this saying the old one.
+    auto: t("settings.warmup_transition_seconds", {
+      seconds: transitionSeconds("auto", LEARNING_SESSIONS),
+    }),
+    "5": t("settings.warmup_transition_seconds", { seconds: transitionSeconds("5", 0) }),
+    "10": t("settings.warmup_transition_seconds", { seconds: transitionSeconds("10", 0) }),
     tap: t("settings.prep_tap"),
     off: t("settings.warmup_transition_off"),
   };
@@ -252,7 +255,10 @@ function WarmupTransitionRow({ warmupEnabled }: { warmupEnabled: boolean }) {
       {/* Until the hero chooses, the first sessions get longer transitions than the 5 s shown. */}
       {transition === "auto" ? (
         <Text testID="settings-warmup-transition-note" fontSize="$2" color="$textSecondary" px="$3">
-          {t("settings.warmup_transition_auto_note", { sessions: LEARNING_SESSIONS })}
+          {t("settings.warmup_transition_auto_note", {
+            seconds: transitionSeconds("auto", 0),
+            sessions: LEARNING_SESSIONS,
+          })}
         </Text>
       ) : null}
     </YStack>

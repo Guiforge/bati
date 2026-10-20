@@ -1581,7 +1581,12 @@ export const useSessionStore = create<SessionState>()(
         get().skipWarmup();
         return;
       }
-      set(toStep(kept[index], get().warmupSessionsBefore));
+      // A new first movement has not been read: it gets the first wait, not a transition.
+      set(
+        index === 0
+          ? { warmupPrep: true, ...prepTimer() }
+          : toStep(kept[index], get().warmupSessionsBefore),
+      );
     },
 
     /** Leave the warm-up for the start screen. Nothing is journaled: a warm-up is not work. */

@@ -944,7 +944,7 @@ describe("useSessionStore", () => {
 
     // "Not for me" (issue #145): the movement in front of the hero, and every other step the
     // hero just set aside with it, leave what is left of this warm-up.
-    test("dropping steps takes them out of what is left and opens the next one's transition", async () => {
+    test("dropping the first steps takes them out and opens the first wait on what is left", async () => {
       prefs.getWarmupEnabled.mockResolvedValue(true);
       await store.getState().startSession(mockQuest, "medium");
       const before = store.getState().warmupSequence.map((s) => s.exerciseName);
@@ -959,6 +959,36 @@ describe("useSessionStore", () => {
         before.filter((name) => name !== first && name !== last),
       );
       expect(store.getState().warmupIndex).toBe(0);
+      expect(store.getState().warmupPrep).toBe(true);
+      expect(store.getState().timerDuration).toBe(PREP_SECONDS);
+    });
+
+    // The replacement first movement is new: it waits for GO when the hero asked, even with
+    // transitions off, instead of starting its clock unread.
+    test("Not for me on the first wait keeps a wait for GO, transitions off or not", async () => {
+      useSettingsStore.setState({ prepMode: "tap", warmupTransition: "off" });
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+      await store.getState().startSession(mockQuest, "medium");
+      const first = store.getState().warmupSequence[0]?.exerciseName;
+      assert(first);
+
+      store.getState().dropWarmupSteps(new Set([first]));
+
+      expect(store.getState().warmupIndex).toBe(0);
+      expect(store.getState().warmupPrep).toBe(true);
+      expect(store.getState().timerStartTimestamp).toBeNull();
+    });
+
+    test("dropping a later step opens the transition of what now stands there", async () => {
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+      await store.getState().startSession(mockQuest, "medium");
+      store.getState().nextWarmupStep();
+      const second = store.getState().warmupSequence[1]?.exerciseName;
+      assert(second);
+
+      store.getState().dropWarmupSteps(new Set([second]));
+
+      expect(store.getState().warmupIndex).toBe(1);
       expect(store.getState().warmupPrep).toBe(true);
       expect(store.getState().timerDuration).toBe(5);
     });

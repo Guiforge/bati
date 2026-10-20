@@ -1,8 +1,14 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, useWindowDimensions, View } from "react-native";
+import {
+  ScrollView,
+  type StyleProp,
+  useWindowDimensions,
+  View,
+  type ViewStyle,
+} from "react-native";
 import { H1, H3, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
@@ -43,9 +49,6 @@ export function MovementDescription({
   // 120 dp is six lines at font scale 1; the cap follows the scale so a large-text hero gets six
   // lines too, not four and a half cut through the middle.
   const maxHeight = useFontScaled(120);
-  const [box, setBox] = useState(0);
-  const [content, setContent] = useState(0);
-  const [atEnd, setAtEnd] = useState(false);
   const body = (
     <AppText
       fontSize={14}
@@ -59,10 +62,42 @@ export function MovementDescription({
   );
   if (uncapped) return body;
   return (
-    <View style={FADE_HOST_STYLE}>
+    <FadedScroll
+      testID="movement-description"
+      hostStyle={FADE_HOST_STYLE}
+      style={[DESCRIPTION_STYLE, { maxHeight }]}
+    >
+      {body}
+    </FadedScroll>
+  );
+}
+
+/**
+ * A scroll that fades its last line while more is below. The lines past the box are there, and
+ * nothing said so: a sentence cut mid-line read as the end of the text (persona audit 05, 71).
+ */
+function FadedScroll({
+  testID,
+  hostStyle,
+  style,
+  contentContainerStyle,
+  children,
+}: {
+  testID: string;
+  hostStyle: StyleProp<ViewStyle>;
+  style?: StyleProp<ViewStyle>;
+  contentContainerStyle?: StyleProp<ViewStyle>;
+  children: ReactNode;
+}) {
+  const [box, setBox] = useState(0);
+  const [content, setContent] = useState(0);
+  const [atEnd, setAtEnd] = useState(false);
+  return (
+    <View style={hostStyle}>
       <ScrollView
-        testID="movement-description"
-        style={[DESCRIPTION_STYLE, { maxHeight }]}
+        testID={testID}
+        style={style}
+        contentContainerStyle={contentContainerStyle}
         showsVerticalScrollIndicator={false}
         onLayout={(e) => setBox(e.nativeEvent.layout.height)}
         onContentSizeChange={(_w, h) => setContent(h)}
@@ -72,13 +107,11 @@ export function MovementDescription({
         }}
         scrollEventThrottle={64}
       >
-        {body}
+        {children}
       </ScrollView>
-      {/* The lines past the box are there, and nothing said so: a sentence cut mid-line read as
-          the end of the text (persona audit 05, 71). The fade says "more below" until the end. */}
       {content > box + 1 && !atEnd ? (
         <LinearGradient
-          testID="movement-description-fade"
+          testID={`${testID}-fade`}
           pointerEvents="none"
           colors={[rawColors.bgDarkClear, rawColors.bgDark]}
           style={FADE_STYLE}
@@ -93,6 +126,7 @@ const FADE_STYLE = { position: "absolute", left: 0, right: 0, bottom: 0, height:
 
 // `flexGrow` keeps the movement centred while it fits.
 const PINNED_SCROLL_STYLE = { flex: 1, alignSelf: "stretch" } as const;
+const PINNED_FILL_STYLE = { flex: 1 } as const;
 const PINNED_CONTENT_STYLE = {
   flexGrow: 1,
   alignItems: "center",
@@ -291,13 +325,15 @@ export function PrepView({
   return (
     <YStack items="center" gap="$3" width="100%" flex={pinned ? 1 : undefined}>
       {pinned ? (
-        <ScrollView
+        // Pinned, the description is uncapped and this scroll is what cuts it: the fade goes here.
+        <FadedScroll
           testID="prep-movement"
-          style={PINNED_SCROLL_STYLE}
+          hostStyle={PINNED_SCROLL_STYLE}
+          style={PINNED_FILL_STYLE}
           contentContainerStyle={PINNED_CONTENT_STYLE}
         >
           {movement}
-        </ScrollView>
+        </FadedScroll>
       ) : (
         movement
       )}

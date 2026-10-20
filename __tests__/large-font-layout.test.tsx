@@ -1,4 +1,4 @@
-import { act, fireEvent, render } from "@testing-library/react-native";
+import { fireEvent, render } from "@testing-library/react-native";
 import { Dimensions, StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
@@ -99,10 +99,8 @@ describe("a movement description longer than its box", () => {
     const box = view.getByTestId("movement-description");
     expect(view.queryByTestId("movement-description-fade")).toBeNull();
 
-    await act(() => {
-      fireEvent(box, "layout", { nativeEvent: { layout: { height: 120 } } });
-      fireEvent(box, "contentSizeChange", 300, 300);
-    });
+    await fireEvent(box, "layout", { nativeEvent: { layout: { height: 120 } } });
+    await fireEvent(box, "contentSizeChange", 300, 300);
     expect(view.getByTestId("movement-description-fade")).toBeTruthy();
 
     await fireEvent.scroll(box, {
@@ -118,10 +116,39 @@ describe("a movement description longer than its box", () => {
   it("shows no fade when the text fits", async () => {
     const view = await mount();
     const box = view.getByTestId("movement-description");
-    await act(() => {
-      fireEvent(box, "layout", { nativeEvent: { layout: { height: 120 } } });
-      fireEvent(box, "contentSizeChange", 300, 80);
-    });
+    await fireEvent(box, "layout", { nativeEvent: { layout: { height: 120 } } });
+    await fireEvent(box, "contentSizeChange", 300, 80);
     expect(view.queryByTestId("movement-description-fade")).toBeNull();
   });
+});
+
+// The warm-up's "Prépare-toi" pins the movement: the description is uncapped and the outer scroll
+// is what cuts it, so that scroll carries the fade (persona audit 05, 71).
+it("fades the pinned prep scroll while the movement runs past it", async () => {
+  const view = await render(
+    <SafeAreaProvider
+      initialMetrics={{
+        frame: { x: 0, y: 0, width: 360, height: 640 },
+        insets: { top: 0, left: 0, right: 0, bottom: 0 },
+      }}
+    >
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <PrepView
+          kicker="Get ready"
+          instruction={instruction}
+          fallbackName="Squat"
+          target="30 s"
+          remainingSeconds={8}
+          onGo={() => {}}
+          goTestID="go"
+          pinned
+        />
+      </TamaguiProvider>
+    </SafeAreaProvider>,
+  );
+  expect(view.queryByTestId("movement-description")).toBeNull();
+  const scroll = view.getByTestId("prep-movement");
+  await fireEvent(scroll, "layout", { nativeEvent: { layout: { height: 90 } } });
+  await fireEvent(scroll, "contentSizeChange", 360, 260);
+  expect(view.getByTestId("prep-movement-fade")).toBeTruthy();
 });

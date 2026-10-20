@@ -184,7 +184,10 @@ async function saveNoteDraft(draft: { current: string }, sessionId: number) {
 
 /** The share of a minute outside that counts as effort, as the card writes it. */
 function rateOf(locomotion: Locomotion): string {
-  return outingRate(locomotion) >= 0.5 ? "½" : "¼";
+  // Read off the rate, never assumed: `db/xp.ts` already plans ⅕ for a walk, which a ">= ½"
+  // test would have kept printing as ¼.
+  const parts = Math.round(1 / outingRate(locomotion));
+  return parts === 2 ? "½" : parts === 4 ? "¼" : `1/${parts}`;
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Post-workout summary screen (save, reveal, feedback, actions)

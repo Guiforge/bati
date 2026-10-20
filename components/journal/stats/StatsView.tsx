@@ -220,7 +220,16 @@ export function HeaderRow({ children, px }: { children: ReactNode; px?: SpaceTok
   );
 }
 
-export function WallRow({ entry, now }: { entry: WallEntry; now: Date }) {
+export function WallRow({
+  entry,
+  now,
+  showTarget = true,
+}: {
+  entry: WallEntry;
+  now: Date;
+  /** False in a light week: the objective is lower than the record, so no target above it. */
+  showTarget?: boolean;
+}) {
   const { t } = useTranslation();
   const router = useRouter();
   const language = useSettingsStore((s) => s.language);
@@ -290,7 +299,7 @@ export function WallRow({ entry, now }: { entry: WallEntry; now: Date }) {
       </YStack>
       {/* A movement never logged has nothing to beat: "1 reps" under "Never logged" read as a dare
           to do one rep. The first try sets the record, which the kicker says. */}
-      {entry.best == null ? null : (
+      {entry.best == null || !showTarget ? null : (
         <YStack items="flex-end">
           <NNum fontSize={24} lineHeight={26} color="$resourceGold">
             {formatTargetValue({ type: entry.type, value: target }, language)}
@@ -310,26 +319,38 @@ export function WallRow({ entry, now }: { entry: WallEntry; now: Date }) {
 
 function Wall({ stats, mode }: { stats: JournalStats; mode: Mode }) {
   const { t } = useTranslation();
+  // A light week asks less than the record: a target above that objective would contradict the set.
   const title =
     mode === "firstDay"
       ? t("journal.wall_empty")
-      : mode === "veteran"
-        ? t("journal.wall_old")
-        : mode === "rest"
-          ? t("journal.wall_standing")
-          : t("journal.wall_tonight");
+      : stats.lightWeek
+        ? t("journal.wall_standing")
+        : mode === "veteran"
+          ? t("journal.wall_old")
+          : mode === "rest"
+            ? t("journal.wall_standing")
+            : t("journal.wall_tonight");
 
   return (
     <YStack testID="journal-wall">
       <HeaderRow px="$5">
         <NKicker>{title}</NKicker>
         <NMuted fontSize={11} style={CAPTION_STYLE}>
-          {mode === "firstDay" ? t("journal.wall_meta_first") : t("journal.wall_meta")}
+          {mode === "firstDay"
+            ? t("journal.wall_meta_first")
+            : stats.lightWeek
+              ? ""
+              : t("journal.wall_meta")}
         </NMuted>
       </HeaderRow>
       <YStack px="$5" pt={8} gap={6}>
         {stats.wall.map((entry) => (
-          <WallRow key={`${entry.exerciseId}:${entry.type}`} entry={entry} now={stats.now} />
+          <WallRow
+            key={`${entry.exerciseId}:${entry.type}`}
+            entry={entry}
+            now={stats.now}
+            showTarget={!stats.lightWeek}
+          />
         ))}
       </YStack>
     </YStack>

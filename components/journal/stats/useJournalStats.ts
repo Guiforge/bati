@@ -21,7 +21,7 @@ import {
   type RecordMention,
   type WallEntry,
 } from "@/db/journal";
-import { hardSetsByPattern } from "@/db/lightWeek";
+import { hardSetsByPattern, isLightWeekRunning } from "@/db/lightWeek";
 import { getMuscleBalance, type MuscleBalance } from "@/db/muscleBalance";
 import { type FlameDetail, type FlameSpan, getFlameWithSpan } from "@/db/streaks";
 import { getUserLevelInfo, type UserLevelInfo } from "@/db/userLevel";
@@ -35,6 +35,8 @@ export type JournalStats = {
   /** Nothing logged, ever: the first day's wall and sentence. */
   isFirstDay: boolean;
   trainedToday: boolean;
+  /** A light week runs: the wall states what stands and sets no target (the set does the same). */
+  lightWeek: boolean;
   wall: WallEntry[];
   flame: FlameDetail;
   /** The dates the flame's count can be checked against, null when nothing is lit or asleep. */
@@ -93,6 +95,7 @@ async function loadJournalStats(): Promise<JournalStats> {
     chronicle,
     hardSets,
     handInWindow,
+    lightWeek,
   ] = await Promise.all([
     getRecordWall(4),
     getFlameWithSpan(now),
@@ -111,6 +114,7 @@ async function loadJournalStats(): Promise<JournalStats> {
     chronicleToOpen(now),
     hardSetsByPattern(weekFrom),
     countHandEntriesSince(weekFrom),
+    isLightWeekRunning(now),
   ]);
 
   const isFirstDay = firstSessionAt == null;
@@ -134,6 +138,7 @@ async function loadJournalStats(): Promise<JournalStats> {
     now,
     isFirstDay,
     trainedToday: activity.has(dayKey(now)),
+    lightWeek,
     wall: wall.length > 0 ? wall : await getStarterWall(),
     flame: flameRead.detail,
     flameSpan: flameRead.span,

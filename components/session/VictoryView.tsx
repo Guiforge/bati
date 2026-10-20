@@ -26,7 +26,11 @@ import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { LEVEL_CARD_HEIGHT } from "@/constants/layout";
 import { fade, rawColors } from "@/constants/rawColors";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
-import { updateSessionFeedback, updateSessionNotes } from "@/db/completed";
+import {
+  UNTRACED_PAID_SECONDS_PER_DAY,
+  updateSessionFeedback,
+  updateSessionNotes,
+} from "@/db/completed";
 import { type Crest, getCrest } from "@/db/crest";
 import { COAT_RARE_KEY } from "@/db/crestEvents";
 import { countsAsDeed } from "@/db/deed";
@@ -720,10 +724,16 @@ export function VictoryView() {
                           moving: formatTime(result.outing.seconds),
                           effort: formatDurationEstimate(result.outing.effortSeconds, language),
                         })
-                      : t("session.xp_outing_rate_timed", {
-                          time: formatTime(result.outing.clockSeconds),
-                          effort: formatDurationEstimate(result.outing.effortSeconds, language),
-                        })}
+                      : result.outing.seconds === 0 && result.outing.clockSeconds > 0
+                        ? // The day's allowance for time nothing witnessed is spent: say so, where
+                          // a bare "+0 XP" would read as a fault.
+                          t("session.xp_outing_capped", {
+                            hours: UNTRACED_PAID_SECONDS_PER_DAY / 3600,
+                          })
+                        : t("session.xp_outing_rate_timed", {
+                            time: formatTime(result.outing.clockSeconds),
+                            effort: formatDurationEstimate(result.outing.effortSeconds, language),
+                          })}
                   </AppText>
                 ) : null}
                 {!!result?.overshootXp && (

@@ -710,6 +710,7 @@
     "xp_overshoot": "incl. +{{count}} for beating your targets",
     "xp_outing_rate": "{{moving}} moving · counted as {{effort}} of effort",
     "xp_outing_rate_timed": "{{time}} on the clock · counted as {{effort}} of effort",
+    "xp_outing_capped": "Your {{hours}} h of unmeasured time today are already counted.",
     "swap_short": "Replace",
     "skip_exercise": "I couldn't do this one",
     "xp_earned": "XP Earned",

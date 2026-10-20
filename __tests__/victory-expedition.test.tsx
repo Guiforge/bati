@@ -44,7 +44,10 @@ jest.mock("@/components/journal/PastSessionSheet", () => ({
 }));
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/db", () => ({ preferences: {} }));
-jest.mock("@/db/completed", () => ({ updateSessionFeedback: jest.fn() }));
+jest.mock("@/db/completed", () => ({
+  updateSessionFeedback: jest.fn(),
+  UNTRACED_PAID_SECONDS_PER_DAY: 7200,
+}));
 jest.mock("@/db/adventures-narrative", () => ({
   getAdventureStepOutroNarrative: jest.fn().mockResolvedValue(null),
 }));
@@ -418,6 +421,23 @@ describe("VictoryView, the walk it just celebrated", () => {
     expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(
       /240:00 on the clock · counted as 30 min of effort/,
     );
+  });
+
+  test("a day whose unmeasured allowance is spent says so, in place of a bare +0 XP", async () => {
+    await mountVictory({
+      outing: {
+        seconds: 0,
+        effortSeconds: 0,
+        locomotion: "walk",
+        measured: false,
+        clockSeconds: 3600,
+      },
+    });
+
+    expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(
+      /Your 2 h of unmeasured time today are already counted\./,
+    );
+    expect(screen.queryByText(/on the clock/)).toBeNull();
   });
 
   test("a workout is not told what it was counted as - it was counted as itself", async () => {

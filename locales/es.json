@@ -735,6 +735,7 @@
     "xp_overshoot": "incluye +{{count}} por superar tus objetivos",
     "xp_outing_rate": "{{moving}} en movimiento · cuenta como {{effort}} de esfuerzo",
     "xp_outing_rate_timed": "{{time}} en el reloj · cuenta como {{effort}} de esfuerzo",
+    "xp_outing_capped": "Tus {{hours}} h de tiempo sin medir de hoy ya están contadas.",
     "swap_short": "Sustituir",
     "skip_exercise": "No he podido",
     "xp_earned": "XP ganada",

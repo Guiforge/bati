@@ -269,6 +269,13 @@ describe("db/streaks", () => {
     expect(detail.current).toBeGreaterThan(50 - 10 + 1);
   });
 
+  // Up to the pivot, an unlit flame does not sleep: "0 days lit" read "lit since 2023" beside it.
+  test("dates only a count on screen: lit or asleep", async () => {
+    for (const daysAgo of [60, 57, 53, 50, 46, 43]) await addSessionOnDate(daysAgo);
+    const { detail, span } = await streaks().getFlameWithSpan();
+    expect(span !== null).toBe(detail.current > 0 || detail.dormant > 0);
+  });
+
   test("nothing lit and nothing asleep has no dates", async () => {
     await addSessionOnDate(200);
     const { span } = await streaks().getFlameWithSpan();

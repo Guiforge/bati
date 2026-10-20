@@ -605,8 +605,9 @@ function readFlame(
     litDaysLast30,
   };
   // `runStart` is infinite once the run is wiped: nothing is lit, nothing is asleep, nothing to date.
+  // An unlit run that is not asleep either (up to the pivot day) has no count on screen to date.
   const span =
-    runStart < Number.POSITIVE_INFINITY
+    (current > 0 || dormant > 0) && runStart < Number.POSITIVE_INFINITY
       ? { from: flame.dateOf(runStart), to: flame.dateOf(lastLit) }
       : null;
   return { detail, span };

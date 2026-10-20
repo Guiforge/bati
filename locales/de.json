@@ -709,6 +709,7 @@
     "village_growth_cta": "Dein Dorf ansehen",
     "xp_overshoot": "davon +{{count}} fürs Übertreffen deiner Ziele",
     "xp_outing_rate": "{{moving}} in Bewegung · gewertet als {{effort}} Anstrengung",
+    "xp_outing_rate_timed": "{{time}} auf der Uhr · gewertet als {{effort}} Anstrengung",
     "swap_short": "Ersetzen",
     "skip_exercise": "Das ging nicht",
     "xp_earned": "Verdiente XP",

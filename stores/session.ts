@@ -285,7 +285,13 @@ export type SaveResult = {
    * walls. `effortSeconds` is already decayed by whatever the day had paid for, so the victory
    * screen can show the conversion that actually happened rather than the tariff.
    */
-  outing: { seconds: number; effortSeconds: number; locomotion: Locomotion } | null;
+  outing: {
+    seconds: number;
+    effortSeconds: number;
+    locomotion: Locomotion;
+    /** False when no GPS timed the ground, so `seconds` is the clock and nothing was seen moving. */
+    measured: boolean;
+  } | null;
   campaign: {
     adventureId: number;
     runId: number;
@@ -961,7 +967,7 @@ async function outingLedger(
   atTarget: OutingLeg | null;
   prior: number;
   /** The same leg with what it was actually worth, for the victory screen's conversion line. */
-  priced: (OutingLeg & { effortSeconds: number }) | null;
+  priced: (OutingLeg & { effortSeconds: number; measured: boolean }) | null;
 }> {
   const locomotion = pricedLocomotion(quest);
   if (locomotion === null) return { outing: null, atTarget: null, prior: 0, priced: null };
@@ -987,7 +993,11 @@ async function outingLedger(
     outing,
     atTarget: { seconds: outingGoalSeconds(quest), locomotion },
     prior,
-    priced: { ...outing, effortSeconds: Math.round(outingEffortSeconds(outing, prior)) },
+    priced: {
+      ...outing,
+      effortSeconds: Math.round(outingEffortSeconds(outing, prior)),
+      measured: ground.movingSeconds !== null,
+    },
   };
 }
 

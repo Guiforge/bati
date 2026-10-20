@@ -758,6 +758,7 @@
     "village_growth_cta": "Посмотреть деревню",
     "xp_overshoot": "в т. ч. +{{count}} за превышение целей",
     "xp_outing_rate": "{{moving}} в движении · засчитано как {{effort}} усилия",
+    "xp_outing_rate_timed": "{{time}} по часам · засчитано как {{effort}} усилия",
     "swap_short": "Заменить",
     "skip_exercise": "Не получилось",
     "xp_earned": "Заработано XP",

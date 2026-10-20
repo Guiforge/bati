@@ -1183,6 +1183,7 @@
     "village_growth_cta": "Voir ton village",
     "xp_overshoot": "dont +{{count}} pour avoir dépassé tes objectifs",
     "xp_outing_rate": "{{moving}} en mouvement, soit {{effort}} d'effort",
+    "xp_outing_rate_timed": "{{time}} au chrono, soit {{effort}} d'effort",
     "swap_short": "Remplacer",
     "skip_exercise": "Je n'ai pas pu",
     "xp_earned": "XP gagnés",

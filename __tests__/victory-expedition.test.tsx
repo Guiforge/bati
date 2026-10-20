@@ -160,7 +160,12 @@ async function mountVictory({
   /** What the hero asked for before setting off. `null` is a free outing, and only that. */
   goal?: OutingGoal | null;
   /** The ground the save priced, as `saveSession` reports it back. */
-  outing?: { seconds: number; effortSeconds: number; locomotion: "walk" | "run" | "ride" } | null;
+  outing?: {
+    seconds: number;
+    effortSeconds: number;
+    locomotion: "walk" | "run" | "ride";
+    measured: boolean;
+  } | null;
   /** The records the save found, as `saveSession` reports them. */
   newRecords?: unknown[];
 } = {}) {
@@ -358,7 +363,7 @@ describe("VictoryView, the walk it just celebrated", () => {
 
     await mountVictory({
       sessionSeconds: 52 * 60,
-      outing: { seconds: 720, effortSeconds: 720, locomotion: "walk" },
+      outing: { seconds: 720, effortSeconds: 720, locomotion: "walk", measured: true },
     });
 
     expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(/of which 12:00 moving/);
@@ -372,11 +377,24 @@ describe("VictoryView, the walk it just celebrated", () => {
    */
   test("says what the walk was counted as, not just what it paid", async () => {
     // Same clock as the "of which" line of the time card: 97 s read "2 min" here and "1:37" there.
-    await mountVictory({ outing: { seconds: 3600, effortSeconds: 900, locomotion: "walk" } });
+    await mountVictory({
+      outing: { seconds: 3600, effortSeconds: 900, locomotion: "walk", measured: true },
+    });
 
     expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(
       /60:00 moving · counted as 15 min of effort/,
     );
+  });
+
+  test("an outing nothing measured says clock time, never moving time", async () => {
+    await mountVictory({
+      outing: { seconds: 141, effortSeconds: 60, locomotion: "walk", measured: false },
+    });
+
+    expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(
+      /2:21 on the clock · counted as 1 min of effort/,
+    );
+    expect(screen.queryByText(/moving · counted/)).toBeNull();
   });
 
   test("a workout is not told what it was counted as - it was counted as itself", async () => {

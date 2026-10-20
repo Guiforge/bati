@@ -713,11 +713,17 @@ export function VictoryView() {
                 controlling rather than informative. This is the rule, in the hero's own numbers. */}
                 {result?.outing ? (
                   <AppText fontWeight="700" fontSize={11} color="$textSecondary">
-                    {t("session.xp_outing_rate", {
-                      // The clock the time card prints beside it, not a rounded "2 min" that disagreed.
-                      moving: formatTime(result.outing.seconds),
-                      effort: formatDurationEstimate(result.outing.effortSeconds, language),
-                    })}
+                    {/* No trace measured nothing moving: the clock is all the card may claim. */}
+                    {result.outing.measured
+                      ? t("session.xp_outing_rate", {
+                          // The clock the time card prints beside it, not a rounded "2 min" that disagreed.
+                          moving: formatTime(result.outing.seconds),
+                          effort: formatDurationEstimate(result.outing.effortSeconds, language),
+                        })
+                      : t("session.xp_outing_rate_timed", {
+                          time: formatTime(result.outing.seconds),
+                          effort: formatDurationEstimate(result.outing.effortSeconds, language),
+                        })}
                   </AppText>
                 ) : null}
                 {!!result?.overshootXp && (

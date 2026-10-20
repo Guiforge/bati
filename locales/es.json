@@ -734,6 +734,7 @@
     "village_growth_cta": "Ver tu aldea",
     "xp_overshoot": "incluye +{{count}} por superar tus objetivos",
     "xp_outing_rate": "{{moving}} en movimiento · cuenta como {{effort}} de esfuerzo",
+    "xp_outing_rate_timed": "{{time}} en el reloj · cuenta como {{effort}} de esfuerzo",
     "swap_short": "Sustituir",
     "skip_exercise": "No he podido",
     "xp_earned": "XP ganada",

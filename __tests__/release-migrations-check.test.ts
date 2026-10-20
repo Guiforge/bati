@@ -2,6 +2,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { isolatedGitEnv } from "./helpers/isolatedGit";
 
 /**
  * `scripts/check-release-migrations.sh` against a real, throwaway git history: tags are what it
@@ -13,7 +14,7 @@ let repo: string;
 let n = 0;
 
 const git = (...args: string[]) =>
-  execFileSync("git", args, { cwd: repo, stdio: "pipe", encoding: "utf8" });
+  execFileSync("git", args, { cwd: repo, stdio: "pipe", encoding: "utf8", env: isolatedGitEnv() });
 
 function commit(files: Record<string, string>, message: string) {
   fs.mkdirSync(path.join(repo, "drizzle"), { recursive: true });
@@ -25,7 +26,11 @@ function commit(files: Record<string, string>, message: string) {
 }
 
 function check(ref: string) {
-  const run = spawnSync("bash", [SCRIPT, ref], { cwd: repo, encoding: "utf8" });
+  const run = spawnSync("bash", [SCRIPT, ref], {
+    cwd: repo,
+    encoding: "utf8",
+    env: isolatedGitEnv(),
+  });
   return { code: run.status, out: `${run.stdout}${run.stderr}` };
 }
 
@@ -38,6 +43,8 @@ beforeEach(() => {
   repo = fs.mkdtempSync(path.join(os.tmpdir(), "bati-release-"));
   n = 0;
   git("init", "-q", "-b", "main");
+  // Proof the repository is this folder, not whatever an inherited GIT_DIR names.
+  expect(fs.existsSync(path.join(repo, ".git"))).toBe(true);
   git("config", "user.email", "t@example.com");
   git("config", "user.name", "t");
   git("config", "commit.gpgsign", "false");

@@ -48,7 +48,11 @@ export function GhostLine({
    * taps the reps back down has not set a record.
    */
   live: number;
-  /** What the app asks tonight, already the big number on the screen: not repeated when equal. */
+  /**
+   * What the app asks tonight, already the big number on the screen. The coach's rule (double
+   * progression, light week, return after a pause) set it, so "to beat" is never offered above it:
+   * the record stays a fact (the stamp, the victory), it is not an invitation past the rule.
+   */
   objective: number;
   /** Read once by the screen, not per tick: it decides whether the record has aged. */
   now: Date;
@@ -93,7 +97,7 @@ export function GhostLine({
       <AppText fontSize={15} fontWeight="700" color="$text">
         {perSideLabel(
           formatTarget({ type, value: ghost.last }, language),
-          perSide && !beatsBest && beat === objective,
+          perSide && !beatsBest && beat >= objective,
           language,
         )}
       </AppText>
@@ -131,7 +135,7 @@ export function GhostLine({
             {perSideLabel(formatTarget({ type, value: live }, language), perSide, language)}
           </AppText>
         </XStack>
-      ) : beat !== objective ? (
+      ) : beat < objective ? (
         <>
           <AppText fontSize={12} color="$textSecondary" opacity={0.5}>
             ·

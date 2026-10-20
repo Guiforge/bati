@@ -90,7 +90,7 @@ test("in a light week the wall row sets no target above the objective", async ()
   const now = new Date(2026, 8, 15, 12);
   const normal = await wrap(<WallRow entry={entry} now={now} />);
   expect(normal.getByText("hold")).toBeTruthy();
-  normal.unmount();
+  await normal.unmount();
   const light = await wrap(<WallRow entry={entry} now={now} showTarget={false} />);
   expect(light.queryByText("hold")).toBeNull();
 });

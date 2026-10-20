@@ -151,7 +151,14 @@ describe("NoticeSlot", () => {
   test("while the Sage welcomes the hero back, no card shares the screen with him", async () => {
     mockRecovery.recoverableSession = null;
     useChorusStore.setState({
-      current: { id: 1, owner: "home", moment: "comeback", villager: "sage", pose: "talk", line: "x" },
+      current: {
+        id: 1,
+        owner: "home",
+        moment: "comeback",
+        villager: "sage",
+        pose: "talk",
+        line: "x",
+      },
     });
     await mount();
     await waitFor(() => expect(screen.queryByTestId("home-sync-lost")).toBeNull());

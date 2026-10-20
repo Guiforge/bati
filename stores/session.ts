@@ -1747,7 +1747,9 @@ export const useSessionStore = create<SessionState>()(
         .catch((e) => reportError("session.stopExpedition", e))
         .then(() => {
           if (discardedUuid !== null) {
-            return deletePoints(discardedUuid).catch((e) => reportError("session.discardPoints", e));
+            return deletePoints(discardedUuid).catch((e) =>
+              reportError("session.discardPoints", e),
+            );
           }
         });
     },

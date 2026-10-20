@@ -1121,8 +1121,9 @@ describe("useSessionStore", () => {
             };
           }),
       );
-      gps.deletePoints.mockImplementationOnce(async () => {
+      gps.deletePoints.mockImplementationOnce(() => {
         order.push("delete");
+        return Promise.resolve();
       });
       const state = useExpeditionStore.getState();
       useExpeditionStore.setState({ end } as never);

@@ -1,10 +1,11 @@
 import { usePathname } from "expo-router";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { BackHandler, Keyboard, Pressable, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Sheet, Text, XStack, YStack } from "tamagui";
 import { headingFont } from "@/components/common/headingFont";
+import { useKeyboardHeight } from "@/components/common/useKeyboardHeight";
 import { X } from "@/components/icons";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -43,20 +44,7 @@ export function FormSheet({ open, title, onClose, children, footer }: Props) {
   const { height } = useWindowDimensions();
   const pathname = usePathname();
   const shownOn = useRef(pathname);
-  // The sheet rides up by the keyboard's height (`moveOnKeyboardChange`), so its own height must
-  // give that much back or the footer ends under the keys.
-  const [keyboardH, setKeyboardH] = useState(0);
-
-  useEffect(() => {
-    const show = Keyboard.addListener("keyboardDidShow", (e) =>
-      setKeyboardH(e.endCoordinates.height),
-    );
-    const hide = Keyboard.addListener("keyboardDidHide", () => setKeyboardH(0));
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, []);
+  const keyboardH = useKeyboardHeight();
 
   const close = () => {
     Keyboard.dismiss();

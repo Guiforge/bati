@@ -617,13 +617,19 @@ function readFlame(
  * purpose, and the cache only knows three of the numbers it needs.
  */
 export async function getFlameDetail(now = new Date()): Promise<FlameDetail> {
-  return (await getFlameWithSpan(now)).detail;
+  const [quota, pauses, performedAt] = await readJournalFlameInputs();
+  return describeFlame(performedAt, quota, now, FLAME_PIVOT, pauses);
 }
 
 /** `getFlameDetail` and the dates of the count it holds, from the one read of the journal. */
 export async function getFlameWithSpan(
   now = new Date(),
 ): Promise<{ detail: FlameDetail; span: FlameSpan | null }> {
+  const [quota, pauses, performedAt] = await readJournalFlameInputs();
+  return readFlame(performedAt, quota, now, FLAME_PIVOT, pauses);
+}
+
+async function readJournalFlameInputs(): Promise<[number, PausePeriod[], Date[]]> {
   const [quota, pauses, rows] = await Promise.all([
     getWeeklyQuota(),
     getPausePeriods(),
@@ -632,11 +638,5 @@ export async function getFlameWithSpan(
       .from(completedQuest)
       .where(countsAsSession()),
   ]);
-  return readFlame(
-    rows.map((r) => r.performedAt),
-    quota,
-    now,
-    FLAME_PIVOT,
-    pauses,
-  );
+  return [quota, pauses, rows.map((r) => r.performedAt)];
 }

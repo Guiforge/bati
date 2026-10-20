@@ -343,6 +343,7 @@ export function ExpeditionPanelView({
   lapFromMs = null,
   hideBig = false,
   noGps = false,
+  note = null,
 }: {
   view: LiveView;
   track: TrackState;
@@ -365,6 +366,8 @@ export function ExpeditionPanelView({
    * a status line about a sky nobody is looking at.
    */
   noGps?: boolean;
+  /** A line the live outing adds at the top, such as the spared-legs note. */
+  note?: ReactNode;
 }) {
   const { t } = useTranslation();
   const unit = useSettingsStore((state) => state.distanceUnit);
@@ -392,6 +395,7 @@ export function ExpeditionPanelView({
   return (
     <Card p="$4" gap="$3">
       {noGps ? <NoGpsBadge /> : null}
+      {note}
       {hideBig ? null : (
         <BigReading
           ctx={ctx}

@@ -15,6 +15,7 @@ import { Chip } from "@/components/common/Chip";
 import { useKeyboardHeight } from "@/components/common/useKeyboardHeight";
 import { X } from "@/components/icons";
 import { GpsSetting } from "@/components/quests/GpsSetting";
+import { SparedLegsNote } from "@/components/quests/SparedLegsNote";
 import { formatDistance, METRES_PER_TYPED_UNIT } from "@/constants/distanceFormat";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { formatDuration } from "@/db/estimate";
@@ -22,7 +23,6 @@ import { getOutingHabit } from "@/db/outingHabit";
 import { LONGEST_RUN_CEILING, NO_HABIT, type OutingHabit } from "@/db/outingRule";
 import type { DistanceUnit } from "@/db/preferences";
 import type { Locomotion } from "@/db/schema";
-import { getZone } from "@/db/zone";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import type { OutingGoal } from "@/src/gps/track";
 import { reportError } from "@/src/reportError";
@@ -99,27 +99,6 @@ type Props = {
 function longestOf(habit: OutingHabit, durationTab: boolean, shown: boolean): number | null {
   if (!shown) return null;
   return durationTab ? habit.longestSeconds : habit.longestM;
-}
-
-/**
- * The line a hero sparing their legs reads before running, ahead of the clock. It blocks
- * nothing and costs no tap: a walk or a ride suits a return, a run is the one outing that does not.
- */
-function SparedLegsNote({ locomotion }: { locomotion: Locomotion | null }) {
-  const { t } = useTranslation();
-  const [sparing, setSparing] = useState(false);
-  useEffect(() => {
-    if (locomotion !== "run") return;
-    getZone()
-      .then((zone) => setSparing(zone?.groups.includes("legs") ?? false))
-      .catch((e) => reportError("goalSheet.zone", e));
-  }, [locomotion]);
-  if (!sparing) return null;
-  return (
-    <Text testID="goal-zone-legs" fontSize={13} color="$textSecondary">
-      {t("quests.goal_zone_legs")}
-    </Text>
-  );
 }
 
 /**

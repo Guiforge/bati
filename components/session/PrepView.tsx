@@ -1,12 +1,15 @@
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, useWindowDimensions } from "react-native";
+import { ScrollView, useWindowDimensions, View } from "react-native";
 import { H1, H3, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
 import { FONT_CAPS } from "@/components/common/fontCaps";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { WARMUP_PICTURE_MIN_HEIGHT } from "@/constants/layout";
+import { rawColors } from "@/constants/rawColors";
 import { useFontScaled } from "@/hooks/useFontScaled";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import type { SessionInstruction } from "@/hooks/useSessionInstructions";
@@ -40,6 +43,9 @@ export function MovementDescription({
   // 120 dp is six lines at font scale 1; the cap follows the scale so a large-text hero gets six
   // lines too, not four and a half cut through the middle.
   const maxHeight = useFontScaled(120);
+  const [box, setBox] = useState(0);
+  const [content, setContent] = useState(0);
+  const [atEnd, setAtEnd] = useState(false);
   const body = (
     <AppText
       fontSize={14}
@@ -53,15 +59,37 @@ export function MovementDescription({
   );
   if (uncapped) return body;
   return (
-    <ScrollView
-      testID="movement-description"
-      style={[DESCRIPTION_STYLE, { maxHeight }]}
-      showsVerticalScrollIndicator={false}
-    >
-      {body}
-    </ScrollView>
+    <View style={FADE_HOST_STYLE}>
+      <ScrollView
+        testID="movement-description"
+        style={[DESCRIPTION_STYLE, { maxHeight }]}
+        showsVerticalScrollIndicator={false}
+        onLayout={(e) => setBox(e.nativeEvent.layout.height)}
+        onContentSizeChange={(_w, h) => setContent(h)}
+        onScroll={(e) => {
+          const { contentOffset, layoutMeasurement, contentSize } = e.nativeEvent;
+          setAtEnd(contentOffset.y + layoutMeasurement.height >= contentSize.height - 2);
+        }}
+        scrollEventThrottle={64}
+      >
+        {body}
+      </ScrollView>
+      {/* The lines past the box are there, and nothing said so: a sentence cut mid-line read as
+          the end of the text (persona audit 05, 71). The fade says "more below" until the end. */}
+      {content > box + 1 && !atEnd ? (
+        <LinearGradient
+          testID="movement-description-fade"
+          pointerEvents="none"
+          colors={[rawColors.bgDarkClear, rawColors.bgDark]}
+          style={FADE_STYLE}
+        />
+      ) : null}
+    </View>
   );
 }
+
+const FADE_HOST_STYLE = { ...DESCRIPTION_STYLE, alignSelf: "stretch" } as const;
+const FADE_STYLE = { position: "absolute", left: 0, right: 0, bottom: 0, height: 28 } as const;
 
 // `flexGrow` keeps the movement centred while it fits.
 const PINNED_SCROLL_STYLE = { flex: 1, alignSelf: "stretch" } as const;

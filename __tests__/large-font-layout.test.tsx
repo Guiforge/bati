@@ -1,10 +1,10 @@
-import { render } from "@testing-library/react-native";
+import { act, fireEvent, render } from "@testing-library/react-native";
 import { Dimensions, StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
 import { ExerciseInstructionsBody } from "@/components/session/ExerciseInstructions";
-import { PrepView } from "@/components/session/PrepView";
+import { MovementDescription, PrepView } from "@/components/session/PrepView";
 import type { SessionInstruction } from "@/hooks/useSessionInstructions";
 import config from "@/tamagui.config";
 
@@ -81,5 +81,47 @@ describe("the rest of the large-font pass", () => {
     );
     const box = StyleSheet.flatten(view.getByTestId("instruction-description").props.style);
     expect(box.maxHeight).toBeGreaterThanOrEqual(Math.ceil(160 * FONT_SCALE));
+  });
+});
+
+const LONG = "Lie on your back. ".repeat(20);
+
+describe("a movement description longer than its box", () => {
+  const mount = () =>
+    render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <MovementDescription text={LONG} />
+      </TamaguiProvider>,
+    );
+
+  it("fades its last line while more is below, and stops at the end", async () => {
+    const view = await mount();
+    const box = view.getByTestId("movement-description");
+    expect(view.queryByTestId("movement-description-fade")).toBeNull();
+
+    await act(() => {
+      fireEvent(box, "layout", { nativeEvent: { layout: { height: 120 } } });
+      fireEvent(box, "contentSizeChange", 300, 300);
+    });
+    expect(view.getByTestId("movement-description-fade")).toBeTruthy();
+
+    await fireEvent.scroll(box, {
+      nativeEvent: {
+        contentOffset: { y: 180 },
+        layoutMeasurement: { height: 120 },
+        contentSize: { height: 300 },
+      },
+    });
+    expect(view.queryByTestId("movement-description-fade")).toBeNull();
+  });
+
+  it("shows no fade when the text fits", async () => {
+    const view = await mount();
+    const box = view.getByTestId("movement-description");
+    await act(() => {
+      fireEvent(box, "layout", { nativeEvent: { layout: { height: 120 } } });
+      fireEvent(box, "contentSizeChange", 300, 80);
+    });
+    expect(view.queryByTestId("movement-description-fade")).toBeNull();
   });
 });

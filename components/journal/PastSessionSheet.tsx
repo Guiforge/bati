@@ -14,7 +14,6 @@ import {
   DURATION_CHIPS_MIN,
   dayChoices,
   dayFromLink,
-  endOn,
   filedDay,
   openingDay,
   parseDistanceM,
@@ -23,6 +22,7 @@ import {
   settleDay,
   toastKey,
   typedEnd,
+  typedEndOn,
 } from "@/components/journal/pastSessionForm";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatDistance, formatRate, METRES_PER_TYPED_UNIT } from "@/constants/distanceFormat";
@@ -375,8 +375,16 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
         .catch((e: unknown) => reportError("pastSession.day", e));
       return;
     }
-    const next = endOn(picked, { hours: endAt.getHours(), minutes: endAt.getMinutes() });
-    setEndAt(next);
+    // The typed hour on the day the chip names, which is the filed day: `endOn` put it on the
+    // calendar day and filed a 00:10 under the day before.
+    setEndAt(
+      typedEndOn(
+        picked,
+        durationSeconds,
+        { hours: endAt.getHours(), minutes: endAt.getMinutes() },
+        new Date(),
+      ),
+    );
   };
 
   const commitEnd = () => {

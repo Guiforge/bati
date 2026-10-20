@@ -89,3 +89,27 @@ test("a rest day with the flame out and nothing asleep still says how to light i
     { exact: false },
   );
 });
+
+test("a flame asleep says the two days its count can be checked against", async () => {
+  const stats = {
+    ...statsOf({}),
+    flameSpan: { from: new Date(2023, 9, 12, 12), to: new Date(2026, 9, 1, 12) },
+  } as JournalStats;
+  await wrap(<FlameBlock stats={stats} />);
+
+  expect(screen.getByTestId("journal-flame")).toHaveTextContent("Lit from Oct 12, 2023 to Oct 1.", {
+    exact: false,
+  });
+});
+
+test("a lit flame says the day it was lit", async () => {
+  const stats = {
+    ...statsOf({ dormant: 0, current: 7, litUntil: NOW, inWindow: 2, bestIsCurrent: false }),
+    flameSpan: { from: new Date(2023, 9, 12, 12), to: NOW },
+  } as JournalStats;
+  await wrap(<FlameBlock stats={stats} />);
+
+  expect(screen.getByTestId("journal-flame")).toHaveTextContent("Lit since Oct 12, 2023.", {
+    exact: false,
+  });
+});

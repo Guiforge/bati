@@ -188,6 +188,7 @@ export default function JournalScreen() {
           label: s.label,
           tracePoints: (s.uuid && traces.get(s.uuid)) || [],
           userLevel: s.userLevel,
+          feedback: s.feedback,
           notes: s.notes,
           photoCount: (s.uuid && photos.get(s.uuid)?.count) || 0,
           firstPhotoUuid: (s.uuid && photos.get(s.uuid)?.first) || null,

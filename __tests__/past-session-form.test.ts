@@ -10,6 +10,7 @@ import {
   settleDay,
   toastKey,
   typedEnd,
+  typedEndOn,
 } from "@/components/journal/pastSessionForm";
 import { dayKey } from "@/db/dates";
 import { checkHandEntry, type MeasuredSpan } from "@/db/handEntryRules";
@@ -202,6 +203,15 @@ describe("a typed end time", () => {
     const end = typedEnd(lastNight, 45 * 60, at(0, 10), MIDNIGHT);
     expect(end).toEqual(new Date(2026, 9, 21, 0, 10));
     expect(dayKey(filedDay(end, 45 * 60))).toBe("2026-10-20");
+  });
+
+  test("re-tapping the yesterday chip after typing 00:10 keeps the entry filed yesterday", () => {
+    const yesterday = new Date(2026, 9, 20);
+    const end = typedEndOn(yesterday, 45 * 60, at(0, 10), MIDNIGHT);
+    expect(end).toEqual(new Date(2026, 9, 21, 0, 10));
+    expect(dayKey(filedDay(end, 45 * 60))).toBe("2026-10-20");
+    // Where the calendar day used to put it: filed the day before the chip.
+    expect(dayKey(filedDay(endOn(yesterday, at(0, 10)), 45 * 60))).toBe("2026-10-19");
   });
 
   test("a time still to come today stays in the future for the form to refuse", () => {

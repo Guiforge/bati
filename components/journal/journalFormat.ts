@@ -138,3 +138,18 @@ export function formatHoursMinutes(t: TFunction, seconds: number): string {
     m: String(minutes % 60).padStart(2, "0"),
   });
 }
+
+/**
+ * The level the quest was played at, said as the quest's: a bare "Easy" next to a session the hero
+ * rated "Just right" read as a contradiction. The two are different questions.
+ */
+export function questLevelLabel(t: TFunction, level: string): string {
+  return t(`journal.level_quest_${level}`);
+}
+
+/** How the hero said it felt, in the hero's words and never next to the quest's level unmarked. */
+export function feelingLabel(t: TFunction, language: string, feedback: string): string {
+  return t("journal.feeling", {
+    value: t(`session.feedback_${feedback}`).toLocaleLowerCase(language),
+  });
+}

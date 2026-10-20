@@ -135,7 +135,20 @@ export function typedEnd(
   clock: { hours: number; minutes: number },
   now: Date,
 ): Date {
-  const day = filedDay(current, durationSeconds);
+  return typedEndOn(filedDay(current, durationSeconds), durationSeconds, clock, now);
+}
+
+/**
+ * `typedEnd` for a day the hero names (a tap on its chip) rather than one read off the end: the
+ * chip names the day the entry is FILED under, so a typed 00:10 re-tapped on "yesterday" must stay
+ * just after midnight, and not move to yesterday's 00:10, which files it the day before.
+ */
+export function typedEndOn(
+  day: Date,
+  durationSeconds: number,
+  clock: { hours: number; minutes: number },
+  now: Date,
+): Date {
   const same = endOn(day, clock);
   for (const c of [endOn(addDays(day, 1), clock), same]) {
     if (c <= now && dayKey(filedDay(c, durationSeconds)) === dayKey(day)) return c;

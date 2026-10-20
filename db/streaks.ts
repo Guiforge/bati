@@ -241,6 +241,8 @@ function walkFlame(flame: FlameTimeline, pivot: Date, start = 0) {
   let idle = 0;
   let gap = false;
   let lastLit = -1;
+  // The first lit day of the run in progress: where a hero can start counting it by hand.
+  let runStart = Number.POSITIVE_INFINITY;
   let best = 0;
   let bestEnd = -1;
   let litDays = 0;
@@ -248,12 +250,19 @@ function walkFlame(flame: FlameTimeline, pivot: Date, start = 0) {
     if (!flame.isLit(day)) {
       gap = true;
       idle = idleAfter(flame, day, idle);
-      if (idle >= FLAME_DORMANT_DAYS) run = 0;
+      if (idle >= FLAME_DORMANT_DAYS) {
+        run = 0;
+        runStart = Number.POSITIVE_INFINITY;
+      }
       continue;
     }
-    if (gap && day <= pivotDay) run = 0;
+    if (gap && day <= pivotDay) {
+      run = 0;
+      runStart = Number.POSITIVE_INFINITY;
+    }
     gap = false;
     idle = 0;
+    runStart = Math.min(runStart, day);
     run++;
     litDays++;
     lastLit = day;
@@ -274,6 +283,7 @@ function walkFlame(flame: FlameTimeline, pivot: Date, start = 0) {
     best,
     bestEnd,
     lastLit,
+    runStart,
     litDays,
     litDaysLast30: litDaysLast30(flame, start),
   };
@@ -534,8 +544,26 @@ export function describeFlame(
   pivot: Date = FLAME_PIVOT,
   pauses: readonly PausePeriod[] = [],
 ): FlameDetail {
+  return readFlame(performedAt, quota, now, pivot, pauses).detail;
+}
+
+/**
+ * Where the count on screen can be checked: the day it began and the last day it was lit. The
+ * count is lit days, so it is not the gap between the two: the flame holds up to two weeks past the
+ * last session, and a bridged gap is not counted. Kept apart from `FlameDetail` so the golden hero,
+ * which freezes that whole object, does not move for a date no figure is computed from.
+ */
+export type FlameSpan = { from: Date; to: Date };
+
+function readFlame(
+  performedAt: Date[],
+  quota: number,
+  now: Date,
+  pivot: Date,
+  pauses: readonly PausePeriod[],
+): { detail: FlameDetail; span: FlameSpan | null } {
   if (performedAt.length === 0) {
-    return {
+    const detail: FlameDetail = {
       current: 0,
       dormant: 0,
       best: 0,
@@ -547,10 +575,11 @@ export function describeFlame(
       litDays: 0,
       litDaysLast30: 0,
     };
+    return { detail, span: null };
   }
 
   const flame = flameTimeline(performedAt, quota, now, pauses);
-  const { current, dormant, best, bestEnd, lastLit, litDays, litDaysLast30 } = walkFlame(
+  const { current, dormant, best, bestEnd, lastLit, runStart, litDays, litDaysLast30 } = walkFlame(
     flame,
     pivot,
   );
@@ -563,7 +592,7 @@ export function describeFlame(
     litUntil = flame.dateOf(last);
   }
 
-  return {
+  const detail: FlameDetail = {
     current,
     dormant,
     best,
@@ -575,6 +604,12 @@ export function describeFlame(
     litDays,
     litDaysLast30,
   };
+  // `runStart` is infinite once the run is wiped: nothing is lit, nothing is asleep, nothing to date.
+  const span =
+    runStart < Number.POSITIVE_INFINITY
+      ? { from: flame.dateOf(runStart), to: flame.dateOf(lastLit) }
+      : null;
+  return { detail, span };
 }
 
 /**
@@ -582,6 +617,19 @@ export function describeFlame(
  * purpose, and the cache only knows three of the numbers it needs.
  */
 export async function getFlameDetail(now = new Date()): Promise<FlameDetail> {
+  const [quota, pauses, performedAt] = await readJournalFlameInputs();
+  return describeFlame(performedAt, quota, now, FLAME_PIVOT, pauses);
+}
+
+/** `getFlameDetail` and the dates of the count it holds, from the one read of the journal. */
+export async function getFlameWithSpan(
+  now = new Date(),
+): Promise<{ detail: FlameDetail; span: FlameSpan | null }> {
+  const [quota, pauses, performedAt] = await readJournalFlameInputs();
+  return readFlame(performedAt, quota, now, FLAME_PIVOT, pauses);
+}
+
+async function readJournalFlameInputs(): Promise<[number, PausePeriod[], Date[]]> {
   const [quota, pauses, rows] = await Promise.all([
     getWeeklyQuota(),
     getPausePeriods(),
@@ -590,11 +638,5 @@ export async function getFlameDetail(now = new Date()): Promise<FlameDetail> {
       .from(completedQuest)
       .where(countsAsSession()),
   ]);
-  return describeFlame(
-    rows.map((r) => r.performedAt),
-    quota,
-    now,
-    FLAME_PIVOT,
-    pauses,
-  );
+  return [quota, pauses, rows.map((r) => r.performedAt)];
 }

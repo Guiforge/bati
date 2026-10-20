@@ -300,6 +300,24 @@ describe("a session that left the walls", () => {
     expect(gap).toHaveTextContent(/^Nothing measured from .+ to .+: tracking had stopped\.$/);
   });
 
+  // Seen on the emulator: "from 21:58 to 21:58" for a 46 s hole.
+  test("a hole inside one minute is told with its seconds", async () => {
+    const fixes = walkThenStand();
+    const last = fixes.at(-1);
+    assert(last);
+    const minute = Math.floor(last.t / 60_000) * 60_000 + 10 * 60_000;
+    mockPointsOf.mockResolvedValue([
+      ...fixes,
+      { ...last, t: minute + 5_000 },
+      { ...last, t: minute + 45_000 },
+    ]);
+    mockSession = "session-with-short-hole";
+    await mount();
+
+    const gaps = await screen.findAllByTestId("recap-gap");
+    expect(gaps.at(-1)).toHaveTextContent(/from \d\d:\d\d:05\b.* to \d\d:\d\d:45\b/);
+  });
+
   test("draws the map and the three numbers", async () => {
     await mount();
     expect(await screen.findByTestId("recap-map")).toBeTruthy();

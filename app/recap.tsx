@@ -240,13 +240,17 @@ function SpeedLegend({
  */
 function GapLines({ fixes, language }: { fixes: readonly LocationFix[]; language: AppLanguage }) {
   const { t } = useTranslation();
-  const clock = (ms: number) =>
-    new Date(ms).toLocaleTimeString(language, { hour: "2-digit", minute: "2-digit" });
-  return gapsOf(fixes).map((gap) => (
-    <Text key={gap.from} testID="recap-gap" fontSize={12} color="$textSecondary">
-      {t("recap.gap", { from: clock(gap.from), to: clock(gap.to) })}
-    </Text>
-  ));
+  const clock = (ms: number, second?: "2-digit") =>
+    new Date(ms).toLocaleTimeString(language, { hour: "2-digit", minute: "2-digit", second });
+  return gapsOf(fixes).map((gap) => {
+    // A hole of 40 s inside one minute read "from 21:58 to 21:58": the seconds then.
+    const second = clock(gap.from) === clock(gap.to) ? "2-digit" : undefined;
+    return (
+      <Text key={gap.from} testID="recap-gap" fontSize={12} color="$textSecondary">
+        {t("recap.gap", { from: clock(gap.from, second), to: clock(gap.to, second) })}
+      </Text>
+    );
+  });
 }
 
 /**

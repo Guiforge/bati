@@ -13,7 +13,9 @@ import { Text, YStack } from "tamagui";
  */
 export function Figure({ label, value, testID }: { label: string; value: string; testID: string }) {
   return (
-    <YStack flex={1} gap="$1" items="center">
+    // From the bottom: a label shrunk to fit is shorter than its neighbours, and from the top it
+    // lifted its own number out of the row ("3:21" above "1493 ft" on the recap at 130%).
+    <YStack flex={1} gap="$1" items="center" justify="flex-end">
       {/* One line too: at 130% "EN MOUVEMENT" wrapped mid-word ("EN MOUVE" over "MENT"). */}
       <Text
         fontSize={11}

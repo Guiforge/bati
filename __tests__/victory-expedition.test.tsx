@@ -248,6 +248,17 @@ describe("VictoryView, the walk it just celebrated", () => {
     expect(screen.getByTestId("victory-expedition-pace")).toHaveTextContent("12:30 /mi");
   });
 
+  // 455.4 m in 201.6 s live is 455 m in 201 s once saved: the Journal divides the row, so must this.
+  test("the pace is the one the saved row gives, not the live floats'", async () => {
+    useSettingsStore.setState({ distanceUnit: "imperial" });
+    useExpeditionStore.setState({ track: { ...EMPTY, distanceM: 455.4, movingMs: 201_600 } });
+
+    await mountVictory();
+
+    // The live floats read 11:52.
+    expect(screen.getByTestId("victory-expedition-pace")).toHaveTextContent("11:51 /mi");
+  });
+
   test("the road line names the building, the leagues covered and the next floor", async () => {
     await mountVictory();
 

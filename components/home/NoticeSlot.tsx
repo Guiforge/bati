@@ -5,12 +5,14 @@ import { type NoticeKind, pickNotice } from "@/components/home/noticeOrder";
 import { PasswordCheckCard } from "@/components/home/PasswordCheckCard";
 import { ProtectCard } from "@/components/home/ProtectCard";
 import { ReminderCard } from "@/components/home/ReminderCard";
+import { RhythmLine } from "@/components/home/RhythmLine";
 import { SyncCard } from "@/components/home/SyncCard";
 import { syncNoticeKind } from "@/components/home/syncNoticeKind";
 import { UpdateCard } from "@/components/home/UpdateCard";
 import { WhatsNewCard } from "@/components/home/WhatsNewCard";
 import { SessionRecoveryCard } from "@/components/session/SessionRecoveryCard";
-import { lightWeekReason } from "@/db/lightWeek";
+import { lightWeekReason, lightWeekUntil } from "@/db/lightWeek";
+import { getActivePause } from "@/db/pause";
 import { useSessionRecovery } from "@/hooks/useSessionRecovery";
 import { lastMerge, lostSync, syncHealth } from "@/src/deviceSync";
 import { passwordCheckDue } from "@/src/passwordReminders";
@@ -33,7 +35,14 @@ import { useSyncStore } from "@/stores/sync";
  * shortcut: the next notice waits for the next focus after the winner is closed, re-decide on
  * dismiss if testers find the empty slot odd.
  */
-export function NoticeSlot({ onLightWeekAnswered }: { onLightWeekAnswered?: () => void }) {
+export function NoticeSlot({
+  onLightWeekAnswered,
+  weekRev = 0,
+}: {
+  onLightWeekAnswered?: () => void;
+  /** Bumped when a light week is accepted or ended, so the slot reads the rhythm line again. */
+  weekRev?: number;
+}) {
   const { recoverableSession, isChecking, recoverSession, finishSession, discardSession } =
     useSessionRecovery();
   const language = useSettingsStore((s) => s.language);
@@ -47,7 +56,7 @@ export function NoticeSlot({ onLightWeekAnswered }: { onLightWeekAnswered?: () =
   const [present, setPresent] = useState<ReadonlySet<NoticeKind> | null>(null);
 
   useFocusEffect(
-    // biome-ignore lint/correctness/useExhaustiveDependencies: `lastSyncAt` is the signal that a sync run ended, not a value the effect reads.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: `lastSyncAt` and `weekRev` are signals (a sync ended, a week changed), not values the effect reads.
     useCallback(() => {
       let cancelled = false;
       Promise.all([
@@ -60,33 +69,50 @@ export function NoticeSlot({ onLightWeekAnswered }: { onLightWeekAnswered?: () =
         reminderCardKind(),
         passwordCheckDue(),
         lightWeekReason(new Date()),
+        getActivePause(),
+        lightWeekUntil(new Date()),
       ])
-        .then(([lost, health, merge, notes, update, protect, reminder, password, lightWeek]) => {
-          if (cancelled) return;
-          const sync = syncNoticeKind({
+        .then(
+          ([
             lost,
-            waitingPassword,
-            failure,
-            failingSince: health.failingSince,
+            health,
             merge,
-            now: Date.now(),
-          });
-          const due: [NoticeKind, boolean][] = [
-            ["sync", sync !== null],
-            ["lightWeek", lightWeek !== null],
-            ["whatsNew", notes && releaseNotes(language).length > 0],
-            ["update", update !== null],
-            ["protect", protect],
-            ["reminder", reminder !== null],
-            ["passwordCheck", password],
-          ];
-          setPresent(new Set(due.filter(([, on]) => on).map(([kind]) => kind)));
-        })
+            notes,
+            update,
+            protect,
+            reminder,
+            password,
+            lightWeek,
+            pause,
+            weekUntil,
+          ]) => {
+            if (cancelled) return;
+            const sync = syncNoticeKind({
+              lost,
+              waitingPassword,
+              failure,
+              failingSince: health.failingSince,
+              merge,
+              now: Date.now(),
+            });
+            const due: [NoticeKind, boolean][] = [
+              ["sync", sync !== null],
+              ["lightWeek", lightWeek !== null],
+              ["rhythm", pause !== null || weekUntil !== null],
+              ["whatsNew", notes && releaseNotes(language).length > 0],
+              ["update", update !== null],
+              ["protect", protect],
+              ["reminder", reminder !== null],
+              ["passwordCheck", password],
+            ];
+            setPresent(new Set(due.filter(([, on]) => on).map(([kind]) => kind)));
+          },
+        )
         .catch((error: unknown) => reportError("notice.slot", error));
       return () => {
         cancelled = true;
       };
-    }, [language, updateEnabled, waitingPassword, failure, lastSyncAt]),
+    }, [language, updateEnabled, waitingPassword, failure, lastSyncAt, weekRev]),
   );
 
   if (present === null) return null;
@@ -108,6 +134,13 @@ export function NoticeSlot({ onLightWeekAnswered }: { onLightWeekAnswered?: () =
     case "lightWeek":
       return (
         <LightWeekCard {...(onLightWeekAnswered ? { onAnswered: onLightWeekAnswered } : {})} />
+      );
+    case "rhythm":
+      return (
+        <RhythmLine
+          key={weekRev}
+          {...(onLightWeekAnswered ? { onLightWeekEnded: onLightWeekAnswered } : {})}
+        />
       );
     case "whatsNew":
       return <WhatsNewCard />;

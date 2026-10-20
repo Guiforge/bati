@@ -40,7 +40,7 @@ column only scrolls when a notice pushes it.
 | Block | Component | Answers |
 | --- | --- | --- |
 | Status strip | `HomeHeader` | who I am, what my training built: avatar → settings, level + title, XP as `340 / 500`, village crest + tier → village |
-| Notice | `NoticeSlot` | *conditional*: one notice at a time, the first of `NOTICE_ORDER` (interrupted session, sync, release notes, update, backup, reminder, password check) |
+| Notice | `NoticeSlot` | *conditional*: one notice at a time, the first of `NOTICE_ORDER` (interrupted session, sync, light-week offer, the running pause or light week, release notes, update, backup, reminder, password check) |
 | Stage | `HomeStage` | what I do right now: one full-bleed scene, **Start**, **Details** |
 | Rest note | `RestNote` | *conditional*: one quiet line under the button, never a gate |
 | Oath strip | `OathStrip` | where I am going: the objective along the foot of the scene, its rungs as ticks; the way to swear one when there is none |

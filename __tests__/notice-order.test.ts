@@ -13,6 +13,7 @@ describe("pickNotice", () => {
       "recovery",
       "sync",
       "lightWeek",
+      "rhythm",
       "whatsNew",
       "update",
       "protect",
@@ -20,5 +21,10 @@ describe("pickNotice", () => {
       "passwordCheck",
       null,
     ]);
+  });
+
+  test("a running pause or light week outranks the backup card, and answers to sync and recovery", () => {
+    expect(pickNotice(new Set<NoticeKind>(["protect", "rhythm"]))).toBe("rhythm");
+    expect(pickNotice(new Set<NoticeKind>(["sync", "rhythm"]))).toBe("sync");
   });
 });

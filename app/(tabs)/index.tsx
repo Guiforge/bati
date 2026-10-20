@@ -9,6 +9,7 @@ import { NoticeSlot } from "@/components/home/NoticeSlot";
 import { QuickActions } from "@/components/home/QuickActions";
 import { type Disclosure, disclosure } from "@/db/disclosure";
 import { useReloadOnChange } from "@/hooks/useReloadOnChange";
+import { useSyncStore } from "@/stores/sync";
 
 /**
  * THESIS: Home is the hero's HUD. One strip of status, one scene to walk into, one row of doors.
@@ -61,6 +62,8 @@ export default function HomeScreen() {
   // it, and are keyed on it so they read it again instead of waiting for the next focus.
   const [weekRev, setWeekRev] = useState(0);
   const weekChanged = useCallback(() => setWeekRev((r) => r + 1), []);
+  // A finished sync re-reads the slot the same way: its card may have something new to say.
+  const lastSyncAt = useSyncStore((s) => s.lastSyncAt);
 
   return (
     <YStack testID="home-screen" flex={1} bg="$background" {...dragCancelsPress}>
@@ -79,8 +82,8 @@ export default function HomeScreen() {
         {/* One notice at a time, the first in noticeOrder.ts: an interrupted session outranks
             sync, the notes, an update, the backup and the reminders. Keyed on the week: an
             answer must re-read the slot, and the React Compiler drops a dependency the focus
-            callback does not read, so a prop in its deps never re-ran it. */}
-        <NoticeSlot key={weekRev} onLightWeekAnswered={weekChanged} />
+            callback does not read, so a prop in its deps never re-ran it. A finished sync too. */}
+        <NoticeSlot key={`${weekRev}:${lastSyncAt}`} onLightWeekAnswered={weekChanged} />
 
         {/* Tonight's scene, one action that starts it, the rest advice and the oath under it */}
         <HomeStage key={weekRev} oathStrip={disclosed?.oathStrip ?? null} />

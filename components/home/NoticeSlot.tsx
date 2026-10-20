@@ -44,12 +44,10 @@ export function NoticeSlot({ onLightWeekAnswered }: { onLightWeekAnswered?: () =
     (s) => s.result?.peers.some((p) => p.state === "locked") ?? false,
   );
   const failure = useSyncStore((s) => s.failure);
-  const lastSyncAt = useSyncStore((s) => s.lastSyncAt);
   // Null until the first read lands: a loading slot asserts nothing.
   const [present, setPresent] = useState<ReadonlySet<NoticeKind> | null>(null);
 
   useFocusEffect(
-    // biome-ignore lint/correctness/useExhaustiveDependencies: `lastSyncAt` is the signal that a sync run ended, not a value the effect reads.
     useCallback(() => {
       let cancelled = false;
       Promise.all([
@@ -105,7 +103,7 @@ export function NoticeSlot({ onLightWeekAnswered }: { onLightWeekAnswered?: () =
       return () => {
         cancelled = true;
       };
-    }, [language, updateEnabled, waitingPassword, failure, lastSyncAt]),
+    }, [language, updateEnabled, waitingPassword, failure]),
   );
 
   if (present === null) return null;

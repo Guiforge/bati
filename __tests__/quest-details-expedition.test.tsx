@@ -240,7 +240,13 @@ jest.mock("@/db/preferences", () => ({
   preferences: {
     getOwnedEquipment: jest.fn().mockResolvedValue(null),
     getSetAsideExercises: jest.fn().mockResolvedValue([]),
+    // "GPS : oui / non" (the goal sheet's chip, and the start's last choice).
+    getOutingGps: jest.fn().mockResolvedValue(true),
+    setOutingGps: jest.fn().mockResolvedValue(undefined),
   },
+}));
+jest.mock("@/modules/bati-location", () => ({
+  getPermissionStatus: jest.fn().mockResolvedValue({ granted: true }),
 }));
 
 jest.mock("@/db/adventures-narrative", () => ({

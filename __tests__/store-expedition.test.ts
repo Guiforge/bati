@@ -154,6 +154,23 @@ describe("stores/expedition", () => {
     expect(mockStart).not.toHaveBeenCalled();
   });
 
+  test("without GPS no permission is asked, nothing starts, and no zero distance is invented", async () => {
+    mockAvailable = false;
+    const begun = await store
+      .getState()
+      .begin("s1", NOTIFICATION, false, "metric", null, true, DEFAULT_LIVE_VIEW, false);
+    expect(begun).toBe(true);
+    expect(mockRequestPermission).not.toHaveBeenCalled();
+    expect(mockRequestNotificationPermission).not.toHaveBeenCalled();
+    expect(mockStart).not.toHaveBeenCalled();
+    expect(mockListeners.size).toBe(0);
+    expect(store.getState()).toMatchObject({ error: null, sessionUuid: "s1", lastFix: null });
+    expect(store.getState().track.distanceM).toBe(0);
+    // No points are filed under it either: nothing was witnessed.
+    await store.getState().end();
+    expect(mockAppendPoints).not.toHaveBeenCalled();
+  });
+
   test("fixes fold into the reading the screen shows", async () => {
     await store.getState().begin("s1", NOTIFICATION, false, "metric");
     // Three fixes open the start gate, then the walk is credited.

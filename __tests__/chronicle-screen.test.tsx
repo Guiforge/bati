@@ -49,6 +49,7 @@ const year: Chronicle = {
   figures: {
     quests: 9,
     outings: 0,
+    handOutings: 0,
     reps: 0,
     questSeconds: 5400,
     timedQuests: 9,

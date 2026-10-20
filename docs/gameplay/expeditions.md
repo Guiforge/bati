@@ -57,6 +57,25 @@ every second of the downtime as pause, so a walk killed at 45 minutes and resume
 read ten. The duration on the victory screen, the one in the journal and the effort the XP ceiling
 is bounded by all read that one definition (`sessionClock`, `stores/session.ts`).
 
+## Going out without GPS
+
+"GPS : oui / non" on the outing's goal sheet (`outing_gps`, local to the phone) prefills every start;
+the Home door and the quest screen read it. With it off, `begin()` asks for no position and no
+notification, starts no service and measures nothing: the panel is a clock and a "Sans GPS" badge
+(text, never colour alone), the recap shows the duration alone with "Ajouter la distance", and no
+distance of zero is ever drawn. The choice is part of the session state (`SessionState.gps`, in
+`SavedSessionState`): a resume after the OS killed the app keeps it whatever the setting says now,
+and counts the dead time as time out (nothing was measuring, so nothing says it was a pause).
+
+What it earns, the rule shown behind "Ce que ça rapporte": the duration, so the flame and the XP,
+but no leagues until the distance is added. The XP is paid on the time and does not change when the
+distance is typed. The paid time nothing witnessed is capped at two hours a day
+([progression.md](progression.md#ground-is-priced-by-the-way-out-not-by-the-movement)). The
+distance, typed from the recap or from the session's detail, is stored in `leaguesM` with
+`byHand = 'distance'`, feeds the road and the leagues oath, and is marked "saisie à la main"
+everywhere; it gives no pace and is not a record (`isMeasured`). The same gesture exists for an
+outing whose GPS never got a fix.
+
 ## Standing still
 
 Nothing is credited while the hero is stopped, and stopping costs nothing either. Ground is the
@@ -87,7 +106,8 @@ question — whether to *show* a distance — as `hasGround` in `db/expeditions.
 - Economy: `db/workUnits.ts` (`NON_REP_STYLE` converts to zero), `db/xp.ts` (`LOCOMOTION_RATE`,
   `creditedOutingSeconds`). What the hero reads: `app/xp.tsx`.
 - Which kind a session was: `completed_sessions.outing` (`0049`), `isWorkout` /
-  `countsAsSession` in `db/completed.ts`.
+  `countsAsSession` / `isMeasured` in `db/completed.ts`. What the hero typed:
+  `completed_sessions.byHand` (`0078`), `db/handEntries.ts`, `db/handEntryRules.ts`.
 - Road floors: `db/village.ts` (`ROAD_FLOORS`). Scale: `db/gps.ts` (`METRES_PER_LEAGUE`).
 - Design: [`../designs/expeditions.md`](../designs/expeditions.md),
   [`../designs/gps-without-google.md`](../designs/gps-without-google.md).

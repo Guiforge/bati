@@ -257,6 +257,8 @@ test("follows the hero, and fetches nothing until the hero says yes", async () =
   // whichever host it points at.
   expect(lastStyle()).not.toMatch(/https?:\/\//);
   expect(screen.getByTestId("map-offer")).toBeTruthy();
+  // The live map shows the button alone; the sentence stays on the recap.
+  expect(screen.queryByText(/openfreemap/i)).toBeNull();
   expect(screen.queryByTestId("map-attribution")).toBeNull();
 
   await act(async () => {

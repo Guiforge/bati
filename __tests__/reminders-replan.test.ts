@@ -57,7 +57,11 @@ describe("replanReminders", () => {
     expect(plan.entries[0].title).not.toMatch(/^reminders\./);
     expect(plan.dueToday).toBe("yes");
     expect(plan.channelName).toBe("Training reminders");
-    expect(plan.actionLabels).toEqual({ snooze: "In 1 hour", pause: "Pause 7 days" });
+    expect(plan.actionLabels).toEqual({
+      elsewhere: "Done elsewhere?",
+      snooze: "In 1 hour",
+      pause: "Pause 7 d",
+    });
     expect(plan.quietText).not.toBe("");
     // The numbers the native half keeps to have one home, db/reminders.ts.
     expect(plan).toMatchObject({ horizonDays: 14, pauseDays: 7, lateMinutes: 60 });
@@ -93,7 +97,8 @@ describe("replanReminders", () => {
     await replan()(false);
     const plan = mockSetPlan.mock.calls[0]?.[0];
     expect(plan.channelName).toBe("Rappels d'entraînement");
-    expect(plan.actionLabels.snooze).toBe("Dans 1 h");
+    expect(plan.actionLabels.snooze).toBe("+1 h");
+    expect(plan.actionLabels.elsewhere).toBe("Fait ailleurs ?");
     t.db.delete(userPreferences).run();
   });
 

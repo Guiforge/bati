@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useConfirmDialog } from "@/components/common/useConfirmDialog";
+import { setHandDistance } from "@/db/handEntries";
 import { reportError } from "@/src/reportError";
 import { forgetSession } from "@/stores/session";
 
@@ -15,10 +16,15 @@ export function useConfirmForget() {
   const { t } = useTranslation();
   const { ask, dialog } = useConfirmDialog();
 
-  const confirmForget = (sessionId: number, onForgotten: () => void) => {
+  /** `byHand`: a session the hero wrote down, whose body says it stops counting for the oath too. */
+  const confirmForget = (
+    sessionId: number,
+    onForgotten: () => void,
+    options: { byHand?: boolean } = {},
+  ) => {
     ask({
       title: t("journal.forget_title"),
-      body: t("journal.forget_body"),
+      body: t(options.byHand ? "journal.forget_body_by_hand" : "journal.forget_body"),
       cancelLabel: t("common.cancel"),
       confirmLabel: t("journal.forget_confirm"),
       destructive: true,
@@ -41,5 +47,24 @@ export function useConfirmForget() {
     });
   };
 
-  return { confirmForget, dialog };
+  /** Take back a distance the hero typed: the leagues it gave the road go with it. */
+  const confirmDropDistance = (sessionId: number, onDone: () => void) => {
+    ask({
+      title: t("journal.drop_distance_title"),
+      body: t("journal.drop_distance_body"),
+      cancelLabel: t("common.cancel"),
+      confirmLabel: t("journal.drop_distance_confirm"),
+      destructive: true,
+      onConfirm: () => {
+        setHandDistance(sessionId, null)
+          .then(onDone)
+          .catch((e) => {
+            reportError("journal.dropDistance", e);
+            ask({ title: t("common.error"), body: "", confirmLabel: t("common.close") });
+          });
+      },
+    });
+  };
+
+  return { confirmForget, confirmDropDistance, dialog };
 }

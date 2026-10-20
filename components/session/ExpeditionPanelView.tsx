@@ -5,7 +5,9 @@ import { Paragraph, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
 import { Card } from "@/components/common/Card";
-import { Mountain } from "@/components/icons";
+import { RuleDisclosure } from "@/components/common/RuleDisclosure";
+import { Tag } from "@/components/common/Tag";
+import { MapPinOff, Mountain } from "@/components/icons";
 import { formatDistance } from "@/constants/distanceFormat";
 import type { OutingMetric, RateKind } from "@/constants/outingDisplay";
 import { formatDuration } from "@/db/estimate";
@@ -311,6 +313,21 @@ function StatusBand({
  * `ExpeditionPanel`; in the preview there is no status line, no accuracy and no hint, because
  * nothing is being measured, and `empty` swaps every figure for a dash: nothing invented.
  */
+/** The badge and the rule behind it: what an outing without GPS earns, one tap away. */
+function NoGpsBadge() {
+  const { t } = useTranslation();
+  return (
+    <YStack gap="$1" items="flex-start">
+      <Tag
+        testID="expedition-no-gps"
+        label={t("session.no_gps_badge")}
+        icon={<MapPinOff size={14} color="$text" />}
+      />
+      <RuleDisclosure testID="expedition-no-gps-rule" text={t("past_session.rule_no_gps")} />
+    </YStack>
+  );
+}
+
 export function ExpeditionPanelView({
   view,
   track,
@@ -325,6 +342,7 @@ export function ExpeditionPanelView({
   empty = false,
   lapFromMs = null,
   hideBig = false,
+  noGps = false,
 }: {
   view: LiveView;
   track: TrackState;
@@ -341,7 +359,14 @@ export function ExpeditionPanelView({
   lapFromMs?: number | null;
   /** The big figure floats on the map instead (`bigMap`): the panel keeps everything else. */
   hideBig?: boolean;
+  /**
+   * The hero went out without GPS: nothing is measured, so the panel says so in a badge, shows the
+   * clock as the big figure whatever "Affichage des sorties" says, and never a distance, a pace or
+   * a status line about a sky nobody is looking at.
+   */
+  noGps?: boolean;
 }) {
+  const { t } = useTranslation();
   const unit = useSettingsStore((state) => state.distanceUnit);
   const language = useSettingsStore((state) => state.language);
 
@@ -366,6 +391,7 @@ export function ExpeditionPanelView({
 
   return (
     <Card p="$4" gap="$3">
+      {noGps ? <NoGpsBadge /> : null}
       {hideBig ? null : (
         <BigReading
           ctx={ctx}
@@ -376,7 +402,10 @@ export function ExpeditionPanelView({
         />
       )}
 
-      {acquiring ? null : (
+      {/* No GPS: only a duration goal can be followed, on the clock the journal will write. */}
+      {noGps && goal?.type === "time" ? (
+        <GoalBar goal={goal} metres={0} seconds={recorded} reached={recorded >= goal.seconds} />
+      ) : acquiring ? null : (
         // Moving seconds, the clock `goalReached` reads: the recorded total counts red lights,
         // and filled the bar minutes before the goal was met.
         <GoalBar
@@ -397,7 +426,13 @@ export function ExpeditionPanelView({
         />
       )}
 
-      {preview ? null : (
+      {noGps && showPocketHint ? (
+        <Paragraph testID="expedition-no-gps-pocket" fontSize={13} color="$textSecondary">
+          {t("session.no_gps_pocket")}
+        </Paragraph>
+      ) : null}
+
+      {preview || noGps ? null : (
         <StatusBand
           track={track}
           error={error}

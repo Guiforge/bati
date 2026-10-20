@@ -83,8 +83,22 @@ test("MainActivity forgets a quest file when its task is restored, before RN rea
   const drop = activity.indexOf("intent = Intent(intent).setData(null)");
   expect(drop).toBeGreaterThan(-1);
   expect(activity).toContain("savedInstanceState != null || fromHistory");
+  // The reminder's link opens a form, and a restored task must not open it again.
+  expect(activity).toContain('data.scheme == "bati" && data.getQueryParameter("add") != null');
   expect(activity).toContain("Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY");
   expect(drop).toBeLessThan(activity.indexOf("super.onCreate(null)"));
+});
+
+/**
+ * Process killed, task still in recents: Android recreates MainActivity on its old MAIN intent and
+ * hands the notification's link to `onNewIntent`, where React Native drops it while it has no
+ * context. Keeping it as the activity's intent is what lets `getInitialURL` find it.
+ */
+test("MainActivity keeps the intent onNewIntent receives, for a cold start through a notification", () => {
+  const activity = main("java", "com", "guiforge", "bati", "MainActivity.kt");
+  expect(activity).toMatch(
+    /override fun onNewIntent\(intent: Intent\) \{\s*setIntent\(intent\)\s*super\.onNewIntent\(intent\)/,
+  );
 });
 
 test("the launcher icon has a monochrome layer for themed icons", () => {

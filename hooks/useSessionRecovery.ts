@@ -104,6 +104,19 @@ async function groundCovered(quest: Quest, sessionUuid: string | null): Promise<
 const SESSION_EXPIRY_MS = 4 * 60 * 60 * 1000;
 const OUTING_EXPIRY_MS = 24 * 60 * 60 * 1000;
 
+/** A saved outing begun without GPS. Snapshots from before the choice existed read as GPS. */
+function withoutGps(saved: SavedSessionState): boolean {
+  return saved.gps === false && saved.quest !== null && isOutingSession(saved.quest);
+}
+
+/**
+ * Whether the time the app was dead counts as walked: an outing without GPS that was moving. A
+ * paused one stays paused: the snapshot is written as a pause begins and again as it ends.
+ */
+function deadTimeWalked(saved: SavedSessionState): boolean {
+  return withoutGps(saved) && saved.status !== "paused";
+}
+
 /**
  * The snapshot, back in the session store.
  *
@@ -117,8 +130,8 @@ function restoreSnapshot(saved: SavedSessionState): void {
   // It is a workout's answer, and only a workout's: nothing happened while the process was
   // dead, so the hero was not training. An outing's is different — the walk may well have
   // gone on for another hour with the app already gone, and the snapshot cannot say, because
-  // an expedition is one round of one movement and the subscriber writes it exactly once, at
-  // the start. So an outing's clock does not read this at all: `sessionClock` in
+  // an expedition is one round of one movement and the subscriber writes it only at the start
+  // and at each pause and resume. So an outing's clock does not read this at all: `sessionClock` in
   // `stores/session.ts` times a walk by its own trace, tap on start to last fix. Left as it is on
   // purpose — the timer on screen and every strength quest still need it.
   const now = Date.now();
@@ -145,7 +158,10 @@ function restoreSnapshot(saved: SavedSessionState): void {
     longHoldKept: saved.longHoldKept ?? false,
     firstSideSeconds: saved.firstSideSeconds ?? null,
     pendingDamage: saved.pendingDamage ?? [],
-    totalPausedTime: saved.totalPausedTime + pauseDuration,
+    // An outing without GPS keeps the dead time as time out (`gps` is the saved state's, not the
+    // preference's): the OS kills an app with no foreground service in a pocket, and the walk went
+    // on. It is bounded by the four hours of an unwitnessed outing and the day's two paid hours.
+    totalPausedTime: saved.totalPausedTime + (deadTimeWalked(saved) ? 0 : pauseDuration),
     lastPauseTimestamp: now,
     timerStartTimestamp,
     // JSON has no Date, so every `performedAt` came back as a string.
@@ -202,8 +218,13 @@ async function findRecoverableSession(language: AppLanguage): Promise<Recoverabl
       savedAt: new Date(saved.savedAt),
       leaguesM,
       isOuting,
+      // An outing without GPS counts the dead time, as `restoreSnapshot` does: up to now, not up
+      // to the snapshot, which an outing writes only at its start, pauses and resumes.
       elapsedTime: Math.floor(
-        (saved.savedAt - (saved.startTime ?? saved.savedAt) - saved.totalPausedTime) / 1000,
+        ((deadTimeWalked(saved) ? Date.now() : saved.savedAt) -
+          (saved.startTime ?? saved.savedAt) -
+          saved.totalPausedTime) /
+          1000,
       ),
     };
   } catch (error) {
@@ -231,7 +252,12 @@ async function resumeSavedSession(): Promise<boolean> {
     // kilometres already in `gps_points`. Same uuid, so the points land on the same session,
     // and the store folds those points back into the reading rather than restarting at zero.
     if (saved.quest) {
-      beginTrackingIfOuting(saved.quest, saved.sessionUuid ?? null, saved.goal ?? null);
+      beginTrackingIfOuting(
+        saved.quest,
+        saved.sessionUuid ?? null,
+        saved.goal ?? null,
+        saved.gps !== false,
+      );
     }
 
     // Clear saved session after recovery

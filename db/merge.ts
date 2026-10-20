@@ -4,6 +4,7 @@ import {
   type CanonicalColumns,
   canonical,
   canonicalColumns,
+  handCanon,
   MERGED_PREFERENCES,
   photosWon,
   setsCanon,
@@ -238,6 +239,7 @@ async function mergeInto(
   const moved = await takeEditedSets(conn);
   changes += await takeEditedFeedback(conn);
   changes += await takeEditedNotes(conn);
+  changes += await takeEditedHand(conn);
   changes += await takeLargerXp(conn);
   const edited = await count(conn, "SELECT 1 FROM temp.edited");
   if (sessions > 0 || edited > 0) {
@@ -403,6 +405,28 @@ async function takeEditedNotes(conn: IsolatedConnection): Promise<number> {
     await conn.execAsync(`UPDATE main.completed_sessions SET (notes, notesEditedAt) =
       (SELECT p.notes, p.notesEditedAt FROM ${PEER}.completed_sessions p
         WHERE p.uuid = main.completed_sessions.uuid)
+      WHERE id IN (${later})`);
+  }
+  return taken;
+}
+
+/**
+ * Sessions both hold whose typed part the other device changed later (`byHandEditedAt`, 0078): a
+ * session written down corrected there, or the distance of an outing typed or taken back. The
+ * typed fields and the stamp, nothing else, on the text `handCanon` also feeds the fingerprint, so
+ * the two agree on what counts as news. The XP is not among them (`takeLargerXp` alone).
+ */
+async function takeEditedHand(conn: IsolatedConnection): Promise<number> {
+  const later = `SELECT l.id FROM ${PEER}.completed_sessions p
+    JOIN main.completed_sessions l ON l.uuid = p.uuid
+    WHERE ${editedLater("byHandEditedAt", (_schema, alias) => handCanon(alias))}`;
+  const taken = await count(conn, later);
+  if (taken > 0) {
+    await conn.execAsync(`UPDATE main.completed_sessions SET
+      (performedAt, durationSeconds, outing, leaguesM, label, byHand, tzOffsetMin, byHandEditedAt) =
+      (SELECT p.performedAt, p.durationSeconds, p.outing, p.leaguesM, p.label, p.byHand,
+              p.tzOffsetMin, p.byHandEditedAt
+        FROM ${PEER}.completed_sessions p WHERE p.uuid = main.completed_sessions.uuid)
       WHERE id IN (${later})`);
   }
   return taken;

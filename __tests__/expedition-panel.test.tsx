@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react-native";
+import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import { TamaguiProvider } from "tamagui";
 import { ExpeditionPanel } from "@/components/session/ExpeditionPanel";
 import { ExpeditionPanelView } from "@/components/session/ExpeditionPanelView";
@@ -710,5 +710,70 @@ describe("ExpeditionPanel with the hero's places", () => {
     setView({ keepAwake: false });
     await mount();
     expect(screen.queryByText(/put the phone away/)).toBeNull();
+  });
+
+  describe("an outing without GPS", () => {
+    beforeEach(() => {
+      useSessionStore.setState({ gps: false });
+      // Nothing was ever witnessed: the receiver was not started.
+      setTrack({});
+    });
+    afterEach(() => {
+      useSessionStore.setState({ gps: true });
+    });
+
+    test("shows a badge in text, the clock, and no distance, pace or status about the sky", async () => {
+      useSessionStore.setState({ startTime: NOW - 42 * 60_000 - 17_000 });
+      await mount();
+      expect(screen.getByText("No GPS")).toBeTruthy();
+      // The clock is the big figure whatever the hero's display chose.
+      expect(screen.getByTestId("expedition-big").props.children).toBe("42:17");
+      for (const gone of [
+        "expedition-distance",
+        "expedition-rate",
+        "expedition-climb",
+        "expedition-goal",
+      ]) {
+        expect(screen.queryByTestId(gone)).toBeNull();
+      }
+      expect(screen.queryByText("Finding the sky")).toBeNull();
+      expect(screen.queryByText(/0 m/)).toBeNull();
+      expect(screen.queryByText("...")).toBeNull();
+    });
+
+    test("the clock leads even when the hero chose the distance as the big figure", async () => {
+      setView({ big: "distance" });
+      useSessionStore.setState({ startTime: NOW - 600_000 });
+      await mount();
+      expect(screen.getByTestId("expedition-big").props.children).toBe("10:00");
+    });
+
+    test("says what it earns, one tap away, and that the phone can be put away", async () => {
+      useSessionStore.setState({ startTime: NOW - 600_000 });
+      await mount();
+      expect(
+        screen.getByText(/put your phone away|put the phone away|You can put your phone away/),
+      ).toBeTruthy();
+      await fireEvent.press(screen.getByTestId("expedition-no-gps-rule-link"));
+      expect(screen.getByTestId("expedition-no-gps-rule").props.children).toMatch(
+        /Without GPS, your outing counts by time/,
+      );
+    });
+
+    test("a duration goal is followed on the clock; a distance goal is not shown", async () => {
+      setSession({ type: "time", seconds: 3600 }, 1_800_000);
+      useSessionStore.setState({ gps: false });
+      await mount();
+      expect(screen.getByTestId("expedition-goal")).toBeTruthy();
+      expect(JSON.stringify(screen.getByTestId("expedition-goal-fill").props.style)).toContain(
+        '"width":"50%"',
+      );
+    });
+
+    test("with GPS the badge is not there", async () => {
+      useSessionStore.setState({ gps: true });
+      await mount();
+      expect(screen.queryByText("No GPS")).toBeNull();
+    });
   });
 });

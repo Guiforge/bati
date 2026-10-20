@@ -97,6 +97,13 @@ export type CompletedSessionInput = {
    */
   outing?: Locomotion | null;
   questId?: number | null;
+  /**
+   * The hero's word, not Bati's measure (`0078`): `'session'` is a session written down, which has
+   * no exercises. Only `db/handEntries.ts` passes it.
+   */
+  byHand?: "session" | "distance" | null;
+  /** The name a session written down was given ("gym"). */
+  label?: string | null;
   userLevel?: DifficultyCode;
   durationSeconds?: number | null;
   xpEarned?: number;
@@ -149,6 +156,10 @@ export type CompletedSession = {
   movingSeconds: number | null;
   ascentM: number | null;
   outing: Locomotion | null;
+  /** Which part is the hero's word (`0078`): null when everything was measured. */
+  byHand: "session" | "distance" | null;
+  /** The name a session written down was given; null otherwise. */
+  label: string | null;
   /**
    * Whether the session set a record, which is what the history row's badge reads. A row saved
    * before `0051` has the flag and not the detail (`getFallenRecords` returns nothing for it), so
@@ -223,8 +234,23 @@ function parseExerciseStyle(value: unknown): ExerciseStyle {
     : "strength";
 }
 
+/** A session written down has no exercises, and is the only kind that may. */
+function requireExercises(input: CompletedSessionInput): void {
+  if (input.exercises.length === 0 && input.byHand !== "session") {
+    throw new Error("A completed session must have exercises");
+  }
+}
+
+function handColumns(input: CompletedSessionInput) {
+  return { byHand: input.byHand ?? null, label: input.label ?? null };
+}
+
+function insertSets(tx: TransactionTx, rows: (typeof completedExercises.$inferInsert)[]) {
+  return rows.length === 0 ? Promise.resolve() : tx.insert(completedExercises).values(rows);
+}
+
 export async function createCompletedSession(input: CompletedSessionInput): Promise<number> {
-  if (input.exercises.length === 0) throw new Error("A completed session must have exercises");
+  requireExercises(input);
 
   // Read *before* the transaction, never inside it: on this install's first save `getDeviceId`
   // writes `user_preferences` through `db`, and reaching for `db` from inside an open
@@ -269,6 +295,7 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
         movingSeconds: input.movingSeconds ?? null,
         ascentM: input.ascentM ?? null,
         outing: input.outing ?? null,
+        ...handColumns(input),
         tzOffsetMin: 0 - performedAt.getTimezoneOffset(),
         originDevice,
       })
@@ -337,7 +364,7 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
         performedAt: ex.performedAt ?? input.performedAt ?? new Date(),
       };
     });
-    await tx.insert(completedExercises).values(rowsToInsert);
+    await insertSets(tx, rowsToInsert);
 
     // Hold targets are now derived from the journal (`generateTarget` reads the hero's longest
     // logged hold), so a cached quest detail goes stale the moment a session lands. Cheap to
@@ -665,6 +692,8 @@ export async function listCompletedSessions(
       movingSeconds: completedQuest.movingSeconds,
       ascentM: completedQuest.ascentM,
       outing: completedQuest.outing,
+      byHand: completedQuest.byHand,
+      label: completedQuest.label,
     })
     .from(completedQuest)
     .orderBy(desc(completedQuest.performedAt), desc(completedQuest.id))
@@ -687,6 +716,8 @@ export async function listCompletedSessions(
     movingSeconds: r.movingSeconds ?? null,
     ascentM: r.ascentM ?? null,
     outing: r.outing ?? null,
+    byHand: r.byHand ?? null,
+    label: r.label ?? null,
   }));
 }
 
@@ -776,7 +807,15 @@ export async function getStalestQuest(): Promise<{ questId: number; daysAgo: num
  * `countQualifyingWeeks` would read as `(performedAt >= ? AND outing IS NULL) OR moving >= 600`
  * and pull every outing ever logged into one oath's weekly count.
  */
-export const isWorkout = () => sql`(${completedQuest.outing} IS NULL)`;
+export const isWorkout = () =>
+  sql`(${completedQuest.outing} IS NULL AND ${completedQuest.byHand} IS NULL)`;
+
+/**
+ * Everything on the row was measured by Bati (`0078`): nothing the hero typed. Records and bests
+ * read this, so a figure typed in can neither set a bar nor be one. Beside `isWorkout`, which is
+ * closed the same way for a session written down: a reader that forgets both leaves it out.
+ */
+export const isMeasured = () => sql`(${completedQuest.byHand} IS NULL)`;
 
 /**
  * How long a walk has to be before it counts as having shown up.
@@ -833,11 +872,38 @@ export async function outingSecondsToday(excludeSessionId: number | null): Promi
     .where(
       and(
         sql`${completedQuest.outing} IS NOT NULL`,
+        // A session written down pays a flat 75 and never sits on the day's curve.
+        sql`(${completedQuest.byHand} IS NULL OR ${completedQuest.byHand} != 'session')`,
         gte(completedQuest.performedAt, startOfLocalDay()),
         excludeSessionId === null ? undefined : ne(completedQuest.id, excludeSessionId),
       ),
     );
 
+  return Number(row?.seconds ?? 0);
+}
+
+/** The most seconds of outing with no witness the day pays (`untracedSecondsToday`). */
+export const UNTRACED_PAID_SECONDS_PER_DAY = 2 * 3600;
+
+/**
+ * Seconds of today's outings that nothing witnessed: no GPS, or no fix ever locked, with the
+ * distance typed after or not. A session written down is not among them (it has its own flat pay).
+ * The day pays at most `UNTRACED_PAID_SECONDS_PER_DAY` of them: once going out without GPS is a
+ * button, a timer left on a table must not pay four hours (`UNWITNESSED_OUTING_MAX_SECONDS`).
+ */
+export async function untracedSecondsToday(excludeSessionId: number | null): Promise<number> {
+  const [row] = await db
+    .select({ seconds: sum(completedQuest.durationSeconds) })
+    .from(completedQuest)
+    .where(
+      and(
+        sql`${completedQuest.outing} IS NOT NULL`,
+        sql`${completedQuest.movingSeconds} IS NULL`,
+        sql`(${completedQuest.byHand} IS NULL OR ${completedQuest.byHand} = 'distance')`,
+        gte(completedQuest.performedAt, startOfLocalDay()),
+        excludeSessionId === null ? undefined : ne(completedQuest.id, excludeSessionId),
+      ),
+    );
   return Number(row?.seconds ?? 0);
 }
 
@@ -876,6 +942,8 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
       movingSeconds: completedQuest.movingSeconds,
       ascentM: completedQuest.ascentM,
       outing: completedQuest.outing,
+      byHand: completedQuest.byHand,
+      label: completedQuest.label,
       hasNewRecords: completedQuest.hasNewRecords,
     })
     .from(completedQuest)
@@ -898,6 +966,8 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
     movingSeconds: head.movingSeconds,
     ascentM: head.ascentM,
     outing: head.outing,
+    byHand: head.byHand,
+    label: head.label,
     hasNewRecords: head.hasNewRecords === 1,
     exercises: [],
   };

@@ -38,6 +38,8 @@ export function PausedOverlay() {
   // loses the lock and breaks the segment on the way back, and the reducer already credits
   // nothing while the hero stands still. So the screen is what has to be honest about it.
   const measuring = useExpeditionStore((s) => s.sessionUuid !== null);
+  // An outing without the receiver has no trace to keep running.
+  const gps = useSessionStore((s) => s.gps);
   // Above the early return: hook order may not depend on the paused state.
   const instruction = useSessionInstructions();
   const insets = useSafeAreaInsets();
@@ -128,7 +130,7 @@ export function PausedOverlay() {
             <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
               {t("session.paused_subtitle")}
             </Paragraph>
-            {measuring ? (
+            {measuring && gps ? (
               <Paragraph color="$textSecondary" size="$2" style={{ textAlign: "center" }}>
                 {t("session.paused_expedition_note")}
               </Paragraph>

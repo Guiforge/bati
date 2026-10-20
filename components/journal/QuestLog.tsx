@@ -1,5 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
+import type { TFunction } from "i18next";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, useWindowDimensions, View } from "react-native";
@@ -8,6 +9,7 @@ import { Text, XStack, YStack } from "tamagui";
 import { InkGauge } from "@/components/common/InkGauge";
 import { Recitatif } from "@/components/common/Recitatif";
 import { Trophy } from "@/components/icons";
+import { HandMark } from "@/components/journal/HandMark";
 import { foldRounds, formatShare, shortDate, whenLabel } from "@/components/journal/journalFormat";
 import {
   NBackButton,
@@ -43,6 +45,7 @@ import { formatCount, formatTargetValue, PER_SIDE, perSideLabel } from "@/db/tar
 import type { UserLevelInfo } from "@/db/userLevel";
 import { useRateKind } from "@/hooks/useRateKind";
 import type { LngLat } from "@/src/gps/trace";
+import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { formatList } from "@/src/i18n/list";
 import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -87,7 +90,9 @@ export function ReportHero({
   // `$surface`, which would hide it.
   const pad = source == null ? 22 : 11;
   return (
-    <View style={{ height: height + insets.top }}>
+    // A minimum, not a height: with no art and a large font the title outgrows the plate, and a
+    // fixed height put it under the buttons.
+    <View style={{ minHeight: height + insets.top }}>
       {source == null ? (
         <YStack
           testID="session-details-plate"
@@ -112,15 +117,22 @@ export function ReportHero({
           />
         </>
       )}
-      <View style={{ position: "absolute", top: insets.top + pad, left: pad }}>
-        <NBackButton onPress={() => router.back()} label={t("common.go_back")} veiled />
+      <View
+        style={{
+          flexGrow: 1,
+          justifyContent: "space-between",
+          paddingTop: insets.top + pad,
+          paddingHorizontal: pad,
+          paddingBottom: pad,
+          gap: 12,
+        }}
+      >
+        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          <NBackButton onPress={() => router.back()} label={t("common.go_back")} veiled />
+          <ShareButton testID="journal-share" sessionId={sessionId} veiled />
+        </View>
+        <YStack>{children}</YStack>
       </View>
-      <View style={{ position: "absolute", top: insets.top + pad, right: pad }}>
-        <ShareButton testID="journal-share" sessionId={sessionId} veiled />
-      </View>
-      <YStack position="absolute" l={pad} r={pad} b={pad}>
-        {children}
-      </YStack>
     </View>
   );
 }
@@ -540,14 +552,18 @@ function Ground({ data }: { data: QuestLogData }) {
             <NMuted fontSize={10.5}>{t("journal.ground_climbed")}</NMuted>
           </YStack>
         )}
-        {session.leaguesM != null && session.leaguesM > 0 && moving > 0 && (
-          <YStack>
-            <NNum fontSize={17}>
-              {formatRate(session.leaguesM, moving * 1000, distanceUnit, language, rate)}
-            </NNum>
-            <NMuted fontSize={10.5}>{t(`journal.ground_${rate}`)}</NMuted>
-          </YStack>
-        )}
+        {/* A distance the hero typed makes no pace: it divides a figure nobody measured. */}
+        {session.byHand !== "distance" &&
+          session.leaguesM != null &&
+          session.leaguesM > 0 &&
+          moving > 0 && (
+            <YStack>
+              <NNum fontSize={17}>
+                {formatRate(session.leaguesM, moving * 1000, distanceUnit, language, rate)}
+              </NNum>
+              <NMuted fontSize={10.5}>{t(`journal.ground_${rate}`)}</NMuted>
+            </YStack>
+          )}
       </XStack>
       {trace.length > 0 && (
         <NText mt={11} fontSize={12.5} color="$resourceGold">
@@ -558,6 +574,55 @@ function Ground({ data }: { data: QuestLogData }) {
   );
 }
 
+/**
+ * What a session written down holds: how long, how far when the hero said, what it paid. No pace,
+ * no record, no boss, no sets: nothing here was measured, and the mark above says so.
+ */
+function HandFacts({ session }: { session: CompletedSession }) {
+  const { t } = useTranslation();
+  const language = useSettingsStore((s) => s.language);
+  const unit = useSettingsStore((s) => s.distanceUnit);
+  return (
+    <NBlock testID="journal-hand-facts" mt={6}>
+      <XStack gap={17}>
+        {session.durationSeconds ? (
+          <YStack>
+            <NNum fontSize={17}>{formatDuration(session.durationSeconds, language)}</NNum>
+          </YStack>
+        ) : null}
+        {session.leaguesM ? (
+          <YStack>
+            <NNum fontSize={17}>{formatDistance(session.leaguesM, unit, language)}</NNum>
+          </YStack>
+        ) : null}
+        <YStack>
+          <NNum fontSize={17} color="$resourceGold">
+            {t("quests.reward_xp", { count: formatCount(language, session.xpEarned) })}
+          </NNum>
+        </YStack>
+      </XStack>
+    </NBlock>
+  );
+}
+
+/** Level, rounds and duration on one line. */
+function metaLine(
+  session: CompletedSession,
+  rounds: number,
+  t: TFunction,
+  language: AppLanguage,
+): string {
+  const outing = session.outing != null;
+  return [
+    // A difficulty means nothing on a walk, nor on a session the hero wrote down.
+    outing || session.byHand === "session" ? null : t(`quests.level_${session.userLevel}`),
+    rounds > 0 && !outing ? t("journal.rounds_completed", { count: rounds }) : null,
+    session.durationSeconds ? formatDuration(session.durationSeconds, language) : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
 /** The quest log: one session, told as where it sits, what it moved, and what was done. */
 export function QuestLog({ data, onChanged }: { data: QuestLogData; onChanged: () => void }) {
   const { t } = useTranslation();
@@ -566,16 +631,11 @@ export function QuestLog({ data, onChanged }: { data: QuestLogData; onChanged: (
   const { width } = useWindowDimensions();
   const { session } = data;
   const outing = session.outing != null;
+  const writtenDown = session.byHand === "session";
+  const title = writtenDown ? (session.label ?? t("past_session.default_name")) : data.questTitle;
   const rounds = new Set(session.exercises.map((ex) => ex.roundIndex)).size;
 
-  const meta = [
-    // A difficulty means nothing on a walk.
-    outing ? null : t(`quests.level_${session.userLevel}`),
-    rounds > 0 && !outing ? t("journal.rounds_completed", { count: rounds }) : null,
-    session.durationSeconds ? formatDuration(session.durationSeconds, language) : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const meta = metaLine(session, rounds, t, language);
 
   return (
     <YStack testID="session-details-screen">
@@ -597,16 +657,23 @@ export function QuestLog({ data, onChanged }: { data: QuestLogData; onChanged: (
           >
             {whenLabel(t, language, session.performedAt).toLocaleUpperCase(language)}
           </Text>
-          <Recitatif>{data.questTitle}</Recitatif>
+          <Recitatif>{title}</Recitatif>
         </YStack>
         <NMuted mt={6}>{meta}</NMuted>
+        {session.byHand ? <HandMark what={writtenDown ? "entry" : "distance"} size={13} /> : null}
       </ReportHero>
 
       <YStack px={11} pt={11}>
-        <RecordPanel records={data.records} />
-        {data.standing ? <WhereItSits standing={data.standing} /> : null}
-        <WhatItMoved data={data} />
-        {outing ? <Ground data={data} /> : <Rounds session={session} onChanged={onChanged} />}
+        {writtenDown ? (
+          <HandFacts session={session} />
+        ) : (
+          <>
+            <RecordPanel records={data.records} />
+            {data.standing ? <WhereItSits standing={data.standing} /> : null}
+            <WhatItMoved data={data} />
+            {outing ? <Ground data={data} /> : <Rounds session={session} onChanged={onChanged} />}
+          </>
+        )}
         <YStack mt={6}>
           <SessionNotebook sessionId={session.id} />
         </YStack>

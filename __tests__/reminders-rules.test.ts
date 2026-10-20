@@ -113,6 +113,12 @@ describe("ignoredStreak", () => {
     expect(ignoredStreak(log, [walk], today, null)).toBe(3);
   });
 
+  test("a session written down does, a walk without the phone included", () => {
+    const log = ["2026-01-17", "2026-01-18", "2026-01-19"].map((d) => posted(d));
+    const typed = { ...workout(new Date(2026, 0, 18, 9)), outing: "walk", byHand: "session" };
+    expect(ignoredStreak(log, [typed], today, null)).toBe(1);
+  });
+
   test("a workout today does not reach back: today is not over", () => {
     const log = ["2026-01-17", "2026-01-18", "2026-01-19"].map((d) => posted(d));
     expect(ignoredStreak(log, [workout(new Date(2026, 0, 20, 8))], today, null)).toBe(3);

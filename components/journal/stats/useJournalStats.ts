@@ -3,6 +3,7 @@ import { useCallback, useRef, useState } from "react";
 import { type AchievementProgress, getAllAchievementsWithProgress } from "@/db/achievements";
 import { type ChronicleWindow, chronicleToOpen } from "@/db/chronicle";
 import { dayKey } from "@/db/dates";
+import { countHandEntriesSince } from "@/db/handEntries";
 import {
   type DayActivity,
   getActivityDays,
@@ -36,6 +37,8 @@ export type JournalStats = {
   trainedToday: boolean;
   wall: WallEntry[];
   flame: FlameDetail;
+  /** Of the flame's seven days, the sessions the hero wrote down (`0078`): said beside the count. */
+  handInWindow: number;
   /** The last seven days, oldest first, today last. */
   week: (DayActivity | null)[];
   month: {
@@ -87,6 +90,7 @@ async function loadJournalStats(): Promise<JournalStats> {
     kills,
     chronicle,
     hardSets,
+    handInWindow,
   ] = await Promise.all([
     getRecordWall(4),
     getFlameDetail(now),
@@ -104,6 +108,7 @@ async function loadJournalStats(): Promise<JournalStats> {
     getBossKills(),
     chronicleToOpen(now),
     hardSetsByPattern(weekFrom),
+    countHandEntriesSince(weekFrom),
   ]);
 
   const isFirstDay = firstSessionAt == null;
@@ -129,6 +134,7 @@ async function loadJournalStats(): Promise<JournalStats> {
     trainedToday: activity.has(dayKey(now)),
     wall: wall.length > 0 ? wall : await getStarterWall(),
     flame,
+    handInWindow,
     week,
     month: {
       current,

@@ -2,6 +2,7 @@ import { and, between, desc, eq, gt, inArray, lt, max, ne, type SQL, sql } from 
 import type { Localized } from "@/src/i18n/deviceLanguage";
 import { db, schema, transactionOrFallback } from "./client";
 import {
+  isMeasured,
   isWorkout,
   markSessionWithNewRecords,
   nextEditStamp,
@@ -632,7 +633,8 @@ export async function checkForNewRecords(
     const previousLongest = await db
       .select({ maxM: max(completedQuest.leaguesM) })
       .from(completedQuest)
-      .where(sql`${completedQuest.id} != ${sessionId}`);
+      // A distance the hero typed is not a bar to clear (`0078`).
+      .where(and(sql`${completedQuest.id} != ${sessionId}`, isMeasured()));
 
     const prevMax = previousLongest[0]?.maxM ?? 0;
     if (session.leaguesM > prevMax) {

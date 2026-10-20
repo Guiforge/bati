@@ -25,6 +25,8 @@ const session = (over: Partial<CompletedSession>): CompletedSession =>
     movingSeconds: null,
     ascentM: null,
     outing: null,
+    byHand: null,
+    label: null,
     hasNewRecords: false,
     exercises: [],
     ...over,
@@ -51,6 +53,37 @@ describe("shareStats", () => {
       "journal.ground_climbed",
       "share.xp",
     ]);
+  });
+
+  test("a distance the hero typed carries the mark where its label is, and makes no pace", () => {
+    const stats = shareStats(
+      session({
+        outing: "walk",
+        leaguesM: 3800,
+        durationSeconds: 2520,
+        byHand: "distance",
+      }),
+      t,
+      "en",
+      "metric",
+      "pace",
+    );
+    expect(stats.map((s) => s.label)).toEqual([
+      "past_session.hand_mark_distance",
+      "journal.ground_moving",
+      "share.xp",
+    ]);
+  });
+
+  test("a session written down gives its time and what it paid, never a pace or a round", () => {
+    const stats = shareStats(
+      session({ byHand: "session", durationSeconds: 2700, xpEarned: 75 }),
+      t,
+      "en",
+      "metric",
+      "pace",
+    );
+    expect(stats.map((s) => s.label)).toEqual(["share.duration", "share.xp"]);
   });
 
   test("a pace or a speed, as the hero chose, is the one on the card", () => {
@@ -135,6 +168,7 @@ const year = (figures: Partial<PeriodFigures>, over: Partial<Chronicle> = {}): C
   figures: {
     quests: 0,
     outings: 0,
+    handOutings: 0,
     reps: 0,
     questSeconds: 0,
     timedQuests: 0,

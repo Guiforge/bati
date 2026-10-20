@@ -33,10 +33,16 @@ function outingStats(
   const metres = session.leaguesM ?? 0;
   const moving = session.movingSeconds ?? session.durationSeconds ?? 0;
   const ascent = session.ascentM ?? 0;
-  const paced = metres > 0 && moving > 0;
+  // A distance and a time the hero typed make no pace (nothing was measured to divide), and the
+  // distance wears the one mark the Journal gives it, in its place under the figure.
+  const typed = session.byHand != null;
+  const paced = metres > 0 && moving > 0 && !typed;
   return [
     metres > 0
-      ? { value: formatDistance(metres, unit, language), label: t("share.distance") }
+      ? {
+          value: formatDistance(metres, unit, language),
+          label: t(typed ? "past_session.hand_mark_distance" : "share.distance"),
+        }
       : null,
     moving > 0
       ? { value: formatDuration(moving, language), label: t("journal.ground_moving") }

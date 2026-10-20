@@ -1,13 +1,14 @@
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Keyboard, Pressable } from "react-native";
+import { Keyboard, Pressable, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Input, Sheet, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Chip } from "@/components/common/Chip";
 import { X } from "@/components/icons";
-import { formatDistance } from "@/constants/distanceFormat";
+import { GpsSetting } from "@/components/quests/GpsSetting";
+import { formatDistance, METRES_PER_TYPED_UNIT } from "@/constants/distanceFormat";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { formatDuration } from "@/db/estimate";
 import { getOutingHabit } from "@/db/outingHabit";
@@ -50,12 +51,6 @@ const DISTANCE_PRESETS_M: Record<Locomotion, Record<DistanceUnit, number[]>> = {
 const roundMetres = (metres: number) => Math.max(100, Math.round(metres / 100) * 100);
 const roundSeconds = (seconds: number) => Math.max(60, Math.round(seconds / 60) * 60);
 
-/**
- * ponytail: second copy of the mile, `constants/distanceFormat.ts` holds the first and owns the
- * conversion. Export `M_PER_MILE` from there and delete this the next time that file is open.
- */
-const METRES_PER_TYPED_UNIT: Record<DistanceUnit, number> = { metric: 1000, imperial: 1609.344 };
-
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -84,6 +79,8 @@ type Props = {
   walkRun: boolean;
   /** One goal at a time: the caller writes a duration or a distance, never both. */
   onPick: (goal: OutingGoal) => void;
+  /** The GPS chip's value, live: the screen under the sheet words a notice from it. */
+  onGps?: (gps: boolean) => void;
 };
 
 /**
@@ -110,12 +107,16 @@ export function OutingGoalSheet({
   displayLocomotion,
   walkRun,
   onPick,
+  onGps,
 }: Props) {
   const { t } = useTranslation();
   const router = useRouter();
   const reducedMotion = useReducedMotion();
   const language = useSettingsStore((s) => s.language);
   const insets = useSafeAreaInsets();
+  const { height } = useWindowDimensions();
+  // Told by the GPS row (`GpsSetting`), which owns the preference: the distance note needs it.
+  const [gps, setGps] = useState(true);
   // The caller mounts this on open, so the initialiser is the reset: a hero who saved a distance
   // and came back lands on Distance rather than editing minutes `outingGoal` has already decided
   // to ignore, and yesterday's half-typed number is not still in the box.
@@ -224,105 +225,124 @@ export function OutingGoalSheet({
         bg="$surface"
         borderTopLeftRadius="$6"
         borderTopRightRadius="$6"
+        // The GPS row made the sheet taller than a short screen at 130 % text: what does not fit
+        // scrolls, as in `FormSheet`.
+        style={{ maxHeight: height - insets.top - 16 }}
       >
-        <YStack px="$4" pt="$4" pb={insets.bottom + 16} gap="$4">
-          <XStack items="center" justify="space-between" gap="$3">
-            <Text flex={1} fontWeight="700" fontSize={18} color="$text">
-              {t("quests.goal_sheet_title")}
-            </Text>
-            <Pressable
-              hitSlop={12}
-              accessibilityRole="button"
-              accessibilityLabel={t("common.close")}
-              onPress={close}
-            >
-              <X size={20} color="$textSecondary" />
-            </Pressable>
-          </XStack>
-
-          <XStack gap="$2">
-            <Chip
-              label={t("quests.config_duration")}
-              tone={durationTab ? "primary" : "default"}
-              accessibilityState={{ selected: durationTab }}
-              onPress={() => setTab("time")}
-            />
-            <Chip
-              label={t("quests.config_distance")}
-              tone={durationTab ? "default" : "primary"}
-              accessibilityState={{ selected: !durationTab }}
-              onPress={() => setTab("distance")}
-            />
-          </XStack>
-
-          {/* Wrapping, not scrolling: four chips at 44 dp fit two rows on the narrowest phone,
-              and a scroll view here would hand part of every touch to a pane that cannot move. */}
-          <XStack gap="$2" flexWrap="wrap">
-            {presets.map((preset) => (
-              <Chip
-                key={preset.key}
-                label={preset.label}
-                tone="default"
-                onPress={() => pick(preset.goal)}
-              />
-            ))}
-          </XStack>
-
-          {longestRun === null ? null : (
-            <Text testID="goal-longest-run" fontSize={13} color="$textSecondary">
-              {t("quests.goal_longest_run", {
-                longest: longestLabel(longestRun),
-                ceiling: longestLabel(longestRun * LONGEST_RUN_CEILING),
-              })}
-            </Text>
-          )}
-
-          <YStack gap="$2">
-            <Text fontWeight="700" fontSize={15} color="$text">
-              {t("quests.goal_sheet_custom")}
-            </Text>
-            <XStack items="center" gap="$2">
-              <Input
-                flex={1}
-                minH={44}
-                value={custom}
-                onChangeText={setCustom}
-                keyboardType="decimal-pad"
-                returnKeyType="done"
-                onSubmitEditing={applyCustom}
-                placeholder={t("quests.goal_sheet_custom_hint")}
-                bg="$background"
-                borderColor="$borderStrong"
-                color="$text"
-              />
-              {/* The unit words are the same in both languages Bati speaks, so `formatDistance`
-                  owns them and there is nothing here for i18n to translate. */}
-              <Text fontWeight="700" fontSize={15} color="$textSecondary">
-                {unitWord}
+        <Sheet.ScrollView
+          keyboardShouldPersistTaps="handled"
+          onMoveShouldSetResponder={() => false}
+        >
+          <YStack px="$4" pt="$4" pb={insets.bottom + 16} gap="$4">
+            <XStack items="center" justify="space-between" gap="$3">
+              <Text flex={1} fontWeight="700" fontSize={18} color="$text">
+                {t("quests.goal_sheet_title")}
               </Text>
+              <Pressable
+                hitSlop={12}
+                accessibilityRole="button"
+                accessibilityLabel={t("common.close")}
+                onPress={close}
+              >
+                <X size={20} color="$textSecondary" />
+              </Pressable>
             </XStack>
+
+            <GpsSetting
+              open={open}
+              onValue={(value) => {
+                setGps(value);
+                onGps?.(value);
+              }}
+            />
+
+            <XStack gap="$2">
+              <Chip
+                label={t("quests.config_duration")}
+                selected={durationTab}
+                onPress={() => setTab("time")}
+              />
+              <Chip
+                label={t("quests.config_distance")}
+                selected={!durationTab}
+                onPress={() => setTab("distance")}
+              />
+            </XStack>
+            {gps || durationTab ? null : (
+              <Text testID="goal-gps-distance-note" fontSize={13} color="$textSecondary">
+                {t("quests.gps_distance_note")}
+              </Text>
+            )}
+
+            {/* Wrapping, not scrolling: four chips at 44 dp fit two rows on the narrowest phone,
+              and a scroll view here would hand part of every touch to a pane that cannot move. */}
+            <XStack gap="$2" flexWrap="wrap">
+              {presets.map((preset) => (
+                <Chip
+                  key={preset.key}
+                  label={preset.label}
+                  tone="default"
+                  onPress={() => pick(preset.goal)}
+                />
+              ))}
+            </XStack>
+
+            {longestRun === null ? null : (
+              <Text testID="goal-longest-run" fontSize={13} color="$textSecondary">
+                {t("quests.goal_longest_run", {
+                  longest: longestLabel(longestRun),
+                  ceiling: longestLabel(longestRun * LONGEST_RUN_CEILING),
+                })}
+              </Text>
+            )}
+
+            <YStack gap="$2">
+              <Text fontWeight="700" fontSize={15} color="$text">
+                {t("quests.goal_sheet_custom")}
+              </Text>
+              <XStack items="center" gap="$2">
+                <Input
+                  flex={1}
+                  minH={44}
+                  value={custom}
+                  onChangeText={setCustom}
+                  keyboardType="decimal-pad"
+                  returnKeyType="done"
+                  onSubmitEditing={applyCustom}
+                  placeholder={t("quests.goal_sheet_custom_hint")}
+                  bg="$background"
+                  borderColor="$borderStrong"
+                  color="$text"
+                />
+                {/* The unit words are the same in both languages Bati speaks, so `formatDistance`
+                  owns them and there is nothing here for i18n to translate. */}
+                <Text fontWeight="700" fontSize={15} color="$textSecondary">
+                  {unitWord}
+                </Text>
+              </XStack>
+            </YStack>
+
+            <AppButton variant="outline" onPress={applyCustom}>
+              {t("common.done")}
+            </AppButton>
+
+            {/* Quiet, under the goals: what the hero sees while out is a setting of the outing too. */}
+            <Pressable
+              testID="goal-sheet-outing-display"
+              accessibilityRole="link"
+              hitSlop={8}
+              style={{ minHeight: 44, justifyContent: "center", alignItems: "center" }}
+              onPress={() => {
+                close();
+                router.push(`/outing-display?tab=${displayLocomotion}` as never);
+              }}
+            >
+              <Text fontSize={14} color="$textSecondary" textDecorationLine="underline">
+                {t("quests.outing_display_link")}
+              </Text>
+            </Pressable>
           </YStack>
-
-          <AppButton variant="outline" onPress={applyCustom}>
-            {t("common.done")}
-          </AppButton>
-
-          {/* Quiet, under the goals: what the hero sees while out is a setting of the outing too. */}
-          <Pressable
-            testID="goal-sheet-outing-display"
-            accessibilityRole="link"
-            hitSlop={8}
-            style={{ minHeight: 44, justifyContent: "center", alignItems: "center" }}
-            onPress={() => {
-              close();
-              router.push(`/outing-display?tab=${displayLocomotion}` as never);
-            }}
-          >
-            <Text fontSize={14} color="$textSecondary" textDecorationLine="underline">
-              {t("quests.outing_display_link")}
-            </Text>
-          </Pressable>
-        </YStack>
+        </Sheet.ScrollView>
       </Sheet.Frame>
     </Sheet>
   );

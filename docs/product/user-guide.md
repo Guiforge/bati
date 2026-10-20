@@ -2,7 +2,7 @@
 title: Product Guide
 type: product
 status: active
-updated: 2026-07-18
+updated: 2026-10-18
 related: [vision.md, feature-overview.md, ../screens/README.md, ../gameplay/progression.md]
 sources: [app/_layout.tsx, app/(tabs)/index.tsx, app/(tabs)/village.tsx]
 ---
@@ -104,12 +104,26 @@ After workouts, Bati rewards you with:
   request until you turn it on, and the route is drawn on a plain background without it. On, the
   map host learns roughly where you went, and the privacy policy spells out exactly what that means.
 
+### 7b) Write down a session Bati did not see, and go out without GPS
+
+- **Journal > History > "Ajouter une séance passée"**, or the reminder's first button. Pick the
+  type (workout, walk, run, ride), the day (up to seven days back, one per day), when you finished
+  and how long (20, 30, 45, 60, 90 minutes or your own). It keeps the flame, counts for the oath,
+  pays the XP of 15 minutes (75) and never touches the boss, the records or the progression. It is
+  marked "saisie à la main" wherever it shows, and it can be corrected or removed from its page.
+  Five soft refusals say what to change: too far back, one already that day, under 10 minutes or over
+  4 hours, overlapping a session Bati measured, or a distance too fast for the type.
+- **"GPS : oui / non"** on an outing's goal sheet. With it off Bati asks for no position, times the
+  outing by the clock and shows a "Sans GPS" badge; the recap offers "Ajouter la distance". The time
+  counts (flame, XP, up to two hours a day), the leagues only once you type the distance.
+
 ### 8) Be reminded on your days (Reminder)
 
 - Settings > Reminder: choose your days and one hour. Bati reminds you once on those days, unless
   your session is done or it advises rest. Off until you turn it on; the notification permission
   is asked then, never at launch.
-- On the notification: **In 1 hour** (once) and **Pause 7 days**. A tap opens Home.
+- On the notification: **Déjà bougé ailleurs ?** (opens the Journal's form for that day), **In 1
+  hour** (once) and **Pause 7 days**. A tap opens Home.
 - Home offers it once after your first session, and asks after three reminders went by untouched
   whether they land well. Nothing else, and never a count of days missed.
 - Two known limits:

@@ -2,7 +2,7 @@
 title: Progression (XP, Village, Flame)
 type: system
 status: active
-updated: 2026-09-10
+updated: 2026-10-18
 related:
   [
     ../planning/roadmap.md,
@@ -108,6 +108,15 @@ Three bounds again, and each closes a hole the others could not see:
 | Decay | 1st hour full, 2nd ½, then ¼ | Going on is worth less per minute and never nothing. Measured over the **day**: per session it is undone by pressing stop and start, which paid 1800 for six hours worth 750. |
 | The floor | 10 XP, not on the day's second outing | A one-minute walk is 1.25 XP and floors to 10, an eightfold uplift. 120 of them paid 1200 against 450 for the same two hours in one piece. |
 
+A fourth bound exists for the time nothing witnessed, which going out without GPS made a button
+instead of a rare hole. **At most two hours of it are paid per day**, however many outings without
+GPS, outings where no fix ever locked, or resumes after a kill produced it (`untracedSecondsToday`,
+`UNTRACED_PAID_SECONDS_PER_DAY` in `db/completed.ts`, applied in `outingLedger`, `stores/session.ts`):
+450 XP of walking, 900 of running, before the day's decay. The duration written to the journal stays
+what the clock said (bounded by `UNWITNESSED_OUTING_MAX_SECONDS`, four hours); only the paid time is
+capped, and the flame reads the duration, not the XP. This replaces the "ceiling of a declaration"
+that `UNWITNESSED_OUTING_MAX_SECONDS` used to name as a known hole.
+
 One leg per session, never one per slot: a quest with six outdoor slots or six rounds — both of
 which the editor allows — priced six first hours.
 
@@ -123,6 +132,33 @@ words: it devalues the real sessions.
 Nothing was recalculated. `0049` gave a session a column saying which kind it was, and the records
 a walk had taken stopped looking at walks, which settles the trophy without moving a journalled
 number. See [statistics-progress.md](statistics-progress.md#outings-are-counted-apart).
+
+### A session the hero writes down pays 75
+
+A session done where Bati cannot see it (a gym session, a walk without the phone) is written down
+afterwards, up to seven days back, one per calendar day, from ten minutes to four hours. It pays
+`HAND_ENTRY_XP` (`db/xp.ts`): the XP of fifteen minutes in Bati, `15 * outingXpPerMinute("walk")`,
+**75**, the same for every type and every duration. One figure because nothing checks what happened
+in a gym, and a "run" entry would pay double for it. Fixed at the save: a correction changes the
+day, the length, the name, the type or the distance and never the XP, because the oath bonus is
+written on the same row and the sync keeps the larger XP of a row (`takeLargerXp`).
+
+What it keeps and what it never touches is one table (`docs/product/glossary.md` has the words):
+
+| | Written down |
+| --- | --- |
+| Flame, oath (sessions, per week, flame) | Yes: it is read as a session (`countsAsSession`) |
+| Oath of leagues, the road | Only the distance the hero typed, bounded by four hours at the plausible speed |
+| Boss damage, records, bests, objectives, the outing habit | Never: `isWorkout()` is `outing IS NULL AND byHand IS NULL` and `isMeasured()` is `byHand IS NULL`, so a reader that forgets either leaves the row out |
+| Level, adventure step, light week, rung, cap offer | Never |
+| Badges of count, hour and length (`sessions_*`, `early_bird`, `night_owl`, `long_session_*`, `first_outing`, `hour_outside`) | Never; the badges of XP and flame follow on their own |
+| The village's presence (years, chronicle, crest, big feast) | Yes, as the flame does |
+
+The flame can now be held by two sessions written down in a week, without opening a quest. That is
+what the feature is for, and it is written here so nobody rediscovers it as a bug. The five refusals
+(too old, one per day, under ten minutes or over four hours, overlapping a measured session, an
+implausible distance: 8 km/h on foot, 20 running, 45 riding) are `checkHandEntry`,
+`db/handEntryRules.ts`.
 
 ### The day's quest pays nothing extra
 

@@ -13,6 +13,7 @@ jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ id: "1" }),
 }));
 jest.mock("@/components/journal/QuestLog", () => ({ QuestLog: () => null }));
+jest.mock("@/components/journal/PastSessionSheet", () => ({ PastSessionSheet: () => null }));
 jest.mock("@/components/journal/KillReport", () => ({ KillReport: () => null }));
 jest.mock("@/components/journal/sessionLog", () => ({
   readSession: () => Promise.resolve({ log: { session: {} }, kill: null }),

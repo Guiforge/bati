@@ -599,7 +599,11 @@ export function VictoryView() {
             before the stat row (rather than at the bottom, with the rewards) so it is in view
             without scrolling past the stat tiles. */}
           {!!result && isExpedition(quest) && (
-            <ExpeditionSummary sessionUuid={sessionUuid} language={language} />
+            <ExpeditionSummary
+              sessionUuid={sessionUuid}
+              sessionId={result.sessionId}
+              language={language}
+            />
           )}
 
           {/* The bridge (docs/designs/outing-doors.md, T17). Only after a *free* outing: a walk

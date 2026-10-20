@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { act, renderHook, waitFor } from "@testing-library/react-native";
 import { PREP_SECONDS, WARMUP_SEQUENCE } from "@/constants/warmup";
-import { outingSecondsToday } from "@/db/completed";
+import { outingSecondsToday, untracedSecondsToday } from "@/db/completed";
 import { getCrest } from "@/db/crest";
 import type { Exercise } from "@/db/exercises";
 import { checkOathFulfilled } from "@/db/oaths";
@@ -65,6 +65,9 @@ jest.mock("@/db/completed", () => ({
   // starts calling has to be added by hand. Forget one and fifteen cases die on
   // "is not a function", which is exactly how this line came to exist.
   outingSecondsToday: jest.fn().mockResolvedValue(0),
+  // The seconds of the day's outings nothing witnessed, and the room the day pays for (0078).
+  untracedSecondsToday: jest.fn().mockResolvedValue(0),
+  UNTRACED_PAID_SECONDS_PER_DAY: 7200,
 }));
 // The rest of what saveSession touches on its way through. Stubbed so the store's own
 // behaviour — what it banks, commits and clears — is what these cases actually measure.
@@ -2336,6 +2339,23 @@ describe("useSessionStore", () => {
       expect(store.getState().status).toBe("finished");
     });
 
+    // Without GPS the clock is the duration, so the pause the hero finished from was not walked.
+    test("finishing a walk without GPS while paused leaves the pause out", async () => {
+      await store.getState().startSession(outing, "medium", { gps: false });
+      store.setState({
+        startTime: Date.now() - 60 * 60_000,
+        totalPausedTime: 0,
+        status: "paused",
+        prePauseStatus: "running",
+        lastPauseTimestamp: Date.now() - 20 * 60_000,
+      });
+
+      store.getState().completeOuting();
+
+      expect(store.getState().results[0]?.result.value).toBe(40 * 60);
+      expect(store.getState().status).toBe("finished");
+    });
+
     test("the same tap arriving during a workout indoors writes nothing", async () => {
       await store.getState().startSession(mockQuest, "medium");
       store.getState().finishCountdown();
@@ -2733,6 +2753,87 @@ describe("the at-target reading of an outing", () => {
     assert(atTarget);
     expect(atTarget[0].outing).toEqual({ seconds: 2700, locomotion: "walk" });
     expect(atTarget[0].priorOutingSecondsToday).toBe(0);
+  });
+});
+
+/**
+ * Going out without GPS is a button (0078), so the time nothing witnessed is paid up to two hours a
+ * day: a timer left running on a table must not pay the four hours an unwitnessed outing may claim.
+ */
+describe("an outing without GPS", () => {
+  const walk = {
+    id: 41,
+    rounds: 1,
+    restSeconds: 0,
+    roundRestSeconds: null,
+    enTitle: "The round",
+    frTitle: "La ronde",
+    exercises: [
+      {
+        exercise: {
+          id: 30,
+          enName: "Warden's Walk",
+          muscles: [],
+          style: "expedition",
+          secondsPerRep: 1,
+          locomotion: "walk",
+        },
+        target: { type: "time", value: 2700 },
+      },
+    ],
+  } as unknown as Quest;
+
+  beforeEach(() => {
+    useExpeditionStore.setState({ track: EMPTY });
+    (computeSessionXp as jest.Mock).mockClear();
+    (untracedSecondsToday as jest.Mock).mockResolvedValue(0);
+    useSessionStore.setState({ status: "idle" });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    (untracedSecondsToday as jest.Mock).mockResolvedValue(0);
+  });
+
+  test("starts the expedition store with gps false, and remembers it for a resume", async () => {
+    const begin = jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+    begin.mockClear();
+    await useSessionStore.getState().startSession(walk, "medium", { gps: false });
+    await waitFor(() => expect(begin).toHaveBeenCalled());
+    expect(begin.mock.calls.at(-1)?.[7]).toBe(false);
+    expect(useSessionStore.getState().gps).toBe(false);
+  });
+
+  test("a workout and an outing begun with GPS keep gps true", async () => {
+    jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+    await useSessionStore.getState().startSession(walk, "medium", {});
+    expect(useSessionStore.getState().gps).toBe(true);
+  });
+
+  async function finish(seconds: number) {
+    (computeSessionXp as jest.Mock).mockClear();
+    useSessionStore.setState({ status: "idle" });
+    jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+    await useSessionStore.getState().startSession(walk, "medium", { gps: false });
+    useSessionStore.setState({ startTime: Date.now() - seconds * 1000, totalPausedTime: 0 });
+    useSessionStore.getState().completeExercise(seconds);
+    await useSessionStore.getState().saveSession(null);
+    return (computeSessionXp as jest.Mock).mock.calls[0]?.[0];
+  }
+
+  test("pays the whole of an hour on a day with nothing yet", async () => {
+    expect((await finish(3600)).outing).toEqual({ seconds: 3600, locomotion: "walk" });
+  });
+
+  test("pays only the two hours of a day, however long the timer ran", async () => {
+    expect((await finish(4 * 3600)).outing.seconds).toBe(7200);
+  });
+
+  test("pays only what the day has left of its two hours", async () => {
+    (untracedSecondsToday as jest.Mock).mockResolvedValue(5400);
+    expect((await finish(3 * 3600)).outing.seconds).toBe(1800);
+    (untracedSecondsToday as jest.Mock).mockResolvedValue(9000);
+    expect((await finish(3600)).outing.seconds).toBe(0);
   });
 });
 

@@ -45,6 +45,8 @@ export { Link2 } from "@tamagui/lucide-icons/icons/Link2";
 export { LocateFixed } from "@tamagui/lucide-icons/icons/LocateFixed";
 export { Lock } from "@tamagui/lucide-icons/icons/Lock";
 export { Map } from "@tamagui/lucide-icons/icons/Map";
+export { MapPin } from "@tamagui/lucide-icons/icons/MapPin";
+export { MapPinOff } from "@tamagui/lucide-icons/icons/MapPinOff";
 export { Medal } from "@tamagui/lucide-icons/icons/Medal";
 export { MessagesSquare } from "@tamagui/lucide-icons/icons/MessagesSquare";
 export { Minus } from "@tamagui/lucide-icons/icons/Minus";

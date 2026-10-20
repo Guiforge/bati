@@ -35,7 +35,14 @@ import { useSyncStore } from "@/stores/sync";
  * shortcut: the next notice waits for the next focus after the winner is closed, re-decide on
  * dismiss if testers find the empty slot odd.
  */
-export function NoticeSlot({ onLightWeekAnswered }: { onLightWeekAnswered?: () => void }) {
+export function NoticeSlot(props: { onLightWeekAnswered?: () => void }) {
+  // Keyed on the last sync, as Home keys this slot on the week: the React Compiler drops a
+  // dependency the focus callback does not read, so a finished sync never re-read the cards.
+  const lastSyncAt = useSyncStore((s) => s.lastSyncAt);
+  return <Slot key={String(lastSyncAt)} {...props} />;
+}
+
+function Slot({ onLightWeekAnswered }: { onLightWeekAnswered?: () => void }) {
   const { recoverableSession, isChecking, recoverSession, finishSession, discardSession } =
     useSessionRecovery();
   const language = useSettingsStore((s) => s.language);

@@ -88,8 +88,8 @@ function isPrepMode(value: string | null): value is PrepMode {
 /**
  * The gap between two warm-up movements (issue #198): time to change position, from a plank on
  * the floor to a wall sit, not time to read, since the movement's description stays on screen
- * while it runs. `"auto"` is ten seconds while the movements are new, five once they are known
- * (`transitionSeconds`). `"off"` chains them with no gap, which is what the warm-up did from #154 on.
+ * while it runs. `"auto"` is the hero not having chosen: ten seconds while the movements are new,
+ * five once they are known (`transitionSeconds`). Any value the hero picks wins over both. `"off"` chains them with no gap, which is what the warm-up did from #154 on.
  */
 export type WarmupTransition = "auto" | "5" | "10" | "tap" | "off";
 

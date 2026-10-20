@@ -205,12 +205,13 @@ function PrepModeRow() {
   );
 }
 
+// Auto is not on the cycle: it reads as 5 s, and the first tap is a choice that replaces it.
 const NEXT_TRANSITION: Record<WarmupTransition, WarmupTransition> = {
-  auto: "5",
+  auto: "10",
   "5": "10",
   "10": "tap",
   tap: "off",
-  off: "auto",
+  off: "5",
 };
 
 /**
@@ -227,7 +228,7 @@ function WarmupTransitionRow({ warmupEnabled }: { warmupEnabled: boolean }) {
   if (!warmupEnabled) return null;
 
   const labels: Record<WarmupTransition, string> = {
-    auto: t("settings.warmup_transition_auto"),
+    auto: t("settings.warmup_transition_5"),
     "5": t("settings.warmup_transition_5"),
     "10": t("settings.warmup_transition_10"),
     tap: t("settings.prep_tap"),
@@ -248,7 +249,7 @@ function WarmupTransitionRow({ warmupEnabled }: { warmupEnabled: boolean }) {
           });
         }}
       />
-      {/* Auto changes length on its own at the fourth session: say so, or it reads as a bug. */}
+      {/* Until the hero chooses, the first sessions get longer transitions than the 5 s shown. */}
       {transition === "auto" ? (
         <Text testID="settings-warmup-transition-note" fontSize="$2" color="$textSecondary" px="$3">
           {t("settings.warmup_transition_auto_note", { sessions: LEARNING_SESSIONS })}

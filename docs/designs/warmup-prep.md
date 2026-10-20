@@ -64,14 +64,14 @@ L'app te dit tout **avant** que le chrono tourne, jamais pendant.
 2. **Démarrer** : attente du mouvement 1/6 (illustration, nom, description complète, 10 s ou GO).
 3. **Mouvement**, 30 s. Pour les mouvements d'un côté, « Change de côté » à mi-temps.
 4. **Transition** vers le mouvement suivant (`toStep` dans `stores/session.ts`) : le même écran
-   d'attente, « Auto » par défaut (10 s pendant les 3 premières séances, 5 s ensuite), puis le
-   mouvement, et ainsi de suite. Suivant, Précédent (jusqu'au premier mouvement compris) et
+   d'attente, 5 s par défaut (10 s pendant les 3 premières séances tant que le héros n'a rien
+   choisi), puis le mouvement, et ainsi de suite. Suivant, Précédent (jusqu'au premier mouvement compris) et
    « Pas pour moi » mènent tous à la transition du mouvement visé.
 5. **Écran de démarrage** avec le premier vrai exercice.
 
 ## Coût en temps (mode 10 s)
 
-| Échauffement | Avant | Une attente par mouvement (11/09) | Une seule attente (03/10) | Auto, 3 premières séances (19/10) | Auto ensuite, ou 5 s (19/10) |
+| Échauffement | Avant | Une attente par mouvement (11/09) | Une seule attente (03/10) | 3 premières séances, rien choisi (19/10) | Défaut 5 s (19/10) |
 |---|---|---|---|---|---|
 | 4 mouvements (quête courte) | 2 min | 2 min 40 | 2 min 10 | 2 min 40 | 2 min 25 |
 | 11 mouvements (quête longue + poignets) | 5 min 30 | 7 min 20 | 5 min 40 | 7 min 20 | 6 min 30 |
@@ -104,16 +104,18 @@ La règle : une transition sert à **changer de position**, pas à lire (la desc
 l'écran pendant le mouvement) ni à se reposer (un échauffement RAMP doit rester continu). D'où
 5 s une fois les mouvements connus, le haut des 3 à 5 s que demandait Fabio. Pendant les
 3 premières séances (`LEARNING_SESSIONS`), les mouvements sont neufs et il faut aussi les lire :
-10 s, celles du 7-minute workout, qui servaient aussi à lire. C'est la valeur « Auto ».
+10 s, celles du 7-minute workout, qui servaient aussi à lire. Priorité : le choix du héros,
+puis les 3 premières séances, puis 5 s.
 
-- Réglage « Transitions d'échauffement » (`warmupTransition`) : Auto → 5 s → 10 s → Attendre GO
-  → Enchaîner, au tap, masqué quand l'échauffement est coupé. Préférence par appareil, jamais
+- Réglage « Transitions d'échauffement » (`warmupTransition`) : 5 s → 10 s → Attendre GO →
+  Enchaîner, au tap, masqué quand l'échauffement est coupé. Tant que le héros n'a rien choisi
+  (valeur stockée `auto`), la ligne affiche 5 s et une note dessous dit « 10 s pendant tes
+  3 premières séances » ; le premier tap est un choix, et il gagne sur tout. Préférence par appareil, jamais
   fusionnée (R11 de `docs/testing/data-rules.md`).
-- Auto lit le nombre de séances du journal au démarrage de la séance (le même compteur que la
+- Le cas « rien choisi » lit le nombre de séances du journal au démarrage de la séance (le même compteur que la
   rotation des mouvements), le garde pour tout l'échauffement et dans le snapshot de reprise
-  (`warmupSessionsBefore`). Le réglage affiche « Auto », jamais une valeur qui changerait seule, et une ligne
-  dessous dit ce que fait Auto.
-- Jamais choisi : Auto, écrit en base au premier lancement, sauf si « Avant de commencer » est
+  (`warmupSessionsBefore`).
+- Jamais choisi : `auto`, écrit en base au premier lancement, sauf si « Avant de commencer » est
   sur « Attendre GO ». Un héros qui avait
   demandé à garder la main ne découvre pas un chrono entre les mouvements.
 - L'écran est celui de l'attente du premier mouvement (`PrepView`), mêmes bips (3-2-1 puis go).

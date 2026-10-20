@@ -1105,6 +1105,38 @@ describe("useSessionStore", () => {
       expect(store.getState().warmupPrep).toBe(false);
     });
 
+    test("quitting deletes the discarded trace only after the expedition flushed its buffer", async () => {
+      const gps = require("@/db/gps") as { deletePoints: jest.Mock };
+      gps.deletePoints.mockClear();
+      await store.getState().startSession(mockQuest, "medium");
+      const uuid = store.getState().sessionUuid;
+      const order: string[] = [];
+      let release: () => void = () => {};
+      const end = jest.fn(
+        () =>
+          new Promise<void>((resolve) => {
+            release = () => {
+              order.push("end");
+              resolve();
+            };
+          }),
+      );
+      gps.deletePoints.mockImplementationOnce(async () => {
+        order.push("delete");
+      });
+      const state = useExpeditionStore.getState();
+      useExpeditionStore.setState({ end } as never);
+
+      store.getState().quitSession();
+      expect(gps.deletePoints).not.toHaveBeenCalled();
+      release();
+      await new Promise((r) => setTimeout(r, 0));
+
+      expect(order).toEqual(["end", "delete"]);
+      expect(gps.deletePoints).toHaveBeenCalledWith(uuid);
+      useExpeditionStore.setState({ end: state.end } as never);
+    });
+
     test("turning it off starts on the countdown, as before", async () => {
       prefs.getWarmupEnabled.mockResolvedValue(false);
 

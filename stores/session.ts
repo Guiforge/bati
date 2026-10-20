@@ -1703,9 +1703,7 @@ export const useSessionStore = create<SessionState>()(
       // the hero threw away. The recovery banner's own discard already did this; the victory
       // screen's did not.
       const { sessionUuid, savedSessionId } = get();
-      if (sessionUuid !== null && savedSessionId === null) {
-        deletePoints(sessionUuid).catch((e) => reportError("session.discardPoints", e));
-      }
+      const discardedUuid = sessionUuid !== null && savedSessionId === null ? sessionUuid : null;
 
       set({
         quest: null,
@@ -1741,10 +1739,17 @@ export const useSessionStore = create<SessionState>()(
       });
       // Whether the hero quit or the session ended, the service must let go: it holds a wake
       // lock and a permanent notification, and nothing else will stop it.
+      // The delete waits for end(): it flushes the buffered fixes, and a delete that ran first
+      // left up to four points for the uuid just discarded.
       useExpeditionStore
         .getState()
         .end()
-        .catch((e) => reportError("session.stopExpedition", e));
+        .catch((e) => reportError("session.stopExpedition", e))
+        .then(() => {
+          if (discardedUuid !== null) {
+            return deletePoints(discardedUuid).catch((e) => reportError("session.discardPoints", e));
+          }
+        });
     },
 
     completeExercise: (resultValue, sidesWorked) => {

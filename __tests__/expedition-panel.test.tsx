@@ -225,7 +225,7 @@ describe("ExpeditionPanel", () => {
   // The unit is a display choice and nothing else: the same stored metres, read differently.
   test("the same run reads in miles when the hero asked for miles", async () => {
     mockUnit = "imperial";
-    setTrack(walked(600, 600, 1609.344));
+    setTrack(walked(600, 600, 1610));
     await mount();
 
     expect(screen.getByText("1.00 mi")).toBeTruthy();

@@ -2587,8 +2587,7 @@
     "zone_pick": "Zones (une ou deux)",
     "zone_weeks": "Semaines",
     "zone_start": "Ménager cette zone",
-    "zone_active": "Zone ménagée : {{zones}}, jusqu'au {{date}}.",
-    "zone_line": "On ménage : {{zones}}. On travaille le reste.",
+    "zone_active": "Zone ménagée : {{zones}}, jusqu'au {{date}}",
     "zone_end": "Les remettre maintenant",
     "safety": "Ce n'est pas un conseil médical. Si quelque chose te fait mal, vois quelqu'un qui peut te dire ce qui ne va pas.",
     "safety_link": "Lire S'entraîner en sécurité"

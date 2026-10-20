@@ -2484,8 +2484,7 @@
     "zone_pick": "Bereiche (einer oder zwei)",
     "zone_weeks": "Wochen",
     "zone_start": "Diese Zone schonen",
-    "zone_active": "Geschont: {{zones}}, bis {{date}}.",
-    "zone_line": "Geschont: {{zones}}. Den Rest trainieren wir.",
+    "zone_active": "Geschont: {{zones}}, bis {{date}}",
     "zone_end": "Jetzt zurückholen",
     "safety": "Das ist keine medizinische Beratung. Wenn etwas wehtut, such dir jemanden, der sagen kann, was los ist.",
     "safety_link": "Sicher trainieren lesen"

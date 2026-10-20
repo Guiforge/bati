@@ -2587,8 +2587,7 @@
     "zone_pick": "Zonas (una o dos)",
     "zone_weeks": "Semanas",
     "zone_start": "Cuidar esta zona",
-    "zone_active": "Cuidando {{zones}} hasta el {{date}}.",
-    "zone_line": "Cuidamos: {{zones}}. Trabajamos el resto.",
+    "zone_active": "Cuidando {{zones}} hasta el {{date}}",
     "zone_end": "Recuperarlos ahora",
     "safety": "Esto no es consejo médico. Si algo te duele, consulta a alguien que pueda decirte qué pasa.",
     "safety_link": "Leer Entrenar con seguridad"

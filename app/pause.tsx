@@ -175,9 +175,6 @@ export default function PauseScreen() {
               <Paragraph testID="zone-active" color="$textSecondary">
                 {t("pause.zone_active", { zones: zoneNames(zone.groups), date: date(zone.until) })}
               </Paragraph>
-              <Paragraph color="$text">
-                {t("pause.zone_line", { zones: zoneNames(zone.groups) })}
-              </Paragraph>
               <AppButton
                 testID="zone-end"
                 fullWidth={false}

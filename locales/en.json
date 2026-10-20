@@ -2482,8 +2482,7 @@
     "zone_pick": "Areas (one or two)",
     "zone_weeks": "Weeks",
     "zone_start": "Spare this zone",
-    "zone_active": "Sparing {{zones}} until {{date}}.",
-    "zone_line": "Resting: {{zones}}. We train the rest.",
+    "zone_active": "Sparing {{zones}} until {{date}}",
     "zone_end": "Bring them back now",
     "safety": "This isn't medical advice. If something hurts, see someone who can tell you what's wrong.",
     "safety_link": "Read Train safely"

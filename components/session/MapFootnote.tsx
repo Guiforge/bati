@@ -43,7 +43,14 @@ function useNetworkBlocked(): boolean {
  * One component for the recap and the live map, so the two screens that can fetch a tile ask
  * with the same sentence and credit with the same line.
  */
-export function MapFootnote({ quiet = false }: { quiet?: boolean }) {
+export function MapFootnote({
+  quiet = false,
+  compact = false,
+}: {
+  quiet?: boolean;
+  /** The live map: only the offer's button, the sentence that confirms it stays on the recap. */
+  compact?: boolean;
+}) {
   const { t } = useTranslation();
   const enabled = useSettingsStore((s) => s.mapTilesEnabled);
   const setEnabled = useSettingsStore((s) => s.setMapTilesEnabled);
@@ -89,9 +96,11 @@ export function MapFootnote({ quiet = false }: { quiet?: boolean }) {
 
   return (
     <YStack testID="map-offer" gap="$3">
-      <AppText fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
-        {t("recap.map_offer")}
-      </AppText>
+      {compact ? null : (
+        <AppText fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+          {t("recap.map_offer")}
+        </AppText>
+      )}
       <AppButton
         testID="map-enable"
         variant="outline"

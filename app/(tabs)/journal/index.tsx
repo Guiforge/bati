@@ -1,17 +1,19 @@
 import { LegendList } from "@legendapp/list/react-native";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { RefreshControl, ScrollView } from "react-native";
+import { Pressable, RefreshControl, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getTokenValue, XStack, YStack } from "tamagui";
 import { useAmbientVisit, useScreenGuide } from "@/components/chorus/screenCues";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
 import { Skeleton } from "@/components/common/Skeleton";
 import { OathStrip } from "@/components/home/OathStrip";
-import { Scroll } from "@/components/icons";
+import { Plus, Scroll } from "@/components/icons";
 import { NButton, NMuted, NSeg, NText, NTitle } from "@/components/journal/nocturne";
+import { PastSessionSheet } from "@/components/journal/PastSessionSheet";
+import { dayFromLink } from "@/components/journal/pastSessionForm";
 import { type JournalEntry, SessionCard } from "@/components/journal/SessionCard";
 import { StatsView } from "@/components/journal/stats/StatsView";
 import { useJournalStats } from "@/components/journal/stats/useJournalStats";
@@ -21,13 +23,17 @@ import { rawColors } from "@/constants/rawColors";
 import type { ChronicleWindow } from "@/db/chronicle";
 import type { StoredRecord } from "@/db/completed";
 import { listCompletedSessions } from "@/db/completed";
+import { dayKey } from "@/db/dates";
 import { listExercises } from "@/db/exercises";
 import { previewPathsFor } from "@/db/gps";
+import { loadHandContext } from "@/db/handEntries";
 import { getJournalVersion } from "@/db/journal";
 import { listQuestTemplates } from "@/db/quests";
 import { photoSummaries } from "@/db/sessionPhotos";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
+import { consumePastSessionLink } from "@/src/pastSessionLink";
 import { reportError } from "@/src/reportError";
+import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 
 type TabType = "history" | "stats";
@@ -70,6 +76,27 @@ function recordLabel(
   if (!first) return null;
   if (first.e != null) return names.get(first.e) ?? null;
   return t(`journal.record_${first.t}`, { defaultValue: "" }) || null;
+}
+
+/**
+ * The first row of History: writes a session down. A quiet row, 44 dp, in the voice of the empty
+ * state, so the Journal's header and its Stats keep the shape they had.
+ */
+function AddPastRow({ onPress }: { onPress: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <Pressable
+      testID="journal-add-past"
+      accessibilityRole="button"
+      onPress={onPress}
+      style={{ minHeight: 44, flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}
+    >
+      <Plus size={18} color="$textSecondary" />
+      <NMuted fontSize={14} lineHeight={20}>
+        {t("past_session.add_row")}
+      </NMuted>
+    </Pressable>
+  );
 }
 
 /** The year's chronicle, when the stats say there is one to open (`chronicleToOpen`). */
@@ -116,6 +143,8 @@ export default function JournalScreen() {
   /** The Journal version and language the list was last read under. */
   const shownVersion = useRef<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>("stats");
+  const [sheet, setSheet] = useState<{ open: boolean; day?: string }>({ open: false });
+  const { add, day: dayParam } = useLocalSearchParams<{ add?: string; day?: string }>();
   const { stats, reload: reloadStats } = useJournalStats();
 
   /** One page of history, ready to draw. */
@@ -155,6 +184,8 @@ export default function JournalScreen() {
           movingSeconds: s.movingSeconds,
           outing: s.outing,
           uuid: s.uuid,
+          byHand: s.byHand,
+          label: s.label,
           tracePoints: (s.uuid && traces.get(s.uuid)) || [],
           userLevel: s.userLevel,
           notes: s.notes,
@@ -223,6 +254,28 @@ export default function JournalScreen() {
     setRefreshing(false);
   }, [loadHistory, reloadStats]);
 
+  // "Fait ailleurs ?" on the reminder: History, and the sheet open on the day it names.
+  // Ignored while a session is running (it is not in the journal yet, so the overlap refusal could
+  // not see it), and the link is cleared either way so a remount does not open it twice. A day
+  // already written down opens nothing: the activity keeps the link as its intent, so a remount
+  // can hand back the one just saved, and it looks exactly like a second tap.
+  useEffect(() => {
+    const link = consumePastSessionLink({ add, day: dayParam });
+    if (link === null) return;
+    router.setParams({ add: undefined, day: undefined });
+    const { status } = useSessionStore.getState();
+    if (status !== "idle" && status !== "finished") return;
+    setActiveTab("history");
+    const now = new Date();
+    loadHandContext(null, now)
+      .then((context) => {
+        if (!context.handDays.has(dayKey(dayFromLink(link.day, now)))) {
+          setSheet({ open: true, day: link.day });
+        }
+      })
+      .catch((error: unknown) => reportError("journal.pastSessionLink", error));
+  }, [add, dayParam, router]);
+
   const refreshControl = (
     <RefreshControl
       refreshing={refreshing}
@@ -273,6 +326,7 @@ export default function JournalScreen() {
             recycleItems
             estimatedItemSize={100}
             refreshControl={refreshControl}
+            ListHeaderComponent={<AddPastRow onPress={() => setSheet({ open: true })} />}
             onEndReached={() => {
               loadMore().catch((e) => reportError("journal.loadMoreHistory", e));
             }}
@@ -298,25 +352,30 @@ export default function JournalScreen() {
             showsVerticalScrollIndicator={false}
           />
         ) : historyLoaded ? (
-          <YStack
-            testID="journal-history-empty"
-            mx="$5"
-            mt={17}
-            p={17}
-            rounded={8}
-            borderWidth={1}
-            borderStyle="dashed"
-            borderColor="$glassBorder"
-            items="center"
-            gap={8}
-          >
-            <NText fontWeight="500" fontSize={16}>
-              {t("journal.history_empty_title")}
-            </NText>
-            <NMuted fontSize={13} lineHeight={20} style={{ textAlign: "center" }}>
-              {t("journal.history_empty_body")}
-            </NMuted>
-          </YStack>
+          <>
+            <YStack px="$5">
+              <AddPastRow onPress={() => setSheet({ open: true })} />
+            </YStack>
+            <YStack
+              testID="journal-history-empty"
+              mx="$5"
+              mt={17}
+              p={17}
+              rounded={8}
+              borderWidth={1}
+              borderStyle="dashed"
+              borderColor="$glassBorder"
+              items="center"
+              gap={8}
+            >
+              <NText fontWeight="500" fontSize={16}>
+                {t("journal.history_empty_title")}
+              </NText>
+              <NMuted fontSize={13} lineHeight={20} style={{ textAlign: "center" }}>
+                {t("journal.history_empty_body")}
+              </NMuted>
+            </YStack>
+          </>
         ) : null
       ) : (
         <ScrollView
@@ -335,6 +394,15 @@ export default function JournalScreen() {
           {stats ? <StatsView stats={stats} /> : <StatsSkeleton />}
         </ScrollView>
       )}
+      <PastSessionSheet
+        open={sheet.open}
+        day={sheet.day}
+        onClose={() => setSheet((prev) => ({ ...prev, open: false }))}
+        onSaved={() => {
+          loadHistory(true).catch((e) => reportError("journal.history", e));
+          reloadStats().catch((e) => reportError("journal.stats", e));
+        }}
+      />
     </YStack>
   );
 }

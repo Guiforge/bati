@@ -121,6 +121,8 @@ type ExpeditionState = {
     goal?: OutingGoal | null,
     haptics?: boolean,
     view?: LiveView,
+    /** False: the hero went out without GPS. Nothing is asked, nothing starts, nothing is measured. */
+    gps?: boolean,
   ) => Promise<boolean>;
   end: () => Promise<void>;
 };
@@ -339,6 +341,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
     goal = null,
     haptics = true,
     view = DEFAULT_LIVE_VIEW,
+    gps = true,
   ) => {
     // The previous run is closed before this one can be refused. Both early exits below used to
     // return with the last outing's reading still in state: permission revoked between two
@@ -362,6 +365,14 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       view,
       lap: LAP_START,
     });
+
+    if (!gps) {
+      // The hero chose to go out without the receiver: no location permission, no notification
+      // permission (nothing will be posted), no service. The session store times the outing by
+      // its clock, and the recap shows the time alone, never a distance of zero.
+      set({ sessionUuid });
+      return true;
+    }
 
     if (!isAvailable()) {
       // No native half: iOS today, and jest. The quest still runs, it just measures nothing.

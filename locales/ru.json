@@ -405,7 +405,13 @@
     "import_none_kept": "Выбери хотя бы одно упражнение.",
     "import_confirm": "Добавить к моим заданиям",
     "import_confirm_update": "Обновить моё задание",
-    "editor_delete_in_use": "Это задание входит в {{titles}}. Сначала убери его из приключения."
+    "editor_delete_in_use": "Это задание входит в {{titles}}. Сначала убери его из приключения.",
+    "gps_label": "GPS",
+    "gps_on": "GPS: да",
+    "gps_off": "GPS: нет",
+    "gps_distance_note": "Без GPS цель по расстоянию не измерить.",
+    "gps_allow_location": "Разрешить доступ к местоположению",
+    "go_without_gps": "Выйти без GPS"
   },
   "adventures": {
     "editor_saved": "Приключение сохранено",
@@ -928,7 +934,10 @@
     "feast_anniversary_kicker": "Anniversary",
     "feast_anniversary_body": "{{n}} sessions in the past twelve months.",
     "feast_anniversary_record": "Best record of the year, {{movement}}, {{from}} to {{to}}.",
-    "expedition_lap": "Текущая лига"
+    "expedition_lap": "Текущая лига",
+    "no_gps_badge": "Без GPS",
+    "add_distance": "Добавить расстояние",
+    "no_gps_pocket": "Можно убрать телефон, таймер продолжает идти."
   },
   "muscles": {
     "arms": "Руки",
@@ -1291,7 +1300,13 @@
     "hard_sets_line_one": "{{pattern}}: {{count}} рабочий подход на этой неделе",
     "hard_sets_line_few": "{{pattern}}: {{count}} рабочих подхода на этой неделе",
     "hard_sets_line_many": "{{pattern}}: {{count}} рабочих подходов на этой неделе",
-    "hard_sets_line_other": "{{pattern}}: {{count}} рабочего подхода на этой неделе"
+    "hard_sets_line_other": "{{pattern}}: {{count}} рабочего подхода на этой неделе",
+    "correct": "Исправить",
+    "correct_distance": "Исправить расстояние",
+    "drop_distance_title": "Убрать расстояние?",
+    "drop_distance_body": "Лиги, которые она дала дороге, уйдут вместе с ней.",
+    "drop_distance_confirm": "Убрать",
+    "forget_body_by_hand": "Заработанные ею XP уйдут вместе с ней, и она перестанет считаться в пламени и клятве. Это нельзя отменить."
   },
   "achievements": {
     "progress": "{{unlocked}} / {{total}} открыто",
@@ -2586,7 +2601,8 @@
     "check_change": "Сменить мои дни",
     "check_off": "Выключить",
     "check_fine": "Всё хорошо",
-    "pause_row": "Пауза"
+    "pause_row": "Пауза",
+    "elsewhere": "Уже сделал?"
   },
   "setAside": {
     "leave_out": "Больше не предлагать {{name}}",
@@ -3093,5 +3109,53 @@
         "line": "Четыре тяжёлые недели подряд. На этой неделе сбавляем нагрузку, а не останавливаемся."
       }
     ]
+  },
+  "past_session": {
+    "title": "Добавить прошлую тренировку",
+    "title_edit": "Исправить тренировку",
+    "title_distance": "Добавить расстояние",
+    "add_row": "Добавить прошлую тренировку",
+    "type_workout": "Тренировка",
+    "when": "Когда",
+    "today": "Сегодня",
+    "yesterday": "Вчера",
+    "other_day": "Другой день",
+    "ended_at": "Закончил около",
+    "duration": "Длительность",
+    "duration_custom": "Другая",
+    "minutes": "мин",
+    "name": "Название (необязательно)",
+    "name_hint": "зал",
+    "default_name": "Тренировка вне Bati",
+    "distance": "Расстояние (необязательно)",
+    "distance_a11y": "Расстояние в {{unit}}",
+    "rule_link": "Что это даёт",
+    "rule": "Тренировка вне Bati сохраняет пламя и идёт в зачёт клятвы, даёт XP за 15 минут в Bati и не бьёт босса.",
+    "save": "Сохранить",
+    "toast_flame": "Пламя сохранено, +{{xp}} XP",
+    "toast_corrected": "Тренировка исправлена",
+    "toast_noted": "Тренировка записана, +{{xp}} XP",
+    "toast_oath": "Клятва исполнена, +{{xp}} XP",
+    "refuse_too_old": "Записать можно до 7 дней назад: выбери день поближе.",
+    "refuse_one_per_day_today": "Твоя тренировка вне Bati за сегодня уже записана. Чтобы изменить её, открой её в Журнале.",
+    "refuse_one_per_day_yesterday": "Твоя тренировка вне Bati за вчера уже записана. Чтобы изменить её, открой её в Журнале.",
+    "refuse_one_per_day_weekday": "Твоя тренировка вне Bati за {{weekday}} уже записана. Чтобы изменить её, открой её в Журнале.",
+    "refuse_duration": "Тренировка вне Bati засчитывается от 10 минут до 4 часов.",
+    "refuse_overlap": "В {{time}} Bati видел тебя на «{{name}}». Сдвинь время или сократи длительность.",
+    "overlap_unknown": "другая тренировка",
+    "refuse_implausible": "{{distance}} за {{duration}}: это {{speed}} {{way}}. Ты имел в виду {{fix}}?",
+    "refuse_implausible_nofix": "{{distance}} за {{duration}}: это {{speed}} {{way}}. Проверь расстояние или убери его.",
+    "way_walk": "пешком",
+    "way_run": "бегом",
+    "way_ride": "на велосипеде",
+    "fix_distance": "Указать {{fix}}",
+    "drop_distance": "Убрать расстояние",
+    "rule_no_gps": "Без GPS вылазка засчитывается по времени: пламя, XP, но без лиг, пока ты не добавишь расстояние.",
+    "hand_mark": "введено вручную",
+    "hand_mark_distance": "расстояние введено вручную",
+    "hand_mark_count_one": "({{count}} введена вручную)",
+    "hand_mark_count_few": "({{count}} введены вручную)",
+    "hand_mark_count_many": "({{count}} введены вручную)",
+    "hand_mark_count_other": "({{count}} введены вручную)"
   }
 }

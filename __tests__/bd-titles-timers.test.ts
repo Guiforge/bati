@@ -65,8 +65,9 @@ describe("Journal report titles", () => {
 
   it("the session details title is a Recitatif on the plate, once", () => {
     const src = read("components/journal/QuestLog.tsx");
-    expect(src).toContain("<Recitatif>{data.questTitle}</Recitatif>");
-    expect(src.match(/data\.questTitle/g)).toHaveLength(1);
+    // `title` is the quest's, or, for a session the hero wrote down, the name they gave it.
+    expect(src).toContain("<Recitatif>{title}</Recitatif>");
+    expect(src.match(/<Recitatif>/g)).toHaveLength(1);
   });
 });
 

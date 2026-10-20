@@ -421,3 +421,12 @@ function estimateSlotSeconds(qex: { exercise: XpSet["exercise"]; target: Target 
 export function outingXpPerMinute(locomotion: Locomotion): number {
   return (60 * LOCOMOTION_RATE[locomotion]) / SECONDS_PER_REP_EQUIVALENT;
 }
+
+/**
+ * What a session the hero writes down pays: the XP of 15 minutes in Bati, 75, the same for every
+ * type and every duration. Derived from the walk's tariff so it follows it, and one figure for all
+ * types because nothing checks what a hero did in a gym (a "run" entry would pay double for it).
+ * Fixed at the save: a later correction never recomputes it (the oath bonus sits on the same row,
+ * and sync keeps the larger XP of a row).
+ */
+export const HAND_ENTRY_XP = 15 * outingXpPerMinute("walk");

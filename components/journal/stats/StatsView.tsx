@@ -336,6 +336,18 @@ function Wall({ stats, mode }: { stats: JournalStats; mode: Mode }) {
   );
 }
 
+/**
+ * A count that includes sessions the hero wrote down, with the mark in brackets after it, before
+ * the full stop when the sentence has one: "3 sessions or outings in the last seven days (1 typed
+ * by hand)." Nothing is added when there are none.
+ */
+function withHandMark(t: TFunction, text: string, entries: number): string {
+  if (!(entries > 0)) return text;
+  const mark = t("past_session.hand_mark_count", { count: entries });
+  const stop = /[.。]$/.exec(text)?.[0] ?? "";
+  return `${text.slice(0, text.length - stop.length)} ${mark}${stop}`;
+}
+
 export function FlameBlock({ stats }: { stats: JournalStats }) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
@@ -358,7 +370,9 @@ export function FlameBlock({ stats }: { stats: JournalStats }) {
   // Short of the quota, the note says how many are missing: "2 keep it lit" beside "0 days lit"
   // after a first session told a new hero she had failed, not that one more would do it.
   const note = [
-    t("journal.flame_window", { count: flame.inWindow }),
+    // The window counts sessions the hero wrote down too; the bracket says how many, in the one
+    // mark every surface uses.
+    withHandMark(t, t("journal.flame_window", { count: flame.inWindow }), stats.handInWindow),
     // The playable half of the rule, said before "N more": without it "45 asleep" over "4 more"
     // reads as "four sessions this week or I lose everything".
     flame.dormant > 0 ? t("journal.flame_dormant_note") : "",
@@ -476,7 +490,7 @@ function recordLine(
   return name ? t("journal.fig_record_latest", { name, date }) : date;
 }
 
-function MonthBlock({ stats }: { stats: JournalStats }) {
+export function MonthBlock({ stats }: { stats: JournalStats }) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const distanceUnit = useSettingsStore((s) => s.distanceUnit);
@@ -542,7 +556,11 @@ function MonthBlock({ stats }: { stats: JournalStats }) {
         >
           <NMuted fontSize={11}>
             {current.outings > 0
-              ? t("journal.fig_outings", { count: current.outings })
+              ? withHandMark(
+                  t,
+                  t("journal.fig_outings", { count: current.outings }),
+                  current.handOutings,
+                )
               : t("journal.fig_no_outings")}
           </NMuted>
         </Figure>

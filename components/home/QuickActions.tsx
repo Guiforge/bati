@@ -3,7 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Linking, ScrollView, StyleSheet, useWindowDimensions } from "react-native";
+import { ScrollView, StyleSheet, useWindowDimensions } from "react-native";
 import { getTokens, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
@@ -20,6 +20,7 @@ import { listExercises } from "@/db/exercises";
 import { cheapestLocomotion, hasOutdoorSlot, outingGoal, withOutingGoal } from "@/db/expeditions";
 import { getOutingHabit } from "@/db/outingHabit";
 import { listOutings, type Outing } from "@/db/outings";
+import { preferences } from "@/db/preferences";
 import { previewOuting } from "@/db/preview";
 import {
   getAllQuestConfigs,
@@ -67,6 +68,14 @@ const FALLBACK_GOAL: OutingGoal = { type: "time", seconds: 30 * 60 };
  * saying it twice is the right answer.
  */
 let whySaid = false;
+
+/** The hero's last "GPS : oui / non"; on when it cannot be read, which is how every outing began. */
+function readGpsChoice(): Promise<boolean> {
+  return preferences.getOutingGps().catch((e: unknown) => {
+    reportError("home.outingGps", e);
+    return true;
+  });
+}
 
 /**
  * The row's head notice: one sentence, one action, above the tiles.
@@ -160,7 +169,7 @@ export function QuickActions({ showGoals }: { showGoals: boolean | null }) {
    * never learn that the hero granted the permission from Android's settings, and the row would
    * say "denied" for ever. We ask on the tap and answer the answer.
    */
-  const [denied, setDenied] = useState(false);
+  const [deniedFor, setDeniedFor] = useState<number | null>(null);
   /** The tile whose why is on screen, waiting for the tap that lets Android ask. */
   const [whyFor, setWhyFor] = useState<number | null>(null);
   /** The way out whose goal sheet is open. */
@@ -227,7 +236,48 @@ export function QuickActions({ showGoals }: { showGoals: boolean | null }) {
     await load();
   };
 
-  const startOuting = async (questId: number) => {
+  /**
+   * The position, asked before an outing measured by GPS: the why first when there is something to
+   * explain, then Android's dialog, then the notification. False when it stopped short (the why is
+   * on screen waiting for a tap, or the position was refused and the notice says what to do).
+   */
+  const askPosition = async (questId: number): Promise<boolean> => {
+    // Why, before Android's own dialog, and only when there is something to explain.
+    // `quests.location_notice` says it on the quest screen, which this door skips: an unprimed
+    // system dialog is refused more often, and a final refusal cannot be undone from inside
+    // the app. The module answers without prompting, so a hero who granted months ago is
+    // never told about a dialog that will not appear, and one who granted from the settings
+    // is seen on the very next tap: the same reason a refusal is never persisted.
+    const already = await getPermissionStatus();
+    if (!whySaid && !already.granted) {
+      whySaid = true;
+      setDeniedFor(null);
+      setWhyFor(questId);
+      setIsStarting(false);
+      return false;
+    }
+    setWhyFor(null);
+
+    // Position first, then the notification: from API 33 the ongoing notification is the only
+    // surface an outing has in a pocket, and bundling the two would let one refusal veto the
+    // other. `begin()` asks again and both are idempotent once granted.
+    const permission = await requestPermission();
+    if (!permission.granted) {
+      // No fix means no ground. The row says so and offers the outing without GPS, which is a
+      // choice the hero makes (the chip on the goal sheet), not a state the app falls into.
+      setDeniedFor(questId);
+      setIsStarting(false);
+      return false;
+    }
+    setDeniedFor(null);
+    // Once per process, and `begin()` calls the same helper: a hero who refused here used to
+    // get the system dialog again, over a chronometer already counting their walk.
+    await ensureNotificationPermission();
+    return true;
+  };
+
+  /** `withoutGps`: the notice's "Go out without GPS", which has just written the choice down. */
+  const startOuting = async (questId: number, withoutGps = false) => {
     if (isStarting) return;
     // A session that is neither idle nor finished is a live one — an outing paused by the
     // hardware back button still holds its uuid and its points. `startSession` would overwrite
@@ -241,37 +291,13 @@ export function QuickActions({ showGoals }: { showGoals: boolean | null }) {
     // The body and its error path apart: the React Compiler cannot lower a `try` holding `??`,
     // and it used to skip this whole row over one.
     const begin = async () => {
-      // Why, before Android's own dialog, and only when there is something to explain.
-      // `quests.location_notice` says it on the quest screen, which this door skips: an unprimed
-      // system dialog is refused more often, and a final refusal cannot be undone from inside
-      // the app. The module answers without prompting, so a hero who granted months ago is
-      // never told about a dialog that will not appear, and one who granted from the settings
-      // is seen on the very next tap: the same reason a refusal is never persisted.
-      const already = await getPermissionStatus();
-      if (!whySaid && !already.granted) {
-        whySaid = true;
-        setDenied(false);
-        setWhyFor(questId);
-        setIsStarting(false);
-        return;
-      }
+      // The last choice of "GPS : oui / non" (`outing_gps`), set on the goal sheet. Off: no
+      // position is asked for, nothing is explained about it, no notification is needed (an outing
+      // without GPS posts none), and the outing starts as it is.
+      const gps = withoutGps ? false : await readGpsChoice();
+      if (gps && !(await askPosition(questId))) return;
       setWhyFor(null);
-
-      // Position first, then the notification: from API 33 the ongoing notification is the only
-      // surface an outing has in a pocket, and bundling the two would let one refusal veto the
-      // other. `begin()` asks again and both are idempotent once granted.
-      const permission = await requestPermission();
-      if (!permission.granted) {
-        // No fix means no ground, and a session that measures nothing is not the session this
-        // tile promises. Nothing starts, and the row says where the grant lives.
-        setDenied(true);
-        setIsStarting(false);
-        return;
-      }
-      setDenied(false);
-      // Once per process, and `begin()` calls the same helper: a hero who refused here used to
-      // get the system dialog again, over a chronometer already counting their walk.
-      await ensureNotificationPermission();
+      setDeniedFor(null);
 
       // Loaded at `medium` whatever the quest screen was left on: a level stretches an outing's
       // duration and multiplies its XP, and the hero who taps here has chosen neither.
@@ -287,6 +313,7 @@ export function QuickActions({ showGoals }: { showGoals: boolean | null }) {
       // duration, which is what "no number on it" has always meant here.
       await startSession(loaded.quest, loaded.level, {
         goal: outingGoal(loaded.quest, loaded.config?.distanceM ?? null),
+        gps,
       });
       router.push("/session" as never);
     };
@@ -341,12 +368,16 @@ export function QuickActions({ showGoals }: { showGoals: boolean | null }) {
         />
       ) : null}
 
-      {denied && whyFor === null ? (
+      {deniedFor !== null && whyFor === null ? (
         <BandNotice
           text={t("session.expedition_status_denied")}
-          action={t("session.expedition_open_settings")}
+          action={t("quests.go_without_gps")}
           onPress={() => {
-            Linking.openSettings().catch((e: unknown) => reportError("home.openSettings", e));
+            // The choice, written down, then the outing: the chip on the goal sheet shows it.
+            preferences
+              .setOutingGps(false)
+              .then(() => startOuting(deniedFor, true))
+              .catch((error: unknown) => reportError("home.startOuting", error));
           }}
         />
       ) : null}

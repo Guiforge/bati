@@ -14,9 +14,13 @@ const mockPush = jest.fn();
 const mockStats: { chronicle: ChronicleWindow | null } = { chronicle: null };
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
+// The sheet that writes a session down is mounted (closed) under the Journal and asks for a Toast.
+jest.mock("@/components/common/Toast", () => ({ useToast: () => ({ showSuccess: jest.fn() }) }));
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ push: mockPush, back: jest.fn() }),
+  useRouter: () => ({ push: mockPush, back: jest.fn(), setParams: jest.fn() }),
   useFocusEffect: jest.fn(),
+  useLocalSearchParams: () => ({}),
+  usePathname: () => "/journal",
 }));
 jest.mock(
   "react-native-safe-area-context",

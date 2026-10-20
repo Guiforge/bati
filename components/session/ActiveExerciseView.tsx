@@ -124,9 +124,11 @@ export function ActiveExerciseView() {
   /** An expedition measures ground rather than repetitions, and shows it. */
   const isOuting = isOutdoors(currentEx?.exercise.style);
   const view = useExpeditionStore((state) => state.view);
-  const bigNumbers = isOuting && view.layout === "bigFigures";
+  // Out without GPS (`outing_gps`): no map, no picture to wait on the sky for, a clock and nothing else.
+  const noGps = useSessionStore((s) => !s.gps);
+  const bigNumbers = isOuting && (view.layout === "bigFigures" || noGps);
   /** The big figure floats on the map; in a boss fight the arena owns the slot, so not then. */
-  const bigOnMap = !bossFight && isOuting && view.layout === "bigMap";
+  const bigOnMap = !bossFight && isOuting && !noGps && view.layout === "bigMap";
   /** Screen on, on foot: ending takes a confirmation and the map ignores fingers. */
   const pocketLock =
     quest !== null && currentEx !== undefined && pocketGuarded(quest, currentEx, view);

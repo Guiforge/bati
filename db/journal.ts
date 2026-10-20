@@ -18,7 +18,13 @@ import { FIRST_QUEST_TITLE } from "@/constants/onboarding";
 import type { Localized } from "@/src/i18n/deviceLanguage";
 import type { AchievementProgress } from "./achievements";
 import { db, schema } from "./client";
-import { type CompletedSession, isWorkout, parseRecords, type StoredRecord } from "./completed";
+import {
+  type CompletedSession,
+  isMeasured,
+  isWorkout,
+  parseRecords,
+  type StoredRecord,
+} from "./completed";
 import { dayKey } from "./dates";
 import { DEED_ADVENTURE } from "./deed";
 import {
@@ -230,7 +236,10 @@ export type RecordMention = {
 
 export type PeriodFigures = {
   quests: number;
+  /** Outings, the ones written down included (`handOutings` of them). */
   outings: number;
+  /** Of those, the outings the hero wrote down (`0078`): the Stats say so beside the count. */
+  handOutings: number;
   /** Every result as reps, a held second at a third of one: the conversion the village uses. */
   reps: number;
   /** Seconds in quests. An outing's time is its own figure and not counted here. */
@@ -302,10 +311,13 @@ export async function getPeriodFigures(from: Date | null, to: Date): Promise<Per
 
   const [head] = await db
     .select({
-      quests: sql<number>`COALESCE(SUM(CASE WHEN ${completedQuest.outing} IS NULL THEN 1 ELSE 0 END), 0)`,
+      // A session written down is neither a quest nor, when it is not an outing, anything else
+      // here: it is in the XP and nowhere in what was played (`0078`).
+      quests: sql<number>`COALESCE(SUM(CASE WHEN ${completedQuest.outing} IS NULL AND ${completedQuest.byHand} IS NULL THEN 1 ELSE 0 END), 0)`,
       outings: sql<number>`COALESCE(SUM(CASE WHEN ${completedQuest.outing} IS NOT NULL THEN 1 ELSE 0 END), 0)`,
-      questSeconds: sql<number>`COALESCE(SUM(CASE WHEN ${completedQuest.outing} IS NULL THEN COALESCE(${completedQuest.durationSeconds}, 0) ELSE 0 END), 0)`,
-      timedQuests: sql<number>`COALESCE(SUM(CASE WHEN ${completedQuest.outing} IS NULL AND ${completedQuest.durationSeconds} > 0 THEN 1 ELSE 0 END), 0)`,
+      handOutings: sql<number>`COALESCE(SUM(CASE WHEN ${completedQuest.outing} IS NOT NULL AND ${completedQuest.byHand} = 'session' THEN 1 ELSE 0 END), 0)`,
+      questSeconds: sql<number>`COALESCE(SUM(CASE WHEN ${completedQuest.outing} IS NULL AND ${completedQuest.byHand} IS NULL THEN COALESCE(${completedQuest.durationSeconds}, 0) ELSE 0 END), 0)`,
+      timedQuests: sql<number>`COALESCE(SUM(CASE WHEN ${completedQuest.outing} IS NULL AND ${completedQuest.byHand} IS NULL AND ${completedQuest.durationSeconds} > 0 THEN 1 ELSE 0 END), 0)`,
       outingSeconds: sql<number>`COALESCE(SUM(CASE WHEN ${completedQuest.outing} IS NOT NULL THEN COALESCE(${completedQuest.movingSeconds}, ${completedQuest.durationSeconds}, 0) ELSE 0 END), 0)`,
       leaguesM: sql<number>`COALESCE(SUM(${completedQuest.leaguesM}), 0)`,
       xp: sql<number>`COALESCE(SUM(${completedQuest.xpEarned}), 0)`,
@@ -319,6 +331,7 @@ export async function getPeriodFigures(from: Date | null, to: Date): Promise<Per
   return {
     quests: Number(head?.quests ?? 0),
     outings: Number(head?.outings ?? 0),
+    handOutings: Number(head?.handOutings ?? 0),
     reps,
     questSeconds: Number(head?.questSeconds ?? 0),
     timedQuests: Number(head?.timedQuests ?? 0),
@@ -469,7 +482,12 @@ async function bestSessionBy(metric: "duration" | "xp" | "ground"): Promise<Sess
     .from(completedQuest)
     .leftJoin(quests, eq(quests.id, completedQuest.questId))
     // A quest's records are about quests; the longest outing is the one record about outings.
-    .where(and(metric === "ground" ? isNotNull(completedQuest.outing) : isWorkout(), gt(column, 0)))
+    .where(
+      and(
+        metric === "ground" ? and(isNotNull(completedQuest.outing), isMeasured()) : isWorkout(),
+        gt(column, 0),
+      ),
+    )
     .orderBy(desc(column), desc(completedQuest.performedAt))
     .limit(1);
   if (!row || row.value == null) return null;
@@ -629,6 +647,8 @@ export type QuestStanding = {
 export async function getQuestStanding(session: CompletedSession): Promise<QuestStanding | null> {
   let rows: { sessionId: number; value: number; at: Date }[];
 
+  // A typed distance is not ground covered: it neither ranks nor is ranked.
+  if (session.outing != null && session.byHand != null) return null;
   if (session.outing != null) {
     rows = (
       await db
@@ -638,7 +658,7 @@ export async function getQuestStanding(session: CompletedSession): Promise<Quest
           at: completedQuest.performedAt,
         })
         .from(completedQuest)
-        .where(and(isNotNull(completedQuest.outing), gt(completedQuest.leaguesM, 0)))
+        .where(and(isNotNull(completedQuest.outing), gt(completedQuest.leaguesM, 0), isMeasured()))
     ).map((r) => ({ sessionId: r.sessionId, value: r.value ?? 0, at: r.at }));
   } else {
     if (session.questId == null) return null;
@@ -766,7 +786,7 @@ async function sessionRecordFell(
       and(
         ne(completedQuest.id, session.id),
         lt(completedQuest.performedAt, session.performedAt),
-        outing ? undefined : isWorkout(),
+        outing ? isMeasured() : isWorkout(),
       ),
     );
   return {
@@ -1216,6 +1236,8 @@ export async function getJournalVersion(): Promise<string> {
         records: sql<number | null>`SUM(${completedQuest.hasNewRecords})`,
         // A note typed from the detail grows its stamp, so the list refreshes behind it (0075).
         notes: sql<number | null>`TOTAL(${completedQuest.notesEditedAt})`,
+        // A session written down corrected, or a distance typed (0078).
+        hand: sql<number | null>`TOTAL(${completedQuest.byHandEditedAt})`,
       })
       .from(completedQuest),
     db
@@ -1237,6 +1259,7 @@ export async function getJournalVersion(): Promise<string> {
     sessions?.xp,
     sessions?.records,
     sessions?.notes,
+    sessions?.hand,
     photos?.count,
     photos?.stamps,
     ...preferences.map((row) => row.value),

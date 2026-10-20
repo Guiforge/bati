@@ -36,7 +36,9 @@ class MainActivity : ReactActivity() {
     // setTheme(R.style.AppTheme);
     // bati-stale-file-intent: see plugins/withAndroidStaleFileIntent.js.
     val fromHistory = (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0
-    if ((savedInstanceState != null || fromHistory) && intent.data?.scheme == "content") {
+    val data = intent.data
+    val stale = data != null && (data.scheme == "content" || (data.scheme == "bati" && data.getQueryParameter("add") != null))
+    if ((savedInstanceState != null || fromHistory) && stale) {
       intent = Intent(intent).setData(null)
     }
     // @generated begin expo-splashscreen - expo prebuild (DO NOT MODIFY) sync-f3ff59a738c56c9a6119210cb55f0b613eb8b6af
@@ -44,6 +46,12 @@ class MainActivity : ReactActivity() {
     // @generated end expo-splashscreen
     super.onCreate(null)
     if (Build.VERSION.SDK_INT in 33..35) onBackPressedDispatcher.addCallback(this, backToJs)
+  }
+
+  // bati-stale-file-intent: the link of a notification that restarts a dead process.
+  override fun onNewIntent(intent: Intent) {
+    setIntent(intent)
+    super.onNewIntent(intent)
   }
 
   /**

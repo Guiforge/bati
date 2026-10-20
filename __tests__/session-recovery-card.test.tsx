@@ -144,6 +144,13 @@ describe("SessionRecoveryCard, finishing an outing", () => {
     expect(screen.getByText("Resume")).toBeTruthy();
   });
 
+  test("an outing without GPS shows only the time out, not a workout's rounds", async () => {
+    await mount(session({ isOuting: true, leaguesM: null, elapsedTime: 3600 }));
+
+    expect(screen.getByText("Time: 60:00")).toBeTruthy();
+    expect(screen.queryByText(/Round 1\/1/)).toBeNull();
+  });
+
   test("a finish that did not take stays on Home", async () => {
     const finish = jest.fn(async () => false);
     await mount(session({ isOuting: true, leaguesM: 1800 }), finish);

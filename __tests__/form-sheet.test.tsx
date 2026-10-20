@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react-native";
 import { Dimensions } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { TamaguiProvider } from "tamagui";
+import { TamaguiProvider, Text } from "tamagui";
 import { FormSheet } from "@/components/common/FormSheet";
 import de from "@/locales/de.json";
 import en from "@/locales/en.json";
@@ -12,7 +12,7 @@ import config from "@/tamagui.config";
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("expo-router", () => ({ usePathname: () => "/" }));
 
-async function mountTitle(title: string, top = 0) {
+async function mountTitle(title: string, top = 0, footer?: React.ReactNode) {
   await render(
     <SafeAreaProvider
       initialMetrics={{
@@ -21,7 +21,7 @@ async function mountTitle(title: string, top = 0) {
       }}
     >
       <TamaguiProvider config={config} defaultTheme="dark">
-        <FormSheet open title={title} onClose={jest.fn()}>
+        <FormSheet open title={title} onClose={jest.fn()} footer={footer}>
           {null}
         </FormSheet>
       </TamaguiProvider>
@@ -53,5 +53,19 @@ describe("FormSheet", () => {
     await mountTitle("Ton animal", 40);
     const max = JSON.stringify(screen.toJSON()).match(/"maxHeight":(\d+(?:\.\d+)?)/);
     expect(Number(max?.[1])).toBe(Dimensions.get("window").height - 40 - 16);
+  });
+
+  it("pins a footer under the body, outside the scroll view", async () => {
+    await mountTitle("Ton animal", 0, <Text>pinned</Text>);
+    const tree = JSON.stringify(screen.toJSON());
+    expect(tree).toContain("pinned");
+    // After the scroll view's content: the footer is its sibling, not a child of it.
+    expect(tree.indexOf("pinned")).toBeGreaterThan(tree.indexOf("Ton animal"));
+    expect(screen.getByText("pinned")).toBeTruthy();
+  });
+
+  it("has no footer unless it is given one", async () => {
+    await mountTitle("Ton animal");
+    expect(screen.queryByText("pinned")).toBeNull();
   });
 });

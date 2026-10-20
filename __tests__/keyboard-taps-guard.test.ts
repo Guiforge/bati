@@ -40,6 +40,8 @@ const TEXT_FIELD = /<TextInput|<Input\b/;
  * view, and the sheet sets the prop on its own list.
  */
 const EXEMPT: Record<string, string> = {
+  "app/(tabs)/journal/index.tsx":
+    "the past-session form is a FormSheet, its own surface: its scroll view sets the prop. Nothing on this screen is typed into.",
   "app/(tabs)/quests/[id].tsx":
     "same picker sheet, opened over the quest detail. Nothing on this screen is typed into.",
 };

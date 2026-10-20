@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { isolatedGitEnv } from "./helpers/isolatedGitEnv";
+import { isolatedGitEnv } from "./helpers/isolatedGit";
 
 // The DCO script runs in CI only, so this builds a throwaway repository and runs it for real.
 const script = path.resolve("scripts/check-dco.sh");
@@ -34,6 +34,8 @@ test("an outside commit needs a Signed-off-by, the maintainer and bots do not (B
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "dco-"));
   try {
     git(dir, "init", "-q");
+    // Proof the repository is this folder, not whatever an inherited GIT_DIR names.
+    expect(fs.existsSync(path.join(dir, ".git"))).toBe(true);
     fs.mkdirSync(path.join(dir, ".github"));
     fs.copyFileSync(".github/dco-maintainers.txt", path.join(dir, ".github/dco-maintainers.txt"));
     fs.mkdirSync(path.join(dir, "scripts"));

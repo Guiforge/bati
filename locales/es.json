@@ -394,7 +394,13 @@
     "import_none_kept": "Elige al menos un ejercicio.",
     "import_confirm": "Añadir a mis misiones",
     "import_confirm_update": "Actualizar mi misión",
-    "editor_delete_in_use": "Esta misión es una etapa de {{titles}}. Quítala primero de la aventura."
+    "editor_delete_in_use": "Esta misión es una etapa de {{titles}}. Quítala primero de la aventura.",
+    "gps_label": "GPS",
+    "gps_on": "GPS: sí",
+    "gps_off": "GPS: no",
+    "gps_distance_note": "Sin GPS, un objetivo de distancia no se puede medir.",
+    "gps_allow_location": "Permitir la ubicación",
+    "go_without_gps": "Salir sin GPS"
   },
   "adventures": {
     "editor_saved": "Aventura guardada",
@@ -901,7 +907,10 @@
     "tonight_anniversary_one": "Tu aldea cumple un año.",
     "tonight_anniversary_other": "Tu aldea cumple {{count}} años.",
     "tonight_anniversary_many": "Tu aldea cumple {{count}} de años.",
-    "expedition_lap": "Legua en curso"
+    "expedition_lap": "Legua en curso",
+    "no_gps_badge": "Sin GPS",
+    "add_distance": "Añadir la distancia",
+    "no_gps_pocket": "Puedes guardar el móvil, el cronómetro sigue."
   },
   "muscles": {
     "arms": "Brazos",
@@ -1228,7 +1237,13 @@
     "hard_sets_title": "Series duras",
     "hard_sets_line_one": "{{pattern}}: {{count}} serie dura esta semana",
     "hard_sets_line_many": "{{pattern}}: {{count}} series duras esta semana",
-    "hard_sets_line_other": "{{pattern}}: {{count}} series duras esta semana"
+    "hard_sets_line_other": "{{pattern}}: {{count}} series duras esta semana",
+    "correct": "Corregir",
+    "correct_distance": "Corregir la distancia",
+    "drop_distance_title": "¿Quitar la distancia?",
+    "drop_distance_body": "Las leguas que dio al camino se van con ella.",
+    "drop_distance_confirm": "Quitar",
+    "forget_body_by_hand": "La XP que te dio se va con ella, y deja de contar para tu llama y tu juramento. No se puede deshacer."
   },
   "achievements": {
     "progress": "{{unlocked}} / {{total}} desbloqueados",
@@ -2440,7 +2455,7 @@
     "oath_more_other": "{{count}} sesiones más y el juramento se mantiene esta semana.",
     "channel": "Recordatorios de entrenamiento",
     "snooze": "En 1 h",
-    "pause": "Pausa 7 días",
+    "pause": "Pausa 7 d",
     "section": "RECORDATORIO",
     "switch": "Recuérdame entrenar",
     "rule": "Tú eliges tus días y tu hora. Bati te avisa una vez esos días, salvo si tu sesión ya está hecha o si te aconseja descansar. Puedes aplazarlo una hora o ponerlo en pausa.",
@@ -2481,7 +2496,8 @@
     "check_change": "Cambiar mis días",
     "check_off": "Apagar",
     "check_fine": "Me van bien",
-    "pause_row": "Pausar"
+    "pause_row": "Pausar",
+    "elsewhere": "¿Hecho fuera?"
   },
   "setAside": {
     "leave_out": "No proponerme más: {{name}}",
@@ -2992,5 +3008,52 @@
         "line": "Cuatro semanas intensas seguidas. Esta semana toca aligerar, no parar."
       }
     ]
+  },
+  "past_session": {
+    "title": "Añadir una sesión pasada",
+    "title_edit": "Corregir la sesión",
+    "title_distance": "Añadir la distancia",
+    "add_row": "Añadir una sesión pasada",
+    "type_workout": "Entrenamiento",
+    "when": "Cuándo",
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "other_day": "Otro día",
+    "ended_at": "Terminé hacia las",
+    "duration": "Duración",
+    "duration_custom": "Otra",
+    "minutes": "min",
+    "name": "Nombre (opcional)",
+    "name_hint": "gimnasio",
+    "default_name": "Sesión fuera",
+    "distance": "Distancia (opcional)",
+    "distance_a11y": "Distancia en {{unit}}",
+    "rule_link": "Lo que aporta",
+    "rule": "Una sesión fuera mantiene la llama y cuenta para el juramento, aporta la XP de 15 minutos en Bati y no golpea al jefe.",
+    "save": "Guardar",
+    "toast_flame": "Llama mantenida, +{{xp}} XP",
+    "toast_corrected": "Sesión corregida",
+    "toast_noted": "Sesión anotada, +{{xp}} XP",
+    "toast_oath": "Juramento cumplido, +{{xp}} XP",
+    "refuse_too_old": "Puedes anotar hasta 7 días atrás: elige un día más cercano.",
+    "refuse_one_per_day_today": "Tu sesión fuera de hoy ya está anotada. Para cambiarla, ábrela en el Diario.",
+    "refuse_one_per_day_yesterday": "Tu sesión fuera de ayer ya está anotada. Para cambiarla, ábrela en el Diario.",
+    "refuse_one_per_day_weekday": "Tu sesión fuera del {{weekday}} ya está anotada. Para cambiarla, ábrela en el Diario.",
+    "refuse_duration": "Una sesión fuera cuenta entre 10 minutos y 4 horas.",
+    "refuse_overlap": "A las {{time}}, Bati te veía en «{{name}}». Cambia la hora o acorta la duración.",
+    "overlap_unknown": "otra sesión",
+    "refuse_implausible": "{{distance}} en {{duration}} serían {{speed}} {{way}}. ¿Querías decir {{fix}}?",
+    "refuse_implausible_nofix": "{{distance}} en {{duration}} serían {{speed}} {{way}}. Revisa la distancia o quítala.",
+    "way_walk": "a pie",
+    "way_run": "corriendo",
+    "way_ride": "en bici",
+    "fix_distance": "Poner {{fix}}",
+    "drop_distance": "Quitar la distancia",
+    "rule_no_gps": "Sin GPS, tu salida cuenta por tiempo: llama, XP, pero ninguna legua hasta que añadas la distancia.",
+    "hand_mark": "anotada a mano",
+    "hand_mark_distance": "distancia anotada a mano",
+    "hand_mark_count_one": "({{count}} anotada a mano)",
+    "hand_mark_count_many": "({{count}} anotadas a mano)",
+    "hand_mark_count_other": "({{count}} anotadas a mano)"
   }
 }

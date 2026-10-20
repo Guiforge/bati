@@ -705,6 +705,19 @@ export const preferences = {
     await setPreference("notesSeenVersion", version);
   },
 
+  /**
+   * Whether the next outing is measured by GPS (`outing_gps`, "GPS : oui / non" on the door).
+   * Local to the phone, not in `MERGED_PREFERENCES`: it only prefills the next start, and the
+   * outing under way keeps the choice it began with (`SessionState.gps`). On by default.
+   */
+  async getOutingGps(): Promise<boolean> {
+    return (await getPreference("outing_gps")) !== "off";
+  },
+
+  async setOutingGps(on: boolean): Promise<void> {
+    await setPreference("outing_gps", on ? "on" : "off");
+  },
+
   async getHapticsEnabled(): Promise<boolean> {
     const value = await getPreference("hapticsEnabled");
     // Default to true if not set

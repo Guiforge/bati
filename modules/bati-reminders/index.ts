@@ -31,8 +31,8 @@ export type NativePlan = ReminderPlan & {
   lateMinutes: number;
   /** The notification channel's name in Android's settings, in the app's language. */
   channelName: string;
-  /** The two buttons: "In 1 hour" and "Pause 7 days". */
-  actionLabels: { snooze: string; pause: string };
+  /** The three buttons: "Already moved elsewhere?", "In 1 hour" and "Pause 7 days". */
+  actionLabels: { elsewhere: string; snooze: string; pause: string };
 };
 
 /** What this phone kept. The switch, the pause and the journal never leave it. */

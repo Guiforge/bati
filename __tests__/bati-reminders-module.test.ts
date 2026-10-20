@@ -46,7 +46,11 @@ describe("bati-reminders, without its native half", () => {
         pauseDays: 7,
         lateMinutes: 60,
         channelName: "Reminders",
-        actionLabels: { snooze: "In 1 hour", pause: "Pause 7 days" },
+        actionLabels: {
+          elsewhere: "Already moved elsewhere?",
+          snooze: "In 1 hour",
+          pause: "Pause 7 days",
+        },
       }),
     ).not.toThrow();
     expect(() => setEnabled(true)).not.toThrow();
@@ -125,7 +129,11 @@ describe("bati-reminders, with a native half", () => {
       pauseDays: 7,
       lateMinutes: 60,
       channelName: "Reminders",
-      actionLabels: { snooze: "In 1 hour", pause: "Pause 7 days" },
+      actionLabels: {
+        elsewhere: "Already moved elsewhere?",
+        snooze: "In 1 hour",
+        pause: "Pause 7 days",
+      },
     };
     mod.setPlan(plan);
     expect(JSON.parse(native.setPlan.mock.calls[0]?.[0])).toEqual(plan);

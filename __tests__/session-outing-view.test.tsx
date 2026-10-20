@@ -277,6 +277,25 @@ describe("a walk in the hero's big-numbers layout", () => {
   });
 });
 
+describe("a walk begun without GPS", () => {
+  afterEach(() => {
+    useSessionStore.setState({ gps: true });
+    useExpeditionStore.setState({ view: DEFAULT_LIVE_VIEW });
+  });
+
+  test("mounts no map, in any layout, and keeps the big figure in the panel as a clock", async () => {
+    useExpeditionStore.setState({ view: { ...DEFAULT_LIVE_VIEW, layout: "bigMap" } });
+    await mountRunning(questWith(mockWalk));
+    await act(() => {
+      useSessionStore.setState({ gps: false });
+    });
+    expect(screen.queryByTestId("live-map")).toBeNull();
+    expect(screen.queryByTestId("live-map-big")).toBeNull();
+    expect(screen.getByTestId("expedition-big")).toBeTruthy();
+    expect(screen.getByText("No GPS")).toBeTruthy();
+  });
+});
+
 describe("a walk in the hero's big-map layout", () => {
   const FIX = {
     t: NOW,

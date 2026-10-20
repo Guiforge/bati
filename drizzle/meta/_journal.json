@@ -547,6 +547,13 @@
       "when": 1792800000000,
       "tag": "0077_the_boss_gets_a_name",
       "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "6",
+      "when": 1792886400000,
+      "tag": "0078_the_hand_written_entry",
+      "breakpoints": true
     }
   ]
 }

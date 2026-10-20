@@ -2,7 +2,7 @@
 title: Glossary
 type: reference
 status: draft
-updated: 2026-10-17
+updated: 2026-10-18
 related: [writing.md, ../design/audits/2026-09-10-french-copy.md]
 ---
 
@@ -143,7 +143,7 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 
 | Term | Means | en | fr | fr never | de | es |
 |---|---|---|---|---|---|---|
-| outing | A session recorded by GPS, a walk, a run or a ride | outing | sortie | expédition (the code's word, `expedition`, never a reader's) | Tour | salida |
+| outing | A session recorded by GPS, or by the clock when the hero goes out without it: a walk, a run or a ride | outing | sortie | expédition (the code's word, `expedition`, never a reader's) | Tour | salida |
 | league | Bati's distance unit, one kilometre | league | lieue |  | Wegstunde | legua |
 | ground covered | The distance of an outing, as a label | distance | distance | terrain (a field) | Strecke | distancia |
 | moving time | Seconds the GPS saw the hero move | moving | en mouvement |  | in Bewegung | en marcha (en movimiento wraps under its column) |
@@ -153,6 +153,17 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 | recap | The screen after an outing | recap | récap |  | Rückblick | resumen |
 | beyond the walls | Outside, in the world's own words | beyond the walls | hors des murs |  | jenseits der Mauern | más allá de las murallas |
 | High Road | The building leagues raise | High Road | Grand Chemin |  | Hohe Straße | Camino Real |
+
+## Written down
+
+| Term | Means | en | fr | de | es |
+|---|---|---|---|---|---|
+| session elsewhere | A session the hero writes down after the fact: a gym session, a walk without the phone. Keeps the flame, counts for the oath, pays 75 XP, never touches the boss, a record, an objective or the progression | session elsewhere | séance ailleurs | Einheit woanders | sesión fuera |
+| typed by hand | The one mark on every figure the hero typed rather than Bati measured, in a row, a detail, the Stats and the recap. Lower case, no icon, never gold | typed by hand | saisie à la main | von Hand eingetragen | anotada a mano |
+| GPS: yes / no | The chip that says whether the next outing is measured; a switch for TalkBack | GPS: yes / no | GPS : oui / non | GPS: ja / nein | GPS: sí / no |
+
+`séance` stays the word for anything logged, a session elsewhere included, and `entraînement` the
+one for the workout type on the form (`isWorkout()`).
 
 ## Open
 

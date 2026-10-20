@@ -3,7 +3,7 @@ title: Session Details
 type: screen
 route: /journal/[id]
 status: active
-updated: 2026-09-16
+updated: 2026-10-18
 related: [journal.md, session.md, ../gameplay/statistics-progress.md, ../gameplay/boss-fights.md]
 sources: ["app/(tabs)/journal/[id].tsx", components/journal/QuestLog.tsx, components/journal/KillReport.tsx, db/journal.ts]
 ---
@@ -42,6 +42,15 @@ the adventure, and the hero starts it there.
    trace, moving time, climb and pace instead, and opens the map.
 6. Notes, then "Take this quest again". "Remove from the journal" is an outline button with a red
    edge (the raw red: the Journal theme remaps `$error`). The XP figure is gold.
+
+### A session the hero wrote down
+
+Titled by its name, with "saisie à la main" under the title; the figures are the duration, the
+distance when there is one, and the XP, in place of the pace, the records, the sets and the boss.
+"Corriger" (outline, above "Remove from the journal") reopens the form on the entry, every field
+corrected but the XP; removing it says the XP leaves with it and that it stops counting for the
+flame and the oath. An outing nothing witnessed gets "Ajouter la distance", then "Corriger la
+distance" and "Retirer la distance" once typed; the pace is hidden beside a typed distance.
 
 ## The kill report
 

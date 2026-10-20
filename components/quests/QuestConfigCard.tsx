@@ -210,6 +210,8 @@ type Props = {
   onReset: () => void;
   /** Opens the picker for one slot. Lives here because a substitution *is* a config override. */
   onSwap: (questExerciseId: number) => void;
+  /** The outing sheet's GPS chip, live (see `OutingGoalSheet`). */
+  onGps?: (gps: boolean) => void;
 };
 
 export function QuestConfigCard({
@@ -220,6 +222,7 @@ export function QuestConfigCard({
   onChange,
   onReset,
   onSwap,
+  onGps,
 }: Props) {
   const { t } = useTranslation();
   // The run on this card is still the app's walk-run proposal, not a goal the hero set.
@@ -325,6 +328,7 @@ export function QuestConfigCard({
                     displayLocomotion={displayLocomotion(quest)}
                     walkRun={walkRun}
                     onPick={setGoal}
+                    onGps={onGps}
                   />
                 ) : null}
               </>

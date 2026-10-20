@@ -32,6 +32,15 @@ const mockGetVillageBuildings = jest.fn<Promise<VillageBuilding[]>, []>();
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, replace: jest.fn(), back: jest.fn() }),
   useIsFocused: () => true,
+  usePathname: () => "/session",
+}));
+// The sheet that types a distance has its own suite; here it is the props the summary hands it.
+const mockSheet = jest.fn();
+jest.mock("@/components/journal/PastSessionSheet", () => ({
+  PastSessionSheet: (props: unknown) => {
+    mockSheet(props);
+    return null;
+  },
 }));
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/db", () => ({ preferences: {} }));
@@ -464,5 +473,87 @@ describe("VictoryView, the bridge from a free outing to a quest", () => {
     });
 
     expect(mockCreateQuestFromOuting).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("VictoryView, an outing without GPS", () => {
+  beforeEach(() => {
+    mockPush.mockClear();
+    mockSheet.mockClear();
+    mockGetVillageBuildings.mockReset();
+    mockGetVillageBuildings.mockResolvedValue([road({})]);
+    useSettingsStore.setState({ language: "en", distanceUnit: "metric", outingDisplay: {} });
+    useExpeditionStore.setState({ track: EMPTY, view: DEFAULT_LIVE_VIEW });
+  });
+
+  afterEach(() => {
+    useSessionStore.setState({ gps: true });
+  });
+
+  async function mountWithoutGps() {
+    await mountVictory({ sessionSeconds: 42 * 60 });
+    await act(() => {
+      useSessionStore.setState({ gps: false });
+    });
+  }
+
+  test("shows the duration alone: no distance of zero, no pace, no map, no road", async () => {
+    await mountWithoutGps();
+    expect(screen.getByTestId("victory-expedition-duration")).toBeTruthy();
+    expect(screen.getByText("42 min")).toBeTruthy();
+    for (const gone of [
+      "victory-expedition-distance",
+      "victory-expedition-moving",
+      "victory-expedition-pace",
+      "victory-expedition-recap",
+      "victory-expedition-road",
+    ]) {
+      expect(screen.queryByTestId(gone)).toBeNull();
+    }
+    expect(screen.queryByText(/0 m\b/)).toBeNull();
+  });
+
+  test("offers the distance as an outline button, and Continue stays the one primary", async () => {
+    await mountWithoutGps();
+    expect(screen.getByTestId("victory-add-distance")).toBeTruthy();
+    expect(screen.getByText("Add the distance")).toBeTruthy();
+    expect(screen.getAllByText("Continue")).toHaveLength(1);
+  });
+
+  test("the button opens the sheet in distance mode on the saved session", async () => {
+    await mountWithoutGps();
+    await fireEvent.press(screen.getByTestId("victory-add-distance"));
+    const props = mockSheet.mock.calls.at(-1)?.[0] as {
+      open: boolean;
+      mode: string;
+      target: { id: number; kind: string; distanceM: number | null };
+    };
+    expect(props).toMatchObject({ open: true, mode: "distance" });
+    expect(props.target).toMatchObject({ id: 42, kind: "walk", distanceM: null });
+  });
+
+  test("once typed, the distance appears with the mark, the button goes, and the road is read again", async () => {
+    await mountWithoutGps();
+    await fireEvent.press(screen.getByTestId("victory-add-distance"));
+    const props = mockSheet.mock.calls.at(-1)?.[0] as {
+      onSaved: (result: unknown, metres: number | null) => void;
+    };
+    mockGetVillageBuildings.mockClear();
+    await act(() => {
+      props.onSaved({ ok: true }, 3800);
+    });
+    expect(screen.getByText("3.80 km")).toBeTruthy();
+    expect(screen.getByText("distance typed by hand")).toBeTruthy();
+    expect(screen.queryByTestId("victory-add-distance")).toBeNull();
+    expect(mockGetVillageBuildings).toHaveBeenCalled();
+    expect(await screen.findByTestId("victory-expedition-road")).toBeTruthy();
+  });
+
+  test("the rule is one tap away", async () => {
+    await mountWithoutGps();
+    await fireEvent.press(screen.getByTestId("victory-no-gps-rule-link"));
+    expect(screen.getByTestId("victory-no-gps-rule").props.children).toMatch(
+      /Without GPS, your outing counts by time/,
+    );
   });
 });

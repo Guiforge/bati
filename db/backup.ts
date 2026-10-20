@@ -448,8 +448,16 @@ export const photosWon = (
       AND (l.uuid IS NULL OR p.updatedAt > l.updatedAt
            OR (p.updatedAt = l.updatedAt AND p.deletedAt IS NOT NULL AND l.deletedAt IS NULL))`;
 
-/** The edit stamps of a saved session: sets and feedback from 0072, the note from 0075. */
-const STAMP_COLUMNS = ["setsEditedAt", "feedbackEditedAt", "notesEditedAt"] as const;
+/**
+ * The edit stamps of a saved session: sets and feedback from 0072, the note from 0075, a session
+ * written down or a typed distance from 0078.
+ */
+const STAMP_COLUMNS = [
+  "setsEditedAt",
+  "feedbackEditedAt",
+  "notesEditedAt",
+  "byHandEditedAt",
+] as const;
 type StampColumn = (typeof STAMP_COLUMNS)[number];
 
 /** The stamp columns a schema has: a device on an older build has fewer, or none. */
@@ -478,6 +486,10 @@ async function hasPhotos(conn: IsolatedConnection, schema: string): Promise<bool
   return Number(row?.n ?? 0) > 0;
 }
 
+/** What a correction of a session written down changed, as one text to settle a tie on. */
+export const handCanon = (alias: string) =>
+  `json_array(${alias}.performedAt, ${alias}.durationSeconds, ${alias}.outing, ${alias}.leaguesM, ${alias}.label, ${alias}.byHand)`;
+
 /**
  * Sessions both devices hold that `a` edited later than `b` (`0072`): a corrected set or a feedback
  * given after the copy, each stamp read on its own, as `mergePeer` takes them. An unedited session
@@ -500,6 +512,8 @@ function editedLaterIn(
     setsEditedAt: (schema, alias) => (tie ? setsCanon(schema, alias, tie.sets) : ""),
     feedbackEditedAt: (_schema, alias) => `ifnull(${alias}.feedback, '')`,
     notesEditedAt: (_schema, alias) => `ifnull(${alias}.notes, '')`,
+    // The same text `takeEditedHand` (db/merge.ts) settles a tie on. Never the XP.
+    byHandEditedAt: (_schema, alias) => handCanon(alias),
   };
   const later = (column: StampColumn) =>
     bStamps.includes(column)

@@ -266,6 +266,13 @@ describe("db/journal", () => {
     expect(await journal().getJournalVersion()).not.toBe(added);
   });
 
+  test("the Journal version moves with a correction of a session written down", async () => {
+    session(1, daysAgo(3));
+    const before = await journal().getJournalVersion();
+    t.sqlite.exec("UPDATE completed_sessions SET byHandEditedAt = 5 WHERE id = 1");
+    expect(await journal().getJournalVersion()).not.toBe(before);
+  });
+
   test("the starter wall is the first quest's own movements, never logged", async () => {
     const expected = t.sqlite
       .prepare(

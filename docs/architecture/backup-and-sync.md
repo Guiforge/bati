@@ -2,7 +2,7 @@
 title: Backups, encryption and device sync
 type: technical
 status: active
-updated: 2026-10-17
+updated: 2026-10-18
 related: [README.md, ../planning/roadmap.md, ../legal/privacy.md]
 ---
 
@@ -432,7 +432,8 @@ merge can hand A the friend's version (`ponytail:` in `importAdventure`).
   `waiting` and says nothing.
 - **What each side lacks** (`compareWithPeer`, on real SQLite): sessions by uuid, sessions both
   hold that one side edited later (`setsEditedAt`, `feedbackEditedAt`, 0072: a corrected set, a
-  late feedback), a session's larger XP, deletions
+  late feedback; `byHandEditedAt`, 0078: a session written down corrected, a distance typed on an
+  outing nothing measured), a session's larger XP, deletions
   by the `deleted_sessions` tombstones (0064) and, for hero quests and movements, by the
   `deleted_content` ones (0074), and the hero's own content (hero exercises and quests,
   village name, avatar, level, equipment, oath, reminder days). Derived caches are ignored, and so are favourites

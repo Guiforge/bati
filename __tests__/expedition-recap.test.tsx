@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
@@ -280,6 +281,23 @@ describe("a session that left the walls", () => {
     await mount();
 
     expect(await screen.findByText(/High Road/)).toBeTruthy();
+  });
+
+  // A phone that closed Bati stops writing; the line must say so, with the clock, not a distance.
+  test("names a hole in the trace over thirty seconds, and nothing for a continuous one", async () => {
+    await mount();
+    await screen.findByTestId("recap-map");
+    expect(screen.queryByTestId("recap-gap")).toBeNull();
+
+    const fixes = walkThenStand();
+    const last = fixes.at(-1);
+    assert(last);
+    mockPointsOf.mockResolvedValue([...fixes, { ...last, t: last.t + 7 * 60_000 }]);
+    mockSession = "session-with-hole";
+    await mount();
+
+    const gap = await screen.findByTestId("recap-gap");
+    expect(gap).toHaveTextContent(/^Nothing measured from .+ to .+: tracking had stopped\.$/);
   });
 
   test("draws the map and the three numbers", async () => {

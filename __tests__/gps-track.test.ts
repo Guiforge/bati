@@ -1,5 +1,5 @@
 import type { LocationFix } from "@/modules/bati-location";
-import { accept, credited, EMPTY, RULES, type TrackState } from "@/src/gps/track";
+import { accept, credited, EMPTY, gapsOf, RULES, type TrackState } from "@/src/gps/track";
 
 const T0 = Date.UTC(2026, 7, 31, 15, 0, 0);
 
@@ -602,5 +602,29 @@ describe("elevation gain", () => {
       fix({ t: T0 + 3000, acc: 5, ele: null }),
     ]);
     expect(credited(hiked(120, () => null, blind))?.ascentM).toBeNull();
+  });
+});
+
+describe("gapsOf", () => {
+  const at = (t: number): LocationFix => ({
+    t,
+    lat: 48,
+    lon: -2,
+    ele: null,
+    baro: null,
+    acc: 5,
+    speed: 1.4,
+    distFromPrev: 1.4,
+  });
+
+  it("names every stretch longer than the reducer's maximum, and no other", () => {
+    const fixes = [at(0), at(1000), at(1000 + RULES.maxGapMs), at(2000 + 2 * RULES.maxGapMs)];
+
+    expect(gapsOf(fixes)).toEqual([{ from: 1000 + RULES.maxGapMs, to: 2000 + 2 * RULES.maxGapMs }]);
+  });
+
+  it("says nothing of an empty or continuous trace", () => {
+    expect(gapsOf([])).toEqual([]);
+    expect(gapsOf([at(0), at(1000), at(2000)])).toEqual([]);
   });
 });

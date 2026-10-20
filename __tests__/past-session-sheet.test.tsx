@@ -261,6 +261,40 @@ describe("PastSessionSheet, a session written down", () => {
     expect(screen.getByTestId("past-session-distance").props.value).toBe("");
   });
 
+  // The refusal went only on Enter or a blur, so a hero who had fixed the value kept reading it.
+  it("a refusal goes as soon as the typed distance is plausible, without Enter", async () => {
+    mockRefusal.mockResolvedValue({ key: "implausible", speedKmh: 24, fixM: 1200 });
+    await mount();
+    await screen.findByText("Add a past session");
+    await fireEvent.press(screen.getByRole("button", { name: "Run" }));
+    const field = await screen.findByTestId("past-session-distance");
+    await fireEvent.changeText(field, "12");
+    await fireEvent(field, "blur");
+    await screen.findByTestId("past-session-refusal");
+
+    mockRefusal.mockResolvedValue(null);
+    await fireEvent.changeText(screen.getByTestId("past-session-distance"), "1.2");
+
+    await waitFor(() => expect(screen.queryByTestId("past-session-refusal")).toBeNull());
+  });
+
+  it("a refusal goes as soon as a typed 'Other' duration is plausible, without Enter", async () => {
+    mockRefusal.mockResolvedValue({ key: "implausible", speedKmh: 24, fixM: 1200 });
+    await mount();
+    await screen.findByText("Add a past session");
+    await fireEvent.press(screen.getByRole("button", { name: "Run" }));
+    const field = await screen.findByTestId("past-session-distance");
+    await fireEvent.changeText(field, "12");
+    await fireEvent(field, "blur");
+    await screen.findByTestId("past-session-refusal");
+
+    await fireEvent.press(screen.getByRole("button", { name: "Other" }));
+    mockRefusal.mockResolvedValue(null);
+    await fireEvent.changeText(screen.getByTestId("past-session-custom"), "90");
+
+    await waitFor(() => expect(screen.queryByTestId("past-session-refusal")).toBeNull());
+  });
+
   it("a workout asks for a name, an outing does not", async () => {
     await mount();
     await screen.findByText("Add a past session");

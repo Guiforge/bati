@@ -141,6 +141,14 @@ async function bankLiveSession(overrides: Record<string, unknown> = {}) {
   await waitFor(() => expect(mockSavedSlot).not.toBeNull());
 }
 
+/** The process died: nothing of the session is left in memory, only the slot it had written. */
+async function diePreservingSlot() {
+  const slot = mockSavedSlot;
+  useSessionStore.setState({ quest: null, status: "idle", sessionUuid: null });
+  await new Promise((r) => setTimeout(r, 20));
+  mockSavedSlot = slot;
+}
+
 beforeEach(() => {
   mockPoints = [];
   mockSavedSlot = null;
@@ -413,6 +421,98 @@ describe("useSessionRecovery", () => {
     });
 
     expect(useSessionStore.getState().totalPausedTime).toBe(60_000);
+  });
+
+  // One "Resume", not two: the card's tap is the hero's answer, and a walk was never paused.
+  it.each([
+    ["an outing that was walking", outing, "running", "running", null],
+    ["an outing the hero had paused", outing, "paused", "paused", "running"],
+    ["a workout", quest, "running", "paused", "running"],
+  ] as const)("%s comes back %s -> %s", async (_name, q, savedStatus, back, prePause) => {
+    useExpeditionStore.setState({ begin: jest.fn(async () => true) });
+    await bankLiveSession({
+      quest: q,
+      sessionUuid: `0192-back-${savedStatus}-${q.id}`,
+      gps: true,
+      status: savedStatus,
+      prePauseStatus: savedStatus === "paused" ? "running" : null,
+      lastPauseTimestamp: savedStatus === "paused" ? NOW : null,
+      currentRoundIndex: 0,
+      currentExerciseIndex: 0,
+    });
+
+    const { result } = await renderHook(() => useSessionRecovery());
+    await waitFor(() => expect(result.current.recoverableSession).not.toBeNull());
+    await act(async () => {
+      await result.current.recoverSession();
+    });
+
+    const state = useSessionStore.getState();
+    expect(state.status).toBe(back);
+    expect(state.prePauseStatus).toBe(prePause);
+  });
+
+  // The audit of 20/10: 44 s without a point between the kill and the tap on "Resume".
+  it("an interrupted outing measures again at launch, and resuming does not start it twice", async () => {
+    const begin = jest.fn(async (..._args: unknown[]) => true);
+    const end = jest.fn(async () => undefined);
+    useExpeditionStore.setState({ begin, end });
+    await bankLiveSession({
+      quest: outing,
+      sessionUuid: "0192-launch",
+      gps: true,
+      currentRoundIndex: 0,
+      currentExerciseIndex: 0,
+    });
+
+    await diePreservingSlot();
+    const { result } = await renderHook(() => useSessionRecovery());
+    await waitFor(() => expect(result.current.recoverableSession).not.toBeNull());
+
+    // No tap yet, and the receiver is already on the same trace.
+    await waitFor(() => expect(begin).toHaveBeenCalledTimes(1));
+    expect(begin.mock.calls[0]?.[0]).toBe("0192-launch");
+
+    await act(async () => {
+      await result.current.recoverSession();
+    });
+    expect(begin).toHaveBeenCalledTimes(1);
+
+    // Discarding another one stops what the launch started before it deletes the ground.
+    await bankLiveSession({
+      quest: outing,
+      sessionUuid: "0192-discard",
+      gps: true,
+      currentRoundIndex: 0,
+      currentExerciseIndex: 0,
+    });
+    await diePreservingSlot();
+    const second = await renderHook(() => useSessionRecovery());
+    await waitFor(() => expect(begin).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(second.result.current.recoverableSession).not.toBeNull());
+    await act(async () => {
+      await second.result.current.discardSession();
+    });
+    expect(end).toHaveBeenCalled();
+    expect(deletePoints).toHaveBeenCalledWith("0192-discard");
+  });
+
+  it("an outing begun without GPS starts nothing at launch", async () => {
+    const begin = jest.fn(async () => true);
+    useExpeditionStore.setState({ begin });
+    await bankLiveSession({
+      quest: outing,
+      sessionUuid: "0192-nogps-launch",
+      gps: false,
+      currentRoundIndex: 0,
+      currentExerciseIndex: 0,
+    });
+
+    const { result } = await renderHook(() => useSessionRecovery());
+    await waitFor(() => expect(result.current.recoverableSession).not.toBeNull());
+    await new Promise((r) => setTimeout(r, 20));
+
+    expect(begin).not.toHaveBeenCalled();
   });
 
   // Phase 0 of the outing display: the walk-run flag and the goal both ride in the snapshot, so a

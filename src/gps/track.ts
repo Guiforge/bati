@@ -302,6 +302,22 @@ export function breaksRun(fix: LocationFix, previousAt: number | null): boolean 
   return elapsed < 0 || elapsed > RULES.maxGapMs;
 }
 
+/**
+ * The holes in time a trace holds: every stretch between two fixes longer than `maxGapMs`, as the
+ * two timestamps. The reducer credits nothing across one and the recap names it, so a walk the
+ * phone stopped measuring says so instead of drawing a shorter line with no explanation. The
+ * distance between the two ends is never invented.
+ */
+export function gapsOf(fixes: readonly LocationFix[]): { from: number; to: number }[] {
+  const gaps: { from: number; to: number }[] = [];
+  for (let i = 1; i < fixes.length; i += 1) {
+    const prev = fixes[i - 1];
+    const fix = fixes[i];
+    if (prev && fix && fix.t - prev.t > RULES.maxGapMs) gaps.push({ from: prev.t, to: fix.t });
+  }
+  return gaps;
+}
+
 /** Fold one fix into the session. */
 export function accept(state: TrackState, fix: LocationFix): TrackState {
   if (state.startedAt === null) return openGate(state, fix);

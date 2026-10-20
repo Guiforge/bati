@@ -58,6 +58,7 @@ import {
   toGhostLine,
 } from "@/src/gps/route";
 import { toTrace } from "@/src/gps/trace";
+import { gapsOf } from "@/src/gps/track";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
@@ -231,6 +232,21 @@ function SpeedLegend({
       )}
     </YStack>
   );
+}
+
+/**
+ * The stretches nobody measured, by clock time. Silence when the trace has none; a hole is named
+ * rather than left for the hero to wonder why the line stops. No distance is put on it.
+ */
+function GapLines({ fixes, language }: { fixes: readonly LocationFix[]; language: AppLanguage }) {
+  const { t } = useTranslation();
+  const clock = (ms: number) =>
+    new Date(ms).toLocaleTimeString(language, { hour: "2-digit", minute: "2-digit" });
+  return gapsOf(fixes).map((gap) => (
+    <Text key={gap.from} testID="recap-gap" fontSize={12} color="$textSecondary">
+      {t("recap.gap", { from: clock(gap.from), to: clock(gap.to) })}
+    </Text>
+  ));
 }
 
 /**
@@ -751,6 +767,8 @@ export default function ExpeditionRecapScreen() {
         {/* The note and photos of this outing, the same notebook as the Journal detail. The whole
             block already scrolls under a height cap, so three photos cannot squeeze the map. */}
         {recap?.sessionId != null ? <SessionNotebook sessionId={recap.sessionId} /> : null}
+
+        <GapLines fixes={drawn} language={language} />
 
         <LeaguesTable splits={trace.splits} unit={distanceUnit} locomotion={recap?.display} />
 

@@ -354,6 +354,14 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
     };
   }, [open, ready, kind, endAt, durationSeconds, customOpen, settled]);
 
+  // A refusal on screen is re-read as the hero types, so it goes the moment the value is plausible
+  // instead of waiting for Enter or a blur. Only while one is showing: a field is never refused
+  // mid-word, it is only released early. The effect above reads the state this render commits.
+  const retype = (set: (v: string) => void) => (v: string) => {
+    set(v);
+    if (refusal !== null) setSettled((n) => n + 1);
+  };
+
   const pickDay = (picked: Date) => {
     if (!endTouched.current) {
       // Not touched yet: another day proposes its own hour; a touched hour follows the hero.
@@ -517,7 +525,7 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
             onPickDay={pickDay}
             onOtherDays={() => setOtherDays(true)}
             endText={endText}
-            onEndText={setEndText}
+            onEndText={retype(setEndText)}
             onEndCommit={commitEnd}
           />
 
@@ -530,7 +538,7 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
               setDurationSeconds(m * 60);
             }}
             onCustom={() => setCustomOpen(true)}
-            onCustomText={setCustomText}
+            onCustomText={retype(setCustomText)}
             onCustomCommit={commitCustom}
           />
         </>
@@ -539,7 +547,7 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
       {outing || distanceOnly ? (
         <DistanceField
           value={distanceText}
-          onChange={setDistanceText}
+          onChange={retype(setDistanceText)}
           onSettle={() => setSettled((n) => n + 1)}
           unitWord={unitWord}
           a11y={t("past_session.distance_a11y", { unit: unitWord })}

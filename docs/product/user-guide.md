@@ -122,8 +122,9 @@ After workouts, Bati rewards you with:
 - Settings > Reminder: choose your days and one hour. Bati reminds you once on those days, unless
   your session is done or it advises rest. Off until you turn it on; the notification permission
   is asked then, never at launch.
-- On the notification: **Déjà bougé ailleurs ?** (opens the Journal's form for that day), **In 1
-  hour** (once) and **Pause 7 days**. A tap opens Home.
+- On the notification: **Fait ailleurs ?** (opens the Journal's form for that day; only once a
+  first session is done in Bati, since the journal starts there), **In 1 hour** (once) and
+  **Pause 7 days**. A tap opens Home.
 - Home offers it once after your first session, and asks after three reminders went by untouched
   whether they land well. Nothing else, and never a count of days missed.
 - Two known limits:

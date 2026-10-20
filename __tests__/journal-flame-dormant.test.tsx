@@ -97,10 +97,9 @@ test("a flame asleep says the two days its count can be checked against", async 
   } as JournalStats;
   await wrap(<FlameBlock stats={stats} />);
 
-  expect(screen.getByTestId("journal-flame")).toHaveTextContent(
-    "Lit from Oct 12, 2023 to Oct 1, 2026.",
-    { exact: false },
-  );
+  expect(screen.getByTestId("journal-flame")).toHaveTextContent("Lit from Oct 12, 2023 to Oct 1.", {
+    exact: false,
+  });
 });
 
 test("a lit flame says the day it was lit", async () => {

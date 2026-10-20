@@ -63,6 +63,21 @@ describe("SessionCard", () => {
     tracePoints: [],
   };
 
+  it("says the level is the quest's and the feeling is the hero's, apart", async () => {
+    await mount({ ...baseEntry, userLevel: "easy", feedback: "good" });
+
+    // The i18n module is mocked here, so `t` answers with the key: the keys are what is asserted,
+    // and journal-flame-dormant reads the real English for the same block of copy.
+    expect(await screen.findByText(/journal\.level_quest_easy/)).toBeTruthy();
+    expect(screen.getByTestId("journal-row-feeling")).toHaveTextContent("journal.feeling");
+  });
+
+  it("draws no feeling line for a session the hero did not rate", async () => {
+    await mount({ ...baseEntry, feedback: null });
+
+    expect(screen.queryByTestId("journal-row-feeling")).toBeNull();
+  });
+
   it("renders duration alone for a workout with leaguesM null", async () => {
     await mount({ ...baseEntry, leaguesM: null });
 

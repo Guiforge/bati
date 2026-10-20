@@ -10,7 +10,14 @@ import { InkGauge } from "@/components/common/InkGauge";
 import { Recitatif } from "@/components/common/Recitatif";
 import { Trophy } from "@/components/icons";
 import { HandMark } from "@/components/journal/HandMark";
-import { foldRounds, formatShare, shortDate, whenLabel } from "@/components/journal/journalFormat";
+import {
+  feelingLabel,
+  foldRounds,
+  formatShare,
+  questLevelLabel,
+  shortDate,
+  whenLabel,
+} from "@/components/journal/journalFormat";
 import {
   NBackButton,
   NBlock,
@@ -621,7 +628,8 @@ function metaLine(
   const outing = session.outing != null;
   return [
     // A difficulty means nothing on a walk, nor on a session the hero wrote down.
-    outing || session.byHand === "session" ? null : t(`quests.level_${session.userLevel}`),
+    outing || session.byHand === "session" ? null : questLevelLabel(t, session.userLevel),
+    session.feedback ? feelingLabel(t, language, session.feedback) : null,
     rounds > 0 && !outing ? t("journal.rounds_completed", { count: rounds }) : null,
     session.durationSeconds ? formatDuration(session.durationSeconds, language) : null,
   ]

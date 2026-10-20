@@ -309,6 +309,11 @@ async function resumeSavedSession(): Promise<boolean> {
 
     const saved: SavedSessionState = JSON.parse(savedJson);
 
+    // Cleared before the restore, not after: the store's subscriber writes a fresh snapshot of the
+    // restored session, and a clear landing behind it erased that one. A walk that comes back
+    // running has no later pause to write another, so a second kill left no card and the orphan
+    // sweep took the whole trace (seen on the emulator, 20/10).
+    await preferences.clearSavedSession();
     restoreSnapshot(saved);
 
     // An outing that was interrupted is still an outing.
@@ -327,10 +332,8 @@ async function resumeSavedSession(): Promise<boolean> {
       );
     }
 
-    // Clear saved session after recovery
     trackedEarly = null;
     dropEarlyFinish();
-    await preferences.clearSavedSession();
 
     return true;
   } catch (error) {

@@ -341,8 +341,11 @@ describe("useSessionRecovery", () => {
     // so the hero does not lose the seconds they had already run.
     expect(state.totalPausedTime).toBe(away);
     expect(state.timerStartTimestamp).toBe(NOW - 30_000 + away);
-    // Consumed: recovering twice would double-count the downtime.
-    expect(mockSavedSlot).toBeNull();
+    // Consumed: the slot now holds the restored session, stamped at the restore, so a second
+    // recovery counts only the time after it and never the same downtime twice.
+    const slot = JSON.parse(mockSavedSlot ?? "null");
+    expect(slot?.savedAt).toBe(NOW + away);
+    expect(slot?.totalPausedTime).toBe(away);
     expect(result.current.recoverableSession).toBeNull();
   });
 
@@ -451,6 +454,7 @@ describe("useSessionRecovery", () => {
       currentExerciseIndex: 0,
     });
 
+    await diePreservingSlot();
     const { result } = await renderHook(() => useSessionRecovery());
     await waitFor(() => expect(result.current.recoverableSession).not.toBeNull());
     await act(async () => {
@@ -460,6 +464,13 @@ describe("useSessionRecovery", () => {
     const state = useSessionStore.getState();
     expect(state.status).toBe(back);
     expect(state.prePauseStatus).toBe(prePause);
+    // A second kill must still find it: a walk back running writes no pause, and a slot cleared
+    // behind the restore left nothing to offer while the sweep took the trace.
+    await waitFor(() =>
+      expect(JSON.parse(mockSavedSlot ?? "null")?.sessionUuid).toBe(
+        `0192-back-${savedStatus}-${q.id}`,
+      ),
+    );
   });
 
   // The audit of 20/10: 44 s without a point between the kill and the tap on "Resume".

@@ -416,7 +416,7 @@ describe("VictoryView, the walk it just celebrated", () => {
     });
 
     expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(
-      /4:00:00 on the clock · counted as 30 min of effort/,
+      /240:00 on the clock · counted as 30 min of effort/,
     );
   });
 

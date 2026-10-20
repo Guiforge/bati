@@ -3041,6 +3041,7 @@
     "refuse_one_per_day_yesterday": "Ta séance ailleurs d'hier est déjà notée. Pour la changer, ouvre-la dans le Journal.",
     "refuse_one_per_day_weekday": "Ta séance ailleurs de {{weekday}} est déjà notée. Pour la changer, ouvre-la dans le Journal.",
     "refuse_duration": "Une séance ailleurs compte entre 10 minutes et 4 heures.",
+    "refuse_future": "Cette heure n'est pas encore venue aujourd'hui : tape une heure déjà passée.",
     "refuse_overlap": "À {{time}}, Bati te voyait sur « {{name}} ». Décale l'heure ou raccourcis la durée.",
     "overlap_unknown": "une autre séance",
     "refuse_implausible": "{{distance}} en {{duration}}, ça ferait {{speed}} {{way}}. Tu voulais dire {{fix}} ?",

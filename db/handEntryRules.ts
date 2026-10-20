@@ -38,6 +38,7 @@ export type HandRefusal =
   | { key: "too_old" }
   | { key: "one_per_day"; day: string }
   | { key: "duration" }
+  | { key: "future" }
   | { key: "overlap"; with: MeasuredSpan }
   | {
       key: "implausible";
@@ -91,7 +92,9 @@ export function checkHandEntry(
   context: HandContext,
   now: Date = new Date(),
 ): HandRefusal | null {
-  const endedAt = draft.endedAt > now ? now : draft.endedAt;
+  // A time still to come is refused, never moved to now behind the hero's back.
+  if (draft.endedAt > now) return { key: "future" };
+  const endedAt = draft.endedAt;
   const startedAt = new Date(endedAt.getTime() - draft.durationSeconds * 1000);
   const day = dayKey(startedAt);
 

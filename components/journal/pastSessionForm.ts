@@ -1,4 +1,4 @@
-import { setHours, startOfDay, subDays } from "date-fns";
+import { addDays, setHours, startOfDay, subDays } from "date-fns";
 import { dayKey } from "@/db/dates";
 import { HAND_MAX_DAYS_BACK, type MeasuredSpan } from "@/db/handEntryRules";
 
@@ -116,6 +116,27 @@ export function endOn(day: Date, clock: { hours: number; minutes: number }): Dat
   const end = startOfDay(day);
   end.setHours(clock.hours, clock.minutes, 0, 0);
   return end;
+}
+
+/**
+ * Where a typed time of day lands: on the day the chip shows (the one `current` is filed under),
+ * the latest occurrence that is not in the future and still files the entry under that day, so
+ * 23:50 typed at 00:20 under "yesterday" is last night, and 00:10 is just after midnight. Nothing
+ * of the kind (a time still to come today): that day at the time, in the future, and the form
+ * refuses it rather than moving it.
+ */
+export function typedEnd(
+  current: Date,
+  durationSeconds: number,
+  clock: { hours: number; minutes: number },
+  now: Date,
+): Date {
+  const day = filedDay(current, durationSeconds);
+  const same = endOn(day, clock);
+  for (const c of [endOn(addDays(day, 1), clock), same]) {
+    if (c <= now && dayKey(filedDay(c, durationSeconds)) === dayKey(day)) return c;
+  }
+  return same;
 }
 
 /** Minutes typed into "Autre": whole minutes, or null for anything else. */

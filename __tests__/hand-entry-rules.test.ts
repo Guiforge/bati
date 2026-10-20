@@ -109,8 +109,10 @@ describe("the five refusals", () => {
     expect(refusal).toEqual({ key: "too_old" });
   });
 
-  test("an end in the future is read as now", () => {
-    expect(checkHandEntry(draft({ endedAt: new Date(2026, 9, 18, 23, 0) }), none, NOW)).toBeNull();
+  test("an end in the future is refused, not moved to now", () => {
+    expect(checkHandEntry(draft({ endedAt: new Date(2026, 9, 18, 23, 0) }), none, NOW)).toEqual({
+      key: "future",
+    });
   });
 });
 

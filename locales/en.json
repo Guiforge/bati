@@ -2917,6 +2917,7 @@
     "refuse_one_per_day_yesterday": "Your session elsewhere yesterday is already noted. To change it, open it in the Journal.",
     "refuse_one_per_day_weekday": "Your session elsewhere on {{weekday}} is already noted. To change it, open it in the Journal.",
     "refuse_duration": "A session elsewhere counts between 10 minutes and 4 hours.",
+    "refuse_future": "That time has not come yet today: type one that has passed.",
     "refuse_overlap": "At {{time}}, Bati saw you on \"{{name}}\". Move the time or shorten the duration.",
     "overlap_unknown": "another session",
     "refuse_implausible": "{{distance}} in {{duration}} would be {{speed}} {{way}}. Did you mean {{fix}}?",

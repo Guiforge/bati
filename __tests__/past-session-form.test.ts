@@ -2,12 +2,14 @@ import {
   dayChoices,
   dayFromLink,
   endOn,
+  filedDay,
   openingDay,
   parseDistanceM,
   parseMinutes,
   proposedEnd,
   settleDay,
   toastKey,
+  typedEnd,
 } from "@/components/journal/pastSessionForm";
 import { dayKey } from "@/db/dates";
 import { checkHandEntry, type MeasuredSpan } from "@/db/handEntryRules";
@@ -163,5 +165,34 @@ describe("the day the sheet opens on is the day the entry is filed under", () =>
 
   test("midday it is plain today", () => {
     expect(dayKey(openingDay(NOW, new Set(), 45 * 60, []).day)).toBe("2026-10-18");
+  });
+});
+
+describe("a typed end time", () => {
+  const MIDNIGHT = new Date(2026, 9, 21, 0, 20); // Wednesday 00:20
+  const lastNight = new Date(2026, 9, 21, 0, 20); // 45 min filed under Tuesday
+  const at = (h: number, m: number) => ({ hours: h, minutes: m });
+
+  test("23:50 under the yesterday chip is last night, not tonight", () => {
+    const end = typedEnd(lastNight, 45 * 60, at(23, 50), MIDNIGHT);
+    expect(end).toEqual(new Date(2026, 9, 20, 23, 50));
+  });
+
+  test("00:10 under the yesterday chip is just after midnight, still filed yesterday", () => {
+    const end = typedEnd(lastNight, 45 * 60, at(0, 10), MIDNIGHT);
+    expect(end).toEqual(new Date(2026, 9, 21, 0, 10));
+    expect(dayKey(filedDay(end, 45 * 60))).toBe("2026-10-20");
+  });
+
+  test("a time still to come today stays in the future for the form to refuse", () => {
+    const end = typedEnd(MIDNIGHT, 10 * 60, at(18, 0), MIDNIGHT);
+    expect(end > MIDNIGHT).toBe(true);
+    expect(
+      checkHandEntry(
+        { kind: "workout", endedAt: end, durationSeconds: 600, distanceM: null },
+        { handDays: new Set(), measured: [] },
+        MIDNIGHT,
+      ),
+    ).toEqual({ key: "future" });
   });
 });

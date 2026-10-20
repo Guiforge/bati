@@ -22,6 +22,7 @@ import {
   proposedEnd,
   settleDay,
   toastKey,
+  typedEnd,
 } from "@/components/journal/pastSessionForm";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatDistance, formatRate, METRES_PER_TYPED_UNIT } from "@/constants/distanceFormat";
@@ -155,6 +156,8 @@ function refusalSentence(r: HandRefusal, c: SentenceContext): string {
       return t("past_session.refuse_too_old");
     case "duration":
       return t("past_session.refuse_duration");
+    case "future":
+      return t("past_session.refuse_future");
     case "one_per_day": {
       if (r.day === dayKey(new Date())) return t("past_session.refuse_one_per_day_today");
       if (r.day === dayKey(new Date(Date.now() - 86_400_000))) {
@@ -220,7 +223,6 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
   const distanceOnly = mode === "distance";
 
   const [kind, setKind] = useState<HandKind>("workout");
-  const [chosenDay, setChosenDay] = useState<Date>(new Date());
   const [otherDays, setOtherDays] = useState(false);
   const [endAt, setEndAt] = useState<Date>(new Date());
   const [endText, setEndText] = useState("");
@@ -264,7 +266,6 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
       setTitles(new Map(templates.map((q) => [q.id, localizedTitle(q, language)])));
       const f = initialFields(target ?? null, defaults, context, day, now, metresPerUnit);
       setKind(f.kind);
-      setChosenDay(f.day);
       setEndAt(f.end);
       setEndText(timeFormat.format(f.end));
       setDurationSeconds(f.seconds);
@@ -291,9 +292,10 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
   const typed = () => {
     const clock = endText === timeFormat.format(endAt) ? null : parseClock(endText);
     const minutes = customOpen ? parseMinutes(customText) : null;
+    const seconds = minutes ?? durationSeconds;
     return {
-      endedAt: clock === null ? endAt : endOn(chosenDay, clock),
-      durationSeconds: minutes ?? durationSeconds,
+      endedAt: clock === null ? endAt : typedEnd(endAt, seconds, clock, new Date()),
+      durationSeconds: seconds,
     };
   };
 
@@ -334,17 +336,15 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
     return () => {
       cancelled = true;
     };
-  }, [open, ready, kind, chosenDay, endAt, durationSeconds, customOpen, settled]);
+  }, [open, ready, kind, endAt, durationSeconds, customOpen, settled]);
 
   const pickDay = (picked: Date) => {
-    setChosenDay(picked);
     if (!endTouched.current) {
       // Not touched yet: another day proposes its own hour; a touched hour follows the hero.
       loadHandContext(target?.id ?? null, new Date())
         .then((ctx) => {
           // Settled on the filed day: "today" at 00:20 is the evening before, as at the opening.
-          const { day, end } = settleDay(picked, new Date(), durationSeconds, ctx.measured);
-          setChosenDay(day);
+          const { end } = settleDay(picked, new Date(), durationSeconds, ctx.measured);
           setEndAt(end);
           setEndText(timeFormat.format(end));
         })
@@ -362,7 +362,7 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
       return;
     }
     endTouched.current = true;
-    const next = endOn(chosenDay, clock);
+    const next = typedEnd(endAt, typed().durationSeconds, clock, new Date());
     setEndAt(next);
     setEndText(timeFormat.format(next));
     setSettled((n) => n + 1);

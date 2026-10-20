@@ -56,7 +56,7 @@ describe("the end proposed never opens the sheet on a refusal", () => {
     expect(
       checkHandEntry(
         { kind: "workout", endedAt: end, durationSeconds: 45 * 60, distanceM: null },
-        { handDays: new Set(), measured },
+        { handDays: new Set(), measured, firstMeasuredAt: new Date(2020, 0, 1), paidInWindow: 0 },
         NOW,
       ),
     ).toBeNull();
@@ -120,9 +120,24 @@ describe("typed fields", () => {
 
 describe("the toast", () => {
   test("says the oath first, then the flame, else only that it is noted", () => {
-    expect(toastKey({ oathKept: true, flameActive: true })).toBe("toast_oath");
-    expect(toastKey({ oathKept: false, flameActive: true })).toBe("toast_flame");
-    expect(toastKey({ oathKept: false, flameActive: false })).toBe("toast_noted");
+    expect(toastKey({ oathKept: true, flameActive: true, xp: 75 })).toBe("toast_oath");
+    expect(toastKey({ oathKept: false, flameActive: true, xp: 0 })).toBe("toast_unpaid");
+    expect(toastKey({ oathKept: false, flameActive: true, xp: 75 })).toBe("toast_flame");
+    expect(toastKey({ oathKept: false, flameActive: false, xp: 75 })).toBe("toast_noted");
+  });
+});
+
+describe("the sheet never opens before the first measured session", () => {
+  test("a free day older than the first session is skipped", () => {
+    const now = new Date(2026, 9, 18, 20, 0);
+    // Today and yesterday are written down, the 16th is free but the first session is the 17th.
+    const handDays = new Set(["2026-10-18", "2026-10-17"]);
+    const { day } = openingDay(now, handDays, 45 * 60, [], new Date(2026, 9, 17, 9, 0));
+    expect(dayKey(openingDay(now, new Set(), 45 * 60, [], new Date(2026, 9, 17, 9, 0)).day)).toBe(
+      "2026-10-18",
+    );
+    // All the reachable days since the first are taken: it falls back to today, never to the 16th.
+    expect(dayKey(day)).toBe("2026-10-18");
   });
 });
 
@@ -136,7 +151,12 @@ describe("the day the sheet opens on is the day the entry is filed under", () =>
     expect(
       checkHandEntry(
         { kind: "workout", endedAt: end, durationSeconds: 45 * 60, distanceM: null },
-        { handDays: new Set(), measured: [] },
+        {
+          handDays: new Set(),
+          measured: [],
+          firstMeasuredAt: new Date(2020, 0, 1),
+          paidInWindow: 0,
+        },
         now,
       ),
     ).toBeNull();
@@ -190,7 +210,12 @@ describe("a typed end time", () => {
     expect(
       checkHandEntry(
         { kind: "workout", endedAt: end, durationSeconds: 600, distanceM: null },
-        { handDays: new Set(), measured: [] },
+        {
+          handDays: new Set(),
+          measured: [],
+          firstMeasuredAt: new Date(2020, 0, 1),
+          paidInWindow: 0,
+        },
         MIDNIGHT,
       ),
     ).toEqual({ key: "future" });

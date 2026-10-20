@@ -1,4 +1,4 @@
-import { addSeconds, subDays } from "date-fns";
+import { addSeconds, differenceInCalendarDays, subDays } from "date-fns";
 import { and, desc, eq, gte, isNotNull, ne, or, sql } from "drizzle-orm";
 import { reportError } from "@/src/reportError";
 import { checkForNewAchievements } from "./achievements";
@@ -13,6 +13,7 @@ import {
   type HandEntryDraft,
   type HandKind,
   type HandRefusal,
+  handEntryPays,
   type MeasuredSpan,
   takesHandDistance,
 } from "./handEntryRules";
@@ -50,9 +51,9 @@ export type HandResult =
 /** The rule, over the journal as it stands: `ignoreId` is the entry being corrected. */
 export async function loadHandContext(ignoreId: number | null, now: Date): Promise<HandContext> {
   const since = subDays(now, HAND_MAX_DAYS_BACK + 2);
-  const [hands, rows] = await Promise.all([
+  const [hands, rows, [first]] = await Promise.all([
     db
-      .select({ performedAt: completedQuest.performedAt })
+      .select({ performedAt: completedQuest.performedAt, xpEarned: completedQuest.xpEarned })
       .from(completedQuest)
       .where(
         and(
@@ -76,6 +77,10 @@ export async function loadHandContext(ignoreId: number | null, now: Date): Promi
           isNotNull(completedQuest.durationSeconds),
         ),
       ),
+    db
+      .select({ at: sql<number | null>`min(${completedQuest.performedAt})` })
+      .from(completedQuest)
+      .where(sql`${completedQuest.byHand} IS NOT 'session'`),
   ]);
   const measured: MeasuredSpan[] = rows.map((r) => ({
     id: r.id,
@@ -84,7 +89,15 @@ export async function loadHandContext(ignoreId: number | null, now: Date): Promi
     questId: r.questId,
     outing: r.outing,
   }));
-  return { handDays: new Set(hands.map((h) => dayKey(h.performedAt))), measured };
+  return {
+    handDays: new Set(hands.map((h) => dayKey(h.performedAt))),
+    measured,
+    // min() comes back raw: the column's seconds, not a Date.
+    firstMeasuredAt: first?.at == null ? null : new Date(Number(first.at) * 1000),
+    paidInWindow: hands.filter(
+      (h) => h.xpEarned > 0 && differenceInCalendarDays(now, h.performedAt) <= HAND_MAX_DAYS_BACK,
+    ).length,
+  };
 }
 
 /** The name as stored: a workout's, trimmed and capped, or null. An outing keeps none. */
@@ -164,9 +177,11 @@ export async function createHandEntry(
   now: Date = new Date(),
 ): Promise<HandResult> {
   const draft = draftOf(input);
-  const refusal = checkHandEntry(draft, await loadHandContext(null, now), now);
+  const context = await loadHandContext(null, now);
+  const refusal = checkHandEntry(draft, context, now);
   if (refusal) return { ok: false, refusal };
 
+  const xp = handEntryPays(context) ? HAND_ENTRY_XP : 0;
   const { endedAt } = draft;
   const id = await createCompletedSession({
     byHand: "session",
@@ -174,7 +189,7 @@ export async function createHandEntry(
     leaguesM: draft.distanceM,
     label: labelOf(input),
     durationSeconds: draft.durationSeconds,
-    xpEarned: HAND_ENTRY_XP,
+    xpEarned: xp,
     performedAt: addSeconds(endedAt, -draft.durationSeconds),
     exercises: [],
   });
@@ -182,7 +197,7 @@ export async function createHandEntry(
   return {
     ok: true,
     id,
-    xp: HAND_ENTRY_XP + after.bonusXp,
+    xp: xp + after.bonusXp,
     flameActive: after.flameActive,
     oathKept: after.oathKept,
   };

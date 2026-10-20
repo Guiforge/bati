@@ -13,6 +13,12 @@ export type HandKind = "workout" | Locomotion;
 const HAND_MIN_SECONDS = 10 * 60;
 const HAND_MAX_SECONDS = 4 * 3600;
 export const HAND_MAX_DAYS_BACK = 7;
+/**
+ * Entries that pay XP inside the days the form reaches. The next ones are still noted (the flame
+ * counts them) but pay nothing. ponytail: two synced devices can each pay this many; revisit if a
+ * real journal shows it.
+ */
+export const HAND_PAID_MAX = 3;
 /** Average speeds above these are a typo, not a person (km/h). */
 export const HAND_MAX_KMH: Record<Locomotion, number> = { walk: 8, run: 20, ride: 45 };
 
@@ -36,6 +42,7 @@ export type HandEntryDraft = {
 
 export type HandRefusal =
   | { key: "too_old" }
+  | { key: "before_first" }
   | { key: "one_per_day"; day: string }
   | { key: "duration" }
   | { key: "future" }
@@ -52,7 +59,16 @@ export type HandContext = {
   handDays: ReadonlySet<string>;
   /** Sessions and outings Bati measured, near the days an entry can land on. */
   measured: readonly MeasuredSpan[];
+  /** When the hero's first measured session began (null: none yet). Nothing is noted before it. */
+  firstMeasuredAt: Date | null;
+  /** Other hand entries that paid XP over the days the form reaches. */
+  paidInWindow: number;
 };
+
+/** Whether a new entry still pays its XP, or is only noted (see `HAND_PAID_MAX`). */
+export function handEntryPays(context: Pick<HandContext, "paidInWindow">): boolean {
+  return context.paidInWindow < HAND_PAID_MAX;
+}
 
 /** The farthest a hand can claim in one entry: four hours at the plausible speed. */
 export function maxHandDistanceM(kind: Locomotion): number {
@@ -99,6 +115,10 @@ export function checkHandEntry(
   const day = dayKey(startedAt);
 
   if (!withinHandWindow(startedAt, now)) return { key: "too_old" };
+  // The journal starts with the first session Bati measured: by the day, so that day itself is fine.
+  if (context.firstMeasuredAt === null || day < dayKey(context.firstMeasuredAt)) {
+    return { key: "before_first" };
+  }
   if (context.handDays.has(day)) return { key: "one_per_day", day };
   if (draft.durationSeconds < HAND_MIN_SECONDS || draft.durationSeconds > HAND_MAX_SECONDS) {
     return { key: "duration" };

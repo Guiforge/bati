@@ -20,6 +20,7 @@ Static rendition, hand-written from `components/journal/PastSessionSheet.tsx` (p
 - Fields, top to bottom: type (Entraînement, Marche, Course, Vélo), day (Aujourd'hui, Hier, Autre jour, seven days back at most), "Fini vers" (a typed time), duration (20, 30, 45, 60, 90, Autre in minutes), then a free name for a workout ("salle", "foot") or an optional distance for an outing.
 - Prefill never opens on a refusal: the most recent day without a hand-written entry, an end time before any measured session it would overlap, 45 min.
 - Five refusals, one gentle sentence each, in the footer: more than seven days back; already one today; under 10 min (or over 4 h); overlapping a measured session, which it names; a distance faster than 8 / 20 / 45 km/h on foot / running / riding, with "Mettre 3,00 km" and "Retirer la distance" to fix it.
+- Two more rules, in `db/handEntryRules.ts`: nothing is noted on a day before the hero's first measured session (a sixth refusal, `before_first`), and only three entries pay XP over the eight days the sheet reaches (`HAND_PAID_MAX`): the next ones are noted at 0 XP, still count for the flame, and the footer says so before saving.
 - On save: closes, then a success `Toast` read after the write ("Flamme entretenue, +75 XP", "Séance notée, +75 XP" when the flame is not lit, "Serment tenu, +… XP" when it keeps an oath). A correction says "Séance corrigée" and no XP. No victory screen.
 
 ## Anatomy

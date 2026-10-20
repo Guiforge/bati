@@ -874,6 +874,7 @@ export function ActiveExerciseView() {
                             onPress={() => handleAdjustReps(-1)}
                             pressStyle={{ opacity: 0.8, scale: 0.95 }}
                             disabled={adjustedReps <= 1}
+                            aria-disabled={adjustedReps <= 1}
                             opacity={adjustedReps <= 1 ? 0.4 : 1}
                             accessibilityLabel={t("session.decrease_reps_accessibility")}
                             accessibilityRole="button"

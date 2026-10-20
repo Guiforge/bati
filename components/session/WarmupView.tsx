@@ -252,6 +252,7 @@ export function WarmupView() {
           circular
           icon={<SkipBack size={20} color="$text" />}
           disabled={isFirst}
+          aria-disabled={isFirst}
           opacity={isFirst ? 0.35 : 1}
           bg="$surface"
           borderWidth={1}

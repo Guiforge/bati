@@ -388,6 +388,7 @@ function DaysRow({
               size="$4"
               circular
               disabled={disabled}
+              aria-disabled={disabled}
               bg={on ? "$primary" : "$surface"}
               borderColor="$borderStrong"
               borderWidth={1}

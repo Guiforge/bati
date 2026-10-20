@@ -83,6 +83,7 @@ export function BackupSecretSheet({
           // Twelve words on one line showed the last four. Only while they are shown: Android
           // does not mask a multiline field. The key stays "done" and submits, it adds no line.
           multiline={shown}
+          py={shown ? 8 : 4}
           submitBehavior="blurAndSubmit"
           autoCapitalize="none"
           autoCorrect={false}

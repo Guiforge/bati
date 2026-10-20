@@ -529,6 +529,7 @@ export default function AdventureEditor() {
                     onChangeText={(next) => patch({ description: next })}
                     maxLength={MAX_DESCRIPTION}
                     multiline
+                    py={8}
                     bg="$background"
                     borderColor="$borderStrong"
                     color="$text"

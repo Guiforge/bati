@@ -118,6 +118,7 @@ export function EditorStepCard({
             onChangeText={(narrative) => onChange({ narrative })}
             maxLength={MAX_STEP_TEXT}
             multiline
+            py={8}
             placeholder={t("adventures.editor_before_placeholder")}
             bg="$background"
             borderColor="$borderStrong"
@@ -135,6 +136,7 @@ export function EditorStepCard({
               onChangeText={(outro) => onChange({ outro })}
               maxLength={MAX_STEP_TEXT}
               multiline
+              py={8}
               bg="$background"
               borderColor="$borderStrong"
               color="$text"

@@ -66,6 +66,7 @@ export function EditorBossVoice({ voice, placeholder, onChange }: Props) {
               })
             }
             multiline
+            py={8}
             bg="$background"
             borderColor="$borderStrong"
             color="$text"

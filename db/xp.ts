@@ -154,6 +154,11 @@ const LOCOMOTION_RATE: Record<Locomotion, number> = {
   run: 1 / 2,
 };
 
+/** What a second of this ground is worth as effort, before the day's decay (the Victory card says it). */
+export function outingRate(locomotion: Locomotion): number {
+  return LOCOMOTION_RATE[locomotion];
+}
+
 /** The band the full rate is paid over, and the width of every band after it. */
 const OUTING_BAND_SECONDS = 3600;
 

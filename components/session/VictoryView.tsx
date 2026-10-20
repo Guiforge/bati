@@ -38,9 +38,10 @@ import { formatDuration, formatDurationEstimate } from "@/db/estimate";
 import { isOutingSession } from "@/db/expeditions";
 import { preferences } from "@/db/preferences";
 import { createQuestFromOuting } from "@/db/quests";
-import type { FeedbackCode } from "@/db/schema";
+import type { FeedbackCode, Locomotion } from "@/db/schema";
 import { formatCount } from "@/db/targets";
 import { calculateLevelFromXp, getLevelTitle, getXpForLevel } from "@/db/userLevel";
+import { outingRate } from "@/db/xp";
 import { useFontScaled } from "@/hooks/useFontScaled";
 import { useHaptics } from "@/hooks/useHaptics";
 import { formatTime } from "@/hooks/useSessionTimer";
@@ -179,6 +180,11 @@ async function saveNoteDraft(draft: { current: string }, sessionId: number) {
   const text = draft.current;
   draft.current = "";
   if (text.trim()) await updateSessionNotes(sessionId, text);
+}
+
+/** The share of a minute outside that counts as effort, as the card writes it. */
+function rateOf(locomotion: Locomotion): string {
+  return outingRate(locomotion) >= 0.5 ? "½" : "¼";
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Post-workout summary screen (save, reveal, feedback, actions)
@@ -724,6 +730,7 @@ export function VictoryView() {
                           // The clock the time card prints beside it, not a rounded "2 min" that disagreed.
                           moving: formatTime(result.outing.seconds),
                           effort: formatDurationEstimate(result.outing.effortSeconds, language),
+                          rate: rateOf(result.outing.locomotion),
                         })
                       : result.outing.seconds === 0 && result.outing.clockSeconds > 0
                         ? // The day's allowance for time nothing witnessed is spent: say so, where
@@ -734,6 +741,7 @@ export function VictoryView() {
                         : t("session.xp_outing_rate_timed", {
                             time: formatTime(result.outing.clockSeconds),
                             effort: formatDurationEstimate(result.outing.effortSeconds, language),
+                            rate: rateOf(result.outing.locomotion),
                           })}
                   </AppText>
                 ) : null}

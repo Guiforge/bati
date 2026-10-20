@@ -77,8 +77,10 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* One notice at a time, the first in noticeOrder.ts: an interrupted session outranks
-            sync, the notes, an update, the backup and the reminders. */}
-        <NoticeSlot onLightWeekAnswered={weekChanged} weekRev={weekRev} />
+            sync, the notes, an update, the backup and the reminders. Keyed on the week: an
+            answer must re-read the slot, and the React Compiler drops a dependency the focus
+            callback does not read, so a prop in its deps never re-ran it. */}
+        <NoticeSlot key={weekRev} onLightWeekAnswered={weekChanged} />
 
         {/* Tonight's scene, one action that starts it, the rest advice and the oath under it */}
         <HomeStage key={weekRev} oathStrip={disclosed?.oathStrip ?? null} />

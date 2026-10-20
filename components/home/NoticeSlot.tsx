@@ -35,14 +35,7 @@ import { useSyncStore } from "@/stores/sync";
  * shortcut: the next notice waits for the next focus after the winner is closed, re-decide on
  * dismiss if testers find the empty slot odd.
  */
-export function NoticeSlot({
-  onLightWeekAnswered,
-  weekRev = 0,
-}: {
-  onLightWeekAnswered?: () => void;
-  /** Bumped when a light week is accepted or ended, so the slot reads the rhythm line again. */
-  weekRev?: number;
-}) {
+export function NoticeSlot({ onLightWeekAnswered }: { onLightWeekAnswered?: () => void }) {
   const { recoverableSession, isChecking, recoverSession, finishSession, discardSession } =
     useSessionRecovery();
   const language = useSettingsStore((s) => s.language);
@@ -56,7 +49,7 @@ export function NoticeSlot({
   const [present, setPresent] = useState<ReadonlySet<NoticeKind> | null>(null);
 
   useFocusEffect(
-    // biome-ignore lint/correctness/useExhaustiveDependencies: `lastSyncAt` and `weekRev` are signals (a sync ended, a week changed), not values the effect reads.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: `lastSyncAt` is the signal that a sync run ended, not a value the effect reads.
     useCallback(() => {
       let cancelled = false;
       Promise.all([
@@ -112,7 +105,7 @@ export function NoticeSlot({
       return () => {
         cancelled = true;
       };
-    }, [language, updateEnabled, waitingPassword, failure, lastSyncAt, weekRev]),
+    }, [language, updateEnabled, waitingPassword, failure, lastSyncAt]),
   );
 
   if (present === null) return null;
@@ -137,10 +130,7 @@ export function NoticeSlot({
       );
     case "rhythm":
       return (
-        <RhythmLine
-          key={weekRev}
-          {...(onLightWeekAnswered ? { onLightWeekEnded: onLightWeekAnswered } : {})}
-        />
+        <RhythmLine {...(onLightWeekAnswered ? { onLightWeekEnded: onLightWeekAnswered } : {})} />
       );
     case "whatsNew":
       return <WhatsNewCard />;

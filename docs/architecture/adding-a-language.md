@@ -58,8 +58,9 @@ on. These strings put a number under another name beside a noun, and a language 
 (Russian, Polish) cannot write them correctly until the number is renamed to `count` and the key
 split: `journal.work_meta` and `journal.pull_deficit_body` (reps), `village.detail_recent_units`,
 `village.detail_muscle_driver` and `village.detail_style_driver` (reps), `village.rep_unit`
-(seconds), the `journal.moved_rung_left_*` family (a second count of sessions), and the reminder
-lines that say "{{total}} leagues". A string with two numbers needs one of them written so that it
+(seconds), the `journal.moved_rung_left_*` family (a second count of sessions),
+`settings.warmup_transition_auto_note` (`{{sessions}}`), and the reminder lines that say
+"{{total}} leagues". A string with two numbers needs one of them written so that it
 never agrees. Not done yet: it is copy work for the first such language.
 
 ## 4. Seeded content: a migration

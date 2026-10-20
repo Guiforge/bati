@@ -1576,17 +1576,21 @@ export const useSessionStore = create<SessionState>()(
       const keep = (s: WarmupStep) => !names.has(s.exerciseName);
       const kept = warmupSequence.filter(keep);
       const index = warmupSequence.slice(0, warmupIndex).filter(keep).length;
-      set({ warmupSequence: kept, warmupIndex: index });
       if (index >= kept.length) {
+        set({ warmupSequence: kept, warmupIndex: index });
         get().skipWarmup();
         return;
       }
-      // A new first movement has not been read: it gets the first wait, not a transition.
-      set(
-        index === 0
+      // One `set`: the snapshot subscriber writes on every one, and a kill between two would
+      // recover the new step under the old step's clock. A new first movement has not been
+      // read, so it gets the first wait rather than a transition.
+      set({
+        warmupSequence: kept,
+        warmupIndex: index,
+        ...(index === 0
           ? { warmupPrep: true, ...prepTimer() }
-          : toStep(kept[index], get().warmupSessionsBefore),
-      );
+          : toStep(kept[index], get().warmupSessionsBefore)),
+      });
     },
 
     /** Leave the warm-up for the start screen. Nothing is journaled: a warm-up is not work. */

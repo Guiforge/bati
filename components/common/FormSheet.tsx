@@ -1,7 +1,7 @@
 import { usePathname } from "expo-router";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Keyboard, Pressable, useWindowDimensions } from "react-native";
+import { BackHandler, Keyboard, Pressable, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Sheet, Text, XStack, YStack } from "tamagui";
 import { headingFont } from "@/components/common/headingFont";
@@ -62,6 +62,17 @@ export function FormSheet({ open, title, onClose, children, footer }: Props) {
     Keyboard.dismiss();
     onClose();
   };
+
+  // Hardware back closes the sheet first: a portalled modal is above the navigator, so without
+  // this the router took the press and left the tab (past-session sheet sent the hero Home).
+  useEffect(() => {
+    if (!open) return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      close();
+      return true;
+    });
+    return () => sub.remove();
+  }, [open, close]);
 
   useEffect(() => {
     if (!open) {

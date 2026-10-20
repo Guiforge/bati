@@ -1,5 +1,6 @@
+import assert from "node:assert/strict";
 import { render, screen } from "@testing-library/react-native";
-import { Dimensions } from "react-native";
+import { BackHandler, Dimensions } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider, Text } from "tamagui";
 import { FormSheet } from "@/components/common/FormSheet";
@@ -67,5 +68,29 @@ describe("FormSheet", () => {
   it("has no footer unless it is given one", async () => {
     await mountTitle("Ton animal");
     expect(screen.queryByText("pinned")).toBeNull();
+  });
+
+  it("closes on hardware back and swallows the press so the router never leaves the tab", async () => {
+    const spy = jest.spyOn(BackHandler, "addEventListener");
+    const onClose = jest.fn();
+    await render(
+      <SafeAreaProvider
+        initialMetrics={{
+          frame: { x: 0, y: 0, width: 390, height: 844 },
+          insets: { top: 0, left: 0, right: 0, bottom: 0 },
+        }}
+      >
+        <TamaguiProvider config={config} defaultTheme="dark">
+          <FormSheet open title="T" onClose={onClose}>
+            {null}
+          </FormSheet>
+        </TamaguiProvider>
+      </SafeAreaProvider>,
+    );
+    const call = spy.mock.calls.find(([name]) => name === "hardwareBackPress");
+    assert(call);
+    expect(call[1]()).toBe(true);
+    expect(onClose).toHaveBeenCalledTimes(1);
+    spy.mockRestore();
   });
 });

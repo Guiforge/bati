@@ -426,6 +426,15 @@ describe("stores/expedition", () => {
     expect(mockSetProgress.mock.calls.at(-1)?.[0]).toMatch(/^32:04 · \d+ m$/);
   });
 
+  // The recovery card restarts the receiver before any session holds the walk: no clock to read.
+  test("with no session holding the walk, the notification times it by its trace, not 0:00", async () => {
+    mockElapsedSeconds = 0;
+    await store.getState().begin("s1", NOTIFICATION, false, "metric");
+    for (let i = 0; i < 30; i += 1) emit(walking(i));
+
+    expect(mockSetProgress.mock.calls.at(-1)?.[0]).toMatch(/^0:[12]\d · \d+ m$/);
+  });
+
   describe("the outing display", () => {
     const view = (over: Record<string, unknown> = {}) => ({
       big: "auto" as const,

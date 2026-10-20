@@ -250,7 +250,11 @@ function progressLine(
   goal: OutingGoal | null,
   reached: boolean,
 ): string {
-  const recordedSeconds = sessionBridge?.recordedSeconds() ?? 0;
+  // Zero while no session holds the walk (the recovery card restarted the receiver and waits):
+  // the trace's own span then, or the notification read 0:00 over a walk already under way.
+  const traceSeconds =
+    track.startedAt !== null && track.lastAt !== null ? (track.lastAt - track.startedAt) / 1000 : 0;
+  const recordedSeconds = sessionBridge?.recordedSeconds() || Math.floor(traceSeconds);
   const elapsed = formatClock(recordedSeconds * 1000);
   // `startedAt` is set by the first fix the gate accepts, so null is exactly "no sky yet" - the
   // same test the panel's status line makes.

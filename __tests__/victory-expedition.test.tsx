@@ -360,10 +360,11 @@ describe("VictoryView, the walk it just celebrated", () => {
    * on screen: this much moving, counted as this much effort.
    */
   test("says what the walk was counted as, not just what it paid", async () => {
+    // Same clock as the "of which" line of the time card: 97 s read "2 min" here and "1:37" there.
     await mountVictory({ outing: { seconds: 3600, effortSeconds: 900, locomotion: "walk" } });
 
     expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(
-      /60 min moving · counted as 15 min of effort/,
+      /60:00 moving · counted as 15 min of effort/,
     );
   });
 

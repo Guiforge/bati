@@ -714,7 +714,8 @@ export function VictoryView() {
                 {result?.outing ? (
                   <AppText fontWeight="700" fontSize={11} color="$textSecondary">
                     {t("session.xp_outing_rate", {
-                      moving: formatDurationEstimate(result.outing.seconds, language),
+                      // The clock the time card prints beside it, not a rounded "2 min" that disagreed.
+                      moving: formatTime(result.outing.seconds),
                       effort: formatDurationEstimate(result.outing.effortSeconds, language),
                     })}
                   </AppText>

@@ -5,6 +5,8 @@ import { clientMock, createTestDb } from "./helpers/testDb";
  * and the oath see it; the boss, the records, the objectives, the progression and the adventure do
  * not; the XP is the XP of fifteen minutes, fixed at the save.
  */
+const mockClearDay = jest.fn();
+
 describe("a session written down", () => {
   const t = createTestDb();
 
@@ -15,6 +17,7 @@ describe("a session written down", () => {
     jest.doMock("../src/reminders", () => ({
       replanRemindersNow: jest.fn(() => Promise.resolve()),
     }));
+    jest.doMock("../modules/bati-reminders", () => ({ clearDay: mockClearDay }));
     jest.doMock("../src/widget", () => ({
       requestWidgetsUpdate: jest.fn(() => Promise.resolve()),
     }));
@@ -103,6 +106,15 @@ describe("a session written down", () => {
         n: 0,
       });
       expect(t.sqlite.prepare("SELECT COUNT(*) n FROM boss_damage_log").get()).toEqual({ n: 0 });
+    });
+
+    test("takes the reminder of the saved day out of the shade, not only today's", async () => {
+      mockClearDay.mockClear();
+      const end = noon(2);
+      const res = await hand().createHandEntry(entry({ endedAt: end }));
+      expect(res.ok).toBe(true);
+      const { dayKey } = require("../db/dates") as typeof import("../db/dates");
+      expect(mockClearDay).toHaveBeenCalledWith(dayKey(new Date(end.getTime() - 45 * 60_000)));
     });
 
     test("performedAt is the end minus the duration; the label and the distance are kept", async () => {

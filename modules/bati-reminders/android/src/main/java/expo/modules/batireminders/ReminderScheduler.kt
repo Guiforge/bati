@@ -211,7 +211,7 @@ internal object ReminderScheduler {
     if (body.isNotEmpty()) builder.setContentText(body)
     // First, and the only one of the three that answers the question the reminder asks: the session
     // was done somewhere Bati did not see. It opens the form for that day, and does not take the
-    // reminder away: saving does (`clearToday`), and a sheet closed unsaved leaves it standing.
+    // reminder away: saving does (`clearToday`, or `clearDay` for another day), and a sheet closed unsaved leaves it standing.
     val elsewhere = labels?.optString("elsewhere").orEmpty()
     if (elsewhere.isNotEmpty()) {
       builder.addAction(0, elsewhere, elsewhereIntent(context, due.date))
@@ -289,6 +289,12 @@ internal object ReminderScheduler {
 
   /** Takes today's reminder out of the shade. */
   fun clearToday(context: Context) = cancelNotification(context, LocalDay.today())
+
+  /** Takes the reminder of any day out of the shade: a past one opened from its action stays otherwise. */
+  fun clearDay(
+    context: Context,
+    date: String,
+  ) = cancelNotification(context, date)
 
   private fun cancelNotification(
     context: Context,

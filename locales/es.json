@@ -43,8 +43,8 @@
     "update_body": "Tienes la {{current}}. La página de la versión dice qué ha cambiado, y la descarga está ahí también.",
     "update_open": "Ver la versión",
     "update_later": "Más tarde",
-    "light_week_under": "Tus dos últimas sesiones han costado. ¿Una semana ligera: una ronda menos, las mismas variantes?",
-    "light_week_busy": "Cinco semanas con cuatro sesiones o más. ¿Una semana ligera: una ronda menos, las mismas variantes?",
+    "light_week_under": "Tus dos últimas sesiones han costado. ¿Una ronda menos esta semana?",
+    "light_week_busy": "Cinco semanas con cuatro sesiones o más. ¿Una ronda menos esta semana?",
     "light_week_accept": "Semana ligera",
     "light_week_refuse": "Ahora no"
   },

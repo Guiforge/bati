@@ -42,8 +42,8 @@
     "update_body": "Du bist auf {{current}}. Die Release-Seite sagt, was sich geändert hat, und der Download liegt dort auch.",
     "update_open": "Release ansehen",
     "update_later": "Später",
-    "light_week_under": "Deine letzten zwei Einheiten waren hart. Eine leichte Woche: eine Runde weniger, gleiche Varianten?",
-    "light_week_busy": "Fünf Wochen mit vier Einheiten oder mehr. Eine leichte Woche: eine Runde weniger, gleiche Varianten?",
+    "light_week_under": "Deine letzten zwei Einheiten waren hart. Diese Woche eine Runde weniger?",
+    "light_week_busy": "Fünf Wochen mit vier Einheiten oder mehr. Diese Woche eine Runde weniger?",
     "light_week_accept": "Leichte Woche",
     "light_week_refuse": "Jetzt nicht"
   },

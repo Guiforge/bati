@@ -30,6 +30,7 @@ import {
   saveQuestConfig,
 } from "@/db/questConfig";
 import { Difficulty } from "@/db/targets";
+import { useFontScaled } from "@/hooks/useFontScaled";
 import { useReloadOnChange } from "@/hooks/useReloadOnChange";
 import {
   ensureNotificationPermission,
@@ -147,7 +148,9 @@ export function QuickActions({ showGoals }: { showGoals: boolean | null }) {
   // the scroll's own padding, from the token so it lines up with the stage above.
   const pageInset = getTokens().space.$4.val;
   const { width: windowWidth, height: screenHeight } = useWindowDimensions();
-  const tileHeight = screenHeight < SHORT_SCREEN ? TILE_HEIGHT_SHORT : TILE_HEIGHT;
+  // In step with the font: a name over two lines and the goal chip no longer fit 72 dp at 130 %,
+  // and the tile cut them (persona audit 2, 14).
+  const tileHeight = useFontScaled(screenHeight < SHORT_SCREEN ? TILE_HEIGHT_SHORT : TILE_HEIGHT);
   const router = useRouter();
   const language = useSettingsStore((s) => s.language);
   const unit = useSettingsStore((s) => s.distanceUnit);

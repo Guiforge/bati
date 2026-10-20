@@ -543,7 +543,8 @@ export default function ExpeditionRecapScreen() {
               fontWeight="700"
               fontSize={20}
               color="$text"
-              numberOfLines={1}
+              // Two lines: "La Parole Doit Passer" lost its last words to the share button at 130 %.
+              numberOfLines={2}
             >
               {recap.title ?? t("recap.title")}
             </Text>

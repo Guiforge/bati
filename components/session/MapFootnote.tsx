@@ -88,6 +88,9 @@ export function MapFootnote({
         fontSize={11}
         color="$muted"
         style={{ textAlign: "center" }}
+        // One line on the live strip: at 130 % the credit took two, a third of the map band. It
+        // shrinks to fit rather than losing a word of the credit.
+        {...(compact ? { numberOfLines: 1, adjustsFontSizeToFit: true } : {})}
         // Over the live map the trace can run under the line (persona B audit, 130 %): a backing
         // keeps both readable, sized to the words so the rest of the strip stays map.
         {...(compact

@@ -271,9 +271,10 @@ describe("VictoryView, the walk it just celebrated", () => {
   test("the road line names the building, the leagues covered and the next floor", async () => {
     await mountVictory();
 
-    expect(screen.getByTestId("victory-expedition-road")).toHaveTextContent(
-      "High Road · 12/15 leagues",
-    );
+    const line = screen.getByTestId("victory-expedition-road");
+    expect(line).toHaveTextContent(/High Road · 12\/15 leagues/);
+    // ...and says what a league is, so the fraction is not a count of something unexplained.
+    expect(line).toHaveTextContent(/A league of Bati is one kilometre\./);
   });
 
   // `nextTarget` is null once the road is maxed, and "40/null leagues" is exactly the shape a
@@ -286,7 +287,7 @@ describe("VictoryView, the walk it just celebrated", () => {
     await mountVictory();
 
     const line = screen.getByTestId("victory-expedition-road");
-    expect(line).toHaveTextContent("High Road · 40 leagues covered beyond the walls");
+    expect(line).toHaveTextContent(/High Road · 40 leagues covered beyond the walls/);
     expect(line).not.toHaveTextContent("null");
   });
 

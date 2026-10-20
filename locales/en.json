@@ -1710,13 +1710,14 @@
     "resume": "Resume",
     "discard": "Discard",
     "finish_outing": "Finish the outing",
-    "finish_outing_description": "It kept running while the app was gone. Its trace says what happened.",
-    "finish_outing_title": "Your outing carried on without you"
+    "finish_outing_description": "Bati was closed. The trace keeps what was measured before, and measuring has started again.",
+    "finish_outing_title": "Your outing was interrupted"
   },
   "recap": {
     "title": "The ground covered",
     "open": "See the ground covered",
     "no_trace": "This quest never left the walls.",
+    "gap": "Nothing measured from {{from}} to {{to}}: tracking had stopped.",
     "privacy": "The map comes from OpenFreeMap, which learns roughly where you go, never the trace itself.",
     "export": "Export as GPX",
     "export_failed": "Could not write the file. Try again.",

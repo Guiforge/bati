@@ -177,7 +177,20 @@ describe("PausedOverlay", () => {
    * growing.
    */
   it("says the outing is still being measured while the game is paused", async () => {
-    useExpeditionStore.setState({ sessionUuid: "0192-walk" });
+    useExpeditionStore.setState({
+      sessionUuid: "0192-walk",
+      error: null,
+      lastFix: {
+        t: 1,
+        lat: 48,
+        lon: -2,
+        ele: null,
+        baro: null,
+        acc: 5,
+        speed: 1.4,
+        distFromPrev: 1.4,
+      },
+    });
     useSessionStore.setState({
       quest: mockQuest,
       status: "paused",
@@ -191,6 +204,23 @@ describe("PausedOverlay", () => {
     const paused = await mountPaused();
 
     expect(paused.getByText("session.paused_expedition_note")).toBeTruthy();
+  });
+
+  it("and does not promise a trace that has produced no point", async () => {
+    useExpeditionStore.setState({ sessionUuid: "0192-walk", error: null, lastFix: null });
+    useSessionStore.setState({
+      quest: mockQuest,
+      status: "paused",
+      prePauseStatus: "running",
+      currentRoundIndex: 0,
+      currentExerciseIndex: 0,
+      warmupSequence: [],
+      warmupIndex: 0,
+    });
+
+    const paused = await mountPaused();
+
+    expect(paused.queryByText("session.paused_expedition_note")).toBeNull();
   });
 
   it("and says nothing of the sort in a room", async () => {

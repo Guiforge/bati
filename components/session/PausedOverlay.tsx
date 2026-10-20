@@ -37,7 +37,11 @@ export function PausedOverlay() {
   // The GPS is deliberately left running through a pause: stopping and restarting the service
   // loses the lock and breaks the segment on the way back, and the reducer already credits
   // nothing while the hero stands still. So the screen is what has to be honest about it.
-  const measuring = useExpeditionStore((s) => s.sessionUuid !== null);
+  // And only once it has said so: a note promising the trace runs sits badly over a receiver that
+  // never produced a fix or went quiet.
+  const measuring = useExpeditionStore(
+    (s) => s.sessionUuid !== null && s.lastFix !== null && s.error === null,
+  );
   // An outing without the receiver has no trace to keep running.
   const gps = useSessionStore((s) => s.gps);
   // Above the early return: hook order may not depend on the paused state.

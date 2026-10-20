@@ -1710,13 +1710,14 @@
     "resume": "Fortsetzen",
     "discard": "Verwerfen",
     "finish_outing": "Tour beenden",
-    "finish_outing_description": "Sie lief weiter, während Bati geschlossen war. Ihre Spur zeigt, was passiert ist.",
-    "finish_outing_title": "Deine Tour ging ohne dich weiter"
+    "finish_outing_description": "Bati wurde geschlossen. Die Spur behält, was vorher gemessen wurde, und die Messung läuft wieder.",
+    "finish_outing_title": "Deine Tour wurde unterbrochen"
   },
   "recap": {
     "title": "Die zurückgelegte Strecke",
     "open": "Zurückgelegte Strecke ansehen",
     "no_trace": "Diese Quest hat die Mauern nie verlassen.",
+    "gap": "Nichts gemessen von {{from}} bis {{to}}: Die Aufzeichnung war unterbrochen.",
     "privacy": "Die Karte kommt von OpenFreeMap, das ungefähr erfährt, wo du unterwegs bist, aber nie die Spur selbst.",
     "export": "Als GPX exportieren",
     "export_failed": "Die Datei konnte nicht geschrieben werden. Versuch es nochmal.",

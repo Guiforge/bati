@@ -1079,8 +1079,8 @@
     "resume": "Reprendre",
     "title": "Reprendre ta séance ?",
     "finish_outing": "Terminer la sortie",
-    "finish_outing_description": "Elle a tourné pendant que Bati était fermé. Son tracé dit ce qui s'est passé.",
-    "finish_outing_title": "Ta sortie a continué sans toi"
+    "finish_outing_description": "Bati s'est fermé. Le tracé garde ce qui a été mesuré avant, et la mesure a repris.",
+    "finish_outing_title": "Ta sortie a été interrompue"
   },
   "session": {
     "expedition_status_acquiring": "En quête du ciel",
@@ -1806,6 +1806,7 @@
     "title": "La distance parcourue",
     "open": "Voir la distance parcourue",
     "no_trace": "Cette quête n'a jamais quitté les murs.",
+    "gap": "Rien mesuré de {{from}} à {{to}} : le suivi s'était interrompu.",
     "privacy": "La carte vient d'OpenFreeMap, qui apprend à peu près où tu vas, jamais le tracé lui-même.",
     "export": "Exporter en GPX",
     "export_failed": "Le fichier n'a pas pu être écrit. Réessaie.",

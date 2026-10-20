@@ -1799,13 +1799,14 @@
     "resume": "Reanudar",
     "discard": "Descartar",
     "finish_outing": "Terminar la salida",
-    "finish_outing_description": "Siguió mientras Bati estaba cerrada. Su trazado cuenta lo que pasó.",
-    "finish_outing_title": "Tu salida siguió sin ti"
+    "finish_outing_description": "Bati se cerró. El trazado conserva lo medido antes, y la medición ha vuelto a empezar.",
+    "finish_outing_title": "Tu salida se interrumpió"
   },
   "recap": {
     "title": "La distancia recorrida",
     "open": "Ver la distancia recorrida",
     "no_trace": "Esta misión nunca salió de las murallas.",
+    "gap": "Nada medido de {{from}} a {{to}}: el seguimiento se había interrumpido.",
     "privacy": "El mapa viene de OpenFreeMap, que sabe más o menos por dónde vas, nunca el trazado en sí.",
     "export": "Exportar en GPX",
     "export_failed": "No se ha podido escribir el archivo. Inténtalo de nuevo.",

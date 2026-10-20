@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { fireEvent, render, waitFor, within } from "@testing-library/react-native";
-import { BackHandler } from "react-native";
+import { BackHandler, Dimensions, StyleSheet } from "react-native";
 import { TamaguiProvider } from "tamagui";
 
 import AdventureDetailsScreen from "@/app/(tabs)/adventures/[id]";
@@ -651,5 +651,35 @@ describe("back from an adventure opened from Home", () => {
 
     expect(mockBack).toHaveBeenCalledTimes(1);
     expect(mockNavigate).not.toHaveBeenCalled();
+  });
+});
+
+// Persona audit 61: at 130 % the title column beside the painting was ~120 dp and broke mid-word.
+describe("a step row at a large font", () => {
+  const rowDirection = async (fontScale: number) => {
+    const real = Dimensions.get("window");
+    jest.spyOn(Dimensions, "get").mockImplementation(() => ({ ...real, fontScale }) as never);
+    const db = require("@/db") as { getAdventureDetails: jest.Mock };
+    const details = await db.getAdventureDetails();
+    db.getAdventureDetails.mockResolvedValueOnce({
+      ...details,
+      steps: [{ ...details.steps[0], imagePath: "assets/images/exercises/squat.webp" }],
+    });
+    const { findByTestId } = await render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <AdventureDetailsScreen />
+      </TamaguiProvider>,
+    );
+    const row = await findByTestId("adventure-step-0-active");
+    return StyleSheet.flatten(row.props.style).flexDirection;
+  };
+  afterEach(() => jest.restoreAllMocks());
+
+  test("puts the painting above the text at 130 %", async () => {
+    expect(await rowDirection(1.3)).toBe("column");
+  });
+
+  test("keeps it beside the text at 100 %", async () => {
+    expect(await rowDirection(1)).toBe("row");
   });
 });

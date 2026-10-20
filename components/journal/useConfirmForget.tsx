@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { Keyboard } from "react-native";
 import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import { setHandDistance } from "@/db/handEntries";
 import { reportError } from "@/src/reportError";
@@ -22,6 +23,8 @@ export function useConfirmForget() {
     onForgotten: () => void,
     options: { byHand?: boolean } = {},
   ) => {
+    // A note field still focused kept its keyboard up behind the dialog, and after the row left.
+    Keyboard.dismiss();
     ask({
       title: t("journal.forget_title"),
       body: t(options.byHand ? "journal.forget_body_by_hand" : "journal.forget_body"),
@@ -49,6 +52,7 @@ export function useConfirmForget() {
 
   /** Take back a distance the hero typed: the leagues it gave the road go with it. */
   const confirmDropDistance = (sessionId: number, onDone: () => void) => {
+    Keyboard.dismiss();
     ask({
       title: t("journal.drop_distance_title"),
       body: t("journal.drop_distance_body"),

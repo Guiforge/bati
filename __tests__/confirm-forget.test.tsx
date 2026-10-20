@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
-import { Alert, Pressable } from "react-native";
+import { Alert, Keyboard, Pressable } from "react-native";
 import { TamaguiProvider } from "tamagui";
 
 import { useConfirmForget } from "@/components/journal/useConfirmForget";
@@ -63,6 +63,12 @@ test("nothing is forgotten until the hero confirms, and no native alert is raise
   await act(async () => fireEvent.press(screen.getByTestId("confirm-dialog-confirm")));
   expect(mockForget).toHaveBeenCalledWith(7);
   expect(onForgotten).toHaveBeenCalledTimes(1);
+});
+
+test("asking puts the keyboard away, so a focused note field does not keep it up", async () => {
+  const dismiss = jest.spyOn(Keyboard, "dismiss");
+  await mount();
+  expect(dismiss).toHaveBeenCalled();
 });
 
 test("cancelling forgets nothing", async () => {

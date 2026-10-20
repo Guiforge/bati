@@ -389,7 +389,8 @@ export function FlameBlock({ stats }: { stats: JournalStats }) {
     flame.inWindow < flame.quota
       ? t("journal.flame_more", { count: flame.quota - flame.inWindow })
       : t("journal.flame_quota", { count: flame.quota }),
-    since,
+    // An abbreviated month ends with its own dot ("5 sept."): the sentence's full stop is then one too many.
+    since.replace(/\.\.$/, "."),
     best,
   ]
     .filter(Boolean)

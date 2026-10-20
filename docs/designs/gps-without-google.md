@@ -436,6 +436,11 @@ artifact under `~/.gstack/projects/Guiforge-bati/`. The spine:
   over `maxGapMs` (`gapsOf`). The gate is unchanged: build B when a real outing, killed by the
   system and not by `kill -9`, still shows holes after that. The restarted service buffers
   nothing, so what the app was closed for is never in `gps_points`.
+  Two rules the C audit added the same day: resuming clears the saved slot *before* restoring,
+  so the subscriber's fresh snapshot survives (a walk back running writes no later pause, and a
+  second kill used to leave no card while the orphan sweep took the trace); and the
+  notification's Finish while the card still waits stops the early receiver, so the walk ends
+  where the hero pressed and the card concludes it.
 
 ## What I noticed about how you think
 

@@ -21,6 +21,7 @@ import { reminderCardKind } from "@/src/reminders";
 import { reportError } from "@/src/reportError";
 import { checkForUpdate } from "@/src/updateCheck";
 import { hasUnseenNotes, releaseNotes } from "@/src/whatsNew";
+import { useChorusStore } from "@/stores/chorus";
 import { useSettingsStore } from "@/stores/settings";
 import { useSyncStore } from "@/stores/sync";
 
@@ -51,6 +52,10 @@ function Slot({ onLightWeekAnswered }: { onLightWeekAnswered?: () => void }) {
     (s) => s.result?.peers.some((p) => p.state === "locked") ?? false,
   );
   const failure = useSyncStore((s) => s.failure);
+  // The Sage's welcome back takes the slot's place for as long as he speaks: line and card
+  // together pushed "Voir la quête" below the fold at 130 % (persona audit 2, 71). The card is
+  // still due when he leaves; only a session to recover is more urgent than a greeting.
+  const welcoming = useChorusStore((s) => s.current?.moment === "comeback");
   // Null until the first read lands: a loading slot asserts nothing.
   const [present, setPresent] = useState<ReadonlySet<NoticeKind> | null>(null);
 
@@ -116,6 +121,7 @@ function Slot({ onLightWeekAnswered }: { onLightWeekAnswered?: () => void }) {
   if (present === null) return null;
   const all = new Set(present);
   if (!isChecking && recoverableSession) all.add("recovery");
+  if (welcoming && !all.has("recovery")) return null;
 
   switch (pickNotice(all)) {
     case "recovery":

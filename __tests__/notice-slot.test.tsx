@@ -79,6 +79,7 @@ jest.mock("@/components/home/PasswordCheckCard", () => ({
 }));
 
 import { NoticeSlot } from "@/components/home/NoticeSlot";
+import { useChorusStore } from "@/stores/chorus";
 import { useSettingsStore } from "@/stores/settings";
 
 const ALL = [
@@ -145,6 +146,18 @@ describe("NoticeSlot", () => {
       await waitFor(() => expect(shown()).toEqual([expected]));
       await screen.unmount();
     }
+  });
+
+  test("while the Sage welcomes the hero back, no card shares the screen with him", async () => {
+    mockRecovery.recoverableSession = null;
+    useChorusStore.setState({
+      current: { id: 1, owner: "home", moment: "comeback", villager: "sage", pose: "talk", line: "x" },
+    });
+    await mount();
+    await waitFor(() => expect(screen.queryByTestId("home-sync-lost")).toBeNull());
+    expect(shown()).toEqual([]);
+    useChorusStore.setState({ current: null });
+    await waitFor(() => expect(shown()).toEqual(["home-sync-lost"]));
   });
 
   test("a running week takes the slot ahead of the backup card, never beside it", async () => {

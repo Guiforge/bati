@@ -2960,6 +2960,20 @@ describe("an outing without GPS", () => {
     return (computeSessionXp as jest.Mock).mock.calls[0]?.[0];
   }
 
+  test("reports the real clock beside the capped seconds, for the XP card", async () => {
+    useSessionStore.setState({ status: "idle" });
+    jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+    await useSessionStore.getState().startSession(walk, "medium", { gps: false });
+    useSessionStore.setState({ startTime: Date.now() - 4 * 3600 * 1000, totalPausedTime: 0 });
+    useSessionStore.getState().completeExercise(4 * 3600);
+    const result = await useSessionStore.getState().saveSession(null);
+    expect(result?.outing).toMatchObject({
+      seconds: 7200,
+      clockSeconds: 4 * 3600,
+      measured: false,
+    });
+  });
+
   test("pays the whole of an hour on a day with nothing yet", async () => {
     expect((await finish(3600)).outing).toEqual({ seconds: 3600, locomotion: "walk" });
   });

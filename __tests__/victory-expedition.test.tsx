@@ -165,6 +165,7 @@ async function mountVictory({
     effortSeconds: number;
     locomotion: "walk" | "run" | "ride";
     measured: boolean;
+    clockSeconds?: number;
   } | null;
   /** The records the save found, as `saveSession` reports them. */
   newRecords?: unknown[];
@@ -388,13 +389,35 @@ describe("VictoryView, the walk it just celebrated", () => {
 
   test("an outing nothing measured says clock time, never moving time", async () => {
     await mountVictory({
-      outing: { seconds: 141, effortSeconds: 60, locomotion: "walk", measured: false },
+      outing: {
+        seconds: 141,
+        effortSeconds: 60,
+        locomotion: "walk",
+        measured: false,
+        clockSeconds: 141,
+      },
     });
 
     expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(
       /2:21 on the clock · counted as 1 min of effort/,
     );
     expect(screen.queryByText(/moving · counted/)).toBeNull();
+  });
+
+  test("an outing past the daily allowance prints the real clock, the effort keeps the cap", async () => {
+    await mountVictory({
+      outing: {
+        seconds: 7200,
+        effortSeconds: 1800,
+        locomotion: "walk",
+        measured: false,
+        clockSeconds: 4 * 3600,
+      },
+    });
+
+    expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(
+      /4:00:00 on the clock · counted as 30 min of effort/,
+    );
   });
 
   test("a workout is not told what it was counted as - it was counted as itself", async () => {

@@ -662,7 +662,7 @@ export function VictoryView() {
                 </AppText>
                 {/* The wait for the sky and the red lights are in the total (D-58); the moving time is
                   what XP is paid in, said once the two differ by a minute. */}
-                {result?.outing && durationSeconds - result.outing.seconds >= 60 ? (
+                {result?.outing?.measured && durationSeconds - result.outing.seconds >= 60 ? (
                   <AppText fontSize={11} color="$textSecondary">
                     {t("session.total_time_moving", {
                       moving: formatTime(result.outing.seconds),
@@ -721,7 +721,7 @@ export function VictoryView() {
                           effort: formatDurationEstimate(result.outing.effortSeconds, language),
                         })
                       : t("session.xp_outing_rate_timed", {
-                          time: formatTime(result.outing.seconds),
+                          time: formatTime(result.outing.clockSeconds),
                           effort: formatDurationEstimate(result.outing.effortSeconds, language),
                         })}
                   </AppText>

@@ -291,6 +291,8 @@ export type SaveResult = {
     locomotion: Locomotion;
     /** False when no GPS timed the ground, so `seconds` is the clock and nothing was seen moving. */
     measured: boolean;
+    /** The outing's clock before the daily allowance for unmeasured time capped `seconds`. */
+    clockSeconds: number;
   } | null;
   campaign: {
     adventureId: number;
@@ -967,7 +969,7 @@ async function outingLedger(
   atTarget: OutingLeg | null;
   prior: number;
   /** The same leg with what it was actually worth, for the victory screen's conversion line. */
-  priced: (OutingLeg & { effortSeconds: number; measured: boolean }) | null;
+  priced: (OutingLeg & { effortSeconds: number; measured: boolean; clockSeconds: number }) | null;
 }> {
   const locomotion = pricedLocomotion(quest);
   if (locomotion === null) return { outing: null, atTarget: null, prior: 0, priced: null };
@@ -979,6 +981,7 @@ async function outingLedger(
   // Excludes this session: a retry finds the row the first attempt wrote, and would otherwise
   // read it as its own predecessor and pay the second band for the first band's work.
   const prior = await outingSecondsToday(savedSessionId);
+  const clockSeconds = outing.seconds;
   // Time nothing witnessed (no GPS, or no fix ever locked) is paid up to two hours a day. Going
   // out without GPS is a button now; a timer left running on a table must not pay four hours.
   if (ground.movingSeconds === null) {
@@ -997,6 +1000,7 @@ async function outingLedger(
       ...outing,
       effortSeconds: Math.round(outingEffortSeconds(outing, prior)),
       measured: ground.movingSeconds !== null,
+      clockSeconds,
     },
   };
 }

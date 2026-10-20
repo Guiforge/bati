@@ -549,7 +549,13 @@ export default function ExpeditionRecapScreen() {
               {recap.title ?? t("recap.title")}
             </Text>
             {recap.performedAt ? (
-              <Text testID="recap-date" fontSize={12} color="$textSecondary" numberOfLines={1}>
+              <Text
+                testID="recap-date"
+                fontSize={12}
+                color="$textSecondary"
+                // Two lines, like the title: at 130 % the hour was cut to "20 oct. 2026, 2…".
+                numberOfLines={2}
+              >
                 {getDateTimeFormat(language, {
                   dateStyle: "medium",
                   timeStyle: "short",

@@ -46,10 +46,8 @@ describe("replanReminders", () => {
   const everyDay = Object.fromEntries(
     ["sun", "mon", "tue", "wed", "thu", "fri", "sat"].map((d) => [d, "23:59"]),
   );
-  const replan = () =>
-    (require("@/src/reminders") as typeof import("@/src/reminders")).replanReminders;
-
-  test("hands over the plan, with the words the native half cannot know", async () => {
+  /** "Done elsewhere?" is offered from the first measured session on. */
+  const measuredThreeDaysAgo = () =>
     t.db
       .insert(completedQuest)
       .values({
@@ -59,6 +57,11 @@ describe("replanReminders", () => {
         xpEarned: 10,
       })
       .run();
+  const replan = () =>
+    (require("@/src/reminders") as typeof import("@/src/reminders")).replanReminders;
+
+  test("hands over the plan, with the words the native half cannot know", async () => {
+    measuredThreeDaysAgo();
     await replan()(false);
     expect(mockSetPlan).toHaveBeenCalledTimes(1);
     const plan = mockSetPlan.mock.calls[0]?.[0];
@@ -119,6 +122,7 @@ describe("replanReminders", () => {
       .values({ key: "language", value: "fr" })
       .onConflictDoUpdate({ target: userPreferences.key, set: { value: "fr" } })
       .run();
+    measuredThreeDaysAgo();
     await replan()(false);
     const plan = mockSetPlan.mock.calls[0]?.[0];
     expect(plan.channelName).toBe("Rappels d'entraînement");

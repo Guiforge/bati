@@ -671,6 +671,9 @@ export async function getQuestStanding(session: CompletedSession): Promise<Quest
         .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
         .where(and(eq(completedQuest.questId, session.questId), isWorkout()))
         .groupBy(completedQuest.id)
+        // A light week's session (every set `ladderNeutral`) has a round fewer by design: ranked,
+        // it came last of its quest ("n° 16 sur 16") and said nothing true. It neither ranks nor is ranked.
+        .having(sql`MIN(${completedExercises.ladderNeutral}) = 0`)
     ).map((r) => ({ sessionId: r.sessionId, value: Number(r.value ?? 0), at: r.at }));
   }
 

@@ -167,7 +167,7 @@ export async function createHandEntry(
   const refusal = checkHandEntry(draft, await loadHandContext(null, now), now);
   if (refusal) return { ok: false, refusal };
 
-  const endedAt = draft.endedAt > now ? now : draft.endedAt;
+  const { endedAt } = draft;
   const id = await createCompletedSession({
     byHand: "session",
     outing: input.kind === "workout" ? null : input.kind,
@@ -206,7 +206,7 @@ export async function correctHandEntry(
   const refusal = checkHandEntry(draft, await loadHandContext(id, now), now);
   if (refusal) return { ok: false, refusal };
 
-  const endedAt = draft.endedAt > now ? now : draft.endedAt;
+  const { endedAt } = draft;
   const performedAt = addSeconds(endedAt, -draft.durationSeconds);
   // `xpEarned` is not here, on purpose: the oath bonus sits on the same row, and sync keeps the
   // larger XP of a row, so a lower one could not travel.

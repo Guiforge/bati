@@ -61,9 +61,16 @@ describe("formatDistance", () => {
   });
 
   test("one mile is 1609.344 m, exactly, and the boundary sits on it", () => {
-    expect(formatDistance(1609.344, "imperial", "en")).toBe("1.00 mi");
+    // Whole metres first, like the stored row: 1609.344 is the 1609 m a row keeps, 5279 ft.
+    expect(formatDistance(1610, "imperial", "en")).toBe("1.00 mi");
     expect(formatDistance(1609.0, "imperial", "en")).toBe("5279 ft");
     expect(formatDistance(42_195, "imperial", "en")).toBe("26.22 mi");
+  });
+
+  test("the live float and the stored whole metre print the same figure", () => {
+    // 391.3 m is 1283.9 ft raw and 1282.9 ft once stored as 391 m: one outing, two screens.
+    expect(formatDistance(391.3, "imperial", "en")).toBe(formatDistance(391, "imperial", "en"));
+    expect(formatDistance(1234.4, "imperial", "en")).toBe(formatDistance(1234, "imperial", "en"));
   });
 
   test("a distance that is not a number says so instead of printing NaN", () => {

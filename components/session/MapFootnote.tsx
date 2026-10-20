@@ -88,6 +88,11 @@ export function MapFootnote({
         fontSize={11}
         color="$muted"
         style={{ textAlign: "center" }}
+        // Over the live map the trace can run under the line (persona B audit, 130 %): a backing
+        // keeps both readable, sized to the words so the rest of the strip stays map.
+        {...(compact
+          ? { bg: "$bgOverlaySoft", self: "center", px: "$2", py: 2, rounded: "$2" }
+          : {})}
       >
         {/* The live map is a short strip: the credit alone, the privacy sentence is the recap's.
             Both together took three lines at 130 % and covered the trace (persona audit 109). */}

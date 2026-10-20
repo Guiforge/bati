@@ -350,6 +350,7 @@
     "favourite_add": "Pin to the top",
     "favourite_remove": "Unpin",
     "goal_sheet_title": "How long, or how far",
+    "goal_zone_legs": "You're sparing your legs: run easy, or take a short walk.",
     "goal_sheet_custom": "Other",
     "outing_display_link": "What you see during the outing",
     "goal_usual": "As usual · {{value}}",

@@ -370,6 +370,7 @@
     "favourite_add": "Закрепить сверху",
     "favourite_remove": "Открепить",
     "goal_sheet_title": "Как долго или как далеко",
+    "goal_zone_legs": "Ты бережёшь ноги: беги спокойно или пройдись недолго.",
     "goal_sheet_custom": "Другое",
     "outing_display_link": "Что ты видишь во время вылазки",
     "goal_usual": "Как обычно · {{value}}",

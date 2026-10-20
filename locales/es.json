@@ -360,6 +360,7 @@
     "favourite_add": "Fijar arriba",
     "favourite_remove": "Quitar de arriba",
     "goal_sheet_title": "¿Cuánto tiempo o qué distancia?",
+    "goal_zone_legs": "Estás cuidando las piernas: corre suave o da un paseo corto.",
     "goal_sheet_custom": "Otro",
     "outing_display_link": "Lo que ves durante la salida",
     "goal_usual": "Lo de siempre · {{value}}",

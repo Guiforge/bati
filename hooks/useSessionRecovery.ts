@@ -3,6 +3,7 @@ import { isOutingSession } from "@/db/expeditions";
 import { deletePoints, pointsOf, sweepOrphanedPoints } from "@/db/gps";
 import { preferences } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
+import { addListener } from "@/modules/bati-location";
 import { accept, credited, EMPTY, type TrackState } from "@/src/gps/track";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
@@ -194,6 +195,13 @@ function restoreSnapshot(saved: SavedSessionState): void {
 let trackedEarly: string | null = null;
 
 /**
+ * The notification's Finish while the card still waits. The session store refuses it (it is idle,
+ * `completeOuting` only ends a walk under way), so without this the button did nothing and the
+ * receiver kept measuring the hero's sofa into the walk's clock until the card was answered.
+ */
+let earlyFinish: { remove(): void } | null = null;
+
+/**
  * An interrupted outing measures again the moment the app reopens, not at the tap on "Resume".
  *
  * The OS restarts the service without a consumer, on purpose (it buffers nothing, see
@@ -208,10 +216,22 @@ function restartTrackingEarly(saved: SavedSessionState): void {
   if (trackedEarly === uuid || useSessionStore.getState().sessionUuid === uuid) return;
   trackedEarly = uuid;
   beginTrackingIfOuting(saved.quest, uuid, saved.goal ?? null, true);
+  // The walk ends where the hero pressed: measuring stops, the card stays and concludes it from
+  // the trace (its "Finish" reads the last fix), or resumes it, which starts the receiver again.
+  earlyFinish = addListener("onFinishRequested", () => {
+    if (useSessionStore.getState().status !== "idle") return;
+    stopEarlyTracking().catch((e: unknown) => reportError("session.earlyFinish", e));
+  });
+}
+
+function dropEarlyFinish(): void {
+  earlyFinish?.remove();
+  earlyFinish = null;
 }
 
 /** The early tracker, stopped and flushed: before the trace is read for good, or thrown away. */
 async function stopEarlyTracking(): Promise<void> {
+  dropEarlyFinish();
   if (trackedEarly === null) return;
   trackedEarly = null;
   await useExpeditionStore.getState().end();
@@ -309,6 +329,7 @@ async function resumeSavedSession(): Promise<boolean> {
 
     // Clear saved session after recovery
     trackedEarly = null;
+    dropEarlyFinish();
     await preferences.clearSavedSession();
 
     return true;

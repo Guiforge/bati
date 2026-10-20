@@ -34,6 +34,16 @@ jest.mock("@/db/gps", () => ({
   sweepOrphanedPoints: jest.fn(async () => 0),
 }));
 
+// The service's events, so the notification's Finish can be pressed from here.
+const mockListeners = new Map<string, () => void>();
+jest.mock("@/modules/bati-location", () => ({
+  ...jest.requireActual("@/modules/bati-location"),
+  addListener: (event: string, listener: () => void) => {
+    mockListeners.set(event, listener);
+    return { remove: () => mockListeners.delete(event) };
+  },
+}));
+
 // One in-memory slot standing in for the preferences row.
 let mockSavedSlot: string | null = null;
 jest.mock("@/db/preferences", () => ({
@@ -495,6 +505,38 @@ describe("useSessionRecovery", () => {
     });
     expect(end).toHaveBeenCalled();
     expect(deletePoints).toHaveBeenCalledWith("0192-discard");
+  });
+
+  // The notification still offers Finish while the card waits, and the idle store refuses it.
+  it("the notification's Finish before the card is answered stops the measuring, and the card still concludes", async () => {
+    const begin = jest.fn(async (..._args: unknown[]) => true);
+    const end = jest.fn(async () => undefined);
+    useExpeditionStore.setState({ begin, end });
+    await bankLiveSession({
+      quest: outing,
+      sessionUuid: "0192-early-finish",
+      gps: true,
+      currentRoundIndex: 0,
+      currentExerciseIndex: 0,
+    });
+    await diePreservingSlot();
+    const { result } = await renderHook(() => useSessionRecovery());
+    await waitFor(() => expect(begin).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(result.current.recoverableSession).not.toBeNull());
+
+    end.mockClear();
+    mockListeners.get("onFinishRequested")?.();
+    await waitFor(() => expect(end).toHaveBeenCalledTimes(1));
+    expect(mockListeners.has("onFinishRequested")).toBe(false);
+    // The walk is not thrown away: the card is still there to conclude it.
+    expect(result.current.recoverableSession).not.toBeNull();
+    expect(mockSavedSlot).not.toBeNull();
+
+    // Resuming after that measures again, since nothing is any more.
+    await act(async () => {
+      await result.current.recoverSession();
+    });
+    expect(begin).toHaveBeenCalledTimes(2);
   });
 
   it("an outing begun without GPS starts nothing at launch", async () => {

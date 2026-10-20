@@ -523,7 +523,10 @@ function Ground({ data }: { data: QuestLogData }) {
   const { session, trace } = data;
   // Only an outing row reaches this panel, so its stored activity is the tab; a mixed quest has no ground panel.
   const rate = useRateKind(session.outing);
-  const moving = session.movingSeconds ?? session.durationSeconds ?? 0;
+  // Null when nothing measured it (no GPS): the whole duration is not "moving", and a pace over
+  // it would be a figure nobody saw.
+  const moving = session.movingSeconds;
+  if (moving === null && trace.length === 0 && session.ascentM == null) return null;
 
   return (
     <NBlock
@@ -542,10 +545,12 @@ function Ground({ data }: { data: QuestLogData }) {
         </YStack>
       )}
       <XStack gap={17} mt={11}>
-        <YStack>
-          <NNum fontSize={17}>{formatDuration(moving, language)}</NNum>
-          <NMuted fontSize={10.5}>{t("journal.ground_moving")}</NMuted>
-        </YStack>
+        {moving !== null && (
+          <YStack>
+            <NNum fontSize={17}>{formatDuration(moving, language)}</NNum>
+            <NMuted fontSize={10.5}>{t("journal.ground_moving")}</NMuted>
+          </YStack>
+        )}
         {session.ascentM != null && (
           <YStack>
             <NNum fontSize={17}>{formatElevation(session.ascentM, distanceUnit)}</NNum>
@@ -556,6 +561,7 @@ function Ground({ data }: { data: QuestLogData }) {
         {session.byHand !== "distance" &&
           session.leaguesM != null &&
           session.leaguesM > 0 &&
+          moving !== null &&
           moving > 0 && (
             <YStack>
               <NNum fontSize={17}>

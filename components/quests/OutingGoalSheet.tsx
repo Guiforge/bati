@@ -1,7 +1,13 @@
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Keyboard, Pressable, useWindowDimensions } from "react-native";
+import {
+  BackHandler,
+  Keyboard,
+  Pressable,
+  type ScrollView,
+  useWindowDimensions,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Input, Sheet, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
@@ -117,6 +123,24 @@ export function OutingGoalSheet({
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const keyboardH = useKeyboardHeight();
+  // The only field is the last thing in the sheet: once the keyboard is up, show it and Done.
+  // Riding up was not enough at 130 % on a short screen, the field stayed under the keys.
+  const scroll = useRef<ScrollView>(null);
+  useEffect(() => {
+    if (keyboardH > 0) requestAnimationFrame(() => scroll.current?.scrollToEnd());
+  }, [keyboardH]);
+
+  // Hardware back closes the sheet, not the screen under it (as in `FormSheet`): the modal is
+  // portalled above the navigator, and the press left the quest screen along with the sheet.
+  useEffect(() => {
+    if (!open) return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      Keyboard.dismiss();
+      onOpenChange(false);
+      return true;
+    });
+    return () => sub.remove();
+  }, [open, onOpenChange]);
   // Told by the GPS row (`GpsSetting`), which owns the preference: the distance note needs it.
   const [gps, setGps] = useState(true);
   // The caller mounts this on open, so the initialiser is the reset: a hero who saved a distance
@@ -234,6 +258,7 @@ export function OutingGoalSheet({
         style={{ maxHeight: height - insets.top - 16 - keyboardH }}
       >
         <Sheet.ScrollView
+          ref={scroll}
           keyboardShouldPersistTaps="handled"
           onMoveShouldSetResponder={() => false}
         >

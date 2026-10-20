@@ -258,7 +258,8 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
               ponytail: measured on the emulator only, whose GPU is the host's through a
               translation layer. A release build on a phone decides whether the row needs more. */}
             <NMuted numberOfLines={1}>{dateLabel}</NMuted>
-            <NText fontSize={12} lineHeight={17} numberOfLines={1}>
+            {/* Two lines: at 130 % "Quête difficile" was cut to "Quête d…" at the end of one. */}
+            <NText fontSize={12} lineHeight={17} numberOfLines={2}>
               {parts.flatMap((part, i) => (i ? [" · ", part] : [part]))}
             </NText>
             {entry.feedback ? (

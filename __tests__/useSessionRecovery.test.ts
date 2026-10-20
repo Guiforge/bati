@@ -454,7 +454,7 @@ describe("useSessionRecovery", () => {
 
   // The audit of 20/10: 44 s without a point between the kill and the tap on "Resume".
   it("an interrupted outing measures again at launch, and resuming does not start it twice", async () => {
-    const begin = jest.fn(async () => true);
+    const begin = jest.fn(async (..._args: unknown[]) => true);
     const end = jest.fn(async () => undefined);
     useExpeditionStore.setState({ begin, end });
     await bankLiveSession({

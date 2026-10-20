@@ -429,7 +429,13 @@ artifact under `~/.gstack/projects/Guiforge-bati/`. The spine:
   § Screens.
 - A separate demo repo as the open-source proof vehicle (outside voice #11, rejected: the
   quest mode is half the value and cannot live there).
-- Approach B native writes (upgrade path, gated on T5 hole frequency).
+- Approach B native writes (upgrade path, gated on T5 hole frequency). Still deferred on
+  2026-10-20 (persona plan v2, decision 5): the JS side was tightened first. The store flushes
+  every 5 fixes (`FLUSH_EVERY`, was 30), an interrupted outing restarts the receiver when the
+  app reopens (`useSessionRecovery`, not at the tap on "Resume"), and the recap names any hole
+  over `maxGapMs` (`gapsOf`). The gate is unchanged: build B when a real outing, killed by the
+  system and not by `kill -9`, still shows holes after that. The restarted service buffers
+  nothing, so what the app was closed for is never in `gps_points`.
 
 ## What I noticed about how you think
 

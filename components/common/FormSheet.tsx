@@ -68,11 +68,12 @@ export function FormSheet({ open, title, onClose, children, footer }: Props) {
   useEffect(() => {
     if (!open) return;
     const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-      close();
+      Keyboard.dismiss();
+      onClose();
       return true;
     });
     return () => sub.remove();
-  }, [open, close]);
+  }, [open, onClose]);
 
   useEffect(() => {
     if (!open) {

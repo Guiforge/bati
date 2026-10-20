@@ -88,9 +88,11 @@ export function MapFootnote({
         fontSize={11}
         color="$muted"
         style={{ textAlign: "center" }}
-        // One line on the live strip: at 130 % the credit took two, a third of the map band. It
-        // shrinks to fit rather than losing a word of the credit.
-        {...(compact ? { numberOfLines: 1, adjustsFontSizeToFit: true } : {})}
+        // One line on the live strip: at 130 % the credit took two, a third of the map band. Held
+        // at the designed size rather than shrunk: Android's adjustsFontSizeToFit on this
+        // word-sized backing cut "contributors." off instead (persona E audit, 14), and the credit
+        // is owed whole. At 11 sp it fits one line on a 360 dp phone.
+        {...(compact ? { maxFontSizeMultiplier: 1 } : {})}
         // Over the live map the trace can run under the line (persona B audit, 130 %): a backing
         // keeps both readable, sized to the words so the rest of the strip stays map.
         {...(compact

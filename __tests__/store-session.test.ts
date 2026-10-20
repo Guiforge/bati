@@ -2339,6 +2339,23 @@ describe("useSessionStore", () => {
       expect(store.getState().status).toBe("finished");
     });
 
+    // Without GPS the clock is the duration, so the pause the hero finished from was not walked.
+    test("finishing a walk without GPS while paused leaves the pause out", async () => {
+      await store.getState().startSession(outing, "medium", { gps: false });
+      store.setState({
+        startTime: Date.now() - 60 * 60_000,
+        totalPausedTime: 0,
+        status: "paused",
+        prePauseStatus: "running",
+        lastPauseTimestamp: Date.now() - 20 * 60_000,
+      });
+
+      store.getState().completeOuting();
+
+      expect(store.getState().results[0]?.result.value).toBe(40 * 60);
+      expect(store.getState().status).toBe("finished");
+    });
+
     test("the same tap arriving during a workout indoors writes nothing", async () => {
       await store.getState().startSession(mockQuest, "medium");
       store.getState().finishCountdown();

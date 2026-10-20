@@ -1794,6 +1794,15 @@ export const useSessionStore = create<SessionState>()(
       // lock screen can mean.
       if (!quest || !underWay || !isTheWholeWalk(quest)) return;
 
+      // Finished while paused: the open pause was not walked, and a clock-timed outing would
+      // count it (`endTime` stops the clock, it does not bank the pause).
+      const { lastPauseTimestamp, totalPausedTime } = get();
+      if (status === "paused" && lastPauseTimestamp !== null) {
+        set({
+          totalPausedTime: totalPausedTime + (Date.now() - lastPauseTimestamp),
+          lastPauseTimestamp: null,
+        });
+      }
       get().completeExercise(Math.max(1, recordedDurationSeconds()));
     },
 

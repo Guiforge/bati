@@ -51,8 +51,16 @@ import { reportError, reportEvent } from "@/src/reportError";
  * re-tuned, which is the whole reason this table stores raw fixes.
  */
 
-/** Fixes buffered before a write. Thirty seconds at 1 Hz, so a kill costs half a minute. */
-const FLUSH_EVERY = 30;
+/**
+ * Fixes buffered before a write. Five seconds at 1 Hz, so a kill costs five seconds and not half
+ * a minute (the audit of 20/10 lost 44 s of a walk to a kill). A write of five rows is one
+ * statement; the service buffers nothing natively (`docs/designs/outing-doors.md`), so this
+ * buffer is the whole window a process death can take.
+ */
+const FLUSH_EVERY = 5;
+
+/** Fixes between two rewrites of the notification's line: the pocket's cost, kept at half a minute. */
+const PROGRESS_EVERY_FIXES = 30;
 
 /**
  * How often the notification's line is rewritten from the clock rather than from a fix.
@@ -62,7 +70,7 @@ const FLUSH_EVERY = 30;
  * when a fix landed, so the walk that most needs a readout - the one where no fix ever lands -
  * was the one that never got one.
  */
-const PROGRESS_EVERY_MS = FLUSH_EVERY * 1000;
+const PROGRESS_EVERY_MS = PROGRESS_EVERY_FIXES * 1000;
 
 /** Metres per second above which a fix is implausible, by how the hero is moving. */
 const SPEED_CAP_MS = { onFoot: 8, mounted: 25 } as const;
@@ -149,6 +157,8 @@ export function isExpedition(quest: Quest | null): boolean {
  */
 let subscriptions: { remove(): void }[] = [];
 let buffer: LocationFix[] = [];
+/** Fixes since the notification line was last rewritten, see `PROGRESS_EVERY_FIXES`. */
+let fixesSinceProgress = 0;
 /** The wording the notification uses while no fix has landed, kept for `progressLine`. */
 let acquiringWord = "";
 /** The clock behind the notification's line, so it moves without a fix. Cleared by `end()`. */
@@ -351,6 +361,7 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
       .end()
       .catch((e) => reportError("expedition.restart", e));
     buffer = [];
+    fixesSinceProgress = 0;
     leaguesCrossed = 0;
     speedWindow = [];
     acquiringWord = notification.acquiring;
@@ -457,10 +468,14 @@ export const useExpeditionStore = create<ExpeditionState>()((set, get) => ({
         if (reached && !wasReached) announceGoalReached(track, unit, haptics, view, goal);
         announceLeague(track, haptics, view.buzzEvery);
 
-        // Same cadence as the write, so a pocket that is never looked at costs one notification
-        // update every thirty seconds rather than one a second.
-        if (buffer.length >= FLUSH_EVERY) {
+        // The notification keeps its own, slower cadence: one update every thirty fixes rather
+        // than one a second, whatever the write rate is.
+        fixesSinceProgress += 1;
+        if (fixesSinceProgress >= PROGRESS_EVERY_FIXES) {
+          fixesSinceProgress = 0;
           setProgress(progressLine(track, unit, view, goal, reached));
+        }
+        if (buffer.length >= FLUSH_EVERY) {
           flush(sessionUuid).catch((e) => reportError("expedition.flush", e));
         }
       }),

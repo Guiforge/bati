@@ -175,6 +175,38 @@ function restoreSnapshot(saved: SavedSessionState): void {
 }
 
 /**
+ * The uuid of the outing this launch already put back on the road, or null.
+ *
+ * A module variable, because the hook mounts again (Home remounts, the language changes) and the
+ * tracker must start once per launch, not once per mount.
+ */
+let trackedEarly: string | null = null;
+
+/**
+ * An interrupted outing measures again the moment the app reopens, not at the tap on "Resume".
+ *
+ * The OS restarts the service without a consumer, on purpose (it buffers nothing, see
+ * `docs/designs/outing-doors.md`), so the JS side is the only thing that can start the receiver.
+ * It used to wait for the hero to find the card: the audit of 20/10 read 44 s with no point
+ * between the kill and the tap, and a hero who never taps measures nothing at all. Same uuid, so
+ * the points land on the same trace and the store folds the earlier ones back in.
+ */
+function restartTrackingEarly(saved: SavedSessionState): void {
+  const uuid = saved.sessionUuid ?? null;
+  if (uuid === null || !saved.quest || saved.gps === false) return;
+  if (trackedEarly === uuid || useSessionStore.getState().sessionUuid === uuid) return;
+  trackedEarly = uuid;
+  beginTrackingIfOuting(saved.quest, uuid, saved.goal ?? null, true);
+}
+
+/** The early tracker, stopped and flushed: before the trace is read for good, or thrown away. */
+async function stopEarlyTracking(): Promise<void> {
+  if (trackedEarly === null) return;
+  trackedEarly = null;
+  await useExpeditionStore.getState().end();
+}
+
+/**
  * The snapshot on disk as the card would offer it, or nothing. A stale or quest-less snapshot is
  * cleared on the way. Outside the hook because the React Compiler cannot lower a `try` holding
  * `??` or a `finally`, and skips the whole hook when it meets one.
@@ -203,6 +235,8 @@ async function findRecoverableSession(language: AppLanguage): Promise<Recoverabl
       await preferences.clearSavedSession();
       return null;
     }
+
+    restartTrackingEarly(saved);
 
     const uuid = saved.sessionUuid ?? null;
     const leaguesM = await groundCovered(saved.quest, uuid);
@@ -253,7 +287,7 @@ async function resumeSavedSession(): Promise<boolean> {
     // reducer had no witness at all — `leaguesM: null` on a session whose recap draws the
     // kilometres already in `gps_points`. Same uuid, so the points land on the same session,
     // and the store folds those points back into the reading rather than restarting at zero.
-    if (saved.quest) {
+    if (saved.quest && trackedEarly !== (saved.sessionUuid ?? null)) {
       beginTrackingIfOuting(
         saved.quest,
         saved.sessionUuid ?? null,
@@ -263,6 +297,7 @@ async function resumeSavedSession(): Promise<boolean> {
     }
 
     // Clear saved session after recovery
+    trackedEarly = null;
     await preferences.clearSavedSession();
 
     return true;
@@ -285,6 +320,9 @@ async function finishSavedOuting(): Promise<boolean> {
     if (!saved.quest || !isOutingSession(saved.quest)) return false;
 
     restoreSnapshot(saved);
+
+    // The tracker the launch restarted stops here, flushed, so the fold below reads every point.
+    await stopEarlyTracking();
 
     const uuid = saved.sessionUuid ?? null;
     if (uuid !== null) {
@@ -384,6 +422,8 @@ export function useSessionRecovery() {
     // count toward the leagues that grow the High Road, for a session the hero just said never
     // happened.
     const uuid = recoverableSession?.sessionUuid;
+    // Stopped before the delete: a tracker still writing would refill the ground just removed.
+    await stopEarlyTracking().catch((e: unknown) => reportError("session.discardTracking", e));
     if (uuid) {
       await deletePoints(uuid).catch((e: unknown) => reportError("session.discardPoints", e));
     }

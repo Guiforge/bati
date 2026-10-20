@@ -248,17 +248,29 @@ describe("stores/expedition", () => {
     expect(mockSetReached).not.toHaveBeenCalled();
   });
 
-  // The buffer is what a crash costs. Thirty seconds, never the run.
-  test("points are written in batches rather than one at a time", async () => {
+  // The buffer is what a crash costs. Five seconds, never the run.
+  test("points are written in batches of five rather than one at a time", async () => {
     await store.getState().begin("s1", NOTIFICATION, false, "metric");
 
-    for (let i = 0; i < 29; i++) emit(walking(i));
+    for (let i = 0; i < 4; i++) emit(walking(i));
     expect(mockAppendPoints).not.toHaveBeenCalled();
 
-    emit(walking(29));
+    emit(walking(4));
     expect(mockAppendPoints).toHaveBeenCalledTimes(1);
     expect(mockAppendPoints).toHaveBeenCalledWith("s1", expect.any(Array));
-    expect(mockAppendPoints.mock.calls[0]?.[1]).toHaveLength(30);
+    expect(mockAppendPoints.mock.calls[0]?.[1]).toHaveLength(5);
+  });
+
+  test("a kill after thirty seconds costs at most five fixes, and the notification still updates every thirty", async () => {
+    await store.getState().begin("s1", NOTIFICATION, false, "metric");
+    mockSetProgress.mockClear();
+
+    for (let i = 0; i < 33; i++) emit(walking(i));
+
+    // Six full batches written, three fixes still in memory: that is all a kill could take.
+    const written = mockAppendPoints.mock.calls.reduce((n, c) => n + (c[1] as unknown[]).length, 0);
+    expect(written).toBe(30);
+    expect(mockSetProgress).toHaveBeenCalledTimes(1);
   });
 
   test("ending writes what the buffer still holds, then stops the service", async () => {

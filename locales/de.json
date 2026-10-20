@@ -1005,6 +1005,8 @@
     "flame_dormant_note": "Jede Einheit oder Tour hält sie in Ruhe.",
     "flame_best_ended_one": "Beste Flamme: {{days}} Tag (zu Ende am {{date}}).",
     "flame_best_ended_other": "Beste Flamme: {{days}} Tage (zu Ende am {{date}}).",
+    "flame_since": "Brennt seit dem {{date}}.",
+    "flame_span": "Brannte vom {{from}} bis zum {{to}}.",
     "month_so_far": "{{month}} bisher",
     "month_vs_one": "im Vergleich zu {{month}}, jeweils {{count}} Tag",
     "month_vs_other": "im Vergleich zu {{month}}, jeweils {{count}} Tage",

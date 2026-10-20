@@ -1042,6 +1042,8 @@
     "flame_best_ended_one": "Mejor llama: {{days}} día (terminó el {{date}}).",
     "flame_best_ended_many": "Mejor llama: {{days}} días (terminó el {{date}}).",
     "flame_best_ended_other": "Mejor llama: {{days}} días (terminó el {{date}}).",
+    "flame_since": "Encendida desde el {{date}}.",
+    "flame_span": "Encendida del {{from}} al {{to}}.",
     "month_so_far": "{{month}}, de momento",
     "month_vs_one": "frente a {{month}}, el mismo {{count}} día",
     "month_vs_many": "frente a {{month}}, los mismos {{count}} días",

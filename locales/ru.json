@@ -1078,6 +1078,8 @@
     "flame_best_ended_few": "Лучшее пламя: {{days}} дня (закончилось {{date}}).",
     "flame_best_ended_many": "Лучшее пламя: {{days}} дней (закончилось {{date}}).",
     "flame_best_ended_other": "Лучшее пламя: {{days}} дня (закончилось {{date}}).",
+    "flame_since": "Горит с {{date}}.",
+    "flame_span": "Горело с {{from}} по {{to}}.",
     "month_so_far": "{{month}} на данный момент",
     "month_vs_one": "сравнение: {{month}}, за {{count}} день",
     "month_vs_few": "сравнение: {{month}}, за те же {{count}} дня",

@@ -669,6 +669,8 @@
     "flame_best_ended_one": "Meilleure flamme : {{days}} jour (éteinte le {{date}}).",
     "flame_best_ended_many": "Meilleure flamme : {{days}} jours (éteinte le {{date}}).",
     "flame_best_ended_other": "Meilleure flamme : {{days}} jours (éteinte le {{date}}).",
+    "flame_since": "Allumée depuis le {{date}}.",
+    "flame_span": "Allumée du {{from}} au {{to}}.",
     "month_so_far": "{{month}}, pour l'instant",
     "month_vs_one": "face à {{month}}, sur {{count}} jour",
     "month_vs_many": "face à {{month}}, sur les mêmes {{count}} jours",

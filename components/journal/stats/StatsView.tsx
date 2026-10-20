@@ -351,7 +351,17 @@ function withHandMark(t: TFunction, text: string, entries: number): string {
 export function FlameBlock({ stats }: { stats: JournalStats }) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
-  const { flame, now } = stats;
+  const { flame, now, flameSpan } = stats;
+  // The two dates the count can be checked against: "1,104 days" is lit days, not first session to
+  // last, because the flame holds up to two weeks past a session.
+  const since = !flameSpan
+    ? ""
+    : flame.dormant > 0
+      ? t("journal.flame_span", {
+          from: shortDate(language, flameSpan.from, now),
+          to: shortDate(language, flameSpan.to, now),
+        })
+      : t("journal.flame_since", { date: shortDate(language, flameSpan.from, now) });
 
   // Written out rather than "6/2": sessions and outings both keep the flame, and a walker who read
   // the fraction concluded that her walks did not count.
@@ -379,6 +389,7 @@ export function FlameBlock({ stats }: { stats: JournalStats }) {
     flame.inWindow < flame.quota
       ? t("journal.flame_more", { count: flame.quota - flame.inWindow })
       : t("journal.flame_quota", { count: flame.quota }),
+    since,
     best,
   ]
     .filter(Boolean)

@@ -1004,6 +1004,8 @@
     "flame_dormant_note": "Every session or outing keeps it dormant.",
     "flame_best_ended_one": "Best flame: {{days}} day, ended {{date}}.",
     "flame_best_ended_other": "Best flame: {{days}} days, ended {{date}}.",
+    "flame_since": "Lit since {{date}}.",
+    "flame_span": "Lit from {{from}} to {{to}}.",
     "month_so_far": "{{month}} so far",
     "month_vs_one": "vs. {{month}}, same {{count}} day",
     "month_vs_other": "vs. {{month}}, same {{count}} days",

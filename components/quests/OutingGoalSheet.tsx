@@ -310,6 +310,8 @@ export function OutingGoalSheet({
                   returnKeyType="done"
                   onSubmitEditing={applyCustom}
                   placeholder={t("quests.goal_sheet_custom_hint")}
+                  // At 130% the field is taller than its line: Android set the text on the top edge.
+                  textAlignVertical="center"
                   bg="$background"
                   borderColor="$borderStrong"
                   color="$text"

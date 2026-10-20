@@ -818,6 +818,10 @@ export function VictoryView() {
                   onPress={() => handleFeedbackSelect(value)}
                   // Like Continue: the answer needs a session id, which only the save gives.
                   disabled={!result}
+                  // Always said, `false` included (as `AppButton` does): Tamagui sends it only while
+                  // disabled, Android kept the view disabled once the save landed, and every tap
+                  // outside the glyph and the label was lost (measured: 0 of 16 on the emulator).
+                  aria-disabled={!result}
                   rounded="$4"
                   accessibilityLabel={t(`session.feedback_${value}`)}
                   accessibilityRole="button"

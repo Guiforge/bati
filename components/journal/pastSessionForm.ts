@@ -65,10 +65,14 @@ export function openingDay(
   handDays: ReadonlySet<string>,
   durationSeconds: number,
   measured: readonly MeasuredSpan[],
+  firstMeasuredAt: Date | null = null,
 ): { day: Date; end: Date } {
+  // Nothing is noted before the first measured session: opening there would open on a refusal.
+  const first = firstMeasuredAt === null ? "" : dayKey(firstMeasuredAt);
   for (const choice of dayChoices(now)) {
     const { day, end } = settleDay(choice, now, durationSeconds, measured);
-    if (!handDays.has(dayKey(filedDay(end, durationSeconds)))) return { day, end };
+    const filed = dayKey(filedDay(end, durationSeconds));
+    if (filed >= first && !handDays.has(filed)) return { day, end };
   }
   return {
     day: startOfDay(now),
@@ -152,11 +156,13 @@ export function parseDistanceM(text: string, metresPerUnit: number): number | nu
   return Number.isFinite(n) && n > 0 ? Math.round(n * metresPerUnit) : null;
 }
 
-/** Which of the three sentences the Toast says, read after the write. */
+/** Which of the four sentences the Toast says, read after the write. */
 export function toastKey(result: {
   flameActive: boolean;
   oathKept: boolean;
-}): "toast_oath" | "toast_flame" | "toast_noted" {
+  xp: number;
+}): "toast_oath" | "toast_flame" | "toast_noted" | "toast_unpaid" {
   if (result.oathKept) return "toast_oath";
+  if (result.xp === 0) return "toast_unpaid";
   return result.flameActive ? "toast_flame" : "toast_noted";
 }

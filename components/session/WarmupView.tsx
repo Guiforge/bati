@@ -27,7 +27,8 @@ import { TimerBar } from "./TimerBar";
  * The dynamic warm-up, before the start screen (roadmap §14 H2).
  *
  * Every movement is two screens: the wait, which shows what the movement is before its clock
- * runs, then the movement itself. The first wait is ten seconds or GO (`prepMode`), the ones
+ * runs, then the movement itself. The first wait is ten seconds or GO (`prepMode`; always GO for the
+ * hero's very first session), the ones
  * after it the transition chosen in Settings (`warmupTransition`, issue #198), which can also be
  * off. Nothing advances by touch otherwise: a phone on the floor gets the whole warm-up hands-free.
  *

@@ -2,6 +2,7 @@ import { AppState } from "react-native";
 import { getChangeVersion } from "@/db/changeVersion";
 import { getSessionAggregates } from "@/db/completed";
 import { dayKey } from "@/db/dates";
+import { firstMeasuredAt } from "@/db/handEntries";
 import { decideHomeOffer } from "@/db/homeOffer";
 import { getOath, isOathFrozen } from "@/db/oaths";
 import { getActivePause } from "@/db/pause";
@@ -46,12 +47,13 @@ export async function replanReminders(sessionHeld: boolean): Promise<void> {
   const language = resolveAppLanguage(await preferences.getLanguage());
   const t = (key: string, options?: Record<string, unknown>) =>
     i18n.t(key, { ...options, lng: language });
-  const [days, sessions, offer, oath, pause] = await Promise.all([
+  const [days, sessions, offer, oath, pause, first] = await Promise.all([
     getReminderDays(),
     getReminderSessions(now),
     decideHomeOffer(language),
     getOath(),
     getActivePause(now),
+    firstMeasuredAt(),
   ]);
   if (!offer || mine !== replans) return;
 
@@ -75,7 +77,9 @@ export async function replanReminders(sessionHeld: boolean): Promise<void> {
     lateMinutes: REMINDER_LATE_MINUTES,
     channelName: t("reminders.channel"),
     actionLabels: {
-      elsewhere: t("reminders.elsewhere"),
+      // Before a first session, the sheet behind it could only refuse (`before_first`): an empty
+      // label leaves the button off the notification.
+      elsewhere: first === null ? "" : t("reminders.elsewhere"),
       snooze: t("reminders.snooze"),
       pause: t("reminders.pause"),
     },

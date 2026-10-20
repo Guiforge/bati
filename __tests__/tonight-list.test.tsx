@@ -145,6 +145,39 @@ describe("TonightList", () => {
     expect(color).not.toBe(dark.resourceGold?.val);
   });
 
+  const grown = (codes: string[]) =>
+    codes.map((code) => ({
+      code: code as never,
+      enName: code,
+      frName: code,
+      deName: code,
+      esName: code,
+      relatedMuscle: null,
+      oldLevel: 1,
+      newLevel: 2,
+    }));
+
+  test("five lines show three and 'and 2 more', which opens the rest", async () => {
+    const codes = ["forge", "mill", "inn", "chapel", "tower"];
+    const feasts = rank({
+      villageGrowth: grown(codes),
+    });
+    const view = await show(feasts, "en");
+    const rows = () => view.getAllByText(/rank 2/);
+    expect(rows()).toHaveLength(3);
+    await fireEvent.press(view.getByText("and 2 more"));
+    expect(rows()).toHaveLength(5);
+    expect(view.queryByTestId("tonight-more")).toBeNull();
+  });
+
+  test("three lines or fewer show no 'more'", async () => {
+    const feasts = rank({
+      villageGrowth: grown(["forge", "mill", "inn"]),
+    });
+    const view = await show(feasts, "en");
+    expect(view.queryByTestId("tonight-more")).toBeNull();
+  });
+
   test("an empty list renders nothing at all, not even the title", async () => {
     const { toJSON, queryByText } = await show([]);
     expect(toJSON()).toBeNull();

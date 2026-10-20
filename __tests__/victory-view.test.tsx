@@ -255,7 +255,7 @@ describe("VictoryView order and fold", () => {
   const position = (view: { toJSON: () => unknown }, testID: string) =>
     JSON.stringify(view.toJSON()).indexOf(`"testID":"${testID}"`);
 
-  it("reads time and XP, Tonight, the feeling, then See everything", async () => {
+  it("reads time and XP, the feeling, Tonight, then See everything", async () => {
     const { view, release } = await mountWithPendingSave(null, 12 * 60, {
       standing: null,
       newRungs: [],
@@ -266,8 +266,8 @@ describe("VictoryView order and fold", () => {
 
     const order = [
       "victory-stat-row",
-      "tonight-view-village",
       "feedback-glyph-easy",
+      "tonight-view-village",
       "victory-see-all",
     ];
     const at = order.map((id) => position(view, id));
@@ -952,7 +952,7 @@ describe("VictoryView tonight", () => {
     expect(view.getByTestId("session-victory-continue")).toBeDisabled();
   });
 
-  it("lists what the save changed, under the gauge and above the feeling", async () => {
+  it("lists what the save changed, under the gauge and the feeling", async () => {
     const { view, release, saveSession } = await mountWithPendingSave(null, 12 * 60, {
       newRecords: [record],
     });
@@ -962,9 +962,11 @@ describe("VictoryView tonight", () => {
     expect(view.getByText("SESSION.TONIGHT_TITLE")).toBeTruthy();
     expect(view.getByText("session.tonight_badge_record")).toBeTruthy();
     const tree = JSON.stringify(view.toJSON());
-    expect(tree.indexOf("journal.xp_progress")).toBeLessThan(tree.indexOf("SESSION.TONIGHT_TITLE"));
-    expect(tree.indexOf("SESSION.TONIGHT_TITLE")).toBeLessThan(
-      tree.indexOf("session.feedback_hard"),
+    // The feeling sits right under the level bar: "Tonight" has no reserved height and must not
+    // push the three buttons out from under the finger.
+    expect(tree.indexOf("journal.xp_progress")).toBeLessThan(tree.indexOf("session.feedback_hard"));
+    expect(tree.indexOf("session.feedback_hard")).toBeLessThan(
+      tree.indexOf("SESSION.TONIGHT_TITLE"),
     );
   });
 

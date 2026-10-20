@@ -39,6 +39,8 @@ describe("a session written down", () => {
         // a table this schema does not have
       }
     }
+    // The journal starts with a first measured session: nothing is noted before it.
+    measured(60);
   });
 
   const hand = () => require("../db/handEntries") as typeof import("../db/handEntries");
@@ -68,6 +70,13 @@ describe("a session written down", () => {
     >;
   }
 
+  /** Takes the seeded first session out again, for a test that counts what it wrote or sees. */
+  function dropFirstSession() {
+    t.sqlite
+      .prepare("DELETE FROM completed_sessions WHERE byHand IS NULL AND performedAt < ?")
+      .run(Math.floor(noon(50).getTime() / 1000));
+  }
+
   function measured(daysAgo: number, over: Record<string, unknown> = {}): number {
     const at = Math.floor(noon(daysAgo).getTime() / 1000);
     const info = t.sqlite
@@ -88,9 +97,9 @@ describe("a session written down", () => {
 
   describe("what it writes", () => {
     test("pays 75 XP for every type and every duration, with no exercise and no boss hit", async () => {
-      for (const [i, kind] of (["workout", "walk", "run", "ride"] as const).entries()) {
+      for (const [i, kind] of (["workout", "run", "ride"] as const).entries()) {
         const res = await hand().createHandEntry(
-          entry({ kind, endedAt: noon(i + 1), durationSeconds: (i === 3 ? 90 : 20) * 60 }),
+          entry({ kind, endedAt: noon(i + 1), durationSeconds: (i === 2 ? 90 : 20) * 60 }),
         );
         if (!res.ok) throw new Error(`refused: ${res.refusal.key}`);
         expect(res.xp).toBe(75);
@@ -138,6 +147,55 @@ describe("a session written down", () => {
       const res = await hand().createHandEntry(entry({ distanceM: 5000 }));
       if (!res.ok) throw new Error("refused");
       expect(row(res.id).leaguesM).toBeNull();
+    });
+  });
+
+  describe("the rules of the game", () => {
+    test("nothing is noted before the first measured session, a correction cannot move one there", async () => {
+      dropFirstSession();
+      measured(3);
+      const before = await hand().createHandEntry(entry({ endedAt: noon(5) }));
+      expect(before).toMatchObject({ ok: false, refusal: { key: "before_first" } });
+      const ok = await hand().createHandEntry(entry({ endedAt: noon(2) }));
+      if (!ok.ok) throw new Error("refused");
+      const moved = await hand().correctHandEntry(ok.id, entry({ endedAt: noon(6) }));
+      expect(moved).toMatchObject({ ok: false, refusal: { key: "before_first" } });
+    });
+
+    test("the day of the first session itself is accepted", async () => {
+      dropFirstSession();
+      measured(2);
+      const res = await hand().createHandEntry(entry({ endedAt: noon(2) }));
+      expect(res.ok).toBe(true);
+    });
+
+    test("the fourth entry in the window is noted at 0 XP, and still lights the flame", async () => {
+      const results = [];
+      for (const back of [1, 2, 3, 4]) {
+        results.push(await hand().createHandEntry(entry({ endedAt: noon(back) })));
+      }
+      const xps = results.map((r) => (r.ok ? r.xp : -1));
+      expect(xps).toEqual([75, 75, 75, 0]);
+      const last = results[3];
+      if (!last?.ok) throw new Error("refused");
+      expect(row(last.id).xpEarned).toBe(0);
+      expect(row(last.id).byHand).toBe("session");
+      // The flame counts it like the paid ones: it sits in the flame's week with the three paid.
+      expect(
+        (await require("../db/streaks").calculateAndCacheStreak()).inWindow,
+      ).toBeGreaterThanOrEqual(4);
+    });
+
+    test("an entry older than the window does not use up the three", async () => {
+      // Seven days back is inside, so this one pays; an entry paid 8 days ago (hand-seeded) is not counted.
+      t.sqlite
+        .prepare(
+          `INSERT INTO completed_sessions (userLevel, xpEarned, performedAt, durationSeconds, byHand)
+           VALUES ('medium', 75, ?, 1800, 'session')`,
+        )
+        .run(Math.floor(noon(9).getTime() / 1000));
+      const ctx = await hand().loadHandContext(null, new Date());
+      expect(ctx.paidInWindow).toBe(0);
     });
   });
 
@@ -190,6 +248,7 @@ describe("a session written down", () => {
     test("it is not a workout: aggregates, history, rest and the suggestion pool skip it", async () => {
       const real = measured(5);
       await hand().createHandEntry(entry());
+      dropFirstSession();
       const agg = await completed().getSessionAggregates();
       expect(agg.totalSessions).toBe(1);
       expect((await completed().getRecentSessionHistory()).map((s) => s.id)).toEqual([real]);
@@ -201,6 +260,7 @@ describe("a session written down", () => {
       await hand().createHandEntry(
         entry({ kind: "walk", endedAt: noon(2), durationSeconds: 3600, distanceM: 6000 }),
       );
+      dropFirstSession();
       const journal = require("../db/journal") as typeof import("../db/journal");
       const bests = await journal.getSessionBests();
       expect(bests.longest).toBeNull();
@@ -239,6 +299,7 @@ describe("a session written down", () => {
     });
 
     test("no achievement of count, hour or length unlocks, even at 06:00 for two hours", async () => {
+      dropFirstSession();
       measured(8, { outing: "walk", durationSeconds: 600 }); // 100 XP already: the badge of XP below proves the check ran
       const res = await hand().createHandEntry(
         entry({
@@ -282,6 +343,7 @@ describe("a session written down", () => {
     });
 
     test("4: a measured session in the way is named, and nothing is written", async () => {
+      dropFirstSession();
       const id = measured(1, { durationSeconds: 3600 });
       const res = await hand().createHandEntry(
         entry({ endedAt: new Date(noon(1).getTime() + 30 * 60_000) }),
@@ -327,6 +389,7 @@ describe("a session written down", () => {
       const res = await hand().createHandEntry(entry());
       if (!res.ok) throw new Error("refused");
       expect(await completed().deleteSession(res.id)).toBe("deleted");
+      dropFirstSession();
       expect(await completed().countSessions()).toBe(0);
     });
 

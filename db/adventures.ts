@@ -763,7 +763,7 @@ async function isOnRampQuest(questId: number): Promise<boolean> {
  *
  * 1. this adventure never had a run (a replay starts at step 0, as it always did);
  * 2. its step 0 is the seeded on-ramp quest, and it has a step after it;
- * 3. the hero's oldest session is that quest, matched by the seeded title and not by id, because a
+ * 3. the hero's oldest measured session (not one written down) is that quest, matched by the seeded title and not by id, because a
  *    journal that arrived by sync carries the other device's quest ids.
  */
 export async function offeredFirstStep(adventureId: number): Promise<{ performedAt: Date } | null> {
@@ -783,6 +783,9 @@ export async function offeredFirstStep(adventureId: number): Promise<{ performed
   const [oldest] = await db
     .select({ questId: completedQuest.questId, performedAt: completedQuest.performedAt })
     .from(completedQuest)
+    // A session written down is not a session Bati saw: one dated before the on-ramp must not
+    // hide it. `IS NOT`, not `IS NULL`: a typed distance (`'distance'`) is still a measured outing.
+    .where(sql`${completedQuest.byHand} IS NOT 'session'`)
     .orderBy(asc(completedQuest.performedAt), asc(completedQuest.id))
     .limit(1);
   if (!oldest || oldest.questId == null || !(await isOnRampQuest(oldest.questId))) return null;

@@ -512,9 +512,10 @@ export function VictoryView() {
           >
             {/* The ratio follows the source, because this slot serves two of them: a felled boss is
               1024x1024 and a quest cover is 1024x768. One fixed 16:9 box cut 22% off each end of
-              the boss — the monster you just beat, shown with its head and its feet removed — and
-              11% off the quest. Neither loses anything now. */}
-            <YStack width="100%" aspectRatio={felledBoss ? 1 : 4 / 3} bg="$surface2">
+              the boss — the monster you just beat, shown with its head and its feet removed — so
+              the boss keeps its square. A quest cover takes 16:9 and loses 11%: at 4:3 it pushed the
+              feeling buttons under the sticky bar on a 360x640 screen (D-86). */}
+            <YStack width="100%" aspectRatio={felledBoss ? 1 : 16 / 9} bg="$surface2">
               <Image
                 source={
                   felledBoss
@@ -781,22 +782,10 @@ export function VictoryView() {
             <HeroLevelBar heroXp={result ? result.heroXp : null} language={language} />
           )}
 
-          {/* "Tonight": what the save changed. It arrives with the save and says nothing before it,
-            nothing at all on a night where nothing rose. "See your village" only when it grew. */}
-          {!!result && (
-            <TonightList
-              feasts={feastOpened ? feasts.filter((f) => f !== bigFeast) : feasts}
-              villageName={villageName}
-              crest={crest}
-              epilogue={result.campaign?.isFinished === true && outroSettled && !outroNarrative}
-              onViewVillage={
-                result.tierUp || result.villageGrowth.length > 0 ? handleViewVillage : undefined
-              }
-            />
-          )}
-
           {/* Feedback — above the fold: this answer is what steers the next
-            session's difficulty, and below the fold a hurried hero never saw it (audit §06-B). */}
+            session's difficulty, and below the fold a hurried hero never saw it (audit §06-B).
+            Under the level bar and above "Tonight": that list arrives with the save and has no
+            reserved height, so below it it pushed these buttons out from under the finger. */}
           <Card width="100%" maxW={520} bg="$surface" borderColor="$glassBorder" gap="$3">
             <AppText
               fontFamily="$body"
@@ -828,9 +817,12 @@ export function VictoryView() {
                   opacity={feedback === value ? 1 : 0.85}
                   pressStyle={{ opacity: 0.8, scale: 0.98 }}
                   onPress={() => handleFeedbackSelect(value)}
-                  // Like Continue: "Tonight" lands with the save and has no reserved height, so a
-                  // tap during the save could land on whatever it pushes into this slot.
+                  // Like Continue: the answer needs a session id, which only the save gives.
                   disabled={!result}
+                  // Always said, `false` included (as `AppButton` does): Tamagui sends it only while
+                  // disabled, Android kept the view disabled once the save landed, and every tap
+                  // outside the glyph and the label was lost (measured: 0 of 16 on the emulator).
+                  aria-disabled={!result}
                   rounded="$4"
                   accessibilityLabel={t(`session.feedback_${value}`)}
                   accessibilityRole="button"
@@ -855,6 +847,20 @@ export function VictoryView() {
               ))}
             </XStack>
           </Card>
+
+          {/* "Tonight": what the save changed. It arrives with the save and says nothing before it,
+            nothing at all on a night where nothing rose. "See your village" only when it grew. */}
+          {!!result && (
+            <TonightList
+              feasts={feastOpened ? feasts.filter((f) => f !== bigFeast) : feasts}
+              villageName={villageName}
+              crest={crest}
+              epilogue={result.campaign?.isFinished === true && outroSettled && !outroNarrative}
+              onViewVillage={
+                result.tierUp || result.villageGrowth.length > 0 ? handleViewVillage : undefined
+              }
+            />
+          )}
 
           {/* A failed save: the only thing that replaces "Tonight". */}
           {!!saveError && (

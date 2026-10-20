@@ -74,7 +74,7 @@ beforeEach(() => {
 
 describe("the ghost line, while the set is still happening", () => {
   test("shows what there is to beat while the hold is short of it", async () => {
-    await render(line({ type: "time", last: 39, best: 45, live: 40 }));
+    await render(line({ type: "time", last: 39, best: 45, live: 40, objective: 60 }));
 
     expect(screen.getByText("Last time")).toBeTruthy();
     expect(screen.getByText("39s")).toBeTruthy();
@@ -86,7 +86,9 @@ describe("the ghost line, while the set is still happening", () => {
 
   // One side then the other (`0068`): the figures are one side's, said once at the end of the line.
   test("a per-side hold says per side once, after the last figure", async () => {
-    await render(line({ type: "time", last: 39, best: 45, live: 40, perSide: true }));
+    await render(
+      line({ type: "time", last: 39, best: 45, live: 40, perSide: true, objective: 60 }),
+    );
     expect(screen.getByText("39s")).toBeTruthy();
     expect(screen.getByText("46s per side")).toBeTruthy();
 
@@ -100,7 +102,7 @@ describe("the ghost line, while the set is still happening", () => {
   test("equalling the best is not beating it", async () => {
     // `toBeat` is the best plus one, so a tie is short of it, as `checkForNewRecords` decides at
     // save time. A stamp on a tie would promise a record the victory screen then refuses to list.
-    await render(line({ type: "time", last: 39, best: 45, live: 45 }));
+    await render(line({ type: "time", last: 39, best: 45, live: 45, objective: 60 }));
 
     expect(screen.getByText("to beat")).toBeTruthy();
     expect(screen.queryByText("Past your best")).toBeNull();
@@ -175,12 +177,16 @@ describe("the ghost line under a progressive objective", () => {
     expect(screen.queryByText("Past your best")).toBeNull();
   });
 
-  test("a record above the objective is what there is to beat", async () => {
+  test("a record above the objective is never offered: the rule sets the evening, the record stays a fact", async () => {
     await render(line({ type: "reps", last: 12, best: 15, live: 13, objective: 13 }));
 
-    expect(screen.getByText("to beat")).toBeTruthy();
-    expect(screen.getByText("16 reps")).toBeTruthy();
+    expect(screen.queryByText("to beat")).toBeNull();
+    expect(screen.queryByText("16 reps")).toBeNull();
     expect(screen.queryByText("Past your best")).toBeNull();
+
+    // Past the record the stamp still shows: that is a fact, not an invitation.
+    await render(line({ type: "reps", last: 12, best: 15, live: 16, objective: 13 }));
+    expect(screen.getByText("Past your best")).toBeTruthy();
   });
 
   test("past an aged record the stamp names the season, and the number to beat is the season's", async () => {
@@ -189,7 +195,7 @@ describe("the ghost line under a progressive objective", () => {
       type: "reps",
       last: 12,
       best: 30,
-      objective: 13,
+      objective: 20,
       recordAt: old,
       seasonBest: 14,
     } as const;

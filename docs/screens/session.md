@@ -77,8 +77,8 @@ button with a red edge. A session under two minutes is held: the "That was a sho
 (Keep it, Discard) takes the level card's slot above the fold and the whole stat row and the level
 card are hidden until you keep it. The chart of past sessions fits its card, centres each date under
 its bar and carries an easy / medium / hard legend. The pause dialog's title is "Session paused" in
-the title font and its actions are sentence case, "Quit quest" an outline with the red edge. Under the stats the victory lists **Tonight** (`TonightList`, "Ce soir"): what this session
-changed, as lines (small feasts), cards (medium: second animal, stage, the rare coat (`coat`), tier, boss, oath, new rung,
+the title font and its actions are sentence case, "Quit quest" an outline with the red edge. Under the level bar come the feeling buttons ("Comment c'était ?", before Tonight, which arrives with the save and has no reserved height), then **Tonight** (`TonightList`, "Ce soir"): what this session
+changed, as lines (small feasts, three shown then "et N autres" opens the rest), cards (medium: second animal, stage, the rare coat (`coat`), tier, boss, oath, new rung,
 achievement) and, when the village grew, a "View your village" link (`handleViewVillage`, 44 dp
 tall). The card body is `$textSecondary` throughout, XP lines included. One large feast per
 session is only named there with an "after" badge: "Continue" opens it full screen

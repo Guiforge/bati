@@ -145,10 +145,21 @@ function restoreSnapshot(saved: SavedSessionState): void {
   // function. Copying by hand is what lost `warmupSequence` and `bossStartHp`.
   const { savedAt: _savedAt, ...restored } = saved;
 
+  // A walk comes back walking. It was never paused, so a pause modal asking for a second
+  // "Resume" after the card's own was one tap with no reason; the tracker is measuring again
+  // already. A workout keeps the pause (the hero must get back in position), and so does an
+  // outing the hero had paused.
+  const backRunning = saved.status === "running" && !!saved.quest && isOutingSession(saved.quest);
+
   useSessionStore.setState({
     ...restored,
-    status: "paused", // Always resume in paused state
-    prePauseStatus: saved.status === "paused" ? saved.prePauseStatus : saved.status,
+    // A workout always resumes in paused state.
+    status: backRunning ? "running" : "paused",
+    prePauseStatus: backRunning
+      ? null
+      : saved.status === "paused"
+        ? saved.prePauseStatus
+        : saved.status,
     // ?? 0 covers snapshots written before warmupIndex was part of the payload.
     warmupIndex: saved.warmupIndex ?? 0,
     warmupSequence: saved.warmupSequence ?? [],
@@ -164,7 +175,7 @@ function restoreSnapshot(saved: SavedSessionState): void {
     // preference's): the OS kills an app with no foreground service in a pocket, and the walk went
     // on. It is bounded by the four hours of an unwitnessed outing and the day's two paid hours.
     totalPausedTime: saved.totalPausedTime + (deadTimeWalked(saved) ? 0 : pauseDuration),
-    lastPauseTimestamp: now,
+    lastPauseTimestamp: backRunning ? null : now,
     timerStartTimestamp,
     // JSON has no Date, so every `performedAt` came back as a string.
     results: saved.results.map((r) => ({

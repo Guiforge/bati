@@ -750,7 +750,39 @@ describe("useSessionStore", () => {
 
     // The report, four times over: the first movement's thirty seconds started on the tap on
     // Start, before the hero had seen what the movement was.
+    const seen = (sessions: number) => {
+      const db = require("@/db/completed") as { getSessionAggregates: jest.Mock };
+      db.getSessionAggregates.mockResolvedValueOnce({ totalSessions: sessions });
+    };
+
+    // The hero's very first warm-up waits for GO, whatever prepMode says: nobody has read the
+    // movement yet. Every later session keeps the setting.
+    test("the very first session waits for GO even with the ten-second wait chosen", async () => {
+      seen(0);
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+
+      await store.getState().startSession(mockQuest, "medium");
+
+      expect(store.getState().warmupPrep).toBe(true);
+      expect(store.getState().timerStartTimestamp).toBeNull();
+      store.getState().startWarmupMove();
+      store.getState().nextWarmupStep();
+      // The transition after it is the setting's own: five seconds of a clock, not a tap.
+      expect(store.getState().timerStartTimestamp).not.toBeNull();
+    });
+
+    test("a second session opens on the ten-second wait again", async () => {
+      seen(1);
+      prefs.getWarmupEnabled.mockResolvedValue(true);
+
+      await store.getState().startSession(mockQuest, "medium");
+
+      expect(store.getState().timerStartTimestamp).not.toBeNull();
+      expect(store.getState().timerDuration).toBe(PREP_SECONDS);
+    });
+
     test("a session opens on the wait before the first movement, not on its clock", async () => {
+      seen(1);
       prefs.getWarmupEnabled.mockResolvedValue(true);
 
       await store.getState().startSession(mockQuest, "medium");
@@ -820,6 +852,7 @@ describe("useSessionStore", () => {
     // first movement does not make the transitions run on one.
     test("a transition set to GO has no clock, whatever the first wait does", async () => {
       useSettingsStore.setState({ warmupTransition: "tap" });
+      seen(1);
       prefs.getWarmupEnabled.mockResolvedValue(true);
       await store.getState().startSession(mockQuest, "medium");
       expect(store.getState().timerDuration).toBe(PREP_SECONDS);

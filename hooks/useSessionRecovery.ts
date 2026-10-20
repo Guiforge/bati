@@ -154,6 +154,8 @@ function restoreSnapshot(saved: SavedSessionState): void {
     warmupSequence: saved.warmupSequence ?? [],
     // ?? false for snapshots from before the warm-up waited: those were always mid-movement.
     warmupPrep: saved.warmupPrep ?? false,
+    // ?? 0 for snapshots from before the auto transition: the longer gap is the safe guess.
+    warmupSessionsBefore: saved.warmupSessionsBefore ?? 0,
     // ?? false for snapshots from before the long-hold question.
     longHoldKept: saved.longHoldKept ?? false,
     firstSideSeconds: saved.firstSideSeconds ?? null,

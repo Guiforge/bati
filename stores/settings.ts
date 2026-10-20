@@ -4,7 +4,7 @@ import { type AvatarId, avatarIds, isAvatarId } from "@/constants/avatars";
 import type { MapStyleId } from "@/constants/mapStyle";
 import type { OutingDisplay } from "@/constants/outingDisplay";
 import { preferences } from "@/db";
-import type { DistanceUnit, PrepMode } from "@/db/preferences";
+import type { DistanceUnit, PrepMode, WarmupTransition } from "@/db/preferences";
 import type { Locomotion } from "@/db/schema";
 import { i18n } from "@/i18n";
 import { portLegacyAvatar } from "@/src/customAvatar";
@@ -48,6 +48,8 @@ interface SettingsState {
    * wait, and a recovered session needs no copy of it in its snapshot.
    */
   prepMode: PrepMode;
+  /** The gap between two warm-up movements, read at each one the same way as `prepMode`. */
+  warmupTransition: WarmupTransition;
   /** What the hero chose to see on the outing panel, per activity. Synced; see constants/outingDisplay. */
   outingDisplay: OutingDisplay;
   /** The activities whose screen stays on during an outing. This phone only: src/outingKeepAwake. */
@@ -65,6 +67,7 @@ interface SettingsState {
   setMapStyle: (id: MapStyleId) => Promise<void>;
   setUpdateCheckEnabled: (enabled: boolean) => Promise<void>;
   setPrepMode: (mode: PrepMode) => Promise<void>;
+  setWarmupTransition: (value: WarmupTransition) => Promise<void>;
   setOutingDisplay: (display: OutingDisplay) => Promise<void>;
   setOutingKeepAwake: (locomotion: Locomotion, on: boolean) => Promise<void>;
 
@@ -160,6 +163,20 @@ function watchDeviceReducedMotion(apply: (reducedMotion: boolean) => void): void
   });
 }
 
+/**
+ * The warm-up transition of a hero who never chose one: auto, unless they already asked
+ * to be waited for, since someone who chose GO before this setting existed must not find a clock
+ * running between movements. Written down at once, or it would follow `prepMode` until the next
+ * launch and then turn into auto on its own.
+ */
+function settleWarmupTransition(prepMode: PrepMode): WarmupTransition {
+  const value: WarmupTransition = prepMode === "tap" ? "tap" : "auto";
+  preferences.setWarmupTransition(value).catch((error) => {
+    reportError("settings.warmupTransitionSettle", error);
+  });
+  return value;
+}
+
 export const useSettingsStore = create<SettingsState>((set, get) => ({
   language: getDevicePreferredAppLanguage(),
   // Same default the DB read normalises to (normalizeAvatarId). It used to say "guardian"
@@ -178,6 +195,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   mapStyle: "ember",
   updateCheckEnabled: false,
   prepMode: "timer",
+  warmupTransition: "auto",
   outingDisplay: {},
   outingKeepAwake: [],
   isLoaded: false,
@@ -247,6 +265,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     await preferences.setPrepMode(mode);
   },
 
+  setWarmupTransition: async (value) => {
+    set({ warmupTransition: value });
+    await preferences.setWarmupTransition(value);
+  },
+
   // Written first, state after: a failed write must not leave the screen saying a choice that the
   // next launch will not find.
   setOutingDisplay: async (display) => {
@@ -286,6 +309,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         mapStyle,
         updateCheckEnabled,
         prepMode,
+        warmupTransition,
         outingDisplay,
         outingKeepAwake,
       ] = await Promise.all([
@@ -301,6 +325,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         preferences.getMapStyle(),
         preferences.getUpdateCheckEnabled(),
         preferences.getPrepMode(),
+        preferences.getWarmupTransition(),
         preferences.getOutingDisplay(),
         keepAwakeSet(),
       ]);
@@ -327,6 +352,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         mapStyle,
         updateCheckEnabled,
         prepMode,
+        warmupTransition: warmupTransition ?? settleWarmupTransition(prepMode),
         outingDisplay,
         outingKeepAwake,
         isLoaded: true,

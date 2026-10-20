@@ -126,7 +126,7 @@ one session changes it; adding a tombstone changes it.
 
 **R11. Never compared and never merged:** derived caches (`streak_*`, achievements), favourites
 (`favourite_quests`), quest configs (`quest:<id>:config`), adventure runs, boss fights and boss damage
-log (any status, `left` included; the hero's own adventures are no longer in this list, R19), set-aside exercises, `language`, `warmupEnabled`, `prepMode`,
+log (any status, `left` included; the hero's own adventures are no longer in this list, R19), set-aside exercises, `language`, `warmupEnabled`, `prepMode`, `warmupTransition`,
 `distanceUnit`, `hapticsEnabled`, `soundEnabled`, `mapTiles`, `mapStyle` (the basemap look; carried by the backup like `mapTiles`, never merged, never news), `villagersEnabled`, `bigFeastsShown`
 (a JSON list of the big feasts this phone already showed; it only decides display), `notesSeenVersion`
 (the release notes this phone already showed; per device, it only decides which Home notice is up), and every

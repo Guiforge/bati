@@ -1,4 +1,5 @@
 import { estimateQuestSeconds } from "@/db/estimate";
+import type { WarmupTransition } from "@/db/preferences";
 import type { ExerciseStyle, MovementPattern, QuestArchetype } from "@/db/schema";
 import type { Target } from "@/db/targets";
 import { NON_REP_STYLE } from "@/db/workUnits";
@@ -37,8 +38,9 @@ export type WarmupStep = {
 const STEP_SECONDS = 30;
 
 /**
- * The wait before every movement, the warm-up's and the first exercise's alike, when it runs on
- * its own (the other mode waits for GO, `PrepMode` in `db/preferences.ts`).
+ * The wait before the warm-up's first movement and before the first exercise, when it runs on
+ * its own (the other mode waits for GO, `PrepMode` in `db/preferences.ts`). The gap between two
+ * warm-up movements is `transitionSeconds`.
  *
  * Ten seconds is the 7-minute workout's transition (Klika & Jordan 2013, a protocol built to be
  * fast: "30 seconds, with 10 seconds of transition time between bouts"). Bati ran thirty and
@@ -46,6 +48,34 @@ const STEP_SECONDS = 30;
  * movement they had not read yet, and a pause they learned to press by hand to make up for it.
  */
 export const PREP_SECONDS = 10;
+
+/**
+ * How many sessions `"auto"` gives ten seconds to: the first warm-ups are the ones where the hero
+ * still has to read a movement as well as get into it. Counted from the journal before this
+ * session, the same count that rotates the movements.
+ */
+export const LEARNING_SESSIONS = 3;
+
+/** The clock of a gap between two warm-up movements: none when it waits for GO or is off. */
+export function transitionSeconds(transition: WarmupTransition, sessionsBefore: number): number {
+  if (transition === "auto") return sessionsBefore < LEARNING_SESSIONS ? 10 : 5;
+  if (transition === "5") return 5;
+  if (transition === "10") return 10;
+  return 0;
+}
+
+/**
+ * The movements still ahead, each with the transition before it: what is left of a warm-up as
+ * the quest screen announces it and as the warm-up counts it down, one sum for both.
+ */
+export function secondsAhead(
+  steps: readonly WarmupStep[],
+  transition: WarmupTransition,
+  sessionsBefore: number,
+): number {
+  const gap = transitionSeconds(transition, sessionsBefore);
+  return steps.reduce((sum, step) => sum + gap + step.seconds, 0);
+}
 
 const step = (exerciseName: string): WarmupStep => ({ exerciseName, seconds: STEP_SECONDS });
 

@@ -8,6 +8,7 @@ import { PREP_SECONDS, WARMUP_SEQUENCE } from "@/constants/warmup";
 import { listExercises } from "@/db/exercises";
 import { playCue } from "@/src/sounds";
 import { useSessionStore } from "@/stores/session";
+import { useSettingsStore } from "@/stores/settings";
 import config from "@/tamagui.config";
 
 /**
@@ -82,6 +83,7 @@ describe("WarmupView", () => {
   beforeEach(() => {
     jest.useFakeTimers();
     (playCue as jest.Mock).mockClear();
+    useSettingsStore.setState({ warmupTransition: "5" });
     // Mid-movement by default: most of what is pinned here is the movement's own clock. The
     // cases about the wait before it set it up themselves.
     useSessionStore.setState({
@@ -107,9 +109,27 @@ describe("WarmupView", () => {
     expect(useSessionStore.getState().warmupPrep).toBe(false);
   });
 
+  // Issue #198: the next movement opens on its transition, which then starts it. Walked second by
+  // second, because the render where a movement becomes a transition still reads the movement's
+  // zero, and that zero must not end the transition before it is shown.
+  it("a movement that runs out opens the next one's transition, which then starts it", async () => {
+    await mountWarmup();
+
+    await tickSeconds(WARMUP_SEQUENCE[0].seconds);
+    expect(useSessionStore.getState().warmupIndex).toBe(1);
+    expect(useSessionStore.getState().warmupPrep).toBe(true);
+    expect(useSessionStore.getState().timerDuration).toBe(5);
+
+    await tickSeconds(5);
+    expect(useSessionStore.getState().warmupIndex).toBe(1);
+    expect(useSessionStore.getState().warmupPrep).toBe(false);
+    expect(useSessionStore.getState().timerDuration).toBe(WARMUP_SEQUENCE[1]?.seconds);
+  });
+
   // A get-ready countdown before every movement made a continuous warm-up a series of waits
-  // (audit 2026-10-03): only the first movement has one.
-  it("a movement that runs out starts the next one on its clock, with no wait", async () => {
+  // (audit 2026-10-03): "off" keeps the chaining for whoever wants it.
+  it("with transitions off, a movement that runs out starts the next one on its clock", async () => {
+    useSettingsStore.setState({ warmupTransition: "off" });
     await mountWarmup();
 
     await act(() => {
@@ -121,12 +141,14 @@ describe("WarmupView", () => {
     expect(useSessionStore.getState().timerDuration).toBe(WARMUP_SEQUENCE[1]?.seconds);
   });
 
-  // Only the first movement has a wait now (audit 2026-10-03), so the time still ahead adds none
-  // for the ones after it, even with the waits on a clock.
-  it("counts no wait in what is left after the current movement", async () => {
+  // The transitions still ahead are warm-up time the quest screen announced (`WarmupPreview`), so
+  // the line counts them; the wait on screen is not counted (F3, below).
+  it("counts the transitions still ahead in what is left", async () => {
     const { getByTestId } = await mountWarmup();
 
-    const total = WARMUP_SEQUENCE.reduce((sum, step) => sum + step.seconds, 0);
+    const total =
+      WARMUP_SEQUENCE.reduce((sum, step) => sum + step.seconds, 0) +
+      (WARMUP_SEQUENCE.length - 1) * 5;
     const clock = `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
     expect(getByTestId("warmup-left")).toHaveTextContent(new RegExp(clock));
   });
@@ -141,7 +163,9 @@ describe("WarmupView", () => {
     });
     const { getByTestId } = await mountWarmup();
 
-    const total = WARMUP_SEQUENCE.reduce((sum, step) => sum + step.seconds, 0);
+    const total =
+      WARMUP_SEQUENCE.reduce((sum, step) => sum + step.seconds, 0) +
+      (WARMUP_SEQUENCE.length - 1) * 5;
     const clock = `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
     expect(getByTestId("warmup-left")).toHaveTextContent(new RegExp(clock));
     await tickSeconds(3);
@@ -192,14 +216,20 @@ describe("WarmupView", () => {
   /**
    * The report: no beep on any warm-up movement, only on the last one. This screen was the one
    * timed view that never called `useCountdownCues`. The wait counts down the same way, so the
-   * sounds of a warm-up are the sounds of the rest of a session: 3-2-1, then go, at every end.
+   * sounds of a warm-up are the sounds of the rest of a session: 3-2-1, then go, at every end,
+   * the transition's included.
    */
-  it("counts down the end of every movement the same way", async () => {
+  it("counts down the end of every movement and transition the same way", async () => {
     await mountWarmup();
 
     await tickSeconds(WARMUP_SEQUENCE[0].seconds);
     expect(cues()).toEqual(["tick", "tick", "tick", "go"]);
     expect(useSessionStore.getState().warmupIndex).toBe(1);
+    expect(useSessionStore.getState().warmupPrep).toBe(true);
+
+    (playCue as jest.Mock).mockClear();
+    await tickSeconds(5);
+    expect(cues()).toEqual(["tick", "tick", "tick", "go"]);
     expect(useSessionStore.getState().warmupPrep).toBe(false);
 
     (playCue as jest.Mock).mockClear();
@@ -285,7 +315,7 @@ describe("WarmupView", () => {
 
   // Issue #145: the hero who cannot jump met the jump here and had only Next and Skip. "Not for
   // me" sets it aside and takes it out of what is left, so the wait opens on the next movement.
-  it("Not for me takes the movement out of the warm-up and starts the next", async () => {
+  it("Not for me takes the movement out of the warm-up and opens the next one's transition", async () => {
     const [first, second] = WARMUP_SEQUENCE;
     (listExercises as jest.Mock).mockResolvedValueOnce([
       {
@@ -306,7 +336,7 @@ describe("WarmupView", () => {
     const state = useSessionStore.getState();
     expect(state.warmupSequence.map((s) => s.exerciseName)).not.toContain(first.exerciseName);
     expect(state.warmupSequence[state.warmupIndex]?.exerciseName).toBe(second?.exerciseName);
-    expect(state.warmupPrep).toBe(false);
+    expect(state.warmupPrep).toBe(true);
   });
 });
 

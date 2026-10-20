@@ -2,6 +2,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { isolatedGitEnv } from "./helpers/isolatedGitEnv";
 
 /**
  * `scripts/check-release-migrations.sh` against a real, throwaway git history: tags are what it
@@ -13,7 +14,7 @@ let repo: string;
 let n = 0;
 
 const git = (...args: string[]) =>
-  execFileSync("git", args, { cwd: repo, stdio: "pipe", encoding: "utf8" });
+  execFileSync("git", args, { cwd: repo, stdio: "pipe", encoding: "utf8", env: isolatedGitEnv() });
 
 function commit(files: Record<string, string>, message: string) {
   fs.mkdirSync(path.join(repo, "drizzle"), { recursive: true });
@@ -25,7 +26,11 @@ function commit(files: Record<string, string>, message: string) {
 }
 
 function check(ref: string) {
-  const run = spawnSync("bash", [SCRIPT, ref], { cwd: repo, encoding: "utf8" });
+  const run = spawnSync("bash", [SCRIPT, ref], {
+    cwd: repo,
+    encoding: "utf8",
+    env: isolatedGitEnv(),
+  });
   return { code: run.status, out: `${run.stdout}${run.stderr}` };
 }
 
@@ -102,4 +107,20 @@ describe("check-release-migrations.sh", () => {
     git("tag", "v1.1.0");
     expect(check("v1.1.0").code).toBe(0);
   });
+});
+
+// The pre-push hook runs this suite with `GIT_DIR` set to the real repository. Jest hands each
+// file its own copy of `process.env` while child processes inherit the real one, so the only
+// guard that holds is passing an env explicitly; this pins what that env leaves out.
+test("the fixtures' git runs without any GIT_ variable inherited from a hook", () => {
+  const saved = { ...process.env };
+  process.env.GIT_DIR = "/elsewhere/.git";
+  process.env.GIT_WORK_TREE = "/elsewhere";
+  try {
+    const env = isolatedGitEnv();
+    expect(Object.keys(env).filter((key) => key.startsWith("GIT_"))).toEqual([]);
+    expect(env.PATH).toBe(process.env.PATH);
+  } finally {
+    process.env = saved;
+  }
 });

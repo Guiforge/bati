@@ -2,11 +2,12 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { isolatedGitEnv } from "./helpers/isolatedGitEnv";
 
 // The DCO script runs in CI only, so this builds a throwaway repository and runs it for real.
 const script = path.resolve("scripts/check-dco.sh");
 const git = (cwd: string, ...args: string[]) =>
-  execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
+  execFileSync("git", args, { cwd, encoding: "utf8", env: isolatedGitEnv() }).trim();
 
 function commit(cwd: string, email: string, message: string) {
   fs.writeFileSync(path.join(cwd, "f"), message);
@@ -17,7 +18,12 @@ function commit(cwd: string, email: string, message: string) {
 
 function check(cwd: string, base: string, head: string) {
   try {
-    execFileSync(script, [base, head], { cwd, encoding: "utf8", stdio: "pipe" });
+    execFileSync(script, [base, head], {
+      cwd,
+      encoding: "utf8",
+      stdio: "pipe",
+      env: isolatedGitEnv(),
+    });
     return true;
   } catch {
     return false;

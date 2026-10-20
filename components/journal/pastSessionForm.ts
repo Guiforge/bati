@@ -27,6 +27,11 @@ export function dayFromLink(raw: string | undefined, now: Date): Date {
   return dayChoices(now).some((c) => dayKey(c) === raw) ? parsed : today;
 }
 
+/** The day an entry ending at `end` is filed under: the day it starts. */
+export function filedDay(end: Date, durationSeconds: number): Date {
+  return startOfDay(new Date(end.getTime() - durationSeconds * 1000));
+}
+
 /**
  * A picked day and its proposed end, settled on the day the entry is FILED under (its start). Just
  * after midnight a hand-picked "today" proposes an end whose start is the evening before, and the
@@ -41,7 +46,7 @@ export function settleDay(
 ): { day: Date; end: Date } {
   let day = picked;
   let end = proposedEnd(day, now, durationSeconds, measured);
-  const filed = startOfDay(new Date(end.getTime() - durationSeconds * 1000));
+  const filed = filedDay(end, durationSeconds);
   if (dayKey(filed) !== dayKey(day)) {
     day = filed;
     end = proposedEnd(day, now, durationSeconds, measured);
@@ -61,10 +66,9 @@ export function openingDay(
   durationSeconds: number,
   measured: readonly MeasuredSpan[],
 ): { day: Date; end: Date } {
-  const filedDay = (end: Date) => startOfDay(new Date(end.getTime() - durationSeconds * 1000));
   for (const choice of dayChoices(now)) {
     const { day, end } = settleDay(choice, now, durationSeconds, measured);
-    if (!handDays.has(dayKey(filedDay(end)))) return { day, end };
+    if (!handDays.has(dayKey(filedDay(end, durationSeconds)))) return { day, end };
   }
   return {
     day: startOfDay(now),

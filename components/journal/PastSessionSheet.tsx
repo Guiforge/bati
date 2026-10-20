@@ -15,6 +15,7 @@ import {
   dayChoices,
   dayFromLink,
   endOn,
+  filedDay,
   openingDay,
   parseDistanceM,
   parseMinutes,
@@ -426,7 +427,11 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
 
   const days = dayChoices(new Date());
   const shownDays = otherDays ? days : days.slice(0, 2);
-  const isChosen = (d: Date) => dayKey(d) === dayKey(chosenDay);
+  // The chip names the day the entry is filed under, whatever moved it there (a tap, the
+  // duration, a typed hour): derived from the end and the length, never held beside them.
+  const live = typed();
+  const shownDay = filedDay(live.endedAt, live.durationSeconds);
+  const isChosen = (d: Date) => dayKey(d) === dayKey(shownDay);
   const dayLabel = (d: Date, index: number) =>
     index === 0
       ? t("past_session.today")
@@ -491,7 +496,7 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
             }))}
             showOtherDays={!otherDays}
             otherChosen={!shownDays.some(isChosen)}
-            otherLabel={dayLabel(chosenDay, days.findIndex(isChosen))}
+            otherLabel={dayLabel(shownDay, days.findIndex(isChosen))}
             onPickDay={pickDay}
             onOtherDays={() => setOtherDays(true)}
             endText={endText}

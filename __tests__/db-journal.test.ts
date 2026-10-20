@@ -290,6 +290,18 @@ describe("db/journal", () => {
     expect(await journal().getJournalVersion()).not.toBe(added);
   });
 
+  test("the Journal version moves when a light week is accepted or ended", async () => {
+    session(1, daysAgo(3));
+    const { acceptLightWeek, endLightWeek } =
+      require("../db/lightWeek") as typeof import("../db/lightWeek");
+    const before = await journal().getJournalVersion();
+    await acceptLightWeek(new Date());
+    const accepted = await journal().getJournalVersion();
+    expect(accepted).not.toBe(before);
+    await endLightWeek(new Date());
+    expect(await journal().getJournalVersion()).not.toBe(accepted);
+  });
+
   test("the Journal version moves with a correction of a session written down", async () => {
     session(1, daysAgo(3));
     const before = await journal().getJournalVersion();

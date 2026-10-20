@@ -34,6 +34,7 @@ import {
   successorsOf,
   type VariationStep,
 } from "./exercises";
+import { LIGHT_WEEK_RUNNING_KEYS } from "./lightWeek";
 import { getMovementRecords, previousBest } from "./personalRecords";
 import { PROGRESSION_SESSIONS_REQUIRED, streakOf } from "./progress";
 import { ADMIN_CREATOR, type MuscleCode, type QuestTargetType } from "./schema";
@@ -1246,7 +1247,14 @@ export async function getJournalVersion(): Promise<string> {
     db
       .select({ value: schema.userPreferences.value })
       .from(schema.userPreferences)
-      .where(inArray(schema.userPreferences.key, ["oath", "unlocked_achievements"]))
+      // A light week accepted or ended takes the targets off the wall or puts them back (D-125).
+      .where(
+        inArray(schema.userPreferences.key, [
+          "oath",
+          "unlocked_achievements",
+          ...LIGHT_WEEK_RUNNING_KEYS,
+        ]),
+      )
       .orderBy(schema.userPreferences.key),
     // A photo added or removed moves the count or the sum of the stamps (a removal grows one).
     db

@@ -142,15 +142,8 @@ export function PausedOverlay() {
               </Paragraph>
             ) : null}
 
-            {/* Reading is free here, and it is free from the running screen and the rest too: the
-              how-to modal pauses on the way in. This is what the hero lands on if they pause by
-              hand instead. Same block either way — see ExerciseInstructions.tsx. */}
-            {instruction ? (
-              <YStack pt="$2">
-                <ExerciseInstructionsBody instruction={instruction} artSize={120} />
-              </YStack>
-            ) : null}
-
+            {/* The buttons come before the how-to: at 130 % the picture pushed "Quit" below the
+                fold with nothing to say the card scrolls (persona audit 2, 64 and 79). */}
             <YStack width="100%" gap="$3" pt="$2">
               <AppButton
                 testID="session-resume"
@@ -202,6 +195,15 @@ export function PausedOverlay() {
                 {t("session.quit_button")}
               </AppButton>
             </YStack>
+
+            {/* Reading is free here, and it is free from the running screen and the rest too: the
+              how-to modal pauses on the way in. This is what the hero lands on if they pause by
+              hand instead. Same block either way — see ExerciseInstructions.tsx. */}
+            {instruction ? (
+              <YStack pt="$2">
+                <ExerciseInstructionsBody instruction={instruction} artSize={120} />
+              </YStack>
+            ) : null}
           </YStack>
         </Card>
       </ScrollView>

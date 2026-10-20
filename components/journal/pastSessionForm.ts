@@ -1,4 +1,4 @@
-import { setHours, startOfDay, subDays } from "date-fns";
+import { addDays, setHours, startOfDay, subDays } from "date-fns";
 import { dayKey } from "@/db/dates";
 import { HAND_MAX_DAYS_BACK, type MeasuredSpan } from "@/db/handEntryRules";
 
@@ -27,6 +27,33 @@ export function dayFromLink(raw: string | undefined, now: Date): Date {
   return dayChoices(now).some((c) => dayKey(c) === raw) ? parsed : today;
 }
 
+/** The day an entry ending at `end` is filed under: the day it starts. */
+export function filedDay(end: Date, durationSeconds: number): Date {
+  return startOfDay(new Date(end.getTime() - durationSeconds * 1000));
+}
+
+/**
+ * A picked day and its proposed end, settled on the day the entry is FILED under (its start). Just
+ * after midnight a hand-picked "today" proposes an end whose start is the evening before, and the
+ * entry would be filed there while the chip said today: the chip follows the filed day instead.
+ * One rule for the opening and for a tap, so the two never disagree.
+ */
+export function settleDay(
+  picked: Date,
+  now: Date,
+  durationSeconds: number,
+  measured: readonly MeasuredSpan[],
+): { day: Date; end: Date } {
+  let day = picked;
+  let end = proposedEnd(day, now, durationSeconds, measured);
+  const filed = filedDay(end, durationSeconds);
+  if (dayKey(filed) !== dayKey(day)) {
+    day = filed;
+    end = proposedEnd(day, now, durationSeconds, measured);
+  }
+  return { day, end };
+}
+
 /**
  * The day and end the sheet opens on. An entry is filed under the day it STARTS, so just after
  * midnight "today" would land on the evening before: that day is what the sheet opens on, and the
@@ -39,15 +66,9 @@ export function openingDay(
   durationSeconds: number,
   measured: readonly MeasuredSpan[],
 ): { day: Date; end: Date } {
-  const filedDay = (end: Date) => startOfDay(new Date(end.getTime() - durationSeconds * 1000));
   for (const choice of dayChoices(now)) {
-    let day = choice;
-    let end = proposedEnd(day, now, durationSeconds, measured);
-    if (dayKey(filedDay(end)) !== dayKey(day)) {
-      day = filedDay(end);
-      end = proposedEnd(day, now, durationSeconds, measured);
-    }
-    if (!handDays.has(dayKey(filedDay(end)))) return { day, end };
+    const { day, end } = settleDay(choice, now, durationSeconds, measured);
+    if (!handDays.has(dayKey(filedDay(end, durationSeconds)))) return { day, end };
   }
   return {
     day: startOfDay(now),
@@ -95,6 +116,27 @@ export function endOn(day: Date, clock: { hours: number; minutes: number }): Dat
   const end = startOfDay(day);
   end.setHours(clock.hours, clock.minutes, 0, 0);
   return end;
+}
+
+/**
+ * Where a typed time of day lands: on the day the chip shows (the one `current` is filed under),
+ * the latest occurrence that is not in the future and still files the entry under that day, so
+ * 23:50 typed at 00:20 under "yesterday" is last night, and 00:10 is just after midnight. Nothing
+ * of the kind (a time still to come today): that day at the time, in the future, and the form
+ * refuses it rather than moving it.
+ */
+export function typedEnd(
+  current: Date,
+  durationSeconds: number,
+  clock: { hours: number; minutes: number },
+  now: Date,
+): Date {
+  const day = filedDay(current, durationSeconds);
+  const same = endOn(day, clock);
+  for (const c of [endOn(addDays(day, 1), clock), same]) {
+    if (c <= now && dayKey(filedDay(c, durationSeconds)) === dayKey(day)) return c;
+  }
+  return same;
 }
 
 /** Minutes typed into "Autre": whole minutes, or null for anything else. */

@@ -218,6 +218,7 @@ export default function ExerciseEditor() {
                 onChangeText={setDescription}
                 placeholder={t("exercise_editor.description_placeholder")}
                 multiline
+                py={8}
                 numberOfLines={4}
                 height={110}
               />

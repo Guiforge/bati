@@ -184,3 +184,29 @@ test("a mixed quest's journal page prints no pace or speed", async () => {
   });
   expect(screen.queryByTestId("journal-ground")).toBeNull();
 });
+
+// No GPS, no measured moving time: the whole duration must not be passed off as "en mouvement".
+test("an outing with no measured moving time shows no ground panel", async () => {
+  const data = dataWith(362);
+  Object.assign(data.session, {
+    outing: "walk",
+    leaguesM: 2500,
+    movingSeconds: null,
+    durationSeconds: 128,
+  });
+  await act(async () => {
+    await render(
+      <SafeAreaProvider
+        initialMetrics={{
+          frame: { x: 0, y: 0, width: 390, height: 844 },
+          insets: { top: 0, left: 0, right: 0, bottom: 0 },
+        }}
+      >
+        <TamaguiProvider config={config} defaultTheme="dark">
+          <QuestLog data={data} onChanged={() => {}} />
+        </TamaguiProvider>
+      </SafeAreaProvider>,
+    );
+  });
+  expect(screen.queryByTestId("journal-ground")).toBeNull();
+});

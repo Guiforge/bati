@@ -69,7 +69,12 @@ export function BackupSecretSheet({
   };
 
   return (
-    <FormSheet open={request.open} title={title ?? t("backup.secretTitle")} onClose={cancel}>
+    <FormSheet
+      open={request.open}
+      title={title ?? t("backup.secretTitle")}
+      onClose={cancel}
+      endOnKeyboard
+    >
       <Text color="$textSecondary">{body ?? t("backup.secretBody")}</Text>
 
       <XStack items="center" gap="$2">
@@ -83,6 +88,7 @@ export function BackupSecretSheet({
           // Twelve words on one line showed the last four. Only while they are shown: Android
           // does not mask a multiline field. The key stays "done" and submits, it adds no line.
           multiline={shown}
+          py={shown ? 8 : 4}
           submitBehavior="blurAndSubmit"
           autoCapitalize="none"
           autoCorrect={false}

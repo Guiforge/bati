@@ -160,7 +160,13 @@ async function mountVictory({
   /** What the hero asked for before setting off. `null` is a free outing, and only that. */
   goal?: OutingGoal | null;
   /** The ground the save priced, as `saveSession` reports it back. */
-  outing?: { seconds: number; effortSeconds: number; locomotion: "walk" | "run" | "ride" } | null;
+  outing?: {
+    seconds: number;
+    effortSeconds: number;
+    locomotion: "walk" | "run" | "ride";
+    measured: boolean;
+    clockSeconds?: number;
+  } | null;
   /** The records the save found, as `saveSession` reports them. */
   newRecords?: unknown[];
 } = {}) {
@@ -246,6 +252,17 @@ describe("VictoryView, the walk it just celebrated", () => {
 
     expect(screen.getByTestId("victory-expedition-distance")).toHaveTextContent("2.00 mi");
     expect(screen.getByTestId("victory-expedition-pace")).toHaveTextContent("12:30 /mi");
+  });
+
+  // 455.4 m in 201.6 s live is 455 m in 201 s once saved: the Journal divides the row, so must this.
+  test("the pace is the one the saved row gives, not the live floats'", async () => {
+    useSettingsStore.setState({ distanceUnit: "imperial" });
+    useExpeditionStore.setState({ track: { ...EMPTY, distanceM: 455.4, movingMs: 201_600 } });
+
+    await mountVictory();
+
+    // The live floats read 11:52.
+    expect(screen.getByTestId("victory-expedition-pace")).toHaveTextContent("11:51 /mi");
   });
 
   test("the road line names the building, the leagues covered and the next floor", async () => {
@@ -347,7 +364,7 @@ describe("VictoryView, the walk it just celebrated", () => {
 
     await mountVictory({
       sessionSeconds: 52 * 60,
-      outing: { seconds: 720, effortSeconds: 720, locomotion: "walk" },
+      outing: { seconds: 720, effortSeconds: 720, locomotion: "walk", measured: true },
     });
 
     expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(/of which 12:00 moving/);
@@ -360,10 +377,46 @@ describe("VictoryView, the walk it just celebrated", () => {
    * on screen: this much moving, counted as this much effort.
    */
   test("says what the walk was counted as, not just what it paid", async () => {
-    await mountVictory({ outing: { seconds: 3600, effortSeconds: 900, locomotion: "walk" } });
+    // Same clock as the "of which" line of the time card: 97 s read "2 min" here and "1:37" there.
+    await mountVictory({
+      outing: { seconds: 3600, effortSeconds: 900, locomotion: "walk", measured: true },
+    });
 
     expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(
-      /60 min moving · counted as 15 min of effort/,
+      /60:00 moving · counted as 15 min of effort/,
+    );
+  });
+
+  test("an outing nothing measured says clock time, never moving time", async () => {
+    await mountVictory({
+      outing: {
+        seconds: 141,
+        effortSeconds: 60,
+        locomotion: "walk",
+        measured: false,
+        clockSeconds: 141,
+      },
+    });
+
+    expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(
+      /2:21 on the clock · counted as 1 min of effort/,
+    );
+    expect(screen.queryByText(/moving · counted/)).toBeNull();
+  });
+
+  test("an outing past the daily allowance prints the real clock, the effort keeps the cap", async () => {
+    await mountVictory({
+      outing: {
+        seconds: 7200,
+        effortSeconds: 1800,
+        locomotion: "walk",
+        measured: false,
+        clockSeconds: 4 * 3600,
+      },
+    });
+
+    expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(
+      /240:00 on the clock · counted as 30 min of effort/,
     );
   });
 

@@ -77,6 +77,29 @@ describe("PastSessionSheet, a session written down", () => {
     );
   });
 
+  it("the day chip names the day the entry is filed under, after a duration change too", async () => {
+    // 00:20: a 45-minute entry ending now started yesterday evening, a 20-minute one today.
+    jest.useFakeTimers({ now: new Date(2026, 9, 20, 0, 20), advanceTimers: true });
+    try {
+      await mount();
+      await screen.findByText("Add a past session");
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: "Yesterday", selected: true })).toBeTruthy(),
+      );
+      await fireEvent.press(screen.getByRole("button", { name: "20 min" }));
+      await fireEvent.press(screen.getByRole("button", { name: "Today" }));
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: "Today", selected: true })).toBeTruthy(),
+      );
+
+      await fireEvent.press(screen.getByRole("button", { name: "45 min" }));
+      expect(screen.getByRole("button", { name: "Yesterday", selected: true })).toBeTruthy();
+      expect(screen.queryByRole("button", { name: "Today", selected: true })).toBeNull();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it("saves what the chips say and tells the flame in the Toast", async () => {
     await mount();
     await screen.findByText("Add a past session");

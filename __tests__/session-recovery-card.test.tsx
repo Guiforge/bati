@@ -79,7 +79,7 @@ describe("SessionRecoveryCard", () => {
   // The ground is metres in the row and the hero's unit on the card, like every other distance.
   test("says that ground in the hero's own unit", async () => {
     mockUnit = "imperial";
-    await mount(session({ leaguesM: 1609.344 }));
+    await mount(session({ leaguesM: 1610 }));
 
     expect(screen.getByText("1.00 mi already covered")).toBeTruthy();
   });

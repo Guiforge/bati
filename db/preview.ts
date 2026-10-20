@@ -2,6 +2,7 @@ import type { OutingGoal } from "@/src/gps/track";
 import { estimateQuestSeconds } from "./estimate";
 import type { Exercise } from "./exercises";
 import { isOutingQuest, outingGoal, proposesWalkRun } from "./expeditions";
+import { isLightWeekRunning, lightenRounds } from "./lightWeek";
 import type { OutingHabit } from "./outingRule";
 import {
   applyConfigToSlots,
@@ -147,12 +148,13 @@ export async function previewQuests(
 ): Promise<Map<number, QuestPreview>> {
   // A saved swap puts another movement in a slot, and it is progressed on its own history.
   const swapped = [...configs.values()].flatMap((c) => Object.values(c.swaps ?? {}));
-  const [journal, defaults] = await Promise.all([
+  const [journal, defaults, lightWeek] = await Promise.all([
     loadSlotJournal([
       ...templates.flatMap((q) => q.exercises.map((qex) => qex.exerciseId)),
       ...swapped,
     ]),
     loadDefaultLevels(),
+    isLightWeekRunning(new Date()),
   ]);
 
   return new Map(
@@ -163,7 +165,9 @@ export async function previewQuests(
         level ??
         config?.level ??
         (isOutingQuest(q, exercisesById) ? Difficulty.Medium : defaults(q.id));
-      return [q.id, previewQuest(q, exercisesById, config, journal, starts)] as const;
+      // The round a light week takes off, as the screen behind the card takes it (`lightenRounds`).
+      const shown = lightenRounds(q, config, lightWeek, isUserQuest(q));
+      return [q.id, previewQuest(shown, exercisesById, config, journal, starts)] as const;
     }),
   );
 }

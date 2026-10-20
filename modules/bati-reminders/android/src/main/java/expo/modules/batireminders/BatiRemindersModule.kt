@@ -75,6 +75,13 @@ class BatiRemindersModule : Module() {
         true
       }
 
+      /** A session was written down for `date` (local `yyyy-MM-dd`): its reminder has no more to say. */
+      Function("clearDay") { date: String ->
+        val context = context ?: return@Function false
+        ReminderScheduler.clearDay(context, date)
+        true
+      }
+
       Function("resume") {
         val context = context ?: return@Function false
         ReminderStore(context).resumeDate = null

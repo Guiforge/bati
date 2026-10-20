@@ -183,7 +183,15 @@ function TracedSummary({ sessionUuid, language }: SummaryProps) {
         <Figure
           testID="victory-expedition-pace"
           label={t(`session.expedition_${rate}`)}
-          value={formatRate(track.distanceM, track.movingMs, unit, language, rate)}
+          // The row's figures (`credited`): whole metres, whole seconds. On the live floats the
+          // victory said 11:52 /mi and the Journal 11:51 for the same walk.
+          value={formatRate(
+            Math.round(track.distanceM),
+            Math.floor(track.movingMs / 1000) * 1000,
+            unit,
+            language,
+            rate,
+          )}
         />
       </XStack>
 

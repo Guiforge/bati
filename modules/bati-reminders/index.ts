@@ -14,6 +14,7 @@ type BatiRemindersNativeModule = {
   setEnabled(enabled: boolean): boolean;
   pause(resumeDate: string): boolean;
   resume(): boolean;
+  clearDay(date: string): boolean;
   getState(): string | null;
   areEnabled(): boolean;
   is24Hour(): boolean;
@@ -61,6 +62,11 @@ export function setEnabled(enabled: boolean): void {
 /** Nothing rings before `resumeDate` (local `yyyy-MM-dd`), which rings as usual. */
 export function pause(resumeDate: string): void {
   native?.pause(resumeDate);
+}
+
+/** Takes the reminder of a local `yyyy-MM-dd` day out of the shade, whichever day that is. */
+export function clearDay(date: string): void {
+  native?.clearDay(date);
 }
 
 export function resume(): void {

@@ -91,6 +91,7 @@ export function PasswordCheckFlow({ open, onClose, onAnswer }: Props) {
         open={open && !forgetting}
         title={t("vault.checkTitle")}
         onClose={() => finish(true)}
+        endOnKeyboard
       >
         {result === "right" ? (
           <>

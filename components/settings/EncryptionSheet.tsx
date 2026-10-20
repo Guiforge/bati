@@ -281,7 +281,12 @@ export function EncryptionSheet({
   };
 
   return (
-    <FormSheet open={mode !== null} title={titleFor(t, step, pending, mode)} onClose={onClose}>
+    <FormSheet
+      open={mode !== null}
+      title={titleFor(t, step, pending, mode)}
+      onClose={onClose}
+      endOnKeyboard
+    >
       {views[step]}
     </FormSheet>
   );

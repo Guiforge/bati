@@ -3,6 +3,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import {
   areEnabled,
+  clearDay,
   getState,
   isAvailable,
   pause,
@@ -56,6 +57,7 @@ describe("bati-reminders, without its native half", () => {
     expect(() => setEnabled(true)).not.toThrow();
     expect(() => pause("2026-01-20")).not.toThrow();
     expect(() => resume()).not.toThrow();
+    expect(() => clearDay("2026-01-20")).not.toThrow();
   });
 });
 
@@ -101,6 +103,7 @@ describe("bati-reminders, with a native half", () => {
     setEnabled: jest.fn().mockReturnValue(true),
     pause: jest.fn().mockReturnValue(true),
     resume: jest.fn().mockReturnValue(true),
+    clearDay: jest.fn().mockReturnValue(true),
     areEnabled: jest.fn().mockReturnValue(true),
     getState: jest.fn(),
     is24Hour: jest.fn().mockReturnValue(false),
@@ -140,6 +143,8 @@ describe("bati-reminders, with a native half", () => {
     mod.setEnabled(true);
     mod.pause("2026-01-22");
     mod.resume();
+    mod.clearDay("2026-01-14");
+    expect(native.clearDay).toHaveBeenCalledWith("2026-01-14");
     expect(native.setEnabled).toHaveBeenCalledWith(true);
     expect(native.pause).toHaveBeenCalledWith("2026-01-22");
     expect(native.resume).toHaveBeenCalled();

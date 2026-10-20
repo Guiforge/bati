@@ -165,6 +165,35 @@ describe("a quest card and its screen quote the same numbers", () => {
     expect(await disagreements(pins)).toEqual([]);
   });
 
+  // The round a light week takes off is on the screen behind the card (`lightenRounds`); a card
+  // that still priced the full quest said "12 min, +186 XP" over a screen saying "8 min, +124 XP".
+  test("a running light week lightens the card as it lightens the screen", async () => {
+    const { quests, preview, config, exercises, estimate, xp } = api();
+    const lightWeek = require("../db/lightWeek") as typeof import("../db/lightWeek");
+    const templates = await quests.listQuestTemplates();
+    const catalogue = config.indexExercises(await exercises.listExercises());
+    const before = await preview.previewQuests(templates, catalogue, new Map());
+    await lightWeek.acceptLightWeek(new Date(Date.now() - 24 * 60 * 60 * 1000));
+    try {
+      const cards = await preview.previewQuests(templates, catalogue, new Map());
+      let lightened = 0;
+      for (const template of templates) {
+        const loaded = await config.loadConfiguredQuest(template.id);
+        if (!loaded) throw new Error(`quest ${template.id} vanished`);
+        expect(cards.get(template.id)).toEqual({
+          seconds: estimate.estimateQuestSeconds(loaded.quest),
+          xp: xp.estimateQuestXp(loaded.quest, loaded.level),
+        });
+        if ((cards.get(template.id)?.seconds ?? 0) < (before.get(template.id)?.seconds ?? 0)) {
+          lightened++;
+        }
+      }
+      expect(lightened).toBeGreaterThan(0);
+    } finally {
+      t.sqlite.exec("DELETE FROM user_preferences");
+    }
+  });
+
   test("a hero whose records move the holds and whose rungs move the movements", async () => {
     // A long plank pulls every plank slot up off `HOLD_FRACTION_OF_MAX`, and three clean wall
     // push-up sessions move the push-up slots one rung up the chain.

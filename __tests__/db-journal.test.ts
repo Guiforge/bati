@@ -157,6 +157,30 @@ describe("db/journal", () => {
     );
   }
 
+  test("a light week's session neither ranks nor is ranked among the runs of its quest", async () => {
+    const pushups = exerciseId("Push-ups");
+    const quest = t.sqlite.prepare("SELECT id FROM quests ORDER BY id LIMIT 1").get() as {
+      id: number;
+    };
+    for (const [id, day, value] of [
+      [1, 6, 30],
+      [2, 4, 20],
+      [3, 2, 10],
+    ] as const) {
+      session(id, daysAgo(day), `questId=${quest.id}`);
+      set(id, pushups, value, daysAgo(day));
+    }
+    // The light one: fewest reps, every set neutral.
+    t.sqlite.exec("UPDATE completed_exercises SET ladderNeutral = 1 WHERE sessionId = 3");
+    const { getCompletedSessionById } =
+      require("../db/completed") as typeof import("../db/completed");
+    const light = await getCompletedSessionById(3);
+    const normal = await getCompletedSessionById(2);
+    assert(light && normal);
+    expect(await journal().getQuestStanding(light)).toBeNull();
+    expect(await journal().getQuestStanding(normal)).toMatchObject({ rank: 2, outOf: 2 });
+  });
+
   test("the wall dates a record by the first set that reached it, not the last", async () => {
     const pushups = exerciseId("Push-ups");
     session(1, daysAgo(20));

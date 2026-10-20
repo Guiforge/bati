@@ -134,13 +134,18 @@ const config = createTamagui({
   // the font scale, and at 130% the first line was cut at the top (adventure name, quest name). The
   // floor is what the token gave, so nothing moves at the default scale. A field that sets its own
   // height (the multi-line ones) still wins.
+  //
+  // `py: 4`, not 8: the first line's top is clipped at the content box, which is the field minus its
+  // padding. At 130% the 44 dp floor less 16 dp of padding left 28 dp for a ~28.3 dp line, and the
+  // accent of a capital (the E of "Epreuve du Guet") is the first thing past it. The multi-line
+  // fields, which want the air above their first line, say `py={8}` themselves.
   defaultProps: {
     Input: {
       placeholderTextColor: "$textSecondary",
       rounded: "$3",
       height: "auto",
       minH: 44,
-      py: 8,
+      py: 4,
     },
   },
   fonts: {

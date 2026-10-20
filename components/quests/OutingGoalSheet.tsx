@@ -1,11 +1,18 @@
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Keyboard, Pressable, useWindowDimensions } from "react-native";
+import {
+  BackHandler,
+  Keyboard,
+  Pressable,
+  type ScrollView,
+  useWindowDimensions,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Input, Sheet, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Chip } from "@/components/common/Chip";
+import { useKeyboardHeight } from "@/components/common/useKeyboardHeight";
 import { X } from "@/components/icons";
 import { GpsSetting } from "@/components/quests/GpsSetting";
 import { formatDistance, METRES_PER_TYPED_UNIT } from "@/constants/distanceFormat";
@@ -115,6 +122,21 @@ export function OutingGoalSheet({
   const language = useSettingsStore((s) => s.language);
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
+  // The only field is the last thing in the sheet: once the keyboard is up, show it and Done.
+  const scroll = useRef<ScrollView>(null);
+  const keyboardH = useKeyboardHeight(scroll);
+
+  // Hardware back closes the sheet, not the screen under it (as in `FormSheet`): the modal is
+  // portalled above the navigator, and the press left the quest screen along with the sheet.
+  useEffect(() => {
+    if (!open) return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      Keyboard.dismiss();
+      onOpenChange(false);
+      return true;
+    });
+    return () => sub.remove();
+  }, [open, onOpenChange]);
   // Told by the GPS row (`GpsSetting`), which owns the preference: the distance note needs it.
   const [gps, setGps] = useState(true);
   // The caller mounts this on open, so the initialiser is the reset: a hero who saved a distance
@@ -207,6 +229,8 @@ export function OutingGoalSheet({
       onOpenChange={(next: boolean) => (next ? onOpenChange(true) : close())}
       snapPointsMode="fit"
       disableDrag
+      // The custom field sits low in the sheet: the keyboard covered it (as in `FormSheet`).
+      moveOnKeyboardChange
       transition={reducedMotion ? undefined : "quick"}
       zIndex={100_000}
     >
@@ -227,9 +251,10 @@ export function OutingGoalSheet({
         borderTopRightRadius="$6"
         // The GPS row made the sheet taller than a short screen at 130 % text: what does not fit
         // scrolls, as in `FormSheet`.
-        style={{ maxHeight: height - insets.top - 16 }}
+        style={{ maxHeight: height - insets.top - 16 - keyboardH }}
       >
         <Sheet.ScrollView
+          ref={scroll}
           keyboardShouldPersistTaps="handled"
           onMoveShouldSetResponder={() => false}
         >

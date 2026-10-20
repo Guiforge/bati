@@ -119,7 +119,7 @@ export async function refusalFor(
  * What follows every write: the flame recounted, the oath looked at, the widgets and the reminder
  * told. The oath's XP is paid onto the row that tipped it, whichever write that was.
  */
-async function afterHandWrite(sessionId: number) {
+async function afterHandWrite(sessionId: number, performedAt?: Date) {
   invalidateStreakInfo();
   const streak = await calculateAndCacheStreak();
   let oathKept = false;
@@ -147,6 +147,11 @@ async function afterHandWrite(sessionId: number) {
   try {
     const { requestWidgetsUpdate } = require("@/src/widget") as typeof import("@/src/widget");
     const { replanRemindersNow } = require("@/src/reminders") as typeof import("@/src/reminders");
+    const { clearDay: clearReminderDay } =
+      require("@/modules/bati-reminders") as typeof import("@/modules/bati-reminders");
+    // The reminder of the saved day goes with it: `setPlan` only clears today's, and a past day's
+    // (opened from its "Done elsewhere?" action) stayed in the shade.
+    if (performedAt) clearReminderDay(dayKey(performedAt));
     await Promise.all([requestWidgetsUpdate(), replanRemindersNow()]);
   } catch (e) {
     reportError("handEntry.afterWrite", e);
@@ -162,7 +167,7 @@ export async function createHandEntry(
   const refusal = checkHandEntry(draft, await loadHandContext(null, now), now);
   if (refusal) return { ok: false, refusal };
 
-  const endedAt = draft.endedAt > now ? now : draft.endedAt;
+  const { endedAt } = draft;
   const id = await createCompletedSession({
     byHand: "session",
     outing: input.kind === "workout" ? null : input.kind,
@@ -173,7 +178,7 @@ export async function createHandEntry(
     performedAt: addSeconds(endedAt, -draft.durationSeconds),
     exercises: [],
   });
-  const after = await afterHandWrite(id);
+  const after = await afterHandWrite(id, addSeconds(endedAt, -draft.durationSeconds));
   return {
     ok: true,
     id,
@@ -201,7 +206,7 @@ export async function correctHandEntry(
   const refusal = checkHandEntry(draft, await loadHandContext(id, now), now);
   if (refusal) return { ok: false, refusal };
 
-  const endedAt = draft.endedAt > now ? now : draft.endedAt;
+  const { endedAt } = draft;
   const performedAt = addSeconds(endedAt, -draft.durationSeconds);
   // `xpEarned` is not here, on purpose: the oath bonus sits on the same row, and sync keeps the
   // larger XP of a row, so a lower one could not travel.
@@ -217,7 +222,7 @@ export async function correctHandEntry(
       byHandEditedAt: nextEditStamp(completedQuest.byHandEditedAt),
     })
     .where(eq(completedQuest.id, id));
-  const after = await afterHandWrite(id);
+  const after = await afterHandWrite(id, performedAt);
   return {
     ok: true,
     id,

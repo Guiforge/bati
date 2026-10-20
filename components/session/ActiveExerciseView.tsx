@@ -611,7 +611,7 @@ export function ActiveExerciseView() {
                   belong with "How to do it", which is the other thing a hero asks about the
                   movement rather than about the set, and the counter now stands between all
                   three and the button. */}
-                  <XStack items="center" justify="center" gap="$3" opacity={0.7} flexWrap="wrap">
+                  <XStack items="center" justify="center" gap="$4" opacity={0.7} flexWrap="wrap">
                     {instruction?.description ? (
                       <Pressable
                         testID="session-how-to"
@@ -629,12 +629,9 @@ export function ActiveExerciseView() {
                     {/* Not on an outing: a walk has no movement to swap and no set to fail. */}
                     {isOuting ? null : (
                       <>
-                        {/* Each dot travels with the link after it, so a row that wraps at a large
-                        font never leaves one dangling at the end of a line. */}
+                        {/* No "·" between the links: one travelling with the link after it started a
+                        wrapped line ("· Je n'ai pas pu"), and the gap already separates them. */}
                         <XStack items="center" gap="$3">
-                          <AppText fontSize={12} color="$textSecondary" opacity={0.5}>
-                            ·
-                          </AppText>
                           <Pressable
                             testID="session-swap-exercise"
                             hitSlop={12}
@@ -658,9 +655,6 @@ export function ActiveExerciseView() {
                         </XStack>
 
                         <XStack items="center" gap="$3">
-                          <AppText fontSize={12} color="$textSecondary" opacity={0.5}>
-                            ·
-                          </AppText>
                           <Pressable
                             testID="session-skip-exercise"
                             hitSlop={12}
@@ -685,7 +679,7 @@ export function ActiveExerciseView() {
                     from Done, which would end the whole set and never offer the second side. */}
                         {/* Mounted for the whole per-side set and live on the first side only: a link that
                     left at the switch would shorten this row and move the counter and Done. Last in
-                    the row, so once hidden it leaves no gap between two dots. */}
+                    the row, so once hidden it leaves no gap. */}
                         {perSideHold ? (
                           <XStack
                             items="center"
@@ -697,9 +691,6 @@ export function ActiveExerciseView() {
                               side?.phase === "first" ? "auto" : "no-hide-descendants"
                             }
                           >
-                            <AppText fontSize={12} color="$textSecondary" opacity={0.5}>
-                              ·
-                            </AppText>
                             <Pressable
                               testID="session-next-side"
                               hitSlop={12}

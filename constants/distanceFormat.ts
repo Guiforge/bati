@@ -34,6 +34,9 @@ export const METRES_PER_TYPED_UNIT: Record<DistanceUnit, number> = {
  */
 export function formatDistance(metres: number, unit: DistanceUnit, language: string): string {
   if (!Number.isFinite(metres) || metres < 0) return "...";
+  // Whole metres first, as the row stores them (`credited` rounds): the victory card read the live
+  // float and the Journal the stored metre, so one outing wore 1284 ft on one and 1283 on the other.
+  const whole = Math.round(metres);
 
   const twoPlaces = (value: number) =>
     new Intl.NumberFormat(language, {
@@ -42,12 +45,11 @@ export function formatDistance(metres: number, unit: DistanceUnit, language: str
     }).format(value);
 
   if (unit === "imperial") {
-    const feet = Math.round(metres / M_PER_FOOT);
-    return feet < FEET_PER_MILE ? `${feet} ft` : `${twoPlaces(metres / M_PER_MILE)} mi`;
+    const feet = Math.round(whole / M_PER_FOOT);
+    return feet < FEET_PER_MILE ? `${feet} ft` : `${twoPlaces(whole / M_PER_MILE)} mi`;
   }
 
-  const rounded = Math.round(metres);
-  return rounded < 1000 ? `${rounded} m` : `${twoPlaces(metres / 1000)} km`;
+  return whole < 1000 ? `${whole} m` : `${twoPlaces(whole / 1000)} km`;
 }
 
 /**

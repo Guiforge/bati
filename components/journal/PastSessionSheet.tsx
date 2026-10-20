@@ -7,6 +7,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Chip } from "@/components/common/Chip";
 import { FormSheet } from "@/components/common/FormSheet";
 import { RuleDisclosure } from "@/components/common/RuleDisclosure";
+import { useRevealInSheet } from "@/components/common/revealInSheet";
 import { SectionLabel } from "@/components/common/SectionLabel";
 import { useToast } from "@/components/common/Toast";
 import { Info } from "@/components/icons";
@@ -747,6 +748,7 @@ function DurationSection({
   onCustomCommit: () => void;
 }) {
   const { t } = useTranslation();
+  const reveal = useRevealInSheet();
   return (
     <YStack gap="$2">
       <SectionLabel>{t("past_session.duration")}</SectionLabel>
@@ -768,6 +770,7 @@ function DurationSection({
       {customOpen ? (
         <Input
           testID="past-session-custom"
+          ref={reveal}
           minH={44}
           value={customText}
           onChangeText={onCustomText}

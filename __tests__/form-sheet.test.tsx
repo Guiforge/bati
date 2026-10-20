@@ -89,7 +89,7 @@ describe("FormSheet", () => {
     );
     const call = spy.mock.calls.find(([name]) => name === "hardwareBackPress");
     assert(call);
-    expect(call[1]()).toBe(true);
+    expect((call[1] as () => boolean)()).toBe(true);
     expect(onClose).toHaveBeenCalledTimes(1);
     spy.mockRestore();
   });

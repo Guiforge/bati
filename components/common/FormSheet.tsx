@@ -1,7 +1,13 @@
 import { usePathname } from "expo-router";
 import { type ReactNode, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { BackHandler, Keyboard, Pressable, useWindowDimensions } from "react-native";
+import {
+  BackHandler,
+  Keyboard,
+  Pressable,
+  type ScrollView,
+  useWindowDimensions,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Sheet, Text, XStack, YStack } from "tamagui";
 import { headingFont } from "@/components/common/headingFont";
@@ -21,6 +27,8 @@ type Props = {
    * above scrolls or the keyboard is up. Absent for the sheets that never needed one.
    */
   footer?: ReactNode;
+  /** One field and then the action: scroll to the end when the keyboard rises, so both show. */
+  endOnKeyboard?: boolean;
 };
 
 /**
@@ -37,14 +45,15 @@ type Props = {
  * - closing when the route changes: a modal sheet is portalled above the navigator, and one left
  *   open while a row underneath navigated stayed painted over the next screen.
  */
-export function FormSheet({ open, title, onClose, children, footer }: Props) {
+export function FormSheet({ open, title, onClose, children, footer, endOnKeyboard }: Props) {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const pathname = usePathname();
   const shownOn = useRef(pathname);
-  const keyboardH = useKeyboardHeight();
+  const scroll = useRef<ScrollView>(null);
+  const keyboardH = useKeyboardHeight(endOnKeyboard ? scroll : undefined);
 
   const close = () => {
     Keyboard.dismiss();
@@ -108,6 +117,7 @@ export function FormSheet({ open, title, onClose, children, footer }: Props) {
             emulator with a 3 px finger drift). Drag is off here, so the hook has nothing to feed.
             Drop this once `useSheetScrollViewGestures.native.ts` resets it per touch. */}
         <Sheet.ScrollView
+          ref={scroll}
           keyboardShouldPersistTaps="handled"
           onMoveShouldSetResponder={() => false}
           // With a footer the body gives way to it instead of pushing it off the sheet.

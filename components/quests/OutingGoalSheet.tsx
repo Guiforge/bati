@@ -122,13 +122,9 @@ export function OutingGoalSheet({
   const language = useSettingsStore((s) => s.language);
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
-  const keyboardH = useKeyboardHeight();
   // The only field is the last thing in the sheet: once the keyboard is up, show it and Done.
-  // Riding up was not enough at 130 % on a short screen, the field stayed under the keys.
   const scroll = useRef<ScrollView>(null);
-  useEffect(() => {
-    if (keyboardH > 0) requestAnimationFrame(() => scroll.current?.scrollToEnd());
-  }, [keyboardH]);
+  const keyboardH = useKeyboardHeight(scroll);
 
   // Hardware back closes the sheet, not the screen under it (as in `FormSheet`): the modal is
   // portalled above the navigator, and the press left the quest screen along with the sheet.

@@ -69,7 +69,12 @@ export function BackupSecretSheet({
   };
 
   return (
-    <FormSheet open={request.open} title={title ?? t("backup.secretTitle")} onClose={cancel}>
+    <FormSheet
+      open={request.open}
+      title={title ?? t("backup.secretTitle")}
+      onClose={cancel}
+      endOnKeyboard
+    >
       <Text color="$textSecondary">{body ?? t("backup.secretBody")}</Text>
 
       <XStack items="center" gap="$2">

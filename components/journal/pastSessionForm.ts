@@ -28,6 +28,28 @@ export function dayFromLink(raw: string | undefined, now: Date): Date {
 }
 
 /**
+ * A picked day and its proposed end, settled on the day the entry is FILED under (its start). Just
+ * after midnight a hand-picked "today" proposes an end whose start is the evening before, and the
+ * entry would be filed there while the chip said today: the chip follows the filed day instead.
+ * One rule for the opening and for a tap, so the two never disagree.
+ */
+export function settleDay(
+  picked: Date,
+  now: Date,
+  durationSeconds: number,
+  measured: readonly MeasuredSpan[],
+): { day: Date; end: Date } {
+  let day = picked;
+  let end = proposedEnd(day, now, durationSeconds, measured);
+  const filed = startOfDay(new Date(end.getTime() - durationSeconds * 1000));
+  if (dayKey(filed) !== dayKey(day)) {
+    day = filed;
+    end = proposedEnd(day, now, durationSeconds, measured);
+  }
+  return { day, end };
+}
+
+/**
  * The day and end the sheet opens on. An entry is filed under the day it STARTS, so just after
  * midnight "today" would land on the evening before: that day is what the sheet opens on, and the
  * one-per-day check reads it. Skips days whose filed day already has an entry; all taken, the
@@ -41,12 +63,7 @@ export function openingDay(
 ): { day: Date; end: Date } {
   const filedDay = (end: Date) => startOfDay(new Date(end.getTime() - durationSeconds * 1000));
   for (const choice of dayChoices(now)) {
-    let day = choice;
-    let end = proposedEnd(day, now, durationSeconds, measured);
-    if (dayKey(filedDay(end)) !== dayKey(day)) {
-      day = filedDay(end);
-      end = proposedEnd(day, now, durationSeconds, measured);
-    }
+    const { day, end } = settleDay(choice, now, durationSeconds, measured);
     if (!handDays.has(dayKey(filedDay(end)))) return { day, end };
   }
   return {

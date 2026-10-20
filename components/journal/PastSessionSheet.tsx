@@ -19,6 +19,7 @@ import {
   parseDistanceM,
   parseMinutes,
   proposedEnd,
+  settleDay,
   toastKey,
 } from "@/components/journal/pastSessionForm";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
@@ -340,7 +341,9 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
       // Not touched yet: another day proposes its own hour; a touched hour follows the hero.
       loadHandContext(target?.id ?? null, new Date())
         .then((ctx) => {
-          const end = proposedEnd(picked, new Date(), durationSeconds, ctx.measured);
+          // Settled on the filed day: "today" at 00:20 is the evening before, as at the opening.
+          const { day, end } = settleDay(picked, new Date(), durationSeconds, ctx.measured);
+          setChosenDay(day);
           setEndAt(end);
           setEndText(timeFormat.format(end));
         })

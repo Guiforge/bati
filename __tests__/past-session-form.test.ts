@@ -6,6 +6,7 @@ import {
   parseDistanceM,
   parseMinutes,
   proposedEnd,
+  settleDay,
   toastKey,
 } from "@/components/journal/pastSessionForm";
 import { dayKey } from "@/db/dates";
@@ -145,6 +146,19 @@ describe("the day the sheet opens on is the day the entry is filed under", () =>
     const { day, end } = openingDay(now, handDays, 45 * 60, []);
     expect(handDays.has(filed(end, 45 * 60))).toBe(false);
     expect(dayKey(day)).toBe(filed(end, 45 * 60));
+  });
+
+  test("a hand-picked today at 00:20 settles on the day the entry is filed under", () => {
+    const now = new Date(2026, 9, 19, 0, 20);
+    const { day, end } = settleDay(new Date(2026, 9, 19), now, 45 * 60, []);
+    expect(dayKey(day)).toBe("2026-10-18");
+    expect(dayKey(day)).toBe(filed(end, 45 * 60));
+  });
+
+  test("a picked day that already holds its start stays as picked", () => {
+    const now = new Date(2026, 9, 19, 14, 0);
+    expect(dayKey(settleDay(new Date(2026, 9, 19), now, 45 * 60, []).day)).toBe("2026-10-19");
+    expect(dayKey(settleDay(new Date(2026, 9, 16), now, 45 * 60, []).day)).toBe("2026-10-16");
   });
 
   test("midday it is plain today", () => {

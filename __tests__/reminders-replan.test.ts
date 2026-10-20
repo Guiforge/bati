@@ -50,6 +50,15 @@ describe("replanReminders", () => {
     (require("@/src/reminders") as typeof import("@/src/reminders")).replanReminders;
 
   test("hands over the plan, with the words the native half cannot know", async () => {
+    t.db
+      .insert(completedQuest)
+      .values({
+        questId: 1,
+        performedAt: new Date(Date.now() - 3 * 86_400_000),
+        userLevel: "medium",
+        xpEarned: 10,
+      })
+      .run();
     await replan()(false);
     expect(mockSetPlan).toHaveBeenCalledTimes(1);
     const plan = mockSetPlan.mock.calls[0]?.[0];
@@ -65,6 +74,22 @@ describe("replanReminders", () => {
     expect(plan.quietText).not.toBe("");
     // The numbers the native half keeps to have one home, db/reminders.ts.
     expect(plan).toMatchObject({ horizonDays: 14, pauseDays: 7, lateMinutes: 60 });
+  });
+
+  test("before a first session, no 'Done elsewhere?': the sheet behind it could only refuse", async () => {
+    // A session written down is not a first session.
+    t.db
+      .insert(completedQuest)
+      .values({
+        questId: null,
+        byHand: "session",
+        performedAt: new Date(Date.now() - 86_400_000),
+        userLevel: "medium",
+        xpEarned: 75,
+      })
+      .run();
+    await replan()(false);
+    expect(mockSetPlan.mock.calls[0]?.[0].actionLabels.elsewhere).toBe("");
   });
 
   test("a session under way holds today", async () => {

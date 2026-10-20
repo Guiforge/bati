@@ -48,10 +48,20 @@ export type HandResult =
   | { ok: true; id: number; xp: number; flameActive: boolean; oathKept: boolean }
   | { ok: false; refusal: HandRefusal };
 
+/** When the hero's first session Bati measured began, or null: nothing is noted before it. */
+export async function firstMeasuredAt(): Promise<Date | null> {
+  const [first] = await db
+    .select({ at: sql<number | null>`min(${completedQuest.performedAt})` })
+    .from(completedQuest)
+    .where(sql`${completedQuest.byHand} IS NOT 'session'`);
+  // min() comes back raw: the column's seconds, not a Date.
+  return first?.at == null ? null : new Date(Number(first.at) * 1000);
+}
+
 /** The rule, over the journal as it stands: `ignoreId` is the entry being corrected. */
 export async function loadHandContext(ignoreId: number | null, now: Date): Promise<HandContext> {
   const since = subDays(now, HAND_MAX_DAYS_BACK + 2);
-  const [hands, rows, [first]] = await Promise.all([
+  const [hands, rows, first] = await Promise.all([
     db
       .select({ performedAt: completedQuest.performedAt, xpEarned: completedQuest.xpEarned })
       .from(completedQuest)
@@ -77,10 +87,7 @@ export async function loadHandContext(ignoreId: number | null, now: Date): Promi
           isNotNull(completedQuest.durationSeconds),
         ),
       ),
-    db
-      .select({ at: sql<number | null>`min(${completedQuest.performedAt})` })
-      .from(completedQuest)
-      .where(sql`${completedQuest.byHand} IS NOT 'session'`),
+    firstMeasuredAt(),
   ]);
   const measured: MeasuredSpan[] = rows.map((r) => ({
     id: r.id,
@@ -92,8 +99,7 @@ export async function loadHandContext(ignoreId: number | null, now: Date): Promi
   return {
     handDays: new Set(hands.map((h) => dayKey(h.performedAt))),
     measured,
-    // min() comes back raw: the column's seconds, not a Date.
-    firstMeasuredAt: first?.at == null ? null : new Date(Number(first.at) * 1000),
+    firstMeasuredAt: first,
     paidInWindow: hands.filter(
       (h) => h.xpEarned > 0 && differenceInCalendarDays(now, h.performedAt) <= HAND_MAX_DAYS_BACK,
     ).length,

@@ -813,6 +813,8 @@
     "feast_legendary_late_horse": "{{n}} bike rides and counting.",
     "feast_legendary_late_any": "{{n}} sessions and counting.",
     "tonight_title": "Tonight",
+    "tonight_more_one": "and {{count}} more",
+    "tonight_more_other": "and {{count}} more",
     "tonight_place_named": "{{name}}",
     "tonight_place_unnamed": "{{place}}",
     "tonight_join": "{{second}} joins {{first}}",

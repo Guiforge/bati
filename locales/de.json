@@ -813,6 +813,8 @@
     "feast_legendary_late_horse": "{{n}} Radtouren, und du machst weiter.",
     "feast_legendary_late_any": "{{n}} Einheiten, und du machst weiter.",
     "tonight_title": "Heute Abend",
+    "tonight_more_one": "und {{count}} weiteres",
+    "tonight_more_other": "und {{count}} weitere",
     "tonight_place_named": "{{name}}",
     "tonight_place_unnamed": "{{place}}",
     "tonight_join": "{{second}} gesellt sich {{first}}",

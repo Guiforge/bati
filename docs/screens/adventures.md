@@ -25,8 +25,7 @@ The Adventures gallery is where you browse and choose a campaign to follow over 
   - event adventure (seasonal)
 - **Get a quick preview**: what kind of journey it is and roughly what it involves.
 - **Your adventures**: the ones the hero wrote sit under their own header, newest first, each marked
-  "Écrite par toi", and a **write row** ("Écrire une aventure") ends the section (or the game's section
-  when there are none). A hero adventure whose first step lost its quest stays, with no duration or XP,
+  "Écrite par toi", and the **write row** ("Écrire une aventure") leads the whole gallery, above the game's posters. A hero adventure whose first step lost its quest stays, with no duration or XP,
   and says so. One retired on another device stays while a run of it is under way here. Every adventure
   under way sorts first.
 

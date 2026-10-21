@@ -362,14 +362,24 @@ export default function BossEditor() {
                   testID="boss-weakness"
                   label={t("boss_editor.weakness")}
                   value={draft.weakness}
-                  onChange={(weakness) => patch({ weakness })}
+                  onChange={(weakness) =>
+                    patch({
+                      weakness,
+                      resistance: weakness === draft.resistance ? null : draft.resistance,
+                    })
+                  }
                   language={language}
                 />
                 <MusclePick
                   testID="boss-resistance"
                   label={t("boss_editor.resistance")}
                   value={draft.resistance}
-                  onChange={(resistance) => patch({ resistance })}
+                  onChange={(resistance) =>
+                    patch({
+                      resistance,
+                      weakness: resistance === draft.weakness ? null : draft.weakness,
+                    })
+                  }
                   language={language}
                 />
 

@@ -154,6 +154,19 @@ describe("a new boss", () => {
     expect(mockBack).toHaveBeenCalled();
   });
 
+  test("one muscle cannot be both: picking it on one side clears the other", async () => {
+    const editor = await mount();
+    await fireEvent.changeText(editor.getByTestId("boss-name"), "Gorgo");
+    await fireEvent.press(editor.getByTestId("boss-weakness-chest"));
+    await fireEvent.press(editor.getByTestId("boss-resistance-chest"));
+    await fireEvent.press(editor.getByTestId("boss-save"));
+    await waitFor(() =>
+      expect(bosses().createHeroBoss).toHaveBeenCalledWith(
+        expect.objectContaining({ weakness: null, resistance: "chest" }),
+      ),
+    );
+  });
+
   test("choosing the painted monster again drops the photo of that form, and a muscle can be cleared", async () => {
     const editor = await mount();
     await fireEvent.changeText(editor.getByTestId("boss-name"), "Gorgo");

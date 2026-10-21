@@ -566,6 +566,12 @@ describe("db/heroAdventures", () => {
       });
     });
 
+    test("a muscle that is both weakness and resistance is kept as the weakness only", async () => {
+      const { bosses } = mod();
+      const id = await bosses.createHeroBoss(bossDraft({ resistance: "chest" }));
+      expect(row(id)).toMatchObject({ weaknessMuscle: "chest", resistanceMuscle: null });
+    });
+
     test("an adventure that ends on it fights as it says: its name, lines, weakness and monster", async () => {
       const { hero, bosses, boss } = mod();
       const [a, b] = adminQuests();

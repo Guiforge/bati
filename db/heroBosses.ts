@@ -128,7 +128,9 @@ async function columns(draft: HeroBossDraft) {
     name: clip(draft.name.replace(/\s+/g, " ").trim(), MAX_BOSS_NAME),
     monster: monster.bossImagePath,
     weaknessMuscle: draft.weakness,
-    resistanceMuscle: draft.resistance,
+    // One muscle is never both (two contradicting badges, a 0.75 hit): a file
+    // may say so, the editor cannot.
+    resistanceMuscle: draft.resistance === draft.weakness ? null : draft.resistance,
     linesJson: bossLinesJson(draft.lines),
     artJson: bossArtJson(draft.art),
   };

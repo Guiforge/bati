@@ -71,11 +71,13 @@ catalogue the import writes into:
 - **What arrives** (adventure files, `ImportArrives`): a card with the counts of quests, exercises and
   photos the file adds to this phone (`quests.import_arrives_*`). A row at zero is left out, and the card
   is gone when everything is already here. An exercise counts once however many quests name it, and one
-  the hero already has by uuid is not an arrival.
+  the hero already has by uuid is not an arrival. The adventure's own photo counts among the photos, as
+  the sender's share dialog counts it.
 - **A same-name exercise** (both kinds, `ImportClashes`): "You already have an exercise named X: both will
   stay." Identity is the uuid, never the name (a hero may name two exercises alike, 0036), so the file's
   exercise arrives as a second row beside the hero's own. The match ignores case and surrounding spaces
-  and looks only at the hero's own exercises, never the seeded ones. Neutral, not a warning.
+  and looks only at the hero's own exercises, never the seeded ones. Neutral, not a warning. In a quest
+  file, an exercise the hero unticks does not arrive, so its line goes with it.
 
 An adventure file with a boss also shows the boss's lines, every moment, under its name (see
 [boss fights](../gameplay/boss-fights.md)).

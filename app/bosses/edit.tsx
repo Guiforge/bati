@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Keyboard, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Input, Text, XStack, YStack } from "tamagui";
+import { Input, type TamaguiElement, Text, XStack, YStack } from "tamagui";
 import { monsterName } from "@/components/adventures/monsterName";
 import { BossLines } from "@/components/bosses/BossLines";
 import { BossPictures } from "@/components/bosses/BossPictures";
@@ -117,6 +117,9 @@ export default function BossEditor() {
   const [dialog, setDialog] = useState<DialogState | null>(null);
   const typing = useKeyboardShown();
   const skipGuardRef = useRef(false);
+  const scrollRef = useRef<ScrollView>(null);
+  const nameRef = useRef<TamaguiElement>(null);
+  const nameCardY = useRef(0);
 
   const isDirty = draft !== null && JSON.stringify(draft) !== baseline;
   const navigation = useNavigation();
@@ -184,6 +187,9 @@ export default function BossEditor() {
     if (!draft || busy) return;
     if (draft.name.trim().length === 0) {
       setNameMissing(true);
+      // The name is at the top and the save button at the bottom: take the hero to the message.
+      scrollRef.current?.scrollTo({ y: Math.max(0, nameCardY.current - 16), animated: true });
+      nameRef.current?.focus();
       return;
     }
     const clean: HeroBossDraft = { ...draft, lines: cleanBossLines(draft.lines) };
@@ -269,6 +275,7 @@ export default function BossEditor() {
         style={{ flex: 1 }}
       >
         <ScrollView
+          ref={scrollRef}
           keyboardShouldPersistTaps="handled"
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingBottom: 24 }}
@@ -296,12 +303,17 @@ export default function BossEditor() {
 
             {draft ? (
               <>
-                <Card>
+                <Card
+                  onLayout={(e) => {
+                    nameCardY.current = e.nativeEvent.layout.y;
+                  }}
+                >
                   <YStack gap="$2">
                     <Text fontWeight="700" fontSize={14} color="$textSecondary">
                       {t("adventures.editor_boss_name")}
                     </Text>
                     <Input
+                      ref={nameRef}
                       testID="boss-name"
                       height="auto"
                       minH={44}

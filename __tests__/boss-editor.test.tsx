@@ -1,4 +1,5 @@
 import { act, fireEvent, render, waitFor, within } from "@testing-library/react-native";
+import { ScrollView } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
@@ -117,6 +118,15 @@ describe("a new boss", () => {
     await fireEvent.press(editor.getByTestId("boss-save"));
     expect(await editor.findByTestId("boss-name-error")).toBeTruthy();
     expect(bosses().createHeroBoss).not.toHaveBeenCalled();
+  });
+
+  test("takes the hero to the name when it is missing", async () => {
+    const scrollTo = jest.spyOn(ScrollView.prototype, "scrollTo");
+    const editor = await mount();
+    await fireEvent.press(editor.getByTestId("boss-save"));
+    await editor.findByTestId("boss-name-error");
+    expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ y: 0, animated: true }));
+    scrollTo.mockRestore();
   });
 
   test("offers the monsters it is told to, and the consent line sits under the pictures", async () => {

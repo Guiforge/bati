@@ -273,7 +273,7 @@ test("an import that fails otherwise is reported", async () => {
   await mountReady();
   await fireEvent.press(confirm());
 
-  expect(mockShowError).toHaveBeenCalledWith("The file could not be opened. Try again.");
+  expect(mockShowError).toHaveBeenCalledWith("The adventure could not be added. Try again.");
   expect(reportError).toHaveBeenCalledWith("adventures.import", boom);
 });
 

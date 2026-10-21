@@ -547,7 +547,15 @@ async function mergeBosses(conn: IsolatedConnection, canon: CanonicalColumns): P
     const local = await conn.getFirstAsync<{ id: number; at: number | null }>(
       `SELECT id, updatedAt AS at FROM main.hero_bosses WHERE uuid = ${sqlString(row.uuid ?? "")}`,
     );
-    if (isDead(row, local)) continue;
+    // A dead boss an adventure here ends on (the other device's, merged above) comes back, as a
+    // named quest does (`bringNamedQuests`): the tombstone stays and `honourTombstones` keeps it while
+    // that adventure is active (a retired one would only bring it back to be removed again).
+    const named =
+      (await count(
+        conn,
+        `SELECT 1 FROM main.adventures WHERE isActive = 1 AND heroBossUuid = ${sqlString(row.uuid ?? "")}`,
+      )) > 0;
+    if (isDead(row, local) && !named) continue;
     if (!local) {
       await conn.execAsync(`INSERT INTO main.hero_bosses (${columnList(cols)})
         SELECT ${selectList(cols, "p")} FROM ${PEER}.hero_bosses p WHERE p.id = ${row.id}`);

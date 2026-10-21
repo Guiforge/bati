@@ -172,6 +172,28 @@ describe("deletions", () => {
     expect(byUuid(B1)).toBeUndefined();
     expect(byUuid(B2)?.name).toBe("Used");
   });
+
+  test("e2: a boss deleted here comes back when an adventure from there ends on it, as a quest does", async () => {
+    boss(t.sqlite, B1, "Gorgo", 100);
+    const q = adminQuest();
+    const file = await peer("tablet.db", (sqlite) =>
+      sqlite
+        .prepare(
+          `INSERT INTO adventures (questId, enTitle, frTitle, deTitle, esTitle, author, sortOrder, kind, isActive,
+             imagePath, bossImagePath, createdAt, updatedAt, uuid, heroBossUuid)
+           VALUES (?, 'Tale', 'Tale', 'Tale', 'Tale', 'hero', 1000, 'boss', 1, 'the_golem',
+             'assets/images/bosses/iron_golem.jpg', 400, 400, ?, ?)`,
+        )
+        .run(q, A1, B1),
+    );
+    t.sqlite.prepare("DELETE FROM hero_bosses WHERE uuid = ?").run(B1);
+    t.sqlite.prepare("INSERT INTO deleted_content (uuid, deletedAt) VALUES (?, 300)").run(B1);
+
+    await merge().mergePeer(file);
+    await merge().honourTombstones();
+    expect(byUuid(B1)?.name).toBe("Gorgo");
+    await converged(file);
+  });
 });
 
 test("f: a boss only here is this device's news, and moves the fingerprint's content segment", async () => {

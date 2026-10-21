@@ -535,8 +535,9 @@ export async function previewAdventure(
   );
   const arrives = arrivals(bringing, catalogue);
   return {
-    // The adventure's own photo arrives too: the sender's dialog counted it.
-    arrives: { ...arrives, photos: arrives.photos + (file.adventure.photo ? 1 : 0) },
+    // The adventure's own photo arrives too (the sender's dialog counted it), unless the adventure
+    // is already here: then, like a quest already here, it is not an arrival.
+    arrives: { ...arrives, photos: arrives.photos + (file.adventure.photo && !here ? 1 : 0) },
     steps: file.steps.map(({ quest }, i) => ({
       status: statuses[i]?.status ?? "missing",
       questId: statuses[i]?.quest?.id ?? null,

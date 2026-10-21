@@ -760,6 +760,9 @@ describe("previewing an adventure file", () => {
       ),
     );
     expect((await load().adv.previewAdventure(file, "en")).arrives.photos).toBe(1);
+    // Once the adventure is here, its photo is no arrival, as a quest already here is not.
+    await load().adv.importAdventure(file, { asCopy: false });
+    expect((await load().adv.previewAdventure(file, "en")).arrives.photos).toBe(0);
   });
 
   test("an exercise of the file that matches only a seed name is no clash: seed rows are not the hero's", async () => {

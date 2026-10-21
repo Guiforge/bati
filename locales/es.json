@@ -547,6 +547,7 @@
     "import_step_brings": "Llega con la aventura",
     "import_step_missing": "Desconocida para tu versión de Bati, se deja fuera",
     "import_boss_unknown": "Este jefe aún no existe en tu versión. La aventura llega como una ruta.",
+    "import_boss_lines": "Lo que dirá ({{count}})",
     "import_existing": "Ya tienes esta aventura: {{title}}",
     "import_choice_update": "Actualizar la mía",
     "import_choice_copy": "Conservar las dos",
@@ -2547,7 +2548,7 @@
     "check_off": "Apagar",
     "check_fine": "Me van bien",
     "pause_row": "Pausar",
-    "elsewhere": "¿Hecho fuera?"
+    "elsewhere": "¿Ya te moviste fuera?"
   },
   "setAside": {
     "leave_out": "No proponerme más: {{name}}",
@@ -3102,7 +3103,7 @@
     "way_ride": "en bici",
     "fix_distance": "Poner {{fix}}",
     "drop_distance": "Quitar la distancia",
-    "rule_no_gps": "Sin GPS, tu salida cuenta por tiempo: llama, XP, pero ninguna legua (una legua es un kilómetro) hasta que añadas la distancia.",
+    "rule_no_gps": "Sin GPS, tu salida cuenta por tiempo: llama, XP, pero ninguna legua hasta que añadas la distancia.",
     "hand_mark": "anotada a mano",
     "hand_mark_distance": "distancia anotada a mano",
     "hand_mark_count_one": "({{count}} anotada a mano)",

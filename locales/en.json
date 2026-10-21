@@ -526,6 +526,7 @@
     "import_step_brings": "Arrives with the adventure",
     "import_step_missing": "Unknown to your Bati, left out",
     "import_boss_unknown": "This boss does not exist in your version yet. The adventure arrives as a route.",
+    "import_boss_lines": "What it will say ({{count}})",
     "import_existing": "You already have this adventure: {{title}}",
     "import_choice_update": "Update mine",
     "import_choice_copy": "Keep both",
@@ -2439,7 +2440,7 @@
     "check_off": "Turn off",
     "check_fine": "They're fine",
     "pause_row": "Pause",
-    "elsewhere": "Done elsewhere?"
+    "elsewhere": "Already moved elsewhere?"
   },
   "setAside": {
     "leave_out": "Don't suggest {{name}} again",
@@ -2976,7 +2977,7 @@
     "way_ride": "by bike",
     "fix_distance": "Use {{fix}}",
     "drop_distance": "Remove the distance",
-    "rule_no_gps": "Without GPS, your outing counts by time: flame, XP, but no leagues (one league is one kilometre) until you add the distance.",
+    "rule_no_gps": "Without GPS, your outing counts by time: flame, XP, but no leagues until you add the distance.",
     "hand_mark": "typed by hand",
     "hand_mark_distance": "distance typed by hand",
     "hand_mark_count_one": "({{count}} typed by hand)",

@@ -258,6 +258,7 @@
     "import_step_brings": "Arrive avec l'aventure",
     "import_step_missing": "Inconnue de ta version de Bati, laissée de côté",
     "import_boss_unknown": "Ce boss n'existe pas encore dans ta version. L'aventure arrive comme une route.",
+    "import_boss_lines": "Ce qu'il dira ({{count}})",
     "import_existing": "Tu as déjà cette aventure : {{title}}",
     "import_choice_update": "Mettre la mienne à jour",
     "import_choice_copy": "Garder les deux",
@@ -2547,7 +2548,7 @@
     "check_off": "Couper",
     "check_fine": "Ils me vont",
     "pause_row": "Mettre en pause",
-    "elsewhere": "Fait ailleurs ?"
+    "elsewhere": "Déjà bougé ailleurs ?"
   },
   "setAside": {
     "leave_out": "Ne plus me proposer : {{name}}",
@@ -3103,7 +3104,7 @@
     "way_ride": "à vélo",
     "fix_distance": "Mettre {{fix}}",
     "drop_distance": "Retirer la distance",
-    "rule_no_gps": "Sans GPS, ta sortie compte au temps : flamme, XP, mais pas de lieues (une lieue vaut un kilomètre) tant que tu n'ajoutes pas la distance.",
+    "rule_no_gps": "Sans GPS, ta sortie compte au temps : flamme, XP, mais pas de lieues tant que tu n'ajoutes pas la distance.",
     "hand_mark": "saisie à la main",
     "hand_mark_distance": "distance saisie à la main",
     "hand_mark_count_one": "({{count}} saisie à la main)",

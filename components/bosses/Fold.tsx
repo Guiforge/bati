@@ -11,11 +11,14 @@ import { ChevronDown, ChevronUp } from "@/components/icons";
 export function Fold({
   title,
   testID,
+  size = 18,
   children,
 }: {
   title: string;
   /** The toggle's test id. */
   testID: string;
+  /** The title's font size: a form's section heading by default. */
+  size?: number;
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -30,7 +33,7 @@ export function Fold({
         onPress={() => setOpen((v) => !v)}
       >
         <XStack gap="$2" items="center">
-          <Text flex={1} fontWeight="700" fontSize={18} color="$text">
+          <Text flex={1} fontWeight="700" fontSize={size} color="$text">
             {title}
           </Text>
           <Chevron size={18} color="$textSecondary" />

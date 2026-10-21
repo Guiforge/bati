@@ -190,12 +190,16 @@ const bossRaw = (lines: Record<string, string[]>) => ({
   },
 });
 
-test("the boss's lines are read before the import, every moment, with its name", async () => {
+test("the boss's lines are one tap away, every moment, with its name", async () => {
   mockRead.mockResolvedValue(
     bossRaw({ intro: ["Who dares?"], enrage: ["Enough."], defeat: ["Not like this."] }),
   );
   await mountReady({ monster: golem });
 
+  // Folded: the count says what is inside, one tap reads it.
+  expect(screen.queryByTestId("adventure-import-boss-lines")).toBeNull();
+  expect(screen.getByText("What it will say (3)")).toBeTruthy();
+  await fireEvent.press(screen.getByTestId("adventure-import-boss-lines-toggle"));
   expect(screen.getByTestId("adventure-import-boss-lines")).toBeTruthy();
   expect(screen.getByText("When the fight opens")).toBeTruthy();
   expect(screen.getByText("Who dares?")).toBeTruthy();
@@ -203,6 +207,34 @@ test("the boss's lines are read before the import, every moment, with its name",
   expect(screen.getByText("When it falls")).toBeTruthy();
   expect(screen.getByText("Not like this.")).toBeTruthy();
   expect(screen.queryByText("When you hit it")).toBeNull();
+});
+
+/** The test ids on screen, in reading order. */
+function order(node: unknown, out: string[] = []): string[] {
+  if (node === null || typeof node !== "object") return out;
+  if (Array.isArray(node)) {
+    for (const n of node) order(n, out);
+    return out;
+  }
+  const { props, children } = node as {
+    props?: { testID?: string };
+    children?: unknown;
+  };
+  if (props?.testID) out.push(props.testID);
+  order(children, out);
+  return out;
+}
+
+test("the page opens on the decision: what is here, what arrives, the steps, and the boss last", async () => {
+  mockRead.mockResolvedValue(bossRaw({ intro: ["Who dares?"] }));
+  await mountReady({ monster: golem, existing: { id: 5, title: "Mine" } });
+  const ids = order(screen.toJSON());
+  const at = (id: string) => ids.findIndex((x) => x.startsWith(id));
+  expect(at("adventure-import-title")).toBeGreaterThanOrEqual(0);
+  expect(at("adventure-import-existing")).toBeGreaterThan(at("adventure-import-title"));
+  expect(at("adventure-import-step-0")).toBeGreaterThan(at("adventure-import-existing"));
+  expect(at("adventure-import-boss-art")).toBeGreaterThan(at("adventure-import-step-0"));
+  expect(at("adventure-import-boss-lines-toggle")).toBeGreaterThan(at("adventure-import-boss-art"));
 });
 
 test("a boss this version lacks shows no lines: it arrives as a route", async () => {

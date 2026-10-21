@@ -202,4 +202,23 @@ describe("BossTauntOverlay", () => {
     });
     expect(queryByText("Who dares?")).toBeNull();
   });
+
+  it("a pause inside the opening line's four seconds does not keep it up after the resume", async () => {
+    const { queryByText } = await renderOverlay();
+    const mine = { intro: ["Who dares?"], idle: [], crit: [], enrage: [], defeat: [] };
+
+    await act(() => {
+      useSessionStore.setState({ bossFight: { ...makeBossFight(100), bossLines: mine } });
+    });
+    await act(() => {
+      useSessionStore.setState({ status: "paused" });
+    });
+    await act(() => {
+      jest.advanceTimersByTime(4_000);
+    });
+    await act(() => {
+      useSessionStore.setState({ status: "running" });
+    });
+    expect(queryByText("Who dares?")).toBeNull();
+  });
 });

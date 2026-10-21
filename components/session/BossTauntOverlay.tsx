@@ -66,8 +66,9 @@ export function BossTauntOverlay() {
     if (!intro || status !== "running" || opened.current) return;
     opened.current = true;
     setTaunt(intro);
-    const id = setTimeout(() => setTaunt((now) => (now === intro ? null : now)), TAUNT_MS);
-    return () => clearTimeout(id);
+    // Not cleared when the status moves on: a pause inside the four seconds kept the line up
+    // until the first hit. A timer that outlives the screen sets state on nothing, harmlessly.
+    setTimeout(() => setTaunt((now) => (now === intro ? null : now)), TAUNT_MS);
   }, [intro, status]);
 
   if (!taunt || !isActive) return null;

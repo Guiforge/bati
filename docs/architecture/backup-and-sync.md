@@ -344,7 +344,8 @@ tombstone.
 A boss is a creation of its own: table `hero_bosses` (hero rows only, `uuid` UNIQUE), classed `merged` in
 `db/syncTables.ts`. `mergeBosses` copies a row only the other device has, takes the later `updatedAt` for
 one both have (a same-second tie goes to the larger `canonical` text, `heroBosses` in `CanonicalColumns`),
-and skips one a tombstone killed that nobody edited since. Nothing names a boss by id: an adventure carries
+and skips one a tombstone killed that nobody edited since, unless an active adventure here (one just merged
+from the other device included) ends on it: then it comes back with its tombstone, as a named quest does. Nothing names a boss by id: an adventure carries
 `heroBossUuid`, copied verbatim, so there is no id map. Deleting a boss writes a `deleted_content` tombstone
 (`writeContentTombstone`, table `hero_bosses`); `honourTombstones` removes the other device's deletion unless
 an active adventure ends on the boss. The fingerprint's content segment gains one `b:<uuid>` row per boss

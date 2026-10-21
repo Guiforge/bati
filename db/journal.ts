@@ -17,6 +17,7 @@ import { bossLocalizedName } from "@/constants/bosses";
 import { FIRST_QUEST_TITLE } from "@/constants/onboarding";
 import type { Localized } from "@/src/i18n/deviceLanguage";
 import type { AchievementProgress } from "./achievements";
+import { type BossArt, parseBossArt } from "./bossVoice";
 import { db, schema } from "./client";
 import {
   type CompletedSession,
@@ -930,6 +931,8 @@ export type KillReport = {
   adventureId: number;
   title: Localized;
   bossImagePath: string | null;
+  /** The hero's own pictures of the boss, when it is theirs. */
+  bossArt: BossArt;
   felledAt: Date;
   /** Steps in the campaign, and how many days it took from its start to the kill. */
   steps: number;
@@ -1092,7 +1095,7 @@ export async function getKillReport(session: CompletedSession): Promise<KillRepo
       esTitle: adventures.esTitle,
       imagePath: adventures.imagePath,
       bossImagePath: adventures.bossImagePath,
-      bossName: adventures.bossName,
+      heroBossUuid: adventures.heroBossUuid,
     })
     .from(adventureRunSteps)
     .innerJoin(adventureRuns, eq(adventureRuns.id, adventureRunSteps.runId))
@@ -1169,27 +1172,33 @@ export async function getKillReport(session: CompletedSession): Promise<KillRepo
 
   const next = await nextStandingBoss();
 
+  // A boss the hero made speaks for the adventure: its name, its monster, its pictures.
+  const [hero] = step.heroBossUuid
+    ? await db
+        .select()
+        .from(schema.heroBosses)
+        .where(eq(schema.heroBosses.uuid, step.heroBossUuid))
+        .limit(1)
+    : [];
+  const bossName = hero?.name || null;
+  const bossImagePath = hero?.monster ?? step.bossImagePath ?? step.imagePath;
+
   const felledAt = step.finishedAt ?? session.performedAt;
   const startedAt = step.startedAt ?? felledAt;
 
   return {
     adventureId: step.adventureId,
-    title: step.bossName
-      ? {
-          en: step.bossName,
-          fr: step.bossName,
-          de: step.bossName,
-          es: step.bossName,
-          ru: step.bossName,
-        }
-      : bossLocalizedName(step.bossImagePath ?? step.imagePath, foughtAtTier, {
+    title: bossName
+      ? { en: bossName, fr: bossName, de: bossName, es: bossName, ru: bossName }
+      : bossLocalizedName(bossImagePath, foughtAtTier, {
           en: step.enTitle,
           fr: step.frTitle,
           de: step.deTitle,
           es: step.esTitle,
           ru: step.enTitle,
         }),
-    bossImagePath: step.bossImagePath ?? step.imagePath,
+    bossImagePath,
+    bossArt: parseBossArt(hero?.artJson),
     felledAt,
     steps: runSteps.length,
     days: Math.max(1, Math.ceil((felledAt.getTime() - startedAt.getTime()) / DAY_MS)),

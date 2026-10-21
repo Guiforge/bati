@@ -13,6 +13,7 @@ const mockQuests = jest.fn();
 const mockAdventures = jest.fn();
 const mockExercises = jest.fn();
 const mockBuildings = jest.fn();
+const mockBosses = jest.fn();
 
 jest.mock("expo-router", () => ({
   useRouter: () => mockRouter,
@@ -33,6 +34,7 @@ jest.mock("@/db/exercises", () => ({
   ...jest.requireActual("@/db/exercises"),
   listExercises: () => mockExercises(),
 }));
+jest.mock("@/db/heroBosses", () => ({ listHeroBosses: () => mockBosses() }));
 jest.mock("@/db/village", () => ({
   ...jest.requireActual("@/db/village"),
   getVillageBuildings: () => mockBuildings(),
@@ -85,37 +87,70 @@ beforeEach(() => {
   mockAdventures.mockResolvedValue([]);
   mockExercises.mockResolvedValue([]);
   mockBuildings.mockResolvedValue([]);
+  mockBosses.mockResolvedValue([]);
 });
 
 describe("Forge page", () => {
-  test("empty: one line and one button per section, in the audit's order, and the import door", async () => {
+  test("empty: no sentence, the smith is the one voice; a button per section, bosses after adventures, and the import door", async () => {
     await render(wrap(<ForgeScreen />));
-    await screen.findByText("You haven't written a quest yet.");
-    expect(screen.getByText("You haven't written an adventure yet.")).toBeTruthy();
-    expect(screen.getByText("You haven't made an exercise yet.")).toBeTruthy();
+    await screen.findByTestId("forge-quests-new");
+    expect(screen.queryByText(/yet\.$/)).toBeNull();
     expect(screen.queryByTestId("forge-quests-all")).toBeNull();
 
-    // Quests, then adventures, then exercises, then the import.
-    const order = ["forge-quests", "forge-adventures", "forge-exercises", "forge-import"].map(
-      (id) => JSON.stringify(screen.toJSON()).indexOf(`"testID":"${id}"`),
-    );
+    // Quests, then adventures, then bosses, then exercises, then the import.
+    const order = [
+      "forge-quests",
+      "forge-adventures",
+      "forge-bosses",
+      "forge-exercises",
+      "forge-import",
+    ].map((id) => JSON.stringify(screen.toJSON()).indexOf(`"testID":"${id}"`));
     expect([...order].sort((a, b) => a - b)).toEqual(order);
     expect(order.every((i) => i >= 0)).toBe(true);
 
     await fireEvent.press(screen.getByTestId("forge-quests-new"));
     await fireEvent.press(screen.getByTestId("forge-adventures-new"));
     await fireEvent.press(screen.getByTestId("forge-exercises-new"));
+    await fireEvent.press(screen.getByTestId("forge-bosses-new"));
     expect(mockRouter.push.mock.calls.map((c) => c[0])).toEqual([
       "/quests/edit",
       "/adventures/edit",
       "/exercises/new",
+      "/bosses/edit",
     ]);
     // Into a tab's stack with its gallery under it, or back falls through to Home.
     expect(mockRouter.push.mock.calls.map((c) => c[1])).toEqual([
       { withAnchor: true },
       { withAnchor: true },
       undefined,
+      undefined,
     ]);
+  });
+
+  test("some made, some not: the empty sections say so, and only once the read is in", async () => {
+    mockQuests.mockResolvedValue([quest(10, "hero")]);
+    await render(wrap(<ForgeScreen />));
+    await screen.findByText("Quest 10");
+    expect(screen.getByText("You haven't written an adventure yet.")).toBeTruthy();
+    expect(screen.getByText("You haven't made an exercise yet.")).toBeTruthy();
+    expect(screen.getByText("You haven't made a boss yet.")).toBeTruthy();
+  });
+
+  test("while it reads, it asserts nothing", async () => {
+    mockQuests.mockReturnValue(new Promise(() => undefined));
+    await render(wrap(<ForgeScreen />));
+    await screen.findByTestId("forge-quests-new");
+    expect(screen.queryByText(/yet\.$/)).toBeNull();
+    expect(screen.queryByTestId("forge-load-failed")).toBeNull();
+  });
+
+  test("a read that fails is reported and does not claim the hero has made nothing", async () => {
+    const failure = new Error("disk");
+    mockQuests.mockRejectedValue(failure);
+    await render(wrap(<ForgeScreen />));
+    await screen.findByTestId("forge-load-failed");
+    expect(require("@/src/reportError").reportError).toHaveBeenCalledWith("forge.load", failure);
+    expect(screen.queryByText(/yet\.$/)).toBeNull();
   });
 
   test("full: only the hero's own, the last three, each row opening its own screen", async () => {
@@ -136,6 +171,7 @@ describe("Forge page", () => {
       exercise(30, "hero"),
       exercise(31, "hero", new Date()),
     ]);
+    mockBosses.mockResolvedValue([1, 2, 3, 4].map((id) => ({ id, name: `Boss ${id}` })));
     await render(wrap(<ForgeScreen />));
     await screen.findByText("Quest 13");
 
@@ -146,20 +182,26 @@ describe("Forge page", () => {
     expect(screen.queryByText("Tale 21")).toBeNull();
     expect(screen.getByText("Move 30")).toBeTruthy();
     expect(screen.queryByText("Move 31")).toBeNull();
+    expect(screen.getByText("Boss 4")).toBeTruthy();
+    expect(screen.queryByText("Boss 1")).toBeNull();
 
     await fireEvent.press(screen.getByTestId("forge-quests-13"));
     await fireEvent.press(screen.getByTestId("forge-adventures-20"));
     await fireEvent.press(screen.getByTestId("forge-exercises-30"));
+    await fireEvent.press(screen.getByTestId("forge-bosses-4"));
     await fireEvent.press(screen.getByTestId("forge-quests-all"));
     await fireEvent.press(screen.getByTestId("forge-adventures-all"));
     await fireEvent.press(screen.getByTestId("forge-exercises-all"));
+    await fireEvent.press(screen.getByTestId("forge-bosses-all"));
     expect(mockRouter.push.mock.calls.map((c) => c[0])).toEqual([
       "/quests/13",
       "/adventures/20",
       "/exercises/30",
+      "/bosses/edit?id=4",
       "/quests",
       "/adventures",
       "/exercises?mine=1",
+      "/bosses",
     ]);
   });
 });
@@ -176,8 +218,11 @@ test("inside the building: its painting at the hero's rank, and the smith's line
   expect(getArt).toHaveBeenCalledWith("forge", "chest", 0);
   expect(screen.getByText("The Smith")).toBeTruthy();
   expect(
-    screen.getByText("Quests get forged here. Tell me what you need, I'll bring the fire."),
+    screen.getByText(
+      "Everything gets forged here, even your monsters. Tell me what you need, I'll bring the fire.",
+    ),
   ).toBeTruthy();
+  expect(screen.queryByText("What you've made, and room for more.")).toBeNull();
   getArt.mockRestore();
 });
 

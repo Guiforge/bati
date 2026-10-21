@@ -312,7 +312,7 @@ const questIdentity = (schema: string, idExpr: string) =>
  */
 export function canonical(
   schema: string,
-  table: "exercises" | "quests" | "adventures",
+  table: "exercises" | "quests" | "adventures" | "hero_bosses",
   alias: string,
   columns: string[],
 ): string {
@@ -328,13 +328,15 @@ export function canonical(
     table === "exercises"
       ? `(SELECT json_group_array(muscle ORDER BY muscle) FROM ${schema}.exercise_muscles
           WHERE exerciseId = ${alias}.id)`
-      : table === "adventures"
-        ? `(SELECT json_group_array(json_array(${questIdentity(schema, "s.questId")}, s.stepIndex,
+      : table === "hero_bosses"
+        ? "NULL"
+        : table === "adventures"
+          ? `(SELECT json_group_array(json_array(${questIdentity(schema, "s.questId")}, s.stepIndex,
               s.enNarrative, s.frNarrative, s.deNarrative, s.esNarrative,
               s.enOutroNarrative, s.frOutroNarrative, s.deOutroNarrative, s.esOutroNarrative,
               s.imagePath) ORDER BY s.stepIndex)
             FROM ${schema}.adventure_steps s WHERE s.adventureId = ${alias}.id)`
-        : `(SELECT json_group_array(json_array(${exerciseIdentity(schema, "qe.exerciseId")}, qe.sortOrder,
+          : `(SELECT json_group_array(json_array(${exerciseIdentity(schema, "qe.exerciseId")}, qe.sortOrder,
             qe.targetType, qe.targetMin, qe.targetMax, qe.imagesJson) ORDER BY qe.sortOrder)
           FROM ${schema}.quest_exercises qe WHERE qe.questId = ${alias}.id)`;
   return `json_array(${[...own, children].join(", ")})`;
@@ -353,6 +355,8 @@ export type CanonicalColumns = {
   exercises: string[];
   quests: string[];
   adventures: string[];
+  /** Empty on a database from before 0079. */
+  heroBosses: string[];
   sets: string[];
 };
 
@@ -364,6 +368,7 @@ export async function canonicalColumns(
     exercises: await sharedColumns(conn, other, "exercises"),
     quests: await sharedColumns(conn, other, "quests"),
     adventures: await sharedColumns(conn, other, "adventures"),
+    heroBosses: await sharedColumns(conn, other, "hero_bosses"),
     sets: await sharedColumns(conn, other, "completed_exercises", ["id", "sessionId"]),
   };
 }
@@ -378,6 +383,7 @@ function heroContent(
   named: boolean,
   canon: CanonicalColumns | null,
   adventures: boolean,
+  bosses: boolean,
 ): string {
   const keys = MERGED_PREFERENCES.map(sqlString).join(", ");
   // By uuid (0066), as `mergePeer` matches them, so a rename is a change to one row and not a row
@@ -393,8 +399,10 @@ function heroContent(
   //           Same for a tied set correction or feedback, and for a second edit in the same second as
   //           the newest `updatedAt` (the `max(at):count` segment). Nothing is lost or asked twice.
   const uuid = named ? "uuid" : "NULL";
-  const canonOf = (table: "exercises" | "quests" | "adventures", columns: string[] | undefined) =>
-    canon && columns ? canonical(schema, table, "x", columns) : "NULL";
+  const canonOf = (
+    table: "exercises" | "quests" | "adventures" | "hero_bosses",
+    columns: string[] | undefined,
+  ) => (canon && columns ? canonical(schema, table, "x", columns) : "NULL");
   return `SELECT 'e:' || ${exercise} AS id, updatedAt AS at, ${uuid} AS uuid,
         ${canonOf("exercises", canon?.exercises)} AS canon
       FROM ${schema}.exercises x WHERE creator = 'hero'
@@ -411,6 +419,14 @@ function heroContent(
         ${canonOf("adventures", canon?.adventures)}
       FROM ${schema}.adventures x WHERE author = 'hero'`
           : ""
+      }${
+        // The hero's bosses (0079), only where the schema has the table; none, no row.
+        bosses
+          ? `
+    UNION ALL SELECT 'b:' || uuid, updatedAt, uuid,
+        ${canonOf("hero_bosses", canon?.heroBosses)}
+      FROM ${schema}.hero_bosses x`
+          : ""
       }`;
 }
 
@@ -426,6 +442,14 @@ async function hasColumn(
 ): Promise<boolean> {
   const row = await conn.getFirstAsync<{ n: number }>(
     `SELECT count(*) AS n FROM pragma_table_info(${sqlString(table)}, ${sqlString(schema)}) WHERE name = ${sqlString(column)}`,
+  );
+  return Number(row?.n ?? 0) > 0;
+}
+
+/** Whether a schema has a table: the hero's bosses from 0079, on a device that may be older. */
+async function hasTable(conn: IsolatedConnection, schema: string, table: string): Promise<boolean> {
+  const row = await conn.getFirstAsync<{ n: number }>(
+    `SELECT count(*) AS n FROM ${schema}.sqlite_master WHERE type = 'table' AND name = ${sqlString(table)}`,
   );
   return Number(row?.n ?? 0) > 0;
 }
@@ -558,13 +582,15 @@ function newerIn(
   canon: CanonicalColumns | null,
   adventures: boolean,
 ): string {
+  // `adventures` is "both devices are on one build": the schemas then have the same tables.
+  const bosses = adventures;
   // Equal dates are settled by content when both devices are on one build, so that `y` only covers
   // `x` when it is later, or equal and not smaller: the same order `mergePeer` writes by.
   const covers = canon
     ? "(ifnull(y.at, 0) > ifnull(x.at, 0) OR (ifnull(y.at, 0) = ifnull(x.at, 0) AND ifnull(y.canon, '') >= ifnull(x.canon, '')))"
     : "ifnull(y.at, 0) >= ifnull(x.at, 0)";
-  return `SELECT count(*) FROM (${heroContent(a, named, canon, adventures)}) x
-    WHERE NOT EXISTS (SELECT 1 FROM (${heroContent(b, named, canon, adventures)}) y WHERE y.id = x.id AND ${covers})
+  return `SELECT count(*) FROM (${heroContent(a, named, canon, adventures, bosses)}) x
+    WHERE NOT EXISTS (SELECT 1 FROM (${heroContent(b, named, canon, adventures, bosses)}) y WHERE y.id = x.id AND ${covers})
       AND NOT EXISTS (SELECT 1 FROM (${tombstonesOfB}) t WHERE t.uuid = x.uuid AND t.deletedAt >= ifnull(x.at, 0))`;
 }
 
@@ -675,6 +701,7 @@ export function compareWithPeer(path: string): Promise<PeerComparison> {
     // `exerciseIdentity` names a hero movement by uuid, so both sides must have one (0066).
     const canon = sameBuild && named ? await canonicalColumns(conn, CANDIDATE) : null;
     const peerAdventures = await hasColumn(conn, CANDIDATE, "adventures", "uuid");
+    const peerBosses = await hasTable(conn, CANDIDATE, "hero_bosses");
     const peerStamps = await stampColumns(conn, CANDIDATE);
     const localStamps = await stampColumns(conn, "main");
     const peerHasPhotos = await hasPhotos(conn, CANDIDATE);
@@ -702,7 +729,7 @@ export function compareWithPeer(path: string): Promise<PeerComparison> {
          (SELECT value FROM ${CANDIDATE}.user_preferences WHERE key = 'villageName') AS peerVillage,
          (SELECT count(*) FROM main.completed_sessions) AS localSessions,
          (${sessionsStamp(CANDIDATE, peerStamps)}) AS s,
-         (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent(CANDIDATE, peerNamed, null, peerAdventures)})) AS c,
+         (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent(CANDIDATE, peerNamed, null, peerAdventures, peerBosses)})) AS c,
          (SELECT count(*) FROM (${peerGone})) AS g,
          ${extraStamp(CANDIDATE, peerContentGone)} AS x,
          ${photosStamp(CANDIDATE, peerHasPhotos)} AS p`,
@@ -745,7 +772,7 @@ export function stateFingerprint(): Promise<string> {
     const row = await conn.getFirstAsync<Record<string, string | number | null>>(
       `SELECT
          (${sessionsStamp("main", [...STAMP_COLUMNS])}) AS s,
-         (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent("main", true, null, true)})) AS c,
+         (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent("main", true, null, true, true)})) AS c,
          (SELECT count(*) FROM (${gone})) AS g,
          ${extraStamp("main", await contentTombstones(conn, "main"))} AS x,
          ${photosStamp("main", true)} AS p`,

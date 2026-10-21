@@ -5,14 +5,16 @@ import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { monsterName } from "@/components/adventures/monsterName";
+import { Fold } from "@/components/bosses/Fold";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { useToast } from "@/components/common/Toast";
 import { Download, Info } from "@/components/icons";
 import { ImportArrives, ImportClashes } from "@/components/quests/ImportNotes";
-import { ADVENTURE_ASSETS, getAdventureAsset } from "@/constants/assetMap";
+import { ADVENTURE_ASSETS, getAdventureAsset, getBossAsset } from "@/constants/assetMap";
 import { BOSS_LINE_MOMENTS, type HeroBossLines } from "@/db/bossVoice";
+import type { Monster } from "@/db/heroAdventures";
 import {
   type AdventureFile,
   AdventureFileError,
@@ -51,6 +53,7 @@ export function AdventureImport({
   // A run under way forces the copy, so the chips are not offered and the button says "add".
   const updating = existing !== null && !asCopy && !running;
   const cover = coverKey(adventure);
+  const end = shownEnd(adventure.end, preview);
 
   // No try/finally: the React Compiler does not compile a function that has one.
   const onImport = async () => {
@@ -97,21 +100,6 @@ export function AdventureImport({
               {adventure.description}
             </Paragraph>
           ) : null}
-          <Text color="$textSecondary" fontSize={14}>
-            {preview.monster
-              ? t("adventures.editor_summary_boss", {
-                  name: bossLabel(adventure.end, monsterName(preview.monster, language)),
-                })
-              : t("adventures.editor_end_route")}
-          </Text>
-          {/* What the boss will say, read before the hero walks in: a line from a friend is no
-              surprise in the middle of a set. A boss this version lacks arrives as a route, with none. */}
-          <BossLines end={adventure.end} known={preview.monster !== null} />
-          {preview.monsterUnknown ? (
-            <Text testID="adventure-import-boss-unknown" color="$textSecondary" fontSize={13}>
-              {t("adventures.import_boss_unknown")}
-            </Text>
-          ) : null}
         </YStack>
 
         {existing ? (
@@ -157,6 +145,27 @@ export function AdventureImport({
             // biome-ignore lint/suspicious/noArrayIndexKey: a file's steps have no id, and a quest can appear twice.
             <StepRow key={i} index={i} step={step} />
           ))}
+        </YStack>
+
+        <YStack gap="$2">
+          <Text color="$textSecondary" fontSize={14}>
+            {preview.monster
+              ? t("adventures.editor_summary_boss", {
+                  name: bossLabel(end, monsterName(preview.monster, language)),
+                })
+              : t("adventures.editor_end_route")}
+          </Text>
+          <BossPortrait monster={preview.monster} end={end} />
+          {/* What the boss will say, one tap away: a line from a friend is no surprise in the
+              middle of a set once it can be read, but the page opens on the decision (what
+              arrives, what is already here) and the closing line stays the hero's to spoil.
+              A boss this version lacks arrives as a route, with none. */}
+          <BossLines end={end} known={preview.monster !== null} />
+          {preview.monsterUnknown ? (
+            <Text testID="adventure-import-boss-unknown" color="$textSecondary" fontSize={13}>
+              {t("adventures.import_boss_unknown")}
+            </Text>
+          ) : null}
         </YStack>
       </ScrollView>
 
@@ -206,22 +215,44 @@ function BossLines({ end, known }: { end: AdventureFile["adventure"]["end"]; kno
   const lines: HeroBossLines | undefined = known && end.kind === "boss" ? end.lines : undefined;
   const spoken = BOSS_LINE_MOMENTS.filter((m) => (lines?.[m].length ?? 0) > 0);
   if (spoken.length === 0) return null;
+  const count = spoken.reduce((n, m) => n + (lines?.[m].length ?? 0), 0);
   return (
-    <YStack testID="adventure-import-boss-lines" gap="$2" pt="$1">
-      {spoken.map((m) => (
-        <YStack key={m} gap={2}>
-          <Text fontSize={13} fontWeight="700" color="$textSecondary">
-            {t(`adventures.editor_boss_lines_${m}`)}
-          </Text>
-          {lines?.[m].map((line) => (
-            <Text key={line} color="$text" fontStyle="italic">
-              {line}
+    <Fold
+      testID="adventure-import-boss-lines-toggle"
+      size={14}
+      title={t("adventures.import_boss_lines", { count })}
+    >
+      <YStack testID="adventure-import-boss-lines" gap="$2">
+        {spoken.map((m) => (
+          <YStack key={m} gap={2}>
+            <Text fontSize={13} fontWeight="700" color="$textSecondary">
+              {t(`adventures.editor_boss_lines_${m}`)}
             </Text>
-          ))}
-        </YStack>
-      ))}
-    </YStack>
+            {lines?.[m].map((line) => (
+              <Text key={line} color="$text" fontStyle="italic">
+                {line}
+              </Text>
+            ))}
+          </YStack>
+        ))}
+      </YStack>
+    </Fold>
   );
+}
+
+/** A boss already here is kept as it is by the import: show that one, not the file's words and pictures. */
+function shownEnd(
+  end: AdventureFile["adventure"]["end"],
+  { boss, monster }: AdventurePreview,
+): AdventureFile["adventure"]["end"] {
+  if (!boss) return end;
+  return {
+    kind: "boss",
+    monster: monster?.key ?? "",
+    name: boss.name,
+    lines: boss.lines,
+    art: boss.art,
+  };
 }
 
 /** The name the file's sender gave their boss, else the painted one's. */
@@ -249,4 +280,29 @@ async function save(
     reportError("adventures.import", error);
     return { error: "adventures.import_failed" };
   }
+}
+
+/** The boss as it will look: the sender's picture when the file has one, else the painting. */
+function BossPortrait({
+  monster,
+  end,
+}: {
+  monster: Monster | null;
+  end: AdventureFile["adventure"]["end"];
+}) {
+  if (!monster) return null;
+  return (
+    <Image
+      testID="adventure-import-boss-art"
+      source={getBossAsset(
+        monster.bossImagePath,
+        0,
+        undefined,
+        end.kind === "boss" ? end.art : undefined,
+      )}
+      style={{ width: 96, height: 96, borderRadius: 12 }}
+      contentFit="cover"
+      accessible={false}
+    />
+  );
 }

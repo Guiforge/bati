@@ -154,3 +154,36 @@ describe("villager assets", () => {
     expect(seen.size).toBe(VILLAGER_IDS.length * VILLAGER_POSES.length);
   });
 });
+
+describe("getBossAsset with a hero boss's own pictures", () => {
+  const FRESH = "data:image/jpeg;base64,F";
+  const WOUNDED = "data:image/jpeg;base64,W";
+  const DEFEATED = "data:image/jpeg;base64,D";
+  const LEGEND = "data:image/jpeg;base64,L";
+  const key = "stone_golem";
+  const all = { fresh: FRESH, wounded: WOUNDED, defeated: DEFEATED, legendary: LEGEND };
+
+  test("each form wears its own picture, in the painted chain's order", () => {
+    expect(getBossAsset(key, 0, undefined, all)).toEqual({ uri: FRESH });
+    expect(getBossAsset(key, 0, "wounded", all)).toEqual({ uri: WOUNDED });
+    expect(getBossAsset(key, 0, "defeated", all)).toEqual({ uri: DEFEATED });
+    expect(getBossAsset(key, 1, undefined, all)).toEqual({ uri: LEGEND });
+    // Defeated wins over legendary, as for the painted ones.
+    expect(getBossAsset(key, 1, "defeated", all)).toEqual({ uri: DEFEATED });
+  });
+
+  test("a form without a picture of its own wears the normal one", () => {
+    const art = { fresh: FRESH };
+    expect(getBossAsset(key, 0, "wounded", art)).toEqual({ uri: FRESH });
+    expect(getBossAsset(key, 0, "defeated", art)).toEqual({ uri: FRESH });
+    expect(getBossAsset(key, 2, undefined, art)).toEqual({ uri: FRESH });
+  });
+
+  test("with no normal picture, a form without one is the painted monster's, and none changes a painted boss", () => {
+    const art = { defeated: DEFEATED };
+    expect(getBossAsset(key, 0, "defeated", art)).toEqual({ uri: DEFEATED });
+    expect(getBossAsset(key, 0, undefined, art)).toBe(getBossAsset(key));
+    expect(getBossAsset(key, 0, "wounded", art)).toBe(getBossAsset(key, 0, "wounded"));
+    expect(getBossAsset(key, 1, undefined, {})).toBe(getBossAsset(key, 1));
+  });
+});

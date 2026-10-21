@@ -147,7 +147,11 @@ export function KillReport({
   return (
     <YStack testID="journal-kill-report">
       <ReportHero
-        source={report.bossImagePath ? getBossAsset(report.bossImagePath, 0, "defeated") : null}
+        source={
+          report.bossImagePath
+            ? getBossAsset(report.bossImagePath, 0, "defeated", report.bossArt)
+            : null
+        }
         height={240}
         sessionId={session.id}
       >

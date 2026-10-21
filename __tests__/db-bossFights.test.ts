@@ -106,15 +106,26 @@ describe("db/bossFights", () => {
     expect(await b.getBossFightByAdventure(BOSS_WITH_HP)).toMatchObject({ id: first?.id });
   });
 
-  test("the three builders carry the adventure's name and lines, and an edit is seen on the next read", async () => {
+  test("the three builders carry the hero boss's name, lines, weakness and monster, and an edit is seen on the next read", async () => {
     noCrits();
     const b = boss();
     const lines = '{"idle":["Again."],"crit":[],"enrage":["Enough."]}';
     t.sqlite
-      .prepare("UPDATE adventures SET bossName = 'Nightcoil', bossLinesJson = ? WHERE id = ?")
-      .run(lines, BOSS_WITH_HP);
+      .prepare(
+        `INSERT INTO hero_bosses (uuid, name, monster, weaknessMuscle, resistanceMuscle, linesJson)
+         VALUES ('0192b000-0000-7000-8000-00000000000b', 'Nightcoil', 'assets/images/bosses/shadow_serpent.jpg', 'legs', NULL, ?)`,
+      )
+      .run(lines);
+    t.sqlite
+      .prepare(
+        "UPDATE adventures SET heroBossUuid = '0192b000-0000-7000-8000-00000000000b' WHERE id = ?",
+      )
+      .run(BOSS_WITH_HP);
     const expected = {
       bossName: "Nightcoil",
+      weaknessMuscle: "legs",
+      resistanceMuscle: null,
+      imagePath: "assets/images/bosses/shadow_serpent.jpg",
       bossLines: { intro: [], idle: ["Again."], crit: [], enrage: ["Enough."], defeat: [] },
     };
 
@@ -125,14 +136,25 @@ describe("db/bossFights", () => {
     // Read without creating.
     expect(await b.getBossFightByAdventure(BOSS_WITH_HP)).toMatchObject(expected);
 
-    // The words are the adventure's, not the fight row's: an edit applies on the next session.
+    // The words are the boss's, not the fight row's: an edit applies on the next session.
     t.sqlite
-      .prepare("UPDATE adventures SET bossName = 'Nightcoil II', bossLinesJson = NULL WHERE id = ?")
-      .run(BOSS_WITH_HP);
+      .prepare(
+        "UPDATE hero_bosses SET name = 'Nightcoil II', linesJson = NULL, weaknessMuscle = NULL WHERE uuid = '0192b000-0000-7000-8000-00000000000b'",
+      )
+      .run();
     expect(await b.getOrCreateBossFight(BOSS_WITH_HP, "medium")).toMatchObject({
       bossName: "Nightcoil II",
+      weaknessMuscle: null,
       bossLines: { intro: [], idle: [], crit: [], enrage: [], defeat: [] },
     });
+
+    // A boss deleted under the adventure (a sync) leaves the painted one it was.
+    t.sqlite.prepare("DELETE FROM hero_bosses").run();
+    expect(await b.getOrCreateBossFight(BOSS_WITH_HP, "medium")).toMatchObject({
+      bossName: null,
+      weaknessMuscle: "chest",
+    });
+    t.sqlite.prepare("UPDATE adventures SET heroBossUuid = NULL WHERE id = ?").run(BOSS_WITH_HP);
   });
 
   test("a game boss has no name of its own and no lines", async () => {

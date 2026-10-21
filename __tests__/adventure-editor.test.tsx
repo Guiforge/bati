@@ -18,13 +18,19 @@ const mockReplace = jest.fn();
 const mockBack = jest.fn();
 const mockDismissTo = jest.fn();
 const mockParams: { id?: string } = {};
+const mockPush = jest.fn();
+const mockFocus: { current: () => void } = { current: () => undefined };
 jest.mock("expo-router", () => ({
   useRouter: () => ({
     back: mockBack,
     dismissTo: mockDismissTo,
     replace: mockReplace,
-    push: jest.fn(),
+    push: mockPush,
   }),
+  useFocusEffect: (cb: () => void) => {
+    mockFocus.current = cb;
+    require("react").useEffect(cb, []);
+  },
   useLocalSearchParams: () => mockParams,
   useNavigation: () => ({ addListener: () => () => undefined, dispatch: jest.fn() }),
 }));
@@ -79,13 +85,8 @@ jest.mock("@/db/quests", () => ({
   USER_QUEST_AUTHOR: "hero",
   trainingFocus: () => ({ archetype: null, muscles: [] }),
 }));
-jest.mock("@/db/heroAdventures", () => ({
-  ...jest.requireActual("@/db/heroAdventures"),
-  createHeroAdventure: jest.fn().mockResolvedValue(5),
-  updateHeroAdventure: jest.fn().mockResolvedValue(undefined),
-  retireHeroAdventure: jest.fn().mockResolvedValue(undefined),
-  loadHeroAdventureDraft: jest.fn(),
-  listMonsters: jest.fn().mockResolvedValue([
+jest.mock("@/db/heroAdventures", () => {
+  const monsters = [
     {
       key: "shadow_serpent",
       bossImagePath: "assets/images/bosses/shadow_serpent.jpg",
@@ -98,9 +99,20 @@ jest.mock("@/db/heroAdventures", () => ({
       weakness: "chest",
       resistance: "back",
     },
-  ]),
-  recentSessionQuests: jest.fn().mockResolvedValue([]),
-}));
+  ];
+  return {
+    ...jest.requireActual("@/db/heroAdventures"),
+    createHeroAdventure: jest.fn().mockResolvedValue(5),
+    updateHeroAdventure: jest.fn().mockResolvedValue(undefined),
+    retireHeroAdventure: jest.fn().mockResolvedValue(undefined),
+    loadHeroAdventureDraft: jest.fn(),
+    listMonsters: jest.fn().mockResolvedValue(monsters),
+    listOfferedMonsters: jest.fn().mockResolvedValue(monsters),
+    recentSessionQuests: jest.fn().mockResolvedValue([]),
+  };
+});
+const mockBosses = jest.fn();
+jest.mock("@/db/heroBosses", () => ({ listHeroBosses: () => mockBosses() }));
 // The sheet is a modal the test cannot drive; its contract is `onPick` of a quest.
 jest.mock("@/components/adventures/QuestPickerSheet", () => ({
   QuestPickerSheet: ({
@@ -157,6 +169,7 @@ async function pick(editor: Editor, ...ids: number[]) {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockBosses.mockResolvedValue([]);
   mockParams.id = undefined;
   mockOuting.mockReturnValue(false);
   (require("@/db") as { listQuestTemplates: jest.Mock }).listQuestTemplates.mockResolvedValue(
@@ -204,7 +217,6 @@ describe("a new adventure", () => {
         description: "",
         imagePath: expect.any(String),
         end: { kind: "boss", monster: "iron_golem" },
-        voice: { name: "", lines: { intro: [], idle: [], crit: [], enrage: [], defeat: [] } },
         steps: [
           { questId: 1, narrative: "Cold.", outro: "" },
           { questId: 101, narrative: "", outro: "" },
@@ -264,7 +276,6 @@ describe("an adventure being edited", () => {
     description: "Once",
     imagePath: "the_golem",
     end: { kind: "route" },
-    voice: { name: "", lines: { intro: [], idle: [], crit: [], enrage: [], defeat: [] } },
     steps: [
       { questId: 1, narrative: "a", outro: "back" },
       { questId: 2, narrative: "b", outro: "" },
@@ -350,117 +361,178 @@ describe("an adventure being edited", () => {
   });
 });
 
-describe("the boss's voice", () => {
-  const bossDraft = (frozen: boolean) => ({
-    title: "Tale",
-    description: "",
-    imagePath: "the_golem",
-    end: { kind: "boss", monster: "iron_golem" },
-    voice: {
-      name: "Nightcoil",
-      lines: { intro: [], idle: ["Again."], crit: [], enrage: [], defeat: [] },
-    },
-    steps: [
-      { questId: 1, narrative: "", outro: "" },
-      { questId: 2, narrative: "", outro: "" },
-    ],
-    frozen,
+describe("the boss ending", () => {
+  const monster = (key: string) => ({
+    key,
+    bossImagePath: `assets/images/bosses/${key}.jpg`,
+    weakness: null,
+    resistance: null,
   });
+  const gorgo = {
+    id: 4,
+    uuid: "0192b000-0000-7000-8000-000000000004",
+    name: "Gorgo",
+    monster: "assets/images/bosses/iron_golem.jpg",
+    monsterKey: "iron_golem",
+    weakness: "chest",
+    resistance: null,
+    lines: { intro: [], idle: [], crit: [], enrage: [], defeat: [] },
+    art: {},
+    updatedAt: null,
+  };
 
-  const openVoice = (editor: Awaited<ReturnType<typeof mount>>) =>
-    fireEvent.press(editor.getByTestId("editor-boss-voice-toggle"));
-
-  test("the block shows for a boss only, folded until opened, and keeps what was typed through a switch to route", async () => {
-    const editor = await mount();
-    expect(editor.queryByTestId("editor-boss-voice-toggle")).toBeNull();
-    await fireEvent.press(editor.getByTestId("editor-end-boss"));
-    // Folded by default: the editor is no longer for the hero who writes no voice.
-    expect(editor.queryByTestId("editor-boss-name")).toBeNull();
-    await openVoice(editor);
-    for (const m of ["intro", "idle", "crit", "enrage", "defeat"]) {
-      expect(editor.getByTestId(`editor-boss-lines-${m}`)).toBeTruthy();
-    }
-    await fireEvent.changeText(editor.getByTestId("editor-boss-name"), "Nightcoil");
-    await fireEvent.press(editor.getByTestId("editor-end-route"));
-    expect(editor.queryByTestId("editor-boss-name")).toBeNull();
-    await fireEvent.press(editor.getByTestId("editor-end-boss"));
-    await openVoice(editor);
-    expect(editor.getByDisplayValue("Nightcoil")).toBeTruthy();
-  });
-
-  test("a fourth line shows and warns, a 61st character does not appear; save keeps three", async () => {
+  test("the hero's own boss is offered first, picks as the end, and names the summary", async () => {
+    mockBosses.mockResolvedValue([gorgo]);
     const editor = await mount();
     await fireEvent.changeText(editor.getByTestId("adventure-name"), "Tale");
     await pick(editor, 1, 2);
     await fireEvent.press(editor.getByTestId("editor-end-boss"));
-    await openVoice(editor);
-    await fireEvent.changeText(editor.getByTestId("editor-boss-name"), "Nightcoil");
-    await fireEvent.changeText(editor.getByTestId("editor-boss-lines-intro"), "Who dares?");
-    await fireEvent.changeText(editor.getByTestId("editor-boss-lines-defeat"), "Not like this.");
-    await fireEvent.changeText(editor.getByTestId("editor-boss-lines-idle"), "a\nb\nc\nd");
-    await fireEvent.changeText(editor.getByTestId("editor-boss-lines-crit"), "x".repeat(70));
-    // Kept in the field: cutting it there ate the Enter and glued the next words onto line 3.
-    expect(editor.getByTestId("editor-boss-lines-idle").props.value).toBe("a\nb\nc\nd");
+    expect(editor.getByTestId(`editor-hero-boss-${gorgo.uuid}`)).toBeTruthy();
+    await fireEvent.press(editor.getByTestId(`editor-hero-boss-${gorgo.uuid}`));
+    expect((await editor.findAllByText(/Gorgo/)).length).toBeGreaterThan(1);
     await fireEvent.press(editor.getByTestId("adventure-save"));
     await waitFor(() =>
       expect(hero().createHeroAdventure).toHaveBeenCalledWith(
         expect.objectContaining({
-          voice: {
-            name: "Nightcoil",
-            lines: {
-              intro: ["Who dares?"],
-              idle: ["a", "b", "c"],
-              crit: ["x".repeat(60)],
-              enrage: [],
-              defeat: ["Not like this."],
-            },
-          },
+          end: { kind: "boss", monster: "iron_golem", heroBoss: gorgo.uuid },
         }),
       ),
     );
+    // No voice rides in the draft any more: the boss carries its own.
+    expect(hero().createHeroAdventure?.mock.calls[0]?.[0]).not.toHaveProperty("voice");
   });
 
-  test("under a playthrough the end is frozen and the name still edits and saves", async () => {
-    mockParams.id = "9";
-    hero().loadHeroAdventureDraft?.mockResolvedValue(bossDraft(true));
+  test("the boss chip starts on the hero's latest boss, not a painted one", async () => {
+    mockBosses.mockResolvedValue([gorgo]);
     const editor = await mount();
-    expect(await editor.findByTestId("editor-frozen")).toBeTruthy();
-    await fireEvent.press(await editor.findByTestId("editor-boss-voice-toggle"));
-    await fireEvent.changeText(await editor.findByTestId("editor-boss-name"), "Nightcoil II");
+    await fireEvent.changeText(editor.getByTestId("adventure-name"), "Tale");
+    await pick(editor, 1, 2);
+    await fireEvent.press(editor.getByTestId("editor-end-boss"));
     await fireEvent.press(editor.getByTestId("adventure-save"));
     await waitFor(() =>
-      expect(hero().updateHeroAdventure).toHaveBeenCalledWith(
-        9,
+      expect(hero().createHeroAdventure).toHaveBeenCalledWith(
         expect.objectContaining({
-          end: { kind: "boss", monster: "iron_golem" },
-          voice: expect.objectContaining({ name: "Nightcoil II" }),
+          end: { kind: "boss", monster: "iron_golem", heroBoss: gorgo.uuid },
         }),
       ),
     );
   });
 
-  test("the summary says the hero's name for the boss once there is one", async () => {
-    mockParams.id = "9";
-    hero().loadHeroAdventureDraft?.mockResolvedValue(bossDraft(false));
+  test("picking a painted monster after a hero boss drops the boss from the end", async () => {
+    mockBosses.mockResolvedValue([gorgo]);
     const editor = await mount();
-    await editor.findByDisplayValue("Tale");
-    expect(editor.getByTestId("editor-summary")).toHaveTextContent(/Nightcoil/);
-    await openVoice(editor);
-    await fireEvent.changeText(editor.getByTestId("editor-boss-name"), "");
-    expect(editor.getByTestId("editor-summary")).not.toHaveTextContent(/Nightcoil/);
+    await fireEvent.changeText(editor.getByTestId("adventure-name"), "Tale");
+    await pick(editor, 1, 2);
+    await fireEvent.press(editor.getByTestId("editor-end-boss"));
+    await fireEvent.press(editor.getByTestId(`editor-hero-boss-${gorgo.uuid}`));
+    await fireEvent.press(editor.getByTestId("editor-monster-shadow_serpent"));
+    await fireEvent.press(editor.getByTestId("adventure-save"));
+    await waitFor(() =>
+      expect(hero().createHeroAdventure).toHaveBeenCalledWith(
+        expect.objectContaining({ end: { kind: "boss", monster: "shadow_serpent" } }),
+      ),
+    );
   });
-});
 
-describe("the balance sentences", () => {
-  test("three steps that only push say so under the summary", async () => {
-    const pushing = (id: number) => ({ ...quest(id, `Q${id}`), exercises: [{ exerciseId: 1 }] });
-    const db = require("@/db") as { listQuestTemplates: jest.Mock; listExercises: jest.Mock };
-    db.listQuestTemplates.mockResolvedValue([pushing(1), pushing(2)]);
-    db.listExercises.mockResolvedValue([{ id: 1, muscles: ["chest"], pattern: "push_horizontal" }]);
+  test("a shortcut opens the boss editor", async () => {
     const editor = await mount();
-    await pick(editor, 1, 2, 1);
-    const [first] = await editor.findAllByTestId("editor-balance");
-    expect(first).toHaveTextContent(/^3 steps in a row push without pulling/);
-    db.listExercises.mockResolvedValue([]);
+    await fireEvent.press(editor.getByTestId("editor-end-boss"));
+    await fireEvent.press(editor.getByTestId("editor-new-boss"));
+    expect(mockPush).toHaveBeenCalledWith("/bosses/edit");
+  });
+
+  test("a boss made from the shortcut is the one chosen when the hero comes back", async () => {
+    mockBosses.mockResolvedValue([gorgo]);
+    const editor = await mount();
+    await fireEvent.press(editor.getByTestId("editor-end-boss"));
+    await fireEvent.press(editor.getByTestId("editor-new-boss"));
+    const fresh = { ...gorgo, uuid: "new-boss", name: "Fresh" };
+    mockBosses.mockResolvedValue([gorgo, fresh]);
+    await act(() => {
+      mockFocus.current();
+    });
+    await waitFor(() => expect(editor.getByTestId("editor-hero-boss-new-boss")).toBeTruthy());
+    await fireEvent.changeText(editor.getByTestId("adventure-name"), "Tale");
+    await pick(editor, 1, 2);
+    await fireEvent.press(editor.getByTestId("adventure-save"));
+    await waitFor(() =>
+      expect(hero().createHeroAdventure).toHaveBeenCalledWith(
+        expect.objectContaining({ end: expect.objectContaining({ heroBoss: "new-boss" }) }),
+      ),
+    );
+  });
+
+  test("coming back without making a boss changes nothing", async () => {
+    mockBosses.mockResolvedValue([gorgo]);
+    const editor = await mount();
+    await fireEvent.press(editor.getByTestId("editor-end-boss"));
+    await act(() => {
+      mockFocus.current();
+    });
+    await fireEvent.changeText(editor.getByTestId("adventure-name"), "Tale");
+    await pick(editor, 1, 2);
+    await fireEvent.press(editor.getByTestId("adventure-save"));
+    await waitFor(() =>
+      expect(hero().createHeroAdventure).toHaveBeenCalledWith(
+        expect.objectContaining({
+          end: { kind: "boss", monster: "iron_golem", heroBoss: gorgo.uuid },
+        }),
+      ),
+    );
+  });
+
+  test("a boss that arrives later, after the shortcut was left without saving, is never chosen", async () => {
+    mockBosses.mockResolvedValue([gorgo]);
+    const editor = await mount();
+    await fireEvent.press(editor.getByTestId("editor-end-boss"));
+    await fireEvent.press(editor.getByTestId("editor-new-boss"));
+    // Back from the boss editor without saving: nothing new.
+    await act(() => {
+      mockFocus.current();
+    });
+    // Later, a sync brings a boss and the screen is focused again.
+    mockBosses.mockResolvedValue([gorgo, { ...gorgo, uuid: "synced", name: "Synced" }]);
+    await act(() => {
+      mockFocus.current();
+    });
+    await waitFor(() => expect(editor.getByTestId("editor-hero-boss-synced")).toBeTruthy());
+    await fireEvent.changeText(editor.getByTestId("adventure-name"), "Tale");
+    await pick(editor, 1, 2);
+    await fireEvent.press(editor.getByTestId("adventure-save"));
+    await waitFor(() =>
+      expect(hero().createHeroAdventure).toHaveBeenCalledWith(
+        expect.objectContaining({
+          end: { kind: "boss", monster: "iron_golem", heroBoss: gorgo.uuid },
+        }),
+      ),
+    );
+  });
+
+  test("the picker offers the monsters it is told to, and keeps showing a saved one it does not offer", async () => {
+    mockParams.id = "9";
+    hero().listOfferedMonsters?.mockResolvedValueOnce([monster("shadow_serpent")]);
+    hero().loadHeroAdventureDraft?.mockResolvedValue({
+      title: "Tale",
+      description: "",
+      imagePath: "the_golem",
+      end: { kind: "boss", monster: "iron_golem" },
+      steps: [
+        { questId: 1, narrative: "", outro: "" },
+        { questId: 2, narrative: "", outro: "" },
+      ],
+      frozen: false,
+    });
+    const editor = await mount();
+    expect(await editor.findByTestId("editor-monster-iron_golem")).toBeTruthy();
+    expect(editor.getByTestId("editor-monster-shadow_serpent")).toBeTruthy();
+  });
+
+  test("a fresh editor shows only the offered monsters", async () => {
+    hero().listOfferedMonsters?.mockResolvedValueOnce([monster("shadow_serpent")]);
+    const editor = await mount();
+    await fireEvent.press(editor.getByTestId("editor-end-boss"));
+    // The first offered one is preselected; the other painted one is hidden, not selectable.
+    expect(editor.getByTestId("editor-monster-shadow_serpent")).toBeTruthy();
+    expect(editor.queryByTestId("editor-monster-iron_golem")).toBeNull();
   });
 });

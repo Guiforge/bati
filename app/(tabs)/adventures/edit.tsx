@@ -1,11 +1,10 @@
-import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Keyboard, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Input, type TamaguiElement, Text, XStack, YStack } from "tamagui";
 import { balanceFacts, balanceSentence } from "@/components/adventures/balanceFacts";
-import { EditorBossVoice } from "@/components/adventures/EditorBossVoice";
 import { type EditorEnd, EditorEndSection } from "@/components/adventures/EditorEnd";
 import { type EditorStep, EditorStepCard } from "@/components/adventures/EditorStepCard";
 import { focusLabel } from "@/components/adventures/focusLabel";
@@ -28,12 +27,12 @@ import {
   suggestDifficultyFromSessions,
 } from "@/db";
 import { bossHpForQuests } from "@/db/bossFights";
-import { cleanBossLines, type HeroBossVoice, noBossLines } from "@/db/bossVoice";
 import { isOutingQuest } from "@/db/expeditions";
 import {
   createHeroAdventure,
   type HeroAdventureDraft,
   listMonsters,
+  listOfferedMonsters,
   loadHeroAdventureDraft,
   MAX_DESCRIPTION,
   MAX_STEPS,
@@ -44,6 +43,7 @@ import {
   retireHeroAdventure,
   updateHeroAdventure,
 } from "@/db/heroAdventures";
+import { type HeroBoss, listHeroBosses } from "@/db/heroBosses";
 import { preferences } from "@/db/preferences";
 import { getAllQuestConfigs, startingDifficulty } from "@/db/questConfig";
 import { type QuestTemplate, trainingFocus } from "@/db/quests";
@@ -80,7 +80,6 @@ type Fields = {
   cover: string;
   steps: EditorStep[];
   end: EditorEnd;
-  voice: HeroBossVoice;
 };
 
 const NEW_FIELDS: Fields = {
@@ -89,7 +88,6 @@ const NEW_FIELDS: Fields = {
   cover: FIRST_COVER,
   steps: [],
   end: { kind: "route" },
-  voice: { name: "", lines: noBossLines() },
 };
 
 /** What the hero wrote, as the dirty-form guard compares it (the row ids are editor-only). */
@@ -103,6 +101,10 @@ type Catalogue = {
   exercisesById: Record<number, Awaited<ReturnType<typeof listExercises>>[number]>;
   seconds: ReadonlyMap<number, number>;
   monsters: readonly Monster[];
+  /** Keys of the monsters the picker offers; the others still resolve (a saved or imported boss). */
+  offered: ReadonlySet<string>;
+  /** The hero's own bosses, read again each time the screen is back in front. */
+  heroBosses: readonly HeroBoss[];
   recent: readonly number[];
   level: "easy" | "medium" | "hard";
 };
@@ -113,20 +115,25 @@ const EMPTY_CATALOGUE: Catalogue = {
   exercisesById: {},
   seconds: new Map(),
   monsters: [],
+  offered: new Set(),
+  heroBosses: [],
   recent: [],
   level: "medium",
 };
 
 async function loadCatalogue(): Promise<Catalogue> {
-  const [quests, exercises, monsters, recent, configs, history, answer] = await Promise.all([
-    listQuestTemplates(),
-    listExercises(),
-    listMonsters(),
-    recentSessionQuests(),
-    getAllQuestConfigs(),
-    getRecentSessionHistory(10),
-    preferences.getTrainingLevel(),
-  ]);
+  const [quests, exercises, monsters, offered, bosses, recent, configs, history, answer] =
+    await Promise.all([
+      listQuestTemplates(),
+      listExercises(),
+      listMonsters(),
+      listOfferedMonsters(),
+      listHeroBosses(),
+      recentSessionQuests(),
+      getAllQuestConfigs(),
+      getRecentSessionHistory(10),
+      preferences.getTrainingLevel(),
+    ]);
   const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
   const level = suggestDifficultyFromSessions(history, {
     maxSessions: 10,
@@ -139,6 +146,8 @@ async function loadCatalogue(): Promise<Catalogue> {
     exercisesById,
     seconds: new Map([...previews].map(([id, p]) => [id, p.seconds] as const)),
     monsters,
+    offered: new Set(offered.map((m) => m.key)),
+    heroBosses: bosses,
     recent,
     level,
   };
@@ -178,9 +187,10 @@ export default function AdventureEditor() {
   const nameRef = useRef<TamaguiElement>(null);
   const scrollRef = useRef<ScrollView>(null);
   const nameCardY = useRef(0);
+  const addStepY = useRef(0);
   const skipGuardRef = useRef(false);
 
-  const { title, description, cover, steps, end, voice } = fields;
+  const { title, description, cover, steps, end } = fields;
   const patch = useCallback((next: Partial<Fields>) => setFields((f) => ({ ...f, ...next })), []);
   const showMessage = (heading: string, body: string) =>
     setDialog({ title: heading, body, confirmLabel: t("common.close") });
@@ -244,7 +254,6 @@ export default function AdventureEditor() {
           cover: draft.imagePath,
           steps: kept.map(toStep),
           end: draft.end,
-          voice: draft.voice,
         };
         setFields(next);
         setBaseline(snapshot(next));
@@ -263,6 +272,27 @@ export default function AdventureEditor() {
       cancelled = true;
     };
   }, [adventureId, t]);
+
+  // Back from the boss editor with a new boss: it shows in the list, and it is the one chosen,
+  // since the hero made it for this adventure (the uuids known when they left tell it apart).
+  const bossesBefore = useRef<ReadonlySet<string> | null>(null);
+  useFocusEffect(
+    useCallback(() => {
+      listHeroBosses()
+        .then((heroBosses) => {
+          setCatalogue((c) => ({ ...c, heroBosses }));
+          const known = bossesBefore.current;
+          const made = known ? heroBosses.find((b) => !known.has(b.uuid)) : undefined;
+          // One return only: left without saving, a boss a sync brings later is not the shortcut's.
+          bossesBefore.current = null;
+          if (!made) return;
+          patch({
+            end: { kind: "boss", monster: made.monsterKey ?? "stone_golem", heroBoss: made.uuid },
+          });
+        })
+        .catch((error: unknown) => reportError("adventure.editorBosses", error));
+    }, [patch]),
+  );
 
   const questIds = useMemo(() => steps.map((s) => s.questId), [steps]);
   const bossEnd = end.kind === "boss";
@@ -290,6 +320,12 @@ export default function AdventureEditor() {
   );
   const outingsOnly =
     resolved.length > 0 && resolved.every((q) => isOutingQuest(q, catalogue.exercisesById));
+  // The hero's boss, if the adventure ends on one: its name is what the summary says.
+  const heroBoss =
+    end.kind === "boss" && end.heroBoss
+      ? catalogue.heroBosses.find((b) => b.uuid === end.heroBoss)
+      : undefined;
+  const heroBossName = heroBoss?.name.trim() ?? "";
   const monster =
     end.kind === "boss" ? catalogue.monsters.find((m) => m.key === end.monster) : null;
 
@@ -351,7 +387,8 @@ export default function AdventureEditor() {
         scrollRef.current?.scrollTo({ y: Math.max(0, nameCardY.current - 16), animated: true });
         nameRef.current?.focus();
       } else {
-        scrollRef.current?.scrollToEnd({ animated: true });
+        // To the message under "Add a step", not the end: the boss grid below it is taller than a screen.
+        scrollRef.current?.scrollTo({ y: Math.max(0, addStepY.current - 16), animated: true });
       }
       return;
     }
@@ -360,8 +397,6 @@ export default function AdventureEditor() {
       description,
       imagePath: cover,
       end,
-      // The field keeps a fourth line while it is typed (EditorBossVoice); the draft never does.
-      voice: { ...voice, lines: cleanBossLines(voice.lines) },
       steps: steps.map(({ questId, narrative, outro }) => ({ questId, narrative, outro })),
     };
     // A promise chain, not `try ... finally`: the React Compiler cannot lower one.
@@ -418,7 +453,7 @@ export default function AdventureEditor() {
     weeks,
     monster
       ? t("adventures.editor_summary_boss", {
-          name: voice.name.trim() || monsterName(monster, language),
+          name: heroBossName || monsterName(monster, language),
         })
       : null,
     focus || null,
@@ -558,14 +593,20 @@ export default function AdventureEditor() {
             })}
 
             {steps.length < MAX_STEPS && !frozen ? (
-              <AppButton
-                testID="editor-add-step"
-                variant="outline"
-                icon={<Plus size={20} color="$text" strokeWidth={2.5} />}
-                onPress={() => setPickerOpen(true)}
+              <YStack
+                onLayout={(e) => {
+                  addStepY.current = e.nativeEvent.layout.y;
+                }}
               >
-                {t("adventures.editor_add_step")}
-              </AppButton>
+                <AppButton
+                  testID="editor-add-step"
+                  variant="outline"
+                  icon={<Plus size={20} color="$text" strokeWidth={2.5} />}
+                  onPress={() => setPickerOpen(true)}
+                >
+                  {t("adventures.editor_add_step")}
+                </AppButton>
+              </YStack>
             ) : null}
             {stepsMissing ? (
               <Text
@@ -584,19 +625,18 @@ export default function AdventureEditor() {
             <EditorEndSection
               end={end}
               monsters={catalogue.monsters}
+              offered={catalogue.offered}
+              heroBosses={catalogue.heroBosses}
+              onCreateBoss={() => {
+                bossesBefore.current = new Set(catalogue.heroBosses.map((b) => b.uuid));
+                router.push("/bosses/edit" as never);
+              }}
               language={language}
               hp={hp}
               outingsOnly={outingsOnly}
               frozen={frozen}
               onChange={(next) => patch({ end: next })}
             />
-            {bossEnd ? (
-              <EditorBossVoice
-                voice={voice}
-                placeholder={monster ? monsterName(monster, language) : ""}
-                onChange={(next) => patch({ voice: next })}
-              />
-            ) : null}
 
             <Text testID="editor-summary" fontSize={13} color="$textSecondary">
               {summary.join(" · ")}

@@ -21,7 +21,7 @@ An **Adventure** is a **multi-step campaign** made of several quest sessions cha
 
 The hero writes their own from the gallery ("Écrire une aventure"): a cover among the bundled ones, a
 name, an introduction, **2 to 8 steps** (any quest, the hero's own first in the picker) each with the
-words before it and, optionally, on the way back, and an end: a route, or one of the six painted bosses.
+words before it and, optionally, on the way back, and an end: a route, a painted boss (the first two, then the ones the hero has beaten), or a boss the hero made (a creation of its own: see [boss-fights.md](boss-fights.md#the-heros-boss-a-creation-of-its-own)).
 Everything is free: no quota, no Bati+ lock, no offer (`db/heroAdventures.ts` is the one writer).
 
 - **A victory on a hero adventure pays only its sessions.** No Triumph XP, no Lair, Arena or Hall level,

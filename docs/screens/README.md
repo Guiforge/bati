@@ -34,6 +34,7 @@ Maintained per the [wiki protocol](../meta/wiki-protocol.md).
 
 **Making things**
 - [forge.md](forge.md) — what the hero made, the doors to make more, the one import door
+- [boss-editor.md](boss-editor.md) — create or edit a hero boss: name, pictures per form, weakness, lines
 
 **Progression & rewards**
 - [village.md](village.md) — visual reward layer (village growth)

@@ -554,6 +554,13 @@
       "when": 1792886400000,
       "tag": "0078_the_hand_written_entry",
       "breakpoints": true
+    },
+    {
+      "idx": 79,
+      "version": "6",
+      "when": 1792972800000,
+      "tag": "0079_the_boss_is_a_creation",
+      "breakpoints": true
     }
   ]
 }

@@ -10,10 +10,12 @@ import type { TransactionTx } from "./client";
  */
 export async function writeContentTombstone(
   tx: TransactionTx,
-  table: "quests" | "exercises",
+  table: "quests" | "exercises" | "hero_bosses",
   id: number,
 ): Promise<void> {
-  const owner = table === "quests" ? sql`author` : sql`creator`;
+  // `hero_bosses` holds hero rows only: no owner column to test.
+  const owner =
+    table === "quests" ? sql`author` : table === "exercises" ? sql`creator` : sql`'hero'`;
   await tx.run(sql`INSERT INTO deleted_content (uuid, deletedAt)
     SELECT uuid, max(unixepoch(), ifnull(updatedAt, 0) + 1) FROM ${sql.identifier(table)}
     WHERE id = ${id} AND ${owner} = 'hero' AND uuid IS NOT NULL

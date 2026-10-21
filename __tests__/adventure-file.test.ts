@@ -240,7 +240,6 @@ function draftOf(
     description: "A tale",
     imagePath: "the_golem" as const,
     end: { kind: "route" as const },
-    voice: { name: "", lines: { intro: [], idle: [], crit: [], enrage: [], defeat: [] } },
     steps: questIds.map((questId, i) => ({ questId, narrative: `before ${i}`, outro: "" })),
     ...over,
   };
@@ -1170,13 +1169,16 @@ describe("the boss's voice in the file", () => {
     return null;
   };
   const columns = (id: number) =>
-    t.sqlite
-      .prepare("SELECT kind, bossName, bossLinesJson FROM adventures WHERE id = ?")
-      .get(id) as {
+    t.sqlite.prepare("SELECT kind, heroBossUuid FROM adventures WHERE id = ?").get(id) as {
       kind: string;
-      bossName: string | null;
-      bossLinesJson: string | null;
+      heroBossUuid: string | null;
     };
+  const bossNamed = (uuid: string) =>
+    (
+      t.sqlite.prepare("SELECT name FROM hero_bosses WHERE uuid = ?").get(uuid) as
+        | { name: string }
+        | undefined
+    )?.name;
 
   test("the format is version 1: a dev build's version 2 file is read as it, a version 3 is newer", () => {
     expect(parse({ kind: "route" }, 1).version).toBe(1);
@@ -1188,15 +1190,26 @@ describe("the boss's voice in the file", () => {
     const [a, b] = seedQuests();
     assert(a && b);
     const { hero, adv } = load();
+    const heroBosses = require("../db/heroBosses") as typeof import("../db/heroBosses");
     const monster = (await hero.listMonsters())[0];
     assert(monster);
     const draft = draftOf([a.id, b.id], { end: { kind: "boss", monster: monster.key } });
+
+    // A boss the hero made travels whole: name, lines, weakness, uuid.
+    const lines = { intro: [], idle: ["Again."], crit: [], enrage: ["Enough."], defeat: [] };
+    const bossId = await heroBosses.createHeroBoss({
+      name: "Nightcoil",
+      monster: monster.key,
+      weakness: "chest",
+      resistance: null,
+      lines,
+      art: {},
+    });
+    const made = await heroBosses.getHeroBoss(bossId);
+    assert(made);
     const voiced = await hero.createHeroAdventure({
       ...draft,
-      voice: {
-        name: "Nightcoil",
-        lines: { intro: [], idle: ["Again."], crit: [], enrage: ["Enough."], defeat: [] },
-      },
+      end: { kind: "boss", monster: monster.key, heroBoss: made.uuid },
     });
     const out = await adv.adventureToFile(voiced);
     assert(out);
@@ -1205,20 +1218,13 @@ describe("the boss's voice in the file", () => {
       kind: "boss",
       monster: monster.key,
       name: "Nightcoil",
-      lines: { intro: [], idle: ["Again."], crit: [], enrage: ["Enough."], defeat: [] },
+      lines,
+      weakness: "chest",
+      bossUuid: made.uuid,
     });
     expect(parseJson(out.json)).toEqual(out.file);
 
-    // Lines alone are a voice too.
-    const quiet = await hero.createHeroAdventure({
-      ...draft,
-      voice: { name: "", lines: { intro: [], idle: [], crit: ["Hah."], enrage: [], defeat: [] } },
-    });
-    expect((await adv.adventureToFile(quiet))?.file.adventure.end).toMatchObject({
-      lines: { intro: [], idle: [], crit: ["Hah."], enrage: [], defeat: [] },
-    });
-
-    // No voice written: the voice fields are there, empty, and read back the same.
+    // A painted monster picked as it is: the voice fields are there, empty, and read back the same.
     const plain = await hero.createHeroAdventure(draft);
     const plainOut = await adv.adventureToFile(plain);
     assert(plainOut);
@@ -1257,10 +1263,22 @@ describe("the boss's voice in the file", () => {
       enrage: ["Enough."],
       defeat: ["Not like this.", "Second."],
     };
+    const bosses = require("../db/heroBosses") as typeof import("../db/heroBosses");
+    const bossId = await bosses.createHeroBoss({
+      name: "Nightcoil",
+      monster: monster.key,
+      weakness: "abs",
+      resistance: "legs",
+      lines,
+      art: { fresh: photo(2_500), defeated: photo(2_400) },
+    });
+    const boss = await bosses.getHeroBoss(bossId);
+    assert(boss);
     const id = await hero.createHeroAdventure({
-      ...draftOf([mine.id, seed.id], { end: { kind: "boss", monster: monster.key } }),
+      ...draftOf([mine.id, seed.id], {
+        end: { kind: "boss", monster: monster.key, heroBoss: boss.uuid },
+      }),
       description: "Three days.",
-      voice: { name: "Nightcoil", lines },
     });
     const out = await adv.adventureToFile(id);
     assert(out);
@@ -1270,7 +1288,7 @@ describe("the boss's voice in the file", () => {
     t.sqlite.exec(
       `DELETE FROM adventure_steps; DELETE FROM adventures WHERE uuid = '${uuid}';
        DELETE FROM quest_exercises WHERE questId = ${mine.id}; DELETE FROM quests WHERE id = ${mine.id};
-       DELETE FROM exercises WHERE uuid = '${dip}';`,
+       DELETE FROM exercises WHERE uuid = '${dip}'; DELETE FROM hero_bosses;`,
     );
     refresh();
     const read = parseJson(out.json);
@@ -1278,7 +1296,22 @@ describe("the boss's voice in the file", () => {
 
     const draft = await hero.loadHeroAdventureDraft(landed);
     assert(draft);
-    expect(draft.voice).toEqual({ name: "Nightcoil", lines });
+    // The boss arrived as the receiver's own, by the uuid the sender named it with.
+    expect(draft.end).toEqual({ kind: "boss", monster: monster.key, heroBoss: boss.uuid });
+    const landedBoss = await bosses.getHeroBoss(
+      (
+        t.sqlite.prepare("SELECT id FROM hero_bosses WHERE uuid = ?").get(boss.uuid) as {
+          id: number;
+        }
+      ).id,
+    );
+    expect(landedBoss).toMatchObject({
+      name: "Nightcoil",
+      weakness: "abs",
+      resistance: "legs",
+      lines,
+      art: boss.art,
+    });
     expect(draft.steps.map((s) => s.narrative)).toEqual(["before 0", "before 1"]);
     const quest = t.sqlite
       .prepare("SELECT enDescription, imagePath FROM quests WHERE uuid = ?")
@@ -1292,10 +1325,12 @@ describe("the boss's voice in the file", () => {
     expect(moved.imagePath.startsWith("data:")).toBe(true);
   });
 
-  test("a version 1 file with a boss still imports, with an empty voice", async () => {
+  test("a version 1 file with a painted boss still imports, as the monster alone", async () => {
     const file = parse(await bossEnd(), 1);
+    const before = count("hero_bosses");
     const { id } = await load().adv.importAdventure(file, { asCopy: false });
-    expect(columns(id)).toEqual({ kind: "boss", bossName: null, bossLinesJson: null });
+    expect(columns(id)).toEqual({ kind: "boss", heroBossUuid: null });
+    expect(count("hero_bosses")).toBe(before);
   });
 
   test("the name and the lines are cleaned and bounded", async () => {
@@ -1328,24 +1363,32 @@ describe("the boss's voice in the file", () => {
       name: "Nightcoil",
       lines: { idle: ["Again."] },
     });
+    const before = count("hero_bosses");
     const { id } = await load().adv.importAdventure(file, { asCopy: false });
-    expect(columns(id)).toEqual({ kind: "route", bossName: null, bossLinesJson: null });
+    expect(columns(id)).toEqual({ kind: "route", heroBossUuid: null });
+    expect(count("hero_bosses")).toBe(before);
   });
 
-  test("a re-import updating in place replaces the voice", async () => {
+  test("a boss the phone already holds is kept as it is, never rewritten by a second import", async () => {
     const uuid = nextUuid();
     const make = async (extra: Record<string, unknown>) =>
       load().adv.parseAdventureData({
         ...adventureLiteral(uuid, readSteps(), {}, await bossEnd(extra)),
-        version: 2,
+        version: 1,
       });
     const first = await load().adv.importAdventure(await make({ name: "One" }), { asCopy: false });
-    expect(columns(first.id).bossName).toBe("One");
+    // A dev file with no boss uuid names the boss after the adventure.
+    expect(bossNamed(uuid)).toBe("One");
+    expect(columns(first.id).heroBossUuid).toBe(uuid);
     const second = await load().adv.importAdventure(await make({ name: "Two" }), {
       asCopy: false,
     });
     expect(second).toEqual({ id: first.id, updated: true });
-    expect(columns(first.id).bossName).toBe("Two");
+    expect(bossNamed(uuid)).toBe("One");
+    // As a copy it is the same boss, not a second one.
+    const before = count("hero_bosses");
+    await load().adv.importAdventure(await make({ name: "Three" }), { asCopy: true });
+    expect(count("hero_bosses")).toBe(before);
   });
 });
 
@@ -1580,5 +1623,186 @@ describe("what an imported adventure can and cannot touch", () => {
         (s: { adventureId: number }) => s.adventureId === id,
       ),
     ).toBe(false);
+  });
+});
+
+describe("a hero boss's pictures in the file", () => {
+  const heroBosses = () => require("../db/heroBosses") as typeof import("../db/heroBosses");
+
+  async function adventureWithBoss(
+    art: import("../db/bossVoice").BossArt,
+    quests?: number[],
+  ): Promise<{ id: number; bossUuid: string }> {
+    const monster = (await load().hero.listMonsters())[0];
+    assert(monster);
+    const bossId = await heroBosses().createHeroBoss({
+      name: "Gorgo",
+      monster: monster.key,
+      weakness: null,
+      resistance: null,
+      lines: { intro: [], idle: [], crit: [], enrage: [], defeat: [] },
+      art,
+    });
+    const boss = await heroBosses().getHeroBoss(bossId);
+    assert(boss);
+    const ids = quests ?? [(await heroQuest()).id, (await heroQuest()).id];
+    const { id } = await heroAdventure(ids, {
+      end: { kind: "boss", monster: monster.key, heroBoss: boss.uuid },
+    });
+    return { id, bossUuid: boss.uuid };
+  }
+  const written = async (id: number) => {
+    const out = await load().adv.adventureToFile(id);
+    assert(out);
+    return out;
+  };
+
+  test("all four forms and none both round trip, counted as photos", async () => {
+    const art = {
+      fresh: photo(3_000),
+      wounded: photo(3_100),
+      defeated: photo(3_200),
+      legendary: photo(3_300),
+    };
+    const full = await written((await adventureWithBoss(art)).id);
+    expect(full.photos).toBe(4);
+    expect(full.leftOut).toBe(0);
+    const end = full.file.adventure.end;
+    assert(end.kind === "boss");
+    expect(end.art).toEqual(art);
+    expect(parseJson(full.json)).toEqual(full.file);
+
+    const none = await written((await adventureWithBoss({})).id);
+    expect(none.photos).toBe(0);
+    const bare = none.file.adventure.end;
+    assert(bare.kind === "boss");
+    expect(bare.art).toBeUndefined();
+    expect(none.json).not.toContain('"art"');
+    expect(parseJson(none.json)).toEqual(none.file);
+  });
+
+  test("a photo that holds EXIF is never written, and one in a received file is dropped, not refused", async () => {
+    const { id, bossUuid } = await adventureWithBoss({
+      fresh: photo(3_000),
+      wounded: photo(3_000),
+    });
+    // Written straight to the row, as an older build could have left it.
+    t.sqlite
+      .prepare("UPDATE hero_bosses SET artJson = ? WHERE uuid = ?")
+      .run(JSON.stringify({ fresh: photo(3_000), wounded: photo(3_000, 64, 48, true) }), bossUuid);
+    const out = await written(id);
+    expect(out.photos).toBe(1);
+    expect(out.leftOut).toBe(1);
+    const end = out.file.adventure.end;
+    assert(end.kind === "boss");
+    expect(Object.keys(end.art ?? {})).toEqual(["fresh"]);
+
+    const received = JSON.parse(out.json);
+    received.adventure.end.art.defeated = photo(3_000, 64, 48, true);
+    received.adventure.end.art.legendary = "javascript:alert(1)";
+    const read = load().adv.parseAdventureData(received);
+    assert(read.adventure.end.kind === "boss");
+    expect(Object.keys(read.adventure.end.art ?? {})).toEqual(["fresh"]);
+  });
+
+  test("under the budget the cover goes first, then the boss's normal picture, then the quests, then its other forms", async () => {
+    const big = () => photo(390_000);
+    // 18 pictures in the quest, 7.0M: with the cover and the normal picture it is 7.8M, and no other form fits after it.
+    const own = Array.from({ length: 18 }, () => ({ uuid: nextUuid(), image: big() }));
+    const mine = await heroQuest({ own, official: [] });
+    const { id } = await adventureWithBoss({ fresh: big(), wounded: big(), defeated: big() }, [
+      mine.id,
+      (await heroQuest()).id,
+    ]);
+    t.sqlite.prepare("UPDATE adventures SET imagePath = ? WHERE id = ?").run(big(), id);
+    refresh();
+    const out = await written(id);
+    const end = out.file.adventure.end;
+    assert(end.kind === "boss");
+    expect(out.file.adventure.photo).toBeDefined();
+    expect(end.art?.fresh).toBeDefined();
+    expect(end.art?.wounded).toBeUndefined();
+    expect(end.art?.defeated).toBeUndefined();
+    expect(dataImages(out.file).size).toBeGreaterThanOrEqual(18);
+    expect(out.photos).toBe(20);
+    expect(out.leftOut).toBe(2);
+    expect(utf8(out.json)).toBeLessThanOrEqual(MAX_FILE_BYTES);
+  });
+
+  test("the preview counts the boss's pictures among what arrives, unless the phone already holds that boss", async () => {
+    const { id } = await adventureWithBoss({ fresh: photo(3_000), defeated: photo(3_000) });
+    const file = parseJson((await written(id)).json);
+    // Another phone: nothing of it here.
+    t.sqlite.exec("DELETE FROM hero_bosses");
+    refresh();
+    const fresh = await load().adv.previewAdventure(
+      { ...file, adventure: { ...file.adventure, uuid: nextUuid() } },
+      "en",
+    );
+    expect(fresh.arrives.photos).toBeGreaterThanOrEqual(2);
+    const withBoss = fresh.arrives.photos;
+    await load().adv.importAdventure(
+      { ...file, adventure: { ...file.adventure, uuid: nextUuid() } },
+      { asCopy: false },
+    );
+    // Now the boss is here: a second adventure naming it brings no picture for it.
+    const again = await load().adv.previewAdventure(
+      { ...file, adventure: { ...file.adventure, uuid: nextUuid() } },
+      "en",
+    );
+    expect(again.arrives.photos).toBe(withBoss - 2);
+  });
+
+  test("a boss already here is the one the preview shows, as it is the one the import keeps", async () => {
+    const { id, bossUuid } = await adventureWithBoss({ fresh: photo(3_000) });
+    const file = parseJson((await written(id)).json);
+    const end = file.adventure.end;
+    assert(end.kind === "boss");
+    const theirs = {
+      ...file,
+      adventure: {
+        ...file.adventure,
+        uuid: nextUuid(),
+        end: {
+          ...end,
+          name: "Theirs",
+          lines: { intro: [], idle: ["Not mine."], crit: [], enrage: [], defeat: [] },
+          art: {},
+        },
+      },
+    };
+    const preview = await load().adv.previewAdventure(theirs, "en");
+    expect(preview.boss?.uuid).toBe(bossUuid);
+    expect(preview.boss?.name).toBe("Gorgo");
+    expect(preview.boss?.art.fresh).toBeDefined();
+    await load().adv.importAdventure(theirs, { asCopy: false });
+    expect((await heroBosses().getHeroBossByUuid(bossUuid))?.name).toBe("Gorgo");
+  });
+
+  test("an older file without the fields imports with the painted monster", async () => {
+    const monster = (await load().hero.listMonsters())[0];
+    assert(monster);
+    const [a, b] = seedQuests();
+    assert(a && b);
+    const file = load().adv.parseAdventureData(
+      adventureLiteral(
+        nextUuid(),
+        [{ official: a.enTitle }, { official: b.enTitle }],
+        {},
+        { kind: "boss", monster: monster.key, name: "Old", lines: { idle: ["Hi."] } },
+      ),
+    );
+    const { id } = await load().adv.importAdventure(file, { asCopy: false });
+    const draft = await load().hero.loadHeroAdventureDraft(id);
+    assert(draft?.end.kind === "boss");
+    const boss = await heroBosses().getHeroBoss(
+      (
+        t.sqlite.prepare("SELECT id FROM hero_bosses WHERE uuid = ?").get(draft.end.heroBoss) as {
+          id: number;
+        }
+      ).id,
+    );
+    expect(boss?.art).toEqual({});
+    expect(boss?.monsterKey).toBe(monster.key);
   });
 });

@@ -18,3 +18,10 @@ export function formatList(items: readonly string[], language: AppLanguage): str
     .replace("{{a}}", () => items.slice(0, -1).join(", "))
     .replace("{{b}}", () => last);
 }
+
+/** A title between the quotation marks its language writes. */
+export function quoted(title: string, language: AppLanguage): string {
+  if (language === "en") return `\u201C${title}\u201D`;
+  if (language === "de") return `\u201E${title}\u201C`;
+  return `\u00AB\u00A0${title}\u00A0\u00BB`;
+}

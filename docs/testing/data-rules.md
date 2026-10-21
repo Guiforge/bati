@@ -610,7 +610,7 @@ the quest count unchanged; a failing import leaves counts unchanged.
 quest is never overwritten (only `isUserQuest` rows match). `src/questFile.ts:525-527, 545`.
 
 **R122. Adventure file** = `{kind:'bati-adventure', version:1, adventure{uuid, title, description,
-cover, photo?, end}, steps[]}`; the `end` of a boss carries `name` and `lines` (R126), always written. The
+cover, photo?, end}, steps[]}`; the `end` of a boss carries `name` and `lines` (R126), always written, and, for a boss the hero made, optional `weakness`, `resistance`, `bossUuid` and `art` (photos). The
 format was frozen at version 1 before its first release (2.13.0): from then on every addition is an optional
 field read by its name, and `VERSION` moves only for a field an older build must refuse. Each step is `{quest, narrative, outro}`, the quest a seed one by `enTitle`
 (`{official}`) or a hero one as a quest body (`{own: {quest, slots}}`, R66). The adventure's texts are
@@ -1030,7 +1030,22 @@ constructors read them from `adventures`, so changing the monster between two pl
 next hit the new monster's. The `boss_fights` columns are written at creation and read by nothing.
 Invariant: the fight's stats equal its adventure's at the next hit. `__tests__/db-hero-adventures.test.ts`.
 
-**R126. The boss's voice.** Migration 0077 gives `adventures` two nullable text columns, `bossName` and
+**R126. The hero's boss.** Migration 0079 moved the voice of 0077 into a table of its own, `hero_bosses`
+(hero rows, `uuid` UNIQUE; name, painted `monster`, `weaknessMuscle`, `resistanceMuscle`, `linesJson`,
+`artJson`), and gave `adventures` a nullable `heroBossUuid`. The two 0077 columns below are emptied by the
+migration (the adventure's uuid becomes the boss's) and read by nothing. The three `BossFight` builders read
+the boss through `bossLook` at fight time, so an edit applies on the next session and to every adventure that
+ends on it; a boss deleted under an adventure leaves the adventure's own columns. HP stays derived. Photos
+(`artJson`, four forms) stay out of `BossFight` (`getBossArt`, `useBossArt`) because the fight rides in the
+session snapshot. The editor offers the first two seeded monsters and the ones already beaten
+(`listOfferedMonsters`); every monster still resolves. The file carries the boss in `end` (optional
+`weakness`, `resistance`, `bossUuid`, `art`; R122), photos through `safeImage` and the budget in the order
+cover, boss normal, quests, the boss's other forms. Invariant: a seeded boss's fight is unchanged;
+`parse(write(a))` equals `write(a)` with a boss, with none, and with all four pictures.
+`__tests__/db-hero-adventures.test.ts`, `__tests__/adventure-file.test.ts`, `__tests__/migration-hero-bosses.test.ts`,
+`__tests__/db-peer-merge-bosses.test.ts`.
+
+*(Superseded text, 0077 as first written:)* Migration 0077 gives `adventures` two nullable text columns, `bossName` and
 `bossLinesJson` (`{"intro":[],"idle":[],"crit":[],"enrage":[],"defeat":[]}`, keys in that order, written by
 `db/bossVoice.ts` only; a row from before `intro` and `defeat` simply reads with none, no migration). NULL on seeded rows, on a route and on a boss left unnamed and silent. They are texts, so
 `updateHeroAdventure` writes them under a run too, and the stored end kind decides whether they are kept

@@ -9,6 +9,7 @@ import { getBossAsset, getExerciseAsset, getQuestAsset } from "@/constants/asset
 import { bossDisplayName } from "@/constants/bosses";
 import { fade, rawColors } from "@/constants/rawColors";
 import { formatSlotTarget } from "@/db/targets";
+import { useBossArt } from "@/hooks/useBossArt";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { describeExercise } from "@/hooks/useSessionInstructions";
@@ -58,6 +59,7 @@ export function CountdownView() {
   const status = useSessionStore((s) => s.status);
   const quest = useSessionStore((s) => s.quest);
   const bossFight = useSessionStore((s) => s.bossFight);
+  const bossArt = useBossArt(bossFight);
   const currentExerciseIndex = useSessionStore((s) => s.currentExerciseIndex);
   const timerStartTimestamp = useSessionStore((s) => s.timerStartTimestamp);
   const finishCountdown = useSessionStore((s) => s.finishCountdown);
@@ -114,7 +116,7 @@ export function CountdownView() {
   // What the hero is setting out against: the monster, else the quest's own cover. A quest a hero
   // wrote may have no cover, and then the first movement is the picture.
   const art = bossFight
-    ? getBossAsset(bossFight.imagePath, bossFight.tier)
+    ? getBossAsset(bossFight.imagePath, bossFight.tier, undefined, bossArt)
     : quest.imagePath
       ? getQuestAsset(quest.imagePath)
       : getExerciseAsset(first.exercise.imagePath);

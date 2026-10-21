@@ -57,8 +57,8 @@ than one device: see [the map](#the-map-and-the-one-host),
 
 ## What is stored, and where
 
-Everything Bati records (your workouts, sets, reps, hold times, quests, adventures, village,
-achievements, flame, oath, avatar, settings, the photos you give an exercise, a quest or an adventure, and the GPS points
+Everything Bati records (your workouts, sets, reps, hold times, quests, adventures, bosses you made, village,
+achievements, flame, oath, avatar, settings, the photos you give an exercise, a quest, an adventure or a boss, and the GPS points
 and air-pressure readings of an outing) is written to a
 **SQLite database inside the app's private storage on your device**.
 
@@ -252,13 +252,15 @@ around you, and a network name is a location by another route.
 
 **Photos (optional).** If you choose a photo as your hero avatar, the app reads that one image
 from your library and keeps a pointer to it on your device; the image itself is never copied or
-sent. If you give a photo to an exercise, a quest or an adventure you made (as its cover), the app
-shrinks it and stores it in the database like the rest of your data, so it travels with your
+sent. If you give a photo to an exercise, a quest, an adventure or a boss you made (as its cover or
+its picture), the app shrinks it and stores it in the database like the rest of your data, so it travels with your
 backups and an encrypted sync. It also travels in a quest or adventure file when you share one: such
 a file holds that quest or adventure (its cover photo included), its quests, the exercises you made
-for them and their photos as they are stored, and
+for them, the boss you made for the adventure (its name, its lines and its pictures) and their photos
+as they are stored, and
 nothing else (not your name, not your history). Before an adventure file leaves, Bati says how many
-photos it holds. It goes only where you send it from your phone's share sheet, and it is not
+photos it holds, the boss's included. The editor reminds you not to use a photo of someone without
+their consent. It goes only where you send it from your phone's share sheet, and it is not
 encrypted. Photos you add to a session or an outing in the Journal (three at most) are shrunk the
 same way, and the re-encoding removes the location and camera data the original carried; they leave
 the phone only in a backup you make, an encrypted sync, or a share you choose. Decline the permission and the app works normally with the built-in images.
@@ -347,7 +349,7 @@ appareil. Voir « La carte, et l'hôte unique », « La vérification de version
 
 Tout ce que Bati enregistre (séances, séries, répétitions, temps de gainage, quêtes,
 aventures, village, hauts faits, flamme, serment, avatar, réglages, les photos que vous donnez à
-un exercice, une quête ou une aventure, et les points GPS et relevés de pression d'une sortie) est écrit dans une **base SQLite située dans le stockage privé de l'application, sur
+un exercice, une quête, une aventure ou un boss, et les points GPS et relevés de pression d'une sortie) est écrit dans une **base SQLite située dans le stockage privé de l'application, sur
 votre appareil**.
 
 - Rien n'est envoyé chez nous ni partagé avec qui que ce soit. Les données ne quittent le téléphone
@@ -565,14 +567,16 @@ réseaux autour de vous : un nom de réseau est une position par un autre chemin
 
 **Photos (facultatif).** Si vous choisissez une photo comme avatar, l'application lit cette
 image dans votre galerie et garde un lien vers elle sur votre appareil ; l'image elle-même n'est
-jamais copiée ni envoyée. Si vous donnez une photo à un exercice, une quête ou une aventure que vous
-avez créés (comme couverture), l'application la réduit et la stocke dans la base comme le reste : elle
+jamais copiée ni envoyée. Si vous donnez une photo à un exercice, une quête, une aventure ou un boss que vous
+avez créés (comme couverture ou comme image), l'application la réduit et la stocke dans la base comme le reste : elle
 voyage donc avec vos sauvegardes et une synchronisation chiffrée. Elle voyage aussi dans un fichier
 de quête ou d'aventure quand vous en partagez un : ce fichier contient cette quête ou cette aventure
 (photo de couverture comprise), ses quêtes,
-les exercices que vous avez créés pour elles et leurs photos telles qu'elles sont enregistrées, et rien
+les exercices que vous avez créés pour elles, le boss que vous avez créé pour l'aventure (son nom,
+ses répliques et ses images) et leurs photos telles qu'elles sont enregistrées, et rien
 d'autre (ni votre nom, ni votre historique). Avant qu'un fichier d'aventure parte, Bati dit combien de
-photos il contient. Il ne va que là où vous l'envoyez depuis le partage de votre téléphone, et il n'est
+photos il contient, celles du boss comprises. L'éditeur rappelle de ne pas utiliser la photo de
+quelqu'un sans son accord. Il ne va que là où vous l'envoyez depuis le partage de votre téléphone, et il n'est
 pas chiffré. Les photos que vous ajoutez à une séance ou à une sortie dans le Journal (trois au plus)
 sont réduites de la même façon, et le réencodage retire la position et les données de l'appareil photo
 de l'original ; elles ne quittent le téléphone que dans une sauvegarde que vous faites, une

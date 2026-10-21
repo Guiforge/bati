@@ -1,5 +1,6 @@
 import { type BuildingStage, buildingStage } from "@/constants/buildingLevels";
 import type { VillagerId, VillagerPose } from "@/constants/villagers";
+import type { BossArt } from "@/db/bossVoice";
 
 /**
  * BATI Asset Map
@@ -662,7 +663,15 @@ export function getStepArt(stepImagePath: string | null, questImagePath: string 
  * Wounded and defeated exist for base monsters only (see scripts/generate-bosses.py); every
  * chain ends base → placeholder.
  */
-export function getBossAsset(id: string, tier = 0, state?: "wounded" | "defeated") {
+export function getBossAsset(id: string, tier = 0, state?: "wounded" | "defeated", art?: BossArt) {
+  // A hero's own picture of the form the moment calls for, in the same order as the painted chain;
+  // a form they left out shows their normal picture, and with none the painted monster as before.
+  const own =
+    (state === "defeated" && art?.defeated) ||
+    (tier >= 1 && art?.legendary) ||
+    (state === "wounded" && art?.wounded) ||
+    art?.fresh;
+  if (own) return { uri: own };
   const defeated = state === "defeated" ? lookup(BOSS_DEFEATED_ASSETS, id) : undefined;
   const legendary = tier >= 1 ? lookup(BOSS_LEGENDARY_ASSETS, id) : undefined;
   const wounded = state === "wounded" ? lookup(BOSS_WOUNDED_ASSETS, id) : undefined;

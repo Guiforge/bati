@@ -1,7 +1,10 @@
 import { ADVENTURE_ASSETS, type AdventureAssetKey } from "@/constants/assetMap";
 import { invalidateAdventures } from "@/db/adventures";
 import {
+  BOSS_ART_STATES,
   BOSS_LINE_MOMENTS,
+  type BossArt,
+  type BossArtState,
   clip,
   type HeroBossLines,
   MAX_BOSS_LINE,
@@ -26,12 +29,19 @@ import {
   type Monster,
 } from "@/db/heroAdventures";
 import {
+  createHeroBoss,
+  getHeroBossByUuid,
+  type HeroBoss,
+  type HeroBossDraft,
+} from "@/db/heroBosses";
+import {
   getQuestTemplateById,
   invalidateQuestTemplates,
   isUserQuest,
   listQuestTemplates,
   type QuestTemplate,
 } from "@/db/quests";
+import { type MuscleCode, muscleCodes } from "@/db/schema";
 import { uuidv7 } from "@/db/uuid";
 import { localizedTitle, seededLanguage } from "@/src/i18n/localized";
 import {
@@ -100,7 +110,26 @@ export type AdventureFile = {
     photo?: string;
     end:
       | { kind: "route" }
-      | { kind: "boss"; monster: string; name?: string; lines?: HeroBossLines };
+      | {
+          kind: "boss";
+          monster: string;
+          name?: string;
+          lines?: HeroBossLines;
+          /**
+           * The hero's own pictures of their boss, by form, each a `data:` image `safeImage` vouches
+           * for. Optional and read by name like `photo`: an older Bati ignores it and shows the
+           * painted monster, a file without it is unchanged.
+           */
+          art?: BossArt;
+          /** The boss's weakness and resistance when the hero chose them; a muscle this version lacks reads as none. */
+          weakness?: MuscleCode;
+          resistance?: MuscleCode;
+          /**
+           * The boss's own uuid (`hero_bosses.uuid`): a receiver that already holds it keeps its
+           * copy, as for a quest. A file without one (from a dev build) names the boss after the adventure.
+           */
+          bossUuid?: string;
+        };
   };
   steps: {
     quest: { official: string } | { own: QuestBody };
@@ -170,7 +199,26 @@ function end(value: unknown): AdventureFile["adventure"]["end"] {
   // Set only when present, so `parse(write(a))` still equals `write(a)` for a file without a voice.
   if (value.name !== undefined) boss.name = clip(text(value.name, MAX_BOSS_NAME), MAX_BOSS_NAME);
   if (value.lines !== undefined) boss.lines = lines(value.lines);
+  const art = bossArt(value.art);
+  if (art) boss.art = art;
+  // A muscle this version does not know is no choice, not a reason to refuse the file.
+  if (muscleCodes.includes(value.weakness as MuscleCode))
+    boss.weakness = value.weakness as MuscleCode;
+  if (muscleCodes.includes(value.resistance as MuscleCode))
+    boss.resistance = value.resistance as MuscleCode;
+  if (value.bossUuid !== undefined) boss.bossUuid = uuid(value.bossUuid);
   return boss;
+}
+
+/** Only `data:` images that pass `safeImage`: one that does not is dropped, never a reason to refuse the file. */
+function bossArt(value: unknown): BossArt | undefined {
+  if (!isRecord(value)) return undefined;
+  const out: BossArt = {};
+  for (const form of BOSS_ART_STATES) {
+    const image = safeImage(value[form]);
+    if (image?.startsWith("data:")) out[form] = image;
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
 }
 
 function lines(value: unknown): HeroBossLines {
@@ -262,9 +310,68 @@ const utf8Length = (s: string) => new TextEncoder().encode(s).length;
 
 type Picture = { stored: string; cover: boolean; refs: { image: string | null }[] };
 
-/** The end as the file carries it: a boss always with its voice, empty or not. */
-function fileEnd({ end, voice }: HeroAdventureDraft): AdventureFile["adventure"]["end"] {
-  return end.kind === "boss" ? { ...end, name: voice.name, lines: voice.lines } : end;
+/**
+ * The end as the file carries it: a boss always with its voice, empty or not. A boss the hero
+ * created travels whole (name, lines, weakness, resistance, uuid, and its pictures as the placeholder
+ * until the budget decides, `withBossArt`); a painted one travels as the monster alone.
+ */
+function fileEnd(
+  { end }: HeroAdventureDraft,
+  boss: HeroBoss | null,
+): AdventureFile["adventure"]["end"] {
+  if (end.kind !== "boss") return end;
+  const monster = boss?.monsterKey ?? end.monster;
+  if (!boss) return { kind: "boss", monster, name: "", lines: noBossLines() };
+  const out: AdventureFile["adventure"]["end"] = {
+    kind: "boss",
+    monster,
+    name: boss.name,
+    lines: boss.lines,
+    bossUuid: boss.uuid,
+  };
+  if (boss.weakness) out.weakness = boss.weakness;
+  if (boss.resistance) out.resistance = boss.resistance;
+  const set = BOSS_ART_STATES.filter((form) => boss.art[form]?.startsWith("data:"));
+  if (set.length > 0) out.art = Object.fromEntries(set.map((form) => [form, PLACEHOLDER]));
+  return out;
+}
+
+/** The order the pictures are put back in under the budget (D8): the cover, the boss, the quests, then its other forms. */
+const BOSS_FORMS_LAST: readonly BossArtState[] = ["wounded", "defeated", "legendary"];
+
+/**
+ * The boss's pictures among the others: `fresh` right after the cover, `wounded`, `defeated` and
+ * `legendary` after everything else, since each of those has a fallback (the normal picture). One
+ * left out is removed from the file, as a cover is.
+ */
+function withBossArt(
+  file: AdventureFile,
+  art: BossArt | undefined,
+  pictures: ReadonlyMap<string, Picture>,
+): ReadonlyMap<string, Picture> {
+  const e = file.adventure.end;
+  if (e.kind !== "boss" || !e.art || !art) return pictures;
+  const boss = e;
+  const entry = (form: BossArtState): [string, Picture][] => {
+    const stored = art[form];
+    if (!stored || !boss.art?.[form]) return [];
+    const ref: Picture["refs"][number] = {
+      get image() {
+        return boss.art?.[form] ?? null;
+      },
+      set image(value: string | null) {
+        if (value === null) {
+          if (boss.art) delete boss.art[form];
+          if (boss.art && Object.keys(boss.art).length === 0) delete boss.art;
+        } else boss.art = { ...boss.art, [form]: value };
+      },
+    };
+    return [[`boss:${form}`, { stored, cover: true, refs: [ref] }]];
+  };
+  const all = [...pictures];
+  const head = all.filter(([k]) => k.startsWith("adventure:"));
+  const rest = all.filter(([k]) => !k.startsWith("adventure:"));
+  return new Map([...head, ...entry("fresh"), ...rest, ...BOSS_FORMS_LAST.flatMap(entry)]);
 }
 
 /**
@@ -278,6 +385,10 @@ export async function adventureToFile(id: number): Promise<AdventureToFile | nul
   const draft = await loadHeroAdventureDraft(id);
   if (!draft?.uuid)
     throw new Error(`Adventure ${id} is not an adventure of the hero, or has no uuid`);
+  const boss =
+    draft.end.kind === "boss" && draft.end.heroBoss
+      ? await getHeroBossByUuid(draft.end.heroBoss)
+      : null;
   const [templates, catalogue] = await Promise.all([listQuestTemplates(), listExercises()]);
   const byId = new Map(templates.map((q) => [q.id, q]));
 
@@ -317,12 +428,15 @@ export async function adventureToFile(id: number): Promise<AdventureToFile | nul
       title: draft.title,
       description: draft.description,
       ...fileCover(draft.imagePath),
-      end: fileEnd(draft),
+      end: fileEnd(draft, boss),
     },
     steps,
   };
 
-  const { photos, leftOut } = putPicturesBack(file, withCoverPhoto(file, ownPhoto, pictures));
+  const { photos, leftOut } = putPicturesBack(
+    file,
+    withBossArt(file, boss?.art, withCoverPhoto(file, ownPhoto, pictures)),
+  );
 
   const json = JSON.stringify(file);
   try {
@@ -493,6 +607,11 @@ export type AdventurePreview = {
   monster: Monster | null;
   /** A boss this version lacks: it arrives as a route. */
   monsterUnknown: boolean;
+  /**
+   * The file's boss when this phone already holds it (by uuid): the import keeps this copy as it
+   * is, so the preview shows it, not the file's words and pictures. `monster` is then its monster.
+   */
+  boss: HeroBoss | null;
 };
 
 type StepStatus = { status: StepPreview["status"]; quest: QuestTemplate | null };
@@ -519,6 +638,34 @@ function stepStatuses(
   });
 }
 
+/**
+ * The boss a file carries as a creation of the hero's: one with a name, a line, a picture, a weakness
+ * or a resistance, named as the sender named it (a file from a dev build, with no uuid, names it after
+ * the adventure so a second import finds it). A painted monster with no voice is no creation: it
+ * arrives as the monster, exactly as before.
+ */
+function carriedBoss(
+  file: AdventureFile,
+): { uuid: string; draft: Omit<HeroBossDraft, "monster"> } | null {
+  const e = file.adventure.end;
+  if (e.kind !== "boss") return null;
+  const lines = e.lines ?? noBossLines();
+  const art = e.art ?? {};
+  const speaks = BOSS_LINE_MOMENTS.some((m) => lines[m].length > 0);
+  if (!e.name && !speaks && Object.keys(art).length === 0 && !e.weakness && !e.resistance)
+    return null;
+  return {
+    uuid: e.bossUuid ?? file.adventure.uuid,
+    draft: {
+      name: e.name ?? "",
+      weakness: e.weakness ?? null,
+      resistance: e.resistance ?? null,
+      lines,
+      art,
+    },
+  };
+}
+
 /** What an import would do, read before it does it. */
 export async function previewAdventure(
   file: AdventureFile,
@@ -532,15 +679,25 @@ export async function previewAdventure(
   const statuses = stepStatuses(file, catalogue, templates);
   const here = await findHeroAdventureByUuid(file.adventure.uuid);
   const e = file.adventure.end;
-  const monster = e.kind === "boss" ? (monsters.find((m) => m.key === e.monster) ?? null) : null;
+  const sent = e.kind === "boss" ? (monsters.find((m) => m.key === e.monster) ?? null) : null;
   const bringing = file.steps.flatMap(({ quest }, i) =>
     statuses[i]?.status === "brings" && "own" in quest ? [quest.own] : [],
   );
   const arrives = arrivals(bringing, catalogue);
+  // A boss this phone already holds is kept as it is, so its pictures are no arrival.
+  const carried = sent ? carriedBoss(file) : null;
+  const boss = carried ? await getHeroBossByUuid(carried.uuid) : null;
+  const monster = (boss && monsters.find((m) => m.key === boss.monsterKey)) || sent;
   return {
     // The adventure's own photo arrives too (the sender's dialog counted it), unless the adventure
     // is already here: then, like a quest already here, it is not an arrival.
-    arrives: { ...arrives, photos: arrives.photos + (file.adventure.photo && !here ? 1 : 0) },
+    arrives: {
+      ...arrives,
+      photos:
+        arrives.photos +
+        (here ? 0 : file.adventure.photo ? 1 : 0) +
+        (carried && !boss ? Object.keys(carried.draft.art).length : 0),
+    },
     steps: file.steps.map(({ quest }, i) => ({
       status: statuses[i]?.status ?? "missing",
       questId: statuses[i]?.quest?.id ?? null,
@@ -554,6 +711,7 @@ export async function previewAdventure(
     running: here ? await hasActiveRun(here.id) : false,
     monster,
     monsterUnknown: e.kind === "boss" && monster === null,
+    boss,
   };
 }
 
@@ -612,12 +770,20 @@ export async function importAdventure(
       description: a.description,
       imagePath: cover,
       end: monster ? { kind: "boss", monster: monster.key } : { kind: "route" },
-      voice:
-        monster && e.kind === "boss"
-          ? { name: e.name ?? "", lines: e.lines ?? noBossLines() }
-          : { name: "", lines: noBossLines() },
       steps,
     };
+    const carried = monster ? carriedBoss(file) : null;
+    if (monster && carried && draft.end.kind === "boss") {
+      // A boss already here (by uuid) is kept as it is, never rewritten: the file has no say over
+      // what the hero edited, as for a quest.
+      if (!(await getHeroBossByUuid(carried.uuid, tx))) {
+        await createHeroBoss(
+          { ...carried.draft, monster: monster.key },
+          { uuid: carried.uuid, exec: tx },
+        );
+      }
+      draft.end.heroBoss = carried.uuid;
+    }
     return fileHeroAdventure(draft, asCopy ? uuidv7() : a.uuid, tx);
   });
 

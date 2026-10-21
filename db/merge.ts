@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { reportError } from "@/src/reportError";
 import {
   type CanonicalColumns,
@@ -9,9 +9,10 @@ import {
   photosWon,
   setsCanon,
 } from "./backup";
-import { db, type IsolatedConnection, withWritableConnection } from "./client";
+import { db, type IsolatedConnection, schema, withWritableConnection } from "./client";
 import { deleteSession, parseRecords } from "./completed";
 import { getExerciseUsage, invalidateExercisesCache, removeExercise } from "./exercises";
+import { adventuresUsingBoss } from "./heroBosses";
 import { type MovedMovement, redecideAfterChange, redecideSessions } from "./personalRecords";
 import { adventuresUsingQuest, invalidateQuestTemplates, removeQuest } from "./quests";
 import { sqlString } from "./sql";
@@ -212,6 +213,8 @@ async function mergeInto(
   // After the quests, so `quest_map` is full (a quest brought back for a step also maps the other
   // device's sessions of it), and before the sessions.
   changes += await mergeAuthored(conn, ADVENTURES, canon);
+  // By uuid, and an adventure names its boss by uuid, so the order between the two does not matter.
+  changes += await mergeBosses(conn, canon);
 
   // Sessions this device neither has nor deleted.
   await conn.execAsync(`INSERT INTO temp.fresh SELECT uuid FROM ${PEER}.completed_sessions
@@ -526,6 +529,58 @@ async function mergeAuthored(
 }
 
 /**
+ * The hero's bosses (0079), by uuid: a row only the other device has is copied, one both have takes
+ * the later `updatedAt` (a same-second tie goes to the larger content, as everywhere), one a
+ * tombstone kills and nobody edited since is left out. Nothing names a boss by id (an adventure
+ * carries its uuid, copied verbatim), so there is no map and nothing to translate. Returns how many
+ * rows it wrote.
+ */
+async function mergeBosses(conn: IsolatedConnection, canon: CanonicalColumns): Promise<number> {
+  const cols = await columnsOf(conn, "hero_bosses", ["id"]);
+  const rows = await conn.getAllAsync<HeroRow>(
+    `SELECT p.id, p.uuid, '' AS name, p.updatedAt AS at,
+        (SELECT deletedAt FROM main.deleted_content d WHERE d.uuid = p.uuid) AS gone
+      FROM ${PEER}.hero_bosses p`,
+  );
+  let written = 0;
+  for (const row of rows) {
+    const local = await conn.getFirstAsync<{ id: number; at: number | null }>(
+      `SELECT id, updatedAt AS at FROM main.hero_bosses WHERE uuid = ${sqlString(row.uuid ?? "")}`,
+    );
+    // A dead boss an adventure here ends on (the other device's, merged above) comes back, as a
+    // named quest does (`bringNamedQuests`): the tombstone stays and `honourTombstones` keeps it while
+    // that adventure is active (a retired one would only bring it back to be removed again).
+    const named =
+      (await count(
+        conn,
+        `SELECT 1 FROM main.adventures WHERE isActive = 1 AND heroBossUuid = ${sqlString(row.uuid ?? "")}`,
+      )) > 0;
+    if (isDead(row, local) && !named) continue;
+    if (!local) {
+      await conn.execAsync(`INSERT INTO main.hero_bosses (${columnList(cols)})
+        SELECT ${selectList(cols, "p")} FROM ${PEER}.hero_bosses p WHERE p.id = ${row.id}`);
+      written++;
+      continue;
+    }
+    const [theirs, ours] = [row.at ?? 0, local.at ?? 0];
+    const takes =
+      theirs !== ours
+        ? theirs > ours
+        : (
+            await conn.getFirstAsync<{ r: number | null }>(
+              `SELECT ${canonical(PEER, "hero_bosses", "p", canon.heroBosses)} > ${canonical("main", "hero_bosses", "l", canon.heroBosses)} AS r
+                FROM ${PEER}.hero_bosses p, main.hero_bosses l WHERE p.id = ${row.id} AND l.id = ${local.id}`,
+            )
+          )?.r === 1;
+    if (!takes) continue;
+    await conn.execAsync(`UPDATE main.hero_bosses SET (${columnList(cols)}) =
+      (SELECT ${selectList(cols, "p")} FROM ${PEER}.hero_bosses p WHERE p.id = ${row.id}) WHERE id = ${local.id}`);
+    written++;
+  }
+  return written;
+}
+
+/**
  * Deleted on one device and not edited since, on either: the row is not brought back. A newer copy
  * on either side outlives the deletion, and goes the ordinary way.
  */
@@ -813,6 +868,16 @@ export async function honourTombstones(): Promise<number> {
     // Kept while an active adventure or a run names it, as a movement in use is (R32).
     if ((await adventuresUsingQuest(id)).length > 0) continue;
     await removeQuest(id);
+    removed++;
+  }
+  // Then the bosses, once the adventures that named them are settled: kept while an active adventure
+  // ends on one, as a quest in use is.
+  for (const { id, uuid } of await db.all<{ id: number; uuid: string }>(
+    sql.raw(`SELECT id, uuid FROM hero_bosses r WHERE EXISTS
+      (SELECT 1 FROM deleted_content d WHERE d.uuid = r.uuid AND d.deletedAt >= ifnull(r.updatedAt, 0))`),
+  )) {
+    if ((await adventuresUsingBoss(uuid)).length > 0) continue;
+    await db.delete(schema.heroBosses).where(eq(schema.heroBosses.id, id));
     removed++;
   }
   for (const { id } of await db.all<{ id: number }>(dead("exercises", "creator"))) {

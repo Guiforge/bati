@@ -402,6 +402,22 @@ describe("the boss ending", () => {
     expect(hero().createHeroAdventure?.mock.calls[0]?.[0]).not.toHaveProperty("voice");
   });
 
+  test("the boss chip starts on the hero's latest boss, not a painted one", async () => {
+    mockBosses.mockResolvedValue([gorgo]);
+    const editor = await mount();
+    await fireEvent.changeText(editor.getByTestId("adventure-name"), "Tale");
+    await pick(editor, 1, 2);
+    await fireEvent.press(editor.getByTestId("editor-end-boss"));
+    await fireEvent.press(editor.getByTestId("adventure-save"));
+    await waitFor(() =>
+      expect(hero().createHeroAdventure).toHaveBeenCalledWith(
+        expect.objectContaining({
+          end: { kind: "boss", monster: "iron_golem", heroBoss: gorgo.uuid },
+        }),
+      ),
+    );
+  });
+
   test("picking a painted monster after a hero boss drops the boss from the end", async () => {
     mockBosses.mockResolvedValue([gorgo]);
     const editor = await mount();
@@ -458,7 +474,9 @@ describe("the boss ending", () => {
     await fireEvent.press(editor.getByTestId("adventure-save"));
     await waitFor(() =>
       expect(hero().createHeroAdventure).toHaveBeenCalledWith(
-        expect.objectContaining({ end: { kind: "boss", monster: "shadow_serpent" } }),
+        expect.objectContaining({
+          end: { kind: "boss", monster: "iron_golem", heroBoss: gorgo.uuid },
+        }),
       ),
     );
   });
@@ -483,7 +501,9 @@ describe("the boss ending", () => {
     await fireEvent.press(editor.getByTestId("adventure-save"));
     await waitFor(() =>
       expect(hero().createHeroAdventure).toHaveBeenCalledWith(
-        expect.objectContaining({ end: { kind: "boss", monster: "shadow_serpent" } }),
+        expect.objectContaining({
+          end: { kind: "boss", monster: "iron_golem", heroBoss: gorgo.uuid },
+        }),
       ),
     );
   });

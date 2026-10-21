@@ -45,6 +45,12 @@ export function EditorEndSection({
 }: Props) {
   const { t } = useTranslation();
   const label = (m: Monster["weakness"]) => (m ? (MUSCLE_LABELS[m]?.[language] ?? m) : "");
+  const painted0 = monsters[0]?.key ?? "stone_golem";
+  // The hero's latest boss (the list is newest first) before any painted one.
+  const latest = heroBosses[0];
+  const firstBoss: EditorEnd = latest
+    ? { kind: "boss", monster: latest.monsterKey ?? painted0, heroBoss: latest.uuid }
+    : { kind: "boss", monster: painted0 };
 
   return (
     <YStack gap="$3" opacity={frozen ? 0.6 : 1} pointerEvents={frozen ? "none" : "auto"}>
@@ -59,13 +65,7 @@ export function EditorEndSection({
           testID="editor-end-boss"
           label={t("adventures.editor_end_boss")}
           tone={end.kind === "boss" ? "primary" : "default"}
-          onPress={() =>
-            onChange(
-              end.kind === "boss"
-                ? end
-                : { kind: "boss", monster: monsters[0]?.key ?? "stone_golem" },
-            )
-          }
+          onPress={() => onChange(end.kind === "boss" ? end : firstBoss)}
         />
       </XStack>
 
@@ -74,7 +74,7 @@ export function EditorEndSection({
           <XStack flexWrap="wrap" gap="$2">
             {heroBosses.map((b) => {
               const selected = end.heroBoss === b.uuid;
-              const fallback = b.monsterKey ?? monsters[0]?.key ?? "stone_golem";
+              const fallback = b.monsterKey ?? painted0;
               const painted = monsters.find((m) => m.key === b.monsterKey);
               return (
                 <YStack

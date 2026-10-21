@@ -79,5 +79,7 @@ catalogue the import writes into:
   and looks only at the hero's own exercises, never the seeded ones. Neutral, not a warning. In a quest
   file, an exercise the hero unticks does not arrive, so its line goes with it.
 
-An adventure file with a boss also shows the boss's lines, every moment, under its name (see
-[boss fights](../gameplay/boss-fights.md)).
+The adventure preview reads in the order of the decision: cover and title, the "already here" notice
+(update or keep both), **What arrives**, the same-name exercise line, the steps, then the boss (its name,
+picture, and its lines behind a fold, "What it will say (5)", closed: every moment is readable, the
+closing line is not thrown at the hero). See [boss fights](../gameplay/boss-fights.md).

@@ -30,8 +30,9 @@ Write an adventure out of quests the hero already has or has written. One scroll
 - **The end**: a route, or a boss. The picker lists the hero's own bosses first (each with its picture,
   what it is weak to and what it resists), then the painted monsters the hero may pick: the first two
   and any already beaten, with the monster already on a saved adventure always shown (`listOfferedMonsters`),
-  and a **New boss** button that opens the boss editor (the form stays as it is; the new boss shows in the
-  list on return). The figure of the pool is and about how many HP it has at the hero's level for these steps (the figure the fight will
+  and a **New boss** button that opens the boss editor (the form stays as it is; the boss made there is
+  chosen on return, the hero having made it for this adventure: the uuids known when they left tell it
+  apart from one that arrived by sync, and the choice is theirs to change). The figure of the pool is and about how many HP it has at the hero's level for these steps (the figure the fight will
   use). If every step is an outing, a line says outings do not hit the boss; saving stays possible.
 - **The boss itself is not edited here any more**: its name, pictures, weakness, resistance and lines
   live in the boss editor (`/bosses/edit`, reached from the Forge or from this picker's New boss).

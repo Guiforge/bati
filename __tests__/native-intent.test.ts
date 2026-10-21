@@ -18,7 +18,7 @@ test("a content:// file goes to the import preview, held exactly as Android gran
   const uri =
     "content://com.android.providers.downloads.documents/document/raw%3A%2Fstorage%2Femulated%2F0%2FDownload%2Fq.json";
   const target = redirect(uri);
-  expect(target).toMatch(/^\/quest-import\?n=\d+$/);
+  expect(target).toMatch(/^\/quest-import\?n=[a-z0-9]{10}$/);
   expect(target).not.toContain("raw");
   expect(incomingFile(counter(target))).toBe(uri);
 });
@@ -33,22 +33,23 @@ test("every file gets its own route, cold start or warm", () => {
 
 // `bati://` is BROWSABLE: a web page could link `bati://quest-import?n=1` and reopen, with
 // "Update my quest" one tap away, whatever file was held earlier in the process.
-test("only the counter a file was held under reads it, and an imported file reads nothing", () => {
-  const n = String(holdIncomingFile("content://chat/held"));
+test("only the token a file was held under reads it, and an imported file reads nothing", () => {
+  const n = holdIncomingFile("content://chat/held");
   expect(incomingFile(n)).toBe("content://chat/held");
-  expect(incomingFile(String(Number(n) - 1))).toBeNull();
+  // What a crafted link would try: the first counter of a process, and its neighbours.
+  for (const guess of ["1", "0", "2", "", "undefined"]) expect(incomingFile(guess)).toBeNull();
   expect(incomingFile(undefined)).toBeNull();
 
   releaseIncomingFile();
   expect(incomingFile(n)).toBeNull();
-  // The counter keeps climbing: a released file's number never names the next one.
-  expect(holdIncomingFile("content://chat/next")).toBeGreaterThan(Number(n));
+  // A released file's token never names the next one.
+  expect(holdIncomingFile("content://chat/next")).not.toBe(n);
 });
 
 // A `file:` URI points into a filesystem: `/dev/zero` never ends, and Bati's own files are not a
 // quest someone sent. No chat hands one over.
 test("a file:// URL is not taken for a quest file", () => {
-  const n = String(holdIncomingFile("content://chat/kept"));
+  const n = holdIncomingFile("content://chat/kept");
   const path = "file:///dev/zero";
   expect(redirect(path)).toBe(path);
   expect(incomingFile(n)).toBe("content://chat/kept");

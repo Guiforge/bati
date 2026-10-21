@@ -5,25 +5,27 @@
  * runs `decodeURIComponent` over a route's params more than once: a Downloads URI
  * (`…/document/raw%3A%2Fstorage%2F…`) reached `File` as `…/raw:/storage/…`, a URI nobody had
  * granted, and the provider refused it ("Permission Denial"). So the URI never goes through the
- * router. The route carries a counter instead, which changes for every file, so a second file
- * opened while the preview is showing reads again.
+ * router. The route carries a random token instead, new for every file, so a second file opened
+ * while the preview is showing reads again, and a link another app or a web page builds cannot
+ * name the file held (a counter was 1 for the first file of the process).
  */
-let held: { uri: string; n: number } | null = null;
-let opened = 0;
+let held: { uri: string; n: string } | null = null;
 
-/** Holds `uri` for the preview and returns the counter its route carries. */
-export function holdIncomingFile(uri: string): number {
-  opened += 1;
-  held = { uri, n: opened };
-  return opened;
+/** Holds `uri` for the preview and returns the token its route carries. */
+export function holdIncomingFile(uri: string): string {
+  // ponytail: `Math.random()`, as `db/uuid.ts`: unguessable in one blind tap, not a secret. Swap
+  //           for `expo-crypto` the day the token guards more than a preview that asks for a tap.
+  const n = Math.random().toString(36).slice(2, 12).padEnd(10, "0");
+  held = { uri, n };
+  return n;
 }
 
 /**
- * The URI held under counter `n`. Kept, not taken: the screen can mount twice. Another counter
+ * The URI held under counter `n`. Kept, not taken: the screen can mount twice. Another token
  * reads nothing, so a `bati://quest-import?n=1` link on a web page cannot reopen a held file.
  */
 export function incomingFile(n: string | undefined): string | null {
-  return held !== null && String(held.n) === n ? held.uri : null;
+  return held !== null && held.n === n ? held.uri : null;
 }
 
 /** Once imported, the file is done with: nothing should read it again. */

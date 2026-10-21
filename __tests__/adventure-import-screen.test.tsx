@@ -119,7 +119,7 @@ const confirm = () => screen.getByTestId("adventure-import-confirm");
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockParams.n = String(holdIncomingFile("content://chat/adventure.bati-adventure.json"));
+  mockParams.n = holdIncomingFile("content://chat/adventure.bati-adventure.json");
   mockSettings.language = "en";
   mockRead.mockResolvedValue(raw);
   mockImport.mockResolvedValue({ id: 77, updated: false });
@@ -406,7 +406,7 @@ describe("the Forge's import button", () => {
 
     expect(mockRouter.back).not.toHaveBeenCalled();
     const target = mockRouter.push.mock.calls[0]?.[0] as string;
-    expect(target).toMatch(/^\/quest-import\?n=\d+$/);
+    expect(target).toMatch(/^\/quest-import\?n=[a-z0-9]{10}$/);
     expect(incomingFile(target.split("=")[1])).toBe(uri);
   });
 

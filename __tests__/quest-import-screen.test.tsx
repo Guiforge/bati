@@ -149,7 +149,7 @@ function imported(): QuestFile {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockParams.n = String(holdIncomingFile("content://chat/quest.json"));
+  mockParams.n = holdIncomingFile("content://chat/quest.json");
   mockSettings.language = "en";
   mockRead.mockResolvedValue(file);
   mockImport.mockResolvedValue({ id: 42, updated: false });
@@ -481,7 +481,9 @@ describe("ImportFileButton", () => {
     mockRouter.canGoBack.mockReturnValue(true);
     await press();
 
-    expect(mockRouter.push).toHaveBeenCalledWith(expect.stringMatching(/^\/quest-import\?n=\d+$/));
+    expect(mockRouter.push).toHaveBeenCalledWith(
+      expect.stringMatching(/^\/quest-import\?n=[a-z0-9]{10}$/),
+    );
     const target = mockRouter.push.mock.calls[0]?.[0] as string;
     expect(incomingFile(target.split("=")[1])).toBe(uri);
     expect(mockRouter.back).not.toHaveBeenCalled();
@@ -556,7 +558,7 @@ test("a second file opened over the preview is read afresh", async () => {
   expect(slot(0).props.accessibilityState.checked).toBe(false);
 
   mockRead.mockClear();
-  mockParams.n = String(holdIncomingFile("content://chat/second.json"));
+  mockParams.n = holdIncomingFile("content://chat/second.json");
   await screen.rerender(wrap(<QuestImportScreen />));
   await screen.findByTestId("quest-import-title");
 

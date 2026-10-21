@@ -19,6 +19,7 @@ const mockBack = jest.fn();
 const mockDismissTo = jest.fn();
 const mockParams: { id?: string } = {};
 const mockPush = jest.fn();
+const mockFocus: { current: () => void } = { current: () => undefined };
 jest.mock("expo-router", () => ({
   useRouter: () => ({
     back: mockBack,
@@ -27,6 +28,7 @@ jest.mock("expo-router", () => ({
     push: mockPush,
   }),
   useFocusEffect: (cb: () => void) => {
+    mockFocus.current = cb;
     require("react").useEffect(cb, []);
   },
   useLocalSearchParams: () => mockParams,
@@ -421,6 +423,44 @@ describe("the boss ending", () => {
     await fireEvent.press(editor.getByTestId("editor-end-boss"));
     await fireEvent.press(editor.getByTestId("editor-new-boss"));
     expect(mockPush).toHaveBeenCalledWith("/bosses/edit");
+  });
+
+  test("a boss made from the shortcut is the one chosen when the hero comes back", async () => {
+    mockBosses.mockResolvedValue([gorgo]);
+    const editor = await mount();
+    await fireEvent.press(editor.getByTestId("editor-end-boss"));
+    await fireEvent.press(editor.getByTestId("editor-new-boss"));
+    const fresh = { ...gorgo, uuid: "new-boss", name: "Fresh" };
+    mockBosses.mockResolvedValue([gorgo, fresh]);
+    await act(() => {
+      mockFocus.current();
+    });
+    await waitFor(() => expect(editor.getByTestId("editor-hero-boss-new-boss")).toBeTruthy());
+    await fireEvent.changeText(editor.getByTestId("adventure-name"), "Tale");
+    await pick(editor, 1, 2);
+    await fireEvent.press(editor.getByTestId("adventure-save"));
+    await waitFor(() =>
+      expect(hero().createHeroAdventure).toHaveBeenCalledWith(
+        expect.objectContaining({ end: expect.objectContaining({ heroBoss: "new-boss" }) }),
+      ),
+    );
+  });
+
+  test("coming back without making a boss changes nothing", async () => {
+    mockBosses.mockResolvedValue([gorgo]);
+    const editor = await mount();
+    await fireEvent.press(editor.getByTestId("editor-end-boss"));
+    await act(() => {
+      mockFocus.current();
+    });
+    await fireEvent.changeText(editor.getByTestId("adventure-name"), "Tale");
+    await pick(editor, 1, 2);
+    await fireEvent.press(editor.getByTestId("adventure-save"));
+    await waitFor(() =>
+      expect(hero().createHeroAdventure).toHaveBeenCalledWith(
+        expect.objectContaining({ end: { kind: "boss", monster: "shadow_serpent" } }),
+      ),
+    );
   });
 
   test("the picker offers the monsters it is told to, and keeps showing a saved one it does not offer", async () => {

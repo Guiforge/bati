@@ -272,13 +272,24 @@ export default function AdventureEditor() {
     };
   }, [adventureId, t]);
 
-  // Back from the boss editor with a new boss: it shows in the list without a reload of the form.
+  // Back from the boss editor with a new boss: it shows in the list, and it is the one chosen,
+  // since the hero made it for this adventure (the uuids known when they left tell it apart).
+  const bossesBefore = useRef<ReadonlySet<string> | null>(null);
   useFocusEffect(
     useCallback(() => {
       listHeroBosses()
-        .then((heroBosses) => setCatalogue((c) => ({ ...c, heroBosses })))
+        .then((heroBosses) => {
+          setCatalogue((c) => ({ ...c, heroBosses }));
+          const known = bossesBefore.current;
+          const made = known ? heroBosses.find((b) => !known.has(b.uuid)) : undefined;
+          if (!made) return;
+          bossesBefore.current = null;
+          patch({
+            end: { kind: "boss", monster: made.monsterKey ?? "stone_golem", heroBoss: made.uuid },
+          });
+        })
         .catch((error: unknown) => reportError("adventure.editorBosses", error));
-    }, []),
+    }, [patch]),
   );
 
   const questIds = useMemo(() => steps.map((s) => s.questId), [steps]);
@@ -607,7 +618,10 @@ export default function AdventureEditor() {
               monsters={catalogue.monsters}
               offered={catalogue.offered}
               heroBosses={catalogue.heroBosses}
-              onCreateBoss={() => router.push("/bosses/edit" as never)}
+              onCreateBoss={() => {
+                bossesBefore.current = new Set(catalogue.heroBosses.map((b) => b.uuid));
+                router.push("/bosses/edit" as never);
+              }}
               language={language}
               hp={hp}
               outingsOnly={outingsOnly}

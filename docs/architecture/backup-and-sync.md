@@ -571,3 +571,47 @@ trail too, so "Send me the details" carries it.
 installed for any app that does not ask, which left a home server behind a private authority with no
 way in. The hero installs it in Android's security settings, which is their act; Bati only talks to
 the server they named. What is not offered is Joplin's "ignore TLS errors".
+
+## Known risks
+
+### The widget's pictures are readable by any app (accepted, 2026-10-22)
+
+Lead `rnwidget-imageprovider-exported` of security audit run 1, confirmed on an emulator and
+accepted. `react-native-android-widget` declares `RNWidgetImageProvider` with
+`android:exported="true"` and no permission, and the widget is drawn as a PNG served by it. Any app
+that guesses the URI reads the picture: what it shows is the Flame's streak count and the week's
+dots, which are already on the home screen.
+
+Evidence, `.perf` release build of `fix/security-audit-run-1`, x86_64 emulator (API 35), react-native-android-widget 0.22.1:
+
+- `aapt2 dump xmltree` on the APK: the provider is `exported=true`, with no permission.
+- With the Flame widget placed (id 2), `adb shell content read --uri
+  content://com.guiforge.bati.perf.rnwidget.imageprovider/widget_2_mode_light.png`, as the shell
+  uid (2000, another app), returned the 456x456 PNG.
+- Overriding it with `exported="false"` + `grantUriPermissions="true"` (`tools:replace`) closes the
+  read (`SecurityException: Permission Denial ... not exported from UID 10210`) and blanks both
+  widgets: the launcher shows "Can't load widget", and logcat has the same denial for
+  `com.google.android.apps.nexuslauncher` from `AppWidgetHostView`. The library draws through
+  `RemoteViews.setImageViewUri` (`RNWidget.java:78,94,104`) and never grants the URI to the host.
+
+Why it is not fixed here: the fix is in the library's Java, either granting the URI to the widget
+host or drawing a bitmap instead of a URI. This repo has no patch tooling, and adding patch-package
+or vendoring the library breaks the no-new-dependency rule and F-Droid's build of an unmodified
+package from source. Revisit when the library ships a fix.
+
+Issue text for upstream (`sAleksovski/react-native-android-widget`):
+
+> **RNWidgetImageProvider is exported without a permission**
+>
+> The library's manifest declares `.RNWidgetImageProvider` with `android:exported="true"` and no
+> `android:readPermission`, so any installed app can read every rendered widget image with
+> `content://<applicationId>.rnwidget.imageprovider/widget_<id>_mode_<light|dark>.png`. Widgets
+> often show personal data (counts, names, health figures).
+>
+> Making it `exported="false"` alone blanks the widget, because the host reads the URI given to
+> `RemoteViews.setImageViewUri` (`RNWidget.java`) with its own uid. Proposed fix: declare the
+> provider `exported="false"` with `android:grantUriPermissions="true"`, and before each
+> `setImageViewUri`, call `context.grantUriPermission(<host package>, uri,
+> Intent.FLAG_GRANT_READ_URI_PERMISSION)` for the widget host (the packages resolving
+> `Intent.ACTION_MAIN` + `Intent.CATEGORY_HOME`), or pass the bitmap with `setImageViewBitmap`
+> where the size allows.

@@ -4,7 +4,7 @@ type: screen
 route: /forge
 status: active
 updated: 2026-10-21
-related: [quests.md, adventures.md, exercises.md, adventure-editor.md, village.md, ../product/glossary.md]
+related: [boss-editor.md, quests.md, adventures.md, exercises.md, adventure-editor.md, village.md, ../product/glossary.md]
 sources: [app/forge.tsx, components/forge/ForgeButton.tsx, components/quests/QuestFileButtons.tsx, components/chorus/VillagerLine.tsx]
 ---
 
@@ -12,7 +12,7 @@ sources: [app/forge.tsx, components/forge/ForgeButton.tsx, components/quests/Que
 
 ## Purpose
 
-Where a hero makes things: quests, adventures and exercises of their own, and where a file someone
+Where a hero makes things: quests, adventures, exercises and bosses of their own, and where a file someone
 sent comes in. It adds no data. Each row opens the screen the galleries already open, each button
 pushes the route they already push.
 
@@ -46,7 +46,9 @@ Then one column, never a grid. In this order, the most frequent first:
    leads with the hero's own), and **New quest**.
 2. **Your adventures**: the same, with **Write an adventure**.
 3. **Your exercises**: the same; "See all" opens the catalogue on the hero's own (`?mine=1`).
-4. **Import a received file**: the one door for a quest or an adventure file. The preview screen
+4. **Your bosses**: the last three, "See all" (`/bosses`), and **New boss** (`/bosses/edit`), the
+   [boss editor](boss-editor.md).
+5. **Import a received file**: the one door for a quest or an adventure file. The preview screen
    reads which it is (`/quest-import`). The editors no longer carry an import link.
 
 A section with nothing in it says one line and keeps its button. No counter, no XP, no

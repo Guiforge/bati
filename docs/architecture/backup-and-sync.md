@@ -339,6 +339,20 @@ tombstone.
   exists) and never merged (`mergePeer` refuses on the newest migration); the previous build reads this
   build's file as unreadable. Nothing is lost on either side.
 
+### The hero's bosses (0079)
+
+A boss is a creation of its own: table `hero_bosses` (hero rows only, `uuid` UNIQUE), classed `merged` in
+`db/syncTables.ts`. `mergeBosses` copies a row only the other device has, takes the later `updatedAt` for
+one both have (a same-second tie goes to the larger `canonical` text, `heroBosses` in `CanonicalColumns`),
+and skips one a tombstone killed that nobody edited since. Nothing names a boss by id: an adventure carries
+`heroBossUuid`, copied verbatim, so there is no id map. Deleting a boss writes a `deleted_content` tombstone
+(`writeContentTombstone`, table `hero_bosses`); `honourTombstones` removes the other device's deletion unless
+an active adventure ends on the boss. The fingerprint's content segment gains one `b:<uuid>` row per boss
+(only where the schema has the table, so a device without a boss, or a peer before 0079, keeps its shape).
+The migration also moved the 0077 name and lines of a dev build's adventures into boss rows named after the
+adventure's uuid, so two phones that both migrated the same adventure hold the same boss. A peer on 0078 is
+compared and never merged. Backup and restore need nothing: a backup is the whole database.
+
 ### The boss's voice (0077)
 
 Two nullable columns on `adventures`, `bossName` and `bossLinesJson`, merged with the row by the existing

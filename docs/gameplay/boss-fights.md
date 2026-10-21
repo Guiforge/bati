@@ -2,7 +2,7 @@
 title: Boss Fights
 type: system
 status: active
-updated: 2026-10-17
+updated: 2026-10-21
 related: [adventures.md, session-flow.md, progression.md, ../screens/session.md]
 sources:
   [
@@ -286,12 +286,34 @@ The monster's portrait and its tuning live on `adventures`: `bossImagePath`, `bo
 
 ---
 
-## The hero's boss: name and voice
+## The hero's boss: a creation of its own
 
-A boss of an adventure the hero wrote is one of the six painted monsters, so its art, weakness,
-resistance and HP rules stay the monster's. The hero adds words only (columns `bossName` and
-`bossLinesJson`, [R126](../testing/data-rules.md)): a name of 40 characters at most, and up to three
-lines of 60 for each of five moments.
+A boss is the fourth thing a hero creates, beside exercises, quests and adventures (Forge, "Your
+bosses"; migration `0079`, table `hero_bosses`, [R126](../testing/data-rules.md)). It is a row with its
+own `uuid`: a name (40 characters at most), the **painted monster** its pictures fall back to, an
+optional **photo for each form** (normal, wounded, defeated, legendary), an optional **weakness** and
+**resistance** (a muscle each, or none), and up to three lines of 60 for each of five moments. An
+adventure ends on one by `adventures.heroBossUuid`, and several adventures may end on the same boss.
+The fight reads the boss at fight time (`bossLook` in `db/bossFights.ts`), so editing a boss changes
+every adventure that ends on it, mid-run included (the end of the adventure is what freezes under a
+run, not the boss). A boss deleted while an *active* adventure ends on it is refused; a retired
+adventure falls back to the painted monster it carries.
+
+**No combat number is set on a boss.** HP is still derived from the adventure's steps
+(`calculateBossHp`) and the damage rules are unchanged: a hero boss only chooses *which* muscle
+counts as weak or resisted, with the same 1.5x and 0.5x as a seeded boss, and none means neither.
+
+**Pictures.** Each form is the painted monster's own or a photo from the album, through the
+same `ImageChoiceField` and `encodePhoto` as an exercise (photos live in the row, `artJson`). A form
+without a picture of its own shows the *normal* picture with the arena's treatments (the phase
+darkening and rim, the pose lying at 45 % opacity when it falls); with no normal picture either, the
+painted monster's own form. `getBossAsset(id, tier, state, art)` picks, in the painted chain's order:
+defeated, then legendary at tier 1 or more (a hero boss does reach tier 1 on a rematch), then wounded,
+then normal. The photos are read apart from the fight (`getBossArt`, `useBossArt`): `BossFight` rides
+in the session snapshot, which must not carry up to four photos. They show on the adventure's boss
+panel, the countdown, the arena, the victory card and the import preview; a hero boss never appears
+in the bestiary or the village, which read the game's adventures only. The editor says, under the
+pictures, not to use a photo of someone without their consent.
 
 | Moment | Where it is heard |
 | ------ | ----------------- |
@@ -300,6 +322,21 @@ lines of 60 for each of five moments.
 | `defeat` | the felled boss's victory card, under its name |
 
 `intro` and `defeat` have no painted lines, so a seeded boss is unchanged, and the first line of the
-moment is the one said. A resisted hit keeps the painted lines only. Nothing here changes a combat
-number. The fields sit folded in the adventure editor, and the file import preview shows every line
-before the hero accepts the adventure.
+moment is the one said. A resisted hit keeps the painted lines only.
+
+**What the editor offers (no spoilers).** The adventure editor's boss end lists the hero's own bosses
+first, then the **first two seeded monsters** by `sortOrder` and any seeded monster the hero has
+already beaten (a finished run, or the live fight's `defeatedAt`: `listOfferedMonsters`), and a
+shortcut to create a new boss. A boss saved or imported with a monster outside that list still
+resolves and shows (`listMonsters` is unchanged), and the editor keeps showing it as the current
+choice. The boss editor's painted-monster choice follows the same rule.
+
+**Sharing.** The adventure file carries the boss in the end (`name`, `lines`, `weakness`, `resistance`,
+`bossUuid`, `art`, all optional and read by name, `VERSION` stays 1). The pictures go through the same
+`safeImage` as every photo (a photo with EXIF is dropped, never a reason to refuse the file) and the
+8 MB budget in this order: the adventure's cover, the boss's normal picture, the quests' pictures,
+then the boss's wounded, defeated and legendary ones. They are counted in "What arrives" and in the
+share dialog. On import the boss becomes the receiver's own boss; one already here by uuid is kept as
+it is, never rewritten. A file from before the boss existed (a name and lines, no uuid) names its boss
+after the adventure, so a second import finds it. A painted monster with no voice imports as the
+monster alone, exactly as before.

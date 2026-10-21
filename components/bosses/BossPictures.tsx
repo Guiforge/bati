@@ -45,6 +45,7 @@ export function BossPictures({ art, monster, monsterLabel, onChange }: Props) {
                 const rest = Object.fromEntries(Object.entries(art).filter(([k]) => k !== form));
                 onChange(next.startsWith("data:") ? { ...rest, [form]: next } : rest);
               }}
+              label={t("boss_editor.picture_of", { form: t(`adventures.editor_boss_art_${form}`) })}
               choices={[monster.key]}
               choiceLabel={() => monsterLabel}
               // What the boss will really show in this form: a form without a picture of its own

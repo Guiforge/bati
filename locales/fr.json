@@ -3124,6 +3124,7 @@
     "resistance": "Sa résistance (facultatif)",
     "no_muscle": "Aucune",
     "lines": "Ses répliques",
+    "picture_of": "Image : {{form}}",
     "delete": "Supprimer ce boss",
     "delete_title": "Supprimer {{name}} ?",
     "delete_body": "Il disparaît de ta Forge, et de tes autres appareils sauf là où une aventure se termine encore sur lui.",

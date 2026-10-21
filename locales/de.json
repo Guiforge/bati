@@ -3005,6 +3005,7 @@
     "resistance": "Sein Widerstand (optional)",
     "no_muscle": "Keine",
     "lines": "Seine Sprüche",
+    "picture_of": "Bild: {{form}}",
     "delete": "Diesen Boss löschen",
     "delete_title": "{{name}} löschen?",
     "delete_body": "Er verschwindet aus deiner Schmiede und von deinen anderen Geräten, außer dort, wo noch ein Abenteuer mit ihm endet.",

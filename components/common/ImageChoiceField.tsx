@@ -55,8 +55,11 @@ export type ImageChoiceFieldProps = {
   photos?: boolean;
   /** What a screen reader says for a choice tile; the key itself without it. */
   choiceLabel?: (key: string) => string;
+  /** What a screen reader says for the preview; "Image" without it. A form with four needs names. */
+  label?: string;
 };
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: one `??` over the limit; the pieces share all the state
 export function ImageChoiceField({
   value,
   onChange,
@@ -66,6 +69,7 @@ export function ImageChoiceField({
   aspect,
   photos = true,
   choiceLabel,
+  label,
 }: ImageChoiceFieldProps) {
   const { t } = useTranslation();
   const { showError } = useToast();
@@ -127,7 +131,7 @@ export function ImageChoiceField({
         pressStyle={{ opacity: 0.85 }}
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
-        accessibilityLabel={t("exercise_editor.image")}
+        accessibilityLabel={label ?? t("exercise_editor.image")}
       >
         <Image
           source={resolve(value)}

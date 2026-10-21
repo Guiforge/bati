@@ -3123,6 +3123,7 @@
     "resistance": "Su resistencia (opcional)",
     "no_muscle": "Ninguna",
     "lines": "Sus frases",
+    "picture_of": "Imagen: {{form}}",
     "delete": "Eliminar este jefe",
     "delete_title": "¿Eliminar {{name}}?",
     "delete_body": "Desaparece de tu Forja, y de tus otros dispositivos salvo donde una aventura aún termine con él.",

@@ -120,6 +120,21 @@ describe("a new boss", () => {
     expect(bosses().createHeroBoss).not.toHaveBeenCalled();
   });
 
+  test("each picture is announced by the form it stands for", async () => {
+    const editor = await mount();
+    for (const [form, name] of [
+      ["fresh", "Normal"],
+      ["wounded", "Wounded"],
+      ["defeated", "Defeated"],
+      ["legendary", "Legendary"],
+    ] as const) {
+      const preview = within(editor.getByTestId(`editor-boss-art-${form}`)).getByTestId(
+        "image-choice-preview",
+      );
+      expect(preview.props.accessibilityLabel).toContain(name);
+    }
+  });
+
   test("takes the hero to the name when it is missing", async () => {
     const scrollTo = jest.spyOn(ScrollView.prototype, "scrollTo");
     const editor = await mount();

@@ -12,6 +12,7 @@ const mockRouter = { push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGo
 const mockQuests = jest.fn();
 const mockAdventures = jest.fn();
 const mockExercises = jest.fn();
+const mockBuildings = jest.fn();
 
 jest.mock("expo-router", () => ({
   useRouter: () => mockRouter,
@@ -31,6 +32,10 @@ jest.mock("@/db/adventures", () => ({
 jest.mock("@/db/exercises", () => ({
   ...jest.requireActual("@/db/exercises"),
   listExercises: () => mockExercises(),
+}));
+jest.mock("@/db/village", () => ({
+  ...jest.requireActual("@/db/village"),
+  getVillageBuildings: () => mockBuildings(),
 }));
 jest.mock("@/db/completed", () => ({
   getRecentContributingSessions: jest.fn().mockResolvedValue([]),
@@ -79,6 +84,7 @@ beforeEach(() => {
   mockQuests.mockResolvedValue([]);
   mockAdventures.mockResolvedValue([]);
   mockExercises.mockResolvedValue([]);
+  mockBuildings.mockResolvedValue([]);
 });
 
 describe("Forge page", () => {
@@ -156,6 +162,23 @@ describe("Forge page", () => {
       "/exercises?mine=1",
     ]);
   });
+});
+
+test("inside the building: its painting at the hero's rank, and the smith's line", async () => {
+  const getArt = jest.spyOn(require("@/constants/assetMap"), "getBuildingIconAsset");
+  mockBuildings.mockResolvedValue([
+    { code: "quarry", relatedMuscle: "back", level: 4 },
+    { code: "forge", relatedMuscle: "chest", level: 0 },
+  ]);
+  await render(wrap(<ForgeScreen />));
+  await screen.findByTestId("forge-building");
+  // Not built yet still draws, at level 0, which the village paints rough.
+  expect(getArt).toHaveBeenCalledWith("forge", "chest", 0);
+  expect(screen.getByText("The Smith")).toBeTruthy();
+  expect(
+    screen.getByText("Quests get forged here. Tell me what you need, I'll bring the fire."),
+  ).toBeTruthy();
+  getArt.mockRestore();
 });
 
 test("the gallery button says Create and opens the Forge", async () => {

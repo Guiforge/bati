@@ -4,6 +4,7 @@ import { Paragraph, Text, View, XStack, YStack } from "tamagui";
 
 import { getVillagerAsset } from "@/constants/assetMap";
 import { type FaceFrame, VILLAGER_FACES } from "@/constants/villagerFaces";
+import type { VillagerId, VillagerPose } from "@/constants/villagers";
 import { type CueOwner, useChorusStore } from "@/stores/chorus";
 import { useCueOwner } from "./useCueOwner";
 import { useGuideSeen } from "./useGuideSeen";
@@ -37,18 +38,61 @@ function faceStyle({ x, y, side }: FaceFrame) {
 }
 
 export function VillagerLine({ owner, reserve }: { owner: CueOwner; reserve?: number }) {
-  const { t } = useTranslation();
   const current = useChorusStore((s) => s.current);
   const focused = useCueOwner(owner);
   const speaking = focused && current?.owner === owner ? current : null;
-  const { line, shown, rest } = useTypedLine(speaking);
+  const { shown, rest } = useTypedLine(speaking);
   useGuideSeen(speaking);
 
   const block = speaking ? (
+    <VillagerSays
+      villager={speaking.villager}
+      pose={speaking.pose}
+      shown={shown}
+      rest={rest}
+      numberOfLines={reserve != null ? 3 : undefined}
+    />
+  ) : null;
+
+  if (reserve == null)
+    return block ? (
+      <YStack px="$4" pb="$2">
+        {block}
+      </YStack>
+    ) : null;
+
+  return (
+    <YStack testID="villager-line-slot" height={reserve} overflow="hidden" justify="flex-start">
+      {block}
+    </YStack>
+  );
+}
+
+/**
+ * The medallion and the parchment bubble, without the cue machinery: `VillagerLine` types a cued
+ * line into it, and a screen that is a villager's own place (the Forge) shows one line in it as is.
+ * `shown` is what is visible, `rest` the untyped remainder, drawn transparent so the bubble has its
+ * final size from the first character.
+ */
+export function VillagerSays({
+  villager,
+  pose,
+  shown,
+  rest = "",
+  numberOfLines,
+}: {
+  villager: VillagerId;
+  pose: VillagerPose;
+  shown: string;
+  rest?: string;
+  numberOfLines?: number;
+}) {
+  const { t } = useTranslation();
+  return (
     <XStack
       testID="villager-line-block"
       accessible
-      accessibilityLabel={`${t(`villagers.names.${speaking.villager}`)}. ${line}`}
+      accessibilityLabel={`${t(`villagers.names.${villager}`)}. ${shown}${rest}`}
       gap="$2"
       items="flex-start"
     >
@@ -71,8 +115,8 @@ export function VillagerLine({ owner, reserve }: { owner: CueOwner; reserve?: nu
         <YStack width={FACE} height={FACE} rounded={FACE / 2} overflow="hidden">
           <Image
             testID="villager-face"
-            source={getVillagerAsset(speaking.villager, speaking.pose)}
-            style={faceStyle(VILLAGER_FACES[speaking.villager][speaking.pose])}
+            source={getVillagerAsset(villager, pose)}
+            style={faceStyle(VILLAGER_FACES[villager][pose])}
             accessibilityElementsHidden
             importantForAccessibility="no-hide-descendants"
           />
@@ -99,7 +143,7 @@ export function VillagerLine({ owner, reserve }: { owner: CueOwner; reserve?: nu
         {/* The speaker is the cue that this is speech; the line itself is regular weight, so it
             does not read as the screen's own instruction. */}
         <Text fontSize={12} fontWeight="700" color="$ink800" accessible={false}>
-          {t(`villagers.names.${speaking.villager}`)}
+          {t(`villagers.names.${villager}`)}
         </Text>
         {/* The untyped remainder is transparent rather than omitted, so the line is its final
             size from the first character. */}
@@ -107,7 +151,7 @@ export function VillagerLine({ owner, reserve }: { owner: CueOwner; reserve?: nu
           color="$bgDark"
           fontSize={14}
           lineHeight={18}
-          numberOfLines={reserve != null ? 3 : undefined}
+          numberOfLines={numberOfLines}
           accessible={false}
         >
           <Paragraph testID="villager-line" color="$bgDark" fontSize={14} lineHeight={18}>
@@ -119,18 +163,5 @@ export function VillagerLine({ owner, reserve }: { owner: CueOwner; reserve?: nu
         </Paragraph>
       </YStack>
     </XStack>
-  ) : null;
-
-  if (reserve == null)
-    return block ? (
-      <YStack px="$4" pb="$2">
-        {block}
-      </YStack>
-    ) : null;
-
-  return (
-    <YStack testID="villager-line-slot" height={reserve} overflow="hidden" justify="flex-start">
-      {block}
-    </YStack>
   );
 }

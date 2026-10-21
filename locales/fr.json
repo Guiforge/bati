@@ -1450,7 +1450,8 @@
     "see_all": "Tout voir",
     "import": "Importer un fichier reçu",
     "import_hint": "Une quête ou une aventure qu'on t'a envoyée, en fichier .bati-quest.json ou .bati-adventure.json. Tu peux aussi appuyer dessus directement dans ta conversation.",
-    "import_failed": "Le fichier n'a pas pu être ouvert. Réessaie."
+    "import_failed": "Le fichier n'a pas pu être ouvert. Réessaie.",
+    "smith_greeting": "Ici, on forge des quêtes. Dis-moi ce qu'il te faut, je fournis le feu."
   },
   "village": {
     "forge_enter": "Entrer dans la forge",

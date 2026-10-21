@@ -1,16 +1,22 @@
+import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useRouter } from "expo-router";
 import { type ReactNode, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { VillagerSays } from "@/components/chorus/VillagerLine";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { SectionLabel } from "@/components/common/SectionLabel";
 import { ChevronLeft, ChevronRight } from "@/components/icons";
 import { ImportFileButton } from "@/components/quests/QuestFileButtons";
+import { getBuildingIconAsset } from "@/constants/assetMap";
+import { fade, rawColors } from "@/constants/rawColors";
 import { listAdventures } from "@/db/adventures";
 import { isUserExercise, listExercises } from "@/db/exercises";
 import { isUserQuest, listQuestTemplates, USER_QUEST_AUTHOR } from "@/db/quests";
+import { getVillageBuildings, type VillageBuilding } from "@/db/village";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
@@ -21,6 +27,8 @@ const SHOWN = 3;
 type Row = { id: number; name: string };
 type Made = { quests: Row[]; adventures: Row[]; exercises: Row[] };
 const NOTHING: Made = { quests: [], adventures: [], exercises: [] };
+/** The building's painting, at the size that keeps "New quest" above the fold at 130 % text. */
+const ART = 88;
 
 function ForgeSection({
   testID,
@@ -109,6 +117,7 @@ export default function ForgeScreen(): ReactNode {
   const insets = useSafeAreaInsets();
   const language = useSettingsStore((s) => s.language);
   const [made, setMade] = useState<Made>(NOTHING);
+  const [forge, setForge] = useState<VillageBuilding | null>(null);
   // A quest or adventure screen lives in its tab's stack: without the anchor, opened from here it is
   // that stack's only route, and back (or the hero's next save) fell through to Home.
   const intoTab = (href: string) => router.push(href as never, { withAnchor: true });
@@ -135,11 +144,22 @@ export default function ForgeScreen(): ReactNode {
           });
         })
         .catch((e: unknown) => reportError("forge.load", e));
+      // The building's own painting at the hero's rank, as the village draws it. Its own promise:
+      // a village that fails to load costs the picture, never the lists.
+      getVillageBuildings()
+        .then((buildings) => setForge(buildings.find((b) => b.code === "forge") ?? null))
+        .catch((e: unknown) => reportError("forge.building", e));
     }, [language]),
   );
 
   return (
     <YStack testID="forge-screen" flex={1} bg="$bgDark">
+      {/* The fire inside the building: a warm glow from the top that dies before the lists. */}
+      <LinearGradient
+        colors={[fade(rawColors.primary, 0.2), fade(rawColors.primary, 0)]}
+        style={{ position: "absolute", top: 0, left: 0, right: 0, height: insets.top + 320 }}
+        pointerEvents="none"
+      />
       <ScrollView
         contentContainerStyle={{
           paddingTop: insets.top + 12,
@@ -148,7 +168,7 @@ export default function ForgeScreen(): ReactNode {
           gap: 24,
         }}
       >
-        <YStack gap="$2">
+        <YStack gap="$3">
           <XStack items="center" gap="$3">
             <AppIconButton
               testID="forge-back"
@@ -170,9 +190,25 @@ export default function ForgeScreen(): ReactNode {
               {t("forge.title")}
             </Text>
           </XStack>
-          <Text color="$textSecondary" fontSize={13}>
-            {t("forge.subtitle")}
-          </Text>
+          {/* Inside the village's Forge: its painting at the hero's rank (rough before it is built,
+              nothing is locked), and the smith who keeps it. */}
+          <XStack items="center" gap="$3">
+            <YStack width={ART} height={ART}>
+              {forge ? (
+                <Image
+                  testID="forge-building"
+                  source={getBuildingIconAsset(forge.code, forge.relatedMuscle, forge.level)}
+                  style={{ width: ART, height: ART }}
+                  contentFit="contain"
+                  accessible={false}
+                />
+              ) : null}
+            </YStack>
+            <Text flex={1} minW={0} color="$textSecondary" fontSize={13}>
+              {t("forge.subtitle")}
+            </Text>
+          </XStack>
+          <VillagerSays villager="smith" pose="talk" shown={t("forge.smith_greeting")} />
         </YStack>
 
         <ForgeSection

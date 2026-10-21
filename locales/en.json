@@ -1363,7 +1363,8 @@
     "see_all": "See all",
     "import": "Import a received file",
     "import_hint": "A quest or an adventure someone sent you, as a .bati-quest.json or .bati-adventure.json file. You can also tap it directly in your chat.",
-    "import_failed": "The file could not be opened. Try again."
+    "import_failed": "The file could not be opened. Try again.",
+    "smith_greeting": "Quests get forged here. Tell me what you need, I'll bring the fire."
   },
   "village": {
     "forge_enter": "Enter the forge",

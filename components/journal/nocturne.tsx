@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { type GetProps, styled, Text, XStack, YStack, type YStackProps } from "tamagui";
+import { type GetProps, Spinner, styled, Text, XStack, YStack, type YStackProps } from "tamagui";
 import { ChevronLeft } from "@/components/icons";
 import { rawColors } from "@/constants/rawColors";
 
@@ -189,6 +189,7 @@ export function NButton({
   block,
   minH = 40,
   testID,
+  busy = false,
 }: {
   children: string;
   onPress: () => void;
@@ -196,14 +197,19 @@ export function NButton({
   block?: boolean;
   minH?: number;
   testID?: string;
+  /** Working: a spinner beside the label, and no press until it is done. */
+  busy?: boolean;
 }) {
   const primary = variant === "primary";
   const tone = primary ? "$resourceGold" : undefined;
   return (
     <YStack
       testID={testID}
-      onPress={onPress}
+      onPress={busy ? undefined : onPress}
       accessibilityRole="button"
+      // Always passed: Android keeps a stale `enabled="false"` once the state goes empty.
+      aria-disabled={busy}
+      aria-busy={busy}
       minH={minH}
       // The Journal runs at 0.7x density, so its buttons are 40 tall by design and every one of
       // them was 4 dp under the floor. Taken back in hit area rather than in height, and derived
@@ -220,14 +226,19 @@ export function NButton({
       width={block ? "100%" : undefined}
       pressStyle={{ bg: primary ? "$gold900" : "$ink900" }}
     >
-      <NText
-        fontWeight="500"
-        fontSize={primary ? 15 : 14}
-        color={tone ?? "$text"}
-        style={{ textAlign: "center" }}
-      >
-        {children}
-      </NText>
+      <XStack items="center" gap={8}>
+        {busy ? (
+          <Spinner testID={testID && `${testID}-busy`} size="small" color={tone ?? "$text"} />
+        ) : null}
+        <NText
+          fontWeight="500"
+          fontSize={primary ? 15 : 14}
+          color={tone ?? "$text"}
+          style={{ textAlign: "center" }}
+        >
+          {children}
+        </NText>
+      </XStack>
     </YStack>
   );
 }

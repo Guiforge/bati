@@ -1,5 +1,5 @@
 import { Image } from "expo-image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, TextInput, View } from "react-native";
 import { YStack } from "tamagui";
@@ -60,6 +60,8 @@ export function SessionNotebook({
   const [uuid, setUuid] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
   const [photos, setPhotos] = useState<Photo[]>([]);
+  const adding = useRef(false);
+  const [addingShown, setAddingShown] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [editing, setEditing] = useState(startEditing);
   const [draft, setDraft] = useState("");
@@ -107,7 +109,11 @@ export function SessionNotebook({
   };
 
   const addPhotos = () => {
-    if (!uuid) return;
+    // Read synchronously, unlike the state: a second tap while a big photo was being re-encoded
+    // added it twice, and the seconds of encoding said nothing.
+    if (!uuid || adding.current) return;
+    adding.current = true;
+    setAddingShown(true);
     setMessage(null);
     chooseSessionPhotos(uuid, photos.length)
       .then(async (outcome) => {
@@ -118,6 +124,10 @@ export function SessionNotebook({
       .catch((error: unknown) => {
         reportError("journal.notebook.photo", error);
         setMessage(t("journal.photo_failed"));
+      })
+      .finally(() => {
+        adding.current = false;
+        setAddingShown(false);
       });
   };
 
@@ -170,7 +180,7 @@ export function SessionNotebook({
         </View>
       )}
       {withPhotos && uuid !== null && photos.length < MAX_SESSION_PHOTOS && (
-        <NButton testID="notebook-photo-add" onPress={addPhotos}>
+        <NButton testID="notebook-photo-add" onPress={addPhotos} busy={addingShown}>
           {t("journal.photo_add")}
         </NButton>
       )}

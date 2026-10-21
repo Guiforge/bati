@@ -101,6 +101,32 @@ test("the add button asks the picker for the photos already there, and is gone a
   expect(mockChoose).toHaveBeenCalledWith("s-uuid", 1);
 });
 
+test("a second press while the photo is encoding adds nothing; the button says it is busy, then frees", async () => {
+  let finish: (v: "added") => void = () => {};
+  mockChoose.mockImplementationOnce(() => new Promise((resolve) => (finish = resolve)));
+  await mount();
+  const add = () => screen.getByTestId("notebook-photo-add");
+  await act(async () => {
+    await fireEvent.press(add());
+  });
+  expect(screen.getByTestId("notebook-photo-add-busy")).toBeTruthy();
+  expect(add().props["aria-disabled"] ?? add().props.accessibilityState?.disabled).toBe(true);
+  await act(async () => {
+    await fireEvent.press(add());
+  });
+  expect(mockChoose).toHaveBeenCalledTimes(1);
+
+  await act(async () => {
+    finish("added");
+    await Promise.resolve();
+  });
+  expect(screen.queryByTestId("notebook-photo-add-busy")).toBeNull();
+  await act(async () => {
+    await fireEvent.press(add());
+  });
+  expect(mockChoose).toHaveBeenCalledTimes(2);
+});
+
 test("at three photos there is nothing left to add", async () => {
   mockPhotos = [photo(1), photo(2), photo(3)];
   await mount();

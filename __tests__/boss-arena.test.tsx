@@ -228,3 +228,39 @@ describe("BossArena gauge", () => {
     expect(flat(figure.props.style).fontFamily).toBe(config.fonts.body.face[700].normal);
   });
 });
+
+describe("a hero boss's own pictures in the arena", () => {
+  const FRESH = "data:image/jpeg;base64,FRESH";
+  const WOUNDED = "data:image/jpeg;base64,WOUNDED";
+  const DEFEATED = "data:image/jpeg;base64,DEFEATED";
+  const LEGEND = "data:image/jpeg;base64,LEGEND";
+  const shown = async (hp: number, extra: Partial<React.ComponentProps<typeof BossArena>>) => {
+    const root = await render(arena(hp, extra));
+    // expo-image hands its source on as a list.
+    return [root.getByTestId("boss-arena-art").props.source].flat()[0];
+  };
+
+  it("shows the photo of each form where it has one", async () => {
+    const art = { fresh: FRESH, wounded: WOUNDED, defeated: DEFEATED, legendary: LEGEND };
+    expect(await shown(TOTAL_HP, { art })).toEqual({ uri: FRESH });
+    expect(await shown(TOTAL_HP * 0.4, { art })).toEqual({ uri: WOUNDED });
+    expect(await shown(0, { art })).toEqual({ uri: DEFEATED });
+    expect(await shown(TOTAL_HP, { art, tier: 1 })).toEqual({ uri: LEGEND });
+  });
+
+  it("a form with no photo of its own falls back to the normal photo, with the same treatments", async () => {
+    const art = { fresh: FRESH };
+    expect(await shown(TOTAL_HP * 0.4, { art })).toEqual({ uri: FRESH });
+    expect(await shown(0, { art })).toEqual({ uri: FRESH });
+    expect(await shown(TOTAL_HP, { art, tier: 1 })).toEqual({ uri: FRESH });
+  });
+
+  it("with no normal photo, a form without one is the painted monster's own", async () => {
+    // Only the defeated photo: a standing boss is the painting, the fallen one is the photo.
+    const art = { defeated: DEFEATED };
+    const standing = await shown(TOTAL_HP, { art });
+    expect(standing).not.toEqual({ uri: DEFEATED });
+    expect(standing).toEqual(await shown(TOTAL_HP, {}));
+    expect(await shown(0, { art })).toEqual({ uri: DEFEATED });
+  });
+});

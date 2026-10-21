@@ -28,6 +28,7 @@ describe("db/heroAdventures", () => {
     quests: require("../db/quests") as typeof import("../db/quests"),
     journal: require("../db/journal") as typeof import("../db/journal"),
     village: require("../db/village") as typeof import("../db/village"),
+    bosses: require("../db/heroBosses") as typeof import("../db/heroBosses"),
   });
 
   const adminQuests = () =>
@@ -48,7 +49,6 @@ describe("db/heroAdventures", () => {
       description: "A tale",
       imagePath: "the_golem",
       end,
-      voice: { name: "", lines: { intro: [], idle: [], crit: [], enrage: [], defeat: [] } },
       steps: questIds.map((questId, i) => ({
         questId,
         narrative: `before ${i}`,
@@ -531,101 +531,206 @@ describe("db/heroAdventures", () => {
     expect(hero.worksSparedZone(quest("Admin"), new Set([7]))).toBe(false);
   });
 
-  describe("the boss's voice", () => {
-    const voice = (
-      name: string,
-      lines: Partial<Record<"idle" | "crit" | "enrage", string[]>> = {},
-    ) => ({
-      name,
-      lines: { intro: [], idle: [], crit: [], enrage: [], defeat: [], ...lines },
+  describe("a boss of the hero's", () => {
+    const art = "data:image/jpeg;base64,AAAA";
+    const bossDraft = (over: Partial<import("../db/heroBosses").HeroBossDraft> = {}) => ({
+      name: "  Night   coil ",
+      monster: "shadow_serpent" as const,
+      weakness: "chest" as const,
+      resistance: null,
+      lines: { intro: [], idle: [" Again. ", "", "x"], crit: [], enrage: ["Enough."], defeat: [] },
+      art: {},
+      ...over,
     });
     const row = (id: number) =>
-      t.sqlite
-        .prepare("SELECT kind, bossName, bossLinesJson FROM adventures WHERE id = ?")
-        .get(id) as {
-        kind: string;
-        bossName: string | null;
-        bossLinesJson: string | null;
-      };
-    const boss = { kind: "boss" as const, monster: "iron_golem" as const };
+      t.sqlite.prepare("SELECT * FROM hero_bosses WHERE id = ?").get(id) as Record<string, unknown>;
 
-    test("a boss with a voice writes both columns, the lines in moment order", async () => {
-      const { hero } = mod();
-      const [a, b] = adminQuests();
-      if (!a || !b) throw new Error("seed quests expected");
-      const id = await hero.createHeroAdventure({
-        ...draft([a, b], boss),
-        voice: voice("  Night   coil ", { enrage: ["Enough."], idle: [" Again. ", "", "x"] }),
-      });
+    test("is written clean, with its uuid, and read back", async () => {
+      const { bosses } = mod();
+      const id = await bosses.createHeroBoss(
+        bossDraft({ art: { fresh: art, wounded: "not a photo" as never } }),
+      );
       expect(row(id)).toMatchObject({
-        bossName: "Night coil",
-        bossLinesJson:
-          '{"intro":[],"idle":["Again.","x"],"crit":[],"enrage":["Enough."],"defeat":[]}',
-      });
-      const loaded = await hero.loadHeroAdventureDraft(id);
-      expect(loaded?.voice).toEqual({
         name: "Night coil",
-        lines: { intro: [], idle: ["Again.", "x"], crit: [], enrage: ["Enough."], defeat: [] },
+        weaknessMuscle: "chest",
+        resistanceMuscle: null,
+        linesJson: '{"intro":[],"idle":["Again.","x"],"crit":[],"enrage":["Enough."],"defeat":[]}',
+        artJson: JSON.stringify({ fresh: art }),
+      });
+      expect(String(row(id).uuid)).toMatch(/^[0-9a-f]{8}-/);
+      const read = await bosses.getHeroBoss(id);
+      expect(read).toMatchObject({
+        name: "Night coil",
+        monsterKey: "shadow_serpent",
+        art: { fresh: art },
       });
     });
 
-    test("a route with a voice in the draft writes nothing, and an empty voice is NULL", async () => {
-      const { hero } = mod();
+    test("an adventure that ends on it fights as it says: its name, lines, weakness and monster", async () => {
+      const { hero, bosses, boss } = mod();
       const [a, b] = adminQuests();
       if (!a || !b) throw new Error("seed quests expected");
-      const route = await hero.createHeroAdventure({
-        ...draft([a, b]),
-        voice: voice("Ghost", { idle: ["Boo."] }),
+      const bossId = await bosses.createHeroBoss(bossDraft());
+      const uuid = String(row(bossId).uuid);
+      const id = await hero.createHeroAdventure(
+        draft([a, b], { kind: "boss", monster: "shadow_serpent", heroBoss: uuid }),
+      );
+      const fight = await boss.getOrCreateBossFight(id, "medium");
+      expect(fight).toMatchObject({
+        bossName: "Night coil",
+        weaknessMuscle: "chest",
+        resistanceMuscle: null,
       });
-      expect(row(route)).toMatchObject({ bossName: null, bossLinesJson: null });
-      const silent = await hero.createHeroAdventure({ ...draft([a, b], boss), voice: voice("  ") });
-      expect(row(silent)).toMatchObject({ kind: "boss", bossName: null, bossLinesJson: null });
-    });
-
-    test("under a run the voice is written, and the stored end decides, never the draft's", async () => {
-      const { hero, adv } = mod();
-      const [a, b] = adminQuests();
-      if (!a || !b) throw new Error("seed quests expected");
-      const bossId = await hero.createHeroAdventure({
-        ...draft([a, b], boss),
-        voice: voice("One"),
+      expect(fight?.bossLines?.enrage).toEqual(["Enough."]);
+      // Editing the boss changes the next read, for every adventure that ends on it.
+      await bosses.updateHeroBoss(bossId, bossDraft({ name: "Renamed", weakness: "legs" }));
+      expect(await boss.getBossFightByAdventure(id)).toMatchObject({
+        bossName: "Renamed",
+        weaknessMuscle: "legs",
       });
-      await adv.startAdventureRun({ adventureId: bossId });
-      // A draft that says route for a frozen boss cannot erase the voice.
-      await hero.updateHeroAdventure(bossId, {
-        ...draft([a, b]),
-        voice: voice("Two", { crit: ["Hah."] }),
-      });
-      expect(row(bossId)).toMatchObject({
-        kind: "boss",
-        bossName: "Two",
-        bossLinesJson: '{"intro":[],"idle":[],"crit":["Hah."],"enrage":[],"defeat":[]}',
-      });
-      expect((await hero.loadHeroAdventureDraft(bossId))?.steps.map((s) => s.questId)).toEqual([
-        a,
-        b,
-      ]);
-
-      // A draft that says boss for a frozen route cannot write one.
-      const routeId = await hero.createHeroAdventure(draft([a, b]));
-      await adv.startAdventureRun({ adventureId: routeId });
-      await hero.updateHeroAdventure(routeId, { ...draft([a, b], boss), voice: voice("Sneaky") });
-      expect(row(routeId)).toMatchObject({ kind: "route", bossName: null, bossLinesJson: null });
-    });
-
-    test("changing the monster keeps the voice", async () => {
-      const { hero } = mod();
-      const [a, b] = adminQuests();
-      if (!a || !b) throw new Error("seed quests expected");
-      const id = await hero.createHeroAdventure({
-        ...draft([a, b], { kind: "boss", monster: "shadow_serpent" }),
-        voice: voice("Keeper"),
-      });
+      expect(await boss.getBossArt(id)).toEqual({});
+      await bosses.updateHeroBoss(bossId, bossDraft({ art: { defeated: art } }));
+      expect(await boss.getBossArt(id)).toEqual({ defeated: art });
       const loaded = await hero.loadHeroAdventureDraft(id);
-      if (!loaded) throw new Error("draft expected");
-      const { frozen: _f, uuid: _u, ...rest } = loaded;
-      await hero.updateHeroAdventure(id, { ...rest, end: boss });
-      expect(row(id)).toMatchObject({ bossName: "Keeper" });
+      expect(loaded?.end).toEqual({ kind: "boss", monster: "shadow_serpent", heroBoss: uuid });
+    });
+
+    test("a painted monster picked as it is has no hero boss and fights as before", async () => {
+      const { hero, boss } = mod();
+      const [a, b] = adminQuests();
+      if (!a || !b) throw new Error("seed quests expected");
+      const id = await hero.createHeroAdventure(
+        draft([a, b], { kind: "boss", monster: "iron_golem" }),
+      );
+      const iron = await hero.monsterOf("iron_golem");
+      expect(await boss.getOrCreateBossFight(id, "medium")).toMatchObject({
+        bossName: null,
+        weaknessMuscle: iron?.weakness,
+      });
+    });
+
+    test("an adventure naming a boss that does not exist is refused, one whose boss is gone loads as its monster", async () => {
+      const { hero, bosses } = mod();
+      const [a, b] = adminQuests();
+      if (!a || !b) throw new Error("seed quests expected");
+      await expect(
+        hero.createHeroAdventure(
+          draft([a, b], { kind: "boss", monster: "shadow_serpent", heroBoss: "nope" }),
+        ),
+      ).rejects.toThrow("Unknown boss");
+      const bossId = await bosses.createHeroBoss(bossDraft());
+      const uuid = String(row(bossId).uuid);
+      const id = await hero.createHeroAdventure(
+        draft([a, b], { kind: "boss", monster: "shadow_serpent", heroBoss: uuid }),
+      );
+      // A sync that deleted the boss under it.
+      t.sqlite.prepare("DELETE FROM hero_bosses WHERE uuid = ?").run(uuid);
+      expect((await hero.loadHeroAdventureDraft(id))?.end).toEqual({
+        kind: "boss",
+        monster: "shadow_serpent",
+      });
+    });
+
+    test("delete is refused while an active adventure ends on it, leaves a tombstone otherwise", async () => {
+      const { hero, bosses } = mod();
+      const [a, b] = adminQuests();
+      if (!a || !b) throw new Error("seed quests expected");
+      const bossId = await bosses.createHeroBoss(bossDraft());
+      const uuid = String(row(bossId).uuid);
+      const id = await hero.createHeroAdventure(
+        draft([a, b], { kind: "boss", monster: "shadow_serpent", heroBoss: uuid }),
+      );
+      await expect(bosses.deleteHeroBoss(bossId)).rejects.toBeInstanceOf(bosses.HeroBossInUseError);
+      expect(await bosses.getHeroBoss(bossId)).not.toBeNull();
+      await hero.retireHeroAdventure(id);
+      await bosses.deleteHeroBoss(bossId);
+      expect(await bosses.getHeroBoss(bossId)).toBeNull();
+      expect(
+        t.sqlite.prepare("SELECT uuid FROM deleted_content WHERE uuid = ?").get(uuid),
+      ).toBeTruthy();
+    });
+
+    test("under a run the end is frozen but the boss itself still edits", async () => {
+      const { hero, bosses, adv, boss } = mod();
+      const [a, b] = adminQuests();
+      if (!a || !b) throw new Error("seed quests expected");
+      const bossId = await bosses.createHeroBoss(bossDraft());
+      const uuid = String(row(bossId).uuid);
+      const id = await hero.createHeroAdventure(
+        draft([a, b], { kind: "boss", monster: "shadow_serpent", heroBoss: uuid }),
+      );
+      await adv.startAdventureRun({ adventureId: id });
+      // A draft that says route cannot unseat the boss of a frozen adventure.
+      await hero.updateHeroAdventure(id, draft([a, b]));
+      expect((await hero.loadHeroAdventureDraft(id))?.end).toMatchObject({ heroBoss: uuid });
+      await bosses.updateHeroBoss(bossId, bossDraft({ name: "Mid-run" }));
+      expect((await boss.getOrCreateBossFight(id, "medium"))?.bossName).toBe("Mid-run");
+    });
+  });
+
+  describe("the monsters the editor offers", () => {
+    const keys = async () => (await mod().hero.listOfferedMonsters()).map((m) => m.key);
+
+    test("a fresh hero is offered the first two seeded monsters by sortOrder, and no more", async () => {
+      const { hero } = mod();
+      const all = await hero.listMonsters();
+      expect(all.length).toBeGreaterThan(2);
+      expect(await keys()).toEqual(all.slice(0, 2).map((m) => m.key));
+    });
+
+    test("a seeded monster the hero has beaten joins the offer, by a finished run or by the fight's defeatedAt", async () => {
+      const { hero } = mod();
+      const all = await hero.listMonsters();
+      const [, , third, fourth] = all;
+      if (!third || !fourth) throw new Error("four seeded monsters expected");
+      const adventureOf = (key: string) =>
+        (
+          t.sqlite
+            .prepare(
+              "SELECT id FROM adventures WHERE author = 'Admin' AND kind = 'boss' AND bossImagePath LIKE ? LIMIT 1",
+            )
+            .get(`%${key}%`) as { id: number }
+        ).id;
+      const before = await keys();
+      expect(before).not.toContain(third.key);
+
+      // A finished run of the third monster's adventure.
+      t.sqlite
+        .prepare(
+          "INSERT INTO adventure_runs (adventureId, status, startedAt, finishedAt) VALUES (?, 'finished', unixepoch(), unixepoch())",
+        )
+        .run(adventureOf(third.key));
+      expect(await keys()).toContain(third.key);
+      expect(await keys()).not.toContain(fourth.key);
+
+      // The live fight's defeatedAt counts too (a rematch nulls it, the run above survives).
+      t.sqlite
+        .prepare(
+          "INSERT INTO boss_fights (adventureId, totalHp, currentHp, defeatedAt) VALUES (?, 100, 0, unixepoch())",
+        )
+        .run(adventureOf(fourth.key));
+      expect(await keys()).toContain(fourth.key);
+      // Order is the content's, and a monster is offered once however many records name it.
+      const offered = await keys();
+      expect(offered).toEqual(all.map((m) => m.key).filter((k) => offered.includes(k)));
+      expect(new Set(offered).size).toBe(offered.length);
+      t.sqlite.exec("DELETE FROM boss_fights; DELETE FROM adventure_runs");
+    });
+
+    test("an adventure saved with a monster the editor does not offer still saves, loads and fights", async () => {
+      const { hero, boss } = mod();
+      const hidden = (await hero.listMonsters()).at(-1);
+      const [a, b] = adminQuests();
+      if (!hidden || !a || !b) throw new Error("seed content expected");
+      expect(await keys()).not.toContain(hidden.key);
+      const id = await hero.createHeroAdventure(
+        draft([a, b], { kind: "boss", monster: hidden.key }),
+      );
+      expect((await hero.loadHeroAdventureDraft(id))?.end).toEqual({
+        kind: "boss",
+        monster: hidden.key,
+      });
+      expect((await boss.getOrCreateBossFight(id, "medium"))?.imagePath).toBe(hidden.bossImagePath);
     });
   });
 });

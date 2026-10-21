@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, isNotNull } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, or } from "drizzle-orm";
 import {
   ADVENTURE_ASSETS,
   type AdventureAssetKey,
@@ -6,13 +6,7 @@ import {
   getBossKey,
 } from "@/constants/assetMap";
 import { invalidateAdventures } from "./adventures";
-import {
-  bossLinesJson,
-  clip,
-  type HeroBossVoice,
-  MAX_BOSS_NAME,
-  parseBossLines,
-} from "./bossVoice";
+import { clip } from "./bossVoice";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import { nextEditStamp } from "./completed";
 import { type QuestTemplate, USER_QUEST_AUTHOR } from "./quests";
@@ -24,7 +18,15 @@ import { uuidv7 } from "./uuid";
  * `author = 'hero'`, like a quest of the hero is a row of `quests`. It is never deleted: retiring
  * is an edit (`isActive = 0`), so a run, a fight or a victory that names it keeps a row to name.
  */
-const { adventureRuns, adventures, adventureSteps, completedQuest, quests } = schema;
+const {
+  adventureRuns,
+  adventures,
+  adventureSteps,
+  bossFights,
+  completedQuest,
+  heroBosses,
+  quests,
+} = schema;
 
 export const MIN_STEPS = 2;
 export const MAX_STEPS = 8;
@@ -40,12 +42,11 @@ export type HeroAdventureDraft = {
   description: string;
   /** A bundled cover key, or a `data:` photo the hero chose. */
   imagePath: string;
-  end: { kind: "route" } | { kind: "boss"; monster: BossAssetKey };
   /**
-   * The hero's words for their boss. Top level and not inside `end`: it stays editable while `end`
-   * is frozen under a run, and a switch to "route" and back keeps what the hero typed. Ignored for a route.
+   * A boss is a painted monster picked as it is (`monster`), or one the hero created
+   * (`heroBoss`, its `hero_bosses.uuid`; `monster` is then that boss's painted monster).
    */
-  voice: HeroBossVoice;
+  end: { kind: "route" } | { kind: "boss"; monster: BossAssetKey; heroBoss?: string };
   steps: { questId: number; narrative: string; outro: string }[];
 };
 
@@ -91,6 +92,38 @@ export async function listMonsters(): Promise<Monster[]> {
     });
   }
   return monsters;
+}
+
+/** How many seeded monsters every hero may pick from the start: the ones met first in the game. */
+export const STARTER_MONSTERS = 2;
+
+/**
+ * The monsters the editor offers: the first two by `sortOrder`, plus any the hero has already
+ * beaten (a finished run, or the live fight's `defeatedAt`, the two records `getBossBanners`
+ * reads), so the editor does not show a monster before the game has. A hero's own photos are
+ * the main way to make a boss. This only trims the *offer*: `listMonsters` still resolves every
+ * monster, so an adventure saved or imported with a hidden one keeps working.
+ */
+export async function listOfferedMonsters(): Promise<Monster[]> {
+  const all = await listMonsters();
+  if (all.length <= STARTER_MONSTERS) return all;
+  const beaten = await db
+    .select({ bossImagePath: adventures.bossImagePath })
+    .from(adventures)
+    .leftJoin(bossFights, eq(bossFights.adventureId, adventures.id))
+    .leftJoin(
+      adventureRuns,
+      and(eq(adventureRuns.adventureId, adventures.id), eq(adventureRuns.status, "finished")),
+    )
+    .where(
+      and(
+        eq(adventures.author, ADMIN_CREATOR),
+        eq(adventures.kind, "boss"),
+        or(isNotNull(bossFights.defeatedAt), isNotNull(adventureRuns.id)),
+      ),
+    );
+  const keys = new Set(beaten.map((r) => getBossKey(r.bossImagePath)));
+  return all.filter((m, i) => i < STARTER_MONSTERS || keys.has(m.key));
 }
 
 export async function monsterOf(key: BossAssetKey): Promise<Monster | null> {
@@ -150,14 +183,34 @@ function clean(draft: HeroAdventureDraft): Clean {
   };
 }
 
-/** The columns that depend on how the adventure ends. */
-async function endColumns(end: HeroAdventureDraft["end"]) {
+/**
+ * The columns that depend on how the adventure ends. `exec` reads the boss of a file import on its
+ * own transaction, where the boss it just created is the only place it exists.
+ */
+async function endColumns(end: HeroAdventureDraft["end"], exec: Exec = db) {
   if (end.kind === "route") {
     return {
       kind: "route",
       bossImagePath: null,
       bossWeaknessMuscle: null,
       bossResistanceMuscle: null,
+      heroBossUuid: null,
+    } as const;
+  }
+  if (end.heroBoss) {
+    const [boss] = await exec
+      .select()
+      .from(heroBosses)
+      .where(eq(heroBosses.uuid, end.heroBoss))
+      .limit(1);
+    if (!boss) throw new Error("Unknown boss");
+    // The fight reads the boss itself (`bossLook`); these keep the row readable on its own.
+    return {
+      kind: "boss",
+      bossImagePath: boss.monster,
+      bossWeaknessMuscle: boss.weaknessMuscle,
+      bossResistanceMuscle: boss.resistanceMuscle,
+      heroBossUuid: boss.uuid,
     } as const;
   }
   const monster = await monsterOf(end.monster);
@@ -167,19 +220,8 @@ async function endColumns(end: HeroAdventureDraft["end"]) {
     bossImagePath: monster.bossImagePath,
     bossWeaknessMuscle: monster.weakness,
     bossResistanceMuscle: monster.resistance,
+    heroBossUuid: null,
   } as const;
-}
-
-/**
- * Null for a route: a route has no boss to speak. An unnamed boss keeps the painted name (null).
- * `kind` is the end that will be on the row after the write, never the draft's under a run.
- */
-function voiceColumns(kind: string, voice: HeroBossVoice) {
-  if (kind !== "boss") return { bossName: null, bossLinesJson: null } as const;
-  return {
-    bossName: clamp(voice.name.replace(/\s+/g, " "), MAX_BOSS_NAME) || null,
-    bossLinesJson: bossLinesJson(voice.lines),
-  };
 }
 
 /** The hero's text sits in the four language columns, the same in each (ru reads en). */
@@ -258,8 +300,8 @@ export async function createHeroAdventure(
   { uuid, exec }: { uuid?: string; exec?: Exec } = {},
 ): Promise<number> {
   const c = clean(draft);
-  // `endColumns` reads the seeded monsters on `db`: content no import writes.
-  const end = await endColumns(draft.end);
+  // `endColumns` reads the seeded monsters on `db` (content no import writes) and a hero boss on `exec`.
+  const end = await endColumns(draft.end, exec);
   await assertQuestsExist(
     c.steps.map((s) => s.questId),
     exec,
@@ -273,7 +315,6 @@ export async function createHeroAdventure(
       .values({
         ...titleColumns(c),
         ...end,
-        ...voiceColumns(draft.end.kind, draft.voice),
         author: USER_QUEST_AUTHOR,
         uuid: uuid ?? uuidv7(),
         questId: first.questId,
@@ -304,8 +345,8 @@ export async function createHeroAdventure(
  * helper with `createHeroAdventure`.
  *
  * With a run under way the steps and the end are frozen: the quests and the end of the draft are
- * ignored, and only the texts, the cover, the title and the boss's voice change, the step texts by
- * position; the voice is kept or cleared by the stored end, not the draft's.
+ * ignored, and only the texts, the cover and the title change, the step texts by position. The
+ * boss itself is edited on its own (`db/heroBosses.ts`) and so stays editable under a run.
  *
  * ponytail: a fight kept after a left partie keeps the pool of the old steps (PARK-1). Fix (c)
  * rescales it to the new pool keeping the fraction of HP already taken, if a hero reports it.
@@ -315,10 +356,10 @@ export async function updateHeroAdventure(
   draft: HeroAdventureDraft,
   exec?: Exec,
 ): Promise<void> {
-  const storedKind = await assertHeroAdventure(id, exec);
+  await assertHeroAdventure(id, exec);
   const c = clean(draft);
   const frozen = await hasActiveRun(id, exec);
-  const end = frozen ? null : await endColumns(draft.end);
+  const end = frozen ? null : await endColumns(draft.end, exec);
   if (!frozen) {
     await assertQuestsExist(
       c.steps.map((s) => s.questId),
@@ -334,8 +375,6 @@ export async function updateHeroAdventure(
       .set({
         ...titleColumns(c),
         ...(end ? { ...end, questId: first.questId } : {}),
-        // Texts, so written under a run too; kept or cleared by the end that is really on the row.
-        ...voiceColumns(frozen ? storedKind : draft.end.kind, draft.voice),
         updatedAt: nextEditStamp(adventures.updatedAt),
       })
       .where(eq(adventures.id, id));
@@ -436,6 +475,15 @@ export async function loadHeroAdventureDraft(
     .orderBy(asc(adventureSteps.stepIndex));
   const key = getBossKey(row.bossImagePath);
   const monster = row.kind === "boss" ? (key ?? (await listMonsters())[0]?.key ?? null) : null;
+  // A boss that is gone (sync can lag a deletion) leaves the adventure on its painted monster.
+  const [boss] = row.heroBossUuid
+    ? await db
+        .select({ monster: heroBosses.monster })
+        .from(heroBosses)
+        .where(eq(heroBosses.uuid, row.heroBossUuid))
+        .limit(1)
+    : [];
+  const heroBoss = boss ? row.heroBossUuid : null;
   const cover =
     row.imagePath && isCover(row.imagePath)
       ? row.imagePath
@@ -444,8 +492,7 @@ export async function loadHeroAdventureDraft(
     title: row.enTitle,
     description: row.enDescription,
     imagePath: cover,
-    end: monster ? { kind: "boss", monster } : { kind: "route" },
-    voice: { name: row.bossName ?? "", lines: parseBossLines(row.bossLinesJson) },
+    end: monster ? { kind: "boss", monster, ...(heroBoss ? { heroBoss } : {}) } : { kind: "route" },
     steps: steps.map((s) => ({
       questId: s.questId,
       narrative: s.enNarrative,

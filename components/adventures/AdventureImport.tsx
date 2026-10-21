@@ -11,8 +11,9 @@ import { Chip } from "@/components/common/Chip";
 import { useToast } from "@/components/common/Toast";
 import { Download, Info } from "@/components/icons";
 import { ImportArrives, ImportClashes } from "@/components/quests/ImportNotes";
-import { ADVENTURE_ASSETS, getAdventureAsset } from "@/constants/assetMap";
+import { ADVENTURE_ASSETS, getAdventureAsset, getBossAsset } from "@/constants/assetMap";
 import { BOSS_LINE_MOMENTS, type HeroBossLines } from "@/db/bossVoice";
+import type { Monster } from "@/db/heroAdventures";
 import {
   type AdventureFile,
   AdventureFileError,
@@ -104,6 +105,7 @@ export function AdventureImport({
                 })
               : t("adventures.editor_end_route")}
           </Text>
+          <BossPortrait monster={preview.monster} end={adventure.end} />
           {/* What the boss will say, read before the hero walks in: a line from a friend is no
               surprise in the middle of a set. A boss this version lacks arrives as a route, with none. */}
           <BossLines end={adventure.end} known={preview.monster !== null} />
@@ -249,4 +251,29 @@ async function save(
     reportError("adventures.import", error);
     return { error: "adventures.import_failed" };
   }
+}
+
+/** The boss as it will look: the sender's picture when the file has one, else the painting. */
+function BossPortrait({
+  monster,
+  end,
+}: {
+  monster: Monster | null;
+  end: AdventureFile["adventure"]["end"];
+}) {
+  if (!monster) return null;
+  return (
+    <Image
+      testID="adventure-import-boss-art"
+      source={getBossAsset(
+        monster.bossImagePath,
+        0,
+        undefined,
+        end.kind === "boss" ? end.art : undefined,
+      )}
+      style={{ width: 96, height: 96, borderRadius: 12 }}
+      contentFit="cover"
+      accessible={false}
+    />
+  );
 }

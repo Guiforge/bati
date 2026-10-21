@@ -42,6 +42,7 @@ import type { FeedbackCode, Locomotion } from "@/db/schema";
 import { formatCount } from "@/db/targets";
 import { calculateLevelFromXp, getLevelTitle, getXpForLevel } from "@/db/userLevel";
 import { outingRate } from "@/db/xp";
+import { useBossArt } from "@/hooks/useBossArt";
 import { useFontScaled } from "@/hooks/useFontScaled";
 import { useHaptics } from "@/hooks/useHaptics";
 import { formatTime } from "@/hooks/useSessionTimer";
@@ -262,6 +263,7 @@ export function VictoryView() {
   );
   /** The monster this session felled, when it did — what the hero card shows instead of the quest. */
   const felledBoss = isBossDefeat ? bossFight : null;
+  const felledArt = useBossArt(felledBoss);
 
   // What tonight says, sorted once the save has landed. Nothing before it: a loading screen
   // asserts nothing, and a retried save reaches here with the same facts.
@@ -532,7 +534,7 @@ export function VictoryView() {
               <Image
                 source={
                   felledBoss
-                    ? getBossAsset(felledBoss.imagePath, felledBoss.tier, "defeated")
+                    ? getBossAsset(felledBoss.imagePath, felledBoss.tier, "defeated", felledArt)
                     : getQuestAsset(quest.imagePath)
                 }
                 style={{ width: "100%", height: "100%" }}
@@ -613,7 +615,7 @@ export function VictoryView() {
 
           {felledBoss != null && (
             <ImageViewer
-              source={getBossAsset(felledBoss.imagePath, felledBoss.tier, "defeated")}
+              source={getBossAsset(felledBoss.imagePath, felledBoss.tier, "defeated", felledArt)}
               name={heroTitle}
               visible={bossExpanded}
               onClose={() => setBossExpanded(false)}

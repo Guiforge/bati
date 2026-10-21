@@ -12,6 +12,7 @@ import { ImageViewer } from "@/components/common/ImageViewer";
 import { Shield, Swords, Target, Zap } from "@/components/icons";
 import { getBossAsset } from "@/constants/assetMap";
 import { rawColors } from "@/constants/rawColors";
+import type { BossArt } from "@/db/bossVoice";
 import type { MuscleCode } from "@/db/schema";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { BossHpGauge } from "./BossHpGauge";
@@ -24,6 +25,8 @@ type BossArenaProps = {
   bossName: string;
   /** The monster's own painting (BossFight.imagePath), resolved through getBossAsset. */
   bossImagePath: string;
+  /** The hero's own pictures of this boss, when it is theirs. */
+  art?: BossArt;
   /** Rematch tier (BossFight.tier). ≥ 1 serves the legendary painting. */
   tier?: number;
   /** The encounter's cosmetic roll (BossFight.shiny): the rim burns gold instead of red. */
@@ -164,6 +167,7 @@ export function BossArena({
   totalHp,
   bossName,
   bossImagePath,
+  art,
   tier = 0,
   shiny = false,
   weaknessMuscle,
@@ -194,7 +198,7 @@ export function BossArena({
   const quick = reducedMotion ? undefined : ("quick" as const);
   // The monster wears the fight: its fallen painting once the killing set lands, its battle-worn
   // one below 50 %, its legendary form at tier ≥ 1.
-  const artSource = getBossAsset(bossImagePath, tier, artState(isDown, phase));
+  const artSource = getBossAsset(bossImagePath, tier, artState(isDown, phase), art);
   const pose = artPose(flinching, !!lastDamage?.isCritical, isDown);
 
   return (
@@ -227,6 +231,7 @@ export function BossArena({
         enterStyle={reducedMotion ? undefined : { scale: 1.12, opacity: 0 }}
       >
         <Image
+          testID="boss-arena-art"
           source={artSource}
           style={{ width: "100%", height: "100%" }}
           contentFit="cover"

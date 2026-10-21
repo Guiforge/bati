@@ -350,8 +350,13 @@ export const adventures = sqliteTable(
     // The hero's words for their boss (0077), NULL on seeded rows and on a route: a name shown instead
     // of the painted one, and lines added to its pool. Written by db/heroAdventures.ts through
     // db/bossVoice.ts, read by db/bossFights.ts. The monster itself is still `bossImagePath`.
+    // Moved into `hero_bosses` by 0079 and read by nothing since: NULL on every row that has been
+    // through it. The columns stay (SQLite DROP COLUMN on a table sync merges is not worth the risk).
     bossName: text(),
     bossLinesJson: text(),
+    // The hero's own boss this adventure ends on (0079), by `hero_bosses.uuid`. NULL: a seeded boss,
+    // or a route.
+    heroBossUuid: text(),
   },
   (table) => ({
     activeSortIdx: index("adventures_active_sort_idx").on(table.isActive, table.sortOrder),
@@ -360,6 +365,35 @@ export const adventures = sqliteTable(
     adminTitleUnique: uniqueIndex("adventures_admin_title_unique")
       .on(table.enTitle)
       .where(sql`${table.author} = 'Admin'`),
+  }),
+);
+
+/**
+ * A boss the hero created (0079), beside their exercises, quests and adventures. Hero rows only.
+ * Written by db/heroBosses.ts. The wiring in db/bossFights.ts reads it at fight time, so editing a
+ * boss changes every adventure that ends on it.
+ */
+export const heroBosses = sqliteTable(
+  "hero_bosses",
+  {
+    id: int().primaryKey({ autoIncrement: true }),
+    // A uuid v7: the name that survives leaving this database, as `quests.uuid` is a quest's.
+    uuid: text().notNull(),
+    // Empty reads as the painted monster's own name.
+    name: text().notNull(),
+    // The painted monster its pictures fall back to, as `adventures.bossImagePath` writes it.
+    monster: text().notNull(),
+    weaknessMuscle: text().$type<MuscleCode>(),
+    resistanceMuscle: text().$type<MuscleCode>(),
+    // {"intro":[...],"idle":[...],...}, written by db/bossVoice.ts.
+    linesJson: text(),
+    // {"fresh":"data:...","wounded":...,"defeated":...,"legendary":...}, each optional.
+    artJson: text(),
+    createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
+    updatedAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    uuidUnique: uniqueIndex("hero_bosses_uuid_unique").on(table.uuid),
   }),
 );
 

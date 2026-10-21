@@ -15,6 +15,7 @@ import { getBuildingIconAsset } from "@/constants/assetMap";
 import { fade, rawColors } from "@/constants/rawColors";
 import { listAdventures } from "@/db/adventures";
 import { isUserExercise, listExercises } from "@/db/exercises";
+import { listHeroBosses } from "@/db/heroBosses";
 import { isUserQuest, listQuestTemplates, USER_QUEST_AUTHOR } from "@/db/quests";
 import { getVillageBuildings, type VillageBuilding } from "@/db/village";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
@@ -25,8 +26,8 @@ import { useSettingsStore } from "@/stores/settings";
 const SHOWN = 3;
 
 type Row = { id: number; name: string };
-type Made = { quests: Row[]; adventures: Row[]; exercises: Row[] };
-const NOTHING: Made = { quests: [], adventures: [], exercises: [] };
+type Made = { quests: Row[]; adventures: Row[]; exercises: Row[]; bosses: Row[] };
+const NOTHING: Made = { quests: [], adventures: [], exercises: [], bosses: [] };
 /** The building's painting, at the size that keeps "New quest" above the fold at 130 % text. */
 const ART = 88;
 
@@ -125,8 +126,8 @@ export default function ForgeScreen(): ReactNode {
   // On focus: coming back from an editor has to show what was just written.
   useFocusEffect(
     useCallback(() => {
-      Promise.all([listQuestTemplates(), listAdventures(), listExercises()])
-        .then(([quests, adventures, exercises]) => {
+      Promise.all([listQuestTemplates(), listAdventures(), listExercises(), listHeroBosses()])
+        .then(([quests, adventures, exercises, bosses]) => {
           // Newest first: ids only grow, and the page keeps the last three.
           const newest = <T extends { id: number }>(list: T[]) =>
             [...list].sort((a, b) => b.id - a.id);
@@ -141,6 +142,7 @@ export default function ForgeScreen(): ReactNode {
             exercises: newest(exercises.filter((e) => isUserExercise(e) && !e.retiredAt)).map(
               (e) => ({ id: e.id, name: localizedName(e, language) }),
             ),
+            bosses: newest(bosses).map((b) => ({ id: b.id, name: b.name })),
           });
         })
         .catch((e: unknown) => reportError("forge.load", e));
@@ -240,6 +242,17 @@ export default function ForgeScreen(): ReactNode {
           seeAll={() => router.push("/exercises?mine=1" as never)}
           create={() => router.push("/exercises/new" as never)}
           createLabel={t("exercise_editor.title_new")}
+        />
+
+        <ForgeSection
+          testID="forge-bosses"
+          title={t("forge.bosses")}
+          rows={made.bosses}
+          empty={t("forge.bosses_empty")}
+          open={(id) => router.push(`/bosses/edit?id=${id}` as never)}
+          seeAll={() => router.push("/bosses" as never)}
+          create={() => router.push("/bosses/edit" as never)}
+          createLabel={t("boss_editor.title_new")}
         />
 
         {/* The one way in for a file someone sent: a quest or an adventure, the preview reads which. */}

@@ -1,5 +1,5 @@
 import { and, count, eq, inArray } from "drizzle-orm";
-import { type HeroBossLines, parseBossLines } from "./bossVoice";
+import { type BossArt, type HeroBossLines, parseBossArt, parseBossLines } from "./bossVoice";
 import { db, schema, transactionOrFallback } from "./client";
 import type { DifficultyCode, ExerciseStyle, MuscleCode, QuestTargetType } from "./schema";
 import { USER_LEVEL_MULTIPLIER } from "./targets";
@@ -14,11 +14,37 @@ const {
   questExercises,
   quests,
   exercises,
+  heroBosses,
 } = schema;
 
 // Same fallback used by every getXAsset() helper in constants/assetMap.ts — never expose
 // `| null` for imagePath, resolve to the placeholder here so callers have one code path.
 const PLACEHOLDER_IMAGE_PATH = "assets/placeholder.jpg";
+
+/**
+ * What a boss looks and fights like: a boss the hero created (0079) speaks for the adventure that
+ * ends on it, its name, lines, weakness and resistance and the painted monster it falls back to;
+ * a seeded boss, or a hero boss since deleted, keeps what the adventure row says. Read at fight
+ * time, so editing a boss changes every adventure that ends on it.
+ */
+async function bossLook(a: {
+  bossWeaknessMuscle: MuscleCode | null;
+  bossResistanceMuscle: MuscleCode | null;
+  bossImagePath: string | null;
+  imagePath: string | null;
+  heroBossUuid: string | null;
+}) {
+  const [hero] = a.heroBossUuid
+    ? await db.select().from(heroBosses).where(eq(heroBosses.uuid, a.heroBossUuid)).limit(1)
+    : [];
+  return {
+    weaknessMuscle: hero ? hero.weaknessMuscle : a.bossWeaknessMuscle,
+    resistanceMuscle: hero ? hero.resistanceMuscle : a.bossResistanceMuscle,
+    imagePath: hero?.monster ?? a.bossImagePath ?? a.imagePath ?? PLACEHOLDER_IMAGE_PATH,
+    bossName: hero?.name || null,
+    bossLines: parseBossLines(hero?.linesJson),
+  };
+}
 
 // ------------------------------------------------------------
 // Types
@@ -359,8 +385,7 @@ export async function getOrCreateBossFight(
       bossWeaknessMuscle: adventures.bossWeaknessMuscle,
       bossResistanceMuscle: adventures.bossResistanceMuscle,
       author: adventures.author,
-      bossName: adventures.bossName,
-      bossLinesJson: adventures.bossLinesJson,
+      heroBossUuid: adventures.heroBossUuid,
       imagePath: adventures.imagePath,
       bossImagePath: adventures.bossImagePath,
       enTitle: adventures.enTitle,
@@ -375,6 +400,7 @@ export async function getOrCreateBossFight(
   const adventure = adventureRows[0];
   if (!adventure) return null;
   if (adventure.kind !== "boss") return null;
+  const look = await bossLook(adventure);
 
   // The rematch tier, and the encounter's one cosmetic roll. Rolled here — the session is the
   // encounter — and nowhere else: the adventure screen's read path keeps shiny false so browsing
@@ -397,19 +423,19 @@ export async function getOrCreateBossFight(
       adventureId: row.adventureId,
       totalHp: row.totalHp,
       currentHp: row.currentHp,
-      weaknessMuscle: adventure.bossWeaknessMuscle,
-      resistanceMuscle: adventure.bossResistanceMuscle,
+      weaknessMuscle: look.weaknessMuscle,
+      resistanceMuscle: look.resistanceMuscle,
       defeatedAt: row.defeatedAt,
       createdAt: row.createdAt ?? new Date(),
       updatedAt: row.updatedAt ?? new Date(),
-      imagePath: adventure.bossImagePath ?? adventure.imagePath ?? PLACEHOLDER_IMAGE_PATH,
+      imagePath: look.imagePath,
       enName: adventure.enTitle,
       frName: adventure.frTitle,
       deName: adventure.deTitle,
       esName: adventure.esTitle,
       author: adventure.author,
-      bossName: adventure.bossName,
-      bossLines: parseBossLines(adventure.bossLinesJson),
+      bossName: look.bossName,
+      bossLines: look.bossLines,
       tier,
       shiny,
     };
@@ -429,8 +455,8 @@ export async function getOrCreateBossFight(
       adventureId,
       totalHp,
       currentHp: totalHp,
-      weaknessMuscle: adventure.bossWeaknessMuscle,
-      resistanceMuscle: adventure.bossResistanceMuscle,
+      weaknessMuscle: look.weaknessMuscle,
+      resistanceMuscle: look.resistanceMuscle,
     })
     .returning();
 
@@ -441,22 +467,37 @@ export async function getOrCreateBossFight(
     adventureId: row.adventureId,
     totalHp: row.totalHp,
     currentHp: row.currentHp,
-    weaknessMuscle: adventure.bossWeaknessMuscle,
-    resistanceMuscle: adventure.bossResistanceMuscle,
+    weaknessMuscle: look.weaknessMuscle,
+    resistanceMuscle: look.resistanceMuscle,
     defeatedAt: row.defeatedAt,
     createdAt: row.createdAt ?? new Date(),
     updatedAt: row.updatedAt ?? new Date(),
-    imagePath: adventure.bossImagePath ?? adventure.imagePath ?? PLACEHOLDER_IMAGE_PATH,
+    imagePath: look.imagePath,
     enName: adventure.enTitle,
     frName: adventure.frTitle,
     deName: adventure.deTitle,
     esName: adventure.esTitle,
     author: adventure.author,
-    bossName: adventure.bossName,
-    bossLines: parseBossLines(adventure.bossLinesJson),
+    bossName: look.bossName,
+    bossLines: look.bossLines,
     tier,
     shiny,
   };
+}
+
+/**
+ * The hero's own pictures of the boss an adventure ends on, read apart from the fight: they are up
+ * to four photos, and `BossFight` rides in the session snapshot (written and compared on every set),
+ * which must not carry them. Empty for a seeded boss and for a route.
+ */
+export async function getBossArt(adventureId: number): Promise<BossArt> {
+  const [row] = await db
+    .select({ json: heroBosses.artJson })
+    .from(adventures)
+    .innerJoin(heroBosses, eq(heroBosses.uuid, adventures.heroBossUuid))
+    .where(eq(adventures.id, adventureId))
+    .limit(1);
+  return parseBossArt(row?.json);
 }
 
 /**
@@ -478,8 +519,7 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
       weaknessMuscle: adventures.bossWeaknessMuscle,
       resistanceMuscle: adventures.bossResistanceMuscle,
       author: adventures.author,
-      bossName: adventures.bossName,
-      bossLinesJson: adventures.bossLinesJson,
+      heroBossUuid: adventures.heroBossUuid,
       defeatedAt: bossFights.defeatedAt,
       createdAt: bossFights.createdAt,
       updatedAt: bossFights.updatedAt,
@@ -497,24 +537,31 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
 
   const row = rows[0];
   if (!row) return null;
+  const look = await bossLook({
+    bossWeaknessMuscle: row.weaknessMuscle,
+    bossResistanceMuscle: row.resistanceMuscle,
+    bossImagePath: row.bossImagePath,
+    imagePath: row.imagePath,
+    heroBossUuid: row.heroBossUuid,
+  });
   return {
     id: row.id,
     adventureId: row.adventureId,
     totalHp: row.totalHp,
     currentHp: row.currentHp,
-    weaknessMuscle: row.weaknessMuscle as MuscleCode | null,
-    resistanceMuscle: row.resistanceMuscle as MuscleCode | null,
+    weaknessMuscle: look.weaknessMuscle,
+    resistanceMuscle: look.resistanceMuscle,
     defeatedAt: row.defeatedAt,
     createdAt: row.createdAt ?? new Date(),
     updatedAt: row.updatedAt ?? new Date(),
-    imagePath: row.bossImagePath ?? row.imagePath ?? PLACEHOLDER_IMAGE_PATH,
+    imagePath: look.imagePath,
     enName: row.enTitle,
     frName: row.frTitle,
     deName: row.deTitle,
     esName: row.esTitle,
     author: row.author,
-    bossName: row.bossName,
-    bossLines: parseBossLines(row.bossLinesJson),
+    bossName: look.bossName,
+    bossLines: look.bossLines,
     // A felled fight is named and painted at the tier it was fought at: the run that just ended
     // is already counted, and the legendary name belongs to the rematch once it starts.
     tier: Math.max(

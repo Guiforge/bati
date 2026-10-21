@@ -19,6 +19,7 @@ import { fade, rawColors } from "@/constants/rawColors";
 import { CRIT_CHANCE_ONE_REP, DAMAGE_REPS_PAST_TARGET } from "@/db/bossFights";
 import { isOutdoors, isOutingSession } from "@/db/expeditions";
 import { formatSlotTarget, prescribedValue, TARGET_RANGE } from "@/db/targets";
+import { useBossArt } from "@/hooks/useBossArt";
 import { useCountdownCues } from "@/hooks/useCountdownCues";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -116,6 +117,7 @@ export function ActiveExerciseView() {
   const nextSide = useSessionStore((s) => s.nextSide);
   const firstSideSeconds = useSessionStore((s) => s.firstSideSeconds);
   const bossFight = useSessionStore((s) => s.bossFight);
+  const bossArt = useBossArt(bossFight);
   const lastDamageResult = useSessionStore((s) => s.lastDamageResult);
 
   // Get current exercise safely. Read here rather than below the early return, because the cues
@@ -377,6 +379,7 @@ export function ActiveExerciseView() {
           currentHp={bossFight.currentHp}
           totalHp={bossFight.totalHp}
           bossImagePath={bossFight.imagePath}
+          art={bossArt}
           bossName={bossDisplayName(bossFight, language)}
           tier={bossFight.tier}
           shiny={bossFight.shiny}

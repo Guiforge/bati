@@ -11,6 +11,7 @@ import { getBossAsset } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { rawColors } from "@/constants/rawColors";
 import { type BossFight, threatRank } from "@/db/bossFights";
+import { useBossArt } from "@/hooks/useBossArt";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 
 const ART_HEIGHT = 140;
@@ -31,6 +32,7 @@ const SKULL_KEYS = ["skull-1", "skull-2", "skull-3", "skull-4"] as const;
  */
 export function BossPanel({ fight, language }: { fight: BossFight; language: AppLanguage }) {
   const { t } = useTranslation();
+  const art = useBossArt(fight);
 
   const hpPercent = getHpPercent(fight.currentHp, fight.totalHp);
   const isDefeated = fight.defeatedAt != null || fight.currentHp <= 0;
@@ -47,7 +49,12 @@ export function BossPanel({ fight, language }: { fight: BossFight; language: App
       <YStack height={ART_HEIGHT} width="100%" position="relative">
         <Image
           // A defeated boss shows its fallen painting — the panel becomes proof, not threat.
-          source={getBossAsset(fight.imagePath, fight.tier, isDefeated ? "defeated" : undefined)}
+          source={getBossAsset(
+            fight.imagePath,
+            fight.tier,
+            isDefeated ? "defeated" : undefined,
+            art,
+          )}
           style={{ width: "100%", height: "100%" }}
           contentFit="cover"
           transition={150}

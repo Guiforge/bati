@@ -396,8 +396,10 @@ describe("db/journal", () => {
     const quest = t.sqlite.prepare("SELECT id FROM quests LIMIT 1").get() as { id: number };
     t.sqlite.exec(`
       DELETE FROM adventures WHERE id IN (900, 901, 902);
-      INSERT INTO adventures (id, questId, kind, author, enTitle, frTitle, bossImagePath, bossName, sortOrder) VALUES
-        (901, ${quest.id}, 'boss', 'hero', 'My tale', 'Mon conte', 'fire_dragon.webp', 'Nightcoil', 1000);
+      INSERT INTO hero_bosses (uuid, name, monster, artJson) VALUES
+        ('0192f000-0000-7000-8000-000000000001', 'Nightcoil', 'fire_dragon.webp', '{"defeated":"data:image/jpeg;base64,D"}');
+      INSERT INTO adventures (id, questId, kind, author, enTitle, frTitle, bossImagePath, heroBossUuid, sortOrder) VALUES
+        (901, ${quest.id}, 'boss', 'hero', 'My tale', 'Mon conte', 'fire_dragon.webp', '0192f000-0000-7000-8000-000000000001', 1000);
       INSERT INTO adventure_runs (id, adventureId, status, startedAt, finishedAt) VALUES (1, 901, 'finished', ${seconds(daysAgo(9))}, ${seconds(daysAgo(1))});
       INSERT INTO boss_fights (id, adventureId, totalHp, currentHp, defeatedAt) VALUES (1, 901, 100, 0, ${seconds(daysAgo(1))});
     `);
@@ -419,6 +421,7 @@ describe("db/journal", () => {
       es: "Nightcoil",
       ru: "Nightcoil",
     });
+    expect(report.bossArt).toEqual({ defeated: "data:image/jpeg;base64,D" });
   });
 
   test("a kill is reported under the boss's name at the tier it was fought at, never the adventure's", async () => {

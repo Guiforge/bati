@@ -79,6 +79,7 @@ import m0075 from "./0075_the_notebook.sql";
 import m0076 from "./0076_the_hero_tells_a_tale.sql";
 import m0077 from "./0077_the_boss_gets_a_name.sql";
 import m0078 from "./0078_the_hand_written_entry.sql";
+import m0079 from "./0079_the_boss_is_a_creation.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -163,5 +164,6 @@ export default {
     m0076,
     m0077,
     m0078,
+    m0079,
   },
 };

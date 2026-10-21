@@ -1,7 +1,7 @@
 {
   "dark": "Oscuro",
   "home": {
-    "light_week_on": "Semana ligera hasta el {{date}}: una ronda menos en tus misiones.",
+    "light_week_on": "Semana ligera hasta el {{date}}: cada misión lleva una ronda menos.",
     "light_week_end": "Volver al ritmo normal",
     "pause_on": "En pausa hasta el {{date}}",
     "start": "Empezar",
@@ -43,9 +43,9 @@
     "update_body": "Tienes la {{current}}. La página de la versión dice qué ha cambiado, y la descarga está ahí también.",
     "update_open": "Ver la versión",
     "update_later": "Más tarde",
-    "light_week_under": "Tus dos últimas sesiones han costado. ¿Una ronda menos esta semana?",
-    "light_week_busy": "Cinco semanas con cuatro sesiones o más. ¿Una ronda menos esta semana?",
-    "light_week_accept": "Semana ligera",
+    "light_week_under": "Tus dos últimas sesiones han costado. ¿Quieres tomarte un respiro esta semana?",
+    "light_week_busy": "Cinco semanas seguidas con cuatro sesiones o más. ¿Quieres tomarte un respiro esta semana?",
+    "light_week_accept": "Una ronda menos durante 7 días",
     "light_week_refuse": "Ahora no"
   },
   "language": "Idioma",

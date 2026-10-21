@@ -1,7 +1,7 @@
 {
   "dark": "Dark",
   "home": {
-    "light_week_on": "Light week until {{date}}: one round fewer on your quests.",
+    "light_week_on": "Light week until {{date}}: every quest runs one round shorter.",
     "light_week_end": "Back to the normal rhythm",
     "pause_on": "On a break until {{date}}",
     "start": "Start",
@@ -42,9 +42,9 @@
     "update_body": "You are on {{current}}. The release page says what changed, and the download is there too.",
     "update_open": "See the release",
     "update_later": "Later",
-    "light_week_under": "Your last two sessions asked a lot. One round fewer this week?",
-    "light_week_busy": "Five weeks at four sessions or more. One round fewer this week?",
-    "light_week_accept": "Light week",
+    "light_week_under": "Your last two sessions were hard. Want to ease off this week?",
+    "light_week_busy": "Five weeks in a row at four sessions or more. Want to ease off this week?",
+    "light_week_accept": "One round fewer for 7 days",
     "light_week_refuse": "Not now"
   },
   "language": "Language",

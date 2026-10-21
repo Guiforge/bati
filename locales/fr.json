@@ -507,8 +507,8 @@
     "muscles": "Muscles"
   },
   "home": {
-    "light_week_on": "Semaine légère jusqu'au {{date}} : un tour de moins sur tes quêtes.",
-    "light_week_end": "Reprendre le rythme normal",
+    "light_week_on": "Semaine légère jusqu'au {{date}} : chaque quête se fait en un tour de moins.",
+    "light_week_end": "Revenir au rythme normal",
     "pause_on": "En pause jusqu'au {{date}}",
     "start": "Commencer",
     "details": "Détails",
@@ -549,9 +549,9 @@
     "update_body": "Tu es en {{current}}. La page de la version dit ce qui a changé, et le téléchargement y est aussi.",
     "update_open": "Voir la version",
     "update_later": "Plus tard",
-    "light_week_under": "Tes deux dernières séances ont été dures. Un tour de moins cette semaine ?",
-    "light_week_busy": "Cinq semaines à quatre séances ou plus. Un tour de moins cette semaine ?",
-    "light_week_accept": "Semaine légère",
+    "light_week_under": "Tes deux dernières séances ont été dures. Tu veux souffler cette semaine ?",
+    "light_week_busy": "Cinq semaines d'affilée à quatre séances ou plus. Tu veux souffler cette semaine ?",
+    "light_week_accept": "Un tour de moins pendant 7 jours",
     "light_week_refuse": "Pas maintenant"
   },
   "xp": {

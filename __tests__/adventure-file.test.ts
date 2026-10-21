@@ -1008,8 +1008,6 @@ describe("copy", () => {
     "share_confirm",
     "share_failed",
     "share_too_few",
-    "import_adventure",
-    "import_hint",
     "import_title",
     "import_failed",
     "import_done",

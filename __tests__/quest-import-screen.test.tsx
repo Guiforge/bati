@@ -442,9 +442,9 @@ describe("ImportFileButton", () => {
     await render(
       wrap(
         <ImportFileButton
-          label="quests.import_quest"
-          hint="quests.import_hint"
-          failed="quests.import_failed"
+          label="forge.import"
+          hint="forge.import_hint"
+          failed="forge.import_failed"
           testID="quest-import"
         />,
       ),
@@ -482,7 +482,7 @@ describe("ImportFileButton", () => {
     mockPick.mockRejectedValue(boom);
     await press();
 
-    expect(mockShowError).toHaveBeenCalledWith("The quest could not be imported. Try again.");
+    expect(mockShowError).toHaveBeenCalledWith("The file could not be opened. Try again.");
     expect(reportError).toHaveBeenCalledWith("quests.import", boom);
     expect(mockRouter.push).not.toHaveBeenCalled();
   });

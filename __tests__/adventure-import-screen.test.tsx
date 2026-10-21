@@ -273,7 +273,7 @@ test("an import that fails otherwise is reported", async () => {
   await mountReady();
   await fireEvent.press(confirm());
 
-  expect(mockShowError).toHaveBeenCalledWith("The adventure could not be added. Try again.");
+  expect(mockShowError).toHaveBeenCalledWith("The file could not be opened. Try again.");
   expect(reportError).toHaveBeenCalledWith("adventures.import", boom);
 });
 
@@ -323,24 +323,24 @@ test("a read refused before the kind is known says the sentence for both kinds",
   expect(mockRouter.replace).toHaveBeenCalledWith("/quests");
 });
 
-describe("the adventure editor's import button", () => {
+describe("the Forge's import button", () => {
   const button = () =>
     wrap(
       <ImportFileButton
-        label="adventures.import_adventure"
-        hint="adventures.import_hint"
-        failed="adventures.import_failed"
+        label="forge.import"
+        hint="forge.import_hint"
+        failed="forge.import_failed"
         testID="adventure-import"
       />,
     );
 
-  test("opens the preview with the uri held exactly, and leaves the page it was on", async () => {
+  test("opens the preview with the uri held exactly, and stays on the page it was on", async () => {
     const uri =
       "content://com.android.externalstorage.documents/document/primary%3ADownload%2Fa.json";
     mockPick.mockResolvedValue(uri);
     mockRouter.canGoBack.mockReturnValue(true);
     await render(button());
-    expect(screen.getByText("Import an adventure")).toBeTruthy();
+    expect(screen.getByText("Import a received file")).toBeTruthy();
     await fireEvent.press(screen.getByTestId("adventure-import"));
 
     expect(mockRouter.back).not.toHaveBeenCalled();
@@ -349,13 +349,13 @@ describe("the adventure editor's import button", () => {
     expect(incomingFile(target.split("=")[1])).toBe(uri);
   });
 
-  test("a picker that fails says the adventure sentence", async () => {
+  test("a picker that fails says the file sentence", async () => {
     const boom = new Error("no picker");
     mockPick.mockRejectedValue(boom);
     await render(button());
     await fireEvent.press(screen.getByTestId("adventure-import"));
 
-    expect(mockShowError).toHaveBeenCalledWith("The adventure could not be added. Try again.");
+    expect(mockShowError).toHaveBeenCalledWith("The file could not be opened. Try again.");
     expect(reportError).toHaveBeenCalledWith("quests.import", boom);
   });
 });

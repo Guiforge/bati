@@ -182,8 +182,6 @@ test("every refusal, and every outcome of the buttons, has its sentence in the f
     "import_failed",
     "import_done",
     "import_updated",
-    "import_quest",
-    "import_hint",
     "share_quest",
     "share_quest_hint",
     "share_failed",

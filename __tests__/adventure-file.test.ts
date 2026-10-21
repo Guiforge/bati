@@ -1273,3 +1273,46 @@ describe("the adventure's own cover photo", () => {
     }
   });
 });
+
+describe("a quest shared alone", () => {
+  test("is read back by its own reader, photos counted, and imports on another phone", async () => {
+    const q = await heroQuest({
+      image: photo(3_000),
+      own: [{ uuid: nextUuid(), image: photo(2_000) }],
+    });
+    const out = await load().adv.questToShare(q.id);
+
+    expect(out.photos).toBe(2);
+    expect(out.leftOut).toBe(0);
+    expect(utf8(out.json)).toBeLessThanOrEqual(MAX_FILE_BYTES);
+    expect(load().quest.parseQuestData(JSON.parse(out.json))).toEqual(out.file);
+    expect(out.file.slots.some((s) => "own" in s.movement)).toBe(true);
+  });
+
+  test("goes through the photo budget: what does not fit stays on the phone, and is counted", async () => {
+    const own = Array.from({ length: 40 }, () => ({ uuid: nextUuid(), image: photo(300_000) }));
+    const q = await heroQuest({ own, official: [] });
+    const out = await load().adv.questToShare(q.id);
+
+    expect(utf8(out.json)).toBeLessThanOrEqual(MAX_FILE_BYTES);
+    expect(out.leftOut).toBeGreaterThan(0);
+    expect(out.photos + out.leftOut).toBe(40);
+    load().quest.parseQuestData(JSON.parse(out.json));
+  });
+
+  test("a quest its own reader would refuse is never written", async () => {
+    const q = await heroQuest();
+    t.sqlite
+      .prepare("UPDATE quests SET enDescription = ? WHERE id = ?")
+      .run("x".repeat(9_000), q.id);
+    refresh();
+
+    await expect(load().adv.questToShare(q.id)).rejects.toThrow("refused by its own reader");
+  });
+
+  test("a seed quest is not shared: it is on every phone", async () => {
+    const [seed] = seedQuests();
+    assert(seed);
+    await expect(load().adv.questToShare(seed.id)).rejects.toThrow("not a quest of the hero");
+  });
+});

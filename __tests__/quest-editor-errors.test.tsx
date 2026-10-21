@@ -225,3 +225,13 @@ describe("quest editor, deleting a quest an adventure names", () => {
     expect(editor.getByText("common.cancel")).toBeTruthy();
   });
 });
+
+describe("quest editor, the story field", () => {
+  it("takes several lines and stops at 280, the cap an adventure's introduction has", async () => {
+    const editor = await mountEditor();
+    const field = editor.getByTestId("quest-description");
+
+    expect(field.props.multiline).toBe(true);
+    expect(field.props.maxLength).toBe(280);
+  });
+});

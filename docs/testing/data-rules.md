@@ -571,7 +571,9 @@ rounds, restSeconds, roundRestSeconds, image}, slots[]}`. Official movements tra
 name; hero movements travel whole (uuid, name, description, image, muscles, style, difficulty,
 equipment, pattern, measure, secondsPerRep). No sessions, no hero name. A slot whose exercise is
 not in the catalogue is silently dropped; a hero row without uuid throws; the placeholder cover
-travels as null. `src/questFile.ts` (`questToFile`).
+travels as null. `src/questFile.ts` (`questToFile`). The quest editor writes the description (the
+story or introduction) as one text of at most 280 characters, several lines allowed, in the four columns.
+What leaves is `questToShare` (`src/adventureFile.ts`), under R125.
 Invariant: `parse(export(q))` equals the exported structure.
 
 **R67. Limits on read:** file <= 8,000,000 bytes (declared size and text length), `content://`
@@ -644,7 +646,10 @@ order, and the walk continues past one that does not fit; one `safeImage` would 
 charged and counts in `leftOut`. The written string is read back by `parseAdventureData` before it
 leaves. The hero is told the photos, the steps and the pictures left out before the share sheet opens.
 Invariant: for every adventure the editors can save, `parseAdventureData(JSON.parse(json))` does not
-throw and `json` is at most `MAX_FILE_BYTES` bytes.
+throw and `json` is at most `MAX_FILE_BYTES` bytes. A quest shared alone is held to the same: `questToShare`
+parses the body as its receiver would (and throws when that refuses it), puts the photos back under the
+same budget, reads the string back with `parseQuestData`, and the quest screen's dialog says
+`share_photos_*` and `share_photos_left_*` before the share sheet opens.
 
 ---
 

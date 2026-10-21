@@ -138,7 +138,6 @@ describe("sharing a quest", () => {
   });
   /** The file name `shareQuest` wrote under, from the `new File(dir, name)` it made. */
   const sharedAs = async (enTitle: string) => {
-    mockQuest.mockResolvedValue(quest(enTitle));
     mockOpen.mockImplementation((dir: string, name: string) => ({
       exists: false,
       create: jest.fn(),
@@ -147,7 +146,7 @@ describe("sharing a quest", () => {
       uri: `${dir}/${name}`,
       name,
     }));
-    await shareQuest(1);
+    await shareQuest("{}", enTitle);
     return mockOpen.mock.calls.at(-1)?.[1] as string;
   };
 

@@ -13,7 +13,6 @@ import {
 } from "@/db/exercises";
 import {
   createQuestTemplate,
-  getQuestTemplateById,
   invalidateQuestTemplates,
   isUserQuest,
   listQuestTemplates,
@@ -212,14 +211,9 @@ export async function shareJsonFile(fileName: string, json: string): Promise<voi
   });
 }
 
-/** Writes the quest to a file and hands it to the share sheet. */
-export async function shareQuest(questId: number): Promise<void> {
-  const [quest, catalogue] = await Promise.all([getQuestTemplateById(questId), listExercises()]);
-  if (!quest) throw new Error(`Quest ${questId} not found`);
-  await shareJsonFile(
-    `${fileStem(quest.enTitle, "quest")}.bati-quest.json`,
-    JSON.stringify(questToFile(quest, catalogue)),
-  );
+/** Writes the file `questToShare` returned and hands it to the share sheet. */
+export async function shareQuest(json: string, title: string): Promise<void> {
+  await shareJsonFile(`${fileStem(title, "quest")}.bati-quest.json`, json);
 }
 
 // ---------------------------------------------------------------------------------------------

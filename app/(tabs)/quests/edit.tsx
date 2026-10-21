@@ -38,6 +38,7 @@ import {
   updateQuestMeta,
 } from "@/db";
 import type { Exercise } from "@/db/exercises";
+import { MAX_DESCRIPTION } from "@/db/heroAdventures";
 import type { QuestTargetType } from "@/db/schema";
 import { DEFAULT_TARGET_VALUE, SECONDS_SUFFIX } from "@/db/targets";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -557,7 +558,11 @@ export default function QuestEditor() {
                   <Input
                     value={description}
                     onChangeText={setDescription}
+                    testID="quest-description"
                     placeholder={t("quests.editor_description_placeholder")}
+                    maxLength={MAX_DESCRIPTION}
+                    multiline
+                    py={8}
                     bg="$background"
                     borderColor="$borderStrong"
                     color="$text"

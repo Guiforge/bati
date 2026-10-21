@@ -98,6 +98,7 @@ jest.mock("@/db/exercises", () => ({
   listExercises: jest.fn().mockResolvedValue([]),
 }));
 
+jest.mock("@/src/adventureFile", () => ({ questToShare: jest.fn() }));
 jest.mock("@/src/questFile", () => ({
   shareQuest: jest.fn(),
   importQuest: jest.fn(),

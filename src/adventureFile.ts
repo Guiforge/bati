@@ -26,6 +26,7 @@ import {
   type Monster,
 } from "@/db/heroAdventures";
 import {
+  getQuestTemplateById,
   invalidateQuestTemplates,
   isUserQuest,
   listQuestTemplates,
@@ -39,7 +40,9 @@ import {
   MAX_FILE_BYTES,
   name,
   parseQuestBody,
+  parseQuestData,
   type QuestBody,
+  type QuestFile,
   QuestFileError,
   questToFile,
   safeImage,
@@ -329,6 +332,27 @@ export async function adventureToFile(id: number): Promise<AdventureToFile | nul
   return { file, json, photos, leftOut, stepsLeft };
 }
 
+export type QuestToShare = { file: QuestFile; json: string; photos: number; leftOut: number };
+
+/**
+ * A hero quest as the file another phone reads, held to the same rules as an adventure's (R125):
+ * parsed as its receiver would, photos under the byte budget, the string read back before it is
+ * returned. Throws when the receiver's reader would refuse the quest.
+ */
+export async function questToShare(questId: number): Promise<QuestToShare> {
+  const [quest, catalogue] = await Promise.all([getQuestTemplateById(questId), listExercises()]);
+  if (!quest || !isUserQuest(quest)) throw new Error(`Quest ${questId} is not a quest of the hero`);
+  const own = ownBody(quest, catalogue);
+  if (!own) throw new Error(`Quest ${questId} would be refused by its own reader`);
+  const pictures = new Map<string, Picture>();
+  registerPictures(pictures, own);
+  const file: QuestFile = { kind: "bati-quest", version: 1, ...own.body };
+  const { photos, leftOut } = putPicturesBack(file, pictures);
+  const json = JSON.stringify(file);
+  parseQuestData(JSON.parse(json));
+  return { file, json, photos, leftOut };
+}
+
 /** A photo rides in `photo`, under the placeholder until the budget decides; `cover` keeps a bundled key an older version can draw. */
 function fileCover(imagePath: string): Pick<AdventureFile["adventure"], "cover" | "photo"> {
   if (!imagePath.startsWith("data:")) return { cover: imagePath };
@@ -390,7 +414,7 @@ function ownBody(
 
 /** Puts each picture back in every occurrence while the file stays under the limit, in step order. */
 function putPicturesBack(
-  file: AdventureFile,
+  file: object,
   pictures: ReadonlyMap<string, Picture>,
 ): { photos: number; leftOut: number } {
   // The budget is exact: a picture replaces the placeholder inside the same quotes, and base64 is

@@ -27,6 +27,10 @@
 -- Both statements that write `adventures` are scoped to author = 'hero': from 0076 on a seed
 -- statement must never reach a hero row, and this one must never reach a seed row.
 --
+-- destructive-ok: the UPDATE empties `bossName` and `bossLinesJson` only on rows whose uuid the INSERT just
+-- copied them under, in the same transaction; a row it could not copy keeps both. Not a DELETE, so the guard
+-- does not ask, but it overwrites what a hero wrote, and that deserves the line.
+--
 -- multi-migration-ok: one new table, one nullable column, and the move of two columns no tag has shipped; 0074 to 0078 are in no tag yet and ship with it.
 CREATE TABLE `hero_bosses` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,

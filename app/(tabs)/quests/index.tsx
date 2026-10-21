@@ -731,11 +731,6 @@ export default function QuestsGallery() {
             </Text>
           </XStack>
           <XStack items="center" gap="$2">
-            <Chip
-              label={t("quests.count", {
-                count: filtered.length,
-              })}
-            />
             {/* The catalogue: the only way to ask "what does Bati know about rows?" without
                 first finding a quest that happens to contain one (roadmap 4.22). */}
             <AppIconButton
@@ -752,6 +747,11 @@ export default function QuestsGallery() {
             <ForgeButton />
           </XStack>
         </XStack>
+        {/* The count leaves the title row: beside the catalogue and "Create" it cut the title to
+            "Qu…", at 100 % text as at 130 %. */}
+        <Text color="$textSecondary" fontSize={13} fontWeight="600">
+          {t("quests.count", { count: filtered.length })}
+        </Text>
         <Text color="$textSecondary" fontSize={13}>
           {t("quests.gallery_subtitle")}
         </Text>

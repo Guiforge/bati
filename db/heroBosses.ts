@@ -1,10 +1,11 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, sql } from "drizzle-orm";
 import { type BossAssetKey, getBossKey } from "@/constants/assetMap";
 import { invalidateAdventures } from "./adventures";
 import {
   type BossArt,
   bossArtJson,
   bossLinesJson,
+  cleanBossArt,
   clip,
   type HeroBossLines,
   MAX_BOSS_NAME,
@@ -93,13 +94,21 @@ export function toHeroBoss(row: Row): HeroBoss {
   };
 }
 
-/** Newest first: the Forge shows the last three. */
+/**
+ * Newest first: the Forge shows the last three. Lists show the normal picture only, so only that one
+ * leaves SQLite (`art.fresh`); the other three forms come with `getHeroBoss`, and the fight reads
+ * its own (`getBossArt`). Ten bosses with four photos each were 40 photos per Forge focus.
+ */
 export async function listHeroBosses(): Promise<HeroBoss[]> {
+  const { artJson: _all, ...rest } = getTableColumns(heroBosses);
   const rows = await db
-    .select()
+    .select({ ...rest, fresh: sql<string | null>`json_extract(${heroBosses.artJson}, '$.fresh')` })
     .from(heroBosses)
     .orderBy(desc(heroBosses.updatedAt), desc(heroBosses.id));
-  return rows.map(toHeroBoss);
+  return rows.map(({ fresh, ...row }) => ({
+    ...toHeroBoss({ ...row, artJson: null }),
+    art: cleanBossArt({ fresh }),
+  }));
 }
 
 export async function getHeroBoss(id: number): Promise<HeroBoss | null> {

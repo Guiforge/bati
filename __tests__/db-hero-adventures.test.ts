@@ -566,6 +566,20 @@ describe("db/heroAdventures", () => {
       });
     });
 
+    test("the list carries the normal picture only, the boss itself all four", async () => {
+      const { bosses } = mod();
+      const all = { fresh: art, wounded: `${art}W`, defeated: `${art}D`, legendary: `${art}L` };
+      const id = await bosses.createHeroBoss(bossDraft({ art: all }));
+      const bare = await bosses.createHeroBoss(bossDraft({ name: "Bare" }));
+      const listed = (await bosses.listHeroBosses()).filter((b) => b.id === id || b.id === bare);
+      expect(listed.map((b) => [b.name, b.art])).toEqual([
+        ["Bare", {}],
+        ["Night coil", { fresh: art }],
+      ]);
+      expect(listed[1]).toMatchObject({ id, weakness: "chest", lines: { enrage: ["Enough."] } });
+      expect((await bosses.getHeroBoss(id))?.art).toEqual(all);
+    });
+
     test("a muscle that is both weakness and resistance is kept as the weakness only", async () => {
       const { bosses } = mod();
       const id = await bosses.createHeroBoss(bossDraft({ resistance: "chest" }));

@@ -15,3 +15,4 @@
 
 # Added by plugins/withAndroidKeepRules.js
 -keep class * extends androidx.room.RoomDatabase { <init>(); }
+-keep class * extends androidx.work.InputMerger { <init>(); }

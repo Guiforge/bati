@@ -4,7 +4,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView as RNScrollView } from "react-native";
+import { ScrollView as RNScrollView, type ScrollViewInstance } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text, useTheme, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
@@ -284,7 +284,7 @@ export default function SettingsScreen() {
   // sits inside the preferences group, so the offset is the two added, taken again at each layout
   // until the hero scrolls by hand.
   const { section } = useLocalSearchParams<{ section?: string }>();
-  const scrollRef = useRef<RNScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const anchor = useRef({ wanted: section === "reminder", group: 0, row: -1 });
   const scrollToAnchor = () => {
     const { wanted, group, row } = anchor.current;

@@ -2,7 +2,6 @@ import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ImageSourcePropType } from "react-native";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
@@ -19,7 +18,7 @@ import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, ChevronRight, Dumbbell, Timer } from "@/components/icons";
 import { shortDate } from "@/components/journal/journalFormat";
 import { recordWhen } from "@/components/journal/stats/wall";
-import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
+import { type ArtSource, getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import {
   deleteUserExercise,
   getExerciseById,
@@ -51,7 +50,7 @@ type Status = "loading" | "ready" | "error";
  * resolution in memory, not its slot (docs/architecture/performance.md). Every small slot reads
  * the 128 px thumbnail, which is what `ProgressionCard` and the "Tonight" cards already do.
  */
-const resolveThumb = (path?: string | null): ImageSourcePropType => getExerciseThumb(path ?? "");
+const resolveThumb = (path?: string | null): ArtSource => getExerciseThumb(path ?? "");
 
 const parseId = (raw?: string | string[]): number | null => {
   const val = Array.isArray(raw) ? raw[0] : raw;
@@ -120,7 +119,7 @@ function LoadingCard() {
 }
 
 /** Also the loading state, with nothing in it. */
-function ExerciseImage({ source, name }: { source?: ImageSourcePropType; name?: string }) {
+function ExerciseImage({ source, name }: { source?: ArtSource; name?: string }) {
   return (
     <YStack
       width="100%"

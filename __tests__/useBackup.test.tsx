@@ -309,18 +309,20 @@ test("two screens cannot run two imports into the one staging file", async () =>
   expect(mockCalls.filter((c) => c === "stage" || c === "stagePeer")).toEqual(["stage"]);
 });
 
+// The hook cannot render, so the join question comes back as `dialog` and the probe mounts it.
+let latest: ReturnType<typeof useBackup>;
+// biome-ignore lint/style/useComponentExportOnlyModules: a test file exports nothing
+function BackupProbe() {
+  latest = useBackup();
+  return latest.dialog;
+}
+
 describe("an encrypted backup opened with its password", () => {
-  // The hook cannot render, so the join question comes back as `dialog` and the probe mounts it.
-  let latest: ReturnType<typeof useBackup>;
-  function Probe() {
-    latest = useBackup();
-    return latest.dialog;
-  }
   async function importWithPassword(secret = "correct horse") {
     mockDecryptOutcomes = ["needsSecret", "openedWithSecret"];
     await render(
       <TamaguiProvider config={config} defaultTheme="dark">
-        <Probe />
+        <BackupProbe />
       </TamaguiProvider>,
     );
     await act(() => latest.runImport());
@@ -344,7 +346,7 @@ describe("an encrypted backup opened with its password", () => {
   test("its dialog also carries the failure alert, so a caller mounting one shows both", async () => {
     await render(
       <TamaguiProvider config={config} defaultTheme="dark">
-        <Probe />
+        <BackupProbe />
       </TamaguiProvider>,
     );
     expect(screen.getByTestId("report-dialog")).toBeTruthy();

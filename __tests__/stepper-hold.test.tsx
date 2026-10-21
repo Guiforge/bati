@@ -12,7 +12,7 @@ import config from "@/tamagui.config";
  * parent that renders whenever it gets round to it.
  */
 
-async function mount(props: {
+type HarnessProps = {
   value: number;
   min?: number;
   max?: number;
@@ -20,27 +20,31 @@ async function mount(props: {
   /** Off, the value prop never moves: the stand-in for a parent whose render arrives late. */
   live?: boolean;
   onChange: (value: number) => void;
-}) {
-  function Harness() {
-    const [value, setValue] = useState(props.value);
-    return (
-      <Stepper
-        label="Rest"
-        value={props.live === false ? props.value : value}
-        min={props.min ?? 0}
-        max={props.max ?? 300}
-        step={props.step ?? 5}
-        onChange={(next) => {
-          props.onChange(next);
-          setValue(next);
-        }}
-      />
-    );
-  }
+};
+
+// biome-ignore lint/style/useComponentExportOnlyModules: a test file exports nothing
+function Harness(props: HarnessProps) {
+  const [value, setValue] = useState(props.value);
+  return (
+    <Stepper
+      label="Rest"
+      value={props.live === false ? props.value : value}
+      min={props.min ?? 0}
+      max={props.max ?? 300}
+      step={props.step ?? 5}
+      onChange={(next) => {
+        props.onChange(next);
+        setValue(next);
+      }}
+    />
+  );
+}
+
+async function mount(props: HarnessProps) {
   await act(async () => {
     await render(
       <TamaguiProvider config={config} defaultTheme="dark">
-        <Harness />
+        <Harness {...props} />
       </TamaguiProvider>,
     );
   });

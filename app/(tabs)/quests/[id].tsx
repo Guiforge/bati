@@ -3,7 +3,6 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ImageSourcePropType } from "react-native";
 import { BackHandler, ScrollView, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { type ColorTokens, H2, Paragraph, Text, XStack, YStack } from "tamagui";
@@ -23,7 +22,7 @@ import { ShareQuestButton } from "@/components/quests/QuestFileButtons";
 import { restsBetweenExercises } from "@/components/quests/questShape";
 import { SetAsideToggle } from "@/components/quests/SetAsideToggle";
 import { WarmupPreview } from "@/components/quests/WarmupPreview";
-import { getQuestAsset } from "@/constants/assetMap";
+import { type ArtSource, getQuestAsset } from "@/constants/assetMap";
 import { rankSwapCandidates, type SwapReason } from "@/constants/exerciseFilters";
 import { questHeaderHeight } from "@/constants/layout";
 import { DIFFICULTY_TEXT_TOKENS } from "@/constants/rawColors";
@@ -82,7 +81,7 @@ type LoadState =
 
 /** No path means no cover — the header simply does not render. Every other form, bundled key or
  *  a hero's `data:` photo, `getQuestAsset` resolves. */
-function resolveQuestImage(path?: string | null): ImageSourcePropType | null {
+function resolveQuestImage(path?: string | null): ArtSource | null {
   return path ? getQuestAsset(path) : null;
 }
 

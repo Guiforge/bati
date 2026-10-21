@@ -317,10 +317,14 @@ describe(`three devices on ${server.name}, random days`, () => {
   test(
     "every device ends up with every session, and nothing else goes wrong",
     async () => {
-      await fc.assert(
-        fc.asyncProperty(fc.array(event, { minLength: 3, maxLength: length }), oneDay),
-        { numRuns: runs, seed, endOnFailure: true, ...(replay ? { path: replay } : {}) },
-      );
+      await expect(
+        fc.assert(fc.asyncProperty(fc.array(event, { minLength: 3, maxLength: length }), oneDay), {
+          numRuns: runs,
+          seed,
+          endOnFailure: true,
+          ...(replay ? { path: replay } : {}),
+        }),
+      ).resolves.toBeUndefined();
     },
     Math.max(300_000, runs * 240_000),
   );

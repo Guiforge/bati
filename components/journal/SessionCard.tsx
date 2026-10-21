@@ -2,13 +2,13 @@ import { Image } from "expo-image";
 import type { TFunction } from "i18next";
 import { memo, type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ImageSourcePropType } from "react-native";
 import { XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Trophy } from "@/components/icons";
 import { HandMark } from "@/components/journal/HandMark";
 import { feelingLabel, questLevelLabel } from "@/components/journal/journalFormat";
 import { NKicker, NMuted, NText } from "@/components/journal/nocturne";
+import type { ArtSource } from "@/constants/assetMap";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatDistance } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db";
@@ -33,7 +33,7 @@ export interface JournalEntry {
    * comes from: the quest template is already in hand there, and `SessionCard` is memoized on
    * props it should not be re-deriving.
    */
-  cover?: ImageSourcePropType | null;
+  cover?: ArtSource | null;
   performedAt: Date;
   durationSeconds: number | null;
   leaguesM: number | null;

@@ -3,7 +3,6 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
 import { memo, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ImageSourcePropType } from "react-native";
 import { BackHandler, ScrollView, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { type ColorTokens, H2, Paragraph, Text, XStack, YStack } from "tamagui";
@@ -19,7 +18,7 @@ import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
 import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import { ChevronLeft, Pencil, Sparkles } from "@/components/icons";
-import { getAdventureAsset, getStepArt } from "@/constants/assetMap";
+import { type ArtSource, getAdventureAsset, getStepArt } from "@/constants/assetMap";
 import { DIFFICULTY_TEXT_TOKENS } from "@/constants/rawColors";
 import type {
   ActiveAdventureRun,
@@ -65,8 +64,8 @@ import { useSettingsStore } from "@/stores/settings";
 
 function resolveImage(
   path: string | null | undefined,
-  getAsset: (id: string) => ImageSourcePropType,
-): ImageSourcePropType | null {
+  getAsset: (id: string) => ArtSource,
+): ArtSource | null {
   if (!path) return null;
   return path.startsWith("http") ? { uri: path } : getAsset(path);
 }

@@ -259,14 +259,17 @@ describe("VillagerLine", () => {
  * after the async read) was drawn for one frame with as many of its characters as the old line
  * had, then blanked and typed: a flash of the sentence before it starts.
  */
+/** Writes down every frame of the line the hook shows. */
+// biome-ignore lint/style/useComponentExportOnlyModules: a test file exports nothing
+function TypedLineProbe({ cameo, frames }: { cameo: Cameo; frames: string[] }) {
+  frames.push(useTypedLine(cameo).shown);
+  return null;
+}
+
 describe("useTypedLine", () => {
   it("starts a new line from nothing on its very first frame", async () => {
     useSettingsStore.setState({ reducedMotion: false });
     const frames: string[] = [];
-    function Probe({ cameo }: { cameo: Cameo }) {
-      frames.push(useTypedLine(cameo).shown);
-      return null;
-    }
     const ambient: Cameo = {
       id: 1,
       owner: "village",
@@ -278,11 +281,11 @@ describe("useTypedLine", () => {
     const guide: Cameo = { ...ambient, id: 2, moment: "guide_village", line: GUIDE };
 
     jest.useFakeTimers();
-    const { rerender } = await render(<Probe cameo={ambient} />);
+    const { rerender } = await render(<TypedLineProbe cameo={ambient} frames={frames} />);
     expect(frames.at(-1)).toBe(REST_LINE);
 
     frames.length = 0;
-    await rerender(<Probe cameo={guide} />);
+    await rerender(<TypedLineProbe cameo={guide} frames={frames} />);
     expect(frames[0]).toBe("");
 
     // And after a line that typed itself out, too.
@@ -291,7 +294,7 @@ describe("useTypedLine", () => {
     });
     expect(frames.at(-1)).toBe(GUIDE);
     frames.length = 0;
-    await rerender(<Probe cameo={{ ...guide, id: 3, line: REST_LINE }} />);
+    await rerender(<TypedLineProbe cameo={{ ...guide, id: 3, line: REST_LINE }} frames={frames} />);
     expect(frames[0]).toBe("");
     jest.useRealTimers();
   });

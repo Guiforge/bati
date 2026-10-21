@@ -2,11 +2,11 @@ import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ImageSourcePropType } from "react-native";
 import { ScrollView } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { useToast } from "@/components/common/Toast";
 import { ImagePlus } from "@/components/icons";
+import type { ArtSource } from "@/constants/assetMap";
 import { encodePhoto } from "@/src/exercisePhoto";
 import { reportError } from "@/src/reportError";
 
@@ -43,9 +43,9 @@ export type ImageChoiceFieldProps = {
   /** Keys of the art already in the APK this field offers. */
   choices: readonly string[];
   /** Key or URI -> the source the preview renders. */
-  resolve: (key: string) => ImageSourcePropType;
+  resolve: (key: string) => ArtSource;
   /** The same, thumbnail-sized, for the strip. */
-  resolveThumb: (key: string) => ImageSourcePropType;
+  resolveThumb: (key: string) => ArtSource;
   /**
    * The art's own shape — exercise illustrations are 1:1, quest covers 4:3 — so the preview
    * never letterboxes and the photo the hero crops comes back the shape it will be shown at.

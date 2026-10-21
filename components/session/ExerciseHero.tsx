@@ -1,16 +1,17 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useState } from "react";
-import { type ImageSourcePropType, useWindowDimensions } from "react-native";
+import { useWindowDimensions } from "react-native";
 import Animated, { useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { YStack } from "tamagui";
 import { Recitatif } from "@/components/common/Recitatif";
+import type { ArtSource } from "@/constants/assetMap";
 import { rawColors } from "@/constants/rawColors";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { exerciseArtMaxHeight, HUD_HEIGHT, NAME_MIN_SIDE, titleBelowPicture } from "./sessionArt";
 
 type ExerciseHeroProps = {
-  source: ImageSourcePropType;
+  source: ArtSource;
   /** The movement's name, painted on the artwork rather than under it. */
   name: string;
   /** Floor for the picture band, below the HUD. The hero grows past it to fill the column. */

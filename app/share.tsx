@@ -1,7 +1,7 @@
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useWindowDimensions, View } from "react-native";
+import { useWindowDimensions, View, type ViewInstance } from "react-native";
 import { YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Skeleton } from "@/components/common/Skeleton";
@@ -52,7 +52,7 @@ export default function ShareScreen() {
   // The guard itself, read synchronously: two taps in one frame both saw `busy` false and sent two
   // captures to two share sheets. The state only draws the button.
   const working = useRef(false);
-  const card = useRef<View>(null);
+  const card = useRef<ViewInstance>(null);
 
   useEffect(() => {
     if (!Number.isFinite(sessionId) || sessionId <= 0) {

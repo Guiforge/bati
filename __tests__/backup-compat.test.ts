@@ -170,39 +170,36 @@ describe("a backup from any earlier migration point", () => {
           { performedAt: 1_750_000_000 },
           ...(idx >= HAND_ENTRY_IDX ? [{ performedAt: 1_750_001_000 }] : []),
         ]);
-        if (idx >= HAND_ENTRY_IDX) {
-          // The session written down comes back whole, with no exercise to hold it up.
-          expect(
-            restored
-              .prepare(
-                "SELECT byHand, label, byHandEditedAt AS at FROM completed_sessions WHERE byHand IS NOT NULL",
-              )
-              .all(),
-          ).toEqual([{ byHand: "session", label: "salle", at: 9 }]);
-        } else {
-          expect(
-            restored
-              .prepare("SELECT count(*) AS n FROM completed_sessions WHERE byHand IS NOT NULL")
-              .get(),
-          ).toEqual({ n: 0 });
-        }
+        // The session written down comes back whole, with no exercise to hold it up.
+        expect(
+          restored
+            .prepare(
+              "SELECT byHand, label, byHandEditedAt AS at FROM completed_sessions WHERE byHand IS NOT NULL",
+            )
+            .all(),
+        ).toEqual(idx >= HAND_ENTRY_IDX ? [{ byHand: "session", label: "salle", at: 9 }] : []);
         expect(restored.prepare("SELECT resultValue FROM completed_exercises").all()).toEqual(
           hasExercise ? [{ resultValue: 12 }] : [],
         );
-        if (idx >= HERO_ADVENTURES_IDX) {
-          expect(
-            restored
-              .prepare(
-                `SELECT a.uuid AS uuid, count(s.id) AS steps FROM adventures a
-                 JOIN adventure_steps s ON s.adventureId = a.id WHERE a.author = 'hero'`,
-              )
-              .get(),
-          ).toEqual({ uuid: "0192c000-0000-7000-8000-00000000000a", steps: 2 });
-          // Written at 77 and kept; NULL when the point is 76 and the runner caught it up.
-          expect(
-            restored.prepare("SELECT bossName FROM adventures WHERE author = 'hero'").get(),
-          ).toEqual({ bossName: idx >= BOSS_VOICE_IDX ? "Nightcoil" : null });
-        }
+        const heroAdventures = idx >= HERO_ADVENTURES_IDX;
+        expect(
+          restored
+            .prepare(
+              `SELECT a.uuid AS uuid, count(s.id) AS steps FROM adventures a
+               JOIN adventure_steps s ON s.adventureId = a.id WHERE a.author = 'hero'`,
+            )
+            .get(),
+        ).toEqual(
+          heroAdventures
+            ? { uuid: "0192c000-0000-7000-8000-00000000000a", steps: 2 }
+            : { uuid: null, steps: 0 },
+        );
+        // Written at 77 and kept; NULL when the point is 76 and the runner caught it up.
+        expect(
+          restored.prepare("SELECT bossName FROM adventures WHERE author = 'hero'").get(),
+        ).toEqual(
+          heroAdventures ? { bossName: idx >= BOSS_VOICE_IDX ? "Nightcoil" : null } : undefined,
+        );
       } finally {
         restored.close();
       }

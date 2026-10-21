@@ -4,7 +4,6 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ImageSourcePropType } from "react-native";
 import { Platform, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
@@ -19,7 +18,7 @@ import { Recitatif } from "@/components/common/Recitatif";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { ForgeButton } from "@/components/forge/ForgeButton";
 import { Dumbbell, Map as MapIcon, Star } from "@/components/icons";
-import { getQuestAsset } from "@/constants/assetMap";
+import { type ArtSource, getQuestAsset } from "@/constants/assetMap";
 import {
   type ExerciseColorTokens,
   getQuestColorTokensFromTemplateWithExercises,
@@ -103,7 +102,7 @@ const STAR_CLEARANCE = 12 + 36 + 16;
 
 /** No path means no cover: the muscle tint carries the banner instead. Anything else — a bundled
  *  key, a seeded path, a hero's `data:` photo — `getQuestAsset` already knows. */
-function resolveCoverImage(path?: string | null): ImageSourcePropType | null {
+function resolveCoverImage(path?: string | null): ArtSource | null {
   return path ? getQuestAsset(path) : null;
 }
 
@@ -121,7 +120,7 @@ type QuestMeta = {
   tokens: ExerciseColorTokens;
   durationSeconds: number;
   xp: number;
-  cover: ImageSourcePropType | null;
+  cover: ArtSource | null;
   title: string;
   description: string;
   /** "Strength · Arms · Back" — what the quest trains, in words. Colored dots said nothing. */

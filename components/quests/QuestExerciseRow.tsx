@@ -1,14 +1,13 @@
 import { Image } from "expo-image";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ImageSourcePropType } from "react-native";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Tag } from "@/components/common/Tag";
 import { ChevronDown, ChevronUp, Dumbbell, Footprints } from "@/components/icons";
 import { slotCaption } from "@/components/quests/substitutionCaption";
-import { getExerciseThumb } from "@/constants/assetMap";
+import { type ArtSource, getExerciseThumb } from "@/constants/assetMap";
 import { formatDuration } from "@/db/estimate";
 import type { Exercise } from "@/db/exercises";
 import { EQUIPMENT_LABELS, MUSCLE_LABELS } from "@/db/labels";
@@ -23,7 +22,7 @@ const MAX_THUMBS = 4;
 /** Same cut the gallery card makes: past four muscles the row stops being a summary. */
 const MUSCLES_SHOWN = 4;
 
-function resolveExerciseImage(path?: string | null): ImageSourcePropType | null {
+function resolveExerciseImage(path?: string | null): ArtSource | null {
   if (!path) return null;
   return path.startsWith("http") ? { uri: path } : getExerciseThumb(path);
 }

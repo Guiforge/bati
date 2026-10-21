@@ -1,10 +1,11 @@
 import { Image } from "expo-image";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Keyboard, Platform, Pressable, type ScrollView } from "react-native";
+import { Keyboard, Platform, Pressable, type ScrollViewInstance } from "react-native";
 import { Input, Sheet, ScrollView as TamaguiScrollView, Text, XStack, YStack } from "tamagui";
 import { heroQuestsFirst } from "@/components/adventures/heroQuestsFirst";
 import { AppButton } from "@/components/common/AppButton";
+import { tamaguiRef } from "@/components/common/tamaguiRef";
 import { Plus, X } from "@/components/icons";
 import { getQuestAsset } from "@/constants/assetMap";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
@@ -46,7 +47,7 @@ export function QuestPickerSheet({
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
   const [search, setSearch] = useState("");
-  const listRef = useRef<ScrollView>(null);
+  const listRef = useRef<ScrollViewInstance>(null);
   const bottomPad = Math.max(bottomInset, Platform.OS === "android" ? 24 : 0) + 10;
 
   const close = useCallback(() => {
@@ -116,7 +117,12 @@ export function QuestPickerSheet({
           />
         </YStack>
 
-        <TamaguiScrollView ref={listRef} flex={1} px="$4" keyboardShouldPersistTaps="handled">
+        <TamaguiScrollView
+          ref={tamaguiRef(listRef)}
+          flex={1}
+          px="$4"
+          keyboardShouldPersistTaps="handled"
+        >
           <YStack gap="$2" pb="$3">
             {results.map((quest) => (
               <XStack

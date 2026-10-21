@@ -21,7 +21,9 @@ export default function TabsLayout() {
           const tabs = navigation.getState();
           // A root screen pushed over the tabs blurs this tab too; only a real tab change unwinds.
           if (tabs.routes[tabs.index]?.key === route.key) return;
-          const key = tabs.routes.find((r) => r.key === route.key)?.state?.key;
+          const key = tabs.routes.find(
+            (r: { key: string; state?: { key?: string } }) => r.key === route.key,
+          )?.state?.key;
           // Plain action: importing StackActions pulls @react-navigation/native, which Expo Router 56+ refuses.
           if (key) navigation.dispatch({ type: "POP_TO_TOP", target: key });
         },

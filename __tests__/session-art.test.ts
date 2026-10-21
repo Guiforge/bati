@@ -55,9 +55,8 @@ describe("session art geometry", () => {
 
     // Play testing said the boss read too small at the shared size; that is the whole reason the
     // second factor exists, so a change that flattens them is a change to the design.
-    if (boss < Math.round(width * 1.1)) {
-      expect(boss).toBeGreaterThan(exercise);
-    }
+    // Unless the boss already fills the most it may take.
+    expect(boss >= Math.round(width * 1.1) || boss > exercise).toBe(true);
   });
 
   it.each(SCREENS)(

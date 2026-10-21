@@ -389,15 +389,17 @@ describe("db/oaths", () => {
     const ids = o.OATH_PRESETS.map((p) => p.id);
     expect(new Set(ids).size).toBe(ids.length);
 
+    // Exercise metrics must name a seed exercise so the screen can resolve an id.
+    expect(
+      o.OATH_PRESETS.filter(
+        (p) => o.oathNeedsExercise(p.metric) && typeof p.exerciseName !== "string",
+      ),
+    ).toEqual([]);
     for (const p of o.OATH_PRESETS) {
       expect(p.target).toBeGreaterThan(0);
       expect(o.oathMetrics).toContain(p.metric);
       // The weekly metric is the one that needs a quota; the others must not carry one.
       expect(p.weeklyTarget !== undefined).toBe(o.oathNeedsWeeklyTarget(p.metric));
-      // Exercise metrics must name a seed exercise so the screen can resolve an id.
-      if (o.oathNeedsExercise(p.metric)) {
-        expect(typeof p.exerciseName).toBe("string");
-      }
       // The preset's shape must swear without throwing (exercise id stubbed here).
       await o.swearOath({
         metric: p.metric,

@@ -5,13 +5,14 @@ import {
   BackHandler,
   Keyboard,
   Pressable,
-  type ScrollView,
+  type ScrollViewInstance,
   useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Sheet, Text, XStack, YStack } from "tamagui";
 import { headingFont } from "@/components/common/headingFont";
 import { RevealContext } from "@/components/common/revealInSheet";
+import { tamaguiRef } from "@/components/common/tamaguiRef";
 import { useKeyboardHeight } from "@/components/common/useKeyboardHeight";
 import { X } from "@/components/icons";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
@@ -53,7 +54,7 @@ export function FormSheet({ open, title, onClose, children, footer, endOnKeyboar
   const { height } = useWindowDimensions();
   const pathname = usePathname();
   const shownOn = useRef(pathname);
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<ScrollViewInstance>(null);
   const keyboardH = useKeyboardHeight(endOnKeyboard ? scroll : undefined);
 
   const reveal = (node: unknown) => {
@@ -134,7 +135,7 @@ export function FormSheet({ open, title, onClose, children, footer, endOnKeyboar
             emulator with a 3 px finger drift). Drag is off here, so the hook has nothing to feed.
             Drop this once `useSheetScrollViewGestures.native.ts` resets it per touch. */}
         <Sheet.ScrollView
-          ref={scroll}
+          ref={tamaguiRef(scroll)}
           keyboardShouldPersistTaps="handled"
           onMoveShouldSetResponder={() => false}
           // With a footer the body gives way to it instead of pushing it off the sheet.

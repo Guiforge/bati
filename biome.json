@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.6.2/schema.json",
   "files": {
     "ignoreUnknown": false,
     "includes": [
@@ -75,41 +75,7 @@
         "noUndeclaredVariables": "error",
         "noSelfAssign": "error",
         "noVoidTypeReturn": "error",
-        "noUndeclaredDependencies": "error"
-      },
-      "style": {
-        "noNonNullAssertion": "error",
-        "useConst": "error",
-        "useTemplate": "error",
-        "noParameterAssign": "error",
-        "useSingleVarDeclarator": "error",
-        "noDefaultExport": "error",
-        "useConsistentArrayType": {
-          "level": "error",
-          "options": {
-            "syntax": "shorthand"
-          }
-        }
-      },
-      "suspicious": {
-        "noConsole": {
-          "level": "error",
-          "options": {
-            "allow": ["warn", "error"]
-          }
-        },
-        "noDebugger": "error",
-        "noDoubleEquals": "error",
-        "noArrayIndexKey": "error",
-        "noDuplicateJsxProps": "error",
-        "noAssignInExpressions": "error",
-        "noImplicitAnyLet": "error",
-        "noRedeclare": "error",
-        "useAwait": "warn",
-        "noEmptyBlockStatements": "error"
-      },
-      "nursery": {
-        "noFloatingPromises": "error",
+        "noUndeclaredDependencies": "error",
         "noReactNativeRawText": {
           "level": "error",
           "options": {
@@ -140,9 +106,43 @@
             ]
           }
         },
-        "noReactNativeDeepImports": "error",
-        "useReactNativePlatformComponents": "error",
+        "useReactNativePlatformComponents": "error"
+      },
+      "style": {
+        "noNonNullAssertion": "error",
+        "useConst": "error",
+        "useTemplate": "error",
+        "noParameterAssign": "error",
+        "useSingleVarDeclarator": "error",
+        "noDefaultExport": "error",
+        "useConsistentArrayType": {
+          "level": "error",
+          "options": {
+            "syntax": "shorthand"
+          }
+        },
         "noReactNativeLiteralColors": "error"
+      },
+      "suspicious": {
+        "noConsole": {
+          "level": "error",
+          "options": {
+            "allow": ["warn", "error"]
+          }
+        },
+        "noDebugger": "error",
+        "noDoubleEquals": "error",
+        "noArrayIndexKey": "error",
+        "noDuplicateJsxProps": "error",
+        "noAssignInExpressions": "error",
+        "noImplicitAnyLet": "error",
+        "noRedeclare": "error",
+        "useAwait": "warn",
+        "noEmptyBlockStatements": "error",
+        "noReactNativeDeepImports": "error"
+      },
+      "nursery": {
+        "noFloatingPromises": "error"
       }
     }
   },
@@ -218,6 +218,9 @@
     },
     {
       "includes": ["**/*.md"],
+      "formatter": {
+        "enabled": false
+      },
       "linter": {
         "enabled": false
       }
@@ -238,6 +241,9 @@
           "test": "all"
         },
         "rules": {
+          "style": {
+            "useConsistentTestIt": "off"
+          },
           "suspicious": {
             "noConsole": "off",
             "noEmptyBlockStatements": "off"

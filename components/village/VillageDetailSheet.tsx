@@ -2,13 +2,14 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { BackHandler, type ScrollView, useWindowDimensions } from "react-native";
+import { BackHandler, type ScrollViewInstance, useWindowDimensions } from "react-native";
 import { Sheet, Text, XStack, YStack } from "tamagui";
 
 import { AppButton } from "@/components/common/AppButton";
 import { ImageViewer } from "@/components/common/ImageViewer";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { SectionLabel } from "@/components/common/SectionLabel";
+import { tamaguiRef } from "@/components/common/tamaguiRef";
 import { LevelPips } from "@/components/village/LevelPips";
 import { buildingMilestoneLine } from "@/components/village/milestoneLine";
 import {
@@ -176,7 +177,7 @@ export function VillageDetailSheet({
   }, [selected, onClose]);
 
   // The scroll position survives a close, so the next building opened below the fold.
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<ScrollViewInstance>(null);
   useEffect(() => {
     if (selected) scroll.current?.scrollTo({ y: 0, animated: false });
   }, [selected]);
@@ -226,7 +227,7 @@ export function VillageDetailSheet({
         />
         {/* ponytail: `onMoveShouldSetResponder` as in FormSheet, Tamagui 2.7.7 cancels the first
             tap of a button in a Sheet.ScrollView (see .biome/plugins/noBareSheetScrollView.grit). */}
-        <Sheet.ScrollView ref={scroll} onMoveShouldSetResponder={() => false}>
+        <Sheet.ScrollView ref={tamaguiRef(scroll)} onMoveShouldSetResponder={() => false}>
           <YStack testID="village-detail" px="$4" pt="$3" pb={bottomInset + 16} gap="$4">
             {shown?.kind === "building" ? (
               <BuildingDetail

@@ -94,8 +94,9 @@ describe("a three-year hero updated from any earlier build", () => {
           before.exercises,
         );
         const xp = scalar(sqlite, "SELECT SUM(xpEarned) AS n FROM completed_sessions");
-        if (idx >= 37) expect(xp).toBe(before.xp);
-        else expect(xp).toBeLessThanOrEqual(before.xp);
+        // Before 0037 a migration recomputes XP, never upward; from it on, XP comes back exactly.
+        expect(xp).toBeLessThanOrEqual(before.xp);
+        expect(idx >= 37 ? xp : before.xp).toBe(before.xp);
 
         // The figures, read through the app's own paths on the updated database.
         jest.resetModules();
@@ -122,12 +123,10 @@ describe("a three-year hero updated from any earlier build", () => {
           expect(hero.level.level).toBe(golden.level.level);
           expect(hero.village.tier).toBe(golden.village.tier);
 
-          if (idx >= FULL_EQUALITY_FROM) {
-            const moved = figuresThatMoved(golden, hero);
-            expect(
-              idx >= CONTENT_EQUAL_FROM ? moved : moved.filter((m) => !CONTENT_FIGURE.test(m)),
-            ).toEqual([]);
-          }
+          const moved = idx >= FULL_EQUALITY_FROM ? figuresThatMoved(golden, hero) : [];
+          expect(
+            idx >= CONTENT_EQUAL_FROM ? moved : moved.filter((m) => !CONTENT_FIGURE.test(m)),
+          ).toEqual([]);
         } finally {
           jest.useRealTimers();
         }

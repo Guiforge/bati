@@ -829,22 +829,18 @@ describe("VictoryView villager slot, and what is under it", () => {
     const slot = view.getByTestId("villager-line-slot") as unknown as Node;
     expect(pressableAncestors(slot)).toEqual([]);
 
-    if (isBoss) {
-      // The boss still opens, from the part of the banner below the slot, never over it.
-      const band = slotBand(slot);
-      const open = view.getByTestId("victory-boss-open");
-      expect(StyleSheet.flatten(open.props.style).top).toBeGreaterThanOrEqual(
-        band.top + band.height,
-      );
-      expect(open.props.accessibilityRole).toBe("imagebutton");
-      // The viewer is a Modal, empty until shown; open, it carries the boss's name too.
-      const label = String(open.props.accessibilityLabel);
-      expect(view.getAllByLabelText(label)).toHaveLength(1);
-      await fireEvent.press(open);
-      expect(view.getAllByLabelText(label)).toHaveLength(2);
-    } else {
-      expect(view.queryByTestId("victory-boss-open")).toBeNull();
-    }
+    expect(view.queryByTestId("victory-boss-open") !== null).toBe(isBoss);
+    if (!isBoss) return;
+    // The boss still opens, from the part of the banner below the slot, never over it.
+    const band = slotBand(slot);
+    const open = view.getByTestId("victory-boss-open");
+    expect(StyleSheet.flatten(open.props.style).top).toBeGreaterThanOrEqual(band.top + band.height);
+    expect(open.props.accessibilityRole).toBe("imagebutton");
+    // The viewer is a Modal, empty until shown; open, it carries the boss's name too.
+    const label = String(open.props.accessibilityLabel);
+    expect(view.getAllByLabelText(label)).toHaveLength(1);
+    await fireEvent.press(open);
+    expect(view.getAllByLabelText(label)).toHaveLength(2);
   });
 
   // The hero's own last word for a boss they named; a painted boss has none to say.
@@ -861,8 +857,9 @@ describe("VictoryView villager slot, and what is under it", () => {
     });
     await release();
     const line = view.queryByTestId("victory-boss-defeat-line");
-    if (shown === null) expect(line).toBeNull();
-    else expect(line).toHaveTextContent(shown);
+    expect(line === null).toBe(shown === null);
+    if (shown === null) return;
+    expect(line).toHaveTextContent(shown);
   });
 
   // "Tonight" carries the boss as a card, so the banner must not announce it a second time.

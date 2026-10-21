@@ -1,10 +1,17 @@
 import { Image } from "expo-image";
-import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import { useLocalSearchParams, useNavigation, usePreventRemove, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Keyboard, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  type ScrollViewInstance,
+  type TextInputInstance,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Input, type TamaguiElement, Text, XStack, YStack } from "tamagui";
+import { Input, Text, XStack, YStack } from "tamagui";
 import { monsterName } from "@/components/adventures/monsterName";
 import { BossLines } from "@/components/bosses/BossLines";
 import { BossPictures } from "@/components/bosses/BossPictures";
@@ -15,6 +22,7 @@ import { Chip } from "@/components/common/Chip";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { StatusBand } from "@/components/common/StatusBand";
 import { useToast } from "@/components/common/Toast";
+import { tamaguiRef } from "@/components/common/tamaguiRef";
 import { leavesWithoutAsking } from "@/components/common/useTabLeaveGuard";
 import { ChevronLeft } from "@/components/icons";
 import { getBossAsset } from "@/constants/assetMap";
@@ -120,29 +128,29 @@ export default function BossEditor() {
   const [dialog, setDialog] = useState<DialogState | null>(null);
   const typing = useKeyboardShown();
   const skipGuardRef = useRef(false);
-  const scrollRef = useRef<ScrollView>(null);
-  const nameRef = useRef<TamaguiElement>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
+  const nameRef = useRef<TextInputInstance>(null);
   const nameCardY = useRef(0);
 
   const isDirty = draft !== null && JSON.stringify(draft) !== baseline;
   const navigation = useNavigation();
-  useEffect(() => {
-    return navigation.addListener("beforeRemove", (e) => {
-      if (leavesWithoutAsking(navigation, isDirty, skipGuardRef)) return;
-      e.preventDefault();
-      setDialog({
-        title: t("quests.editor_discard_title"),
-        body: t("quests.editor_discard_body"),
-        confirmLabel: t("quests.editor_discard"),
-        cancelLabel: t("common.cancel"),
-        destructive: true,
-        onConfirm: () => {
-          Keyboard.dismiss();
-          navigation.dispatch(e.data.action);
-        },
-      });
+  usePreventRemove(isDirty, ({ repeat }) => {
+    if (leavesWithoutAsking(navigation, isDirty, skipGuardRef)) {
+      repeat();
+      return;
+    }
+    setDialog({
+      title: t("quests.editor_discard_title"),
+      body: t("quests.editor_discard_body"),
+      confirmLabel: t("quests.editor_discard"),
+      cancelLabel: t("common.cancel"),
+      destructive: true,
+      onConfirm: () => {
+        Keyboard.dismiss();
+        repeat();
+      },
     });
-  }, [navigation, t, isDirty]);
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -322,7 +330,7 @@ export default function BossEditor() {
                       {t("adventures.editor_boss_name")}
                     </Text>
                     <Input
-                      ref={nameRef}
+                      ref={tamaguiRef(nameRef)}
                       testID="boss-name"
                       height="auto"
                       minH={44}

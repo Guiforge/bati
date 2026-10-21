@@ -3,14 +3,18 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ImageSourcePropType } from "react-native";
 import { XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { Recitatif } from "@/components/common/Recitatif";
 import { Info, Play, Sparkles, Target } from "@/components/icons";
-import { ADVENTURE_ASSETS, getAdventureAsset, getQuestAsset } from "@/constants/assetMap";
+import {
+  ADVENTURE_ASSETS,
+  type ArtSource,
+  getAdventureAsset,
+  getQuestAsset,
+} from "@/constants/assetMap";
 import { fade, rawColors } from "@/constants/rawColors";
 import { reportError } from "@/src/reportError";
 import { OathStrip } from "./OathStrip";
@@ -25,7 +29,7 @@ import { useStartQuest } from "./useStartQuest";
 const STAGE_MIN_HEIGHT = 320;
 
 /** The stage is always a scene. With nothing running, the on-ramp route's art stands in. */
-function resolveCover(config: SmartActionConfig | null): ImageSourcePropType {
+function resolveCover(config: SmartActionConfig | null): ArtSource {
   const path = config?.scene?.imagePath;
   if (!path) return ADVENTURE_ASSETS.squire_path;
   if (path.startsWith("http")) return { uri: path };

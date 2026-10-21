@@ -602,6 +602,13 @@ function lookup<T>(map: Record<string, T>, id: string): T | undefined {
  * do not each need to know — only the detail screen did, and everything else showed the
  * placeholder.
  */
+/**
+ * What every getter here hands out: a bundled `require` id or a URI. Narrower than either image
+ * library's own source type on purpose, so one value fits expo-image and RN's `Image` alike (RN
+ * 0.88 made its array form readonly, which expo-image's mutable array refuses).
+ */
+export type ArtSource = number | { uri: string };
+
 function asUriSource(id: string): { uri: string } | null {
   return /^(data:|file:|content:|https?:)/.test(id) ? { uri: id } : null;
 }

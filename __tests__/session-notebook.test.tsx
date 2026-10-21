@@ -6,19 +6,24 @@ jest.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (k: string) => k }),
   initReactI18next: { type: "3rdParty", init: () => {} },
 }));
-type Leave = { preventDefault: () => void; data: { action: unknown } };
-let mockLeaveListeners: ((e: Leave) => void)[] = [];
+// What the notebook last told `usePreventRemove`: whether to hold a removal, and what to do then.
+type Prevented = { data: { action: unknown }; repeat: () => void };
+let mockGuard: { prevent: boolean; onPrevented?: (e: Prevented) => void } = { prevent: false };
 const mockDispatch = jest.fn();
-const mockNavigation = {
-  addListener: (_name: string, fn: (e: Leave) => void) => {
-    mockLeaveListeners.push(fn);
-    return () => {
-      mockLeaveListeners = mockLeaveListeners.filter((l) => l !== fn);
-    };
+jest.mock("expo-router", () => ({
+  usePreventRemove: (prevent: boolean, onPrevented?: (e: Prevented) => void) => {
+    mockGuard = { prevent, onPrevented };
+    // The guard is a child mounted only while the note is unsaved: unmounting it lifts the hold.
+    const { useEffect } = jest.requireActual<typeof import("react")>("react");
+    useEffect(
+      () => () => {
+        mockGuard = { prevent: false };
+      },
+      [],
+    );
+    return () => undefined;
   },
-  dispatch: (action: unknown) => mockDispatch(action),
-};
-jest.mock("expo-router", () => ({ useNavigation: () => mockNavigation }));
+}));
 jest.mock("@/db/client", () => ({ db: {}, schema: {} }));
 jest.mock("@/src/reportError", () => ({ reportError: jest.fn() }));
 
@@ -141,16 +146,25 @@ test("note mode opens on the editor and shows no photo controls", async () => {
 });
 
 describe("leaving with an unsaved note", () => {
+  /** A back press, the way expo-router plays it: through unless held, and held until `repeat`. */
   const leave = async () => {
-    const e = { preventDefault: jest.fn(), data: { action: { type: "GO_BACK" } } };
+    let left = !mockGuard.prevent;
+    const action = { type: "GO_BACK" };
     await act(() => {
-      for (const l of mockLeaveListeners) l(e);
+      if (left) return;
+      mockGuard.onPrevented?.({
+        data: { action },
+        repeat: () => {
+          left = true;
+          mockDispatch(action);
+        },
+      });
     });
-    return e;
+    return left;
   };
 
   beforeEach(() => {
-    mockLeaveListeners = [];
+    mockGuard = { prevent: false };
   });
 
   test("is stopped and asked about once the text differs from the saved note", async () => {
@@ -160,12 +174,12 @@ describe("leaving with an unsaved note", () => {
       await fireEvent.press(screen.getByTestId("notebook-note-edit"));
     });
     // Opened but untouched: nothing to lose, nothing asked.
-    expect((await leave()).preventDefault).not.toHaveBeenCalled();
+    expect(await leave()).toBe(true);
 
     await act(async () => {
       await fireEvent.changeText(screen.getByTestId("notebook-note-input"), "Rain, strong legs");
     });
-    expect((await leave()).preventDefault).toHaveBeenCalledTimes(1);
+    expect(await leave()).toBe(false);
     expect(screen.getByText("quests.editor_discard_title")).toBeTruthy();
     expect(mockDispatch).not.toHaveBeenCalled();
 
@@ -187,7 +201,7 @@ describe("leaving with an unsaved note", () => {
     await act(async () => {
       await fireEvent.press(screen.getByTestId("notebook-note-save"));
     });
-    expect((await leave()).preventDefault).not.toHaveBeenCalled();
+    expect(await leave()).toBe(true);
   });
 
   test("the victory screen's composer is not guarded", async () => {
@@ -195,6 +209,6 @@ describe("leaving with an unsaved note", () => {
     await act(async () => {
       await fireEvent.changeText(screen.getByTestId("notebook-note-input"), "Typing");
     });
-    expect((await leave()).preventDefault).not.toHaveBeenCalled();
+    expect(await leave()).toBe(true);
   });
 });

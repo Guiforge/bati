@@ -1,4 +1,4 @@
-import type { ImageSourcePropType } from "react-native";
+import type { ArtSource } from "@/constants/assetMap";
 
 export const avatarIds = ["shadow", "scout", "guardian", "archmage", "elder", "archer"] as const;
 
@@ -7,7 +7,7 @@ export type AvatarId = (typeof avatarIds)[number];
 export type Avatar = {
   id: AvatarId;
   labelKey: string;
-  source: ImageSourcePropType;
+  source: ArtSource;
 };
 
 export const AVATARS = [
@@ -53,9 +53,6 @@ export function getAvatarById(id: AvatarId): Avatar {
   return found!;
 }
 
-export function getAvatarSource(
-  avatarId: AvatarId,
-  customAvatarUri: string | null,
-): ImageSourcePropType {
+export function getAvatarSource(avatarId: AvatarId, customAvatarUri: string | null): ArtSource {
   return customAvatarUri ? { uri: customAvatarUri } : getAvatarById(avatarId).source;
 }

@@ -33,7 +33,7 @@ jest.mock("expo-file-system", () => {
     create() {
       disk.set(this.uri, "");
     }
-    write(text: string) {
+    writeSync(text: string) {
       disk.set(this.uri, text);
     }
   }

@@ -4,7 +4,6 @@ import { useFocusEffect, useRouter } from "expo-router";
 import type { TFunction } from "i18next";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ImageSourcePropType } from "react-native";
 import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, Text, XStack, YStack } from "tamagui";
@@ -21,7 +20,7 @@ import { Recitatif } from "@/components/common/Recitatif";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { ForgeButton } from "@/components/forge/ForgeButton";
 import { Skull, Sparkles } from "@/components/icons";
-import { getAdventureAsset } from "@/constants/assetMap";
+import { type ArtSource, getAdventureAsset } from "@/constants/assetMap";
 import {
   type Adventure,
   activeRunAdventureIds,
@@ -46,7 +45,7 @@ import { reportError } from "@/src/reportError";
 import { keepIfSame } from "@/src/sameContent";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
-function resolveCoverImage(path?: string | null): ImageSourcePropType | null {
+function resolveCoverImage(path?: string | null): ArtSource | null {
   if (!path) return null;
   return path.startsWith("http") ? { uri: path } : getAdventureAsset(path);
 }
@@ -73,7 +72,7 @@ type AdventureRow = {
   adventure: Adventure;
   durationSeconds: number;
   xp: number;
-  cover: ImageSourcePropType | null;
+  cover: ArtSource | null;
   title: string;
   description: string;
   kindLabel: string;

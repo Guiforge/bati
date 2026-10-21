@@ -1,10 +1,17 @@
 import { Image } from "expo-image";
-import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import { useLocalSearchParams, useNavigation, usePreventRemove, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Keyboard, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  type ScrollViewInstance,
+  type TextInputInstance,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, Input, Separator, type TamaguiElement, Text, XStack, YStack } from "tamagui";
+import { Button, Input, Separator, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
@@ -13,6 +20,7 @@ import { ImageChoiceField } from "@/components/common/ImageChoiceField";
 import { StatusBand } from "@/components/common/StatusBand";
 import { Stepper } from "@/components/common/Stepper";
 import { useToast } from "@/components/common/Toast";
+import { tamaguiRef } from "@/components/common/tamaguiRef";
 import { leavesWithoutAsking, useTabLeaveGuard } from "@/components/common/useTabLeaveGuard";
 import { ChevronLeft, Plus, Trash2, X } from "@/components/icons";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
@@ -127,8 +135,8 @@ export default function QuestEditor() {
   const [nameMissing, setNameMissing] = useState(false);
   // Same for a quest with no exercise: the line under "Add an exercise" stays until one is added.
   const [exercisesMissing, setExercisesMissing] = useState(false);
-  const nameRef = useRef<TamaguiElement>(null);
-  const scrollRef = useRef<ScrollView>(null);
+  const nameRef = useRef<TextInputInstance>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const nameCardY = useRef(0);
   const showMessage = (title: string, body: string) =>
     setDialog({ title, body, confirmLabel: t("common.close") });
@@ -158,25 +166,25 @@ export default function QuestEditor() {
   // The ref is read when the hero leaves, never during render: a ref read in the render body is
   // one of the things that makes the React Compiler skip the whole editor.
   const navigation = useNavigation();
-  useEffect(() => {
-    return navigation.addListener("beforeRemove", (e) => {
-      if (leavesWithoutAsking(navigation, isDirty, skipGuardRef)) return;
-      e.preventDefault();
-      setDialog({
-        title: t("quests.editor_discard_title"),
-        body: t("quests.editor_discard_body"),
-        confirmLabel: t("quests.editor_discard"),
-        cancelLabel: t("common.cancel"),
-        destructive: true,
-        onConfirm: () => {
-          // The field that was being typed in is about to unmount; without this the keyboard
-          // outlives it and sits over the screen the hero lands on.
-          Keyboard.dismiss();
-          navigation.dispatch(e.data.action);
-        },
-      });
+  usePreventRemove(isDirty, ({ repeat }) => {
+    if (leavesWithoutAsking(navigation, isDirty, skipGuardRef)) {
+      repeat();
+      return;
+    }
+    setDialog({
+      title: t("quests.editor_discard_title"),
+      body: t("quests.editor_discard_body"),
+      confirmLabel: t("quests.editor_discard"),
+      cancelLabel: t("common.cancel"),
+      destructive: true,
+      onConfirm: () => {
+        // The field that was being typed in is about to unmount; without this the keyboard
+        // outlives it and sits over the screen the hero lands on.
+        Keyboard.dismiss();
+        repeat();
+      },
     });
-  }, [navigation, t, isDirty]);
+  });
 
   useTabLeaveGuard(isDirty, skipGuardRef, (go) =>
     setDialog({
@@ -529,7 +537,7 @@ export default function QuestEditor() {
                       setTitle(next);
                       setNameMissing(false);
                     }}
-                    ref={nameRef}
+                    ref={tamaguiRef(nameRef)}
                     testID="quest-name"
                     placeholder={t("quests.editor_name_placeholder")}
                     bg="$background"

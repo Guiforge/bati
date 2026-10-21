@@ -22,10 +22,9 @@ describe("android versionCode", () => {
     const ordered = ["0.9.9", "1.0.0", "1.0.1", "1.0.2", "1.0.99", "1.1.0", "1.99.99", "2.0.0"];
     const codes = ordered.map(versionCodeFor);
 
-    for (const [i, code] of codes.entries()) {
-      const previous = codes[i - 1];
-      if (previous !== undefined) expect(code).toBeGreaterThan(previous);
-    }
+    // Strictly rising: already sorted, and no two the same.
+    expect(codes).toEqual([...codes].sort((a, b) => a - b));
+    expect(new Set(codes).size).toBe(codes.length);
   });
 
   test("keeps the rest of the config untouched", () => {

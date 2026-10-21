@@ -99,9 +99,11 @@ Under `noUncheckedIndexedAccess` a test that needs `rows[0]` as a *value* — no
 function; `expect(row).toBeDefined()` is not, and `!` is banned everywhere. Inside `expect()`,
 `?.` is enough: `expect(rows[0]?.value)` fails loudly on an empty array.
 
-Biome runs `react`, `reactNative` and `types` domains, but their React Native and type-aware
-rules are all still `nursery`, and a domain does not switch nursery rules on: each one is named
-in `biome.json` (`noFloatingPromises`, `noReactNativeRawText`, …). `noReactNativeRawText` only
+Biome runs `react`, `reactNative` and `types` domains. Its React Native rules left `nursery` in
+2.6 (`noReactNativeRawText` is `correctness` now); the type-aware ones are still there, and a
+domain does not switch nursery rules on, so each is named in `biome.json` (`noFloatingPromises`).
+Tests run the `test` domain whole, except `useConsistentTestIt`: the suites mix `test` and `it`,
+and its autofix rewrote every one in a staged file. Markdown is not formatted. `noReactNativeRawText` only
 trusts `<Text>`; every project component that renders its children inside one is on its `skip`
 list — add a new wrapper there, do not turn the rule off. Five GritQL plugins under
 `.biome/plugins/` cover what no rule does: raw hex colours, identical ternary arms, dynamic

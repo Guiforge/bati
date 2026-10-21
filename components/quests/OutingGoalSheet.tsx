@@ -5,13 +5,14 @@ import {
   BackHandler,
   Keyboard,
   Pressable,
-  type ScrollView,
+  type ScrollViewInstance,
   useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Input, Sheet, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Chip } from "@/components/common/Chip";
+import { tamaguiRef } from "@/components/common/tamaguiRef";
 import { useKeyboardHeight } from "@/components/common/useKeyboardHeight";
 import { X } from "@/components/icons";
 import { GpsSetting } from "@/components/quests/GpsSetting";
@@ -124,7 +125,7 @@ export function OutingGoalSheet({
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   // The only field is the last thing in the sheet: once the keyboard is up, show it and Done.
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<ScrollViewInstance>(null);
   const keyboardH = useKeyboardHeight(scroll);
 
   // Hardware back closes the sheet, not the screen under it (as in `FormSheet`): the modal is
@@ -255,7 +256,7 @@ export function OutingGoalSheet({
         style={{ maxHeight: height - insets.top - 16 - keyboardH }}
       >
         <Sheet.ScrollView
-          ref={scroll}
+          ref={tamaguiRef(scroll)}
           keyboardShouldPersistTaps="handled"
           onMoveShouldSetResponder={() => false}
         >

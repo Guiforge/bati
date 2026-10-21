@@ -1,5 +1,5 @@
 import { type RefObject, useEffect, useState } from "react";
-import { Keyboard, type ScrollView } from "react-native";
+import { Keyboard, type ScrollViewInstance } from "react-native";
 
 /**
  * The keyboard's height while it is up, else 0. A sheet with `moveOnKeyboardChange` rides up by
@@ -7,7 +7,7 @@ import { Keyboard, type ScrollView } from "react-native";
  * With `scroll`, the view is also scrolled to its end when the keyboard rises: riding up is not
  * enough at 130 % on a short screen, a last field or button stays under the keys.
  */
-export function useKeyboardHeight(scroll?: RefObject<ScrollView | null>): number {
+export function useKeyboardHeight(scroll?: RefObject<ScrollViewInstance | null>): number {
   const [keyboardH, setKeyboardH] = useState(0);
   useEffect(() => {
     const show = Keyboard.addListener("keyboardDidShow", (e) =>

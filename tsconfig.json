@@ -11,7 +11,10 @@
     "tsBuildInfoFile": "./node_modules/.cache/tsbuildinfo",
     "types": ["jest", "node"],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      // view-shot 6 lists its `react-native` condition (raw src/index.tsx, which skipLibCheck
+      // cannot skip) before `types`; Expo's customConditions picks the source. Read the built types.
+      "react-native-view-shot": ["./node_modules/react-native-view-shot/lib/index.d.ts"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"],

@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Keyboard, Platform, Pressable, type ScrollView } from "react-native";
+import { Keyboard, Platform, Pressable, type ScrollViewInstance } from "react-native";
 import { Input, Sheet, ScrollView as TamaguiScrollView, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { tamaguiRef } from "@/components/common/tamaguiRef";
 import { ExerciseRow } from "@/components/exercises/ExerciseRow";
 import { MineCaption } from "@/components/exercises/MineCaption";
 import { Check, Search, X } from "@/components/icons";
@@ -87,7 +88,7 @@ export function ExercisePickerSheet({
   // Nothing else ever moves the list, and neither a close nor a narrowing search clamps its
   // offset: reopening the picker landed mid-catalogue, and a search that cut 34 rows to 3 left
   // them — and the "nothing matches" line — above the fold, so the sheet read as empty.
-  const listRef = useRef<ScrollView>(null);
+  const listRef = useRef<ScrollViewInstance>(null);
   const toTop = useCallback(() => listRef.current?.scrollTo({ y: 0, animated: false }), []);
 
   // Closing resets the search: it used to survive, so reopening showed a list still filtered by
@@ -203,7 +204,12 @@ export function ExercisePickerSheet({
             ended, reads as >10px, and the scroll view seizes the responder — cancelling the row's
             press. So the first tap did nothing and the second, landing within 10px of the first,
             worked. Measured: one tap on "Tractions", no badge; the identical tap again, added. */}
-        <TamaguiScrollView ref={listRef} flex={1} px="$4" keyboardShouldPersistTaps="handled">
+        <TamaguiScrollView
+          ref={tamaguiRef(listRef)}
+          flex={1}
+          px="$4"
+          keyboardShouldPersistTaps="handled"
+        >
           <YStack gap="$2" pb="$3">
             {results.map((exercise) => {
               const picked = countByExerciseId.get(exercise.id) ?? 0;

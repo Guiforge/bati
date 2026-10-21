@@ -49,7 +49,7 @@ import {
 /** A file at a uri, as `new File(uri)` would open it. */
 const opened = (size: number | null, body = "{}") => {
   const handle = {
-    readBytes: jest.fn((n: number) => new TextEncoder().encode(body).subarray(0, n)),
+    readBytesSync: jest.fn((n: number) => new TextEncoder().encode(body).subarray(0, n)),
     close: jest.fn(),
   };
   return { size, text: jest.fn(), open: jest.fn(() => handle), handle };
@@ -105,7 +105,7 @@ test("a file of unknown size is read to the limit plus one byte, never whole", a
   const big = opened(null, "x".repeat(8_000_050));
   mockOpen.mockReturnValue(big);
   expect(await refusal(read("content://chat/2"))).toBe("not_a_quest");
-  expect(big.handle.readBytes).toHaveBeenCalledWith(8_000_001);
+  expect(big.handle.readBytesSync).toHaveBeenCalledWith(8_000_001);
   expect(big.handle.close).toHaveBeenCalled();
   expect(big.text).not.toHaveBeenCalled();
 

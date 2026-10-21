@@ -11,10 +11,9 @@ describe("boss art", () => {
     const run = spawnSync("python3", ["scripts/check-boss-frames.py"], { encoding: "utf8" });
     // ponytail: skipped on a machine without python3 + Pillow. Never in CI: ci.yml and
     // release.yml install python3-pil, and a CI run that cannot decode the art fails here.
-    if (run.error || run.status === 2) {
-      expect(process.env.CI).toBeFalsy();
-      return;
-    }
+    const skipped = run.error !== undefined || run.status === 2;
+    expect(skipped && Boolean(process.env.CI)).toBe(false);
+    if (skipped) return;
     expect(run.stderr).toBe("");
     expect(run.stdout.trim().split("\n").filter(Boolean)).toEqual([]);
   });

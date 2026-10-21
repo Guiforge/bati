@@ -463,6 +463,31 @@ describe("the boss ending", () => {
     );
   });
 
+  test("a boss that arrives later, after the shortcut was left without saving, is never chosen", async () => {
+    mockBosses.mockResolvedValue([gorgo]);
+    const editor = await mount();
+    await fireEvent.press(editor.getByTestId("editor-end-boss"));
+    await fireEvent.press(editor.getByTestId("editor-new-boss"));
+    // Back from the boss editor without saving: nothing new.
+    await act(() => {
+      mockFocus.current();
+    });
+    // Later, a sync brings a boss and the screen is focused again.
+    mockBosses.mockResolvedValue([gorgo, { ...gorgo, uuid: "synced", name: "Synced" }]);
+    await act(() => {
+      mockFocus.current();
+    });
+    await waitFor(() => expect(editor.getByTestId("editor-hero-boss-synced")).toBeTruthy());
+    await fireEvent.changeText(editor.getByTestId("adventure-name"), "Tale");
+    await pick(editor, 1, 2);
+    await fireEvent.press(editor.getByTestId("adventure-save"));
+    await waitFor(() =>
+      expect(hero().createHeroAdventure).toHaveBeenCalledWith(
+        expect.objectContaining({ end: { kind: "boss", monster: "shadow_serpent" } }),
+      ),
+    );
+  });
+
   test("the picker offers the monsters it is told to, and keeps showing a saved one it does not offer", async () => {
     mockParams.id = "9";
     hero().listOfferedMonsters?.mockResolvedValueOnce([monster("shadow_serpent")]);

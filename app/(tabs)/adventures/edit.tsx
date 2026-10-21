@@ -283,8 +283,9 @@ export default function AdventureEditor() {
           setCatalogue((c) => ({ ...c, heroBosses }));
           const known = bossesBefore.current;
           const made = known ? heroBosses.find((b) => !known.has(b.uuid)) : undefined;
-          if (!made) return;
+          // One return only: left without saving, a boss a sync brings later is not the shortcut's.
           bossesBefore.current = null;
+          if (!made) return;
           patch({
             end: { kind: "boss", monster: made.monsterKey ?? "stone_golem", heroBoss: made.uuid },
           });

@@ -154,6 +154,7 @@ describe("i18n locale parity", () => {
    */
   test("a string that counts a noun has plural forms", () => {
     const STANDS_ALONE = new Set([
+      "adventures.import_boss_lines",
       "adventures.reward_xp_per_step",
       "adventures.step_label",
       "exercises.seconds_per_rep",

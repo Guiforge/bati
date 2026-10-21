@@ -2439,7 +2439,7 @@
     "check_off": "Turn off",
     "check_fine": "They're fine",
     "pause_row": "Pause",
-    "elsewhere": "Already moved elsewhere?"
+    "elsewhere": "Done elsewhere?"
   },
   "setAside": {
     "leave_out": "Don't suggest {{name}} again",
@@ -2976,7 +2976,7 @@
     "way_ride": "by bike",
     "fix_distance": "Use {{fix}}",
     "drop_distance": "Remove the distance",
-    "rule_no_gps": "Without GPS, your outing counts by time: flame, XP, but no leagues until you add the distance.",
+    "rule_no_gps": "Without GPS, your outing counts by time: flame, XP, but no leagues (one league is one kilometre) until you add the distance.",
     "hand_mark": "typed by hand",
     "hand_mark_distance": "distance typed by hand",
     "hand_mark_count_one": "({{count}} typed by hand)",

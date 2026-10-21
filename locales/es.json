@@ -2547,7 +2547,7 @@
     "check_off": "Apagar",
     "check_fine": "Me van bien",
     "pause_row": "Pausar",
-    "elsewhere": "¿Ya te moviste fuera?"
+    "elsewhere": "¿Hecho fuera?"
   },
   "setAside": {
     "leave_out": "No proponerme más: {{name}}",
@@ -3102,7 +3102,7 @@
     "way_ride": "en bici",
     "fix_distance": "Poner {{fix}}",
     "drop_distance": "Quitar la distancia",
-    "rule_no_gps": "Sin GPS, tu salida cuenta por tiempo: llama, XP, pero ninguna legua hasta que añadas la distancia.",
+    "rule_no_gps": "Sin GPS, tu salida cuenta por tiempo: llama, XP, pero ninguna legua (una legua es un kilómetro) hasta que añadas la distancia.",
     "hand_mark": "anotada a mano",
     "hand_mark_distance": "distancia anotada a mano",
     "hand_mark_count_one": "({{count}} anotada a mano)",
@@ -3131,6 +3131,7 @@
     "delete_confirm": "Eliminar",
     "in_use_title": "Este jefe aún se usa",
     "in_use_body_one": "La aventura {{titles}} aún termina con él. Cambia primero su final.",
+    "in_use_body_many": "Las aventuras {{titles}} aún terminan con él. Cambia primero sus finales.",
     "in_use_body_other": "Las aventuras {{titles}} aún terminan con él. Cambia primero sus finales."
   }
 }

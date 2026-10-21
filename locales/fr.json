@@ -2547,7 +2547,7 @@
     "check_off": "Couper",
     "check_fine": "Ils me vont",
     "pause_row": "Mettre en pause",
-    "elsewhere": "Déjà bougé ailleurs ?"
+    "elsewhere": "Fait ailleurs ?"
   },
   "setAside": {
     "leave_out": "Ne plus me proposer : {{name}}",
@@ -3103,7 +3103,7 @@
     "way_ride": "à vélo",
     "fix_distance": "Mettre {{fix}}",
     "drop_distance": "Retirer la distance",
-    "rule_no_gps": "Sans GPS, ta sortie compte au temps : flamme, XP, mais pas de lieues tant que tu n'ajoutes pas la distance.",
+    "rule_no_gps": "Sans GPS, ta sortie compte au temps : flamme, XP, mais pas de lieues (une lieue vaut un kilomètre) tant que tu n'ajoutes pas la distance.",
     "hand_mark": "saisie à la main",
     "hand_mark_distance": "distance saisie à la main",
     "hand_mark_count_one": "({{count}} saisie à la main)",
@@ -3132,6 +3132,7 @@
     "delete_confirm": "Supprimer",
     "in_use_title": "Ce boss sert encore",
     "in_use_body_one": "L'aventure {{titles}} se termine encore sur lui. Change d'abord sa fin.",
+    "in_use_body_many": "Les aventures {{titles}} se terminent encore sur lui. Change d'abord leur fin.",
     "in_use_body_other": "Les aventures {{titles}} se terminent encore sur lui. Change d'abord leur fin."
   }
 }

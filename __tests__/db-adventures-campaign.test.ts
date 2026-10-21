@@ -72,6 +72,7 @@ describe("db/adventures campaign", () => {
     const progressed = await adventures.completeAdventureRunStep({
       runStepId: step0.id,
       completedSessionId: session1,
+      questId: step0QuestId,
     });
 
     expect(progressed.isFinished).toBe(false);
@@ -101,6 +102,7 @@ describe("db/adventures campaign", () => {
     const finished = await adventures.completeAdventureRunStep({
       runStepId: progressed.nextRunStepId as number,
       completedSessionId: session2,
+      questId: step1QuestId,
     });
 
     const step2QuestId = details.steps[2]?.questId ?? null;
@@ -131,6 +133,7 @@ describe("db/adventures campaign", () => {
       const final = await adventures.completeAdventureRunStep({
         runStepId: finished.nextRunStepId as number,
         completedSessionId: session3,
+        questId: step2QuestId,
       });
 
       expect(final.isFinished).toBe(true);
@@ -184,6 +187,73 @@ describe("db/adventures campaign", () => {
 
     await adventures.startAdventureRun({ adventureId: bossAdv.id, difficultyOverride: "medium" });
     expect((await bosses.getBossFightByAdventure(bossAdv.id))?.currentHp).toBe(10);
+  });
+
+  describe("binding a step to its quest and its turn", () => {
+    const adv = () => require("../db/adventures") as typeof import("../db/adventures");
+
+    async function freshRun() {
+      const a = (await adv().listAdventures()).find((x) => x.frTitle === "La route du bûcheron");
+      if (!a) throw new Error("Expected seeded campaign");
+      t.sqlite.prepare("DELETE FROM adventure_runs WHERE adventureId = ?").run(a.id);
+      const run = await adv().startAdventureRun({ adventureId: a.id });
+      const [first, second] = run.steps;
+      if (!first || !second) throw new Error("Expected two steps");
+      return { run, first, second };
+    }
+    let n = 0;
+    function session(questId: number): number {
+      n += 1;
+      const { lastInsertRowid } = t.sqlite
+        .prepare(
+          `INSERT INTO completed_sessions (uuid, questId, userLevel, xpEarned, performedAt)
+           VALUES (?, ?, 'medium', 10, ?)`,
+        )
+        .run(`0190c000-0000-7000-8000-${String(n).padStart(12, "0")}`, questId, n);
+      return Number(lastInsertRowid);
+    }
+    const statusOf = (id: number) =>
+      (
+        t.sqlite.prepare("SELECT status FROM adventure_run_steps WHERE id = ?").get(id) as {
+          status: string;
+        }
+      ).status;
+
+    test("a session of another quest does not complete the step it names", async () => {
+      const { first, second } = await freshRun();
+      const result = await adv().completeAdventureRunStep({
+        runStepId: second.id,
+        completedSessionId: session(first.questId),
+        questId: first.questId,
+      });
+      expect(result).toMatchObject({ isFinished: false, nextRunStepId: null, nextQuestId: null });
+      expect(statusOf(second.id)).toBe("locked");
+      expect(statusOf(first.id)).toBe("active");
+    });
+
+    test("a step that is not yet open cannot be completed", async () => {
+      const { first, second } = await freshRun();
+      const result = await adv().completeAdventureRunStep({
+        runStepId: second.id,
+        completedSessionId: session(first.questId),
+        questId: second.questId,
+      });
+      expect(result).toMatchObject({ isFinished: false, nextRunStepId: null, nextQuestId: null });
+      expect(statusOf(second.id)).toBe("locked");
+      expect(statusOf(first.id)).toBe("active");
+    });
+
+    test("the first step of a new run completes", async () => {
+      const { first, second } = await freshRun();
+      const result = await adv().completeAdventureRunStep({
+        runStepId: first.id,
+        completedSessionId: session(first.questId),
+        questId: first.questId,
+      });
+      expect(result.nextRunStepId).toBe(second.id);
+      expect(statusOf(first.id)).toBe("completed");
+      expect(statusOf(second.id)).toBe("active");
+    });
   });
 });
 
@@ -366,6 +436,7 @@ describe("db/adventures, the first session offered as step 1", () => {
     await adventures().completeAdventureRunStep({
       runStepId: step1.id,
       completedSessionId: second,
+      questId: step1.questId,
     });
 
     const { deleteSession } = require("../db/completed") as typeof import("../db/completed");
@@ -547,6 +618,7 @@ describe("db/adventures, leaving a run", () => {
     const left = await adv().completeAdventureRunStep({
       runStepId: last.id,
       completedSessionId: 1,
+      questId: last.questId,
     });
 
     expect(left).toMatchObject({ isFinished: false, nextRunStepId: null, nextQuestId: null });
@@ -566,6 +638,7 @@ describe("db/adventures, leaving a run", () => {
     const again = await adv().completeAdventureRunStep({
       runStepId: last.id,
       completedSessionId: 1,
+      questId: last.questId,
     });
     expect(again.isFinished).toBe(false);
     expect(runRows(a.id)[0]?.finishedAt).toBe(77);

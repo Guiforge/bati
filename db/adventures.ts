@@ -901,6 +901,7 @@ export async function getAdventureIdForRunStep(runStepId: number): Promise<numbe
 export async function completeAdventureRunStep(input: {
   runStepId: number;
   completedSessionId: number;
+  questId: number;
 }): Promise<{
   adventureId: number;
   runId: number;
@@ -914,6 +915,7 @@ export async function completeAdventureRunStep(input: {
       runId: adventureRunSteps.runId,
       stepIndex: adventureRunSteps.stepIndex,
       questId: adventureRunSteps.questId,
+      status: adventureRunSteps.status,
     })
     .from(adventureRunSteps)
     .where(eq(adventureRunSteps.id, input.runStepId))
@@ -930,9 +932,11 @@ export async function completeAdventureRunStep(input: {
   const run = runRows[0];
   if (!run) throw new Error("Adventure run not found");
 
-  if (run.status !== "active") {
-    // A session that outlived its run (the hero left it, or a stale step of a finished one) is
-    // ordinary training: no step, no second victory. Its boss hits were committed before and stay.
+  // A run step id comes from a URL: it completes only for a session of its own quest, and only
+  // while it is the run's open step.
+  if (run.status !== "active" || current.questId !== input.questId || current.status !== "active") {
+    // A session that outlived its run (the hero left it, or a stale step of a finished one), or
+    // one that does not belong to the step, is ordinary training: no step, no second victory. Its boss hits were committed before and stay.
     return {
       adventureId: run.adventureId,
       runId: current.runId,

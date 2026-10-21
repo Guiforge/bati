@@ -3,7 +3,7 @@ title: Quests Gallery
 type: screen
 route: /quests
 status: active
-updated: 2026-08-16
+updated: 2026-10-21
 related: [quest-details.md, ../gameplay/quests.md]
 sources: [app/(tabs)/quests/index.tsx, components/common/FilterRail.tsx]
 ---
@@ -20,6 +20,7 @@ A **Quest** is a workout template (one quest = one session when you run it).
 
 - **Browse quests**: discover workouts by theme.
 - **Find what fits today**: quickly locate a quest that matches your focus.
+- **Create** (header, in the place the "+" had): opens the **[Forge](forge.md)**, where "New quest" and the file import live.
 - **Filters** (conceptually): narrow down quests based on what you want to train or what equipment you have.
 
 ## Visual rules

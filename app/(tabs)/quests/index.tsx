@@ -17,7 +17,8 @@ import { FilterRail, type RailGroup } from "@/components/common/FilterRail";
 import { GameIcon } from "@/components/common/GameIcon";
 import { Recitatif } from "@/components/common/Recitatif";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
-import { Dumbbell, Map as MapIcon, Plus, Star } from "@/components/icons";
+import { ForgeButton } from "@/components/forge/ForgeButton";
+import { Dumbbell, Map as MapIcon, Star } from "@/components/icons";
 import { getQuestAsset } from "@/constants/assetMap";
 import {
   type ExerciseColorTokens,
@@ -748,17 +749,7 @@ export default function QuestsGallery() {
             >
               <Dumbbell size={18} color="$text" strokeWidth={2.5} />
             </AppIconButton>
-            <AppIconButton
-              width={36}
-              height={36}
-              rounded={18}
-              testID="quests-new"
-              onPress={() => router.push("/quests/edit" as never)}
-              accessibilityRole="button"
-              accessibilityLabel={t("quests.editor_new_title")}
-            >
-              <Plus size={18} color="$text" strokeWidth={2.5} />
-            </AppIconButton>
+            <ForgeButton />
           </XStack>
         </XStack>
         <Text color="$textSecondary" fontSize={13}>

@@ -26,12 +26,11 @@ appId: com.guiforge.bati.dev
     waitToSettleTimeoutMs: 500
 - assertVisible:
     id: "adventures-screen"
-- scrollUntilVisible:
-    element:
-      id: "adventures-write"
-    direction: DOWN
+# Through the Forge: the header's "Create", then "Write an adventure".
 - tapOn:
-    id: "adventures-write"
+    id: "forge-open"
+- tapOn:
+    id: "forge-adventures-new"
 
 # --- Write it ----------------------------------------------------------------
 

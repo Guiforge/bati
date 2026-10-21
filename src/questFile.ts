@@ -30,6 +30,7 @@ import {
   muscleCodes,
   questTargetTypes,
 } from "@/db/schema";
+import { hasExif } from "@/db/sessionPhotos";
 import { clampToRange, REST_RANGE, ROUNDS_RANGE, type Target, targetRangeFor } from "@/db/targets";
 import { UUID_V7_RE, uuidv7 } from "@/db/uuid";
 import { NON_REP_STYLE } from "@/db/workUnits";
@@ -343,6 +344,18 @@ function jpegSize(r: Reader): Size | null {
   return null;
 }
 
+/** The size of a carried picture, or null when its base64 is broken, its header unreadable or it still holds EXIF. */
+function carriedSize(base64: string): Size | null {
+  try {
+    const picture = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+    // A photo that still carries its EXIF (camera, date, GPS) is someone's location: never kept
+    // here, never written back out. The apps' own encoder strips it, so ours never has any.
+    return hasExif(picture) ? null : imageSize(picture);
+  } catch {
+    return null;
+  }
+}
+
 /**
  * A picture from someone else's phone: a JPEG, PNG or WebP carried in the file, or the name of a
  * picture this app ships. Never a URL, which `getExerciseAsset` would fetch. A quest arriving
@@ -357,12 +370,7 @@ export function safeImage(value: unknown): string | null {
   if (typeof value !== "string" || value.length > MAX_IMAGE_CHARS) return null;
   const data = /^data:image\/(?:jpeg|png|webp);base64,([A-Za-z0-9+/]+=*)$/.exec(value);
   if (data) {
-    let size: ReturnType<typeof imageSize>;
-    try {
-      size = imageSize(Uint8Array.from(atob(data[1] ?? ""), (c) => c.charCodeAt(0)));
-    } catch {
-      return null;
-    }
+    const size = carriedSize(data[1] ?? "");
     if (!size || size.width < 1 || size.height < 1) return null;
     return size.width <= MAX_IMAGE_SIDE && size.height <= MAX_IMAGE_SIDE ? value : null;
   }

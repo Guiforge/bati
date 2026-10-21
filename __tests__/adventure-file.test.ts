@@ -26,18 +26,22 @@ const bytes = (...parts: (number | string)[]) =>
 const be16 = (n: number) => [(n >> 8) & 0xff, n & 0xff];
 
 /** SOI, a JFIF APP0, then SOF0: a header `safeImage` can size. */
-function jpeg(width: number, height: number): Uint8Array {
+function jpeg(width: number, height: number, exif = false): Uint8Array {
+  const app1 = exif ? [0xff, 0xe1, ...be16(10), "Exif\0\0", 0, 0] : [];
   const app0 = [0xff, 0xe0, ...be16(16), "JFIF\0", 1, 1, 0, 0, 1, 0, 1, 0, 0];
   const sof0 = [0xff, 0xc0, ...be16(17), 8, ...be16(height), ...be16(width), 3];
-  return bytes(0xff, 0xd8, ...app0, ...sof0, ...Array<number>(15).fill(0));
+  return bytes(0xff, 0xd8, ...app1, ...app0, ...sof0, ...Array<number>(15).fill(0));
 }
 
 /** A `data:` JPEG of `chars` characters (rounded down to what base64 allows), `width` x `height` by its header. */
-function photo(chars: number, width = 64, height = 48): string {
+function photo(chars: number, width = 64, height = 48, exif = false): string {
   const prefix = "data:image/jpeg;base64,";
-  const size = Math.max(3 * Math.floor((chars - prefix.length) / 4), jpeg(width, height).length);
+  const size = Math.max(
+    3 * Math.floor((chars - prefix.length) / 4),
+    jpeg(width, height, exif).length,
+  );
   const body = new Uint8Array(size);
-  body.set(jpeg(width, height));
+  body.set(jpeg(width, height, exif));
   return `${prefix}${Buffer.from(body).toString("base64")}`;
 }
 
@@ -1427,6 +1431,29 @@ describe("a quest shared alone", () => {
     expect(out.leftOut).toBeGreaterThan(0);
     expect(out.photos + out.leftOut).toBe(40);
     load().quest.parseQuestData(JSON.parse(out.json));
+  });
+
+  // The export never writes a photo the receiver's reader would drop, and one that still holds
+  // EXIF is dropped: the file carries the placeholder and the count says it stayed on the phone.
+  test("a photo that still holds EXIF is never written: it stays on the phone, and is counted", async () => {
+    // Written straight to the rows: the importer itself refuses such a photo, an older build did not.
+    const movement = nextUuid();
+    const q = await heroQuest({
+      image: photo(3_000),
+      own: [{ uuid: movement, image: photo(2_000) }],
+    });
+    t.sqlite
+      .prepare("UPDATE exercises SET imagePath = ? WHERE uuid = ?")
+      .run(photo(2_000, 64, 48, true), movement);
+    t.sqlite
+      .prepare("UPDATE quests SET imagePath = ? WHERE uuid = ?")
+      .run(photo(3_000, 64, 48, true), q.uuid);
+    refresh();
+    const out = await load().adv.questToShare(q.id);
+
+    expect(out.photos).toBe(0);
+    expect(out.leftOut).toBe(2);
+    expect(out.json).not.toContain("data:image");
   });
 
   test("a quest its own reader would refuse is never written", async () => {

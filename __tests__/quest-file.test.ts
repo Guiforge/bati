@@ -32,11 +32,12 @@ const png = (width: number, height: number) =>
   bytes(0x89, "PNG\r\n\x1a\n", ...be32(13), "IHDR", ...be32(width), ...be32(height), 8, 6, 0, 0, 0);
 
 /** SOI, a JFIF APP0, optionally a Huffman table (DHT, `0xC4`, which is no frame), then SOF0. */
-function jpeg(width: number, height: number, { dht = false } = {}): Uint8Array {
+function jpeg(width: number, height: number, { dht = false, exif = false } = {}): Uint8Array {
+  const app1 = exif ? [0xff, 0xe1, ...be16(10), "Exif\0\0", 0, 0] : [];
   const app0 = [0xff, 0xe0, ...be16(16), "JFIF\0", 1, 1, 0, 0, 1, 0, 1, 0, 0];
   const table = dht ? [0xff, 0xc4, ...be16(6), 0, 1, 2, 3] : [];
   const sof0 = [0xff, 0xc0, ...be16(17), 8, ...be16(height), ...be16(width), 3];
-  return bytes(0xff, 0xd8, ...app0, ...table, ...sof0, ...Array<number>(15).fill(0));
+  return bytes(0xff, 0xd8, ...app1, ...app0, ...table, ...sof0, ...Array<number>(15).fill(0));
 }
 
 const riff = (chunk: string, body: number[]) =>
@@ -313,6 +314,25 @@ describe("reading a quest file", () => {
     expect(safeImage(dataUri("webp", webpLossless(10, 1025)))).toBeNull();
     expect(safeImage(dataUri("png", png(0, 10)))).toBeNull();
     expect(safeImage(dataUri("jpeg", jpeg(10, 0)))).toBeNull();
+  });
+
+  // The journal refuses a photo with EXIF; a received one must not be a way round that.
+  test("a carried JPEG that still holds EXIF is refused, so it is neither kept nor written back", () => {
+    const { safeImage } = load().file;
+    expect(safeImage(dataUri("jpeg", jpeg(64, 48, { exif: true })))).toBeNull();
+    expect(safeImage(dataUri("jpeg", jpeg(64, 48)))).not.toBeNull();
+  });
+
+  test("a movement whose photo holds EXIF is read with the placeholder, the file is not refused", () => {
+    const file = received();
+    const image = dataUri("jpeg", jpeg(64, 48, { exif: true }));
+    const slots = file.slots.map((s) =>
+      "own" in s.movement ? { ...s, movement: { own: { ...s.movement.own, image } } } : s,
+    );
+    const read = load().file.parseQuestData({ ...file, slots });
+    const own = read.slots.find((s) => "own" in s.movement)?.movement;
+    assert(own && "own" in own);
+    expect(own.own.image).toBe("assets/placeholder.jpg");
   });
 
   test("a carried picture whose header cannot be read, or whose base64 is broken, is refused", () => {

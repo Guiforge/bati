@@ -426,7 +426,7 @@ export function parseQuestBody(data: unknown): QuestBody {
     throw new QuestFileError("not_a_quest");
   }
   const q = data.quest;
-  return {
+  const body: QuestBody = {
     quest: {
       uuid: uuid(q.uuid),
       title: text4(q.title, MAX_NAME, true),
@@ -438,6 +438,30 @@ export function parseQuestBody(data: unknown): QuestBody {
     },
     slots: data.slots.map(slot),
   };
+  refuseRepeatedUuids([body]);
+  return body;
+}
+
+/**
+ * Refuses bodies in which one uuid names two different quests or movements. The preview lists
+ * every copy and the import writes the first, so a file could show "Push-ups" and write
+ * something else. The same uuid with the same content (a quest used by two steps) is fine.
+ * Parsed bodies are built field by field, so their JSON is canonical.
+ */
+export function refuseRepeatedUuids(bodies: readonly QuestBody[]): void {
+  const seen = new Map<string, string>();
+  const check = (key: string, content: string) => {
+    if (seen.get(key) !== undefined && seen.get(key) !== content) {
+      throw new QuestFileError("not_a_quest");
+    }
+    seen.set(key, content);
+  };
+  for (const body of bodies) {
+    check(`quest:${body.quest.uuid}`, JSON.stringify(body));
+    for (const { movement } of body.slots) {
+      if ("own" in movement) check(`movement:${movement.own.uuid}`, JSON.stringify(movement.own));
+    }
+  }
 }
 
 /** A parsed JSON value, checked field by field. Throws a `QuestFileError` saying why it is refused. */

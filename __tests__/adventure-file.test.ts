@@ -299,6 +299,37 @@ describe("reading an adventure file", () => {
     expect(read.steps).toHaveLength(2);
   });
 
+  // The preview lists every step and the import writes the first copy of a uuid, so two
+  // contents under one uuid would show the hero one thing and write another.
+  test("a uuid carried by two different quests or movements refuses the file", () => {
+    const q = nextUuid();
+    const m = nextUuid();
+    const twice = (a: unknown, b: unknown) =>
+      reason(adventureLiteral(nextUuid(), [{ own: a }, { own: b }]));
+    expect(
+      twice(
+        questBody(q, { own: [{ uuid: m }] }),
+        questBody(q, { title: "Other", own: [{ uuid: m }] }),
+      ),
+    ).toBe("not_an_adventure");
+    expect(
+      twice(
+        questBody(nextUuid(), { own: [{ uuid: m, name: "Porch dip" }] }),
+        questBody(nextUuid(), { own: [{ uuid: m, name: "Something else" }] }),
+      ),
+    ).toBe("not_an_adventure");
+    // The same quest on two steps, and the same movement in two quests, are one thing each.
+    expect(
+      twice(questBody(q, { own: [{ uuid: m }] }), questBody(q, { own: [{ uuid: m }] })),
+    ).toBeNull();
+    expect(
+      twice(
+        questBody(nextUuid(), { own: [{ uuid: m }] }),
+        questBody(nextUuid(), { own: [{ uuid: m }] }),
+      ),
+    ).toBeNull();
+  });
+
   test.each([
     [
       "kind missing",

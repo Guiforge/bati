@@ -47,6 +47,7 @@ import {
   type QuestFile,
   QuestFileError,
   questToFile,
+  refuseRepeatedUuids,
   safeImage,
   shareJsonFile,
   text,
@@ -204,7 +205,7 @@ function read(data: unknown): AdventureFile {
   // A later Bati may raise the cap.
   if (data.steps.length > MAX_STEPS) throw new AdventureFileError("newer");
   const a = data.adventure;
-  return {
+  const file: AdventureFile = {
     kind: KIND,
     version: VERSION,
     adventure: {
@@ -219,6 +220,8 @@ function read(data: unknown): AdventureFile {
     },
     steps: data.steps.map(step),
   };
+  refuseRepeatedUuids(file.steps.flatMap((s) => ("own" in s.quest ? [s.quest.own] : [])));
+  return file;
 }
 
 /** A photo that is not a vouched-for `data:` image is dropped, never a reason to refuse the file: the cover key stands. */

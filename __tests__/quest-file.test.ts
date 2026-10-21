@@ -154,6 +154,18 @@ describe("reading a quest file", () => {
     return null;
   };
 
+  // The preview lists each slot and the import writes the first copy of a uuid: two movements
+  // under one uuid would show one exercise and write another.
+  test("a movement uuid carried twice with different content refuses the file", () => {
+    const file = received();
+    const own = file.slots.find((s) => "own" in s.movement);
+    assert(own && "own" in own.movement);
+    const other = { ...own, movement: { own: { ...own.movement.own, name: "Something else" } } };
+    expect(reason({ ...file, slots: [...file.slots, other] })).toBe("not_a_quest");
+    // The same movement twice is one movement.
+    expect(reason({ ...file, slots: [...file.slots, own] })).toBeNull();
+  });
+
   test("a file as written is read back as written", () => {
     expect(parse(JSON.stringify(received()))).toEqual(received());
   });

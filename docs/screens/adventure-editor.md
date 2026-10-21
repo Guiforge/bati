@@ -30,9 +30,11 @@ Write an adventure out of quests the hero already has or has written. One scroll
 - **The end**: a route, or a boss among the six painted ones, each with what it is weak to, what it
   resists, and about how many HP it has at the hero's level for these steps (the figure the fight will
   use). If every step is an outing, a line says outings do not hit the boss; saving stays possible.
-- **The boss's voice** (boss end only, outside the frozen part): its name (40), shown instead of the painted
-  one, and up to 3 lines (60 each, one per row) for three moments, when you hit it, on a critical hit and
-  cornered. They join the painted lines; they never replace them. A 4th line or a 61st character does not
+- **The boss's voice** (boss end only, outside the frozen part, **folded by default** behind
+  "Its voice (optional)"): its name (40), shown instead of the painted one, and up to 3 lines (60 each,
+  one per row) for five moments, when the fight opens, when you hit it, on a critical hit, cornered and
+  when it falls. They join the painted lines; they never replace them (the opening and the fall have no
+  painted lines; the first one speaks). A 4th line or a 61st character does not
   appear. The name stays editable under a playthrough.
 - **Import**: not here any more. The **[Forge](forge.md)** has the one door, to the same preview a
   file tapped in a chat opens (`/quest-import`), which reads the kind from the file.

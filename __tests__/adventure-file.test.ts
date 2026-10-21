@@ -236,7 +236,7 @@ function draftOf(
     description: "A tale",
     imagePath: "the_golem" as const,
     end: { kind: "route" as const },
-    voice: { name: "", lines: { idle: [], crit: [], enrage: [] } },
+    voice: { name: "", lines: { intro: [], idle: [], crit: [], enrage: [], defeat: [] } },
     steps: questIds.map((questId, i) => ({ questId, narrative: `before ${i}`, outro: "" })),
     ...over,
   };
@@ -1100,7 +1100,10 @@ describe("the boss's voice in the file", () => {
     const draft = draftOf([a.id, b.id], { end: { kind: "boss", monster: monster.key } });
     const voiced = await hero.createHeroAdventure({
       ...draft,
-      voice: { name: "Nightcoil", lines: { idle: ["Again."], crit: [], enrage: ["Enough."] } },
+      voice: {
+        name: "Nightcoil",
+        lines: { intro: [], idle: ["Again."], crit: [], enrage: ["Enough."], defeat: [] },
+      },
     });
     const out = await adv.adventureToFile(voiced);
     assert(out);
@@ -1109,17 +1112,17 @@ describe("the boss's voice in the file", () => {
       kind: "boss",
       monster: monster.key,
       name: "Nightcoil",
-      lines: { idle: ["Again."], crit: [], enrage: ["Enough."] },
+      lines: { intro: [], idle: ["Again."], crit: [], enrage: ["Enough."], defeat: [] },
     });
     expect(parseJson(out.json)).toEqual(out.file);
 
     // Lines alone are a voice too.
     const quiet = await hero.createHeroAdventure({
       ...draft,
-      voice: { name: "", lines: { idle: [], crit: ["Hah."], enrage: [] } },
+      voice: { name: "", lines: { intro: [], idle: [], crit: ["Hah."], enrage: [], defeat: [] } },
     });
     expect((await adv.adventureToFile(quiet))?.file.adventure.end).toMatchObject({
-      lines: { idle: [], crit: ["Hah."], enrage: [] },
+      lines: { intro: [], idle: [], crit: ["Hah."], enrage: [], defeat: [] },
     });
 
     // No voice written: the voice fields are there, empty, and read back the same.
@@ -1130,12 +1133,70 @@ describe("the boss's voice in the file", () => {
       kind: "boss",
       monster: monster.key,
       name: "",
-      lines: { idle: [], crit: [], enrage: [] },
+      lines: { intro: [], idle: [], crit: [], enrage: [], defeat: [] },
     });
     expect(parseJson(plainOut.json)).toEqual(plainOut.file);
 
     const route = await hero.createHeroAdventure(draftOf([a.id, b.id]));
     expect((await adv.adventureToFile(route))?.file.adventure.end).toEqual({ kind: "route" });
+  });
+
+  test("everything survives the trip to an empty phone: hero quests and movements, photos, texts, every moment", async () => {
+    const { hero, adv } = load();
+    const monster = (await hero.listMonsters())[0];
+    assert(monster);
+    const dip = nextUuid();
+    const mine = await heroQuest({
+      title: "Porch forge",
+      image: photo(3_000),
+      own: [{ uuid: dip, name: "Porch dip", image: photo(2_000) }],
+    });
+    t.sqlite
+      .prepare("UPDATE quests SET enDescription = ? WHERE id = ?")
+      .run("Line one.\nLine two, the story.", mine.id);
+    refresh();
+    const [seed] = seedQuests();
+    assert(seed);
+    const lines = {
+      intro: ["Who dares?"],
+      idle: ["Again."],
+      crit: ["Ow."],
+      enrage: ["Enough."],
+      defeat: ["Not like this.", "Second."],
+    };
+    const id = await hero.createHeroAdventure({
+      ...draftOf([mine.id, seed.id], { end: { kind: "boss", monster: monster.key } }),
+      description: "Three days.",
+      voice: { name: "Nightcoil", lines },
+    });
+    const out = await adv.adventureToFile(id);
+    assert(out);
+    const uuid = out.file.adventure.uuid;
+
+    // The other phone has none of it.
+    t.sqlite.exec(
+      `DELETE FROM adventure_steps; DELETE FROM adventures WHERE uuid = '${uuid}';
+       DELETE FROM quest_exercises WHERE questId = ${mine.id}; DELETE FROM quests WHERE id = ${mine.id};
+       DELETE FROM exercises WHERE uuid = '${dip}';`,
+    );
+    refresh();
+    const read = parseJson(out.json);
+    const { id: landed } = await adv.importAdventure(read, { asCopy: false });
+
+    const draft = await hero.loadHeroAdventureDraft(landed);
+    assert(draft);
+    expect(draft.voice).toEqual({ name: "Nightcoil", lines });
+    expect(draft.steps.map((s) => s.narrative)).toEqual(["before 0", "before 1"]);
+    const quest = t.sqlite
+      .prepare("SELECT enDescription, imagePath FROM quests WHERE uuid = ?")
+      .get(mine.uuid) as { enDescription: string; imagePath: string };
+    expect(quest.enDescription).toBe("Line one.\nLine two, the story.");
+    expect(quest.imagePath.startsWith("data:")).toBe(true);
+    const moved = t.sqlite
+      .prepare("SELECT creator, imagePath FROM exercises WHERE uuid = ?")
+      .get(dip) as { creator: string; imagePath: string };
+    expect(moved.creator).toBe("hero");
+    expect(moved.imagePath.startsWith("data:")).toBe(true);
   });
 
   test("a version 1 file with a boss still imports, with an empty voice", async () => {
@@ -1164,7 +1225,7 @@ describe("the boss's voice in the file", () => {
     expect(read.lines?.idle).toEqual(["a"]);
     expect(read.lines?.crit).toEqual(["x".repeat(60)]);
     expect(read.lines?.enrage).toEqual(["y".repeat(59)]);
-    expect(Object.keys(read.lines ?? {})).toEqual(["idle", "crit", "enrage"]);
+    expect(Object.keys(read.lines ?? {})).toEqual(["intro", "idle", "crit", "enrage", "defeat"]);
   });
 
   test("an unknown monster with a voice arrives as a route and writes nothing of it", async () => {

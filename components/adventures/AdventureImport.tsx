@@ -11,6 +11,7 @@ import { Chip } from "@/components/common/Chip";
 import { useToast } from "@/components/common/Toast";
 import { Download, Info } from "@/components/icons";
 import { ADVENTURE_ASSETS, getAdventureAsset } from "@/constants/assetMap";
+import { BOSS_LINE_MOMENTS, type HeroBossLines } from "@/db/bossVoice";
 import {
   type AdventureFile,
   AdventureFileError,
@@ -102,6 +103,9 @@ export function AdventureImport({
                 })
               : t("adventures.editor_end_route")}
           </Text>
+          {/* What the boss will say, read before the hero walks in: a line from a friend is no
+              surprise in the middle of a set. A boss this version lacks arrives as a route, with none. */}
+          <BossLines end={adventure.end} known={preview.monster !== null} />
           {preview.monsterUnknown ? (
             <Text testID="adventure-import-boss-unknown" color="$textSecondary" fontSize={13}>
               {t("adventures.import_boss_unknown")}
@@ -190,6 +194,29 @@ function StepRow({ index, step }: { index: number; step: AdventurePreview["steps
         </Text>
       </YStack>
     </XStack>
+  );
+}
+
+function BossLines({ end, known }: { end: AdventureFile["adventure"]["end"]; known: boolean }) {
+  const { t } = useTranslation();
+  const lines: HeroBossLines | undefined = known && end.kind === "boss" ? end.lines : undefined;
+  const spoken = BOSS_LINE_MOMENTS.filter((m) => (lines?.[m].length ?? 0) > 0);
+  if (spoken.length === 0) return null;
+  return (
+    <YStack testID="adventure-import-boss-lines" gap="$2" pt="$1">
+      {spoken.map((m) => (
+        <YStack key={m} gap={2}>
+          <Text fontSize={13} fontWeight="700" color="$textSecondary">
+            {t(`adventures.editor_boss_lines_${m}`)}
+          </Text>
+          {lines?.[m].map((line) => (
+            <Text key={line} color="$text" fontStyle="italic">
+              {line}
+            </Text>
+          ))}
+        </YStack>
+      ))}
+    </YStack>
   );
 }
 

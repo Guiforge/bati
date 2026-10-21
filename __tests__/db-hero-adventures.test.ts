@@ -48,7 +48,7 @@ describe("db/heroAdventures", () => {
       description: "A tale",
       imagePath: "the_golem",
       end,
-      voice: { name: "", lines: { idle: [], crit: [], enrage: [] } },
+      voice: { name: "", lines: { intro: [], idle: [], crit: [], enrage: [], defeat: [] } },
       steps: questIds.map((questId, i) => ({
         questId,
         narrative: `before ${i}`,
@@ -537,7 +537,7 @@ describe("db/heroAdventures", () => {
       lines: Partial<Record<"idle" | "crit" | "enrage", string[]>> = {},
     ) => ({
       name,
-      lines: { idle: [], crit: [], enrage: [], ...lines },
+      lines: { intro: [], idle: [], crit: [], enrage: [], defeat: [], ...lines },
     });
     const row = (id: number) =>
       t.sqlite
@@ -559,12 +559,13 @@ describe("db/heroAdventures", () => {
       });
       expect(row(id)).toMatchObject({
         bossName: "Night coil",
-        bossLinesJson: '{"idle":["Again.","x"],"crit":[],"enrage":["Enough."]}',
+        bossLinesJson:
+          '{"intro":[],"idle":["Again.","x"],"crit":[],"enrage":["Enough."],"defeat":[]}',
       });
       const loaded = await hero.loadHeroAdventureDraft(id);
       expect(loaded?.voice).toEqual({
         name: "Night coil",
-        lines: { idle: ["Again.", "x"], crit: [], enrage: ["Enough."] },
+        lines: { intro: [], idle: ["Again.", "x"], crit: [], enrage: ["Enough."], defeat: [] },
       });
     });
 
@@ -598,7 +599,7 @@ describe("db/heroAdventures", () => {
       expect(row(bossId)).toMatchObject({
         kind: "boss",
         bossName: "Two",
-        bossLinesJson: '{"idle":[],"crit":["Hah."],"enrage":[]}',
+        bossLinesJson: '{"intro":[],"idle":[],"crit":["Hah."],"enrage":[],"defeat":[]}',
       });
       expect((await hero.loadHeroAdventureDraft(bossId))?.steps.map((s) => s.questId)).toEqual([
         a,

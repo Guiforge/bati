@@ -149,6 +149,41 @@ test("a boss this version lacks says it arrives as a route", async () => {
   ).toBeTruthy();
 });
 
+const golem = {
+  key: "stone_golem" as const,
+  bossImagePath: "assets/images/bosses/stone_golem.jpg",
+  weakness: null,
+  resistance: null,
+};
+const bossRaw = (lines: Record<string, string[]>) => ({
+  ...raw,
+  adventure: {
+    ...raw.adventure,
+    end: { kind: "boss", monster: "stone_golem", name: "Nightcoil", lines },
+  },
+});
+
+test("the boss's lines are read before the import, every moment, with its name", async () => {
+  mockRead.mockResolvedValue(
+    bossRaw({ intro: ["Who dares?"], enrage: ["Enough."], defeat: ["Not like this."] }),
+  );
+  await mountReady({ monster: golem });
+
+  expect(screen.getByTestId("adventure-import-boss-lines")).toBeTruthy();
+  expect(screen.getByText("When the fight opens")).toBeTruthy();
+  expect(screen.getByText("Who dares?")).toBeTruthy();
+  expect(screen.getByText("Enough.")).toBeTruthy();
+  expect(screen.getByText("When it falls")).toBeTruthy();
+  expect(screen.getByText("Not like this.")).toBeTruthy();
+  expect(screen.queryByText("When you hit it")).toBeNull();
+});
+
+test("a boss this version lacks shows no lines: it arrives as a route", async () => {
+  mockRead.mockResolvedValue(bossRaw({ intro: ["Who dares?"] }));
+  await mountReady({ monster: null, monsterUnknown: true });
+  expect(screen.queryByTestId("adventure-import-boss-lines")).toBeNull();
+});
+
 test("an adventure the hero has offers to update it or keep both, and the choice is what is imported", async () => {
   await mountReady({ existing: { id: 5, title: "Mine" } });
 

@@ -847,6 +847,24 @@ describe("VictoryView villager slot, and what is under it", () => {
     }
   });
 
+  // The hero's own last word for a boss they named; a painted boss has none to say.
+  it.each([
+    ["a hero's defeat line", ["Not like this.", "Second."], "Not like this."],
+    ["no defeat line", [], null],
+  ])("the felled boss's card carries %s", async (_, defeat, shown) => {
+    const { view, release } = await mountWithPendingSave();
+    await act(() => {
+      useSessionStore.setState({
+        bossFight: { ...boss, bossLines: { intro: [], idle: [], crit: [], enrage: [], defeat } },
+        bossStartHp: 10,
+      } as unknown as Partial<ReturnType<typeof useSessionStore.getState>>);
+    });
+    await release();
+    const line = view.queryByTestId("victory-boss-defeat-line");
+    if (shown === null) expect(line).toBeNull();
+    else expect(line).toHaveTextContent(shown);
+  });
+
   // "Tonight" carries the boss as a card, so the banner must not announce it a second time.
   it.each([
     ["a quest victory", false, 1],

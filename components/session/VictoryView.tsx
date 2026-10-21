@@ -576,6 +576,18 @@ export function VictoryView() {
                     </AppText>
                   )}
                   <Recitatif>{heroTitle}</Recitatif>
+                  {/* The hero's last word for their boss (`defeat`), on the card of its fall. */}
+                  {felledBoss?.bossLines?.defeat[0] ? (
+                    <AppText
+                      testID="victory-boss-defeat-line"
+                      fontFamily="$body"
+                      color="$text"
+                      fontSize={15}
+                      fontStyle="italic"
+                    >
+                      {felledBoss.bossLines.defeat[0]}
+                    </AppText>
+                  ) : null}
                 </YStack>
               </YStack>
               {/* What opens the felled boss: the banner below the villager's slot, never the slot.

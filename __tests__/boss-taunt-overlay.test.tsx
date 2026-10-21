@@ -154,7 +154,7 @@ describe("BossTauntOverlay", () => {
     // The last line of the pool is the hero's.
     jest.spyOn(Math, "random").mockReturnValue(0.999);
     const { getByText, queryByText } = await renderOverlay();
-    const mine = { idle: ["Again."], crit: [], enrage: [] };
+    const mine = { intro: [], idle: ["Again."], crit: [], enrage: [], defeat: [] };
 
     await act(() => {
       useSessionStore.setState({
@@ -177,5 +177,29 @@ describe("BossTauntOverlay", () => {
       useSessionStore.setState({ lastDamageResult: makeHit() });
     });
     expect(getByText(GOLEM.idle.en[0])).toBeTruthy();
+  });
+
+  it("says the hero's opening line once when the first set starts, and never for a painted boss", async () => {
+    const { queryByText } = await renderOverlay();
+    const mine = { intro: ["Who dares?"], idle: [], crit: [], enrage: [], defeat: [] };
+
+    await act(() => {
+      useSessionStore.setState({ bossFight: { ...makeBossFight(100), bossLines: mine } });
+    });
+    expect(queryByText("Who dares?")).not.toBeNull();
+
+    await act(() => {
+      jest.advanceTimersByTime(4_000);
+    });
+    expect(queryByText("Who dares?")).toBeNull();
+
+    // Not again when the status flips back to running after a rest.
+    await act(() => {
+      useSessionStore.setState({ status: "resting" });
+    });
+    await act(() => {
+      useSessionStore.setState({ status: "running" });
+    });
+    expect(queryByText("Who dares?")).toBeNull();
   });
 });

@@ -166,8 +166,11 @@ content that ships with no `bossTotalHp`.
 | 3 Critical | ≥ 25 % | `bossPhase3` | 0.20 | 0.35 |
 | 4 Enraged | < 25 % | `bossPhase4` | 0.32 | 0.55 |
 
-A phase is a **treatment over the boss's own painting**, not four paintings per boss: the room
-darkens and reddens, the art keeps its colours. It used to be one flat fill ending at
+A phase is a **treatment over the boss's own painting**, not four paintings per phase: the room
+darkens and reddens, the art keeps its colours. Each seeded boss does have **three paintings by state**
+besides its base one: *wounded* (from phase 3, below 50 % HP), *defeated* (on the arena once it is
+down and on the victory card), and a *legendary* form for rematches (`getBossAsset`: defeated, then
+legendary at tier 1 or more, then wounded, then base). The phases layer on top of whichever is shown. It used to be one flat fill ending at
 `rgba(255,23,68,0.5)` — 50 % red over a painting is not drama, it is a lost painting. The values
 are opacities over token-coloured layers, so nothing is written outside
 [`constants/rawColors.ts`](../../constants/rawColors.ts).
@@ -280,3 +283,23 @@ The monster's portrait and its tuning live on `adventures`: `bossImagePath`, `bo
 - **No boss-specific audio.**
 - **No desaturation at low HP.** RN has no image filter and `react-native-svg`'s `feColorMatrix` on
   a full-bleed bitmap is not worth it. Add if darken alone reads flat.
+
+---
+
+## The hero's boss: name and voice
+
+A boss of an adventure the hero wrote is one of the six painted monsters, so its art, weakness,
+resistance and HP rules stay the monster's. The hero adds words only (columns `bossName` and
+`bossLinesJson`, [R126](../testing/data-rules.md)): a name of 40 characters at most, and up to three
+lines of 60 for each of five moments.
+
+| Moment | Where it is heard |
+| ------ | ----------------- |
+| `intro` | the boss panel on the adventure page, in place of the generic line, and the arena's first bubble when the first set starts |
+| `idle`, `crit`, `enrage` | the arena's bubble after a hit, **added** to the painted lines, never in place of them |
+| `defeat` | the felled boss's victory card, under its name |
+
+`intro` and `defeat` have no painted lines, so a seeded boss is unchanged, and the first line of the
+moment is the one said. A resisted hit keeps the painted lines only. Nothing here changes a combat
+number. The fields sit folded in the adventure editor, and the file import preview shows every line
+before the hero accepts the adventure.

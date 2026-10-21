@@ -10,7 +10,7 @@ describe("cleanBossLines", () => {
       enrage: ["  a  ", "", "   ", "b", "c", "d"],
       idle: ["x\n y"],
     });
-    expect(Object.keys(out)).toEqual(["idle", "crit", "enrage"]);
+    expect(Object.keys(out)).toEqual(["intro", "idle", "crit", "enrage", "defeat"]);
     expect(out.idle).toEqual(["x y"]);
     expect(out.crit).toEqual([]);
     expect(out.enrage).toEqual(["a", "b", "c"]);
@@ -34,7 +34,7 @@ describe("bossLinesJson", () => {
 
   test("writes the keys in moment order whatever the input order", () => {
     expect(bossLinesJson({ enrage: ["c"], idle: ["a"] })).toBe(
-      '{"idle":["a"],"crit":[],"enrage":["c"]}',
+      '{"intro":[],"idle":["a"],"crit":[],"enrage":["c"],"defeat":[]}',
     );
   });
 });
@@ -42,25 +42,55 @@ describe("bossLinesJson", () => {
 describe("parseBossLines", () => {
   beforeEach(() => jest.clearAllMocks());
 
+  test("a row written before `intro` and `defeat` reads with none of them", () => {
+    expect(parseBossLines('{"idle":["a"],"crit":[],"enrage":["c"]}')).toEqual({
+      intro: [],
+      idle: ["a"],
+      crit: [],
+      enrage: ["c"],
+      defeat: [],
+    });
+  });
+
   test("null and empty are no lines, silently", () => {
-    expect(parseBossLines(null)).toEqual({ idle: [], crit: [], enrage: [] });
-    expect(parseBossLines("")).toEqual({ idle: [], crit: [], enrage: [] });
+    expect(parseBossLines(null)).toEqual({ intro: [], idle: [], crit: [], enrage: [], defeat: [] });
+    expect(parseBossLines("")).toEqual({ intro: [], idle: [], crit: [], enrage: [], defeat: [] });
     expect(reportError).not.toHaveBeenCalled();
   });
 
   test("garbage is no lines and is reported, never thrown", () => {
-    expect(parseBossLines("{nope")).toEqual({ idle: [], crit: [], enrage: [] });
+    expect(parseBossLines("{nope")).toEqual({
+      intro: [],
+      idle: [],
+      crit: [],
+      enrage: [],
+      defeat: [],
+    });
     expect(reportError).toHaveBeenCalledWith("boss.lines", expect.anything());
   });
 
   test("wrong shapes are filtered", () => {
     expect(parseBossLines('{"idle":"a","crit":["b",3,null],"extra":["z"]}')).toEqual({
+      intro: [],
       idle: [],
       crit: ["b"],
       enrage: [],
+      defeat: [],
     });
-    expect(parseBossLines("[1]")).toEqual({ idle: [], crit: [], enrage: [] });
-    expect(parseBossLines("null")).toEqual({ idle: [], crit: [], enrage: [] });
+    expect(parseBossLines("[1]")).toEqual({
+      intro: [],
+      idle: [],
+      crit: [],
+      enrage: [],
+      defeat: [],
+    });
+    expect(parseBossLines("null")).toEqual({
+      intro: [],
+      idle: [],
+      crit: [],
+      enrage: [],
+      defeat: [],
+    });
   });
 });
 

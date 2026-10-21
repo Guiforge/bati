@@ -1031,13 +1031,14 @@ next hit the new monster's. The `boss_fights` columns are written at creation an
 Invariant: the fight's stats equal its adventure's at the next hit. `__tests__/db-hero-adventures.test.ts`.
 
 **R126. The boss's voice.** Migration 0077 gives `adventures` two nullable text columns, `bossName` and
-`bossLinesJson` (`{"idle":[],"crit":[],"enrage":[]}`, keys in that order, written by `db/bossVoice.ts`
-only). NULL on seeded rows, on a route and on a boss left unnamed and silent. They are texts, so
+`bossLinesJson` (`{"intro":[],"idle":[],"crit":[],"enrage":[],"defeat":[]}`, keys in that order, written by
+`db/bossVoice.ts` only; a row from before `intro` and `defeat` simply reads with none, no migration). NULL on seeded rows, on a route and on a boss left unnamed and silent. They are texts, so
 `updateHeroAdventure` writes them under a run too, and the stored end kind decides whether they are kept
 or cleared, never the draft's. The three `BossFight` builders read them from the adventure, like R121, so
 an edit applies on the next session. The hero's name replaces the painted one at every tier
 (`bossDisplayName`, `getKillReport`); the hero's lines join the painted pool for idle, crit and enrage,
-never resist. Merge needs no code: both columns travel with the row. Invariant: an Admin fight's name and
+never resist; `intro` (panel, first bubble) and `defeat` (victory card) have no painted pool and say their
+first line. Merge needs no code: both columns travel with the row. Invariant: an Admin fight's name and
 pool are unchanged. `__tests__/db-hero-adventures.test.ts`, `__tests__/boss-voice.test.ts`,
 `__tests__/db-peer-merge-adventures.test.ts`.
 

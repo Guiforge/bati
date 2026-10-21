@@ -119,6 +119,9 @@ export default function QuestEditor() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  // A received quest may carry a longer story (the file reads up to 2000): shown whole and kept,
+  // never cut by the field. Only what the hero writes here stops at 280.
+  const [descriptionCap, setDescriptionCap] = useState(MAX_DESCRIPTION);
   const [rounds, setRounds] = useState(DEFAULT_ROUNDS);
   const [rest, setRest] = useState(DEFAULT_REST);
   const [roundRest, setRoundRest] = useState(DEFAULT_REST);
@@ -246,6 +249,7 @@ export default function QuestEditor() {
 
       setTitle(nextTitle);
       setDescription(nextDescription);
+      setDescriptionCap(Math.max(MAX_DESCRIPTION, nextDescription.length));
       setRounds(template.rounds);
       setRest(template.restSeconds);
       setRoundRest(template.roundRestSeconds ?? template.restSeconds);
@@ -560,7 +564,7 @@ export default function QuestEditor() {
                     onChangeText={setDescription}
                     testID="quest-description"
                     placeholder={t("quests.editor_description_placeholder")}
-                    maxLength={MAX_DESCRIPTION}
+                    maxLength={descriptionCap}
                     multiline
                     py={8}
                     bg="$background"

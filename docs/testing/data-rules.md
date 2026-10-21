@@ -609,13 +609,14 @@ the quest count unchanged; a failing import leaves counts unchanged.
 **R70b. A borrowed uuid overwrites the receiver's quest** (documented and previewed); an Admin
 quest is never overwritten (only `isUserQuest` rows match). `src/questFile.ts:525-527, 545`.
 
-**R122. Adventure file** = `{kind:'bati-adventure', version:1 | 2, adventure{uuid, title, description,
-cover, end}, steps[]}`; the `end` of a boss may carry `name` and `lines` (R126), and only a file that does is
-version 2, so a build before 0077 still opens every other file. Each step is `{quest, narrative, outro}`, the quest a seed one by `enTitle`
+**R122. Adventure file** = `{kind:'bati-adventure', version:1, adventure{uuid, title, description,
+cover, photo?, end}, steps[]}`; the `end` of a boss carries `name` and `lines` (R126), always written. The
+format was frozen at version 1 before its first release (2.13.0): from then on every addition is an optional
+field read by its name, and `VERSION` moves only for a field an older build must refuse. Each step is `{quest, narrative, outro}`, the quest a seed one by `enTitle`
 (`{official}`) or a hero one as a quest body (`{own: {quest, slots}}`, R66). The adventure's texts are
 single strings (the row repeats them in four columns). No run, victory, boss HP, weakness, resistance,
 sort order, sender or date. `src/adventureFile.ts`.
-Invariant: `parse(write(a))` equals `write(a)`, for both versions: the reader returns the version it read.
+Invariant: `parse(write(a))` equals `write(a)`. A version 2 file (what the unreleased dev builds wrote with a voice) is read as version 1.
 
 **R123. Limits on read:** the file limits of R67; 2 to 8 steps (fewer is `not_an_adventure`, more is
 `newer`, and the length is read before any element); title 1 to 60, description 280, narrative and outro

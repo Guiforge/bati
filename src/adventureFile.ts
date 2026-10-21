@@ -61,10 +61,15 @@ import type { AppLanguage } from "@/stores/settings";
  * Nothing else travels: no run, no victory, no boss HP, weakness or resistance (recomputed from the
  * monster on arrival), no sort order, no sender, no date. The file is someone else's bytes on
  * arrival, so every field of it is read by name into a fresh object (`parseAdventureData`).
+ *
+ * The format was frozen at version 1 before its first release (2.13.0). From then on a change is an
+ * optional field read by its name: an older Bati ignores it, a file without it is unchanged. `VERSION`
+ * moves only for a field an older Bati must refuse rather than misread, and then it is "newer".
  */
 const KIND = "bati-adventure";
-/** 2 only when the file carries a boss's voice; a file without one is written as 1, so an older build opens it. */
-const VERSION = 2;
+const VERSION = 1;
+/** Files the unreleased dev builds wrote with a voice as 2: the same shape, still read. */
+const LAST_READABLE = 2;
 /** A bundled art key or a boss key: never a path, never a URL. */
 const KEY_RE = /^[a-z0-9_]{1,64}$/;
 /** What a photo the file does not carry reads as, in the receiver's quest. */
@@ -72,7 +77,7 @@ const PLACEHOLDER = "assets/placeholder.jpg";
 
 export type AdventureFile = {
   kind: typeof KIND;
-  version: 1 | 2;
+  version: typeof VERSION;
   adventure: {
     /** uuid v7, the row's `adventures.uuid`. */
     uuid: string;
@@ -189,7 +194,7 @@ function read(data: unknown): AdventureFile {
   if (typeof data.version !== "number" || !Number.isInteger(data.version) || data.version < 1) {
     throw new AdventureFileError("not_an_adventure");
   }
-  if (data.version > VERSION) throw new AdventureFileError("newer");
+  if (data.version > LAST_READABLE) throw new AdventureFileError("newer");
   // The length is read before any element, so a million-element array costs nothing.
   if (!Array.isArray(data.steps) || data.steps.length < MIN_STEPS) {
     throw new AdventureFileError("not_an_adventure");
@@ -199,7 +204,7 @@ function read(data: unknown): AdventureFile {
   const a = data.adventure;
   return {
     kind: KIND,
-    version: data.version as 1 | 2,
+    version: VERSION,
     adventure: {
       uuid: uuid(a.uuid),
       title: clip(name(a.title, MAX_TITLE), MAX_TITLE),
@@ -252,16 +257,9 @@ const utf8Length = (s: string) => new TextEncoder().encode(s).length;
 
 type Picture = { stored: string; cover: boolean; refs: { image: string | null }[] };
 
-/** The end as the file carries it: version 2 only with a voice, so a file without one opens on an older build. */
-function fileEnd({ end, voice }: HeroAdventureDraft): Pick<AdventureFile, "version"> & {
-  end: AdventureFile["adventure"]["end"];
-} {
-  const voiced =
-    end.kind === "boss" &&
-    (voice.name !== "" || BOSS_LINE_MOMENTS.some((m) => voice.lines[m].length > 0));
-  return voiced
-    ? { version: 2, end: { ...end, name: voice.name, lines: voice.lines } }
-    : { version: 1, end };
+/** The end as the file carries it: a boss always with its voice, empty or not. */
+function fileEnd({ end, voice }: HeroAdventureDraft): AdventureFile["adventure"]["end"] {
+  return end.kind === "boss" ? { ...end, name: voice.name, lines: voice.lines } : end;
 }
 
 /**
@@ -305,17 +303,16 @@ export async function adventureToFile(id: number): Promise<AdventureToFile | nul
   }
   if (steps.length < MIN_STEPS) return null;
 
-  const { end, version } = fileEnd(draft);
   const ownPhoto = draft.imagePath.startsWith("data:") ? draft.imagePath : null;
   const file: AdventureFile = {
     kind: KIND,
-    version,
+    version: VERSION,
     adventure: {
       uuid: draft.uuid,
       title: draft.title,
       description: draft.description,
       ...fileCover(draft.imagePath),
-      end,
+      end: fileEnd(draft),
     },
     steps,
   };

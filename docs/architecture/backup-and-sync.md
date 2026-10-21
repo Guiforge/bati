@@ -357,9 +357,9 @@ the hero's rows (`exercises`, `quests`, `adventures`, `adventure_steps`), all me
 uuid, so nothing in the fingerprint or in `mergePeer` was touched. The same file imported on two devices
 is the same adventure, the same quests and the same movements on both, and they converge by `updatedAt`
 (a same-second tie goes to the canonical form); a copy, or an import over a run under way, is a second
-adventure with a fresh uuid on both. The file is version 2 only when it carries a boss's voice and version 1 otherwise, so a build before 0077
-reads every file without one and refuses a voiced file as newer. A build without the feature reads the file
-as "no Bati quest". One limit: "never rewritten" holds on the importing device. A quest the hero edited on
+adventure with a fresh uuid on both. The file format is frozen at version 1 (2.13.0, before its first release): a boss always carries its voice,
+and every later addition is an optional field an older build ignores. A build without the feature reads the
+file as "no Bati quest". One limit: "never rewritten" holds on the importing device. A quest the hero edited on
 device A that device B has not received yet is created new on B at `now`, newer than the edit, so the next
 merge can hand A the friend's version (`ponytail:` in `importAdventure`).
 

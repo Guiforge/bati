@@ -1085,12 +1085,13 @@ describe("the boss's voice in the file", () => {
       bossLinesJson: string | null;
     };
 
-  test("each version reads back as the version it was", () => {
+  test("the format is version 1: a dev build's version 2 file is read as it, a version 3 is newer", () => {
     expect(parse({ kind: "route" }, 1).version).toBe(1);
-    expect(parse({ kind: "route" }, 2).version).toBe(2);
+    expect(parse({ kind: "route" }, 2).version).toBe(1);
+    expect(() => parse({ kind: "route" }, 3)).toThrow("newer");
   });
 
-  test("a voiced boss is written as version 2 and round trips; no voice stays version 1", async () => {
+  test("a boss is always written with its voice, in version 1, and round trips", async () => {
     const [a, b] = seedQuests();
     assert(a && b);
     const { hero, adv } = load();
@@ -1103,7 +1104,7 @@ describe("the boss's voice in the file", () => {
     });
     const out = await adv.adventureToFile(voiced);
     assert(out);
-    expect(out.file.version).toBe(2);
+    expect(out.file.version).toBe(1);
     expect(out.file.adventure.end).toEqual({
       kind: "boss",
       monster: monster.key,
@@ -1117,15 +1118,24 @@ describe("the boss's voice in the file", () => {
       ...draft,
       voice: { name: "", lines: { idle: [], crit: ["Hah."], enrage: [] } },
     });
-    expect((await adv.adventureToFile(quiet))?.file.version).toBe(2);
+    expect((await adv.adventureToFile(quiet))?.file.adventure.end).toMatchObject({
+      lines: { idle: [], crit: ["Hah."], enrage: [] },
+    });
 
+    // No voice written: the voice fields are there, empty, and read back the same.
     const plain = await hero.createHeroAdventure(draft);
     const plainOut = await adv.adventureToFile(plain);
-    expect(plainOut?.file.version).toBe(1);
-    expect(plainOut?.file.adventure.end).toEqual({ kind: "boss", monster: monster.key });
+    assert(plainOut);
+    expect(plainOut.file.adventure.end).toEqual({
+      kind: "boss",
+      monster: monster.key,
+      name: "",
+      lines: { idle: [], crit: [], enrage: [] },
+    });
+    expect(parseJson(plainOut.json)).toEqual(plainOut.file);
 
     const route = await hero.createHeroAdventure(draftOf([a.id, b.id]));
-    expect((await adv.adventureToFile(route))?.file.version).toBe(1);
+    expect((await adv.adventureToFile(route))?.file.adventure.end).toEqual({ kind: "route" });
   });
 
   test("a version 1 file with a boss still imports, with an empty voice", async () => {

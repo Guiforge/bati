@@ -71,7 +71,7 @@ catalogue the import writes into:
 - **What arrives** (adventure files, `ImportArrives`): a card with the counts of quests, exercises and
   photos the file adds to this phone (`quests.import_arrives_*`). A row at zero is left out, and the card
   is gone when everything is already here. An exercise counts once however many quests name it, and one
-  the hero already has by uuid is not an arrival. The adventure's own photo counts among the photos, as
+  the hero already has by uuid is not an arrival. A new adventure's own photo counts among the photos, as
   the sender's share dialog counts it.
 - **A same-name exercise** (both kinds, `ImportClashes`): "You already have an exercise named X: both will
   stay." Identity is the uuid, never the name (a hero may name two exercises alike, 0036), so the file's

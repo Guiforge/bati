@@ -2,7 +2,7 @@
 title: Data safety, the guardrails around an update
 type: technical
 status: active
-updated: 2026-10-15
+updated: 2026-10-22
 related: [backup-and-sync.md, exercise-ownership.md, ../../AGENTS.md]
 ---
 
@@ -57,6 +57,20 @@ It exists because `backupBeforeMigrations` returns at once when no backup folder
 leaves exactly the hero who never opened Settings with nothing. There is no restore screen: it is
 for a support session, by file. It is not in the Android backup rules and is not touched by
 `validateBackup`.
+
+## A restored backup from an older build
+
+A backup that claims an older migration is migrated before the swap, or refused. `checkStaged`
+in `hooks/useBackup.tsx`, the one road for the picker and for a peer's snapshot, runs
+`bringForward` (`db/backup.ts`) after `validateBackup`: it opens the staged file on its own
+connection (`withConnectionTo`), switches it to `journal_mode = DELETE` so every write lands in the
+main file, runs the migration runner on it (`db/migrationRunner.ts`, without the pre-migration
+copies), then validates it again as the current schema. A file the runner refuses is
+`incompatibleVersion` and never reaches the swap, where it used to fail its migration on every
+launch. The comparison with the live schema covers indexes as well as tables, so a backup cannot
+carry an index of its own that a later migration would collide with. The price is one rule: never
+edit a shipped index or table statement: honest backups that ran the old text would be refused.
+Covered by `test/node/restore/hostile.test.ts`.
 
 ## `scripts/upgrade-check.sh`
 

@@ -152,17 +152,34 @@ export type IsolatedConnection = Pick<
  * `useNewConnection`, because expo-sqlite hands back the cached shared handle otherwise, and
  * closing that would close the app's database.
  */
-export async function withIsolatedConnection<T>(
+export function withIsolatedConnection<T>(
   fn: (isolated: IsolatedConnection) => Promise<T>,
 ): Promise<T> {
-  const isolated = await openDatabaseAsync(DB_NAME, { useNewConnection: true });
+  return withConnectionTo(DB_NAME, fn);
+}
+
+/** What a caller of `withConnectionTo` may do with it: enough to run the migration runner. */
+export type ConnectionTo = Pick<
+  SQLiteDatabase,
+  "execAsync" | "runAsync" | "getFirstAsync" | "getAllAsync"
+>;
+
+/**
+ * `withIsolatedConnection` on another file of the database directory, by `name`: the staged import
+ * that `bringForward` (db/backup.ts) migrates before the swap. Closed when `fn` settles.
+ */
+export async function withConnectionTo<T>(
+  name: string,
+  fn: (conn: ConnectionTo) => Promise<T>,
+): Promise<T> {
+  const conn = await openDatabaseAsync(name, { useNewConnection: true });
   try {
     // Its own wait, for the same reason the shared connection has one: this handle is new and
     // inherits no pragma.
-    await isolated.execAsync("PRAGMA busy_timeout = 5000;");
-    return await fn(isolated);
+    await conn.execAsync("PRAGMA busy_timeout = 5000;");
+    return await fn(conn);
   } finally {
-    await isolated.closeAsync();
+    await conn.closeAsync();
   }
 }
 

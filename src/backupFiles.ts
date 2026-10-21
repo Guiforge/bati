@@ -129,6 +129,11 @@ function deleteIfPresent(name: string) {
   if (file.exists) file.delete();
 }
 
+/** A staged database and its journal files: a stale `-wal` beside a new candidate is read into it. */
+function deleteWithSideFiles(name: string) {
+  for (const suffix of ["", "-wal", "-shm", "-journal"]) deleteIfPresent(`${name}${suffix}`);
+}
+
 /**
  * The copy taken before a migration runs, in the database's own directory. Not `EXPORT_PREFIX`:
  * the export sweeps delete everything under that one, and this must outlive them. The newest and
@@ -357,7 +362,7 @@ export function clearPeerScratch(keep?: File): void {
  * goes through the first door's handler.
  */
 export async function stagePeerForImport(plain: File): Promise<string> {
-  deleteIfPresent(IMPORT_NAME);
+  deleteWithSideFiles(IMPORT_NAME);
   await plain.move(fileIn(IMPORT_NAME));
   return pathIn(IMPORT_NAME);
 }
@@ -504,7 +509,7 @@ export async function stageBackupForImport(): Promise<string | null> {
 
 /** The same staging for a file this app already has a handle on (a copy in the backup folder). */
 export async function stageBackupFrom(source: File): Promise<string> {
-  deleteIfPresent(IMPORT_NAME);
+  deleteWithSideFiles(IMPORT_NAME);
   await source.copy(fileIn(IMPORT_NAME));
   return pathIn(IMPORT_NAME);
 }
@@ -530,8 +535,8 @@ export async function decryptStagedImport(secret?: string): Promise<OpenOutcome>
 
 /** Throws away a staged import. The app is untouched, so there is nothing else to undo. */
 export function discardStagedImport(): void {
-  deleteIfPresent(IMPORT_NAME);
-  deleteIfPresent(IMPORT_PLAIN);
+  deleteWithSideFiles(IMPORT_NAME);
+  deleteWithSideFiles(IMPORT_PLAIN);
 }
 
 /** Moves a WAL that has to travel with its database, when there is one. */

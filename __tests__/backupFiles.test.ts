@@ -706,6 +706,26 @@ describe("stageBackupForImport", () => {
     expect(fs.__disk.has(at(IMPORT_NAME))).toBe(false);
     expect(fs.__disk.get(at(mockDbName))).toBe("the hero's year");
   });
+
+  test("discarding a staged import removes its side files", () => {
+    write(IMPORT_NAME, "rejected");
+    write(`${IMPORT_NAME}-wal`, "a stale wal");
+    write(`${IMPORT_NAME}-shm`, "its index");
+
+    discardStagedImport();
+
+    expect(fs.__disk.has(at(`${IMPORT_NAME}-wal`))).toBe(false);
+    expect(fs.__disk.has(at(`${IMPORT_NAME}-shm`))).toBe(false);
+  });
+
+  test("staging never leaves an earlier candidate's WAL beside the new one", async () => {
+    write(`${IMPORT_NAME}-wal`, "a stale wal");
+    picks("picked");
+
+    await stageBackupForImport();
+
+    expect(fs.__disk.has(at(`${IMPORT_NAME}-wal`))).toBe(false);
+  });
 });
 
 describe("encrypted backups", () => {

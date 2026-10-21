@@ -34,6 +34,7 @@ import { hasExif } from "@/db/sessionPhotos";
 import { clampToRange, REST_RANGE, ROUNDS_RANGE, type Target, targetRangeFor } from "@/db/targets";
 import { UUID_V7_RE, uuidv7 } from "@/db/uuid";
 import { NON_REP_STYLE } from "@/db/workUnits";
+import { imageSize, type Size } from "@/src/carriedImage";
 
 /**
  * A quest the hero wrote, as a file another phone can open.
@@ -289,60 +290,8 @@ function text4(value: unknown, max: number, required: boolean): Text4 {
   return { en, fr: or(value.fr), de: or(value.de), es: or(value.es) };
 }
 
-/**
- * Width and height of a JPEG, PNG or WebP, read from its header. Null when the header is not one
- * this reads, which `safeImage` treats as a picture it cannot vouch for.
- */
-export function imageSize(bytes: Uint8Array): Size | null {
-  const r = reader(bytes);
-  if (r.ascii(0, 8) === "\x89PNG\r\n\x1a\n") return { width: r.u32be(16), height: r.u32be(20) };
-  if (r.ascii(0, 4) === "RIFF" && r.ascii(8, 4) === "WEBP") return webpSize(r);
-  if (r.at(0) === 0xff && r.at(1) === 0xd8) return jpegSize(r);
-  return null;
-}
-
-type Size = { width: number; height: number };
-type Reader = ReturnType<typeof reader>;
-
-function reader(bytes: Uint8Array) {
-  const at = (i: number) => bytes[i] ?? 0;
-  const u16be = (i: number) => (at(i) << 8) | at(i + 1);
-  const u16le = (i: number) => at(i) | (at(i + 1) << 8);
-  return {
-    length: bytes.length,
-    at,
-    u16be,
-    u16le,
-    u24le: (i: number) => u16le(i) | (at(i + 2) << 16),
-    u32be: (i: number) => u16be(i) * 0x10000 + u16be(i + 2),
-    ascii: (i: number, n: number) => String.fromCharCode(...bytes.subarray(i, i + n)),
-  };
-}
-
-function webpSize(r: Reader): Size | null {
-  const chunk = r.ascii(12, 4);
-  if (chunk === "VP8 ") return { width: r.u16le(26) & 0x3fff, height: r.u16le(28) & 0x3fff };
-  if (chunk === "VP8X") return { width: 1 + r.u24le(24), height: 1 + r.u24le(27) };
-  if (chunk !== "VP8L") return null;
-  const b = (i: number) => r.at(21 + i);
-  return {
-    width: 1 + (((b(1) & 0x3f) << 8) | b(0)),
-    height: 1 + (((b(3) & 0xf) << 10) | (b(2) << 2) | ((b(1) & 0xc0) >> 6)),
-  };
-}
-
-/** Segment by segment to the first frame header: SOF0 to SOF15, minus DHT, JPG and DAC. */
-function jpegSize(r: Reader): Size | null {
-  let i = 2;
-  while (i + 9 < r.length && r.at(i) === 0xff) {
-    const marker = r.at(i + 1);
-    if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) {
-      return { width: r.u16be(i + 7), height: r.u16be(i + 5) };
-    }
-    i += 2 + r.u16be(i + 2);
-  }
-  return null;
-}
+// The header parser lives in `carriedImage`; `quest-file.test.ts` still reaches it from here.
+export { imageSize };
 
 /** The size of a carried picture, or null when its base64 is broken, its header unreadable or it still holds EXIF. */
 function carriedSize(base64: string): Size | null {

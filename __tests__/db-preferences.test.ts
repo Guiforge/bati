@@ -12,6 +12,32 @@ describe("db/preferences", () => {
     t.close();
   });
 
+  test("only a legacy file path with no customAvatar is ported", async () => {
+    const { preferences, setPreference, deletePreference } =
+      require("../db/preferences") as typeof import("../db/preferences");
+    const reset = async () => {
+      await deletePreference("customAvatar");
+      await deletePreference("customAvatarUri");
+    };
+    await reset();
+    await setPreference("customAvatar", "file:///data/user/0/x/bati.v3.db");
+    expect(await preferences.legacyAvatarToPort()).toBeNull();
+    await setPreference("customAvatar", "https://attacker.example/p.png");
+    expect(await preferences.legacyAvatarToPort()).toBeNull();
+
+    await reset();
+    await setPreference("customAvatarUri", "file:///cache/picker.jpg");
+    expect(await preferences.legacyAvatarToPort()).toBe("file:///cache/picker.jpg");
+
+    await setPreference("customAvatar", "");
+    expect(await preferences.legacyAvatarToPort()).toBeNull();
+
+    await reset();
+    await setPreference("customAvatarUri", "content://x/y");
+    expect(await preferences.legacyAvatarToPort()).toBeNull();
+    await reset();
+  });
+
   test("get/set/delete preference", async () => {
     const prefs = require("../db/preferences") as typeof import("../db/preferences");
 

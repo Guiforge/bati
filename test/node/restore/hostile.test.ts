@@ -5,6 +5,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { getExerciseThumb } from "@/constants/assetMap";
 import { openRawSqlite } from "../../../__tests__/helpers/testDb";
 
 import { type Device, newDevice } from "../harness/device";
@@ -112,5 +113,22 @@ describe("a database that is not an honest backup", () => {
       "ALTER TABLE completed_sessions RENAME TO old_sessions; CREATE TABLE completed_sessions AS SELECT * FROM old_sessions; DROP TABLE old_sessions",
     );
     expect(await check(file)).toEqual({ ok: false, reason: "schemaMismatch" });
+  });
+
+  // Passes now and pins the sink: whatever a restore leaves in `imagePath`, the screens only ever
+  // draw a carried picture (one sink, `carriedPhoto`), never a request to a stranger's server.
+  test("a URL in an exercise's imagePath survives the restore and is never drawn", async () => {
+    const file = honestCopy("image.db");
+    spoil(file, "UPDATE exercises SET imagePath = 'https://attacker.example/p.png'");
+    expect(await check(file)).toEqual({ ok: true });
+    await a.app.dbBackup.keepDeviceSettings(file);
+
+    const db = openRawSqlite(file);
+    const row = db.prepare("SELECT imagePath FROM exercises LIMIT 1").get() as {
+      imagePath: string;
+    };
+    db.close();
+    expect(row.imagePath).toBe("https://attacker.example/p.png");
+    expect(getExerciseThumb(row.imagePath)).toBe(require("@/assets/placeholder.webp"));
   });
 });

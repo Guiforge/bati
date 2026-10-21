@@ -16,6 +16,14 @@ import {
   QUEST_ASSETS,
 } from "@/constants/assetMap";
 import { VILLAGER_IDS, VILLAGER_POSES } from "@/constants/villagers";
+import { JOURNAL_PHOTO_SIDE } from "@/db/sessionPhotos";
+import { MAX_RENDER_SIDE } from "@/src/carriedImage";
+import { AVATAR_SIZE } from "@/src/customAvatar";
+import { MAX_PHOTO_WIDTH } from "@/src/exercisePhoto";
+import { pngDataUri } from "./helpers/pngDataUri";
+
+// Only the constants are read from db/sessionPhotos; its database is not opened.
+jest.mock("@/db/client", () => ({ db: {}, schema: {} }));
 
 describe("assetMap", () => {
   // The seeds still store `.png` paths for the exercises whose art is now `.jpg` (0001/0010 were
@@ -34,16 +42,14 @@ describe("assetMap", () => {
   // picked, or a `data:` URI of a photo. Only the detail screen knew how to render a URI, so the
   // warm-up, the session hero and the paused overlay all showed the placeholder for it.
   test("a URI or data URI resolves to itself, not the placeholder", () => {
-    const dataUri = "data:image/jpeg;base64,/9j/4AAQSkZJRg==";
+    const dataUri = pngDataUri(64, 64);
     expect(getExerciseAsset(dataUri)).toEqual({ uri: dataUri });
     expect(getExerciseThumb(dataUri)).toEqual({ uri: dataUri });
 
-    expect(getExerciseAsset("file:///data/user/0/x.jpg")).toEqual({
-      uri: "file:///data/user/0/x.jpg",
-    });
-    expect(getExerciseAsset("https://example.test/x.jpg")).toEqual({
-      uri: "https://example.test/x.jpg",
-    });
+    // A file or a URL is no picture the row can carry: see "carried pictures only".
+    const placeholder = require("@/assets/placeholder.webp");
+    expect(getExerciseAsset("file:///data/user/0/x.jpg")).toBe(placeholder);
+    expect(getExerciseAsset("https://example.test/x.jpg")).toBe(placeholder);
   });
 
   test("a bundled path still resolves to the bundled asset", () => {
@@ -61,7 +67,7 @@ describe("assetMap", () => {
   });
 
   test("a hero's quest cover resolves too, key or photo", () => {
-    const dataUri = "data:image/jpeg;base64,/9j/4AAQSkZJRg==";
+    const dataUri = pngDataUri(64, 64);
     expect(getQuestAsset(dataUri)).toEqual({ uri: dataUri });
     expect(getQuestAsset("escape_collapsing_mine")).toBe(QUEST_ASSETS.escape_collapsing_mine);
   });
@@ -73,7 +79,7 @@ describe("assetMap", () => {
   });
 
   test("a step without art of its own shows its quest's cover, and none when the quest has none", () => {
-    const photo = "data:image/jpeg;base64,/9j/4AAQSkZJRg==";
+    const photo = pngDataUri(64, 64);
     // Its own art wins.
     expect(getStepArt("assets/images/adventures/scout_trial.jpg", photo)).toBe(
       getQuestAsset("assets/images/adventures/scout_trial.jpg"),
@@ -86,7 +92,7 @@ describe("assetMap", () => {
   });
 
   test("an adventure cover can be the hero's own photo, as a quest's can", () => {
-    const dataUri = "data:image/jpeg;base64,/9j/4AAQSkZJRg==";
+    const dataUri = pngDataUri(64, 64);
     expect(getAdventureAsset(dataUri)).toEqual({ uri: dataUri });
   });
 });
@@ -156,10 +162,10 @@ describe("villager assets", () => {
 });
 
 describe("getBossAsset with a hero boss's own pictures", () => {
-  const FRESH = "data:image/jpeg;base64,F";
-  const WOUNDED = "data:image/jpeg;base64,W";
-  const DEFEATED = "data:image/jpeg;base64,D";
-  const LEGEND = "data:image/jpeg;base64,L";
+  const FRESH = pngDataUri(11, 11);
+  const WOUNDED = pngDataUri(12, 12);
+  const DEFEATED = pngDataUri(13, 13);
+  const LEGEND = pngDataUri(14, 14);
   const key = "stone_golem";
   const all = { fresh: FRESH, wounded: WOUNDED, defeated: DEFEATED, legendary: LEGEND };
 
@@ -185,5 +191,44 @@ describe("getBossAsset with a hero boss's own pictures", () => {
     expect(getBossAsset(key, 0, undefined, art)).toBe(getBossAsset(key));
     expect(getBossAsset(key, 0, "wounded", art)).toBe(getBossAsset(key, 0, "wounded"));
     expect(getBossAsset(key, 1, undefined, {})).toBe(getBossAsset(key, 1));
+  });
+});
+
+describe("carried pictures only", () => {
+  const placeholder = require("@/assets/placeholder.webp");
+  const hostile = [
+    "https://attacker.example/p.png",
+    "file:///data/user/0/x/bati.v3.db",
+    "content://x/y",
+    "data:text/html;base64,AAAA",
+  ];
+
+  test.each(hostile)("%s is the placeholder at every sink", (value) => {
+    expect(getExerciseThumb(value)).toBe(placeholder);
+    expect(getExerciseAsset(value)).toBe(placeholder);
+    expect(getQuestAsset(value)).toBe(placeholder);
+    expect(getAdventureAsset(value)).toBe(placeholder);
+    expect(getQuestThumb(value)).toBeNull();
+  });
+
+  test("a real small picture passes", () => {
+    expect(getExerciseThumb(pngDataUri(64, 64))).toEqual({ uri: pngDataUri(64, 64) });
+  });
+
+  test("a boss form that is a URL is the painted monster", () => {
+    expect(getBossAsset("stone_golem", 0, undefined, { fresh: hostile[0] })).toBe(
+      getBossAsset("stone_golem", 0),
+    );
+  });
+
+  test("a header claiming 16000 px is refused, and a zero side too", () => {
+    expect(getExerciseThumb(pngDataUri(16000, 16000))).toBe(placeholder);
+    expect(getExerciseThumb(pngDataUri(0, 64))).toBe(placeholder);
+  });
+
+  test("the render limit leaves room for every size the app writes", () => {
+    expect(MAX_RENDER_SIDE).toBeGreaterThanOrEqual(JOURNAL_PHOTO_SIDE);
+    expect(MAX_RENDER_SIDE).toBeGreaterThanOrEqual(AVATAR_SIZE);
+    expect(MAX_RENDER_SIDE).toBeGreaterThanOrEqual(MAX_PHOTO_WIDTH);
   });
 });

@@ -1,6 +1,7 @@
 import { type BuildingStage, buildingStage } from "@/constants/buildingLevels";
 import type { VillagerId, VillagerPose } from "@/constants/villagers";
 import type { BossArt } from "@/db/bossVoice";
+import { carriedImageSize, MAX_RENDER_SIDE } from "@/src/carriedImage";
 
 /**
  * BATI Asset Map
@@ -602,15 +603,18 @@ function lookup<T>(map: Record<string, T>, id: string): T | undefined {
  * do not each need to know — only the detail screen did, and everything else showed the
  * placeholder.
  */
-function asUriSource(id: string): { uri: string } | null {
-  return /^(data:|file:|content:|https?:)/.test(id) ? { uri: id } : null;
+export function carriedPhoto(value: string | null | undefined): { uri: string } | null {
+  if (!value) return null;
+  const size = carriedImageSize(value);
+  const sane = (side: number) => side >= 1 && side <= MAX_RENDER_SIDE;
+  return size && sane(size.width) && sane(size.height) ? { uri: value } : null;
 }
 
 /**
  * Get exercise asset by ID (with fallback to placeholder)
  */
 export function getExerciseAsset(id: string) {
-  return asUriSource(id) ?? lookup(EXERCISE_ASSETS, id) ?? require("@/assets/placeholder.webp");
+  return carriedPhoto(id) ?? lookup(EXERCISE_ASSETS, id) ?? require("@/assets/placeholder.webp");
 }
 
 /**
@@ -621,7 +625,7 @@ export function getExerciseAsset(id: string) {
  */
 export function getExerciseThumb(id: string) {
   return (
-    asUriSource(id) ?? lookup(EXERCISE_THUMB_ASSETS, id) ?? require("@/assets/placeholder.webp")
+    carriedPhoto(id) ?? lookup(EXERCISE_THUMB_ASSETS, id) ?? require("@/assets/placeholder.webp")
   );
 }
 
@@ -635,7 +639,7 @@ export function getExerciseThumb(id: string) {
  */
 export function getQuestThumb(id: string | null | undefined) {
   if (!id) return null;
-  return asUriSource(id) ?? lookup(QUEST_THUMB_ASSETS, id) ?? null;
+  return carriedPhoto(id) ?? lookup(QUEST_THUMB_ASSETS, id) ?? null;
 }
 
 /**
@@ -643,7 +647,7 @@ export function getQuestThumb(id: string | null | undefined) {
  */
 export function getQuestAsset(id: string) {
   // A hero-chosen cover is a bundled key or a `data:` photo, exactly like a movement's art.
-  return asUriSource(id) ?? lookup(QUEST_ASSETS, id) ?? require("@/assets/placeholder.webp");
+  return carriedPhoto(id) ?? lookup(QUEST_ASSETS, id) ?? require("@/assets/placeholder.webp");
 }
 
 /**
@@ -671,7 +675,8 @@ export function getBossAsset(id: string, tier = 0, state?: "wounded" | "defeated
     (tier >= 1 && art?.legendary) ||
     (state === "wounded" && art?.wounded) ||
     art?.fresh;
-  if (own) return { uri: own };
+  const mine = carriedPhoto(own);
+  if (mine) return mine;
   const defeated = state === "defeated" ? lookup(BOSS_DEFEATED_ASSETS, id) : undefined;
   const legendary = tier >= 1 ? lookup(BOSS_LEGENDARY_ASSETS, id) : undefined;
   const wounded = state === "wounded" ? lookup(BOSS_WOUNDED_ASSETS, id) : undefined;
@@ -703,7 +708,7 @@ export function getBossKey(id: string | null | undefined): BossAssetKey | null {
  * key or a `data:` photo, as a quest's is.
  */
 export function getAdventureAsset(id: string) {
-  return asUriSource(id) ?? lookup(ADVENTURE_ASSETS, id) ?? require("@/assets/placeholder.webp");
+  return carriedPhoto(id) ?? lookup(ADVENTURE_ASSETS, id) ?? require("@/assets/placeholder.webp");
 }
 
 /**

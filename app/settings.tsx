@@ -129,7 +129,7 @@ function AvatarSection({
           >
             {customAvatarUri ? (
               <Image
-                source={{ uri: customAvatarUri }}
+                source={getAvatarSource(avatarId, customAvatarUri)}
                 style={{ width: 48, height: 48, borderRadius: 24 }}
               />
             ) : (

@@ -315,6 +315,17 @@ export const preferences = {
    * restore or a merge can bring `customAvatar` in while this phone still holds its unported path
    * (device-local), and then the port never runs to delete it.
    */
+  /**
+   * The legacy picker path worth porting: a device-local `file://` with no `customAvatar` row.
+   * A restored `customAvatar` never gets here, whatever it holds, so `File` and ImageManipulator
+   * are never pointed by a backup.
+   */
+  async legacyAvatarToPort(): Promise<string | null> {
+    if ((await getPreference("customAvatar")) !== null) return null;
+    const legacy = await getPreference("customAvatarUri");
+    return legacy?.startsWith("file://") ? legacy : null;
+  },
+
   async dropSupersededLegacyAvatar(): Promise<void> {
     await db
       .delete(userPreferences)

@@ -68,7 +68,7 @@ function resolveImage(
   getAsset: (id: string) => ImageSourcePropType,
 ): ImageSourcePropType | null {
   if (!path) return null;
-  return path.startsWith("http") ? { uri: path } : getAsset(path);
+  return getAsset(path);
 }
 
 /** What every branch of LoadState carries, so a new field cannot be added to only one of three. */

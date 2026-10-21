@@ -16,6 +16,8 @@ type Props = {
   art: BossArt;
   /** The painted monster the forms fall back to: its key (the "choice" tile) and its path. */
   monster: { key: string; bossImagePath: string };
+  /** Its name, for the screen reader on that tile. */
+  monsterLabel: string;
   onChange: (art: BossArt) => void;
 };
 
@@ -25,7 +27,7 @@ type Props = {
  * picture of its own shows the normal one with the arena's effects (darkening, lying pose), and
  * with no normal one, the painted monster. The help line says whose photo may be used (decision D2).
  */
-export function BossPictures({ art, monster, onChange }: Props) {
+export function BossPictures({ art, monster, monsterLabel, onChange }: Props) {
   const { t } = useTranslation();
   return (
     <YStack gap="$3">
@@ -44,6 +46,7 @@ export function BossPictures({ art, monster, onChange }: Props) {
                 onChange(next.startsWith("data:") ? { ...rest, [form]: next } : rest);
               }}
               choices={[monster.key]}
+              choiceLabel={() => monsterLabel}
               // What the boss will really show in this form: a form without a picture of its own
               // wears the normal one, so the preview says so.
               resolve={(v) =>

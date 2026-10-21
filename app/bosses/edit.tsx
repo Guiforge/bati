@@ -354,6 +354,7 @@ export default function BossEditor() {
                   <BossPictures
                     art={draft.art}
                     monster={monster}
+                    monsterLabel={monsterName(monster, language)}
                     onChange={(art) => patch({ art })}
                   />
                 ) : null}

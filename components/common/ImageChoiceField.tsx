@@ -53,6 +53,8 @@ export type ImageChoiceFieldProps = {
   aspect: readonly [number, number];
   /** Offer the photo tile. Off where the picture must be one of `choices` (an adventure's cover). */
   photos?: boolean;
+  /** What a screen reader says for a choice tile; the key itself without it. */
+  choiceLabel?: (key: string) => string;
 };
 
 export function ImageChoiceField({
@@ -63,6 +65,7 @@ export function ImageChoiceField({
   resolveThumb,
   aspect,
   photos = true,
+  choiceLabel,
 }: ImageChoiceFieldProps) {
   const { t } = useTranslation();
   const { showError } = useToast();
@@ -193,7 +196,7 @@ export function ImageChoiceField({
                 pressStyle={{ opacity: 0.8 }}
                 accessibilityRole="button"
                 accessibilityState={{ selected: value === key }}
-                accessibilityLabel={key}
+                accessibilityLabel={choiceLabel?.(key) ?? key}
               >
                 <Image
                   source={resolveThumb(key)}

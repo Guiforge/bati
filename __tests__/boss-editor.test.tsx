@@ -129,6 +129,16 @@ describe("a new boss", () => {
     expect(editor.getByTestId("editor-boss-art-consent")).toBeTruthy();
   });
 
+  test("the painted tile of a form is read out by the monster's name, not its key", async () => {
+    const editor = await mount();
+    const field = editor.getByTestId("editor-boss-art-fresh");
+    await fireEvent.press(within(field).getByTestId("image-choice-preview"));
+    const tile = within(field).getByTestId("image-choice-shadow_serpent");
+    const name = editor.getByTestId("boss-monster-shadow_serpent").props.accessibilityLabel;
+    expect(name).not.toBe("shadow_serpent");
+    expect(tile.props.accessibilityLabel).toBe(name);
+  });
+
   test("hands the writer the name, the monster, the muscles, the lines and a photo per form", async () => {
     const editor = await mount();
     await fireEvent.changeText(editor.getByTestId("boss-name"), "Gorgo");

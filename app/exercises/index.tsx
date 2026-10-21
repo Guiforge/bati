@@ -7,7 +7,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Input, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
-import { Chip } from "@/components/common/Chip";
 import { FilterRail, type RailGroup } from "@/components/common/FilterRail";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { ExerciseRow } from "@/components/exercises/ExerciseRow";
@@ -375,12 +374,11 @@ export default function ExerciseCatalogue() {
             </Text>
           </XStack>
           <ForgeButton />
-          <Chip
-            label={t("exercises.count", {
-              count: visible.length,
-            })}
-          />
         </XStack>
+        {/* The count leaves the title row: beside "Create" it cut the title to "E…" at 130 %. */}
+        <Text color="$textSecondary" fontSize={13}>
+          {t("exercises.count", { count: visible.length })}
+        </Text>
 
         <XStack items="center" gap="$2">
           <Input

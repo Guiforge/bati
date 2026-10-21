@@ -558,7 +558,7 @@ export default function AdventuresGallery() {
   return (
     <YStack testID="adventures-screen" flex={1} bg="$background">
       <YStack bg="$background" pt={insets.top + 12} px="$5" pb="$3" gap="$1">
-        {/* The title gives way, never the button: same row as the Quests header. */}
+        {/* The title gives way, never the button: it wraps, since one line cut it to "Galerie des avent…" at 130 %. */}
         <XStack items="center" justify="space-between" gap="$2">
           <XStack items="center" gap="$2" flex={1} minW={0}>
             <Sparkles size={18} color="$text" strokeWidth={2.5} />
@@ -568,7 +568,7 @@ export default function AdventuresGallery() {
               fontWeight="700"
               fontSize={20}
               color="$text"
-              numberOfLines={1}
+              numberOfLines={2}
             >
               {title}
             </Text>

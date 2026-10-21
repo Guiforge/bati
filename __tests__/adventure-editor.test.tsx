@@ -251,10 +251,10 @@ describe("a new adventure", () => {
     expect(hero().createHeroAdventure).not.toHaveBeenCalled();
   });
 
-  test("the cover offers no photo: it must be one of the bundled covers", async () => {
+  test("the cover offers the photo tile, as a quest's does", async () => {
     const editor = await mount();
     await fireEvent.press(editor.getByTestId("image-choice-preview"));
-    expect(editor.queryByTestId("image-choice-photo")).toBeNull();
+    expect(editor.getByTestId("image-choice-photo")).toBeTruthy();
   });
 });
 

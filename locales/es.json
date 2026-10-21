@@ -1444,7 +1444,6 @@
   "forge": {
     "open": "Crear",
     "title": "Forja",
-    "subtitle": "Lo que has creado, y sitio para más.",
     "quests": "Tus misiones",
     "quests_empty": "Aún no has escrito ninguna misión.",
     "adventures": "Tus aventuras",
@@ -1457,7 +1456,7 @@
     "import": "Importar un archivo recibido",
     "import_hint": "Una misión o una aventura que alguien te envió, en un archivo .bati-quest.json o .bati-adventure.json. También puedes tocarlo en el chat.",
     "import_failed": "No se pudo abrir el archivo. Inténtalo de nuevo.",
-    "smith_greeting": "Aquí se forjan misiones. Dime qué necesitas, yo pongo el fuego."
+    "smith_greeting": "Aquí se forja todo, hasta tus monstruos. Dime qué necesitas, yo pongo el fuego."
   },
   "village": {
     "forge_enter": "Entrar en la forja",

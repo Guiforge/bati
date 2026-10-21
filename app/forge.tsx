@@ -27,9 +27,8 @@ const SHOWN = 3;
 
 type Row = { id: number; name: string };
 type Made = { quests: Row[]; adventures: Row[]; exercises: Row[]; bosses: Row[] };
-const NOTHING: Made = { quests: [], adventures: [], exercises: [], bosses: [] };
-/** The building's painting, at the size that keeps "New quest" above the fold at 130 % text. */
-const ART = 88;
+/** The building's painting, beside the title: small, so "New quest" stays above the fold at 130 % text. */
+const ART = 48;
 
 function ForgeSection({
   testID,
@@ -44,7 +43,8 @@ function ForgeSection({
   testID: string;
   title: string;
   rows: Row[];
-  empty: string;
+  /** What it says when the read found nothing; `null` says nothing (not read yet, or all empty). */
+  empty: string | null;
   open: (id: number) => void;
   seeAll: () => void;
   create: () => void;
@@ -55,9 +55,11 @@ function ForgeSection({
     <YStack testID={testID} gap="$2">
       <SectionLabel>{title}</SectionLabel>
       {rows.length === 0 ? (
-        <Paragraph color="$textSecondary" size="$3">
-          {empty}
-        </Paragraph>
+        empty ? (
+          <Paragraph color="$textSecondary" size="$3">
+            {empty}
+          </Paragraph>
+        ) : null
       ) : (
         rows.slice(0, SHOWN).map((row) => (
           <XStack
@@ -117,7 +119,10 @@ export default function ForgeScreen(): ReactNode {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const language = useSettingsStore((s) => s.language);
-  const [made, setMade] = useState<Made>(NOTHING);
+  // Null until the read finishes: a page that has not read yet says nothing, and one whose read
+  // failed does not claim the hero has made nothing.
+  const [made, setMade] = useState<Made | null>(null);
+  const [failed, setFailed] = useState(false);
   const [forge, setForge] = useState<VillageBuilding | null>(null);
   // A quest or adventure screen lives in its tab's stack: without the anchor, opened from here it is
   // that stack's only route, and back (or the hero's next save) fell through to Home.
@@ -131,6 +136,7 @@ export default function ForgeScreen(): ReactNode {
           // Newest first: ids only grow, and the page keeps the last three.
           const newest = <T extends { id: number }>(list: T[]) =>
             [...list].sort((a, b) => b.id - a.id);
+          setFailed(false);
           setMade({
             quests: newest(quests.filter(isUserQuest)).map((q) => ({
               id: q.id,
@@ -145,7 +151,10 @@ export default function ForgeScreen(): ReactNode {
             bosses: newest(bosses).map((b) => ({ id: b.id, name: b.name })),
           });
         })
-        .catch((e: unknown) => reportError("forge.load", e));
+        .catch((e: unknown) => {
+          reportError("forge.load", e);
+          setFailed(true);
+        });
       // The building's own painting at the hero's rank, as the village draws it. Its own promise:
       // a village that fails to load costs the picture, never the lists.
       getVillageBuildings()
@@ -153,6 +162,13 @@ export default function ForgeScreen(): ReactNode {
         .catch((e: unknown) => reportError("forge.building", e));
     }, [language]),
   );
+
+  // Said only once the read is in, and not four times in a column for a hero who has made nothing:
+  // then the smith's greeting is the one voice and the buttons are the way in.
+  const nothingYet =
+    made !== null &&
+    made.quests.length + made.adventures.length + made.exercises.length + made.bosses.length === 0;
+  const emptyLine = (key: Parameters<typeof t>[0]) => (made === null || nothingYet ? null : t(key));
 
   return (
     <YStack testID="forge-screen" flex={1} bg="$bgDark">
@@ -180,6 +196,19 @@ export default function ForgeScreen(): ReactNode {
             >
               <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
             </AppIconButton>
+            {/* Inside the village's Forge: its painting at the hero's rank (rough before it is built,
+                nothing is locked), and below, the smith who keeps it. */}
+            <YStack width={ART} height={ART}>
+              {forge ? (
+                <Image
+                  testID="forge-building"
+                  source={getBuildingIconAsset(forge.code, forge.relatedMuscle, forge.level)}
+                  style={{ width: ART, height: ART }}
+                  contentFit="contain"
+                  accessible={false}
+                />
+              ) : null}
+            </YStack>
             <Text
               flex={1}
               minW={0}
@@ -192,32 +221,20 @@ export default function ForgeScreen(): ReactNode {
               {t("forge.title")}
             </Text>
           </XStack>
-          {/* Inside the village's Forge: its painting at the hero's rank (rough before it is built,
-              nothing is locked), and the smith who keeps it. */}
-          <XStack items="center" gap="$3">
-            <YStack width={ART} height={ART}>
-              {forge ? (
-                <Image
-                  testID="forge-building"
-                  source={getBuildingIconAsset(forge.code, forge.relatedMuscle, forge.level)}
-                  style={{ width: ART, height: ART }}
-                  contentFit="contain"
-                  accessible={false}
-                />
-              ) : null}
-            </YStack>
-            <Text flex={1} minW={0} color="$textSecondary" fontSize={13}>
-              {t("forge.subtitle")}
-            </Text>
-          </XStack>
           <VillagerSays villager="smith" pose="talk" shown={t("forge.smith_greeting")} />
         </YStack>
+
+        {failed ? (
+          <Text testID="forge-load-failed" color="$textSecondary" fontSize={13}>
+            {t("errors.generic")}
+          </Text>
+        ) : null}
 
         <ForgeSection
           testID="forge-quests"
           title={t("forge.quests")}
-          rows={made.quests}
-          empty={t("forge.quests_empty")}
+          rows={made?.quests ?? []}
+          empty={emptyLine("forge.quests_empty")}
           open={(id) => intoTab(`/quests/${id}`)}
           seeAll={() => router.push("/quests" as never)}
           create={() => intoTab("/quests/edit")}
@@ -226,33 +243,33 @@ export default function ForgeScreen(): ReactNode {
         <ForgeSection
           testID="forge-adventures"
           title={t("forge.adventures")}
-          rows={made.adventures}
-          empty={t("forge.adventures_empty")}
+          rows={made?.adventures ?? []}
+          empty={emptyLine("forge.adventures_empty")}
           open={(id) => intoTab(`/adventures/${id}`)}
           seeAll={() => router.push("/adventures" as never)}
           create={() => intoTab("/adventures/edit")}
           createLabel={t("adventures.write")}
         />
-        <ForgeSection
-          testID="forge-exercises"
-          title={t("forge.exercises")}
-          rows={made.exercises}
-          empty={t("forge.exercises_empty")}
-          open={(id) => router.push(`/exercises/${id}` as never)}
-          seeAll={() => router.push("/exercises?mine=1" as never)}
-          create={() => router.push("/exercises/new" as never)}
-          createLabel={t("exercise_editor.title_new")}
-        />
-
+        {/* A boss only exists to end an adventure: it sits right after them. */}
         <ForgeSection
           testID="forge-bosses"
           title={t("forge.bosses")}
-          rows={made.bosses}
-          empty={t("forge.bosses_empty")}
+          rows={made?.bosses ?? []}
+          empty={emptyLine("forge.bosses_empty")}
           open={(id) => router.push(`/bosses/edit?id=${id}` as never)}
           seeAll={() => router.push("/bosses" as never)}
           create={() => router.push("/bosses/edit" as never)}
           createLabel={t("boss_editor.title_new")}
+        />
+        <ForgeSection
+          testID="forge-exercises"
+          title={t("forge.exercises")}
+          rows={made?.exercises ?? []}
+          empty={emptyLine("forge.exercises_empty")}
+          open={(id) => router.push(`/exercises/${id}` as never)}
+          seeAll={() => router.push("/exercises?mine=1" as never)}
+          create={() => router.push("/exercises/new" as never)}
+          createLabel={t("exercise_editor.title_new")}
         />
 
         {/* The one way in for a file someone sent: a quest or an adventure, the preview reads which. */}

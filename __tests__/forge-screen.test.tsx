@@ -91,20 +91,18 @@ beforeEach(() => {
 });
 
 describe("Forge page", () => {
-  test("empty: one line and one button per section, in the audit's order, and the import door", async () => {
+  test("empty: no sentence, the smith is the one voice; a button per section, bosses after adventures, and the import door", async () => {
     await render(wrap(<ForgeScreen />));
-    await screen.findByText("You haven't written a quest yet.");
-    expect(screen.getByText("You haven't written an adventure yet.")).toBeTruthy();
-    expect(screen.getByText("You haven't made an exercise yet.")).toBeTruthy();
-    expect(screen.getByText("You haven't made a boss yet.")).toBeTruthy();
+    await screen.findByTestId("forge-quests-new");
+    expect(screen.queryByText(/yet\.$/)).toBeNull();
     expect(screen.queryByTestId("forge-quests-all")).toBeNull();
 
-    // Quests, then adventures, then exercises, then bosses, then the import.
+    // Quests, then adventures, then bosses, then exercises, then the import.
     const order = [
       "forge-quests",
       "forge-adventures",
-      "forge-exercises",
       "forge-bosses",
+      "forge-exercises",
       "forge-import",
     ].map((id) => JSON.stringify(screen.toJSON()).indexOf(`"testID":"${id}"`));
     expect([...order].sort((a, b) => a - b)).toEqual(order);
@@ -127,6 +125,32 @@ describe("Forge page", () => {
       undefined,
       undefined,
     ]);
+  });
+
+  test("some made, some not: the empty sections say so, and only once the read is in", async () => {
+    mockQuests.mockResolvedValue([quest(10, "hero")]);
+    await render(wrap(<ForgeScreen />));
+    await screen.findByText("Quest 10");
+    expect(screen.getByText("You haven't written an adventure yet.")).toBeTruthy();
+    expect(screen.getByText("You haven't made an exercise yet.")).toBeTruthy();
+    expect(screen.getByText("You haven't made a boss yet.")).toBeTruthy();
+  });
+
+  test("while it reads, it asserts nothing", async () => {
+    mockQuests.mockReturnValue(new Promise(() => undefined));
+    await render(wrap(<ForgeScreen />));
+    await screen.findByTestId("forge-quests-new");
+    expect(screen.queryByText(/yet\.$/)).toBeNull();
+    expect(screen.queryByTestId("forge-load-failed")).toBeNull();
+  });
+
+  test("a read that fails is reported and does not claim the hero has made nothing", async () => {
+    const failure = new Error("disk");
+    mockQuests.mockRejectedValue(failure);
+    await render(wrap(<ForgeScreen />));
+    await screen.findByTestId("forge-load-failed");
+    expect(require("@/src/reportError").reportError).toHaveBeenCalledWith("forge.load", failure);
+    expect(screen.queryByText(/yet\.$/)).toBeNull();
   });
 
   test("full: only the hero's own, the last three, each row opening its own screen", async () => {
@@ -194,8 +218,11 @@ test("inside the building: its painting at the hero's rank, and the smith's line
   expect(getArt).toHaveBeenCalledWith("forge", "chest", 0);
   expect(screen.getByText("The Smith")).toBeTruthy();
   expect(
-    screen.getByText("Quests get forged here. Tell me what you need, I'll bring the fire."),
+    screen.getByText(
+      "Everything gets forged here, even your monsters. Tell me what you need, I'll bring the fire.",
+    ),
   ).toBeTruthy();
+  expect(screen.queryByText("What you've made, and room for more.")).toBeNull();
   getArt.mockRestore();
 });
 

@@ -1375,7 +1375,6 @@
   "forge": {
     "open": "Erstellen",
     "title": "Schmiede",
-    "subtitle": "Was du gebaut hast, und Platz für mehr.",
     "quests": "Deine Quests",
     "quests_empty": "Du hast noch keine Quest geschrieben.",
     "adventures": "Deine Abenteuer",
@@ -1388,7 +1387,7 @@
     "import": "Erhaltene Datei importieren",
     "import_hint": "Eine Quest oder ein Abenteuer, das dir jemand geschickt hat, als .bati-quest.json- oder .bati-adventure.json-Datei. Du kannst sie auch direkt im Chat antippen.",
     "import_failed": "Die Datei konnte nicht geöffnet werden. Versuch es noch einmal.",
-    "smith_greeting": "Hier werden Quests geschmiedet. Sag mir, was du brauchst, ich sorge für das Feuer."
+    "smith_greeting": "Hier wird alles geschmiedet, sogar deine Monster. Sag mir, was du brauchst, ich sorge für das Feuer."
   },
   "village": {
     "forge_enter": "Die Schmiede betreten",

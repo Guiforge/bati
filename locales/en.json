@@ -1375,7 +1375,6 @@
   "forge": {
     "open": "Create",
     "title": "Forge",
-    "subtitle": "What you've made, and room for more.",
     "quests": "Your quests",
     "quests_empty": "You haven't written a quest yet.",
     "adventures": "Your adventures",
@@ -1388,7 +1387,7 @@
     "import": "Import a received file",
     "import_hint": "A quest or an adventure someone sent you, as a .bati-quest.json or .bati-adventure.json file. You can also tap it directly in your chat.",
     "import_failed": "The file could not be opened. Try again.",
-    "smith_greeting": "Quests get forged here. Tell me what you need, I'll bring the fire."
+    "smith_greeting": "Everything gets forged here, even your monsters. Tell me what you need, I'll bring the fire."
   },
   "village": {
     "forge_enter": "Enter the forge",

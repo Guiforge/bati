@@ -53,6 +53,17 @@ and note stamps are lost as the content tombstones are; the kept copy and the pr
 hold them. The `.gpx` files in `gps-tracks/` stay out too:
 they are exports, rebuilt from `gps_points` whenever a recap shares one.
 
+**Android's backup is encrypted or absent.** The database in it is plaintext SQLite, so the rules
+only let the OS copy it where the transport encrypts client-side (the user's choice, 2026-10-21):
+`<cloud-backup disableIfNoEncryptionCapabilities="true">` on Android 12 and up, and
+`requireFlags="clientSideEncryption"` on each include of `full-backup-content` on Android 9 to 11.
+`<device-transfer>` is unchanged. Accepted trade-off: on Android 9 to 11 every `requireFlags` must be
+set by the transport, so a phone-to-phone transfer whose transport does not also set client-side
+encryption drops the database; the hero restores from a Bati backup file instead. User CAs stay
+trusted in `plugins/withAndroidNetworkSecurity.js` for self-hosters with a private CA, and an MDM or
+rogue CA on the phone could therefore intercept sync traffic (accepted, same date; the files are
+sealed with the backup key regardless).
+
 **The folder picker does not reach the classic clouds.** Google Drive, OneDrive and Proton never
 appear in `ACTION_OPEN_DOCUMENT_TREE`, Dropbox's provider is partial, and Nextcloud's serves a stale
 copy of what another device wrote. Automatic backup is for the device itself, or a folder Syncthing

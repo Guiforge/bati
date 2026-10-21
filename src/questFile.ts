@@ -323,7 +323,10 @@ export function safeImage(value: unknown): string | null {
     if (!size || size.width < 1 || size.height < 1) return null;
     return size.width <= MAX_IMAGE_SIDE && size.height <= MAX_IMAGE_SIDE ? value : null;
   }
-  if (/^[A-Za-z0-9_\-./]+$/.test(value) && !value.includes("..")) return value;
+  // A leading "/" is an absolute path on this phone, not an asset that ships with the app.
+  if (/^[A-Za-z0-9_\-./]+$/.test(value) && !value.includes("..") && !value.startsWith("/")) {
+    return value;
+  }
   return null;
 }
 

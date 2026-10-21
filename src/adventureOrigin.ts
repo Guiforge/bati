@@ -8,9 +8,9 @@ export type AdventureOrigin = "home" | `/journal${string}`;
 export function parseAdventureOrigin(raw: string | string[] | undefined): AdventureOrigin | null {
   const v = Array.isArray(raw) ? raw[0] : raw;
   if (v === "home") return v;
-  return v?.startsWith("/journal") && !v.includes("//") && !v.includes("..")
-    ? (v as AdventureOrigin)
-    : null;
+  if (v === undefined) return null;
+  const isJournal = v === "/journal" || v.startsWith("/journal/") || v.startsWith("/journal?");
+  return isJournal && !v.includes("//") && !v.includes("..") ? (v as AdventureOrigin) : null;
 }
 
 /** `?from=…` for the adventure page, or nothing. */

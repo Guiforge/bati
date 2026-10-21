@@ -7,7 +7,12 @@ import { rawColors } from "@/constants/rawColors";
 import { stampDatabaseIdentity } from "@/db/backup";
 import { ensureMigrations } from "@/db/migrate";
 import { backupIfStaleToday } from "@/src/autoBackup";
-import { clearPeerScratch, commitRestore, discardStagedImport } from "@/src/backupFiles";
+import {
+  clearPeerScratch,
+  commitRestore,
+  discardStagedImport,
+  UNLOCK_SLOT,
+} from "@/src/backupFiles";
 import { prepareSyncAtLaunch } from "@/src/deviceSync";
 import { reportError } from "@/src/reportError";
 import { rememberRestoreNotice } from "@/src/restoreNotice";
@@ -64,6 +69,7 @@ function sweepLeftovers(): void {
   leftoversSwept = true;
   try {
     discardStagedImport();
+    discardStagedImport(UNLOCK_SLOT);
     clearPeerScratch();
   } catch (e) {
     reportError("backup.sweep", e);

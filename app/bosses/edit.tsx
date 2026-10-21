@@ -20,6 +20,7 @@ import { getBossAsset } from "@/constants/assetMap";
 import { cleanBossLines, MAX_BOSS_NAME } from "@/db/bossVoice";
 import { listMonsters, listOfferedMonsters, type Monster } from "@/db/heroAdventures";
 import {
+  adventuresUsingBoss,
   createHeroBoss,
   deleteHeroBoss,
   emptyHeroBossDraft,
@@ -207,8 +208,31 @@ export default function BossEditor() {
     setBusy(false);
   };
 
+  const inUse = () =>
+    setDialog({
+      title: t("boss_editor.in_use_title"),
+      body: t("boss_editor.in_use_body"),
+      confirmLabel: t("common.close"),
+    });
+
+  // A boss an adventure still ends on cannot go (`deleteHeroBoss` refuses too): say so before
+  // asking, as the quest editor does, rather than after the hero said yes.
   const confirmDelete = () => {
     if (bossId == null) return;
+    getHeroBoss(bossId)
+      .then((boss) => (boss ? adventuresUsingBoss(boss.uuid) : 0))
+      .then((using) => (using > 0 ? inUse() : askDelete(bossId)))
+      .catch((error: unknown) => {
+        reportError("boss.deleteCheck", error);
+        setDialog({
+          title: t("common.error"),
+          body: t("errors.generic"),
+          confirmLabel: t("common.close"),
+        });
+      });
+  };
+
+  const askDelete = (bossId: number) => {
     setDialog({
       title: t("boss_editor.delete_title", { name: draft?.name.trim() ?? "" }),
       body: t("boss_editor.delete_body"),
@@ -224,11 +248,7 @@ export default function BossEditor() {
             setBusy(false);
             skipGuardRef.current = false;
             if (error instanceof HeroBossInUseError) {
-              setDialog({
-                title: t("boss_editor.in_use_title"),
-                body: t("boss_editor.in_use_body"),
-                confirmLabel: t("common.close"),
-              });
+              inUse();
               return;
             }
             reportError("boss.delete", error);

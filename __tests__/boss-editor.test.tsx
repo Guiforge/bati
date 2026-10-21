@@ -51,6 +51,7 @@ jest.mock("@/db/heroAdventures", () => ({
 }));
 jest.mock("@/db/heroBosses", () => ({
   HeroBossInUseError: class extends Error {},
+  adventuresUsingBoss: jest.fn().mockResolvedValue(0),
   createHeroBoss: jest.fn().mockResolvedValue(1),
   updateHeroBoss: jest.fn().mockResolvedValue(undefined),
   deleteHeroBoss: jest.fn().mockResolvedValue(undefined),
@@ -229,6 +230,18 @@ describe("an existing boss", () => {
         }),
       ),
     );
+  });
+
+  test("one an adventure ends on says so before asking, and nothing is deleted", async () => {
+    mockParams.id = "4";
+    bosses().getHeroBoss?.mockResolvedValue(stored);
+    bosses().adventuresUsingBoss?.mockResolvedValueOnce(1);
+    const editor = await mount();
+    await fireEvent.press(editor.getByTestId("boss-delete"));
+    expect(await editor.findByText("This boss is still in use")).toBeTruthy();
+    expect(editor.queryByText("Delete")).toBeNull();
+    expect(bosses().adventuresUsingBoss).toHaveBeenCalledWith(stored.uuid);
+    expect(bosses().deleteHeroBoss).not.toHaveBeenCalled();
   });
 
   test("delete asks first, then deletes; one still in use says so and stays", async () => {

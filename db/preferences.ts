@@ -311,11 +311,6 @@ export const preferences = {
   },
 
   /**
-   * Forgets a legacy picker path once `customAvatar` exists, which the getter already prefers. A
-   * restore or a merge can bring `customAvatar` in while this phone still holds its unported path
-   * (device-local), and then the port never runs to delete it.
-   */
-  /**
    * The legacy picker path worth porting: a device-local `file://` with no `customAvatar` row.
    * A restored `customAvatar` never gets here, whatever it holds, so `File` and ImageManipulator
    * are never pointed by a backup.
@@ -326,6 +321,11 @@ export const preferences = {
     return legacy?.startsWith("file://") ? legacy : null;
   },
 
+  /**
+   * Forgets a legacy picker path once `customAvatar` exists, which the getter already prefers. A
+   * restore or a merge can bring `customAvatar` in while this phone still holds its unported path
+   * (device-local), and then the port never runs to delete it.
+   */
   async dropSupersededLegacyAvatar(): Promise<void> {
     await db
       .delete(userPreferences)

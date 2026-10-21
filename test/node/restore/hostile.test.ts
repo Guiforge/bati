@@ -184,6 +184,13 @@ describe("a backup from an older migration", () => {
     return file;
   }
 
+  test("a path outside the database directory is refused, not reopened by its basename", async () => {
+    const elsewhere = path.join(dir, IMPORT_NAME);
+    await expect(forward(elsewhere)).rejects.toThrow(
+      "bringForward: staged file outside the database directory",
+    );
+  });
+
   test("a backup that claims an older migration it cannot reach is refused before the swap", async () => {
     const file = stageCurrent(
       "DELETE FROM __drizzle_migrations WHERE created_at = (SELECT max(created_at) FROM __drizzle_migrations)",

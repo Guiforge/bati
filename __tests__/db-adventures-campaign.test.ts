@@ -219,8 +219,18 @@ describe("db/adventures campaign", () => {
         }
       ).status;
 
+    const runStatusOf = (id: number) =>
+      (
+        t.sqlite.prepare("SELECT status FROM adventure_runs WHERE id = ?").get(id) as {
+          status: string;
+        }
+      ).status;
+    const bossHp = () =>
+      t.sqlite.prepare("SELECT id, currentHp FROM boss_fights ORDER BY id").all();
+
     test("a session of another quest does not complete the step it names", async () => {
-      const { first, second } = await freshRun();
+      const { run, first, second } = await freshRun();
+      const hpBefore = bossHp();
       const result = await adv().completeAdventureRunStep({
         runStepId: second.id,
         completedSessionId: session(first.questId),
@@ -229,10 +239,13 @@ describe("db/adventures campaign", () => {
       expect(result).toMatchObject({ isFinished: false, nextRunStepId: null, nextQuestId: null });
       expect(statusOf(second.id)).toBe("locked");
       expect(statusOf(first.id)).toBe("active");
+      expect(runStatusOf(run.run.id)).toBe("active");
+      expect(bossHp()).toEqual(hpBefore);
     });
 
     test("a step that is not yet open cannot be completed", async () => {
-      const { first, second } = await freshRun();
+      const { run, first, second } = await freshRun();
+      const hpBefore = bossHp();
       const result = await adv().completeAdventureRunStep({
         runStepId: second.id,
         completedSessionId: session(first.questId),
@@ -241,6 +254,8 @@ describe("db/adventures campaign", () => {
       expect(result).toMatchObject({ isFinished: false, nextRunStepId: null, nextQuestId: null });
       expect(statusOf(second.id)).toBe("locked");
       expect(statusOf(first.id)).toBe("active");
+      expect(runStatusOf(run.run.id)).toBe("active");
+      expect(bossHp()).toEqual(hpBefore);
     });
 
     test("the first step of a new run completes", async () => {

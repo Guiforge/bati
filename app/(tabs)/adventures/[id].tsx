@@ -19,7 +19,7 @@ import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
 import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import { ChevronLeft, Pencil, Sparkles } from "@/components/icons";
-import { getAdventureAsset, getQuestAsset } from "@/constants/assetMap";
+import { getAdventureAsset, getStepArt } from "@/constants/assetMap";
 import { DIFFICULTY_TEXT_TOKENS } from "@/constants/rawColors";
 import type {
   ActiveAdventureRun,
@@ -201,7 +201,7 @@ const AdventureStepRow = memo(function AdventureStepRow({
 
   const narrative = localizedText(step, "narrative", langKey);
 
-  const stepImage = resolveImage(step.imagePath, getQuestAsset);
+  const stepImage = getStepArt(step.imagePath, step.quest.imagePath);
   const color = STATUS_COLOR[status];
 
   return (

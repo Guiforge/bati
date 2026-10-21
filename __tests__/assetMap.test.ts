@@ -11,6 +11,7 @@ import {
   getExerciseThumb,
   getQuestAsset,
   getQuestThumb,
+  getStepArt,
   getVillagerAsset,
   QUEST_ASSETS,
 } from "@/constants/assetMap";
@@ -69,6 +70,19 @@ describe("assetMap", () => {
     expect(getAdventureAsset("assets/images/adventures/scout_trial.jpg")).toBe(
       ADVENTURE_ASSETS.scout_trial,
     );
+  });
+
+  test("a step without art of its own shows its quest's cover, and none when the quest has none", () => {
+    const photo = "data:image/jpeg;base64,/9j/4AAQSkZJRg==";
+    // Its own art wins.
+    expect(getStepArt("assets/images/adventures/scout_trial.jpg", photo)).toBe(
+      getQuestAsset("assets/images/adventures/scout_trial.jpg"),
+    );
+    // A hero's quest with a photo cover: the step shows it.
+    expect(getStepArt(null, photo)).toEqual({ uri: photo });
+    // A quest with no cover of its own is nothing to draw, not a grey square.
+    expect(getStepArt(null, "assets/placeholder.jpg")).toBeNull();
+    expect(getStepArt(null, null)).toBeNull();
   });
 
   test("an adventure cover can be the hero's own photo, as a quest's can", () => {

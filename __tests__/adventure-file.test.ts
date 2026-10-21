@@ -749,6 +749,19 @@ describe("previewing an adventure file", () => {
     });
   });
 
+  test("the adventure's own photo counts among the photos that arrive, as the sender's dialog counts it", async () => {
+    const file = fileOf(
+      adventureLiteral(
+        nextUuid(),
+        [{ official: seedQuests()[0]?.enTitle }, { official: seedQuests()[1]?.enTitle }],
+        {
+          photo: photo(2_000),
+        },
+      ),
+    );
+    expect((await load().adv.previewAdventure(file, "en")).arrives.photos).toBe(1);
+  });
+
   test("an exercise of the file that matches only a seed name is no clash: seed rows are not the hero's", async () => {
     const file = fileOf(
       adventureLiteral(nextUuid(), [

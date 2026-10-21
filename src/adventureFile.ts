@@ -533,8 +533,10 @@ export async function previewAdventure(
   const bringing = file.steps.flatMap(({ quest }, i) =>
     statuses[i]?.status === "brings" && "own" in quest ? [quest.own] : [],
   );
+  const arrives = arrivals(bringing, catalogue);
   return {
-    arrives: arrivals(bringing, catalogue),
+    // The adventure's own photo arrives too: the sender's dialog counted it.
+    arrives: { ...arrives, photos: arrives.photos + (file.adventure.photo ? 1 : 0) },
     steps: file.steps.map(({ quest }, i) => ({
       status: statuses[i]?.status ?? "missing",
       questId: statuses[i]?.quest?.id ?? null,

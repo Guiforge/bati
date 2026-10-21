@@ -52,6 +52,7 @@ export function AdventureImport({
   // A run under way forces the copy, so the chips are not offered and the button says "add".
   const updating = existing !== null && !asCopy && !running;
   const cover = coverKey(adventure);
+  const end = shownEnd(adventure.end, preview);
 
   // No try/finally: the React Compiler does not compile a function that has one.
   const onImport = async () => {
@@ -101,14 +102,14 @@ export function AdventureImport({
           <Text color="$textSecondary" fontSize={14}>
             {preview.monster
               ? t("adventures.editor_summary_boss", {
-                  name: bossLabel(adventure.end, monsterName(preview.monster, language)),
+                  name: bossLabel(end, monsterName(preview.monster, language)),
                 })
               : t("adventures.editor_end_route")}
           </Text>
-          <BossPortrait monster={preview.monster} end={adventure.end} />
+          <BossPortrait monster={preview.monster} end={end} />
           {/* What the boss will say, read before the hero walks in: a line from a friend is no
               surprise in the middle of a set. A boss this version lacks arrives as a route, with none. */}
-          <BossLines end={adventure.end} known={preview.monster !== null} />
+          <BossLines end={end} known={preview.monster !== null} />
           {preview.monsterUnknown ? (
             <Text testID="adventure-import-boss-unknown" color="$textSecondary" fontSize={13}>
               {t("adventures.import_boss_unknown")}
@@ -224,6 +225,21 @@ function BossLines({ end, known }: { end: AdventureFile["adventure"]["end"]; kno
       ))}
     </YStack>
   );
+}
+
+/** A boss already here is kept as it is by the import: show that one, not the file's words and pictures. */
+function shownEnd(
+  end: AdventureFile["adventure"]["end"],
+  { boss, monster }: AdventurePreview,
+): AdventureFile["adventure"]["end"] {
+  if (!boss) return end;
+  return {
+    kind: "boss",
+    monster: monster?.key ?? "",
+    name: boss.name,
+    lines: boss.lines,
+    art: boss.art,
+  };
 }
 
 /** The name the file's sender gave their boss, else the painted one's. */

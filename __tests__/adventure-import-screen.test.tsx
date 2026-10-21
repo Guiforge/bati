@@ -91,6 +91,7 @@ const preview = (over: Partial<AdventurePreview> = {}): AdventurePreview => ({
   running: false,
   monster: null,
   monsterUnknown: false,
+  boss: null,
   ...over,
 });
 

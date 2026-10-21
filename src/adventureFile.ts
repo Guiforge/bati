@@ -607,6 +607,11 @@ export type AdventurePreview = {
   monster: Monster | null;
   /** A boss this version lacks: it arrives as a route. */
   monsterUnknown: boolean;
+  /**
+   * The file's boss when this phone already holds it (by uuid): the import keeps this copy as it
+   * is, so the preview shows it, not the file's words and pictures. `monster` is then its monster.
+   */
+  boss: HeroBoss | null;
 };
 
 type StepStatus = { status: StepPreview["status"]; quest: QuestTemplate | null };
@@ -674,14 +679,15 @@ export async function previewAdventure(
   const statuses = stepStatuses(file, catalogue, templates);
   const here = await findHeroAdventureByUuid(file.adventure.uuid);
   const e = file.adventure.end;
-  const monster = e.kind === "boss" ? (monsters.find((m) => m.key === e.monster) ?? null) : null;
+  const sent = e.kind === "boss" ? (monsters.find((m) => m.key === e.monster) ?? null) : null;
   const bringing = file.steps.flatMap(({ quest }, i) =>
     statuses[i]?.status === "brings" && "own" in quest ? [quest.own] : [],
   );
   const arrives = arrivals(bringing, catalogue);
   // A boss this phone already holds is kept as it is, so its pictures are no arrival.
-  const carried = monster ? carriedBoss(file) : null;
-  const bossHere = carried ? (await getHeroBossByUuid(carried.uuid)) !== null : false;
+  const carried = sent ? carriedBoss(file) : null;
+  const boss = carried ? await getHeroBossByUuid(carried.uuid) : null;
+  const monster = (boss && monsters.find((m) => m.key === boss.monsterKey)) || sent;
   return {
     // The adventure's own photo arrives too (the sender's dialog counted it), unless the adventure
     // is already here: then, like a quest already here, it is not an arrival.
@@ -690,7 +696,7 @@ export async function previewAdventure(
       photos:
         arrives.photos +
         (here ? 0 : file.adventure.photo ? 1 : 0) +
-        (carried && !bossHere ? Object.keys(carried.draft.art).length : 0),
+        (carried && !boss ? Object.keys(carried.draft.art).length : 0),
     },
     steps: file.steps.map(({ quest }, i) => ({
       status: statuses[i]?.status ?? "missing",
@@ -705,6 +711,7 @@ export async function previewAdventure(
     running: here ? await hasActiveRun(here.id) : false,
     monster,
     monsterUnknown: e.kind === "boss" && monster === null,
+    boss,
   };
 }
 

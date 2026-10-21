@@ -1753,6 +1753,32 @@ describe("a hero boss's pictures in the file", () => {
     expect(again.arrives.photos).toBe(withBoss - 2);
   });
 
+  test("a boss already here is the one the preview shows, as it is the one the import keeps", async () => {
+    const { id, bossUuid } = await adventureWithBoss({ fresh: photo(3_000) });
+    const file = parseJson((await written(id)).json);
+    const end = file.adventure.end;
+    assert(end.kind === "boss");
+    const theirs = {
+      ...file,
+      adventure: {
+        ...file.adventure,
+        uuid: nextUuid(),
+        end: {
+          ...end,
+          name: "Theirs",
+          lines: { intro: [], idle: ["Not mine."], crit: [], enrage: [], defeat: [] },
+          art: {},
+        },
+      },
+    };
+    const preview = await load().adv.previewAdventure(theirs, "en");
+    expect(preview.boss?.uuid).toBe(bossUuid);
+    expect(preview.boss?.name).toBe("Gorgo");
+    expect(preview.boss?.art.fresh).toBeDefined();
+    await load().adv.importAdventure(theirs, { asCopy: false });
+    expect((await heroBosses().getHeroBossByUuid(bossUuid))?.name).toBe("Gorgo");
+  });
+
   test("an older file without the fields imports with the painted monster", async () => {
     const monster = (await load().hero.listMonsters())[0];
     assert(monster);

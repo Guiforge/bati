@@ -8,6 +8,7 @@ import { Input, type TamaguiElement, Text, XStack, YStack } from "tamagui";
 import { monsterName } from "@/components/adventures/monsterName";
 import { BossLines } from "@/components/bosses/BossLines";
 import { BossPictures } from "@/components/bosses/BossPictures";
+import { Fold } from "@/components/bosses/Fold";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
@@ -344,9 +345,6 @@ export default function BossEditor() {
                   <Text fontWeight="700" fontSize={18} color="$text">
                     {t("boss_editor.monster")}
                   </Text>
-                  <Text fontSize={13} color="$textSecondary">
-                    {t("boss_editor.monster_hint")}
-                  </Text>
                   <XStack flexWrap="wrap" gap="$2">
                     {monsters
                       .filter((m) => offered.has(m.key) || m.key === draft.monster)
@@ -403,6 +401,9 @@ export default function BossEditor() {
                   }
                   language={language}
                 />
+                <Text testID="boss-weakness-easier" fontSize={13} color="$textSecondary">
+                  {t("boss_editor.weakness_easier")}
+                </Text>
                 <MusclePick
                   testID="boss-resistance"
                   label={t("boss_editor.resistance")}
@@ -416,10 +417,9 @@ export default function BossEditor() {
                   language={language}
                 />
 
-                <Text fontWeight="700" fontSize={18} color="$text">
-                  {t("boss_editor.lines")}
-                </Text>
-                <BossLines lines={draft.lines} onChange={(lines) => patch({ lines })} />
+                <Fold testID="boss-voice-toggle" title={t("boss_editor.voice")}>
+                  <BossLines lines={draft.lines} onChange={(lines) => patch({ lines })} />
+                </Fold>
 
                 {bossId != null ? (
                   <Text

@@ -122,6 +122,7 @@ describe("a new boss", () => {
 
   test("each picture is announced by the form it stands for", async () => {
     const editor = await mount();
+    await fireEvent.press(editor.getByTestId("editor-boss-art-others-toggle"));
     for (const [form, name] of [
       ["fresh", "Normal"],
       ["wounded", "Wounded"],
@@ -149,10 +150,29 @@ describe("a new boss", () => {
     expect(editor.getByTestId("boss-monster-shadow_serpent")).toBeTruthy();
     expect(editor.getByTestId("boss-monster-iron_golem")).toBeTruthy();
     expect(editor.queryByTestId("boss-monster-stone_golem")).toBeNull();
-    for (const form of ["fresh", "wounded", "defeated", "legendary"]) {
+    expect(editor.getByTestId("editor-boss-art-fresh")).toBeTruthy();
+    expect(editor.getByTestId("editor-boss-art-consent")).toBeTruthy();
+  });
+
+  test("the normal picture is open, and the other three forms and the voice are folded", async () => {
+    const editor = await mount();
+    expect(editor.getByTestId("editor-boss-art-fresh")).toBeTruthy();
+    for (const form of ["wounded", "defeated", "legendary"]) {
+      expect(editor.queryByTestId(`editor-boss-art-${form}`)).toBeNull();
+    }
+    expect(editor.queryByTestId("editor-boss-lines-intro")).toBeNull();
+    await fireEvent.press(editor.getByTestId("editor-boss-art-others-toggle"));
+    await fireEvent.press(editor.getByTestId("boss-voice-toggle"));
+    for (const form of ["wounded", "defeated", "legendary"]) {
       expect(editor.getByTestId(`editor-boss-art-${form}`)).toBeTruthy();
     }
-    expect(editor.getByTestId("editor-boss-art-consent")).toBeTruthy();
+    expect(editor.getByTestId("editor-boss-lines-intro")).toBeTruthy();
+  });
+
+  test("says once how the pictures fall back, and that a weakness makes the boss easier", async () => {
+    const editor = await mount();
+    expect(editor.getAllByTestId("editor-boss-art-hint")).toHaveLength(1);
+    expect(editor.getByTestId("boss-weakness-easier")).toBeTruthy();
   });
 
   test("the painted tile of a form is read out by the monster's name, not its key", async () => {
@@ -171,6 +191,8 @@ describe("a new boss", () => {
     await fireEvent.press(editor.getByTestId("boss-monster-iron_golem"));
     await fireEvent.press(editor.getByTestId("boss-weakness-chest"));
     await fireEvent.press(editor.getByTestId("boss-resistance-legs"));
+    await fireEvent.press(editor.getByTestId("boss-voice-toggle"));
+    await fireEvent.press(editor.getByTestId("editor-boss-art-others-toggle"));
     await fireEvent.changeText(editor.getByTestId("editor-boss-lines-intro"), "Who dares?");
     await fireEvent.changeText(editor.getByTestId("editor-boss-lines-idle"), "a\nb\nc\nd");
     await pickPhoto(editor, "fresh");
@@ -206,6 +228,7 @@ describe("a new boss", () => {
   test("choosing the painted monster again drops the photo of that form, and a muscle can be cleared", async () => {
     const editor = await mount();
     await fireEvent.changeText(editor.getByTestId("boss-name"), "Gorgo");
+    await fireEvent.press(editor.getByTestId("editor-boss-art-others-toggle"));
     await pickPhoto(editor, "wounded");
     const field = editor.getByTestId("editor-boss-art-wounded");
     await fireEvent.press(within(field).getByTestId("image-choice-preview"));

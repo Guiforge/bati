@@ -51,14 +51,15 @@ export function LightWeekCard({ onAnswered }: { onAnswered?: () => void }) {
   return (
     <Card testID="home-light-week" mx="$4" mt="$3" py="$2">
       <YStack gap="$2">
-        <AppText fontSize="$3" color="$primaryText">
+        {/* $text, not the ember: the ember doubles as the alert amber, and a whole orange sentence reads as
+            a warning, not an offer. The ember stays on the button. */}
+        <AppText fontSize="$3" color="$text">
           {t(reason === "under" ? "home.light_week_under" : "home.light_week_busy")}
         </AppText>
         <XStack gap="$2" flexWrap="wrap">
           <AppButton
             testID="home-light-week-accept"
             fullWidth={false}
-            minH={40}
             onPress={() => answer(acceptLightWeek)}
           >
             {t("home.light_week_accept")}
@@ -67,7 +68,6 @@ export function LightWeekCard({ onAnswered }: { onAnswered?: () => void }) {
             testID="home-light-week-refuse"
             variant="outline"
             fullWidth={false}
-            minH={40}
             onPress={() => answer(refuseLightWeek)}
           >
             {t("home.light_week_refuse")}

@@ -465,8 +465,57 @@ export type PreviewSlot = {
   target: Target;
 };
 
+/** What a file's quests would add to this phone, and what would sit beside what the hero already has. */
+export type Arrivals = {
+  quests: number;
+  /** Hero movements not on this phone by uuid, each counted once however many quests name it. */
+  movements: number;
+  /** Pictures that come with them: quest covers and those movements' photos. */
+  photos: number;
+  /** Names of arriving movements the hero already has under another uuid: both will stay. */
+  clashes: string[];
+};
+
+/**
+ * Read once for the previews. A name is never a key (a hero may name two movements alike, 0036), so a
+ * same-name movement with another uuid arrives as a second row: this says so before it does.
+ */
+export function arrivals(bodies: readonly QuestBody[], catalogue: readonly Exercise[]): Arrivals {
+  const names = new Set(
+    catalogue
+      .filter((e) => isUserExercise(e) && !e.retiredAt)
+      .map((e) => e.enName.trim().toLowerCase()),
+  );
+  const uuids = new Set(catalogue.filter(isUserExercise).map((e) => e.uuid));
+  // The first body naming a quest or a movement is the one that arrives: the writer does the same.
+  const quests = bodies.filter(
+    (b, i) => bodies.findIndex((o) => o.quest.uuid === b.quest.uuid) === i,
+  );
+  const fresh = new Map<string, OwnMovement>();
+  for (const { slots } of quests) {
+    for (const { movement } of slots) {
+      if ("own" in movement && !uuids.has(movement.own.uuid) && !fresh.has(movement.own.uuid)) {
+        fresh.set(movement.own.uuid, movement.own);
+      }
+    }
+  }
+  const arriving = [...fresh.values()];
+  return {
+    quests: quests.length,
+    movements: arriving.length,
+    photos:
+      quests.filter((b) => b.quest.image?.startsWith("data:")).length +
+      arriving.filter((m) => m.image.startsWith("data:")).length,
+    clashes: [
+      ...new Set(arriving.filter((m) => names.has(m.name.trim().toLowerCase())).map((m) => m.name)),
+    ],
+  };
+}
+
 export type QuestPreview = {
   slots: PreviewSlot[];
+  /** Same-name movements of the file next to the hero's own, by name. */
+  clashes: string[];
   /** The hero's own quest this file would update, when it carries that quest's uuid. */
   existing: QuestTemplate | null;
 };
@@ -496,6 +545,7 @@ export async function previewQuest(file: QuestFile): Promise<QuestPreview> {
       const here = catalogue.find((e) => isUserExercise(e) && e.uuid === own.uuid) ?? null;
       return { exercise: here, available: true, target: target(here?.style ?? own.style) };
     }),
+    clashes: arrivals([file], catalogue).clashes,
     existing: templates.find((q) => isUserQuest(q) && q.uuid === file.quest.uuid) ?? null,
   };
 }

@@ -717,6 +717,48 @@ describe("previewing an adventure file", () => {
     expect(p.existing).toBeNull();
   });
 
+  test("says what arrives, and names an exercise that clashes with the hero's own by name", async () => {
+    const mine = nextUuid();
+    await heroQuest({ own: [{ uuid: mine, name: "Weighted push-up" }] });
+    const newcomer = nextUuid();
+    const twin = nextUuid();
+    const file = fileOf(
+      adventureLiteral(nextUuid(), [
+        {
+          own: questBody(nextUuid(), {
+            image: photo(2_000),
+            // Here by uuid: not an arrival. Same name, other uuid: arrives, and clashes.
+            own: [
+              { uuid: mine, name: "Weighted push-up" },
+              { uuid: twin, name: " weighted PUSH-up ", image: photo(2_000) },
+              { uuid: newcomer, name: "Ring flip" },
+            ],
+          }),
+        },
+        { official: seedQuests()[0]?.enTitle },
+      ]),
+    );
+
+    const { arrives } = await load().adv.previewAdventure(file, "en");
+
+    expect(arrives).toEqual({
+      quests: 1,
+      movements: 2,
+      photos: 2,
+      clashes: [" weighted PUSH-up "].map((n) => n.trim()),
+    });
+  });
+
+  test("an exercise of the file that matches only a seed name is no clash: seed rows are not the hero's", async () => {
+    const file = fileOf(
+      adventureLiteral(nextUuid(), [
+        { own: questBody(nextUuid(), { own: [{ uuid: nextUuid(), name: seedMovement() }] }) },
+        { official: seedQuests()[0]?.enTitle },
+      ]),
+    );
+    expect((await load().adv.previewAdventure(file, "en")).arrives.clashes).toEqual([]);
+  });
+
   test("a seed title never matches a hero quest of the same name", async () => {
     const [a] = seedQuests();
     assert(a);

@@ -10,6 +10,7 @@ import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { useToast } from "@/components/common/Toast";
 import { Download, Info } from "@/components/icons";
+import { ImportArrives, ImportClashes } from "@/components/quests/ImportNotes";
 import { ADVENTURE_ASSETS, getAdventureAsset } from "@/constants/assetMap";
 import { BOSS_LINE_MOMENTS, type HeroBossLines } from "@/db/bossVoice";
 import {
@@ -144,6 +145,9 @@ export function AdventureImport({
             )}
           </Card>
         ) : null}
+
+        <ImportArrives arrives={preview.arrives} />
+        <ImportClashes names={preview.arrives.clashes} />
 
         <YStack gap="$2">
           <Text fontWeight="700" fontSize={14} color="$textSecondary">

@@ -81,6 +81,7 @@ const raw = {
 };
 
 const preview = (over: Partial<AdventurePreview> = {}): AdventurePreview => ({
+  arrives: { quests: 1, movements: 0, photos: 0, clashes: [] },
   steps: [
     { status: "here", questId: 1, title: "Iron Dawn" },
     { status: "brings", questId: null, title: "Moon Walk" },
@@ -138,6 +139,31 @@ test("an adventure shows its text and each step with where it comes from", async
   expect(screen.getByText("Unknown to your Bati, left out")).toBeTruthy();
   expect(screen.getByText("Add to my adventures")).toBeTruthy();
   expect(screen.queryByTestId("adventure-import-existing")).toBeNull();
+});
+
+test("says what arrives, in counts, and leaves out what is zero", async () => {
+  await mountReady({ arrives: { quests: 2, movements: 5, photos: 0, clashes: [] } });
+  expect(screen.getByTestId("import-arrives")).toBeTruthy();
+  expect(screen.getByText("What arrives")).toBeTruthy();
+  expect(screen.getByText("Quests")).toBeTruthy();
+  expect(screen.getByText("Exercises")).toBeTruthy();
+  expect(screen.getByText("5")).toBeTruthy();
+  expect(screen.queryByText("Photos")).toBeNull();
+  expect(screen.queryByTestId("import-clashes")).toBeNull();
+});
+
+test("nothing arrives when every quest is already here: no card", async () => {
+  await mountReady({ arrives: { quests: 0, movements: 0, photos: 0, clashes: [] } });
+  expect(screen.queryByTestId("import-arrives")).toBeNull();
+});
+
+test("a same-name exercise is named, and both stay", async () => {
+  await mountReady({
+    arrives: { quests: 1, movements: 1, photos: 1, clashes: ["Weighted push-up"] },
+  });
+  expect(
+    screen.getByText("You already have an exercise named Weighted push-up: both will stay."),
+  ).toBeTruthy();
 });
 
 test("a boss this version lacks says it arrives as a route", async () => {
@@ -413,6 +439,7 @@ test("a quest file opened from the adventure editor lands on the quest", async (
   });
   mockPreviewQuest.mockResolvedValue({
     slots: [{ exercise: null, available: true, target: { type: "reps", value: 8 } }],
+    clashes: [],
     existing: null,
   });
   mockImportQuest.mockResolvedValue({ id: 42, updated: false });

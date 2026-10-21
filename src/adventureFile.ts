@@ -35,6 +35,8 @@ import {
 import { uuidv7 } from "@/db/uuid";
 import { localizedTitle, seededLanguage } from "@/src/i18n/localized";
 import {
+  type Arrivals,
+  arrivals,
   fileStem,
   isRecord,
   MAX_FILE_BYTES,
@@ -478,6 +480,8 @@ export type StepPreview = {
 
 export type AdventurePreview = {
   steps: StepPreview[];
+  /** What the steps that arrive add to this phone. */
+  arrives: Arrivals;
   /** The hero's adventure with this uuid, retired included. */
   existing: { id: number; title: string } | null;
   /** A run of `existing` is under way: it arrives as a copy, forced. */
@@ -526,7 +530,11 @@ export async function previewAdventure(
   const here = await findHeroAdventureByUuid(file.adventure.uuid);
   const e = file.adventure.end;
   const monster = e.kind === "boss" ? (monsters.find((m) => m.key === e.monster) ?? null) : null;
+  const bringing = file.steps.flatMap(({ quest }, i) =>
+    statuses[i]?.status === "brings" && "own" in quest ? [quest.own] : [],
+  );
   return {
+    arrives: arrivals(bringing, catalogue),
     steps: file.steps.map(({ quest }, i) => ({
       status: statuses[i]?.status ?? "missing",
       questId: statuses[i]?.quest?.id ?? null,

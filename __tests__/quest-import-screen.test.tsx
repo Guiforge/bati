@@ -101,7 +101,8 @@ const file: QuestFile = parseQuestFile(
   }),
 );
 
-const preview = (existing: QuestTemplate | null = null): QuestPreview => ({
+const preview = (existing: QuestTemplate | null = null, clashes: string[] = []): QuestPreview => ({
+  clashes,
   slots: [
     { exercise: null, available: true, target: { type: "reps" as const, value: 10 } },
     { exercise: null, available: false, target: { type: "reps" as const, value: 5 } },
@@ -129,8 +130,8 @@ async function mount() {
   await render(wrap(<QuestImportScreen />));
 }
 
-async function mountReady(existing: QuestTemplate | null = null) {
-  mockPreview.mockResolvedValue(preview(existing));
+async function mountReady(existing: QuestTemplate | null = null, clashes: string[] = []) {
+  mockPreview.mockResolvedValue(preview(existing, clashes));
   await mount();
   await screen.findByTestId("quest-import-title");
 }
@@ -167,6 +168,19 @@ test("the title is the hero's language, and every movement this phone has comes 
   expect(slot(0).props.accessibilityState).toEqual({ checked: true, disabled: false });
   expect(slot(2).props.accessibilityState).toEqual({ checked: true, disabled: false });
   expect(screen.getByText("Bear crawl")).toBeTruthy();
+});
+
+test("an exercise named like one of the hero's says both will stay; none, no line", async () => {
+  await mountReady(null, ["Porch dip"]);
+  expect(screen.getByTestId("import-clashes")).toBeTruthy();
+  expect(
+    screen.getByText("You already have an exercise named Porch dip: both will stay."),
+  ).toBeTruthy();
+});
+
+test("with no same-name exercise there is no such line", async () => {
+  await mountReady();
+  expect(screen.queryByTestId("import-clashes")).toBeNull();
 });
 
 // A seed movement this version lacks refused the whole quest at import time.

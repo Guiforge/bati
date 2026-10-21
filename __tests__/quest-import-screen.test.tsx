@@ -10,13 +10,13 @@ import { rawColors } from "@/constants/rawColors";
 import type { QuestTemplate } from "@/db/quests";
 import { formatTarget } from "@/db/targets";
 import { holdIncomingFile, incomingFile } from "@/src/incomingFile";
-import { parseQuestFile, type QuestFile, QuestFileError, type QuestPreview } from "@/src/questFile";
+import { parseQuestData, type QuestFile, QuestFileError, type QuestPreview } from "@/src/questFile";
 import { reportError } from "@/src/reportError";
 import config from "@/tamagui.config";
 
 /**
  * The preview of a quest someone sent. The file is parsed and edited by the real code
- * (`parseQuestFile`, `editQuestFile`); only the reads and the write are stand-ins, so every test
+ * (`parseQuestData`, `editQuestFile`); only the reads and the write are stand-ins, so every test
  * asserts the file `importQuest` actually received rather than the screen's own idea of it.
  */
 const mockRead = jest.fn();
@@ -63,43 +63,41 @@ jest.mock("@/components/common/Toast", () => ({
 const UUID = "01890a5d-ac96-774b-bcce-b302099a8057";
 
 /** Three movements: a seed one this phone has, a seed one it lacks, and the sender's own. */
-const file: QuestFile = parseQuestFile(
-  JSON.stringify({
-    kind: "bati-quest",
-    version: 1,
-    quest: {
-      uuid: UUID,
-      title: { en: "Iron Dawn", fr: "Aube de fer", de: "Eisenmorgen", es: "Alba de hierro" },
-      description: { en: "Before the sun." },
-      rounds: 3,
-      restSeconds: 30,
-      roundRestSeconds: null,
-      image: null,
-    },
-    slots: [
-      { movement: { official: "Push-up" }, target: { type: "reps", min: 10, max: 12 } },
-      { movement: { official: "Moon Walk" }, target: { type: "time", min: 30, max: 30 } },
-      {
-        movement: {
-          own: {
-            uuid: "01890a5d-ac96-774b-bcce-b302099a8058",
-            name: "Bear crawl",
-            description: "",
-            image: "assets/placeholder.jpg",
-            muscles: [],
-            style: "calisthenics",
-            difficulty: "easy",
-            equipment: "none",
-            pattern: null,
-            measure: null,
-            secondsPerRep: 3,
-          },
+const file: QuestFile = parseQuestData({
+  kind: "bati-quest",
+  version: 1,
+  quest: {
+    uuid: UUID,
+    title: { en: "Iron Dawn", fr: "Aube de fer", de: "Eisenmorgen", es: "Alba de hierro" },
+    description: { en: "Before the sun." },
+    rounds: 3,
+    restSeconds: 30,
+    roundRestSeconds: null,
+    image: null,
+  },
+  slots: [
+    { movement: { official: "Push-up" }, target: { type: "reps", min: 10, max: 12 } },
+    { movement: { official: "Moon Walk" }, target: { type: "time", min: 30, max: 30 } },
+    {
+      movement: {
+        own: {
+          uuid: "01890a5d-ac96-774b-bcce-b302099a8058",
+          name: "Bear crawl",
+          description: "",
+          image: "assets/placeholder.jpg",
+          muscles: [],
+          style: "calisthenics",
+          difficulty: "easy",
+          equipment: "none",
+          pattern: null,
+          measure: null,
+          secondsPerRep: 3,
         },
-        target: { type: "reps", min: 8, max: 8 },
       },
-    ],
-  }),
-);
+      target: { type: "reps", min: 8, max: 8 },
+    },
+  ],
+});
 
 const preview = (existing: QuestTemplate | null = null, clashes: string[] = []): QuestPreview => ({
   clashes,

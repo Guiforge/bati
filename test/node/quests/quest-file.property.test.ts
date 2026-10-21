@@ -16,7 +16,7 @@ beforeAll(async () => {
 });
 afterAll(() => device.close());
 // The device's own copy of the module: its QuestFileError is the one its parser throws.
-const parseQuestFile = (raw: string) => device.app.quest.parseQuestFile(raw);
+const parseQuestFile = (raw: string) => device.app.quest.parseQuestData(JSON.parse(raw));
 
 const SEED = {
   kind: "bati-quest",

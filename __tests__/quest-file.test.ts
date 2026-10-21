@@ -143,7 +143,7 @@ function received(over: Partial<QuestFile["quest"]> = {}): QuestFile {
 }
 
 describe("reading a quest file", () => {
-  const parse = (raw: string) => load().file.parseQuestFile(raw);
+  const parse = (raw: string) => load().file.parseQuestData(JSON.parse(raw));
   const reason = (value: unknown) => {
     try {
       parse(JSON.stringify(value));
@@ -192,13 +192,6 @@ describe("reading a quest file", () => {
   });
 
   test("says why a file is refused", () => {
-    try {
-      parse("{not json");
-      throw new Error("parsed");
-    } catch (error) {
-      assert(error instanceof load().file.QuestFileError);
-      expect(error.reason).toBe("unreadable");
-    }
     expect(reason({ ...received(), kind: "something-else" })).toBe("not_a_quest");
     expect(reason({ ...received(), version: 2 })).toBe("newer");
     expect(reason({ ...received(), slots: [] })).toBe("not_a_quest");
@@ -406,7 +399,7 @@ describe("sizing a picture from its header", () => {
 });
 
 describe("cleaning the text of a quest file", () => {
-  const parse = (raw: string) => load().file.parseQuestFile(raw);
+  const parse = (raw: string) => load().file.parseQuestData(JSON.parse(raw));
   const withTitle = (title: Record<string, unknown>) =>
     parse(JSON.stringify(received({ title: title as never }))).quest.title;
   const reason = (value: unknown) => {
@@ -911,7 +904,7 @@ describe("importing a quest file", () => {
     own.own.uuid = "0192a000-0000-7000-8000-00000000000a";
     own.own.secondsPerRep = 1000;
     // Through the parser, as a file from disk would come.
-    const { id } = await file.importQuest(file.parseQuestFile(JSON.stringify(huge)));
+    const { id } = await file.importQuest(file.parseQuestData(huge));
 
     expect(
       t.sqlite
@@ -947,7 +940,7 @@ describe("importing a quest file", () => {
     assert("own" in own);
     own.own.secondsPerRep = 1000;
 
-    const parsed = file.parseQuestFile(JSON.stringify(huge));
+    const parsed = file.parseQuestData(huge);
 
     expect(parsed.quest).toMatchObject({ rounds: 10, restSeconds: 0, roundRestSeconds: 300 });
     // A seed movement's style is only known here, so its time target keeps the widest ceiling.

@@ -38,10 +38,11 @@ jest.mock("@/db/exercises", () => ({
 }));
 
 import {
+  parseQuestData,
   pickQuestFile,
   QUEST_FILE_REFUSALS,
   QuestFileError,
-  readQuestFile,
+  readBatiFile,
   shareQuest,
 } from "@/src/questFile";
 
@@ -53,6 +54,9 @@ const opened = (size: number | null, body = "{}") => {
   };
   return { size, text: jest.fn(), open: jest.fn(() => handle), handle };
 };
+
+/** What the import screen does: read the file, then check it. A sync throw becomes a rejection. */
+const read = (uri: string) => Promise.resolve().then(() => parseQuestData(readBatiFile(uri)));
 
 const refusal = async (pending: Promise<unknown>) => {
   try {
@@ -90,7 +94,7 @@ test("the picker hands back the uri it chose, unread", async () => {
 test("a file of excessive size is refused before it is read", async () => {
   const file = opened(9_000_000);
   mockOpen.mockReturnValue(file);
-  expect(await refusal(readQuestFile("content://chat/1"))).toBe("not_a_quest");
+  expect(await refusal(read("content://chat/1"))).toBe("not_a_quest");
   expect(file.text).not.toHaveBeenCalled();
   expect(mockOpen).toHaveBeenCalledWith("content://chat/1");
 });
@@ -100,29 +104,29 @@ test("a file of excessive size is refused before it is read", async () => {
 test("a file of unknown size is read to the limit plus one byte, never whole", async () => {
   const big = opened(null, "x".repeat(8_000_050));
   mockOpen.mockReturnValue(big);
-  expect(await refusal(readQuestFile("content://chat/2"))).toBe("not_a_quest");
+  expect(await refusal(read("content://chat/2"))).toBe("not_a_quest");
   expect(big.handle.readBytes).toHaveBeenCalledWith(8_000_001);
   expect(big.handle.close).toHaveBeenCalled();
   expect(big.text).not.toHaveBeenCalled();
 
   mockOpen.mockReturnValue(opened(null, "{oops"));
   // Read and parsed: refused for what it says, not for its size.
-  expect(await refusal(readQuestFile("content://chat/3"))).toBe("unreadable");
+  expect(await refusal(read("content://chat/3"))).toBe("unreadable");
 });
 
 test("a filesystem path is never read: it could be /dev/zero or Bati's own files", async () => {
   mockOpen.mockReturnValue(opened(0, "{}"));
-  expect(await refusal(readQuestFile("file:///dev/zero"))).toBe("unreadable");
-  expect(await refusal(readQuestFile("/data/user/0/com.guiforge.bati/files/x"))).toBe("unreadable");
+  expect(await refusal(read("file:///dev/zero"))).toBe("unreadable");
+  expect(await refusal(read("/data/user/0/com.guiforge.bati/files/x"))).toBe("unreadable");
   expect(mockOpen).not.toHaveBeenCalled();
 });
 
 test("a file within its size is parsed", async () => {
   mockOpen.mockReturnValue(opened(10, "{oops"));
-  expect(await refusal(readQuestFile("content://downloads/q.json"))).toBe("unreadable");
+  expect(await refusal(read("content://downloads/q.json"))).toBe("unreadable");
 
   mockOpen.mockReturnValue(opened(8_000_000, JSON.stringify({ kind: "bati-quest" })));
-  expect(await refusal(readQuestFile("content://downloads/q.json"))).toBe("not_a_quest");
+  expect(await refusal(read("content://downloads/q.json"))).toBe("not_a_quest");
 });
 
 describe("sharing a quest", () => {

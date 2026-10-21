@@ -476,17 +476,6 @@ export function parseQuestData(data: unknown): QuestFile {
   return { kind: KIND, version: VERSION, ...parseQuestBody(data) };
 }
 
-/** The file's text, checked field by field. */
-export function parseQuestFile(raw: string): QuestFile {
-  let data: unknown;
-  try {
-    data = JSON.parse(raw);
-  } catch {
-    throw new QuestFileError("unreadable");
-  }
-  return parseQuestData(data);
-}
-
 /** One slot of a file, as the preview shows it: the movement it lands on, if this phone has it. */
 export type PreviewSlot = {
   /** The seed movement, or the hero's own copy already here. Null for one the file brings. */
@@ -777,11 +766,6 @@ export function readBatiFile(uri: string): unknown {
   } catch {
     throw new QuestFileError("unreadable");
   }
-}
-
-/** A quest file at `uri`, read and checked. */
-export async function readQuestFile(uri: string): Promise<QuestFile> {
-  return parseQuestData(await readBatiFile(uri));
 }
 
 /**

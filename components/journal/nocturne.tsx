@@ -209,7 +209,6 @@ export function NButton({
       accessibilityRole="button"
       // Always passed: Android keeps a stale `enabled="false"` once the state goes empty.
       aria-disabled={busy}
-      aria-busy={busy}
       minH={minH}
       // The Journal runs at 0.7x density, so its buttons are 40 tall by design and every one of
       // them was 4 dp under the floor. Taken back in hit area rather than in height, and derived

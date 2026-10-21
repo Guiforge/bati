@@ -522,6 +522,18 @@ function BuildingDetail({
           }}
         />
       ) : null}
+
+      {/* The Forge is a place too: the page where what the hero made lives. Built or not, since
+          the page asks nothing of the building. */}
+      {building.code === "forge" ? (
+        <QuestLink
+          label={t("village.forge_enter")}
+          onPress={() => {
+            onClose();
+            router.push("/forge" as never);
+          }}
+        />
+      ) : null}
     </YStack>
   );
 }

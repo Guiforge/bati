@@ -680,10 +680,11 @@ export function getBossKey(id: string | null | undefined): BossAssetKey | null {
 }
 
 /**
- * Get adventure cover asset by ID (with fallback to placeholder)
+ * Get adventure cover asset by ID (with fallback to placeholder). A hero's cover is a bundled
+ * key or a `data:` photo, as a quest's is.
  */
 export function getAdventureAsset(id: string) {
-  return lookup(ADVENTURE_ASSETS, id) ?? require("@/assets/placeholder.webp");
+  return asUriSource(id) ?? lookup(ADVENTURE_ASSETS, id) ?? require("@/assets/placeholder.webp");
 }
 
 /**

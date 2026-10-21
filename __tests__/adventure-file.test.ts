@@ -1186,3 +1186,92 @@ describe("the boss's voice in the file", () => {
     expect(columns(first.id).bossName).toBe("Two");
   });
 });
+
+describe("the adventure's own cover photo", () => {
+  const written = async (id: number) => {
+    const out = await load().adv.adventureToFile(id);
+    assert(out);
+    return out;
+  };
+  const coverOf = (id: number) =>
+    (
+      t.sqlite.prepare("SELECT imagePath FROM adventures WHERE id = ?").get(id) as {
+        imagePath: string;
+      }
+    ).imagePath;
+  const twoQuests = async () => [(await heroQuest()).id, (await heroQuest()).id];
+
+  test("the photo rides in `photo`, a bundled cover stays in `cover`, and it is counted", async () => {
+    const cover = photo(3_000);
+    const { id } = await heroAdventure(await twoQuests(), { imagePath: cover });
+    const out = await written(id);
+
+    expect(out.photos).toBe(1);
+    expect(out.leftOut).toBe(0);
+    // An older version reads `cover` as a key and ignores `photo`: it must still pass that test.
+    expect(out.file.adventure.cover).toMatch(/^[a-z0-9_]{1,64}$/);
+    expect(out.file.adventure.photo).toBe(cover);
+    expect(out.file.version).toBe(1);
+
+    const back = parseJson(out.json);
+    expect(back.adventure.photo).toBe(cover);
+    // parse(write(a)) is write(a).
+    expect(back).toEqual(out.file);
+  });
+
+  test("a photo cover survives a round trip through another phone", async () => {
+    const cover = photo(3_000);
+    const { id } = await heroAdventure(await twoQuests(), { imagePath: cover });
+    const file = parseJson((await written(id)).json);
+
+    const imported = await load().adv.importAdventure(
+      { ...file, adventure: { ...file.adventure, uuid: nextUuid() } },
+      { asCopy: false },
+    );
+    expect(coverOf(imported.id)).toBe(cover);
+    expect((await load().hero.loadHeroAdventureDraft(imported.id))?.imagePath).toBe(cover);
+  });
+
+  test("a photo the reader would drop is left out and counted, and the bundled cover stands", async () => {
+    const { id } = await heroAdventure(await twoQuests(), { imagePath: photo(3_000, 600, 2_000) });
+    const out = await written(id);
+
+    expect(out.photos).toBe(0);
+    expect(out.leftOut).toBe(1);
+    expect(out.file.adventure.photo).toBeUndefined();
+    expect(out.file.adventure.cover).toMatch(/^[a-z0-9_]{1,64}$/);
+    expect(parseJson(out.json).adventure.photo).toBeUndefined();
+  });
+
+  test("it counts with the quests' photos, in the same total", async () => {
+    const withCover = await heroQuest({ image: photo(3_000) });
+    const { id } = await heroAdventure([withCover.id, (await heroQuest()).id], {
+      imagePath: photo(4_000),
+    });
+    expect((await written(id)).photos).toBe(2);
+  });
+
+  test("a file without `photo` is unchanged: its bundled cover lands as itself", async () => {
+    const [a, b] = seedQuests();
+    assert(a && b);
+    const file = fileOf(
+      adventureLiteral(nextUuid(), [{ official: a.enTitle }, { official: b.enTitle }], {
+        cover: "the_golem",
+      }),
+    );
+    expect(file.adventure.photo).toBeUndefined();
+    const { id } = await load().adv.importAdventure(file, { asCopy: false });
+    expect(coverOf(id)).toBe("the_golem");
+  });
+
+  test("a `photo` that is not a vouched-for image is ignored, never a reason to refuse the file", () => {
+    const [a, b] = seedQuests();
+    assert(a && b);
+    const steps = [{ official: a.enTitle }, { official: b.enTitle }];
+    for (const bad of ["https://example.com/x.jpg", "assets/images/adventures/x.jpg", 3, null]) {
+      const file = fileOf(adventureLiteral(nextUuid(), steps, { cover: "the_golem", photo: bad }));
+      expect(file.adventure.photo).toBeUndefined();
+      expect(file.adventure.cover).toBe("the_golem");
+    }
+  });
+});

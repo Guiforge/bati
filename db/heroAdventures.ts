@@ -38,7 +38,8 @@ const HERO_SORT_ORDER = 1000;
 export type HeroAdventureDraft = {
   title: string;
   description: string;
-  imagePath: AdventureAssetKey;
+  /** A bundled cover key, or a `data:` photo the hero chose. */
+  imagePath: string;
   end: { kind: "route" } | { kind: "boss"; monster: BossAssetKey };
   /**
    * The hero's words for their boss. Top level and not inside `end`: it stays editable while `end`
@@ -119,10 +120,14 @@ export function worksSparedZone(quest: QuestTemplate, spared: ReadonlySet<number
 
 const clamp = (text: string, max: number) => clip(text.trim(), max);
 
+/** A cover is one of the bundled keys or a photo, which the picture field encodes as a JPEG data URI. */
+const isCover = (value: string) =>
+  Object.hasOwn(ADVENTURE_ASSETS, value) || value.startsWith("data:image/");
+
 type Clean = {
   title: string;
   description: string;
-  imagePath: AdventureAssetKey;
+  imagePath: string;
   steps: { questId: number; narrative: string; outro: string }[];
 };
 
@@ -132,7 +137,7 @@ function clean(draft: HeroAdventureDraft): Clean {
   if (draft.steps.length < MIN_STEPS || draft.steps.length > MAX_STEPS) {
     throw new Error(`Adventure needs ${MIN_STEPS} to ${MAX_STEPS} steps`);
   }
-  if (!Object.hasOwn(ADVENTURE_ASSETS, draft.imagePath)) throw new Error("Unknown adventure cover");
+  if (!isCover(draft.imagePath)) throw new Error("Unknown adventure cover");
   return {
     title,
     description: clamp(draft.description, MAX_DESCRIPTION),
@@ -431,9 +436,10 @@ export async function loadHeroAdventureDraft(
     .orderBy(asc(adventureSteps.stepIndex));
   const key = getBossKey(row.bossImagePath);
   const monster = row.kind === "boss" ? (key ?? (await listMonsters())[0]?.key ?? null) : null;
-  const cover = Object.hasOwn(ADVENTURE_ASSETS, row.imagePath ?? "")
-    ? (row.imagePath as AdventureAssetKey)
-    : (Object.keys(ADVENTURE_ASSETS)[0] as AdventureAssetKey);
+  const cover =
+    row.imagePath && isCover(row.imagePath)
+      ? row.imagePath
+      : (Object.keys(ADVENTURE_ASSETS)[0] as AdventureAssetKey);
   return {
     title: row.enTitle,
     description: row.enDescription,

@@ -48,7 +48,7 @@ export function AdventureImport({
   const { existing, running } = preview;
   // A run under way forces the copy, so the chips are not offered and the button says "add".
   const updating = existing !== null && !asCopy && !running;
-  const cover = coverKey(adventure.cover);
+  const cover = coverKey(adventure);
 
   // No try/finally: the React Compiler does not compile a function that has one.
   const onImport = async () => {
@@ -198,8 +198,9 @@ function bossLabel(end: AdventureFile["adventure"]["end"], painted: string): str
   return (end.kind === "boss" && end.name) || painted;
 }
 
-/** The file's cover when this version has that art, else the default cover. */
-function coverKey(cover: string | null): string {
+/** The file's photo, else its bundled cover when this version has that art, else the default cover. */
+function coverKey({ photo, cover }: AdventureFile["adventure"]): string {
+  if (photo) return photo;
   return cover !== null && Object.hasOwn(ADVENTURE_ASSETS, cover)
     ? cover
     : (Object.keys(ADVENTURE_ASSETS)[0] ?? "");

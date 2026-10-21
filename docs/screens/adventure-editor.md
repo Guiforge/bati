@@ -3,7 +3,7 @@ title: Adventure Editor
 type: screen
 route: /adventures/edit
 status: active
-updated: 2026-10-17
+updated: 2026-10-21
 related: [adventures.md, adventure-details.md, ../gameplay/adventures.md]
 sources: [app/(tabs)/adventures/edit.tsx, components/adventures/QuestPickerSheet.tsx, db/heroAdventures.ts]
 ---
@@ -18,7 +18,12 @@ Write an adventure out of quests the hero already has or has written. One scroll
 
 - **Start from your last sessions** (new adventure, two sessions or more): fills the steps with the
   quests of the 8 latest sessions, oldest first. Nothing is saved.
-- **Cover**: one of the bundled adventure covers (no photo). **Name** (60) and **introduction** (280).
+- **Cover**: one of the bundled adventure covers, or a photo of the hero's own (the picture field's
+  photo tile, a JPEG shrunk to 512 px and stripped of location and camera data, stored in
+  `adventures.imagePath` as a `data:` URI like a quest's). In a shared file the photo rides in an
+  optional `adventure.photo`, and `cover` keeps a bundled key as the fallback, so an older Bati
+  imports the file and shows a real cover; it is counted in "the file holds N photos" and spends the
+  same byte budget as the quests' photos, first. **Name** (60) and **introduction** (280).
 - **Steps, 2 to 8**: a card per step with its quest, its duration, **Before you set out** (160) and,
   behind "Add a return", **On the way back** (160); move up, move down, remove. "Add a step" opens the
   quest picker (the hero's quests first, a name search) and is gone at eight.

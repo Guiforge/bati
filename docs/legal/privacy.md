@@ -6,7 +6,7 @@ head_title: "Privacy policy for Bati"
 description: "Bati collects nothing about you. No account, no server of ours, no analytics. Offline first, with three exceptions, all off by default: the map, which tells a tile host roughly where you go, a daily question to GitHub about a newer version, and device sync, which sends your history encrypted to a server you choose."
 type: legal
 status: active
-updated: 2026-10-17
+updated: 2026-10-21
 permalink: /privacy/
 related: [../planning/roadmap.md]
 ---
@@ -33,7 +33,7 @@ francés: **contact@getbati.app**
 
 # Privacy Policy for Bati
 
-**Last updated: 17 October 2026**
+**Last updated: 21 October 2026**
 
 Bati is an offline-first training app. It has no account, no server of its own, and no analytics.
 This page exists because both app stores require a privacy policy URL, and because the short
@@ -58,7 +58,7 @@ than one device: see [the map](#the-map-and-the-one-host),
 ## What is stored, and where
 
 Everything Bati records (your workouts, sets, reps, hold times, quests, adventures, village,
-achievements, flame, oath, avatar, settings, the photos you give an exercise or a quest, and the GPS points
+achievements, flame, oath, avatar, settings, the photos you give an exercise, a quest or an adventure, and the GPS points
 and air-pressure readings of an outing) is written to a
 **SQLite database inside the app's private storage on your device**.
 
@@ -252,10 +252,11 @@ around you, and a network name is a location by another route.
 
 **Photos (optional).** If you choose a photo as your hero avatar, the app reads that one image
 from your library and keeps a pointer to it on your device; the image itself is never copied or
-sent. If you give a photo to an exercise or a quest you made, the app shrinks it and stores it in
-the database like the rest of your data, so it travels with your backups and an encrypted sync. It
-also travels in a quest or adventure file when you share one: such a file holds that quest or
-adventure, its quests, the exercises you made for them and their photos as they are stored, and
+sent. If you give a photo to an exercise, a quest or an adventure you made (as its cover), the app
+shrinks it and stores it in the database like the rest of your data, so it travels with your
+backups and an encrypted sync. It also travels in a quest or adventure file when you share one: such
+a file holds that quest or adventure (its cover photo included), its quests, the exercises you made
+for them and their photos as they are stored, and
 nothing else (not your name, not your history). Before an adventure file leaves, Bati says how many
 photos it holds. It goes only where you send it from your phone's share sheet, and it is not
 encrypted. Photos you add to a session or an outing in the Journal (three at most) are shrunk the
@@ -319,7 +320,7 @@ Questions about this policy, and anything else (a bug, an idea, a feature you wi
 
 # Politique de confidentialité de Bati
 
-**Dernière mise à jour : 17 octobre 2026**
+**Dernière mise à jour : 21 octobre 2026**
 
 Bati est une application d'entraînement hors ligne d'abord. Pas de compte, pas de serveur à nous,
 pas d'analytics. Cette page existe parce que les deux stores exigent une URL de politique de
@@ -346,7 +347,7 @@ appareil. Voir « La carte, et l'hôte unique », « La vérification de version
 
 Tout ce que Bati enregistre (séances, séries, répétitions, temps de gainage, quêtes,
 aventures, village, hauts faits, flamme, serment, avatar, réglages, les photos que vous donnez à
-un exercice ou une quête, et les points GPS et relevés de pression d'une sortie) est écrit dans une **base SQLite située dans le stockage privé de l'application, sur
+un exercice, une quête ou une aventure, et les points GPS et relevés de pression d'une sortie) est écrit dans une **base SQLite située dans le stockage privé de l'application, sur
 votre appareil**.
 
 - Rien n'est envoyé chez nous ni partagé avec qui que ce soit. Les données ne quittent le téléphone
@@ -564,10 +565,11 @@ réseaux autour de vous : un nom de réseau est une position par un autre chemin
 
 **Photos (facultatif).** Si vous choisissez une photo comme avatar, l'application lit cette
 image dans votre galerie et garde un lien vers elle sur votre appareil ; l'image elle-même n'est
-jamais copiée ni envoyée. Si vous donnez une photo à un exercice ou une quête que vous avez créés,
-l'application la réduit et la stocke dans la base comme le reste : elle voyage donc avec vos
-sauvegardes et une synchronisation chiffrée. Elle voyage aussi dans un fichier de quête ou
-d'aventure quand vous en partagez un : ce fichier contient cette quête ou cette aventure, ses quêtes,
+jamais copiée ni envoyée. Si vous donnez une photo à un exercice, une quête ou une aventure que vous
+avez créés (comme couverture), l'application la réduit et la stocke dans la base comme le reste : elle
+voyage donc avec vos sauvegardes et une synchronisation chiffrée. Elle voyage aussi dans un fichier
+de quête ou d'aventure quand vous en partagez un : ce fichier contient cette quête ou cette aventure
+(photo de couverture comprise), ses quêtes,
 les exercices que vous avez créés pour elles et leurs photos telles qu'elles sont enregistrées, et rien
 d'autre (ni votre nom, ni votre historique). Avant qu'un fichier d'aventure parte, Bati dit combien de
 photos il contient. Il ne va que là où vous l'envoyez depuis le partage de votre téléphone, et il n'est

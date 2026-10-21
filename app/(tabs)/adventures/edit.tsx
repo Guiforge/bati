@@ -76,7 +76,8 @@ function missingPiece(trimmedTitle: string, stepCount: number): "name" | "steps"
 type Fields = {
   title: string;
   description: string;
-  cover: AdventureAssetKey;
+  /** A bundled key or a `data:` photo. */
+  cover: string;
   steps: EditorStep[];
   end: EditorEnd;
   voice: HeroBossVoice;
@@ -521,12 +522,11 @@ export default function AdventureEditor() {
 
             <ImageChoiceField
               value={cover}
-              onChange={(next) => patch({ cover: next as AdventureAssetKey })}
+              onChange={(next) => patch({ cover: next })}
               choices={COVER_CHOICES}
               resolve={getAdventureAsset}
               resolveThumb={getAdventureAsset}
               aspect={[4, 3]}
-              photos={false}
             />
 
             <Text fontWeight="700" fontSize={18} color="$text">

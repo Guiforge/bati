@@ -70,6 +70,11 @@ describe("assetMap", () => {
       ADVENTURE_ASSETS.scout_trial,
     );
   });
+
+  test("an adventure cover can be the hero's own photo, as a quest's can", () => {
+    const dataUri = "data:image/jpeg;base64,/9j/4AAQSkZJRg==";
+    expect(getAdventureAsset(dataUri)).toEqual({ uri: dataUri });
+  });
 });
 
 // A quest file from someone else's phone names its art, and a plain `MAP[key]` answered

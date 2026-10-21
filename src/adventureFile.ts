@@ -76,8 +76,17 @@ export type AdventureFile = {
     /** One text: the hero writes once, the row repeats it in four columns. */
     title: string;
     description: string;
-    /** An `ADVENTURE_ASSETS` key, never a picture. */
+    /**
+     * An `ADVENTURE_ASSETS` key, never a picture. For an adventure with a photo cover it is the
+     * bundled cover kept as the fallback, so a Bati that predates `photo` shows a real cover.
+     */
     cover: string | null;
+    /**
+     * The hero's own cover photo, a `data:` image `safeImage` vouches for. Optional and read by
+     * name, so an older version ignores it and a file without one is unchanged (still version 1 or 2:
+     * a version 3 would have told older builds to update for a picture).
+     */
+    photo?: string;
     end:
       | { kind: "route" }
       | { kind: "boss"; monster: string; name?: string; lines?: HeroBossLines };
@@ -195,10 +204,17 @@ function read(data: unknown): AdventureFile {
       // A well-formed key this version lacks is a newer Bati's art (default cover on import); a
       // URL, a picture or a path is no Bati's file.
       cover: a.cover === null ? null : key(a.cover),
+      ...coverPhoto(a.photo),
       end: end(a.end),
     },
     steps: data.steps.map(step),
   };
+}
+
+/** A photo that is not a vouched-for `data:` image is dropped, never a reason to refuse the file: the cover key stands. */
+function coverPhoto(value: unknown): { photo?: string } {
+  const photo = safeImage(value);
+  return photo?.startsWith("data:") ? { photo } : {};
 }
 
 /** A parsed JSON value, checked field by field. Throws an `AdventureFileError` saying why it is refused. */
@@ -287,6 +303,7 @@ export async function adventureToFile(id: number): Promise<AdventureToFile | nul
   if (steps.length < MIN_STEPS) return null;
 
   const { end, version } = fileEnd(draft);
+  const ownPhoto = draft.imagePath.startsWith("data:") ? draft.imagePath : null;
   const file: AdventureFile = {
     kind: KIND,
     version,
@@ -294,13 +311,13 @@ export async function adventureToFile(id: number): Promise<AdventureToFile | nul
       uuid: draft.uuid,
       title: draft.title,
       description: draft.description,
-      cover: draft.imagePath,
+      ...fileCover(draft.imagePath),
       end,
     },
     steps,
   };
 
-  const { photos, leftOut } = putPicturesBack(file, pictures);
+  const { photos, leftOut } = putPicturesBack(file, withCoverPhoto(file, ownPhoto, pictures));
 
   const json = JSON.stringify(file);
   try {
@@ -310,6 +327,37 @@ export async function adventureToFile(id: number): Promise<AdventureToFile | nul
     throw new Error(`adventure file fails its own reader: ${reason}`);
   }
   return { file, json, photos, leftOut, stepsLeft };
+}
+
+/** A photo rides in `photo`, under the placeholder until the budget decides; `cover` keeps a bundled key an older version can draw. */
+function fileCover(imagePath: string): Pick<AdventureFile["adventure"], "cover" | "photo"> {
+  if (!imagePath.startsWith("data:")) return { cover: imagePath };
+  return { cover: Object.keys(ADVENTURE_ASSETS)[0] ?? null, photo: PLACEHOLDER };
+}
+
+/**
+ * The pictures to put back, the adventure's own photo first: it is the image seen first, so it is
+ * the last to be left out. A photo that does not fit is dropped from `photo`, and `cover` stands.
+ */
+function withCoverPhoto(
+  file: AdventureFile,
+  photo: string | null,
+  pictures: ReadonlyMap<string, Picture>,
+): ReadonlyMap<string, Picture> {
+  if (!photo) return pictures;
+  const ref: Picture["refs"][number] = {
+    get image() {
+      return file.adventure.photo ?? null;
+    },
+    set image(value: string | null) {
+      if (value === null) delete file.adventure.photo;
+      else file.adventure.photo = value;
+    },
+  };
+  return new Map([
+    [`adventure:${file.adventure.uuid}`, { stored: photo, cover: true, refs: [ref] }],
+    ...pictures,
+  ]);
 }
 
 /**
@@ -508,11 +556,12 @@ export async function importAdventure(
   const a = file.adventure;
   const e = a.end;
   const monster = e.kind === "boss" ? monsters.find((m) => m.key === e.monster) : undefined;
-  const cover = (
-    a.cover !== null && Object.hasOwn(ADVENTURE_ASSETS, a.cover)
+  // The photo wins over the bundled cover kept beside it for older versions.
+  const cover =
+    a.photo ??
+    (a.cover !== null && Object.hasOwn(ADVENTURE_ASSETS, a.cover)
       ? a.cover
-      : Object.keys(ADVENTURE_ASSETS)[0]
-  ) as AdventureAssetKey;
+      : (Object.keys(ADVENTURE_ASSETS)[0] as AdventureAssetKey));
 
   const write = transactionOrFallback(async (tx) => {
     const written = new Map<string, number>();

@@ -57,6 +57,7 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 | quest | A workout template in the gallery, and the moment one is won | quest | quête | séance (a quest is picked, a séance is logged) | Quest | misión |
 | session | One logged thing, a workout or an outing | session | séance | session, entraînement | Einheit | sesión |
 | workout | A logged session that is not an outing. Only where the count runs through `isWorkout()` | workout | entraînement | séance | Training | entrenamiento |
+| Forge | A place: the village building a chest session raises, and the page where the hero makes quests, adventures and exercises and imports a file. One word, one place | Forge | Forge | forge (the building and its page are the same Forge) | Schmiede | Forja |
 | exercise | One entry in the catalogue | exercise | exercice | mouvement (kept for a movement family: push, pull, hinge) | Übung | ejercicio |
 | rep | One repetition | rep | rép, répétition |  | Wdh., Wiederholung | rep., repetición |
 | set | The reps done in one go on one movement | set | série | flamme | Satz | serie |

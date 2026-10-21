@@ -1441,7 +1441,23 @@
     "quests": "Quêtes",
     "village": "Village"
   },
+  "forge": {
+    "open": "Créer",
+    "title": "Forge",
+    "subtitle": "Ce que tu as créé, et de quoi en créer d'autres.",
+    "quests": "Tes quêtes",
+    "quests_empty": "Tu n'as pas encore écrit de quête.",
+    "adventures": "Tes aventures",
+    "adventures_empty": "Tu n'as pas encore écrit d'aventure.",
+    "exercises": "Tes exercices",
+    "exercises_empty": "Tu n'as pas encore créé d'exercice.",
+    "see_all": "Tout voir",
+    "import": "Importer un fichier reçu",
+    "import_hint": "Une quête ou une aventure qu'on t'a envoyée, en fichier .bati-quest.json ou .bati-adventure.json. Tu peux aussi appuyer dessus directement dans ta conversation.",
+    "import_failed": "Le fichier n'a pas pu être ouvert. Réessaie."
+  },
   "village": {
+    "forge_enter": "Entrer dans la forge",
     "crest_bear": "un ours",
     "crest_stag": "un cerf",
     "crest_horse": "un cheval",

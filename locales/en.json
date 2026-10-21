@@ -1354,7 +1354,23 @@
   "splash": {
     "loading": "Building your village…"
   },
+  "forge": {
+    "open": "Create",
+    "title": "Forge",
+    "subtitle": "What you've made, and room for more.",
+    "quests": "Your quests",
+    "quests_empty": "You haven't written a quest yet.",
+    "adventures": "Your adventures",
+    "adventures_empty": "You haven't written an adventure yet.",
+    "exercises": "Your exercises",
+    "exercises_empty": "You haven't made an exercise yet.",
+    "see_all": "See all",
+    "import": "Import a received file",
+    "import_hint": "A quest or an adventure someone sent you, as a .bati-quest.json or .bati-adventure.json file. You can also tap it directly in your chat.",
+    "import_failed": "The file could not be opened. Try again."
+  },
   "village": {
+    "forge_enter": "Enter the forge",
     "crest_bear": "a bear",
     "crest_stag": "a stag",
     "crest_horse": "a horse",

@@ -1354,7 +1354,23 @@
   "splash": {
     "loading": "Dein Dorf wird gebaut…"
   },
+  "forge": {
+    "open": "Erstellen",
+    "title": "Schmiede",
+    "subtitle": "Was du gebaut hast, und Platz für mehr.",
+    "quests": "Deine Quests",
+    "quests_empty": "Du hast noch keine Quest geschrieben.",
+    "adventures": "Deine Abenteuer",
+    "adventures_empty": "Du hast noch kein Abenteuer geschrieben.",
+    "exercises": "Deine Übungen",
+    "exercises_empty": "Du hast noch keine Übung erstellt.",
+    "see_all": "Alles anzeigen",
+    "import": "Erhaltene Datei importieren",
+    "import_hint": "Eine Quest oder ein Abenteuer, das dir jemand geschickt hat, als .bati-quest.json- oder .bati-adventure.json-Datei. Du kannst sie auch direkt im Chat antippen.",
+    "import_failed": "Die Datei konnte nicht geöffnet werden. Versuch es noch einmal."
+  },
   "village": {
+    "forge_enter": "Die Schmiede betreten",
     "crest_bear": "ein Bär",
     "crest_stag": "ein Hirsch",
     "crest_horse": "ein Pferd",

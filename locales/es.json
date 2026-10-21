@@ -1421,7 +1421,23 @@
   "splash": {
     "loading": "Construyendo tu aldea…"
   },
+  "forge": {
+    "open": "Crear",
+    "title": "Forja",
+    "subtitle": "Lo que has creado, y sitio para más.",
+    "quests": "Tus misiones",
+    "quests_empty": "Aún no has escrito ninguna misión.",
+    "adventures": "Tus aventuras",
+    "adventures_empty": "Aún no has escrito ninguna aventura.",
+    "exercises": "Tus ejercicios",
+    "exercises_empty": "Aún no has creado ningún ejercicio.",
+    "see_all": "Ver todo",
+    "import": "Importar un archivo recibido",
+    "import_hint": "Una misión o una aventura que alguien te envió, en un archivo .bati-quest.json o .bati-adventure.json. También puedes tocarlo en el chat.",
+    "import_failed": "No se pudo abrir el archivo. Inténtalo de nuevo."
+  },
   "village": {
+    "forge_enter": "Entrar en la forja",
     "crest_bear": "un oso",
     "crest_stag": "un ciervo",
     "crest_horse": "un caballo",

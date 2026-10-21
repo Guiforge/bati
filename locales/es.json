@@ -3125,7 +3125,7 @@
     "lines": "Sus frases",
     "delete": "Eliminar este jefe",
     "delete_title": "¿Eliminar {{name}}?",
-    "delete_body": "Desaparece de tu Forja y de tus otros dispositivos.",
+    "delete_body": "Desaparece de tu Forja, y de tus otros dispositivos salvo donde una aventura aún termine con él.",
     "delete_confirm": "Eliminar",
     "in_use_title": "Este jefe aún se usa",
     "in_use_body": "Una de tus aventuras termina con él. Cambia primero el final de esa aventura."

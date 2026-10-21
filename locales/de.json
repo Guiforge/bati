@@ -3007,7 +3007,7 @@
     "lines": "Seine Sprüche",
     "delete": "Diesen Boss löschen",
     "delete_title": "{{name}} löschen?",
-    "delete_body": "Er verschwindet aus deiner Schmiede und von deinen anderen Geräten.",
+    "delete_body": "Er verschwindet aus deiner Schmiede und von deinen anderen Geräten, außer dort, wo noch ein Abenteuer mit ihm endet.",
     "delete_confirm": "Löschen",
     "in_use_title": "Dieser Boss wird noch gebraucht",
     "in_use_body": "Eines deiner Abenteuer endet bei ihm. Ändere zuerst das Ende dieses Abenteuers."

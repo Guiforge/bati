@@ -22,4 +22,4 @@ export const FLAME_DORMANT_DAYS = 56;
  * Ceiling: nothing checks it against the tag; moving it earlier than the tag rewrites the past
  * of heroes who update on the day, later leaves their sleeping flame reading 0 until then.
  */
-export const FLAME_PIVOT = new Date(2026, 9, 20);
+export const FLAME_PIVOT = new Date(2026, 9, 22);

@@ -123,15 +123,24 @@ export async function loginToNextcloud(
     }).catch(() => null);
     // 404 is "not yet"; a dropped connection is retried on the next beat.
     if (poll?.ok) {
-      const done = (await poll.json()) as NextcloudAccount;
       // The address the hero typed, not the one the server reports: sync goes where they chose.
-      const account = { ...done, server };
+      const account = accountFromAnswer(server, await poll.json());
       const userId = await nextcloudUserId(account);
       return userId === null ? account : { ...account, userId };
     }
   }
   return null;
 }
+
+/** Built from the two credentials alone, so a poll answer cannot add fields to the account. */
+function accountFromAnswer(server: string, answer: unknown): NextcloudAccount {
+  const { loginName, appPassword } = (answer ?? {}) as Record<string, unknown>;
+  if (typeof loginName !== "string" || loginName === "") throw noCredentials();
+  if (typeof appPassword !== "string" || appPassword === "") throw noCredentials();
+  return { server, loginName, appPassword };
+}
+
+const noCredentials = () => new Error("Login flow returned no credentials");
 
 /** The account's user id, from the OCS API, or `null` when the server does not say. */
 async function nextcloudUserId(account: NextcloudAccount): Promise<string | null> {

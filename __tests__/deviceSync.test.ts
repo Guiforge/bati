@@ -701,6 +701,17 @@ test("an unreadable device with a remembered answer is judged without throwing",
   expect((await syncNow({ snapshotFirst: false })).peers[0]?.state).toBe("unreadable");
 });
 
+test("connectNextcloud refuses plain http that is not this phone", async () => {
+  mockSecure.clear();
+  const fetchSpy = jest.fn();
+  global.fetch = fetchSpy as unknown as typeof fetch;
+  await expect(connectNextcloud("http://nas.local", () => false)).rejects.toBeInstanceOf(
+    InsecureAddressError,
+  );
+  expect(fetchSpy).not.toHaveBeenCalled();
+  expect(await syncAccount()).toBeNull();
+});
+
 test("plain http is refused unless it is this phone; an account is kept only once it answered", async () => {
   mockSecure.clear();
   await expect(connectWebDav("http://nas.local/dav", "hero", "p")).rejects.toBeInstanceOf(

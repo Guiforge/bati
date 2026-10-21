@@ -1503,3 +1503,82 @@ describe("a quest shared alone", () => {
     await expect(load().adv.questToShare(seed.id)).rejects.toThrow("not a quest of the hero");
   });
 });
+
+describe("what an imported adventure can and cannot touch", () => {
+  const twoSeeds = () => {
+    const [a, b] = seedQuests();
+    assert(a && b);
+    return [{ official: a.enTitle }, { official: b.enTitle }];
+  };
+
+  // The game's adventure rows carry no uuid, and only the hero's are looked up by one. If a
+  // database ever had a seed row with a uuid (a restore across a migration, a hand edit), a file
+  // carrying it must not rewrite the game's adventure: same rule as the quest and the movement.
+  test("a seed adventure sharing the file's uuid is not the adventure the file updates", async () => {
+    const seed = t.sqlite
+      .prepare("SELECT id, enTitle, enDescription FROM adventures WHERE author = 'Admin' LIMIT 1")
+      .get() as { id: number; enTitle: string; enDescription: string };
+    const advUuid = nextUuid();
+    t.sqlite.prepare("UPDATE adventures SET uuid = ? WHERE id = ?").run(advUuid, seed.id);
+    const file = fileOf(adventureLiteral(advUuid, twoSeeds(), { title: "Owned" }));
+    const before = counts();
+
+    const preview = await load().adv.previewAdventure(file, "en");
+    const outcome = await load()
+      .adv.importAdventure(file, { asCopy: false })
+      .catch((error: unknown) => error);
+    const after = t.sqlite
+      .prepare("SELECT id, enTitle, enDescription FROM adventures WHERE id = ?")
+      .get(seed.id);
+    const afterCounts = counts();
+    t.sqlite.prepare("UPDATE adventures SET uuid = NULL WHERE id = ?").run(seed.id);
+
+    expect(preview.existing).toBeNull();
+    expect(after).toEqual(seed);
+    // The hero's new row cannot take the uuid the seed holds: refused and rolled back whole.
+    expect(String(outcome)).toMatch(/UNIQUE/);
+    expect(afterCounts).toEqual(before);
+  });
+
+  // The import writes a quest, its movements and an adventure, and nothing a session earns: no
+  // session (so no XP, streak or record), no run, no boss fight or damage. A hero boss that was
+  // defeated anyway is no deed: the village shelf and the bestiary read the game's adventures only.
+  test("an imported adventure grants no XP, no achievement and no boss kill", async () => {
+    const monster = (await load().hero.listMonsters())[0];
+    assert(monster);
+    const earned = () => ({
+      sessions: count("completed_sessions"),
+      runs: count("adventure_runs"),
+      fights: count("boss_fights"),
+      damage: count("boss_damage_log"),
+    });
+    const standing = await require("../db/journal").getStandingBosses();
+    const banners = await require("../db/village").getBossBanners();
+    const before = earned();
+
+    const file = fileOf(
+      adventureLiteral(nextUuid(), twoSeeds(), {}, { kind: "boss", monster: monster.key }),
+    );
+    const { id } = await load().adv.importAdventure(file, { asCopy: false });
+    expect(earned()).toEqual(before);
+
+    t.sqlite
+      .prepare(
+        "INSERT INTO boss_fights (adventureId, totalHp, currentHp, defeatedAt) VALUES (?, 100, 0, ?)",
+      )
+      .run(id, Date.now());
+    t.sqlite
+      .prepare(
+        "INSERT INTO adventure_runs (adventureId, status, startedAt, finishedAt) VALUES (?, 'finished', ?, ?)",
+      )
+      .run(id, 1_700_000_000, 1_700_000_100);
+
+    expect(await require("../db/village").getBossBanners()).toEqual(banners);
+    expect(await require("../db/journal").getStandingBosses()).toEqual(standing);
+    expect(
+      (await require("../db/adventures").listFinishedRunSummaries()).some(
+        (s: { adventureId: number }) => s.adventureId === id,
+      ),
+    ).toBe(false);
+  });
+});

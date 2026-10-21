@@ -158,6 +158,11 @@ export function withIsolatedConnection<T>(
   return withConnectionTo(DB_NAME, fn);
 }
 
+/** Where `withConnectionTo(name)` opens: the same path `src/backupFiles.ts` stages under. */
+export function databaseFilePath(name: string): string {
+  return `${defaultDatabaseDirectory}/${name}`;
+}
+
 /** What a caller of `withConnectionTo` may do with it: enough to run the migration runner. */
 export type ConnectionTo = Pick<
   SQLiteDatabase,

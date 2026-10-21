@@ -1,9 +1,9 @@
 import { sql } from "drizzle-orm";
-import { defaultDatabaseDirectory } from "expo-sqlite";
 
 import migrations from "../drizzle/migrations";
 import { reportError } from "../src/reportError";
 import {
+  databaseFilePath,
   db,
   type IsolatedConnection,
   serializeOnDatabase,
@@ -262,7 +262,7 @@ export function validateBackup(path: string): Promise<BackupCheck> {
 export async function bringForward(path: string): Promise<BackupCheck> {
   const name = path.slice(path.lastIndexOf("/") + 1);
   // withConnectionTo reopens by basename in the default directory: any other path would be a different file.
-  if (path !== `${defaultDatabaseDirectory}/${name}`) {
+  if (path !== databaseFilePath(name)) {
     throw new Error("bringForward: staged file outside the database directory");
   }
   const outcome = await withConnectionTo(name, async (conn): Promise<BackupCheck | "migrated"> => {

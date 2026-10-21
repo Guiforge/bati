@@ -63,6 +63,7 @@ export function clientMock(t: { db: unknown; sqlite: Database.Database }) {
   const { sqlString } = require("../../db/sql") as typeof import("../../db/sql");
   return {
     db: t.db,
+    databaseFilePath: (name: string) => `/data/SQLite/${name}`,
     schema: require("../../db/schema"),
     transactionOrFallback: <T>(fn: (tx: never) => Promise<T>) => fn(t.db as never),
     // The real one queues; here there is nothing to queue behind, and a stub keeps a test

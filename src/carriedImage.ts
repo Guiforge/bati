@@ -59,11 +59,11 @@ function jpegSize(r: Reader): Size | null {
 export const MAX_RENDER_SIDE = 2_048;
 
 const CARRIED_PREFIX = /^data:image\/(?:jpeg|png|webp);base64,/;
-/** Base64 characters read after the comma: a JPEG from ImageManipulator reaches its SOF in a few hundred bytes. */
-const HEADER_CHARS = 4096;
+/** Base64 characters read after the comma: an embedded ICC profile (Display P3) can put the SOF several KB in. */
+const HEADER_CHARS = 16_384;
 
 /**
- * The size a data URI of a JPEG, PNG or WebP claims, from its first 4 096 base64 characters only
+ * The size a data URI of a JPEG, PNG or WebP claims, from its first 16 384 base64 characters only
  * (no regex scans the whole string on render). Null for anything else, a header past those
  * characters included, which fails closed. EXIF is not looked at: that is `safeImage`, on import.
  */

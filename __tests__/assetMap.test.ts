@@ -215,6 +215,15 @@ describe("carried pictures only", () => {
     expect(getExerciseThumb(pngDataUri(64, 64))).toEqual({ uri: pngDataUri(64, 64) });
   });
 
+  test("a JPEG whose SOF sits after an 8 KB ICC profile still passes", () => {
+    const icc = new Uint8Array(2 + 8192).fill(0);
+    icc.set([0xff, 0xe2, 0x20, 0x00]); // APP2, length 0x2000 counts itself, so the segment is 8194 bytes
+    const sof = [0xff, 0xc0, 0, 17, 8, 0, 64, 0, 64, 3, 1, 0x22, 0, 2, 0x11, 1, 3, 0x11, 1];
+    const bytes = Buffer.concat([Buffer.from([0xff, 0xd8]), icc, Buffer.from(sof)]);
+    const uri = `data:image/jpeg;base64,${bytes.toString("base64")}`;
+    expect(getExerciseThumb(uri)).toEqual({ uri });
+  });
+
   test("a boss form that is a URL is the painted monster", () => {
     expect(getBossAsset("stone_golem", 0, undefined, { fresh: hostile[0] })).toBe(
       getBossAsset("stone_golem", 0),

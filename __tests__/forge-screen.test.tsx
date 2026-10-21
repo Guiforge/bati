@@ -104,6 +104,12 @@ describe("Forge page", () => {
       "/adventures/edit",
       "/exercises/new",
     ]);
+    // Into a tab's stack with its gallery under it, or back falls through to Home.
+    expect(mockRouter.push.mock.calls.map((c) => c[1])).toEqual([
+      { withAnchor: true },
+      { withAnchor: true },
+      undefined,
+    ]);
   });
 
   test("full: only the hero's own, the last three, each row opening its own screen", async () => {

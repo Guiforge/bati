@@ -109,6 +109,9 @@ export default function ForgeScreen(): ReactNode {
   const insets = useSafeAreaInsets();
   const language = useSettingsStore((s) => s.language);
   const [made, setMade] = useState<Made>(NOTHING);
+  // A quest or adventure screen lives in its tab's stack: without the anchor, opened from here it is
+  // that stack's only route, and back (or the hero's next save) fell through to Home.
+  const intoTab = (href: string) => router.push(href as never, { withAnchor: true });
 
   // On focus: coming back from an editor has to show what was just written.
   useFocusEffect(
@@ -177,9 +180,9 @@ export default function ForgeScreen(): ReactNode {
           title={t("forge.quests")}
           rows={made.quests}
           empty={t("forge.quests_empty")}
-          open={(id) => router.push(`/quests/${id}` as never)}
+          open={(id) => intoTab(`/quests/${id}`)}
           seeAll={() => router.push("/quests" as never)}
-          create={() => router.push("/quests/edit" as never)}
+          create={() => intoTab("/quests/edit")}
           createLabel={t("quests.editor_new_title")}
         />
         <ForgeSection
@@ -187,9 +190,9 @@ export default function ForgeScreen(): ReactNode {
           title={t("forge.adventures")}
           rows={made.adventures}
           empty={t("forge.adventures_empty")}
-          open={(id) => router.push(`/adventures/${id}` as never)}
+          open={(id) => intoTab(`/adventures/${id}`)}
           seeAll={() => router.push("/adventures" as never)}
-          create={() => router.push("/adventures/edit" as never)}
+          create={() => intoTab("/adventures/edit")}
           createLabel={t("adventures.write")}
         />
         <ForgeSection

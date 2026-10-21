@@ -720,20 +720,26 @@ export async function writeImportedQuest(
  * `content://` from a chat or from Files). Read at once, the grant to a
  * `content://` lasts as long as the activity that received it.
  */
-export async function readBatiFile(uri: string): Promise<unknown> {
+export function readBatiFile(uri: string): unknown {
   // A provider's URI only. Both doors hand one over (the picker and a tapped file), and a path
   // into the filesystem could be `/dev/zero`, which reports no size and never ends.
   // ponytail: Android only. iOS's picker hands over a `file://` copy, which this refuses; the
   // day iOS ships, accept the picker's own copies here.
   if (!uri.startsWith("content://")) throw new QuestFileError("unreadable");
   const file = new File(uri);
-  // A provider that reports no size gets its text measured instead, which costs one read.
-  // ponytail: that read is unbounded when the provider lies about its size. The picker and the
-  //           open-with door both hand over a real file; bound the read the day a provider that
-  //           streams without a size shows up.
   if (file.size != null && file.size > MAX_FILE_BYTES) throw new QuestFileError("not_a_quest");
-  const raw = await file.text();
-  if (raw.length > MAX_FILE_BYTES) throw new QuestFileError("not_a_quest");
+  // Never `file.text()`: a provider that reports no size (a chat app's, often) would stream a
+  // file of any length into memory. One byte past the limit is enough to know it is too big.
+  // `readBytes` is synchronous: at most 8 MB, a few milliseconds.
+  let bytes: Uint8Array;
+  const handle = file.open();
+  try {
+    bytes = handle.readBytes(MAX_FILE_BYTES + 1);
+  } finally {
+    handle.close();
+  }
+  if (bytes.length > MAX_FILE_BYTES) throw new QuestFileError("not_a_quest");
+  const raw = new TextDecoder().decode(bytes);
   try {
     return JSON.parse(raw);
   } catch {

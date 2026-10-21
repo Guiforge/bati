@@ -46,10 +46,13 @@ import {
 } from "@/src/questFile";
 
 /** A file at a uri, as `new File(uri)` would open it. */
-const opened = (size: number | null, body = "{}") => ({
-  size,
-  text: jest.fn(() => Promise.resolve(body)),
-});
+const opened = (size: number | null, body = "{}") => {
+  const handle = {
+    readBytes: jest.fn((n: number) => new TextEncoder().encode(body).subarray(0, n)),
+    close: jest.fn(),
+  };
+  return { size, text: jest.fn(), open: jest.fn(() => handle), handle };
+};
 
 const refusal = async (pending: Promise<unknown>) => {
   try {
@@ -93,10 +96,14 @@ test("a file of excessive size is refused before it is read", async () => {
 });
 
 // A chat app's provider often reports no size. Refusing those refused most files a hero is sent,
-// so the text is read and measured instead.
-test("a file of unknown size is read, and refused only if its text is too long", async () => {
-  mockOpen.mockReturnValue(opened(null, "x".repeat(8_000_001)));
+// so the read is bounded instead: at most the limit plus one byte, never the whole file.
+test("a file of unknown size is read to the limit plus one byte, never whole", async () => {
+  const big = opened(null, "x".repeat(8_000_050));
+  mockOpen.mockReturnValue(big);
   expect(await refusal(readQuestFile("content://chat/2"))).toBe("not_a_quest");
+  expect(big.handle.readBytes).toHaveBeenCalledWith(8_000_001);
+  expect(big.handle.close).toHaveBeenCalled();
+  expect(big.text).not.toHaveBeenCalled();
 
   mockOpen.mockReturnValue(opened(null, "{oops"));
   // Read and parsed: refused for what it says, not for its size.

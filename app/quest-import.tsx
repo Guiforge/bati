@@ -182,7 +182,14 @@ export default function QuestImportScreen() {
               />
             ) : null}
 
-            <ImportClashes names={loaded.preview.clashes} />
+            {/* An unticked movement does not arrive, so it sits beside nothing. */}
+            <ImportClashes
+              names={loaded.preview.clashes.filter((name) =>
+                loaded.file.slots.some(
+                  ({ movement }, i) => keep[i] && "own" in movement && movement.own.name === name,
+                ),
+              )}
+            />
 
             <YStack gap="$2">
               <Text fontWeight="700" fontSize={14} color="$textSecondary">

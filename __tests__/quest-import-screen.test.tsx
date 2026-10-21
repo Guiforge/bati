@@ -171,11 +171,17 @@ test("the title is the hero's language, and every movement this phone has comes 
 });
 
 test("an exercise named like one of the hero's says both will stay; none, no line", async () => {
-  await mountReady(null, ["Porch dip"]);
+  await mountReady(null, ["Bear crawl"]);
   expect(screen.getByTestId("import-clashes")).toBeTruthy();
   expect(
-    screen.getByText("You already have an exercise named Porch dip: both will stay."),
+    screen.getByText("You already have an exercise named Bear crawl: both will stay."),
   ).toBeTruthy();
+});
+
+test("an unticked exercise does not arrive, so its clash line goes", async () => {
+  await mountReady(null, ["Bear crawl"]);
+  await fireEvent.press(slot(2));
+  expect(screen.queryByTestId("import-clashes")).toBeNull();
 });
 
 test("with no same-name exercise there is no such line", async () => {

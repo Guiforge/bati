@@ -4,7 +4,8 @@ import { TamaguiProvider } from "tamagui";
 import { FlameBlock, Lead } from "@/components/journal/stats/StatsView";
 import type { JournalStats } from "@/components/journal/stats/useJournalStats";
 import type { FlameDetail } from "@/db/streaks";
-import "@/i18n";
+import { i18n } from "@/i18n";
+import { useSettingsStore } from "@/stores/settings";
 import config from "@/tamagui.config";
 
 // A flame asleep says its count and "dormant", on every page the Journal has, and never says it
@@ -88,4 +89,47 @@ test("a rest day with the flame out and nothing asleep still says how to light i
     "in seven days light the flame again",
     { exact: false },
   );
+});
+
+test("a flame asleep says the two days its count can be checked against", async () => {
+  const stats = {
+    ...statsOf({}),
+    flameSpan: { from: new Date(2023, 9, 12, 12), to: new Date(2026, 9, 1, 12) },
+  } as JournalStats;
+  await wrap(<FlameBlock stats={stats} />);
+
+  expect(screen.getByTestId("journal-flame")).toHaveTextContent("Lit from Oct 12, 2023 to Oct 1.", {
+    exact: false,
+  });
+});
+
+test("a lit flame says the day it was lit", async () => {
+  const stats = {
+    ...statsOf({ dormant: 0, current: 7, litUntil: NOW, inWindow: 2, bestIsCurrent: false }),
+    flameSpan: { from: new Date(2023, 9, 12, 12), to: NOW },
+  } as JournalStats;
+  await wrap(<FlameBlock stats={stats} />);
+
+  expect(screen.getByTestId("journal-flame")).toHaveTextContent("Lit since Oct 12, 2023.", {
+    exact: false,
+  });
+});
+
+// Seen on the emulator: "Allumée du 30 août 2023 au 5 sept.." with the month's dot and the stop.
+test("an abbreviated month ending the sentence does not get a second dot", async () => {
+  useSettingsStore.setState({ language: "fr" });
+  await i18n.changeLanguage("fr");
+  try {
+    const stats = {
+      ...statsOf({}),
+      flameSpan: { from: new Date(2023, 7, 30, 12), to: new Date(2026, 8, 5, 12) },
+    } as JournalStats;
+    await wrap(<FlameBlock stats={stats} />);
+
+    expect(screen.getByTestId("journal-flame")).toHaveTextContent(/au 5 sept\. /);
+    expect(screen.getByTestId("journal-flame")).not.toHaveTextContent(/\.\./);
+  } finally {
+    useSettingsStore.setState({ language: "en" });
+    await i18n.changeLanguage("en");
+  }
 });

@@ -7,12 +7,13 @@ import { XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Trophy } from "@/components/icons";
 import { HandMark } from "@/components/journal/HandMark";
+import { feelingLabel, questLevelLabel } from "@/components/journal/journalFormat";
 import { NKicker, NMuted, NText } from "@/components/journal/nocturne";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatDistance } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db";
 import { hasGround } from "@/db/expeditions";
-import type { DifficultyCode, Locomotion } from "@/db/schema";
+import type { DifficultyCode, FeedbackCode, Locomotion } from "@/db/schema";
 import { firstSessionPhoto } from "@/db/sessionPhotos";
 import { formatCount } from "@/db/targets";
 import type { LngLat } from "@/src/gps/trace";
@@ -60,6 +61,8 @@ export interface JournalEntry {
    */
   firstPhotoUuid?: string | null;
   hasNewRecords?: boolean;
+  /** How the hero said the session felt, when they said. Null when they did not. */
+  feedback?: FeedbackCode | null;
   /**
    * Which part is the hero's word (`0078`): `'session'` for a session written down, `'distance'`
    * for an outing whose distance was typed. Absent or null: everything was measured.
@@ -173,9 +176,7 @@ function rowTitle(entry: JournalEntry, t: TFunction): string {
 
 /** No difficulty on a walk, nor on a session the hero wrote down: nobody chose a level for it. */
 function levelOf(entry: JournalEntry, t: TFunction): string | null {
-  return entry.outing || entry.byHand === "session"
-    ? null
-    : t(`quests.level_${entry.userLevel}`, entry.userLevel);
+  return entry.outing || entry.byHand === "session" ? null : questLevelLabel(t, entry.userLevel);
 }
 
 export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: SessionCardProps) {
@@ -257,9 +258,15 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
               ponytail: measured on the emulator only, whose GPU is the host's through a
               translation layer. A release build on a phone decides whether the row needs more. */}
             <NMuted numberOfLines={1}>{dateLabel}</NMuted>
-            <NText fontSize={12} lineHeight={17} numberOfLines={1}>
+            {/* Two lines: at 130 % "Quête difficile" was cut to "Quête d…" at the end of one. */}
+            <NText fontSize={12} lineHeight={17} numberOfLines={2}>
               {parts.flatMap((part, i) => (i ? [" · ", part] : [part]))}
             </NText>
+            {entry.feedback ? (
+              <NMuted fontSize={12} lineHeight={17} numberOfLines={1} testID="journal-row-feeling">
+                {feelingLabel(t, language, entry.feedback)}
+              </NMuted>
+            ) : null}
             {/* On its own line: the details line is one line, and the mark was cut at its end. */}
             {entry.byHand ? <HandMark what={writtenDown ? "entry" : "distance"} /> : null}
           </YStack>

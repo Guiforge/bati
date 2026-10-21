@@ -13,7 +13,6 @@ import {
 } from "@/db/exercises";
 import {
   createQuestTemplate,
-  getQuestTemplateById,
   invalidateQuestTemplates,
   isUserQuest,
   listQuestTemplates,
@@ -31,6 +30,7 @@ import {
   muscleCodes,
   questTargetTypes,
 } from "@/db/schema";
+import { hasExif } from "@/db/sessionPhotos";
 import { clampToRange, REST_RANGE, ROUNDS_RANGE, type Target, targetRangeFor } from "@/db/targets";
 import { UUID_V7_RE, uuidv7 } from "@/db/uuid";
 import { NON_REP_STYLE } from "@/db/workUnits";
@@ -212,14 +212,9 @@ export async function shareJsonFile(fileName: string, json: string): Promise<voi
   });
 }
 
-/** Writes the quest to a file and hands it to the share sheet. */
-export async function shareQuest(questId: number): Promise<void> {
-  const [quest, catalogue] = await Promise.all([getQuestTemplateById(questId), listExercises()]);
-  if (!quest) throw new Error(`Quest ${questId} not found`);
-  await shareJsonFile(
-    `${fileStem(quest.enTitle, "quest")}.bati-quest.json`,
-    JSON.stringify(questToFile(quest, catalogue)),
-  );
+/** Writes the file `questToShare` returned and hands it to the share sheet. */
+export async function shareQuest(json: string, title: string): Promise<void> {
+  await shareJsonFile(`${fileStem(title, "quest")}.bati-quest.json`, json);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -349,6 +344,18 @@ function jpegSize(r: Reader): Size | null {
   return null;
 }
 
+/** The size of a carried picture, or null when its base64 is broken, its header unreadable or it still holds EXIF. */
+function carriedSize(base64: string): Size | null {
+  try {
+    const picture = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+    // A photo that still carries its EXIF (camera, date, GPS) is someone's location: never kept
+    // here, never written back out. The apps' own encoder strips it, so ours never has any.
+    return hasExif(picture) ? null : imageSize(picture);
+  } catch {
+    return null;
+  }
+}
+
 /**
  * A picture from someone else's phone: a JPEG, PNG or WebP carried in the file, or the name of a
  * picture this app ships. Never a URL, which `getExerciseAsset` would fetch. A quest arriving
@@ -363,12 +370,7 @@ export function safeImage(value: unknown): string | null {
   if (typeof value !== "string" || value.length > MAX_IMAGE_CHARS) return null;
   const data = /^data:image\/(?:jpeg|png|webp);base64,([A-Za-z0-9+/]+=*)$/.exec(value);
   if (data) {
-    let size: ReturnType<typeof imageSize>;
-    try {
-      size = imageSize(Uint8Array.from(atob(data[1] ?? ""), (c) => c.charCodeAt(0)));
-    } catch {
-      return null;
-    }
+    const size = carriedSize(data[1] ?? "");
     if (!size || size.width < 1 || size.height < 1) return null;
     return size.width <= MAX_IMAGE_SIDE && size.height <= MAX_IMAGE_SIDE ? value : null;
   }
@@ -424,7 +426,7 @@ export function parseQuestBody(data: unknown): QuestBody {
     throw new QuestFileError("not_a_quest");
   }
   const q = data.quest;
-  return {
+  const body: QuestBody = {
     quest: {
       uuid: uuid(q.uuid),
       title: text4(q.title, MAX_NAME, true),
@@ -436,6 +438,30 @@ export function parseQuestBody(data: unknown): QuestBody {
     },
     slots: data.slots.map(slot),
   };
+  refuseRepeatedUuids([body]);
+  return body;
+}
+
+/**
+ * Refuses bodies in which one uuid names two different quests or movements. The preview lists
+ * every copy and the import writes the first, so a file could show "Push-ups" and write
+ * something else. The same uuid with the same content (a quest used by two steps) is fine.
+ * Parsed bodies are built field by field, so their JSON is canonical.
+ */
+export function refuseRepeatedUuids(bodies: readonly QuestBody[]): void {
+  const seen = new Map<string, string>();
+  const check = (key: string, content: string) => {
+    if (seen.get(key) !== undefined && seen.get(key) !== content) {
+      throw new QuestFileError("not_a_quest");
+    }
+    seen.set(key, content);
+  };
+  for (const body of bodies) {
+    check(`quest:${body.quest.uuid}`, JSON.stringify(body));
+    for (const { movement } of body.slots) {
+      if ("own" in movement) check(`movement:${movement.own.uuid}`, JSON.stringify(movement.own));
+    }
+  }
 }
 
 /** A parsed JSON value, checked field by field. Throws a `QuestFileError` saying why it is refused. */
@@ -450,17 +476,6 @@ export function parseQuestData(data: unknown): QuestFile {
   return { kind: KIND, version: VERSION, ...parseQuestBody(data) };
 }
 
-/** The file's text, checked field by field. */
-export function parseQuestFile(raw: string): QuestFile {
-  let data: unknown;
-  try {
-    data = JSON.parse(raw);
-  } catch {
-    throw new QuestFileError("unreadable");
-  }
-  return parseQuestData(data);
-}
-
 /** One slot of a file, as the preview shows it: the movement it lands on, if this phone has it. */
 export type PreviewSlot = {
   /** The seed movement, or the hero's own copy already here. Null for one the file brings. */
@@ -471,8 +486,57 @@ export type PreviewSlot = {
   target: Target;
 };
 
+/** What a file's quests would add to this phone, and what would sit beside what the hero already has. */
+export type Arrivals = {
+  quests: number;
+  /** Hero movements not on this phone by uuid, each counted once however many quests name it. */
+  movements: number;
+  /** Pictures that come with them: quest covers and those movements' photos. */
+  photos: number;
+  /** Names of arriving movements the hero already has under another uuid: both will stay. */
+  clashes: string[];
+};
+
+/**
+ * Read once for the previews. A name is never a key (a hero may name two movements alike, 0036), so a
+ * same-name movement with another uuid arrives as a second row: this says so before it does.
+ */
+export function arrivals(bodies: readonly QuestBody[], catalogue: readonly Exercise[]): Arrivals {
+  const names = new Set(
+    catalogue
+      .filter((e) => isUserExercise(e) && !e.retiredAt)
+      .map((e) => e.enName.trim().toLowerCase()),
+  );
+  const uuids = new Set(catalogue.filter(isUserExercise).map((e) => e.uuid));
+  // The first body naming a quest or a movement is the one that arrives: the writer does the same.
+  const quests = bodies.filter(
+    (b, i) => bodies.findIndex((o) => o.quest.uuid === b.quest.uuid) === i,
+  );
+  const fresh = new Map<string, OwnMovement>();
+  for (const { slots } of quests) {
+    for (const { movement } of slots) {
+      if ("own" in movement && !uuids.has(movement.own.uuid) && !fresh.has(movement.own.uuid)) {
+        fresh.set(movement.own.uuid, movement.own);
+      }
+    }
+  }
+  const arriving = [...fresh.values()];
+  return {
+    quests: quests.length,
+    movements: arriving.length,
+    photos:
+      quests.filter((b) => b.quest.image?.startsWith("data:")).length +
+      arriving.filter((m) => m.image.startsWith("data:")).length,
+    clashes: [
+      ...new Set(arriving.filter((m) => names.has(m.name.trim().toLowerCase())).map((m) => m.name)),
+    ],
+  };
+}
+
 export type QuestPreview = {
   slots: PreviewSlot[];
+  /** Same-name movements of the file next to the hero's own, by name. */
+  clashes: string[];
   /** The hero's own quest this file would update, when it carries that quest's uuid. */
   existing: QuestTemplate | null;
 };
@@ -502,6 +566,7 @@ export async function previewQuest(file: QuestFile): Promise<QuestPreview> {
       const here = catalogue.find((e) => isUserExercise(e) && e.uuid === own.uuid) ?? null;
       return { exercise: here, available: true, target: target(here?.style ?? own.style) };
     }),
+    clashes: arrivals([file], catalogue).clashes,
     existing: templates.find((q) => isUserQuest(q) && q.uuid === file.quest.uuid) ?? null,
   };
 }
@@ -676,30 +741,31 @@ export async function writeImportedQuest(
  * `content://` from a chat or from Files). Read at once, the grant to a
  * `content://` lasts as long as the activity that received it.
  */
-export async function readBatiFile(uri: string): Promise<unknown> {
+export function readBatiFile(uri: string): unknown {
   // A provider's URI only. Both doors hand one over (the picker and a tapped file), and a path
   // into the filesystem could be `/dev/zero`, which reports no size and never ends.
   // ponytail: Android only. iOS's picker hands over a `file://` copy, which this refuses; the
   // day iOS ships, accept the picker's own copies here.
   if (!uri.startsWith("content://")) throw new QuestFileError("unreadable");
   const file = new File(uri);
-  // A provider that reports no size gets its text measured instead, which costs one read.
-  // ponytail: that read is unbounded when the provider lies about its size. The picker and the
-  //           open-with door both hand over a real file; bound the read the day a provider that
-  //           streams without a size shows up.
   if (file.size != null && file.size > MAX_FILE_BYTES) throw new QuestFileError("not_a_quest");
-  const raw = await file.text();
-  if (raw.length > MAX_FILE_BYTES) throw new QuestFileError("not_a_quest");
+  // Never `file.text()`: a provider that reports no size (a chat app's, often) would stream a
+  // file of any length into memory. One byte past the limit is enough to know it is too big.
+  // `readBytes` is synchronous: at most 8 MB, a few milliseconds.
+  let bytes: Uint8Array;
+  const handle = file.open();
+  try {
+    bytes = handle.readBytes(MAX_FILE_BYTES + 1);
+  } finally {
+    handle.close();
+  }
+  if (bytes.length > MAX_FILE_BYTES) throw new QuestFileError("not_a_quest");
+  const raw = new TextDecoder().decode(bytes);
   try {
     return JSON.parse(raw);
   } catch {
     throw new QuestFileError("unreadable");
   }
-}
-
-/** A quest file at `uri`, read and checked. */
-export async function readQuestFile(uri: string): Promise<QuestFile> {
-  return parseQuestData(await readBatiFile(uri));
 }
 
 /**

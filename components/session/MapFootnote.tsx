@@ -48,7 +48,7 @@ export function MapFootnote({
   compact = false,
 }: {
   quiet?: boolean;
-  /** The live map: only the offer's button, the sentence that confirms it stays on the recap. */
+  /** The live map: only the offer's button and the credit, the sentences that confirm it stay on the recap. */
   compact?: boolean;
 }) {
   const { t } = useTranslation();
@@ -88,8 +88,21 @@ export function MapFootnote({
         fontSize={11}
         color="$muted"
         style={{ textAlign: "center" }}
+        // One line on the live strip: at 130 % the credit took two, a third of the map band. Held
+        // at the designed size rather than shrunk: Android's adjustsFontSizeToFit on this
+        // word-sized backing cut "contributors." off instead (persona E audit, 14), and the credit
+        // is owed whole. At 11 sp it fits one line on a 360 dp phone.
+        {...(compact ? { maxFontSizeMultiplier: 1 } : {})}
+        // Over the live map the trace can run under the line (persona B audit, 130 %): a backing
+        // keeps both readable, sized to the words so the rest of the strip stays map.
+        {...(compact
+          ? { bg: "$bgOverlaySoft", self: "center", px: "$2", py: 2, rounded: "$2" }
+          : {})}
       >
-        {MAP_ATTRIBUTION} {t("recap.privacy")}
+        {/* The live map is a short strip: the credit alone, the privacy sentence is the recap's.
+            Both together took three lines at 130 % and covered the trace (persona audit 109). */}
+        {MAP_ATTRIBUTION}
+        {compact ? null : ` ${t("recap.privacy")}`}
       </AppText>
     );
   }

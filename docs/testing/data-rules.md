@@ -571,7 +571,9 @@ rounds, restSeconds, roundRestSeconds, image}, slots[]}`. Official movements tra
 name; hero movements travel whole (uuid, name, description, image, muscles, style, difficulty,
 equipment, pattern, measure, secondsPerRep). No sessions, no hero name. A slot whose exercise is
 not in the catalogue is silently dropped; a hero row without uuid throws; the placeholder cover
-travels as null. `src/questFile.ts` (`questToFile`).
+travels as null. `src/questFile.ts` (`questToFile`). The quest editor writes the description (the
+story or introduction) as one text of at most 280 characters, several lines allowed, in the four columns.
+What leaves is `questToShare` (`src/adventureFile.ts`), under R125.
 Invariant: `parse(export(q))` equals the exported structure.
 
 **R67. Limits on read:** file <= 8,000,000 bytes (declared size and text length), `content://`
@@ -607,13 +609,14 @@ the quest count unchanged; a failing import leaves counts unchanged.
 **R70b. A borrowed uuid overwrites the receiver's quest** (documented and previewed); an Admin
 quest is never overwritten (only `isUserQuest` rows match). `src/questFile.ts:525-527, 545`.
 
-**R122. Adventure file** = `{kind:'bati-adventure', version:1 | 2, adventure{uuid, title, description,
-cover, end}, steps[]}`; the `end` of a boss may carry `name` and `lines` (R126), and only a file that does is
-version 2, so a build before 0077 still opens every other file. Each step is `{quest, narrative, outro}`, the quest a seed one by `enTitle`
+**R122. Adventure file** = `{kind:'bati-adventure', version:1, adventure{uuid, title, description,
+cover, photo?, end}, steps[]}`; the `end` of a boss carries `name` and `lines` (R126), always written. The
+format was frozen at version 1 before its first release (2.13.0): from then on every addition is an optional
+field read by its name, and `VERSION` moves only for a field an older build must refuse. Each step is `{quest, narrative, outro}`, the quest a seed one by `enTitle`
 (`{official}`) or a hero one as a quest body (`{own: {quest, slots}}`, R66). The adventure's texts are
 single strings (the row repeats them in four columns). No run, victory, boss HP, weakness, resistance,
 sort order, sender or date. `src/adventureFile.ts`.
-Invariant: `parse(write(a))` equals `write(a)`, for both versions: the reader returns the version it read.
+Invariant: `parse(write(a))` equals `write(a)`. A version 2 file (what the unreleased dev builds wrote with a voice) is read as version 1.
 
 **R123. Limits on read:** the file limits of R67; 2 to 8 steps (fewer is `not_an_adventure`, more is
 `newer`, and the length is read before any element); title 1 to 60, description 280, narrative and outro
@@ -644,7 +647,10 @@ order, and the walk continues past one that does not fit; one `safeImage` would 
 charged and counts in `leftOut`. The written string is read back by `parseAdventureData` before it
 leaves. The hero is told the photos, the steps and the pictures left out before the share sheet opens.
 Invariant: for every adventure the editors can save, `parseAdventureData(JSON.parse(json))` does not
-throw and `json` is at most `MAX_FILE_BYTES` bytes.
+throw and `json` is at most `MAX_FILE_BYTES` bytes. A quest shared alone is held to the same: `questToShare`
+parses the body as its receiver would (and throws when that refuses it), puts the photos back under the
+same budget, reads the string back with `parseQuestData`, and the quest screen's dialog says
+`share_photos_*` and `share_photos_left_*` before the share sheet opens.
 
 ---
 
@@ -1025,13 +1031,14 @@ next hit the new monster's. The `boss_fights` columns are written at creation an
 Invariant: the fight's stats equal its adventure's at the next hit. `__tests__/db-hero-adventures.test.ts`.
 
 **R126. The boss's voice.** Migration 0077 gives `adventures` two nullable text columns, `bossName` and
-`bossLinesJson` (`{"idle":[],"crit":[],"enrage":[]}`, keys in that order, written by `db/bossVoice.ts`
-only). NULL on seeded rows, on a route and on a boss left unnamed and silent. They are texts, so
+`bossLinesJson` (`{"intro":[],"idle":[],"crit":[],"enrage":[],"defeat":[]}`, keys in that order, written by
+`db/bossVoice.ts` only; a row from before `intro` and `defeat` simply reads with none, no migration). NULL on seeded rows, on a route and on a boss left unnamed and silent. They are texts, so
 `updateHeroAdventure` writes them under a run too, and the stored end kind decides whether they are kept
 or cleared, never the draft's. The three `BossFight` builders read them from the adventure, like R121, so
 an edit applies on the next session. The hero's name replaces the painted one at every tier
 (`bossDisplayName`, `getKillReport`); the hero's lines join the painted pool for idle, crit and enrage,
-never resist. Merge needs no code: both columns travel with the row. Invariant: an Admin fight's name and
+never resist; `intro` (panel, first bubble) and `defeat` (victory card) have no painted pool and say their
+first line. Merge needs no code: both columns travel with the row. Invariant: an Admin fight's name and
 pool are unchanged. `__tests__/db-hero-adventures.test.ts`, `__tests__/boss-voice.test.ts`,
 `__tests__/db-peer-merge-adventures.test.ts`.
 

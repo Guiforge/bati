@@ -3,7 +3,7 @@ title: Exercise Catalogue
 type: screen
 route: /exercises
 status: active
-updated: 2026-08-16
+updated: 2026-10-21
 related: [exercise-details.md, quests.md, ../gameplay/quests.md]
 sources: ["app/exercises/index.tsx", "constants/exerciseFilters.ts", "components/exercises/ExerciseRow.tsx"]
 ---
@@ -22,11 +22,14 @@ could only be reached by accident. Roadmap 4.22 exists to give 4.4 somewhere to 
 
 ## Getting here
 
-The Dumbbell icon in the **[Quests gallery](quests.md)** header, beside the "+". No tab of its
+The Dumbbell icon in the **[Quests gallery](quests.md)** header, beside "Create". No tab of its
 own: five tabs is already the ceiling, and the catalogue is a reference book you consult, not a
 place you live.
 
 ## Main features on this page
+
+- **Create** (header): the **[Forge](forge.md)**, where "New exercise" lives. The Forge's "See all"
+  opens this list with **Mine** already on (`?mine=1`).
 
 - **Every movement, A–Z** by localized name — seed order was insertion order across six
   migrations and read as random.

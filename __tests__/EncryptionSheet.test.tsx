@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { Keyboard } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import type { EncryptionSheetMode } from "@/components/settings/EncryptionSheet";
@@ -193,8 +194,11 @@ describe("making a key", () => {
     expect(a.wordsChecked).not.toHaveBeenCalled();
 
     await type("vault-verify-1", "  TWO ");
+    const dismiss = jest.spyOn(Keyboard, "dismiss");
     await press("vault-verify-submit");
     await waitFor(() => expect(a.wordsChecked).toHaveBeenCalled());
+    // The words were typed with the keyboard up and the last step has no field.
+    await waitFor(() => expect(dismiss).toHaveBeenCalled());
     await waitFor(() => expect(screen.getByTestId("vault-warning")).toBeTruthy());
   });
 

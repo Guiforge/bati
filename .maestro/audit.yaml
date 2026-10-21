@@ -142,9 +142,13 @@ tags:
     id: "tab-quests"
     optional: true
 
-# The quest editor, empty — the screen that asks the most of a beginner.
+# The quest editor, empty — the screen that asks the most of a beginner. Through the Forge,
+# the one door: the header's "Create", then "New quest".
 - tapOn:
-    id: "quests-new"
+    id: "forge-open"
+    optional: true
+- tapOn:
+    id: "forge-quests-new"
     optional: true
 - waitForAnimationToEnd:
     timeout: 4000

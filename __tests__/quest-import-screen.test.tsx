@@ -10,13 +10,13 @@ import { rawColors } from "@/constants/rawColors";
 import type { QuestTemplate } from "@/db/quests";
 import { formatTarget } from "@/db/targets";
 import { holdIncomingFile, incomingFile } from "@/src/incomingFile";
-import { parseQuestFile, type QuestFile, QuestFileError, type QuestPreview } from "@/src/questFile";
+import { parseQuestData, type QuestFile, QuestFileError, type QuestPreview } from "@/src/questFile";
 import { reportError } from "@/src/reportError";
 import config from "@/tamagui.config";
 
 /**
  * The preview of a quest someone sent. The file is parsed and edited by the real code
- * (`parseQuestFile`, `editQuestFile`); only the reads and the write are stand-ins, so every test
+ * (`parseQuestData`, `editQuestFile`); only the reads and the write are stand-ins, so every test
  * asserts the file `importQuest` actually received rather than the screen's own idea of it.
  */
 const mockRead = jest.fn();
@@ -63,45 +63,44 @@ jest.mock("@/components/common/Toast", () => ({
 const UUID = "01890a5d-ac96-774b-bcce-b302099a8057";
 
 /** Three movements: a seed one this phone has, a seed one it lacks, and the sender's own. */
-const file: QuestFile = parseQuestFile(
-  JSON.stringify({
-    kind: "bati-quest",
-    version: 1,
-    quest: {
-      uuid: UUID,
-      title: { en: "Iron Dawn", fr: "Aube de fer", de: "Eisenmorgen", es: "Alba de hierro" },
-      description: { en: "Before the sun." },
-      rounds: 3,
-      restSeconds: 30,
-      roundRestSeconds: null,
-      image: null,
-    },
-    slots: [
-      { movement: { official: "Push-up" }, target: { type: "reps", min: 10, max: 12 } },
-      { movement: { official: "Moon Walk" }, target: { type: "time", min: 30, max: 30 } },
-      {
-        movement: {
-          own: {
-            uuid: "01890a5d-ac96-774b-bcce-b302099a8058",
-            name: "Bear crawl",
-            description: "",
-            image: "assets/placeholder.jpg",
-            muscles: [],
-            style: "calisthenics",
-            difficulty: "easy",
-            equipment: "none",
-            pattern: null,
-            measure: null,
-            secondsPerRep: 3,
-          },
+const file: QuestFile = parseQuestData({
+  kind: "bati-quest",
+  version: 1,
+  quest: {
+    uuid: UUID,
+    title: { en: "Iron Dawn", fr: "Aube de fer", de: "Eisenmorgen", es: "Alba de hierro" },
+    description: { en: "Before the sun." },
+    rounds: 3,
+    restSeconds: 30,
+    roundRestSeconds: null,
+    image: null,
+  },
+  slots: [
+    { movement: { official: "Push-up" }, target: { type: "reps", min: 10, max: 12 } },
+    { movement: { official: "Moon Walk" }, target: { type: "time", min: 30, max: 30 } },
+    {
+      movement: {
+        own: {
+          uuid: "01890a5d-ac96-774b-bcce-b302099a8058",
+          name: "Bear crawl",
+          description: "",
+          image: "assets/placeholder.jpg",
+          muscles: [],
+          style: "calisthenics",
+          difficulty: "easy",
+          equipment: "none",
+          pattern: null,
+          measure: null,
+          secondsPerRep: 3,
         },
-        target: { type: "reps", min: 8, max: 8 },
       },
-    ],
-  }),
-);
+      target: { type: "reps", min: 8, max: 8 },
+    },
+  ],
+});
 
-const preview = (existing: QuestTemplate | null = null): QuestPreview => ({
+const preview = (existing: QuestTemplate | null = null, clashes: string[] = []): QuestPreview => ({
+  clashes,
   slots: [
     { exercise: null, available: true, target: { type: "reps" as const, value: 10 } },
     { exercise: null, available: false, target: { type: "reps" as const, value: 5 } },
@@ -129,8 +128,8 @@ async function mount() {
   await render(wrap(<QuestImportScreen />));
 }
 
-async function mountReady(existing: QuestTemplate | null = null) {
-  mockPreview.mockResolvedValue(preview(existing));
+async function mountReady(existing: QuestTemplate | null = null, clashes: string[] = []) {
+  mockPreview.mockResolvedValue(preview(existing, clashes));
   await mount();
   await screen.findByTestId("quest-import-title");
 }
@@ -148,7 +147,7 @@ function imported(): QuestFile {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockParams.n = String(holdIncomingFile("content://chat/quest.json"));
+  mockParams.n = holdIncomingFile("content://chat/quest.json");
   mockSettings.language = "en";
   mockRead.mockResolvedValue(file);
   mockImport.mockResolvedValue({ id: 42, updated: false });
@@ -167,6 +166,25 @@ test("the title is the hero's language, and every movement this phone has comes 
   expect(slot(0).props.accessibilityState).toEqual({ checked: true, disabled: false });
   expect(slot(2).props.accessibilityState).toEqual({ checked: true, disabled: false });
   expect(screen.getByText("Bear crawl")).toBeTruthy();
+});
+
+test("an exercise named like one of the hero's says both will stay; none, no line", async () => {
+  await mountReady(null, ["Bear crawl"]);
+  expect(screen.getByTestId("import-clashes")).toBeTruthy();
+  expect(
+    screen.getByText("You already have an exercise named Bear crawl: both will stay."),
+  ).toBeTruthy();
+});
+
+test("an unticked exercise does not arrive, so its clash line goes", async () => {
+  await mountReady(null, ["Bear crawl"]);
+  await fireEvent.press(slot(2));
+  expect(screen.queryByTestId("import-clashes")).toBeNull();
+});
+
+test("with no same-name exercise there is no such line", async () => {
+  await mountReady();
+  expect(screen.queryByTestId("import-clashes")).toBeNull();
 });
 
 // A seed movement this version lacks refused the whole quest at import time.
@@ -442,9 +460,9 @@ describe("ImportFileButton", () => {
     await render(
       wrap(
         <ImportFileButton
-          label="quests.import_quest"
-          hint="quests.import_hint"
-          failed="quests.import_failed"
+          label="forge.import"
+          hint="forge.import_hint"
+          failed="forge.import_failed"
           testID="quest-import"
         />,
       ),
@@ -454,21 +472,19 @@ describe("ImportFileButton", () => {
 
   // The picker used to import on its own, past the preview a tapped file gets. The URI is held
   // aside, never in the route: the router decoded `%3A` in it, and Android refused the read.
-  test("a picked file opens the preview in place of the editor, its uri held exactly", async () => {
+  test("a picked file opens the preview, its uri held exactly, and leaves the page it was on", async () => {
     const uri =
       "content://com.android.externalstorage.documents/document/primary%3ADownload%2Fq.json";
     mockPick.mockResolvedValue(uri);
     mockRouter.canGoBack.mockReturnValue(true);
     await press();
 
-    expect(mockRouter.push).toHaveBeenCalledWith(expect.stringMatching(/^\/quest-import\?n=\d+$/));
+    expect(mockRouter.push).toHaveBeenCalledWith(
+      expect.stringMatching(/^\/quest-import\?n=[a-z0-9]{10}$/),
+    );
     const target = mockRouter.push.mock.calls[0]?.[0] as string;
     expect(incomingFile(target.split("=")[1])).toBe(uri);
-    // The empty editor closes first, or back from the imported quest landed on it.
-    expect(mockRouter.back).toHaveBeenCalledTimes(1);
-    expect(mockRouter.back.mock.invocationCallOrder[0]).toBeLessThan(
-      mockRouter.push.mock.invocationCallOrder[0] ?? 0,
-    );
+    expect(mockRouter.back).not.toHaveBeenCalled();
     expect(mockRouter.replace).not.toHaveBeenCalled();
     expect(mockImport).not.toHaveBeenCalled();
   });
@@ -486,7 +502,7 @@ describe("ImportFileButton", () => {
     mockPick.mockRejectedValue(boom);
     await press();
 
-    expect(mockShowError).toHaveBeenCalledWith("The quest could not be imported. Try again.");
+    expect(mockShowError).toHaveBeenCalledWith("The file could not be opened. Try again.");
     expect(reportError).toHaveBeenCalledWith("quests.import", boom);
     expect(mockRouter.push).not.toHaveBeenCalled();
   });
@@ -540,7 +556,7 @@ test("a second file opened over the preview is read afresh", async () => {
   expect(slot(0).props.accessibilityState.checked).toBe(false);
 
   mockRead.mockClear();
-  mockParams.n = String(holdIncomingFile("content://chat/second.json"));
+  mockParams.n = holdIncomingFile("content://chat/second.json");
   await screen.rerender(wrap(<QuestImportScreen />));
   await screen.findByTestId("quest-import-title");
 

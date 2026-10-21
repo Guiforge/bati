@@ -102,7 +102,7 @@ test("the rule is one tap away and says what is earned without it", async () => 
   await mount({ type: "time", seconds: 1800 });
   await fireEvent.press(await screen.findByTestId("goal-gps-rule-link"));
   expect(screen.getByTestId("goal-gps-rule").props.children).toBe(
-    "Without GPS, your outing counts by time: flame, XP, but no leagues until you add the distance.",
+    "Without GPS, your outing counts by time: flame, XP, but no leagues (one league is one kilometre) until you add the distance.",
   );
 });
 

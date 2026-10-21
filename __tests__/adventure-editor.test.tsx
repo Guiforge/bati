@@ -204,7 +204,7 @@ describe("a new adventure", () => {
         description: "",
         imagePath: expect.any(String),
         end: { kind: "boss", monster: "iron_golem" },
-        voice: { name: "", lines: { idle: [], crit: [], enrage: [] } },
+        voice: { name: "", lines: { intro: [], idle: [], crit: [], enrage: [], defeat: [] } },
         steps: [
           { questId: 1, narrative: "Cold.", outro: "" },
           { questId: 101, narrative: "", outro: "" },
@@ -251,10 +251,10 @@ describe("a new adventure", () => {
     expect(hero().createHeroAdventure).not.toHaveBeenCalled();
   });
 
-  test("the cover offers no photo: it must be one of the bundled covers", async () => {
+  test("the cover offers the photo tile, as a quest's does", async () => {
     const editor = await mount();
     await fireEvent.press(editor.getByTestId("image-choice-preview"));
-    expect(editor.queryByTestId("image-choice-photo")).toBeNull();
+    expect(editor.getByTestId("image-choice-photo")).toBeTruthy();
   });
 });
 
@@ -264,7 +264,7 @@ describe("an adventure being edited", () => {
     description: "Once",
     imagePath: "the_golem",
     end: { kind: "route" },
-    voice: { name: "", lines: { idle: [], crit: [], enrage: [] } },
+    voice: { name: "", lines: { intro: [], idle: [], crit: [], enrage: [], defeat: [] } },
     steps: [
       { questId: 1, narrative: "a", outro: "back" },
       { questId: 2, narrative: "b", outro: "" },
@@ -356,7 +356,10 @@ describe("the boss's voice", () => {
     description: "",
     imagePath: "the_golem",
     end: { kind: "boss", monster: "iron_golem" },
-    voice: { name: "Nightcoil", lines: { idle: ["Again."], crit: [], enrage: [] } },
+    voice: {
+      name: "Nightcoil",
+      lines: { intro: [], idle: ["Again."], crit: [], enrage: [], defeat: [] },
+    },
     steps: [
       { questId: 1, narrative: "", outro: "" },
       { questId: 2, narrative: "", outro: "" },
@@ -364,14 +367,24 @@ describe("the boss's voice", () => {
     frozen,
   });
 
-  test("the block shows for a boss only, and keeps what was typed through a switch to route", async () => {
+  const openVoice = (editor: Awaited<ReturnType<typeof mount>>) =>
+    fireEvent.press(editor.getByTestId("editor-boss-voice-toggle"));
+
+  test("the block shows for a boss only, folded until opened, and keeps what was typed through a switch to route", async () => {
     const editor = await mount();
-    expect(editor.queryByTestId("editor-boss-name")).toBeNull();
+    expect(editor.queryByTestId("editor-boss-voice-toggle")).toBeNull();
     await fireEvent.press(editor.getByTestId("editor-end-boss"));
+    // Folded by default: the editor is no longer for the hero who writes no voice.
+    expect(editor.queryByTestId("editor-boss-name")).toBeNull();
+    await openVoice(editor);
+    for (const m of ["intro", "idle", "crit", "enrage", "defeat"]) {
+      expect(editor.getByTestId(`editor-boss-lines-${m}`)).toBeTruthy();
+    }
     await fireEvent.changeText(editor.getByTestId("editor-boss-name"), "Nightcoil");
     await fireEvent.press(editor.getByTestId("editor-end-route"));
     expect(editor.queryByTestId("editor-boss-name")).toBeNull();
     await fireEvent.press(editor.getByTestId("editor-end-boss"));
+    await openVoice(editor);
     expect(editor.getByDisplayValue("Nightcoil")).toBeTruthy();
   });
 
@@ -380,7 +393,10 @@ describe("the boss's voice", () => {
     await fireEvent.changeText(editor.getByTestId("adventure-name"), "Tale");
     await pick(editor, 1, 2);
     await fireEvent.press(editor.getByTestId("editor-end-boss"));
+    await openVoice(editor);
     await fireEvent.changeText(editor.getByTestId("editor-boss-name"), "Nightcoil");
+    await fireEvent.changeText(editor.getByTestId("editor-boss-lines-intro"), "Who dares?");
+    await fireEvent.changeText(editor.getByTestId("editor-boss-lines-defeat"), "Not like this.");
     await fireEvent.changeText(editor.getByTestId("editor-boss-lines-idle"), "a\nb\nc\nd");
     await fireEvent.changeText(editor.getByTestId("editor-boss-lines-crit"), "x".repeat(70));
     // Kept in the field: cutting it there ate the Enter and glued the next words onto line 3.
@@ -391,7 +407,13 @@ describe("the boss's voice", () => {
         expect.objectContaining({
           voice: {
             name: "Nightcoil",
-            lines: { idle: ["a", "b", "c"], crit: ["x".repeat(60)], enrage: [] },
+            lines: {
+              intro: ["Who dares?"],
+              idle: ["a", "b", "c"],
+              crit: ["x".repeat(60)],
+              enrage: [],
+              defeat: ["Not like this."],
+            },
           },
         }),
       ),
@@ -403,6 +425,7 @@ describe("the boss's voice", () => {
     hero().loadHeroAdventureDraft?.mockResolvedValue(bossDraft(true));
     const editor = await mount();
     expect(await editor.findByTestId("editor-frozen")).toBeTruthy();
+    await fireEvent.press(await editor.findByTestId("editor-boss-voice-toggle"));
     await fireEvent.changeText(await editor.findByTestId("editor-boss-name"), "Nightcoil II");
     await fireEvent.press(editor.getByTestId("adventure-save"));
     await waitFor(() =>
@@ -422,6 +445,7 @@ describe("the boss's voice", () => {
     const editor = await mount();
     await editor.findByDisplayValue("Tale");
     expect(editor.getByTestId("editor-summary")).toHaveTextContent(/Nightcoil/);
+    await openVoice(editor);
     await fireEvent.changeText(editor.getByTestId("editor-boss-name"), "");
     expect(editor.getByTestId("editor-summary")).not.toHaveTextContent(/Nightcoil/);
   });

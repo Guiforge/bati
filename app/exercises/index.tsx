@@ -1,5 +1,5 @@
 import { LegendList } from "@legendapp/list/react-native";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform } from "react-native";
@@ -7,12 +7,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Input, Paragraph, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
-import { Chip } from "@/components/common/Chip";
 import { FilterRail, type RailGroup } from "@/components/common/FilterRail";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { ExerciseRow } from "@/components/exercises/ExerciseRow";
 import { MineCaption } from "@/components/exercises/MineCaption";
-import { ChevronLeft, ChevronRight, Link2, Plus, Search } from "@/components/icons";
+import { ForgeButton } from "@/components/forge/ForgeButton";
+import { ChevronLeft, ChevronRight, Link2, Search } from "@/components/icons";
 import { getExerciseThumb } from "@/constants/assetMap";
 import {
   buildLeadsTo,
@@ -147,7 +147,12 @@ export default function ExerciseCatalogue() {
   const language = useSettingsStore((s) => s.language);
 
   const [state, setState] = useState<LoadState>({ status: "loading", exercises: [] });
-  const [filters, setFilters] = useState<ExerciseFilters>(NO_EXERCISE_FILTERS);
+  // The Forge's "See all" arrives with the hero's own movements already chosen.
+  const { mine } = useLocalSearchParams<{ mine?: string }>();
+  const [filters, setFilters] = useState<ExerciseFilters>({
+    ...NO_EXERCISE_FILTERS,
+    mine: mine === "1",
+  });
 
   const load = useCallback(async () => {
     setState((s) => (s.exercises.length > 0 ? s : { status: "loading", exercises: [] }));
@@ -368,20 +373,12 @@ export default function ExerciseCatalogue() {
               {t("exercises.catalogue_title")}
             </Text>
           </XStack>
-          <AppIconButton
-            testID="exercise-create"
-            onPress={() => router.push("/exercises/new" as never)}
-            accessibilityRole="button"
-            accessibilityLabel={t("exercise_editor.title_new")}
-          >
-            <Plus size={22} color="$text" strokeWidth={2.5} />
-          </AppIconButton>
-          <Chip
-            label={t("exercises.count", {
-              count: visible.length,
-            })}
-          />
+          <ForgeButton />
         </XStack>
+        {/* The count leaves the title row: beside "Create" it cut the title to "E…" at 130 %. */}
+        <Text color="$textSecondary" fontSize={13}>
+          {t("exercises.count", { count: visible.length })}
+        </Text>
 
         <XStack items="center" gap="$2">
           <Input

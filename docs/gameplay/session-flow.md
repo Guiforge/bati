@@ -145,8 +145,9 @@ was there for it.
 - **Target**: HUGE number, impossible to miss. For reps, a small "Objectif" label sits above it
   (it reads "Objectif 13" once the hero moved the count, so the target never leaves the screen).
 - **Last time and to beat** (`GhostLine`): "la dernière fois 12" is always there, and "· à battre
-  16" beside it when the record is above the objective (it is not repeated when it equals the
-  objective). The number is `toBeat`, the wall's rule. Passing it stamps "Past your best" in place
+  16" beside it only when it is *under* the objective: the objective is the coach's rule (double
+  progression, light week, return after a pause) and "to beat" is never offered above it. The
+  number is `toBeat`, the wall's rule. Passing it stamps "Past your best" in place
   of the "to beat" half only; past an aged record (over 60 days, not matched this season) the stamp
   says "Past your season best".
 - **One sentence** under it when the objective is under what the hero did last time: after a

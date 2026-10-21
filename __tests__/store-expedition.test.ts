@@ -248,17 +248,29 @@ describe("stores/expedition", () => {
     expect(mockSetReached).not.toHaveBeenCalled();
   });
 
-  // The buffer is what a crash costs. Thirty seconds, never the run.
-  test("points are written in batches rather than one at a time", async () => {
+  // The buffer is what a crash costs. Five seconds, never the run.
+  test("points are written in batches of five rather than one at a time", async () => {
     await store.getState().begin("s1", NOTIFICATION, false, "metric");
 
-    for (let i = 0; i < 29; i++) emit(walking(i));
+    for (let i = 0; i < 4; i++) emit(walking(i));
     expect(mockAppendPoints).not.toHaveBeenCalled();
 
-    emit(walking(29));
+    emit(walking(4));
     expect(mockAppendPoints).toHaveBeenCalledTimes(1);
     expect(mockAppendPoints).toHaveBeenCalledWith("s1", expect.any(Array));
-    expect(mockAppendPoints.mock.calls[0]?.[1]).toHaveLength(30);
+    expect(mockAppendPoints.mock.calls[0]?.[1]).toHaveLength(5);
+  });
+
+  test("a kill after thirty seconds costs at most five fixes, and the notification still updates every thirty", async () => {
+    await store.getState().begin("s1", NOTIFICATION, false, "metric");
+    mockSetProgress.mockClear();
+
+    for (let i = 0; i < 33; i++) emit(walking(i));
+
+    // Six full batches written, three fixes still in memory: that is all a kill could take.
+    const written = mockAppendPoints.mock.calls.reduce((n, c) => n + (c[1] as unknown[]).length, 0);
+    expect(written).toBe(30);
+    expect(mockSetProgress).toHaveBeenCalledTimes(1);
   });
 
   test("ending writes what the buffer still holds, then stops the service", async () => {
@@ -412,6 +424,15 @@ describe("stores/expedition", () => {
     // Twenty-nine steps of 1.4 m, minus the gate the reducer holds open for the first three.
     // Time first, because it is the only half that exists on every walk.
     expect(mockSetProgress.mock.calls.at(-1)?.[0]).toMatch(/^32:04 · \d+ m$/);
+  });
+
+  // The recovery card restarts the receiver before any session holds the walk: no clock to read.
+  test("with no session holding the walk, the notification times it by its trace, not 0:00", async () => {
+    mockElapsedSeconds = 0;
+    await store.getState().begin("s1", NOTIFICATION, false, "metric");
+    for (let i = 0; i < 30; i += 1) emit(walking(i));
+
+    expect(mockSetProgress.mock.calls.at(-1)?.[0]).toMatch(/^0:[12]\d · \d+ m$/);
   });
 
   describe("the outing display", () => {

@@ -152,6 +152,7 @@ export function ImageChoiceField({
                 testID="image-choice-photo"
                 onPress={pickPhoto}
                 disabled={busy}
+                aria-disabled={busy}
                 width={TILE}
                 height={TILE}
                 items="center"

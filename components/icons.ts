@@ -34,6 +34,7 @@ export { Flame } from "@tamagui/lucide-icons/icons/Flame";
 export { FolderDown } from "@tamagui/lucide-icons/icons/FolderDown";
 export { Footprints } from "@tamagui/lucide-icons/icons/Footprints";
 export { Gem } from "@tamagui/lucide-icons/icons/Gem";
+export { Hammer } from "@tamagui/lucide-icons/icons/Hammer";
 export { HeartPulse } from "@tamagui/lucide-icons/icons/HeartPulse";
 export { Home } from "@tamagui/lucide-icons/icons/Home";
 export { ImagePlus } from "@tamagui/lucide-icons/icons/ImagePlus";

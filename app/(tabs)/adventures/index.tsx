@@ -19,6 +19,7 @@ import { Chip } from "@/components/common/Chip";
 import { GameIcon } from "@/components/common/GameIcon";
 import { Recitatif } from "@/components/common/Recitatif";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
+import { ForgeButton } from "@/components/forge/ForgeButton";
 import { Skull, Sparkles } from "@/components/icons";
 import { getAdventureAsset } from "@/constants/assetMap";
 import {
@@ -323,18 +324,11 @@ function AdventureCard({
 // Hoisted so the list doesn't get a fresh function identity on every parent render.
 /** "Tes aventures", above the hero's own posters. */
 type YoursHeaderRow = { yoursHeader: true };
-/** The way to write one: after the hero's own, or after the game's when there are none. */
-type WriteRowItem = { writeRow: true };
-type GalleryItem = AdventureRow | YoursHeaderRow | WriteRowItem;
+type GalleryItem = AdventureRow | YoursHeaderRow;
 
 const adventureKey = (item: GalleryItem) =>
-  "yoursHeader" in item
-    ? "yours-header"
-    : "writeRow" in item
-      ? "write-row"
-      : String(item.adventure.id);
-const itemType = (item: GalleryItem) =>
-  "yoursHeader" in item ? "header" : "writeRow" in item ? "write" : "poster";
+  "yoursHeader" in item ? "yours-header" : String(item.adventure.id);
+const itemType = (item: GalleryItem) => ("yoursHeader" in item ? "header" : "poster");
 
 function YoursHeader() {
   const { t } = useTranslation();
@@ -343,17 +337,6 @@ function YoursHeader() {
       <Text fontFamily="$heading" fontWeight="700" fontSize={18} color="$text">
         {t("adventures.yours_section")}
       </Text>
-    </YStack>
-  );
-}
-
-function WriteRow({ onWrite }: { onWrite: () => void }) {
-  const { t } = useTranslation();
-  return (
-    <YStack px="$5">
-      <AppButton testID="adventures-write" variant="outline" onPress={onWrite}>
-        {t("adventures.write")}
-      </AppButton>
     </YStack>
   );
 }
@@ -548,9 +531,9 @@ export default function AdventuresGallery() {
     const own = adventures
       .filter((a) => a.author === USER_QUEST_AUTHOR && (a.isActive === 1 || runningIds.has(a.id)))
       .sort((a, b) => (b.updatedAt?.getTime() ?? 0) - (a.updatedAt?.getTime() ?? 0));
+    // Writing one is the header's "Create" (the Forge), so the posters lead.
     const rows: GalleryItem[] = order(game).map(build);
     if (own.length > 0) rows.push({ yoursHeader: true }, ...order(own).map(build));
-    rows.push({ writeRow: true });
     return rows;
   }, [adventures, finishedCounts, runningIds, language, t, previews, activeProgress, pace]);
 
@@ -562,8 +545,6 @@ export default function AdventuresGallery() {
   const renderItem = ({ item }: { item: GalleryItem }) =>
     "yoursHeader" in item ? (
       <YoursHeader />
-    ) : "writeRow" in item ? (
-      <WriteRow onWrite={onWrite} />
     ) : (
       <AdventureCard
         row={item}
@@ -577,11 +558,22 @@ export default function AdventuresGallery() {
   return (
     <YStack testID="adventures-screen" flex={1} bg="$background">
       <YStack bg="$background" pt={insets.top + 12} px="$5" pb="$3" gap="$1">
-        <XStack items="center" gap="$2">
-          <Sparkles size={18} color="$text" strokeWidth={2.5} />
-          <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
-            {title}
-          </Text>
+        {/* The title gives way, never the button: it wraps, since one line cut it to "Galerie des avent…" at 130 %. */}
+        <XStack items="center" justify="space-between" gap="$2">
+          <XStack items="center" gap="$2" flex={1} minW={0}>
+            <Sparkles size={18} color="$text" strokeWidth={2.5} />
+            <Text
+              flex={1}
+              fontFamily="$heading"
+              fontWeight="700"
+              fontSize={20}
+              color="$text"
+              numberOfLines={2}
+            >
+              {title}
+            </Text>
+          </XStack>
+          <ForgeButton />
         </XStack>
         <Text color="$textSecondary" fontSize={13}>
           {t("adventures.gallery_subtitle")}

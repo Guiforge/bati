@@ -10,7 +10,9 @@ import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { useToast } from "@/components/common/Toast";
 import { Download, Info } from "@/components/icons";
+import { ImportArrives, ImportClashes } from "@/components/quests/ImportNotes";
 import { ADVENTURE_ASSETS, getAdventureAsset } from "@/constants/assetMap";
+import { BOSS_LINE_MOMENTS, type HeroBossLines } from "@/db/bossVoice";
 import {
   type AdventureFile,
   AdventureFileError,
@@ -48,7 +50,7 @@ export function AdventureImport({
   const { existing, running } = preview;
   // A run under way forces the copy, so the chips are not offered and the button says "add".
   const updating = existing !== null && !asCopy && !running;
-  const cover = coverKey(adventure.cover);
+  const cover = coverKey(adventure);
 
   // No try/finally: the React Compiler does not compile a function that has one.
   const onImport = async () => {
@@ -102,6 +104,9 @@ export function AdventureImport({
                 })
               : t("adventures.editor_end_route")}
           </Text>
+          {/* What the boss will say, read before the hero walks in: a line from a friend is no
+              surprise in the middle of a set. A boss this version lacks arrives as a route, with none. */}
+          <BossLines end={adventure.end} known={preview.monster !== null} />
           {preview.monsterUnknown ? (
             <Text testID="adventure-import-boss-unknown" color="$textSecondary" fontSize={13}>
               {t("adventures.import_boss_unknown")}
@@ -140,6 +145,9 @@ export function AdventureImport({
             )}
           </Card>
         ) : null}
+
+        <ImportArrives arrives={preview.arrives} />
+        <ImportClashes names={preview.arrives.clashes} />
 
         <YStack gap="$2">
           <Text fontWeight="700" fontSize={14} color="$textSecondary">
@@ -193,13 +201,37 @@ function StepRow({ index, step }: { index: number; step: AdventurePreview["steps
   );
 }
 
+function BossLines({ end, known }: { end: AdventureFile["adventure"]["end"]; known: boolean }) {
+  const { t } = useTranslation();
+  const lines: HeroBossLines | undefined = known && end.kind === "boss" ? end.lines : undefined;
+  const spoken = BOSS_LINE_MOMENTS.filter((m) => (lines?.[m].length ?? 0) > 0);
+  if (spoken.length === 0) return null;
+  return (
+    <YStack testID="adventure-import-boss-lines" gap="$2" pt="$1">
+      {spoken.map((m) => (
+        <YStack key={m} gap={2}>
+          <Text fontSize={13} fontWeight="700" color="$textSecondary">
+            {t(`adventures.editor_boss_lines_${m}`)}
+          </Text>
+          {lines?.[m].map((line) => (
+            <Text key={line} color="$text" fontStyle="italic">
+              {line}
+            </Text>
+          ))}
+        </YStack>
+      ))}
+    </YStack>
+  );
+}
+
 /** The name the file's sender gave their boss, else the painted one's. */
 function bossLabel(end: AdventureFile["adventure"]["end"], painted: string): string {
   return (end.kind === "boss" && end.name) || painted;
 }
 
-/** The file's cover when this version has that art, else the default cover. */
-function coverKey(cover: string | null): string {
+/** The file's photo, else its bundled cover when this version has that art, else the default cover. */
+function coverKey({ photo, cover }: AdventureFile["adventure"]): string {
+  if (photo) return photo;
   return cover !== null && Object.hasOwn(ADVENTURE_ASSETS, cover)
     ? cover
     : (Object.keys(ADVENTURE_ASSETS)[0] ?? "");

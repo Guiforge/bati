@@ -3,7 +3,7 @@ title: Adventures Gallery
 type: screen
 route: /adventures
 status: active
-updated: 2026-10-17
+updated: 2026-10-21
 related: [adventure-details.md, ../gameplay/adventures.md]
 sources: [app/(tabs)/adventures/index.tsx, app/(tabs)/adventures/edit.tsx]
 ---
@@ -25,8 +25,7 @@ The Adventures gallery is where you browse and choose a campaign to follow over 
   - event adventure (seasonal)
 - **Get a quick preview**: what kind of journey it is and roughly what it involves.
 - **Your adventures**: the ones the hero wrote sit under their own header, newest first, each marked
-  "Écrite par toi", and a **write row** ("Écrire une aventure") ends the section (or the game's section
-  when there are none). A hero adventure whose first step lost its quest stays, with no duration or XP,
+  "Écrite par toi". Writing one starts from the header's **Create**, which opens the **[Forge](forge.md)**; the gallery no longer opens on a write button above the game's posters (an empty gallery keeps its direct one). A hero adventure whose first step lost its quest stays, with no duration or XP,
   and says so. One retired on another device stays while a run of it is under way here. Every adventure
   under way sorts first.
 
@@ -39,7 +38,7 @@ The Adventures gallery is where you browse and choose a campaign to follow over 
 ## Typical user actions
 
 - Pick a new adventure.
-- Write one: the write row opens **[the editor](adventure-editor.md)**.
+- Write one: **Create** opens the **[Forge](forge.md)**, whose "Write an adventure" opens **[the editor](adventure-editor.md)**.
 - Return to an in-progress adventure.
 
 ## What happens next

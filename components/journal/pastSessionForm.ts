@@ -65,10 +65,14 @@ export function openingDay(
   handDays: ReadonlySet<string>,
   durationSeconds: number,
   measured: readonly MeasuredSpan[],
+  firstMeasuredAt: Date | null = null,
 ): { day: Date; end: Date } {
+  // Nothing is noted before the first measured session: opening there would open on a refusal.
+  const first = firstMeasuredAt === null ? "" : dayKey(firstMeasuredAt);
   for (const choice of dayChoices(now)) {
     const { day, end } = settleDay(choice, now, durationSeconds, measured);
-    if (!handDays.has(dayKey(filedDay(end, durationSeconds)))) return { day, end };
+    const filed = dayKey(filedDay(end, durationSeconds));
+    if (filed >= first && !handDays.has(filed)) return { day, end };
   }
   return {
     day: startOfDay(now),
@@ -131,7 +135,20 @@ export function typedEnd(
   clock: { hours: number; minutes: number },
   now: Date,
 ): Date {
-  const day = filedDay(current, durationSeconds);
+  return typedEndOn(filedDay(current, durationSeconds), durationSeconds, clock, now);
+}
+
+/**
+ * `typedEnd` for a day the hero names (a tap on its chip) rather than one read off the end: the
+ * chip names the day the entry is FILED under, so a typed 00:10 re-tapped on "yesterday" must stay
+ * just after midnight, and not move to yesterday's 00:10, which files it the day before.
+ */
+export function typedEndOn(
+  day: Date,
+  durationSeconds: number,
+  clock: { hours: number; minutes: number },
+  now: Date,
+): Date {
   const same = endOn(day, clock);
   for (const c of [endOn(addDays(day, 1), clock), same]) {
     if (c <= now && dayKey(filedDay(c, durationSeconds)) === dayKey(day)) return c;
@@ -152,11 +169,13 @@ export function parseDistanceM(text: string, metresPerUnit: number): number | nu
   return Number.isFinite(n) && n > 0 ? Math.round(n * metresPerUnit) : null;
 }
 
-/** Which of the three sentences the Toast says, read after the write. */
+/** Which of the four sentences the Toast says, read after the write. */
 export function toastKey(result: {
   flameActive: boolean;
   oathKept: boolean;
-}): "toast_oath" | "toast_flame" | "toast_noted" {
+  xp: number;
+}): "toast_oath" | "toast_flame" | "toast_noted" | "toast_unpaid" {
   if (result.oathKept) return "toast_oath";
+  if (result.xp === 0) return "toast_unpaid";
   return result.flameActive ? "toast_flame" : "toast_noted";
 }

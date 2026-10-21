@@ -28,6 +28,8 @@ const REFUSED_KEY = "lightWeekRefusedAt";
 const ACCEPTED_KEY = "lightWeekAcceptedAt";
 /** The hero ended the week early; it counts only if it is later than the acceptance. */
 const ENDED_KEY = "lightWeekEndedAt";
+/** The two answers that start or stop a week: whatever reads "is one running" changes with them. */
+export const LIGHT_WEEK_RUNNING_KEYS = [ACCEPTED_KEY, ENDED_KEY] as const;
 
 /** A workout as the offer reads it: when, and whether more than half of its strength sets missed. */
 export type LightWeekSession = { at: Date; under: boolean };

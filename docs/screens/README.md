@@ -32,6 +32,9 @@ Maintained per the [wiki protocol](../meta/wiki-protocol.md).
 - [adventure-details.md](adventure-details.md) — steps + progress → Quest Details
 - [adventure-editor.md](adventure-editor.md) — write, edit or retire an adventure of one's own
 
+**Making things**
+- [forge.md](forge.md) — what the hero made, the doors to make more, the one import door
+
 **Progression & rewards**
 - [village.md](village.md) — visual reward layer (village growth)
 

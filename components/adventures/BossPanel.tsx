@@ -91,7 +91,9 @@ export function BossPanel({ fight, language }: { fight: BossFight; language: App
 
         <XStack items="center" gap="$2">
           <Text flex={1} fontSize={12} color="$textSecondary">
-            {isDefeated ? t("boss.victory_subtitle") : t("boss.fight_intro")}
+            {isDefeated
+              ? t("boss.victory_subtitle")
+              : (fight.bossLines?.intro[0] ?? t("boss.fight_intro"))}
           </Text>
           {/* Threat, as skulls, from the pool the hero is actually facing — level scaling and
               rematch tier included. The Golem's 278 and a legendary Ranger's 2230 are different

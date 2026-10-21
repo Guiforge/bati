@@ -12,6 +12,11 @@ import { localizedName } from "@/src/i18n/localized";
  * inventing a fifteenth way to say "leagues covered".
  */
 export function roadLine(road: VillageBuilding, language: AppLanguage, t: TFunction): string {
+  // "0/1 lieues" alone reads as a count of something unexplained (persona audit 2, 34 and 36).
+  return `${roadFraction(road, language, t)}\n${t("village.league_unit")}`;
+}
+
+function roadFraction(road: VillageBuilding, language: AppLanguage, t: TFunction): string {
   const building = localizedName(road, language);
   if (road.nextTarget === null) {
     return `${building} · ${t("village.detail_leagues_driver", { count: road.metricValue })}`;

@@ -115,7 +115,7 @@ describe("db/bossFights", () => {
       .run(lines, BOSS_WITH_HP);
     const expected = {
       bossName: "Nightcoil",
-      bossLines: { idle: ["Again."], crit: [], enrage: ["Enough."] },
+      bossLines: { intro: [], idle: ["Again."], crit: [], enrage: ["Enough."], defeat: [] },
     };
 
     // New fight.
@@ -131,7 +131,7 @@ describe("db/bossFights", () => {
       .run(BOSS_WITH_HP);
     expect(await b.getOrCreateBossFight(BOSS_WITH_HP, "medium")).toMatchObject({
       bossName: "Nightcoil II",
-      bossLines: { idle: [], crit: [], enrage: [] },
+      bossLines: { intro: [], idle: [], crit: [], enrage: [], defeat: [] },
     });
   });
 
@@ -139,7 +139,7 @@ describe("db/bossFights", () => {
     noCrits();
     const fight = await boss().getOrCreateBossFight(BOSS_DERIVED_HP, "medium");
     expect(fight?.bossName).toBeNull();
-    expect(fight?.bossLines).toEqual({ idle: [], crit: [], enrage: [] });
+    expect(fight?.bossLines).toEqual({ intro: [], idle: [], crit: [], enrage: [], defeat: [] });
   });
 
   test("a fight in progress is re-read at its current HP, not its total", async () => {

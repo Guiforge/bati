@@ -38,18 +38,25 @@ jest.mock("@/db/exercises", () => ({
 }));
 
 import {
+  parseQuestData,
   pickQuestFile,
   QUEST_FILE_REFUSALS,
   QuestFileError,
-  readQuestFile,
+  readBatiFile,
   shareQuest,
 } from "@/src/questFile";
 
 /** A file at a uri, as `new File(uri)` would open it. */
-const opened = (size: number | null, body = "{}") => ({
-  size,
-  text: jest.fn(() => Promise.resolve(body)),
-});
+const opened = (size: number | null, body = "{}") => {
+  const handle = {
+    readBytes: jest.fn((n: number) => new TextEncoder().encode(body).subarray(0, n)),
+    close: jest.fn(),
+  };
+  return { size, text: jest.fn(), open: jest.fn(() => handle), handle };
+};
+
+/** What the import screen does: read the file, then check it. A sync throw becomes a rejection. */
+const read = (uri: string) => Promise.resolve().then(() => parseQuestData(readBatiFile(uri)));
 
 const refusal = async (pending: Promise<unknown>) => {
   try {
@@ -87,35 +94,39 @@ test("the picker hands back the uri it chose, unread", async () => {
 test("a file of excessive size is refused before it is read", async () => {
   const file = opened(9_000_000);
   mockOpen.mockReturnValue(file);
-  expect(await refusal(readQuestFile("content://chat/1"))).toBe("not_a_quest");
+  expect(await refusal(read("content://chat/1"))).toBe("not_a_quest");
   expect(file.text).not.toHaveBeenCalled();
   expect(mockOpen).toHaveBeenCalledWith("content://chat/1");
 });
 
 // A chat app's provider often reports no size. Refusing those refused most files a hero is sent,
-// so the text is read and measured instead.
-test("a file of unknown size is read, and refused only if its text is too long", async () => {
-  mockOpen.mockReturnValue(opened(null, "x".repeat(8_000_001)));
-  expect(await refusal(readQuestFile("content://chat/2"))).toBe("not_a_quest");
+// so the read is bounded instead: at most the limit plus one byte, never the whole file.
+test("a file of unknown size is read to the limit plus one byte, never whole", async () => {
+  const big = opened(null, "x".repeat(8_000_050));
+  mockOpen.mockReturnValue(big);
+  expect(await refusal(read("content://chat/2"))).toBe("not_a_quest");
+  expect(big.handle.readBytes).toHaveBeenCalledWith(8_000_001);
+  expect(big.handle.close).toHaveBeenCalled();
+  expect(big.text).not.toHaveBeenCalled();
 
   mockOpen.mockReturnValue(opened(null, "{oops"));
   // Read and parsed: refused for what it says, not for its size.
-  expect(await refusal(readQuestFile("content://chat/3"))).toBe("unreadable");
+  expect(await refusal(read("content://chat/3"))).toBe("unreadable");
 });
 
 test("a filesystem path is never read: it could be /dev/zero or Bati's own files", async () => {
   mockOpen.mockReturnValue(opened(0, "{}"));
-  expect(await refusal(readQuestFile("file:///dev/zero"))).toBe("unreadable");
-  expect(await refusal(readQuestFile("/data/user/0/com.guiforge.bati/files/x"))).toBe("unreadable");
+  expect(await refusal(read("file:///dev/zero"))).toBe("unreadable");
+  expect(await refusal(read("/data/user/0/com.guiforge.bati/files/x"))).toBe("unreadable");
   expect(mockOpen).not.toHaveBeenCalled();
 });
 
 test("a file within its size is parsed", async () => {
   mockOpen.mockReturnValue(opened(10, "{oops"));
-  expect(await refusal(readQuestFile("content://downloads/q.json"))).toBe("unreadable");
+  expect(await refusal(read("content://downloads/q.json"))).toBe("unreadable");
 
   mockOpen.mockReturnValue(opened(8_000_000, JSON.stringify({ kind: "bati-quest" })));
-  expect(await refusal(readQuestFile("content://downloads/q.json"))).toBe("not_a_quest");
+  expect(await refusal(read("content://downloads/q.json"))).toBe("not_a_quest");
 });
 
 describe("sharing a quest", () => {
@@ -138,7 +149,6 @@ describe("sharing a quest", () => {
   });
   /** The file name `shareQuest` wrote under, from the `new File(dir, name)` it made. */
   const sharedAs = async (enTitle: string) => {
-    mockQuest.mockResolvedValue(quest(enTitle));
     mockOpen.mockImplementation((dir: string, name: string) => ({
       exists: false,
       create: jest.fn(),
@@ -147,7 +157,7 @@ describe("sharing a quest", () => {
       uri: `${dir}/${name}`,
       name,
     }));
-    await shareQuest(1);
+    await shareQuest("{}", enTitle);
     return mockOpen.mock.calls.at(-1)?.[1] as string;
   };
 
@@ -182,8 +192,6 @@ test("every refusal, and every outcome of the buttons, has its sentence in the f
     "import_failed",
     "import_done",
     "import_updated",
-    "import_quest",
-    "import_hint",
     "share_quest",
     "share_quest_hint",
     "share_failed",

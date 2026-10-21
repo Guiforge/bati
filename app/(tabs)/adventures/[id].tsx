@@ -4,7 +4,7 @@ import type { TFunction } from "i18next";
 import { memo, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ImageSourcePropType } from "react-native";
-import { BackHandler, ScrollView } from "react-native";
+import { BackHandler, ScrollView, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { type ColorTokens, H2, Paragraph, Text, XStack, YStack } from "tamagui";
 import { BossPanel } from "@/components/adventures/BossPanel";
@@ -19,7 +19,7 @@ import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
 import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import { ChevronLeft, Pencil, Sparkles } from "@/components/icons";
-import { getAdventureAsset, getQuestAsset } from "@/constants/assetMap";
+import { getAdventureAsset, getStepArt } from "@/constants/assetMap";
 import { DIFFICULTY_TEXT_TOKENS } from "@/constants/rawColors";
 import type {
   ActiveAdventureRun,
@@ -123,6 +123,9 @@ function StepStatusTag({ status }: { status: "locked" | "active" | "completed" }
   return <Tag label={label} tone={tone} />;
 }
 
+/** From this font scale (120 %) up a step's painting sits above its text. */
+const STACK_STEP_FROM_SCALE = 1.2;
+
 /** The step's own painting, at a size that reads as art rather than as a favicon. */
 const STEP_ART = 88;
 /** The road's node, and the width of the column that draws it. */
@@ -171,6 +174,10 @@ const AdventureStepRow = memo(function AdventureStepRow({
   const { t } = useTranslation();
   const router = useRouter();
   const langKey = useSettingsStore((s) => s.language);
+  // Beside an 88 dp painting, the title column is ~120 dp wide at 130 % and "Étape 2 : La Route
+  // de l'Ours" broke mid-word. Past the threshold the painting goes above and the title takes the
+  // row. Same node, only its direction changes: no percentage below it measures a conditional parent.
+  const stacked = useWindowDimensions().fontScale >= STACK_STEP_FROM_SCALE;
 
   const stepTitle = localizedTitle(step.quest, langKey);
 
@@ -194,7 +201,7 @@ const AdventureStepRow = memo(function AdventureStepRow({
 
   const narrative = localizedText(step, "narrative", langKey);
 
-  const stepImage = resolveImage(step.imagePath, getQuestAsset);
+  const stepImage = getStepArt(step.imagePath, step.quest.imagePath);
   const color = STATUS_COLOR[status];
 
   return (
@@ -219,6 +226,7 @@ const AdventureStepRow = memo(function AdventureStepRow({
         // rather than only that a session opened (`.maestro/adventure-journey.yaml`).
         testID={`adventure-step-${step.stepIndex}-${status}`}
         flex={1}
+        flexDirection={stacked ? "column" : "row"}
         items="flex-start"
         gap="$3"
         pb="$4"
@@ -235,9 +243,14 @@ const AdventureStepRow = memo(function AdventureStepRow({
           />
         ) : null}
 
-        <YStack flex={1} gap="$1">
-          <XStack items="flex-start" justify="space-between" gap="$2">
-            <Text flex={1} fontWeight="700" color="$text">
+        <YStack {...(stacked ? { self: "stretch" } : { flex: 1 })} gap="$1">
+          <XStack
+            flexDirection={stacked ? "column" : "row"}
+            items="flex-start"
+            justify="space-between"
+            gap="$2"
+          >
+            <Text {...(stacked ? {} : { flex: 1 })} fontWeight="700" color="$text">
               {t("adventures.step_title", {
                 step: t("adventures.step_label", { count: step.stepIndex + 1 }),
                 title: stepTitle,

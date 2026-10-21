@@ -166,6 +166,7 @@ export function Stepper({
           circular
           icon={<Minus size={16} />}
           disabled={value <= min}
+          aria-disabled={value <= min}
           opacity={value <= min ? 0.4 : 1}
           accessibilityLabel={t("common.decrease", { label })}
           onPressIn={() => hold.start(-1)}
@@ -188,6 +189,7 @@ export function Stepper({
           circular
           icon={<Plus size={16} />}
           disabled={value >= max}
+          aria-disabled={value >= max}
           opacity={value >= max ? 0.4 : 1}
           accessibilityLabel={t("common.increase", { label })}
           onPressIn={() => hold.start(1)}

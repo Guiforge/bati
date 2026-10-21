@@ -26,6 +26,7 @@ import {
   type Monster,
 } from "@/db/heroAdventures";
 import {
+  getQuestTemplateById,
   invalidateQuestTemplates,
   isUserQuest,
   listQuestTemplates,
@@ -34,14 +35,19 @@ import {
 import { uuidv7 } from "@/db/uuid";
 import { localizedTitle, seededLanguage } from "@/src/i18n/localized";
 import {
+  type Arrivals,
+  arrivals,
   fileStem,
   isRecord,
   MAX_FILE_BYTES,
   name,
   parseQuestBody,
+  parseQuestData,
   type QuestBody,
+  type QuestFile,
   QuestFileError,
   questToFile,
+  refuseRepeatedUuids,
   safeImage,
   shareJsonFile,
   text,
@@ -58,10 +64,15 @@ import type { AppLanguage } from "@/stores/settings";
  * Nothing else travels: no run, no victory, no boss HP, weakness or resistance (recomputed from the
  * monster on arrival), no sort order, no sender, no date. The file is someone else's bytes on
  * arrival, so every field of it is read by name into a fresh object (`parseAdventureData`).
+ *
+ * The format was frozen at version 1 before its first release (2.13.0). From then on a change is an
+ * optional field read by its name: an older Bati ignores it, a file without it is unchanged. `VERSION`
+ * moves only for a field an older Bati must refuse rather than misread, and then it is "newer".
  */
 const KIND = "bati-adventure";
-/** 2 only when the file carries a boss's voice; a file without one is written as 1, so an older build opens it. */
-const VERSION = 2;
+const VERSION = 1;
+/** Files the unreleased dev builds wrote with a voice as 2: the same shape, still read. */
+const LAST_READABLE = 2;
 /** A bundled art key or a boss key: never a path, never a URL. */
 const KEY_RE = /^[a-z0-9_]{1,64}$/;
 /** What a photo the file does not carry reads as, in the receiver's quest. */
@@ -69,15 +80,24 @@ const PLACEHOLDER = "assets/placeholder.jpg";
 
 export type AdventureFile = {
   kind: typeof KIND;
-  version: 1 | 2;
+  version: typeof VERSION;
   adventure: {
     /** uuid v7, the row's `adventures.uuid`. */
     uuid: string;
     /** One text: the hero writes once, the row repeats it in four columns. */
     title: string;
     description: string;
-    /** An `ADVENTURE_ASSETS` key, never a picture. */
+    /**
+     * An `ADVENTURE_ASSETS` key, never a picture. For an adventure with a photo cover it is the
+     * bundled cover kept as the fallback, so a Bati that predates `photo` shows a real cover.
+     */
     cover: string | null;
+    /**
+     * The hero's own cover photo, a `data:` image `safeImage` vouches for. Optional and read by
+     * name, so an older version ignores it and a file without one is unchanged (still version 1 or 2:
+     * a version 3 would have told older builds to update for a picture).
+     */
+    photo?: string;
     end:
       | { kind: "route" }
       | { kind: "boss"; monster: string; name?: string; lines?: HeroBossLines };
@@ -177,7 +197,7 @@ function read(data: unknown): AdventureFile {
   if (typeof data.version !== "number" || !Number.isInteger(data.version) || data.version < 1) {
     throw new AdventureFileError("not_an_adventure");
   }
-  if (data.version > VERSION) throw new AdventureFileError("newer");
+  if (data.version > LAST_READABLE) throw new AdventureFileError("newer");
   // The length is read before any element, so a million-element array costs nothing.
   if (!Array.isArray(data.steps) || data.steps.length < MIN_STEPS) {
     throw new AdventureFileError("not_an_adventure");
@@ -185,9 +205,9 @@ function read(data: unknown): AdventureFile {
   // A later Bati may raise the cap.
   if (data.steps.length > MAX_STEPS) throw new AdventureFileError("newer");
   const a = data.adventure;
-  return {
+  const file: AdventureFile = {
     kind: KIND,
-    version: data.version as 1 | 2,
+    version: VERSION,
     adventure: {
       uuid: uuid(a.uuid),
       title: clip(name(a.title, MAX_TITLE), MAX_TITLE),
@@ -195,10 +215,19 @@ function read(data: unknown): AdventureFile {
       // A well-formed key this version lacks is a newer Bati's art (default cover on import); a
       // URL, a picture or a path is no Bati's file.
       cover: a.cover === null ? null : key(a.cover),
+      ...coverPhoto(a.photo),
       end: end(a.end),
     },
     steps: data.steps.map(step),
   };
+  refuseRepeatedUuids(file.steps.flatMap((s) => ("own" in s.quest ? [s.quest.own] : [])));
+  return file;
+}
+
+/** A photo that is not a vouched-for `data:` image is dropped, never a reason to refuse the file: the cover key stands. */
+function coverPhoto(value: unknown): { photo?: string } {
+  const photo = safeImage(value);
+  return photo?.startsWith("data:") ? { photo } : {};
 }
 
 /** A parsed JSON value, checked field by field. Throws an `AdventureFileError` saying why it is refused. */
@@ -233,16 +262,9 @@ const utf8Length = (s: string) => new TextEncoder().encode(s).length;
 
 type Picture = { stored: string; cover: boolean; refs: { image: string | null }[] };
 
-/** The end as the file carries it: version 2 only with a voice, so a file without one opens on an older build. */
-function fileEnd({ end, voice }: HeroAdventureDraft): Pick<AdventureFile, "version"> & {
-  end: AdventureFile["adventure"]["end"];
-} {
-  const voiced =
-    end.kind === "boss" &&
-    (voice.name !== "" || BOSS_LINE_MOMENTS.some((m) => voice.lines[m].length > 0));
-  return voiced
-    ? { version: 2, end: { ...end, name: voice.name, lines: voice.lines } }
-    : { version: 1, end };
+/** The end as the file carries it: a boss always with its voice, empty or not. */
+function fileEnd({ end, voice }: HeroAdventureDraft): AdventureFile["adventure"]["end"] {
+  return end.kind === "boss" ? { ...end, name: voice.name, lines: voice.lines } : end;
 }
 
 /**
@@ -286,21 +308,21 @@ export async function adventureToFile(id: number): Promise<AdventureToFile | nul
   }
   if (steps.length < MIN_STEPS) return null;
 
-  const { end, version } = fileEnd(draft);
+  const ownPhoto = draft.imagePath.startsWith("data:") ? draft.imagePath : null;
   const file: AdventureFile = {
     kind: KIND,
-    version,
+    version: VERSION,
     adventure: {
       uuid: draft.uuid,
       title: draft.title,
       description: draft.description,
-      cover: draft.imagePath,
-      end,
+      ...fileCover(draft.imagePath),
+      end: fileEnd(draft),
     },
     steps,
   };
 
-  const { photos, leftOut } = putPicturesBack(file, pictures);
+  const { photos, leftOut } = putPicturesBack(file, withCoverPhoto(file, ownPhoto, pictures));
 
   const json = JSON.stringify(file);
   try {
@@ -310,6 +332,58 @@ export async function adventureToFile(id: number): Promise<AdventureToFile | nul
     throw new Error(`adventure file fails its own reader: ${reason}`);
   }
   return { file, json, photos, leftOut, stepsLeft };
+}
+
+export type QuestToShare = { file: QuestFile; json: string; photos: number; leftOut: number };
+
+/**
+ * A hero quest as the file another phone reads, held to the same rules as an adventure's (R125):
+ * parsed as its receiver would, photos under the byte budget, the string read back before it is
+ * returned. Throws when the receiver's reader would refuse the quest.
+ */
+export async function questToShare(questId: number): Promise<QuestToShare> {
+  const [quest, catalogue] = await Promise.all([getQuestTemplateById(questId), listExercises()]);
+  if (!quest || !isUserQuest(quest)) throw new Error(`Quest ${questId} is not a quest of the hero`);
+  const own = ownBody(quest, catalogue);
+  if (!own) throw new Error(`Quest ${questId} would be refused by its own reader`);
+  const pictures = new Map<string, Picture>();
+  registerPictures(pictures, own);
+  const file: QuestFile = { kind: "bati-quest", version: 1, ...own.body };
+  const { photos, leftOut } = putPicturesBack(file, pictures);
+  const json = JSON.stringify(file);
+  parseQuestData(JSON.parse(json));
+  return { file, json, photos, leftOut };
+}
+
+/** A photo rides in `photo`, under the placeholder until the budget decides; `cover` keeps a bundled key an older version can draw. */
+function fileCover(imagePath: string): Pick<AdventureFile["adventure"], "cover" | "photo"> {
+  if (!imagePath.startsWith("data:")) return { cover: imagePath };
+  return { cover: Object.keys(ADVENTURE_ASSETS)[0] ?? null, photo: PLACEHOLDER };
+}
+
+/**
+ * The pictures to put back, the adventure's own photo first: it is the image seen first, so it is
+ * the last to be left out. A photo that does not fit is dropped from `photo`, and `cover` stands.
+ */
+function withCoverPhoto(
+  file: AdventureFile,
+  photo: string | null,
+  pictures: ReadonlyMap<string, Picture>,
+): ReadonlyMap<string, Picture> {
+  if (!photo) return pictures;
+  const ref: Picture["refs"][number] = {
+    get image() {
+      return file.adventure.photo ?? null;
+    },
+    set image(value: string | null) {
+      if (value === null) delete file.adventure.photo;
+      else file.adventure.photo = value;
+    },
+  };
+  return new Map([
+    [`adventure:${file.adventure.uuid}`, { stored: photo, cover: true, refs: [ref] }],
+    ...pictures,
+  ]);
 }
 
 /**
@@ -342,7 +416,7 @@ function ownBody(
 
 /** Puts each picture back in every occurrence while the file stays under the limit, in step order. */
 function putPicturesBack(
-  file: AdventureFile,
+  file: object,
   pictures: ReadonlyMap<string, Picture>,
 ): { photos: number; leftOut: number } {
   // The budget is exact: a picture replaces the placeholder inside the same quotes, and base64 is
@@ -409,6 +483,8 @@ export type StepPreview = {
 
 export type AdventurePreview = {
   steps: StepPreview[];
+  /** What the steps that arrive add to this phone. */
+  arrives: Arrivals;
   /** The hero's adventure with this uuid, retired included. */
   existing: { id: number; title: string } | null;
   /** A run of `existing` is under way: it arrives as a copy, forced. */
@@ -457,7 +533,14 @@ export async function previewAdventure(
   const here = await findHeroAdventureByUuid(file.adventure.uuid);
   const e = file.adventure.end;
   const monster = e.kind === "boss" ? (monsters.find((m) => m.key === e.monster) ?? null) : null;
+  const bringing = file.steps.flatMap(({ quest }, i) =>
+    statuses[i]?.status === "brings" && "own" in quest ? [quest.own] : [],
+  );
+  const arrives = arrivals(bringing, catalogue);
   return {
+    // The adventure's own photo arrives too (the sender's dialog counted it), unless the adventure
+    // is already here: then, like a quest already here, it is not an arrival.
+    arrives: { ...arrives, photos: arrives.photos + (file.adventure.photo && !here ? 1 : 0) },
     steps: file.steps.map(({ quest }, i) => ({
       status: statuses[i]?.status ?? "missing",
       questId: statuses[i]?.quest?.id ?? null,
@@ -508,11 +591,12 @@ export async function importAdventure(
   const a = file.adventure;
   const e = a.end;
   const monster = e.kind === "boss" ? monsters.find((m) => m.key === e.monster) : undefined;
-  const cover = (
-    a.cover !== null && Object.hasOwn(ADVENTURE_ASSETS, a.cover)
+  // The photo wins over the bundled cover kept beside it for older versions.
+  const cover =
+    a.photo ??
+    (a.cover !== null && Object.hasOwn(ADVENTURE_ASSETS, a.cover)
       ? a.cover
-      : Object.keys(ADVENTURE_ASSETS)[0]
-  ) as AdventureAssetKey;
+      : (Object.keys(ADVENTURE_ASSETS)[0] as AdventureAssetKey));
 
   const write = transactionOrFallback(async (tx) => {
     const written = new Map<string, number>();

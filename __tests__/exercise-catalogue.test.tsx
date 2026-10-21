@@ -11,9 +11,11 @@ import config from "@/tamagui.config";
 // not on "the screen rendered" — because a list that shows the wrong rows still renders.
 
 const mockPush = jest.fn();
+let mockParams: { mine?: string } = {};
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn() }),
+  useLocalSearchParams: () => mockParams,
   // The catalogue reloads on focus since the hero can write to it; the real hook needs a
   // navigation container, so run the effect once like a mount.
   useFocusEffect: (effect: () => undefined | (() => void)) => {
@@ -114,10 +116,23 @@ const renderScreen = () =>
 
 beforeEach(() => {
   mockPush.mockClear();
+  mockParams = {};
   mockListExercises.mockResolvedValue([TABLE_ROW, INVERTED_ROW, PUSH_UP]);
 });
 
 describe("exercise catalogue", () => {
+  it("opens on the hero's own movements when the Forge asks (?mine=1)", async () => {
+    mockParams = { mine: "1" };
+    mockListExercises.mockResolvedValue([
+      TABLE_ROW,
+      makeExercise({ id: 9, enName: "Porch Dip", creator: "hero" }),
+    ]);
+    await renderScreen();
+
+    await waitFor(() => expect(screen.getByText("Porch Dip")).toBeTruthy());
+    expect(screen.queryByText("Table Row")).toBeNull();
+  });
+
   it("lists every movement, sorted by name", async () => {
     await renderScreen();
 

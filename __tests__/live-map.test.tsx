@@ -284,7 +284,10 @@ test("under way, the offer waits for the next stop and the credit stays", async 
 
   await act(async () => useExpeditionStore.setState({ track: underWay }));
   await act(async () => useSettingsStore.setState({ mapTilesEnabled: true }));
-  expect(screen.getByTestId("map-attribution")).toBeTruthy();
+  const credit = screen.getByTestId("map-attribution");
+  // The credit alone: with the recap's privacy sentence it took three lines at 130 % and covered
+  // the trace. OpenFreeMap permits dropping its own name (`MAP_ATTRIBUTION`).
+  expect(credit).toHaveTextContent(/^© OpenMapTiles, © OpenStreetMap contributors\.$/);
 });
 
 test("stops drawing while the app is in the background, and draws the whole walk on return", async () => {

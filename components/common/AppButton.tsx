@@ -132,6 +132,8 @@ export function AppIconButton({ children, ...buttonProps }: AppIconButtonProps) 
       borderWidth={1}
       borderColor="$borderStrong"
       pressStyle={{ opacity: 0.9 }}
+      // Always said, as on `AppButton` above.
+      aria-disabled={buttonProps.disabled === true}
       {...buttonProps}
     >
       {children}

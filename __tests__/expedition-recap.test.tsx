@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
@@ -280,6 +281,41 @@ describe("a session that left the walls", () => {
     await mount();
 
     expect(await screen.findByText(/High Road/)).toBeTruthy();
+  });
+
+  // A phone that closed Bati stops writing; the line must say so, with the clock, not a distance.
+  test("names a hole in the trace over thirty seconds, and nothing for a continuous one", async () => {
+    await mount();
+    await screen.findByTestId("recap-map");
+    expect(screen.queryByTestId("recap-gap")).toBeNull();
+
+    const fixes = walkThenStand();
+    const last = fixes.at(-1);
+    assert(last);
+    mockPointsOf.mockResolvedValue([...fixes, { ...last, t: last.t + 7 * 60_000 }]);
+    mockSession = "session-with-hole";
+    await mount();
+
+    const gap = await screen.findByTestId("recap-gap");
+    expect(gap).toHaveTextContent(/^Nothing measured from .+ to .+: tracking had stopped\.$/);
+  });
+
+  // Seen on the emulator: "from 21:58 to 21:58" for a 46 s hole.
+  test("a hole inside one minute is told with its seconds", async () => {
+    const fixes = walkThenStand();
+    const last = fixes.at(-1);
+    assert(last);
+    const minute = Math.floor(last.t / 60_000) * 60_000 + 10 * 60_000;
+    mockPointsOf.mockResolvedValue([
+      ...fixes,
+      { ...last, t: minute + 5_000 },
+      { ...last, t: minute + 45_000 },
+    ]);
+    mockSession = "session-with-short-hole";
+    await mount();
+
+    const gaps = await screen.findAllByTestId("recap-gap");
+    expect(gaps.at(-1)).toHaveTextContent(/from \d\d:\d\d:05\b.* to \d\d:\d\d:45\b/);
   });
 
   test("draws the map and the three numbers", async () => {

@@ -26,12 +26,11 @@ appId: com.guiforge.bati.dev
     waitToSettleTimeoutMs: 500
 - assertVisible:
     id: "adventures-screen"
-- scrollUntilVisible:
-    element:
-      id: "adventures-write"
-    direction: DOWN
+# Through the Forge: the header's "Create", then "Write an adventure".
 - tapOn:
-    id: "adventures-write"
+    id: "forge-open"
+- tapOn:
+    id: "forge-adventures-new"
 
 # --- Write it ----------------------------------------------------------------
 
@@ -73,10 +72,13 @@ appId: com.guiforge.bati.dev
 
 - assertVisible:
     id: "adventure-start"
+# Centred: a step now carries its quest's cover above its title, so "visible" stopped at a sliver
+# of the row under the sticky Start bar, and the tap landed on the bar.
 - scrollUntilVisible:
     element:
       id: "adventure-step-0-active"
     direction: DOWN
+    centerElement: true
 - tapOn:
     id: "adventure-step-0-active"
 - runFlow: subflows/complete-a-session.yaml

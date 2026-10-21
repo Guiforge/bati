@@ -85,7 +85,8 @@ export function SessionRecoveryCard({
       <YStack gap="$3">
         <XStack gap="$2" items="center">
           <AlertTriangle size={20} color="$primaryText" />
-          <AppText fontSize={18} fontWeight="bold" color="$text">
+          {/* flex: a title beside the icon that cannot wrap runs off the card at a large font. */}
+          <AppText flex={1} fontSize={18} fontWeight="bold" color="$text">
             {t(witnessed ? "recovery.finish_outing_title" : "recovery.title")}
           </AppText>
         </XStack>

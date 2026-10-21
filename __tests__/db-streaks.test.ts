@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { sql } from "drizzle-orm";
 import { FLAME_DORMANT_DAYS, FLAME_PIVOT } from "../constants/flame";
 import { DEFAULT_WEEKLY_QUOTA, WEEKLY_TARGETS } from "../constants/weeklyTargets";
@@ -239,6 +240,46 @@ describe("db/streaks", () => {
 
     t.db.delete(userPreferences).where(sql`${userPreferences.key} = 'streak_dormant'`).run();
     expect(await streaks().getCachedStreak()).toBeNull();
+  });
+  test("the figure a hero reads can be checked: its first day, its last lit day", async () => {
+    // Sessions twice a week for 40 days, then 10 days of nothing. The count is lit days, so it
+    // runs past the last session (the flame holds up to two weeks): 41 days from the first
+    // session to the last, and a count that is longer by the days it held.
+    for (const daysAgo of [50, 47, 43, 40, 36, 33, 29, 26, 22, 19, 15, 12, 10]) {
+      await addSessionOnDate(daysAgo);
+    }
+    const { detail, span } = await streaks().getFlameWithSpan();
+    assert(span);
+    const day = (n: number) => {
+      const d = new Date();
+      d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() - n);
+      return d.getTime();
+    };
+    // Lit from the day the second session met the quota, not from the first session.
+    expect(span.from.getTime()).toBe(day(47));
+    // Lit through today: the last session was 10 days ago and the week before it was over quota.
+    expect(detail.current).toBeGreaterThan(0);
+    expect(span.to.getTime()).toBe(day(0));
+    // The count is exactly the days from `from` to `to`, inclusive, when no gap was bridged.
+    expect(detail.current).toBe(
+      Math.round((span.to.getTime() - span.from.getTime()) / 86400000) + 1,
+    );
+    // And it is longer than first session to last session, which is the audit's 1,093 vs 1,104.
+    expect(detail.current).toBeGreaterThan(50 - 10 + 1);
+  });
+
+  // Up to the pivot, an unlit flame does not sleep: "0 days lit" read "lit since 2023" beside it.
+  test("dates only a count on screen: lit or asleep", async () => {
+    for (const daysAgo of [60, 57, 53, 50, 46, 43]) await addSessionOnDate(daysAgo);
+    const { detail, span } = await streaks().getFlameWithSpan();
+    expect(span !== null).toBe(detail.current > 0 || detail.dormant > 0);
+  });
+
+  test("nothing lit and nothing asleep has no dates", async () => {
+    await addSessionOnDate(200);
+    const { span } = await streaks().getFlameWithSpan();
+    expect(span).toBeNull();
   });
 });
 

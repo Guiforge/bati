@@ -7,6 +7,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Chip } from "@/components/common/Chip";
 import { FormSheet } from "@/components/common/FormSheet";
 import { RuleDisclosure } from "@/components/common/RuleDisclosure";
+import { useRevealInSheet } from "@/components/common/revealInSheet";
 import { SectionLabel } from "@/components/common/SectionLabel";
 import { useToast } from "@/components/common/Toast";
 import { Info } from "@/components/icons";
@@ -14,7 +15,6 @@ import {
   DURATION_CHIPS_MIN,
   dayChoices,
   dayFromLink,
-  endOn,
   filedDay,
   openingDay,
   parseDistanceM,
@@ -23,6 +23,7 @@ import {
   settleDay,
   toastKey,
   typedEnd,
+  typedEndOn,
 } from "@/components/journal/pastSessionForm";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatDistance, formatRate, METRES_PER_TYPED_UNIT } from "@/constants/distanceFormat";
@@ -42,9 +43,12 @@ import {
 } from "@/db/handEntries";
 import {
   checkHandDistance,
+  HAND_MAX_DAYS_BACK,
+  HAND_PAID_MAX,
   type HandContext,
   type HandKind,
   type HandRefusal,
+  handEntryPays,
   parseClock,
 } from "@/db/handEntryRules";
 import type { DistanceUnit } from "@/db/preferences";
@@ -122,7 +126,9 @@ function initialFields(
   }
   const seconds = defaults.durationSeconds ?? (defaults.kind === "workout" ? 45 * 60 : 30 * 60);
   const opening =
-    link === undefined ? openingDay(now, context.handDays, seconds, context.measured) : null;
+    link === undefined
+      ? openingDay(now, context.handDays, seconds, context.measured, context.firstMeasuredAt)
+      : null;
   const day = opening?.day ?? dayFromLink(link, now);
   return {
     kind: defaults.kind,
@@ -148,12 +154,20 @@ type SentenceContext = {
   titleOf: (questId: number | null) => string | null;
 };
 
+/** Said before saving a new entry that will pay nothing; null when it pays, or is a correction. */
+function unpaidNote(t: TFunction, pays: boolean, target: PastSessionTarget | undefined | null) {
+  if (pays || target) return null;
+  return t("past_session.note_unpaid", { max: HAND_PAID_MAX, days: HAND_MAX_DAYS_BACK + 1 });
+}
+
 /** The refusal as a sentence, one voice each (`past_session.refuse_*`). */
 function refusalSentence(r: HandRefusal, c: SentenceContext): string {
   const { t, language, unit } = c;
   switch (r.key) {
     case "too_old":
       return t("past_session.refuse_too_old");
+    case "before_first":
+      return t("past_session.refuse_before_first");
     case "duration":
       return t("past_session.refuse_duration");
     case "future":
@@ -235,6 +249,8 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
   /** The distance the refusal was read on: the sentence quotes it, so it must not follow the field. */
   const [refusalM, setRefusalM] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  /** A new entry still pays its XP (`handEntryPays`), read when the sheet opens. */
+  const [pays, setPays] = useState(true);
   const [ready, setReady] = useState(false);
   /** A typed field settled (blur): the refusals of typed fields are read then, never per key. */
   const [settled, setSettled] = useState(0);
@@ -265,6 +281,7 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
       if (cancelled) return;
       setTitles(new Map(templates.map((q) => [q.id, localizedTitle(q, language)])));
       const f = initialFields(target ?? null, defaults, context, day, now, metresPerUnit);
+      setPays(handEntryPays(context));
       setKind(f.kind);
       setEndAt(f.end);
       setEndText(timeFormat.format(f.end));
@@ -338,6 +355,14 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
     };
   }, [open, ready, kind, endAt, durationSeconds, customOpen, settled]);
 
+  // A refusal on screen is re-read as the hero types, so it goes the moment the value is plausible
+  // instead of waiting for Enter or a blur. Only while one is showing: a field is never refused
+  // mid-word, it is only released early. The effect above reads the state this render commits.
+  const retype = (set: (v: string) => void) => (v: string) => {
+    set(v);
+    if (refusal !== null) setSettled((n) => n + 1);
+  };
+
   const pickDay = (picked: Date) => {
     if (!endTouched.current) {
       // Not touched yet: another day proposes its own hour; a touched hour follows the hero.
@@ -351,8 +376,16 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
         .catch((e: unknown) => reportError("pastSession.day", e));
       return;
     }
-    const next = endOn(picked, { hours: endAt.getHours(), minutes: endAt.getMinutes() });
-    setEndAt(next);
+    // The typed hour on the day the chip names, which is the filed day: `endOn` put it on the
+    // calendar day and filed a 00:10 under the day before.
+    setEndAt(
+      typedEndOn(
+        picked,
+        durationSeconds,
+        { hours: endAt.getHours(), minutes: endAt.getMinutes() },
+        new Date(),
+      ),
+    );
   };
 
   const commitEnd = () => {
@@ -457,6 +490,7 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
   const footer = (
     <SheetFooter
       refusalLine={refusal ? refusalText(refusal) : null}
+      noteLine={unpaidNote(t, pays, target)}
       rule={t(ruleKey)}
       disabled={refusal !== null || saving || !ready || unreadableCustom}
       onSave={save}
@@ -500,7 +534,7 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
             onPickDay={pickDay}
             onOtherDays={() => setOtherDays(true)}
             endText={endText}
-            onEndText={setEndText}
+            onEndText={retype(setEndText)}
             onEndCommit={commitEnd}
           />
 
@@ -513,7 +547,7 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
               setDurationSeconds(m * 60);
             }}
             onCustom={() => setCustomOpen(true)}
-            onCustomText={setCustomText}
+            onCustomText={retype(setCustomText)}
             onCustomCommit={commitCustom}
           />
         </>
@@ -522,7 +556,7 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
       {outing || distanceOnly ? (
         <DistanceField
           value={distanceText}
-          onChange={setDistanceText}
+          onChange={retype(setDistanceText)}
           onSettle={() => setSettled((n) => n + 1)}
           unitWord={unitWord}
           a11y={t("past_session.distance_a11y", { unit: unitWord })}
@@ -559,11 +593,14 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
 /** The reserved line (the rule link, or the refusal that took its place) and the one button. */
 function SheetFooter({
   refusalLine,
+  noteLine,
   rule,
   disabled,
   onSave,
 }: {
   refusalLine: string | null;
+  /** Said before saving, takes nothing away: the entry will be noted but pay no XP. */
+  noteLine: string | null;
   rule: string;
   disabled: boolean;
   onSave: () => void;
@@ -572,11 +609,16 @@ function SheetFooter({
   return (
     <YStack gap="$2">
       <YStack minH={44} justify="center" accessibilityLiveRegion="polite">
-        {refusalLine ? (
+        {refusalLine || noteLine ? (
           <XStack gap="$2" items="flex-start">
             <Info size={16} color="$primaryText" />
-            <Text testID="past-session-refusal" flex={1} fontSize={14} color="$text">
-              {refusalLine}
+            <Text
+              testID={refusalLine ? "past-session-refusal" : "past-session-note"}
+              flex={1}
+              fontSize={14}
+              color="$text"
+            >
+              {refusalLine ?? noteLine}
             </Text>
           </XStack>
         ) : (
@@ -747,6 +789,7 @@ function DurationSection({
   onCustomCommit: () => void;
 }) {
   const { t } = useTranslation();
+  const reveal = useRevealInSheet();
   return (
     <YStack gap="$2">
       <SectionLabel>{t("past_session.duration")}</SectionLabel>
@@ -768,6 +811,7 @@ function DurationSection({
       {customOpen ? (
         <Input
           testID="past-session-custom"
+          ref={reveal}
           minH={44}
           value={customText}
           onChangeText={onCustomText}

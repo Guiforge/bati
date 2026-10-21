@@ -15,6 +15,7 @@ import { Chip } from "@/components/common/Chip";
 import { useKeyboardHeight } from "@/components/common/useKeyboardHeight";
 import { X } from "@/components/icons";
 import { GpsSetting } from "@/components/quests/GpsSetting";
+import { SparedLegsNote } from "@/components/quests/SparedLegsNote";
 import { formatDistance, METRES_PER_TYPED_UNIT } from "@/constants/distanceFormat";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { formatDuration } from "@/db/estimate";
@@ -272,6 +273,8 @@ export function OutingGoalSheet({
                 <X size={20} color="$textSecondary" />
               </Pressable>
             </XStack>
+
+            <SparedLegsNote locomotion={locomotion} />
 
             <GpsSetting
               open={open}

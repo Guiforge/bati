@@ -71,6 +71,9 @@ export function QuestPickerSheet({
       onOpenChange={(next: boolean) => (next ? onOpenChange(true) : close())}
       snapPoints={[85]}
       disableDrag
+      // Closed, the sheet still drew every quest row and its picture under the editor, and each
+      // scroll frame of the editor paid for them (gfxinfo: 97 ms median, 16 ms without).
+      unmountChildrenWhenHidden
       transition={reducedMotion ? undefined : "quick"}
       zIndex={100_000}
     >

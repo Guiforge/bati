@@ -142,6 +142,9 @@ afterwards, up to seven days back, one per calendar day, from ten minutes to fou
 in a gym, and a "run" entry would pay double for it. Fixed at the save: a correction changes the
 day, the length, the name, the type or the distance and never the XP, because the oath bonus is
 written on the same row and the sync keeps the larger XP of a row (`takeLargerXp`).
+Two rules keep it from being farmed: nothing is noted on a day before the hero's first measured
+session, and only three entries pay over the eight days the sheet reaches (`HAND_PAID_MAX`), the
+next ones being noted at 0 XP, still counting for the flame.
 
 What it keeps and what it never touches is one table (`docs/product/glossary.md` has the words):
 

@@ -646,6 +646,16 @@ export function getQuestAsset(id: string) {
 }
 
 /**
+ * The art of one step on an adventure's road: its own when the step has one, else its quest's cover.
+ * A step of a hero's adventure carries none of its own, and a hero chooses its picture by choosing
+ * the quest's, so nothing new is stored. Null when neither has art, which is a quest with no cover
+ * of its own (`getQuestThumb`), so a step is never drawn as a grey placeholder square.
+ */
+export function getStepArt(stepImagePath: string | null, questImagePath: string | null) {
+  return stepImagePath ? getQuestAsset(stepImagePath) : getQuestThumb(questImagePath);
+}
+
+/**
  * Get boss asset by ID (with fallback to placeholder). `state` picks the form the moment calls
  * for: "defeated" wins over everything — a dead monster is dead whatever its tier — then the
  * legendary form at tier ≥ 1, then "wounded" (base fights below 50 % HP), then the base painting.
@@ -680,10 +690,11 @@ export function getBossKey(id: string | null | undefined): BossAssetKey | null {
 }
 
 /**
- * Get adventure cover asset by ID (with fallback to placeholder)
+ * Get adventure cover asset by ID (with fallback to placeholder). A hero's cover is a bundled
+ * key or a `data:` photo, as a quest's is.
  */
 export function getAdventureAsset(id: string) {
-  return lookup(ADVENTURE_ASSETS, id) ?? require("@/assets/placeholder.webp");
+  return asUriSource(id) ?? lookup(ADVENTURE_ASSETS, id) ?? require("@/assets/placeholder.webp");
 }
 
 /**

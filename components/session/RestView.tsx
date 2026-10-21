@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { BackHandler, Pressable, ScrollView, StyleSheet } from "react-native";
+import { BackHandler, Pressable, ScrollView, StyleSheet, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, H1, H2, XStack, YStack } from "tamagui";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
@@ -44,6 +44,9 @@ const REST_ART = [
 export function RestView() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  // From 120 % the 112 dp clock and the 28 dp gaps left the set review half under the skip button
+  // (persona audit 09): tighter column, smaller clock, so the review is whole above the fold.
+  const large = useWindowDimensions().fontScale >= 1.2;
   const language = useSettingsStore((s) => s.language);
   const { selection, mediumImpact } = useHaptics();
   const reducedMotion = useReducedMotion();
@@ -260,11 +263,11 @@ export function RestView() {
           contentContainerStyle={{
             flexGrow: 1,
             justifyContent: "flex-start",
-            paddingTop: 24,
+            paddingTop: large ? 8 : 24,
             // Room under the villager's bubble: it ended flush with the scroll's edge, which
             // clipped its bottom corner square.
             paddingBottom: 16,
-            gap: 28,
+            gap: large ? 16 : 28,
           }}
         >
           {/* Timer. Not on the final rest: nothing is coming, so there is nothing to count to. */}
@@ -273,7 +276,7 @@ export function RestView() {
               <H1
                 testID="rest-timer"
                 maxFontSizeMultiplier={FONT_CAPS.display}
-                fontSize={112}
+                fontSize={large ? 88 : 112}
                 fontWeight="700"
                 fontFamily="$body"
                 fontVariant={["tabular-nums"]}

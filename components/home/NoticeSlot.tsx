@@ -5,12 +5,14 @@ import { type NoticeKind, pickNotice } from "@/components/home/noticeOrder";
 import { PasswordCheckCard } from "@/components/home/PasswordCheckCard";
 import { ProtectCard } from "@/components/home/ProtectCard";
 import { ReminderCard } from "@/components/home/ReminderCard";
+import { RhythmLine } from "@/components/home/RhythmLine";
 import { SyncCard } from "@/components/home/SyncCard";
 import { syncNoticeKind } from "@/components/home/syncNoticeKind";
 import { UpdateCard } from "@/components/home/UpdateCard";
 import { WhatsNewCard } from "@/components/home/WhatsNewCard";
 import { SessionRecoveryCard } from "@/components/session/SessionRecoveryCard";
-import { lightWeekReason } from "@/db/lightWeek";
+import { lightWeekReason, lightWeekUntil } from "@/db/lightWeek";
+import { getActivePause } from "@/db/pause";
 import { useSessionRecovery } from "@/hooks/useSessionRecovery";
 import { lastMerge, lostSync, syncHealth } from "@/src/deviceSync";
 import { passwordCheckDue } from "@/src/passwordReminders";
@@ -19,6 +21,7 @@ import { reminderCardKind } from "@/src/reminders";
 import { reportError } from "@/src/reportError";
 import { checkForUpdate } from "@/src/updateCheck";
 import { hasUnseenNotes, releaseNotes } from "@/src/whatsNew";
+import { useChorusStore } from "@/stores/chorus";
 import { useSettingsStore } from "@/stores/settings";
 import { useSyncStore } from "@/stores/sync";
 
@@ -33,7 +36,14 @@ import { useSyncStore } from "@/stores/sync";
  * shortcut: the next notice waits for the next focus after the winner is closed, re-decide on
  * dismiss if testers find the empty slot odd.
  */
-export function NoticeSlot({ onLightWeekAnswered }: { onLightWeekAnswered?: () => void }) {
+export function NoticeSlot(props: { onLightWeekAnswered?: () => void }) {
+  // Keyed on the last sync, as Home keys this slot on the week: the React Compiler drops a
+  // dependency the focus callback does not read, so a finished sync never re-read the cards.
+  const lastSyncAt = useSyncStore((s) => s.lastSyncAt);
+  return <Slot key={String(lastSyncAt)} {...props} />;
+}
+
+function Slot({ onLightWeekAnswered }: { onLightWeekAnswered?: () => void }) {
   const { recoverableSession, isChecking, recoverSession, finishSession, discardSession } =
     useSessionRecovery();
   const language = useSettingsStore((s) => s.language);
@@ -42,12 +52,14 @@ export function NoticeSlot({ onLightWeekAnswered }: { onLightWeekAnswered?: () =
     (s) => s.result?.peers.some((p) => p.state === "locked") ?? false,
   );
   const failure = useSyncStore((s) => s.failure);
-  const lastSyncAt = useSyncStore((s) => s.lastSyncAt);
+  // The Sage's welcome back takes the slot's place for as long as he speaks: line and card
+  // together pushed "Voir la quête" below the fold at 130 % (persona audit 2, 71). The card is
+  // still due when he leaves; only a session to recover is more urgent than a greeting.
+  const welcoming = useChorusStore((s) => s.current?.moment === "comeback");
   // Null until the first read lands: a loading slot asserts nothing.
   const [present, setPresent] = useState<ReadonlySet<NoticeKind> | null>(null);
 
   useFocusEffect(
-    // biome-ignore lint/correctness/useExhaustiveDependencies: `lastSyncAt` is the signal that a sync run ended, not a value the effect reads.
     useCallback(() => {
       let cancelled = false;
       Promise.all([
@@ -60,38 +72,56 @@ export function NoticeSlot({ onLightWeekAnswered }: { onLightWeekAnswered?: () =
         reminderCardKind(),
         passwordCheckDue(),
         lightWeekReason(new Date()),
+        getActivePause(),
+        lightWeekUntil(new Date()),
       ])
-        .then(([lost, health, merge, notes, update, protect, reminder, password, lightWeek]) => {
-          if (cancelled) return;
-          const sync = syncNoticeKind({
+        .then(
+          ([
             lost,
-            waitingPassword,
-            failure,
-            failingSince: health.failingSince,
+            health,
             merge,
-            now: Date.now(),
-          });
-          const due: [NoticeKind, boolean][] = [
-            ["sync", sync !== null],
-            ["lightWeek", lightWeek !== null],
-            ["whatsNew", notes && releaseNotes(language).length > 0],
-            ["update", update !== null],
-            ["protect", protect],
-            ["reminder", reminder !== null],
-            ["passwordCheck", password],
-          ];
-          setPresent(new Set(due.filter(([, on]) => on).map(([kind]) => kind)));
-        })
+            notes,
+            update,
+            protect,
+            reminder,
+            password,
+            lightWeek,
+            pause,
+            weekUntil,
+          ]) => {
+            if (cancelled) return;
+            const sync = syncNoticeKind({
+              lost,
+              waitingPassword,
+              failure,
+              failingSince: health.failingSince,
+              merge,
+              now: Date.now(),
+            });
+            const due: [NoticeKind, boolean][] = [
+              ["sync", sync !== null],
+              ["lightWeek", lightWeek !== null],
+              ["rhythm", pause !== null || weekUntil !== null],
+              ["whatsNew", notes && releaseNotes(language).length > 0],
+              ["update", update !== null],
+              ["protect", protect],
+              ["reminder", reminder !== null],
+              ["passwordCheck", password],
+            ];
+            setPresent(new Set(due.filter(([, on]) => on).map(([kind]) => kind)));
+          },
+        )
         .catch((error: unknown) => reportError("notice.slot", error));
       return () => {
         cancelled = true;
       };
-    }, [language, updateEnabled, waitingPassword, failure, lastSyncAt]),
+    }, [language, updateEnabled, waitingPassword, failure]),
   );
 
   if (present === null) return null;
   const all = new Set(present);
   if (!isChecking && recoverableSession) all.add("recovery");
+  if (welcoming && !all.has("recovery")) return null;
 
   switch (pickNotice(all)) {
     case "recovery":
@@ -108,6 +138,10 @@ export function NoticeSlot({ onLightWeekAnswered }: { onLightWeekAnswered?: () =
     case "lightWeek":
       return (
         <LightWeekCard {...(onLightWeekAnswered ? { onAnswered: onLightWeekAnswered } : {})} />
+      );
+    case "rhythm":
+      return (
+        <RhythmLine {...(onLightWeekAnswered ? { onLightWeekEnded: onLightWeekAnswered } : {})} />
       );
     case "whatsNew":
       return <WhatsNewCard />;

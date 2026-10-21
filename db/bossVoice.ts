@@ -9,13 +9,24 @@ export const MAX_BOSS_NAME = 40;
 export const MAX_BOSS_LINE = 60;
 /** Per moment. */
 export const MAX_BOSS_LINES = 3;
-/** Not `resist`: a resisted hit keeps the painted lines only. */
-export const BOSS_LINE_MOMENTS = ["idle", "crit", "enrage"] as const;
+/**
+ * `intro` when the fight opens (the panel, then the arena's first bubble) and `defeat` on the felled
+ * boss's victory card: the painted bosses have neither. Not `resist`: a resisted hit keeps the
+ * painted lines only. Stored in the same JSON, read by name, so a row from before `intro` and `defeat`
+ * simply has none.
+ */
+export const BOSS_LINE_MOMENTS = ["intro", "idle", "crit", "enrage", "defeat"] as const;
 export type BossLineMoment = (typeof BOSS_LINE_MOMENTS)[number];
 export type HeroBossLines = Record<BossLineMoment, string[]>;
 export type HeroBossVoice = { name: string; lines: HeroBossLines };
 
-export const noBossLines = (): HeroBossLines => ({ idle: [], crit: [], enrage: [] });
+export const noBossLines = (): HeroBossLines => ({
+  intro: [],
+  idle: [],
+  crit: [],
+  enrage: [],
+  defeat: [],
+});
 
 /**
  * Cut to `max` UTF-16 units, the unit the editors' `maxLength` count in, without leaving half a

@@ -21,9 +21,9 @@ import {
   type RecordMention,
   type WallEntry,
 } from "@/db/journal";
-import { hardSetsByPattern } from "@/db/lightWeek";
+import { hardSetsByPattern, isLightWeekRunning } from "@/db/lightWeek";
 import { getMuscleBalance, type MuscleBalance } from "@/db/muscleBalance";
-import { type FlameDetail, getFlameDetail } from "@/db/streaks";
+import { type FlameDetail, type FlameSpan, getFlameWithSpan } from "@/db/streaks";
 import { getUserLevelInfo, type UserLevelInfo } from "@/db/userLevel";
 import { getWeekXpPerSession } from "@/db/village";
 import { reportError } from "@/src/reportError";
@@ -35,8 +35,12 @@ export type JournalStats = {
   /** Nothing logged, ever: the first day's wall and sentence. */
   isFirstDay: boolean;
   trainedToday: boolean;
+  /** A light week runs: the wall states what stands and sets no target (the set does the same). */
+  lightWeek: boolean;
   wall: WallEntry[];
   flame: FlameDetail;
+  /** The dates the flame's count can be checked against, null when nothing is lit or asleep. */
+  flameSpan: FlameSpan | null;
   /** Of the flame's seven days, the sessions the hero wrote down (`0078`): said beside the count. */
   handInWindow: number;
   /** The last seven days, oldest first, today last. */
@@ -76,7 +80,7 @@ async function loadJournalStats(): Promise<JournalStats> {
 
   const [
     wall,
-    flame,
+    flameRead,
     current,
     previous,
     latestRecord,
@@ -91,9 +95,10 @@ async function loadJournalStats(): Promise<JournalStats> {
     chronicle,
     hardSets,
     handInWindow,
+    lightWeek,
   ] = await Promise.all([
     getRecordWall(4),
-    getFlameDetail(now),
+    getFlameWithSpan(now),
     getPeriodFigures(windows.current.from, now),
     getPeriodFigures(windows.previous.from, windows.previous.to),
     getLatestRecord(now),
@@ -109,6 +114,7 @@ async function loadJournalStats(): Promise<JournalStats> {
     chronicleToOpen(now),
     hardSetsByPattern(weekFrom),
     countHandEntriesSince(weekFrom),
+    isLightWeekRunning(now),
   ]);
 
   const isFirstDay = firstSessionAt == null;
@@ -132,8 +138,10 @@ async function loadJournalStats(): Promise<JournalStats> {
     now,
     isFirstDay,
     trainedToday: activity.has(dayKey(now)),
+    lightWeek,
     wall: wall.length > 0 ? wall : await getStarterWall(),
-    flame,
+    flame: flameRead.detail,
+    flameSpan: flameRead.span,
     handInWindow,
     week,
     month: {

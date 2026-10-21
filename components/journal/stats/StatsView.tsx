@@ -220,7 +220,16 @@ export function HeaderRow({ children, px }: { children: ReactNode; px?: SpaceTok
   );
 }
 
-export function WallRow({ entry, now }: { entry: WallEntry; now: Date }) {
+export function WallRow({
+  entry,
+  now,
+  showTarget = true,
+}: {
+  entry: WallEntry;
+  now: Date;
+  /** False in a light week: the objective is lower than the record, so no target above it. */
+  showTarget?: boolean;
+}) {
   const { t } = useTranslation();
   const router = useRouter();
   const language = useSettingsStore((s) => s.language);
@@ -290,7 +299,7 @@ export function WallRow({ entry, now }: { entry: WallEntry; now: Date }) {
       </YStack>
       {/* A movement never logged has nothing to beat: "1 reps" under "Never logged" read as a dare
           to do one rep. The first try sets the record, which the kicker says. */}
-      {entry.best == null ? null : (
+      {entry.best == null || !showTarget ? null : (
         <YStack items="flex-end">
           <NNum fontSize={24} lineHeight={26} color="$resourceGold">
             {formatTargetValue({ type: entry.type, value: target }, language)}
@@ -310,26 +319,38 @@ export function WallRow({ entry, now }: { entry: WallEntry; now: Date }) {
 
 function Wall({ stats, mode }: { stats: JournalStats; mode: Mode }) {
   const { t } = useTranslation();
+  // A light week asks less than the record: a target above that objective would contradict the set.
   const title =
     mode === "firstDay"
       ? t("journal.wall_empty")
-      : mode === "veteran"
-        ? t("journal.wall_old")
-        : mode === "rest"
-          ? t("journal.wall_standing")
-          : t("journal.wall_tonight");
+      : stats.lightWeek
+        ? t("journal.wall_standing")
+        : mode === "veteran"
+          ? t("journal.wall_old")
+          : mode === "rest"
+            ? t("journal.wall_standing")
+            : t("journal.wall_tonight");
 
   return (
     <YStack testID="journal-wall">
       <HeaderRow px="$5">
         <NKicker>{title}</NKicker>
         <NMuted fontSize={11} style={CAPTION_STYLE}>
-          {mode === "firstDay" ? t("journal.wall_meta_first") : t("journal.wall_meta")}
+          {mode === "firstDay"
+            ? t("journal.wall_meta_first")
+            : stats.lightWeek
+              ? ""
+              : t("journal.wall_meta")}
         </NMuted>
       </HeaderRow>
       <YStack px="$5" pt={8} gap={6}>
         {stats.wall.map((entry) => (
-          <WallRow key={`${entry.exerciseId}:${entry.type}`} entry={entry} now={stats.now} />
+          <WallRow
+            key={`${entry.exerciseId}:${entry.type}`}
+            entry={entry}
+            now={stats.now}
+            showTarget={!stats.lightWeek}
+          />
         ))}
       </YStack>
     </YStack>
@@ -351,7 +372,17 @@ function withHandMark(t: TFunction, text: string, entries: number): string {
 export function FlameBlock({ stats }: { stats: JournalStats }) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
-  const { flame, now } = stats;
+  const { flame, now, flameSpan } = stats;
+  // The two dates the count can be checked against: "1,104 days" is lit days, not first session to
+  // last, because the flame holds up to two weeks past a session.
+  const since = !flameSpan
+    ? ""
+    : flame.dormant > 0
+      ? t("journal.flame_span", {
+          from: shortDate(language, flameSpan.from, now),
+          to: shortDate(language, flameSpan.to, now),
+        })
+      : t("journal.flame_since", { date: shortDate(language, flameSpan.from, now) });
 
   // Written out rather than "6/2": sessions and outings both keep the flame, and a walker who read
   // the fraction concluded that her walks did not count.
@@ -379,6 +410,8 @@ export function FlameBlock({ stats }: { stats: JournalStats }) {
     flame.inWindow < flame.quota
       ? t("journal.flame_more", { count: flame.quota - flame.inWindow })
       : t("journal.flame_quota", { count: flame.quota }),
+    // An abbreviated month ends with its own dot ("5 sept."): the sentence's full stop is then one too many.
+    since.replace(/\.\.$/, "."),
     best,
   ]
     .filter(Boolean)

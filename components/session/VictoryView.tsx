@@ -26,7 +26,11 @@ import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { LEVEL_CARD_HEIGHT } from "@/constants/layout";
 import { fade, rawColors } from "@/constants/rawColors";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
-import { updateSessionFeedback, updateSessionNotes } from "@/db/completed";
+import {
+  UNTRACED_PAID_SECONDS_PER_DAY,
+  updateSessionFeedback,
+  updateSessionNotes,
+} from "@/db/completed";
 import { type Crest, getCrest } from "@/db/crest";
 import { COAT_RARE_KEY } from "@/db/crestEvents";
 import { countsAsDeed } from "@/db/deed";
@@ -34,9 +38,10 @@ import { formatDuration, formatDurationEstimate } from "@/db/estimate";
 import { isOutingSession } from "@/db/expeditions";
 import { preferences } from "@/db/preferences";
 import { createQuestFromOuting } from "@/db/quests";
-import type { FeedbackCode } from "@/db/schema";
+import type { FeedbackCode, Locomotion } from "@/db/schema";
 import { formatCount } from "@/db/targets";
 import { calculateLevelFromXp, getLevelTitle, getXpForLevel } from "@/db/userLevel";
+import { outingRate } from "@/db/xp";
 import { useFontScaled } from "@/hooks/useFontScaled";
 import { useHaptics } from "@/hooks/useHaptics";
 import { formatTime } from "@/hooks/useSessionTimer";
@@ -175,6 +180,14 @@ async function saveNoteDraft(draft: { current: string }, sessionId: number) {
   const text = draft.current;
   draft.current = "";
   if (text.trim()) await updateSessionNotes(sessionId, text);
+}
+
+/** The share of a minute outside that counts as effort, as the card writes it. */
+function rateOf(locomotion: Locomotion): string {
+  // Read off the rate, never assumed: `db/xp.ts` already plans ⅕ for a walk, which a ">= ½"
+  // test would have kept printing as ¼.
+  const parts = Math.round(1 / outingRate(locomotion));
+  return parts === 2 ? "½" : parts === 4 ? "¼" : `1/${parts}`;
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Post-workout summary screen (save, reveal, feedback, actions)
@@ -512,9 +525,10 @@ export function VictoryView() {
           >
             {/* The ratio follows the source, because this slot serves two of them: a felled boss is
               1024x1024 and a quest cover is 1024x768. One fixed 16:9 box cut 22% off each end of
-              the boss — the monster you just beat, shown with its head and its feet removed — and
-              11% off the quest. Neither loses anything now. */}
-            <YStack width="100%" aspectRatio={felledBoss ? 1 : 4 / 3} bg="$surface2">
+              the boss — the monster you just beat, shown with its head and its feet removed — so
+              the boss keeps its square. A quest cover takes 16:9 and loses 11%: at 4:3 it pushed the
+              feeling buttons under the sticky bar on a 360x640 screen (D-86). */}
+            <YStack width="100%" aspectRatio={felledBoss ? 1 : 16 / 9} bg="$surface2">
               <Image
                 source={
                   felledBoss
@@ -562,6 +576,18 @@ export function VictoryView() {
                     </AppText>
                   )}
                   <Recitatif>{heroTitle}</Recitatif>
+                  {/* The hero's last word for their boss (`defeat`), on the card of its fall. */}
+                  {felledBoss?.bossLines?.defeat[0] ? (
+                    <AppText
+                      testID="victory-boss-defeat-line"
+                      fontFamily="$body"
+                      color="$text"
+                      fontSize={15}
+                      fontStyle="italic"
+                    >
+                      {felledBoss.bossLines.defeat[0]}
+                    </AppText>
+                  ) : null}
                 </YStack>
               </YStack>
               {/* What opens the felled boss: the banner below the villager's slot, never the slot.
@@ -719,11 +745,19 @@ export function VictoryView() {
                           // The clock the time card prints beside it, not a rounded "2 min" that disagreed.
                           moving: formatTime(result.outing.seconds),
                           effort: formatDurationEstimate(result.outing.effortSeconds, language),
+                          rate: rateOf(result.outing.locomotion),
                         })
-                      : t("session.xp_outing_rate_timed", {
-                          time: formatTime(result.outing.clockSeconds),
-                          effort: formatDurationEstimate(result.outing.effortSeconds, language),
-                        })}
+                      : result.outing.seconds === 0 && result.outing.clockSeconds > 0
+                        ? // The day's allowance for time nothing witnessed is spent: say so, where
+                          // a bare "+0 XP" would read as a fault.
+                          t("session.xp_outing_capped", {
+                            hours: UNTRACED_PAID_SECONDS_PER_DAY / 3600,
+                          })
+                        : t("session.xp_outing_rate_timed", {
+                            time: formatTime(result.outing.clockSeconds),
+                            effort: formatDurationEstimate(result.outing.effortSeconds, language),
+                            rate: rateOf(result.outing.locomotion),
+                          })}
                   </AppText>
                 ) : null}
                 {!!result?.overshootXp && (
@@ -781,22 +815,10 @@ export function VictoryView() {
             <HeroLevelBar heroXp={result ? result.heroXp : null} language={language} />
           )}
 
-          {/* "Tonight": what the save changed. It arrives with the save and says nothing before it,
-            nothing at all on a night where nothing rose. "See your village" only when it grew. */}
-          {!!result && (
-            <TonightList
-              feasts={feastOpened ? feasts.filter((f) => f !== bigFeast) : feasts}
-              villageName={villageName}
-              crest={crest}
-              epilogue={result.campaign?.isFinished === true && outroSettled && !outroNarrative}
-              onViewVillage={
-                result.tierUp || result.villageGrowth.length > 0 ? handleViewVillage : undefined
-              }
-            />
-          )}
-
           {/* Feedback — above the fold: this answer is what steers the next
-            session's difficulty, and below the fold a hurried hero never saw it (audit §06-B). */}
+            session's difficulty, and below the fold a hurried hero never saw it (audit §06-B).
+            Under the level bar and above "Tonight": that list arrives with the save and has no
+            reserved height, so below it it pushed these buttons out from under the finger. */}
           <Card width="100%" maxW={520} bg="$surface" borderColor="$glassBorder" gap="$3">
             <AppText
               fontFamily="$body"
@@ -828,9 +850,12 @@ export function VictoryView() {
                   opacity={feedback === value ? 1 : 0.85}
                   pressStyle={{ opacity: 0.8, scale: 0.98 }}
                   onPress={() => handleFeedbackSelect(value)}
-                  // Like Continue: "Tonight" lands with the save and has no reserved height, so a
-                  // tap during the save could land on whatever it pushes into this slot.
+                  // Like Continue: the answer needs a session id, which only the save gives.
                   disabled={!result}
+                  // Always said, `false` included (as `AppButton` does): Tamagui sends it only while
+                  // disabled, Android kept the view disabled once the save landed, and every tap
+                  // outside the glyph and the label was lost (measured: 0 of 16 on the emulator).
+                  aria-disabled={!result}
                   rounded="$4"
                   accessibilityLabel={t(`session.feedback_${value}`)}
                   accessibilityRole="button"
@@ -855,6 +880,20 @@ export function VictoryView() {
               ))}
             </XStack>
           </Card>
+
+          {/* "Tonight": what the save changed. It arrives with the save and says nothing before it,
+            nothing at all on a night where nothing rose. "See your village" only when it grew. */}
+          {!!result && (
+            <TonightList
+              feasts={feastOpened ? feasts.filter((f) => f !== bigFeast) : feasts}
+              villageName={villageName}
+              crest={crest}
+              epilogue={result.campaign?.isFinished === true && outroSettled && !outroNarrative}
+              onViewVillage={
+                result.tierUp || result.villageGrowth.length > 0 ? handleViewVillage : undefined
+              }
+            />
+          )}
 
           {/* A failed save: the only thing that replaces "Tonight". */}
           {!!saveError && (

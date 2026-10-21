@@ -44,7 +44,10 @@ jest.mock("@/components/journal/PastSessionSheet", () => ({
 }));
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/db", () => ({ preferences: {} }));
-jest.mock("@/db/completed", () => ({ updateSessionFeedback: jest.fn() }));
+jest.mock("@/db/completed", () => ({
+  updateSessionFeedback: jest.fn(),
+  UNTRACED_PAID_SECONDS_PER_DAY: 7200,
+}));
 jest.mock("@/db/adventures-narrative", () => ({
   getAdventureStepOutroNarrative: jest.fn().mockResolvedValue(null),
 }));
@@ -268,9 +271,10 @@ describe("VictoryView, the walk it just celebrated", () => {
   test("the road line names the building, the leagues covered and the next floor", async () => {
     await mountVictory();
 
-    expect(screen.getByTestId("victory-expedition-road")).toHaveTextContent(
-      "High Road · 12/15 leagues",
-    );
+    const line = screen.getByTestId("victory-expedition-road");
+    expect(line).toHaveTextContent(/High Road · 12\/15 leagues/);
+    // ...and says what a league is, so the fraction is not a count of something unexplained.
+    expect(line).toHaveTextContent(/A league of Bati is one kilometre\./);
   });
 
   // `nextTarget` is null once the road is maxed, and "40/null leagues" is exactly the shape a
@@ -283,7 +287,7 @@ describe("VictoryView, the walk it just celebrated", () => {
     await mountVictory();
 
     const line = screen.getByTestId("victory-expedition-road");
-    expect(line).toHaveTextContent("High Road · 40 leagues covered beyond the walls");
+    expect(line).toHaveTextContent(/High Road · 40 leagues covered beyond the walls/);
     expect(line).not.toHaveTextContent("null");
   });
 
@@ -418,6 +422,23 @@ describe("VictoryView, the walk it just celebrated", () => {
     expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(
       /240:00 on the clock · counted as 30 min of effort/,
     );
+  });
+
+  test("a day whose unmeasured allowance is spent says so, in place of a bare +0 XP", async () => {
+    await mountVictory({
+      outing: {
+        seconds: 0,
+        effortSeconds: 0,
+        locomotion: "walk",
+        measured: false,
+        clockSeconds: 3600,
+      },
+    });
+
+    expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(
+      /Your 2 h of unmeasured time today are already counted\./,
+    );
+    expect(screen.queryByText(/on the clock/)).toBeNull();
   });
 
   test("a workout is not told what it was counted as - it was counted as itself", async () => {

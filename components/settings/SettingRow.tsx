@@ -23,6 +23,8 @@ export function SettingRow({ testID, icon, label, value, onPress, disabled }: Se
       height="auto"
       pressStyle={{ scale: 0.98, opacity: 0.9 }}
       disabled={disabled}
+      // Always said: Tamagui sends it only while true, and Android keeps a re-enabled view disabled.
+      aria-disabled={disabled === true}
       onPress={onPress}
     >
       <XStack flex={1} items="center" gap="$3">

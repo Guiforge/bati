@@ -280,6 +280,21 @@ describe("db/adventures, the first session offered as step 1", () => {
     });
   });
 
+  test("a session written down before the on-ramp does not hide the gift, a typed distance does count", async () => {
+    const { adventureId, onRamp } = seeded();
+    const byHand = (id: number, v: string) =>
+      t.sqlite.prepare("UPDATE completed_sessions SET byHand = ? WHERE id = ?").run(v, id);
+    byHand(log(null, 500), "session");
+    log(onRamp, 1_000);
+    expect(await adventures().offeredFirstStep(adventureId)).toEqual({
+      performedAt: new Date(1_000 * 1000),
+    });
+
+    // An outing whose distance was typed is a measured one: older than the on-ramp, it blocks.
+    byHand(log(null, 700), "distance");
+    expect(await adventures().offeredFirstStep(adventureId)).toBeNull();
+  });
+
   test("another quest first, the on-ramp second: nothing is offered", async () => {
     const { adventureId, onRamp, elsewhere } = seeded();
     log(elsewhere, 1_000);

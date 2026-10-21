@@ -3,7 +3,7 @@ title: Adventure Details
 type: screen
 route: /adventures/[id]
 status: active
-updated: 2026-10-17
+updated: 2026-10-21
 related: [adventures.md, quest-details.md, ../gameplay/adventures.md, ../gameplay/boss-fights.md]
 sources: ["app/(tabs)/adventures/[id].tsx", "components/adventures/ShareAdventureButton.tsx"]
 ---
@@ -21,7 +21,7 @@ Adventure Details is the campaign hub. It shows:
 
 ## Main features on this page
 
-- **Steps list**: see the journey broken into parts.
+- **Steps list**: see the journey broken into parts. A step draws its own art when it has some; else its quest's cover (`getStepArt`), so a hero's adventure shows the pictures of its quests, a photo included, and nothing is stored per step. A quest with no cover of its own draws nothing.
 - **Progress tracking**: completed vs current vs locked steps.
 - **Start / Continue**: resume exactly where you left off.
 - **Suggested difficulty** (conceptually): help choose an appropriate challenge based on recent training.

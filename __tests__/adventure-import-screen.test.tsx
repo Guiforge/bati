@@ -81,6 +81,7 @@ const raw = {
 };
 
 const preview = (over: Partial<AdventurePreview> = {}): AdventurePreview => ({
+  arrives: { quests: 1, movements: 0, photos: 0, clashes: [] },
   steps: [
     { status: "here", questId: 1, title: "Iron Dawn" },
     { status: "brings", questId: null, title: "Moon Walk" },
@@ -118,7 +119,7 @@ const confirm = () => screen.getByTestId("adventure-import-confirm");
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockParams.n = String(holdIncomingFile("content://chat/adventure.bati-adventure.json"));
+  mockParams.n = holdIncomingFile("content://chat/adventure.bati-adventure.json");
   mockSettings.language = "en";
   mockRead.mockResolvedValue(raw);
   mockImport.mockResolvedValue({ id: 77, updated: false });
@@ -140,6 +141,31 @@ test("an adventure shows its text and each step with where it comes from", async
   expect(screen.queryByTestId("adventure-import-existing")).toBeNull();
 });
 
+test("says what arrives, in counts, and leaves out what is zero", async () => {
+  await mountReady({ arrives: { quests: 2, movements: 5, photos: 0, clashes: [] } });
+  expect(screen.getByTestId("import-arrives")).toBeTruthy();
+  expect(screen.getByText("What arrives")).toBeTruthy();
+  expect(screen.getByText("Quests")).toBeTruthy();
+  expect(screen.getByText("Exercises")).toBeTruthy();
+  expect(screen.getByText("5")).toBeTruthy();
+  expect(screen.queryByText("Photos")).toBeNull();
+  expect(screen.queryByTestId("import-clashes")).toBeNull();
+});
+
+test("nothing arrives when every quest is already here: no card", async () => {
+  await mountReady({ arrives: { quests: 0, movements: 0, photos: 0, clashes: [] } });
+  expect(screen.queryByTestId("import-arrives")).toBeNull();
+});
+
+test("a same-name exercise is named, and both stay", async () => {
+  await mountReady({
+    arrives: { quests: 1, movements: 1, photos: 1, clashes: ["Weighted push-up"] },
+  });
+  expect(
+    screen.getByText("You already have an exercise named Weighted push-up: both will stay."),
+  ).toBeTruthy();
+});
+
 test("a boss this version lacks says it arrives as a route", async () => {
   await mountReady({ monsterUnknown: true });
   expect(
@@ -147,6 +173,41 @@ test("a boss this version lacks says it arrives as a route", async () => {
       "This boss does not exist in your version yet. The adventure arrives as a route.",
     ),
   ).toBeTruthy();
+});
+
+const golem = {
+  key: "stone_golem" as const,
+  bossImagePath: "assets/images/bosses/stone_golem.jpg",
+  weakness: null,
+  resistance: null,
+};
+const bossRaw = (lines: Record<string, string[]>) => ({
+  ...raw,
+  adventure: {
+    ...raw.adventure,
+    end: { kind: "boss", monster: "stone_golem", name: "Nightcoil", lines },
+  },
+});
+
+test("the boss's lines are read before the import, every moment, with its name", async () => {
+  mockRead.mockResolvedValue(
+    bossRaw({ intro: ["Who dares?"], enrage: ["Enough."], defeat: ["Not like this."] }),
+  );
+  await mountReady({ monster: golem });
+
+  expect(screen.getByTestId("adventure-import-boss-lines")).toBeTruthy();
+  expect(screen.getByText("When the fight opens")).toBeTruthy();
+  expect(screen.getByText("Who dares?")).toBeTruthy();
+  expect(screen.getByText("Enough.")).toBeTruthy();
+  expect(screen.getByText("When it falls")).toBeTruthy();
+  expect(screen.getByText("Not like this.")).toBeTruthy();
+  expect(screen.queryByText("When you hit it")).toBeNull();
+});
+
+test("a boss this version lacks shows no lines: it arrives as a route", async () => {
+  mockRead.mockResolvedValue(bossRaw({ intro: ["Who dares?"] }));
+  await mountReady({ monster: null, monsterUnknown: true });
+  expect(screen.queryByTestId("adventure-import-boss-lines")).toBeNull();
 });
 
 test("an adventure the hero has offers to update it or keep both, and the choice is what is imported", async () => {
@@ -323,42 +384,39 @@ test("a read refused before the kind is known says the sentence for both kinds",
   expect(mockRouter.replace).toHaveBeenCalledWith("/quests");
 });
 
-describe("the adventure editor's import button", () => {
+describe("the Forge's import button", () => {
   const button = () =>
     wrap(
       <ImportFileButton
-        label="adventures.import_adventure"
-        hint="adventures.import_hint"
-        failed="adventures.import_failed"
+        label="forge.import"
+        hint="forge.import_hint"
+        failed="forge.import_failed"
         testID="adventure-import"
       />,
     );
 
-  test("closes the empty editor first, then opens the preview with the uri held exactly", async () => {
+  test("opens the preview with the uri held exactly, and stays on the page it was on", async () => {
     const uri =
       "content://com.android.externalstorage.documents/document/primary%3ADownload%2Fa.json";
     mockPick.mockResolvedValue(uri);
     mockRouter.canGoBack.mockReturnValue(true);
     await render(button());
-    expect(screen.getByText("Import an adventure")).toBeTruthy();
+    expect(screen.getByText("Import a received file")).toBeTruthy();
     await fireEvent.press(screen.getByTestId("adventure-import"));
 
-    expect(mockRouter.back).toHaveBeenCalledTimes(1);
-    expect(mockRouter.back.mock.invocationCallOrder[0]).toBeLessThan(
-      mockRouter.push.mock.invocationCallOrder[0] ?? 0,
-    );
+    expect(mockRouter.back).not.toHaveBeenCalled();
     const target = mockRouter.push.mock.calls[0]?.[0] as string;
-    expect(target).toMatch(/^\/quest-import\?n=\d+$/);
+    expect(target).toMatch(/^\/quest-import\?n=[a-z0-9]{10}$/);
     expect(incomingFile(target.split("=")[1])).toBe(uri);
   });
 
-  test("a picker that fails says the adventure sentence", async () => {
+  test("a picker that fails says the file sentence", async () => {
     const boom = new Error("no picker");
     mockPick.mockRejectedValue(boom);
     await render(button());
     await fireEvent.press(screen.getByTestId("adventure-import"));
 
-    expect(mockShowError).toHaveBeenCalledWith("The adventure could not be added. Try again.");
+    expect(mockShowError).toHaveBeenCalledWith("The file could not be opened. Try again.");
     expect(reportError).toHaveBeenCalledWith("quests.import", boom);
   });
 });
@@ -381,6 +439,7 @@ test("a quest file opened from the adventure editor lands on the quest", async (
   });
   mockPreviewQuest.mockResolvedValue({
     slots: [{ exercise: null, available: true, target: { type: "reps", value: 8 } }],
+    clashes: [],
     existing: null,
   });
   mockImportQuest.mockResolvedValue({ id: 42, updated: false });

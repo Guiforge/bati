@@ -1,4 +1,4 @@
-import { act, fireEvent, render } from "@testing-library/react-native";
+import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import { Alert, StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
@@ -223,5 +223,40 @@ describe("quest editor, deleting a quest an adventure names", () => {
 
     expect(await editor.findByText("quests.editor_delete_body")).toBeTruthy();
     expect(editor.getByText("common.cancel")).toBeTruthy();
+  });
+});
+
+describe("quest editor, the story field", () => {
+  it("takes several lines and stops at 280, the cap an adventure's introduction has", async () => {
+    const editor = await mountEditor();
+    const field = editor.getByTestId("quest-description");
+
+    expect(field.props.multiline).toBe(true);
+    expect(field.props.maxLength).toBe(280);
+  });
+
+  it("a received quest's longer story is shown whole, not cut by the field", async () => {
+    const dbm = require("@/db") as { getQuestTemplateById: jest.Mock };
+    const story = "Once. ".repeat(80).trim();
+    mockParams.id = "7";
+    dbm.getQuestTemplateById.mockResolvedValue({
+      id: 7,
+      enTitle: "Long tale",
+      frTitle: "Long tale",
+      enDescription: story,
+      frDescription: story,
+      rounds: 1,
+      restSeconds: 30,
+      roundRestSeconds: null,
+      imagePath: null,
+      exercises: [],
+    });
+    try {
+      const editor = await mountEditor();
+      await waitFor(() => expect(editor.getByTestId("quest-description").props.value).toBe(story));
+      expect(editor.getByTestId("quest-description").props.maxLength).toBe(story.length);
+    } finally {
+      delete mockParams.id;
+    }
   });
 });

@@ -11,6 +11,7 @@ import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { useToast } from "@/components/common/Toast";
 import { Check, ChevronLeft, Download, Info } from "@/components/icons";
+import { ImportClashes } from "@/components/quests/ImportNotes";
 import { getExerciseThumb, getQuestThumb } from "@/constants/assetMap";
 import { MIN_STEPS } from "@/db/heroAdventures";
 import type { QuestTemplate } from "@/db/quests";
@@ -180,6 +181,15 @@ export default function QuestImportScreen() {
                 onChange={setAsCopy}
               />
             ) : null}
+
+            {/* An unticked movement does not arrive, so it sits beside nothing. */}
+            <ImportClashes
+              names={loaded.preview.clashes.filter((name) =>
+                loaded.file.slots.some(
+                  ({ movement }, i) => keep[i] && "own" in movement && movement.own.name === name,
+                ),
+              )}
+            />
 
             <YStack gap="$2">
               <Text fontWeight="700" fontSize={14} color="$textSecondary">

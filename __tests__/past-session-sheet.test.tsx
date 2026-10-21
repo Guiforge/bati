@@ -21,9 +21,16 @@ const mockCreate = jest.fn();
 const mockCorrect = jest.fn();
 const mockSetDistance = jest.fn();
 const mockRefusal = jest.fn();
+let mockPaidInWindow = 0;
 jest.mock("@/db/handEntries", () => ({
   getHandDefaults: () => Promise.resolve({ kind: "workout", durationSeconds: null, label: null }),
-  loadHandContext: () => Promise.resolve({ handDays: new Set<string>(), measured: [] }),
+  loadHandContext: () =>
+    Promise.resolve({
+      handDays: new Set<string>(),
+      measured: [],
+      firstMeasuredAt: new Date(2020, 0, 1),
+      paidInWindow: mockPaidInWindow,
+    }),
   refusalFor: (...a: unknown[]) => mockRefusal(...a),
   createHandEntry: (...a: unknown[]) => mockCreate(...a),
   correctHandEntry: (...a: unknown[]) => mockCorrect(...a),
@@ -57,6 +64,7 @@ beforeEach(() => {
     m.mockReset();
   }
   mockToast.showSuccess.mockReset();
+  mockPaidInWindow = 0;
   mockRefusal.mockResolvedValue(null);
   mockCreate.mockResolvedValue({ ok: true, id: 9, xp: 75, flameActive: true, oathKept: false });
 });
@@ -75,6 +83,21 @@ describe("PastSessionSheet, a session written down", () => {
     expect(screen.getByTestId("past-session-rule").props.children).toBe(
       "A session elsewhere keeps the flame and counts toward the oath, earns the XP of 15 minutes in Bati, and does not hit the boss.",
     );
+  });
+
+  it("says before saving that a fourth paid entry in the window is noted without XP", async () => {
+    mockPaidInWindow = 3;
+    await mount();
+    expect((await screen.findByTestId("past-session-note")).props.children).toBe(
+      "Noted without XP: 3 noted sessions have already paid in the last 8 days.",
+    );
+    expect(screen.getByTestId("past-session-save").props["aria-disabled"]).toBe(false);
+  });
+
+  it("says nothing while the entry still pays", async () => {
+    await mount();
+    await screen.findByText("Add a past session");
+    expect(screen.queryByTestId("past-session-note")).toBeNull();
   });
 
   it("the day chip names the day the entry is filed under, after a duration change too", async () => {
@@ -236,6 +259,40 @@ describe("PastSessionSheet, a session written down", () => {
     expect(screen.getByTestId("past-session-distance").props.value).toBe("1.2");
     await fireEvent.press(screen.getByTestId("past-session-drop"));
     expect(screen.getByTestId("past-session-distance").props.value).toBe("");
+  });
+
+  // The refusal went only on Enter or a blur, so a hero who had fixed the value kept reading it.
+  it("a refusal goes as soon as the typed distance is plausible, without Enter", async () => {
+    mockRefusal.mockResolvedValue({ key: "implausible", speedKmh: 24, fixM: 1200 });
+    await mount();
+    await screen.findByText("Add a past session");
+    await fireEvent.press(screen.getByRole("button", { name: "Run" }));
+    const field = await screen.findByTestId("past-session-distance");
+    await fireEvent.changeText(field, "12");
+    await fireEvent(field, "blur");
+    await screen.findByTestId("past-session-refusal");
+
+    mockRefusal.mockResolvedValue(null);
+    await fireEvent.changeText(screen.getByTestId("past-session-distance"), "1.2");
+
+    await waitFor(() => expect(screen.queryByTestId("past-session-refusal")).toBeNull());
+  });
+
+  it("a refusal goes as soon as a typed 'Other' duration is plausible, without Enter", async () => {
+    mockRefusal.mockResolvedValue({ key: "implausible", speedKmh: 24, fixM: 1200 });
+    await mount();
+    await screen.findByText("Add a past session");
+    await fireEvent.press(screen.getByRole("button", { name: "Run" }));
+    const field = await screen.findByTestId("past-session-distance");
+    await fireEvent.changeText(field, "12");
+    await fireEvent(field, "blur");
+    await screen.findByTestId("past-session-refusal");
+
+    await fireEvent.press(screen.getByRole("button", { name: "Other" }));
+    mockRefusal.mockResolvedValue(null);
+    await fireEvent.changeText(screen.getByTestId("past-session-custom"), "90");
+
+    await waitFor(() => expect(screen.queryByTestId("past-session-refusal")).toBeNull());
   });
 
   it("a workout asks for a name, an outing does not", async () => {

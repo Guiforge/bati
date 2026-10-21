@@ -513,6 +513,9 @@ function CardRow({ card }: { card: CardData }) {
   );
 }
 
+/** Lines shown before "and N more": a night that fêtes fifteen things pushed everything else away. */
+const LINES_SHOWN = 3;
+
 /**
  * "Tonight": what this session changed, as lines and cards. The large feast is only named here,
  * with an "after" badge: it opens full screen once the hero presses Continue. Nothing to say
@@ -540,6 +543,7 @@ export function TonightList({
   const { t, i18n } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const unit = useSettingsStore((s) => s.distanceUnit);
+  const [allLines, setAllLines] = useState(false);
   if (feasts.length === 0 && !epilogue) return null;
 
   const lines = [
@@ -557,9 +561,21 @@ export function TonightList({
       <SectionLabel>{t("session.tonight_title")}</SectionLabel>
       {lines.length > 0 ? (
         <YStack gap="$3">
-          {lines.map((line) => (
+          {(allLines ? lines : lines.slice(0, LINES_SHOWN)).map((line) => (
             <LineRow key={line.id} line={line} />
           ))}
+          {!allLines && lines.length > LINES_SHOWN ? (
+            <Pressable
+              testID="tonight-more"
+              accessibilityRole="button"
+              onPress={() => setAllLines(true)}
+              style={{ minHeight: 44, justifyContent: "center" }}
+            >
+              <AppText fontSize={15} color="$primaryText" textDecorationLine="underline">
+                {t("session.tonight_more", { count: lines.length - LINES_SHOWN })}
+              </AppText>
+            </Pressable>
+          ) : null}
         </YStack>
       ) : null}
       {cards.map((card) => (

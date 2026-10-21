@@ -167,8 +167,11 @@ function toStep(step: WarmupStep | undefined, sessionsBefore: number) {
  * as idle, `resumeSession` carries it through a pause untouched, and the views advance on a clock
  * reaching zero only when there is a clock.
  */
-function prepTimer(): { timerStartTimestamp: number | null; timerDuration: number } {
-  return useSettingsStore.getState().prepMode === "tap"
+function prepTimer(forceTap = false): {
+  timerStartTimestamp: number | null;
+  timerDuration: number;
+} {
+  return forceTap || useSettingsStore.getState().prepMode === "tap"
     ? { timerStartTimestamp: null, timerDuration: 0 }
     : { timerStartTimestamp: Date.now(), timerDuration: PREP_SECONDS };
 }
@@ -1187,12 +1190,14 @@ function runningFrom(quest: Quest, currentExerciseIndex: number) {
  * seconds, running from the tap on Start, so a hero who did not know the movement spent its
  * clock finding out what it was.
  */
-function openingState(quest: Quest, warmupFirst: boolean) {
+function openingState(quest: Quest, warmupFirst: boolean, firstEver: boolean) {
   if (isOutingSession(quest)) return runningFrom(quest, 0);
 
   return {
     status: warmupFirst ? ("warmup" as const) : ("countdown" as const),
-    ...prepTimer(),
+    // The hero's very first warm-up waits for GO whatever the setting says: a ten-second wait on
+    // a movement nobody has read yet started the clock before the hero knew what it was.
+    ...prepTimer(warmupFirst && firstEver),
   };
 }
 
@@ -1487,7 +1492,7 @@ export const useSessionStore = create<SessionState>()(
       const { steps: warmupSequence, totalSessions } = await loadWarmup(quest);
       const warmupFirst = warmupSequence.length > 0;
 
-      const opening = openingState(quest, warmupFirst);
+      const opening = openingState(quest, warmupFirst, totalSessions === 0);
 
       set({
         quest,
@@ -1698,9 +1703,7 @@ export const useSessionStore = create<SessionState>()(
       // the hero threw away. The recovery banner's own discard already did this; the victory
       // screen's did not.
       const { sessionUuid, savedSessionId } = get();
-      if (sessionUuid !== null && savedSessionId === null) {
-        deletePoints(sessionUuid).catch((e) => reportError("session.discardPoints", e));
-      }
+      const discardedUuid = sessionUuid !== null && savedSessionId === null ? sessionUuid : null;
 
       set({
         quest: null,
@@ -1736,10 +1739,19 @@ export const useSessionStore = create<SessionState>()(
       });
       // Whether the hero quit or the session ended, the service must let go: it holds a wake
       // lock and a permanent notification, and nothing else will stop it.
+      // The delete waits for end(): it flushes the buffered fixes, and a delete that ran first
+      // left up to four points for the uuid just discarded.
       useExpeditionStore
         .getState()
         .end()
-        .catch((e) => reportError("session.stopExpedition", e));
+        .catch((e) => reportError("session.stopExpedition", e))
+        .then(() => {
+          if (discardedUuid !== null) {
+            return deletePoints(discardedUuid).catch((e) =>
+              reportError("session.discardPoints", e),
+            );
+          }
+        });
     },
 
     completeExercise: (resultValue, sidesWorked) => {

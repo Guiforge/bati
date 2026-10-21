@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView } from "react-native";
+import { Platform, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
@@ -37,7 +37,11 @@ export function PausedOverlay() {
   // The GPS is deliberately left running through a pause: stopping and restarting the service
   // loses the lock and breaks the segment on the way back, and the reducer already credits
   // nothing while the hero stands still. So the screen is what has to be honest about it.
-  const measuring = useExpeditionStore((s) => s.sessionUuid !== null);
+  // And only once it has said so: a note promising the trace runs sits badly over a receiver that
+  // never produced a fix or went quiet.
+  const measuring = useExpeditionStore(
+    (s) => s.sessionUuid !== null && s.lastFix !== null && s.error === null,
+  );
   // An outing without the receiver has no trace to keep running.
   const gps = useSessionStore((s) => s.gps);
   // Above the early return: hook order may not depend on the paused state.
@@ -112,7 +116,9 @@ export function PausedOverlay() {
           alignItems: "center",
           justifyContent: "center",
           paddingTop: insets.top + 24,
-          paddingBottom: insets.bottom + 24,
+          // The gesture bar: an overlay over a translucent system bar can read 0 insets, and the
+          // last button ("Quitter") slid under it (persona audit 40). Same floor as the galleries.
+          paddingBottom: Math.max(insets.bottom, Platform.OS === "android" ? 24 : 0) + 24,
           paddingHorizontal: 24,
         }}
       >
@@ -136,15 +142,8 @@ export function PausedOverlay() {
               </Paragraph>
             ) : null}
 
-            {/* Reading is free here, and it is free from the running screen and the rest too: the
-              how-to modal pauses on the way in. This is what the hero lands on if they pause by
-              hand instead. Same block either way — see ExerciseInstructions.tsx. */}
-            {instruction ? (
-              <YStack pt="$2">
-                <ExerciseInstructionsBody instruction={instruction} artSize={120} />
-              </YStack>
-            ) : null}
-
+            {/* The buttons come before the how-to: at 130 % the picture pushed "Quit" below the
+                fold with nothing to say the card scrolls (persona audit 2, 64 and 79). */}
             <YStack width="100%" gap="$3" pt="$2">
               <AppButton
                 testID="session-resume"
@@ -196,6 +195,15 @@ export function PausedOverlay() {
                 {t("session.quit_button")}
               </AppButton>
             </YStack>
+
+            {/* Reading is free here, and it is free from the running screen and the rest too: the
+              how-to modal pauses on the way in. This is what the hero lands on if they pause by
+              hand instead. Same block either way — see ExerciseInstructions.tsx. */}
+            {instruction ? (
+              <YStack pt="$2">
+                <ExerciseInstructionsBody instruction={instruction} artSize={120} />
+              </YStack>
+            ) : null}
           </YStack>
         </Card>
       </ScrollView>

@@ -3,7 +3,7 @@ title: Village
 type: screen
 route: /village
 status: active
-updated: 2026-10-11
+updated: 2026-10-21
 related: [../gameplay/progression.md, ../gameplay/boss-fights.md, ../gameplay/villagers.md]
 sources: [app/(tabs)/village.tsx, components/village/, constants/villageAnchors.ts, db/village.ts, db/crest.ts, db/crestRules.ts, db/milestone.ts]
 ---
@@ -272,3 +272,11 @@ unbuilt row draws the same emblem as a silhouette through `tintColor`, which nee
   sentence names the village ("Brumeval becomes a Flourishing City."); an unnamed village has no
   subject, so every tier is a label ("New tier: Village."), and the full screen, whose kicker
   already says "New tier", shows the bare tier name. See [session](session.md) for the victory.
+
+## The Forge building opens the Forge page
+
+The Forge (chest, tier 2) is the one building whose sheet carries a second link, **Enter the forge**
+(`village.forge_enter`), to the **[Forge page](forge.md)**. It shows built or not: the page asks
+nothing of the building, and the building exists in the village from the first day as an anchor
+(`constants/villageAnchors.ts`) even though it is only built by a first chest session. The link is
+secondary, nobody needs it to create.

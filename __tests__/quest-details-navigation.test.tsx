@@ -122,6 +122,7 @@ jest.mock("@/db/exercises", () => ({
 
 // The share and import buttons write files and open the share sheet; this screen's tests
 // are about the quest, and `src/questFile.ts` has its own.
+jest.mock("@/src/adventureFile", () => ({ questToShare: jest.fn() }));
 jest.mock("@/src/questFile", () => ({
   shareQuest: jest.fn(),
   importQuest: jest.fn(),

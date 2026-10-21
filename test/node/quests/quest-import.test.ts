@@ -71,7 +71,7 @@ const officials = () =>
       .all() as { enName: string }[]
   ).map((r) => r.enName);
 
-const parse = (file: unknown) => a.app.quest.parseQuestFile(JSON.stringify(file));
+const parse = (file: unknown) => a.app.quest.parseQuestData(JSON.parse(JSON.stringify(file)));
 
 describe("importing a quest file", () => {
   test("twice is once: the same quests, slots and movements, one more update date", async () => {

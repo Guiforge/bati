@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Paragraph, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
@@ -57,6 +57,19 @@ export function BossTauntOverlay() {
     const id = setTimeout(() => setTaunt(null), TAUNT_MS);
     return () => clearTimeout(id);
   }, [bossFight, lastDamage, isActive, language]);
+
+  // The hero's opening line, once, as the first set starts (0077 voice, `intro`). A hit within the
+  // four seconds replaces it; the painted bosses have none, so nothing changes for them.
+  const intro = bossFight?.bossLines?.intro[0];
+  const opened = useRef(false);
+  useEffect(() => {
+    if (!intro || status !== "running" || opened.current) return;
+    opened.current = true;
+    setTaunt(intro);
+    // Not cleared when the status moves on: a pause inside the four seconds kept the line up
+    // until the first hit. A timer that outlives the screen sets state on nothing, harmlessly.
+    setTimeout(() => setTaunt((now) => (now === intro ? null : now)), TAUNT_MS);
+  }, [intro, status]);
 
   if (!taunt || !isActive) return null;
 

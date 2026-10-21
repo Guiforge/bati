@@ -17,7 +17,8 @@ import { FilterRail, type RailGroup } from "@/components/common/FilterRail";
 import { GameIcon } from "@/components/common/GameIcon";
 import { Recitatif } from "@/components/common/Recitatif";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
-import { Dumbbell, Map as MapIcon, Plus, Star } from "@/components/icons";
+import { ForgeButton } from "@/components/forge/ForgeButton";
+import { Dumbbell, Map as MapIcon, Star } from "@/components/icons";
 import { getQuestAsset } from "@/constants/assetMap";
 import {
   type ExerciseColorTokens,
@@ -730,11 +731,6 @@ export default function QuestsGallery() {
             </Text>
           </XStack>
           <XStack items="center" gap="$2">
-            <Chip
-              label={t("quests.count", {
-                count: filtered.length,
-              })}
-            />
             {/* The catalogue: the only way to ask "what does Bati know about rows?" without
                 first finding a quest that happens to contain one (roadmap 4.22). */}
             <AppIconButton
@@ -748,19 +744,14 @@ export default function QuestsGallery() {
             >
               <Dumbbell size={18} color="$text" strokeWidth={2.5} />
             </AppIconButton>
-            <AppIconButton
-              width={36}
-              height={36}
-              rounded={18}
-              testID="quests-new"
-              onPress={() => router.push("/quests/edit" as never)}
-              accessibilityRole="button"
-              accessibilityLabel={t("quests.editor_new_title")}
-            >
-              <Plus size={18} color="$text" strokeWidth={2.5} />
-            </AppIconButton>
+            <ForgeButton />
           </XStack>
         </XStack>
+        {/* The count leaves the title row: beside the catalogue and "Create" it cut the title to
+            "Qu…", at 100 % text as at 130 %. */}
+        <Text color="$textSecondary" fontSize={13} fontWeight="600">
+          {t("quests.count", { count: filtered.length })}
+        </Text>
         <Text color="$textSecondary" fontSize={13}>
           {t("quests.gallery_subtitle")}
         </Text>

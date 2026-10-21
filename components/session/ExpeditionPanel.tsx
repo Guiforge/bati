@@ -1,3 +1,4 @@
+import { SparedLegsNote } from "@/components/quests/SparedLegsNote";
 import { useLivePanelProps } from "@/hooks/useLivePanelProps";
 import { ExpeditionPanelView } from "./ExpeditionPanelView";
 
@@ -7,5 +8,13 @@ import { ExpeditionPanelView } from "./ExpeditionPanelView";
  * own `useSessionTimer` (one tick a second apiece), accepted rather than lifting state a level.
  */
 export function ExpeditionPanel({ bigOnMap = false }: { bigOnMap?: boolean }) {
-  return <ExpeditionPanelView {...useLivePanelProps()} hideBig={bigOnMap} />;
+  const props = useLivePanelProps();
+  // A tile starts a run in one tap, so the run says it too, not only the optional goal sheet.
+  return (
+    <ExpeditionPanelView
+      {...props}
+      hideBig={bigOnMap}
+      note={<SparedLegsNote locomotion={props.view.locomotion} />}
+    />
+  );
 }

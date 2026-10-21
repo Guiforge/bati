@@ -73,3 +73,24 @@ test("a one-sided movement's wall row says its figure is per side", async () => 
   const view = await wrap(<WallRow entry={entry} now={new Date(2026, 8, 15, 12)} />);
   expect(view.getByText("hold per side")).toBeTruthy();
 });
+
+test("in a light week the wall row sets no target above the objective", async () => {
+  const entry: WallEntry = {
+    exerciseId: 2,
+    name: { en: "Plank", fr: "Gainage", de: "Brett", es: "Plancha", ru: "Plank" },
+    imagePath: "",
+    type: "time",
+    perSide: false,
+    best: 60,
+    last: 45,
+    recordAt: new Date(2026, 8, 14, 12),
+    recordSessionId: 7,
+    seasonBest: 60,
+  };
+  const now = new Date(2026, 8, 15, 12);
+  const normal = await wrap(<WallRow entry={entry} now={now} />);
+  expect(normal.getByText("hold")).toBeTruthy();
+  await normal.unmount();
+  const light = await wrap(<WallRow entry={entry} now={now} showTarget={false} />);
+  expect(light.queryByText("hold")).toBeNull();
+});

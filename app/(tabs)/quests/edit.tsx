@@ -16,7 +16,6 @@ import { useToast } from "@/components/common/Toast";
 import { leavesWithoutAsking, useTabLeaveGuard } from "@/components/common/useTabLeaveGuard";
 import { ChevronLeft, Plus, Trash2, X } from "@/components/icons";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
-import { ImportFileButton } from "@/components/quests/QuestFileButtons";
 import { getExerciseThumb, getQuestAsset, QUEST_ASSETS } from "@/constants/assetMap";
 import {
   adventuresUsingQuest,
@@ -39,6 +38,7 @@ import {
   updateQuestMeta,
 } from "@/db";
 import type { Exercise } from "@/db/exercises";
+import { MAX_DESCRIPTION } from "@/db/heroAdventures";
 import type { QuestTargetType } from "@/db/schema";
 import { DEFAULT_TARGET_VALUE, SECONDS_SUFFIX } from "@/db/targets";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -119,6 +119,9 @@ export default function QuestEditor() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  // A received quest may carry a longer story (the file reads up to 2000): shown whole and kept,
+  // never cut by the field. Only what the hero writes here stops at 280.
+  const [descriptionCap, setDescriptionCap] = useState(MAX_DESCRIPTION);
   const [rounds, setRounds] = useState(DEFAULT_ROUNDS);
   const [rest, setRest] = useState(DEFAULT_REST);
   const [roundRest, setRoundRest] = useState(DEFAULT_REST);
@@ -246,6 +249,7 @@ export default function QuestEditor() {
 
       setTitle(nextTitle);
       setDescription(nextDescription);
+      setDescriptionCap(Math.max(MAX_DESCRIPTION, nextDescription.length));
       setRounds(template.rounds);
       setRest(template.restSeconds);
       setRoundRest(template.roundRestSeconds ?? template.restSeconds);
@@ -504,17 +508,6 @@ export default function QuestEditor() {
               ) : null}
             </XStack>
 
-            {/* Before the form, on a new quest only: a hero holding a quest someone sent them should
-              not have to scroll past an empty form to find where it goes. */}
-            {questId == null ? (
-              <ImportFileButton
-                label="quests.import_quest"
-                hint="quests.import_hint"
-                failed="quests.import_failed"
-                testID="quest-import"
-              />
-            ) : null}
-
             {/* The cover leads, as it does in the movement editor: a quest is a card in a gallery
             long before anyone reads its rounds. Seed quests carry authored art; a hero picks
             from the same set or brings a photo. */}
@@ -569,7 +562,11 @@ export default function QuestEditor() {
                   <Input
                     value={description}
                     onChangeText={setDescription}
+                    testID="quest-description"
                     placeholder={t("quests.editor_description_placeholder")}
+                    maxLength={descriptionCap}
+                    multiline
+                    py={8}
                     bg="$background"
                     borderColor="$borderStrong"
                     color="$text"

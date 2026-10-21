@@ -58,10 +58,11 @@ describe("colour roles", () => {
     expect(read("components/exercises/MineCaption.tsx")).not.toContain("$primaryText");
   });
 
-  it("tonight writes its beads in gold, its badges in ash (not won yet), and only its village link in braise", () => {
+  it("tonight writes its beads in gold, its badges in ash (not won yet), and its two links (village, more) in braise", () => {
     const tonight = read("components/session/TonightList.tsx");
     // The link is an action (braise); everything else is something earned (gold).
-    expect(tonight.match(/\$primaryText/g)).toHaveLength(1);
+    // Two actions, both links: the village and the "and N more" that opens the rest.
+    expect(tonight.match(/\$primaryText/g)).toHaveLength(2);
     expect(tonight).toMatch(/color="\$primaryText"[^>]*>\s*\{t\("session.village_growth_cta"\)\}/);
     expect(tonight).toContain('bg="$resourceGold"');
     expect(

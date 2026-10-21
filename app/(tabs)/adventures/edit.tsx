@@ -187,6 +187,7 @@ export default function AdventureEditor() {
   const nameRef = useRef<TamaguiElement>(null);
   const scrollRef = useRef<ScrollView>(null);
   const nameCardY = useRef(0);
+  const addStepY = useRef(0);
   const skipGuardRef = useRef(false);
 
   const { title, description, cover, steps, end } = fields;
@@ -385,7 +386,8 @@ export default function AdventureEditor() {
         scrollRef.current?.scrollTo({ y: Math.max(0, nameCardY.current - 16), animated: true });
         nameRef.current?.focus();
       } else {
-        scrollRef.current?.scrollToEnd({ animated: true });
+        // To the message under "Add a step", not the end: the boss grid below it is taller than a screen.
+        scrollRef.current?.scrollTo({ y: Math.max(0, addStepY.current - 16), animated: true });
       }
       return;
     }
@@ -590,14 +592,20 @@ export default function AdventureEditor() {
             })}
 
             {steps.length < MAX_STEPS && !frozen ? (
-              <AppButton
-                testID="editor-add-step"
-                variant="outline"
-                icon={<Plus size={20} color="$text" strokeWidth={2.5} />}
-                onPress={() => setPickerOpen(true)}
+              <YStack
+                onLayout={(e) => {
+                  addStepY.current = e.nativeEvent.layout.y;
+                }}
               >
-                {t("adventures.editor_add_step")}
-              </AppButton>
+                <AppButton
+                  testID="editor-add-step"
+                  variant="outline"
+                  icon={<Plus size={20} color="$text" strokeWidth={2.5} />}
+                  onPress={() => setPickerOpen(true)}
+                >
+                  {t("adventures.editor_add_step")}
+                </AppButton>
+              </YStack>
             ) : null}
             {stepsMissing ? (
               <Text

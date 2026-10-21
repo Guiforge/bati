@@ -49,7 +49,7 @@ Write an adventure out of quests the hero already has or has written. One scroll
   pattern neither pushes nor pulls, but its muscles count. A step whose quest is gone is skipped, so the
   steps on either side of it can join into a streak.
 - **Save** creates or updates, then opens the adventure's page. Missing name or fewer than two steps
-  are said on the field.
+  are said on the field, and the page scrolls to it (the name, or the message under "Add a step").
 - **Retire this adventure** (edit mode, no run under way), after a confirmation.
 
 ## Rules

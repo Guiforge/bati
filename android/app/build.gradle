@@ -94,9 +94,11 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 21300
         versionName "2.13.0"
+// @generated begin expo-localization-supported-locales - expo prebuild (DO NOT MODIFY) sync-c9f73454f3727185f1bd674e1d7b291f937b066c
+        resourceConfigurations += ["b+en", "b+fr", "b+de", "b+es", "b+ru"]
+// @generated end expo-localization-supported-locales
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
-        resourceConfigurations += ["b+en", "b+fr", "b+de", "b+es", "b+ru"]
     }
     signingConfigs {
         debug {
@@ -141,7 +143,7 @@ android {
                 resValue "color", "iconBackground", "#06B6D4"
             }
             minifyEnabled enableMinifyInReleaseBuilds
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             def enablePngCrunchInRelease = findProperty('android.enablePngCrunchInReleaseBuilds') ?: 'true'
             crunchPngs enablePngCrunchInRelease.toBoolean()
         }

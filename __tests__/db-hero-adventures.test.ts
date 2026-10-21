@@ -661,6 +661,10 @@ describe("db/heroAdventures", () => {
         draft([a, b], { kind: "boss", monster: "shadow_serpent", heroBoss: uuid }),
       );
       await expect(bosses.deleteHeroBoss(bossId)).rejects.toBeInstanceOf(bosses.HeroBossInUseError);
+      // The refusal names the adventure, so the editor can say which one.
+      const using = await bosses.adventuresUsingBoss(uuid);
+      expect(using).toHaveLength(1);
+      expect(using[0]?.enTitle).toBe((await hero.loadHeroAdventureDraft(id))?.title);
       expect(await bosses.getHeroBoss(bossId)).not.toBeNull();
       await hero.retireHeroAdventure(id);
       await bosses.deleteHeroBoss(bossId);

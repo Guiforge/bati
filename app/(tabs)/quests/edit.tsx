@@ -43,10 +43,10 @@ import type { QuestTargetType } from "@/db/schema";
 import { DEFAULT_TARGET_VALUE, SECONDS_SUFFIX } from "@/db/targets";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useKeyboardShown } from "@/hooks/useKeyboardShown";
-import { formatList } from "@/src/i18n/list";
+import { formatList, quoted } from "@/src/i18n/list";
 import { localizedName, localizedText, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
-import { type AppLanguage, useSettingsStore } from "@/stores/settings";
+import { useSettingsStore } from "@/stores/settings";
 
 /** What the in-app dialog says; `onConfirm` and `cancelLabel` left out make it a plain message. */
 type DialogState = {
@@ -95,13 +95,6 @@ const QUEST_CHOICES = Object.keys(QUEST_ASSETS);
 const DEFAULT_ROUNDS = 3;
 const DEFAULT_REST = 30;
 const REST_STEP = 5;
-
-/** A title between the quotation marks its language writes. */
-function quoted(title: string, language: AppLanguage): string {
-  if (language === "en") return `\u201C${title}\u201D`;
-  if (language === "de") return `\u201E${title}\u201C`;
-  return `\u00AB\u00A0${title}\u00A0\u00BB`;
-}
 
 export default function QuestEditor() {
   const router = useRouter();

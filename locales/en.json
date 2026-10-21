@@ -3000,9 +3000,10 @@
     "picture_of": "Image: {{form}}",
     "delete": "Delete this boss",
     "delete_title": "Delete {{name}}?",
-    "delete_body": "It disappears from your Forge, and from your other devices except where an adventure still ends on it.",
+    "delete_body": "It leaves your Forge, here and on your other devices. A device where an adventure still ends on it keeps it.",
     "delete_confirm": "Delete",
     "in_use_title": "This boss is still in use",
-    "in_use_body": "One of your adventures ends on it. Change that adventure's ending first."
+    "in_use_body_one": "The adventure {{titles}} still ends on it. Change its ending first.",
+    "in_use_body_other": "The adventures {{titles}} still end on it. Change their endings first."
   }
 }

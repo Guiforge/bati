@@ -876,7 +876,7 @@ export async function honourTombstones(): Promise<number> {
     sql.raw(`SELECT id, uuid FROM hero_bosses r WHERE EXISTS
       (SELECT 1 FROM deleted_content d WHERE d.uuid = r.uuid AND d.deletedAt >= ifnull(r.updatedAt, 0))`),
   )) {
-    if ((await adventuresUsingBoss(uuid)) > 0) continue;
+    if ((await adventuresUsingBoss(uuid)).length > 0) continue;
     await db.delete(schema.heroBosses).where(eq(schema.heroBosses.id, id));
     removed++;
   }

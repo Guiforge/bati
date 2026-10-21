@@ -69,10 +69,15 @@ export const emptyHeroBossDraft = (monster: BossAssetKey): HeroBossDraft => ({
   art: {},
 });
 
+type BossUser = { enTitle: string; frTitle: string; deTitle: string; esTitle: string };
+
 /** Thrown when a boss is deleted while an adventure still ends on it, as for a quest. */
 export class HeroBossInUseError extends Error {
-  constructor() {
+  /** The adventures that still end on it, for the editor to name. */
+  readonly using: BossUser[];
+  constructor(using: BossUser[] = []) {
     super("A boss an adventure ends on cannot be deleted");
+    this.using = using;
     this.name = "HeroBossInUseError";
   }
 }
@@ -121,13 +126,20 @@ export async function getHeroBossByUuid(uuid: string, exec: Exec = db): Promise<
   return row ? toHeroBoss(row) : null;
 }
 
-/** The hero's active adventures that end on this boss: a retired one falls back to its painted monster. */
-export async function adventuresUsingBoss(uuid: string, exec: Exec = db): Promise<number> {
-  const rows = await exec
-    .select({ id: adventures.id })
+/**
+ * The hero's active adventures that end on this boss, by title (the editor names them): a retired
+ * one falls back to its painted monster.
+ */
+export async function adventuresUsingBoss(uuid: string, exec: Exec = db): Promise<BossUser[]> {
+  return await exec
+    .select({
+      enTitle: adventures.enTitle,
+      frTitle: adventures.frTitle,
+      deTitle: adventures.deTitle,
+      esTitle: adventures.esTitle,
+    })
     .from(adventures)
     .where(and(eq(adventures.heroBossUuid, uuid), eq(adventures.isActive, 1)));
-  return rows.length;
 }
 
 async function columns(draft: HeroBossDraft) {
@@ -187,7 +199,8 @@ export async function deleteHeroBoss(id: number): Promise<void> {
       .where(eq(heroBosses.id, id))
       .limit(1);
     if (!row) return;
-    if ((await adventuresUsingBoss(row.uuid, tx)) > 0) throw new HeroBossInUseError();
+    const using = await adventuresUsingBoss(row.uuid, tx);
+    if (using.length > 0) throw new HeroBossInUseError(using);
     await writeContentTombstone(tx, "hero_bosses", id);
     await tx.delete(heroBosses).where(eq(heroBosses.id, id));
   });

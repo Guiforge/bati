@@ -51,8 +51,14 @@ jest.mock("@/db/heroAdventures", () => ({
     .mockResolvedValue(["shadow_serpent", "iron_golem"].map((k) => monster(k))),
 }));
 jest.mock("@/db/heroBosses", () => ({
-  HeroBossInUseError: class extends Error {},
-  adventuresUsingBoss: jest.fn().mockResolvedValue(0),
+  HeroBossInUseError: class extends Error {
+    using: unknown[];
+    constructor(using: unknown[] = []) {
+      super("in use");
+      this.using = using;
+    }
+  },
+  adventuresUsingBoss: jest.fn().mockResolvedValue([]),
   createHeroBoss: jest.fn().mockResolvedValue(1),
   updateHeroBoss: jest.fn().mockResolvedValue(undefined),
   deleteHeroBoss: jest.fn().mockResolvedValue(undefined),
@@ -244,6 +250,8 @@ describe("a new boss", () => {
   });
 });
 
+const ending = (title: string) => ({ enTitle: title, frTitle: "", deTitle: "", esTitle: "" });
+
 describe("an existing boss", () => {
   const stored = {
     id: 4,
@@ -280,13 +288,25 @@ describe("an existing boss", () => {
     );
   });
 
+  test("two adventures are both named", async () => {
+    mockParams.id = "4";
+    bosses().getHeroBoss?.mockResolvedValue(stored);
+    bosses().adventuresUsingBoss?.mockResolvedValueOnce([ending("One"), ending("Two")]);
+    const editor = await mount();
+    await fireEvent.press(editor.getByTestId("boss-delete"));
+    expect(
+      await editor.findByText(/\u201COne\u201D and \u201CTwo\u201D still end on it/),
+    ).toBeTruthy();
+  });
+
   test("one an adventure ends on says so before asking, and nothing is deleted", async () => {
     mockParams.id = "4";
     bosses().getHeroBoss?.mockResolvedValue(stored);
-    bosses().adventuresUsingBoss?.mockResolvedValueOnce(1);
+    bosses().adventuresUsingBoss?.mockResolvedValueOnce([ending("Gorgo's tale")]);
     const editor = await mount();
     await fireEvent.press(editor.getByTestId("boss-delete"));
     expect(await editor.findByText("This boss is still in use")).toBeTruthy();
+    expect(editor.getByText(/\u201CGorgo's tale\u201D still ends on it/)).toBeTruthy();
     expect(editor.queryByText("Delete")).toBeNull();
     expect(bosses().adventuresUsingBoss).toHaveBeenCalledWith(stored.uuid);
     expect(bosses().deleteHeroBoss).not.toHaveBeenCalled();
@@ -303,11 +323,12 @@ describe("an existing boss", () => {
     expect(mockBack).toHaveBeenCalled();
 
     mockBack.mockClear();
-    const InUse = bosses().HeroBossInUseError as unknown as new () => Error;
-    bosses().deleteHeroBoss?.mockRejectedValueOnce(new InUse());
+    const InUse = bosses().HeroBossInUseError as unknown as new (using: unknown[]) => Error;
+    bosses().deleteHeroBoss?.mockRejectedValueOnce(new InUse([ending("Late tale")]));
     await fireEvent.press(editor.getByTestId("boss-delete"));
     await fireEvent.press(await editor.findByText("Delete"));
     expect(await editor.findByText("This boss is still in use")).toBeTruthy();
+    expect(editor.getByText(/Late tale/)).toBeTruthy();
     expect(mockBack).not.toHaveBeenCalled();
   });
 });

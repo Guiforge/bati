@@ -3127,9 +3127,10 @@
     "picture_of": "Imagen: {{form}}",
     "delete": "Eliminar este jefe",
     "delete_title": "¿Eliminar {{name}}?",
-    "delete_body": "Desaparece de tu Forja, y de tus otros dispositivos salvo donde una aventura aún termine con él.",
+    "delete_body": "Sale de tu Forja, aquí y en tus otros dispositivos. Un dispositivo donde una aventura aún termine con él lo conserva.",
     "delete_confirm": "Eliminar",
     "in_use_title": "Este jefe aún se usa",
-    "in_use_body": "Una de tus aventuras termina con él. Cambia primero el final de esa aventura."
+    "in_use_body_one": "La aventura {{titles}} aún termina con él. Cambia primero su final.",
+    "in_use_body_other": "Las aventuras {{titles}} aún terminan con él. Cambia primero sus finales."
   }
 }

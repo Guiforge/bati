@@ -3128,9 +3128,10 @@
     "picture_of": "Image : {{form}}",
     "delete": "Supprimer ce boss",
     "delete_title": "Supprimer {{name}} ?",
-    "delete_body": "Il disparaît de ta Forge, et de tes autres appareils sauf là où une aventure se termine encore sur lui.",
+    "delete_body": "Il quitte ta Forge, ici et sur tes autres appareils. Un appareil où une aventure finit encore sur lui le garde.",
     "delete_confirm": "Supprimer",
     "in_use_title": "Ce boss sert encore",
-    "in_use_body": "Une de tes aventures se termine sur lui. Change d'abord la fin de cette aventure."
+    "in_use_body_one": "L'aventure {{titles}} se termine encore sur lui. Change d'abord sa fin.",
+    "in_use_body_other": "Les aventures {{titles}} se terminent encore sur lui. Change d'abord leur fin."
   }
 }

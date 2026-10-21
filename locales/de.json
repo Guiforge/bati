@@ -3009,9 +3009,10 @@
     "picture_of": "Bild: {{form}}",
     "delete": "Diesen Boss löschen",
     "delete_title": "{{name}} löschen?",
-    "delete_body": "Er verschwindet aus deiner Schmiede und von deinen anderen Geräten, außer dort, wo noch ein Abenteuer mit ihm endet.",
+    "delete_body": "Er verlässt deine Schmiede, hier und auf deinen anderen Geräten. Ein Gerät, auf dem noch ein Abenteuer mit ihm endet, behält ihn.",
     "delete_confirm": "Löschen",
     "in_use_title": "Dieser Boss wird noch gebraucht",
-    "in_use_body": "Eines deiner Abenteuer endet bei ihm. Ändere zuerst das Ende dieses Abenteuers."
+    "in_use_body_one": "Das Abenteuer {{titles}} endet noch bei ihm. Ändere zuerst dessen Ende.",
+    "in_use_body_other": "Die Abenteuer {{titles}} enden noch bei ihm. Ändere zuerst deren Enden."
   }
 }

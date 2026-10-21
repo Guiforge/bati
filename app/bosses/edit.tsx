@@ -34,6 +34,8 @@ import { MUSCLE_LABELS } from "@/db/labels";
 import { type MuscleCode, muscleCodes } from "@/db/schema";
 import { useHaptics } from "@/hooks/useHaptics";
 import { useKeyboardShown } from "@/hooks/useKeyboardShown";
+import { formatList, quoted } from "@/src/i18n/list";
+import { localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -215,10 +217,16 @@ export default function BossEditor() {
     setBusy(false);
   };
 
-  const inUse = () =>
+  const inUse = (using: readonly Parameters<typeof localizedTitle>[0][]) =>
     setDialog({
       title: t("boss_editor.in_use_title"),
-      body: t("boss_editor.in_use_body"),
+      body: t("boss_editor.in_use_body", {
+        count: using.length,
+        titles: formatList(
+          using.map((a) => quoted(localizedTitle(a, language), language)),
+          language,
+        ),
+      }),
       confirmLabel: t("common.close"),
     });
 
@@ -227,8 +235,8 @@ export default function BossEditor() {
   const confirmDelete = () => {
     if (bossId == null) return;
     getHeroBoss(bossId)
-      .then((boss) => (boss ? adventuresUsingBoss(boss.uuid) : 0))
-      .then((using) => (using > 0 ? inUse() : askDelete(bossId)))
+      .then((boss) => (boss ? adventuresUsingBoss(boss.uuid) : []))
+      .then((using) => (using.length > 0 ? inUse(using) : askDelete(bossId)))
       .catch((error: unknown) => {
         reportError("boss.deleteCheck", error);
         setDialog({
@@ -255,7 +263,7 @@ export default function BossEditor() {
             setBusy(false);
             skipGuardRef.current = false;
             if (error instanceof HeroBossInUseError) {
-              inUse();
+              inUse(error.using);
               return;
             }
             reportError("boss.delete", error);

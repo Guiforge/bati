@@ -58,10 +58,9 @@ export function ShareQuestButton({ questId }: { questId: number }) {
 }
 
 /**
- * A quest or an adventure someone sent, read from a file and filed with the hero's own. Lives in
- * the new-quest and the new-adventure editors, because receiving one is one more way to get a new
- * one, and the gallery's "+" is already where a hero goes for that. Either button opens either
- * kind: the preview screen reads the kind from the file, and decides where the import lands.
+ * A quest or an adventure someone sent, read from a file and filed with the hero's own. Lives on
+ * the Forge page, the one door: the preview screen reads the kind from the file, and decides
+ * where the import lands.
  */
 export function ImportFileButton({
   label,
@@ -88,9 +87,7 @@ export function ImportFileButton({
   const run = async () => {
     const uri = await pickQuestFile();
     if (!uri) return;
-    // The empty editor closes first: left under the preview, it was where back from the imported
-    // quest landed (seen on the emulator). The URI is held aside, never in the route.
-    if (router.canGoBack()) router.back();
+    // The URI is held aside, never in the route.
     router.push(`/quest-import?n=${holdIncomingFile(uri)}` as never);
   };
 

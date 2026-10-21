@@ -454,7 +454,7 @@ describe("ImportFileButton", () => {
 
   // The picker used to import on its own, past the preview a tapped file gets. The URI is held
   // aside, never in the route: the router decoded `%3A` in it, and Android refused the read.
-  test("a picked file opens the preview in place of the editor, its uri held exactly", async () => {
+  test("a picked file opens the preview, its uri held exactly, and leaves the page it was on", async () => {
     const uri =
       "content://com.android.externalstorage.documents/document/primary%3ADownload%2Fq.json";
     mockPick.mockResolvedValue(uri);
@@ -464,11 +464,7 @@ describe("ImportFileButton", () => {
     expect(mockRouter.push).toHaveBeenCalledWith(expect.stringMatching(/^\/quest-import\?n=\d+$/));
     const target = mockRouter.push.mock.calls[0]?.[0] as string;
     expect(incomingFile(target.split("=")[1])).toBe(uri);
-    // The empty editor closes first, or back from the imported quest landed on it.
-    expect(mockRouter.back).toHaveBeenCalledTimes(1);
-    expect(mockRouter.back.mock.invocationCallOrder[0]).toBeLessThan(
-      mockRouter.push.mock.invocationCallOrder[0] ?? 0,
-    );
+    expect(mockRouter.back).not.toHaveBeenCalled();
     expect(mockRouter.replace).not.toHaveBeenCalled();
     expect(mockImport).not.toHaveBeenCalled();
   });

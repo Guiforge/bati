@@ -88,8 +88,8 @@ A finished session as a picture, an outing as a GPX, a quest the hero wrote as a
   privacy policy change, and Android's Quick Share already carries a file between two phones in
   the room.
   - **Opening one**: tapping the file in a chat, a mail or Files opens Bati (an ACTION_VIEW filter
-    on `application/json`, `app/+native-intent.tsx`), and so does the editor's import button,
-    through the picker. Both land on one preview (`app/quest-import.tsx`): the hero renames the
+    on `application/json`, `app/+native-intent.tsx`), and so does the Forge's import button
+    (`/forge`), through the picker. Both land on one preview (`app/quest-import.tsx`): the hero renames the
     quest, unticks the movements they do not want, and, for a quest they already have, chooses
     between updating it and keeping both. A seed movement this version lacks is shown and left
     out, instead of refusing the whole quest. The extension stays `.json`: chat apps type a file

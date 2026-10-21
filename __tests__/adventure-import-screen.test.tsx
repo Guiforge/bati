@@ -334,7 +334,7 @@ describe("the adventure editor's import button", () => {
       />,
     );
 
-  test("closes the empty editor first, then opens the preview with the uri held exactly", async () => {
+  test("opens the preview with the uri held exactly, and leaves the page it was on", async () => {
     const uri =
       "content://com.android.externalstorage.documents/document/primary%3ADownload%2Fa.json";
     mockPick.mockResolvedValue(uri);
@@ -343,10 +343,7 @@ describe("the adventure editor's import button", () => {
     expect(screen.getByText("Import an adventure")).toBeTruthy();
     await fireEvent.press(screen.getByTestId("adventure-import"));
 
-    expect(mockRouter.back).toHaveBeenCalledTimes(1);
-    expect(mockRouter.back.mock.invocationCallOrder[0]).toBeLessThan(
-      mockRouter.push.mock.invocationCallOrder[0] ?? 0,
-    );
+    expect(mockRouter.back).not.toHaveBeenCalled();
     const target = mockRouter.push.mock.calls[0]?.[0] as string;
     expect(target).toMatch(/^\/quest-import\?n=\d+$/);
     expect(incomingFile(target.split("=")[1])).toBe(uri);

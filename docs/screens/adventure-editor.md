@@ -29,8 +29,8 @@ Write an adventure out of quests the hero already has or has written. One scroll
   one, and up to 3 lines (60 each, one per row) for three moments, when you hit it, on a critical hit and
   cornered. They join the painted lines; they never replace them. A 4th line or a 61st character does not
   appear. The name stays editable under a playthrough.
-- **Import an adventure** (new adventure only, above the form): opens the file picker, then the same
-  preview screen a file tapped in a chat opens (`/quest-import`), which reads the kind from the file.
+- **Import**: not here any more. The **[Forge](forge.md)** has the one door, to the same preview a
+  file tapped in a chat opens (`/quest-import`), which reads the kind from the file.
 - **Summary**: steps, weeks, the boss (the hero's name for it once there is one), what it trains.
 - **Balance sentences**, under the summary, at most two, derived from the steps and never typed. A push
   streak: 3 or more steps in a row that push (a push pattern slot) and do not pull. Else a pull deficit:

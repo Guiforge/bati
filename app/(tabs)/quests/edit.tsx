@@ -16,7 +16,6 @@ import { useToast } from "@/components/common/Toast";
 import { leavesWithoutAsking, useTabLeaveGuard } from "@/components/common/useTabLeaveGuard";
 import { ChevronLeft, Plus, Trash2, X } from "@/components/icons";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
-import { ImportFileButton } from "@/components/quests/QuestFileButtons";
 import { getExerciseThumb, getQuestAsset, QUEST_ASSETS } from "@/constants/assetMap";
 import {
   adventuresUsingQuest,
@@ -503,17 +502,6 @@ export default function QuestEditor() {
                 </AppIconButton>
               ) : null}
             </XStack>
-
-            {/* Before the form, on a new quest only: a hero holding a quest someone sent them should
-              not have to scroll past an empty form to find where it goes. */}
-            {questId == null ? (
-              <ImportFileButton
-                label="quests.import_quest"
-                hint="quests.import_hint"
-                failed="quests.import_failed"
-                testID="quest-import"
-              />
-            ) : null}
 
             {/* The cover leads, as it does in the movement editor: a quest is a card in a gallery
             long before anyone reads its rounds. Seed quests carry authored art; a hero picks

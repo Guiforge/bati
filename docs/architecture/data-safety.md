@@ -98,7 +98,10 @@ automatic backup folder whose last copy is under 7 days old (a folder with no st
 count: every write that lands stamps one), or a device sync that succeeded in the last 7 days. A hero with either never
 sees the card. A hero whose database file is over 20 MB (`HEAVY_DATABASE_BYTES`, photos
 and traces: Google's backup stops at 25 MB) and who is not protected gets the same card with
-another text, and its silence never becomes "for good": a month at most. Settings shows "last backup N days ago" under the automatic backup row, read from
+another text, and its silence never becomes "for good": a month at most. A phone with no screen
+lock (`deviceIsSecure()` in `modules/bati-save`) gets a third text that outranks it, with the same
+monthly return: Android cannot encrypt its backup there, so `withAndroidBackupRules` leaves Bati
+out of it and this phone is the only copy. Settings shows "last backup N days ago" under the automatic backup row, read from
 `lastAutoBackupDay`, which `enableAutoBackup` now stamps and `disableAutoBackup` clears.
 
 ## Not done, on purpose

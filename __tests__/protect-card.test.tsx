@@ -58,6 +58,9 @@ jest.mock("@/src/deviceSync", () => ({
   syncHealth: async () => ({ lastSuccessAt: mockLastSyncAt, failure: null, failingSince: null }),
 }));
 
+let mockSecure = true;
+jest.mock("@/modules/bati-save", () => ({ deviceIsSecure: () => mockSecure }));
+
 import { ProtectCard } from "@/components/home/ProtectCard";
 import { dismissProtectCard, protectCardKind, protectCardVisible } from "@/src/protectHero";
 import config from "@/tamagui.config";
@@ -69,6 +72,7 @@ beforeEach(() => {
   mockPrefs.clear();
   mockSessions = 5;
   mockBytes = 0;
+  mockSecure = true;
   mockAccount = null;
   mockLastSyncAt = null;
 });
@@ -188,6 +192,35 @@ describe("a heavy database", () => {
     mockBytes = HEAVY;
     await mount();
     await waitFor(() => expect(screen.getByText("backup.protectHeavyTitle")).toBeTruthy());
+  });
+});
+
+describe("a phone with no screen lock", () => {
+  test("says Android will not back it up, and only for a hero with no backup of their own", async () => {
+    mockSecure = false;
+    expect(await protectCardKind()).toBe("noLock");
+    mockBytes = HEAVY;
+    expect(await protectCardKind()).toBe("noLock");
+
+    mockPrefs.set("backupFolderUri", "content://tree");
+    mockPrefs.set("lastAutoBackupDay", ago(1));
+    expect(await protectCardKind()).toBeNull();
+  });
+
+  test("never goes quiet for good: closed three times, it is back within a month", async () => {
+    mockSecure = false;
+    mockPrefs.set("protectDismissals", "3");
+    mockPrefs.set("protectDismissedDay", ago(29));
+    expect(await protectCardKind()).toBeNull();
+    mockPrefs.set("protectDismissedDay", ago(30));
+    expect(await protectCardKind()).toBe("noLock");
+  });
+
+  test("the card shows the no-lock text", async () => {
+    mockSecure = false;
+    await mount();
+    await waitFor(() => expect(screen.getByText("backup.protectNoLockTitle")).toBeTruthy());
+    expect(screen.getByText("backup.protectNoLockBody")).toBeTruthy();
   });
 });
 

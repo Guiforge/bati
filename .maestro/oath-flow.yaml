@@ -42,6 +42,12 @@ appId: com.guiforge.bati.dev
 
 # Re-opening now shows the sworn oath and its progress. The presets stay on screen
 # (swearing a new one replaces the old), so their absence is not the thing to assert.
+# Swearing raises the success toast right over the Journal's strip, and a toast takes the tap
+# that lands on it (components/common/Toast.tsx), so the strip is tapped once the toast is gone.
+- extendedWaitUntil:
+    notVisible:
+      id: "toast"
+    timeout: 8000
 - tapOn:
     id: "home-oath-card"
 - assertVisible:

@@ -4,7 +4,12 @@ import { useTranslation } from "react-i18next";
 
 import { useToast } from "@/components/common/Toast";
 import { useConfirmDialog } from "@/components/common/useConfirmDialog";
-import { type BackupRejection, keepDeviceSettings, validateBackup } from "@/db/backup";
+import {
+  type BackupRejection,
+  bringForward,
+  keepDeviceSettings,
+  validateBackup,
+} from "@/db/backup";
 import { useBugReport } from "@/hooks/useBugReport";
 import {
   autoBackupFolder,
@@ -210,6 +215,10 @@ export function useBackup() {
 
       const check = await validateBackup(staged);
       if (!check.ok) return { verdict: check.reason };
+      // An older backup is migrated here, before the swap, or refused: never swapped in to fail
+      // its migration on every launch. The picker and `runAdopt` both come through this line.
+      const forward = await bringForward(staged);
+      if (!forward.ok) return { verdict: forward.reason };
       // Offered later, by the caller, once the copies are kept: adopting the key now would change
       // the vault of a restore that may still be abandoned.
       return { verdict: "ok", join: opened.join, byWords };

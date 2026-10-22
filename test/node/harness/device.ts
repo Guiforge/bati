@@ -88,6 +88,7 @@ export async function newDevice(name: string, restoreFrom?: string): Promise<Dev
     }));
     jest.doMock("@/db/client", () => ({
       ...clientMock(test),
+      databaseFilePath: (name: string) => path.join(dbDir, name),
       DB_NAME,
       SAFETY_NAME: `${DB_NAME}.bak`,
       closeDatabase: () => Promise.resolve(),

@@ -6,6 +6,7 @@ import { BossArena } from "@/components/session/BossArena";
 import { getHpPercent, getPhaseFromHp, getPhaseLook } from "@/components/session/bossPhase";
 import { rawColors } from "@/constants/rawColors";
 import config from "@/tamagui.config";
+import { pngDataUri } from "./helpers/pngDataUri";
 
 /**
  * The damage trail is the one piece of state in the arena: the bar holds at the old HP so the
@@ -230,10 +231,10 @@ describe("BossArena gauge", () => {
 });
 
 describe("a hero boss's own pictures in the arena", () => {
-  const FRESH = "data:image/jpeg;base64,FRESH";
-  const WOUNDED = "data:image/jpeg;base64,WOUNDED";
-  const DEFEATED = "data:image/jpeg;base64,DEFEATED";
-  const LEGEND = "data:image/jpeg;base64,LEGEND";
+  const FRESH = pngDataUri(11, 11);
+  const WOUNDED = pngDataUri(12, 12);
+  const DEFEATED = pngDataUri(13, 13);
+  const LEGEND = pngDataUri(14, 14);
   const shown = async (hp: number, extra: Partial<React.ComponentProps<typeof BossArena>>) => {
     const root = await render(arena(hp, extra));
     // expo-image hands its source on as a list.

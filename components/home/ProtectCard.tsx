@@ -10,6 +10,12 @@ import { useHaptics } from "@/hooks/useHaptics";
 import { dismissProtectCard, type ProtectCardKind, protectCardKind } from "@/src/protectHero";
 import { reportError } from "@/src/reportError";
 
+const TEXT = {
+  plain: ["backup.protectTitle", "backup.protectBody"],
+  heavy: ["backup.protectHeavyTitle", "backup.protectHeavyBody"],
+  noLock: ["backup.protectNoLockTitle", "backup.protectNoLockBody"],
+} as const satisfies Record<ProtectCardKind, readonly [string, string]>;
+
 /**
  * A line under the scene, same family as `ReminderCard`: after a few sessions with nothing
  * protecting the hero, it opens Settings in one tap and can be closed for thirty days. Reads on
@@ -54,10 +60,10 @@ export function ProtectCard() {
         <Shield size={16} color="textSecondary" />
         <YStack flex={1}>
           <AppText fontSize="3" fontWeight="bold" color="text">
-            {t(kind === "heavy" ? "backup.protectHeavyTitle" : "backup.protectTitle")}
+            {t(TEXT[kind][0])}
           </AppText>
           <AppText fontSize="2" color="textSecondary">
-            {t(kind === "heavy" ? "backup.protectHeavyBody" : "backup.protectBody")}
+            {t(TEXT[kind][1])}
           </AppText>
         </YStack>
         <ChevronRight size={16} color="primaryText" />

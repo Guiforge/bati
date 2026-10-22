@@ -310,11 +310,13 @@ describe("d: a quest deleted there that an adventure names here (foreign keys OF
     const first = await adventures().completeAdventureRunStep({
       runStepId: runSteps[0] as number,
       completedSessionId: session(adminQuests()[0] as number),
+      questId: adminQuests()[0] as number,
     });
     expect(first.isFinished).toBe(false);
     const last = await adventures().completeAdventureRunStep({
       runStepId: runSteps[1] as number,
       completedSessionId: session(h),
+      questId: h,
     });
     expect(last.isFinished).toBe(true);
   });
@@ -373,10 +375,12 @@ test.each([
     const one = await adventures().completeAdventureRunStep({
       runStepId: runSteps[0] as number,
       completedSessionId: session(q1),
+      questId: q1,
     });
     const two = await adventures().completeAdventureRunStep({
       runStepId: runSteps[1] as number,
       completedSessionId: session(q2),
+      questId: q2,
     });
     expect(one.isFinished).toBe(false);
     expect(two.isFinished).toBe(true);

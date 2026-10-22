@@ -25,7 +25,7 @@ const MUSCLES_SHOWN = 4;
 
 function resolveExerciseImage(path?: string | null): ArtSource | null {
   if (!path) return null;
-  return path.startsWith("http") ? { uri: path } : getExerciseThumb(path);
+  return getExerciseThumb(path);
 }
 
 /**

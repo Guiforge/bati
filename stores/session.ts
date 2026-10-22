@@ -2276,6 +2276,7 @@ export const useSessionStore = create<SessionState>()(
           ? await completeAdventureRunStep({
               runStepId: adventureRunStepId,
               completedSessionId: sessionId,
+              questId: quest.id,
             })
           : null;
 

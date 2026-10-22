@@ -1,6 +1,7 @@
 package expo.modules.batisave
 
 import android.app.Activity
+import android.app.KeyguardManager
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ClipDescription
@@ -84,6 +85,15 @@ class BatiSaveModule : Module() {
           clip.description.extras = PersistableBundle().apply { putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true) }
         }
         clipboard.setPrimaryClip(clip)
+      }
+
+      /**
+       * Whether the phone has a screen lock. Without one Android cannot encrypt its own backup, and
+       * `withAndroidBackupRules` then keeps Bati out of it: Home tells such a hero.
+       */
+      Function("isDeviceSecure") {
+        val context = appContext.reactContext ?: throw Exceptions.ReactContextLost()
+        (context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager).isDeviceSecure
       }
 
       AsyncFunction("writeTo") Coroutine { uri: String, sourcePath: String ->

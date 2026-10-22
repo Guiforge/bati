@@ -19,6 +19,7 @@ import config from "@/tamagui.config";
 const mockCalls: string[] = [];
 let mockStagedPath: string | null = "/tmp/staged.db";
 let mockValidation: { ok: true } | { ok: false; reason: string } = { ok: true };
+let mockForward: { ok: true } | { ok: false; reason: string } = { ok: true };
 let mockExportBehaviour: () => void = () => {};
 let mockValidateBehaviour: () => void = () => {};
 let mockStageGate: Promise<void> | null = null;
@@ -37,6 +38,8 @@ jest.mock("@/db/backup", () => ({
     mockValidateBehaviour();
     return mockValidation;
   }),
+  // Recorded nowhere, so the order tests below keep meaning what they meant before it existed.
+  bringForward: jest.fn(() => Promise.resolve(mockForward)),
   keepDeviceSettings: jest.fn(async () => {
     mockCalls.push("keepDevice");
     await Promise.resolve();
@@ -155,6 +158,7 @@ beforeEach(() => {
   mockReportedErrors.length = 0;
   mockStagedPath = "/tmp/staged.db";
   mockValidation = { ok: true };
+  mockForward = { ok: true };
   mockExportBehaviour = () => {};
   mockValidateBehaviour = () => {};
   mockStageGate = null;
@@ -459,6 +463,18 @@ describe("useBackup — import", () => {
     expect(mockCalls).toEqual(["stage", "decrypt", "validate", "discard"]);
     expect(useRestoreStore.getState().phase).toBe("idle");
     expect(mockShownErrors).toEqual(["backup.rejected.notBati"]);
+  });
+
+  test("a staged file bringForward refuses is discarded and never swapped", async () => {
+    mockForward = { ok: false, reason: "incompatibleVersion" };
+    const { result } = await renderHook(() => useBackup());
+
+    await act(async () => result.current.runImport());
+
+    expect(mockCalls.filter((c) => c === "discard")).toHaveLength(1);
+    expect(mockCalls).not.toContain("keepDevice");
+    expect(useRestoreStore.getState().phase).toBe("idle");
+    expect(mockShownErrors).toEqual(["backup.rejected.incompatibleVersion"]);
   });
 
   /**

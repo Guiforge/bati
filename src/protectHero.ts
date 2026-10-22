@@ -3,6 +3,7 @@ import { getSessionAggregates } from "@/db/completed";
 import { dayKey } from "@/db/dates";
 import { preferences } from "@/db/preferences";
 import { dayOf } from "@/db/reminders";
+import { deviceIsSecure } from "@/modules/bati-save";
 import { databaseBytes } from "@/src/databaseSize";
 import { syncAccount, syncHealth } from "@/src/deviceSync";
 
@@ -74,27 +75,33 @@ export async function heroIsProtected(now: Date = new Date()): Promise<boolean> 
  * Which card to show, if any. `"heavy"` is the same card with another text, for a hero whose
  * database is above `HEAVY_DATABASE_BYTES` with no backup of their own: the one case where the
  * silence after a third close must not be for good, because the cost of ignoring it grows with
- * every photo. It returns monthly instead.
+ * every photo. It returns monthly instead. `"noLock"` outranks it, with the same monthly return: a
+ * phone with no screen lock gets no Android backup at all, so this phone is the only copy.
  */
-export type ProtectCardKind = "plain" | "heavy";
+export type ProtectCardKind = "plain" | "heavy" | "noLock";
 
 export async function protectCardKind(now: Date = new Date()): Promise<ProtectCardKind | null> {
   const { totalSessions } = await getSessionAggregates();
   if (totalSessions < PROTECT_AFTER_SESSIONS) return null;
   if (await heroIsProtected(now)) return null;
 
-  const heavy = databaseBytes() > HEAVY_DATABASE_BYTES;
+  const kind: ProtectCardKind = !deviceIsSecure()
+    ? "noLock"
+    : databaseBytes() > HEAVY_DATABASE_BYTES
+      ? "heavy"
+      : "plain";
   const closed = await preferences.getProtectDismissedDay();
   if (closed !== null) {
-    const silence = heavy
-      ? Math.min(
-          HEAVY_SILENCE_DAYS,
-          PROTECT_SILENCE_DAYS[(await closings()) - 1] ?? HEAVY_SILENCE_DAYS,
-        )
-      : PROTECT_SILENCE_DAYS[(await closings()) - 1];
+    const silence =
+      kind !== "plain"
+        ? Math.min(
+            HEAVY_SILENCE_DAYS,
+            PROTECT_SILENCE_DAYS[(await closings()) - 1] ?? HEAVY_SILENCE_DAYS,
+          )
+        : PROTECT_SILENCE_DAYS[(await closings()) - 1];
     if (silence === undefined || daysSince(closed, now) < silence) return null;
   }
-  return heavy ? "heavy" : "plain";
+  return kind;
 }
 
 /** Whether Home has a card to show for this: the notice slot only needs the yes or no. */

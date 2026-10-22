@@ -1830,6 +1830,8 @@
     "protectBody": "Dein Held lebt auf diesem Handy. Schalte die automatische Sicherung ein.",
     "protectHeavyTitle": "Dein Held wird schwer",
     "protectHeavyBody": "Die Google-Sicherung hört bei 25 MB auf. Wähle eine eigene Sicherung.",
+    "protectNoLockTitle": "Android sichert Bati nicht",
+    "protectNoLockBody": "Dein Handy hat keine Displaysperre. Schalte die automatische Sicherung ein.",
     "heroSize": "Dein Held: {{total}} MB, davon Fotos {{photos}} MB",
     "lastBackupToday": "Letzte Sicherung: heute",
     "lastBackupDays_one": "Letzte Sicherung vor {{count}} Tag",

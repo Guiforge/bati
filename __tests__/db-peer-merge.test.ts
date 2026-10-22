@@ -811,12 +811,14 @@ describe("error branches", () => {
     const next = await adventures.completeAdventureRunStep({
       runStepId: run.activeStep.id,
       completedSessionId: first,
+      questId: run.activeStep.questId,
     });
     assert(next.nextRunStepId != null);
     const second = await save(next.nextQuestId);
     await adventures.completeAdventureRunStep({
       runStepId: next.nextRunStepId,
       completedSessionId: second,
+      questId: next.nextQuestId as number,
     });
     const loose = await save(null);
     for (const id of [first, loose]) {

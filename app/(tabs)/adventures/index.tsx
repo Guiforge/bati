@@ -48,7 +48,7 @@ import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
 function resolveCoverImage(path?: string | null): ArtSource | null {
   if (!path) return null;
-  return path.startsWith("http") ? { uri: path } : getAdventureAsset(path);
+  return getAdventureAsset(path);
 }
 
 /** The posters' data. The cover quests' chips are priced in one read: see `previewQuests`. */

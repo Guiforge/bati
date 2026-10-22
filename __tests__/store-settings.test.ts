@@ -57,6 +57,7 @@ const prefs = {
   setAvatarId: jest.fn().mockResolvedValue(undefined),
   setCustomAvatarUri: jest.fn().mockResolvedValue(undefined),
   dropSupersededLegacyAvatar: jest.fn().mockResolvedValue(undefined),
+  legacyAvatarToPort: jest.fn<Promise<string | null>, []>(),
   setHapticsEnabled: jest.fn().mockResolvedValue(undefined),
   setVillagersEnabled: jest.fn().mockResolvedValue(undefined),
   setSoundEnabled: jest.fn().mockResolvedValue(undefined),
@@ -110,6 +111,7 @@ function storedSettings() {
   prefs.getAvatarId.mockResolvedValue("archmage");
   prefs.getCustomAvatarUri.mockResolvedValue("file:///stored-avatar.jpg");
   portLegacyAvatar.mockResolvedValue("data:image/jpeg;base64,AAAA");
+  prefs.legacyAvatarToPort.mockResolvedValue(null);
   prefs.getHapticsEnabled.mockResolvedValue(false);
   prefs.getVillagersEnabled.mockResolvedValue(false);
   prefs.getSoundEnabled.mockResolvedValue(false);
@@ -221,6 +223,7 @@ describe("useSettingsStore", () => {
   // carried and Android could purge: it becomes a data URI on the first launch that can read it.
   test("an avatar stored as a cache path is ported to a data URI at launch", async () => {
     storedSettings();
+    prefs.legacyAvatarToPort.mockResolvedValue("file:///stored-avatar.jpg");
     portLegacyAvatar.mockResolvedValue("data:image/jpeg;base64,AAAA");
 
     await settingsStore().getState().loadFromDatabase();
@@ -229,6 +232,20 @@ describe("useSettingsStore", () => {
     expect(portLegacyAvatar).toHaveBeenCalledWith("file:///stored-avatar.jpg");
     expect(settingsStore().getState().customAvatarUri).toBe("data:image/jpeg;base64,AAAA");
   });
+
+  test.each(["https://attacker.example/p.png", "file:///data/user/0/x/bati.v3.db"])(
+    "a restored avatar that is a URL or a file is never ported (%s)",
+    async (restored) => {
+      storedSettings();
+      prefs.getCustomAvatarUri.mockResolvedValue(restored);
+      prefs.legacyAvatarToPort.mockResolvedValue(null);
+
+      await settingsStore().getState().loadFromDatabase();
+      await new Promise(process.nextTick);
+
+      expect(portLegacyAvatar).not.toHaveBeenCalled();
+    },
+  );
 
   test("an avatar already portable is left alone", async () => {
     storedSettings();

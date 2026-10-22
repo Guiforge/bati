@@ -1,4 +1,4 @@
-import type { ArtSource } from "@/constants/assetMap";
+import { type ArtSource, carriedPhoto } from "@/constants/assetMap";
 
 export const avatarIds = ["shadow", "scout", "guardian", "archmage", "elder", "archer"] as const;
 
@@ -54,5 +54,5 @@ export function getAvatarById(id: AvatarId): Avatar {
 }
 
 export function getAvatarSource(avatarId: AvatarId, customAvatarUri: string | null): ArtSource {
-  return customAvatarUri ? { uri: customAvatarUri } : getAvatarById(avatarId).source;
+  return carriedPhoto(customAvatarUri) ?? getAvatarById(avatarId).source;
 }

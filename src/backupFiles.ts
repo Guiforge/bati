@@ -33,6 +33,14 @@ const IMPORT_NAME = "bati-import.tmp.db";
 /** An encrypted import, decrypted. It replaces `IMPORT_NAME` only once it has authenticated. */
 const IMPORT_PLAIN = "bati-import-plain.tmp.db";
 
+/** A staged file and the plaintext it is decrypted into. A vault unlock gets its own, apart from a restore's. */
+export type StagingSlot = { readonly name: string; readonly plain: string };
+export const RESTORE_SLOT: StagingSlot = { name: IMPORT_NAME, plain: IMPORT_PLAIN };
+export const UNLOCK_SLOT: StagingSlot = {
+  name: "bati-unlock.tmp.db",
+  plain: "bati-unlock.plain.db",
+};
+
 /**
  * The database as it was just before the last restore, and the rollback source if the swap
  * fails. It *is* the previous file, renamed rather than copied — see `commitRestore`.
@@ -127,6 +135,11 @@ function fileIn(name: string) {
 function deleteIfPresent(name: string) {
   const file = fileIn(name);
   if (file.exists) file.delete();
+}
+
+/** A staged database and its journal files: a stale `-wal` beside a new candidate is read into it. */
+function deleteWithSideFiles(name: string) {
+  for (const suffix of ["", "-wal", "-shm", "-journal"]) deleteIfPresent(`${name}${suffix}`);
 }
 
 /**
@@ -357,7 +370,7 @@ export function clearPeerScratch(keep?: File): void {
  * goes through the first door's handler.
  */
 export async function stagePeerForImport(plain: File): Promise<string> {
-  deleteIfPresent(IMPORT_NAME);
+  deleteWithSideFiles(IMPORT_NAME);
   await plain.move(fileIn(IMPORT_NAME));
   return pathIn(IMPORT_NAME);
 }
@@ -494,19 +507,19 @@ function isPickerCancelled(error: unknown): boolean {
  * Returns the path to validate, or `null` if the user backed out. Nothing destructive has
  * happened when this returns — the copy is a new file under a name of ours.
  */
-export async function stageBackupForImport(): Promise<string | null> {
+export async function stageBackupForImport(slot = RESTORE_SLOT): Promise<string | null> {
   // Backups have no registered MIME type and Android's picker greys out what it cannot name, so
   // the filter stays open. Validation decides what is acceptable, never the file extension.
   const picked = await File.pickFileAsync({ mimeTypes: ["*/*"] });
   if (picked.canceled || !picked.result) return null;
-  return stageBackupFrom(picked.result);
+  return stageBackupFrom(picked.result, slot);
 }
 
 /** The same staging for a file this app already has a handle on (a copy in the backup folder). */
-export async function stageBackupFrom(source: File): Promise<string> {
-  deleteIfPresent(IMPORT_NAME);
-  await source.copy(fileIn(IMPORT_NAME));
-  return pathIn(IMPORT_NAME);
+export async function stageBackupFrom(source: File, slot = RESTORE_SLOT): Promise<string> {
+  deleteWithSideFiles(slot.name);
+  await source.copy(fileIn(slot.name));
+  return pathIn(slot.name);
 }
 
 /**
@@ -517,21 +530,24 @@ export async function stageBackupFrom(source: File): Promise<string> {
  * the caller for the hero's password or recovery key. Rejects on a file whose body does not
  * authenticate, which is a damaged backup and is reported as one.
  */
-export async function decryptStagedImport(secret?: string): Promise<OpenOutcome> {
-  deleteIfPresent(IMPORT_PLAIN);
+export async function decryptStagedImport(
+  secret?: string,
+  slot = RESTORE_SLOT,
+): Promise<OpenOutcome> {
+  deleteIfPresent(slot.plain);
   // The decryptor holds a file in memory; a picked file that size is not a backup.
-  if (fileIn(IMPORT_NAME).size > MAX_SEALED_BYTES) throw new Error("Backup file is too large");
-  const outcome = await openBackup(pathIn(IMPORT_NAME), pathIn(IMPORT_PLAIN), secret);
+  if (fileIn(slot.name).size > MAX_SEALED_BYTES) throw new Error("Backup file is too large");
+  const outcome = await openBackup(pathIn(slot.name), pathIn(slot.plain), secret);
   if (outcome.result === "opened") {
-    await fileIn(IMPORT_PLAIN).move(fileIn(IMPORT_NAME), { overwrite: true });
+    await fileIn(slot.plain).move(fileIn(slot.name), { overwrite: true });
   }
   return outcome;
 }
 
 /** Throws away a staged import. The app is untouched, so there is nothing else to undo. */
-export function discardStagedImport(): void {
-  deleteIfPresent(IMPORT_NAME);
-  deleteIfPresent(IMPORT_PLAIN);
+export function discardStagedImport(slot = RESTORE_SLOT): void {
+  deleteWithSideFiles(slot.name);
+  deleteWithSideFiles(slot.plain);
 }
 
 /** Moves a WAL that has to travel with its database, when there is one. */

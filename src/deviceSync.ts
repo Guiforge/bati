@@ -259,9 +259,19 @@ export async function connectNextcloud(
   server: string,
   isCancelled: () => boolean,
 ): Promise<SyncAccount | null> {
+  // Before the login flow, which POSTs at once.
+  if (/^http:\/\//i.test(server.trim()) && !isOnThisDevice(server)) {
+    throw new InsecureAddressError("Plain HTTP is only allowed to this phone");
+  }
   const signedIn = await loginToNextcloud(server, isCancelled);
   if (signedIn === null) return null;
-  const account: SyncAccount = { kind: "nextcloud", ...signedIn };
+  const account: SyncAccount = {
+    kind: "nextcloud",
+    server: signedIn.server,
+    loginName: signedIn.loginName,
+    appPassword: signedIn.appPassword,
+    ...(signedIn.userId === undefined ? {} : { userId: signedIn.userId }),
+  };
   // Remembered once the server is known to work, as a WebDAV account is: a 400 on the first listing
   // used to leave an account that failed at every launch, and no way to say why.
   await verified(account);

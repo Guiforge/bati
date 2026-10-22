@@ -1608,6 +1608,29 @@ describe("useSessionStore", () => {
       expect(state.bossFight?.defeatedAt).toBeInstanceOf(Date);
     });
 
+    test("a resumed session completes its step with the quest the snapshot carried", async () => {
+      const dbMock = require("@/db") as { completeAdventureRunStep: jest.Mock };
+      dbMock.completeAdventureRunStep.mockClear();
+      dbMock.completeAdventureRunStep.mockResolvedValueOnce({
+        adventureId: 42,
+        runId: 9,
+        isFinished: false,
+        nextRunStepId: null,
+        nextQuestId: null,
+      });
+      // What `restoreSnapshot` does: the saved quest and run step id land in state together.
+      store.setState({ adventureRunStepId: 5 });
+      const questId = store.getState().quest?.id;
+      assert(questId != null);
+
+      await store.getState().completeExercise(10);
+      await store.getState().saveSession(null);
+
+      expect(dbMock.completeAdventureRunStep).toHaveBeenCalledWith(
+        expect.objectContaining({ runStepId: 5, questId }),
+      );
+    });
+
     /**
      * The Triumph is what HP are for: empty the pool with your own damage and the killing session
      * pays a bonus. The final blow still guarantees the kill for everyone else — reward for

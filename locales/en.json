@@ -1830,6 +1830,8 @@
     "protectBody": "Your hero lives on this phone. Turn on automatic backup.",
     "protectHeavyTitle": "Your hero is getting heavy",
     "protectHeavyBody": "Google's backup stops at 25 MB. Choose a backup of your own.",
+    "protectNoLockTitle": "Android isn't backing up Bati",
+    "protectNoLockBody": "Your phone has no screen lock. Turn on automatic backup.",
     "heroSize": "Your hero: {{total}} MB, of which photos {{photos}} MB",
     "lastBackupToday": "Last backup: today",
     "lastBackupDays_one": "Last backup {{count}} day ago",

@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Text, YStack } from "tamagui";
 import { Fold } from "@/components/bosses/Fold";
 import { ImageChoiceField } from "@/components/common/ImageChoiceField";
-import { getBossAsset } from "@/constants/assetMap";
+import { carriedPhoto, getBossAsset } from "@/constants/assetMap";
 import { BOSS_ART_STATES, type BossArt, type BossArtState } from "@/db/bossVoice";
 
 /** The painted form each picture stands in for, as `getBossAsset` is asked for it. */
@@ -50,9 +50,8 @@ export function BossPictures({ art, monster, monsterLabel, onChange }: Props) {
           // What the boss will really show in this form: a form without a picture of its own
           // wears the normal one, so the preview says so.
           resolve={(v) =>
-            v.startsWith("data:")
-              ? { uri: v }
-              : getBossAsset(monster.bossImagePath, tier, state, { fresh: art.fresh })
+            carriedPhoto(v) ??
+            getBossAsset(monster.bossImagePath, tier, state, { fresh: art.fresh })
           }
           resolveThumb={() => getBossAsset(monster.bossImagePath, tier, state)}
           aspect={[1, 1]}

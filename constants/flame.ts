@@ -18,8 +18,8 @@ export const FLAME_DORMANT_DAYS = 56;
  * `current` or `best` moves and an update unlocks no burst of achievements (and the golden hero,
  * whose clock is frozen in March, does not move).
  *
- * ponytail: must equal the date of the real release tag (see .claude/skills/release/SKILL.md).
- * Ceiling: nothing checks it against the tag; moving it earlier than the tag rewrites the past
- * of heroes who update on the day, later leaves their sleeping flame reading 0 until then.
+ * Fixed at the v2.13.0 tag, the release that shipped the sleeping flame. Never move it: earlier
+ * rewrites the past of heroes who updated that day, later turns gaps they already saw bridged
+ * back into breaks.
  */
 export const FLAME_PIVOT = new Date(2026, 9, 21);

@@ -45,11 +45,9 @@ can never be updated again.
 
 Three things to know before tagging:
 
-- **Set the flame pivot to the tag's date.** `FLAME_PIVOT` in `constants/flame.ts` must equal the
-  date of the real release tag: a gap in the flame is only bridged when the day that relights it
-  falls after it, and the golden hero (whose clock is frozen in March) only stays still because it
-  is later than every fixture. Moved earlier than the tag it rewrites the past of heroes who update
-  that day; later, their sleeping flame reads 0 until then.
+- **Leave the flame pivot alone.** `FLAME_PIVOT` in `constants/flame.ts` is the date of the v2.13.0
+  tag, which shipped the sleeping flame. Moving it in a later release turns gaps heroes already saw
+  bridged back into breaks (or, earlier, rewrites their past), so it stays at 2026-10-21.
 - **Write the changelog first.** `fastlane/metadata/android/*/changelogs/<versionCode>.txt` is
   named after the integer, not the version string, and a missing file fails silently — the entry
   just has no notes. `npx expo config --type public | grep versionCode` tells you the number.

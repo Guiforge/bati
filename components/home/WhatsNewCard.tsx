@@ -1,8 +1,9 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, XStack } from "tamagui";
+import { XStack } from "tamagui";
 import { AppText } from "@/components/common/AppText";
+import { Button } from "@/components/common/Button";
 import { Card } from "@/components/common/Card";
 import { ChevronRight, X } from "@/components/icons";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -50,26 +51,26 @@ export function WhatsNewCard() {
   return (
     <Card
       testID="home-whats-new-open"
-      mx="$4"
-      mt="$3"
-      py="$2"
+      mx="4"
+      mt="3"
+      py="2"
       onPress={() => {
         haptics.selection();
         dismiss();
         router.push("/whats-new" as never);
       }}
     >
-      <XStack items="center" gap="$2">
-        <AppText flex={1} fontSize="$4" fontWeight="700" color="$text">
+      <XStack items="center" gap="2">
+        <AppText flex={1} fontSize="4" fontWeight="700" color="text">
           {t("whats_new.card_title", { version: appVersion })}
         </AppText>
-        <AppText fontSize="$3" color="$primaryText">
+        <AppText fontSize="3" color="primaryText">
           {t("whats_new.card_open")}
         </AppText>
-        <ChevronRight size={16} color="$primaryText" />
+        <ChevronRight size={16} color="primaryText" />
         <Button
           testID="home-whats-new-dismiss"
-          size="$2"
+          size="2"
           circular
           chromeless
           hitSlop={8}
@@ -77,7 +78,7 @@ export function WhatsNewCard() {
             haptics.selection();
             dismiss();
           }}
-          icon={<X size={18} color="$textSecondary" />}
+          icon={<X size={18} color="textSecondary" />}
           accessibilityRole="button"
           accessibilityLabel={t("common.close")}
         />

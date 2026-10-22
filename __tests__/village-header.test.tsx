@@ -375,7 +375,7 @@ describe("the header's rules", () => {
     await mount(crestOf());
     await screen.findByTestId("village-crest-line");
     const num = within(screen.getByTestId("village-title")).getByText("8");
-    expect(StyleSheet.flatten(num.props.style).fontWeight).toBe("700");
+    expect(String(StyleSheet.flatten(num.props.style).fontWeight)).toBe("700");
     expect(screen.getByText(/Level .*8.* · Champion/)).toBeTruthy();
   });
 

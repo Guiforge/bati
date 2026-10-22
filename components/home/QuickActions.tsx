@@ -97,16 +97,16 @@ function BandNotice({
   return (
     // Polite, never an alert: neither of the two is an error, and both appear under the thumb
     // that just tapped, where a screen reader has to be told something changed.
-    <YStack px="$4" gap="$2" pb="$1" accessibilityLiveRegion="polite">
-      <AppText fontSize={13} color="$textSecondary">
+    <YStack px="4" gap="2" pb="1" accessibilityLiveRegion="polite">
+      <AppText fontSize={13} color="textSecondary">
         {text}
       </AppText>
       <AppButton
         fullWidth={false}
         variant="outline"
-        backgroundColor="$surface2"
-        size="$3"
-        // Size $3 lands under the 44×44 floor of DESIGN.md:229, and Yoga clamps a height to the
+        backgroundColor="surface2"
+        size="3"
+        // Size 3 lands under the 44×44 floor of DESIGN.md:229, and Yoga clamps a height to the
         // larger minimum, so the button keeps its compact type and gains the hit area.
         minH={44}
         fontSize={15}
@@ -146,7 +146,7 @@ export function QuickActions({ showGoals }: { showGoals: boolean | null }) {
   // The row runs to the physical screen edge: the tile that does not fit is cut by the screen,
   // which reads as "there is more", instead of in mid-air inside a margin. The inset comes back as
   // the scroll's own padding, from the token so it lines up with the stage above.
-  const pageInset = getTokens().space.$4.val;
+  const pageInset = getTokens().space["4"].val;
   const { width: windowWidth, height: screenHeight } = useWindowDimensions();
   // In step with the font: a name over two lines and the goal chip no longer fit 72 dp at 130 %,
   // and the tile cut them (persona audit 2, 14).
@@ -344,15 +344,15 @@ export function QuickActions({ showGoals }: { showGoals: boolean | null }) {
         : formatDurationEstimate(goal.seconds, language);
 
   return (
-    <YStack pt="$2.5" pb="$2" gap="$2">
-      <XStack px="$4" items="baseline" justify="space-between" gap="$3">
+    <YStack pt="2-5" pb="2" gap="2">
+      <XStack px="4" items="baseline" justify="space-between" gap="3">
         <SectionLabel>{t("home.quick_actions")}</SectionLabel>
         <AppText
           variant="label"
           flex={1}
           text="right"
           fontSize={10}
-          color="$textSecondary"
+          color="textSecondary"
           numberOfLines={1}
         >
           {t("home.quick_hint")}
@@ -410,16 +410,17 @@ export function QuickActions({ showGoals }: { showGoals: boolean | null }) {
               key={quest.id}
               width={TILE_WIDTH}
               height={tileHeight}
-              bg="$surface"
+              bg="surface"
               borderWidth={1}
-              borderColor="$borderStrong"
-              rounded="$3"
+              borderColor="borderStrong"
+              rounded="3"
               overflow="hidden"
+              opacity="press:0.85"
+              scale="press:0.98"
               onPress={() => {
                 startOuting(quest.id).catch((error) => reportError("home.startOuting", error));
               }}
               onLongPress={() => setGoalFor(quest.id)}
-              pressStyle={{ opacity: 0.85, scale: 0.98 }}
               accessibilityRole="button"
               accessibilityLabel={t("home.outside_start_a11y", { quest: name })}
             >
@@ -431,19 +432,19 @@ export function QuickActions({ showGoals }: { showGoals: boolean | null }) {
                 contentFit="cover"
                 transition={200}
               />
-              {/* $bgDark (the ink) as rgba - LinearGradient takes plain colors, not tokens. */}
+              {/* bgDark (the ink) as rgba - LinearGradient takes plain colors, not tokens. */}
               <LinearGradient
                 colors={[fade(rawColors.bgDark, 0.1), fade(rawColors.bgDark, 0.92)]}
                 style={StyleSheet.absoluteFill}
               />
-              <YStack flex={1} justify="flex-end" p="$2" gap={4}>
+              <YStack flex={1} justify="flex-end" p="2" gap={4}>
                 <AppText
                   variant="label"
                   fontSize={11}
                   fontWeight="700"
-                  color="$text"
+                  color="text"
                   numberOfLines={2}
-                  lineHeight={14}
+                  lineHeight="14px"
                   // Words break between words only: Android's default strategy hyphenates and
                   // splits a long name mid-word at large font ('Messe / nger').
                   textBreakStrategy="simple"
@@ -461,15 +462,15 @@ export function QuickActions({ showGoals }: { showGoals: boolean | null }) {
                     items="center"
                     rounded={10}
                     borderWidth={1}
-                    borderColor="$borderStrong"
+                    borderColor="borderStrong"
+                    opacity="press:0.7"
                     hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
                     onPress={() => setGoalFor(quest.id)}
-                    pressStyle={{ opacity: 0.7 }}
                     accessibilityRole="button"
                     accessibilityLabel={t("home.goal_a11y", { quest: name, goal: label })}
                   >
-                    <SlidersHorizontal size={10} color="$textSecondary" />
-                    <AppText variant="label" fontSize={10} fontWeight="700" color="$textSecondary">
+                    <SlidersHorizontal size={10} color="textSecondary" />
+                    <AppText variant="label" fontSize={10} fontWeight="700" color="textSecondary">
                       {label}
                     </AppText>
                   </XStack>
@@ -484,25 +485,26 @@ export function QuickActions({ showGoals }: { showGoals: boolean | null }) {
             testID="home-replay"
             width={REPLAY_WIDTH}
             height={tileHeight}
-            p="$2"
+            p="2"
             gap={3}
             justify="flex-end"
-            bg="$surface"
+            bg="surface"
             borderWidth={1}
-            borderColor="$borderStrong"
-            rounded="$3"
+            borderColor="borderStrong"
+            rounded="3"
+            opacity="press:0.85"
+            scale="press:0.98"
             onPress={() => {
               startQuest(replay.questId).catch((error) => reportError("home.replay", error));
             }}
-            pressStyle={{ opacity: 0.85, scale: 0.98 }}
             accessibilityRole="button"
             accessibilityLabel={t("home.replay_a11y", { quest: replay.title })}
           >
-            <RotateCcw size={16} color="$primaryText" />
-            <AppText variant="label" fontSize={10} fontWeight="700" color="$textSecondary">
+            <RotateCcw size={16} color="primaryText" />
+            <AppText variant="label" fontSize={10} fontWeight="700" color="textSecondary">
               {t("home.replay")}
             </AppText>
-            <AppText variant="label" fontSize={11} fontWeight="700" color="$text" numberOfLines={1}>
+            <AppText variant="label" fontSize={11} fontWeight="700" color="text" numberOfLines={1}>
               {replay.title}
             </AppText>
           </YStack>

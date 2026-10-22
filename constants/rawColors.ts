@@ -5,13 +5,13 @@ import type { DifficultyCode } from "@/db/schema";
  * The palette, as plain strings. Every colour in the app is defined here exactly once.
  *
  * `tamagui.config.ts` builds its tokens from this object, so product UI keeps using tokens
- * (`bg="$primary"`) and never sees a hex. The reason the raw values need a home of their own is
+ * (`bg="primary"`) and never sees a hex. The reason the raw values need a home of their own is
  * that three things cannot take a Tamagui token and need a real string: `expo-linear-gradient`,
  * `react-native-gifted-charts`, and React Native's `textShadowColor`.
  *
  * Those call sites used to hand-copy hex, and it drifted: the onboarding faded to `#101323`
  * while the surface token read `#101322`, and the journal invented its own green and red for the
- * difficulties the progression chart already drew from `$success` and `$error`. A lint rule
+ * difficulties the progression chart already drew from `success` and `error`. A lint rule
  * (`.biome/plugins/noRawHexColor.grit`) now rejects raw hex everywhere but this file — which is
  * only enforceable because there is nothing left outside it.
  */
@@ -156,7 +156,7 @@ export function fade(
 /**
  * Difficulty has one colour per level, everywhere: easy success, medium the braise, hard error.
  *
- * The progression chart used `$success`/`$primary`/`$error`; the journal's stats used `#22C55E`
+ * The progression chart used `success`/`primary`/`error`; the journal's stats used `#22C55E`
  * and `#EF4444` — a different green and a different red for the same three words, on two screens
  * a tab apart.
  */
@@ -167,11 +167,11 @@ export const DIFFICULTY_COLORS: Record<DifficultyCode, string> = {
 };
 
 /**
- * The same three levels as Tamagui tokens, for *text*. Medium reads `$primaryText`, not `$primary`:
+ * The same three levels as Tamagui tokens, for *text*. Medium reads `primaryText`, not `primary`:
  * the braise is a fill (3.75:1 on bgDark) and its lightened twin is the one legible as words.
  */
 export const DIFFICULTY_TEXT_TOKENS: Record<DifficultyCode, ColorTokens> = {
-  easy: "$success",
-  medium: "$primaryText",
-  hard: "$error",
+  easy: "success",
+  medium: "primaryText",
+  hard: "error",
 };

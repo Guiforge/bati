@@ -41,14 +41,14 @@ export function SuggestedQuestsCard() {
               gap={11}
               py={8}
               minH={48}
+              opacity="press:0.8"
               onPress={() =>
                 router.push(`/quests/${quest.id}?from=journal` as never, { withAnchor: true })
               }
               accessibilityRole="button"
-              pressStyle={{ opacity: 0.8 }}
             >
               <YStack flex={1} minW={0}>
-                <NText fontSize={14} lineHeight={20} numberOfLines={1}>
+                <NText fontSize={14} lineHeight="20px" numberOfLines={1}>
                   {localizedTitle(quest, language)}
                 </NText>
                 <NMuted numberOfLines={1}>
@@ -62,7 +62,7 @@ export function SuggestedQuestsCard() {
                   )}
                 </NMuted>
               </YStack>
-              <NText color="$resourceGold">→</NText>
+              <NText color="resourceGold">→</NText>
             </XStack>
             {index < quests.length - 1 && <NRule my={0} />}
           </YStack>

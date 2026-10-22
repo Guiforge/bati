@@ -46,12 +46,12 @@ const ListGap = () => <YStack height={8} />;
 
 /** Reserves the wall's first screen, so the swap to real content does not shuffle. */
 const StatsSkeleton = () => (
-  <YStack px="$5" gap={6}>
-    <Skeleton height={44} bg="$surface2" />
+  <YStack px="5" gap={6}>
+    <Skeleton height={44} bg="surface2" />
     {[0, 1, 2, 3].map((i) => (
-      <Skeleton key={i} height={60} bg="$surface2" />
+      <Skeleton key={i} height={60} bg="surface2" />
     ))}
-    <Skeleton height={70} bg="$surface2" />
+    <Skeleton height={70} bg="surface2" />
   </YStack>
 );
 
@@ -91,8 +91,8 @@ function AddPastRow({ onPress }: { onPress: () => void }) {
       onPress={onPress}
       style={{ minHeight: 44, flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}
     >
-      <Plus size={18} color="$textSecondary" />
-      <NMuted fontSize={14} lineHeight={20}>
+      <Plus size={18} color="textSecondary" />
+      <NMuted fontSize={14} lineHeight="20px">
         {t("past_session.add_row")}
       </NMuted>
     </Pressable>
@@ -105,7 +105,7 @@ function ChronicleDoor({ window }: { window: ChronicleWindow | null }) {
   const router = useRouter();
   if (!window) return null;
   return (
-    <YStack px="$5" mb={11}>
+    <YStack px="5" mb={11}>
       <NButton
         testID="journal-chronicle"
         variant="primary"
@@ -297,13 +297,13 @@ export default function JournalScreen() {
   );
 
   return (
-    <YStack testID="journal-screen" flex={1} bg="$bgDark">
+    <YStack testID="journal-screen" flex={1} bg="bgDark">
       {/* Quests and Adventures set their title 20 dp in, 20 px, a glyph before it: the tab bar
           moves between the three and a title that shrinks reads as a different app. */}
-      <XStack pt={insets.top + 12} px="$5" pb="$3" items="center" justify="space-between">
-        <XStack items="center" gap="$2">
-          <Scroll testID="journal-title-glyph" size={18} color="$text" strokeWidth={2.5} />
-          <NTitle fontSize={20} lineHeight={26}>
+      <XStack pt={insets.top + 12} px="5" pb="3" items="center" justify="space-between">
+        <XStack items="center" gap="2">
+          <Scroll testID="journal-title-glyph" size={18} color="text" strokeWidth={2.5} />
+          <NTitle fontSize={20} lineHeight="26px">
             {t("journal.title")}
           </NTitle>
         </XStack>
@@ -347,32 +347,32 @@ export default function JournalScreen() {
             }
             style={{ flex: 1 }}
             contentContainerStyle={{
-              paddingHorizontal: getTokenValue("$5", "space"),
+              paddingHorizontal: getTokenValue("5", "space"),
               paddingBottom: insets.bottom + 20,
             }}
             showsVerticalScrollIndicator={false}
           />
         ) : historyLoaded ? (
           <>
-            <YStack px="$5">
+            <YStack px="5">
               <AddPastRow onPress={() => setSheet({ open: true })} />
             </YStack>
             <YStack
               testID="journal-history-empty"
-              mx="$5"
+              mx="5"
               mt={17}
               p={17}
               rounded={8}
               borderWidth={1}
               borderStyle="dashed"
-              borderColor="$glassBorder"
+              borderColor="glassBorder"
               items="center"
               gap={8}
             >
               <NText fontWeight="500" fontSize={16}>
                 {t("journal.history_empty_title")}
               </NText>
-              <NMuted fontSize={13} lineHeight={20} style={{ textAlign: "center" }}>
+              <NMuted fontSize={13} lineHeight="20px" style={{ textAlign: "center" }}>
                 {t("journal.history_empty_body")}
               </NMuted>
             </YStack>

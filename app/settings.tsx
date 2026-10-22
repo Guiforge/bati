@@ -6,7 +6,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView, type ScrollViewInstance } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, Text, useTheme, XStack, YStack } from "tamagui";
+import { Text, useTheme, XStack, YStack } from "tamagui";
+import { Button } from "@/components/common/Button";
 import { Card } from "@/components/common/Card";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { SectionLabel } from "@/components/common/SectionLabel";
@@ -91,21 +92,19 @@ function AvatarSection({
     : t(currentAvatar.labelKey);
 
   return (
-    <Card bg="$surface" p="$4" gap="$3">
+    <Card bg="surface" p="4" gap="3">
       <SectionLabel>{t("settings.avatar")}</SectionLabel>
 
       {showAvatarPicker ? (
-        <XStack flexWrap="wrap" gap="$3" justify="center">
+        <XStack flexWrap="wrap" gap="3" justify="center">
           {AVATARS.map((avatar) => (
             <Button
               key={avatar.id}
-              size="$5"
-              circular
+              size="5"
               p={0}
               borderWidth={avatarId === avatar.id && !customAvatarUri ? 2 : 1}
-              borderColor={
-                avatarId === avatar.id && !customAvatarUri ? "$primary" : "$borderStrong"
-              }
+              borderColor={`${avatarId === avatar.id && !customAvatarUri ? "primary" : "borderStrong"}`}
+              circular
               accessibilityLabel={t(avatar.labelKey)}
               accessibilityState={{ selected: avatarId === avatar.id && !customAvatarUri }}
               onPress={() => {
@@ -117,12 +116,12 @@ function AvatarSection({
             </Button>
           ))}
           <Button
-            size="$5"
-            circular
+            size="5"
             p={0}
-            bg="$surface2"
+            bg="surface2"
             borderWidth={customAvatarUri ? 2 : 1}
-            borderColor={customAvatarUri ? "$primary" : "$borderStrong"}
+            borderColor={`${customAvatarUri ? "primary" : "borderStrong"}`}
+            circular
             accessibilityLabel={t("settings.avatar_custom")}
             accessibilityState={{ selected: !!customAvatarUri }}
             onPress={pickCustomAvatar}
@@ -133,13 +132,13 @@ function AvatarSection({
                 style={{ width: 48, height: 48, borderRadius: 24 }}
               />
             ) : (
-              <ImagePlus size={22} color="$textSecondary" />
+              <ImagePlus size={22} color="textSecondary" />
             )}
           </Button>
         </XStack>
       ) : (
-        <Button bg="transparent" height="auto" p="$2" onPress={() => setShowAvatarPicker(true)}>
-          <XStack items="center" gap="$3">
+        <Button bg="transparent" height="auto" p="2" onPress={() => setShowAvatarPicker(true)}>
+          <XStack items="center" gap="3">
             <Image
               source={currentAvatarSource}
               style={{
@@ -151,10 +150,10 @@ function AvatarSection({
               }}
             />
             <YStack>
-              <Text fontSize="$4" fontWeight="bold" color="$text">
+              <Text fontSize="4" fontWeight="bold" color="text">
                 {currentAvatarLabel}
               </Text>
-              <Text fontSize="$2" color="$textSecondary">
+              <Text fontSize="2" color="textSecondary">
                 {t("settings.tap_change")}
               </Text>
             </YStack>
@@ -171,7 +170,7 @@ function DevFooter() {
   return (
     <SettingRow
       testID="settings-dev"
-      icon={<Wrench size={22} color="$text" />}
+      icon={<Wrench size={22} color="text" />}
       label="Dev tools"
       // `as never`: same typed-route caveat as the pushes above.
       onPress={() => router.push("/dev" as never)}
@@ -192,7 +191,7 @@ function PrepModeRow() {
   return (
     <SettingRow
       testID="settings-prep-mode"
-      icon={<Timer size={22} color="$text" />}
+      icon={<Timer size={22} color="text" />}
       label={t("settings.prep_mode")}
       value={prepMode === "timer" ? t("settings.prep_timer") : t("settings.prep_tap")}
       onPress={() => {
@@ -239,10 +238,10 @@ function WarmupTransitionRow({ warmupEnabled }: { warmupEnabled: boolean }) {
   };
 
   return (
-    <YStack gap="$1">
+    <YStack gap="1">
       <SettingRow
         testID="settings-warmup-transition"
-        icon={<Timer size={22} color="$text" />}
+        icon={<Timer size={22} color="text" />}
         label={t("settings.warmup_transition")}
         value={labels[transition]}
         onPress={() => {
@@ -254,7 +253,7 @@ function WarmupTransitionRow({ warmupEnabled }: { warmupEnabled: boolean }) {
       />
       {/* Until the hero chooses, the first sessions get longer transitions than the 5 s shown. */}
       {transition === "auto" ? (
-        <Text testID="settings-warmup-transition-note" fontSize="$2" color="$textSecondary" px="$3">
+        <Text testID="settings-warmup-transition-note" fontSize="2" color="textSecondary" px="3">
           {t("settings.warmup_transition_auto_note", {
             seconds: transitionSeconds("auto", 0),
             sessions: LEARNING_SESSIONS,
@@ -472,11 +471,11 @@ export default function SettingsScreen() {
   };
 
   return (
-    <YStack testID="settings-screen" flex={1} bg="$background" pt={insets.top}>
+    <YStack testID="settings-screen" flex={1} bg="background" pt={insets.top}>
       {/* Header */}
-      <XStack px="$4" py="$3" items="center" gap="$3">
+      <XStack px="4" py="3" items="center" gap="3">
         <ScreenBackButton />
-        <Text fontFamily="$heading" fontSize={20} fontWeight="700" color="$text">
+        <Text fontFamily="heading" fontSize={20} fontWeight="700" color="text">
           {t("settings.title")}
         </Text>
       </XStack>
@@ -502,37 +501,37 @@ export default function SettingsScreen() {
           pickCustomAvatar={pickCustomAvatar}
         />
 
-        <YStack gap="$3">
-          <SectionLabel px="$1">{t("settings.village_section")}</SectionLabel>
+        <YStack gap="3">
+          <SectionLabel px="1">{t("settings.village_section")}</SectionLabel>
           <VillageNameRow />
           <CrestAnimalRow />
         </YStack>
 
         {/* Preferences */}
         <YStack
-          gap="$3"
+          gap="3"
           onLayout={(event) => {
             anchor.current.group = event.nativeEvent.layout.y;
             scrollToAnchor();
           }}
         >
-          <SectionLabel px="$1">{t("settings.preferences")}</SectionLabel>
+          <SectionLabel px="1">{t("settings.preferences")}</SectionLabel>
 
           <SettingRow
-            icon={<Languages size={22} color="$text" />}
+            icon={<Languages size={22} color="text" />}
             label={t("settings.language")}
             value={LANGUAGE_NAMES[language]}
             onPress={cycleLanguage}
           />
 
           {MACHINE_TRANSLATED[language] ? (
-            <Text testID="settings-language-ai-note" fontSize="$2" color="$textSecondary" px="$3">
+            <Text testID="settings-language-ai-note" fontSize="2" color="textSecondary" px="3">
               {t("settings.language_ai_note")}
             </Text>
           ) : null}
 
           <SettingRow
-            icon={<Vibrate size={22} color="$text" />}
+            icon={<Vibrate size={22} color="text" />}
             label={t("settings.haptics")}
             value={hapticsEnabled ? t("common.on") : t("common.off")}
             onPress={() => {
@@ -551,7 +550,7 @@ export default function SettingsScreen() {
 
           <SettingRow
             testID="settings-sound"
-            icon={<Volume2 size={22} color="$text" />}
+            icon={<Volume2 size={22} color="text" />}
             label={t("settings.sound")}
             value={soundEnabled ? t("common.on") : t("common.off")}
             onPress={() => {
@@ -564,7 +563,7 @@ export default function SettingsScreen() {
 
           <SettingRow
             testID="settings-villagers"
-            icon={<MessagesSquare size={22} color="$text" />}
+            icon={<MessagesSquare size={22} color="text" />}
             label={t("settings.villagers")}
             value={villagersEnabled ? t("common.on") : t("common.off")}
             onPress={() => {
@@ -579,7 +578,7 @@ export default function SettingsScreen() {
               how a hero would end up with four guides back and wonder which one they missed. */}
           <SettingRow
             testID="settings-replay-guides"
-            icon={<RotateCcw size={22} color="$text" />}
+            icon={<RotateCcw size={22} color="text" />}
             label={t("settings.replay_guides")}
             onPress={() => {
               haptics.selection();
@@ -591,7 +590,7 @@ export default function SettingsScreen() {
           />
 
           <SettingRow
-            icon={<Flame size={22} color="$text" />}
+            icon={<Flame size={22} color="text" />}
             label={t("settings.warmup")}
             value={warmupEnabled ? t("common.on") : t("common.off")}
             onPress={() => {
@@ -615,7 +614,7 @@ export default function SettingsScreen() {
               in every GPX, and constants/distanceFormat.ts is the only place that converts. */}
           <SettingRow
             testID="settings-distance-unit"
-            icon={<Ruler size={22} color="$text" />}
+            icon={<Ruler size={22} color="text" />}
             label={t("settings.distance_unit")}
             value={
               distanceUnit === "metric"
@@ -635,7 +634,7 @@ export default function SettingsScreen() {
               is where a hero finds out after the fact. */}
           <SettingRow
             testID="settings-map-tiles"
-            icon={<MapIcon size={22} color="$text" />}
+            icon={<MapIcon size={22} color="text" />}
             label={t("settings.map_tiles")}
             value={onOffLabel(mapTilesEnabled, t)}
             onPress={() => {
@@ -646,7 +645,7 @@ export default function SettingsScreen() {
             }}
           />
 
-          <Text testID="settings-map-tiles-note" fontSize="$2" color="$textSecondary" px="$3">
+          <Text testID="settings-map-tiles-note" fontSize="2" color="textSecondary" px="3">
             {t("settings.map_tiles_note")}
           </Text>
 
@@ -655,7 +654,7 @@ export default function SettingsScreen() {
           <OutingDisplayRow />
 
           <SettingRow
-            icon={<Dumbbell size={22} color="$text" />}
+            icon={<Dumbbell size={22} color="text" />}
             label={t("settings.equipment")}
             value={equipmentLabel}
             onPress={() => {
@@ -671,7 +670,7 @@ export default function SettingsScreen() {
           <PauseRow />
 
           <SettingRow
-            icon={<Swords size={22} color="$text" />}
+            icon={<Swords size={22} color="text" />}
             label={t("oath.screen_title")}
             onPress={openOath}
           />
@@ -685,7 +684,7 @@ export default function SettingsScreen() {
             }}
           />
 
-          <SectionLabel px="$1" mt="$2">
+          <SectionLabel px="1" mt="2">
             {t("backup.section")}
           </SectionLabel>
 
@@ -699,7 +698,7 @@ export default function SettingsScreen() {
               wants to hand the file straight to another app. */}
             <SettingRow
               testID="settings-save-backup"
-              icon={<FolderDown size={22} color="$text" />}
+              icon={<FolderDown size={22} color="text" />}
               label={t("backup.save")}
               value={t("backup.saveHint")}
               disabled={backupBusy}
@@ -707,10 +706,10 @@ export default function SettingsScreen() {
             />
             <Text
               testID="settings-export-backup"
-              fontSize="$3"
-              color="$textSecondary"
+              fontSize="3"
+              color="textSecondary"
               textDecorationLine="underline"
-              px="$1"
+              px="1"
               minH={44}
               verticalAlign="middle"
               role="link"
@@ -724,7 +723,7 @@ export default function SettingsScreen() {
 
           <SettingRow
             testID="settings-import-backup"
-            icon={<ArchiveRestore size={22} color="$text" />}
+            icon={<ArchiveRestore size={22} color="text" />}
             label={t("backup.import")}
             value={t("backup.importHint")}
             disabled={backupBusy}
@@ -735,7 +734,7 @@ export default function SettingsScreen() {
               whose app works — "I never understood the village", "the rest timer is too short" —
               and none of that is a crash. The count still shows when there is one to send. */}
           <SettingRow
-            icon={<Bug size={22} color="$text" />}
+            icon={<Bug size={22} color="text" />}
             label={t("settings.feedback")}
             value={
               crashCount > 0
@@ -746,13 +745,13 @@ export default function SettingsScreen() {
           />
 
           <SettingRow
-            icon={<Zap size={22} color="$text" />}
+            icon={<Zap size={22} color="text" />}
             label={t("xp.title")}
             onPress={() => router.push("/xp" as never)}
           />
 
           <SettingRow
-            icon={<HeartPulse size={22} color="$text" />}
+            icon={<HeartPulse size={22} color="text" />}
             label={t("safety.title")}
             // `as never`: the typed-route union is generated by the dev server and does not know
             // this screen until it restarts — same idiom as the oath push above.
@@ -760,13 +759,13 @@ export default function SettingsScreen() {
           />
 
           <SettingRow
-            icon={<ShieldCheck size={22} color="$text" />}
+            icon={<ShieldCheck size={22} color="text" />}
             label={t("settings.privacy")}
             onPress={() => router.push("/privacy" as never)}
           />
 
           <SettingRow
-            icon={<ScrollText size={22} color="$text" />}
+            icon={<ScrollText size={22} color="text" />}
             label={t("credits.title")}
             value={t("credits.open")}
             onPress={() => router.push("/credits")}
@@ -780,7 +779,7 @@ export default function SettingsScreen() {
             <>
               <SettingRow
                 testID="settings-update-check"
-                icon={<Download size={22} color="$text" />}
+                icon={<Download size={22} color="text" />}
                 label={t("settings.update_check")}
                 value={onOffLabel(updateCheckEnabled, t)}
                 onPress={() => {
@@ -791,12 +790,7 @@ export default function SettingsScreen() {
                 }}
               />
 
-              <Text
-                testID="settings-update-check-note"
-                fontSize="$2"
-                color="$textSecondary"
-                px="$3"
-              >
+              <Text testID="settings-update-check-note" fontSize="2" color="textSecondary" px="3">
                 {t("settings.update_check_note")}
               </Text>
             </>
@@ -809,7 +803,7 @@ export default function SettingsScreen() {
             <YStack
               testID="settings-version-notes"
               self="center"
-              px="$4"
+              px="4"
               minH={48}
               justify="center"
               onPress={() => router.push("/whats-new" as never)}
@@ -820,15 +814,15 @@ export default function SettingsScreen() {
             >
               <Text
                 testID="settings-version"
-                fontSize="$2"
-                color="$textSecondary"
+                fontSize="2"
+                color="textSecondary"
                 textDecorationLine="underline"
               >
                 {versionLabel}
               </Text>
             </YStack>
           ) : (
-            <Text testID="settings-version" fontSize="$2" color="$textSecondary" text="center">
+            <Text testID="settings-version" fontSize="2" color="textSecondary" text="center">
               {versionLabel}
             </Text>
           )}

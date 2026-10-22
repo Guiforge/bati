@@ -4,7 +4,7 @@ import { TamaguiProvider } from "tamagui";
 
 import { BossArena } from "@/components/session/BossArena";
 import { getHpPercent, getPhaseFromHp, getPhaseLook } from "@/components/session/bossPhase";
-import { fade, rawColors } from "@/constants/rawColors";
+import { rawColors } from "@/constants/rawColors";
 import config from "@/tamagui.config";
 
 /**
@@ -208,7 +208,7 @@ describe("BossArena gauge", () => {
   ])("fills with the phase colour at %i HP", async (hp, colour) => {
     const root = await render(arena(hp));
 
-    expect(root.getByTestId("boss-hp-fill")).toHaveStyle({ backgroundColor: fade(colour, 1) });
+    expect(root.getByTestId("boss-hp-fill")).toHaveStyle({ backgroundColor: colour });
   });
 
   it("is empty when the boss is down", async () => {

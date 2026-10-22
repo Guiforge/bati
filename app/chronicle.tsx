@@ -71,7 +71,7 @@ export default function ChronicleScreen() {
       <NPage title={t("chronicle.title")} testID="chronicle-screen">
         {loaded.status === "loading" ? (
           <YStack items="center" mt={11}>
-            <Skeleton height={cardWidth} width={cardWidth} bg="$surface2" />
+            <Skeleton height={cardWidth} width={cardWidth} bg="surface2" />
           </YStack>
         ) : loaded.status === "ready" ? (
           <NMuted testID="chronicle-empty" mt={11}>
@@ -97,7 +97,7 @@ export default function ChronicleScreen() {
             disabled={holding}
             height={56}
             icon={
-              <Share2 size={20} color={holding ? "$textSecondary" : "$text"} strokeWidth={2.5} />
+              <Share2 size={20} color={`${holding ? "textSecondary" : "text"}`} strokeWidth={2.5} />
             }
             onPress={() => {
               send().catch((error: unknown) => reportError("chronicle.image", error));

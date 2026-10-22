@@ -10,7 +10,7 @@ import { useSettingsStore } from "@/stores/settings";
 export function SectionLabel({ children, ...props }: TextProps & { children: string }) {
   const language = useSettingsStore((s) => s.language);
   return (
-    <Text fontSize={12} fontWeight="700" letterSpacing={1.5} color="$textSecondary" {...props}>
+    <Text fontSize={12} fontWeight="700" letterSpacing={1.5} color="textSecondary" {...props}>
       {children.toLocaleUpperCase(language)}
     </Text>
   );

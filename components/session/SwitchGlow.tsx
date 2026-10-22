@@ -13,7 +13,7 @@ const FADE_MS = 250;
  * The product owner's idea, from games: colour around the edges says "something is about to
  * happen" to someone who is not reading. Kept to what the persona audit of 2026-10-07 let through:
  *
- * - Top and bottom only. The boss arena already breathes `$error` on its left and right edges when
+ * - Top and bottom only. The boss arena already breathes `error` on its left and right edges when
  *   the boss enrages, so a frame all round, or one that pulsed, would read as "you are being hit".
  * - One colour, the braise of "get ready to switch sides", and no meaning carried by hue alone:
  *   braise and green are the pair deuteranopia confuses.

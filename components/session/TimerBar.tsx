@@ -32,7 +32,7 @@ export function TimerBar({ value, fill, fillOpacity, ...track }: TimerBarProps) 
       height={11}
       width="100%"
       overflow="hidden"
-      rounded="$6"
+      rounded="6"
       accessibilityRole="progressbar"
       accessibilityValue={{ min: 0, max: 100, now: Math.round(percent) }}
       {...track}

@@ -3,9 +3,10 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { Paragraph } from "@/components/common/Paragraph";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { ExternalLink, ScrollText } from "@/components/icons";
 import { reportError } from "@/src/reportError";
@@ -26,32 +27,32 @@ export default function WhatsNewScreen() {
   }, []);
 
   return (
-    <YStack flex={1} bg="$background" pt={insets.top} pb={insets.bottom}>
-      <XStack px="$4" py="$3" items="center" gap="$3">
+    <YStack flex={1} bg="background" pt={insets.top} pb={insets.bottom}>
+      <XStack px="4" py="3" items="center" gap="3">
         <ScreenBackButton />
-        <XStack flex={1} items="center" gap="$2">
-          <ScrollText size={20} color="$primaryText" />
-          <Text fontSize={22} fontWeight="700" color="$text">
+        <XStack flex={1} items="center" gap="2">
+          <ScrollText size={20} color="primaryText" />
+          <Text fontSize={22} fontWeight="700" color="text">
             {t("whats_new.title", { version: appVersion })}
           </Text>
         </XStack>
       </XStack>
 
       <RNScrollView contentContainerStyle={{ padding: 16, paddingBottom: 24 }}>
-        <Card testID="whats-new-notes" gap="$3">
+        <Card testID="whats-new-notes" gap="3">
           {notes.length > 0 ? (
             notes.map((line, index) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: a fixed list, and two notes may read the same
-              <XStack key={index} gap="$2">
+              <XStack key={index} gap="2">
                 {/* A Paragraph like the note, so the bullet shares its size and first line. */}
-                <Paragraph color="$primaryText">•</Paragraph>
-                <Paragraph flex={1} color="$text">
+                <Paragraph color="primaryText">•</Paragraph>
+                <Paragraph flex={1} color="text">
                   {line}
                 </Paragraph>
               </XStack>
             ))
           ) : (
-            <Paragraph color="$textSecondary">{t("whats_new.empty")}</Paragraph>
+            <Paragraph color="textSecondary">{t("whats_new.empty")}</Paragraph>
           )}
         </Card>
 
@@ -59,8 +60,8 @@ export default function WhatsNewScreen() {
         <AppButton
           testID="whats-new-all-releases"
           variant="outline"
-          mt="$3"
-          iconAfter={<ExternalLink size={16} color="$textSecondary" />}
+          mt="3"
+          iconAfter={<ExternalLink size={16} color="textSecondary" />}
           onPress={() => {
             Linking.openURL(ALL_RELEASES_URL).catch((error: unknown) => {
               reportError("whatsNew.openReleases", error);

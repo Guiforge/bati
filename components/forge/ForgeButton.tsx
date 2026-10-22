@@ -18,8 +18,8 @@ export function ForgeButton() {
       variant="outline"
       fullWidth={false}
       fontSize={14}
-      px="$3"
-      icon={<Hammer size={16} color="$text" strokeWidth={2.5} />}
+      px="3"
+      icon={<Hammer size={16} color="text" strokeWidth={2.5} />}
       onPress={() => router.push("/forge" as never)}
     >
       {t("forge.open")}

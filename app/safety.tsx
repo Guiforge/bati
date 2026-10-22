@@ -1,8 +1,9 @@
 import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
+import { Paragraph } from "@/components/common/Paragraph";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { HeartPulse } from "@/components/icons";
 
@@ -18,44 +19,44 @@ export default function SafetyScreen() {
   const insets = useSafeAreaInsets();
 
   return (
-    <YStack flex={1} bg="$background" pt={insets.top} pb={insets.bottom}>
-      <XStack px="$4" py="$3" items="center" gap="$3">
+    <YStack flex={1} bg="background" pt={insets.top} pb={insets.bottom}>
+      <XStack px="4" py="3" items="center" gap="3">
         <ScreenBackButton />
-        <XStack flex={1} items="center" gap="$2">
-          <HeartPulse size={20} color="$primaryText" />
-          <Text fontFamily="$heading" fontSize={22} fontWeight="700" color="$text">
+        <XStack flex={1} items="center" gap="2">
+          <HeartPulse size={20} color="primaryText" />
+          <Text fontFamily="heading" fontSize={22} fontWeight="700" color="text">
             {t("safety.title")}
           </Text>
         </XStack>
       </XStack>
 
       <RNScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 24 }}>
-        <Card gap="$3">
-          <Text fontSize="$4" fontWeight="700" color="$text">
+        <Card gap="3">
+          <Text fontSize="4" fontWeight="700" color="text">
             {t("safety.before_title")}
           </Text>
-          <Paragraph color="$textSecondary">{t("safety.before_body")}</Paragraph>
+          <Paragraph color="textSecondary">{t("safety.before_body")}</Paragraph>
         </Card>
 
-        <Card gap="$3">
-          <Text fontSize="$4" fontWeight="700" color="$text">
+        <Card gap="3">
+          <Text fontSize="4" fontWeight="700" color="text">
             {t("safety.during_title")}
           </Text>
-          <Paragraph color="$textSecondary">{t("safety.during_body")}</Paragraph>
+          <Paragraph color="textSecondary">{t("safety.during_body")}</Paragraph>
         </Card>
 
-        <Card gap="$3">
-          <Text fontSize="$4" fontWeight="700" color="$text">
+        <Card gap="3">
+          <Text fontSize="4" fontWeight="700" color="text">
             {t("safety.outdoors_title")}
           </Text>
-          <Paragraph color="$textSecondary">{t("safety.outdoors_body")}</Paragraph>
+          <Paragraph color="textSecondary">{t("safety.outdoors_body")}</Paragraph>
         </Card>
 
-        <Card gap="$3">
-          <Text fontSize="$4" fontWeight="700" color="$text">
+        <Card gap="3">
+          <Text fontSize="4" fontWeight="700" color="text">
             {t("safety.not_a_coach_title")}
           </Text>
-          <Paragraph color="$textSecondary">{t("safety.not_a_coach_body")}</Paragraph>
+          <Paragraph color="textSecondary">{t("safety.not_a_coach_body")}</Paragraph>
         </Card>
       </RNScrollView>
     </YStack>

@@ -45,8 +45,8 @@ export function ImageViewer({
           contentFit="contain"
           transition={reducedMotion ? 0 : 150}
         />
-        <YStack position="absolute" b={insets.bottom + 24} l="$4" r="$4" items="center">
-          <Text fontFamily="$heading" fontWeight="700" fontSize={24} color="$text">
+        <YStack position="absolute" b={insets.bottom + 24} l="4" r="4" items="center">
+          <Text fontFamily="heading" fontWeight="700" fontSize={24} color="text">
             {name}
           </Text>
         </YStack>

@@ -1,8 +1,9 @@
 import { Image } from "expo-image";
 import { useTranslation } from "react-i18next";
-import { Input, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { Input } from "@/components/common/Input";
 import { ChevronDown, ChevronUp, X } from "@/components/icons";
 import { getQuestAsset } from "@/constants/assetMap";
 import { formatDurationEstimate } from "@/db/estimate";
@@ -54,9 +55,9 @@ export function EditorStepCard({
 
   return (
     <Card testID={`editor-step-${index}`}>
-      <YStack gap="$3">
-        <XStack items="center" gap="$3">
-          <YStack width={48} height={48} rounded="$4" overflow="hidden" bg="$background">
+      <YStack gap="3">
+        <XStack items="center" gap="3">
+          <YStack width={48} height={48} rounded="4" overflow="hidden" bg="background">
             {quest ? (
               <Image
                 source={getQuestAsset(quest.imagePath ?? "")}
@@ -67,14 +68,14 @@ export function EditorStepCard({
             ) : null}
           </YStack>
           <YStack flex={1} minW={0}>
-            <Text fontSize={12} fontWeight="700" color="$textSecondary">
+            <Text fontSize={12} fontWeight="700" color="textSecondary">
               {t("adventures.editor_step", { n })}
             </Text>
-            <Text fontWeight="700" color="$text" numberOfLines={2}>
+            <Text fontWeight="700" color="text" numberOfLines={2}>
               {quest ? localizedTitle(quest, language) : t("adventures.missing_quest")}
             </Text>
             {quest ? (
-              <Text fontSize={12} color="$textSecondary">
+              <Text fontSize={12} color="textSecondary">
                 {formatDurationEstimate(seconds, language)}
               </Text>
             ) : null}
@@ -82,14 +83,14 @@ export function EditorStepCard({
         </XStack>
         {/* A row of their own: beside the title, three 44 dp buttons left it one word at 130%. */}
         {frozen ? null : (
-          <XStack gap="$1" justify="flex-end">
+          <XStack gap="1" justify="flex-end">
             <AppIconButton
               disabled={index === 0}
               onPress={() => onMove(-1)}
               accessibilityRole="button"
               accessibilityLabel={t("adventures.editor_step_up", { n })}
             >
-              <ChevronUp size={18} color="$text" />
+              <ChevronUp size={18} color="text" />
             </AppIconButton>
             <AppIconButton
               disabled={isLast}
@@ -97,20 +98,20 @@ export function EditorStepCard({
               accessibilityRole="button"
               accessibilityLabel={t("adventures.editor_step_down", { n })}
             >
-              <ChevronDown size={18} color="$text" />
+              <ChevronDown size={18} color="text" />
             </AppIconButton>
             <AppIconButton
               onPress={onRemove}
               accessibilityRole="button"
               accessibilityLabel={t("adventures.editor_step_remove", { n })}
             >
-              <X size={18} color="$text" />
+              <X size={18} color="text" />
             </AppIconButton>
           </XStack>
         )}
 
-        <YStack gap="$2">
-          <Text fontWeight="700" fontSize={14} color="$textSecondary">
+        <YStack gap="2">
+          <Text fontWeight="700" fontSize={14} color="textSecondary">
             {t("adventures.editor_before")}
           </Text>
           <Input
@@ -119,16 +120,16 @@ export function EditorStepCard({
             maxLength={MAX_STEP_TEXT}
             multiline
             py={8}
+            bg="background"
+            borderColor="borderStrong"
+            color="text"
             placeholder={t("adventures.editor_before_placeholder")}
-            bg="$background"
-            borderColor="$borderStrong"
-            color="$text"
           />
         </YStack>
 
         {step.showOutro ? (
-          <YStack gap="$2">
-            <Text fontWeight="700" fontSize={14} color="$textSecondary">
+          <YStack gap="2">
+            <Text fontWeight="700" fontSize={14} color="textSecondary">
               {t("adventures.editor_after")}
             </Text>
             <Input
@@ -137,9 +138,9 @@ export function EditorStepCard({
               maxLength={MAX_STEP_TEXT}
               multiline
               py={8}
-              bg="$background"
-              borderColor="$borderStrong"
-              color="$text"
+              bg="background"
+              borderColor="borderStrong"
+              color="text"
             />
           </YStack>
         ) : (
@@ -148,7 +149,7 @@ export function EditorStepCard({
             minH={44}
             fontWeight="700"
             fontSize={14}
-            color="$primaryText"
+            color="primaryText"
             accessibilityRole="button"
           >
             {t("adventures.editor_after_add")}

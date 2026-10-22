@@ -3,12 +3,13 @@ import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { monsterName } from "@/components/adventures/monsterName";
 import { Fold } from "@/components/bosses/Fold";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
+import { Paragraph } from "@/components/common/Paragraph";
 import { useToast } from "@/components/common/Toast";
 import { Download, Info } from "@/components/icons";
 import { ImportArrives, ImportClashes } from "@/components/quests/ImportNotes";
@@ -85,38 +86,38 @@ export function AdventureImport({
           style={{ width: "100%", aspectRatio: 16 / 9, borderRadius: 12 }}
           contentFit="cover"
         />
-        <YStack gap="$2">
+        <YStack gap="2">
           <Text
             testID="adventure-import-title"
-            fontFamily="$heading"
+            fontFamily="heading"
             fontWeight="700"
             fontSize={22}
-            color="$text"
+            color="text"
           >
             {adventure.title}
           </Text>
           {adventure.description ? (
-            <Paragraph color="$textSecondary" numberOfLines={6}>
+            <Paragraph color="textSecondary" numberOfLines={6}>
               {adventure.description}
             </Paragraph>
           ) : null}
         </YStack>
 
         {existing ? (
-          <Card gap="$3" testID="adventure-import-existing">
-            <XStack gap="$2" items="center">
+          <Card gap="3" testID="adventure-import-existing">
+            <XStack gap="2" items="center">
               {/* Neutral: meeting an adventure you already have is the normal case, not a warning. */}
-              <Info size={18} color="$textSecondary" />
-              <Text flex={1} color="$text" fontWeight="700">
+              <Info size={18} color="textSecondary" />
+              <Text flex={1} color="text" fontWeight="700">
                 {t("adventures.import_existing", { title: existing.title })}
               </Text>
             </XStack>
             {running ? (
-              <Text testID="adventure-import-running" color="$textSecondary" fontSize={13}>
+              <Text testID="adventure-import-running" color="textSecondary" fontSize={13}>
                 {t("adventures.import_running")}
               </Text>
             ) : (
-              <XStack gap="$2" flexWrap="wrap">
+              <XStack gap="2" flexWrap="wrap">
                 <Chip
                   testID="adventure-import-update"
                   label={t("adventures.import_choice_update")}
@@ -137,8 +138,8 @@ export function AdventureImport({
         <ImportArrives arrives={preview.arrives} />
         <ImportClashes names={preview.arrives.clashes} />
 
-        <YStack gap="$2">
-          <Text fontWeight="700" fontSize={14} color="$textSecondary">
+        <YStack gap="2">
+          <Text fontWeight="700" fontSize={14} color="textSecondary">
             {t("adventures.import_steps")}
           </Text>
           {preview.steps.map((step, i) => (
@@ -147,8 +148,8 @@ export function AdventureImport({
           ))}
         </YStack>
 
-        <YStack gap="$2">
-          <Text color="$textSecondary" fontSize={14}>
+        <YStack gap="2">
+          <Text color="textSecondary" fontSize={14}>
             {preview.monster
               ? t("adventures.editor_summary_boss", {
                   name: bossLabel(end, monsterName(preview.monster, language)),
@@ -162,18 +163,20 @@ export function AdventureImport({
               A boss this version lacks arrives as a route, with none. */}
           <BossLines end={end} known={preview.monster !== null} />
           {preview.monsterUnknown ? (
-            <Text testID="adventure-import-boss-unknown" color="$textSecondary" fontSize={13}>
+            <Text testID="adventure-import-boss-unknown" color="textSecondary" fontSize={13}>
               {t("adventures.import_boss_unknown")}
             </Text>
           ) : null}
         </YStack>
       </ScrollView>
 
-      <YStack px="$4" pt="$2" pb="$3">
+      <YStack px="4" pt="2" pb="3">
         <AppButton
           testID="adventure-import-confirm"
           disabled={busy}
-          icon={<Download size={18} color={busy ? "$textSecondary" : "$white"} strokeWidth={2.5} />}
+          icon={
+            <Download size={18} color={`${busy ? "textSecondary" : "white"}`} strokeWidth={2.5} />
+          }
           onPress={() => {
             onImport().catch((error: unknown) => reportError("adventures.import", error));
           }}
@@ -190,19 +193,19 @@ function StepRow({ index, step }: { index: number; step: AdventurePreview["steps
   return (
     <XStack
       testID={`adventure-import-step-${index}`}
-      gap="$3"
+      gap="3"
       items="center"
-      p="$2"
+      p="2"
       opacity={step.status === "missing" ? 0.5 : 1}
     >
-      <Text color="$textSecondary" fontWeight="700" width={20}>
+      <Text color="textSecondary" fontWeight="700" width={20}>
         {index + 1}
       </Text>
       <YStack flex={1}>
-        <Text color="$text" fontWeight="600" numberOfLines={2}>
+        <Text color="text" fontWeight="600" numberOfLines={2}>
           {step.title}
         </Text>
-        <Text fontSize={13} color="$textSecondary">
+        <Text fontSize={13} color="textSecondary">
           {t(`adventures.import_step_${step.status}`)}
         </Text>
       </YStack>
@@ -222,14 +225,14 @@ function BossLines({ end, known }: { end: AdventureFile["adventure"]["end"]; kno
       size={14}
       title={t("adventures.import_boss_lines", { count })}
     >
-      <YStack testID="adventure-import-boss-lines" gap="$2">
+      <YStack testID="adventure-import-boss-lines" gap="2">
         {spoken.map((m) => (
           <YStack key={m} gap={2}>
-            <Text fontSize={13} fontWeight="700" color="$textSecondary">
+            <Text fontSize={13} fontWeight="700" color="textSecondary">
               {t(`adventures.editor_boss_lines_${m}`)}
             </Text>
             {lines?.[m].map((line) => (
-              <Text key={line} color="$text" fontStyle="italic">
+              <Text key={line} color="text" fontStyle="italic">
                 {line}
               </Text>
             ))}

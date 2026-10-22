@@ -148,7 +148,7 @@ function useEnragePulse(isEnraged: boolean, reducedMotion: boolean): boolean {
 /**
  * The boss fight's arena — the monster owning the screen, with its health at the screen's edge.
  *
- * It was a rounded, bordered, shadowed card inset at `px="$4"`, with art capped at
+ * It was a rounded, bordered, shadowed card inset at `px="4"`, with art capped at
  * `min(width × 0.5, height × 0.28)` — 195 px next to the 354 px `ExerciseHero` on the other branch
  * of the same screen. The subject of the screen was its second-largest image, and the two branches
  * spoke two visual languages while `docs/design/design-system.md` §"Art heroes" documented one and
@@ -210,9 +210,9 @@ export function BossArena({
       width="100%"
       position="relative"
       overflow="hidden"
-      bg="$surface"
+      bg="surface"
       onPress={() => setExpanded(true)}
-      pressStyle={{ opacity: 0.96 }}
+      opacity="press:0.96"
       accessibilityRole="imagebutton"
       accessibilityLabel={bossName}
     >
@@ -222,13 +222,12 @@ export function BossArena({
           when the killing set lands instead of standing at zero. */}
       <YStack
         position="absolute"
-        fullscreen
-        scale={pose.scale}
+        inset={0}
+        scale={reducedMotion ? pose.scale : `${pose.scale} enter:1.12`}
         x={pose.x}
         y={pose.y}
-        opacity={pose.opacity}
+        opacity={reducedMotion ? pose.opacity : `${pose.opacity} enter:0`}
         transition={reducedMotion ? undefined : ("bouncy" as const)}
-        enterStyle={reducedMotion ? undefined : { scale: 1.12, opacity: 0 }}
       >
         <Image
           testID="boss-arena-art"
@@ -241,11 +240,11 @@ export function BossArena({
         {/* Darken, do not repaint: the art keeps its own colours, the room loses its light. */}
         <YStack
           position="absolute"
-          fullscreen
-          bg="$bgDark"
+          bg="bgDark"
           opacity={look.dim}
           transition="quick"
           pointerEvents="none"
+          inset={0}
         />
 
         {/* The rim, and — at phase 4 — its breath. `bouncy` is the slowest spring the config has
@@ -256,7 +255,7 @@ export function BossArena({
             vignette top and bottom. Add a second, vertical pass if those edges ever read flat. */}
         <YStack
           position="absolute"
-          fullscreen
+          inset={0}
           opacity={rimOpacity}
           transition={reducedMotion ? undefined : "bouncy"}
           pointerEvents="none"
@@ -275,11 +274,11 @@ export function BossArena({
           of instead of moving with it. */}
       <YStack
         position="absolute"
-        fullscreen
-        bg="$error"
+        bg="error"
         opacity={flinching ? 0.3 : 0}
         transition={quick}
         pointerEvents="none"
+        inset={0}
       />
 
       {/* Top scrim: the HUD sits on painted art with no card behind it, and some of these
@@ -308,15 +307,15 @@ export function BossArena({
         pointerEvents="none"
       />
 
-      <YStack position="absolute" b="$3" l="$4" r="$4" gap="$2">
-        <XStack items="flex-end" gap="$2">
+      <YStack position="absolute" b="3" l="4" r="4" gap="2">
+        <XStack items="flex-end" gap="2">
           <AppText
             flex={1}
-            fontFamily="$heading"
+            fontFamily="heading"
             fontWeight="700"
             fontSize={28}
-            lineHeight={32}
-            color="$text"
+            lineHeight="32px"
+            color="text"
             numberOfLines={2}
           >
             {bossName}
@@ -342,7 +341,7 @@ export function BossArena({
         {children}
       </YStack>
 
-      {/* AnimatePresence is what finally lets the burst's exitStyle run: it was conditionally
+      {/* AnimatePresence is what finally lets the burst's exit clauses run: it was conditionally
           mounted with nothing above it, so it faded in and then vanished. Same wrapper as
           components/common/Toast.tsx. */}
       <AnimatePresence>
@@ -350,7 +349,7 @@ export function BossArena({
           <YStack
             key="burst"
             position="absolute"
-            fullscreen
+            inset={0}
             items="center"
             justify="center"
             pointerEvents="none"
@@ -404,9 +403,9 @@ function StatusLine({
 
   if (isDown) {
     return (
-      <XStack items="center" gap="$1" height={16}>
-        <Swords size={13} color="$resourceGold" />
-        <AppText fontSize={11} fontWeight="700" color="$resourceGold" textTransform="uppercase">
+      <XStack items="center" gap="1" height={16}>
+        <Swords size={13} color="resourceGold" />
+        <AppText fontSize={11} fontWeight="700" color="resourceGold" textTransform="uppercase">
           {t("boss.defeated")}
         </AppText>
       </XStack>
@@ -415,9 +414,9 @@ function StatusLine({
 
   if (isEnraged) {
     return (
-      <XStack items="center" gap="$1" height={16}>
-        <GameIcon name="flame" size={13} color="$error" />
-        <AppText fontSize={11} fontWeight="700" color="$error" textTransform="uppercase">
+      <XStack items="center" gap="1" height={16}>
+        <GameIcon name="flame" size={13} color="error" />
+        <AppText fontSize={11} fontWeight="700" color="error" textTransform="uppercase">
           {t("boss.enraged")}
         </AppText>
       </XStack>
@@ -433,19 +432,19 @@ function StatusLine({
       .join(", ");
 
     return (
-      <XStack items="center" gap="$3" height={16} accessibilityLabel={label}>
+      <XStack items="center" gap="3" height={16} accessibilityLabel={label}>
         {!!weaknessMuscle && (
-          <XStack items="center" gap="$1">
-            <Target size={12} color="$primaryText" />
-            <AppText fontSize={11} fontWeight="700" color="$primaryText" numberOfLines={1}>
+          <XStack items="center" gap="1">
+            <Target size={12} color="primaryText" />
+            <AppText fontSize={11} fontWeight="700" color="primaryText" numberOfLines={1}>
               {t(`muscles.${weaknessMuscle}`)}
             </AppText>
           </XStack>
         )}
         {!!resistanceMuscle && (
-          <XStack items="center" gap="$1">
-            <Shield size={12} color="$textSecondary" />
-            <AppText fontSize={11} fontWeight="700" color="$textSecondary" numberOfLines={1}>
+          <XStack items="center" gap="1">
+            <Shield size={12} color="textSecondary" />
+            <AppText fontSize={11} fontWeight="700" color="textSecondary" numberOfLines={1}>
               {t(`muscles.${resistanceMuscle}`)}
             </AppText>
           </XStack>
@@ -480,28 +479,28 @@ function DamageBurst({
   return (
     <XStack
       items="center"
-      gap="$1"
-      px="$3"
-      py="$2"
-      rounded="$10"
-      bg="$bgOverlay"
+      gap="1"
+      px="3"
+      py="2"
+      rounded="10"
+      bg="bgOverlay"
       borderWidth={1}
-      borderColor={isCritical ? "$error" : "$borderStrong"}
+      borderColor={isCritical ? "error" : "borderStrong"}
       pointerEvents="none"
       transition={reducedMotion ? undefined : "bouncy"}
-      enterStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.4 }}
-      exitStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.8 }}
+      opacity={reducedMotion ? undefined : "enter:0 exit:0"}
+      scale={reducedMotion ? undefined : "enter:0.4 exit:0.8"}
     >
-      {isCritical ? <Zap size={20} color="$error" /> : <Swords size={16} color="$primaryText" />}
+      {isCritical ? <Zap size={20} color="error" /> : <Swords size={16} color="primaryText" />}
       <AppText
         fontWeight="700"
         fontSize={isCritical ? 28 : 22}
-        color={isCritical ? "$error" : "$text"}
+        color={isCritical ? "error" : "text"}
       >
         {isCritical ? `${t("common.crit")} ` : ""}−{damage}
       </AppText>
-      {!!weaknessBonus && <Target size={16} color="$primaryText" />}
-      {!!resistancePenalty && <Shield size={16} color="$textSecondary" />}
+      {!!weaknessBonus && <Target size={16} color="primaryText" />}
+      {!!resistancePenalty && <Shield size={16} color="textSecondary" />}
     </XStack>
   );
 }

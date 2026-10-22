@@ -63,8 +63,8 @@ export function MapFootnote({
 
   if (enabled && blocked) {
     return (
-      <YStack testID="map-blocked" gap="$3">
-        <AppText fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+      <YStack testID="map-blocked" gap="3">
+        <AppText fontSize={12} color="textSecondary" style={{ textAlign: "center" }}>
           {t("recap.map_blocked")}
         </AppText>
         <AppButton
@@ -86,7 +86,7 @@ export function MapFootnote({
       <AppText
         testID="map-attribution"
         fontSize={11}
-        color="$muted"
+        color="muted"
         style={{ textAlign: "center" }}
         // One line on the live strip: at 130 % the credit took two, a third of the map band. Held
         // at the designed size rather than shrunk: Android's adjustsFontSizeToFit on this
@@ -95,9 +95,7 @@ export function MapFootnote({
         {...(compact ? { maxFontSizeMultiplier: 1 } : {})}
         // Over the live map the trace can run under the line (persona B audit, 130 %): a backing
         // keeps both readable, sized to the words so the rest of the strip stays map.
-        {...(compact
-          ? { bg: "$bgOverlaySoft", self: "center", px: "$2", py: 2, rounded: "$2" }
-          : {})}
+        {...(compact ? { bg: "bgOverlaySoft", self: "center", px: "2", py: 2, rounded: "2" } : {})}
       >
         {/* The live map is a short strip: the credit alone, the privacy sentence is the recap's.
             Both together took three lines at 130 % and covered the trace (persona audit 109). */}
@@ -108,9 +106,9 @@ export function MapFootnote({
   }
 
   return (
-    <YStack testID="map-offer" gap="$3">
+    <YStack testID="map-offer" gap="3">
       {compact ? null : (
-        <AppText fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+        <AppText fontSize={12} color="textSecondary" style={{ textAlign: "center" }}>
           {t("recap.map_offer")}
         </AppText>
       )}

@@ -30,17 +30,17 @@ describe("every screen title is in the title font", () => {
   ];
   it.each(titles)("%s", (file, needle) => {
     const head = before(file, needle, 600);
-    expect(head.slice(head.lastIndexOf("<Text"))).toContain('fontFamily="$heading"');
+    expect(head.slice(head.lastIndexOf("<Text"))).toContain('fontFamily="heading"');
   });
 
-  it("the Journal's title (NTitle) is Alegreya, its body stays on $nocturne", () => {
+  it("the Journal's title (NTitle) is Alegreya, its body stays on nocturne", () => {
     const src = read("components/journal/nocturne.tsx");
-    expect(src).toMatch(/<TextFrame fontFamily="\$heading" fontWeight="700"/);
-    expect(src).toContain('fontFamily: "$nocturne"');
+    expect(src).toMatch(/<TextFrame fontFamily="heading" fontWeight="700"/);
+    expect(src).toContain('fontFamily: "nocturne"');
   });
 });
 
-describe("one timer: body face, bold, tabular, $text", () => {
+describe("one timer: body face, bold, tabular, text", () => {
   const timers: [string, string][] = [
     ["components/session/WarmupView.tsx", "formatTime(Math.max(0, remainingSeconds))"],
     ["components/session/PrepView.tsx", "{running ? remainingSeconds"],
@@ -50,10 +50,10 @@ describe("one timer: body face, bold, tabular, $text", () => {
   it.each(timers)("%s", (file, needle) => {
     const head = before(file, needle, 600);
     const el = head.slice(head.lastIndexOf("<H1"));
-    expect(el).toContain('fontFamily="$body"');
+    expect(el).toContain('fontFamily="body"');
     expect(el).toContain('fontWeight="700"');
     expect(el).toContain('fontVariant={["tabular-nums"]}');
-    expect(el).toContain('color="$text"');
+    expect(el).toContain('color="text"');
   });
 });
 
@@ -87,6 +87,6 @@ describe("no violet", () => {
     expect(read("app/(tabs)/quests/[id].tsx")).not.toContain("questTokens");
     expect(read("app/(tabs)/adventures/[id].tsx")).not.toContain("tokens?.bg");
     expect(read("app/(tabs)/adventures/index.tsx")).not.toContain("row.tokens");
-    expect(read("components/session/RestView.tsx")).toContain('bg="$bgDark"');
+    expect(read("components/session/RestView.tsx")).toContain('bg="bgDark"');
   });
 });

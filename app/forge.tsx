@@ -5,9 +5,10 @@ import { type ReactNode, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { VillagerSays } from "@/components/chorus/VillagerLine";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
+import { Paragraph } from "@/components/common/Paragraph";
 import { SectionLabel } from "@/components/common/SectionLabel";
 import { ChevronLeft, ChevronRight } from "@/components/icons";
 import { ImportFileButton } from "@/components/quests/QuestFileButtons";
@@ -52,11 +53,11 @@ function ForgeSection({
 }) {
   const { t } = useTranslation();
   return (
-    <YStack testID={testID} gap="$2">
+    <YStack testID={testID} gap="2">
       <SectionLabel>{title}</SectionLabel>
       {rows.length === 0 ? (
         empty ? (
-          <Paragraph color="$textSecondary" size="$3">
+          <Paragraph color="textSecondary" size="3">
             {empty}
           </Paragraph>
         ) : null
@@ -67,16 +68,16 @@ function ForgeSection({
             testID={`${testID}-${row.id}`}
             minH={44}
             items="center"
-            gap="$2"
+            gap="2"
+            opacity="press:0.7"
             onPress={() => open(row.id)}
-            pressStyle={{ opacity: 0.7 }}
             accessibilityRole="button"
             accessibilityLabel={row.name}
           >
-            <Text flex={1} minW={0} color="$text" fontSize={15} numberOfLines={2}>
+            <Text flex={1} minW={0} color="text" fontSize={15} numberOfLines={2}>
               {row.name}
             </Text>
-            <ChevronRight size={16} color="$textSecondary" />
+            <ChevronRight size={16} color="textSecondary" />
           </XStack>
         ))
       )}
@@ -87,15 +88,15 @@ function ForgeSection({
           minH={44}
           items="center"
           gap={4}
+          opacity="press:0.7"
           onPress={seeAll}
-          pressStyle={{ opacity: 0.7 }}
           accessibilityRole="link"
           accessibilityLabel={t("forge.see_all")}
         >
-          <Text fontSize={13} fontWeight="600" color="$primaryText">
+          <Text fontSize={13} fontWeight="600" color="primaryText">
             {t("forge.see_all")}
           </Text>
-          <ChevronRight size={16} color="$primaryText" />
+          <ChevronRight size={16} color="primaryText" />
         </XStack>
       ) : null}
       <AppButton testID={`${testID}-new`} variant="outline" fontSize={16} onPress={create}>
@@ -171,7 +172,7 @@ export default function ForgeScreen(): ReactNode {
   const emptyLine = (key: Parameters<typeof t>[0]) => (made === null || nothingYet ? null : t(key));
 
   return (
-    <YStack testID="forge-screen" flex={1} bg="$bgDark">
+    <YStack testID="forge-screen" flex={1} bg="bgDark">
       {/* The fire inside the building: a warm glow from the top that dies before the lists. */}
       <LinearGradient
         colors={[fade(rawColors.primary, 0.2), fade(rawColors.primary, 0)]}
@@ -186,15 +187,15 @@ export default function ForgeScreen(): ReactNode {
           gap: 24,
         }}
       >
-        <YStack gap="$3">
-          <XStack items="center" gap="$3">
+        <YStack gap="3">
+          <XStack items="center" gap="3">
             <AppIconButton
               testID="forge-back"
               onPress={() => router.back()}
               accessibilityRole="button"
               accessibilityLabel={t("exercises.go_back")}
             >
-              <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
+              <ChevronLeft size={22} color="text" strokeWidth={2.5} />
             </AppIconButton>
             {/* Inside the village's Forge: its painting at the hero's rank (rough before it is built,
                 nothing is locked), and below, the smith who keeps it. */}
@@ -212,10 +213,10 @@ export default function ForgeScreen(): ReactNode {
             <Text
               flex={1}
               minW={0}
-              fontFamily="$heading"
+              fontFamily="heading"
               fontWeight="700"
               fontSize={20}
-              color="$text"
+              color="text"
               numberOfLines={1}
             >
               {t("forge.title")}
@@ -225,7 +226,7 @@ export default function ForgeScreen(): ReactNode {
         </YStack>
 
         {failed ? (
-          <Text testID="forge-load-failed" color="$textSecondary" fontSize={13}>
+          <Text testID="forge-load-failed" color="textSecondary" fontSize={13}>
             {t("errors.generic")}
           </Text>
         ) : null}
@@ -273,7 +274,7 @@ export default function ForgeScreen(): ReactNode {
         />
 
         {/* The one way in for a file someone sent: a quest or an adventure, the preview reads which. */}
-        <YStack gap="$2">
+        <YStack gap="2">
           <ImportFileButton
             label="forge.import"
             hint="forge.import_hint"

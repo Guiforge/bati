@@ -1,8 +1,9 @@
 import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
+import { Paragraph } from "@/components/common/Paragraph";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { Zap } from "@/components/icons";
 
@@ -30,30 +31,30 @@ export default function XpScreen() {
   const insets = useSafeAreaInsets();
 
   return (
-    <YStack flex={1} bg="$background" pt={insets.top} pb={insets.bottom}>
-      <XStack px="$4" py="$3" items="center" gap="$3">
+    <YStack flex={1} bg="background" pt={insets.top} pb={insets.bottom}>
+      <XStack px="4" py="3" items="center" gap="3">
         <ScreenBackButton />
-        <XStack flex={1} items="center" gap="$2">
-          <Zap size={20} color="$primaryText" />
-          <Text fontFamily="$heading" fontSize={22} fontWeight="700" color="$text">
+        <XStack flex={1} items="center" gap="2">
+          <Zap size={20} color="primaryText" />
+          <Text fontFamily="heading" fontSize={22} fontWeight="700" color="text">
             {t("xp.title")}
           </Text>
         </XStack>
       </XStack>
 
       <RNScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 24 }}>
-        <Card gap="$3">
-          <Paragraph color="$text" fontWeight="700">
+        <Card gap="3">
+          <Paragraph color="text" fontWeight="700">
             {t("xp.summary")}
           </Paragraph>
         </Card>
 
         {RULES.map((rule) => (
-          <Card key={rule} gap="$3">
-            <Text fontSize="$4" fontWeight="700" color="$text">
+          <Card key={rule} gap="3">
+            <Text fontSize="4" fontWeight="700" color="text">
               {t(`xp.${rule}_title`)}
             </Text>
-            <Paragraph color="$textSecondary">{t(`xp.${rule}_body`)}</Paragraph>
+            <Paragraph color="textSecondary">{t(`xp.${rule}_body`)}</Paragraph>
           </Card>
         ))}
       </RNScrollView>

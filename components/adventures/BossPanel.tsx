@@ -40,11 +40,11 @@ export function BossPanel({ fight, language }: { fight: BossFight; language: App
 
   return (
     <YStack
-      rounded="$8"
+      rounded="8"
       overflow="hidden"
       borderWidth={1}
-      borderColor={isEnraged ? "$error" : "$borderStrong"}
-      bg="$surface"
+      borderColor={`${isEnraged ? "error" : "borderStrong"}`}
+      bg="surface"
     >
       <YStack height={ART_HEIGHT} width="100%" position="relative">
         <Image
@@ -67,27 +67,27 @@ export function BossPanel({ fight, language }: { fight: BossFight; language: App
           pointerEvents="none"
         />
 
-        <XStack position="absolute" b="$3" l="$4" r="$4" items="flex-end" gap="$2">
+        <XStack position="absolute" b="3" l="4" r="4" items="flex-end" gap="2">
           <Text
             flex={1}
-            fontFamily="$heading"
+            fontFamily="heading"
             fontWeight="700"
             fontSize={22}
-            lineHeight={26}
-            color="$text"
+            lineHeight="26px"
+            color="text"
             numberOfLines={2}
           >
             {bossDisplayName(fight, language)}
           </Text>
           {isDefeated ? (
-            <Text fontSize={12} fontWeight="700" color="$resourceGold" textTransform="uppercase">
+            <Text fontSize={12} fontWeight="700" color="resourceGold" textTransform="uppercase">
               {t("boss.defeated")}
             </Text>
           ) : null}
         </XStack>
       </YStack>
 
-      <YStack px="$4" py="$3" gap="$2">
+      <YStack px="4" py="3" gap="2">
         <BossHpGauge
           hp={fight.currentHp}
           maxHp={fight.totalHp}
@@ -96,8 +96,8 @@ export function BossPanel({ fight, language }: { fight: BossFight; language: App
           testIDPrefix="boss-panel-hp"
         />
 
-        <XStack items="center" gap="$2">
-          <Text flex={1} fontSize={12} color="$textSecondary">
+        <XStack items="center" gap="2">
+          <Text flex={1} fontSize={12} color="textSecondary">
             {isDefeated
               ? t("boss.victory_subtitle")
               : (fight.bossLines?.intro[0] ?? t("boss.fight_intro"))}
@@ -111,7 +111,7 @@ export function BossPanel({ fight, language }: { fight: BossFight; language: App
             accessibilityLabel={t("boss.threat", { rank: threatRank(fight.totalHp) })}
           >
             {SKULL_KEYS.slice(0, threatRank(fight.totalHp)).map((k) => (
-              <Skull key={k} size={12} color={isDefeated ? "$textSecondary" : "$error"} />
+              <Skull key={k} size={12} color={`${isDefeated ? "textSecondary" : "error"}`} />
             ))}
           </XStack>
         </XStack>
@@ -133,20 +133,20 @@ function Traits({ fight, isEnraged }: { fight: BossFight; isEnraged: boolean }) 
   if (!(fight.weaknessMuscle || fight.resistanceMuscle || isEnraged)) return null;
 
   return (
-    <YStack gap="$1.5">
-      <XStack items="center" gap="$3" flexWrap="wrap">
+    <YStack gap="1-5">
+      <XStack items="center" gap="3" flexWrap="wrap">
         {isEnraged ? (
-          <Trait icon={<GameIcon name="flame" size={13} color="$error" />} color="$error">
+          <Trait icon={<GameIcon name="flame" size={13} color="error" />} color="error">
             {t("boss.enraged")}
           </Trait>
         ) : null}
         {fight.weaknessMuscle ? (
-          <Trait icon={<Target size={12} color="$primaryText" />} color="$primaryText">
+          <Trait icon={<Target size={12} color="primaryText" />} color="primaryText">
             {t("boss.weakness")} · {t(`muscles.${fight.weaknessMuscle}`)}
           </Trait>
         ) : null}
         {fight.resistanceMuscle ? (
-          <Trait icon={<Shield size={12} color="$textSecondary" />}>
+          <Trait icon={<Shield size={12} color="textSecondary" />}>
             {t("boss.resistance")} · {t(`muscles.${fight.resistanceMuscle}`)}
           </Trait>
         ) : null}
@@ -154,7 +154,7 @@ function Traits({ fight, isEnraged }: { fight: BossFight; isEnraged: boolean }) 
       {/* The causal rule the labels never stated: muscle choice drives damage. Said here,
           on the pre-fight panel, where the hero still has time to pick accordingly. */}
       {fight.weaknessMuscle || fight.resistanceMuscle ? (
-        <Text fontSize={11} color="$textSecondary" opacity={0.8}>
+        <Text fontSize={11} color="textSecondary" opacity={0.8}>
           {t("boss.matchup_hint")}
         </Text>
       ) : null}
@@ -164,7 +164,7 @@ function Traits({ fight, isEnraged }: { fight: BossFight; isEnraged: boolean }) 
 
 function Trait({
   icon,
-  color = "$textSecondary",
+  color = "textSecondary",
   children,
 }: {
   icon: ReactNode;
@@ -172,7 +172,7 @@ function Trait({
   children: ReactNode;
 }) {
   return (
-    <XStack items="center" gap="$1">
+    <XStack items="center" gap="1">
       {icon}
       <Text fontSize={11} fontWeight="700" color={color}>
         {children}

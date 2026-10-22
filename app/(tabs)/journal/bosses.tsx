@@ -59,12 +59,12 @@ export default function BossesScreen() {
                   {kill.title[language] || kill.title.en}
                 </NText>
                 <XStack items="center" gap={5}>
-                  <Skull size={12} color="$resourceGold" />
+                  <Skull size={12} color="resourceGold" />
                   <NMuted>{t("journal.felled_on", { date: date(kill.felledAt) })}</NMuted>
                 </XStack>
               </YStack>
               {/* A kill logged before its session was linked has no report to open. */}
-              {kill.sessionId == null ? null : <ChevronRight size={18} color="$textSecondary" />}
+              {kill.sessionId == null ? null : <ChevronRight size={18} color="textSecondary" />}
             </XStack>
           </NBlock>
         ))}
@@ -89,10 +89,10 @@ export default function BossesScreen() {
                 <YStack opacity={0.15}>
                   <NImage source={getBossAsset(boss.imagePath ?? "", 0)} size={48} round />
                 </YStack>
-                <NText flex={1} fontWeight="500" fontSize={15} color="$textSecondary">
+                <NText flex={1} fontWeight="500" fontSize={15} color="textSecondary">
                   ?
                 </NText>
-                <ChevronRight size={18} color="$textSecondary" />
+                <ChevronRight size={18} color="textSecondary" />
               </XStack>
             </NBlock>
           ))}

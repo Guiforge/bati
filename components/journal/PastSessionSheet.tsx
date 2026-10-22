@@ -2,10 +2,11 @@ import type { TFunction } from "i18next";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Keyboard } from "react-native";
-import { Input, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Chip } from "@/components/common/Chip";
 import { FormSheet } from "@/components/common/FormSheet";
+import { Input } from "@/components/common/Input";
 import { RuleDisclosure } from "@/components/common/RuleDisclosure";
 import { useRevealInSheet } from "@/components/common/revealInSheet";
 import { SectionLabel } from "@/components/common/SectionLabel";
@@ -509,7 +510,7 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
     <FormSheet open={open} title={title} onClose={onClose} footer={footer}>
       {distanceOnly ? null : (
         <>
-          <XStack gap="$2" flexWrap="wrap">
+          <XStack gap="2" flexWrap="wrap">
             {KINDS.map((k) => (
               <Chip
                 key={k}
@@ -568,21 +569,21 @@ export function PastSessionSheet({ open, onClose, mode = "entry", target, day, o
           }}
         />
       ) : (
-        <YStack gap="$2">
-          <Text fontSize={15} color="$text">
+        <YStack gap="2">
+          <Text fontSize={15} color="text">
             {t("past_session.name")}
           </Text>
           <Input
             testID="past-session-name"
             minH={44}
+            bg="background"
+            borderColor="borderStrong"
+            color="text"
             value={label}
             onChangeText={(v) => setLabel(v.slice(0, HAND_LABEL_MAX))}
             placeholder={t("past_session.name_hint")}
             accessibilityLabel={t("past_session.name")}
             maxLength={HAND_LABEL_MAX}
-            bg="$background"
-            borderColor="$borderStrong"
-            color="$text"
           />
         </YStack>
       )}
@@ -607,16 +608,16 @@ function SheetFooter({
 }) {
   const { t } = useTranslation();
   return (
-    <YStack gap="$2">
+    <YStack gap="2">
       <YStack minH={44} justify="center" accessibilityLiveRegion="polite">
         {refusalLine || noteLine ? (
-          <XStack gap="$2" items="flex-start">
-            <Info size={16} color="$primaryText" />
+          <XStack gap="2" items="flex-start">
+            <Info size={16} color="primaryText" />
             <Text
               testID={refusalLine ? "past-session-refusal" : "past-session-note"}
               flex={1}
               fontSize={14}
-              color="$text"
+              color="text"
             >
               {refusalLine ?? noteLine}
             </Text>
@@ -659,31 +660,31 @@ function DistanceField({
 }) {
   const { t } = useTranslation();
   return (
-    <YStack gap="$2">
-      <Text fontSize={15} color="$text">
+    <YStack gap="2">
+      <Text fontSize={15} color="text">
         {t("past_session.distance")}
       </Text>
-      <XStack gap="$2" items="center">
+      <XStack gap="2" items="center">
         <Input
           testID="past-session-distance"
           flex={1}
           minH={44}
+          bg="background"
+          borderColor="borderStrong"
+          color="text"
           value={value}
           onChangeText={onChange}
           onBlur={onSettle}
           onSubmitEditing={onSettle}
           keyboardType="decimal-pad"
           accessibilityLabel={a11y}
-          bg="$background"
-          borderColor="$borderStrong"
-          color="$text"
         />
-        <Text fontWeight="700" fontSize={15} color="$textSecondary">
+        <Text fontWeight="700" fontSize={15} color="textSecondary">
           {unitWord}
         </Text>
       </XStack>
       {fix ? (
-        <XStack gap="$2" flexWrap="wrap">
+        <XStack gap="2" flexWrap="wrap">
           {fixLabel === null ? null : (
             <Chip testID="past-session-fix" label={fixLabel} onPress={onFix} />
           )}
@@ -727,9 +728,9 @@ function WhenSection({
 }) {
   const { t } = useTranslation();
   return (
-    <YStack gap="$2">
+    <YStack gap="2">
       <SectionLabel>{t("past_session.when")}</SectionLabel>
-      <XStack gap="$2" flexWrap="wrap">
+      <XStack gap="2" flexWrap="wrap">
         {choices.map((c) => (
           <Chip
             key={c.key}
@@ -747,23 +748,23 @@ function WhenSection({
           />
         ) : null}
       </XStack>
-      <XStack gap="$2" items="center">
-        <Text fontSize={15} color="$text">
+      <XStack gap="2" items="center">
+        <Text fontSize={15} color="text">
           {t("past_session.ended_at")}
         </Text>
         <Input
           testID="past-session-end"
           width={96}
           minH={44}
+          bg="background"
+          borderColor="borderStrong"
+          color="text"
           value={endText}
           onChangeText={onEndText}
           onBlur={onEndCommit}
           onSubmitEditing={onEndCommit}
           accessibilityLabel={t("past_session.ended_at")}
           returnKeyType="done"
-          bg="$background"
-          borderColor="$borderStrong"
-          color="$text"
         />
       </XStack>
     </YStack>
@@ -791,9 +792,9 @@ function DurationSection({
   const { t } = useTranslation();
   const reveal = useRevealInSheet();
   return (
-    <YStack gap="$2">
+    <YStack gap="2">
       <SectionLabel>{t("past_session.duration")}</SectionLabel>
-      <XStack gap="$2" flexWrap="wrap" items="center">
+      <XStack gap="2" flexWrap="wrap" items="center">
         {DURATION_CHIPS_MIN.map((m) => (
           <Chip
             key={m}
@@ -804,7 +805,7 @@ function DurationSection({
           />
         ))}
         <Chip label={t("past_session.duration_custom")} selected={customOpen} onPress={onCustom} />
-        <Text fontSize={15} color="$textSecondary">
+        <Text fontSize={15} color="textSecondary">
           {t("past_session.minutes")}
         </Text>
       </XStack>
@@ -813,15 +814,15 @@ function DurationSection({
           testID="past-session-custom"
           ref={reveal}
           minH={44}
+          bg="background"
+          borderColor="borderStrong"
+          color="text"
           value={customText}
           onChangeText={onCustomText}
           onBlur={onCustomCommit}
           onSubmitEditing={onCustomCommit}
           keyboardType="decimal-pad"
           accessibilityLabel={`${t("past_session.duration")} (${t("past_session.minutes")})`}
-          bg="$background"
-          borderColor="$borderStrong"
-          color="$text"
         />
       ) : null}
     </YStack>

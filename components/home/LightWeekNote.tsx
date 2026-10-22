@@ -53,12 +53,12 @@ export function LightWeekNote({
   };
 
   return (
-    <Card testID="light-week-note" py="$2" {...(onHome ? { mx: "$4", mt: "$3" } : {})}>
-      <YStack gap="$2">
-        <AppText fontSize="$3" color="$primaryText">
+    <Card testID="light-week-note" py="2" {...(onHome ? { mx: "4", mt: "3" } : {})}>
+      <YStack gap="2">
+        <AppText fontSize="3" color="primaryText">
           {t("home.light_week_on", { date: shortDate(language, until) })}
         </AppText>
-        <XStack gap="$2" flexWrap="wrap">
+        <XStack gap="2" flexWrap="wrap">
           <AppButton
             testID="light-week-end"
             variant="outline"

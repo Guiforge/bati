@@ -2181,10 +2181,10 @@
     },
     {
       "name": "@react-native/normalize-colors",
-      "version": "0.83.2",
+      "version": "0.86.2",
       "license": "MIT",
       "notices": [
-        { "copyright": ["@react-native/normalize-colors (declared in package.json)"], "text": 4 }
+        { "copyright": ["Copyright (c) Meta Platforms, Inc. and affiliates."], "text": 4 }
       ]
     },
     {
@@ -2254,31 +2254,31 @@
     },
     {
       "name": "@tamagui/accordion",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/adapt",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/alert-dialog",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2022 WorkOS"], "text": 4 }]
     },
     {
       "name": "@tamagui/animate",
-      "version": "2.7.7",
+      "version": "3.1.2",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/animate-presence",
-      "version": "2.7.7",
+      "version": "3.1.2",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 },
@@ -2287,296 +2287,284 @@
     },
     {
       "name": "@tamagui/animation-helpers",
-      "version": "2.7.7",
+      "version": "3.1.2",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/animations-css",
-      "version": "2.7.7",
+      "version": "3.1.2",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/animations-motion",
-      "version": "2.7.7",
+      "version": "3.1.2",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/animations-react-native",
-      "version": "2.7.7",
+      "version": "3.1.2",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/animations-reanimated",
-      "version": "2.7.7",
+      "version": "3.1.2",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/avatar",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/button",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/card",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/checkbox",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/checkbox-headless",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/collapsible",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/collection",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
-      "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
-    },
-    {
-      "name": "@tamagui/colors",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/compose-refs",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/config",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/config-default",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/constants",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/context-menu",
-      "version": "2.7.7",
+      "version": "3.1.2",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/core",
-      "version": "2.7.7",
+      "version": "3.1.2",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/create-context",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/create-menu",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+    },
+    {
+      "name": "@tamagui/create-system-font",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/create-theme",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/cubic-bezier-animator",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/dialog",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2022 WorkOS"], "text": 4 }]
     },
     {
       "name": "@tamagui/dismissable",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+    },
+    {
+      "name": "@tamagui/dom",
+      "version": "3.1.2",
+      "license": "MIT",
+      "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/element",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 22 }]
     },
     {
-      "name": "@tamagui/elements",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "name": "@tamagui/fake-react-native",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
-      "name": "@tamagui/fake-react-native",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "name": "@tamagui/field",
+      "version": "3.1.2",
+      "license": "MIT",
+      "notices": [{ "copyright": ["Copyright (c) 2023 Tamagui"], "text": 4 }]
     },
     {
       "name": "@tamagui/floating",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/focus-guard",
-      "version": "2.7.7",
+      "version": "3.1.2",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/focus-scope",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
-    },
-    {
-      "name": "@tamagui/focusable",
-      "version": "2.7.7",
+      "version": "3.1.2",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
-      "name": "@tamagui/font-inter",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
-    },
-    {
-      "name": "@tamagui/font-silkscreen",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "name": "@tamagui/focusable",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/font-size",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/form",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
-    },
-    {
-      "name": "@tamagui/get-button-sized",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/get-font-sized",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/get-token",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/group",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/helpers",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/helpers-icon",
-      "version": "2.7.7",
+      "version": "3.1.2",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/helpers-tamagui",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/image",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/input",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/is-equal-shallow",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2025 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/label",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/linear-gradient",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/list-item",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
@@ -2587,344 +2575,356 @@
     },
     {
       "name": "@tamagui/menu",
-      "version": "2.7.7",
+      "version": "3.1.2",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/native",
-      "version": "2.7.7",
+      "version": "3.1.2",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/normalize-css-color",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
-    },
-    {
-      "name": "@tamagui/polyfill-dev",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
-    },
-    {
-      "name": "@tamagui/popover",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
-    },
-    {
-      "name": "@tamagui/popper",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
-    },
-    {
-      "name": "@tamagui/portal",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
-    },
-    {
-      "name": "@tamagui/progress",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
-    },
-    {
-      "name": "@tamagui/radio-group",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
-    },
-    {
-      "name": "@tamagui/radio-headless",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
-      "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
-    },
-    {
-      "name": "@tamagui/react-native-media-driver",
-      "version": "2.7.7",
+      "version": "3.1.2",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
+      "name": "@tamagui/polyfill-dev",
+      "version": "3.1.2",
+      "license": "MIT",
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+    },
+    {
+      "name": "@tamagui/popover",
+      "version": "3.1.2",
+      "license": "MIT",
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+    },
+    {
+      "name": "@tamagui/popper",
+      "version": "3.1.2",
+      "license": "MIT",
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+    },
+    {
+      "name": "@tamagui/portal",
+      "version": "3.1.2",
+      "license": "MIT",
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+    },
+    {
+      "name": "@tamagui/progress",
+      "version": "3.1.2",
+      "license": "MIT",
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+    },
+    {
+      "name": "@tamagui/radio-group",
+      "version": "3.1.2",
+      "license": "MIT",
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+    },
+    {
+      "name": "@tamagui/radio-headless",
+      "version": "3.1.2",
+      "license": "MIT",
+      "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
+    },
+    {
+      "name": "@tamagui/react-native-media-driver",
+      "version": "3.1.2",
+      "license": "MIT",
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+    },
+    {
+      "name": "@tamagui/react-native-pan-responder",
+      "version": "3.1.2",
+      "license": "MIT",
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+    },
+    {
+      "name": "@tamagui/react-native-types",
+      "version": "3.1.2",
+      "license": "MIT",
+      "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
+    },
+    {
       "name": "@tamagui/react-native-use-pressable",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+    },
+    {
+      "name": "@tamagui/react-native-use-responder-events",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/remove-scroll",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/roving-focus",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/scroll-view",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/select",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/separator",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/shapes",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/sheet",
-      "version": "2.7.7",
+      "version": "3.1.2",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/shorthands",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/simple-hash",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
-      "name": "@tamagui/sizable-context",
-      "version": "2.7.7",
-      "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 4 }]
-    },
-    {
       "name": "@tamagui/slider",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/spacer",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
-    },
-    {
-      "name": "@tamagui/spinner",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
-    },
-    {
-      "name": "@tamagui/stacks",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
-    },
-    {
-      "name": "@tamagui/start-transition",
-      "version": "2.7.7",
+      "version": "3.1.2",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
+      "name": "@tamagui/spinner",
+      "version": "3.1.2",
+      "license": "MIT",
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+    },
+    {
+      "name": "@tamagui/stacks",
+      "version": "3.1.2",
+      "license": "MIT",
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+    },
+    {
+      "name": "@tamagui/start-transition",
+      "version": "3.1.2",
+      "license": "MIT",
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+    },
+    {
+      "name": "@tamagui/style-grammar",
+      "version": "3.1.2",
+      "license": "MIT",
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 4 }]
+    },
+    {
       "name": "@tamagui/switch",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/switch-headless",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/tabs",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
+      "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
+    },
+    {
+      "name": "@tamagui/tabs-headless",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/text",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/theme",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
-    },
-    {
-      "name": "@tamagui/theme-builder",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/themes",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
-    },
-    {
-      "name": "@tamagui/timer",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/toast",
-      "version": "2.7.7",
+      "version": "3.1.2",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/toggle-group",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/tooltip",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/types",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+    },
+    {
+      "name": "@tamagui/ui",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/use-async",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2025 Tamagui"], "text": 4 }]
     },
     {
       "name": "@tamagui/use-callback-ref",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/use-constant",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/use-controllable-state",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/use-debounce",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/use-did-finish-ssr",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/use-direction",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/use-element-layout",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/use-escape-keydown",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/use-event",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/use-force-update",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
-    },
-    {
-      "name": "@tamagui/use-keyboard-visible",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/use-presence",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/use-previous",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/use-window-dimensions",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/visually-hidden",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/web",
-      "version": "2.7.7",
+      "version": "3.1.2",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
       "name": "@tamagui/z-index-stack",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {
@@ -3818,12 +3818,6 @@
       ]
     },
     {
-      "name": "color2k",
-      "version": "2.0.4",
-      "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Rico Kahler"], "text": 4 }]
-    },
-    {
       "name": "commander",
       "version": "12.1.0",
       "license": "MIT",
@@ -4219,23 +4213,6 @@
       "version": "2.3.2",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (C) 2018-2022 Guy Bedford"], "text": 41 }]
-    },
-    {
-      "name": "esbuild",
-      "version": "0.28.2",
-      "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Evan Wallace"], "text": 4 }]
-    },
-    {
-      "name": "esbuild-register",
-      "version": "3.6.0",
-      "license": "MIT",
-      "notices": [
-        {
-          "copyright": ["Copyright (c) EGOIST <0x142857@gmail.com> (https://egoist.sh)"],
-          "text": 35
-        }
-      ]
     },
     {
       "name": "escalade",
@@ -4721,7 +4698,7 @@
     },
     {
       "name": "framer-motion",
-      "version": "14.1.0",
+      "version": "14.5.0",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2018 Framer B.V."], "text": 2 }]
     },
@@ -6081,7 +6058,7 @@
     },
     {
       "name": "motion",
-      "version": "14.1.0",
+      "version": "14.5.0",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2024 [Motion](https://motion.dev) B.V."], "text": 2 }
@@ -6089,7 +6066,7 @@
     },
     {
       "name": "motion-dom",
-      "version": "14.1.0",
+      "version": "14.5.0",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2024 [Motion](https://motion.dev) B.V."], "text": 2 }
@@ -6097,7 +6074,7 @@
     },
     {
       "name": "motion-utils",
-      "version": "14.1.0",
+      "version": "14.1.1",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2024 [Motion](https://motion.dev) B.V."], "text": 2 }
@@ -7593,8 +7570,8 @@
     },
     {
       "name": "tamagui",
-      "version": "2.7.7",
-      "license": "MIT (read from the licence file)",
+      "version": "3.1.2",
+      "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
     },
     {

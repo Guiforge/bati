@@ -12,7 +12,6 @@
   "ignoreDependencies": [
     "expo-dev-client",
     "expo-updates",
-    "@tamagui/babel-plugin",
     "babel-plugin-transform-remove-console",
     "fast-check"
   ],

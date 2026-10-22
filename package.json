@@ -7,8 +7,8 @@
     "@legendapp/list": "^3.6.0",
     "@maplibre/maplibre-react-native": "^11.5.0",
     "@scure/bip39": "^2.4.0",
-    "@tamagui/animations-react-native": "^2.7.7",
-    "@tamagui/config": "^2.7.7",
+    "@tamagui/animations-react-native": "3.1.2",
+    "@tamagui/config": "3.1.2",
     "@tamagui/lucide-icons": "^1.144.4",
     "date-fns": "^4.4.0",
     "drizzle-orm": "^0.45.4",
@@ -50,18 +50,19 @@
     "react-native-view-shot": "6.1.1",
     "react-native-web": "~0.21.4",
     "react-native-worklets": "0.13.0",
-    "tamagui": "^2.7.7",
+    "tamagui": "3.1.2",
     "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@babel/parser": "^7.29.9",
     "@biomejs/biome": "^2.6.2",
     "@j178/prek": "^0.5.7",
-    "@tamagui/babel-plugin": "^2.7.7",
+    "@react-native/jest-preset": "^0.88.0",
     "@testing-library/react-native": "^14.1.0",
     "@types/better-sqlite3": "^9.6.0",
     "@types/jest": "30.0.0",
     "@types/react": "~19.3.0",
+    "babel-jest": "^30.5.2",
     "babel-plugin-inline-import": "^3.0.0",
     "babel-plugin-transform-remove-console": "^6.9.4",
     "babel-preset-expo": "~58.0.19",
@@ -71,8 +72,7 @@
     "jest": "30.5.2",
     "jest-expo": "~58.0.12",
     "knip": "^6.42.1",
-    "typescript": "~7.0.2",
-    "@react-native/jest-preset": "^0.88.0"
+    "typescript": "~7.0.2"
   },
   "jest": {
     "maxWorkers": "25%",
@@ -82,6 +82,9 @@
     },
     "preset": "jest-expo",
     "resolver": "react-native-reanimated/jest/resolver.js",
+    "transform": {
+      "\\.mjs$": "babel-jest"
+    },
     "transformIgnorePatterns": [
       "/node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|standard-navigation|tamagui|@tamagui|@legendapp|@scure|@noble))",
       "/node_modules/react-native-reanimated/plugin/",
@@ -205,10 +208,10 @@
       "esbuild": "^0.25.0"
     },
     "@tamagui/lucide-icons": {
-      "@tamagui/core": "2.7.7",
-      "@tamagui/helpers-icon": "2.7.7"
+      "@tamagui/core": "3.1.2",
+      "@tamagui/helpers-icon": "3.1.2"
     },
-    "@tamagui/web": "2.7.7",
+    "@tamagui/web": "3.1.2",
     "react-dom": "19.3.0",
     "esbuild": "^0.28.2",
     "jest-environment-node": "30.4.1",

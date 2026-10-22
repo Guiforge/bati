@@ -2,8 +2,9 @@ import type { ReactNode } from "react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Keyboard, Platform, Pressable, type ScrollViewInstance } from "react-native";
-import { Input, Sheet, ScrollView as TamaguiScrollView, Text, XStack, YStack } from "tamagui";
+import { Sheet, ScrollView as TamaguiScrollView, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { Input } from "@/components/common/Input";
 import { tamaguiRef } from "@/components/common/tamaguiRef";
 import { ExerciseRow } from "@/components/exercises/ExerciseRow";
 import { MineCaption } from "@/components/exercises/MineCaption";
@@ -145,10 +146,9 @@ export function ExercisePickerSheet({
       zIndex={100_000}
     >
       <Sheet.Overlay
-        bg="$sheetScrim"
+        bg="sheetScrim"
         transition={reducedMotion ? undefined : "quick"}
-        enterStyle={{ opacity: 0 }}
-        exitStyle={{ opacity: 0 }}
+        opacity="1 enter:0 exit:0"
       />
       {/* No handle: it is the universal "drag me" mark, and with the drag off it would promise a
           gesture that no longer answers — a control wired to nothing. */}
@@ -156,17 +156,18 @@ export function ExercisePickerSheet({
           `height={frameSize}` before spreading these props. The stranding this once tried to fix
           by dropping a `flex` was the pane drift above, and `VillageDetailSheet` was never the
           reference — it is `snapPointsMode="fit"` with no ScrollView, so no pan to lose to. */}
-      <Sheet.Frame
+      <Sheet.Container
+        overflow="hidden"
+        borderTopLeftRadius="6"
+        borderTopRightRadius="6"
         width="100%"
         maxW={CONTENT_MAX_WIDTH}
         self="center"
-        bg="$surface"
-        borderTopLeftRadius="$6"
-        borderTopRightRadius="$6"
       >
-        <YStack px="$4" pt="$4" pb="$3" gap="$3">
+        <Sheet.Background bg="surface" borderTopLeftRadius="6" borderTopRightRadius="6" />
+        <YStack px="4" pt="4" pb="3" gap="3">
           <XStack items="center" justify="space-between">
-            <Text fontWeight="700" fontSize={18} color="$text">
+            <Text fontWeight="700" fontSize={18} color="text">
               {title}
             </Text>
             <Pressable
@@ -175,24 +176,24 @@ export function ExercisePickerSheet({
               accessibilityLabel={t("common.close")}
               onPress={close}
             >
-              <X size={20} color="$textSecondary" />
+              <X size={20} color="textSecondary" />
             </Pressable>
           </XStack>
 
-          <XStack items="center" gap="$2">
+          <XStack items="center" gap="2">
             <Input
               flex={1}
+              bg="background"
+              borderColor="borderStrong"
+              color="text"
               value={search}
               onChangeText={(next) => {
                 setSearch(next);
                 toTop();
               }}
               placeholder={t("quests.editor_search")}
-              bg="$background"
-              borderColor="$borderStrong"
-              color="$text"
             />
-            <Search size={18} color="$textSecondary" />
+            <Search size={18} color="textSecondary" />
           </XStack>
 
           {header}
@@ -207,10 +208,10 @@ export function ExercisePickerSheet({
         <TamaguiScrollView
           ref={tamaguiRef(listRef)}
           flex={1}
-          px="$4"
+          px="4"
           keyboardShouldPersistTaps="handled"
         >
-          <YStack gap="$2" pb="$3">
+          <YStack gap="2" pb="3">
             {results.map((exercise) => {
               const picked = countByExerciseId.get(exercise.id) ?? 0;
               const name = localizedName(exercise, language);
@@ -222,7 +223,7 @@ export function ExercisePickerSheet({
                   exercise={exercise}
                   language={language}
                   thumb={assetByExerciseId.get(exercise.id)}
-                  borderColor={picked > 0 ? "$primaryText" : "$borderStrong"}
+                  borderColor={picked > 0 ? "primaryText" : "borderStrong"}
                   accessibilityLabel={
                     picked > 0
                       ? `${name}, ${t("quests.editor_added_count", { count: picked })}`
@@ -233,7 +234,7 @@ export function ExercisePickerSheet({
                     // this movement, which beats saying who wrote it. Otherwise: a hero may own
                     // a name seed content also owns, and two identical rows are unpickable.
                     caption ? (
-                      <Text fontSize={12} fontWeight="700" color="$textSecondary" numberOfLines={1}>
+                      <Text fontSize={12} fontWeight="700" color="textSecondary" numberOfLines={1}>
                         {caption}
                       </Text>
                     ) : exercise.creator === ADMIN_CREATOR ? undefined : (
@@ -249,16 +250,16 @@ export function ExercisePickerSheet({
                       {picked > 0 ? (
                         <XStack
                           items="center"
-                          gap="$1"
-                          px="$2"
-                          py="$1"
-                          rounded="$10"
-                          bg="$surface"
+                          gap="1"
+                          px="2"
+                          py="1"
+                          rounded="10"
+                          bg="surface"
                           borderWidth={1}
-                          borderColor="$primaryText"
+                          borderColor="primaryText"
                         >
-                          <Check size={14} color="$primaryText" strokeWidth={3} />
-                          <Text fontSize={12} fontWeight="700" color="$primaryText">
+                          <Check size={14} color="primaryText" strokeWidth={3} />
+                          <Text fontSize={12} fontWeight="700" color="primaryText">
                             {picked}
                           </Text>
                         </XStack>
@@ -271,17 +272,17 @@ export function ExercisePickerSheet({
             })}
 
             {results.length === 0 ? (
-              <Text fontSize={14} color="$textSecondary" p="$3">
+              <Text fontSize={14} color="textSecondary" p="3">
                 {t("quests.editor_no_results")}
               </Text>
             ) : null}
           </YStack>
         </TamaguiScrollView>
 
-        <XStack p="$4" pb={bottomPad} borderTopWidth={1} borderColor="$borderStrong">
+        <XStack p="4" pb={bottomPad} borderTopWidth={1} borderColor="borderStrong">
           <AppButton onPress={close}>{t("common.done")}</AppButton>
         </XStack>
-      </Sheet.Frame>
+      </Sheet.Container>
     </Sheet>
   );
 }

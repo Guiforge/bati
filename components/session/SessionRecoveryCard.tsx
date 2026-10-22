@@ -1,8 +1,9 @@
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Button, XStack, YStack } from "tamagui";
+import { XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
+import { Button } from "@/components/common/Button";
 import { Card } from "@/components/common/Card";
 import { AlertTriangle, Check, Play, X } from "@/components/icons";
 import { formatDistance } from "@/constants/distanceFormat";
@@ -75,18 +76,19 @@ export function SessionRecoveryCard({
   return (
     // Its own margin: Home's scene is full bleed, so the column around this has none to lend it.
     <Card
-      bg="$pastelOrange"
-      rounded="$6"
-      mx="$4"
-      mt="$3"
+      bg="pastelOrange"
+      rounded="6"
+      mx="4"
+      mt="3"
       transition={reducedMotion ? undefined : "quick"}
-      enterStyle={reducedMotion ? undefined : { opacity: 0, y: -10 }}
+      opacity={reducedMotion ? undefined : "enter:0"}
+      y={reducedMotion ? undefined : "enter:-10px"}
     >
-      <YStack gap="$3">
-        <XStack gap="$2" items="center">
-          <AlertTriangle size={20} color="$primaryText" />
+      <YStack gap="3">
+        <XStack gap="2" items="center">
+          <AlertTriangle size={20} color="primaryText" />
           {/* flex: a title beside the icon that cannot wrap runs off the card at a large font. */}
-          <AppText flex={1} fontSize={18} fontWeight="bold" color="$text">
+          <AppText flex={1} fontSize={18} fontWeight="bold" color="text">
             {t(witnessed ? "recovery.finish_outing_title" : "recovery.title")}
           </AppText>
         </XStack>
@@ -94,12 +96,12 @@ export function SessionRecoveryCard({
         {/* A walk that was killed is not a walk that was abandoned: the trace covers the hours
             the app missed, and the card says so rather than asking the hero to guess what
             "unfinished" means for a hike they already came home from. */}
-        <AppText color="$text" opacity={0.8}>
+        <AppText color="text" opacity={0.8}>
           {t(witnessed ? "recovery.finish_outing_description" : "recovery.description")}
         </AppText>
 
-        <YStack gap="$1" bg="$background" p="$2" rounded="$3">
-          <AppText fontSize="$4" fontWeight="700" color="$text">
+        <YStack gap="1" bg="background" p="2" rounded="3">
+          <AppText fontSize="4" fontWeight="700" color="text">
             {session.questTitle}
           </AppText>
           {/* A walk is one round of one movement, so "Round 1/1, exercise 1/1" is the whole of
@@ -111,7 +113,7 @@ export function SessionRecoveryCard({
             <>
               {/* An outing without a fix has no rounds worth naming, only the time out. */}
               {session.isOuting ? null : (
-                <AppText fontSize="$3" color="$text" opacity={0.7}>
+                <AppText fontSize="3" color="text" opacity={0.7}>
                   {t("recovery.progress", {
                     round: session.round,
                     roundTotal: session.roundTotal,
@@ -120,12 +122,12 @@ export function SessionRecoveryCard({
                   })}
                 </AppText>
               )}
-              <AppText fontSize="$3" color="$text" opacity={0.7}>
+              <AppText fontSize="3" color="text" opacity={0.7}>
                 {t("recovery.elapsed", { time: formatTime(session.elapsedTime) })}
               </AppText>
             </>
           ) : (
-            <AppText fontSize="$3" color="$text" opacity={0.7}>
+            <AppText fontSize="3" color="text" opacity={0.7}>
               {t("recovery.ground", { distance: formatDistance(session.leaguesM, unit, language) })}
             </AppText>
           )}
@@ -142,34 +144,36 @@ export function SessionRecoveryCard({
 
         {/* Wraps: at a 130% font on a 360dp screen the pair is wider than the card, and the
             discard button was pushed off its left edge. */}
-        <XStack gap="$3" justify="flex-end" flexWrap="wrap">
+        <XStack gap="3" justify="flex-end" flexWrap="wrap">
           <Button
-            size="$3"
+            size="3"
             height={44}
-            hitSlop={8}
-            bg="$bgLight"
+            bg="bgLight"
             borderWidth={1}
-            borderColor="$borderStrong"
-            rounded="$6"
+            borderColor="borderStrong"
+            rounded="6"
+            opacity="press:0.8"
+            scale="press:0.98"
+            hitSlop={8}
             icon={<X size={16} />}
             onPress={handleDiscard}
-            pressStyle={{ opacity: 0.8, scale: 0.98 }}
           >
             <Button.Text fontWeight="700">{t("recovery.discard")}</Button.Text>
           </Button>
           <Button
-            size="$3"
+            size="3"
             height={44}
-            hitSlop={8}
-            bg={session.isOuting ? "$bgLight" : "$primary"}
+            bg={session.isOuting ? "bgLight" : "primary"}
             borderWidth={1}
-            borderColor="$borderStrong"
-            rounded="$6"
+            borderColor="borderStrong"
+            rounded="6"
+            opacity="press:0.9"
+            scale="press:0.98"
+            hitSlop={8}
             icon={<Play size={16} />}
             onPress={handleResume}
-            pressStyle={{ opacity: 0.9, scale: 0.98 }}
           >
-            <Button.Text color={session.isOuting ? "$text" : "white"} fontWeight="700">
+            <Button.Text color={session.isOuting ? "text" : "white"} fontWeight="700">
               {t("recovery.resume")}
             </Button.Text>
           </Button>

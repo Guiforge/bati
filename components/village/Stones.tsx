@@ -163,7 +163,7 @@ export function Stones({
   return (
     <YStack
       testID="village-stones"
-      gap="$3"
+      gap="3"
       onLayout={(e: LayoutChangeEvent) => setAvailable(Math.floor(e.nativeEvent.layout.width))}
     >
       <SectionLabel>{t("village.stones_title")}</SectionLabel>
@@ -188,7 +188,7 @@ export function Stones({
             testID={`village-stones-${first.decade}`}
             accessible
             accessibilityLabel={written.flatMap((w) => [w.summary, ...w.lines]).join(". ")}
-            gap="$2"
+            gap="2"
           >
             {/* Rows of six, cut here: a wrapping row would fit five on a narrow phone. */}
             <YStack gap={ROW_GAP}>
@@ -205,11 +205,11 @@ export function Stones({
             <YStack gap={2}>
               {written.flatMap((w) => [
                 ...w.lines.map((line) => (
-                  <Text key={line} fontSize={12} lineHeight={17} color="$textSecondary">
+                  <Text key={line} fontSize={12} lineHeight="17px" color="textSecondary">
                     {line}
                   </Text>
                 )),
-                <Text key={w.summary} fontSize={12} lineHeight={17} color="$textSecondary">
+                <Text key={w.summary} fontSize={12} lineHeight="17px" color="textSecondary">
                   {w.summary}
                 </Text>,
               ])}

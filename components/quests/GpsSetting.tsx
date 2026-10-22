@@ -45,7 +45,7 @@ export function GpsSetting({ open, onValue }: { open: boolean; onValue: (gps: bo
   };
 
   return (
-    <YStack gap="$1">
+    <YStack gap="1">
       <GpsChip value={gps} onChange={flip} />
       <RuleDisclosure testID="goal-gps-rule" text={t("past_session.rule_no_gps")} />
       {gps || !locationDenied ? null : (
@@ -57,7 +57,7 @@ export function GpsSetting({ open, onValue }: { open: boolean; onValue: (gps: bo
             Linking.openSettings().catch((e: unknown) => reportError("goalSheet.settings", e))
           }
         >
-          <Text fontSize={14} color="$textSecondary" textDecorationLine="underline">
+          <Text fontSize={14} color="textSecondary" textDecorationLine="underline">
             {t("quests.gps_allow_location")}
           </Text>
         </Pressable>

@@ -7,15 +7,15 @@ import config from "@/tamagui.config";
  * What a colour token is allowed to be written on, in contrast ratios.
  *
  * This is a ratchet, and the thing it caught is worth stating: the "most XP" record drew its star
- * in `$pastelYellow`, which is not a pale yellow but #33301A, a legacy safety-net tone. 1.39:1 on
- * `$surface`. The star was invisible, it had been for as long as the badge existed, and nothing
+ * in `pastelYellow`, which is not a pale yellow but #33301A, a legacy safety-net tone. 1.39:1 on
+ * `surface`. The star was invisible, it had been for as long as the badge existed, and nothing
  * could see it: the token exists, the prop is spelled right, the component renders, the test
  * suite is green and the screenshot shows a card with an icon-shaped hole nobody reads as wrong.
- * The adventures screen had the same shape of bug, a `$bgDark` sword on a `$primary` chip at
+ * The adventures screen had the same shape of bug, a `bgDark` sword on a `primary` chip at
  * 2.71:1, sitting next to that chip's own label at 7.06:1.
  *
  * **Resolved through the theme, not through the token map**, because that is what the app does:
- * `color="$muted"` renders #909ACB, since `tamagui.config.ts` deliberately overrides `muted` with
+ * `color="muted"` renders #909ACB, since `tamagui.config.ts` deliberately overrides `muted` with
  * `textSecondary` and leaves `rawColors.muted` (#64748B) to the three consumers that cannot take
  * a token at all. Reading the palette file instead would fail this pair and pass the star, which
  * is exactly backwards.
@@ -28,13 +28,13 @@ const theme = config.themes.dark as unknown as ThemeValues;
 const value = (token: string): string => {
   const raw = theme[token];
   const hex = typeof raw === "string" ? raw : raw?.val;
-  if (!hex) throw new Error(`$${token} is not a key of the dark theme`);
+  if (!hex) throw new Error(`${token} is not a key of the dark theme`);
   return hex;
 };
 
 /**
- * Everything text or a meaningful icon is drawn on. Fills are not here: `$primary`, `$error`,
- * `$resourceGold` and the one-off `$pastelYellow` celebration card carry a label of their own
+ * Everything text or a meaningful icon is drawn on. Fills are not here: `primary`, `error`,
+ * `resourceGold` and the one-off `pastelYellow` celebration card carry a label of their own
  * choosing, picked by hand against that fill, each with the working out in a
  * comment. A fill in this list would fail those deliberate pairings.
  *
@@ -139,7 +139,7 @@ function channels(color: string): [number, number, number, number] {
 
 /**
  * A translucent surface shows the void behind it, so it is composited over `bgDark` before being
- * measured. `$glassBg` and `$bgOverlay` are both rgba, and reading them as opaque would credit
+ * measured. `glassBg` and `bgOverlay` are both rgba, and reading them as opaque would credit
  * them with a contrast they do not have.
  */
 function flatten(color: string): [number, number, number] {
@@ -164,18 +164,33 @@ function contrast(foreground: string, background: string): number {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
+/**
+ * Every theme token written as a glyph colour in `source`. `\bcolor=` and not `Color=`:
+ * `borderColor`, `backgroundColor` and `tintColor` all paint something that is not a glyph, and
+ * hold to different floors. The value is a Tamagui 3 program (`"text press:primaryText"`), so
+ * every clause is a colour. Only CSS keywords are left out: any other word is reported, theme key
+ * or not, because v3 paints nothing for a name it cannot resolve (a typo, a v2 `$` left behind).
+ */
+const COLOUR_KEYWORDS = new Set(["transparent", "currentColor", "inherit"]);
+function colourTokens(source: string): string[] {
+  return [...source.matchAll(/\bcolor="([^"]+)"/g)]
+    .flatMap((match) => (match[1] ?? "").split(/\s+/))
+    .map((word) => word.replace(/^[a-z-]+:/, ""))
+    .filter((token) => token !== "" && !COLOUR_KEYWORDS.has(token));
+}
+
 describe("colour contrast", () => {
   describe.each(SURFACES)("on $0", (surface) => {
-    it.each(TEXT_TOKENS)(`$%s clears AA for body text`, (token) => {
+    it.each(TEXT_TOKENS)(`%s clears AA for body text`, (token) => {
       expect(contrast(value(token), value(surface))).toBeGreaterThanOrEqual(AA_TEXT);
     });
 
-    it.each(ACCENT_TOKENS)(`$%s clears AA for a meaningful icon`, (token) => {
+    it.each(ACCENT_TOKENS)(`%s clears AA for a meaningful icon`, (token) => {
       expect(contrast(value(token), value(surface))).toBeGreaterThanOrEqual(AA_ICON);
     });
   });
 
-  it.each(ANIMAL_FILLS)("the crest's bgDark ink on $%s clears 3:1", (fill) => {
+  it.each(ANIMAL_FILLS)("the crest's bgDark ink on %s clears 3:1", (fill) => {
     expect(contrast(value("bgDark"), value(fill))).toBeGreaterThanOrEqual(AA_ICON);
   });
 
@@ -189,7 +204,7 @@ describe("colour contrast", () => {
   });
 
   it.each(Object.entries(ANIMAL_INK_CONTRAST))(
-    "the bgDark ink on $%s measures %s",
+    "the bgDark ink on %s measures %s",
     (fill, expected) => {
       // The spec fixes these five colours: no retouch without measuring everything again.
       const measured = contrast(value("bgDark"), value(fill));
@@ -206,18 +221,18 @@ describe("colour contrast", () => {
     expect(worst).toBeGreaterThanOrEqual(ANIMAL_INK_FLOOR);
   });
 
-  it.each(FILL_LABELS)("$%s on a $%s fill clears AA for body text", (label, fill) => {
+  it.each(FILL_LABELS)("%s on a %s fill clears AA for body text", (label, fill) => {
     expect(contrast(value(label), value(fill))).toBeGreaterThanOrEqual(AA_TEXT);
   });
 
   /**
    * The clause that makes the two lists above a ratchet rather than a snapshot: reaching for a
    * token nobody has weighed fails here, which is the only thing that would have stopped
-   * `$pastelYellow`. Adding a token to a list is a decision with a floor attached; adding it to a
+   * `pastelYellow`. Adding a token to a list is a decision with a floor attached; adding it to a
    * component is not.
    *
    * ponytail: text scan, the trade `android-permissions.test.ts` and `session-art.test.ts` both
-   * make. It sees `color="$x"` and misses a colour computed in a ternary or handed down a prop.
+   * make. It sees `color="x"` and misses a colour computed in a ternary or handed down a prop.
    * A rendered assertion would need the layout pass jest does not run.
    */
   it("every token written as a colour has a floor", () => {
@@ -238,17 +253,16 @@ describe("colour contrast", () => {
       ...FILL_LABELS.map(([label]) => label),
     ]);
     const undeclared = new Map<string, string>();
+    let seen = 0;
     for (const file of files) {
-      const source = fs.readFileSync(file, "utf8");
-      // `\bcolor=` and not `Color=`: `borderColor`, `backgroundColor` and `tintColor` all paint
-      // something that is not a glyph, and hold to different floors.
-      for (const match of source.matchAll(/\bcolor="\$([a-zA-Z0-9]+)"/g)) {
-        const token = match[1];
-        if (token === undefined || declared.has(token)) continue;
-        undeclared.set(token, path.relative(process.cwd(), file));
+      for (const token of colourTokens(fs.readFileSync(file, "utf8"))) {
+        seen += 1;
+        if (!declared.has(token)) undeclared.set(token, path.relative(process.cwd(), file));
       }
     }
 
-    expect([...undeclared].map(([token, file]) => `$${token} in ${file}`)).toEqual([]);
+    // Never vacuous: the scan has to find the app's colours under the spelling it looks for.
+    expect(seen).toBeGreaterThan(200);
+    expect([...undeclared].map(([token, file]) => `${token} in ${file}`)).toEqual([]);
   });
 });

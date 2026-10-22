@@ -2,9 +2,10 @@ import { Image } from "expo-image";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Keyboard, Platform, Pressable, type ScrollViewInstance } from "react-native";
-import { Input, Sheet, ScrollView as TamaguiScrollView, Text, XStack, YStack } from "tamagui";
+import { Sheet, ScrollView as TamaguiScrollView, Text, XStack, YStack } from "tamagui";
 import { heroQuestsFirst } from "@/components/adventures/heroQuestsFirst";
 import { AppButton } from "@/components/common/AppButton";
+import { Input } from "@/components/common/Input";
 import { tamaguiRef } from "@/components/common/tamaguiRef";
 import { Plus, X } from "@/components/icons";
 import { getQuestAsset } from "@/constants/assetMap";
@@ -79,22 +80,22 @@ export function QuestPickerSheet({
       zIndex={100_000}
     >
       <Sheet.Overlay
-        bg="$sheetScrim"
+        bg="sheetScrim"
         transition={reducedMotion ? undefined : "quick"}
-        enterStyle={{ opacity: 0 }}
-        exitStyle={{ opacity: 0 }}
+        opacity="1 enter:0 exit:0"
       />
-      <Sheet.Frame
+      <Sheet.Container
+        overflow="hidden"
+        borderTopLeftRadius="6"
+        borderTopRightRadius="6"
         width="100%"
         maxW={CONTENT_MAX_WIDTH}
         self="center"
-        bg="$surface"
-        borderTopLeftRadius="$6"
-        borderTopRightRadius="$6"
       >
-        <YStack px="$4" pt="$4" pb="$3" gap="$3">
+        <Sheet.Background bg="surface" borderTopLeftRadius="6" borderTopRightRadius="6" />
+        <YStack px="4" pt="4" pb="3" gap="3">
           <XStack items="center" justify="space-between">
-            <Text fontWeight="700" fontSize={18} color="$text">
+            <Text fontWeight="700" fontSize={18} color="text">
               {t("adventures.picker_title")}
             </Text>
             <Pressable
@@ -103,7 +104,7 @@ export function QuestPickerSheet({
               accessibilityLabel={t("common.close")}
               onPress={close}
             >
-              <X size={20} color="$textSecondary" />
+              <X size={20} color="textSecondary" />
             </Pressable>
           </XStack>
           <Input
@@ -111,36 +112,36 @@ export function QuestPickerSheet({
             value={search}
             onChangeText={setSearch}
             placeholder={t("quests.editor_search")}
-            bg="$background"
-            borderColor="$borderStrong"
-            color="$text"
+            bg="background"
+            borderColor="borderStrong"
+            color="text"
           />
         </YStack>
 
         <TamaguiScrollView
           ref={tamaguiRef(listRef)}
           flex={1}
-          px="$4"
+          px="4"
           keyboardShouldPersistTaps="handled"
         >
-          <YStack gap="$2" pb="$3">
+          <YStack gap="2" pb="3">
             {results.map((quest) => (
               <XStack
                 key={quest.id}
                 testID={`quest-pick-${quest.id}`}
                 onPress={() => onPick(quest)}
                 items="center"
-                gap="$3"
-                p="$2"
-                bg="$background"
+                gap="3"
+                p="2"
+                bg="background"
                 borderWidth={1}
-                borderColor="$borderStrong"
-                rounded="$3"
-                pressStyle={{ opacity: 0.85 }}
+                borderColor="borderStrong"
+                rounded="3"
+                opacity="press:0.85"
                 accessibilityRole="button"
                 accessibilityLabel={localizedTitle(quest, language)}
               >
-                <YStack width={48} height={48} rounded="$3" overflow="hidden" bg="$surface2">
+                <YStack width={48} height={48} rounded="3" overflow="hidden" bg="surface2">
                   <Image
                     source={getQuestAsset(quest.imagePath ?? "")}
                     style={{ width: "100%", height: "100%" }}
@@ -149,28 +150,28 @@ export function QuestPickerSheet({
                   />
                 </YStack>
                 <YStack flex={1} minW={0}>
-                  <Text fontWeight="700" color="$text" numberOfLines={2}>
+                  <Text fontWeight="700" color="text" numberOfLines={2}>
                     {localizedTitle(quest, language)}
                   </Text>
-                  <Text fontSize={12} color="$textSecondary">
+                  <Text fontSize={12} color="textSecondary">
                     {formatDuration(seconds.get(quest.id) ?? 0, language)}
                   </Text>
                 </YStack>
-                <Plus size={20} color="$primaryText" strokeWidth={2.5} />
+                <Plus size={20} color="primaryText" strokeWidth={2.5} />
               </XStack>
             ))}
             {results.length === 0 ? (
-              <Text fontSize={14} color="$textSecondary" p="$3">
+              <Text fontSize={14} color="textSecondary" p="3">
                 {t("adventures.picker_empty")}
               </Text>
             ) : null}
           </YStack>
         </TamaguiScrollView>
 
-        <XStack p="$4" pb={bottomPad} borderTopWidth={1} borderColor="$borderStrong">
+        <XStack p="4" pb={bottomPad} borderTopWidth={1} borderColor="borderStrong">
           <AppButton onPress={close}>{t("common.done")}</AppButton>
         </XStack>
-      </Sheet.Frame>
+      </Sheet.Container>
     </Sheet>
   );
 }

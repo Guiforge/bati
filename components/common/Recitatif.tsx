@@ -25,22 +25,22 @@ export function Recitatif({
     <YStack
       testID={testID}
       self="flex-start"
-      bg="$bgDark"
+      bg="bgDark"
       borderWidth={1}
-      borderColor="$borderStrong"
-      rounded="$1"
-      px="$2"
-      py="$1"
+      borderColor="borderStrong"
+      rounded="1"
+      px="2"
+      py="1"
     >
       <Text
         accessibilityRole="header"
         numberOfLines={numberOfLines}
+        fontFamily="heading"
+        fontWeight="700"
+        fontSize="3"
+        color="text"
         maxFontSizeMultiplier={maxFontSizeMultiplier}
         adjustsFontSizeToFit={adjustsFontSizeToFit}
-        fontFamily="$heading"
-        fontWeight="700"
-        fontSize="$3"
-        color="$text"
       >
         {children}
       </Text>

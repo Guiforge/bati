@@ -198,21 +198,21 @@ export function VillageDetailSheet({
       zIndex={100_000}
     >
       <Sheet.Overlay
-        bg="$sheetScrim"
+        bg="sheetScrim"
         transition={reducedMotion ? undefined : "quick"}
-        enterStyle={{ opacity: 0 }}
-        exitStyle={{ opacity: 0 }}
+        opacity="1 enter:0 exit:0"
       />
       {/* What does not fit scrolls: eighty stones are taller than a phone. */}
-      <Sheet.Frame
+      <Sheet.Container
+        overflow="hidden"
+        borderTopLeftRadius="6"
+        borderTopRightRadius="6"
         width="100%"
         maxW={CONTENT_MAX_WIDTH}
         self="center"
-        bg="$surface"
         style={{ maxHeight: Math.round(height * 0.9) }}
-        borderTopLeftRadius="$6"
-        borderTopRightRadius="$6"
       >
+        <Sheet.Background bg="surface" borderTopLeftRadius="6" borderTopRightRadius="6" />
         {/* Inside the frame: Sheet.Handle floats above its top edge, over the dimmed list. A bar
             only: with one `fit` snap point the handle's tap has nothing to cycle, and the drag
             still lives on the frame. */}
@@ -222,13 +222,13 @@ export function VillageDetailSheet({
           width={40}
           height={4}
           rounded={2}
-          mt="$2"
-          bg="$borderStrong"
+          mt="2"
+          bg="borderStrong"
         />
         {/* ponytail: `onMoveShouldSetResponder` as in FormSheet, Tamagui 2.7.7 cancels the first
             tap of a button in a Sheet.ScrollView (see .biome/plugins/noBareSheetScrollView.grit). */}
-        <Sheet.ScrollView ref={tamaguiRef(scroll)} onMoveShouldSetResponder={() => false}>
-          <YStack testID="village-detail" px="$4" pt="$3" pb={bottomInset + 16} gap="$4">
+        <Sheet.ScrollView px={0} ref={tamaguiRef(scroll)} onMoveShouldSetResponder={() => false}>
+          <YStack testID="village-detail" px="4" pt="3" pb={bottomInset + 16} gap="4">
             {shown?.kind === "building" ? (
               <BuildingDetail
                 building={shown.building}
@@ -254,7 +254,7 @@ export function VillageDetailSheet({
             </AppButton>
           </YStack>
         </Sheet.ScrollView>
-      </Sheet.Frame>
+      </Sheet.Container>
     </Sheet>
   );
 }
@@ -372,7 +372,7 @@ function BuildingDetail({
       : [];
 
   return (
-    <YStack gap="$4">
+    <YStack gap="4">
       <XStack gap={13} items="center">
         <Image
           source={getBuildingIconAsset(building.code, building.relatedMuscle, building.level)}
@@ -381,31 +381,35 @@ function BuildingDetail({
           tintColor={built ? undefined : rawColors.muted}
         />
         <YStack flex={1} minW={0} gap={3}>
-          <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
+          <Text fontFamily="heading" fontWeight="700" fontSize={20} color="text">
             {nameOf(building, language)}
           </Text>
           {/* An unbuilt muscle building already says "Built by training your arms" below, and
               "Rises with your arms" right above it was the same sentence twice. */}
           {unbuiltMuscle ? null : (
-            <Text fontSize={12.5} color="$textSecondary">
+            <Text fontSize={12.5} color="textSecondary">
               {feedsLine(building, t, language)}
             </Text>
           )}
         </YStack>
         <YStack items="flex-end" gap={5}>
-          <Text fontSize={13} fontWeight="600" color={built ? "$resourceGold" : "$textSecondary"}>
+          <Text
+            fontSize={13}
+            fontWeight="600"
+            color={`${built ? "resourceGold" : "textSecondary"}`}
+          >
             {levelText(building, t)}
           </Text>
           {built ? <LevelPips level={building.level} max={buildingCeiling(building)} /> : null}
         </YStack>
       </XStack>
 
-      <YStack gap="$2">
-        <Text fontSize={13.5} lineHeight={20} color="$text">
+      <YStack gap="2">
+        <Text fontSize={13.5} lineHeight="20px" color="text">
           {driverLine}
         </Text>
         {building.kept ? (
-          <Text fontSize={12.5} lineHeight={18} color="$textSecondary">
+          <Text fontSize={12.5} lineHeight="18px" color="textSecondary">
             {t("village.kept_level")}
           </Text>
         ) : null}
@@ -415,27 +419,27 @@ function BuildingDetail({
           <ProgressBar
             progress={scale.progress}
             height={6}
-            color="$resourceGold"
+            color="resourceGold"
             ends={scale.ends}
           />
         ) : building.nextTarget === null ||
           building.driver === "tier" ||
           (building.driver === "prereq" && !unbuiltPrereq) ? (
-          <Text fontSize={12} color="$textSecondary">
+          <Text fontSize={12} color="textSecondary">
             {building.code === "castle_wall"
               ? withStones(nextLine(building, t, language), years?.years.stones.length ?? 0, t)
               : nextLine(building, t, language)}
           </Text>
         ) : null}
         {milestone ? (
-          <Text fontSize={12.5} lineHeight={18} color="$text">
+          <Text fontSize={12.5} lineHeight="18px" color="text">
             {milestone}
           </Text>
         ) : null}
       </YStack>
 
       {extra?.kind === "sessions" && extra.sessions.length > 0 && (
-        <YStack gap="$2">
+        <YStack gap="2">
           <SectionLabel>{t("village.detail_recent_title")}</SectionLabel>
           {extra.sessions.map((session) => {
             const title = session.enTitle
@@ -453,11 +457,11 @@ function BuildingDetail({
               session.performedAt,
             );
             return (
-              <XStack key={session.sessionId} justify="space-between" gap="$2">
-                <Text fontSize={12} color="$textSecondary" flex={1}>
+              <XStack key={session.sessionId} justify="space-between" gap="2">
+                <Text fontSize={12} color="textSecondary" flex={1}>
                   {`${title ? `${title} · ` : ""}${when}`}
                 </Text>
-                <Text fontSize={12} color="$textSecondary">
+                <Text fontSize={12} color="textSecondary">
                   {t("village.detail_recent_units", { volume: session.volume })}
                 </Text>
               </XStack>
@@ -467,7 +471,7 @@ function BuildingDetail({
       )}
 
       {listed.length > 0 && (
-        <YStack gap="$2">
+        <YStack gap="2">
           <SectionLabel>
             {t(
               building.driver === "rematches"
@@ -476,7 +480,7 @@ function BuildingDetail({
             )}
           </SectionLabel>
           {listed.map((adventure) => (
-            <XStack key={adventure.adventureId} items="center" gap="$3">
+            <XStack key={adventure.adventureId} items="center" gap="3">
               {!!adventure.imagePath && (
                 <YStack width={32} height={32} rounded={16} overflow="hidden">
                   <Image
@@ -486,16 +490,16 @@ function BuildingDetail({
                   />
                 </YStack>
               )}
-              <Text fontSize={12} color="$textSecondary" flex={1}>
+              <Text fontSize={12} color="textSecondary" flex={1}>
                 {localizedTitle(adventure, language)}
               </Text>
               {adventure.times > 1 && (
-                <Text fontSize={12} color="$textSecondary">
+                <Text fontSize={12} color="textSecondary">
                   {t("village.hall_times", { count: adventure.times })}
                 </Text>
               )}
               {!!adventure.lastFinishedAt && (
-                <Text fontSize={12} color="$textSecondary">
+                <Text fontSize={12} color="textSecondary">
                   {formatDate(adventure.lastFinishedAt)}
                 </Text>
               )}
@@ -549,15 +553,15 @@ function BossDetail({ boss, extra, language, formatDate }: DetailProps & { boss:
       : undefined;
 
   return (
-    <YStack gap="$3">
+    <YStack gap="3">
       {/* The monster itself, its *fallen* painting, because a trophy is proof of the defeat:
           wide, and tappable to full screen. */}
       <YStack
         height={140}
-        rounded="$6"
+        rounded="6"
         overflow="hidden"
+        opacity="press:0.9"
         onPress={() => setExpanded(true)}
-        pressStyle={{ opacity: 0.9 }}
         accessibilityRole="imagebutton"
         accessibilityLabel={title}
       >
@@ -567,7 +571,7 @@ function BossDetail({ boss, extra, language, formatDate }: DetailProps & { boss:
           contentFit="cover"
         />
       </YStack>
-      <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
+      <Text fontFamily="heading" fontWeight="700" fontSize={20} color="text">
         {title}
       </Text>
       <ImageViewer
@@ -579,12 +583,12 @@ function BossDetail({ boss, extra, language, formatDate }: DetailProps & { boss:
 
       {/* The date is the trophy's story, when you did the thing, so it carries real weight
           instead of trailing off as a muted footnote. */}
-      <Text fontSize={16} fontWeight="600" color="$textSecondary">
+      <Text fontSize={16} fontWeight="600" color="textSecondary">
         {t("village.trophy_defeated", { date: formatDate(boss.defeatedAt) })}
       </Text>
 
       {!!victories && victories > 1 && (
-        <Text fontSize={13} color="$textSecondary">
+        <Text fontSize={13} color="textSecondary">
           {t("village.trophy_victories", { count: victories })}
         </Text>
       )}

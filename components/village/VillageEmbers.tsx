@@ -110,7 +110,7 @@ export function Ember({
         style,
       ]}
     >
-      <YStack width="100%" height="100%" rounded={size} bg="$resourceGold" />
+      <YStack width="100%" height="100%" rounded={size} bg="resourceGold" />
     </Animated.View>
   );
 }

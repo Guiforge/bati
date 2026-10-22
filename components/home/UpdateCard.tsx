@@ -1,10 +1,12 @@
 import * as Linking from "expo-linking";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, Paragraph, XStack } from "tamagui";
+import { XStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
+import { Button } from "@/components/common/Button";
 import { Card } from "@/components/common/Card";
+import { Paragraph } from "@/components/common/Paragraph";
 import { ExternalLink, X } from "@/components/icons";
 import { preferences } from "@/db/preferences";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -60,34 +62,34 @@ export function UpdateCard() {
   };
 
   return (
-    <Card mx="$4" mt="$3" gap="$3">
-      <XStack items="flex-start" gap="$2">
-        <AppText flex={1} fontSize="$5" fontWeight="700" color="$text">
+    <Card mx="4" mt="3" gap="3">
+      <XStack items="flex-start" gap="2">
+        <AppText flex={1} fontSize="5" fontWeight="700" color="text">
           {t("home.update_title", { version })}
         </AppText>
         <Button
           testID="home-update-dismiss"
-          size="$2"
+          size="2"
           circular
           chromeless
           onPress={() => {
             haptics.selection();
             dismiss();
           }}
-          icon={<X size={18} color="$textSecondary" />}
+          icon={<X size={18} color="textSecondary" />}
           accessibilityRole="button"
           accessibilityLabel={t("home.update_later")}
         />
       </XStack>
 
-      <Paragraph color="$textSecondary" fontSize="$3">
+      <Paragraph color="textSecondary" fontSize="3">
         {t("home.update_body", { current: appVersion })}
       </Paragraph>
 
       <AppButton
         testID="home-update-open"
         variant="outline"
-        iconAfter={<ExternalLink size={16} color="$textSecondary" />}
+        iconAfter={<ExternalLink size={16} color="textSecondary" />}
         onPress={() => {
           haptics.selection();
           dismiss();

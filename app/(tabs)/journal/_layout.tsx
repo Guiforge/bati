@@ -9,7 +9,7 @@ export const unstable_settings = { initialRouteName: "index" };
 
 /**
  * The Journal's theme (`dark_journal`, tamagui.config.ts): Bati's ground and gold, with the gold
- * as the one accent every shared component on this tab resolves `$primary` to.
+ * as the one accent every shared component on this tab resolves `primary` to.
  *
  * The theme wraps the stack rather than each screen, so every page pushed here (Lifetime, the
  * quest log, a boss report) inherits it without remembering to ask. The navigator's own ground

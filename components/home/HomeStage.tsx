@@ -39,7 +39,7 @@ function resolveCover(config: SmartActionConfig | null): ArtSource {
 function TonightNote({ text }: { text: string | undefined }) {
   if (!text) return null;
   return (
-    <AppText testID="home-tonight" fontSize={12} color="$textSecondary">
+    <AppText testID="home-tonight" fontSize={12} color="textSecondary">
       {text}
     </AppText>
   );
@@ -77,11 +77,11 @@ function StageAction({
         testID="home-pick-quest"
         minH={48}
         items="center"
+        opacity="press:0.7"
         onPress={onPress}
-        pressStyle={{ opacity: 0.7 }}
         accessibilityRole="button"
       >
-        <AppText fontSize={14} fontWeight="700" color="$primaryText">
+        <AppText fontSize={14} fontWeight="700" color="primaryText">
           {label}
         </AppText>
       </XStack>
@@ -94,7 +94,7 @@ function StageAction({
       fullWidth={false}
       flex={1}
       height={56}
-      icon={<Play size={16} color="$onPrimary" />}
+      icon={<Play size={16} color="onPrimary" />}
       onPress={onPress}
     >
       {label}
@@ -120,7 +120,7 @@ export function HomeStage({ oathStrip }: { oathStrip: boolean | null }) {
 
   if (isLoading) {
     // Reserve the stage so the frame doesn't jump when the scene lands.
-    return <YStack flex={1} minH={STAGE_MIN_HEIGHT} mx="$4" mt="$3" rounded={16} bg="$surface" />;
+    return <YStack flex={1} minH={STAGE_MIN_HEIGHT} mx="4" mt="3" rounded={16} bg="surface" />;
   }
 
   const effectiveConfig: SmartActionConfig = config ?? {
@@ -152,11 +152,11 @@ export function HomeStage({ oathStrip }: { oathStrip: boolean | null }) {
     <YStack
       flex={1}
       minH={STAGE_MIN_HEIGHT}
-      mx="$4"
-      mt="$3"
-      rounded="$3"
+      mx="4"
+      mt="3"
+      rounded="3"
       borderWidth={1.5}
-      borderColor="$borderStrong"
+      borderColor="borderStrong"
       overflow="hidden"
     >
       {/* Anchored to the bottom and 18% taller than the stage, so the top 15% of the art sits
@@ -171,7 +171,7 @@ export function HomeStage({ oathStrip }: { oathStrip: boolean | null }) {
         contentFit="cover"
         transition={200}
       />
-      {/* $bgDark (the ink) as rgba: LinearGradient takes plain colors, not tokens. A touch of
+      {/* bgDark (the ink) as rgba: LinearGradient takes plain colors, not tokens. A touch of
           dark under the strip's edge, the art clear, then solid ground under the words. */}
       <LinearGradient
         colors={[
@@ -194,15 +194,15 @@ export function HomeStage({ oathStrip }: { oathStrip: boolean | null }) {
           grow={1}
           pt={titleHeight}
           justify="flex-end"
+          opacity="press:0.85"
           onPress={effectiveConfig.onPress}
-          pressStyle={{ opacity: 0.85 }}
           accessibilityRole="button"
           accessibilityLabel={title}
         >
-          <YStack px="$4" gap="$1.5">
+          <YStack px="4" gap="1-5">
             {/* What the session is made of, then why it is the one being offered. */}
             {scene?.meta ? (
-              <AppText fontSize={12} color="$textSecondary">
+              <AppText fontSize={12} color="textSecondary">
                 {scene.meta}
               </AppText>
             ) : null}
@@ -211,20 +211,20 @@ export function HomeStage({ oathStrip }: { oathStrip: boolean | null }) {
               // One count, not two: the sentence carries both numbers and says which is which,
               // the bar shows how much of it is behind them. Gold, because a step walked is
               // progression.
-              <YStack gap="$2">
-                <AppText fontSize={12} fontWeight="700" color="$textSecondary">
+              <YStack gap="2">
+                <AppText fontSize={12} fontWeight="700" color="textSecondary">
                   {subtitle}
                 </AppText>
-                <ProgressBar progress={stepProgress} height={4} color="$resourceGold" />
+                <ProgressBar progress={stepProgress} height={4} color="resourceGold" />
               </YStack>
             ) : subtitle ? (
               // The reason is advice, not progression, so it is grey with a target, never gold:
               // the strongest colour on the screen used to go to its least actionable sentence.
-              <XStack gap="$1.5" items="flex-start">
+              <XStack gap="1-5" items="flex-start">
                 <YStack pt={2}>
-                  <Target size={13} color="$primaryText" />
+                  <Target size={13} color="primaryText" />
                 </YStack>
-                <AppText flex={1} fontSize={12} lineHeight={17} color="$textSecondary">
+                <AppText flex={1} fontSize={12} lineHeight="17px" color="textSecondary">
                   {subtitle}
                 </AppText>
               </XStack>
@@ -236,27 +236,27 @@ export function HomeStage({ oathStrip }: { oathStrip: boolean | null }) {
           </YStack>
         </YStack>
 
-        <XStack px="$4" pt="$4" gap="$2.5" items="center">
+        <XStack px="4" pt="4" gap="2-5" items="center">
           <StageAction done={done} label={label} onPress={handlePress} />
           {startQuestId === null ? null : (
             <YStack
               testID="home-quest-details"
               width={56}
               height={56}
-              rounded="$3"
+              rounded="3"
               borderWidth={1}
-              borderColor="$glassBorder"
-              bg="$glassBg"
+              borderColor="glassBorder"
+              bg="glassBg"
               items="center"
               justify="center"
               gap={2}
+              opacity="press:0.8"
               onPress={effectiveConfig.onPress}
-              pressStyle={{ opacity: 0.8 }}
               accessibilityRole="button"
               accessibilityLabel={t("home.see_quest")}
             >
-              <Info size={18} color="$primaryText" />
-              <AppText variant="label" fontSize={10} fontWeight="700" color="$primaryText">
+              <Info size={18} color="primaryText" />
+              <AppText variant="label" fontSize={10} fontWeight="700" color="primaryText">
                 {t("home.details")}
               </AppText>
             </YStack>
@@ -266,7 +266,7 @@ export function HomeStage({ oathStrip }: { oathStrip: boolean | null }) {
         {/* Advice, never a gate: the button above still offers a session */}
         <RestNote />
 
-        <YStack mt="$3">
+        <YStack mt="3">
           <StageOath oathStrip={oathStrip} />
         </YStack>
       </YStack>
@@ -276,10 +276,10 @@ export function HomeStage({ oathStrip }: { oathStrip: boolean | null }) {
       {/* One column for the kicker and the title's récitatif, so they stack and cannot overlap. */}
       <YStack
         position="absolute"
-        t="$3"
-        l="$4"
-        r="$4"
-        gap="$2"
+        t="3"
+        l="4"
+        r="4"
+        gap="2"
         pointerEvents="none"
         onLayout={(e) => setTitleHeight(e.nativeEvent.layout.y + e.nativeEvent.layout.height + 8)}
       >
@@ -287,21 +287,21 @@ export function HomeStage({ oathStrip }: { oathStrip: boolean | null }) {
           <XStack
             self="flex-start"
             height={26}
-            px="$2.5"
-            gap="$1.5"
+            px="2-5"
+            gap="1-5"
             items="center"
             rounded={13}
-            bg="$glassBg"
+            bg="glassBg"
             borderWidth={1}
-            borderColor="$glassBorder"
+            borderColor="glassBorder"
           >
-            <Sparkles size={11} color="$primaryText" />
+            <Sparkles size={11} color="primaryText" />
             <AppText
               variant="label"
               fontSize={10}
               fontWeight="700"
               letterSpacing={1.2}
-              color="$text"
+              color="text"
             >
               {scene.kicker.toUpperCase()}
             </AppText>

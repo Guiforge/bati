@@ -4,9 +4,10 @@ import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Paragraph, Separator, Text, XStack, YStack } from "tamagui";
+import { Separator, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { Paragraph } from "@/components/common/Paragraph";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { ChevronRight, ExternalLink, ScrollText } from "@/components/icons";
 import notice from "@/constants/mapStyles/notice.json";
@@ -20,15 +21,15 @@ type CreditLinkProps = {
 
 function CreditLink({ title, subtitle, url, onPress }: CreditLinkProps) {
   return (
-    <Card onPress={() => onPress(url)} p="$3">
-      <XStack items="center" gap="$3">
-        <ExternalLink size={20} color="$text" />
-        <YStack flex={1} gap="$1">
-          <Text fontSize="$4" fontWeight="700" color="$text">
+    <Card onPress={() => onPress(url)} p="3">
+      <XStack items="center" gap="3">
+        <ExternalLink size={20} color="text" />
+        <YStack flex={1} gap="1">
+          <Text fontSize="4" fontWeight="700" color="text">
             {title}
           </Text>
           {subtitle ? (
-            <Text fontSize="$2" color="$textSecondary">
+            <Text fontSize="2" color="textSecondary">
               {subtitle}
             </Text>
           ) : null}
@@ -54,30 +55,30 @@ export default function CreditsScreen() {
   }, []);
 
   return (
-    <YStack flex={1} bg="$background" pt={insets.top} pb={insets.bottom}>
-      <XStack px="$4" py="$3" items="center" gap="$3">
+    <YStack flex={1} bg="background" pt={insets.top} pb={insets.bottom}>
+      <XStack px="4" py="3" items="center" gap="3">
         <ScreenBackButton />
-        <XStack flex={1} items="center" gap="$2">
-          <ScrollText size={20} color="$primaryText" />
-          <Text fontFamily="$heading" fontSize={22} fontWeight="700" color="$text">
+        <XStack flex={1} items="center" gap="2">
+          <ScrollText size={20} color="primaryText" />
+          <Text fontFamily="heading" fontSize={22} fontWeight="700" color="text">
             {t("credits.title")}
           </Text>
         </XStack>
       </XStack>
 
       <RNScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 24 }}>
-        <Card gap="$3">
-          <Text fontSize="$4" fontWeight="700" color="$text">
+        <Card gap="3">
+          <Text fontSize="4" fontWeight="700" color="text">
             {t("credits.third_party_title")}
           </Text>
-          <Paragraph color="$textSecondary">{t("credits.third_party_body")}</Paragraph>
+          <Paragraph color="textSecondary">{t("credits.third_party_body")}</Paragraph>
         </Card>
 
-        <Card gap="$3">
-          <Text fontSize="$4" fontWeight="700" color="$text">
+        <Card gap="3">
+          <Text fontSize="4" fontWeight="700" color="text">
             {t("credits.illustrations_title")}
           </Text>
-          <Paragraph color="$textSecondary">{t("credits.illustrations_note")}</Paragraph>
+          <Paragraph color="textSecondary">{t("credits.illustrations_note")}</Paragraph>
 
           <Separator />
 
@@ -107,11 +108,11 @@ export default function CreditsScreen() {
           />
         </Card>
 
-        <Card gap="$3" testID="credits-map-styles">
-          <Text fontSize="$4" fontWeight="700" color="$text">
+        <Card gap="3" testID="credits-map-styles">
+          <Text fontSize="4" fontWeight="700" color="text">
             {t("credits.map_styles_title")}
           </Text>
-          <Paragraph color="$textSecondary">{t("credits.map_styles_note")}</Paragraph>
+          <Paragraph color="textSecondary">{t("credits.map_styles_note")}</Paragraph>
 
           <Separator />
 
@@ -132,16 +133,16 @@ export default function CreditsScreen() {
 
           {/* Third-party legal text, verbatim and in English like src/licenses.json: it is not app
               copy, so it is not translated and does not live in locales/. */}
-          <Paragraph testID="credits-map-notice" fontSize={11} color="$textSecondary" selectable>
+          <Paragraph testID="credits-map-notice" fontSize={11} color="textSecondary" select="text">
             {notice.openmaptiles}
           </Paragraph>
         </Card>
 
-        <Card gap="$3">
-          <Text fontSize="$4" fontWeight="700" color="$text">
+        <Card gap="3">
+          <Text fontSize="4" fontWeight="700" color="text">
             {t("credits.icons_title")}
           </Text>
-          <Paragraph color="$textSecondary">{t("credits.game_icons_note")}</Paragraph>
+          <Paragraph color="textSecondary">{t("credits.game_icons_note")}</Paragraph>
 
           <Separator />
 
@@ -166,7 +167,7 @@ export default function CreditsScreen() {
 
           <Separator />
 
-          <Paragraph color="$textSecondary">{t("credits.attribution_example")}</Paragraph>
+          <Paragraph color="textSecondary">{t("credits.attribution_example")}</Paragraph>
 
           <XStack>
             <AppButton
@@ -179,11 +180,11 @@ export default function CreditsScreen() {
           </XStack>
         </Card>
 
-        <Card gap="$3">
-          <Text fontSize="$4" fontWeight="700" color="$text">
+        <Card gap="3">
+          <Text fontSize="4" fontWeight="700" color="text">
             {t("credits.open_source_title")}
           </Text>
-          <Paragraph color="$textSecondary">{t("credits.open_source_body")}</Paragraph>
+          <Paragraph color="textSecondary">{t("credits.open_source_body")}</Paragraph>
 
           <Separator />
 
@@ -220,14 +221,14 @@ export default function CreditsScreen() {
 
           <Separator />
 
-          <Card onPress={() => router.push("/licenses")} p="$3">
-            <XStack items="center" gap="$3">
+          <Card onPress={() => router.push("/licenses")} p="3">
+            <XStack items="center" gap="3">
               <YStack flex={1}>
-                <Text fontSize="$4" fontWeight="700" color="$text">
+                <Text fontSize="4" fontWeight="700" color="text">
                   {t("credits.licenses_title")}
                 </Text>
               </YStack>
-              <ChevronRight size={20} color="$textSecondary" />
+              <ChevronRight size={20} color="textSecondary" />
             </XStack>
           </Card>
         </Card>

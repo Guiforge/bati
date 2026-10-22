@@ -45,7 +45,7 @@ test("Remove from the journal is an outline AppButton, in the family's face", as
   expect(label.color).toBe(rawColors.text);
   const button = StyleSheet.flatten(screen.getByTestId("journal-forget-session").props.style);
   expect(button.borderBottomWidth).not.toBe(3);
-  // Under the Journal theme, which greys `$error`: the red edge is the raw colour.
+  // Under the Journal theme, which greys `error`: the red edge is the raw colour.
   expect(button.borderTopColor).toBe(rawColors.error);
 });
 

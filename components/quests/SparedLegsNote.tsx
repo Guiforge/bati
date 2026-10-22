@@ -21,7 +21,7 @@ export function SparedLegsNote({ locomotion }: { locomotion: Locomotion | null }
   }, [locomotion]);
   if (!sparing) return null;
   return (
-    <Text testID="goal-zone-legs" fontSize={13} color="$textSecondary">
+    <Text testID="goal-zone-legs" fontSize={13} color="textSecondary">
       {t("quests.goal_zone_legs")}
     </Text>
   );

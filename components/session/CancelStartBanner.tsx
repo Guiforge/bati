@@ -84,25 +84,25 @@ export function CancelStartBanner() {
       // opaque with the higher z: for five seconds the quest's name and the pause button were
       // painted over and untappable. Floating still, so nothing in the flow moves when it goes.
       t={insets.top + 8 + HUD_HEIGHT}
-      l="$3"
-      r="$3"
+      l="3"
+      r="3"
       z={50}
-      bg="$surface2"
+      bg="surface2"
       borderWidth={1}
-      borderColor="$borderStrong"
-      rounded="$4"
-      pl="$3"
+      borderColor="borderStrong"
+      rounded="4"
+      pl="3"
       items="center"
-      gap="$2"
+      gap="2"
       accessibilityLiveRegion="polite"
     >
-      <AppText flex={1} fontSize={13} color="$textSecondary">
+      <AppText flex={1} fontSize={13} color="textSecondary">
         {t("session.expedition_cancel_start_hint")}
       </AppText>
       {/* The word is "Cancel the start", never plain "Cancel": everywhere else in the app that
           word means "do nothing", and here the gesture throws a session and its ground away. */}
-      <YStack height={44} justify="center" px="$2" accessibilityRole="button" onPress={quitSession}>
-        <AppText fontSize={13} fontWeight="700" color="$primaryText">
+      <YStack height={44} justify="center" px="2" accessibilityRole="button" onPress={quitSession}>
+        <AppText fontSize={13} fontWeight="700" color="primaryText">
           {t("session.expedition_cancel_start")}
         </AppText>
       </YStack>
@@ -115,7 +115,7 @@ export function CancelStartBanner() {
         accessibilityLabel={t("common.close")}
         onPress={() => setGone(true)}
       >
-        <X size={16} color="$textSecondary" />
+        <X size={16} color="textSecondary" />
       </YStack>
     </XStack>
   );

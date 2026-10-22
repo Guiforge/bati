@@ -17,7 +17,7 @@ export function StatusBand() {
       r={0}
       height={insets.top}
       // Opaque: at 0.92 the white of a heading still showed through as ghost text by the clock.
-      bg="$bgDark"
+      bg="bgDark"
       pointerEvents="none"
     />
   );

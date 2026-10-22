@@ -3,11 +3,12 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Paragraph, YStack } from "tamagui";
+import { YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
 import { Card } from "@/components/common/Card";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { Paragraph } from "@/components/common/Paragraph";
 import { restsBetweenRounds } from "@/components/quests/questShape";
 import { ExerciseInstructionsBody } from "@/components/session/ExerciseInstructions";
 import { isOutingSession } from "@/db/expeditions";
@@ -102,7 +103,7 @@ export function PausedOverlay() {
   };
 
   return (
-    <YStack fullscreen bg="$bgOverlay" style={{ zIndex: 1000 }}>
+    <YStack position="absolute" inset={0} bg="bgOverlay" style={{ zIndex: 1000 }}>
       {/* A scroll, not a centred column: at a large font the card is taller than the screen, and
           a column centres it past both edges, under the status bar. The padding is the insets plus
           the page's own margin, so it also clears the bar when it does fit. */}
@@ -122,29 +123,29 @@ export function PausedOverlay() {
           paddingHorizontal: 24,
         }}
       >
-        <Card width="100%" maxW={360} bg="$surface">
-          <YStack gap="$3" items="center">
+        <Card width="100%" maxW={360} bg="surface">
+          <YStack gap="3" items="center">
             <AppText
-              fontFamily="$heading"
+              fontFamily="heading"
               fontWeight="700"
               fontSize={28}
-              color="$text"
+              color="text"
               style={{ textAlign: "center" }}
             >
               {t("session.paused_title")}
             </AppText>
-            <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
+            <Paragraph color="textSecondary" size="3" style={{ textAlign: "center" }}>
               {t("session.paused_subtitle")}
             </Paragraph>
             {measuring && gps ? (
-              <Paragraph color="$textSecondary" size="$2" style={{ textAlign: "center" }}>
+              <Paragraph color="textSecondary" size="2" style={{ textAlign: "center" }}>
                 {t("session.paused_expedition_note")}
               </Paragraph>
             ) : null}
 
             {/* The buttons come before the how-to: at 130 % the picture pushed "Quit" below the
                 fold with nothing to say the card scrolls (persona audit 2, 64 and 79). */}
-            <YStack width="100%" gap="$3" pt="$2">
+            <YStack width="100%" gap="3" pt="2">
               <AppButton
                 testID="session-resume"
                 onPress={handleResume}
@@ -161,7 +162,7 @@ export function PausedOverlay() {
                   testID="session-sound"
                   onPress={handleToggleSound}
                   variant="outline"
-                  backgroundColor="$surface2"
+                  backgroundColor="surface2"
                   accessibilityLabel={t("settings.sound")}
                   accessibilityRole="switch"
                   accessibilityState={{ checked: soundEnabled }}
@@ -175,7 +176,7 @@ export function PausedOverlay() {
                   testID="session-restart-round"
                   onPress={handleRestartRound}
                   variant="outline"
-                  backgroundColor="$surface2"
+                  backgroundColor="surface2"
                   accessibilityLabel={t("session.restart_round_button")}
                   accessibilityRole="button"
                 >
@@ -187,8 +188,8 @@ export function PausedOverlay() {
                 testID="session-quit"
                 onPress={handleQuit}
                 variant="outline"
-                backgroundColor="$surface2"
-                borderColor="$error"
+                backgroundColor="surface2"
+                borderColor="error"
                 accessibilityLabel={t("session.quit_button")}
                 accessibilityRole="button"
               >
@@ -200,7 +201,7 @@ export function PausedOverlay() {
               how-to modal pauses on the way in. This is what the hero lands on if they pause by
               hand instead. Same block either way — see ExerciseInstructions.tsx. */}
             {instruction ? (
-              <YStack pt="$2">
+              <YStack pt="2">
                 <ExerciseInstructionsBody instruction={instruction} artSize={120} />
               </YStack>
             ) : null}

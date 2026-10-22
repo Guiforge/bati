@@ -39,12 +39,12 @@ export function ConnectionTest({ run }: { run: () => Promise<DiagnosticStep[]> }
   };
 
   return (
-    <YStack gap="$2">
+    <YStack gap="2">
       <AppButton testID="sync-test" variant="outline" disabled={running} onPress={start}>
         {running ? t("sync.test.running") : t("sync.test.cta")}
       </AppButton>
       {steps !== null && steps.length === 0 ? (
-        <Text testID="sync-test-nothing" color="$textSecondary" fontSize="$3">
+        <Text testID="sync-test-nothing" color="textSecondary" fontSize="3">
           {t("sync.test.nothing")}
         </Text>
       ) : null}
@@ -52,17 +52,17 @@ export function ConnectionTest({ run }: { run: () => Promise<DiagnosticStep[]> }
         const line = diagnosticLine(t, step);
         const why = diagnosticWhy(t, step);
         return (
-          <YStack key={step.id} gap="$0.5">
+          <YStack key={step.id} gap="0-5">
             <Text
               testID="sync-test-step"
               accessibilityLabel={`${t(step.ok ? "sync.test.passed" : "sync.test.failed")} ${line}`}
-              color={step.ok ? "$text" : "$error"}
-              fontSize="$3"
+              color={`${step.ok ? "text" : "error"}`}
+              fontSize="3"
             >
               {step.ok ? "✓" : "✗"} {line}
             </Text>
             {why ? (
-              <Text color="$textSecondary" fontSize="$2" selectable>
+              <Text color="textSecondary" fontSize="2" select="text">
                 {why}
               </Text>
             ) : null}
@@ -70,7 +70,7 @@ export function ConnectionTest({ run }: { run: () => Promise<DiagnosticStep[]> }
         );
       })}
       {steps !== null && steps.length > 0 ? (
-        <AppButton testID="sync-test-copy" variant="outline" size="$2" onPress={copy}>
+        <AppButton testID="sync-test-copy" variant="outline" size="2" onPress={copy}>
           {copied ? t("sync.test.copied") : t("sync.test.copy")}
         </AppButton>
       ) : null}

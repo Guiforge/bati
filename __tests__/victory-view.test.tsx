@@ -5,7 +5,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import { VictoryView } from "@/components/session/VictoryView";
 import { LEVEL_CARD_HEIGHT } from "@/constants/layout";
-import { fade, rawColors } from "@/constants/rawColors";
+import { rawColors } from "@/constants/rawColors";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
 import type { RecentFeeds } from "@/db/milestone";
 import type { Quest } from "@/db/quests";
@@ -731,7 +731,7 @@ describe("VictoryView level card", () => {
 
     // The earned gauge: the boss's inked gauge, in gold on a dark-gold track.
     const fill = view.getByTestId("victory-level-fill");
-    expect(fill).toHaveStyle({ backgroundColor: fade(rawColors.resourceGold, 1) });
+    expect(fill).toHaveStyle({ backgroundColor: rawColors.resourceGold });
     expect(StyleSheet.flatten(fill.parent?.props.style).backgroundColor).toBe(rawColors.gold800);
 
     const after = JSON.stringify(view.toJSON());

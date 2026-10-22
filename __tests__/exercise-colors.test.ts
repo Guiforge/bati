@@ -20,9 +20,9 @@ describe("exerciseColors", () => {
   });
 
   test("getExerciseColorTokens returns pastel surfaces", () => {
-    expect(getExerciseColorTokens("time").bg).toBe("$pastelBlue");
-    expect(getExerciseColorTokens("reps").bg).toBe("$pastelYellow");
-    expect(getExerciseColorTokens("back").bg).toBe("$pastelBlue");
+    expect(getExerciseColorTokens("time").bg).toBe("pastelBlue");
+    expect(getExerciseColorTokens("reps").bg).toBe("pastelYellow");
+    expect(getExerciseColorTokens("back").bg).toBe("pastelBlue");
   });
 
   test("getQuestColorKeyFromQuest is weighted by estimated seconds", () => {

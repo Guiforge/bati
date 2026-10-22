@@ -5,13 +5,14 @@ import { memo, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BackHandler, ScrollView, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { type ColorTokens, H2, Paragraph, Text, XStack, YStack } from "tamagui";
+import { type ColorTokens, H2, Text, XStack, YStack } from "tamagui";
 import { BossPanel } from "@/components/adventures/BossPanel";
 import { starsFor } from "@/components/adventures/replayStars";
 import { ShareAdventureButton } from "@/components/adventures/ShareAdventureButton";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
+import { Paragraph } from "@/components/common/Paragraph";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { StatusBand } from "@/components/common/StatusBand";
 import { Tag } from "@/components/common/Tag";
@@ -136,9 +137,9 @@ const STEP_ART_STYLE = { width: STEP_ART, height: STEP_ART, borderRadius: 12 } a
 const LOCKED_ART_STYLE = { ...STEP_ART_STYLE, opacity: 0.55 } as const;
 
 const STATUS_COLOR: Record<"locked" | "active" | "completed", ColorTokens> = {
-  completed: "$resourceGold",
-  active: "$primaryText",
-  locked: "$borderStrong",
+  completed: "resourceGold",
+  active: "primaryText",
+  locked: "borderStrong",
 };
 
 /**
@@ -204,11 +205,11 @@ const AdventureStepRow = memo(function AdventureStepRow({
   const color = STATUS_COLOR[status];
 
   return (
-    <XStack gap="$3">
+    <XStack gap="3">
       {/* The road. Drawn as three pieces rather than one line behind the rows, because a
           background line has to know the row heights and these vary with the narrative. */}
       <YStack width={RAIL} items="center" accessible={false} pointerEvents="none">
-        <YStack width={2} height={10} bg={isFirst ? "transparent" : "$borderStrong"} />
+        <YStack width={2} height={10} bg={`${isFirst ? "transparent" : "borderStrong"}`} />
         <YStack
           width={NODE}
           height={NODE}
@@ -217,7 +218,7 @@ const AdventureStepRow = memo(function AdventureStepRow({
           borderColor={color}
           bg={status === "locked" ? "transparent" : color}
         />
-        <YStack flex={1} width={2} bg={isLast ? "transparent" : "$borderStrong"} />
+        <YStack flex={1} width={2} bg={`${isLast ? "transparent" : "borderStrong"}`} />
       </YStack>
 
       <XStack
@@ -227,10 +228,10 @@ const AdventureStepRow = memo(function AdventureStepRow({
         flex={1}
         flexDirection={stacked ? "column" : "row"}
         items="flex-start"
-        gap="$3"
-        pb="$4"
+        gap="3"
+        pb="4"
+        opacity={openQuest ? "press:0.6" : undefined}
         onPress={openQuest}
-        pressStyle={openQuest ? { opacity: 0.6 } : undefined}
         accessibilityRole={openQuest ? "button" : undefined}
       >
         {stepImage ? (
@@ -242,14 +243,14 @@ const AdventureStepRow = memo(function AdventureStepRow({
           />
         ) : null}
 
-        <YStack {...(stacked ? { self: "stretch" } : { flex: 1 })} gap="$1">
+        <YStack {...(stacked ? { self: "stretch" } : { flex: 1 })} gap="1">
           <XStack
             flexDirection={stacked ? "column" : "row"}
             items="flex-start"
             justify="space-between"
-            gap="$2"
+            gap="2"
           >
-            <Text {...(stacked ? {} : { flex: 1 })} fontWeight="700" color="$text">
+            <Text {...(stacked ? {} : { flex: 1 })} fontWeight="700" color="text">
               {t("adventures.step_title", {
                 step: t("adventures.step_label", { count: step.stepIndex + 1 }),
                 title: stepTitle,
@@ -258,7 +259,7 @@ const AdventureStepRow = memo(function AdventureStepRow({
             <StepStatusTag status={status} />
           </XStack>
           {narrative ? (
-            <Paragraph color="$textSecondary" size="$3" numberOfLines={3}>
+            <Paragraph color="textSecondary" size="3" numberOfLines={3}>
               {narrative}
             </Paragraph>
           ) : null}
@@ -266,7 +267,7 @@ const AdventureStepRow = memo(function AdventureStepRow({
             <Text
               testID={`adventure-step-${step.stepIndex}-zone`}
               fontSize={12}
-              color="$textSecondary"
+              color="textSecondary"
             >
               {t("adventures.zone_step")}
             </Text>
@@ -547,8 +548,8 @@ export default function AdventureDetailsScreen() {
 
   if (!adventureId) {
     return (
-      <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$3">
-        <Text fontWeight="700" fontSize={18} color="$text">
+      <YStack flex={1} bg="background" justify="center" items="center" p="6" gap="3">
+        <Text fontWeight="700" fontSize={18} color="text">
           {t("adventures.invalid_id")}
         </Text>
         <AppButton fullWidth={false} variant="outline" onPress={() => router.back()}>
@@ -559,31 +560,31 @@ export default function AdventureDetailsScreen() {
   }
 
   return (
-    <YStack flex={1} bg="$background">
+    <YStack flex={1} bg="background">
       <ScrollView contentContainerStyle={{ paddingBottom: run ? 160 : 100 }}>
-        <YStack p="$5" pt={insets.top + 12} gap="$4">
-          <XStack items="center" justify="space-between" gap="$2">
+        <YStack p="5" pt={insets.top + 12} gap="4">
+          <XStack items="center" justify="space-between" gap="2">
             {/* Same rule as the exercises header: only the title gives way. Yoga's flexShrink
                 defaults to 0, so without this the level column kept its natural width and pushed
                 its caption off the screen edge, across the title. */}
-            <XStack items="center" gap="$3" flex={1} minW={0}>
+            <XStack items="center" gap="3" flex={1} minW={0}>
               <AppIconButton
                 onPress={goBack}
                 accessibilityRole="button"
                 accessibilityLabel={t("quests.go_back")}
               >
-                <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
+                <ChevronLeft size={22} color="text" strokeWidth={2.5} />
               </AppIconButton>
 
-              <XStack items="center" gap="$2" flex={1} minW={0}>
-                <Sparkles size={18} color="$primaryText" />
+              <XStack items="center" gap="2" flex={1} minW={0}>
+                <Sparkles size={18} color="primaryText" />
                 <Text
                   flex={1}
                   minW={0}
-                  fontFamily="$heading"
+                  fontFamily="heading"
                   fontWeight="700"
                   fontSize={20}
-                  color="$text"
+                  color="text"
                   numberOfLines={1}
                 >
                   {t("adventures.details_title")}
@@ -591,7 +592,7 @@ export default function AdventureDetailsScreen() {
               </XStack>
             </XStack>
 
-            <YStack items="flex-end" gap="$1">
+            <YStack items="flex-end" gap="1">
               <Tag
                 testID="adventure-level-tag"
                 label={levelLabel(effectiveDifficulty, t)}
@@ -600,7 +601,7 @@ export default function AdventureDetailsScreen() {
               {/* Only when the shown level *is* the suggestion: a pinned run displays its own
                   starting level, and the caption would be describing something else. */}
               {feedbackAdjusted && !run?.run.difficultyOverride ? (
-                <Paragraph color="$textSecondary" size="$2" numberOfLines={1}>
+                <Paragraph color="textSecondary" size="2" numberOfLines={1}>
                   {t("adventures.level_from_feedback")}
                 </Paragraph>
               ) : null}
@@ -608,12 +609,12 @@ export default function AdventureDetailsScreen() {
           </XStack>
 
           {state.status === "error" ? (
-            <Card bg="$surface">
-              <YStack gap="$2">
-                <Text fontWeight="700" fontSize={16} color="$text">
+            <Card bg="surface">
+              <YStack gap="2">
+                <Text fontWeight="700" fontSize={16} color="text">
                   {t("adventures.load_error")}
                 </Text>
-                <Paragraph color="$textSecondary" size="$3">
+                <Paragraph color="textSecondary" size="3">
                   {"message" in state ? state.message : ""}
                 </Paragraph>
                 <AppButton
@@ -634,7 +635,7 @@ export default function AdventureDetailsScreen() {
           {state.status === "loading" && !details ? (
             // This screen used to render a back button on an empty background while loading —
             // the worst loading state in the audit. Reserve the hero card and the step list.
-            <YStack gap="$4">
+            <YStack gap="4">
               <SkeletonCard>
                 <Skeleton height={180} />
                 <Skeleton height={24} width="60%" />
@@ -648,10 +649,12 @@ export default function AdventureDetailsScreen() {
 
           {details ? (
             <Card
-              p="$0"
+              p="0"
               overflow="hidden"
               transition={reducedMotion ? undefined : "bouncy"}
-              enterStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.96, y: 10 }}
+              opacity={reducedMotion ? undefined : "enter:0"}
+              scale={reducedMotion ? undefined : "enter:0.96"}
+              y={reducedMotion ? undefined : "enter:10px"}
             >
               {heroImage ? (
                 <Image
@@ -663,16 +666,16 @@ export default function AdventureDetailsScreen() {
                 />
               ) : null}
 
-              <YStack gap="$2" p="$4">
-                <XStack items="center" gap="$3">
-                  <H2 flex={1} color="$text" fontWeight="700" fontSize={26}>
+              <YStack gap="2" p="4">
+                <XStack items="center" gap="3">
+                  <H2 flex={1} color="text" fontWeight="700" fontSize={26}>
                     {title}
                   </H2>
                   {starsFor(finishedCount) ? (
                     <Text
                       fontSize={16}
                       fontWeight="700"
-                      color="$resourceGold"
+                      color="resourceGold"
                       accessibilityLabel={t("adventures.completed_times", { count: finishedCount })}
                     >
                       {starsFor(finishedCount)}
@@ -689,14 +692,14 @@ export default function AdventureDetailsScreen() {
                         accessibilityRole="button"
                         accessibilityLabel={t("adventures.edit")}
                       >
-                        <Pencil size={20} color="$text" />
+                        <Pencil size={20} color="text" />
                       </AppIconButton>
                     </>
                   ) : null}
                 </XStack>
 
                 {isBoss || focus.archetype || focus.muscles.length > 0 ? (
-                  <XStack gap="$2" flexWrap="wrap">
+                  <XStack gap="2" flexWrap="wrap">
                     {isBoss ? <Tag label={t("adventures.kind_boss")} tone="primary" /> : null}
                     {focus.archetype ? (
                       <Tag label={t(`quests.archetype_${focus.archetype}`)} />
@@ -708,7 +711,7 @@ export default function AdventureDetailsScreen() {
                 ) : null}
 
                 {description ? (
-                  <Paragraph color="$textSecondary" size="$4" lineHeight={22}>
+                  <Paragraph color="textSecondary" size="4" lineHeight="22px">
                     {description}
                   </Paragraph>
                 ) : null}
@@ -716,12 +719,12 @@ export default function AdventureDetailsScreen() {
                 {/* Who is actually at the end of this. The `BOSS` tag above says a fight exists;
                     this says which monster, how far through it you are, and what it is weak to. */}
                 {bossFight ? (
-                  <YStack pt="$2">
+                  <YStack pt="2">
                     <BossPanel fight={bossFight} language={language} />
                   </YStack>
                 ) : null}
 
-                <XStack gap="$2" flexWrap="wrap" pt="$2">
+                <XStack gap="2" flexWrap="wrap" pt="2">
                   <Chip
                     label={t("adventures.steps", {
                       count: effectiveSteps.length,
@@ -735,7 +738,7 @@ export default function AdventureDetailsScreen() {
                       label={t("adventures.reward_xp_per_step", {
                         count: formatCount(language, preview.xp),
                       })}
-                      textColor="$resourceGold"
+                      textColor="resourceGold"
                     />
                   ) : null}
                 </XStack>
@@ -744,9 +747,9 @@ export default function AdventureDetailsScreen() {
           ) : null}
 
           {effectiveSteps.length > 0 ? (
-            <Card bg="$surface">
-              <YStack gap="$3">
-                <Text fontWeight="700" fontSize={16} color="$text">
+            <Card bg="surface">
+              <YStack gap="3">
+                <Text fontWeight="700" fontSize={16} color="text">
                   {t("adventures.steps_title")}
                 </Text>
 
@@ -787,15 +790,14 @@ export default function AdventureDetailsScreen() {
 
       {details ? (
         <YStack
-          p="$4"
-          pb="$4"
-          bg="$bgDark"
+          p="4"
+          bg="bgDark"
           borderTopWidth={1}
-          borderColor="$borderStrong"
+          borderColor="borderStrong"
           style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
         >
           {unplayable ? (
-            <Text testID="adventure-missing-quest" fontSize={13} color="$textSecondary">
+            <Text testID="adventure-missing-quest" fontSize={13} color="textSecondary">
               {t(isOwn ? "adventures.missing_quest_own" : "adventures.missing_quest")}
             </Text>
           ) : (
@@ -830,7 +832,7 @@ export default function AdventureDetailsScreen() {
               variant="outline"
               fullWidth
               height={48}
-              mt="$2"
+              mt="2"
               onPress={() =>
                 ask({
                   title: t("adventures.leave_title"),

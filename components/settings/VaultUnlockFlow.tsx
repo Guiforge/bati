@@ -1,8 +1,9 @@
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Keyboard, Pressable } from "react-native";
-import { Input, Text, XStack } from "tamagui";
+import { Text, XStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { Input } from "@/components/common/Input";
 import { Eye, EyeOff } from "@/components/icons";
 import { reportError } from "@/src/reportError";
 import type { UnlockResult, UnlockSource } from "@/src/vaultUnlock";
@@ -53,7 +54,7 @@ export function VaultUnlockFlow({ unlock, sources, onUnlocked, onCreate }: Props
   if (phase === "home") {
     return (
       <>
-        <Text color="$textSecondary">{t("vault.unlock.body")}</Text>
+        <Text color="textSecondary">{t("vault.unlock.body")}</Text>
         <AppButton testID="vault-unlock-have" onPress={have}>
           {t("vault.unlock.haveCta")}
         </AppButton>
@@ -66,7 +67,7 @@ export function VaultUnlockFlow({ unlock, sources, onUnlocked, onCreate }: Props
   if (phase === "new") {
     return (
       <>
-        <Text testID="vault-unlock-warning" color="$textSecondary">
+        <Text testID="vault-unlock-warning" color="textSecondary">
           {t("vault.unlock.newWarning")}
         </Text>
         <AppButton variant="outline" testID="vault-unlock-new-continue" onPress={onCreate}>
@@ -81,7 +82,7 @@ export function VaultUnlockFlow({ unlock, sources, onUnlocked, onCreate }: Props
   if (phase === "source") {
     return (
       <>
-        <Text color="$textSecondary">{t("vault.unlock.sourceBody")}</Text>
+        <Text color="textSecondary">{t("vault.unlock.sourceBody")}</Text>
         {available.server ? (
           <AppButton testID="vault-unlock-source-server" onPress={() => pick("server")}>
             {t("vault.unlock.sourceServer")}
@@ -160,11 +161,14 @@ function SecretStep({
 
   return (
     <>
-      <XStack items="center" gap="$2">
+      <XStack items="center" gap="2">
         <Input
           testID="vault-unlock-secret"
           flex={1}
           minH={44}
+          bg="background"
+          borderColor={`${notice === "wrong" ? "error" : "borderStrong"}`}
+          color="text"
           value={secret}
           onChangeText={(value) => {
             setSecret(value);
@@ -177,9 +181,6 @@ function SecretStep({
           returnKeyType="done"
           onSubmitEditing={submit}
           placeholder={t("vault.unlock.secretLabel")}
-          bg="$background"
-          borderColor={notice === "wrong" ? "$error" : "$borderStrong"}
-          color="$text"
         />
         <Pressable
           hitSlop={12}
@@ -188,17 +189,17 @@ function SecretStep({
           onPress={() => setShown((value) => !value)}
         >
           {shown ? (
-            <EyeOff size={22} color="$textSecondary" />
+            <EyeOff size={22} color="textSecondary" />
           ) : (
-            <Eye size={22} color="$textSecondary" />
+            <Eye size={22} color="textSecondary" />
           )}
         </Pressable>
       </XStack>
-      <Text color="$textSecondary" fontSize="$3">
+      <Text color="textSecondary" fontSize="3">
         {t("vault.unlock.secretHint")}
       </Text>
       {message === undefined ? null : (
-        <Text testID="vault-unlock-error" color="$error">
+        <Text testID="vault-unlock-error" color="error">
           {t(message)}
         </Text>
       )}

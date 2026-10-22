@@ -4,10 +4,12 @@ import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Input, Paragraph, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { FilterRail, type RailGroup } from "@/components/common/FilterRail";
+import { Input } from "@/components/common/Input";
+import { Paragraph } from "@/components/common/Paragraph";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { ExerciseRow } from "@/components/exercises/ExerciseRow";
 import { MineCaption } from "@/components/exercises/MineCaption";
@@ -49,9 +51,9 @@ const ListGap = () => <YStack height={8} />;
 function LeadsToCaption({ name }: { name: string }) {
   const { t } = useTranslation();
   return (
-    <XStack items="center" gap="$1">
-      <Link2 size={11} color="$muted" strokeWidth={2.5} />
-      <Text fontSize={12} fontWeight="700" color="$textSecondary" numberOfLines={1}>
+    <XStack items="center" gap="1">
+      <Link2 size={11} color="muted" strokeWidth={2.5} />
+      <Text fontSize={12} fontWeight="700" color="textSecondary" numberOfLines={1}>
         {t("exercises.leads_to", { name })}
       </Text>
     </XStack>
@@ -73,14 +75,14 @@ function StatusMessage({
 
   if (state.status === "error") {
     return (
-      <YStack px="$5">
+      <YStack px="5">
         <Card>
-          <YStack gap="$3" items="center" py="$2">
+          <YStack gap="3" items="center" py="2">
             <Text fontSize={32}>😵</Text>
-            <Text fontWeight="700" fontSize={16} color="$text">
+            <Text fontWeight="700" fontSize={16} color="text">
               {t("exercises.load_error")}
             </Text>
-            <Paragraph color="$textSecondary" size="$3">
+            <Paragraph color="textSecondary" size="3">
               {t("errors.generic")}
             </Paragraph>
             <AppButton fullWidth={false} variant="outline" onPress={onRetry}>
@@ -95,7 +97,7 @@ function StatusMessage({
   if (state.status === "loading") {
     // Reserve three row heights instead of a short card the list then jumps from.
     return (
-      <YStack px="$5" gap="$2">
+      <YStack px="5" gap="2">
         <SkeletonCard>
           <Skeleton height={56} />
         </SkeletonCard>
@@ -111,14 +113,14 @@ function StatusMessage({
 
   if (filteredCount === 0) {
     return (
-      <YStack px="$5">
+      <YStack px="5">
         <Card>
-          <YStack gap="$3" items="center" py="$2">
+          <YStack gap="3" items="center" py="2">
             <Text fontSize={32}>🔍</Text>
-            <Text fontWeight="700" fontSize={16} color="$text">
+            <Text fontWeight="700" fontSize={16} color="text">
               {t("exercises.empty_filters_title")}
             </Text>
-            <Paragraph color="$textSecondary" size="$3">
+            <Paragraph color="textSecondary" size="3">
               {t("exercises.empty_filters_subtitle")}
             </Paragraph>
             <AppButton fullWidth={false} variant="outline" onPress={onClearFilters}>
@@ -302,7 +304,7 @@ export default function ExerciseCatalogue() {
             {
               key: "ladder-only",
               label: t("exercises.filter_ladder"),
-              icon: <Link2 size={14} color={filters.ladderOnly ? "$bgDark" : "$primaryText"} />,
+              icon: <Link2 size={14} color={`${filters.ladderOnly ? "bgDark" : "primaryText"}`} />,
               active: filters.ladderOnly,
               onPress: toggleLadder,
             },
@@ -317,7 +319,7 @@ export default function ExerciseCatalogue() {
     const nextName = next ? localizedName(next, language) : null;
 
     return (
-      <YStack px="$5" testID="exercises-row">
+      <YStack px="5" testID="exercises-row">
         <ExerciseRow
           exercise={item}
           language={language}
@@ -331,7 +333,7 @@ export default function ExerciseCatalogue() {
               <LeadsToCaption name={nextName} />
             ) : undefined
           }
-          trailing={<ChevronRight size={20} color="$textSecondary" strokeWidth={2.5} />}
+          trailing={<ChevronRight size={20} color="textSecondary" strokeWidth={2.5} />}
           accessibilityLabel={
             nextName ? `${name}, ${t("exercises.leads_to", { name: nextName })}` : name
           }
@@ -344,18 +346,18 @@ export default function ExerciseCatalogue() {
   return (
     // Opaque background on purpose: $background is translucent over the full-screen
     // AppBackground image, which makes the compositor blend the whole viewport per scroll frame.
-    <YStack flex={1} bg="$bgDark">
-      <YStack bg="$bgDark" pt={insets.top + 12} px="$5" pb="$3" gap="$3">
-        <XStack items="center" justify="space-between" gap="$2">
+    <YStack flex={1} bg="bgDark">
+      <YStack bg="bgDark" pt={insets.top + 12} px="5" pb="3" gap="3">
+        <XStack items="center" justify="space-between" gap="2">
           {/* Same rule as the quests header: only the title gives way. Yoga's flexShrink
               defaults to 0, so the back button and the count keep their box on their own. */}
-          <XStack items="center" gap="$3" flex={1} minW={0}>
+          <XStack items="center" gap="3" flex={1} minW={0}>
             <AppIconButton
               onPress={() => router.back()}
               accessibilityRole="button"
               accessibilityLabel={t("exercises.go_back")}
             >
-              <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
+              <ChevronLeft size={22} color="text" strokeWidth={2.5} />
             </AppIconButton>
             {/* No decorative dumbbell beside the title any more: the row gained a create
               button, and with four elements the title — the one thing that gives way here —
@@ -364,10 +366,10 @@ export default function ExerciseCatalogue() {
             <Text
               flex={1}
               minW={0}
-              fontFamily="$heading"
+              fontFamily="heading"
               fontWeight="700"
               fontSize={20}
-              color="$text"
+              color="text"
               numberOfLines={1}
             >
               {t("exercises.catalogue_title")}
@@ -376,21 +378,21 @@ export default function ExerciseCatalogue() {
           <ForgeButton />
         </XStack>
         {/* The count leaves the title row: beside "Create" it cut the title to "E…" at 130 %. */}
-        <Text color="$textSecondary" fontSize={13}>
+        <Text color="textSecondary" fontSize={13}>
           {t("exercises.count", { count: visible.length })}
         </Text>
 
-        <XStack items="center" gap="$2">
+        <XStack items="center" gap="2">
           <Input
             flex={1}
+            bg="background"
+            borderColor="borderStrong"
+            color="text"
             value={filters.search}
             onChangeText={setSearch}
             placeholder={t("exercises.search")}
-            bg="$background"
-            borderColor="$borderStrong"
-            color="$text"
           />
-          <Search size={18} color="$textSecondary" />
+          <Search size={18} color="textSecondary" />
         </XStack>
       </YStack>
 

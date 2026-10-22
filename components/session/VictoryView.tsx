@@ -5,11 +5,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BackHandler, KeyboardAvoidingView, Platform, Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, XStack, YStack } from "tamagui";
+import { XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
 import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
+import { Button } from "@/components/common/Button";
 import { Card } from "@/components/common/Card";
 import { GameIcon } from "@/components/common/GameIcon";
 import { ImageViewer } from "@/components/common/ImageViewer";
@@ -146,19 +147,19 @@ function FilledLevelBar({
       width="100%"
       maxW={520}
       minH={LEVEL_CARD_HEIGHT}
-      bg="$surface"
-      borderColor="$glassBorder"
-      gap="$2"
-      py="$2"
+      bg="surface"
+      borderColor="glassBorder"
+      gap="2"
+      py="2"
     >
       <XStack items="center" justify="space-between">
-        <AppText fontFamily="$body" fontWeight="700" fontSize={14} color="$text">
+        <AppText fontFamily="body" fontWeight="700" fontSize={14} color="text">
           {t("home.level_line", {
             level,
             title,
           })}
         </AppText>
-        <AppText fontFamily="$body" fontWeight="700" fontSize={12} color="$resourceGold">
+        <AppText fontFamily="body" fontWeight="700" fontSize={12} color="resourceGold">
           {t("journal.xp_progress", {
             current: formatCount(language, after - base),
             next: formatCount(language, span),
@@ -168,8 +169,8 @@ function FilledLevelBar({
       <InkGauge
         testIDPrefix="victory-level"
         progress={progress}
-        fill="$resourceGold"
-        track="$gold800"
+        fill="resourceGold"
+        track="gold800"
         from={from}
       />
     </Card>
@@ -493,7 +494,7 @@ export function VictoryView() {
   };
 
   return (
-    <YStack flex={1} bg="$background" pt={insets.top + 12}>
+    <YStack flex={1} bg="background" pt={insets.top + 12}>
       {/* The window does not resize under the keyboard here, so without this the note editor and
           its buttons sat under it. Same pairing as the Journal detail. */}
       <KeyboardAvoidingView
@@ -522,15 +523,15 @@ export function VictoryView() {
             p={0}
             overflow="hidden"
             borderWidth={1.5}
-            borderColor="$borderStrong"
-            {...(isBossDefeat ? { borderWidth: 2, borderColor: "$resourceGold" } : null)}
+            borderColor="borderStrong"
+            {...(isBossDefeat ? { borderWidth: 2, borderColor: "resourceGold" } : null)}
           >
             {/* The ratio follows the source, because this slot serves two of them: a felled boss is
               1024x1024 and a quest cover is 1024x768. One fixed 16:9 box cut 22% off each end of
               the boss — the monster you just beat, shown with its head and its feet removed — so
               the boss keeps its square. A quest cover takes 16:9 and loses 11%: at 4:3 it pushed the
               feeling buttons under the sticky bar on a 360x640 screen (D-86). */}
-            <YStack width="100%" aspectRatio={felledBoss ? 1 : 16 / 9} bg="$surface2">
+            <YStack width="100%" aspectRatio={felledBoss ? 1 : 16 / 9} bg="surface2">
               <Image
                 source={
                   felledBoss
@@ -550,17 +551,13 @@ export function VictoryView() {
                 first frame, villager or not, at a fixed height: the cue fires after the save, and
                 a line that arrived with it would move things under the finger. Up here an empty
                 slot is just artwork, where under the title it read as dead space. */}
-              <YStack position="absolute" t={VILLAGER_SLOT_TOP} l={64} r="$3">
+              <YStack position="absolute" t={VILLAGER_SLOT_TOP} l={64} r="3">
                 <VillagerLine owner="victory" reserve={villagerSlot} />
               </YStack>
-              <YStack position="absolute" t="$3" l="$3">
-                <GameIcon
-                  name={isBossDefeat ? "sword" : "trophy"}
-                  size={40}
-                  color="$resourceGold"
-                />
+              <YStack position="absolute" t="3" l="3">
+                <GameIcon name={isBossDefeat ? "sword" : "trophy"} size={40} color="resourceGold" />
               </YStack>
-              <YStack position="absolute" b={0} l={0} r={0} p="$4" gap="$1">
+              <YStack position="absolute" b={0} l={0} r={0} p="4" gap="1">
                 {/* The kicker and the title are one unit: the kicker announces a reward, gold, directly
                   over the cartouche. A felled boss has none: "Tonight" carries that fact as a card,
                   and a fact is said once. */}
@@ -568,9 +565,9 @@ export function VictoryView() {
                   {!isBossDefeat && (
                     <AppText
                       testID="victory-kicker"
-                      fontFamily="$body"
+                      fontFamily="body"
                       fontWeight="700"
-                      color="$resourceGold"
+                      color="resourceGold"
                       fontSize={13}
                       letterSpacing={2}
                     >
@@ -582,8 +579,8 @@ export function VictoryView() {
                   {felledBoss?.bossLines?.defeat[0] ? (
                     <AppText
                       testID="victory-boss-defeat-line"
-                      fontFamily="$body"
-                      color="$text"
+                      fontFamily="body"
+                      color="text"
                       fontSize={15}
                       fontStyle="italic"
                     >
@@ -642,8 +639,8 @@ export function VictoryView() {
               {madeQuest ? (
                 <AppText
                   testID="victory-made-quest"
-                  fontFamily="$body"
-                  color="$textSecondary"
+                  fontFamily="body"
+                  color="textSecondary"
                   fontSize={14}
                   style={{ textAlign: "center" }}
                 >
@@ -652,11 +649,11 @@ export function VictoryView() {
               ) : (
                 <AppButton
                   testID="victory-make-quest"
-                  backgroundColor="$surface2"
+                  backgroundColor="surface2"
                   height={48}
                   onPress={handleMakeQuest}
                 >
-                  <AppText color="$text" fontSize={16} fontWeight="700">
+                  <AppText color="text" fontSize={16} fontWeight="700">
                     {t("session.expedition_make_quest")}
                   </AppText>
                 </AppButton>
@@ -666,32 +663,25 @@ export function VictoryView() {
 
           {/* Stat row: Time · XP */}
           {!tooShort && (
-            <XStack testID="victory-stat-row" width="100%" maxW={520} gap="$3">
-              <Card
-                flex={1}
-                bg="$surface"
-                borderColor="$glassBorder"
-                items="center"
-                gap="$1"
-                py="$2"
-              >
-                <AppText fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
+            <XStack testID="victory-stat-row" width="100%" maxW={520} gap="3">
+              <Card flex={1} bg="surface" borderColor="glassBorder" items="center" gap="1" py="2">
+                <AppText fontFamily="body" fontWeight="700" fontSize={13} color="textSecondary">
                   {t("session.total_time")}
                 </AppText>
                 <AppText
                   variant="display"
                   fontWeight="700"
                   fontSize={26}
-                  lineHeight={32}
-                  color="$text"
-                  fontFamily="$body"
+                  lineHeight="32px"
+                  color="text"
+                  fontFamily="body"
                 >
                   {result ? formatTime(durationSeconds) : "\u00A0"}
                 </AppText>
                 {/* The wait for the sky and the red lights are in the total (D-58); the moving time is
                   what XP is paid in, said once the two differ by a minute. */}
                 {result?.outing?.measured && durationSeconds - result.outing.seconds >= 60 ? (
-                  <AppText fontSize={11} color="$textSecondary">
+                  <AppText fontSize={11} color="textSecondary">
                     {t("session.total_time_moving", {
                       moving: formatTime(result.outing.seconds),
                     })}
@@ -701,22 +691,22 @@ export function VictoryView() {
               <Card
                 testID="victory-xp-rules"
                 flex={1}
-                bg="$surface"
-                borderColor="$glassBorder"
+                bg="surface"
+                borderColor="glassBorder"
                 items="center"
-                gap="$1"
-                py="$2"
+                gap="1"
+                py="2"
                 // Not while saving: a card that answers a press and goes nowhere reads as broken.
                 onPress={result ? handleViewXpRules : undefined}
                 accessibilityRole="link"
               >
-                <AppText fontFamily="$body" fontWeight="700" fontSize={13} color="$textSecondary">
+                <AppText fontFamily="body" fontWeight="700" fontSize={13} color="textSecondary">
                   {t("session.xp_earned")}
                 </AppText>
                 {/* In the corner, out of the label's row: beside it, the chevron took the width a
                 long label needs, and at 130 % Russian broke "Заработано" in the middle. */}
                 <YStack position="absolute" t={6} r={4}>
-                  <ChevronRight size={16} color="$textSecondary" />
+                  <ChevronRight size={16} color="textSecondary" />
                 </YStack>
                 {/* The testID only exists once the session is banked: Continue is on screen, and
                 disabled, for the whole save, so it cannot tell an E2E flow when to tap it. */}
@@ -727,9 +717,9 @@ export function VictoryView() {
                   importantForAccessibility={result ? "auto" : "no"}
                   fontWeight="700"
                   fontSize={26}
-                  lineHeight={32}
-                  color="$resourceGold"
-                  fontFamily="$body"
+                  lineHeight="32px"
+                  color="resourceGold"
+                  fontFamily="body"
                 >
                   {result
                     ? t("quests.reward_xp", { count: formatCount(language, result.xpEarned) })
@@ -740,7 +730,7 @@ export function VictoryView() {
                 know why, and a number with no rule behind it is the thing the research calls
                 controlling rather than informative. This is the rule, in the hero's own numbers. */}
                 {result?.outing ? (
-                  <AppText fontWeight="700" fontSize={11} color="$textSecondary">
+                  <AppText fontWeight="700" fontSize={11} color="textSecondary">
                     {/* No trace measured nothing moving: the clock is all the card may claim. */}
                     {result.outing.measured
                       ? t("session.xp_outing_rate", {
@@ -766,9 +756,9 @@ export function VictoryView() {
                   <AppText
                     fontWeight="700"
                     fontSize={11}
-                    color="$success"
+                    color="success"
                     text="center"
-                    fontFamily="$body"
+                    fontFamily="body"
                   >
                     {t("session.xp_overshoot", {
                       count: formatCount(language, result.overshootXp),
@@ -785,11 +775,11 @@ export function VictoryView() {
           {/* Held for the hero's answer: the question takes the level card's slot, above the fold,
             and no reward is drawn for a session that may be discarded. */}
           {tooShort ? (
-            <YStack width="100%" maxW={520} items="center" gap="$3" py="$4">
-              <AppText color="$text" fontSize={18} fontWeight="700">
+            <YStack width="100%" maxW={520} items="center" gap="3" py="4">
+              <AppText color="text" fontSize={18} fontWeight="700">
                 {t("session.summary_too_short_title")}
               </AppText>
-              <AppText color="$textSecondary" fontSize={14} style={{ textAlign: "center" }}>
+              <AppText color="textSecondary" fontSize={14} style={{ textAlign: "center" }}>
                 {/* A walk is not held, it is walked. The shared line says "you held out for", the
                   verb of a plank, which reads as faint praise after ninety seconds outdoors. */}
                 {t(
@@ -801,7 +791,7 @@ export function VictoryView() {
               </AppText>
               <AppButton
                 variant="outline"
-                borderColor="$error"
+                borderColor="error"
                 onPress={() => {
                   // Discard is the existing quit path: nothing was written, so there is nothing
                   // to undo, and the session state has to be cleared either way. Home rather than
@@ -821,36 +811,36 @@ export function VictoryView() {
             session's difficulty, and below the fold a hurried hero never saw it (audit §06-B).
             Under the level bar and above "Tonight": that list arrives with the save and has no
             reserved height, so below it it pushed these buttons out from under the finger. */}
-          <Card width="100%" maxW={520} bg="$surface" borderColor="$glassBorder" gap="$3">
+          <Card width="100%" maxW={520} bg="surface" borderColor="glassBorder" gap="3">
             <AppText
-              fontFamily="$body"
+              fontFamily="body"
               fontWeight="700"
               fontSize={15}
-              color="$text"
+              color="text"
               style={{ textAlign: "center" }}
             >
               {t("session.feedback_title")}
             </AppText>
-            <XStack gap="$3" justify="center">
+            <XStack gap="3" justify="center">
               {(
                 [
-                  { value: "easy", glyph: "wind", accent: "$success" },
-                  { value: "good", glyph: "sword", accent: "$primaryText" },
-                  { value: "hard", glyph: "flame", accent: "$error" },
+                  { value: "easy", glyph: "wind", accent: "success" },
+                  { value: "good", glyph: "sword", accent: "primaryText" },
+                  { value: "hard", glyph: "flame", accent: "error" },
                 ] as const
               ).map(({ value, glyph, accent }) => (
                 <Button
                   key={value}
                   flex={1}
-                  size="$4"
+                  size="4"
                   // Fixed height clipped the glyph onto the top edge once a label wrapped at 130 %.
                   height="auto"
-                  py="$2"
-                  bg={feedback === value || !result ? "$surface2" : "$surface"}
+                  py="2"
+                  bg={feedback === value || !result ? "surface2" : "surface"}
                   borderWidth={1}
-                  borderColor={feedback === value ? accent : "$glassBorder"}
-                  opacity={feedback === value ? 1 : 0.85}
-                  pressStyle={{ opacity: 0.8, scale: 0.98 }}
+                  borderColor={feedback === value ? accent : "glassBorder"}
+                  opacity={`${feedback === value ? 1 : 0.85} press:0.8`}
+                  scale="press:0.98"
                   onPress={() => handleFeedbackSelect(value)}
                   // Like Continue: the answer needs a session id, which only the save gives.
                   disabled={!result}
@@ -858,19 +848,19 @@ export function VictoryView() {
                   // disabled, Android kept the view disabled once the save landed, and every tap
                   // outside the glyph and the label was lost (measured: 0 of 16 on the emulator).
                   aria-disabled={!result}
-                  rounded="$4"
+                  rounded="4"
                   accessibilityLabel={t(`session.feedback_${value}`)}
                   accessibilityRole="button"
                 >
-                  <YStack items="center" gap="$1">
+                  <YStack items="center" gap="1">
                     <GameIcon
                       testID={`feedback-glyph-${value}`}
                       name={glyph}
                       size={22}
-                      color={feedback === value ? accent : result ? "$text" : "$textSecondary"}
+                      color={feedback === value ? accent : result ? "text" : "textSecondary"}
                     />
                     <AppText
-                      color={result ? "$text" : "$textSecondary"}
+                      color={result ? "text" : "textSecondary"}
                       fontSize={12}
                       fontWeight="700"
                       style={{ textAlign: "center" }}
@@ -899,12 +889,12 @@ export function VictoryView() {
 
           {/* A failed save: the only thing that replaces "Tonight". */}
           {!!saveError && (
-            <YStack width="100%" maxW={520} items="center" gap="$3">
-              <AppText color="$textSecondary" fontSize={14} style={{ textAlign: "center" }}>
+            <YStack width="100%" maxW={520} items="center" gap="3">
+              <AppText color="textSecondary" fontSize={14} style={{ textAlign: "center" }}>
                 {t("errors.save_session_failed")}
               </AppText>
-              <AppButton backgroundColor="$surface2" onPress={runSave}>
-                <AppText color="$text" fontSize={16} fontWeight="700">
+              <AppButton backgroundColor="surface2" onPress={runSave}>
+                <AppText color="text" fontSize={16} fontWeight="700">
                   {t("common.retry")}
                 </AppText>
               </AppButton>
@@ -929,10 +919,10 @@ export function VictoryView() {
                   testID="session-victory-forget"
                   accessibilityRole="button"
                   onPress={handleForget}
-                  color="$textSecondary"
+                  color="textSecondary"
                   fontSize={14}
-                  py="$3"
-                  px="$4"
+                  py="3"
+                  px="4"
                   textDecorationLine="underline"
                 >
                   {t("session.summary_forget")}
@@ -944,11 +934,11 @@ export function VictoryView() {
               testID="victory-see-all"
               accessibilityRole="button"
               onPress={() => setExpanded(true)}
-              color="$textSecondary"
+              color="textSecondary"
               fontSize={14}
               minH={44}
-              py="$3"
-              px="$4"
+              py="3"
+              px="4"
               textDecorationLine="underline"
             >
               {t("session.victory_see_all")}
@@ -981,11 +971,11 @@ export function VictoryView() {
                   testID="victory-note"
                   accessibilityRole="button"
                   onPress={() => setNoting(true)}
-                  color="$textSecondary"
+                  color="textSecondary"
                   fontSize={14}
                   minH={44}
-                  py="$3"
-                  px="$4"
+                  py="3"
+                  px="4"
                   textDecorationLine="underline"
                 >
                   {t("session.victory_note")}
@@ -998,13 +988,13 @@ export function VictoryView() {
 
       {/* Sticky actions: Share + Continue */}
       <XStack
-        px="$4"
-        pt="$3"
+        px="4"
+        pt="3"
         pb={insets.bottom + 8}
-        gap="$3"
-        bg="$bgDark"
+        gap="3"
+        bg="bgDark"
         borderTopWidth={1}
-        borderColor="$glassBorder"
+        borderColor="glassBorder"
         style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
       >
         {/* Only once the row exists, and never on a short session the hero has not kept yet:

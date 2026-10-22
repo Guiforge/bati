@@ -18,9 +18,9 @@ export function MapBigFigure() {
     <YStack
       testID="live-map-big"
       bg={fade(rawColors.bgDark, 0.8)}
-      rounded="$4"
-      px="$3"
-      py="$1"
+      rounded="4"
+      px="3"
+      py="1"
       self="flex-start"
       maxW="100%"
       pointerEvents="none"

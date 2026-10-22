@@ -3,11 +3,12 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Input, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { ImageChoiceField } from "@/components/common/ImageChoiceField";
+import { Input } from "@/components/common/Input";
 import { Stepper } from "@/components/common/Stepper";
 import { useToast } from "@/components/common/Toast";
 import { useDiscardGuard } from "@/components/common/useDiscardGuard";
@@ -149,7 +150,7 @@ export default function ExerciseEditor() {
   }, [allowLeave, details, description, editingId, name, router, showError, t]);
 
   return (
-    <YStack flex={1} bg="$background">
+    <YStack flex={1} bg="background">
       {/* The window does not resize under the keyboard here (edge-to-edge), so without this the
           focused field and the save bar sat under it. Same pairing as journal/[id]. */}
       <KeyboardAvoidingView
@@ -170,15 +171,15 @@ export default function ExerciseEditor() {
             gap: 16,
           }}
         >
-          <XStack items="center" gap="$3">
+          <XStack items="center" gap="3">
             <AppIconButton
               onPress={() => router.back()}
               accessibilityRole="button"
               accessibilityLabel={t("quests.go_back")}
             >
-              <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
+              <ChevronLeft size={22} color="text" strokeWidth={2.5} />
             </AppIconButton>
-            <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
+            <Text fontFamily="heading" fontWeight="700" fontSize={20} color="text">
               {editingId === null
                 ? t("exercise_editor.title_new")
                 : t("exercise_editor.title_edit")}
@@ -198,8 +199,8 @@ export default function ExerciseEditor() {
           />
 
           <Card>
-            <YStack gap="$3">
-              <Text fontWeight="700" fontSize={13} color="$textSecondary">
+            <YStack gap="3">
+              <Text fontWeight="700" fontSize={13} color="textSecondary">
                 {t("exercise_editor.name_label")}
               </Text>
               <Input
@@ -209,7 +210,7 @@ export default function ExerciseEditor() {
                 placeholder={t("exercise_editor.name_placeholder")}
               />
 
-              <Text fontWeight="700" fontSize={13} color="$textSecondary">
+              <Text fontWeight="700" fontSize={13} color="textSecondary">
                 {t("exercise_editor.description_label")}
               </Text>
               <Input
@@ -235,28 +236,28 @@ export default function ExerciseEditor() {
               accessibilityLabel={t("exercise_editor.details")}
             >
               <XStack items="center" justify="space-between">
-                <Text fontWeight="700" fontSize={13} color="$textSecondary">
+                <Text fontWeight="700" fontSize={13} color="textSecondary">
                   {t("exercise_editor.details")}
                 </Text>
                 {showDetails ? (
-                  <ChevronUp size={16} color="$textSecondary" />
+                  <ChevronUp size={16} color="textSecondary" />
                 ) : (
-                  <ChevronDown size={16} color="$textSecondary" />
+                  <ChevronDown size={16} color="textSecondary" />
                 )}
               </XStack>
             </Pressable>
 
-            <Text fontSize={12} color="$textSecondary" opacity={0.8} pt="$2">
+            <Text fontSize={12} color="textSecondary" opacity={0.8} pt="2">
               {t("exercise_editor.details_hint")}
             </Text>
 
             {showDetails ? (
-              <YStack gap="$4" pt="$3">
-                <YStack gap="$2">
-                  <Text fontSize={12} color="$textSecondary">
+              <YStack gap="4" pt="3">
+                <YStack gap="2">
+                  <Text fontSize={12} color="textSecondary">
                     {t("exercise_editor.muscles")}
                   </Text>
-                  <XStack gap="$2" flexWrap="wrap">
+                  <XStack gap="2" flexWrap="wrap">
                     {muscleCodes.map((muscle) => (
                       <Chip
                         key={muscle}
@@ -269,11 +270,11 @@ export default function ExerciseEditor() {
                   </XStack>
                 </YStack>
 
-                <YStack gap="$2">
-                  <Text fontSize={12} color="$textSecondary">
+                <YStack gap="2">
+                  <Text fontSize={12} color="textSecondary">
                     {t("exercise_editor.style")}
                   </Text>
-                  <XStack gap="$2" flexWrap="wrap">
+                  <XStack gap="2" flexWrap="wrap">
                     {exerciseStyles.map((style) => (
                       <Chip
                         key={style}
@@ -286,11 +287,11 @@ export default function ExerciseEditor() {
                   </XStack>
                 </YStack>
 
-                <YStack gap="$2">
-                  <Text fontSize={12} color="$textSecondary">
+                <YStack gap="2">
+                  <Text fontSize={12} color="textSecondary">
                     {t("exercise_editor.difficulty")}
                   </Text>
-                  <XStack gap="$2" flexWrap="wrap">
+                  <XStack gap="2" flexWrap="wrap">
                     {difficultyCodes.map((difficulty) => (
                       <Chip
                         key={difficulty}
@@ -303,11 +304,11 @@ export default function ExerciseEditor() {
                   </XStack>
                 </YStack>
 
-                <YStack gap="$2">
-                  <Text fontSize={12} color="$textSecondary">
+                <YStack gap="2">
+                  <Text fontSize={12} color="textSecondary">
                     {t("exercise_editor.equipment")}
                   </Text>
-                  <XStack gap="$2" flexWrap="wrap">
+                  <XStack gap="2" flexWrap="wrap">
                     {equipmentCodes.map((equipment) => (
                       <Chip
                         key={equipment}
@@ -320,11 +321,11 @@ export default function ExerciseEditor() {
                   </XStack>
                 </YStack>
 
-                <YStack gap="$2">
-                  <Text fontSize={12} color="$textSecondary">
+                <YStack gap="2">
+                  <Text fontSize={12} color="textSecondary">
                     {t("exercise_editor.measure")}
                   </Text>
-                  <XStack gap="$2">
+                  <XStack gap="2">
                     {questTargetTypes.map((measure) => (
                       <Chip
                         key={measure}
@@ -347,11 +348,11 @@ export default function ExerciseEditor() {
                   />
                 )}
 
-                <YStack gap="$2">
-                  <Text fontSize={12} color="$textSecondary">
+                <YStack gap="2">
+                  <Text fontSize={12} color="textSecondary">
                     {t("exercise_editor.pattern")}
                   </Text>
-                  <XStack gap="$2" flexWrap="wrap">
+                  <XStack gap="2" flexWrap="wrap">
                     <Chip
                       testID="exercise-pattern-none"
                       label={t("exercise_editor.pattern_none")}
@@ -421,12 +422,12 @@ function SidesPicker({
 }) {
   const { t } = useTranslation();
   return (
-    <YStack gap="$2">
+    <YStack gap="2">
       <Chip
         self="flex-start"
         testID="exercise-per-side"
         tone={perSide ? "primary" : "default"}
-        icon={perSide ? <Check size={14} color="$white" strokeWidth={3} /> : undefined}
+        icon={perSide ? <Check size={14} color="white" strokeWidth={3} /> : undefined}
         label={t("exercise_editor.sides_each")}
         onPress={() => onChange(!perSide)}
         // `role`, not only `accessibilityRole`: Tamagui sets its own role on a pressable stack.
@@ -434,7 +435,7 @@ function SidesPicker({
         accessibilityRole="checkbox"
         accessibilityState={{ checked: perSide }}
       />
-      <Text fontSize={12} color="$textSecondary">
+      <Text fontSize={12} color="textSecondary">
         {t("exercise_editor.sides_hint")}
       </Text>
     </YStack>

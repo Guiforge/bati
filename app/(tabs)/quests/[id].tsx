@@ -5,10 +5,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BackHandler, ScrollView, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { type ColorTokens, H2, Paragraph, Text, XStack, YStack } from "tamagui";
+import { type ColorTokens, H2, Text, XStack, YStack } from "tamagui";
 import { NarrativeModal } from "@/components/adventures/NarrativeModal";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { Paragraph } from "@/components/common/Paragraph";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { StatusBand } from "@/components/common/StatusBand";
 import { Tag } from "@/components/common/Tag";
@@ -130,12 +131,12 @@ function levelLabel(level: Difficulty, t: TFunction) {
 
 // The Journal's difficulty breakdown (components/journal/JournalStats.tsx) reads as "this colour
 // means this level": easy success green, medium primary braise, hard error red. Success and error
-// are light fills and take ink (rule 1 of the 2026-10 refresh); primary takes $onPrimary.
+// are light fills and take ink (rule 1 of the 2026-10 refresh); primary takes onPrimary.
 // AppButton picks the label from the fill: bgDark on success/error, onPrimary on primary.
 const LEVEL_CHIP_COLORS: Record<Difficulty, { bg: ColorTokens }> = {
-  [Difficulty.Easy]: { bg: "$success" },
-  [Difficulty.Medium]: { bg: "$primary" },
-  [Difficulty.Hard]: { bg: "$error" },
+  [Difficulty.Easy]: { bg: "success" },
+  [Difficulty.Medium]: { bg: "primary" },
+  [Difficulty.Hard]: { bg: "error" },
 };
 
 function LevelChip({
@@ -159,10 +160,10 @@ function LevelChip({
       // 40 is under the 44×44 floor. Vertical only: these sit in a row, and widening them
       // sideways would make neighbouring chips fight over the same pixels.
       hitSlop={{ top: 4, bottom: 4 }}
-      px="$3"
+      px="3"
       variant={active ? "primary" : "outline"}
-      backgroundColor={active ? colors.bg : "$surface"}
-      borderColor={active ? colors.bg : "$borderStrong"}
+      backgroundColor={active ? colors.bg : "surface"}
+      borderColor={active ? colors.bg : "borderStrong"}
       borderWidth={1}
       fontSize={14}
     >
@@ -631,8 +632,8 @@ export default function QuestDetails() {
 
   if (!questId) {
     return (
-      <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$3">
-        <Text fontWeight="700" fontSize={18} color="$text">
+      <YStack flex={1} bg="background" justify="center" items="center" p="6" gap="3">
+        <Text fontWeight="700" fontSize={18} color="text">
           {t("quests.invalid_id")}
         </Text>
         <AppButton fullWidth={false} variant="outline" onPress={goToGallery}>
@@ -723,31 +724,31 @@ export default function QuestDetails() {
   const headerImage = resolveQuestImage(quest?.imagePath);
 
   return (
-    <YStack flex={1} bg="$background">
+    <YStack flex={1} bg="background">
       {/* Measured, not guessed. The bar below is taller on an outing (it carries the location
           notice) and taller again at a large system font size, and the hand-counted 140 it used
           to reserve left two pixels of margin. Same pattern as the editor's save bar. */}
       <ScrollView contentContainerStyle={{ paddingBottom: startBarHeight + 24 }}>
-        <YStack p="$5" pt={insets.top + 12} gap="$4">
+        <YStack p="5" pt={insets.top + 12} gap="4">
           <XStack items="center" justify="space-between">
-            <XStack items="center" gap="$3">
+            <XStack items="center" gap="3">
               <AppIconButton
                 onPress={goToGallery}
                 accessibilityRole="button"
                 accessibilityLabel={t("quests.go_back")}
               >
-                <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
+                <ChevronLeft size={22} color="text" strokeWidth={2.5} />
               </AppIconButton>
 
-              <XStack items="center" gap="$2">
-                <Sparkles size={18} color="$text" />
-                <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
+              <XStack items="center" gap="2">
+                <Sparkles size={18} color="text" />
+                <Text fontFamily="heading" fontWeight="700" fontSize={20} color="text">
                   {t("quests.details_title")}
                 </Text>
               </XStack>
             </XStack>
 
-            <XStack items="center" gap="$2">
+            <XStack items="center" gap="2">
               {/* Says whose quest this is before the pencil implies it. Same word the gallery
                 card and the movement rows wear. */}
               {quest && isUserQuest(quest) ? (
@@ -769,7 +770,7 @@ export default function QuestDetails() {
                   accessibilityRole="button"
                   accessibilityLabel={t("quests.edit_quest")}
                 >
-                  <Pencil size={18} color="$text" strokeWidth={2.5} />
+                  <Pencil size={18} color="text" strokeWidth={2.5} />
                 </AppIconButton>
               ) : null}
             </XStack>
@@ -779,11 +780,11 @@ export default function QuestDetails() {
             <YStack
               width="100%"
               height={questHeaderHeight(windowWidth, windowHeight)}
-              bg="$surface"
+              bg="surface"
               borderWidth={1}
-              borderColor="$borderStrong"
-              rounded="$8"
-              shadowColor="$shadowColor"
+              borderColor="borderStrong"
+              rounded="8"
+              shadowColor="shadowColor"
               shadowRadius={6}
               shadowOffset={{ width: 0, height: 3 }}
               overflow="hidden"
@@ -798,12 +799,12 @@ export default function QuestDetails() {
           ) : null}
 
           {state.status === "error" ? (
-            <Card bg="$surface">
-              <YStack gap="$2">
-                <Text fontWeight="700" fontSize={16} color="$text">
+            <Card bg="surface">
+              <YStack gap="2">
+                <Text fontWeight="700" fontSize={16} color="text">
                   {t("quests.load_error")}
                 </Text>
-                <Paragraph color="$textSecondary" size="$3">
+                <Paragraph color="textSecondary" size="3">
                   {state.message}
                 </Paragraph>
                 <AppButton
@@ -823,7 +824,7 @@ export default function QuestDetails() {
 
           {state.status === "loading" && !quest ? (
             // Hero image + title card + config card, held at height instead of popping in.
-            <YStack gap="$4">
+            <YStack gap="4">
               <Skeleton height={200} radius={16} />
               <SkeletonCard>
                 <Skeleton height={24} width="60%" />
@@ -838,16 +839,16 @@ export default function QuestDetails() {
 
           {quest ? (
             <Card>
-              <YStack gap="$2">
-                <H2 color="$text" fontWeight="700" fontSize={26}>
+              <YStack gap="2">
+                <H2 color="text" fontWeight="700" fontSize={26}>
                   {questTitle}
                 </H2>
 
-                <Paragraph color="$textSecondary" size="$4" lineHeight={22}>
+                <Paragraph color="textSecondary" size="4" lineHeight="22px">
                   {questDesc}
                 </Paragraph>
 
-                <XStack gap="$2" flexWrap="wrap" pt="$2">
+                <XStack gap="2" flexWrap="wrap" pt="2">
                   {/* A count of one is not information. "1 round" and "1 exercise" were the
                       first two things an outing said about itself, and they said nothing: the
                       screen lists its one movement right below. Same knowledge the rest chips
@@ -897,7 +898,7 @@ export default function QuestDetails() {
                       label={t(isOuting ? "quests.reward_xp_open" : "quests.reward_xp_estimate", {
                         count: formatCount(language, xpReward),
                       })}
-                      textColor="$resourceGold"
+                      textColor="resourceGold"
                     />
                   ) : null}
                   {/* What an outing has instead of a maximum. The number above is what the
@@ -913,8 +914,8 @@ export default function QuestDetails() {
                     number that matters here is the goal, two cards down. */}
                 {isOuting ? null : (
                   <>
-                    <XStack gap="$2" flexWrap="wrap" pt="$2">
-                      <Text fontWeight="700" color="$textSecondary">
+                    <XStack gap="2" flexWrap="wrap" pt="2">
+                      <Text fontWeight="700" color="textSecondary">
                         {t("quests.level")}
                       </Text>
                       <LevelChip value={Difficulty.Easy} level={level} onSelect={selectLevel} />
@@ -924,7 +925,7 @@ export default function QuestDetails() {
                     {/* What the selected level actually does — the chips above already re-derive
                         every number, but nothing said so (2026-08 audit, §06-C). The multipliers
                         are USER_LEVEL_MULTIPLIER (targets) and computeSessionXp (payout). */}
-                    <Text fontSize={13} color="$textSecondary" pt="$1">
+                    <Text fontSize={13} color="textSecondary" pt="1">
                       {level === Difficulty.Easy
                         ? t("quests.level_effect_easy")
                         : level === Difficulty.Hard
@@ -978,8 +979,8 @@ export default function QuestDetails() {
           ) : null}
 
           {quest ? (
-            <YStack gap="$3">
-              <Text fontWeight="700" fontSize={18} color="$text">
+            <YStack gap="3">
+              <Text fontWeight="700" fontSize={18} color="text">
                 {t("quests.exercises_list")}
               </Text>
 
@@ -1017,12 +1018,11 @@ export default function QuestDetails() {
 
       {quest ? (
         <YStack
-          p="$4"
-          pb="$4"
-          bg="$bgDark"
+          p="4"
+          bg="bgDark"
           borderTopWidth={1}
-          borderColor="$borderStrong"
-          gap="$2"
+          borderColor="borderStrong"
+          gap="2"
           style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
           onLayout={(e) => setStartBarHeight(e.nativeEvent.layout.height)}
         >
@@ -1034,7 +1034,7 @@ export default function QuestDetails() {
               Fairphone 6 that put it below the fold while this button stayed on screen the whole
               time. A hero who tapped straight away never read it, which is the entire job it had. */}
           {willReadPosition && (outingGps || !(quest && isOutingSession(quest))) ? (
-            <Text testID="quest-location-notice" fontSize={13} color="$textSecondary">
+            <Text testID="quest-location-notice" fontSize={13} color="textSecondary">
               {t("quests.location_notice")}
             </Text>
           ) : null}
@@ -1104,7 +1104,7 @@ export default function QuestDetails() {
               });
           }}
           closeOnPick
-          pickAction={<Repeat size={20} color="$primaryText" strokeWidth={2.5} />}
+          pickAction={<Repeat size={20} color="primaryText" strokeWidth={2.5} />}
           captionFor={(exercise) => swapReasonLabel(swapReasons.get(exercise.id), t)}
           bottomInset={insets.bottom}
         />

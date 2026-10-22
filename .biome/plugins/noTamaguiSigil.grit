@@ -1,0 +1,40 @@
+// A Tamagui 2 token spelling (`"$text"`, `"$1.5"`, `` `$${x}` ``) renders nothing on Tamagui 3.
+//
+// v3 dropped the `$` sigil with no runtime fallback: tokens and theme keys are bare (`"text"`,
+// `"1-5"`). A leftover sigil is not an error anywhere. tsc accepts it wherever the value is a plain
+// `string`, because every v3 colour and size type carries an `OpenStyleString` arm, so the prop
+// type-checks and the style silently resolves to nothing: a text loses its colour, a gap its size.
+// tsc only catches the literal unions (`ColorTokens[]`, `as const` tables); this catches the rest.
+//
+// Flags a string, JSX string or template literal whose text starts with `$` and a letter, a digit
+// or a second `$` (a template splicing a name after the sigil). Comments are not strings, so a
+// comment naming an old token is left to the reader. Tests are out of scope on purpose: they
+// assert on spellings, and a test that wants a sigil is checking that one is rejected.
+//
+// Scoped by $filename rather than a biome.json override: `overrides[].plugins: []` does not
+// suppress plugin diagnostics in Biome 2.5.6.
+language js
+
+or {
+  string(),
+  JsxString(),
+  JsTemplateExpression(),
+  TsTemplateLiteralType()
+} as $value where {
+  or { $value <: r"[\"']\$[A-Za-z0-9].*", $value <: r"`\$[A-Za-z0-9$].*" },
+  // One filename condition per directory rather than one alternation: a group in a GritQL regex
+  // is read as a metavariable binding.
+  or {
+    $filename <: r"app/.*",
+    $filename <: r".*/app/.*",
+    $filename <: r"components/.*",
+    $filename <: r".*/components/.*",
+    $filename <: r"src/.*",
+    $filename <: r".*/src/.*",
+    $filename <: r"constants/.*",
+    $filename <: r".*/constants/.*",
+    $filename <: r"hooks/.*",
+    $filename <: r".*/hooks/.*"
+  },
+  register_diagnostic(span=$value, message="Tamagui 2 token spelling: Tamagui 3 has no `$` sigil and renders this as nothing. Write the bare name (`text`, `1-5`).")
+}

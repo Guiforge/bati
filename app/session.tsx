@@ -78,7 +78,7 @@ export default function SessionScreen() {
   const displayStatus = status === "paused" ? prePauseStatus : status;
 
   return (
-    <YStack flex={1} bg="$background">
+    <YStack flex={1} bg="background">
       {quest !== null && screenStaysOn(quest, view) && <KeepAwake />}
       <BossTauntOverlay />
       {displayStatus === "warmup" && <WarmupView />}

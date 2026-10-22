@@ -42,7 +42,8 @@
     "./.biome/plugins/noIdenticalTernaryArms.grit",
     "./.biome/plugins/noDynamicEnvAccess.grit",
     "./.biome/plugins/noJsNetwork.grit",
-    "./.biome/plugins/noBareSheetScrollView.grit"
+    "./.biome/plugins/noBareSheetScrollView.grit",
+    "./.biome/plugins/noTamaguiSigil.grit"
   ],
   "linter": {
     "enabled": true,

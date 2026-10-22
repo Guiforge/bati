@@ -57,7 +57,7 @@ export function ChronicleCard({
 
       <YStack p={17} gap={6}>
         <NKicker>{t("chronicle.title")}</NKicker>
-        <NText fontWeight="500" fontSize={22} lineHeight={28}>
+        <NText fontWeight="500" fontSize={22} lineHeight="28px">
           {t("chronicle.heading", { year: chronicle.year })}
         </NText>
         <NMuted testID="chronicle-span">

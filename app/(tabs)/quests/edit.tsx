@@ -11,16 +11,17 @@ import {
   type TextInputInstance,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, Input, Separator, Text, XStack, YStack } from "tamagui";
+import { Separator, Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
+import { Button } from "@/components/common/Button";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { ImageChoiceField } from "@/components/common/ImageChoiceField";
+import { Input } from "@/components/common/Input";
 import { StatusBand } from "@/components/common/StatusBand";
 import { Stepper } from "@/components/common/Stepper";
 import { useToast } from "@/components/common/Toast";
-import { tamaguiRef } from "@/components/common/tamaguiRef";
 import { leavesWithoutAsking, useTabLeaveGuard } from "@/components/common/useTabLeaveGuard";
 import { ChevronLeft, Plus, Trash2, X } from "@/components/icons";
 import { ExercisePickerSheet } from "@/components/quests/ExercisePickerSheet";
@@ -464,7 +465,7 @@ export default function QuestEditor() {
   };
 
   return (
-    <YStack flex={1} bg="$background">
+    <YStack flex={1} bg="background">
       {/* The window does not resize under the keyboard here (edge-to-edge), so without this the
           focused field and the save bar sat under it. Same pairing as journal/[id]. */}
       <KeyboardAvoidingView
@@ -482,17 +483,17 @@ export default function QuestEditor() {
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingBottom: 24 }}
         >
-          <YStack p="$5" pt={insets.top + 12} gap="$4">
+          <YStack p="5" pt={insets.top + 12} gap="4">
             <XStack items="center" justify="space-between">
-              <XStack items="center" gap="$3" flex={1}>
+              <XStack items="center" gap="3" flex={1}>
                 <AppIconButton
                   onPress={() => router.back()}
                   accessibilityRole="button"
                   accessibilityLabel={t("quests.go_back")}
                 >
-                  <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
+                  <ChevronLeft size={22} color="text" strokeWidth={2.5} />
                 </AppIconButton>
-                <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
+                <Text fontFamily="heading" fontWeight="700" fontSize={20} color="text">
                   {questId == null ? t("quests.editor_new_title") : t("quests.editor_edit_title")}
                 </Text>
               </XStack>
@@ -504,7 +505,7 @@ export default function QuestEditor() {
                   accessibilityRole="button"
                   accessibilityLabel={t("quests.editor_delete")}
                 >
-                  <Trash2 size={20} color="$danger" strokeWidth={2.5} />
+                  <Trash2 size={20} color="danger" strokeWidth={2.5} />
                 </AppIconButton>
               ) : null}
             </XStack>
@@ -526,9 +527,9 @@ export default function QuestEditor() {
                 nameCardY.current = e.nativeEvent.layout.y;
               }}
             >
-              <YStack gap="$3">
-                <YStack gap="$2">
-                  <Text fontWeight="700" fontSize={14} color="$textSecondary">
+              <YStack gap="3">
+                <YStack gap="2">
+                  <Text fontWeight="700" fontSize={14} color="textSecondary">
                     {t("quests.editor_name")}
                   </Text>
                   <Input
@@ -537,27 +538,27 @@ export default function QuestEditor() {
                       setTitle(next);
                       setNameMissing(false);
                     }}
-                    ref={tamaguiRef(nameRef)}
+                    ref={nameRef}
                     testID="quest-name"
                     placeholder={t("quests.editor_name_placeholder")}
-                    bg="$background"
-                    borderColor={nameMissing ? "$error" : "$borderStrong"}
-                    color="$text"
+                    bg="background"
+                    borderColor={`${nameMissing ? "error" : "borderStrong"}`}
+                    color="text"
                   />
                   {nameMissing ? (
                     <Text
                       testID="quest-name-error"
                       accessibilityLiveRegion="polite"
                       fontSize={13}
-                      color="$error"
+                      color="error"
                     >
                       {t("quests.editor_incomplete_name")}
                     </Text>
                   ) : null}
                 </YStack>
 
-                <YStack gap="$2">
-                  <Text fontWeight="700" fontSize={14} color="$textSecondary">
+                <YStack gap="2">
+                  <Text fontWeight="700" fontSize={14} color="textSecondary">
                     {t("quests.editor_description")}
                   </Text>
                   <Input
@@ -568,13 +569,13 @@ export default function QuestEditor() {
                     maxLength={descriptionCap}
                     multiline
                     py={8}
-                    bg="$background"
-                    borderColor="$borderStrong"
-                    color="$text"
+                    bg="background"
+                    borderColor="borderStrong"
+                    color="text"
                   />
                 </YStack>
 
-                <Separator borderColor="$borderStrong" />
+                <Separator borderColor="borderStrong" />
 
                 <Stepper
                   label={t("quests.config_rounds")}
@@ -607,7 +608,7 @@ export default function QuestEditor() {
               </YStack>
             </Card>
 
-            <Text fontWeight="700" fontSize={18} color="$text">
+            <Text fontWeight="700" fontSize={18} color="text">
               {t("quests.exercises_list")}
             </Text>
 
@@ -617,15 +618,9 @@ export default function QuestEditor() {
 
               return (
                 <Card key={p.uid}>
-                  <YStack gap="$3">
-                    <XStack items="center" gap="$3">
-                      <YStack
-                        width={48}
-                        height={48}
-                        rounded="$4"
-                        overflow="hidden"
-                        bg="$background"
-                      >
+                  <YStack gap="3">
+                    <XStack items="center" gap="3">
+                      <YStack width={48} height={48} rounded="4" overflow="hidden" bg="background">
                         <Image
                           source={assetByExerciseId.get(exercise.id)}
                           style={{ width: "100%", height: "100%" }}
@@ -633,11 +628,11 @@ export default function QuestEditor() {
                           transition={0}
                         />
                       </YStack>
-                      <Text flex={1} fontWeight="700" fontSize={16} color="$text">
+                      <Text flex={1} fontWeight="700" fontSize={16} color="text">
                         {i + 1}. {exerciseName(exercise)}
                       </Text>
                       <Button
-                        size="$2"
+                        size="2"
                         circular
                         hitSlop={12}
                         icon={<X size={14} />}
@@ -647,7 +642,7 @@ export default function QuestEditor() {
                       />
                     </XStack>
 
-                    <XStack gap="$2">
+                    <XStack gap="2">
                       <Chip
                         label={t("quests.config_reps")}
                         tone={p.type === "reps" ? "primary" : "default"}
@@ -682,7 +677,7 @@ export default function QuestEditor() {
               and substitution opens the same sheet from a row with a different one. */}
             <AppButton
               variant="outline"
-              icon={<Plus size={20} color="$text" strokeWidth={2.5} />}
+              icon={<Plus size={20} color="text" strokeWidth={2.5} />}
               onPress={() => setPickerOpen(true)}
               accessibilityLabel={t("quests.editor_add_exercise")}
             >
@@ -693,7 +688,7 @@ export default function QuestEditor() {
                 testID="quest-exercises-error"
                 accessibilityLiveRegion="polite"
                 fontSize={13}
-                color="$error"
+                color="error"
               >
                 {t("quests.editor_incomplete_exercises")}
               </Text>
@@ -707,7 +702,7 @@ export default function QuestEditor() {
               onOpenChange={setPickerOpen}
               title={t("quests.editor_add_exercise")}
               onPick={addExercise}
-              pickAction={<Plus size={20} color="$primaryText" strokeWidth={2.5} />}
+              pickAction={<Plus size={20} color="primaryText" strokeWidth={2.5} />}
               bottomInset={insets.bottom}
             />
           </YStack>
@@ -719,11 +714,11 @@ export default function QuestEditor() {
         {/* `$bgDark`, opaque like the quest screen's Start bar: the theme's `$background` is
           translucent, and the form scrolling under it read through as ghost headings. */}
         <YStack
-          p="$4"
+          p="4"
           pb={typing ? 16 : insets.bottom + 16}
-          bg="$bgDark"
+          bg="bgDark"
           borderTopWidth={1}
-          borderColor="$borderStrong"
+          borderColor="borderStrong"
         >
           <AppButton testID="quest-save" height={56} disabled={busy} onPress={save}>
             {t("quests.editor_save")}

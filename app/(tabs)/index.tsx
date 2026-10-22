@@ -63,7 +63,7 @@ export default function HomeScreen() {
   const weekChanged = useCallback(() => setWeekRev((r) => r + 1), []);
 
   return (
-    <YStack testID="home-screen" flex={1} bg="$background" {...dragCancelsPress}>
+    <YStack testID="home-screen" flex={1} bg="background" {...dragCancelsPress}>
       {/* The whole top chrome: identity, level, XP, streak, village. Owns the top inset. */}
       <HomeHeader showLevel={disclosed?.level ?? null} />
       <VillagerLine owner="home" />

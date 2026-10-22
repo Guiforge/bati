@@ -24,7 +24,7 @@ export function GpsChip({
     <Chip
       testID="gps-chip"
       label={t(value ? "quests.gps_on" : "quests.gps_off")}
-      icon={<Glyph size={16} color="$text" />}
+      icon={<Glyph size={16} color="text" />}
       accessibilityRole="switch"
       accessibilityLabel={t("quests.gps_label")}
       accessibilityState={{ checked: value }}

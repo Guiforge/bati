@@ -42,7 +42,7 @@ export function LeaguesTable({
       flex={opts.flex ?? 1}
       fontSize={13}
       fontWeight={opts.gold ? "700" : "400"}
-      color={opts.gold ? "$resourceGold" : "$text"}
+      color={opts.gold ? "resourceGold" : "text"}
       style={{ ...NUMS, textAlign: opts.end ? "right" : "left" }}
       numberOfLines={1}
     >
@@ -51,17 +51,17 @@ export function LeaguesTable({
   );
 
   return (
-    <YStack gap="$1" testID="recap-leagues">
-      <AppText fontSize={11} letterSpacing={2} color="$textSecondary" textTransform="uppercase">
+    <YStack gap="1" testID="recap-leagues">
+      <AppText fontSize={11} letterSpacing={2} color="textSecondary" textTransform="uppercase">
         {t("recap.leagues_title")}
       </AppText>
-      <XStack gap="$2">
+      <XStack gap="2">
         {["#", t("session.expedition_moving"), t(`session.expedition_${rate}`)].map((label, i) => (
           <AppText
             key={label}
             flex={i === 0 ? 1.2 : 1}
             fontSize={11}
-            color="$textSecondary"
+            color="textSecondary"
             variant="label"
             numberOfLines={1}
             style={{ textAlign: i === 0 ? "left" : "right" }}
@@ -73,7 +73,7 @@ export function LeaguesTable({
           <AppText
             flex={1}
             fontSize={11}
-            color="$textSecondary"
+            color="textSecondary"
             variant="label"
             numberOfLines={1}
             style={{ textAlign: "right" }}
@@ -83,8 +83,8 @@ export function LeaguesTable({
         ) : null}
       </XStack>
       {splits.map((split) => (
-        <XStack key={split.league} gap="$2" items="center" testID={`recap-league-${split.league}`}>
-          <XStack flex={1.2} gap="$1" items="center">
+        <XStack key={split.league} gap="2" items="center" testID={`recap-league-${split.league}`}>
+          <XStack flex={1.2} gap="1" items="center">
             {cell(
               split.metres >= 1000
                 ? String(split.league)
@@ -95,7 +95,7 @@ export function LeaguesTable({
               <AppText
                 testID="recap-league-best"
                 fontSize={10}
-                color="$resourceGold"
+                color="resourceGold"
                 variant="label"
                 numberOfLines={1}
               >
@@ -117,7 +117,7 @@ export function LeaguesTable({
         </XStack>
       ))}
       {unit === "imperial" ? (
-        <AppText fontSize={11} color="$textSecondary">
+        <AppText fontSize={11} color="textSecondary">
           {t("outing_display.buzz_note")}
         </AppText>
       ) : null}

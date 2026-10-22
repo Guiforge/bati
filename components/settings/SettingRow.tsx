@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { Button, Text, XStack } from "tamagui";
+import { Text, XStack } from "tamagui";
+import { Button } from "@/components/common/Button";
 
 type SettingRowProps = {
   testID?: string;
@@ -15,21 +16,22 @@ export function SettingRow({ testID, icon, label, value, onPress, disabled }: Se
   return (
     <Button
       testID={testID}
-      bg="$surface"
-      borderColor="$borderStrong"
+      bg="surface"
+      borderColor="borderStrong"
       borderWidth={1}
-      rounded="$4"
-      p="$3"
+      rounded="4"
+      p="3"
       height="auto"
-      pressStyle={{ scale: 0.98, opacity: 0.9 }}
+      scale="press:0.98"
+      opacity="press:0.9"
       disabled={disabled}
       // Always said: Tamagui sends it only while true, and Android keeps a re-enabled view disabled.
       aria-disabled={disabled === true}
       onPress={onPress}
     >
-      <XStack flex={1} items="center" gap="$3">
+      <XStack flex={1} items="center" gap="3">
         {icon}
-        <Text flex={1} fontSize="$4" fontWeight="bold" color="$text">
+        <Text flex={1} fontSize="4" fontWeight="bold" color="text">
           {label}
         </Text>
         {value ? (
@@ -37,7 +39,7 @@ export function SettingRow({ testID, icon, label, value, onPress, disabled }: Se
           // the `flex={1}`, so it is the half that gives way: an unbounded value — a folder
           // path, a long count — takes the space the label needed and squeezes it off the
           // screen. `flexShrink` is not a prop Tamagui's `Text` accepts; `maxW` is.
-          <Text fontSize="$3" color="$textSecondary" numberOfLines={1} maxW="55%">
+          <Text fontSize="3" color="textSecondary" numberOfLines={1} maxW="55%">
             {value}
           </Text>
         ) : null}

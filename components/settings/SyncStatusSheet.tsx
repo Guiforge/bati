@@ -120,21 +120,21 @@ export function SyncStatusSheet({
   return (
     <>
       <FormSheet open={open} title={t("sync.row")} onClose={onClose}>
-        <Text testID="sync-status" color="$text" fontSize="$4">
+        <Text testID="sync-status" color="text" fontSize="4">
           {status}
         </Text>
 
-        <YStack gap="$1">
-          <Text color="$textSecondary" fontSize="$3">
+        <YStack gap="1">
+          <Text color="textSecondary" fontSize="3">
             {account.kind === "folder"
               ? t("sync.status.whereFolder")
               : t("sync.status.where", { server: accountLabel(account) })}
           </Text>
-          <Text testID="sync-folder" color="$textSecondary" fontSize="$2" selectable>
+          <Text testID="sync-folder" color="textSecondary" fontSize="2" select="text">
             {folder}
           </Text>
           {user ? (
-            <Text color="$textSecondary" fontSize="$2">
+            <Text color="textSecondary" fontSize="2">
               {t("sync.status.user", { user })}
             </Text>
           ) : null}
@@ -148,7 +148,7 @@ export function SyncStatusSheet({
             local.onPress();
           }}
         >
-          <Text color="$textSecondary" fontSize="$3" textDecorationLine="underline">
+          <Text color="textSecondary" fontSize="3" textDecorationLine="underline">
             {local.folder
               ? t("shelter.alsoPhone", { folder: local.folder })
               : t("shelter.alsoPhoneAdd")}
@@ -156,23 +156,23 @@ export function SyncStatusSheet({
         </Pressable>
 
         {kept > 0 ? (
-          <Text testID="sync-kept" color="$textSecondary" fontSize="$3">
+          <Text testID="sync-kept" color="textSecondary" fontSize="3">
             {t("sync.status.keptSessions", { count: kept })}
           </Text>
         ) : null}
 
-        <YStack gap="$1">
-          <Text color="$text" fontWeight="700">
+        <YStack gap="1">
+          <Text color="text" fontWeight="700">
             {t("sync.status.devices")}
           </Text>
           {peers.length === 0 ? (
-            <Text color="$textSecondary" fontSize="$3">
+            <Text color="textSecondary" fontSize="3">
               {t("sync.status.noDevices")}
             </Text>
           ) : (
             peers.map((peer) => (
               <YStack key={peer.name}>
-                <Text testID="sync-peer" color="$textSecondary" fontSize="$3">
+                <Text testID="sync-peer" color="textSecondary" fontSize="3">
                   {t("sync.status.device", {
                     id: shortId(peer.name),
                     state: t(`sync.peerState.${peer.state}`),
@@ -183,7 +183,7 @@ export function SyncStatusSheet({
                   <AppButton
                     testID="sync-forget"
                     variant="outline"
-                    size="$2"
+                    size="2"
                     onPress={() => confirmForget(peer)}
                   >
                     {t("sync.forgetCta")}
@@ -195,7 +195,7 @@ export function SyncStatusSheet({
         </YStack>
 
         {merge ? (
-          <Text testID="sync-last-merge" color="$textSecondary" fontSize="$3">
+          <Text testID="sync-last-merge" color="textSecondary" fontSize="3">
             {t("sync.status.lastMerge", {
               count: merge.sessions,
               when: syncAgo(t, merge.at),
@@ -207,7 +207,7 @@ export function SyncStatusSheet({
 
         <SettingRow
           testID="sync-wifi-only"
-          icon={<Wifi size={22} color="$text" />}
+          icon={<Wifi size={22} color="text" />}
           label={t("sync.wifiOnly")}
           value={wifiOnly ? t("common.on") : t("common.off")}
           onPress={() => {
@@ -216,7 +216,7 @@ export function SyncStatusSheet({
             setSyncWifiOnly(next).catch((error: unknown) => reportError("sync.wifiOnly", error));
           }}
         />
-        <Text color="$textSecondary" fontSize="$2">
+        <Text color="textSecondary" fontSize="2">
           {t("sync.wifiOnlyNote")}
         </Text>
 

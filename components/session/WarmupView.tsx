@@ -3,9 +3,10 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, XStack, YStack } from "tamagui";
+import { H1, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
+import { Button } from "@/components/common/Button";
 import { FONT_CAPS } from "@/components/common/fontCaps";
 import { Pause, SkipBack, SkipForward } from "@/components/icons";
 import { getExerciseAsset } from "@/constants/assetMap";
@@ -136,20 +137,20 @@ export function WarmupView() {
   const isFirst = warmupIndex === 0;
 
   return (
-    <YStack flex={1} bg="$background" pt={insets.top + 16} pb={insets.bottom + 16} px="$5" gap="$4">
+    <YStack flex={1} bg="background" pt={insets.top + 16} pb={insets.bottom + 16} px="5" gap="4">
       <XStack justify="space-between" items="center">
-        <AppText fontSize={13} fontWeight="700" color="$textSecondary" letterSpacing={1}>
+        <AppText fontSize={13} fontWeight="700" color="textSecondary" letterSpacing={1}>
           {t("session.warmup_title")}
         </AppText>
         <Button
           testID="session-pause"
-          size="$3"
+          size="3"
+          opacity="press:0.7"
           hitSlop={8}
           circular
-          icon={<Pause size={20} color="$text" />}
+          icon={<Pause size={20} color="text" />}
           onPress={pauseSession}
           chromeless
-          pressStyle={{ opacity: 0.7 }}
           accessibilityLabel={t("session.pause_accessibility")}
           accessibilityRole="button"
         />
@@ -178,7 +179,7 @@ export function WarmupView() {
               description are taller than the space between the header and the step controls, and
               a centred box spilled over both. `flexGrow` keeps it centred while it fits. */}
           <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
-            <YStack style={{ flexGrow: 1 }} items="center" justify="center" gap="$4">
+            <YStack style={{ flexGrow: 1 }} items="center" justify="center" gap="4">
               {exercise ? (
                 <Image
                   source={getExerciseAsset(exercise.imagePath)}
@@ -193,13 +194,13 @@ export function WarmupView() {
                 />
               ) : null}
 
-              <YStack items="center" gap="$1">
+              <YStack items="center" gap="1">
                 <AppText
                   testID="warmup-name"
-                  fontFamily="$heading"
+                  fontFamily="heading"
                   fontWeight="700"
                   fontSize={20}
-                  color="$text"
+                  color="text"
                   style={{ textAlign: "center" }}
                 >
                   {label}
@@ -209,7 +210,7 @@ export function WarmupView() {
                     testID="warmup-sides"
                     fontSize={15}
                     fontWeight="700"
-                    color={switched ? "$warning" : "$textSecondary"}
+                    color={switched ? "warning" : "textSecondary"}
                   >
                     {switched
                       ? t("session.switch_sides")
@@ -227,12 +228,12 @@ export function WarmupView() {
           </ScrollView>
           {/* Pinned under the scroll, not inside it: at 360x640 and a 130% font the picture and the
             description fill the scroll, and the countdown was only reachable by swiping. */}
-          <YStack items="center" gap="$4">
+          <YStack items="center" gap="4">
             <H1
               testID="warmup-clock"
               maxFontSizeMultiplier={FONT_CAPS.display}
-              color="$text"
-              fontFamily="$body"
+              color="text"
+              fontFamily="body"
               fontSize={64}
               fontWeight="700"
               fontVariant={["tabular-nums"]}
@@ -240,24 +241,23 @@ export function WarmupView() {
               {formatTime(Math.max(0, remainingSeconds))}
             </H1>
 
-            <TimerBar value={progress} fill="$primary" bg="$surface" />
+            <TimerBar value={progress} fill="primary" bg="surface" />
           </YStack>
         </>
       )}
 
-      <XStack items="center" justify="center" gap="$5">
+      <XStack items="center" justify="center" gap="5">
         <Button
           testID="session-warmup-prev"
-          size="$4"
+          size="4"
+          opacity={`${isFirst ? 0.35 : 1} press:0.7`}
+          bg="surface"
+          borderWidth={1}
+          borderColor="borderStrong"
           circular
-          icon={<SkipBack size={20} color="$text" />}
+          icon={<SkipBack size={20} color="text" />}
           disabled={isFirst}
           aria-disabled={isFirst}
-          opacity={isFirst ? 0.35 : 1}
-          bg="$surface"
-          borderWidth={1}
-          borderColor="$borderStrong"
-          pressStyle={{ opacity: 0.7 }}
           onPress={() => {
             selection();
             previousWarmupStep();
@@ -267,26 +267,26 @@ export function WarmupView() {
         />
 
         <YStack items="center" minW={96}>
-          <AppText fontSize={13} color="$textSecondary">
+          <AppText fontSize={13} color="textSecondary">
             {t("session.warmup_step", {
               current: warmupIndex + 1,
               total: warmupSequence.length,
             })}
           </AppText>
-          <AppText testID="warmup-left" fontSize={13} color="$textSecondary">
+          <AppText testID="warmup-left" fontSize={13} color="textSecondary">
             {t("session.warmup_left", { time: formatTime(left) })}
           </AppText>
         </YStack>
 
         <Button
           testID="session-warmup-next"
-          size="$4"
-          circular
-          icon={<SkipForward size={20} color="$text" />}
-          bg="$surface"
+          size="4"
+          bg="surface"
           borderWidth={1}
-          borderColor="$borderStrong"
-          pressStyle={{ opacity: 0.7 }}
+          borderColor="borderStrong"
+          opacity="press:0.7"
+          circular
+          icon={<SkipForward size={20} color="text" />}
           onPress={() => {
             selection();
             nextWarmupStep();
@@ -325,7 +325,7 @@ export function WarmupView() {
           accessibilityRole="button"
           style={{ alignSelf: "center" }}
         >
-          <AppText py="$2" fontSize={14} fontWeight="700" color="$textSecondary">
+          <AppText py="2" fontSize={14} fontWeight="700" color="textSecondary">
             {t("setAside.not_for_me")}
           </AppText>
         </Pressable>

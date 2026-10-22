@@ -17,10 +17,10 @@ const pct = (n: number): `${number}%` => `${+(clamp01(n) * 100).toFixed(2)}%`;
 export function InkGauge({
   progress,
   fill,
-  track = "$bgDark",
-  frame = "$borderStrong",
+  track = "bgDark",
+  frame = "borderStrong",
   figure,
-  figureColor = "$text",
+  figureColor = "text",
   figureLabel,
   from,
   testIDPrefix,
@@ -30,7 +30,7 @@ export function InkGauge({
   progress: number;
   fill: ColorTokens;
   track?: ColorTokens;
-  /** The track's outline. A theme that maps `$borderStrong` onto the ground passes a raw colour. */
+  /** The track's outline. A theme that maps `borderStrong` onto the ground passes a raw colour. */
   frame?: ColorTokens | string;
   figure?: string;
   figureColor?: ColorTokens;
@@ -53,7 +53,7 @@ export function InkGauge({
   }, [sweeps, target]);
 
   return (
-    <XStack items="center" gap="$2">
+    <XStack items="center" gap="2">
       <YStack
         flex={1}
         height={GAUGE_HEIGHT}
@@ -61,7 +61,7 @@ export function InkGauge({
         borderWidth={1.5}
         // Tamagui types a raw colour out of `borderColor`, but it resolves one fine.
         borderColor={frame as ColorTokens}
-        rounded="$1"
+        rounded="1"
         overflow="hidden"
       >
         {trail === undefined ? null : (
@@ -72,7 +72,7 @@ export function InkGauge({
             b={0}
             l={0}
             width={pct(trail)}
-            bg="$error"
+            bg="error"
             opacity={0.45}
             transition={transition}
           />
@@ -91,7 +91,7 @@ export function InkGauge({
       {figure === undefined ? null : (
         <Text
           testID={`${testIDPrefix}-figure`}
-          fontFamily="$body"
+          fontFamily="body"
           fontWeight="700"
           fontSize={13}
           color={figureColor}

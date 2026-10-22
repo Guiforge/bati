@@ -53,18 +53,19 @@ export function VillageReward({ growth, buildings, language, top, onDismiss }: P
       gap={12}
       rounded={14}
       borderWidth={1}
-      borderColor="$resourceGold"
-      bg="$surface"
-      shadowColor="$shadowColor"
+      borderColor="resourceGold"
+      bg="surface"
+      shadowColor="shadowColor"
       shadowRadius={24}
       shadowOpacity={0.7}
-      elevation={12}
+      // Tamagui 3 no longer types `elevation` as a prop; Android still draws it from the style.
+      style={{ elevation: 12 }}
       onPress={onDismiss}
       accessibilityRole="button"
       accessibilityLabel={t("village.close")}
       {...anim}
     >
-      <SectionLabel color="$resourceGold">{t("village.reward_kicker")}</SectionLabel>
+      <SectionLabel color="resourceGold">{t("village.reward_kicker")}</SectionLabel>
       <XStack items="center" gap={14}>
         <YStack items="center" gap={4} opacity={0.45}>
           <Image
@@ -72,13 +73,13 @@ export function VillageReward({ growth, buildings, language, top, onDismiss }: P
             style={{ width: 46, height: 46 }}
             contentFit="contain"
           />
-          <Text fontSize={10} fontWeight="600" color="$textSecondary">
+          <Text fontSize={10} fontWeight="600" color="textSecondary">
             {first.oldLevel > 0
               ? t("village.building_rank", { level: first.oldLevel })
               : t("village.not_built")}
           </Text>
         </YStack>
-        <Text fontSize={18} color="$resourceGold">
+        <Text fontSize={18} color="resourceGold">
           →
         </Text>
         <YStack items="center" gap={4}>
@@ -87,12 +88,12 @@ export function VillageReward({ growth, buildings, language, top, onDismiss }: P
             style={{ width: 62, height: 62 }}
             contentFit="contain"
           />
-          <Text fontSize={10} fontWeight="600" color="$resourceGold">
+          <Text fontSize={10} fontWeight="600" color="resourceGold">
             {t("village.building_rank", { level: first.newLevel })}
           </Text>
         </YStack>
         <YStack flex={1} minW={0} gap={5}>
-          <Text fontWeight="700" fontSize={17} lineHeight={21} color="$text" numberOfLines={2}>
+          <Text fontWeight="700" fontSize={17} lineHeight="21px" color="text" numberOfLines={2}>
             {t("village.reward_title", {
               building: nameOf(building, language),
               level: first.newLevel,
@@ -100,7 +101,7 @@ export function VillageReward({ growth, buildings, language, top, onDismiss }: P
           </Text>
           {/* Capped so the card is never taller than the room under the title: the rest of the growth
               is listed under "Since your last quest". */}
-          <Text fontSize={12.5} lineHeight={18} color="$textSecondary" numberOfLines={4}>
+          <Text fontSize={12.5} lineHeight="18px" color="textSecondary" numberOfLines={4}>
             {body}
           </Text>
         </YStack>

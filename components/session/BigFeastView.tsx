@@ -65,11 +65,11 @@ function Kicker({ children }: { children: string }) {
   return (
     <AppText
       testID="big-feast-kicker"
-      fontFamily="$body"
+      fontFamily="body"
       fontWeight="700"
       fontSize={13}
       letterSpacing={2}
-      color="$resourceGold"
+      color="resourceGold"
       style={{ textAlign: "center" }}
     >
       {children.toUpperCase()}
@@ -84,7 +84,7 @@ function Title({ children }: { children: string }) {
       fontFamily={headingFont(children)}
       fontWeight="700"
       fontSize={26}
-      color="$text"
+      color="text"
       style={{ textAlign: "center" }}
     >
       {children}
@@ -92,7 +92,7 @@ function Title({ children }: { children: string }) {
   );
 }
 
-/** The fact is the line to read: `$text` at 16, the mockup's. A plain explanation stays pale. */
+/** The fact is the line to read: `text` at 16, the mockup's. A plain explanation stays pale. */
 function Line({
   children,
   testID,
@@ -106,7 +106,7 @@ function Line({
     <AppText
       testID={testID}
       fontSize={fact ? 16 : 15}
-      color={fact ? "$text" : "$textSecondary"}
+      color={fact ? "text" : "textSecondary"}
       style={{ textAlign: "center" }}
     >
       {children}
@@ -150,11 +150,11 @@ function WhyLink({
       onPress={onPress}
       style={{ minHeight: 44, justifyContent: "center" }}
     >
-      <XStack items="center" gap="$1">
-        <AppText fontSize={15} fontWeight="600" color="$primaryText">
+      <XStack items="center" gap="1">
+        <AppText fontSize={15} fontWeight="600" color="primaryText">
           {t(`village.crest_why_title_${animal}`)}
         </AppText>
-        <ChevronRight size={16} color="$primaryText" />
+        <ChevronRight size={16} color="primaryText" />
       </XStack>
     </Pressable>
   );
@@ -286,9 +286,9 @@ function FeastText({
         {sessions !== null && feast.level !== null ? (
           <AppText
             testID="big-feast-level"
-            fontFamily="$body"
+            fontFamily="body"
             fontSize={16}
-            color="$text"
+            color="text"
             style={{ textAlign: "center" }}
           >
             {t("session.feast_tier_level", { level: feast.level, count: sessions })}
@@ -348,7 +348,7 @@ function Frame({
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   return (
-    <YStack flex={1} bg="$bgDark" testID="big-feast">
+    <YStack flex={1} bg="bgDark" testID="big-feast">
       <Image
         source={getVillageTierAsset(tier)}
         contentFit="cover"
@@ -380,7 +380,7 @@ function Frame({
       >
         {children}
       </ScrollView>
-      <YStack px="$4" pt="$3" pb={insets.bottom + 16} bg="$bgDark">
+      <YStack px="4" pt="3" pb={insets.bottom + 16} bg="bgDark">
         <AppButton testID="big-feast-view-village" height={48} onPress={onSeeVillage}>
           {villageName
             ? t("session.feast_view_village", { name: villageName })
@@ -417,7 +417,7 @@ function RevealFinal({
       onSeeVillage={onSeeVillage}
     >
       <YStack style={SECTION}>
-        <XStack testID="big-feast-reveal-row" items="center" justify="center" gap="$3">
+        <XStack testID="big-feast-reveal-row" items="center" justify="center" gap="3">
           <RevealPortrait animal={feast.animal} portrait={portrait} />
           <Shield crest={crest} />
         </XStack>
@@ -493,13 +493,13 @@ function RevealStoryboard({
       <YStack width="100%" maxW={520} minH={360} items="center" justify="center">
         <Animated.View style={[LAYER, first]}>
           <Animated.View style={[{ flexDirection: "row", gap: 14 }, eyes]}>
-            <YStack width={7} height={7} rounded={4} bg="$text" />
-            <YStack width={7} height={7} rounded={4} bg="$text" />
+            <YStack width={7} height={7} rounded={4} bg="text" />
+            <YStack width={7} height={7} rounded={4} bg="text" />
           </Animated.View>
           <Title>{t("session.feast_reveal_t1")}</Title>
         </Animated.View>
         <YStack style={SECTION}>
-          <XStack testID="big-feast-reveal-row" items="center" justify="center" gap="$3">
+          <XStack testID="big-feast-reveal-row" items="center" justify="center" gap="3">
             <Animated.View style={portraitIn}>
               <RevealPortrait animal={feast.animal} portrait={portrait} />
             </Animated.View>

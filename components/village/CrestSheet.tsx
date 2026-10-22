@@ -51,11 +51,11 @@ function Link({ testID, label, onPress }: { testID: string; label: string; onPre
       onPress={onPress}
       style={{ minHeight: 44, justifyContent: "center" }}
     >
-      <XStack items="center" gap="$1">
-        <Text fontSize={15} fontWeight="600" color="$primaryText">
+      <XStack items="center" gap="1">
+        <Text fontSize={15} fontWeight="600" color="primaryText">
           {label}
         </Text>
-        <ChevronRight size={16} color="$primaryText" />
+        <ChevronRight size={16} color="primaryText" />
       </XStack>
     </Pressable>
   );
@@ -99,7 +99,7 @@ function Why({
   if (crest.manual) {
     return (
       <>
-        <Text testID="crest-why-chosen" fontSize={15} color="$text">
+        <Text testID="crest-why-chosen" fontSize={15} color="text">
           {firstPractice === undefined
             ? t("village.crest_why_chosen_mixed", { list })
             : t("village.crest_why_chosen", {
@@ -108,7 +108,7 @@ function Why({
                 part: t(`village.crest_count_${firstPractice}`),
               })}
         </Text>
-        <Text fontSize={14} color="$textSecondary">
+        <Text fontSize={14} color="textSecondary">
           {t("village.crest_why_diamond")}
         </Text>
         {/* One group: the parent's gap would add 12 to the 44 dp each link already takes. */}
@@ -133,19 +133,19 @@ function Why({
   const sessions = PRACTICES.reduce((sum, p) => sum + totals[p], 0);
   return (
     <>
-      <Text fontSize={15} color="$text">
+      <Text fontSize={15} color="text">
         {t("village.crest_why_intro")}
       </Text>
-      <Text fontSize={13} color="$textSecondary">
+      <Text fontSize={13} color="textSecondary">
         {t("village.crest_why_bars")}
       </Text>
-      <YStack gap="$2">
+      <YStack gap="2">
         {barsOf(crest).map(([p, n]) => (
-          <XStack key={p} items="center" gap="$3">
-            <Text width={96} fontSize={14} color="$text">
+          <XStack key={p} items="center" gap="3">
+            <Text width={96} fontSize={14} color="text">
               {sentence(t(PRACTICE_KEY[p]))}
             </Text>
-            <YStack flex={1} height={8} rounded={4} bg="$borderStrong">
+            <YStack flex={1} height={8} rounded={4} bg="borderStrong">
               <YStack
                 height={8}
                 rounded={4}
@@ -153,26 +153,26 @@ function Why({
                 bg={ANIMAL_TOKEN[ANIMAL_OF[p]]}
               />
             </YStack>
-            <Text width={20} fontSize={14} color="$textSecondary" style={{ textAlign: "right" }}>
+            <Text width={20} fontSize={14} color="textSecondary" style={{ textAlign: "right" }}>
               {n}
             </Text>
           </XStack>
         ))}
       </YStack>
       {first === "boar" ? (
-        <Text testID="crest-why-boar" fontSize={15} color="$text">
+        <Text testID="crest-why-boar" fontSize={15} color="text">
           {t("village.crest_why_boar", { list })}
         </Text>
       ) : null}
       {crest.animal === "boar" && crest.quarters && crest.quarters[0] !== crest.quarters[1] ? (
-        <Text fontSize={13} color="$textSecondary">
+        <Text fontSize={13} color="textSecondary">
           {t("session.feast_reveal_boar_colors", {
             first: t(PRACTICE_KEY[crest.quarters[0]]),
             second: t(PRACTICE_KEY[crest.quarters[1]]),
           })}
         </Text>
       ) : null}
-      <Text testID="crest-why-shield" fontSize={15} color="$text">
+      <Text testID="crest-why-shield" fontSize={15} color="text">
         {[
           t(`village.crest_why_center_${crest.animal}`),
           crest.longestFlame > 0 ? t("village.crest_why_flame") : null,
@@ -182,14 +182,14 @@ function Why({
           .join(" ")}
       </Text>
       {secondFromSessions !== null && secondPractice !== undefined ? (
-        <YStack testID="crest-why-second" gap="$1">
-          <Text fontSize={15} fontWeight="600" color="$text">
+        <YStack testID="crest-why-second" gap="1">
+          <Text fontSize={15} fontWeight="600" color="text">
             {t("session.tonight_join", {
               second: sentence(t(`village.crest_${secondFromSessions}`)),
               first: t(`village.crest_to_${first}`),
             })}
           </Text>
-          <Text fontSize={14} color="$textSecondary">
+          <Text fontSize={14} color="textSecondary">
             {t(`session.tonight_join_body_${secondFromSessions}`, {
               n: totals[secondPractice],
               total: sessions,
@@ -231,24 +231,24 @@ function Option({
     >
       <XStack
         items="center"
-        gap="$3"
-        p="$2"
-        rounded="$4"
+        gap="3"
+        p="2"
+        rounded="4"
         borderWidth={1}
-        borderColor={selected ? "$primary" : "$borderStrong"}
+        borderColor={`${selected ? "primary" : "borderStrong"}`}
       >
         {shape ? <Crest crest={shape} size={24} /> : null}
         <YStack flex={1}>
-          <Text fontSize={15} fontWeight="600" color={selected ? "$primaryText" : "$text"}>
+          <Text fontSize={15} fontWeight="600" color={`${selected ? "primaryText" : "text"}`}>
             {label}
           </Text>
           {sub ? (
-            <Text fontSize={13} color="$textSecondary">
+            <Text fontSize={13} color="textSecondary">
               {sub}
             </Text>
           ) : null}
         </YStack>
-        {selected ? <Check size={18} color="$primaryText" /> : null}
+        {selected ? <Check size={18} color="primaryText" /> : null}
       </XStack>
     </Pressable>
   );
@@ -268,7 +268,7 @@ function Pick({ crest, choose }: { crest: CrestData; choose: (v: Animal | "auto"
   const firstPractice = practiceOfAnimal(first);
   const autoSelected = !crest.manual;
   return (
-    <YStack gap="$2" role="radiogroup">
+    <YStack gap="2" role="radiogroup">
       <Option
         testID="crest-pick-auto"
         shape={shape(first)}
@@ -296,7 +296,7 @@ function Pick({ crest, choose }: { crest: CrestData; choose: (v: Animal | "auto"
         />
       ))}
       {/* A pick never moves the stage: the sheet is where the hero reads which one it is. */}
-      <Text testID="crest-pick-stage" fontSize={13} color="$textSecondary">
+      <Text testID="crest-pick-stage" fontSize={13} color="textSecondary">
         {t("village.crest_pick_stage", { stage: t(`village.crest_stage_${crest.stage}`) })}
       </Text>
     </YStack>
@@ -323,7 +323,7 @@ function MottoPick({
       .catch((error) => reportError("village.crestMotto", error));
   };
   return (
-    <YStack gap="$2" role="radiogroup">
+    <YStack gap="2" role="radiogroup">
       <Option
         testID="crest-motto-none"
         label={t("village.motto_none")}
@@ -378,8 +378,8 @@ function CoatChoice({ crest, onCoat }: { crest: CrestData; onCoat: () => void })
       .catch((error) => reportError("village.crestCoat", error));
   };
   return (
-    <YStack testID="crest-coat" gap="$2" role="radiogroup">
-      <Text fontSize={13} color="$textSecondary">
+    <YStack testID="crest-coat" gap="2" role="radiogroup">
+      <Text fontSize={13} color="textSecondary">
         {t("village.coat_title")}
       </Text>
       <Option
@@ -432,18 +432,18 @@ function Picture({
     <>
       {/* 144 dp: beside the 96 dp shield it fits a 320 dp sheet, and the box is reserved
           so the title and the text stay put while the image loads. */}
-      <XStack justify="center" items="center" gap="$3">
+      <XStack justify="center" items="center" gap="3">
         <PortraitImage animal={animal} stage={stage} slug={slug} size={144} />
         <Crest crest={crest} size={96} />
       </XStack>
       <Text
         testID="crest-legend"
         fontSize={14}
-        lineHeight={19}
+        lineHeight="19px"
         // Two lines reserved: German and Spanish legends wrap at 130 %, and the body must not move.
         // The text's lineHeight grows with the system font scale, so the reserve does too.
         minH={legendReserve}
-        color="$textSecondary"
+        color="textSecondary"
         style={{ textAlign: "center" }}
       >
         {reading
@@ -457,7 +457,7 @@ function Picture({
           testID="crest-motto"
           fontSize={15}
           fontStyle="italic"
-          color="$text"
+          color="text"
           style={{ textAlign: "center" }}
         >
           {t(`village.motto_${motto}`)}

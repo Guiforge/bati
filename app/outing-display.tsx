@@ -3,9 +3,10 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { Chip } from "@/components/common/Chip";
 import { FormSheet } from "@/components/common/FormSheet";
+import { Paragraph } from "@/components/common/Paragraph";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { SectionLabel } from "@/components/common/SectionLabel";
 import { Check } from "@/components/icons";
@@ -49,7 +50,7 @@ function LayoutNote({ layout }: { layout: OutingLayout }) {
   const { t } = useTranslation();
   if (layout !== "bigMap") return null;
   return (
-    <Paragraph fontSize={13} color="$textSecondary">
+    <Paragraph fontSize={13} color="textSecondary">
       {t("outing_display.layout_bigmap_note")}
     </Paragraph>
   );
@@ -109,7 +110,7 @@ function LastOutingPreview({
   const outing = last.outing;
   const liveView: LiveView = { ...view, locomotion: tab, walkRun: false, keepAwake };
   return (
-    <YStack gap="$1" testID="outing-display-preview">
+    <YStack gap="1" testID="outing-display-preview">
       <ExpeditionPanelView
         view={liveView}
         track={outing ? trackOf(outing) : { ...EMPTY, startedAt: 1, climbFrom: 0 }}
@@ -117,7 +118,7 @@ function LastOutingPreview({
         preview
         empty={!outing}
       />
-      <Paragraph fontSize={13} color="$textSecondary" px="$1">
+      <Paragraph fontSize={13} color="textSecondary" px="1">
         {outing
           ? t(`outing_display.preview_last_${tab}`, {
               date: formatDay(language, outing.performedAt, { dateStyle: "short" }),
@@ -212,16 +213,16 @@ export default function OutingDisplayScreen() {
   const current = editing === null ? undefined : rows.find((r) => r.id === editing);
 
   return (
-    <YStack flex={1} bg="$background" pt={insets.top} pb={insets.bottom}>
-      <XStack px="$4" py="$3" items="center" gap="$3">
+    <YStack flex={1} bg="background" pt={insets.top} pb={insets.bottom}>
+      <XStack px="4" py="3" items="center" gap="3">
         <ScreenBackButton />
-        <Text flex={1} fontFamily="$heading" fontSize={22} fontWeight="700" color="$text">
+        <Text flex={1} fontFamily="heading" fontSize={22} fontWeight="700" color="text">
           {t("outing_display.title")}
         </Text>
       </XStack>
 
       <RNScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 24 }}>
-        <XStack gap="$2" flexWrap="wrap">
+        <XStack gap="2" flexWrap="wrap">
           {OUTING_ACTIVITIES.map((activity) => (
             <Chip
               key={activity}
@@ -234,7 +235,7 @@ export default function OutingDisplayScreen() {
           ))}
         </XStack>
         {tab === "walk" ? (
-          <Paragraph fontSize={13} color="$textSecondary">
+          <Paragraph fontSize={13} color="textSecondary">
             {t("outing_display.walk_note")}
           </Paragraph>
         ) : null}
@@ -242,20 +243,20 @@ export default function OutingDisplayScreen() {
         <LastOutingPreview tab={tab} view={view} keepAwake={keepAwake} />
 
         {ride ? (
-          <YStack gap="$1">
+          <YStack gap="1">
             <SettingRow
               testID="outing-display-handlebar"
-              icon={handlebar ? <Check size={22} color="$success" /> : null}
+              icon={handlebar ? <Check size={22} color="success" /> : null}
               label={t("outing_display.handlebar")}
               onPress={applyHandlebar}
             />
-            <Paragraph fontSize={13} color="$textSecondary" px="$3">
+            <Paragraph fontSize={13} color="textSecondary" px="3">
               {t("outing_display.handlebar_note")}
             </Paragraph>
           </YStack>
         ) : null}
 
-        <YStack gap="$2">
+        <YStack gap="2">
           {rows.map((row) => (
             <SettingRow
               key={String(row.id)}
@@ -268,10 +269,10 @@ export default function OutingDisplayScreen() {
           ))}
         </YStack>
 
-        <SectionLabel px="$1" mt="$2">
+        <SectionLabel px="1" mt="2">
           {t("outing_display.layout")}
         </SectionLabel>
-        <XStack gap="$2" flexWrap="wrap">
+        <XStack gap="2" flexWrap="wrap">
           {OUTING_LAYOUTS.map((layout) => (
             <Chip
               key={layout}
@@ -285,10 +286,10 @@ export default function OutingDisplayScreen() {
         </XStack>
         <LayoutNote layout={view.layout} />
 
-        <SectionLabel px="$1" mt="$2">
+        <SectionLabel px="1" mt="2">
           {t("outing_display.route_ghost")}
         </SectionLabel>
-        <XStack gap="$2" flexWrap="wrap">
+        <XStack gap="2" flexWrap="wrap">
           {([false, true] as const).map((on) => (
             <Chip
               key={String(on)}
@@ -300,14 +301,14 @@ export default function OutingDisplayScreen() {
             />
           ))}
         </XStack>
-        <Paragraph fontSize={13} color="$textSecondary">
+        <Paragraph fontSize={13} color="textSecondary">
           {t("outing_display.route_ghost_note")}
         </Paragraph>
 
-        <SectionLabel px="$1" mt="$2">
+        <SectionLabel px="1" mt="2">
           {t("outing_display.rate")}
         </SectionLabel>
-        <XStack gap="$2" flexWrap="wrap">
+        <XStack gap="2" flexWrap="wrap">
           {RATE_KINDS.map((rate) => (
             <Chip
               key={rate}
@@ -319,14 +320,14 @@ export default function OutingDisplayScreen() {
             />
           ))}
         </XStack>
-        <Paragraph fontSize={13} color="$textSecondary">
+        <Paragraph fontSize={13} color="textSecondary">
           {t("outing_display.rate_note")}
         </Paragraph>
 
-        <SectionLabel px="$1" mt="$2">
+        <SectionLabel px="1" mt="2">
           {t("outing_display.buzz")}
         </SectionLabel>
-        <XStack gap="$2" flexWrap="wrap">
+        <XStack gap="2" flexWrap="wrap">
           {BUZZ_STEPS.map((step) => (
             <Chip
               key={step}
@@ -341,15 +342,15 @@ export default function OutingDisplayScreen() {
             />
           ))}
         </XStack>
-        <Paragraph fontSize={13} color="$textSecondary">
+        <Paragraph fontSize={13} color="textSecondary">
           {t(hapticsOn ? "outing_display.buzz_note" : "outing_display.buzz_off")}
           {hapticsOn && view.buzzEvery === 0 ? ` ${t("outing_display.buzz_goal_note")}` : ""}
         </Paragraph>
 
-        <SectionLabel px="$1" mt="$2">
+        <SectionLabel px="1" mt="2">
           {t("outing_display.screen")}
         </SectionLabel>
-        <XStack gap="$2" flexWrap="wrap">
+        <XStack gap="2" flexWrap="wrap">
           {([false, true] as const).map((on) => (
             <Chip
               key={String(on)}
@@ -364,7 +365,7 @@ export default function OutingDisplayScreen() {
             />
           ))}
         </XStack>
-        <Paragraph fontSize={13} color="$textSecondary">
+        <Paragraph fontSize={13} color="textSecondary">
           {t(ride ? "outing_display.screen_note_ride" : "outing_display.screen_note_foot")}
         </Paragraph>
 
@@ -376,7 +377,7 @@ export default function OutingDisplayScreen() {
             hitSlop={8}
             style={{ minHeight: 44, justifyContent: "center" }}
           >
-            <Text color="$primaryText" fontSize={15} fontWeight="700">
+            <Text color="primaryText" fontSize={15} fontWeight="700">
               {t("outing_display.reset")}
             </Text>
           </Pressable>
@@ -400,23 +401,23 @@ export default function OutingDisplayScreen() {
               onPress={() => editing !== null && pick(editing, option)}
               style={{ minHeight: 44, justifyContent: "center" }}
             >
-              <XStack items="center" gap="$2">
+              <XStack items="center" gap="2">
                 <YStack flex={1}>
-                  <Text fontSize={16} fontWeight={selected ? "700" : "400"} color="$text">
+                  <Text fontSize={16} fontWeight={selected ? "700" : "400"} color="text">
                     {placeValue(option)}
                   </Text>
                   {note ? (
-                    <Text fontSize={13} color="$textSecondary">
+                    <Text fontSize={13} color="textSecondary">
                       {t("outing_display.walk_run_note")}
                     </Text>
                   ) : null}
                 </YStack>
-                {selected ? <Check size={20} color="$success" /> : null}
+                {selected ? <Check size={20} color="success" /> : null}
               </XStack>
             </Pressable>
           );
         })}
-        <Paragraph fontSize={13} color="$textSecondary">
+        <Paragraph fontSize={13} color="textSecondary">
           {t("outing_display.auto_note")}
         </Paragraph>
       </FormSheet>

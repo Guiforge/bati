@@ -24,25 +24,19 @@ export function PathStrip({ chain }: { chain: Chain }) {
   const isClimbed = chain.climbed;
 
   return (
-    <YStack gap="$2">
-      <Text fontWeight="700" fontSize={13} color="$text" opacity={0.5} flex={1}>
+    <YStack gap="2">
+      <Text fontWeight="700" fontSize={13} color="text" opacity={0.5} flex={1}>
         {caption.toUpperCase()}
       </Text>
 
-      <XStack gap="$1" accessibilityLabel={caption}>
+      <XStack gap="1" accessibilityLabel={caption}>
         {chain.rungs.map((rung, index) => (
           <YStack
             key={rung.exercise.id}
             flex={1}
             height={4}
-            rounded="$1"
-            bg={
-              isClimbed || index < chain.position - 1
-                ? "$resourceGold"
-                : index === chain.position - 1
-                  ? "$primary"
-                  : "$borderStrong"
-            }
+            rounded="1"
+            bg={`${isClimbed || index < chain.position - 1 ? "resourceGold" : index === chain.position - 1 ? "primary" : "borderStrong"}`}
           />
         ))}
       </XStack>

@@ -54,18 +54,19 @@ function Pill({
     <YStack
       minH={44}
       justify="center"
-      px="$3"
-      rounded="$3"
-      bg={active ? "$primary" : "$bgLight"}
+      px="3"
+      rounded="3"
+      bg={`${active ? "primary" : "bgLight"}`}
       borderWidth={1}
-      borderColor={open ? "$primaryText" : "$borderStrong"}
-      pressStyle={{ opacity: 0.92, scale: 0.99 }}
+      borderColor={`${open ? "primaryText" : "borderStrong"}`}
+      opacity="press:0.92"
+      scale="press:0.99"
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ expanded: open, selected: active }}
     >
-      <Text fontWeight="700" fontSize={13} color={active ? "$white" : "$text"}>
+      <Text fontWeight="700" fontSize={13} color={`${active ? "white" : "text"}`}>
         {label}
       </Text>
     </YStack>
@@ -108,7 +109,7 @@ export function FilterRail({
   const toggleOpen = (key: string) => setOpenKey((k) => (k === key ? null : key));
 
   return (
-    <YStack style={RAIL_STYLE} gap="$2" pb="$2">
+    <YStack style={RAIL_STYLE} gap="2" pb="2">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -141,7 +142,7 @@ export function FilterRail({
       </ScrollView>
 
       {openGroup ? (
-        <XStack flexWrap="wrap" gap="$2" px="$5" accessibilityLabel={openGroup.label}>
+        <XStack flexWrap="wrap" gap="2" px="5" accessibilityLabel={openGroup.label}>
           {openGroup.chips.map((c) => (
             <Chip
               key={c.key}
@@ -160,13 +161,13 @@ export function FilterRail({
           ))}
         </XStack>
       ) : applied.length > 0 ? (
-        <XStack flexWrap="wrap" gap="$2" px="$5" items="center">
+        <XStack flexWrap="wrap" gap="2" px="5" items="center">
           {applied.map((c) => (
             <Chip
               key={c.key}
               label={c.label}
               tone="primary"
-              icon={<X size={14} color="$white" strokeWidth={3} />}
+              icon={<X size={14} color="white" strokeWidth={3} />}
               onPress={c.onPress}
               borderWidth={1}
               accessibilityRole="button"
@@ -177,7 +178,7 @@ export function FilterRail({
           ))}
           <Chip
             label={t("quests.filter_clear_all")}
-            icon={<X size={14} color="$text" />}
+            icon={<X size={14} color="text" />}
             onPress={onClearAll}
             borderWidth={1}
             accessibilityRole="button"

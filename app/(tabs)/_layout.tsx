@@ -54,7 +54,7 @@ export default function TabsLayout() {
           title: t("tabs.home"),
           tabBarIcon: ({ focused, size }) => (
             <Home
-              color={focused ? "$primaryText" : "$text"}
+              color={`${focused ? "primaryText" : "text"}`}
               fill={focused ? theme.primaryText?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
@@ -73,7 +73,7 @@ export default function TabsLayout() {
           popToTopOnBlur: true,
           tabBarIcon: ({ focused, size }) => (
             <Sparkles
-              color={focused ? "$primaryText" : "$text"}
+              color={`${focused ? "primaryText" : "text"}`}
               fill={focused ? theme.primaryText?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
@@ -95,7 +95,7 @@ export default function TabsLayout() {
           popToTopOnBlur: true,
           tabBarIcon: ({ focused, size }) => (
             <MapIcon
-              color={focused ? "$primaryText" : "$text"}
+              color={`${focused ? "primaryText" : "text"}`}
               fill={focused ? theme.primaryText?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
@@ -112,7 +112,7 @@ export default function TabsLayout() {
           title: t("tabs.village"),
           tabBarIcon: ({ focused, size }) => (
             <Castle
-              color={focused ? "$primaryText" : "$text"}
+              color={`${focused ? "primaryText" : "text"}`}
               fill={focused ? theme.primaryText?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
@@ -129,7 +129,7 @@ export default function TabsLayout() {
           title: t("tabs.journal"),
           tabBarIcon: ({ focused, size }) => (
             <Scroll
-              color={focused ? "$primaryText" : "$text"}
+              color={`${focused ? "primaryText" : "text"}`}
               fill={focused ? theme.primaryText?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}

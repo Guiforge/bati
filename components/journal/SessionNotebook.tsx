@@ -224,7 +224,7 @@ export function SessionNotebook({
           {!!notes && (
             <NBlock>
               <NKickerQuiet>{t("journal.notes")}</NKickerQuiet>
-              <NText testID="notebook-note" mt={6} fontSize={13.5} lineHeight={20}>
+              <NText testID="notebook-note" mt={6} fontSize={13.5} lineHeight="20px">
                 {notes}
               </NText>
             </NBlock>

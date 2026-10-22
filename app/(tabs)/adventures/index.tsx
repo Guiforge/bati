@@ -6,7 +6,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { AdventureFooter } from "@/components/adventures/AdventureFooter";
 import { focusLabel } from "@/components/adventures/focusLabel";
 import { starsFor } from "@/components/adventures/replayStars";
@@ -16,6 +16,7 @@ import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { GameIcon } from "@/components/common/GameIcon";
+import { Paragraph } from "@/components/common/Paragraph";
 import { Recitatif } from "@/components/common/Recitatif";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { ForgeButton } from "@/components/forge/ForgeButton";
@@ -179,10 +180,10 @@ function AdventureCard({
     .join(" · ");
 
   return (
-    <YStack px="$5">
+    <YStack px="5">
       <Card
         testID="adventures-adventure-card"
-        p="$0"
+        p="0"
         overflow="hidden"
         onPress={() => onPressAdventure(item.id)}
       >
@@ -197,19 +198,19 @@ function AdventureCard({
             />
           ) : (
             <YStack flex={1} items="center" justify="center">
-              <GameIcon name="scroll" size={44} color="$textSecondary" />
+              <GameIcon name="scroll" size={44} color="textSecondary" />
             </YStack>
           )}
-          <XStack position="absolute" t="$3" l="$3" items="center" gap="$2">
+          <XStack position="absolute" t="3" l="3" items="center" gap="2">
             <Chip
               label={row.kindLabel}
               tone={item.kind === "boss" ? "primary" : undefined}
               icon={
                 item.kind === "boss" ? (
-                  // The same `$white` the chip writes its own label in. `$bgDark` here was
-                  // 2.71:1 on the `$primary` fill, under the 3:1 a meaningful icon needs, next
+                  // The same `white` the chip writes its own label in. `bgDark` here was
+                  // 2.71:1 on the `primary` fill, under the 3:1 a meaningful icon needs, next
                   // to a label sitting at 7.06:1.
-                  <GameIcon name="sword" size={14} color="$white" accessible={false} />
+                  <GameIcon name="sword" size={14} color="white" accessible={false} />
                 ) : undefined
               }
             />
@@ -220,23 +221,23 @@ function AdventureCard({
               <XStack
                 items="center"
                 gap={2}
-                bg="$bgLight"
-                rounded="$4"
-                px="$2"
-                py="$1"
+                bg="bgLight"
+                rounded="4"
+                px="2"
+                py="1"
                 borderWidth={1}
-                borderColor="$borderStrong"
+                borderColor="borderStrong"
                 accessibilityLabel={t("boss.threat", { rank: row.threat })}
               >
                 {SKULL_KEYS.slice(0, row.threat).map((k) => (
-                  <Skull key={k} size={14} color="$error" />
+                  <Skull key={k} size={14} color="error" />
                 ))}
               </XStack>
             ) : null}
           </XStack>
           {/* The title on the art, like Home and the session: a poster names itself. */}
           {row.cover ? (
-            <YStack position="absolute" b="$3" l="$3" r="$3">
+            <YStack position="absolute" b="3" l="3" r="3">
               <Recitatif numberOfLines={2} testID="adventure-card-title">
                 {row.title}
               </Recitatif>
@@ -245,17 +246,17 @@ function AdventureCard({
           {row.starsLabel ? (
             <XStack
               position="absolute"
-              t="$3"
-              r="$3"
-              bg="$bgLight"
-              rounded="$4"
-              px="$2"
-              py="$1"
+              t="3"
+              r="3"
+              bg="bgLight"
+              rounded="4"
+              px="2"
+              py="1"
               borderWidth={1}
-              borderColor="$borderStrong"
+              borderColor="borderStrong"
               accessibilityLabel={t("adventures.completed_times", { count: row.finishedCount })}
             >
-              <Text fontSize={12} fontWeight="700" color="$resourceGold">
+              <Text fontSize={12} fontWeight="700" color="resourceGold">
                 {row.starsLabel}
               </Text>
             </XStack>
@@ -263,7 +264,7 @@ function AdventureCard({
         </YStack>
 
         {/* Step track — the campaign's signature. Filled only on the active run. */}
-        <XStack px="$4" pt="$3" gap={3} accessibilityLabel={stepProgressLabel ?? row.stepsLabel}>
+        <XStack px="4" pt="3" gap={3} accessibilityLabel={stepProgressLabel ?? row.stepsLabel}>
           {Array.from({ length: item.stepsCount }, (_, i) => (
             <YStack
               // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length ordinal segments
@@ -271,19 +272,19 @@ function AdventureCard({
               flex={1}
               height={4}
               rounded={2}
-              bg={progress && i < progress.completedCount ? "$primary" : "$borderStrong"}
+              bg={`${progress && i < progress.completedCount ? "primary" : "borderStrong"}`}
             />
           ))}
         </XStack>
 
-        <YStack gap="$2" p="$4">
+        <YStack gap="2" p="4">
           {/* Without a cover there is no art to carry it: the title stays in the body. */}
           {row.cover ? null : (
             <Text
-              fontFamily="$heading"
+              fontFamily="heading"
               fontWeight="700"
               fontSize={18}
-              color="$text"
+              color="text"
               numberOfLines={1}
             >
               {row.title}
@@ -291,24 +292,24 @@ function AdventureCard({
           )}
 
           {row.byHero ? (
-            <Text fontSize={12} color="$textSecondary" testID="adventure-card-by-you">
+            <Text fontSize={12} color="textSecondary" testID="adventure-card-by-you">
               {t("adventures.by_you")}
             </Text>
           ) : null}
 
           {row.focusLabel ? (
-            <Text fontSize={12} fontWeight="700" color="$textSecondary" numberOfLines={1}>
+            <Text fontSize={12} fontWeight="700" color="textSecondary" numberOfLines={1}>
               {row.focusLabel}
             </Text>
           ) : null}
 
-          <Paragraph color="$textSecondary" size="$3" numberOfLines={2}>
+          <Paragraph color="textSecondary" size="3" numberOfLines={2}>
             {row.description}
           </Paragraph>
 
           {item.coverMissing ? (
             // Its preview is of an empty quest: no duration, no XP, and the way to the repair.
-            <Text fontSize={13} color="$textSecondary">
+            <Text fontSize={13} color="textSecondary">
               {t("adventures.missing_quest_own")}
             </Text>
           ) : (
@@ -332,8 +333,8 @@ const itemType = (item: GalleryItem) => ("yoursHeader" in item ? "header" : "pos
 function YoursHeader() {
   const { t } = useTranslation();
   return (
-    <YStack testID="adventures-yours-header" px="$5" pt="$3">
-      <Text fontFamily="$heading" fontWeight="700" fontSize={18} color="$text">
+    <YStack testID="adventures-yours-header" px="5" pt="3">
+      <Text fontFamily="heading" fontWeight="700" fontSize={18} color="text">
         {t("adventures.yours_section")}
       </Text>
     </YStack>
@@ -357,14 +358,14 @@ function StatusMessage({
 
   if (state.status === "error") {
     return (
-      <YStack px="$5">
-        <Card bg="$surface">
-          <YStack gap="$3" items="center" py="$2">
+      <YStack px="5">
+        <Card bg="surface">
+          <YStack gap="3" items="center" py="2">
             <Text fontSize={32}>😵</Text>
-            <Text fontWeight="700" fontSize={16} color="$text">
+            <Text fontWeight="700" fontSize={16} color="text">
               {t("quests.load_error")}
             </Text>
-            <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
+            <Paragraph color="textSecondary" size="3" style={{ textAlign: "center" }}>
               {t("errors.generic")}
             </Paragraph>
             <AppButton fullWidth={false} variant="outline" onPress={onRetry}>
@@ -379,7 +380,7 @@ function StatusMessage({
   if (state.status === "loading" && state.adventures.length === 0) {
     // Reserve a poster's height instead of a small "Loading…" card the list jumps from.
     return (
-      <YStack px="$5" gap="$3">
+      <YStack px="5" gap="3">
         <SkeletonCard>
           <Skeleton height={280} />
         </SkeletonCard>
@@ -389,13 +390,13 @@ function StatusMessage({
 
   if (state.status !== "loading" && state.adventures.length === 0) {
     return (
-      <YStack px="$5">
-        <Card bg="$surface">
-          <YStack gap="$3" items="center" py="$2">
-            <Text fontWeight="700" fontSize={16} color="$text">
+      <YStack px="5">
+        <Card bg="surface">
+          <YStack gap="3" items="center" py="2">
+            <Text fontWeight="700" fontSize={16} color="text">
               {t("adventures.empty_title")}
             </Text>
-            <Paragraph color="$textSecondary" size="$3" style={{ textAlign: "center" }}>
+            <Paragraph color="textSecondary" size="3" style={{ textAlign: "center" }}>
               {t("adventures.empty_subtitle")}
             </Paragraph>
             {/* The hero can write one, and single quests are the way to train meanwhile. */}
@@ -555,18 +556,18 @@ export default function AdventuresGallery() {
     );
 
   return (
-    <YStack testID="adventures-screen" flex={1} bg="$background">
-      <YStack bg="$background" pt={insets.top + 12} px="$5" pb="$3" gap="$1">
+    <YStack testID="adventures-screen" flex={1} bg="background">
+      <YStack bg="background" pt={insets.top + 12} px="5" pb="3" gap="1">
         {/* The title gives way, never the button: it wraps, since one line cut it to "Galerie des avent…" at 130 %. */}
-        <XStack items="center" justify="space-between" gap="$2">
-          <XStack items="center" gap="$2" flex={1} minW={0}>
-            <Sparkles size={18} color="$text" strokeWidth={2.5} />
+        <XStack items="center" justify="space-between" gap="2">
+          <XStack items="center" gap="2" flex={1} minW={0}>
+            <Sparkles size={18} color="text" strokeWidth={2.5} />
             <Text
               flex={1}
-              fontFamily="$heading"
+              fontFamily="heading"
               fontWeight="700"
               fontSize={20}
-              color="$text"
+              color="text"
               numberOfLines={2}
             >
               {title}
@@ -574,7 +575,7 @@ export default function AdventuresGallery() {
           </XStack>
           <ForgeButton />
         </XStack>
-        <Text color="$textSecondary" fontSize={13}>
+        <Text color="textSecondary" fontSize={13}>
           {t("adventures.gallery_subtitle")}
         </Text>
       </YStack>

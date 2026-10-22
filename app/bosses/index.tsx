@@ -4,8 +4,9 @@ import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
+import { Paragraph } from "@/components/common/Paragraph";
 import { ChevronLeft, ChevronRight } from "@/components/icons";
 import { getBossAsset } from "@/constants/assetMap";
 import { type HeroBoss, listHeroBosses } from "@/db/heroBosses";
@@ -29,7 +30,7 @@ export default function BossesScreen() {
   );
 
   return (
-    <YStack testID="bosses-screen" flex={1} bg="$background">
+    <YStack testID="bosses-screen" flex={1} bg="background">
       <ScrollView
         contentContainerStyle={{
           paddingTop: insets.top + 12,
@@ -38,28 +39,28 @@ export default function BossesScreen() {
           gap: 16,
         }}
       >
-        <XStack items="center" gap="$3">
+        <XStack items="center" gap="3">
           <AppIconButton
             onPress={() => router.back()}
             accessibilityRole="button"
             accessibilityLabel={t("quests.go_back")}
           >
-            <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
+            <ChevronLeft size={22} color="text" strokeWidth={2.5} />
           </AppIconButton>
           <Text
             flex={1}
             minW={0}
-            fontFamily="$heading"
+            fontFamily="heading"
             fontWeight="700"
             fontSize={20}
-            color="$text"
+            color="text"
             numberOfLines={1}
           >
             {t("forge.bosses")}
           </Text>
         </XStack>
         {bosses?.length === 0 ? (
-          <Paragraph color="$textSecondary">{t("forge.bosses_empty")}</Paragraph>
+          <Paragraph color="textSecondary">{t("forge.bosses_empty")}</Paragraph>
         ) : null}
         {bosses?.map((b) => (
           <XStack
@@ -67,9 +68,9 @@ export default function BossesScreen() {
             testID={`bosses-row-${b.id}`}
             minH={THUMB}
             items="center"
-            gap="$3"
+            gap="3"
+            opacity="press:0.7"
             onPress={() => router.push(`/bosses/edit?id=${b.id}` as never)}
-            pressStyle={{ opacity: 0.7 }}
             accessibilityRole="button"
             accessibilityLabel={b.name}
           >
@@ -79,10 +80,10 @@ export default function BossesScreen() {
               contentFit="cover"
               accessible={false}
             />
-            <Text flex={1} minW={0} color="$text" fontSize={15} numberOfLines={2}>
+            <Text flex={1} minW={0} color="text" fontSize={15} numberOfLines={2}>
               {b.name}
             </Text>
-            <ChevronRight size={16} color="$textSecondary" />
+            <ChevronRight size={16} color="textSecondary" />
           </XStack>
         ))}
         <AppButton

@@ -4,10 +4,11 @@ import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
+import { Paragraph } from "@/components/common/Paragraph";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { Pause } from "@/components/icons";
 import { shortDate } from "@/components/journal/journalFormat";
@@ -99,25 +100,25 @@ export default function PauseScreen() {
     );
 
   return (
-    <YStack flex={1} bg="$background" pt={insets.top} pb={insets.bottom}>
-      <XStack px="$4" py="$3" items="center" gap="$3">
+    <YStack flex={1} bg="background" pt={insets.top} pb={insets.bottom}>
+      <XStack px="4" py="3" items="center" gap="3">
         <ScreenBackButton />
-        <XStack flex={1} items="center" gap="$2">
-          <Pause size={20} color="$primaryText" />
-          <Text fontFamily="$heading" fontSize={22} fontWeight="700" color="$text">
+        <XStack flex={1} items="center" gap="2">
+          <Pause size={20} color="primaryText" />
+          <Text fontFamily="heading" fontSize={22} fontWeight="700" color="text">
             {t("pause.title")}
           </Text>
         </XStack>
       </XStack>
 
       <RNScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 24 }}>
-        <Card gap="$3">
-          <Text fontSize="$4" fontWeight="700" color="$text">
+        <Card gap="3">
+          <Text fontSize="4" fontWeight="700" color="text">
             {t("pause.pause_title")}
           </Text>
           {pause ? (
             <>
-              <Paragraph testID="pause-active" color="$textSecondary">
+              <Paragraph testID="pause-active" color="textSecondary">
                 {t("pause.pause_active", { date: date(pause.until) })}
               </Paragraph>
               <AppButton
@@ -132,11 +133,11 @@ export default function PauseScreen() {
             </>
           ) : (
             <>
-              <Paragraph color="$textSecondary">{t("pause.pause_body")}</Paragraph>
-              <Text fontSize="$3" color="$text">
+              <Paragraph color="textSecondary">{t("pause.pause_body")}</Paragraph>
+              <Text fontSize="3" color="text">
                 {t("pause.pause_weeks")}
               </Text>
-              <XStack gap="$2" flexWrap="wrap">
+              <XStack gap="2" flexWrap="wrap">
                 {PAUSE_WEEKS.map((w) => (
                   <Chip
                     key={w}
@@ -147,7 +148,7 @@ export default function PauseScreen() {
                   />
                 ))}
               </XStack>
-              <Text fontSize="$3" color="$textSecondary">
+              <Text fontSize="3" color="textSecondary">
                 {t("pause.pause_back_on", {
                   date: shortDate(language, addWeeks(new Date(), pauseWeeks)),
                 })}
@@ -166,13 +167,13 @@ export default function PauseScreen() {
           )}
         </Card>
 
-        <Card gap="$3">
-          <Text fontSize="$4" fontWeight="700" color="$text">
+        <Card gap="3">
+          <Text fontSize="4" fontWeight="700" color="text">
             {t("pause.zone_title")}
           </Text>
           {zone ? (
             <>
-              <Paragraph testID="zone-active" color="$textSecondary">
+              <Paragraph testID="zone-active" color="textSecondary">
                 {t("pause.zone_active", { zones: zoneNames(zone.groups), date: date(zone.until) })}
               </Paragraph>
               <AppButton
@@ -187,11 +188,11 @@ export default function PauseScreen() {
             </>
           ) : (
             <>
-              <Paragraph color="$textSecondary">{t("pause.zone_body")}</Paragraph>
-              <Text fontSize="$3" color="$text">
+              <Paragraph color="textSecondary">{t("pause.zone_body")}</Paragraph>
+              <Text fontSize="3" color="text">
                 {t("pause.zone_pick")}
               </Text>
-              <XStack gap="$2" flexWrap="wrap">
+              <XStack gap="2" flexWrap="wrap">
                 {muscleCodes.map((m) => (
                   <Chip
                     key={m}
@@ -202,10 +203,10 @@ export default function PauseScreen() {
                   />
                 ))}
               </XStack>
-              <Text fontSize="$3" color="$text">
+              <Text fontSize="3" color="text">
                 {t("pause.zone_weeks")}
               </Text>
-              <XStack gap="$2" flexWrap="wrap">
+              <XStack gap="2" flexWrap="wrap">
                 {ZONE_WEEKS.map((w) => (
                   <Chip
                     key={w}
@@ -228,7 +229,7 @@ export default function PauseScreen() {
           )}
         </Card>
 
-        <Paragraph color="$textSecondary" size="$2" px="$1">
+        <Paragraph color="textSecondary" size="2" px="1">
           {t("pause.safety")}
         </Paragraph>
         <AppButton

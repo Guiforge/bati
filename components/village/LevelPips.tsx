@@ -23,14 +23,14 @@ export function LevelPips({ level, max = MAX_BUILDING_LEVEL }: { level: number; 
           width={5}
           height={5}
           rounded={3}
-          bg={slot <= level ? "$resourceGold" : "$borderStrong"}
+          bg={`${slot <= level ? "resourceGold" : "borderStrong"}`}
         />
       ))}
       {level > BUILDING_STAGE_LEVEL ? (
         <Text
           fontSize={11}
           fontWeight="700"
-          color="$resourceGold"
+          color="resourceGold"
           accessible={false}
           importantForAccessibility="no"
         >

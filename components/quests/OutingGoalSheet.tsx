@@ -9,9 +9,10 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Input, Sheet, Text, XStack, YStack } from "tamagui";
+import { Sheet, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Chip } from "@/components/common/Chip";
+import { Input } from "@/components/common/Input";
 import { tamaguiRef } from "@/components/common/tamaguiRef";
 import { useKeyboardHeight } from "@/components/common/useKeyboardHeight";
 import { X } from "@/components/icons";
@@ -237,32 +238,33 @@ export function OutingGoalSheet({
       zIndex={100_000}
     >
       <Sheet.Overlay
-        bg="$sheetScrim"
+        bg="sheetScrim"
         transition={reducedMotion ? undefined : "quick"}
-        enterStyle={{ opacity: 0 }}
-        exitStyle={{ opacity: 0 }}
+        opacity="1 enter:0 exit:0"
       />
       {/* No handle, for the same reason the picker has none: with the drag off it would promise
           a gesture that answers nothing. The X and hardware back are the way out. */}
-      <Sheet.Frame
+      <Sheet.Container
+        overflow="hidden"
+        borderTopLeftRadius="6"
+        borderTopRightRadius="6"
         width="100%"
         maxW={CONTENT_MAX_WIDTH}
         self="center"
-        bg="$surface"
-        borderTopLeftRadius="$6"
-        borderTopRightRadius="$6"
         // The GPS row made the sheet taller than a short screen at 130 % text: what does not fit
         // scrolls, as in `FormSheet`.
         style={{ maxHeight: height - insets.top - 16 - keyboardH }}
       >
+        <Sheet.Background bg="surface" borderTopLeftRadius="6" borderTopRightRadius="6" />
         <Sheet.ScrollView
+          px={0}
           ref={tamaguiRef(scroll)}
           keyboardShouldPersistTaps="handled"
           onMoveShouldSetResponder={() => false}
         >
-          <YStack px="$4" pt="$4" pb={insets.bottom + 16} gap="$4">
-            <XStack items="center" justify="space-between" gap="$3">
-              <Text flex={1} fontWeight="700" fontSize={18} color="$text">
+          <YStack px="4" pt="4" pb={insets.bottom + 16} gap="4">
+            <XStack items="center" justify="space-between" gap="3">
+              <Text flex={1} fontWeight="700" fontSize={18} color="text">
                 {t("quests.goal_sheet_title")}
               </Text>
               <Pressable
@@ -271,7 +273,7 @@ export function OutingGoalSheet({
                 accessibilityLabel={t("common.close")}
                 onPress={close}
               >
-                <X size={20} color="$textSecondary" />
+                <X size={20} color="textSecondary" />
               </Pressable>
             </XStack>
 
@@ -285,7 +287,7 @@ export function OutingGoalSheet({
               }}
             />
 
-            <XStack gap="$2">
+            <XStack gap="2">
               <Chip
                 label={t("quests.config_duration")}
                 selected={durationTab}
@@ -298,14 +300,14 @@ export function OutingGoalSheet({
               />
             </XStack>
             {gps || durationTab ? null : (
-              <Text testID="goal-gps-distance-note" fontSize={13} color="$textSecondary">
+              <Text testID="goal-gps-distance-note" fontSize={13} color="textSecondary">
                 {t("quests.gps_distance_note")}
               </Text>
             )}
 
             {/* Wrapping, not scrolling: four chips at 44 dp fit two rows on the narrowest phone,
               and a scroll view here would hand part of every touch to a pane that cannot move. */}
-            <XStack gap="$2" flexWrap="wrap">
+            <XStack gap="2" flexWrap="wrap">
               {presets.map((preset) => (
                 <Chip
                   key={preset.key}
@@ -317,7 +319,7 @@ export function OutingGoalSheet({
             </XStack>
 
             {longestRun === null ? null : (
-              <Text testID="goal-longest-run" fontSize={13} color="$textSecondary">
+              <Text testID="goal-longest-run" fontSize={13} color="textSecondary">
                 {t("quests.goal_longest_run", {
                   longest: longestLabel(longestRun),
                   ceiling: longestLabel(longestRun * LONGEST_RUN_CEILING),
@@ -325,27 +327,27 @@ export function OutingGoalSheet({
               </Text>
             )}
 
-            <YStack gap="$2">
-              <Text fontWeight="700" fontSize={15} color="$text">
+            <YStack gap="2">
+              <Text fontWeight="700" fontSize={15} color="text">
                 {t("quests.goal_sheet_custom")}
               </Text>
-              <XStack items="center" gap="$2">
+              <XStack items="center" gap="2">
                 <Input
                   flex={1}
                   minH={44}
+                  bg="background"
+                  borderColor="borderStrong"
+                  color="text"
                   value={custom}
                   onChangeText={setCustom}
                   keyboardType="decimal-pad"
                   returnKeyType="done"
                   onSubmitEditing={applyCustom}
                   placeholder={t("quests.goal_sheet_custom_hint")}
-                  bg="$background"
-                  borderColor="$borderStrong"
-                  color="$text"
                 />
                 {/* The unit words are the same in both languages Bati speaks, so `formatDistance`
                   owns them and there is nothing here for i18n to translate. */}
-                <Text fontWeight="700" fontSize={15} color="$textSecondary">
+                <Text fontWeight="700" fontSize={15} color="textSecondary">
                   {unitWord}
                 </Text>
               </XStack>
@@ -366,13 +368,13 @@ export function OutingGoalSheet({
                 router.push(`/outing-display?tab=${displayLocomotion}` as never);
               }}
             >
-              <Text fontSize={14} color="$textSecondary" textDecorationLine="underline">
+              <Text fontSize={14} color="textSecondary" textDecorationLine="underline">
                 {t("quests.outing_display_link")}
               </Text>
             </Pressable>
           </YStack>
         </Sheet.ScrollView>
-      </Sheet.Frame>
+      </Sheet.Container>
     </Sheet>
   );
 }

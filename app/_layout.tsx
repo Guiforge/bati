@@ -34,6 +34,7 @@ import { useChorusStore } from "@/stores/chorus";
 import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
 import "../i18n";
+import { rawColors } from "@/constants/rawColors";
 import config from "../tamagui.config";
 
 LogBox.ignoreLogs(["Expo AV has been deprecated"]);
@@ -51,10 +52,10 @@ const MyTheme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    background: config.tokens.color.bgOverlay.val,
-    card: config.tokens.color.surface.val,
-    text: config.tokens.color.text.val,
-    border: config.tokens.color.borderStrong.val,
+    background: rawColors.bgOverlay,
+    card: rawColors.surface,
+    text: rawColors.text,
+    border: rawColors.borderStrong,
   },
 };
 

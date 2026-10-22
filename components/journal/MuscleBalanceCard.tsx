@@ -65,7 +65,7 @@ export function MuscleBalanceCard() {
     return (
       <NBlock gap={8}>
         {header}
-        <NText fontSize={13.5} lineHeight={19}>
+        <NText fontSize={13.5} lineHeight="19px">
           {t("chart.complete_more")}
         </NText>
       </NBlock>
@@ -79,7 +79,7 @@ export function MuscleBalanceCard() {
     return (
       <NBlock gap={8}>
         {header}
-        <NText fontSize={13.5} lineHeight={19}>
+        <NText fontSize={13.5} lineHeight="19px">
           {verdict.text}
         </NText>
       </NBlock>
@@ -92,7 +92,7 @@ export function MuscleBalanceCard() {
   return (
     <NBlock gap={11}>
       {header}
-      <NText fontSize={13.5} lineHeight={19}>
+      <NText fontSize={13.5} lineHeight="19px">
         {verdict.text}
       </NText>
 
@@ -113,9 +113,9 @@ export function MuscleBalanceCard() {
               <NText
                 width={84}
                 fontSize={12.5}
-                lineHeight={17}
+                lineHeight="17px"
                 numberOfLines={1}
-                color={weak ? "$resourceGold" : "$text"}
+                color={weak ? "resourceGold" : "text"}
               >
                 {m.label[language]}
               </NText>
@@ -123,10 +123,10 @@ export function MuscleBalanceCard() {
                 <NBar
                   progress={maxVolume > 0 ? (m.volume / maxVolume) * 100 : 0}
                   height={6}
-                  fill={weak ? "$resourceGold" : "$gold700"}
+                  fill={weak ? "resourceGold" : "gold700"}
                 />
               </YStack>
-              <NNum width={44} fontSize={12.5} lineHeight={17} style={{ textAlign: "right" }}>
+              <NNum width={44} fontSize={12.5} lineHeight="17px" style={{ textAlign: "right" }}>
                 {share}
               </NNum>
             </XStack>
@@ -145,7 +145,7 @@ export function MuscleBalanceCard() {
       {pullDeficit ? (
         <YStack>
           <NRule my={0} />
-          <NText mt={11} fontWeight="500" fontSize={13.5} lineHeight={19}>
+          <NText mt={11} fontWeight="500" fontSize={13.5} lineHeight="19px">
             {t("journal.pull_deficit_title")}
           </NText>
           <NMuted mt={2}>

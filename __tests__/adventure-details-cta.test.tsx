@@ -198,7 +198,7 @@ test("a completed adventure offers a replay and wears its stars", async () => {
 
   expect(await findByText("Replay Adventure")).toBeVisible();
 
-  // The stars live inside the details Card, which mounts with `enterStyle={{ opacity: 0, … }}`.
+  // The stars live inside the details Card, which mounts with `opacity="enter:0"`.
   // `findByText` resolves the moment the node joins the tree — sometimes mid-animation, while an
   // ancestor is still fully transparent — so asserting visibility straight off it failed about
   // one run in three. `waitFor` retries until the enter transition has settled, which keeps the

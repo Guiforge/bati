@@ -74,7 +74,7 @@ export function ShareAdventureButton({
       accessibilityRole="button"
       accessibilityLabel={t("adventures.share")}
     >
-      <Share2 size={20} color="$text" />
+      <Share2 size={20} color="text" />
     </AppIconButton>
   );
 }

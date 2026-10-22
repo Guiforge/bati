@@ -3,9 +3,10 @@ import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { Paragraph } from "@/components/common/Paragraph";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { ExerciseRow } from "@/components/exercises/ExerciseRow";
 import { EyeOff } from "@/components/icons";
@@ -107,12 +108,12 @@ export default function SetAsideScreen() {
   ) : null;
 
   return (
-    <YStack flex={1} bg="$background" pt={insets.top} pb={insets.bottom}>
-      <XStack px="$4" py="$3" items="center" gap="$3">
+    <YStack flex={1} bg="background" pt={insets.top} pb={insets.bottom}>
+      <XStack px="4" py="3" items="center" gap="3">
         <ScreenBackButton />
-        <XStack flex={1} items="center" gap="$2">
-          <EyeOff size={20} color="$primaryText" />
-          <Text fontFamily="$heading" fontSize={22} fontWeight="700" color="$text">
+        <XStack flex={1} items="center" gap="2">
+          <EyeOff size={20} color="primaryText" />
+          <Text fontFamily="heading" fontSize={22} fontWeight="700" color="text">
             {t("setAside.title")}
           </Text>
         </XStack>
@@ -120,8 +121,8 @@ export default function SetAsideScreen() {
 
       <RNScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 24 }}>
         {rows === null ? null : rows.length === 0 ? (
-          <Card gap="$3">
-            <Paragraph color="$textSecondary">{t("setAside.empty")}</Paragraph>
+          <Card gap="3">
+            <Paragraph color="textSecondary">{t("setAside.empty")}</Paragraph>
             <AppButton
               fullWidth={false}
               variant="outline"
@@ -141,7 +142,7 @@ export default function SetAsideScreen() {
                 thumb={getExerciseThumb(exercise.imagePath)}
                 accessibilityLabel={localizedName(exercise, language)}
                 caption={
-                  <Text fontSize={12} color="$textSecondary" numberOfLines={1}>
+                  <Text fontSize={12} color="textSecondary" numberOfLines={1}>
                     {until === undefined
                       ? t("setAside.since", { date: shortDate(language, new Date(at)) })
                       : t("setAside.until", { date: shortDate(language, new Date(until)) })}
@@ -153,7 +154,7 @@ export default function SetAsideScreen() {
                     testID={`set-aside-put-back-${exercise.id}`}
                     fullWidth={false}
                     variant="outline"
-                    size="$3"
+                    size="3"
                     fontSize={14}
                     onPress={() => {
                       // Off the list once the write holds: a row that vanished and comes back on
@@ -177,7 +178,7 @@ export default function SetAsideScreen() {
               />
             ))}
             {allJumps}
-            <Paragraph color="$textSecondary" size="$2" px="$1">
+            <Paragraph color="textSecondary" size="2" px="1">
               {t("setAside.limits")}
             </Paragraph>
           </>

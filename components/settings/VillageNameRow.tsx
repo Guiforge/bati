@@ -30,22 +30,22 @@ export function VillageNameRow() {
   return (
     <XStack
       testID="settings-village-name"
-      bg="$surface"
-      borderColor={draft === null ? "$borderStrong" : "$primary"}
+      bg="surface"
+      borderColor={`${draft === null ? "borderStrong" : "primary"}`}
       borderWidth={1}
-      rounded="$4"
-      p="$3"
+      rounded="4"
+      p="3"
       items="center"
-      gap="$3"
+      gap="3"
       onPress={() => setDraft(villageName)}
     >
-      <Castle size={22} color="$text" />
+      <Castle size={22} color="text" />
       <YStack flex={1}>
-        <Text fontSize="$4" fontWeight="bold" color="$text">
+        <Text fontSize="4" fontWeight="bold" color="text">
           {t("settings.village_name")}
         </Text>
         {draft === null ? (
-          <Text fontSize="$3" color="$textSecondary">
+          <Text fontSize="3" color="textSecondary">
             {villageName || t("settings.tap_change")}
           </Text>
         ) : (

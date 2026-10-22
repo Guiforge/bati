@@ -30,7 +30,7 @@ related: [design-system.md]
 ## 3) Accessibility (WCAG AA + gym lighting)
 
 - [ ] Body text contrast ≥ 4.5:1; large text and meaningful icons ≥ 3:1.
-      `__tests__/color-contrast.test.ts` holds this for every token written as `color="$x"`, and
+      `__tests__/color-contrast.test.ts` holds this for every token written as `color="x"`, and
       a token nobody has weighed fails there rather than on a screen. Resolve through the theme,
       not `rawColors`: `$muted` renders `#909ACB`.
 - [ ] Secondary text remains readable under bright ambient light.

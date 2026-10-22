@@ -53,8 +53,8 @@ export function EditorEndSection({
     : { kind: "boss", monster: painted0 };
 
   return (
-    <YStack gap="$3" opacity={frozen ? 0.6 : 1} pointerEvents={frozen ? "none" : "auto"}>
-      <XStack gap="$2">
+    <YStack gap="3" opacity={frozen ? 0.6 : 1} pointerEvents={frozen ? "none" : "auto"}>
+      <XStack gap="2">
         <Chip
           testID="editor-end-route"
           label={t("adventures.editor_end_route")}
@@ -70,8 +70,8 @@ export function EditorEndSection({
       </XStack>
 
       {end.kind === "boss" ? (
-        <YStack gap="$3">
-          <XStack flexWrap="wrap" gap="$2">
+        <YStack gap="3">
+          <XStack flexWrap="wrap" gap="2">
             {heroBosses.map((b) => {
               const selected = end.heroBoss === b.uuid;
               const fallback = b.monsterKey ?? painted0;
@@ -82,12 +82,12 @@ export function EditorEndSection({
                   testID={`editor-hero-boss-${b.uuid}`}
                   onPress={() => onChange({ kind: "boss", monster: fallback, heroBoss: b.uuid })}
                   width="48%"
-                  gap="$1"
-                  p="$2"
-                  bg="$background"
+                  gap="1"
+                  p="2"
+                  bg="background"
                   borderWidth={2}
-                  borderColor={selected ? "$primaryText" : "$borderStrong"}
-                  rounded="$3"
+                  borderColor={`${selected ? "primaryText" : "borderStrong"}`}
+                  rounded="3"
                   accessibilityRole="button"
                   accessibilityState={{ selected }}
                   accessibilityLabel={b.name}
@@ -98,16 +98,16 @@ export function EditorEndSection({
                     contentFit="cover"
                     accessible={false}
                   />
-                  <Text fontWeight="700" color="$text" numberOfLines={1}>
+                  <Text fontWeight="700" color="text" numberOfLines={1}>
                     {b.name || (painted ? monsterName(painted, language) : "")}
                   </Text>
                   {b.weakness ? (
-                    <Text fontSize={12} color="$textSecondary">
+                    <Text fontSize={12} color="textSecondary">
                       {t("adventures.editor_boss_weak", { muscle: label(b.weakness) })}
                     </Text>
                   ) : null}
                   {b.resistance ? (
-                    <Text fontSize={12} color="$textSecondary">
+                    <Text fontSize={12} color="textSecondary">
                       {t("adventures.editor_boss_resists", { muscle: label(b.resistance) })}
                     </Text>
                   ) : null}
@@ -124,12 +124,12 @@ export function EditorEndSection({
                     testID={`editor-monster-${m.key}`}
                     onPress={() => onChange({ kind: "boss", monster: m.key })}
                     width="48%"
-                    gap="$1"
-                    p="$2"
-                    bg="$background"
+                    gap="1"
+                    p="2"
+                    bg="background"
                     borderWidth={2}
-                    borderColor={selected ? "$primaryText" : "$borderStrong"}
-                    rounded="$3"
+                    borderColor={`${selected ? "primaryText" : "borderStrong"}`}
+                    rounded="3"
                     accessibilityRole="button"
                     accessibilityState={{ selected }}
                     accessibilityLabel={monsterName(m, language)}
@@ -140,16 +140,16 @@ export function EditorEndSection({
                       contentFit="cover"
                       accessible={false}
                     />
-                    <Text fontWeight="700" color="$text" numberOfLines={1}>
+                    <Text fontWeight="700" color="text" numberOfLines={1}>
                       {monsterName(m, language)}
                     </Text>
                     {m.weakness ? (
-                      <Text fontSize={12} color="$textSecondary">
+                      <Text fontSize={12} color="textSecondary">
                         {t("adventures.editor_boss_weak", { muscle: label(m.weakness) })}
                       </Text>
                     ) : null}
                     {m.resistance ? (
-                      <Text fontSize={12} color="$textSecondary">
+                      <Text fontSize={12} color="textSecondary">
                         {t("adventures.editor_boss_resists", { muscle: label(m.resistance) })}
                       </Text>
                     ) : null}
@@ -161,12 +161,12 @@ export function EditorEndSection({
             {t("adventures.editor_new_boss")}
           </AppButton>
           {hp !== null ? (
-            <Text fontSize={13} color="$textSecondary">
+            <Text fontSize={13} color="textSecondary">
               {t("adventures.editor_boss_hp", { hp })}
             </Text>
           ) : null}
           {outingsOnly ? (
-            <Text testID="editor-outings-no-hit" fontSize={13} color="$textSecondary">
+            <Text testID="editor-outings-no-hit" fontSize={13} color="textSecondary">
               {t("adventures.editor_outings_no_hit")}
             </Text>
           ) : null}

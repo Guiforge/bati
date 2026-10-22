@@ -3,9 +3,10 @@ import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { Paragraph } from "@/components/common/Paragraph";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { Crest, type CrestShape } from "@/components/village/Crest";
 import {
@@ -99,24 +100,24 @@ const CREST_ROWS: [string, CrestShape][] = [
 ];
 const CREST_SIZES = [24, 48, 56, 96] as const;
 const CREST_GROUNDS = [
-  ["bgDark", "$bgDark", false],
-  ["surface2", "$surface2", false],
-  ["painting", "$surface", true],
+  ["bgDark", "bgDark", false],
+  ["surface2", "surface2", false],
+  ["painting", "surface", true],
 ] as const;
 
 function CrestBoard() {
   return (
-    <Card p="$4" gap="$3">
-      <Text fontSize="$4" fontWeight="700" color="$text">
+    <Card p="4" gap="3">
+      <Text fontSize="4" fontWeight="700" color="text">
         Crests
       </Text>
       {CREST_ROWS.map(([name, crest]) => (
-        <YStack key={name} gap="$2">
-          <Text fontSize="$2" color="$textSecondary">
+        <YStack key={name} gap="2">
+          <Text fontSize="2" color="textSecondary">
             {name}
           </Text>
           {CREST_GROUNDS.map(([ground, bg, onPainting]) => (
-            <XStack key={ground} bg={bg} p="$2" gap="$3" items="center">
+            <XStack key={ground} bg={bg} p="2" gap="3" items="center">
               {CREST_SIZES.map((size) => (
                 <Crest key={size} crest={crest} size={size} onPainting={onPainting} />
               ))}
@@ -276,25 +277,25 @@ export default function DevScreen() {
   if (!__DEV__) return null;
 
   return (
-    <YStack flex={1} bg="$background" pt={insets.top} pb={insets.bottom}>
-      <XStack px="$4" py="$3" items="center" gap="$3">
+    <YStack flex={1} bg="background" pt={insets.top} pb={insets.bottom}>
+      <XStack px="4" py="3" items="center" gap="3">
         <ScreenBackButton />
-        <Text fontSize={20} fontWeight="700" color="$text">
+        <Text fontSize={20} fontWeight="700" color="text">
           Dev tools
         </Text>
       </XStack>
 
       <RNScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
         {/* The local "already shown" key of the big feasts, for .maestro/big-feast-shown-once.yaml. */}
-        <Text testID="dev-big-feasts-shown" fontSize="$2" color="$textSecondary">
+        <Text testID="dev-big-feasts-shown" fontSize="2" color="textSecondary">
           bigFeastsShown={feastsShown}
         </Text>
 
-        <Card p="$4" gap="$3">
-          <Text fontSize="$4" fontWeight="700" color="$text">
+        <Card p="4" gap="3">
+          <Text fontSize="4" fontWeight="700" color="text">
             Hero level {level} — {xp} XP
           </Text>
-          <XStack gap="$2">
+          <XStack gap="2">
             <AppButton fullWidth={false} variant="outline" onPress={() => jumpLevel(-1)}>
               -1
             </AppButton>
@@ -308,16 +309,16 @@ export default function DevScreen() {
               Clear fake XP
             </AppButton>
           </XStack>
-          <Paragraph fontSize="$2" color="$textSecondary">
+          <Paragraph fontSize="2" color="textSecondary">
             Going down only removes fake XP: real sessions keep their levels.
           </Paragraph>
         </Card>
 
-        <Card p="$4" gap="$3">
-          <Text fontSize="$4" fontWeight="700" color="$text">
+        <Card p="4" gap="3">
+          <Text fontSize="4" fontWeight="700" color="text">
             Fake history — {seeded} sessions
           </Text>
-          <XStack gap="$2">
+          <XStack gap="2">
             <AppButton fullWidth={false} onPress={() => runSeed(1)}>
               1y
             </AppButton>
@@ -331,18 +332,18 @@ export default function DevScreen() {
               Clear
             </AppButton>
           </XStack>
-          <Paragraph fontSize="$2" color="$textSecondary">
+          <Paragraph fontSize="2" color="textSecondary">
             For profiling the real screens against a real row count. Sessions and exercises only,
             built from the quest catalogue. Seeding again replaces the batch; Clear removes it and
             leaves real history untouched. 5y is ~910 sessions and takes a moment.
           </Paragraph>
         </Card>
 
-        <Card p="$4" gap="$3">
-          <Text fontSize="$4" fontWeight="700" color="$text">
+        <Card p="4" gap="3">
+          <Text fontSize="4" fontWeight="700" color="text">
             Village
           </Text>
-          <Paragraph fontSize="$2" color="$textSecondary">
+          <Paragraph fontSize="2" color="textSecondary">
             There is no "max out village" button any more: it wrote to village_buildings and
             village_stats, which nothing reads. Every level on that screen is derived from the
             session journal, so seeding history above is what actually grows the village.
@@ -351,8 +352,8 @@ export default function DevScreen() {
 
         <CrestBoard />
 
-        <Card p="$4" gap="$3">
-          <Text fontSize="$4" fontWeight="700" color="$text">
+        <Card p="4" gap="3">
+          <Text fontSize="4" fontWeight="700" color="text">
             Boss fight
           </Text>
           <AppButton onPress={() => runBossFight(false)}>Jump to boss fight</AppButton>
@@ -361,11 +362,11 @@ export default function DevScreen() {
           </AppButton>
         </Card>
 
-        <Card p="$4" gap="$3">
-          <Text fontSize="$4" fontWeight="700" color="$text">
+        <Card p="4" gap="3">
+          <Text fontSize="4" fontWeight="700" color="text">
             Fake expedition
           </Text>
-          <Paragraph fontSize="$2" color="$textSecondary">
+          <Paragraph fontSize="2" color="textSecondary">
             One finished outing with a synthetic trace, written through the real writers, then
             straight to its recap. The only way to see the map without going outside — and no
             evidence whatsoever that the service records a trace, which only a walk can say.
@@ -384,18 +385,18 @@ export default function DevScreen() {
             taken a second late shows a still frame either way. A number you can read is the
             only instrument that works. Toggle "Remove animations" in Android's accessibility
             settings and come back: this flips without a relaunch, or the watch is broken. */}
-        <Card p="$4" gap="$3">
-          <Text fontSize="$4" fontWeight="700" color="$text">
+        <Card p="4" gap="3">
+          <Text fontSize="4" fontWeight="700" color="text">
             Reduced motion · {reducedMotion ? "on" : "off"}
           </Text>
-          <Paragraph fontSize="$2" color="$textSecondary">
+          <Paragraph fontSize="2" color="textSecondary">
             Read from Android, never from a stored value. `adb shell settings put global
             transition_animation_scale 0` is the same switch.
           </Paragraph>
         </Card>
 
-        <Card p="$4" gap="$3">
-          <Text fontSize="$4" fontWeight="700" color="$text">
+        <Card p="4" gap="3">
+          <Text fontSize="4" fontWeight="700" color="text">
             Onboarding
           </Text>
           <AppButton
@@ -409,7 +410,7 @@ export default function DevScreen() {
         </Card>
 
         {status ? (
-          <Text fontSize="$2" color="$textSecondary">
+          <Text fontSize="2" color="textSecondary">
             {status}
           </Text>
         ) : null}

@@ -38,7 +38,7 @@ const WITH_ACTION_MS = 6000;
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const insets = useSafeAreaInsets();
-  // 16 on a phone ($4); on a wide window the toast sits over the content column, not the gutters.
+  // 16 on a phone (4); on a wide window the toast sits over the content column, not the gutters.
   const { width } = useWindowDimensions();
   const side = Math.max(16, (width - CONTENT_MAX_WIDTH) / 2 + 16);
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -96,22 +96,22 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const getToastBorder = (type: ToastType) => {
     switch (type) {
       case "success":
-        return "$success" as const;
+        return "success" as const;
       case "error":
-        return "$error" as const;
+        return "error" as const;
       default:
-        return "$borderStrong" as const;
+        return "borderStrong" as const;
     }
   };
 
   const getToastIcon = (type: ToastType) => {
     switch (type) {
       case "success":
-        return <Check size={16} color="$success" />;
+        return <Check size={16} color="success" />;
       case "error":
-        return <AlertCircle size={16} color="$error" />;
+        return <AlertCircle size={16} color="error" />;
       default:
-        return <Info size={16} color="$primaryText" />;
+        return <Info size={16} color="primaryText" />;
     }
   };
 
@@ -137,22 +137,22 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         r={side}
         z={9999}
         pointerEvents="box-none"
-        gap="$2"
+        gap="2"
         accessibilityLiveRegion="polite"
       >
         <AnimatePresence>
           {toasts.map((toast) => (
             <XStack
               key={toast.id}
-              bg="$surface2"
-              rounded="$4"
+              bg="surface2"
+              rounded="4"
               borderWidth={1}
               borderColor={getToastBorder(toast.type)}
               items="center"
               transition={reducedMotion ? undefined : "quick"}
-              enterStyle={reducedMotion ? undefined : { opacity: 0, y: -20 }}
-              exitStyle={reducedMotion ? undefined : { opacity: 0, y: -20 }}
-              shadowColor="$shadowColor"
+              opacity={reducedMotion ? undefined : "enter:0 exit:0"}
+              y={reducedMotion ? undefined : "enter:-20px exit:-20px"}
+              shadowColor="shadowColor"
               shadowOpacity={0.3}
               shadowRadius={6}
               shadowOffset={{ width: 0, height: 3 }}
@@ -164,7 +164,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 onPress={() => dismiss(toast.id)}
               >
                 {getToastIcon(toast.type)}
-                <Text flex={1} fontWeight="700" color="$text" fontSize={14}>
+                <Text flex={1} fontWeight="700" color="text" fontSize={14}>
                   {toast.message}
                 </Text>
               </Pressable>
@@ -178,7 +178,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                   }}
                   style={{ paddingHorizontal: 12, paddingVertical: 12 }}
                 >
-                  <Text fontWeight="700" color="$primaryText" fontSize={14}>
+                  <Text fontWeight="700" color="primaryText" fontSize={14}>
                     {toast.action.label}
                   </Text>
                 </Pressable>

@@ -29,6 +29,6 @@ describe("the title font", () => {
     const at = warmup.indexOf("formatTime(Math.max(0, remainingSeconds))");
     expect(at).toBeGreaterThan(0);
     const timer = warmup.slice(at - 400, at);
-    expect(timer).toContain('fontFamily="$body"');
+    expect(timer).toContain('fontFamily="body"');
   });
 });

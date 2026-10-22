@@ -47,7 +47,7 @@ export function getPhaseFromHp(hpPercent: number): BossPhase {
 export function getPhaseLook(phase: BossPhase): PhaseLook {
   const entry = PHASE_THRESHOLDS.find((t) => t.phase === phase) ?? PHASE_THRESHOLDS[3];
   return {
-    bgToken: `$${entry.bg}` as ColorTokens,
+    bgToken: entry.bg as ColorTokens,
     bgRaw: rawColors[entry.bg],
     dim: entry.dim,
     rim: entry.rim,
@@ -62,5 +62,5 @@ export function getHpPercent(currentHp: number, totalHp: number): number {
 
 /** Fire while the monster is whole, the error red once it is losing, enraged or down. */
 export function bossHpColor(hpPercent: number, isEnraged: boolean, isDown: boolean) {
-  return isEnraged || isDown || hpPercent < 50 ? "$error" : "$resourceFire";
+  return isEnraged || isDown || hpPercent < 50 ? "error" : "resourceFire";
 }

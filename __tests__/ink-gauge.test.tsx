@@ -13,7 +13,7 @@ const flat = (s: unknown) => StyleSheet.flatten(s as never) as Record<string, un
 function gauge(props: Partial<React.ComponentProps<typeof InkGauge>> = {}) {
   return (
     <TamaguiProvider config={config} defaultTheme="dark">
-      <InkGauge progress={0.4} fill="$resourceGold" testIDPrefix="g" {...props} />
+      <InkGauge progress={0.4} fill="resourceGold" testIDPrefix="g" {...props} />
     </TamaguiProvider>
   );
 }
@@ -24,7 +24,7 @@ describe("InkGauge", () => {
   });
 
   it("fills to its progress, in the colour it was given, on a framed 10 dp track", async () => {
-    const root = await render(gauge({ track: "$gold800" }));
+    const root = await render(gauge({ track: "gold800" }));
     const fill = root.getByTestId("g-fill");
     expect(flat(fill.props.style).width).toBe("40%");
     expect(fill).toHaveStyle({ backgroundColor: fade(rawColors.resourceGold, 1) });
@@ -34,7 +34,7 @@ describe("InkGauge", () => {
     expect(track.backgroundColor).toBe(rawColors.gold800);
   });
 
-  it("outlines its track in $borderStrong unless given a frame", async () => {
+  it("outlines its track in borderStrong unless given a frame", async () => {
     const dflt = await render(gauge());
     expect(flat(dflt.getByTestId("g-fill").parent?.props.style).borderTopColor).toBe(
       rawColors.borderStrong,

@@ -19,16 +19,16 @@ export function ImportArrives({ arrives }: { arrives: Arrivals }) {
   ).filter(([, n]) => n > 0);
   if (rows.length === 0) return null;
   return (
-    <Card gap="$2" testID="import-arrives">
-      <Text fontWeight="700" fontSize={14} color="$textSecondary">
+    <Card gap="2" testID="import-arrives">
+      <Text fontWeight="700" fontSize={14} color="textSecondary">
         {t("quests.import_arrives")}
       </Text>
       {rows.map(([key, n]) => (
-        <XStack key={key} gap="$3" justify="space-between">
-          <Text flex={1} color="$text">
+        <XStack key={key} gap="3" justify="space-between">
+          <Text flex={1} color="text">
             {t(`quests.import_arrives_${key}`)}
           </Text>
-          <Text fontWeight="700" color="$text">
+          <Text fontWeight="700" color="text">
             {n}
           </Text>
         </XStack>
@@ -46,11 +46,11 @@ export function ImportClashes({ names }: { names: readonly string[] }) {
   const { t } = useTranslation();
   if (names.length === 0) return null;
   return (
-    <YStack testID="import-clashes" gap="$2">
+    <YStack testID="import-clashes" gap="2">
       {names.map((name) => (
-        <XStack key={name} gap="$2" items="flex-start">
-          <Info size={16} color="$textSecondary" />
-          <Text flex={1} fontSize={13} color="$textSecondary">
+        <XStack key={name} gap="2" items="flex-start">
+          <Info size={16} color="textSecondary" />
+          <Text flex={1} fontSize={13} color="textSecondary">
             {t("quests.import_clash", { name })}
           </Text>
         </XStack>

@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { useAmbientVisit, useScreenGuide } from "@/components/chorus/screenCues";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
@@ -14,6 +14,7 @@ import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { FilterRail, type RailGroup } from "@/components/common/FilterRail";
 import { GameIcon } from "@/components/common/GameIcon";
+import { Paragraph } from "@/components/common/Paragraph";
 import { Recitatif } from "@/components/common/Recitatif";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { ForgeButton } from "@/components/forge/ForgeButton";
@@ -97,7 +98,7 @@ const FAVOURITE_STYLE = {
   backgroundColor: rawColors.bgOverlay,
 } as const;
 
-/** The star's right offset (12) + its box (20 icon + 2 x 8 padding) + a $4 (16) gap. */
+/** The star's right offset (12) + its box (20 icon + 2 x 8 padding) + a 4 (16) gap. */
 const STAR_CLEARANCE = 12 + 36 + 16;
 
 /** No path means no cover: the muscle tint carries the banner instead. Anything else — a bundled
@@ -253,8 +254,8 @@ function QuestRow({
   const handlePress = () => onPressQuest(q.id);
 
   return (
-    <YStack px="$5">
-      <Card testID="quests-quest-card" bg="$surface" p="$0" overflow="hidden" onPress={handlePress}>
+    <YStack px="5">
+      <Card testID="quests-quest-card" bg="surface" p="0" overflow="hidden" onPress={handlePress}>
         {/* Cover banner — same card family as the adventures gallery. */}
         <YStack height={140}>
           {meta.cover ? (
@@ -271,11 +272,11 @@ function QuestRow({
               <GameIcon
                 name={questGlyph(q.rounds, q.exercises.length)}
                 size={44}
-                color="$textSecondary"
+                color="textSecondary"
               />
             </YStack>
           )}
-          <XStack position="absolute" t="$3" l="$3" gap="$2">
+          <XStack position="absolute" t="3" l="3" gap="2">
             <Chip label={meta.durationLabel} />
             <Chip label={meta.levelLabel} />
           </XStack>
@@ -283,7 +284,7 @@ function QuestRow({
             the house — is legible from the gallery rather than only once opened. Same words the
             movement rows and the filter rail wear. */}
           {meta.outsideLabel || meta.heroLabel ? (
-            <XStack position="absolute" t="$3" r="$3" gap="$2">
+            <XStack position="absolute" t="3" r="3" gap="2">
               {meta.outsideLabel ? <Chip label={meta.outsideLabel} /> : null}
               {meta.heroLabel ? <Chip label={meta.heroLabel} /> : null}
             </XStack>
@@ -302,7 +303,7 @@ function QuestRow({
           >
             <Star
               size={20}
-              color={meta.favourite ? "$resourceGold" : "$text"}
+              color={`${meta.favourite ? "resourceGold" : "text"}`}
               fill={meta.favourite ? rawColors.resourceGold : "transparent"}
               strokeWidth={2.5}
             />
@@ -310,7 +311,7 @@ function QuestRow({
 
           {/* The title on the art, like Home and the session. Right inset clears the star. */}
           {meta.cover ? (
-            <YStack position="absolute" b="$3" l="$3" r={STAR_CLEARANCE}>
+            <YStack position="absolute" b="3" l="3" r={STAR_CLEARANCE}>
               <Recitatif numberOfLines={2} testID="quest-card-title">
                 {meta.title}
               </Recitatif>
@@ -318,14 +319,14 @@ function QuestRow({
           ) : null}
         </YStack>
 
-        <YStack gap="$2" p="$4">
+        <YStack gap="2" p="4">
           {/* Without a cover there is no art to carry it: the title stays in the body. */}
           {meta.cover ? null : (
             <Text
-              fontFamily="$heading"
+              fontFamily="heading"
               fontWeight="700"
               fontSize={18}
-              color="$text"
+              color="text"
               numberOfLines={1}
             >
               {meta.title}
@@ -333,21 +334,21 @@ function QuestRow({
           )}
 
           {meta.focusLabel ? (
-            <Text fontSize={12} fontWeight="700" color="$textSecondary" numberOfLines={1}>
+            <Text fontSize={12} fontWeight="700" color="textSecondary" numberOfLines={1}>
               {meta.focusLabel}
             </Text>
           ) : null}
 
-          <Paragraph color="$textSecondary" size="$3" numberOfLines={2}>
+          <Paragraph color="textSecondary" size="3" numberOfLines={2}>
             {meta.description}
           </Paragraph>
 
-          <XStack items="center" justify="space-between" gap="$2">
-            <Text flex={1} fontSize={12} fontWeight="700" color="$textSecondary" numberOfLines={1}>
+          <XStack items="center" justify="space-between" gap="2">
+            <Text flex={1} fontSize={12} fontWeight="700" color="textSecondary" numberOfLines={1}>
               {meta.metaLabel}
             </Text>
             {/* The reward reads in gold — the design system's resource color for loot. */}
-            <Text fontSize={14} fontWeight="700" color="$resourceGold">
+            <Text fontSize={14} fontWeight="700" color="resourceGold">
               {meta.xpLabel}
             </Text>
           </XStack>
@@ -386,14 +387,14 @@ function StatusMessage({
 
   if (state.status === "error") {
     return (
-      <YStack px="$5">
+      <YStack px="5">
         <Card>
-          <YStack gap="$3" items="center" py="$2">
+          <YStack gap="3" items="center" py="2">
             <Text fontSize={32}>😵</Text>
-            <Text fontWeight="700" fontSize={16} color="$text">
+            <Text fontWeight="700" fontSize={16} color="text">
               {t("quests.load_error")}
             </Text>
-            <Paragraph color="$textSecondary" size="$3">
+            <Paragraph color="textSecondary" size="3">
               {t("errors.generic")}
             </Paragraph>
             <AppButton fullWidth={false} variant="outline" onPress={onRetry}>
@@ -408,7 +409,7 @@ function StatusMessage({
   if (state.status === "loading" && state.quests.length === 0) {
     // Reserve two poster-row heights instead of a ~80dp "Loading…" card the list jumps from.
     return (
-      <YStack px="$5" gap="$3">
+      <YStack px="5" gap="3">
         <SkeletonCard>
           <Skeleton height={200} />
         </SkeletonCard>
@@ -421,13 +422,13 @@ function StatusMessage({
 
   if (state.status !== "loading" && state.quests.length === 0) {
     return (
-      <YStack px="$5">
+      <YStack px="5">
         <Card>
-          <YStack gap="$3" items="center" py="$2">
-            <Text fontWeight="700" fontSize={16} color="$text">
+          <YStack gap="3" items="center" py="2">
+            <Text fontWeight="700" fontSize={16} color="text">
               {t("quests.empty_title")}
             </Text>
-            <Paragraph color="$textSecondary" size="$3">
+            <Paragraph color="textSecondary" size="3">
               {t("quests.empty_subtitle")}
             </Paragraph>
             {/* The header's 36dp "+" was the only way in; an empty gallery should offer it. */}
@@ -442,14 +443,14 @@ function StatusMessage({
 
   if (state.status !== "loading" && state.quests.length > 0 && filteredCount === 0) {
     return (
-      <YStack px="$5">
+      <YStack px="5">
         <Card>
-          <YStack gap="$3" items="center" py="$2">
+          <YStack gap="3" items="center" py="2">
             <Text fontSize={32}>🔍</Text>
-            <Text fontWeight="700" fontSize={16} color="$text">
+            <Text fontWeight="700" fontSize={16} color="text">
               {t("quests.empty_filters_title")}
             </Text>
-            <Paragraph color="$textSecondary" size="$3">
+            <Paragraph color="textSecondary" size="3">
               {t("quests.empty_filters_subtitle")}
             </Paragraph>
             <AppButton fullWidth={false} variant="outline" onPress={onClearFilters}>
@@ -705,31 +706,31 @@ export default function QuestsGallery() {
   );
 
   return (
-    // Opaque background on purpose: $background is translucent (alpha 0.92) over the
+    // Opaque background on purpose: background is translucent (alpha 0.92) over the
     // full-screen AppBackground image, which makes the compositor blend the entire
-    // viewport on every scroll frame. Same RGB as $background, so visually identical
+    // viewport on every scroll frame. Same RGB as background, so visually identical
     // (the image showed through at ~1.4%).
-    <YStack flex={1} bg="$bgDark">
+    <YStack flex={1} bg="bgDark">
       {/* Fixed Header - stays in place */}
-      <YStack bg="$bgDark" pt={insets.top + 12} px="$5" pb="$3" gap="$1">
+      <YStack bg="bgDark" pt={insets.top + 12} px="5" pb="3" gap="1">
         {/* Title Row */}
         {/* The title gives way, never the actions: nothing in this row could shrink, so the
             count chip plus two 36dp buttons pushed the "+" off the right edge. */}
-        <XStack items="center" justify="space-between" gap="$2">
-          <XStack items="center" gap="$2" flex={1} minW={0}>
-            <MapIcon size={18} color="$text" strokeWidth={2.5} />
+        <XStack items="center" justify="space-between" gap="2">
+          <XStack items="center" gap="2" flex={1} minW={0}>
+            <MapIcon size={18} color="text" strokeWidth={2.5} />
             <Text
               flex={1}
-              fontFamily="$heading"
+              fontFamily="heading"
               fontWeight="700"
               fontSize={20}
-              color="$text"
+              color="text"
               numberOfLines={1}
             >
               {title}
             </Text>
           </XStack>
-          <XStack items="center" gap="$2">
+          <XStack items="center" gap="2">
             {/* The catalogue: the only way to ask "what does Bati know about rows?" without
                 first finding a quest that happens to contain one (roadmap 4.22). */}
             <AppIconButton
@@ -741,17 +742,17 @@ export default function QuestsGallery() {
               accessibilityRole="button"
               accessibilityLabel={t("exercises.catalogue_title")}
             >
-              <Dumbbell size={18} color="$text" strokeWidth={2.5} />
+              <Dumbbell size={18} color="text" strokeWidth={2.5} />
             </AppIconButton>
             <ForgeButton />
           </XStack>
         </XStack>
         {/* The count leaves the title row: beside the catalogue and "Create" it cut the title to
             "Qu…", at 100 % text as at 130 %. */}
-        <Text color="$textSecondary" fontSize={13} fontWeight="600">
+        <Text color="textSecondary" fontSize={13} fontWeight="600">
           {t("quests.count", { count: filtered.length })}
         </Text>
-        <Text color="$textSecondary" fontSize={13}>
+        <Text color="textSecondary" fontSize={13}>
           {t("quests.gallery_subtitle")}
         </Text>
       </YStack>

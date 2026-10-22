@@ -31,13 +31,13 @@ export function Banners({
     else years.push([b]);
   }
   return (
-    <YStack testID="village-seasons" gap="$3">
+    <YStack testID="village-seasons" gap="3">
       <SectionLabel>{t("village.years_title")}</SectionLabel>
       {years.map((row) => {
         const year = t("village.year_n", { n: row[0]?.villageYear });
         return (
-          <YStack key={row[0]?.villageYear} testID="village-year-row" gap="$2">
-            <Text fontSize={13} fontWeight="600" color="$textSecondary">
+          <YStack key={row[0]?.villageYear} testID="village-year-row" gap="2">
+            <Text fontSize={13} fontWeight="600" color="textSecondary">
               {year}
             </Text>
             {/* Two to a line: four across left a fact a few letters wide at a large font. */}
@@ -54,19 +54,17 @@ export function Banners({
                     flexBasis="48%"
                     rounded={10}
                     overflow="hidden"
-                    bg="$surface2"
+                    bg="surface2"
                   >
                     <YStack
                       height={6}
-                      bg={
-                        b.animal && b.animal !== "boar" ? ANIMAL_TOKEN[b.animal] : "$borderStrong"
-                      }
+                      bg={b.animal && b.animal !== "boar" ? ANIMAL_TOKEN[b.animal] : "borderStrong"}
                     />
-                    <YStack p="$2" gap={2}>
-                      <Text fontSize={13} fontWeight="700" color="$text">
+                    <YStack p="2" gap={2}>
+                      <Text fontSize={13} fontWeight="700" color="text">
                         {season}
                       </Text>
-                      <Text fontSize={12} lineHeight={17} color="$textSecondary">
+                      <Text fontSize={12} lineHeight="17px" color="textSecondary">
                         {fact}
                       </Text>
                     </YStack>

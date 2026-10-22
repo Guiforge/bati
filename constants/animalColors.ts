@@ -7,11 +7,11 @@ import type { Animal } from "@/db/crestRules";
  */
 export const ANIMAL_TOKEN: {
   // Each value is the one token named after its own animal, so a wrong row does not compile.
-  [A in Exclude<Animal, "boar">]: Extract<ColorTokens, `$animal${Capitalize<A>}`>;
+  [A in Exclude<Animal, "boar">]: Extract<ColorTokens, `animal${Capitalize<A>}`>;
 } = {
-  bear: "$animalBear",
-  ermine: "$animalErmine",
-  salmon: "$animalSalmon",
-  stag: "$animalStag",
-  horse: "$animalHorse",
+  bear: "animalBear",
+  ermine: "animalErmine",
+  salmon: "animalSalmon",
+  stag: "animalStag",
+  horse: "animalHorse",
 };

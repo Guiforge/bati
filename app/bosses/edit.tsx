@@ -11,7 +11,7 @@ import {
   type TextInputInstance,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Input, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { monsterName } from "@/components/adventures/monsterName";
 import { BossLines } from "@/components/bosses/BossLines";
 import { BossPictures } from "@/components/bosses/BossPictures";
@@ -20,9 +20,9 @@ import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { Input } from "@/components/common/Input";
 import { StatusBand } from "@/components/common/StatusBand";
 import { useToast } from "@/components/common/Toast";
-import { tamaguiRef } from "@/components/common/tamaguiRef";
 import { leavesWithoutAsking } from "@/components/common/useTabLeaveGuard";
 import { ChevronLeft } from "@/components/icons";
 import { getBossAsset } from "@/constants/assetMap";
@@ -72,11 +72,11 @@ function MusclePick({
 }) {
   const { t } = useTranslation();
   return (
-    <YStack gap="$2" testID={testID}>
-      <Text fontWeight="700" fontSize={14} color="$textSecondary">
+    <YStack gap="2" testID={testID}>
+      <Text fontWeight="700" fontSize={14} color="textSecondary">
         {label}
       </Text>
-      <XStack flexWrap="wrap" gap="$2">
+      <XStack flexWrap="wrap" gap="2">
         <Chip
           testID={`${testID}-none`}
           label={t("boss_editor.no_muscle")}
@@ -286,7 +286,7 @@ export default function BossEditor() {
   };
 
   return (
-    <YStack testID="boss-editor" flex={1} bg="$background">
+    <YStack testID="boss-editor" flex={1} bg="background">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -297,22 +297,22 @@ export default function BossEditor() {
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingBottom: 24 }}
         >
-          <YStack p="$5" pt={insets.top + 12} gap="$4">
-            <XStack items="center" gap="$3">
+          <YStack p="5" pt={insets.top + 12} gap="4">
+            <XStack items="center" gap="3">
               <AppIconButton
                 onPress={() => router.back()}
                 accessibilityRole="button"
                 accessibilityLabel={t("quests.go_back")}
               >
-                <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
+                <ChevronLeft size={22} color="text" strokeWidth={2.5} />
               </AppIconButton>
               <Text
                 flex={1}
                 minW={0}
-                fontFamily="$heading"
+                fontFamily="heading"
                 fontWeight="700"
                 fontSize={20}
-                color="$text"
+                color="text"
               >
                 {bossId == null ? t("boss_editor.title_new") : t("boss_editor.title_edit")}
               </Text>
@@ -325,31 +325,31 @@ export default function BossEditor() {
                     nameCardY.current = e.nativeEvent.layout.y;
                   }}
                 >
-                  <YStack gap="$2">
-                    <Text fontWeight="700" fontSize={14} color="$textSecondary">
+                  <YStack gap="2">
+                    <Text fontWeight="700" fontSize={14} color="textSecondary">
                       {t("adventures.editor_boss_name")}
                     </Text>
                     <Input
-                      ref={tamaguiRef(nameRef)}
+                      ref={nameRef}
                       testID="boss-name"
                       height="auto"
                       minH={44}
+                      bg="background"
+                      borderColor={`${nameMissing ? "error" : "borderStrong"}`}
+                      color="text"
                       value={draft.name}
                       onChangeText={(name) => {
                         patch({ name });
                         setNameMissing(false);
                       }}
                       maxLength={MAX_BOSS_NAME}
-                      bg="$background"
-                      borderColor={nameMissing ? "$error" : "$borderStrong"}
-                      color="$text"
                     />
                     {nameMissing ? (
                       <Text
                         testID="boss-name-error"
                         accessibilityLiveRegion="polite"
                         fontSize={13}
-                        color="$error"
+                        color="error"
                       >
                         {t("boss_editor.name_missing")}
                       </Text>
@@ -357,11 +357,11 @@ export default function BossEditor() {
                   </YStack>
                 </Card>
 
-                <YStack gap="$2" testID="boss-monsters">
-                  <Text fontWeight="700" fontSize={18} color="$text">
+                <YStack gap="2" testID="boss-monsters">
+                  <Text fontWeight="700" fontSize={18} color="text">
                     {t("boss_editor.monster")}
                   </Text>
-                  <XStack flexWrap="wrap" gap="$2">
+                  <XStack flexWrap="wrap" gap="2">
                     {monsters
                       .filter((m) => offered.has(m.key) || m.key === draft.monster)
                       .map((m) => {
@@ -372,11 +372,11 @@ export default function BossEditor() {
                             testID={`boss-monster-${m.key}`}
                             onPress={() => patch({ monster: m.key })}
                             width="31%"
-                            gap="$1"
-                            p="$1"
+                            gap="1"
+                            p="1"
                             borderWidth={2}
-                            borderColor={selected ? "$primaryText" : "$borderStrong"}
-                            rounded="$3"
+                            borderColor={`${selected ? "primaryText" : "borderStrong"}`}
+                            rounded="3"
                             accessibilityRole="button"
                             accessibilityState={{ selected }}
                             accessibilityLabel={monsterName(m, language)}
@@ -393,7 +393,7 @@ export default function BossEditor() {
                   </XStack>
                 </YStack>
 
-                <Text fontWeight="700" fontSize={18} color="$text">
+                <Text fontWeight="700" fontSize={18} color="text">
                   {t("adventures.editor_boss_art_title")}
                 </Text>
                 {monster ? (
@@ -417,7 +417,7 @@ export default function BossEditor() {
                   }
                   language={language}
                 />
-                <Text testID="boss-weakness-easier" fontSize={13} color="$textSecondary">
+                <Text testID="boss-weakness-easier" fontSize={13} color="textSecondary">
                   {t("boss_editor.weakness_easier")}
                 </Text>
                 <MusclePick
@@ -442,7 +442,7 @@ export default function BossEditor() {
                     testID="boss-delete"
                     onPress={confirmDelete}
                     minH={44}
-                    color="$error"
+                    color="error"
                     fontWeight="700"
                     accessibilityRole="button"
                   >
@@ -457,11 +457,11 @@ export default function BossEditor() {
         <StatusBand />
 
         <YStack
-          p="$4"
+          p="4"
           pb={typing ? 16 : insets.bottom + 16}
-          bg="$bgDark"
+          bg="bgDark"
           borderTopWidth={1}
-          borderColor="$borderStrong"
+          borderColor="borderStrong"
         >
           <AppButton
             testID="boss-save"

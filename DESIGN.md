@@ -1,7 +1,7 @@
 ---
 name: Bati
 description: A minimal, ludic fitness RPG that turns strength training into a dark-fantasy quest.
-source: constants/rawColors.ts, tamagui.config.ts, @tamagui/config/v4 defaults, components/common/
+source: constants/rawColors.ts, tamagui.config.ts, @tamagui/config/v5 defaults, components/common/
 colors:
   primary: "#C2410C"
   primary-text: "#F08A4B"
@@ -147,6 +147,9 @@ feel immersive but remain operationally clear in the middle of a workout.
 
 ### Color roles
 
+Token names are written `$name` on this page so they read as names. In code Tamagui 3 takes them
+bare (`bg="primary"`, `p="4"`); a `$` renders nothing, and a lint plugin rejects it.
+
 - `$primary`: the braise, one main action per screen. It is a **fill**: 3.75:1 on `$bgDark`,
   so never text. Its label is `$onPrimary` (4.77:1).
 - `$primaryText`: the braise lifted for text and icons on dark grounds (6.5:1 at worst). It is
@@ -208,7 +211,7 @@ feel immersive but remain operationally clear in the middle of a workout.
 follow without knowing: `$primary`, `$success` become `$resourceGold`, `$surface` becomes
 `$surface2`, `$borderStrong` folds into `$surface2` (cards lose their outline), and "done / new /
 still coming" are steps of the `$gold100..900` ramp rather than a green and a red. Journal text
-opts into `fontFamily="$nocturne"` (Inter), since a font is not a theme value.
+opts into `fontFamily="nocturne"` (Inter), since a font is not a theme value.
 
 ### Panels, not shadows
 

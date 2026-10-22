@@ -24,7 +24,7 @@ export function Fold({
   const [open, setOpen] = useState(false);
   const Chevron = open ? ChevronUp : ChevronDown;
   return (
-    <YStack gap="$3">
+    <YStack gap="3">
       <Pressable
         testID={testID}
         accessibilityRole="button"
@@ -32,14 +32,14 @@ export function Fold({
         style={{ minHeight: 44, justifyContent: "center" }}
         onPress={() => setOpen((v) => !v)}
       >
-        <XStack gap="$2" items="center">
-          <Text flex={1} fontWeight="700" fontSize={size} color="$text">
+        <XStack gap="2" items="center">
+          <Text flex={1} fontWeight="700" fontSize={size} color="text">
             {title}
           </Text>
-          <Chevron size={18} color="$textSecondary" />
+          <Chevron size={18} color="textSecondary" />
         </XStack>
       </Pressable>
-      {open ? <YStack gap="$3">{children}</YStack> : null}
+      {open ? <YStack gap="3">{children}</YStack> : null}
     </YStack>
   );
 }

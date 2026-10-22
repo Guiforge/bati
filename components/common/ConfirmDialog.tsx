@@ -1,7 +1,8 @@
 import { Modal } from "react-native";
-import { Paragraph, Text, YStack } from "tamagui";
+import { Text, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { Paragraph } from "@/components/common/Paragraph";
 
 type Props = {
   open: boolean;
@@ -54,20 +55,20 @@ export function ConfirmDialog({
       statusBarTranslucent
       onRequestClose={onDismiss ?? onCancel ?? onConfirm}
     >
-      <YStack flex={1} bg="$sheetScrim" items="center" justify="center" p="$6" testID={testID}>
-        <Card width="100%" maxW={360} bg="$surface">
-          <YStack gap="$3">
-            <Text fontWeight="700" fontSize={20} color="$text">
+      <YStack flex={1} bg="sheetScrim" items="center" justify="center" p="6" testID={testID}>
+        <Card width="100%" maxW={360} bg="surface">
+          <YStack gap="3">
+            <Text fontWeight="700" fontSize={20} color="text">
               {title}
             </Text>
             {body ? (
-              <Paragraph color="$textSecondary" size="$3">
+              <Paragraph color="textSecondary" size="3">
                 {body}
               </Paragraph>
             ) : null}
-            <YStack gap="$2" pt="$2">
+            <YStack gap="2" pt="2">
               <AppButton
-                backgroundColor={destructive ? "$error" : undefined}
+                backgroundColor={destructive ? "error" : undefined}
                 onPress={onConfirm}
                 testID={`${testID}-confirm`}
               >

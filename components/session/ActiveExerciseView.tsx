@@ -4,12 +4,14 @@ import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, useWindowDimensions } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, Paragraph, XStack, YStack } from "tamagui";
+import { H1, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
+import { Button } from "@/components/common/Button";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { FONT_CAPS } from "@/components/common/fontCaps";
 import { GameIcon } from "@/components/common/GameIcon";
+import { Paragraph } from "@/components/common/Paragraph";
 import { Crosshair, Minus, Pause, Plus } from "@/components/icons";
 import { formatShare } from "@/components/journal/journalFormat";
 import { slotCaption } from "@/components/quests/substitutionCaption";
@@ -225,7 +227,7 @@ export function ActiveExerciseView() {
   // than left to the paused screen's Resume: the hero asked to read, not to pause, so the way out
   // of reading has to be the way back into the set.
   //
-  // The paused overlay renders underneath, invisible: two stacked `$bgOverlay` at 0.92 leave it
+  // The paused overlay renders underneath, invisible: two stacked `bgOverlay` at 0.92 leave it
   // under a percent of a percent. Both calls are batched with the visibility flag, so no render
   // ever shows one without the other.
   const handleShowHowTo = () => {
@@ -314,7 +316,7 @@ export function ActiveExerciseView() {
    * this game *does* want, and it is the arena's own doing rather than a property of the muscle
    * being trained.
    */
-  const screenBg = phaseLook?.bgToken ?? "$bgDark";
+  const screenBg = phaseLook?.bgToken ?? "bgDark";
   const screenBgRaw = phaseLook?.bgRaw ?? rawColors.bgDark;
 
   // The hero is the elastic part of the column: the counter and the CTA take their own height
@@ -369,7 +371,7 @@ export function ActiveExerciseView() {
       bg={screenBg}
       pb={insets.bottom + 16}
       transition={reducedMotion ? undefined : "quick"}
-      enterStyle={reducedMotion ? undefined : { opacity: 0 }}
+      opacity={reducedMotion ? undefined : "enter:0"}
     >
       {/* The top of the screen is a picture, not a card — the same full-bleed slot either way. In
           a fight the arena owns it and the exercise rides on the arena's own scrim, so both images
@@ -392,9 +394,9 @@ export function ActiveExerciseView() {
               you were performing. */}
           <XStack
             items="center"
-            gap="$2"
+            gap="2"
+            opacity="press:0.8"
             onPress={handleShowHowTo}
-            pressStyle={{ opacity: 0.8 }}
             accessibilityRole="button"
             accessibilityLabel={t("session.how_to_do_it")}
           >
@@ -404,7 +406,7 @@ export function ActiveExerciseView() {
               rounded={18}
               overflow="hidden"
               borderWidth={1}
-              borderColor="$borderStrong"
+              borderColor="borderStrong"
             >
               <Image
                 source={getExerciseThumb(currentEx.exercise.imagePath)}
@@ -413,13 +415,13 @@ export function ActiveExerciseView() {
                 transition={150}
               />
             </YStack>
-            <AppText flex={1} fontWeight="700" fontSize={16} color="$text" numberOfLines={1}>
+            <AppText flex={1} fontWeight="700" fontSize={16} color="text" numberOfLines={1}>
               {exerciseName}
             </AppText>
             {!!targetMuscle && (
-              <XStack items="center" gap="$1">
-                <Crosshair size={12} color="$textSecondary" />
-                <AppText fontSize={12} color="$textSecondary">
+              <XStack items="center" gap="1">
+                <Crosshair size={12} color="textSecondary" />
+                <AppText fontSize={12} color="textSecondary">
                   {t(`muscles.${targetMuscle}`)}
                 </AppText>
               </XStack>
@@ -450,8 +452,8 @@ export function ActiveExerciseView() {
           instead of the two-row header plus framed progress block plus its own label row that
           used to sit above the picture. Every value is the one that was already here; `ROUND`
           simply stopped being printed twice. */}
-      <YStack position="absolute" t={insets.top + 8} l={0} r={0} px="$4" gap="$2" z={10}>
-        <XStack items="center" justify="space-between" gap="$2">
+      <YStack position="absolute" t={insets.top + 8} l={0} r={0} px="4" gap="2" z={10}>
+        <XStack items="center" justify="space-between" gap="2">
           {/* 12px, not 13: "TOUR 1 / 3 · EXERCICE 2 / 5" is the long form and it has to survive
               a 320dp screen without ellipsing away the exercise counter.
 
@@ -460,7 +462,7 @@ export function ActiveExerciseView() {
               refuses to print, because on an outing the target is a suggestion. The quest's own
               name is the one thing the row can say that the hero does not already know. */}
           <AppText
-            color="$text"
+            color="text"
             fontSize={12}
             fontWeight="700"
             numberOfLines={1}
@@ -481,12 +483,12 @@ export function ActiveExerciseView() {
                   total: exercisesPerRound,
                 })}`}
           </AppText>
-          <XStack items="center" gap="$2">
+          <XStack items="center" gap="2">
             {isOuting ? null : (
               <AppText
                 fontSize={12}
                 fontWeight="700"
-                color="$textSecondary"
+                color="textSecondary"
                 textShadowColor={fade(rawColors.shadowColor, 0.9)}
                 textShadowOffset={{ width: 0, height: 1 }}
                 textShadowRadius={6}
@@ -496,14 +498,14 @@ export function ActiveExerciseView() {
             )}
             <Button
               testID="session-pause"
-              size="$3"
+              size="3"
+              bg="hover:pastelBlue"
+              opacity="press:0.7"
               hitSlop={8}
               circular
-              icon={<Pause size={20} color="$text" />}
+              icon={<Pause size={20} color="text" />}
               onPress={pauseSession}
               chromeless
-              hoverStyle={{ bg: "$pastelBlue" }}
-              pressStyle={{ opacity: 0.7 }}
               accessibilityLabel={t("session.pause_accessibility")}
               accessibilityRole="button"
             />
@@ -520,14 +522,14 @@ export function ActiveExerciseView() {
           <YStack
             testID="session-progress-bar"
             height={3}
-            rounded="$10"
-            bg="$bgOverlay"
+            rounded="10"
+            bg="bgOverlay"
             overflow="hidden"
           >
             <YStack
               height={3}
               width={`${progressPercent}%`}
-              bg="$text"
+              bg="text"
               opacity={0.55}
               transition={reducedMotion ? undefined : "bouncy"}
             />
@@ -542,9 +544,9 @@ export function ActiveExerciseView() {
           The boss branch is no exception: the arena grows (`flexGrow`, floored at its art cut), so
           the slack lands in the monster's painting, not as a void around the counter. */}
       <YStack
-        px="$4"
-        pt="$4"
-        gap="$4"
+        px="4"
+        pt="4"
+        gap="4"
         // Once the hero is capped the slack splits around this block, not around the picture, so
         // the art stays pinned under the HUD.
         style={{ flexShrink: 1, minHeight: 0, marginVertical: "auto" }}
@@ -562,21 +564,21 @@ export function ActiveExerciseView() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <YStack gap="$4">
+          <YStack gap="4">
             {isOuting ? <ExpeditionPanel bigOnMap={bigOnMap} /> : null}
 
             {/* Within-exercise timer progress (only for time-based exercises) */}
             {isTimeBased && !isOuting && (
-              <YStack gap="$2">
+              <YStack gap="2">
                 {/* No label row: the numeral below is the same figure at 72px. */}
                 <TimerBar
                   // The phase in progress, like the numeral: each side fills from empty, and the switch
                   // drains its own eight seconds. On the whole clock the switch barely moved, and the
                   // second side opened at two thirds full.
                   value={sideBarValue(side, progress, targetValue, secondSideSeconds)}
-                  fill={isOvertime ? "$success" : inSwitch ? "$warning" : "$primary"}
+                  fill={isOvertime ? "success" : inSwitch ? "warning" : "primary"}
                   fillOpacity={isOvertime ? 0.9 : 1}
-                  bg="$surface2"
+                  bg="surface2"
                 />
               </YStack>
             )}
@@ -589,15 +591,15 @@ export function ActiveExerciseView() {
           ponytail: a 640dp screen on a boss fight (fixed-height arena) in overtime with a ghost
           line is the ceiling. Past it, drop the ghost line or shrink the numeral. */}
             <YStack justify="center">
-              <YStack items="center" justify="center" gap="$2">
+              <YStack items="center" justify="center" gap="2">
                 {/* The exercise's name is on the artwork either way now — the hero paints it, and in a
               fight the arena carries it on its own scrim. Nothing repeats it here. */}
-                <YStack items="center" gap="$2" width="100%">
+                <YStack items="center" gap="2" width="100%">
                   {/* The template named a harder movement and the hero is not on that rung yet
                 (issue #33). Named here too: mid-session is where the substitution is felt, and
                 a hero who thinks the app got it wrong is a hero who logs a lie. */}
                   {slotCaption(t, currentEx, language) ? (
-                    <AppText fontSize={12} color="$textSecondary" fontFamily="$body" text="center">
+                    <AppText fontSize={12} color="textSecondary" fontFamily="body" text="center">
                       {slotCaption(t, currentEx, language)}
                     </AppText>
                   ) : null}
@@ -614,7 +616,7 @@ export function ActiveExerciseView() {
                   belong with "How to do it", which is the other thing a hero asks about the
                   movement rather than about the set, and the counter now stands between all
                   three and the button. */}
-                  <XStack items="center" justify="center" gap="$4" opacity={0.7} flexWrap="wrap">
+                  <XStack items="center" justify="center" gap="4" opacity={0.7} flexWrap="wrap">
                     {instruction?.description ? (
                       <Pressable
                         testID="session-how-to"
@@ -623,7 +625,7 @@ export function ActiveExerciseView() {
                         accessibilityRole="button"
                         accessibilityLabel={t("session.how_to_do_it")}
                       >
-                        <AppText py="$2" fontSize={12} fontWeight="700" color="$textSecondary">
+                        <AppText py="2" fontSize={12} fontWeight="700" color="textSecondary">
                           {t("session.how_to_do_it")}
                         </AppText>
                       </Pressable>
@@ -634,7 +636,7 @@ export function ActiveExerciseView() {
                       <>
                         {/* No "·" between the links: one travelling with the link after it started a
                         wrapped line ("· Je n'ai pas pu"), and the gap already separates them. */}
-                        <XStack items="center" gap="$3">
+                        <XStack items="center" gap="3">
                           <Pressable
                             testID="session-swap-exercise"
                             hitSlop={12}
@@ -646,10 +648,10 @@ export function ActiveExerciseView() {
                             accessibilityLabel={t("quests.swap_exercise")}
                           >
                             <AppText
-                              py="$2"
+                              py="2"
                               fontSize={12}
                               fontWeight="700"
-                              color="$textSecondary"
+                              color="textSecondary"
                               numberOfLines={1}
                             >
                               {t("session.swap_short")}
@@ -657,7 +659,7 @@ export function ActiveExerciseView() {
                           </Pressable>
                         </XStack>
 
-                        <XStack items="center" gap="$3">
+                        <XStack items="center" gap="3">
                           <Pressable
                             testID="session-skip-exercise"
                             hitSlop={12}
@@ -666,10 +668,10 @@ export function ActiveExerciseView() {
                             accessibilityLabel={t("session.skip_exercise")}
                           >
                             <AppText
-                              py="$2"
+                              py="2"
                               fontSize={12}
                               fontWeight="700"
-                              color="$textSecondary"
+                              color="textSecondary"
                               numberOfLines={1}
                             >
                               {t("session.skip_exercise")}
@@ -686,7 +688,7 @@ export function ActiveExerciseView() {
                         {perSideHold ? (
                           <XStack
                             items="center"
-                            gap="$3"
+                            gap="3"
                             opacity={side?.phase === "first" ? 1 : 0}
                             pointerEvents={side?.phase === "first" ? "auto" : "none"}
                             accessibilityElementsHidden={side?.phase !== "first"}
@@ -706,10 +708,10 @@ export function ActiveExerciseView() {
                               accessibilityLabel={t("session.next_side")}
                             >
                               <AppText
-                                py="$2"
+                                py="2"
                                 fontSize={12}
                                 fontWeight="700"
-                                color="$textSecondary"
+                                color="textSecondary"
                                 numberOfLines={1}
                               >
                                 {t("session.next_side")}
@@ -726,7 +728,7 @@ export function ActiveExerciseView() {
               lineHeight: the heading default at this size leaves ~50dp of air between the
               figure and its unit label, which read as two separate things. so it needs no outline to be found,
               and on second thought no surface either. The border went first, then this: the box
-              was `py="$6"` twice over, 64dp of padding wrapped around an 80px numeral that was
+              was `py="6"` twice over, 64dp of padding wrapped around an 80px numeral that was
               never going to be missed, and those 64dp were the reason the counter overflowed its
               own scroll view and got clipped on a boss fight. The number now sits straight on the
               room's colour — the exercise's muscle tint, or the boss phase — which is what the
@@ -745,29 +747,29 @@ export function ActiveExerciseView() {
                 {isOuting ? null : (
                   <YStack width="100%" items="center" justify="center">
                     {isTimeBased ? (
-                      <YStack items="center" gap="$2">
+                      <YStack items="center" gap="2">
                         {isOvertime ? (
                           <>
                             {/* Overtime display - counting UP */}
-                            <XStack items="center" gap="$2">
-                              <GameIcon name="flame" size={16} color="$success" />
-                              <AppText fontSize={14} fontWeight="700" color="$textSecondary">
+                            <XStack items="center" gap="2">
+                              <GameIcon name="flame" size={16} color="success" />
+                              <AppText fontSize={14} fontWeight="700" color="textSecondary">
                                 {t("session.overtime")}
                               </AppText>
-                              <GameIcon name="flame" size={16} color="$success" />
+                              <GameIcon name="flame" size={16} color="success" />
                             </XStack>
                             <H1
                               maxFontSizeMultiplier={FONT_CAPS.display}
                               fontSize={72}
-                              lineHeight={80}
+                              lineHeight="80px"
                               fontWeight="700"
-                              fontFamily="$body"
+                              fontFamily="body"
                               fontVariant={["tabular-nums"]}
-                              color="$success"
+                              color="success"
                             >
                               {formatOvertime(overtimeSeconds)}
                             </H1>
-                            <Paragraph fontWeight="700" color="$textSecondary">
+                            <Paragraph fontWeight="700" color="textSecondary">
                               {t("session.target_reached")}
                             </Paragraph>
                           </>
@@ -781,11 +783,11 @@ export function ActiveExerciseView() {
                                 maxFontSizeMultiplier={FONT_CAPS.display}
                                 testID="session-switch-count"
                                 fontSize={72}
-                                lineHeight={80}
+                                lineHeight="80px"
                                 fontWeight="700"
-                                fontFamily="$body"
+                                fontFamily="body"
                                 fontVariant={["tabular-nums"]}
-                                color="$warning"
+                                color="warning"
                               >
                                 {String(side.seconds)}
                               </H1>
@@ -794,11 +796,11 @@ export function ActiveExerciseView() {
                               <H1
                                 maxFontSizeMultiplier={FONT_CAPS.display}
                                 fontSize={72}
-                                lineHeight={80}
+                                lineHeight="80px"
                                 fontWeight="700"
-                                fontFamily="$body"
+                                fontFamily="body"
                                 fontVariant={["tabular-nums"]}
-                                color="$text"
+                                color="text"
                               >
                                 {formatTime(sideRemainingSeconds)}
                               </H1>
@@ -814,15 +816,15 @@ export function ActiveExerciseView() {
                               <AppText
                                 testID="session-switch-title"
                                 fontSize={22}
-                                lineHeight={28}
+                                lineHeight="28px"
                                 fontWeight="700"
-                                color="$warning"
+                                color="warning"
                                 textTransform="uppercase"
                               >
                                 {t("session.switch_sides")}
                               </AppText>
                             ) : (
-                              <Paragraph lineHeight={28} fontWeight="700" color="$textSecondary">
+                              <Paragraph lineHeight="28px" fontWeight="700" color="textSecondary">
                                 {t("session.seconds_left_of", {
                                   target: formatSlotTarget(
                                     {
@@ -840,11 +842,11 @@ export function ActiveExerciseView() {
                             {side ? (
                               <AppText
                                 testID="session-side"
-                                lineHeight={28}
+                                lineHeight="28px"
                                 // Bigger when it announces something: it is read from the floor.
                                 fontSize={switchSoon || secondSideStarting ? 20 : 14}
                                 fontWeight="700"
-                                color={switchSoon || secondSideStarting ? "$warning" : "$text"}
+                                color={switchSoon || secondSideStarting ? "warning" : "text"}
                               >
                                 {inSwitch
                                   ? t("session.side_two_next")
@@ -861,35 +863,34 @@ export function ActiveExerciseView() {
                         )}
                       </YStack>
                     ) : (
-                      <YStack items="center" gap="$2">
+                      <YStack items="center" gap="2">
                         {/* The target, kept on screen: the numeral below follows the hero's taps. */}
-                        <AppText fontSize={12} color="$textSecondary">
+                        <AppText fontSize={12} color="textSecondary">
                           {adjustedReps === targetValue
                             ? t("session.objective_label")
                             : t("session.objective_value", { value: targetValue })}
                         </AppText>
-                        <XStack items="center" gap="$4">
+                        <XStack items="center" gap="4">
                           <Button
-                            size="$4"
-                            circular
-                            bg="$surface2"
+                            size="4"
+                            bg="surface2"
                             borderWidth={0}
+                            scale="press:0.95"
+                            opacity={`${adjustedReps <= 1 ? 0.4 : 1} press:0.8`}
+                            circular
                             onPress={() => handleAdjustReps(-1)}
-                            pressStyle={{ opacity: 0.8, scale: 0.95 }}
                             disabled={adjustedReps <= 1}
                             aria-disabled={adjustedReps <= 1}
-                            opacity={adjustedReps <= 1 ? 0.4 : 1}
                             accessibilityLabel={t("session.decrease_reps_accessibility")}
                             accessibilityRole="button"
                           >
-                            <Minus size={24} color="$text" strokeWidth={2.5} />
+                            <Minus size={24} color="text" strokeWidth={2.5} />
                           </Button>
                           <YStack
                             items="center"
                             key={reducedMotion ? undefined : stepCount}
                             transition={reducedMotion ? undefined : "bouncy"}
-                            enterStyle={reducedMotion ? undefined : { scale: 1.15 }}
-                            scale={1}
+                            scale={reducedMotion ? 1 : "1 enter:1.15"}
                           >
                             <CountInput
                               testID="session-reps-input"
@@ -899,27 +900,28 @@ export function ActiveExerciseView() {
                               fontSize={80}
                               accessibilityLabel={t("session.reps_count_accessibility")}
                             />
-                            <Paragraph fontWeight="700" color="$textSecondary">
+                            <Paragraph fontWeight="700" color="textSecondary">
                               {currentEx.exercise.perSide
                                 ? t("session.reps_per_side")
                                 : t("session.reps")}
                             </Paragraph>
                           </YStack>
                           <Button
-                            size="$4"
-                            circular
-                            bg="$surface2"
+                            size="4"
+                            bg="surface2"
                             borderWidth={0}
+                            opacity="press:0.8"
+                            scale="press:0.95"
+                            circular
                             onPress={() => handleAdjustReps(1)}
-                            pressStyle={{ opacity: 0.8, scale: 0.95 }}
                             accessibilityLabel={t("session.increase_reps_accessibility")}
                             accessibilityRole="button"
                           >
-                            <Plus size={24} color="$text" strokeWidth={2.5} />
+                            <Plus size={24} color="text" strokeWidth={2.5} />
                           </Button>
                         </XStack>
                         {adjustedReps !== targetValue && (
-                          <AppText fontSize={12} color="$textSecondary">
+                          <AppText fontSize={12} color="textSecondary">
                             {t("session.adjust_reps_hint")}
                           </AppText>
                         )}
@@ -933,7 +935,7 @@ export function ActiveExerciseView() {
                         {skipRefused ? (
                           <AppText
                             fontSize={12}
-                            color="$textSecondary"
+                            color="textSecondary"
                             style={{ textAlign: "center" }}
                           >
                             {t("session.pain_rule_last")}
@@ -942,7 +944,7 @@ export function ActiveExerciseView() {
                           <>
                             <AppText
                               fontSize={12}
-                              color="$textSecondary"
+                              color="textSecondary"
                               style={{ textAlign: "center" }}
                             >
                               {t("session.reserve_hint")}
@@ -950,7 +952,7 @@ export function ActiveExerciseView() {
                             {fightLive ? (
                               <AppText
                                 fontSize={12}
-                                color="$textSecondary"
+                                color="textSecondary"
                                 style={{ textAlign: "center" }}
                               >
                                 {targetChanged
@@ -977,7 +979,7 @@ export function ActiveExerciseView() {
                 first side it is wrong too (there is no beep to let go at, the switch comes), so
                 it says what comes next. */}
                 {isTimeBased && !isOuting && (
-                  <AppText fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+                  <AppText fontSize={12} color="textSecondary" style={{ textAlign: "center" }}>
                     {/* Kept, blank, during the switch and the second side up to its target: a line
                     that leaves lets the art above grow, and "keep going past the target" wraps to
                     two lines at a large font, so either one jumps the screen under a hero who is
@@ -997,7 +999,7 @@ export function ActiveExerciseView() {
                 )}
 
                 {bossFight && !fightLive ? (
-                  <AppText fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+                  <AppText fontSize={12} color="textSecondary" style={{ textAlign: "center" }}>
                     {t("session.boss_down", { boss: bossDisplayName(bossFight, language) })}
                   </AppText>
                 ) : null}
@@ -1009,7 +1011,7 @@ export function ActiveExerciseView() {
                     fontSize={12}
                     fontWeight="700"
                     color={
-                      bossFight?.weaknessMuscle === targetMuscle ? "$primaryText" : "$textSecondary"
+                      bossFight?.weaknessMuscle === targetMuscle ? "primaryText" : "textSecondary"
                     }
                     style={{ textAlign: "center" }}
                   >
@@ -1043,7 +1045,7 @@ export function ActiveExerciseView() {
                 drop is explained instead of read as a mistake. A number the hero set has no
                 `targetWhy`, and so no sentence. */}
                 {belowLastKey && !inSwitch ? (
-                  <AppText fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+                  <AppText fontSize={12} color="textSecondary" style={{ textAlign: "center" }}>
                     {t(belowLastKey, { name: exerciseName })}
                   </AppText>
                 ) : null}
@@ -1065,7 +1067,7 @@ export function ActiveExerciseView() {
             testID="session-complete-exercise"
             height={64}
             fontSize={24}
-            backgroundColor={isPastTarget ? "$success" : undefined}
+            backgroundColor={isPastTarget ? "success" : undefined}
             onPress={handleDonePress}
             accessibilityLabel={
               isPastTarget
@@ -1178,8 +1180,8 @@ function OutingFinishButton({
   const [width, setWidth] = useState(0);
   // 20 and not 24: "Maintiens pour terminer" is the long form, and it has to hold one line on a
   // 320dp screen.
-  const holdLabel = (color: "$onPrimary" | "$bgDark") => (
-    <AppText color={color} fontFamily="$heading" fontSize={20} fontWeight="700" numberOfLines={1}>
+  const holdLabel = (color: "onPrimary" | "bgDark") => (
+    <AppText color={color} fontFamily="heading" fontSize={20} fontWeight="700" numberOfLines={1}>
       {t("session.expedition_hold_to_finish")}
     </AppText>
   );
@@ -1218,14 +1220,14 @@ function OutingFinishButton({
       >
         <YStack
           height={64}
-          rounded="$3"
-          bg="$primary"
+          rounded="3"
+          bg="primary"
           overflow="hidden"
           items="center"
           justify="center"
           onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
         >
-          {holdLabel("$onPrimary")}
+          {holdLabel("onPrimary")}
           {/* The sweep carries its own copy of the label, in ink: no single label colour reads on
             both the braise and the green (cream on green is 2.3:1), and the plate that used to
             solve it put a black box in the middle of the button. The copy is laid out at the
@@ -1240,8 +1242,8 @@ function OutingFinishButton({
             accessibilityElementsHidden
             importantForAccessibility="no-hide-descendants"
           >
-            <YStack width={width} flex={1} bg="$success" items="center" justify="center">
-              {holdLabel("$bgDark")}
+            <YStack width={width} flex={1} bg="success" items="center" justify="center">
+              {holdLabel("bgDark")}
             </YStack>
           </Animated.View>
         </YStack>

@@ -1,21 +1,28 @@
 import type { ComponentProps, ReactNode } from "react";
-import { Button, type ColorTokens, type SpaceTokens } from "tamagui";
+import type { ColorTokens, SpaceTokens } from "tamagui";
+import { Button } from "@/components/common/Button";
 
 type AppButtonVariant = "primary" | "outline";
 
 type TamaguiButtonProps = ComponentProps<typeof Button>;
 
+// The press lives on `y`, `opacity`, `scale` and `borderBottomColor` (their `press:` clauses): a
+// caller's value would replace the seal's whole program, not merge with it. A resting opacity is
+// still the caller's: it is a number, merged into the program below.
+type SealOwned = "y" | "opacity" | "scale" | "borderBottomColor";
+
 interface AppButtonProps
-  extends Omit<TamaguiButtonProps, "children" | "variant" | "pressStyle" | "rounded" | "bg"> {
+  extends Omit<TamaguiButtonProps, "children" | "variant" | SealOwned | "rounded" | "bg"> {
   variant?: AppButtonVariant;
   children: ReactNode;
   marginBottom?: SpaceTokens | number;
   marginTop?: SpaceTokens | number;
   backgroundColor?: ColorTokens;
   fullWidth?: boolean;
+  opacity?: number;
 }
 
-const LIGHT_FILLS: ColorTokens[] = ["$success", "$error", "$warning", "$resourceGold"];
+const LIGHT_FILLS: ColorTokens[] = ["success", "error", "warning", "resourceGold"];
 
 export function AppButton({
   variant = "primary",
@@ -24,29 +31,31 @@ export function AppButton({
   marginTop,
   backgroundColor,
   fullWidth = true,
+  opacity,
   ...buttonProps
 }: AppButtonProps) {
   // A disabled primary still reads as a button: a quiet surface, an ash label, no edge to press.
   const dimmed = variant === "primary" && buttonProps.disabled === true;
   const getBackgroundColor = (): ColorTokens => {
-    if (dimmed) return "$surface2";
+    if (dimmed) return "surface2";
     if (backgroundColor) return backgroundColor;
-    if (variant === "outline") return "$background";
-    return "$primary";
+    if (variant === "outline") return "background";
+    return "primary";
   };
 
   // The label follows its fill (spec rule 1): onPrimary on the braise, bone on the outline,
   // and ink on the light signal fills, where a pale label measures 3:1.
   const onLightFill = backgroundColor !== undefined && LIGHT_FILLS.includes(backgroundColor);
   const getColor = (): ColorTokens => {
-    if (dimmed) return "$textSecondary";
-    if (backgroundColor === "$error") return "$onError";
-    if (onLightFill) return "$bgDark";
-    return variant === "outline" ? "$text" : "$onPrimary";
+    if (dimmed) return "textSecondary";
+    if (backgroundColor === "error") return "onError";
+    if (onLightFill) return "bgDark";
+    return variant === "outline" ? "text" : "onPrimary";
   };
   // The seal: a bottom edge on the braise only. A braise edge under red would be wrong.
   const seal = variant === "primary" && !backgroundColor && !dimmed;
   const spans = fullWidth || buttonProps.flex !== undefined || buttonProps.width !== undefined;
+  const resting = opacity === undefined ? "" : `${opacity} `;
 
   return (
     <Button
@@ -54,8 +63,8 @@ export function AppButton({
       mt={marginTop}
       bg={getBackgroundColor()}
       color={getColor()}
-      size="$4"
-      // The floor, not the size. `$4` clears it on its own, but a caller passing `size="$3"`
+      size="4"
+      // The floor, not the size. `4` clears it on its own, but a caller passing `size="3"`
       // for compact type used to take the hit area down with it: the oath screen's "Custom
       // oath" measured 36 dp tall. Yoga clamps a height to the larger minimum, so the type
       // stays compact and the target does not shrink. Before the spread, so a caller that
@@ -66,12 +75,12 @@ export function AppButton({
       // the button, measured); the label below wraps instead, and a short one is as tall as before
       // (`minH` is the floor).
       height="auto"
-      py="$2"
+      py="2"
       width={fullWidth ? "100%" : undefined}
       borderWidth={1}
-      rounded="$3"
-      borderColor="$borderStrong"
-      fontFamily="$heading"
+      rounded="3"
+      borderColor="borderStrong"
+      fontFamily="heading"
       fontWeight="700"
       fontSize={20}
       // A translate, never a border-width change, so nothing below the button moves. No
@@ -81,10 +90,11 @@ export function AppButton({
       {...(seal
         ? {
             borderBottomWidth: 3,
-            borderBottomColor: "$primaryEdge",
-            pressStyle: { y: 2, borderBottomColor: "$primary", opacity: 0.95 },
+            borderBottomColor: "primaryEdge press:primary",
+            y: "press:2px",
+            opacity: `${resting}press:0.95`,
           }
-        : { pressStyle: { opacity: 0.9, scale: 0.98 } })}
+        : { opacity: `${resting}press:0.9`, scale: "press:0.98" })}
       // Always said, `false` included: Tamagui sends it only while disabled, and Android keeps a
       // view disabled when the next state is empty, so a button enabled again was announced as
       // disabled while it answered every tap.
@@ -128,10 +138,10 @@ export function AppIconButton({ children, ...buttonProps }: AppIconButtonProps) 
       hitSlop={8}
       p={0}
       rounded={22}
-      bg="$bgLight"
+      bg="bgLight"
       borderWidth={1}
-      borderColor="$borderStrong"
-      pressStyle={{ opacity: 0.9 }}
+      borderColor="borderStrong"
+      opacity="press:0.9"
       // Always said, as on `AppButton` above.
       aria-disabled={buttonProps.disabled === true}
       {...buttonProps}

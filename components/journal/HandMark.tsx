@@ -18,7 +18,7 @@ type HandMarkProps = {
 export function HandMark({ what = "entry", size = 12, testID }: HandMarkProps) {
   const { t } = useTranslation();
   return (
-    <NMuted testID={testID} fontSize={size} lineHeight={size + 5}>
+    <NMuted testID={testID} fontSize={size} lineHeight={`${size + 5}px`}>
       {t(what === "entry" ? "past_session.hand_mark" : "past_session.hand_mark_distance")}
     </NMuted>
   );

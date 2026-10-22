@@ -98,7 +98,7 @@ export default function ShareScreen() {
       <NPage title={t("share.title")} testID="share-screen">
         {loaded.status === "loading" ? (
           <YStack items="center" mt={11}>
-            <Skeleton height={cardWidth} width={cardWidth} bg="$surface2" />
+            <Skeleton height={cardWidth} width={cardWidth} bg="surface2" />
           </YStack>
         ) : (
           <NMuted mt={11}>{loaded.message}</NMuted>
@@ -141,7 +141,7 @@ export default function ShareScreen() {
             disabled={holding}
             height={56}
             icon={
-              <Share2 size={20} color={holding ? "$textSecondary" : "$text"} strokeWidth={2.5} />
+              <Share2 size={20} color={`${holding ? "textSecondary" : "text"}`} strokeWidth={2.5} />
             }
             onPress={() => {
               shareImage().catch((error: unknown) => reportError("share.image", error));

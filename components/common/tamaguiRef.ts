@@ -1,12 +1,13 @@
 import type { Ref, RefObject } from "react";
 
 /**
- * A ref typed with RN 0.88's instance types (`ScrollViewInstance`, `TextInputInstance`), handed
- * to a Tamagui component. The ref holds that RN instance at runtime.
+ * A ref typed with RN 0.88's `ScrollViewInstance`, handed to a Tamagui ScrollView or
+ * Sheet.ScrollView. The ref holds that RN instance at runtime.
  *
- * ponytail: Tamagui 2.7 still types its refs with RN's old `ScrollView`/`TextInput` classes, which
- * RN 0.88 types as function components with no methods, so no honest type fits both. Delete this
- * and pass the ref straight through once Tamagui's types follow RN 0.88 (the Tamagui 3 upgrade).
+ * ponytail: Tamagui 3 types every ScrollView ref as its web one (`HTMLElement & ScrollViewMethods`)
+ * on native too, which RN's instance type does not satisfy, so no honest type fits both. Its Input
+ * refs follow RN 0.88 (`TextInputInstance`) and go straight through. Delete this once Tamagui's
+ * ScrollView ref type is platform-split.
  */
 export function tamaguiRef<T>(ref: RefObject<T | null>): Ref<never> {
   return ref as RefObject<null>;

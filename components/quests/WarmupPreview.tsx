@@ -80,26 +80,26 @@ export function WarmupPreview({
     firstWait + (first?.seconds ?? 0) + secondsAhead(rest, transition, context?.totalSessions ?? 0);
 
   return (
-    <Card testID="quest-warmup" gap="$3">
+    <Card testID="quest-warmup" gap="3">
       <XStack
         items="center"
-        gap="$3"
+        gap="3"
+        opacity="press:0.8"
         onPress={() => setOpen(!open)}
-        pressStyle={{ opacity: 0.8 }}
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
       >
-        <Flame size={20} color="$resourceFire" />
-        <Text flex={1} fontWeight="700" fontSize={16} color="$text">
+        <Flame size={20} color="resourceFire" />
+        <Text flex={1} fontWeight="700" fontSize={16} color="text">
           {t("quests.warmup_section", {
             count: steps.length,
             duration: formatDurationEstimate(seconds, language),
           })}
         </Text>
         {open ? (
-          <ChevronUp size={20} color="$text" opacity={0.6} />
+          <ChevronUp size={20} color="text" opacity={0.6} />
         ) : (
-          <ChevronDown size={20} color="$text" opacity={0.6} />
+          <ChevronDown size={20} color="text" opacity={0.6} />
         )}
       </XStack>
 
@@ -112,21 +112,21 @@ export function WarmupPreview({
                 key={step.exerciseName}
                 testID={`quest-warmup-step-${i}`}
                 items="center"
-                gap="$3"
+                gap="3"
+                opacity={exercise ? "press:0.8" : undefined}
                 onPress={
                   exercise ? () => router.push(`/exercises/${exercise.id}` as never) : undefined
                 }
-                pressStyle={exercise ? { opacity: 0.8 } : undefined}
                 accessibilityRole={exercise ? "button" : undefined}
               >
                 <YStack
                   width={42}
                   height={42}
-                  bg="$surface2"
-                  rounded="$3"
+                  bg="surface2"
+                  rounded="3"
                   overflow="hidden"
                   borderWidth={1}
-                  borderColor="$borderStrong"
+                  borderColor="borderStrong"
                 >
                   {exercise ? (
                     <Image
@@ -137,10 +137,10 @@ export function WarmupPreview({
                     />
                   ) : null}
                 </YStack>
-                <Text flex={1} fontSize={15} color="$text" numberOfLines={1}>
+                <Text flex={1} fontSize={15} color="text" numberOfLines={1}>
                   {i + 1}. {exercise ? localizedName(exercise, language) : step.exerciseName}
                 </Text>
-                <Text fontSize={13} color="$textSecondary">
+                <Text fontSize={13} color="textSecondary">
                   {step.seconds}s
                 </Text>
               </XStack>

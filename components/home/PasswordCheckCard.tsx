@@ -42,20 +42,20 @@ export function PasswordCheckCard() {
     <>
       <Card
         testID="home-password-check"
-        mx="$4"
-        mt="$3"
-        py="$2"
+        mx="4"
+        mt="3"
+        py="2"
         onPress={() => {
           haptics.selection();
           setOpen(true);
         }}
       >
-        <XStack items="center" gap="$2">
-          <KeyRound size={16} color="$primaryText" />
-          <AppText flex={1} fontSize="$3" color="$primaryText">
+        <XStack items="center" gap="2">
+          <KeyRound size={16} color="primaryText" />
+          <AppText flex={1} fontSize="3" color="primaryText">
             {t("vault.checkTitle")}
           </AppText>
-          <ChevronRight size={16} color="$primaryText" />
+          <ChevronRight size={16} color="primaryText" />
         </XStack>
       </Card>
       <PasswordCheckFlow

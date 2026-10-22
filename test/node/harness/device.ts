@@ -17,6 +17,7 @@ import path from "node:path";
 import { clientMock, createTestDb } from "../../../__tests__/helpers/testDb";
 import { SCHEMA_VERSION } from "../../../db/schemaVersion";
 import { makeExpoFs } from "./fakeExpoFs";
+import { nodeFetch } from "./useNodeFetch";
 
 export type App = {
   deviceSync: typeof import("../../../src/deviceSync");
@@ -116,6 +117,13 @@ export async function newDevice(name: string, restoreFrom?: string): Promise<Dev
       unlock: require("../../../src/vaultUnlock"),
       completed: require("../../../db/completed"),
     };
+  });
+  // Since SDK 58, requiring the app's modules in a fresh registry runs Expo's global install again, which puts
+  // React Native's `fetch` back over the harness's: every request then answers with no status.
+  Object.defineProperty(globalThis, "fetch", {
+    value: nodeFetch,
+    writable: true,
+    configurable: true,
   });
   // The floor Argon2, as the unit tests use: 64 MiB at every unlock makes a hundred syncs a very long test.
   app.cipher.argon.memoryKib = 19 * 1024;

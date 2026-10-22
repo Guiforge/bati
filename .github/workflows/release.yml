@@ -65,7 +65,7 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: scripts/check-release-migrations.sh "$TAG"
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: lts/*
           # zizmor: ignore[cache-poisoning] the npm cache holds tarballs, and `npm ci` checks each
@@ -117,7 +117,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: lts/*
           # zizmor: ignore[cache-poisoning] the npm cache holds tarballs, and `npm ci` checks each
@@ -125,7 +125,7 @@ jobs:
           cache: npm
       - run: npm ci
 
-      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
           distribution: temurin
           # 21, like android-lint.yml and kotlin.yml: what the Expo SDK builds against, and the
@@ -369,7 +369,7 @@ jobs:
 
       # The foss APK on every run, a dispatch included: that is how a branch gets an APK to try
       # without publishing anything. The play APK is not uploaded anywhere, on purpose.
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: matrix.variant == 'foss'
         with:
           name: apk
@@ -377,7 +377,7 @@ jobs:
 
       # Only the play job needs this one, and only on a tagged build — no point keeping it
       # around otherwise.
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: matrix.variant == 'play' && startsWith(github.ref, 'refs/tags/')
         with:
           name: aab
@@ -399,7 +399,7 @@ jobs:
     steps:
       # The `apk` artefact holds one file, the foss APK. pages.yml takes every `*.apk` on the
       # Release into the F-Droid index, so nothing else may ever be attached to it.
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: apk
 
@@ -449,7 +449,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: aab
 

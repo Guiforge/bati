@@ -28,7 +28,11 @@ Builds:
     subdir: android/app
     sudo:
       - apt-get update
-      - apt-get install -y --no-install-recommends npm make g++ python3
+      - apt-get install -y --no-install-recommends make g++ python3 curl
+      - curl -Lo node.tar.gz https://nodejs.org/dist/v24.22.1/node-v24.22.1-linux-x64.tar.gz
+      - echo "eb6728e77c576a35162c122c45ccadf224d89ff00abc8dae46cc2897c6002d7c node.tar.gz"
+        | sha256sum -c -
+      - tar xzf node.tar.gz --strip-components=1 -C /usr/local/
     init:
       - cd ../..
       - npm ci
@@ -61,7 +65,9 @@ Builds:
       - android.enableShrinkResourcesInReleaseBuilds=true
 
 MaintainerNotes: |-
-  Expo / React Native app following templates/build-react-native.yml. android/ is
+  Expo / React Native app following templates/build-react-native.yml, except for
+  Node: Expo SDK 58 refuses anything under 22.13 and Debian trixie ships 20.19, so
+  from 2.13.1 the official Node 24 archive is fetched and checked by sha256. android/ is
   committed upstream so the subdir check passes, but `expo prebuild --clean` still
   regenerates it at build time. package.json already sets
   expo.autolinking.buildFromSource [".*"], so no sed is needed for it; init: purges

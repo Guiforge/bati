@@ -117,7 +117,7 @@ android {
         }
     }
     lint {
-        disable 'AcceptsUserCertificates', 'ExtraTranslation', 'LockedOrientationActivity', 'NewerVersionAvailable'
+        disable 'AcceptsUserCertificates', 'AndroidGradlePluginVersion', 'ExtraTranslation', 'LockedOrientationActivity', 'NewerVersionAvailable'
         warningsAsErrors = true
         informational 'LintBaseline', 'LintBaselineFixed'
         baseline = file("$rootDir/../android-lint-baseline.xml")

@@ -74,6 +74,12 @@ const { withAppBuildGradle, withGradleProperties } = require("expo/config-plugin
  * would also rot the baseline on every upstream release, since the message carries the version
  * number.
  *
+ * ## `disable 'AndroidGradlePluginVersion'`
+ *
+ * The same check for the build tools: since SDK 58 it reports a newer Gradle than the wrapper's.
+ * Gradle and the Android Gradle Plugin come from Expo's prebuild template, which writes the
+ * wrapper on every `prebuild --clean`, so bumping them here would not survive the next prebuild.
+ *
  * ## `informational 'LintBaseline', 'LintBaselineFixed'`
  *
  * Not decoration. As soon as a baseline filters anything, lint emits a `LintBaseline` reminder,
@@ -115,7 +121,7 @@ const GRADLE_PROPERTIES = {
 };
 
 const LINT_BLOCK = `    lint {
-        disable 'AcceptsUserCertificates', 'ExtraTranslation', 'LockedOrientationActivity', 'NewerVersionAvailable'
+        disable 'AcceptsUserCertificates', 'AndroidGradlePluginVersion', 'ExtraTranslation', 'LockedOrientationActivity', 'NewerVersionAvailable'
         warningsAsErrors = true
         informational 'LintBaseline', 'LintBaselineFixed'
         baseline = file("$rootDir/../android-lint-baseline.xml")

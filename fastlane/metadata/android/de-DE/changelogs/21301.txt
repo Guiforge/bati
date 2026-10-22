@@ -1,0 +1,5 @@
+- Hat dein Handy keine Displaysperre, sagt dir Bati jetzt, dass die Android-Sicherung es auslässt.
+- Eine ältere Sicherung wird beim Wiederherstellen aktualisiert oder abgelehnt, statt die App kaputt zu machen.
+- Mehr Fotos werden angenommen, auch solche mit Farbprofil.
+- Ein Abenteuerschritt zählt jetzt nur für seine eigene Quest.
+- Unter der Haube: Expo SDK 58 und eine neue Version des Oberflächen-Toolkits.

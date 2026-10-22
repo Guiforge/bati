@@ -1,0 +1,5 @@
+- If your phone has no screen lock, Bati now tells you that Android's backup leaves it out.
+- Restoring an older backup brings it up to date, or refuses it, instead of breaking the app.
+- More photos are accepted, including those with a colour profile.
+- An adventure step now only counts for its own quest.
+- Under the hood: Expo SDK 58 and a new version of the interface toolkit.

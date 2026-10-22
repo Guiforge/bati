@@ -1,0 +1,5 @@
+- Si tu móvil no tiene bloqueo de pantalla, Bati te avisa de que la copia de seguridad de Android lo deja fuera.
+- Restaurar una copia antigua la pone al día, o la rechaza, en vez de romper la app.
+- Se aceptan más fotos, también las que llevan perfil de color.
+- Un paso de aventura ya solo cuenta para su propia misión.
+- Por dentro: Expo SDK 58 y una nueva versión del kit de interfaz.

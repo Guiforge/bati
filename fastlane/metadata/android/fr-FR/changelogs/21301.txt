@@ -1,0 +1,5 @@
+- Si ton téléphone n'a pas de verrouillage d'écran, Bati te prévient que la sauvegarde d'Android le laisse de côté.
+- Restaurer une ancienne sauvegarde la met à jour, ou la refuse, au lieu de casser l'app.
+- Plus de photos sont acceptées, y compris celles avec un profil de couleur.
+- Une étape d'aventure ne compte plus que pour sa propre quête.
+- Sous le capot : Expo SDK 58 et une nouvelle version de la boîte à outils de l'interface.

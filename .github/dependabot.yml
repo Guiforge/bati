@@ -46,6 +46,8 @@ updates:
         update-types: ["version-update:semver-major"]
       # The SDK pins these to an exact version, so even a patch fails expo-doctor (#147).
       # Dependabot alone is muted: `expo install --fix` still moves them with the SDK.
+      - dependency-name: "react"
+      - dependency-name: "react-dom"
       - dependency-name: "react-native"
       - dependency-name: "react-native-reanimated"
       - dependency-name: "react-native-svg"
@@ -57,10 +59,6 @@ updates:
       # (#172). It moves with babel-preset-expo, when the SDK's own Babel goes to 8.
       - dependency-name: "@babel/parser"
         update-types: ["version-update:semver-major"]
-      - dependency-name: "react"
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
-      - dependency-name: "react-dom"
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: "@types/react"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
 

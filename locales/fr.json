@@ -1922,6 +1922,8 @@
     "protectBody": "Ton héros vit sur ce téléphone. Active la sauvegarde automatique.",
     "protectHeavyTitle": "Ton héros devient lourd",
     "protectHeavyBody": "La sauvegarde Google s'arrête à 25 Mo. Choisis une sauvegarde à toi.",
+    "protectNoLockTitle": "Android ne sauvegarde pas Bati",
+    "protectNoLockBody": "Ton téléphone n'a pas de verrouillage d'écran. Active la sauvegarde automatique.",
     "heroSize": "Ton héros : {{total}} Mo, dont photos {{photos}} Mo",
     "lastBackupToday": "Dernière sauvegarde : aujourd'hui",
     "lastBackupDays_one": "Dernière sauvegarde il y a {{count}} jour",

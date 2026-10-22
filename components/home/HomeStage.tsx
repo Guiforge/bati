@@ -28,7 +28,6 @@ const STAGE_MIN_HEIGHT = 320;
 function resolveCover(config: SmartActionConfig | null): ImageSourcePropType {
   const path = config?.scene?.imagePath;
   if (!path) return ADVENTURE_ASSETS.squire_path;
-  if (path.startsWith("http")) return { uri: path };
   return config?.variant === "quest" ? getQuestAsset(path) : getAdventureAsset(path);
 }
 

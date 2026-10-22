@@ -1,13 +1,17 @@
 import { sql } from "drizzle-orm";
 
 import migrations from "../drizzle/migrations";
+import { reportError } from "../src/reportError";
 import {
+  databaseFilePath,
   db,
   type IsolatedConnection,
   serializeOnDatabase,
   vacuumIntoFile,
+  withConnectionTo,
   withIsolatedConnection,
 } from "./client";
+import { hasPendingMigrations, migrateClient } from "./migrationRunner";
 import { SCHEMA_VERSION } from "./schemaVersion";
 import { errorTrail, sqlString } from "./sql";
 
@@ -176,8 +180,10 @@ async function inspectAttachedCandidate(conn: IsolatedConnection): Promise<Backu
   }
 
   // A backup that claims *this* build's migration history has to look like it. An older one is
-  // exempt on purpose: its tables are meant to differ, and the runner catches them up on the next
-  // launch — that is the whole reason the migration chain is the format version.
+  // exempt here only because its tables are meant to differ: `bringForward` migrates it before the
+  // swap, then runs this check again, where it now claims the newest migration and is held to it.
+  // An older file that the runner cannot carry forward is refused there, never swapped in to fail
+  // its migration on every launch.
   //
   // What this catches is the file whose bookkeeping says a migration ran while the change it was
   // supposed to make is absent. `db/migrate.ts` calls itself the riskiest code in the app, and a
@@ -191,10 +197,13 @@ async function inspectAttachedCandidate(conn: IsolatedConnection): Promise<Backu
 }
 
 /**
- * Table name → its `CREATE TABLE` text, whitespace-flattened so formatting is not a difference.
+ * Table or index name → its `CREATE` text, whitespace-flattened so formatting is not a difference.
  *
- * `__drizzle_migrations` is excluded: it is bookkeeping, it is already the subject of the check
- * above, and the app's runner and the test fixture spell its `CREATE` differently.
+ * Indexes count because only migrations ever create one: an extra UNIQUE index in a backup, or one
+ * named after an index a future migration creates, would fail that migration on every launch.
+ * `sqlite_autoindex_*` falls under `sqlite_%`. `__drizzle_migrations` is excluded: it is
+ * bookkeeping, it is already the subject of the check above, and the app's runner and the test
+ * fixture spell its `CREATE` differently.
  */
 async function tableDefinitions(
   conn: IsolatedConnection,
@@ -202,7 +211,8 @@ async function tableDefinitions(
 ): Promise<Map<string, string>> {
   const rows = await conn.getAllAsync<{ name: string; sql: string | null }>(
     `SELECT name, sql FROM ${prefix}.sqlite_master
-     WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name <> '__drizzle_migrations'`,
+     WHERE type IN ('table', 'index') AND name NOT LIKE 'sqlite_%'
+       AND name <> '__drizzle_migrations'`,
   );
 
   return new Map(rows.map((row) => [row.name, (row.sql ?? "").replace(/\s+/g, " ").trim()]));
@@ -237,6 +247,39 @@ export function validateBackup(path: string): Promise<BackupCheck> {
       return { ok: false, reason: rejectionForError(error) };
     }
   });
+}
+
+/**
+ * Migrates a staged backup that claims an older migration, before the swap, then checks it again as
+ * the current schema. Runs after `validateBackup` has passed it, so a trigger or a view is refused
+ * before any migration SQL touches the file. `incompatibleVersion` when the runner refuses it: its
+ * copy ("a version of Bati this one cannot read") is true of a file older than this build, where
+ * `schemaMismatch`'s says the file claims to be up to date, which this one does not.
+ *
+ * Takes the staged path like `validateBackup`; it is always `${DB_DIR}/${name}` (src/backupFiles.ts),
+ * and React Native has no `node:path`.
+ */
+export async function bringForward(path: string): Promise<BackupCheck> {
+  const name = path.slice(path.lastIndexOf("/") + 1);
+  // withConnectionTo reopens by basename in the default directory: any other path would be a different file.
+  if (path !== databaseFilePath(name)) {
+    throw new Error("bringForward: staged file outside the database directory");
+  }
+  const outcome = await withConnectionTo(name, async (conn): Promise<BackupCheck | "migrated"> => {
+    // The header is the sender's and may ask for WAL: in DELETE mode every write the runner makes
+    // lands in the main file before close, and no side file is left for the swap to strand.
+    await conn.execAsync("PRAGMA journal_mode = DELETE");
+    const client = conn as unknown as Parameters<typeof migrateClient>[0];
+    if (!(await hasPendingMigrations(client))) return { ok: true };
+    try {
+      await migrateClient(client);
+    } catch (error) {
+      reportError("backup.bringForward", error);
+      return { ok: false, reason: "incompatibleVersion" };
+    }
+    return "migrated";
+  });
+  return outcome === "migrated" ? validateBackup(path) : outcome;
 }
 
 /**

@@ -369,17 +369,15 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
       // Once per install from before `customAvatar`: the picker's cache path becomes a data URI
       // that backups carry, before Android purges the file under it.
-      if (customAvatarUri && !customAvatarUri.startsWith("data:")) {
-        portLegacyAvatar(customAvatarUri)
-          .then((ported) => {
-            if (get().customAvatarUri === customAvatarUri) set({ customAvatarUri: ported });
-          })
-          .catch((error: unknown) => reportError("settings.avatarPort", error));
-      } else {
-        preferences
-          .dropSupersededLegacyAvatar()
-          .catch((error: unknown) => reportError("settings.avatarLegacyDrop", error));
-      }
+      // Only a device-local legacy path is ported: a restored `customAvatar` never reaches it.
+      preferences
+        .legacyAvatarToPort()
+        .then(async (legacy) => {
+          if (!legacy) return await preferences.dropSupersededLegacyAvatar();
+          const ported = await portLegacyAvatar(legacy);
+          if (get().customAvatarUri === legacy) set({ customAvatarUri: ported });
+        })
+        .catch((error: unknown) => reportError("settings.avatarPort", error));
 
       i18n.changeLanguage(normalizedLanguage).catch(() => {
         // Ignore i18n errors

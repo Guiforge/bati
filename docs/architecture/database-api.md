@@ -119,7 +119,7 @@ interface AdventureRun {
 | `leaveAdventureRun(adventureId)` | Leave the active run (`left`); the boss keeps its HP |
 | `getActiveAdventureRun(adventureId)` | Get active run for adventure |
 | `getAnyActiveAdventureRun()` | Get any active adventure run |
-| `completeAdventureRunStep(runId, sessionId)` | Mark step complete |
+| `completeAdventureRunStep({ runStepId, completedSessionId, questId })` | Mark step complete. Refuses, writing nothing and returning the ordinary-training result, when the run is not active, the step's quest is not `questId`, or the step's status is not `"active"` |
 | `setAdventureRunDifficultyOverride(runId, level)` | Set difficulty override |
 
 ---

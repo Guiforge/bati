@@ -54,8 +54,19 @@ describe("getWeekStart", () => {
 });
 
 describe("getAvatarSource", () => {
+  // A JPEG header: SOI, then a SOF0 segment saying 256 x 256.
+  const jpeg256 = `data:image/jpeg;base64,${Buffer.from([
+    0xff, 0xd8, 0xff, 0xc0, 0, 17, 8, 1, 0, 1, 0, 3, 1, 0x22, 0, 2, 0x11, 1, 3, 0x11, 1,
+  ]).toString("base64")}`;
+
   it("prefers the hero's own photo over the built-in avatar", () => {
-    expect(getAvatarSource("guardian", "file:///photo.jpg")).toEqual({ uri: "file:///photo.jpg" });
+    expect(getAvatarSource("guardian", jpeg256)).toEqual({ uri: jpeg256 });
+  });
+
+  it("never loads a URL or a file a restored backup put there", () => {
+    const preset = getAvatarSource("guardian", null);
+    expect(getAvatarSource("guardian", "https://attacker.example/p.png")).toEqual(preset);
+    expect(getAvatarSource("guardian", "file:///photo.jpg")).toEqual(preset);
   });
 
   it("uses the built-in avatar when no photo was picked", () => {

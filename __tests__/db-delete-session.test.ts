@@ -96,7 +96,11 @@ describe("deleteSession", () => {
     const step0 = run.activeStep;
     if (!step0) throw new Error("Expected an active step");
     const id = await saveOne(step0.questId);
-    await adventures().completeAdventureRunStep({ runStepId: step0.id, completedSessionId: id });
+    await adventures().completeAdventureRunStep({
+      runStepId: step0.id,
+      completedSessionId: id,
+      questId: step0.questId,
+    });
 
     expect(await completed().deleteSession(id)).toBe("deleted");
 
@@ -116,12 +120,14 @@ describe("deleteSession", () => {
     const next = await adventures().completeAdventureRunStep({
       runStepId: step0.id,
       completedSessionId: first,
+      questId: step0.questId,
     });
     if (next.nextRunStepId == null) throw new Error("Expected a second step");
     const second = await saveOne(next.nextQuestId);
     await adventures().completeAdventureRunStep({
       runStepId: next.nextRunStepId,
       completedSessionId: second,
+      questId: next.nextQuestId as number,
     });
 
     expect(await completed().deleteSession(first)).toBe("locked");
@@ -164,7 +170,11 @@ describe("deleteSession, a session of a left run", () => {
       xpEarned: 40,
       exercises: [{ exerciseId: 1, sortOrder: 0, result: { type: "reps", value: 10 } }],
     });
-    await adventures().completeAdventureRunStep({ runStepId: step0.id, completedSessionId: id });
+    await adventures().completeAdventureRunStep({
+      runStepId: step0.id,
+      completedSessionId: id,
+      questId: step0.questId,
+    });
     await adventures().leaveAdventureRun(adv.id);
     return { adv, run, step0, id };
   }

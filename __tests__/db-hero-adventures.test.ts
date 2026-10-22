@@ -77,6 +77,7 @@ describe("db/heroAdventures", () => {
       const done = await adv.completeAdventureRunStep({
         runStepId: step.id,
         completedSessionId: session(step.questId),
+        questId: step.questId,
       });
       if (done.isFinished) return;
       const next = await adv.getActiveAdventureRun(adventureId);
@@ -378,6 +379,7 @@ describe("db/heroAdventures", () => {
     const one = await adv.completeAdventureRunStep({
       runStepId: first.id,
       completedSessionId: session(first.questId),
+      questId: first.questId,
     });
     expect(one.isFinished).toBe(false);
     const second = await adv.getActiveAdventureRun(id);
@@ -385,6 +387,7 @@ describe("db/heroAdventures", () => {
     const two = await adv.completeAdventureRunStep({
       runStepId: second?.activeStep?.id as number,
       completedSessionId: session(b),
+      questId: b,
     });
     expect(two.isFinished).toBe(false);
     const third = await adv.getActiveAdventureRun(id);
@@ -406,11 +409,16 @@ describe("db/heroAdventures", () => {
     await adv.completeAdventureRunStep({
       runStepId: firstStep.id,
       completedSessionId: session(a),
+      questId: a,
     });
     const second = (await adv.getActiveAdventureRun(id))?.activeStep;
     if (!second) throw new Error("second step expected");
     const secondSession = session(b);
-    await adv.completeAdventureRunStep({ runStepId: second.id, completedSessionId: secondSession });
+    await adv.completeAdventureRunStep({
+      runStepId: second.id,
+      completedSessionId: secondSession,
+      questId: b,
+    });
     expect((await adv.getActiveAdventureRun(id))?.activeStep?.stepIndex).toBe(3);
 
     expect(await completed.deleteSession(secondSession)).toBe("deleted");

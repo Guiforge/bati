@@ -5,6 +5,7 @@ import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 
 import * as schema from "../../db/schema";
+import { makeClient } from "./migrateTo";
 
 type Journal = {
   entries: { idx: number; tag: string; when: number }[];
@@ -62,6 +63,7 @@ export function clientMock(t: { db: unknown; sqlite: Database.Database }) {
   const { sqlString } = require("../../db/sql") as typeof import("../../db/sql");
   return {
     db: t.db,
+    databaseFilePath: (name: string) => `/data/SQLite/${name}`,
     schema: require("../../db/schema"),
     transactionOrFallback: <T>(fn: (tx: never) => Promise<T>) => fn(t.db as never),
     // The real one queues; here there is nothing to queue behind, and a stub keeps a test
@@ -93,6 +95,18 @@ export function clientMock(t: { db: unknown; sqlite: Database.Database }) {
           .prepare("SELECT name FROM pragma_database_list WHERE name NOT IN ('main', 'temp')")
           .all() as { name: string }[];
         for (const { name } of attached) t.sqlite.exec(`DETACH DATABASE ${name}`);
+      }
+    },
+    // Another file beside the live one, as the real one opens it in expo-sqlite's directory. The
+    // directory is the live file's, not `require("expo-sqlite")`'s: outside `jest.isolateModules`
+    // that require finds jest-expo's module, not the Node harness's.
+    withConnectionTo: async <T>(name: string, fn: (conn: unknown) => Promise<T>) => {
+      const conn = new Database(path.join(path.dirname(t.sqlite.name), name));
+      try {
+        conn.exec("PRAGMA busy_timeout = 5000");
+        return await fn(makeClient(conn));
+      } finally {
+        conn.close();
       }
     },
     // A copy of the live database on a connection of its own, closed afterwards like the real

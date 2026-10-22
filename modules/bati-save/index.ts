@@ -20,6 +20,8 @@ export type BatiSave = {
   discard(uri: string): Promise<void>;
   /** Copies `text` flagged as sensitive (Android 13+), so the system does not preview it. */
   copySensitive(text: string): Promise<void>;
+  /** Whether the phone has a screen lock (`KeyguardManager.isDeviceSecure`). */
+  isDeviceSecure(): boolean;
 };
 
 /** What `pickTarget` rejects with on a device that has no app to answer. */
@@ -30,4 +32,13 @@ export function batiSave(): BatiSave {
   const native = requireOptionalNativeModule<BatiSave>("BatiSave");
   if (!native) throw new Error("BatiSave native module is not in this build");
   return native;
+}
+
+/**
+ * Whether the phone has a screen lock: without one, Android's own backup leaves Bati out
+ * (`plugins/withAndroidBackupRules.js`). `true` when the module is missing, so a build without it
+ * never warns about a lock it cannot see.
+ */
+export function deviceIsSecure(): boolean {
+  return requireOptionalNativeModule<BatiSave>("BatiSave")?.isDeviceSecure() ?? true;
 }

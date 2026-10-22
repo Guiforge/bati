@@ -1922,6 +1922,8 @@
     "protectBody": "Tu héroe vive en este teléfono. Activa la copia automática.",
     "protectHeavyTitle": "Tu héroe pesa cada vez más",
     "protectHeavyBody": "La copia de Google se detiene a los 25 MB. Elige una copia propia.",
+    "protectNoLockTitle": "Android no hace copia de Bati",
+    "protectNoLockBody": "Tu teléfono no tiene bloqueo de pantalla. Activa la copia automática.",
     "heroSize": "Tu héroe: {{total}} MB, de los cuales fotos {{photos}} MB",
     "lastBackupToday": "Última copia: hoy",
     "lastBackupDays_one": "Última copia hace {{count}} día",

@@ -4,6 +4,7 @@ import {
   discardStagedImport,
   stageBackupForImport,
   stageBackupFrom,
+  UNLOCK_SLOT,
 } from "@/src/backupFiles";
 import { joinPeer, serverState, syncAccount } from "@/src/deviceSync";
 import { reportError } from "@/src/reportError";
@@ -67,13 +68,13 @@ async function unlockFromFolder(secret: string): Promise<UnlockResult> {
   let result: UnlockResult = "nothingToTry";
   for (const copy of copies) {
     try {
-      await stageBackupFrom(copy);
+      await stageBackupFrom(copy, UNLOCK_SLOT);
       result = await openStaged(secret);
     } catch (error) {
       // One copy that cannot be read (cut short, not ours) must not hide the next one.
       reportError("vault.unlock.folder", error);
     } finally {
-      discardStagedImport();
+      discardStagedImport(UNLOCK_SLOT);
     }
     if (result === "unlocked" || result === "newerVersion") return result;
   }
@@ -82,19 +83,19 @@ async function unlockFromFolder(secret: string): Promise<UnlockResult> {
 
 async function unlockFromChosenFile(secret: string): Promise<UnlockResult> {
   try {
-    if ((await stageBackupForImport()) === null) return "cancelled";
+    if ((await stageBackupForImport(UNLOCK_SLOT)) === null) return "cancelled";
     return await openStaged(secret);
   } catch (error) {
     reportError("vault.unlock.file", error);
     return "nothingToTry";
   } finally {
-    discardStagedImport();
+    discardStagedImport(UNLOCK_SLOT);
   }
 }
 
 /** The staged file, opened with what the hero typed; its key becomes this phone's when it opens. */
 async function openStaged(secret: string): Promise<UnlockResult> {
-  const opened = await decryptStagedImport(secret);
+  const opened = await decryptStagedImport(secret, UNLOCK_SLOT);
   if (opened.result === "newerVersion") return "newerVersion";
   if (opened.result === "wrongSecret" || opened.result === "needsSecret") return "wrong";
   if (opened.result !== "opened" || opened.join === undefined) return "nothingToTry";

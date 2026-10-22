@@ -277,6 +277,7 @@ import {
   saveBackupToFolder,
   sealedCopiesIn,
   stageBackupForImport,
+  UNLOCK_SLOT,
   writePreMigrationCopy,
   writeSyncSnapshot,
 } from "@/src/backupFiles";
@@ -705,6 +706,40 @@ describe("stageBackupForImport", () => {
 
     expect(fs.__disk.has(at(IMPORT_NAME))).toBe(false);
     expect(fs.__disk.get(at(mockDbName))).toBe("the hero's year");
+  });
+
+  test("discarding one slot leaves the other", () => {
+    write(IMPORT_NAME, "a staged restore");
+    write(UNLOCK_SLOT.name, "an unlock copy");
+    write(`${UNLOCK_SLOT.name}-wal`, "its wal");
+    write(UNLOCK_SLOT.plain, "its plain");
+
+    discardStagedImport(UNLOCK_SLOT);
+
+    expect(fs.__disk.get(at(IMPORT_NAME))).toBe("a staged restore");
+    for (const gone of [UNLOCK_SLOT.name, `${UNLOCK_SLOT.name}-wal`, UNLOCK_SLOT.plain]) {
+      expect(fs.__disk.has(at(gone))).toBe(false);
+    }
+  });
+
+  test("discarding a staged import removes its side files", () => {
+    write(IMPORT_NAME, "rejected");
+    write(`${IMPORT_NAME}-wal`, "a stale wal");
+    write(`${IMPORT_NAME}-shm`, "its index");
+
+    discardStagedImport();
+
+    expect(fs.__disk.has(at(`${IMPORT_NAME}-wal`))).toBe(false);
+    expect(fs.__disk.has(at(`${IMPORT_NAME}-shm`))).toBe(false);
+  });
+
+  test("staging never leaves an earlier candidate's WAL beside the new one", async () => {
+    write(`${IMPORT_NAME}-wal`, "a stale wal");
+    picks("picked");
+
+    await stageBackupForImport();
+
+    expect(fs.__disk.has(at(`${IMPORT_NAME}-wal`))).toBe(false);
   });
 });
 

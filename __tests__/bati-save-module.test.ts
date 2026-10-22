@@ -1,4 +1,4 @@
-import { batiSave } from "@/modules/bati-save";
+import { batiSave, deviceIsSecure } from "@/modules/bati-save";
 
 // The JS half names the missing build instead of calling undefined. jest is that situation, and so
 // is a build made before the module existed.
@@ -15,4 +15,12 @@ test("hands back the module it found", () => {
   mockNative = { pickTarget: jest.fn(), writeTo: jest.fn(), discard: jest.fn() };
 
   expect(batiSave()).toBe(mockNative);
+});
+
+test("reads the screen lock from the module, and never warns when it is missing", () => {
+  mockNative = { isDeviceSecure: () => false };
+  expect(deviceIsSecure()).toBe(false);
+
+  mockNative = null;
+  expect(deviceIsSecure()).toBe(true);
 });

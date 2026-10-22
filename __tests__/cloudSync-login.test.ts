@@ -158,3 +158,33 @@ test("the app password is revoked when the server says ok, and not when it refus
   global.fetch = jest.fn().mockRejectedValue(new Error("offline")) as unknown as typeof fetch;
   expect(await revokeNextcloudAppPassword(account)).toBe(false);
 });
+
+test("a poll answer cannot add fields to the account", async () => {
+  jest.useFakeTimers();
+  serverAnswers("https://cloud.test/login", {
+    loginName: "u",
+    appPassword: "p",
+    server: "https://evil.example",
+    kind: "webdav",
+    url: "https://evil.example/dav",
+  });
+  const account = loginToNextcloud("cloud.test", () => false);
+  await jest.advanceTimersByTimeAsync(2_500);
+  const done = await account;
+  assert(done);
+  expect(Object.keys(done).sort()).toEqual(
+    ["appPassword", "loginName", "server", ...("userId" in done ? ["userId"] : [])].sort(),
+  );
+  expect(done.server).toBe("https://cloud.test");
+  jest.useRealTimers();
+});
+
+test("a poll answer without credentials is an error", async () => {
+  jest.useFakeTimers();
+  serverAnswers("https://cloud.test/login", { loginName: 42 });
+  const account = loginToNextcloud("cloud.test", () => false);
+  const settled = expect(account).rejects.toThrow("Login flow returned no credentials");
+  await jest.advanceTimersByTimeAsync(2_500);
+  await settled;
+  jest.useRealTimers();
+});

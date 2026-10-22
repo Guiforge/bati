@@ -297,6 +297,8 @@ describe("reading a quest file", () => {
     expect(safeImage("http://tracker.example/pixel.png")).toBeNull();
     expect(safeImage("file:///data/data/com.guiforge.bati/databases/bati.db")).toBeNull();
     expect(safeImage("content://media/external/images/1")).toBeNull();
+    expect(safeImage("/data/user/0/app/files/a.jpg")).toBeNull();
+    expect(safeImage("squat")).toBe("squat");
     expect(safeImage("data:text/html;base64,PHNjcmlwdD4=")).toBeNull();
     expect(safeImage("../../secrets")).toBeNull();
   });

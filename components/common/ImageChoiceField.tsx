@@ -7,6 +7,7 @@ import { ScrollView } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { useToast } from "@/components/common/Toast";
 import { ImagePlus } from "@/components/icons";
+import { carriedPhoto } from "@/constants/assetMap";
 import { encodePhoto } from "@/src/exercisePhoto";
 import { reportError } from "@/src/reportError";
 
@@ -77,7 +78,8 @@ export function ImageChoiceField({
   const [open, setOpen] = useState(false);
 
   /** A photo lives in the row as a data URI, so "is this a photo?" is a prefix test. */
-  const isPhoto = value.startsWith("data:");
+  const photo = carriedPhoto(value);
+  const isPhoto = photo !== null;
 
   // The body and its error path are split rather than wrapped in `try ... finally`, which the
   // React Compiler cannot lower. The catch never rethrows, so `setBusy(false)` runs on both paths.
@@ -175,8 +177,8 @@ export function ImageChoiceField({
                 accessibilityState={{ selected: isPhoto }}
                 accessibilityLabel={t("exercise_editor.image_from_photos")}
               >
-                {isPhoto ? (
-                  <Image source={{ uri: value }} style={{ width: TILE, height: TILE }} />
+                {photo ? (
+                  <Image source={photo} style={{ width: TILE, height: TILE }} />
                 ) : (
                   <ImagePlus size={22} color="$textSecondary" />
                 )}

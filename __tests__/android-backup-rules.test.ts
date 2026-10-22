@@ -33,7 +33,7 @@ test.each([
     // Once per section: cloud backup and device transfer must agree, or a phone-to-phone move
     // and a restore from the cloud would bring back different heroes.
     for (const file of [db, `${db}-wal`, `${db}-shm`]) {
-      expect(count(`<include domain="file" path="${file}"/>`)).toBe(sections);
+      expect(count(`domain="file" path="${file}"`)).toBe(sections);
     }
     // No directory-wide include: that is how decrypted imports and other devices' histories, in
     // plaintext, went to Google.
@@ -43,3 +43,23 @@ test.each([
     expect(count("<include ")).toBe(3 * sections);
   },
 );
+
+test("cloud backup is off where Android cannot encrypt it", () => {
+  expect(read("res/xml/bati_data_extraction_rules.xml")).toContain(
+    '<cloud-backup disableIfNoEncryptionCapabilities="true">',
+  );
+});
+
+test("full backup includes need client-side encryption", () => {
+  const includes = read("res/xml/bati_backup_rules.xml").match(/<include [^>]*>/g) ?? [];
+  expect(includes).toHaveLength(3);
+  for (const tag of includes) expect(tag).toContain('requireFlags="clientSideEncryption"');
+});
+
+test("device transfer keeps its includes unflagged", () => {
+  const transfer = /<device-transfer>[\s\S]*<\/device-transfer>/.exec(
+    read("res/xml/bati_data_extraction_rules.xml"),
+  )?.[0];
+  expect(transfer).toBeDefined();
+  expect(transfer).not.toContain("requireFlags");
+});

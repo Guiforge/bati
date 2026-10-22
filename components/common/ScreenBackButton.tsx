@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Button } from "tamagui";
+import { Button } from "@/components/common/Button";
 
 import { ChevronLeft } from "@/components/icons";
 
@@ -23,12 +23,12 @@ export function ScreenBackButton() {
 
   return (
     <Button
-      size="$3"
+      size="3"
       hitSlop={8}
       circular
       chromeless
       onPress={() => router.back()}
-      icon={<ChevronLeft size={24} color="$text" />}
+      icon={<ChevronLeft size={24} color="text" />}
       accessibilityRole="button"
       accessibilityLabel={t("quests.go_back")}
     />

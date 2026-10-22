@@ -11,13 +11,8 @@
   "project": ["**/*.{ts,tsx}", "!.design-sync/**"],
   "ignoreDependencies": [
     "expo-dev-client",
-    "@react-navigation/bottom-tabs",
-    "@react-navigation/elements",
-    "@react-navigation/native",
     "expo-updates",
-    "@tamagui/babel-plugin",
     "babel-plugin-transform-remove-console",
-    "jest-environment-node",
     "fast-check"
   ],
   "ignoreBinaries": ["xmllint"],

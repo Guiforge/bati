@@ -23,7 +23,7 @@ describe("SectionLabel", () => {
     const style = StyleSheet.flatten(view.getByText("YOUR NUMBERS").props.style);
     expect(style.fontSize).toBe(12);
     expect(style.letterSpacing).toBe(1.5);
-    expect(style.fontWeight).toBe("700");
+    expect(String(style.fontWeight)).toBe("700");
     const dark = config.themes.dark as unknown as Record<string, { val: string }>;
     expect(style.color).toBe(dark.textSecondary?.val);
   });

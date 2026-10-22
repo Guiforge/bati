@@ -1,8 +1,9 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, XStack, YStack } from "tamagui";
+import { XStack, YStack } from "tamagui";
 import { AppText } from "@/components/common/AppText";
+import { Button } from "@/components/common/Button";
 import { Card } from "@/components/common/Card";
 import { ChevronRight, Shield, X } from "@/components/icons";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -54,26 +55,26 @@ export function ProtectCard() {
   };
 
   return (
-    <Card testID="home-protect" mx="$4" mt="$3" py="$2" onPress={open}>
-      <XStack items="center" gap="$2">
-        <Shield size={16} color="$textSecondary" />
+    <Card testID="home-protect" mx="4" mt="3" py="2" onPress={open}>
+      <XStack items="center" gap="2">
+        <Shield size={16} color="textSecondary" />
         <YStack flex={1}>
-          <AppText fontSize="$3" fontWeight="bold" color="$text">
+          <AppText fontSize="3" fontWeight="bold" color="text">
             {t(TEXT[kind][0])}
           </AppText>
-          <AppText fontSize="$2" color="$textSecondary">
+          <AppText fontSize="2" color="textSecondary">
             {t(TEXT[kind][1])}
           </AppText>
         </YStack>
-        <ChevronRight size={16} color="$primaryText" />
+        <ChevronRight size={16} color="primaryText" />
         <Button
           testID="home-protect-dismiss"
-          size="$2"
+          size="2"
           circular
           chromeless
           hitSlop={8}
           onPress={close}
-          icon={<X size={18} color="$textSecondary" />}
+          icon={<X size={18} color="textSecondary" />}
           accessibilityRole="button"
           accessibilityLabel={t("common.close")}
         />

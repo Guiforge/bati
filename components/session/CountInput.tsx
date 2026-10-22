@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Input, YStack } from "tamagui";
+import { YStack } from "tamagui";
+import { Input } from "tamagui/unstyled";
 
 interface CountInputProps {
   value: number;
@@ -45,9 +46,9 @@ export function CountInput({
   };
 
   return (
-    <YStack borderBottomWidth={2} borderColor={draft === null ? "$borderStrong" : "$primary"}>
+    <YStack borderBottomWidth={2} borderColor={draft === null ? "borderStrong" : "primary"}>
+      {/* The behaviour Input, not the skin: the underline above is the whole look. */}
       <Input
-        unstyled
         testID={testID}
         value={draft ?? String(value)}
         onChangeText={handleChangeText}
@@ -58,10 +59,10 @@ export function CountInput({
         selectTextOnFocus
         maxLength={String(max).length}
         fontSize={fontSize}
-        lineHeight={Math.round(fontSize * 1.1)}
+        lineHeight={`${Math.round(fontSize * 1.1)}px`}
         fontWeight="700"
-        fontFamily="$body"
-        color="$text"
+        fontFamily="body"
+        color="text"
         text="center"
         p={0}
         minW={fontSize}

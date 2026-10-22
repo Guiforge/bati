@@ -1,7 +1,7 @@
 # Maestro E2E Test - Swearing an oath
 #
-# The oath is the app's single chosen objective. Covers: swear a preset from Home, then reopen
-# it and find the sworn oath in place of the empty state.
+# The oath is the app's single chosen objective. Covers: swear a preset from the Journal, then
+# reopen it and find the sworn oath in place of the empty state, and on Home once it is sworn.
 #
 # It also toggled the oath's reminder in Settings, until notifications were removed from the app
 # (c7246643). The flow kept tapping `settings-notifications`, a row that no longer exists.
@@ -17,9 +17,13 @@ appId: com.guiforge.bati.dev
 
 # --- Swear ------------------------------------------------------------------
 
-# With nothing sworn the card is the empty-state CTA; either way it opens the oath screen.
-- assertVisible:
+# A new hero has no strip on Home: with nothing sworn, Home offers the oath only from the third
+# session (db/disclosure.ts, 220bb4b3). The flow asserted the empty-state card here and failed on
+# every fresh install from that commit on. The Journal always carries the strip, so it goes there.
+- assertNotVisible:
     id: "home-oath-card"
+- tapOn:
+    id: "tab-journal"
 - tapOn:
     id: "home-oath-card"
 
@@ -28,7 +32,7 @@ appId: com.guiforge.bati.dev
 - assertVisible:
     id: "oath-preset"
 
-# Tapping a preset swears it and returns to Home (app/oath.tsx swearPreset -> router.back).
+# Tapping a preset swears it and returns to the Journal (app/oath.tsx swearPreset -> router.back).
 - tapOn:
     id: "oath-preset"
     index: 0
@@ -38,6 +42,12 @@ appId: com.guiforge.bati.dev
 
 # Re-opening now shows the sworn oath and its progress. The presets stay on screen
 # (swearing a new one replaces the old), so their absence is not the thing to assert.
+# Swearing raises the success toast right over the Journal's strip, and a toast takes the tap
+# that lands on it (components/common/Toast.tsx), so the strip is tapped once the toast is gone.
+- extendedWaitUntil:
+    notVisible:
+      id: "toast"
+    timeout: 8000
 - tapOn:
     id: "home-oath-card"
 - assertVisible:
@@ -46,6 +56,8 @@ appId: com.guiforge.bati.dev
     id: "oath-current"
 - back
 
-# Back on Home, the card now carries the sworn oath.
+# A sworn oath is shown on Home whatever the session count: the state the swear wrote.
+- tapOn:
+    id: "tab-home"
 - assertVisible:
     id: "home-oath-card"

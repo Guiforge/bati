@@ -35,7 +35,7 @@ export function trackFileFor(startedAt: number): File {
 export function flushTrack(file: File, fixes: readonly LocationFix[], distanceM: number): void {
   try {
     if (!file.exists) file.create({ intermediates: true, overwrite: true });
-    file.write(toGpx(fixes, { name: file.name, totalDistanceM: distanceM }));
+    file.writeSync(toGpx(fixes, { name: file.name, totalDistanceM: distanceM }));
   } catch (error) {
     // Losing the trace is the whole failure this function exists to prevent, so it is never
     // swallowed: a run that silently wrote nothing is worse than one that says it could not.

@@ -12,3 +12,7 @@
 -keep class com.facebook.react.turbomodule.** { *; }
 
 # Add any project specific keep options here:
+
+# Added by plugins/withAndroidKeepRules.js
+-keep class * extends androidx.room.RoomDatabase { <init>(); }
+-keep class * extends androidx.work.InputMerger { <init>(); }

@@ -12,9 +12,9 @@ module.exports = (api) => {
     plugins: [
       ...(stripConsole ? [["transform-remove-console", { exclude: ["error"] }]] : []),
       ["inline-import", { extensions: [".sql"] }],
-      // @tamagui/babel-plugin removed: @tamagui/static can't require react-native 0.86
-      // (ESM/Flow source) in Node, so extraction failed on every file ("skipping").
-      // Tamagui still works fully at runtime. Re-add the plugin once on tamagui v2+.
+      // No Tamagui plugin: Tamagui runs at runtime only. v3 has no Babel plugin; its optimizing
+      // compiler is `@tamagui/cli/metro`, deliberately not adopted yet: it changes the render
+      // path, so it gets its own change with its own before/after measurement.
       // IMPORTANT: must be last
       "react-native-reanimated/plugin",
     ],

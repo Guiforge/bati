@@ -57,11 +57,11 @@ export function StartingPointRow() {
     <>
       <SettingRow
         testID="settings-starting-point"
-        icon={<Sprout size={22} color="$text" />}
+        icon={<Sprout size={22} color="text" />}
         label={t("settings.starting_point")}
         onPress={toggle}
       />
-      <Text testID="settings-starting-point-note" fontSize="$2" color="$textSecondary" px="$3">
+      <Text testID="settings-starting-point-note" fontSize="2" color="textSecondary" px="3">
         {said === null
           ? t("settings.starting_point_note")
           : `${said}. ${t("settings.starting_point_note")}`}

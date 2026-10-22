@@ -105,11 +105,11 @@ function TitleText({ children }: { children: string }) {
   return (
     <Text
       shrink={1}
-      fontFamily="$heading"
+      fontFamily="heading"
       fontWeight="700"
       fontSize={30}
-      lineHeight={TITLE_LINE}
-      color="$text"
+      lineHeight={`${TITLE_LINE}px`}
+      color="text"
       numberOfLines={2}
     >
       {children.replace(/-/g, "-\u200B")}
@@ -132,15 +132,15 @@ function Glow() {
     >
       {/* Upright ovals, well apart: flat dashes read as "- -", a missing value. */}
       <XStack testID="village-glow" gap={16} accessible={false}>
-        <YStack width={6} height={10} rounded={999} bg="$text" />
-        <YStack width={6} height={10} rounded={999} bg="$text" />
+        <YStack width={6} height={10} rounded={999} bg="text" />
+        <YStack width={6} height={10} rounded={999} bg="text" />
       </XStack>
     </YStack>
   );
 }
 
 /** The title block's own box: the loaded header and its skeleton share it, so nothing slides. */
-const TITLE_BLOCK_STYLE = { px: "$4", pb: 28, gap: 6 } as const;
+const TITLE_BLOCK_STYLE = { px: "4", pb: 28, gap: 6 } as const;
 /** A line of the header's small text: its height at the current font scale, for the skeleton. */
 const TEXT_LINE = 17;
 /** Stands where the level's number goes while the line is translated. */
@@ -365,13 +365,13 @@ export function VillageScene() {
         <YStack
           testID="village-screen"
           flex={1}
-          bg="$background"
+          bg="background"
           items="center"
           justify="center"
-          gap="$4"
-          p="$4"
+          gap="4"
+          p="4"
         >
-          <Text fontSize={16} fontWeight="700" color="$text" style={{ textAlign: "center" }}>
+          <Text fontSize={16} fontWeight="700" color="text" style={{ textAlign: "center" }}>
             {t("village.load_error")}
           </Text>
           <AppButton fullWidth={false} onPress={loadScene}>
@@ -385,7 +385,7 @@ export function VillageScene() {
     // hero is already its final height when the data arrives.
     const lineHeight = Math.round(TEXT_LINE * PixelRatio.getFontScale());
     return (
-      <YStack testID="village-screen" flex={1} bg="$background">
+      <YStack testID="village-screen" flex={1} bg="background">
         <YStack testID="village-hero-loading" width="100%" height={heroHeight}>
           <YStack position="absolute" t={0} l={0} r={0} b={0}>
             <Skeleton width="100%" height={heroHeight} radius={0} />
@@ -402,7 +402,7 @@ export function VillageScene() {
             <XStack items="flex-start" gap={10}>
               <Skeleton
                 testID="village-crest-skeleton"
-                bg="$surface2"
+                bg="surface2"
                 {...crestFootprint(CREST_SIZE, true)}
               />
               <XStack testID="village-name-row" {...nameRow()}>
@@ -422,7 +422,7 @@ export function VillageScene() {
             <Skeleton height={20} width="40%" />
           </YStack>
         </YStack>
-        <YStack gap="$3" p="$4">
+        <YStack gap="3" p="4">
           <Skeleton height={28} width="60%" />
           <Skeleton height={16} width="40%" />
         </YStack>
@@ -449,7 +449,7 @@ export function VillageScene() {
   const weather = pickDailyVariant(VILLAGE_FLAVOUR[lang], `${dayKey(new Date())}:${scene.tier}`);
 
   return (
-    <YStack testID="village-screen" flex={1} bg="$background">
+    <YStack testID="village-screen" flex={1} bg="background">
       <Animated.ScrollView
         ref={scrollRef}
         testID="village-scroll"
@@ -574,26 +574,36 @@ export function VillageScene() {
                     px={9}
                     py={3}
                     rounded={999}
-                    bg="$glassBg"
+                    bg="glassBg"
                     borderWidth={1}
-                    borderColor="$glassBorder"
+                    borderColor="glassBorder"
                   >
                     <FlameFlicker size={14} />
-                    <Text fontSize={11.5} fontWeight="600" color="$text" numberOfLines={1}>
+                    <Text fontSize={11.5} fontWeight="600" color="text" numberOfLines={1}>
                       {`${t(`village.flame_${scene.flame}`)} · ${t("village.flame_days", { days: formatCount(language, scene.streakDays) })}`}
                     </Text>
                   </XStack>
                 )}
               </XStack>
             </XStack>
-            <Text fontSize={13} lineHeight={TEXT_LINE} fontWeight="500" color="$textSecondary">
+            <Text
+              fontSize={13}
+              lineHeight={`${TEXT_LINE}px`}
+              fontWeight="500"
+              color="textSecondary"
+            >
               {villageName ? `${tierName} · ` : null}
               {beforeLevel}
               <Text fontWeight="700">{scene.level}</Text>
               {`${afterLevel} · ${scene.title[lang]}`}
             </Text>
             {crest === undefined ? null : (
-              <Text testID="village-crest-line" fontSize={13} lineHeight={TEXT_LINE} color="$text">
+              <Text
+                testID="village-crest-line"
+                fontSize={13}
+                lineHeight={`${TEXT_LINE}px`}
+                color="text"
+              >
                 {crestLine}
               </Text>
             )}
@@ -604,7 +614,7 @@ export function VillageScene() {
                   style={{ width: 20, height: 20 }}
                   contentFit="contain"
                 />
-                <Text fontSize={11.5} color="$textSecondary">
+                <Text fontSize={11.5} color="textSecondary">
                   {t("village.focus_line", {
                     muscle: MUSCLE_LABELS[scene.dominantSport.muscle][lang],
                   })}
@@ -621,13 +631,13 @@ export function VillageScene() {
         {/* The panel rides up over the painting's last 14 dp, so the list reads as the scene's
             own ground rather than a second screen stacked under it. */}
         <YStack
-          bg="$bgDark"
+          bg="bgDark"
           borderTopWidth={1}
-          borderColor="$glassBorder"
+          borderColor="glassBorder"
           borderTopLeftRadius={16}
           borderTopRightRadius={16}
-          px="$4"
-          pt="$4"
+          px="4"
+          pt="4"
           gap={18}
           mt={-14}
           {...sectionAnim}
@@ -661,10 +671,10 @@ export function VillageScene() {
             <Banners banners={yearsView.years.banners} names={yearsView.names} language={lang} />
           ) : null}
           <YStack gap={6}>
-            <Text fontSize={12} lineHeight={17} color="$textSecondary" fontStyle="italic">
+            <Text fontSize={12} lineHeight="17px" color="textSecondary" fontStyle="italic">
               {weather}
             </Text>
-            <Text fontSize={11.5} lineHeight={17} color="$textSecondary" opacity={0.75}>
+            <Text fontSize={11.5} lineHeight="17px" color="textSecondary" opacity={0.75}>
               {t("village.foot")}
             </Text>
           </YStack>

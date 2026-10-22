@@ -45,19 +45,16 @@ jest.mock("@/db/exercises", () => ({
 
 const mockBack = jest.fn();
 const mockParams: { id?: string } = {};
-type Leave = { preventDefault: () => void; data: { action: unknown } };
-let mockLeaveListeners: ((e: Leave) => void)[] = [];
-const mockNavigation = {
-  addListener: (_name: string, fn: (e: Leave) => void) => {
-    mockLeaveListeners.push(fn);
-    return () => {
-      mockLeaveListeners = mockLeaveListeners.filter((l) => l !== fn);
-    };
-  },
-  dispatch: jest.fn(),
-};
+// What the screen last told `usePreventRemove`: whether to hold a removal, and what to do then.
+type Prevented = { data: { action: unknown }; repeat: () => void };
+let mockGuard: { prevent: boolean; onPrevented?: (e: Prevented) => void } = { prevent: false };
+const mockNavigation = { dispatch: jest.fn() };
 jest.mock("expo-router", () => ({
   useNavigation: () => mockNavigation,
+  usePreventRemove: (prevent: boolean, onPrevented?: (e: Prevented) => void) => {
+    mockGuard = { prevent, onPrevented };
+    return () => undefined;
+  },
   useRouter: () => ({
     back: (...args: unknown[]) => mockBack(...args),
     replace: jest.fn(),
@@ -103,23 +100,32 @@ describe("exercise editor", () => {
     mockShowError.mockClear();
     mockGetById.mockResolvedValue(null);
     delete mockParams.id;
-    mockLeaveListeners = [];
+    mockGuard = { prevent: false };
   });
 
+  /** A back press, the way expo-router plays it: through unless held, and held until `repeat`. */
   const leave = async () => {
-    const e = { preventDefault: jest.fn(), data: { action: { type: "GO_BACK" } } };
+    let left = !mockGuard.prevent;
+    const action = { type: "GO_BACK" };
     await act(() => {
-      for (const l of mockLeaveListeners) l(e);
+      if (left) return;
+      mockGuard.onPrevented?.({
+        data: { action },
+        repeat: () => {
+          left = true;
+          mockNavigation.dispatch(action);
+        },
+      });
     });
-    return e;
+    return left;
   };
 
   it("asks before dropping a typed name, and not before an untouched form", async () => {
     const editor = await mountEditor();
-    expect((await leave()).preventDefault).not.toHaveBeenCalled();
+    expect(await leave()).toBe(true);
 
     await act(async () => fireEvent.changeText(editor.getByTestId("exercise-name"), "Archer"));
-    expect((await leave()).preventDefault).toHaveBeenCalledTimes(1);
+    expect(await leave()).toBe(false);
     expect(editor.getByText("quests.editor_discard_title")).toBeTruthy();
   });
 
@@ -128,7 +134,8 @@ describe("exercise editor", () => {
     await act(async () => fireEvent.changeText(editor.getByTestId("exercise-name"), "Archer"));
     await act(async () => fireEvent.press(editor.getByTestId("exercise-save")));
     await waitFor(() => expect(mockBack).toHaveBeenCalled());
-    expect((await leave()).preventDefault).not.toHaveBeenCalled();
+    expect(await leave()).toBe(true);
+    expect(editor.queryByText("quests.editor_discard_title")).toBeNull();
   });
 
   it("saves with nothing but a name and a how-to", async () => {

@@ -68,14 +68,14 @@ function Waiting({ label }: { label: string }) {
       <XStack
         testID="live-map-loading"
         items="center"
-        gap="$2"
-        px="$3"
-        py="$2"
-        rounded="$10"
-        bg="$surface"
+        gap="2"
+        px="3"
+        py="2"
+        rounded="10"
+        bg="surface"
       >
         <ActivityIndicator size="small" color={rawColors.resourceGold} />
-        <AppText fontSize={13} color="$text">
+        <AppText fontSize={13} color="text">
           {label}
         </AppText>
       </XStack>
@@ -86,7 +86,7 @@ function Waiting({ label }: { label: string }) {
 /** The big map's floating figure: above the credit line, touching nothing. */
 function Overlay({ children }: { children: ReactNode }) {
   return (
-    <YStack position="absolute" b={40} l="$4" r="$4" pointerEvents="none">
+    <YStack position="absolute" b={40} l="4" r="4" pointerEvents="none">
       {children}
     </YStack>
   );
@@ -263,7 +263,7 @@ export function LiveMap({
       style={{ flex: 1 }}
       minH={topInset + HUD_HEIGHT + minHeight}
       width="100%"
-      bg="$bgDark"
+      bg="bgDark"
     >
       <MapLibreMap
         style={{ flex: 1 }}
@@ -383,7 +383,7 @@ export function LiveMap({
         onPress={() => setFollowing(true)}
       />
 
-      <YStack position="absolute" b="$3" l="$4" r="$4">
+      <YStack position="absolute" b="3" l="4" r="4">
         <MapFootnote quiet={moving} compact />
       </YStack>
 

@@ -2,13 +2,13 @@ import { Image } from "expo-image";
 import type { TFunction } from "i18next";
 import { memo, type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ImageSourcePropType } from "react-native";
 import { XStack, YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Trophy } from "@/components/icons";
 import { HandMark } from "@/components/journal/HandMark";
 import { feelingLabel, questLevelLabel } from "@/components/journal/journalFormat";
 import { NKicker, NMuted, NText } from "@/components/journal/nocturne";
+import type { ArtSource } from "@/constants/assetMap";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { formatDistance } from "@/constants/distanceFormat";
 import { formatDuration } from "@/db";
@@ -33,7 +33,7 @@ export interface JournalEntry {
    * comes from: the quest template is already in hand there, and `SessionCard` is memoized on
    * props it should not be re-deriving.
    */
-  cover?: ImageSourcePropType | null;
+  cover?: ArtSource | null;
   performedAt: Date;
   durationSeconds: number | null;
   leaguesM: number | null;
@@ -135,10 +135,10 @@ function Thumb({ entry, blank }: { entry: JournalEntry; blank: boolean }) {
     <YStack
       width={64}
       height={64}
-      bg="$surface2"
-      rounded="$4"
+      bg="surface2"
+      rounded="4"
       borderWidth={1}
-      borderColor="$borderStrong"
+      borderColor="borderStrong"
       items="center"
       justify="center"
       overflow="hidden"
@@ -161,7 +161,7 @@ function Thumb({ entry, blank }: { entry: JournalEntry; blank: boolean }) {
       ) : (
         // A hero-authored quest has no cover, and the trophy is the honest stand-in: it says
         // "a session happened" without pretending to be a picture of one.
-        <Trophy size={24} color="$resourceGold" />
+        <Trophy size={24} color="resourceGold" />
       )}
     </YStack>
   );
@@ -212,7 +212,7 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
   const parts: ReactNode[] = [
     metaLabel,
     entry.xpEarned > 0 ? (
-      <NText key="xp" testID="journal-row-xp" fontSize={12} lineHeight={17} color="$resourceGold">
+      <NText key="xp" testID="journal-row-xp" fontSize={12} lineHeight="17px" color="resourceGold">
         {t("quests.reward_xp", { count: formatCount(language, entry.xpEarned) })}
       </NText>
     ) : null,
@@ -221,8 +221,8 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
 
   return (
     <Card testID="journal-session-card" onPress={onPress}>
-      <YStack gap="$2">
-        <XStack gap="$3" items="center">
+      <YStack gap="2">
+        <XStack gap="3" items="center">
           {/* Icon */}
           {/* 64, not 50.
             The journal's covers are dark-fantasy paintings, and a dark painting cropped to a 50 px
@@ -232,13 +232,13 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
             tower are legible at it.
 
             A ring in the quest's own colour was tried and dropped: `accent` is the same token for
-            every key, and `bg`'s pastels resolve to near-identical plums against `$surface2`, so
+            every key, and `bg`'s pastels resolve to near-identical plums against `surface2`, so
             it was an ornament that looked like information. */}
           <Thumb entry={entry} blank={writtenDown} />
 
-          <YStack flex={1} gap="$1">
-            <XStack gap="$2" items="center">
-              <NText fontWeight="500" fontSize={16} lineHeight={22} numberOfLines={1} flex={1}>
+          <YStack flex={1} gap="1">
+            <XStack gap="2" items="center">
+              <NText fontWeight="500" fontSize={16} lineHeight="22px" numberOfLines={1} flex={1}>
                 {title}
               </NText>
               {/* A gold word, the wall's own kicker, where a filled badge was: no plate, no border,
@@ -259,11 +259,16 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
               translation layer. A release build on a phone decides whether the row needs more. */}
             <NMuted numberOfLines={1}>{dateLabel}</NMuted>
             {/* Two lines: at 130 % "Quête difficile" was cut to "Quête d…" at the end of one. */}
-            <NText fontSize={12} lineHeight={17} numberOfLines={2}>
+            <NText fontSize={12} lineHeight="17px" numberOfLines={2}>
               {parts.flatMap((part, i) => (i ? [" · ", part] : [part]))}
             </NText>
             {entry.feedback ? (
-              <NMuted fontSize={12} lineHeight={17} numberOfLines={1} testID="journal-row-feeling">
+              <NMuted
+                fontSize={12}
+                lineHeight="17px"
+                numberOfLines={1}
+                testID="journal-row-feeling"
+              >
                 {feelingLabel(t, language, entry.feedback)}
               </NMuted>
             ) : null}
@@ -275,7 +280,7 @@ export const SessionCard = memo(function SessionCard({ entry, onPressEntry }: Se
           <CardPhoto uuid={entry.uuid} photoUuid={entry.firstPhotoUuid} />
         ) : null}
         {!!entry.notes && (
-          <NText testID="journal-card-note" fontSize={12} lineHeight={17} numberOfLines={2}>
+          <NText testID="journal-card-note" fontSize={12} lineHeight="17px" numberOfLines={2}>
             {entry.notes}
           </NText>
         )}

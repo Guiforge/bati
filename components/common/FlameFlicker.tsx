@@ -75,12 +75,7 @@ export function FlameFlicker({ size = 48, animate = true }: FlameFlickerProps) {
 
   return (
     <Animated.View style={animatedStyle}>
-      <GameIcon
-        name="flame"
-        size={size}
-        shape="square"
-        color={animate ? "$primaryText" : "$muted"}
-      />
+      <GameIcon name="flame" size={size} shape="square" color={animate ? "primaryText" : "muted"} />
     </Animated.View>
   );
 }

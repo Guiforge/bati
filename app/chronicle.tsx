@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useWindowDimensions, View } from "react-native";
+import { useWindowDimensions, View, type ViewInstance } from "react-native";
 import { YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Skeleton } from "@/components/common/Skeleton";
@@ -37,7 +37,7 @@ export default function ChronicleScreen() {
   const holding = busy || !painted;
   // Read synchronously, as on the share screen: two taps in one frame must not send two pictures.
   const working = useRef(false);
-  const card = useRef<View>(null);
+  const card = useRef<ViewInstance>(null);
 
   useEffect(() => {
     const window = chronicleWindow(new Date());
@@ -71,7 +71,7 @@ export default function ChronicleScreen() {
       <NPage title={t("chronicle.title")} testID="chronicle-screen">
         {loaded.status === "loading" ? (
           <YStack items="center" mt={11}>
-            <Skeleton height={cardWidth} width={cardWidth} bg="$surface2" />
+            <Skeleton height={cardWidth} width={cardWidth} bg="surface2" />
           </YStack>
         ) : loaded.status === "ready" ? (
           <NMuted testID="chronicle-empty" mt={11}>
@@ -97,7 +97,7 @@ export default function ChronicleScreen() {
             disabled={holding}
             height={56}
             icon={
-              <Share2 size={20} color={holding ? "$textSecondary" : "$text"} strokeWidth={2.5} />
+              <Share2 size={20} color={`${holding ? "textSecondary" : "text"}`} strokeWidth={2.5} />
             }
             onPress={() => {
               send().catch((error: unknown) => reportError("chronicle.image", error));

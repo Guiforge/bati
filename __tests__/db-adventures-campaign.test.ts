@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { clientMock, createTestDb } from "./helpers/testDb";
 
 describe("db/adventures campaign", () => {
@@ -108,41 +109,36 @@ describe("db/adventures campaign", () => {
     const step2QuestId = details.steps[2]?.questId ?? null;
 
     // Seeded campaign has 3 steps; completing step 1 should not finish yet.
-    if (step2QuestId != null) {
-      expect(finished.isFinished).toBe(false);
-      expect(finished.nextQuestId).toBe(step2QuestId);
-      expect(finished.nextRunStepId).toBeTruthy();
+    assert(step2QuestId != null, "the seeded campaign has a third step");
+    expect(finished.isFinished).toBe(false);
+    expect(finished.nextQuestId).toBe(step2QuestId);
+    expect(finished.nextRunStepId).toBeTruthy();
 
-      const session3 = await completed.createCompletedSession({
-        questId: step2QuestId,
-        userLevel: "medium",
-        durationSeconds: 60,
-        xpEarned: 10,
-        exercises: [
-          {
-            exerciseId: squat.id,
-            sortOrder: 0,
-            result: { type: "reps", value: 10 },
-            target: { type: "reps", value: 10 },
-            performedAt: new Date(),
-          },
-        ],
-        performedAt: new Date(),
-      });
+    const session3 = await completed.createCompletedSession({
+      questId: step2QuestId,
+      userLevel: "medium",
+      durationSeconds: 60,
+      xpEarned: 10,
+      exercises: [
+        {
+          exerciseId: squat.id,
+          sortOrder: 0,
+          result: { type: "reps", value: 10 },
+          target: { type: "reps", value: 10 },
+          performedAt: new Date(),
+        },
+      ],
+      performedAt: new Date(),
+    });
 
-      const final = await adventures.completeAdventureRunStep({
-        runStepId: finished.nextRunStepId as number,
-        completedSessionId: session3,
-        questId: step2QuestId,
-      });
+    const final = await adventures.completeAdventureRunStep({
+      runStepId: finished.nextRunStepId as number,
+      completedSessionId: session3,
+      questId: step2QuestId,
+    });
 
-      expect(final.isFinished).toBe(true);
-      expect(await adventures.getActiveAdventureRun(adv.id)).toBeNull();
-    } else {
-      // If the campaign only has 2 steps, we should be finished now.
-      expect(finished.isFinished).toBe(true);
-      expect(await adventures.getActiveAdventureRun(adv.id)).toBeNull();
-    }
+    expect(final.isFinished).toBe(true);
+    expect(await adventures.getActiveAdventureRun(adv.id)).toBeNull();
   });
 
   /**

@@ -4,11 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, Input, Paragraph, Spinner, Text, XStack, YStack } from "tamagui";
+import { Spinner, Text, XStack, YStack } from "tamagui";
 import { AdventureImport } from "@/components/adventures/AdventureImport";
 import { AppButton } from "@/components/common/AppButton";
+import { Button } from "@/components/common/Button";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
+import { Input } from "@/components/common/Input";
+import { Paragraph } from "@/components/common/Paragraph";
 import { useToast } from "@/components/common/Toast";
 import { Check, ChevronLeft, Download, Info } from "@/components/icons";
 import { ImportClashes } from "@/components/quests/ImportNotes";
@@ -139,20 +142,20 @@ export default function QuestImportScreen() {
   };
 
   return (
-    <YStack flex={1} bg="$background" pt={insets.top} pb={insets.bottom}>
-      <XStack px="$4" py="$3" items="center" gap="$3">
+    <YStack flex={1} bg="background" pt={insets.top} pb={insets.bottom}>
+      <XStack px="4" py="3" items="center" gap="3">
         <Button
-          size="$3"
+          size="3"
           hitSlop={8}
           circular
           chromeless
           onPress={leave}
           aria-label={t("quests.go_back")}
-          icon={<ChevronLeft size={24} color="$text" />}
+          icon={<ChevronLeft size={24} color="text" />}
         />
-        <XStack flex={1} items="center" gap="$2">
-          <Download size={20} color="$primaryText" />
-          <Text fontFamily="$heading" fontSize={22} fontWeight="700" color="$text">
+        <XStack flex={1} items="center" gap="2">
+          <Download size={20} color="primaryText" />
+          <Text fontFamily="heading" fontSize={22} fontWeight="700" color="text">
             {t(headerTitle(loaded))}
           </Text>
         </XStack>
@@ -191,12 +194,12 @@ export default function QuestImportScreen() {
               )}
             />
 
-            <YStack gap="$2">
-              <Text fontWeight="700" fontSize={14} color="$textSecondary">
+            <YStack gap="2">
+              <Text fontWeight="700" fontSize={14} color="textSecondary">
                 {t("quests.import_movements")}
               </Text>
               {loaded.preview.slots.some((s) => s.available && !alreadyHere(s)) ? (
-                <Text fontSize={13} color="$textSecondary">
+                <Text fontSize={13} color="textSecondary">
                   {t("quests.import_unticked_hint")}
                 </Text>
               ) : null}
@@ -215,9 +218,9 @@ export default function QuestImportScreen() {
             </YStack>
           </ScrollView>
 
-          <YStack px="$4" pt="$2" pb="$3" gap="$2">
+          <YStack px="4" pt="2" pb="3" gap="2">
             {kept === 0 ? (
-              <Text fontSize={13} color="$textSecondary" style={{ textAlign: "center" }}>
+              <Text fontSize={13} color="textSecondary" style={{ textAlign: "center" }}>
                 {t("quests.import_none_kept")}
               </Text>
             ) : null}
@@ -227,7 +230,7 @@ export default function QuestImportScreen() {
               icon={
                 <Download
                   size={18}
-                  color={canImport ? "$white" : "$textSecondary"}
+                  color={`${canImport ? "white" : "textSecondary"}`}
                   strokeWidth={2.5}
                 />
               }
@@ -256,8 +259,8 @@ function OtherStates({
 }) {
   if (loaded.status === "loading") {
     return (
-      <YStack p="$6" items="center">
-        <Spinner testID="quest-import-loading" size="large" color="$primaryText" />
+      <YStack p="6" items="center">
+        <Spinner testID="quest-import-loading" size="large" color="primaryText" />
       </YStack>
     );
   }
@@ -375,8 +378,8 @@ function QuestHead({
           contentFit="cover"
         />
       ) : null}
-      <YStack gap="$2">
-        <Text fontWeight="700" fontSize={14} color="$textSecondary">
+      <YStack gap="2">
+        <Text fontWeight="700" fontSize={14} color="textSecondary">
           {t("quests.editor_name")}
         </Text>
         <Input
@@ -384,16 +387,16 @@ function QuestHead({
           value={title}
           onChangeText={onTitle}
           maxLength={120}
-          bg="$background"
-          borderColor="$borderStrong"
-          color="$text"
+          bg="background"
+          borderColor="borderStrong"
+          color="text"
         />
         {description ? (
-          <Paragraph color="$textSecondary" numberOfLines={6}>
+          <Paragraph color="textSecondary" numberOfLines={6}>
             {description}
           </Paragraph>
         ) : null}
-        <Text fontSize={13} color="$textSecondary">
+        <Text fontSize={13} color="textSecondary">
           {t("quests.import_rounds", { count: quest.rounds })}
         </Text>
       </YStack>
@@ -415,9 +418,9 @@ async function save(file: QuestFile): Promise<ImportedQuest | { error: string }>
 function Refused({ message, onLeave }: { message: string; onLeave: () => void }) {
   const { t } = useTranslation();
   return (
-    <YStack p="$4" gap="$3">
-      <Card gap="$3">
-        <Paragraph testID="quest-import-refused" color="$text">
+    <YStack p="4" gap="3">
+      <Card gap="3">
+        <Paragraph testID="quest-import-refused" color="text">
           {t(message)}
         </Paragraph>
       </Card>
@@ -442,15 +445,15 @@ function ExistingQuest({
 }) {
   const { t } = useTranslation();
   return (
-    <Card gap="$3" testID="quest-import-existing">
-      <XStack gap="$2" items="center">
+    <Card gap="3" testID="quest-import-existing">
+      <XStack gap="2" items="center">
         {/* Neutral: meeting a quest you already have is the normal case, not a warning. */}
-        <Info testID="quest-import-existing-icon" size={18} color="$textSecondary" />
-        <Text flex={1} color="$text" fontWeight="700">
+        <Info testID="quest-import-existing-icon" size={18} color="textSecondary" />
+        <Text flex={1} color="text" fontWeight="700">
           {t("quests.import_existing", { title: localizedTitle(quest, language) })}
         </Text>
       </XStack>
-      <XStack gap="$2" flexWrap="wrap">
+      <XStack gap="2" flexWrap="wrap">
         <Chip
           testID="quest-import-update"
           label={t("quests.import_choice_update")}
@@ -499,19 +502,19 @@ function SlotRow({
 
   if (exercise && alreadyHere(preview)) {
     return (
-      <XStack testID={`quest-import-have-${index}`} gap="$3" items="center" p="$2">
+      <XStack testID={`quest-import-have-${index}`} gap="3" items="center" p="2">
         <Image
           source={getExerciseThumb(exercise.imagePath)}
           style={{ width: 48, height: 48, borderRadius: 8 }}
         />
         <YStack flex={1}>
-          <Text color="$text" fontWeight="600" numberOfLines={2}>
+          <Text color="text" fontWeight="600" numberOfLines={2}>
             {label}
           </Text>
-          <Text fontSize={13} color="$textSecondary" numberOfLines={1}>
+          <Text fontSize={13} color="textSecondary" numberOfLines={1}>
             {formatTarget(target, language)}
           </Text>
-          <Text fontSize={13} color="$textSecondary" numberOfLines={1}>
+          <Text fontSize={13} color="textSecondary" numberOfLines={1}>
             {t("quests.import_have")}
           </Text>
         </YStack>
@@ -529,12 +532,12 @@ function SlotRow({
       onPress={onToggle}
     >
       <XStack
-        gap="$3"
+        gap="3"
         items="center"
-        p="$2"
-        rounded="$4"
+        p="2"
+        rounded="4"
         borderWidth={1}
-        borderColor="$borderStrong"
+        borderColor="borderStrong"
         opacity={on ? 1 : 0.5}
       >
         <Image
@@ -542,24 +545,24 @@ function SlotRow({
           style={{ width: 48, height: 48, borderRadius: 8 }}
         />
         <YStack flex={1}>
-          <Text color="$text" fontWeight="600" numberOfLines={2}>
+          <Text color="text" fontWeight="600" numberOfLines={2}>
             {label}
           </Text>
-          <Text fontSize={13} color="$textSecondary" numberOfLines={1}>
+          <Text fontSize={13} color="textSecondary" numberOfLines={1}>
             {available ? formatTarget(target, language) : t("quests.import_missing_movement")}
           </Text>
         </YStack>
         <YStack
           width={28}
           height={28}
-          rounded="$2"
+          rounded="2"
           borderWidth={2}
-          borderColor="$borderStrong"
-          bg={on ? "$primary" : "transparent"}
+          borderColor="borderStrong"
+          bg={`${on ? "primary" : "transparent"}`}
           items="center"
           justify="center"
         >
-          {on ? <Check size={18} color="$white" strokeWidth={3} /> : null}
+          {on ? <Check size={18} color="white" strokeWidth={3} /> : null}
         </YStack>
       </XStack>
     </Pressable>

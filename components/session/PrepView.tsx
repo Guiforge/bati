@@ -52,8 +52,8 @@ export function MovementDescription({
   const body = (
     <AppText
       fontSize={14}
-      color="$textSecondary"
-      lineHeight={20}
+      color="textSecondary"
+      lineHeight="20px"
       numberOfLines={lines}
       style={{ textAlign: "center" }}
     >
@@ -147,22 +147,22 @@ function MovementIdentity({
   compact: boolean;
 }) {
   const targetLine = target ? (
-    <AppText color="$textSecondary" fontSize={15} fontWeight="700">
+    <AppText color="textSecondary" fontSize={15} fontWeight="700">
       {target}
     </AppText>
   ) : null;
 
   if (compact) {
     return (
-      <XStack items="center" gap="$3" width="100%">
+      <XStack items="center" gap="3" width="100%">
         <YStack
           width={64}
           height={64}
-          bg="$surface2"
-          rounded="$3"
+          bg="surface2"
+          rounded="3"
           overflow="hidden"
           borderWidth={1}
-          borderColor="$borderStrong"
+          borderColor="borderStrong"
         >
           {instruction ? (
             <Image
@@ -173,8 +173,8 @@ function MovementIdentity({
             />
           ) : null}
         </YStack>
-        <YStack flex={1} gap="$1">
-          <H3 color="$text" fontWeight="700" numberOfLines={2}>
+        <YStack flex={1} gap="1">
+          <H3 color="text" fontWeight="700" numberOfLines={2}>
             {name}
           </H3>
           {targetLine}
@@ -192,8 +192,8 @@ function MovementIdentity({
           contentFit="cover"
         />
       ) : null}
-      <YStack items="center" gap="$1">
-        <H3 color="$text" fontWeight="700" style={{ textAlign: "center" }}>
+      <YStack items="center" gap="1">
+        <H3 color="text" fontWeight="700" style={{ textAlign: "center" }}>
           {name}
         </H3>
         {targetLine}
@@ -209,7 +209,7 @@ function PrepClock({ remainingSeconds }: { remainingSeconds: number | null }) {
 
   if (remainingSeconds === null) {
     return (
-      <AppText color="$textSecondary" fontSize={15} style={{ textAlign: "center" }}>
+      <AppText color="textSecondary" fontSize={15} style={{ textAlign: "center" }}>
         {t("session.prep_tap_hint")}
       </AppText>
     );
@@ -221,13 +221,14 @@ function PrepClock({ remainingSeconds }: { remainingSeconds: number | null }) {
       maxFontSizeMultiplier={FONT_CAPS.display}
       fontWeight="700"
       fontSize={running ? 64 : 40}
-      lineHeight={68}
-      color="$text"
-      fontFamily="$body"
+      lineHeight="68px"
+      color="text"
+      fontFamily="body"
       fontVariant={["tabular-nums"]}
       transition={reducedMotion ? undefined : "quick"}
+      scale={reducedMotion ? undefined : "enter:0.92"}
+      opacity={reducedMotion ? undefined : "enter:0.6"}
       key={reducedMotion ? undefined : String(remainingSeconds)}
-      enterStyle={reducedMotion ? undefined : { scale: 0.92, opacity: 0.6 }}
       style={{ textAlign: "center" }}
     >
       {running ? remainingSeconds : t("session.countdown_letsgo")}
@@ -294,7 +295,7 @@ export function PrepView({
       <AppText
         fontSize={13}
         fontWeight="700"
-        color="$textSecondary"
+        color="textSecondary"
         letterSpacing={1}
         textTransform="uppercase"
       >
@@ -323,7 +324,7 @@ export function PrepView({
   );
 
   return (
-    <YStack items="center" gap="$3" width="100%" flex={pinned ? 1 : undefined}>
+    <YStack items="center" gap="3" width="100%" flex={pinned ? 1 : undefined}>
       {pinned ? (
         // Pinned, the description is uncapped and this scroll is what cuts it: the fade goes here.
         <FadedScroll

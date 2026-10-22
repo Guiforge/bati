@@ -44,7 +44,9 @@ describe("timer bar", () => {
     const code = withoutComments(
       fs.readFileSync(path.join(ROOT, "components/session/TimerBar.tsx"), "utf8"),
     );
-    expect(code).not.toMatch(/transition|enterStyle|animation|Animated|reanimated|withTiming/);
+    expect(code).not.toMatch(
+      /transition|enterStyle|\b(enter|exit):|animation|Animated|reanimated|withTiming/,
+    );
   });
 
   it.each([
@@ -58,7 +60,7 @@ describe("timer bar", () => {
   it("fills to the value, clamped to the track", async () => {
     const screen = await render(
       <TamaguiProvider config={config} defaultTheme="dark">
-        <TimerBar value={0.25} fill="$primary" />
+        <TimerBar value={0.25} fill="primary" />
       </TamaguiProvider>,
     );
     const width = () => screen.getByTestId("timer-bar-fill").props.style.width;
@@ -66,7 +68,7 @@ describe("timer bar", () => {
 
     await screen.rerender(
       <TamaguiProvider config={config} defaultTheme="dark">
-        <TimerBar value={1.6} fill="$success" />
+        <TimerBar value={1.6} fill="success" />
       </TamaguiProvider>,
     );
     // Overtime: progress runs to 2, the bar stops at full.

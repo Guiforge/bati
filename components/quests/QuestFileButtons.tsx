@@ -58,12 +58,12 @@ export function ShareQuestButton({ questId }: { questId: number }) {
   };
 
   return (
-    <YStack gap="$2">
+    <YStack gap="2">
       <AppButton
         testID="quest-share"
         variant="outline"
         fontSize={16}
-        icon={<Share2 size={18} color="$text" strokeWidth={2.5} />}
+        icon={<Share2 size={18} color="text" strokeWidth={2.5} />}
         disabled={busy}
         onPress={() => {
           onPress().catch((error: unknown) => reportError("quests.share", error));
@@ -75,7 +75,7 @@ export function ShareQuestButton({ questId }: { questId: number }) {
       <Text
         testID="quest-share-hint"
         fontSize={13}
-        color="$textSecondary"
+        color="textSecondary"
         style={{ textAlign: "center" }}
       >
         {t("quests.share_quest_hint")}
@@ -132,12 +132,12 @@ export function ImportFileButton({
   };
 
   return (
-    <YStack gap="$2">
+    <YStack gap="2">
       <AppButton
         testID={testID}
         variant="outline"
         fontSize={16}
-        icon={<Download size={18} color="$text" strokeWidth={2.5} />}
+        icon={<Download size={18} color="text" strokeWidth={2.5} />}
         disabled={busy}
         onPress={() => {
           onPress().catch((error: unknown) => reportError("quests.import", error));
@@ -149,7 +149,7 @@ export function ImportFileButton({
       <Text
         testID={`${testID}-hint`}
         fontSize={13}
-        color="$textSecondary"
+        color="textSecondary"
         style={{ textAlign: "center" }}
       >
         {t(hint)}

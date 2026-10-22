@@ -59,7 +59,7 @@ export function ShareCard({
         {/* The kicker names the best thing that happened, so a boss or a record is the first
             word read and not a line under the numbers. */}
         <NKicker testID="share-card-kicker">{t(shareKicker(log, kill != null))}</NKicker>
-        <NText fontWeight="500" fontSize={22} lineHeight={28}>
+        <NText fontWeight="500" fontSize={22} lineHeight="28px">
           {log.questTitle}
         </NText>
         <NMuted>{date}</NMuted>
@@ -73,7 +73,7 @@ export function ShareCard({
           {/* ODbL wants the credit wherever the map is shown, and a sent picture is shown. Only
               when it is: a credit over a line whose map never arrived credits nothing. */}
           {mapState === "ready" ? (
-            <NMuted flex={1} fontSize={9} lineHeight={12} style={{ textAlign: "right" }}>
+            <NMuted flex={1} fontSize={9} lineHeight="12px" style={{ textAlign: "right" }}>
               {MAP_ATTRIBUTION}
             </NMuted>
           ) : null}
@@ -97,10 +97,10 @@ export function CardFrame({
     <YStack
       testID={testID}
       width={width}
-      bg="$bgDark"
+      bg="bgDark"
       rounded={16}
       borderWidth={1}
-      borderColor="$glassBorder"
+      borderColor="glassBorder"
       overflow="hidden"
     >
       {children}
@@ -118,7 +118,7 @@ export function CardStats({ stats }: { stats: readonly ShareStat[] }) {
           {/* A trailing space each: a cell is exactly as wide as its text, and Android drew
               "jours, plus longue flamme" a pixel narrower than it measured it, so "flamme" went to
               a second line the cell had no height for. The space is measured and never wrapped on. */}
-          <NNum fontSize={20} lineHeight={26}>
+          <NNum fontSize={20} lineHeight="26px">
             {`${stat.value} `}
           </NNum>
           <NMuted fontSize={11}>{`${stat.label} `}</NMuted>
@@ -150,7 +150,7 @@ function CardVisual({
   if (line.length > 0) {
     const uuid = log.session.uuid;
     return (
-      <YStack bg="$bgDark" items="center" minH={width}>
+      <YStack bg="bgDark" items="center" minH={width}>
         {/* The ends are cut on a picture that leaves the phone, map or not: a loop from the front
             door draws the street in front of it either way. Its own cache key, so the
             journal's full-line pictures and this one never stand in for each other. */}
@@ -195,16 +195,16 @@ function Brag({ log, kill }: { log: QuestLogData; kill: KillReport | null }) {
     <>
       {kill ? (
         <XStack testID="share-card-kill" gap={8} items="center" mt={6}>
-          <Swords size={20} color="$resourceGold" strokeWidth={2.5} />
-          <NText flex={1} fontSize={17} lineHeight={23} color="$gold300">
+          <Swords size={20} color="resourceGold" strokeWidth={2.5} />
+          <NText flex={1} fontSize={17} lineHeight="23px" color="gold300">
             {t("share.boss_felled", { boss: kill.title[language] || kill.title.en })}
           </NText>
         </XStack>
       ) : null}
       {record ? (
         <XStack testID="share-card-record" gap={8} items="center" mt={6}>
-          <Trophy size={20} color="$resourceGold" strokeWidth={2.5} />
-          <NText flex={1} fontSize={17} lineHeight={23} color="$gold300">
+          <Trophy size={20} color="resourceGold" strokeWidth={2.5} />
+          <NText flex={1} fontSize={17} lineHeight="23px" color="gold300">
             {t("share.record", {
               record: `${recordName(t, language, record)}, ${recordValue(record, unit, language)}`,
             })}

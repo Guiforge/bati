@@ -740,8 +740,9 @@ describe("content invariants", () => {
     const offenders = all.flatMap((quest) => {
       // An outing is the one quest with no warm-up, deliberately: it warms up by leaving.
       if (quest.exercises.some((qex) => qex.exercise.style === NON_REP_STYLE)) {
-        expect(buildWarmup(quest)).toEqual([]);
-        return [];
+        return buildWarmup(quest).length === 0
+          ? []
+          : [`${quest.enTitle}: an outing with a warm-up`];
       }
 
       const session = estimateQuestSeconds(quest);

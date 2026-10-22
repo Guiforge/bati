@@ -33,6 +33,7 @@ jest.mock("expo-router", () => ({
   },
   useLocalSearchParams: () => mockParams,
   useNavigation: () => ({ addListener: () => () => undefined, dispatch: jest.fn() }),
+  usePreventRemove: () => () => undefined,
 }));
 const mockShowSuccess = jest.fn();
 jest.mock("@/components/common/Toast", () => ({

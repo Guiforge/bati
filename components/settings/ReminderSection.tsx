@@ -4,7 +4,8 @@ import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { LayoutChangeEvent } from "react-native";
-import { Button, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
+import { Button } from "@/components/common/Button";
 import { Chip } from "@/components/common/Chip";
 import { SectionLabel } from "@/components/common/SectionLabel";
 import { Bell, Clock, Pause } from "@/components/icons";
@@ -265,14 +266,14 @@ export function ReminderSection({ onLayout }: { onLayout?: (event: LayoutChangeE
   };
 
   return (
-    <YStack gap="$3" testID="settings-reminder" onLayout={onLayout}>
-      <SectionLabel px="$1" mt="$2">
+    <YStack gap="3" testID="settings-reminder" onLayout={onLayout}>
+      <SectionLabel px="1" mt="2">
         {t("reminders.section")}
       </SectionLabel>
 
       <SettingRow
         testID="settings-reminder-switch"
-        icon={<Bell size={22} color="$text" />}
+        icon={<Bell size={22} color="text" />}
         label={t("reminders.switch")}
         value={view.enabled ? t("common.on") : t("common.off")}
         onPress={() => {
@@ -281,7 +282,7 @@ export function ReminderSection({ onLayout }: { onLayout?: (event: LayoutChangeE
         }}
       />
 
-      <Text fontSize="$2" color="$textSecondary" px="$3">
+      <Text fontSize="2" color="textSecondary" px="3">
         {t("reminders.rule")}
       </Text>
 
@@ -293,7 +294,7 @@ export function ReminderSection({ onLayout }: { onLayout?: (event: LayoutChangeE
 
       <SettingRow
         testID="settings-reminder-hour"
-        icon={<Clock size={22} color="$text" />}
+        icon={<Clock size={22} color="text" />}
         label={t("reminders.hour")}
         value={hourLabel(time, language)}
         disabled={!view.enabled}
@@ -313,16 +314,16 @@ export function ReminderSection({ onLayout }: { onLayout?: (event: LayoutChangeE
       <Preview view={view} language={language} time={time} />
 
       {view.synced ? (
-        <Text fontSize="$2" color="$textSecondary" px="$3">
+        <Text fontSize="2" color="textSecondary" px="3">
           {t("reminders.one_device")}
         </Text>
       ) : null}
 
       <Text
         testID="settings-reminder-sound"
-        fontSize="$2"
-        color="$primaryText"
-        px="$3"
+        fontSize="2"
+        color="primaryText"
+        px="3"
         accessibilityRole="link"
         onPress={() => Reminders.openChannelSettings(t("reminders.channel"))}
       >
@@ -336,14 +337,14 @@ function NoteLine({ note }: { note: Note }) {
   const { t } = useTranslation();
   if (note === null) return null;
   return (
-    <YStack px="$3" gap="$1" testID={`settings-reminder-note-${note}`}>
-      <Text fontSize="$2" color="$warning">
+    <YStack px="3" gap="1" testID={`settings-reminder-note-${note}`}>
+      <Text fontSize="2" color="warning">
         {t(`reminders.${note}`)}
       </Text>
       {note === "keep_one_day" ? null : (
         <Text
-          fontSize="$2"
-          color="$primaryText"
+          fontSize="2"
+          color="primaryText"
           accessibilityRole="link"
           onPress={() => {
             Linking.openSettings().catch((e: unknown) => reportError("reminders.openSettings", e));
@@ -371,11 +372,11 @@ function DaysRow({
   const narrow = getDateTimeFormat(language, { weekday: "narrow" });
   const long = getDateTimeFormat(language, { weekday: "long" });
   return (
-    <YStack gap="$2" px="$1" opacity={disabled ? 0.5 : 1}>
-      <Text fontSize="$3" color="$text" px="$2">
+    <YStack gap="2" px="1" opacity={disabled ? 0.5 : 1}>
+      <Text fontSize="3" color="text" px="2">
         {t("reminders.days")}
       </Text>
-      <XStack gap="$1" justify="space-between">
+      <XStack gap="1" justify="space-between">
         {orderedWeekdays(language).map((day) => {
           // 4 January 2026 is a Sunday: the weekday's own name, in the hero's language.
           const date = new Date(2026, 0, 4 + WEEKDAYS.indexOf(day));
@@ -385,12 +386,12 @@ function DaysRow({
             <Button
               key={day}
               testID={`settings-reminder-day-${day}`}
-              size="$4"
+              size="4"
               circular
               disabled={disabled}
               aria-disabled={disabled}
-              bg={on ? "$primary" : "$surface"}
-              borderColor="$borderStrong"
+              bg={`${on ? "primary" : "surface"}`}
+              borderColor="borderStrong"
               borderWidth={1}
               onPress={() => onToggle(day)}
               // `role`, not only `accessibilityRole`: Tamagui's Button sets role="button", and in
@@ -401,7 +402,7 @@ function DaysRow({
               // The name alone: TalkBack adds "checked" from the state, "Tuesday, checked".
               accessibilityLabel={name}
             >
-              <Text fontWeight="700" color={on ? "$onPrimary" : "$text"}>
+              <Text fontWeight="700" color={`${on ? "onPrimary" : "text"}`}>
                 {narrow.format(date)}
               </Text>
             </Button>
@@ -431,7 +432,7 @@ function GapLine({ view, chosen }: { view: ReminderView; chosen: number }) {
   }
   if (text === null) return null;
   return (
-    <Text testID="settings-reminder-gap" fontSize="$2" color="$textSecondary" px="$3">
+    <Text testID="settings-reminder-gap" fontSize="2" color="textSecondary" px="3">
       {text}
     </Text>
   );
@@ -456,8 +457,8 @@ function PauseRow({
       dayOf(resumeDate),
     );
     return (
-      <XStack px="$3" items="center" gap="$3">
-        <Text flex={1} fontSize="$3" color="$text" testID="settings-reminder-paused">
+      <XStack px="3" items="center" gap="3">
+        <Text flex={1} fontSize="3" color="text" testID="settings-reminder-paused">
           {t("reminders.paused", { date })}
         </Text>
         <Chip testID="settings-reminder-resume" label={t("reminders.resume")} onPress={onResume} />
@@ -465,9 +466,9 @@ function PauseRow({
     );
   }
   return (
-    <XStack px="$3" items="center" gap="$2">
-      <Pause size={18} color="$textSecondary" />
-      <Text flex={1} fontSize="$3" color="$text">
+    <XStack px="3" items="center" gap="2">
+      <Pause size={18} color="textSecondary" />
+      <Text flex={1} fontSize="3" color="text">
         {t("reminders.pause_row")}
       </Text>
       {[1, 2].map((weeks) => (
@@ -499,7 +500,7 @@ function Preview({
   const { t } = useTranslation();
   if (!view.enabled) {
     return (
-      <Text testID="settings-reminder-preview" fontSize="$3" color="$textSecondary" px="$3">
+      <Text testID="settings-reminder-preview" fontSize="3" color="textSecondary" px="3">
         {t("reminders.off")}
       </Text>
     );
@@ -538,18 +539,18 @@ function Preview({
         );
 
   return (
-    <YStack px="$3" gap="$1" testID="settings-reminder-preview">
+    <YStack px="3" gap="1" testID="settings-reminder-preview">
       {day.today ? (
-        <Text fontSize="$3" color="$textSecondary">
+        <Text fontSize="3" color="textSecondary">
           {t(`reminders.today_${day.today}`)}
         </Text>
       ) : null}
       {day.restTomorrow ? (
-        <Text fontSize="$3" color="$textSecondary">
+        <Text fontSize="3" color="textSecondary">
           {t("reminders.tomorrow_rest")}
         </Text>
       ) : null}
-      <Text fontSize="$3" color="$text">
+      <Text fontSize="3" color="text">
         {next
           ? t("reminders.next", {
               day: weekdayLabel(next.date, language),
@@ -558,7 +559,7 @@ function Preview({
           : t("reminders.none")}
       </Text>
       {last?.postedAt ? (
-        <Text fontSize="$3" color="$textSecondary">
+        <Text fontSize="3" color="textSecondary">
           {t("reminders.last", {
             day: weekdayLabel(last.date, language),
             time: hourLabel(last.postedAt, language),
@@ -573,14 +574,14 @@ function Preview({
 function MissedLine({ day }: { day: string }) {
   const { t } = useTranslation();
   return (
-    <YStack gap="$1" testID="settings-reminder-missed">
-      <Text fontSize="$3" color="$warning">
+    <YStack gap="1" testID="settings-reminder-missed">
+      <Text fontSize="3" color="warning">
         {t("reminders.blocked", { day })}
       </Text>
-      <XStack gap="$3">
+      <XStack gap="3">
         <Text
-          fontSize="$2"
-          color="$primaryText"
+          fontSize="2"
+          color="primaryText"
           accessibilityRole="link"
           onPress={() => {
             Linking.openSettings().catch((e: unknown) => reportError("reminders.openSettings", e));
@@ -589,8 +590,8 @@ function MissedLine({ day }: { day: string }) {
           {t("reminders.battery")}
         </Text>
         <Text
-          fontSize="$2"
-          color="$primaryText"
+          fontSize="2"
+          color="primaryText"
           accessibilityRole="link"
           onPress={() => {
             Linking.openURL(DONT_KILL_MY_APP).catch((e: unknown) =>

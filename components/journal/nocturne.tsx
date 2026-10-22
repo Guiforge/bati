@@ -15,24 +15,28 @@ import { rawColors } from "@/constants/rawColors";
  * The design project ("Journal Bati", option 3c) takes the structure of the Nocturne design system
  * and keeps Bati's colours. Nocturne ships plain CSS classes (`.card`, `.btn`, `.seg`, `.hr`,
  * `.lighten`); this is their translation, one component each, so a screen never re-types a radius
- * or a letter-spacing. Its one accent is `$resourceGold`, stepped by the `$gold…` ramp; the stack
+ * or a letter-spacing. Its one accent is `resourceGold`, stepped by the `gold…` ramp; the stack
  * is wrapped in the `dark_journal` theme, so a shared component mounted here takes the same ground
  * and accent.
  */
 
 const TextFrame = styled(Text, {
-  fontFamily: "$nocturne",
-  color: "$text",
+  fontFamily: "nocturne",
+  color: "text",
   fontSize: 15,
-  lineHeight: 22,
+  lineHeight: "22px",
 });
-const MutedFrame = styled(TextFrame, { color: "$textSecondary", fontSize: 12, lineHeight: 17 });
+const MutedFrame = styled(TextFrame, {
+  color: "textSecondary",
+  fontSize: 12,
+  lineHeight: "17px",
+});
 const KickerFrame = styled(TextFrame, {
   fontSize: 10,
-  lineHeight: 14,
+  lineHeight: "14px",
   letterSpacing: 1,
   textTransform: "uppercase",
-  color: "$resourceGold",
+  color: "resourceGold",
 });
 const NumFrame = styled(TextFrame, {
   fontWeight: "500",
@@ -59,7 +63,7 @@ export function NKicker(props: TextProps) {
 
 /** The quiet kicker: "SEPTEMBER SO FAR". */
 export function NKickerQuiet(props: TextProps) {
-  return <KickerFrame color="$textSecondary" {...props} />;
+  return <KickerFrame color="textSecondary" {...props} />;
 }
 
 /** A number. Inter 500 in tabular figures, so a column of them lines up. */
@@ -70,7 +74,7 @@ export function NNum(props: TextProps) {
 /** A screen or block title. */
 export function NTitle(props: TextProps) {
   return (
-    <TextFrame fontFamily="$heading" fontWeight="700" fontSize={18} lineHeight={24} {...props} />
+    <TextFrame fontFamily="heading" fontWeight="700" fontSize={18} lineHeight="24px" {...props} />
   );
 }
 
@@ -78,10 +82,10 @@ export function NTitle(props: TextProps) {
 export function NBlock({ children, ...props }: YStackProps & { children: ReactNode }) {
   return (
     <YStack
-      bg="$surface2"
+      bg="surface2"
       rounded={8}
       p={11}
-      pressStyle={props.onPress ? { opacity: 0.85 } : undefined}
+      opacity={props.onPress ? "press:0.85" : undefined}
       accessibilityRole={props.onPress ? "button" : undefined}
       {...props}
     >
@@ -147,7 +151,7 @@ export function NSeg<T extends string>({
   return (
     <XStack
       borderWidth={1}
-      borderColor="$glassBorder"
+      borderColor="glassBorder"
       rounded={8}
       overflow="hidden"
       accessibilityRole="tablist"
@@ -165,11 +169,11 @@ export function NSeg<T extends string>({
             px={14}
             justify="center"
             borderLeftWidth={index === 0 ? 0 : 1}
-            borderColor="$glassBorder"
-            {...(selected ? { borderWidth: 1, borderColor: "$resourceGold", rounded: 7 } : null)}
-            pressStyle={{ bg: "$ink900" }}
+            borderColor="glassBorder"
+            {...(selected ? { borderWidth: 1, borderColor: "resourceGold", rounded: 7 } : null)}
+            bg="press:ink900"
           >
-            <NText fontSize={13} lineHeight={18} color={selected ? "$resourceGold" : "$text"}>
+            <NText fontSize={13} lineHeight="18px" color={selected ? "resourceGold" : "text"}>
               {option.label}
             </NText>
           </YStack>
@@ -201,7 +205,7 @@ export function NButton({
   busy?: boolean;
 }) {
   const primary = variant === "primary";
-  const tone = primary ? "$resourceGold" : undefined;
+  const tone = primary ? "resourceGold" : undefined;
   return (
     <YStack
       testID={testID}
@@ -219,20 +223,20 @@ export function NButton({
       py={6}
       rounded={8}
       borderWidth={1}
-      borderColor={tone ?? "$glassBorder"}
+      borderColor={tone ?? "glassBorder"}
       items="center"
       justify="center"
       width={block ? "100%" : undefined}
-      pressStyle={{ bg: primary ? "$gold900" : "$ink900" }}
+      bg={`press:${primary ? "gold900" : "ink900"}`}
     >
       <XStack items="center" gap={8}>
         {busy ? (
-          <Spinner testID={testID && `${testID}-busy`} size="small" color={tone ?? "$text"} />
+          <Spinner testID={testID && `${testID}-busy`} size="small" color={tone ?? "text"} />
         ) : null}
         <NText
           fontWeight="500"
           fontSize={primary ? 15 : 14}
-          color={tone ?? "$text"}
+          color={tone ?? "text"}
           style={{ textAlign: "center" }}
         >
           {children}
@@ -281,15 +285,15 @@ export function NImage({
 export function NBar({
   progress,
   height = 4,
-  fill = "$resourceGold",
+  fill = "resourceGold",
 }: {
   progress: number;
   height?: number;
-  fill?: "$resourceGold" | "$gold600" | "$gold700" | "$gold800";
+  fill?: "resourceGold" | "gold600" | "gold700" | "gold800";
 }) {
   const width = `${Math.max(0, Math.min(100, progress))}%` as const;
   return (
-    <YStack height={height} bg="$ink900" rounded={height / 2} overflow="hidden">
+    <YStack height={height} bg="ink900" rounded={height / 2} overflow="hidden">
       <YStack height="100%" width={width} bg={fill} />
     </YStack>
   );
@@ -303,7 +307,7 @@ export function NFact({
   children: ReactNode;
   tone?: "accent" | "soft" | "quiet";
 }) {
-  const bg = tone === "accent" ? "$resourceGold" : tone === "soft" ? "$gold600" : "$muted";
+  const bg = tone === "accent" ? "resourceGold" : tone === "soft" ? "gold600" : "muted";
   return (
     <XStack items="center" gap={11}>
       <YStack width={6} height={6} rounded={3} bg={bg} />
@@ -345,7 +349,7 @@ export function NPage({
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   return (
-    <YStack testID={testID} flex={1} bg="$bgDark">
+    <YStack testID={testID} flex={1} bg="bgDark">
       <ScrollView
         contentContainerStyle={{ paddingTop: insets.top, paddingBottom: insets.bottom + 24 }}
         showsVerticalScrollIndicator={false}
@@ -366,7 +370,7 @@ export function NPage({
  */
 export function NStatusScrim() {
   const insets = useSafeAreaInsets();
-  return <YStack position="absolute" t={0} l={0} r={0} height={insets.top} bg="$bgOverlay" />;
+  return <YStack position="absolute" t={0} l={0} r={0} height={insets.top} bg="bgOverlay" />;
 }
 
 export function NBackButton({
@@ -390,14 +394,13 @@ export function NBackButton({
       height={36}
       rounded={18}
       borderWidth={1}
-      borderColor="$glassBorder"
-      bg={veiled ? "$bgOverlaySoft" : undefined}
+      borderColor="glassBorder"
+      bg={veiled ? "bgOverlaySoft press:ink900" : "press:ink900"}
       items="center"
       justify="center"
       hitSlop={6}
-      pressStyle={{ bg: "$ink900" }}
     >
-      <ChevronLeft size={18} color="$text" strokeWidth={2.5} />
+      <ChevronLeft size={18} color="text" strokeWidth={2.5} />
     </YStack>
   );
 }

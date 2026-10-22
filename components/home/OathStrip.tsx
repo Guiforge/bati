@@ -68,13 +68,7 @@ function Rungs({ chain, climbed }: { chain: Chain; climbed: boolean }) {
           width={11}
           height={4}
           rounded={2}
-          bg={
-            climbed || index < chain.position - 1
-              ? "$resourceGold"
-              : index === chain.position - 1
-                ? "$primaryText"
-                : "$borderStrong"
-          }
+          bg={`${climbed || index < chain.position - 1 ? "resourceGold" : index === chain.position - 1 ? "primaryText" : "borderStrong"}`}
         />
       ))}
     </XStack>
@@ -106,12 +100,12 @@ function SwornStrip({ oath }: { oath: OathProgress }) {
 
   return (
     <>
-      <Award size={16} color="$resourceGold" />
-      <AppText flex={1} fontSize={13} lineHeight={18} color="$text" numberOfLines={2}>
+      <Award size={16} color="resourceGold" />
+      <AppText flex={1} fontSize={13} lineHeight="18px" color="text" numberOfLines={2}>
         {label}
         {/* The detail travels as one piece with its dot: "5 / 50" split over two lines reads as
             two numbers, and a dot left at the end of a line reads as a stray mark. */}
-        <AppText color="$textSecondary">{` ·\u00A0${detail.replaceAll(" ", "\u00A0")}`}</AppText>
+        <AppText color="textSecondary">{` ·\u00A0${detail.replaceAll(" ", "\u00A0")}`}</AppText>
       </AppText>
       {climbing && chain && path?.name ? (
         <Rungs chain={chain} climbed={path.isClimbed} />
@@ -121,8 +115,8 @@ function SwornStrip({ oath }: { oath: OathProgress }) {
             testID="oath-progress-bar"
             progress={oath.progress}
             height={4}
-            color="$resourceGold"
-            trackColor="$borderStrong"
+            color="resourceGold"
+            trackColor="borderStrong"
           />
         </YStack>
       )}
@@ -170,26 +164,26 @@ export function OathStrip({ swornOnly = false }: { swornOnly?: boolean }) {
     <XStack
       testID="home-oath-card"
       minH={STRIP_MIN_HEIGHT}
-      px="$4"
-      py="$2"
-      gap="$2.5"
+      px="4"
+      py="2"
+      gap="2-5"
       items="center"
-      bg="$glassBg"
+      bg="glassBg"
       borderTopWidth={1}
-      borderColor={oath ? "$goldHairline" : "$glassBorder"}
+      borderColor={`${oath ? "goldHairline" : "glassBorder"}`}
+      opacity="press:0.8"
       onPress={() => router.push("/oath" as never)}
-      pressStyle={{ opacity: 0.8 }}
       accessibilityRole="button"
     >
       {oath ? (
         <SwornStrip oath={oath} />
       ) : (
         <>
-          <Award size={16} color="$textSecondary" />
-          <AppText flex={1} fontSize={13} lineHeight={18} color="$textSecondary" numberOfLines={2}>
+          <Award size={16} color="textSecondary" />
+          <AppText flex={1} fontSize={13} lineHeight="18px" color="textSecondary" numberOfLines={2}>
             {`${t("oath.empty_cta")} · ${t("oath.empty_hint")}`}
           </AppText>
-          <ChevronRight size={16} color="$textSecondary" />
+          <ChevronRight size={16} color="textSecondary" />
         </>
       )}
     </XStack>

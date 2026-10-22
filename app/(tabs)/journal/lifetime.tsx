@@ -69,11 +69,11 @@ function Row({
     <YStack>
       <XStack py={6} px={6} items="center" gap={8}>
         <YStack flex={1}>
-          <NText fontSize={14} lineHeight={20}>
+          <NText fontSize={14} lineHeight="20px">
             {label}
           </NText>
           {note ? (
-            <NMuted fontSize={10.5} lineHeight={14}>
+            <NMuted fontSize={10.5} lineHeight="14px">
               {note}
             </NMuted>
           ) : null}
@@ -114,7 +114,7 @@ export default function LifetimeScreen() {
 
   return (
     <NPage title={t("journal.lifetime_title")} testID="journal-lifetime">
-      <NMuted fontSize={13.5} lineHeight={20} pb={11}>
+      <NMuted fontSize={13.5} lineHeight="20px" pb={11}>
         {t("journal.lifetime_intro")}
       </NMuted>
       {data ? (
@@ -235,13 +235,13 @@ export default function LifetimeScreen() {
               .filter(([key]) => key !== "sr_longest_outing" || data.all.outings > 0)
               .map(([key, best, format]) => (
                 <XStack key={key} justify="space-between" items="baseline" gap={8}>
-                  <NText fontSize={13.5} lineHeight={19}>
+                  <NText fontSize={13.5} lineHeight="19px">
                     {t(`journal.${key}`)}
                   </NText>
                   {best ? (
                     <NText
                       fontSize={13.5}
-                      lineHeight={19}
+                      lineHeight="19px"
                       style={{ flexShrink: 1, textAlign: "right" }}
                     >
                       <NNum fontSize={13.5}>{format(best.value)}</NNum>

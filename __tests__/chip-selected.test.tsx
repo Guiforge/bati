@@ -31,6 +31,12 @@ describe("Chip", () => {
     expect(screen.getByRole("button")).toBeTruthy();
   });
 
+  it("a pressable chip's numeric opacity is its resting value, merged into the press program", async () => {
+    // jest renders no press, so this pins the resting half; the merge keeps the press dim.
+    await mount(<Chip label="Off" opacity={0.4} onPress={jest.fn()} />);
+    expect(screen.getByRole("button")).toHaveStyle({ opacity: 0.4 });
+  });
+
   it("a chip with no press handler is plain metadata", async () => {
     await mount(<Chip label="3 min" />);
     expect(screen.queryByRole("button")).toBeNull();

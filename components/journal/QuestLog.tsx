@@ -91,10 +91,10 @@ export function ReportHero({
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
-  // No art: the plate is a framed `$surface` panel (the Journal's own surface, like its blocks)
+  // No art: the plate is a framed `surface` panel (the Journal's own surface, like its blocks)
   // instead of a bare gradient, and its content sits 11 dp further in so the frame holds the back
-  // button and the kicker. The frame is a raw colour: the Journal folds `$borderStrong` into
-  // `$surface`, which would hide it.
+  // button and the kicker. The frame is a raw colour: the Journal folds `borderStrong` into
+  // `surface`, which would hide it.
   const pad = source == null ? 22 : 11;
   return (
     // A minimum, not a height: with no art and a large font the title outgrows the plate, and a
@@ -108,7 +108,7 @@ export function ReportHero({
           b={0}
           l={11}
           r={11}
-          bg="$surface"
+          bg="surface"
           borderWidth={1}
           borderColor={rawColors.borderStrong}
         />
@@ -179,7 +179,7 @@ function RecordPanel({ records }: { records: FallenRecord[] }) {
 
   return (
     <NPanel center>
-      <Trophy size={28} color="$resourceGold" strokeWidth={2.5} />
+      <Trophy size={28} color="resourceGold" strokeWidth={2.5} />
       {/* "A record fell" over a first attempt promised a fall there was nothing to fall from. */}
       <NKicker mt={8}>
         {record.previous == null ? t("journal.record_set_first") : t("journal.record_fell")}
@@ -187,17 +187,17 @@ function RecordPanel({ records }: { records: FallenRecord[] }) {
       <NNum
         testID="journal-record-fell"
         fontSize={32}
-        lineHeight={36}
+        lineHeight="36px"
         mt={6}
         style={{ textAlign: "center" }}
       >
         {recordName(t, language, record)}, {recordValue(record, distanceUnit, language)}
       </NNum>
-      <NMuted fontSize={12.5} lineHeight={19} mt={6} style={{ textAlign: "center" }}>
+      <NMuted fontSize={12.5} lineHeight="19px" mt={6} style={{ textAlign: "center" }}>
         {context}
       </NMuted>
       {others > 0 ? (
-        <NText fontSize={12.5} lineHeight={19} mt={6} color="$gold300">
+        <NText fontSize={12.5} lineHeight="19px" mt={6} color="gold300">
           {t("journal.record_more", { count: others })}
         </NText>
       ) : null}
@@ -228,12 +228,12 @@ function WhereItSits({ standing }: { standing: QuestStanding }) {
     <NBlock testID="journal-sits" mt={6}>
       <NKickerQuiet>{t("journal.sits_title")}</NKickerQuiet>
       <XStack items="baseline" gap={7} mt={8}>
-        <NNum fontSize={26} lineHeight={30}>
+        <NNum fontSize={26} lineHeight="30px">
           {standing.rank === 1
             ? t("journal.sits_best")
             : t("journal.sits_rank", { rank: standing.rank })}
         </NNum>
-        <NText fontSize={13} lineHeight={18} style={{ flexShrink: 1 }}>
+        <NText fontSize={13} lineHeight="18px" style={{ flexShrink: 1 }}>
           {t(outing ? "journal.sits_of_outings" : "journal.sits_of_runs", {
             count: standing.outOf,
           })}
@@ -246,7 +246,7 @@ function WhereItSits({ standing }: { standing: QuestStanding }) {
             key={i}
             flex={1}
             height={height(v) as `${number}%`}
-            bg={i === highlight ? "$resourceGold" : i === 0 ? "$textSecondary" : "$muted"}
+            bg={i === highlight ? "resourceGold" : i === 0 ? "textSecondary" : "muted"}
             borderTopLeftRadius={2}
             borderTopRightRadius={2}
           />
@@ -280,7 +280,7 @@ function RungFact({ rung }: { rung: VariationStep }) {
   const language = useSettingsStore((s) => s.language);
   return (
     <NFact tone="quiet">
-      <NMuted fontSize={13.5} lineHeight={19}>
+      <NMuted fontSize={13.5} lineHeight="19px">
         {rung.isEarned
           ? t("journal.moved_rung_earned", {
               movement: localizedName(rung.from, language),
@@ -296,7 +296,7 @@ function RungFact({ rung }: { rung: VariationStep }) {
       {/* The fork, only once it is earned: below the bar the line counts sessions and names
           no movement at all, so there is nothing yet for the other branches to hang off. */}
       {rung.isEarned && rung.alsoNext.length > 0 ? (
-        <NMuted fontSize={12.5} lineHeight={18} mt={2}>
+        <NMuted fontSize={12.5} lineHeight="18px" mt={2}>
           {t("progression.rung_also_leads_to", {
             names: formatList(
               rung.alsoNext.map((m) => localizedName(m, language)),
@@ -328,7 +328,7 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
       <NKickerQuiet>{t("journal.moved_title")}</NKickerQuiet>
       {keepsFlame ? (
         <NFact>
-          <NText fontSize={13.5} lineHeight={19}>
+          <NText fontSize={13.5} lineHeight="19px">
             {t("journal.moved_flame")}
           </NText>
         </NFact>
@@ -336,7 +336,7 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
       {session.xpEarned > 0 && (
         <YStack gap={6}>
           <NFact>
-            <NText fontSize={13.5} lineHeight={19} color="$resourceGold">
+            <NText fontSize={13.5} lineHeight="19px" color="resourceGold">
               {t("journal.moved_xp", { xp: formatCount(language, session.xpEarned) })}
               {latest ? (
                 <NMuted fontSize={13.5}>
@@ -355,8 +355,8 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
               <InkGauge
                 testIDPrefix="session-details-xp"
                 progress={level.xpProgress / 100}
-                fill="$resourceGold"
-                track="$gold800"
+                fill="resourceGold"
+                track="gold800"
                 frame={rawColors.borderStrong}
               />
             </YStack>
@@ -367,7 +367,7 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
         <>
           {session.leaguesM != null && session.leaguesM > 0 && (
             <NFact>
-              <NText fontSize={13.5} lineHeight={19}>
+              <NText fontSize={13.5} lineHeight="19px">
                 {t("journal.moved_ground", {
                   distance: formatDistance(session.leaguesM, distanceUnit, language),
                 })}
@@ -375,7 +375,7 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
             </NFact>
           )}
           <NFact tone="quiet">
-            <NMuted fontSize={13.5} lineHeight={19}>
+            <NMuted fontSize={13.5} lineHeight="19px">
               {t("journal.moved_outing_note")}
             </NMuted>
           </NFact>
@@ -383,7 +383,7 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
       ) : (
         reps > 0 && (
           <NFact>
-            <NText fontSize={13.5} lineHeight={19}>
+            <NText fontSize={13.5} lineHeight="19px">
               {t("journal.moved_reps", { count: reps, formatted: formatCount(language, reps) })}
               {/* A plank's minute is 20 of these reps, a rule Lifetime wrote and this line used
                   without saying. */}
@@ -394,7 +394,7 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
       )}
       {shift ? (
         <NFact tone="soft">
-          <NText fontSize={13.5} lineHeight={19}>
+          <NText fontSize={13.5} lineHeight="19px">
             {t("journal.moved_muscle", {
               muscle: MUSCLE_LABELS[shift.muscle][language],
               before: formatShare(language, shift.before),
@@ -432,13 +432,13 @@ function Rounds({ session, onChanged }: { session: CompletedSession; onChanged: 
                 items="center"
                 gap={11}
                 minH={44}
+                opacity="press:0.8"
                 onPress={() => router.push(`/exercises/${row.exercise.id}` as never)}
                 accessibilityRole="button"
-                pressStyle={{ opacity: 0.8 }}
               >
                 <NImage source={getExerciseThumb(row.exercise.imagePath)} size={28} />
                 <YStack flex={1} minW={0}>
-                  <NText fontSize={13.5} lineHeight={19} numberOfLines={1}>
+                  <NText fontSize={13.5} lineHeight="19px" numberOfLines={1}>
                     {localizedName(row.exercise, language)}
                   </NText>
                   {/* Said once for the row: the sets and the target are all one side's. */}
@@ -464,18 +464,16 @@ function Rounds({ session, onChanged }: { session: CompletedSession; onChanged: 
                     minH={44}
                     px={5}
                     items="center"
+                    opacity="press:0.8"
                     onPress={() => setEditing(editing === set.id ? null : set.id)}
                     accessibilityRole="button"
                     accessibilityLabel={`${t("journal.set_edit_label")}: ${perSideLabel(formatTargetValue(set, language), row.exercise.perSide, language)}`}
-                    pressStyle={{ opacity: 0.8 }}
                   >
                     <NNum
                       fontSize={13}
                       // Each set carries its own colour: a nested text re-applies its own, so a
                       // colour on the line alone never reached the numbers.
-                      color={
-                        set.met === false ? "$textSecondary" : row.cleared ? "$gold300" : "$text"
-                      }
+                      color={set.met === false ? "textSecondary" : row.cleared ? "gold300" : "text"}
                       textDecorationLine={editing === set.id ? "underline" : "none"}
                     >
                       {i > 0 ? "· " : ""}
@@ -515,7 +513,7 @@ function Rounds({ session, onChanged }: { session: CompletedSession; onChanged: 
           </YStack>
         ))}
       </YStack>
-      <NMuted fontSize={11} lineHeight={16} mt={6}>
+      <NMuted fontSize={11} lineHeight="16px" mt={6}>
         {t("journal.set_edit_note")}
       </NMuted>
     </NBlock>
@@ -547,7 +545,7 @@ function Ground({ data }: { data: QuestLogData }) {
     >
       <NKickerQuiet>{t("journal.ground_title")}</NKickerQuiet>
       {trace.length > 0 && (
-        <YStack mt={11} items="center" py={8} rounded={8} bg="$bgDark">
+        <YStack mt={11} items="center" py={8} rounded={8} bg="bgDark">
           <TraceThumb segments={trace} size={160} mapKey={session.uuid ?? undefined} />
         </YStack>
       )}
@@ -579,7 +577,7 @@ function Ground({ data }: { data: QuestLogData }) {
           )}
       </XStack>
       {trace.length > 0 && (
-        <NText mt={11} fontSize={12.5} color="$resourceGold">
+        <NText mt={11} fontSize={12.5} color="resourceGold">
           {t("recap.open")} →
         </NText>
       )}
@@ -609,7 +607,7 @@ function HandFacts({ session }: { session: CompletedSession }) {
           </YStack>
         ) : null}
         <YStack>
-          <NNum fontSize={17} color="$resourceGold">
+          <NNum fontSize={17} color="resourceGold">
             {t("quests.reward_xp", { count: formatCount(language, session.xpEarned) })}
           </NNum>
         </YStack>
@@ -663,9 +661,9 @@ export function QuestLog({ data, onChanged }: { data: QuestLogData; onChanged: (
         <YStack gap={2} self="flex-start">
           <Text
             testID="session-details-kicker"
-            fontFamily="$body"
+            fontFamily="body"
             fontWeight="700"
-            color="$resourceGold"
+            color="resourceGold"
             fontSize={13}
             letterSpacing={2}
           >

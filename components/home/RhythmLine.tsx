@@ -45,13 +45,13 @@ export function RhythmLine({ onLightWeekEnded }: { onLightWeekEnded?: () => void
   return (
     <Card
       testID="home-pause-line"
-      mx="$4"
-      mt="$3"
-      py="$2"
+      mx="4"
+      mt="3"
+      py="2"
       accessibilityRole="button"
       onPress={() => router.push("/pause" as never)}
     >
-      <AppText fontSize="$3" color="$primaryText">
+      <AppText fontSize="3" color="primaryText">
         {t("home.pause_on", { date: shortDate(language, dayOf(pauseUntil)) })}
       </AppText>
     </Card>

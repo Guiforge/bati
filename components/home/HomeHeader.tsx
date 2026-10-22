@@ -56,12 +56,12 @@ export function HomeHeader({ showLevel }: { showLevel: boolean | null }) {
     <XStack
       pt={insets.top}
       height={insets.top + HUD_HEIGHT}
-      px="$3"
+      px="3"
       items="center"
-      gap="$2"
-      bg="$surface"
+      gap="2"
+      bg="surface"
       borderBottomWidth={1}
-      borderColor="$borderStrong"
+      borderColor="borderStrong"
     >
       {/* The avatar is the way to settings, and the only one. The gear badge is the cue for it
           (the audit's first-launch strangers never found the door); it sits on the avatar's rim
@@ -75,14 +75,14 @@ export function HomeHeader({ showLevel }: { showLevel: boolean | null }) {
           // answer `AppIconButton` gives: hitSlop restores the hit area without moving a pixel.
           hitSlop={2}
           borderWidth={1}
-          borderColor="$borderStrong"
-          pressStyle={{ scale: 0.95 }}
+          borderColor="borderStrong"
+          scale="press:0.95"
           onPress={() => router.push("/settings")}
           accessibilityRole="button"
           accessibilityLabel={t("home.open_settings_a11y")}
         >
           <Avatar.Image source={avatarSource} />
-          <Avatar.Fallback background="$primary" />
+          <Avatar.Fallback background="primary" />
         </Avatar>
         <YStack
           testID="home-settings-gear"
@@ -94,12 +94,12 @@ export function HomeHeader({ showLevel }: { showLevel: boolean | null }) {
           rounded={9}
           items="center"
           justify="center"
-          bg="$surface"
+          bg="surface"
           borderWidth={1}
-          borderColor="$borderStrong"
+          borderColor="borderStrong"
           pointerEvents="none"
         >
-          <Settings size={11} color="$textSecondary" />
+          <Settings size={11} color="textSecondary" />
         </YStack>
       </YStack>
 
@@ -109,30 +109,30 @@ export function HomeHeader({ showLevel }: { showLevel: boolean | null }) {
       ) : (
         <YStack flex={1} gap={4}>
           {levelInfo && showLevel ? (
-            <AppText variant="label" fontWeight="700" fontSize={13} color="$text" numberOfLines={1}>
+            <AppText variant="label" fontWeight="700" fontSize={13} color="text" numberOfLines={1}>
               {t("home.level_line", {
                 level: levelInfo.level,
                 title: levelTitle,
               })}
             </AppText>
           ) : (
-            <Skeleton height={16} width={130} bg="$surface2" />
+            <Skeleton height={16} width={130} bg="surface2" />
           )}
-          <XStack items="center" gap="$1.5">
+          <XStack items="center" gap="1-5">
             {/* ProgressBar is width:100% and doesn't shrink: without this flex wrapper it takes the
               whole row and pushes the numbers out under the crest. */}
             <XStack flex={1}>
               <ProgressBar
                 progress={levelInfo?.xpProgress ?? 0}
                 height={3}
-                color="$resourceGold"
-                trackColor="$gold800"
+                color="resourceGold"
+                trackColor="gold800"
               />
             </XStack>
             {/* The numbers, not a percentage of something this strip never named. The victory
               screen prints the same fraction with the same key. */}
             {levelInfo && showLevel ? (
-              <AppText variant="label" fontSize={10} fontWeight="700" color="$resourceGold">
+              <AppText variant="label" fontSize={10} fontWeight="700" color="resourceGold">
                 {t("journal.xp_progress", {
                   current: formatCount(language, levelInfo.currentLevelXp),
                   next: formatCount(language, levelInfo.currentLevelXp + levelInfo.xpToNextLevel),
@@ -155,15 +155,15 @@ export function HomeHeader({ showLevel }: { showLevel: boolean | null }) {
           items="center"
           justify="center"
           borderLeftWidth={1}
-          borderColor="$borderStrong"
-          pressStyle={{ opacity: 0.7 }}
+          borderColor="borderStrong"
+          opacity="press:0.7"
           onPress={() => router.push("/(tabs)/village")}
           accessibilityRole="button"
           accessibilityLabel={t("home.village_a11y", {
             name: `${TIER_NAMES[tier][language]}, ${t("village.tier", { tier })}`,
           })}
         >
-          <Castle size={16} color="$textSecondary" />
+          <Castle size={16} color="textSecondary" />
           {/* "Tier 12", not a bare 12 next to a castle: the audit's strangers read it as a count.
               Shrinks to fit the 44 dp cell instead of wrapping at large fonts. */}
           <AppText
@@ -171,7 +171,7 @@ export function HomeHeader({ showLevel }: { showLevel: boolean | null }) {
             testID="home-village-tier"
             fontSize={10}
             fontWeight="700"
-            color="$textSecondary"
+            color="textSecondary"
             numberOfLines={1}
             adjustsFontSizeToFit
             minimumFontScale={0.6}

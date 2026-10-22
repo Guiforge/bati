@@ -33,26 +33,23 @@ export function GameIcon({
   const badgeSource = useGameIcon(badge ?? "sword");
   const theme = useTheme();
 
-  // expo-image's tintColor takes a real colour, not a token, so a `$name` has to be resolved
-  // here. Theme keys are unprefixed — `theme.text`, never `theme["$text"]` — so the lookup has
-  // to drop the `$` first. Without that every token missed, fell through to the raw string, and
-  // expo-image was handed the literal "$text": nineteen call sites all tinted with the fallback,
-  // and one warning per icon.
+  // expo-image's tintColor takes a real colour, not a token, so a token name has to be resolved
+  // here. The theme decides what is a token: a name it holds is one, anything else (a raw
+  // colour) passes through. Without the lookup expo-image was handed the literal "text":
+  // nineteen call sites all tinted with the fallback, and one warning per icon.
   const resolveColor = (c?: string | ColorTokens) => {
     if (!c) return undefined;
-    const key = typeof c === "string" && c.startsWith("$") ? c.slice(1) : (c as string);
-    const val = theme[key]?.val;
-    return val ? (val as string) : (c as string);
+    return (theme[c]?.val as string | undefined) ?? c;
   };
 
   const finalColor = resolveColor(color) ?? (theme.color?.val as string);
   const finalBadgeColor = resolveColor(badgeColor) ?? finalColor;
 
   const resolvedBg = bgColor as unknown as GetProps<typeof YStack>["bg"];
-  const resolvedBorderColor = (borderColor ?? "$text") as unknown as GetProps<
+  const resolvedBorderColor = (borderColor ?? "text") as unknown as GetProps<
     typeof YStack
   >["borderColor"];
-  const resolvedBadgeBg = (badgeBg ?? "$background") as unknown as GetProps<typeof YStack>["bg"];
+  const resolvedBadgeBg = (badgeBg ?? "background") as unknown as GetProps<typeof YStack>["bg"];
 
   const borderRadius = shape === "circle" ? 999 : shape === "rounded" ? size / 4 : 0;
 

@@ -148,8 +148,8 @@ describe("reading a quest file", () => {
     try {
       parse(JSON.stringify(value));
     } catch (error) {
-      assert(error instanceof load().file.QuestFileError);
-      return error.reason;
+      if (error instanceof load().file.QuestFileError) return error.reason;
+      throw error;
     }
     return null;
   };
@@ -408,8 +408,8 @@ describe("cleaning the text of a quest file", () => {
     try {
       parse(JSON.stringify(value));
     } catch (error) {
-      assert(error instanceof load().file.QuestFileError);
-      return error.reason;
+      if (error instanceof load().file.QuestFileError) return error.reason;
+      throw error;
     }
     return null;
   };

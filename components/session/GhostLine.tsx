@@ -89,12 +89,12 @@ export function GhostLine({
     // without this the column jumps the instant the record falls, mid-set, on the screen whose
     // one rule is that nothing may move under the hero's thumb. `flexWrap` still lets a narrow
     // screen grow past it.
-    <XStack items="baseline" justify="center" gap="$2" flexWrap="wrap" minH={30}>
+    <XStack items="baseline" justify="center" gap="2" flexWrap="wrap" minH={30}>
       {/* The labels stay quiet; the numbers step up a size and take the full text colour. */}
-      <AppText fontSize={12} color="$textSecondary">
+      <AppText fontSize={12} color="textSecondary">
         {t("session.ghost_last_label")}
       </AppText>
-      <AppText fontSize={15} fontWeight="700" color="$text">
+      <AppText fontSize={15} fontWeight="700" color="text">
         {perSideLabel(
           formatTarget({ type, value: ghost.last }, language),
           perSide && !beatsBest && beat >= objective,
@@ -114,36 +114,37 @@ export function GhostLine({
           // The row above aligns on the baseline, which is what keeps the plain line's 12px labels
           // sitting with its 15px figures. A pill has no business on that baseline.
           self="center"
-          gap="$2"
-          px="$3"
-          py="$1"
-          rounded="$10"
-          bg="$bgOverlay"
+          gap="2"
+          px="3"
+          py="1"
+          rounded="10"
+          bg="bgOverlay"
           borderWidth={1}
-          borderColor="$resourceGold"
+          borderColor="resourceGold"
           transition={reducedMotion ? undefined : "bouncy"}
-          enterStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.6 }}
+          opacity={reducedMotion ? undefined : "enter:0"}
+          scale={reducedMotion ? undefined : "enter:0.6"}
         >
-          <GameIcon name="trophy" size={14} color="$resourceGold" />
+          <GameIcon name="trophy" size={14} color="resourceGold" />
           {/* "Past your best", not "New record". The number here is the one the set *would* log,
               and a hero who taps the reps back down has set nothing. Past an aged record it is
               the season's best that was passed, and the word says so. */}
-          <AppText fontSize={12} fontWeight="700" color="$resourceGold">
+          <AppText fontSize={12} fontWeight="700" color="resourceGold">
             {t(aged ? "session.ghost_season_label" : "session.ghost_record_label")}
           </AppText>
-          <AppText fontSize={15} fontWeight="700" color="$text">
+          <AppText fontSize={15} fontWeight="700" color="text">
             {perSideLabel(formatTarget({ type, value: live }, language), perSide, language)}
           </AppText>
         </XStack>
       ) : beat < objective ? (
         <>
-          <AppText fontSize={12} color="$textSecondary" opacity={0.5}>
+          <AppText fontSize={12} color="textSecondary" opacity={0.5}>
             ·
           </AppText>
-          <AppText fontSize={12} color="$textSecondary">
+          <AppText fontSize={12} color="textSecondary">
             {t("session.ghost_to_beat_label")}
           </AppText>
-          <AppText fontSize={15} fontWeight="700" color="$resourceGold">
+          <AppText fontSize={15} fontWeight="700" color="resourceGold">
             {perSideLabel(formatTarget({ type, value: beat }, language), perSide, language)}
           </AppText>
         </>

@@ -77,19 +77,19 @@ export default function VillageSetup() {
   const inputBorderColor = isFocused ? theme.primary?.val : theme.borderStrong?.val;
 
   return (
-    <YStack flex={1} bg="$bgDark">
+    <YStack flex={1} bg="bgDark">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <YStack flex={1} pt={insets.top + 8} pb={insets.bottom + 20} gap="$3">
+        <YStack flex={1} pt={insets.top + 8} pb={insets.bottom + 20} gap="3">
           {/* Header */}
-          <YStack gap="$2" items="center" px="$5">
-            <YStack position="absolute" t={0} l="$2" z={1}>
+          <YStack gap="2" items="center" px="5">
+            <YStack position="absolute" t={0} l="2" z={1}>
               <ScreenBackButton />
             </YStack>
             <ProgressDots current={CURRENT_STEP} total={TOTAL_STEPS} />
-            <H2 text="center" color="$text" fontWeight="700" fontSize={28}>
+            <H2 text="center" color="text" fontWeight="700" fontSize={28}>
               {t("onboarding.village_name_title")}
             </H2>
           </YStack>
@@ -97,20 +97,20 @@ export default function VillageSetup() {
           <FirstFire name={trimmedName} lit={isValidName} />
 
           {/* Bottom section: subtitle + name */}
-          <YStack gap="$3" px="$5">
+          <YStack gap="3" px="5">
             {typing ? null : (
               <>
-                <Text text="center" color="$text" fontSize={16} fontWeight="700">
+                <Text text="center" color="text" fontSize={16} fontWeight="700">
                   {t("onboarding.village_name_subtitle")}
                 </Text>
-                <Text text="center" color="$textSecondary" fontSize={13}>
+                <Text text="center" color="textSecondary" fontSize={13}>
                   {t("onboarding.village_name_hint")}
                 </Text>
               </>
             )}
 
             {/* Name input */}
-            <YStack gap="$2">
+            <YStack gap="2">
               <TextInput
                 testID="onboarding-village-name"
                 value={name}
@@ -125,7 +125,7 @@ export default function VillageSetup() {
                   styles.input,
                   {
                     backgroundColor: theme.surface?.val as string,
-                    borderRadius: getTokens().radius.$3.val,
+                    borderRadius: getTokens().radius["3"].val,
                     borderColor: inputBorderColor as string,
                     color: theme.text?.val as string,
                   },
@@ -133,13 +133,13 @@ export default function VillageSetup() {
               />
               {/* No green here: the plate above has the one warm light, and it is the answer to
                   "is this name good". */}
-              <XStack justify="space-between" px="$2">
-                <Text fontSize={12} color="$textSecondary" fontWeight="700">
+              <XStack justify="space-between" px="2">
+                <Text fontSize={12} color="textSecondary" fontWeight="700">
                   {isValidName
                     ? t("onboarding.valid")
                     : `${MIN_NAME_LENGTH} ${t("onboarding.chars_min")}`}
                 </Text>
-                <Text fontSize={12} color="$textSecondary">
+                <Text fontSize={12} color="textSecondary">
                   {name.length}/{MAX_NAME_LENGTH}
                 </Text>
               </XStack>

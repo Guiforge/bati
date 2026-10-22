@@ -1,5 +1,5 @@
-import { useNavigation } from "expo-router";
-import { useEffect, useRef } from "react";
+import { usePreventRemove } from "expo-router";
+import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 
@@ -11,26 +11,25 @@ import { useConfirmDialog } from "@/components/common/useConfirmDialog";
  */
 export function useDiscardGuard(dirty: boolean) {
   const { t } = useTranslation();
-  const navigation = useNavigation();
   const { ask, dialog } = useConfirmDialog();
   const allowed = useRef(false);
 
-  // The ref is read when the hero leaves, never during render (the React Compiler skips a
-  // component that reads one in its body).
-  useEffect(() => {
-    return navigation.addListener("beforeRemove", (e) => {
-      if (allowed.current || !dirty) return;
-      e.preventDefault();
-      ask({
-        title: t("quests.editor_discard_title"),
-        body: t("quests.editor_discard_body"),
-        confirmLabel: t("quests.editor_discard"),
-        cancelLabel: t("common.cancel"),
-        destructive: true,
-        onConfirm: () => navigation.dispatch(e.data.action),
-      });
+  // expo-router 58 has no `beforeRemove` event: a dirty screen is held back, and the hero's own
+  // exit (`allowed`) is let through by repeating the very action that was stopped.
+  usePreventRemove(dirty, ({ repeat }) => {
+    if (allowed.current) {
+      repeat();
+      return;
+    }
+    ask({
+      title: t("quests.editor_discard_title"),
+      body: t("quests.editor_discard_body"),
+      confirmLabel: t("quests.editor_discard"),
+      cancelLabel: t("common.cancel"),
+      destructive: true,
+      onConfirm: repeat,
     });
-  }, [navigation, ask, t, dirty]);
+  });
 
   return {
     dialog,

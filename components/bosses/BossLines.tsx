@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
-import { Input, Text, YStack } from "tamagui";
+import { Text, YStack } from "tamagui";
+import { Input } from "@/components/common/Input";
 import {
   BOSS_LINE_MOMENTS,
   clip,
@@ -20,10 +21,10 @@ export function BossLines({ lines, onChange }: Props) {
     (m) => lines[m].filter((l) => l.trim()).length > MAX_BOSS_LINES,
   );
   return (
-    <YStack gap="$3">
+    <YStack gap="3">
       {BOSS_LINE_MOMENTS.map((m) => (
-        <YStack key={m} gap="$2">
-          <Text fontWeight="700" fontSize={14} color="$textSecondary">
+        <YStack key={m} gap="2">
+          <Text fontWeight="700" fontSize={14} color="textSecondary">
             {t(`adventures.editor_boss_lines_${m}`)}
           </Text>
           <Input
@@ -36,13 +37,13 @@ export function BossLines({ lines, onChange }: Props) {
             }
             multiline
             py={8}
-            bg="$background"
-            borderColor="$borderStrong"
-            color="$text"
+            bg="background"
+            borderColor="borderStrong"
+            color="text"
           />
         </YStack>
       ))}
-      <Text fontSize={13} color={tooMany ? "$warning" : "$textSecondary"}>
+      <Text fontSize={13} color={`${tooMany ? "warning" : "textSecondary"}`}>
         {t("adventures.editor_boss_lines_hint")}
       </Text>
     </YStack>

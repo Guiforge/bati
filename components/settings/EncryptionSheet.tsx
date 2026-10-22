@@ -3,9 +3,10 @@ import type { TFunction } from "i18next";
 import { type ReactNode, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Keyboard, Pressable } from "react-native";
-import { Input, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { FormSheet } from "@/components/common/FormSheet";
+import { Input } from "@/components/common/Input";
 import { useToast } from "@/components/common/Toast";
 import { Eye, EyeOff } from "@/components/icons";
 import { type UnlockSources, VaultUnlockFlow } from "@/components/settings/VaultUnlockFlow";
@@ -317,7 +318,7 @@ function ManageView({
   if (format === 2) {
     return (
       <>
-        <Text color="$textSecondary">
+        <Text color="textSecondary">
           {updateOffered ? t("vault.updateBody") : t("vault.manageHold")}
         </Text>
         {updateOffered ? (
@@ -333,14 +334,14 @@ function ManageView({
   }
   return (
     <>
-      <Text color="$textSecondary">{t("vault.manageBody")}</Text>
+      <Text color="textSecondary">{t("vault.manageBody")}</Text>
       {canShowWordsAgain ? (
         <AppButton variant="outline" testID="backup-show-recovery" onPress={actions.showWords}>
           {t("vault.manageShowWords")}
         </AppButton>
       ) : (
         // A missing button reads as a lost key: say where it is instead.
-        <Text testID="backup-recovery-not-here" color="$textSecondary" fontSize="$3">
+        <Text testID="backup-recovery-not-here" color="textSecondary" fontSize="3">
           {t("vault.manageNoWords")}
         </Text>
       )}
@@ -393,14 +394,14 @@ function IntroView({
   const label = busy && kind === "update" ? t("vault.updateChecking") : cta;
   return (
     <>
-      <Text color="$textSecondary">{body}</Text>
+      <Text color="textSecondary">{body}</Text>
       {kind === "forgot" ? (
-        <Text color="$textSecondary" fontSize="$3">
+        <Text color="textSecondary" fontSize="3">
           {t("vault.forgotHonest")}
         </Text>
       ) : null}
       {blocked ? (
-        <Text testID="vault-update-blocked" color="$error">
+        <Text testID="vault-update-blocked" color="error">
           {t("vault.updateBlocked")}
         </Text>
       ) : null}
@@ -449,14 +450,17 @@ function PasswordForm({
 
   return (
     <>
-      <Text color="$textSecondary">
+      <Text color="textSecondary">
         {pending === "enable" ? t("backup.encryptionIntro") : t("backup.changeIntro")}
       </Text>
-      <XStack items="center" gap="$2">
+      <XStack items="center" gap="2">
         <Input
           testID="backup-password"
           flex={1}
           minH={44}
+          bg="background"
+          borderColor="borderStrong"
+          color="text"
           value={password}
           onChangeText={setPassword}
           secureTextEntry={!shown}
@@ -466,9 +470,6 @@ function PasswordForm({
           returnKeyType="done"
           onSubmitEditing={submit}
           placeholder={t("backup.password")}
-          bg="$background"
-          borderColor="$borderStrong"
-          color="$text"
         />
         <Pressable
           hitSlop={12}
@@ -477,21 +478,21 @@ function PasswordForm({
           onPress={() => setShown((value) => !value)}
         >
           {shown ? (
-            <EyeOff size={22} color="$textSecondary" />
+            <EyeOff size={22} color="textSecondary" />
           ) : (
-            <Eye size={22} color="$textSecondary" />
+            <Eye size={22} color="textSecondary" />
           )}
         </Pressable>
       </XStack>
       {/* A counter that encourages, not an error: the hero is still typing. */}
-      <Text testID="vault-password-counter" color="$textSecondary" fontSize="$3">
+      <Text testID="vault-password-counter" color="textSecondary" fontSize="3">
         {password === ""
           ? t("vault.pwHint", { count: MIN_PASSWORD_LENGTH })
           : missing > 0
             ? t("vault.pwMore", { count: missing })
             : t("vault.pwReread")}
       </Text>
-      <Text color="$textSecondary" fontSize="$3">
+      <Text color="textSecondary" fontSize="3">
         {t("vault.pwNotCloud")}
       </Text>
       <AppButton testID="backup-password-submit" disabled={!ready} onPress={submit}>
@@ -518,17 +519,17 @@ function WordsView({
   const numbered = words.split(" ").map((word, i) => ({ n: i + 1, word }));
   return (
     <>
-      <Text color="$textSecondary">{t("vault.wordsBody")}</Text>
+      <Text color="textSecondary">{t("vault.wordsBody")}</Text>
       {/* Two numbered columns, large enough at 130 %; TalkBack reads "word 3, bee". */}
-      <XStack testID="vault-words" flexWrap="wrap" bg="$background" p="$3" rounded="$3" gap="$2">
+      <XStack testID="vault-words" flexWrap="wrap" bg="background" p="3" rounded="3" gap="2">
         {numbered.map(({ n, word }) => (
           <Text
             key={n}
             testID={`vault-word-${n}`}
             width="47%"
-            fontSize="$5"
-            color="$text"
-            selectable
+            fontSize="5"
+            color="text"
+            select="text"
             accessibilityLabel={t("vault.wordA11y", { n, word })}
           >
             {`${n}. ${word}`}
@@ -536,7 +537,7 @@ function WordsView({
         ))}
       </XStack>
       {wordLanguageFor(language) === language ? null : (
-        <Text testID="vault-words-english" color="$textSecondary" fontSize="$3">
+        <Text testID="vault-words-english" color="textSecondary" fontSize="3">
           {t("vault.wordsEnglishOnly")}
         </Text>
       )}
@@ -551,7 +552,7 @@ function WordsView({
       >
         {t("vault.wordsCopy")}
       </AppButton>
-      <Text color="$textSecondary" fontSize="$3">
+      <Text color="textSecondary" fontSize="3">
         {t("vault.wordsPaper")}
       </Text>
       <AppButton testID="vault-words-next" onPress={onNext}>
@@ -592,7 +593,7 @@ function VerifyView({
 
   return (
     <>
-      <Text color="$textSecondary">
+      <Text color="textSecondary">
         {t("vault.verifyBody", { a: places[0] + 1, b: places[1] + 1 })}
       </Text>
       {places.map((place, i) => (
@@ -600,6 +601,9 @@ function VerifyView({
           key={place}
           testID={`vault-verify-${i}`}
           minH={44}
+          bg="background"
+          borderColor={`${wrong ? "error" : "borderStrong"}`}
+          color="text"
           value={typed[i]}
           onChangeText={(value) => {
             setWrong(false);
@@ -608,13 +612,10 @@ function VerifyView({
           autoCapitalize="none"
           autoCorrect={false}
           placeholder={t("vault.verifyLabel", { n: place + 1 })}
-          bg="$background"
-          borderColor={wrong ? "$error" : "$borderStrong"}
-          color="$text"
         />
       ))}
       {wrong ? (
-        <Text testID="vault-verify-wrong" color="$error">
+        <Text testID="vault-verify-wrong" color="error">
           {t("vault.verifyWrong")}
         </Text>
       ) : null}
@@ -640,7 +641,7 @@ function NoWordsView({
   const { t } = useTranslation();
   return (
     <>
-      <Text color="$textSecondary">{t("vault.pendingNoWords")}</Text>
+      <Text color="textSecondary">{t("vault.pendingNoWords")}</Text>
       <AppButton testID="vault-pending-new" disabled={busy} onPress={onNewWords}>
         {t("vault.pendingNew")}
       </AppButton>
@@ -672,15 +673,15 @@ function DoneView({
   return (
     <>
       {kept ? (
-        <Text testID="vault-forgot-done" color="$textSecondary">
+        <Text testID="vault-forgot-done" color="textSecondary">
           {t("vault.forgotDone")}
         </Text>
       ) : null}
-      <YStack testID="vault-warning" gap="$1" bg="$background" p="$3" rounded="$3">
-        <Text fontWeight="bold" color="$text">
+      <YStack testID="vault-warning" gap="1" bg="background" p="3" rounded="3">
+        <Text fontWeight="bold" color="text">
           {t("vault.doneWarnTitle")}
         </Text>
-        <Text color="$textSecondary">{t("vault.doneWarnBody")}</Text>
+        <Text color="textSecondary">{t("vault.doneWarnBody")}</Text>
       </YStack>
       <AppButton testID="vault-remind-yes" disabled={busy} onPress={() => choose(true)}>
         {t("vault.doneRemind")}
@@ -694,7 +695,7 @@ function DoneView({
         {t("vault.doneNoRemind")}
       </AppButton>
       <Pressable accessibilityRole="link" onPress={onHow} testID="vault-how-link">
-        <Text color="$primaryText" fontSize="$3">
+        <Text color="primaryText" fontSize="3">
           {t("vault.doneHow")}
         </Text>
       </Pressable>

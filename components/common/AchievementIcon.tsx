@@ -50,7 +50,7 @@ const LUCIDE_ACHIEVEMENT_ICONS: Record<string, typeof Target> = {
 export function AchievementIcon({
   icon,
   size = 24,
-  color = "$text",
+  color = "text",
 }: {
   icon: string;
   size?: number;

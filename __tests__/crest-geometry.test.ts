@@ -189,7 +189,8 @@ describe("crest rings", () => {
       expect(rows.size).toBeLessThanOrEqual(2);
       for (const y of rows) {
         const inRow = centres.filter((c) => c[1] === y).length;
-        if (n <= 10) expect(inRow).toBeLessThanOrEqual(5);
+        // Past ten rings the two rows take what is left.
+        expect(inRow).toBeLessThanOrEqual(n <= 10 ? 5 : n);
       }
     }
   });

@@ -3,10 +3,11 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BackHandler, Pressable, ScrollView, StyleSheet, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, H2, XStack, YStack } from "tamagui";
+import { H1, H2, XStack, YStack } from "tamagui";
 import { VillagerLine } from "@/components/chorus/VillagerLine";
 import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
+import { Button } from "@/components/common/Button";
 import { FONT_CAPS } from "@/components/common/fontCaps";
 import { GameIcon } from "@/components/common/GameIcon";
 import { Minus, Pause, Plus } from "@/components/icons";
@@ -180,14 +181,14 @@ export function RestView() {
   return (
     // The root bleeds and an inner column carries the padding, the same shape the running screen
     // uses: the arena is full-bleed and starts at the screen's own top edge, so it cannot sit
-    // inside a `px="$4"` container.
+    // inside a `px="4"` container.
     <YStack
       flex={1}
-      bg="$bgDark"
+      bg="bgDark"
       pb={insets.bottom + 16}
-      gap="$4"
+      gap="4"
       transition={reducedMotion ? undefined : "quick"}
-      enterStyle={reducedMotion ? undefined : { opacity: 0 }}
+      opacity={reducedMotion ? undefined : "enter:0"}
     >
       {/* Campfire scene behind everything, quiet enough for the timer to stay readable: the same
           low-opacity treatment AppBackground gives new_city. */}
@@ -200,16 +201,16 @@ export function RestView() {
       {/* The one view of the flow that had no pause: on iOS there is no hardware back, so
           mid-rest the session could not be paused at all. Same floating control as the
           running screen. */}
-      <XStack position="absolute" t={insets.top + 8} r="$4" z={10}>
+      <XStack position="absolute" t={insets.top + 8} r="4" z={10}>
         <Button
           testID="session-pause"
-          size="$3"
+          size="3"
+          opacity="press:0.7"
           hitSlop={8}
           circular
-          icon={<Pause size={20} color="$text" />}
+          icon={<Pause size={20} color="text" />}
           onPress={pauseSession}
           chromeless
-          pressStyle={{ opacity: 0.7 }}
           accessibilityLabel={t("session.pause_accessibility")}
           accessibilityRole="button"
         />
@@ -226,24 +227,25 @@ export function RestView() {
         height={insets.top + REST_HEADER_HEIGHT}
         pt={insets.top + 16}
         items="center"
-        gap="$2"
+        gap="2"
         transition={reducedMotion ? undefined : "bouncy"}
-        enterStyle={reducedMotion ? undefined : { opacity: 0, y: -20 }}
+        opacity={reducedMotion ? undefined : "enter:0"}
+        y={reducedMotion ? undefined : "enter:-20px"}
       >
-        <GameIcon name="flame" size={40} color="$resourceFire" />
+        <GameIcon name="flame" size={40} color="resourceFire" />
         <H2
           maxFontSizeMultiplier={FONT_CAPS.label}
-          color="$text"
+          color="text"
           fontWeight="700"
           fontSize={32}
-          lineHeight={38}
+          lineHeight="38px"
           text="center"
         >
           {t(copy.title)}
         </H2>
       </YStack>
 
-      <YStack flex={1} px="$4" gap="$4">
+      <YStack flex={1} px="4" gap="4">
         {/* Scrolls so the skip CTA below stays reachable: the timer, the set review and the
             up-next card are fixed-height siblings that never shrink, and a boss fight adds the
             arena on top of them.
@@ -272,48 +274,48 @@ export function RestView() {
         >
           {/* Timer. Not on the final rest: nothing is coming, so there is nothing to count to. */}
           {!isFinal && (
-            <YStack items="center" gap="$2">
+            <YStack items="center" gap="2">
               <H1
                 testID="rest-timer"
                 maxFontSizeMultiplier={FONT_CAPS.display}
                 fontSize={large ? 88 : 112}
                 fontWeight="700"
-                fontFamily="$body"
+                fontFamily="body"
                 fontVariant={["tabular-nums"]}
-                color="$text"
+                color="text"
               >
                 {formatTime(remainingSeconds)}
               </H1>
               <TimerBar
                 value={progress}
-                fill="$primary"
-                bg="$surface2"
+                fill="primary"
+                bg="surface2"
                 borderWidth={1}
-                borderColor="$borderStrong"
+                borderColor="borderStrong"
                 style={{ maxWidth: 360 }}
               />
-              <XStack gap="$3">
+              <XStack gap="3">
                 <Button
-                  size="$3"
-                  hitSlop={8}
-                  bg="$surface"
+                  size="3"
+                  bg="surface"
                   borderWidth={1}
-                  borderColor="$borderStrong"
+                  borderColor="borderStrong"
+                  hitSlop={8}
                   onPress={() => handleAddRestTime(10)}
                 >
-                  <AppText variant="label" fontWeight="700" color="$text">
+                  <AppText variant="label" fontWeight="700" color="text">
                     +10s
                   </AppText>
                 </Button>
                 <Button
-                  size="$3"
-                  hitSlop={8}
-                  bg="$surface"
+                  size="3"
+                  bg="surface"
                   borderWidth={1}
-                  borderColor="$borderStrong"
+                  borderColor="borderStrong"
+                  hitSlop={8}
                   onPress={() => handleAddRestTime(30)}
                 >
-                  <AppText variant="label" fontWeight="700" color="$text">
+                  <AppText variant="label" fontWeight="700" color="text">
                     +30s
                   </AppText>
                 </Button>
@@ -345,7 +347,7 @@ export function RestView() {
                 couldn't" is the tap that says something may be wrong. In the review card's place,
                 which a skip hides. Said once, with no link out of a running session. */}
             {lastSetSkipped ? (
-              <AppText testID="rest-pain-rule" fontSize={14} color="$textSecondary">
+              <AppText testID="rest-pain-rule" fontSize={14} color="textSecondary">
                 {t("session.pain_rule")}
               </AppText>
             ) : null}
@@ -356,7 +358,7 @@ export function RestView() {
               <AppText
                 testID="rest-position"
                 variant="label"
-                color="$textSecondary"
+                color="textSecondary"
                 fontSize={12}
                 fontWeight="700"
                 letterSpacing={1}
@@ -377,23 +379,23 @@ export function RestView() {
             <YStack
               testID="rest-up-next"
               display={onlyBeforeAMovement}
-              bg="$surface"
-              p="$4"
-              rounded="$3"
+              bg="surface"
+              p="4"
+              rounded="3"
               borderWidth={1}
-              borderColor="$borderStrong"
-              gap="$2"
+              borderColor="borderStrong"
+              gap="2"
+              opacity={reducedMotion ? "press:0.9" : "press:0.9 enter:0"}
+              x={reducedMotion ? undefined : "enter:30px"}
+              transition={reducedMotion ? undefined : "bouncy"}
               onPress={handleShowHowTo}
-              pressStyle={{ opacity: 0.9 }}
               accessibilityRole="button"
               accessibilityLabel={t("session.how_to_do_it")}
-              transition={reducedMotion ? undefined : "bouncy"}
-              enterStyle={reducedMotion ? undefined : { opacity: 0, x: 30 }}
             >
               {/* The swap link sits on the label's row, inside the card: below it, in landscape, it
                   fell under the fold. Its own Pressable answers the press, not the card. */}
               <XStack items="center" justify="space-between">
-                <AppText color="$textSecondary" fontSize={12} fontWeight="700">
+                <AppText color="textSecondary" fontSize={12} fontWeight="700">
                   {t("session.up_next")}
                 </AppText>
                 {nextEx && !isOutdoors(nextEx.exercise.style) ? (
@@ -404,28 +406,23 @@ export function RestView() {
                     accessibilityRole="button"
                     accessibilityLabel={t("quests.swap_exercise")}
                   >
-                    <AppText
-                      fontSize={12}
-                      fontWeight="700"
-                      color="$textSecondary"
-                      numberOfLines={1}
-                    >
+                    <AppText fontSize={12} fontWeight="700" color="textSecondary" numberOfLines={1}>
                       {t("session.swap_short")}
                     </AppText>
                   </Pressable>
                 ) : null}
               </XStack>
-              <XStack gap="$3" items="center">
+              <XStack gap="3" items="center">
                 <YStack
                   width={50}
                   height={50}
-                  bg="$surface2"
-                  rounded="$3"
+                  bg="surface2"
+                  rounded="3"
                   overflow="hidden"
                   items="center"
                   justify="center"
                   borderWidth={1}
-                  borderColor="$borderStrong"
+                  borderColor="borderStrong"
                 >
                   <Image
                     source={getExerciseThumb(nextEx?.exercise.imagePath ?? "")}
@@ -435,10 +432,10 @@ export function RestView() {
                   />
                 </YStack>
                 <YStack flex={1}>
-                  <AppText fontWeight="700" fontSize={18} numberOfLines={1} color="$text">
+                  <AppText fontWeight="700" fontSize={18} numberOfLines={1} color="text">
                     {nextExName}
                   </AppText>
-                  <AppText color="$textSecondary">
+                  <AppText color="textSecondary">
                     {nextEx ? formatSlotTarget(nextEx, language) : null}
                   </AppText>
                 </YStack>
@@ -532,21 +529,21 @@ function LastSetCard({ result, name }: { result: CompletedExerciseInput; name: s
     loggedValue < result.target.value;
 
   return (
-    <YStack bg="$surface" p="$4" rounded="$3" borderWidth={1} borderColor="$borderStrong" gap="$2">
-      <XStack justify="space-between" items="center" gap="$3">
+    <YStack bg="surface" p="4" rounded="3" borderWidth={1} borderColor="borderStrong" gap="2">
+      <XStack justify="space-between" items="center" gap="3">
         <YStack testID="rest-adjust-label" flex={1} shrink={1}>
           {/* Names the set: "Up next" sits right below and would otherwise read as its subject. */}
-          <AppText color="$textSecondary" fontSize={12} fontWeight="700">
+          <AppText color="textSecondary" fontSize={12} fontWeight="700">
             {name}
           </AppText>
-          <AppText fontSize={12} color="$textSecondary">
+          <AppText fontSize={12} color="textSecondary">
             {isLastTimeBased ? t("session.adjust_seconds_hint") : t("session.adjust_reps_hint")}
           </AppText>
         </YStack>
 
-        <XStack testID="rest-adjust-controls" items="center" gap="$3" shrink={0}>
+        <XStack testID="rest-adjust-controls" items="center" gap="3" shrink={0}>
           <Button
-            size="$3"
+            size="3"
             hitSlop={8}
             circular
             icon={<Minus size={16} />}
@@ -563,13 +560,13 @@ function LastSetCard({ result, name }: { result: CompletedExerciseInput; name: s
               accessibilityLabel={t("session.result_count_accessibility")}
             />
             {isLastTimeBased ? (
-              <AppText fontWeight="700" fontSize={20} color="$text">
+              <AppText fontWeight="700" fontSize={20} color="text">
                 s
               </AppText>
             ) : null}
           </XStack>
           <Button
-            size="$3"
+            size="3"
             hitSlop={8}
             circular
             icon={<Plus size={16} />}
@@ -580,34 +577,34 @@ function LastSetCard({ result, name }: { result: CompletedExerciseInput; name: s
       </XStack>
 
       {weakerSide ? (
-        <AppText testID="rest-weaker-side" fontSize={12} color="$textSecondary">
+        <AppText testID="rest-weaker-side" fontSize={12} color="textSecondary">
           {t("session.per_side_weaker")}
         </AppText>
       ) : null}
 
       {askAboutHold && result.target ? (
-        <XStack testID="rest-hold-check" items="center" gap="$2" flexWrap="wrap">
-          <AppText fontWeight="700" color="$text" shrink={1}>
+        <XStack testID="rest-hold-check" items="center" gap="2" flexWrap="wrap">
+          <AppText fontWeight="700" color="text" shrink={1}>
             {t("session.hold_check_question", { time: formatTime(result.result.value) })}
           </AppText>
           <Button
             testID="rest-hold-keep"
-            size="$3"
+            size="3"
             hitSlop={8}
             onPress={() => {
               selection();
               keepLongHold();
             }}
           >
-            <AppText color="$text">{t("session.hold_check_keep")}</AppText>
+            <AppText color="text">{t("session.hold_check_keep")}</AppText>
           </Button>
           <Button
             testID="rest-hold-target"
-            size="$3"
+            size="3"
             hitSlop={8}
             onPress={() => step(result.target?.value ?? 1)}
           >
-            <AppText color="$text">{t("session.hold_check_target")}</AppText>
+            <AppText color="text">{t("session.hold_check_target")}</AppText>
           </Button>
         </XStack>
       ) : null}

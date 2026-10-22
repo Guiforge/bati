@@ -53,8 +53,8 @@ function BuildingThumb({ building, size }: { building: VillageBuilding; size: nu
       rounded={9}
       borderWidth={built ? 0 : 1}
       borderStyle="dashed"
-      borderColor="$borderStrong"
-      bg={built ? undefined : "$surface2"}
+      borderColor="borderStrong"
+      bg={built ? undefined : "surface2"}
     >
       <Image
         source={getBuildingIconAsset(building.code, building.relatedMuscle, building.level)}
@@ -73,15 +73,15 @@ export function QuestLink({ label, onPress }: { label: string; onPress: () => vo
       minH={44}
       items="center"
       gap={4}
+      opacity="press:0.7"
       onPress={onPress}
-      pressStyle={{ opacity: 0.7 }}
       accessibilityRole="link"
       accessibilityLabel={label}
     >
-      <Text fontSize={13} fontWeight="600" color="$primaryText">
+      <Text fontSize={13} fontWeight="600" color="primaryText">
         {label}
       </Text>
-      <ChevronRight size={16} color="$primaryText" />
+      <ChevronRight size={16} color="primaryText" />
     </XStack>
   );
 }
@@ -118,10 +118,10 @@ export function NextToRise({ building, dayOne, language, feeds, onOpen }: NextPr
       testID="village-next"
       p={14}
       gap={10}
-      rounded="$3"
+      rounded="3"
       borderWidth={1}
-      borderColor="$borderStrong"
-      bg="$surface"
+      borderColor="borderStrong"
+      bg="surface"
     >
       <SectionLabel>{nextTitle(building, t)}</SectionLabel>
       {building ? (
@@ -135,11 +135,11 @@ export function NextToRise({ building, dayOne, language, feeds, onOpen }: NextPr
           <BuildingThumb building={building} size={40} />
           <YStack flex={1} minW={0} gap={4}>
             <XStack justify="space-between" items="baseline" gap={10}>
-              <Text fontFamily="$heading" fontWeight="700" fontSize={18} color="$text" shrink={1}>
+              <Text fontFamily="heading" fontWeight="700" fontSize={18} color="text" shrink={1}>
                 {nameOf(building, language)}
               </Text>
               {building.level > 0 ? (
-                <Text fontSize={12} fontWeight="600" color="$resourceGold">
+                <Text fontSize={12} fontWeight="600" color="resourceGold">
                   {levelText(building, t)}
                 </Text>
               ) : null}
@@ -149,14 +149,14 @@ export function NextToRise({ building, dayOne, language, feeds, onOpen }: NextPr
                 <ProgressBar
                   progress={scale.progress}
                   height={5}
-                  color="$resourceGold"
+                  color="resourceGold"
                   caption={scale.caption}
                   ends={scale.ends}
                 />
               </YStack>
             ) : null}
             {line ? (
-              <Text fontSize={13} lineHeight={18} color="$text">
+              <Text fontSize={13} lineHeight="18px" color="text">
                 {line}
               </Text>
             ) : null}
@@ -164,10 +164,10 @@ export function NextToRise({ building, dayOne, language, feeds, onOpen }: NextPr
         </XStack>
       ) : (
         <YStack gap={4}>
-          <Text fontWeight="700" fontSize={16} color="$text">
+          <Text fontWeight="700" fontSize={16} color="text">
             {t("village.day_one_title")}
           </Text>
-          <Text fontSize={13} lineHeight={18} color="$textSecondary">
+          <Text fontSize={13} lineHeight="18px" color="textSecondary">
             {t("village.day_one_body")}
           </Text>
         </YStack>
@@ -204,18 +204,18 @@ export function SinceLastQuest({ growth, buildings, language }: ChangesProps) {
             minH={48}
             py={8}
             borderBottomWidth={1}
-            borderColor="$surface2"
+            borderColor="surface2"
           >
             <BuildingThumb building={building} size={30} />
             <YStack flex={1} minW={0}>
-              <Text fontWeight="600" fontSize={14} color="$text">
+              <Text fontWeight="600" fontSize={14} color="text">
                 {nameOf(building, language)}
               </Text>
-              <Text fontSize={11.5} color="$textSecondary">
+              <Text fontSize={11.5} color="textSecondary">
                 {feedsLine(building, t, language)}
               </Text>
             </YStack>
-            <Text fontWeight="600" fontSize={13} color="$resourceGold">
+            <Text fontWeight="600" fontSize={13} color="resourceGold">
               {`${g.oldLevel} → ${g.newLevel}`}
             </Text>
           </XStack>
@@ -245,7 +245,7 @@ export function Families({ families, risen, next, language, stones, onOpen }: Fa
             <SectionLabel>
               {t(`village.family_${family.key}`, { count: family.items.length })}
             </SectionLabel>
-            <Text fontSize={11} color="$textSecondary" opacity={0.75} shrink={1}>
+            <Text fontSize={11} color="textSecondary" opacity={0.75} shrink={1}>
               {t(`village.family_${family.key}_feeds`, { count: family.items.length })}
             </Text>
           </XStack>
@@ -290,38 +290,38 @@ function BuildingRow({ building, risen, isNext, language, stones, onPress }: Row
       py={9}
       position="relative"
       borderBottomWidth={1}
-      borderColor="$surface2"
+      borderColor="surface2"
+      opacity="press:0.85"
       onPress={onPress}
-      pressStyle={{ opacity: 0.85 }}
       accessibilityRole="button"
       accessibilityLabel={name}
     >
       {/* In the page's gutter, not in the row: a left border pushed this one icon out of line
           with every other row, and read as a glitch. */}
       {isNext ? (
-        <YStack position="absolute" l={-10} t={9} b={9} width={2} rounded={1} bg="$resourceGold" />
+        <YStack position="absolute" l={-10} t={9} b={9} width={2} rounded={1} bg="resourceGold" />
       ) : null}
       <BuildingThumb building={building} size={34} />
       <YStack flex={1} minW={0} gap={2}>
         <XStack items="center" gap={7} flexWrap="wrap">
-          <Text fontWeight="600" fontSize={14.5} color="$text">
+          <Text fontWeight="600" fontSize={14.5} color="text">
             {name}
           </Text>
           {risen ? (
-            <XStack px={6} py={1} rounded={4} borderWidth={1} borderColor="$resourceGold">
+            <XStack px={6} py={1} rounded={4} borderWidth={1} borderColor="resourceGold">
               <Text
                 fontSize={9.5}
                 fontWeight="600"
                 letterSpacing={0.8}
                 textTransform="uppercase"
-                color="$resourceGold"
+                color="resourceGold"
               >
                 {t("village.risen")}
               </Text>
             </XStack>
           ) : null}
         </XStack>
-        <Text fontSize={11.5} lineHeight={16} color="$textSecondary">
+        <Text fontSize={11.5} lineHeight="16px" color="textSecondary">
           {/* "Next to rise" already reads the next rung aloud; its row says what feeds it. */}
           {withStones(
             isNext ? feedsLine(building, t, language) : nextLine(building, t, language),
@@ -334,7 +334,7 @@ function BuildingRow({ building, risen, isNext, language, stones, onPress }: Row
         <Text
           fontSize={12}
           fontWeight="600"
-          color={built ? "$resourceGold" : "$textSecondary"}
+          color={`${built ? "resourceGold" : "textSecondary"}`}
           numberOfLines={1}
         >
           {levelText(building, t)}
@@ -375,10 +375,10 @@ export function VillageTier({ progress, name, complete, openDeeds, language }: T
       testID="village-tier"
       p={14}
       gap={8}
-      rounded="$3"
+      rounded="3"
       borderWidth={1}
-      borderColor={complete ? "$resourceGold" : "$borderStrong"}
-      bg="$surface"
+      borderColor={`${complete ? "resourceGold" : "borderStrong"}`}
+      bg="surface"
     >
       <SectionLabel>
         {t(progress.final ? "village.tier_final_kicker" : "village.tier_next_kicker")}
@@ -388,29 +388,29 @@ export function VillageTier({ progress, name, complete, openDeeds, language }: T
       <Text
         fontSize={12}
         fontWeight="700"
-        color={progress.final ? "$resourceGold" : "$textSecondary"}
+        color={`${progress.final ? "resourceGold" : "textSecondary"}`}
       >
         {t("village.tier_badge", { tier: progress.tier, max: MAX_TIER })}
       </Text>
 
       {complete ? (
         <YStack testID="village-done" gap={4}>
-          <Text fontWeight="600" fontSize={14} color="$resourceGold">
+          <Text fontWeight="600" fontSize={14} color="resourceGold">
             {t("village.done_title", { name })}
           </Text>
-          <Text fontSize={12.5} lineHeight={18} color="$text">
+          <Text fontSize={12.5} lineHeight="18px" color="text">
             {t("village.done_body")}
           </Text>
         </YStack>
       ) : null}
 
       {progress.final ? (
-        <Text fontSize={13} lineHeight={19} color={complete ? "$textSecondary" : "$text"}>
+        <Text fontSize={13} lineHeight="19px" color={`${complete ? "textSecondary" : "text"}`}>
           {t("village.tier_final_line", { level: progress.reachedAt })}
         </Text>
       ) : (
         <>
-          <Text fontSize={13} lineHeight={19} color="$text">
+          <Text fontSize={13} lineHeight="19px" color="text">
             {t("village.tier_next_line", { level: progress.nextLevel, count: progress.levelsAway })}
           </Text>
           {scale ? (
@@ -418,7 +418,7 @@ export function VillageTier({ progress, name, complete, openDeeds, language }: T
               <ProgressBar
                 progress={scale.progress}
                 height={5}
-                color="$resourceGold"
+                color="resourceGold"
                 caption={scale.caption}
                 ends={scale.ends}
               />
@@ -428,7 +428,7 @@ export function VillageTier({ progress, name, complete, openDeeds, language }: T
       )}
 
       {foot ? (
-        <Text fontSize={12} lineHeight={17} color="$textSecondary">
+        <Text fontSize={12} lineHeight="17px" color="textSecondary">
           {foot}
         </Text>
       ) : null}

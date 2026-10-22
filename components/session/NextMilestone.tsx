@@ -50,9 +50,9 @@ export function NextMilestone({
 
   if (line === null) return null;
   return (
-    <YStack testID="victory-next" width="100%" maxW={520} gap={6} px="$1">
+    <YStack testID="victory-next" width="100%" maxW={520} gap={6} px="1">
       <SectionLabel>{t("session.next_title")}</SectionLabel>
-      <AppText fontSize={14} lineHeight={20} color="$text">
+      <AppText fontSize={14} lineHeight="20px" color="text">
         {line}
       </AppText>
     </YStack>

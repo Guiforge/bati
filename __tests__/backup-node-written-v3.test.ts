@@ -85,6 +85,7 @@ describe("format 3 as the Node double writes it", () => {
   );
 
   test("a body of two whole segments and seven bytes has three, and its digest is what Kotlin must reproduce", async () => {
+    expect.hasAssertions();
     const sealed = await seal(2 * segment.bytes + 7, "41", 0);
     const digest = crypto.createHash("sha256").update(sealed).digest();
     frozen("node-v3-multi.sha256", digest);

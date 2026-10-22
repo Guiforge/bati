@@ -71,6 +71,8 @@ beforeEach(() => {
 
 describe("PastSessionSheet, a session written down", () => {
   it("opens on an answer: workout, 45 minutes, nothing refused, the rule one tap away", async () => {
+    // Midday: in the first 45 minutes after midnight the entry is yesterday's (the next test).
+    jest.useFakeTimers({ now: new Date(2026, 9, 20, 12, 0), advanceTimers: true });
     await mount();
     expect(await screen.findByText("Add a past session")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Workout", selected: true })).toBeTruthy();
@@ -83,6 +85,7 @@ describe("PastSessionSheet, a session written down", () => {
     expect(screen.getByTestId("past-session-rule").props.children).toBe(
       "A session elsewhere keeps the flame and counts toward the oath, earns the XP of 15 minutes in Bati, and does not hit the boss.",
     );
+    jest.useRealTimers();
   });
 
   it("says before saving that a fourth paid entry in the window is noted without XP", async () => {

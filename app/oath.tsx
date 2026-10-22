@@ -3,11 +3,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Input, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { GameIcon } from "@/components/common/GameIcon";
+import { Input } from "@/components/common/Input";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { useToast } from "@/components/common/Toast";
@@ -138,34 +139,34 @@ function PresetRow({
   const current = standing?.current ?? null;
 
   return (
-    <Card testID="oath-preset" bg="$surface" onPress={() => onSwear(preset)}>
-      <XStack items="center" gap="$3">
-        <GameIcon name="star" size={20} color="$primaryText" />
-        <YStack flex={1} gap="$1">
-          <Text fontWeight="700" fontSize={15} color="$text">
+    <Card testID="oath-preset" bg="surface" onPress={() => onSwear(preset)}>
+      <XStack items="center" gap="3">
+        <GameIcon name="star" size={20} color="primaryText" />
+        <YStack flex={1} gap="1">
+          <Text fontWeight="700" fontSize={15} color="text">
             {label}
           </Text>
           {/* Nothing done yet is not worth a "0 / 50": the target above already says it. */}
           {current !== null && current > 0 && standing !== undefined ? (
             <>
-              <Text fontSize={12} color="$textSecondary">
+              <Text fontSize={12} color="textSecondary">
                 {t("oath.preset_standing", { current, target: standing.target })}
               </Text>
               <ProgressBar
                 progress={Math.min(100, (current / standing.target) * 100)}
-                color="$resourceGold"
-                trackColor="$gold800"
+                color="resourceGold"
+                trackColor="gold800"
               />
             </>
           ) : null}
           {/* A preset swears at the tap, so the warning has to be here, before it. */}
           {recount !== null ? (
-            <Text testID="oath-flame-recount" fontSize={12} color="$textSecondary">
+            <Text testID="oath-flame-recount" fontSize={12} color="textSecondary">
               {t("oath.flame_recount", { count: recount })}
             </Text>
           ) : null}
         </YStack>
-        <ChevronRight size={20} color="$text" opacity={0.5} />
+        <ChevronRight size={20} color="text" opacity={0.5} />
       </XStack>
     </Card>
   );
@@ -203,37 +204,37 @@ function CurrentOathCard({
     : getDateTimeFormat(language, SWORN_DATE_OPTIONS).format(sworn);
 
   return (
-    <Card testID="oath-current" gap="$2">
-      <Text fontWeight="700" fontSize={13} color="$text" opacity={0.8}>
+    <Card testID="oath-current" gap="2">
+      <Text fontWeight="700" fontSize={13} color="text" opacity={0.8}>
         {t("oath.current_title")}
       </Text>
 
       {/* The oath itself — the card showed a bar and two numbers without ever saying what
           had been sworn. */}
-      <XStack items="center" gap="$2">
-        <GameIcon name="star" size={20} color="$text" />
-        <Text flex={1} fontWeight="700" fontSize={16} color="$text">
+      <XStack items="center" gap="2">
+        <GameIcon name="star" size={20} color="text" />
+        <Text flex={1} fontWeight="700" fontSize={16} color="text">
           {label}
         </Text>
       </XStack>
 
-      <ProgressBar progress={progress.progress} color="$resourceGold" trackColor="$gold800" />
+      <ProgressBar progress={progress.progress} color="resourceGold" trackColor="gold800" />
 
-      <Text fontSize={13} color="$text" opacity={0.75}>
+      <Text fontSize={13} color="text" opacity={0.75}>
         {progress.isFulfilled
           ? t("oath.card_fulfilled")
           : t("oath.card_progress", { current: progress.current, target: progress.target })}
       </Text>
 
       {swornLabel !== null && (
-        <Text fontSize={13} color="$text" opacity={0.6}>
+        <Text fontSize={13} color="text" opacity={0.6}>
           {t("oath.sworn_on", { date: swornLabel })}
         </Text>
       )}
 
       <OathReminderLine progress={progress} />
 
-      <AppButton variant="outline" size="$3" fontSize={15} onPress={onAbandon}>
+      <AppButton variant="outline" size="3" fontSize={15} onPress={onAbandon}>
         {t("oath.abandon")}
       </AppButton>
     </Card>
@@ -259,7 +260,7 @@ function OathReminderLine({ progress }: { progress: OathProgress }) {
     <Text
       testID="oath-reminder-offer"
       fontSize={13}
-      color="$primaryText"
+      color="primaryText"
       accessibilityRole="link"
       onPress={() => router.push("/settings" as never)}
     >
@@ -554,10 +555,10 @@ export default function OathScreen() {
   }, [router, showError, t, ask]);
 
   return (
-    <YStack testID="oath-screen" flex={1} bg="$background" pt={insets.top}>
-      <XStack px="$4" py="$3" items="center" gap="$3">
+    <YStack testID="oath-screen" flex={1} bg="background" pt={insets.top}>
+      <XStack px="4" py="3" items="center" gap="3">
         <ScreenBackButton />
-        <Text fontFamily="$heading" fontSize={20} fontWeight="700" color="$text">
+        <Text fontFamily="heading" fontSize={20} fontWeight="700" color="text">
           {t("oath.screen_title")}
         </Text>
       </XStack>
@@ -571,14 +572,14 @@ export default function OathScreen() {
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 40 + insets.bottom }}
       >
-        <YStack px="$4" gap="$4">
+        <YStack px="4" gap="4">
           {/* Current oath — swearing a new one replaces it, so say so up front */}
           {existing !== null && <CurrentOathCard progress={existing} onAbandon={abandon} />}
 
           {/* Ready-made oaths — a tap, no target to guess. The default path. */}
           {!showCustom && (
-            <YStack gap="$2">
-              <Text fontSize={13} fontWeight="700" color="$textSecondary">
+            <YStack gap="2">
+              <Text fontSize={13} fontWeight="700" color="textSecondary">
                 {t("oath.presets_title")}
               </Text>
               {presetRows.map((row) => (
@@ -597,9 +598,9 @@ export default function OathScreen() {
               ))}
               <AppButton
                 variant="outline"
-                size="$3"
+                size="3"
                 fontSize={15}
-                icon={<PenLine size={16} color="$text" />}
+                icon={<PenLine size={16} color="text" />}
                 onPress={() => setShowCustom(true)}
               >
                 {t("oath.custom_toggle")}
@@ -611,11 +612,11 @@ export default function OathScreen() {
           {showCustom ? (
             <>
               {/* Metric */}
-              <YStack gap="$2">
-                <Text fontSize={13} fontWeight="700" color="$textSecondary">
+              <YStack gap="2">
+                <Text fontSize={13} fontWeight="700" color="textSecondary">
                   {t("oath.pick_metric")}
                 </Text>
-                <XStack gap="$2" flexWrap="wrap">
+                <XStack gap="2" flexWrap="wrap">
                   {METRICS.map((m) => (
                     <MetricChip key={m} metric={m} selected={metric === m} onSelect={pickMetric} />
                   ))}
@@ -623,17 +624,17 @@ export default function OathScreen() {
               </YStack>
 
               {/* Target */}
-              <YStack gap="$2">
-                <Text fontSize={13} fontWeight="700" color="$textSecondary">
+              <YStack gap="2">
+                <Text fontSize={13} fontWeight="700" color="textSecondary">
                   {t("oath.pick_target")}
                 </Text>
                 <Input
                   value={target}
                   onChangeText={setTarget}
                   keyboardType="number-pad"
-                  bg="$surface"
-                  borderColor="$borderStrong"
-                  color="$text"
+                  bg="surface"
+                  borderColor="borderStrong"
+                  color="text"
                   fontSize={18}
                   height={52}
                   accessibilityLabel={t("oath.pick_target")}
@@ -642,11 +643,11 @@ export default function OathScreen() {
 
               {/* Sessions per week — only for the weekly metric */}
               {oathNeedsWeeklyTarget(metric) && (
-                <YStack gap="$2">
-                  <Text fontSize={13} fontWeight="700" color="$textSecondary">
+                <YStack gap="2">
+                  <Text fontSize={13} fontWeight="700" color="textSecondary">
                     {t("oath.pick_weekly")}
                   </Text>
-                  <XStack gap="$2" flexWrap="wrap">
+                  <XStack gap="2" flexWrap="wrap">
                     {WEEKLY_TARGETS.map((n) => (
                       <WeeklyChip
                         key={n}
@@ -657,7 +658,7 @@ export default function OathScreen() {
                     ))}
                   </XStack>
                   {recountAt(weeklyTarget) !== null ? (
-                    <Text testID="oath-flame-recount" fontSize={12} color="$textSecondary">
+                    <Text testID="oath-flame-recount" fontSize={12} color="textSecondary">
                       {t("oath.flame_recount", { count: weeklyTarget })}
                     </Text>
                   ) : null}
@@ -666,21 +667,21 @@ export default function OathScreen() {
 
               {/* Exercise — only for the exercise_* metrics */}
               {oathNeedsExercise(metric) && (
-                <YStack gap="$2">
-                  <Text fontSize={13} fontWeight="700" color="$textSecondary">
+                <YStack gap="2">
+                  <Text fontSize={13} fontWeight="700" color="textSecondary">
                     {t("oath.pick_exercise")}
                   </Text>
                   <Input
                     value={filter}
                     onChangeText={setFilter}
                     placeholder={t("oath.search_exercise")}
-                    bg="$surface"
-                    borderColor="$borderStrong"
-                    color="$text"
+                    bg="surface"
+                    borderColor="borderStrong"
+                    color="text"
                     height={48}
                     accessibilityLabel={t("oath.search_exercise")}
                   />
-                  <YStack gap="$2">
+                  <YStack gap="2">
                     {visibleExercises.map((e) => (
                       <ExerciseChip
                         key={e.id}
@@ -695,7 +696,7 @@ export default function OathScreen() {
               )}
 
               {error !== null && (
-                <Text fontSize={14} color="$error" fontWeight="700">
+                <Text fontSize={14} color="error" fontWeight="700">
                   {error}
                 </Text>
               )}

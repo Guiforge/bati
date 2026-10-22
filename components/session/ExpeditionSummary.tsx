@@ -81,9 +81,9 @@ function UntracedSummary({ sessionId = null, language }: SummaryProps) {
       testID="victory-expedition"
       width="100%"
       maxW={520}
-      bg="$surface"
-      borderColor="$glassBorder"
-      gap="$3"
+      bg="surface"
+      borderColor="glassBorder"
+      gap="3"
     >
       <XStack>
         <Figure
@@ -110,7 +110,7 @@ function UntracedSummary({ sessionId = null, language }: SummaryProps) {
         <AppButton
           testID="victory-add-distance"
           variant="outline"
-          backgroundColor="$surface2"
+          backgroundColor="surface2"
           onPress={() => setAdding(true)}
         >
           {t("session.add_distance")}
@@ -122,7 +122,7 @@ function UntracedSummary({ sessionId = null, language }: SummaryProps) {
         <AppText
           testID="victory-expedition-road"
           fontSize={13}
-          color="$textSecondary"
+          color="textSecondary"
           style={{ textAlign: "center" }}
         >
           {roadLine(road, language, t)}
@@ -165,9 +165,9 @@ function TracedSummary({ sessionUuid, language }: SummaryProps) {
       testID="victory-expedition"
       width="100%"
       maxW={520}
-      bg="$surface"
-      borderColor="$glassBorder"
-      gap="$3"
+      bg="surface"
+      borderColor="glassBorder"
+      gap="3"
     >
       <XStack>
         <Figure
@@ -199,7 +199,7 @@ function TracedSummary({ sessionUuid, language }: SummaryProps) {
         <AppText
           testID="victory-expedition-road"
           fontSize={13}
-          color="$textSecondary"
+          color="textSecondary"
           style={{ textAlign: "center" }}
         >
           {roadLine(road, language, t)}
@@ -210,17 +210,17 @@ function TracedSummary({ sessionUuid, language }: SummaryProps) {
           across both screens. Secondary by design: Continue is this screen's only primary. */}
       {sessionUuid ? (
         <Card
-          bg="$surface2"
+          bg="surface2"
           testID="victory-expedition-recap"
           onPress={() => router.push(`/recap?session=${encodeURIComponent(sessionUuid)}` as never)}
           accessibilityLabel={t("recap.open")}
         >
-          <XStack items="center" gap="$3">
-            <MapIcon size={20} color="$resourceGold" strokeWidth={2.5} />
-            <AppText flex={1} fontWeight="700" fontSize={16} color="$text">
+          <XStack items="center" gap="3">
+            <MapIcon size={20} color="resourceGold" strokeWidth={2.5} />
+            <AppText flex={1} fontWeight="700" fontSize={16} color="text">
               {t("recap.open")}
             </AppText>
-            <ChevronRight size={20} color="$textSecondary" />
+            <ChevronRight size={20} color="textSecondary" />
           </XStack>
         </Card>
       ) : null}

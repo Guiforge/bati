@@ -41,7 +41,7 @@ export function ExerciseRow({
   caption,
   trailing,
   accessibilityLabel,
-  borderColor = "$borderStrong",
+  borderColor = "borderStrong",
   onPress,
 }: Props) {
   const subtitle = [
@@ -52,18 +52,19 @@ export function ExerciseRow({
   return (
     <XStack
       items="center"
-      gap="$3"
-      p="$2"
-      rounded="$6"
-      bg="$background"
+      gap="3"
+      p="2"
+      rounded="6"
+      bg="background"
       borderWidth={1}
       borderColor={borderColor}
-      pressStyle={{ opacity: 0.92, scale: 0.99 }}
+      opacity="press:0.92"
+      scale="press:0.99"
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
     >
-      <YStack width={56} height={56} rounded="$4" overflow="hidden" bg="$surface">
+      <YStack width={56} height={56} rounded="4" overflow="hidden" bg="surface">
         <Image
           source={thumb}
           recyclingKey={String(exercise.id)}
@@ -74,11 +75,11 @@ export function ExerciseRow({
         />
       </YStack>
 
-      <YStack flex={1} gap="$1">
-        <Text fontWeight="700" fontSize={15} color="$text" numberOfLines={1}>
+      <YStack flex={1} gap="1">
+        <Text fontWeight="700" fontSize={15} color="text" numberOfLines={1}>
           {localizedName(exercise, language)}
         </Text>
-        <Text fontSize={12} color="$textSecondary" numberOfLines={1}>
+        <Text fontSize={12} color="textSecondary" numberOfLines={1}>
           {subtitle}
         </Text>
         {caption}

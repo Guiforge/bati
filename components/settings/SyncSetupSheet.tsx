@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Keyboard, Pressable } from "react-native";
-import { Input, Text, YStack } from "tamagui";
+import { Text, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { FormSheet } from "@/components/common/FormSheet";
+import { Input } from "@/components/common/Input";
 import { ConnectionTest } from "@/components/settings/ConnectionTest";
 import type { DiagnosticStep } from "@/src/cloudSync";
 
@@ -182,9 +183,9 @@ export function SyncSetupSheet({
 
 const FIELD = {
   minH: 44,
-  bg: "$background",
-  borderColor: "$borderStrong",
-  color: "$text",
+  bg: "background",
+  borderColor: "borderStrong",
+  color: "text",
   autoCapitalize: "none",
   autoCorrect: false,
 } as const;
@@ -222,28 +223,28 @@ function Doors({
   ];
   return (
     <>
-      <Text color="$textSecondary">
+      <Text color="textSecondary">
         {context === "onboarding" ? t("sync.pick.whereIsIt") : t("sync.pick.whereToKeep")}
       </Text>
       {local ? (
-        <YStack gap="$1">
+        <YStack gap="1">
           <AppButton testID="sync-door-phone" variant="outline" onPress={onLocal}>
             {t("shelter.doorPhone")}
           </AppButton>
-          <Text color="$textSecondary" fontSize="$2" px="$2">
+          <Text color="textSecondary" fontSize="2" px="2">
             {local.folder
               ? t("shelter.doorPhoneOn", { folder: local.folder })
               : t("shelter.doorPhoneNote")}
           </Text>
           {local.gpsNotice ? (
-            <Text testID="sync-door-phone-gps" color="$textSecondary" fontSize="$2" px="$2">
+            <Text testID="sync-door-phone-gps" color="textSecondary" fontSize="2" px="2">
               {t("backup.gpsNotice")}
             </Text>
           ) : null}
         </YStack>
       ) : null}
       {doors.map((door) => (
-        <YStack key={door.mode} gap="$1">
+        <YStack key={door.mode} gap="1">
           <AppButton
             testID={`sync-door-${door.mode}`}
             variant="outline"
@@ -251,13 +252,13 @@ function Doors({
           >
             {door.title}
           </AppButton>
-          <Text color="$textSecondary" fontSize="$2" px="$2">
+          <Text color="textSecondary" fontSize="2" px="2">
             {door.note}
           </Text>
         </YStack>
       ))}
       <Pressable testID="sync-not-listed" accessibilityRole="button" onPress={onNotListed}>
-        <Text color="$textSecondary" fontSize="$3" textDecorationLine="underline" py="$2">
+        <Text color="textSecondary" fontSize="3" textDecorationLine="underline" py="2">
           {t("sync.pick.notListed")}
         </Text>
       </Pressable>
@@ -283,21 +284,21 @@ function NotListed({
   const service = t("sync.pick.yourCloud");
   return (
     <>
-      <Text testID="sync-handoff" color="$text">
+      <Text testID="sync-handoff" color="text">
         {t("sync.handoff.intro")}
       </Text>
-      <Text color="$text" fontWeight="700">
+      <Text color="text" fontWeight="700">
         {t("sync.handoff.onceTitle")}
       </Text>
-      <Text color="$textSecondary">
+      <Text color="textSecondary">
         {context === "onboarding"
           ? t("sync.handoff.onceOnboarding", { service })
           : t("sync.handoff.onceSettings", { service })}
       </Text>
-      <Text color="$text" fontWeight="700">
+      <Text color="text" fontWeight="700">
         {t("sync.handoff.stepTitle")}
       </Text>
-      <Text color="$textSecondary">{t("sync.handoff.step", { service })}</Text>
+      <Text color="textSecondary">{t("sync.handoff.step", { service })}</Text>
       <AppButton testID="sync-handoff-roundsync" variant="outline" onPress={onRoundSync}>
         {t("sync.handoff.roundSyncCta")}
       </AppButton>
@@ -325,8 +326,8 @@ function FolderForm({
   const { t } = useTranslation();
   return (
     <>
-      <Text color="$textSecondary">{t("sync.folder.intro")}</Text>
-      <Text color="$textSecondary" fontSize="$3">
+      <Text color="textSecondary">{t("sync.folder.intro")}</Text>
+      <Text color="textSecondary" fontSize="3">
         {t("sync.folder.versioning")}
       </Text>
       {backupFolder ? (
@@ -373,7 +374,7 @@ function NextcloudForm({
   const ready = server.trim() !== "";
   return (
     <>
-      <Text color="$textSecondary">
+      <Text color="textSecondary">
         {waiting ? t("sync.connectWaiting") : t("sync.connectIntro")}
       </Text>
       {waiting ? null : (
@@ -421,7 +422,7 @@ function WebDavForm({
   const roundSync = webdavLabelFor(fields.url) === "Round Sync";
   return (
     <>
-      <Text color="$textSecondary">{t("sync.webdavIntro")}</Text>
+      <Text color="textSecondary">{t("sync.webdavIntro")}</Text>
       <Input
         testID="sync-dav-url"
         {...FIELD}
@@ -449,7 +450,7 @@ function WebDavForm({
           roundSync ? t("sync.roundSyncPasswordPlaceholder") : t("sync.appPasswordPlaceholder")
         }
       />
-      <Text testID="sync-dav-addresses" color="$textSecondary" fontSize="$2" selectable>
+      <Text testID="sync-dav-addresses" color="textSecondary" fontSize="2" select="text">
         {t("sync.webdavAddresses")}
       </Text>
       <AppButton testID="sync-dav-connect" disabled={!ready} onPress={onSubmit}>

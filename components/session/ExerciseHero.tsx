@@ -1,16 +1,17 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useState } from "react";
-import { type ImageSourcePropType, useWindowDimensions } from "react-native";
+import { useWindowDimensions } from "react-native";
 import Animated, { useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { YStack } from "tamagui";
 import { Recitatif } from "@/components/common/Recitatif";
+import type { ArtSource } from "@/constants/assetMap";
 import { rawColors } from "@/constants/rawColors";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { exerciseArtMaxHeight, HUD_HEIGHT, NAME_MIN_SIDE, titleBelowPicture } from "./sessionArt";
 
 type ExerciseHeroProps = {
-  source: ImageSourcePropType;
+  source: ArtSource;
   /** The movement's name, painted on the artwork rather than under it. */
   name: string;
   /** Floor for the picture band, below the HUD. The hero grows past it to fill the column. */
@@ -99,10 +100,10 @@ export function ExerciseHero({
         maxH={topInset + HUD_HEIGHT + Math.max(minHeight, exerciseArtMaxHeight(width)) - give}
         width="100%"
         position="relative"
-        bg="$bgDark"
+        bg="bgDark"
         pt={topInset + HUD_HEIGHT}
+        opacity={onPress ? "press:0.92" : undefined}
         onPress={onPress}
-        pressStyle={onPress ? { opacity: 0.92 } : undefined}
         accessibilityRole={onPress ? "button" : undefined}
         accessibilityLabel={accessibilityLabel}
       >
@@ -196,7 +197,7 @@ export function ExerciseHero({
         {/* The name sits in a récitatif, bottom-left of the square, so it never starts
           outside the picture on a wide band. */}
         {nameBelow ? null : (
-          <YStack position="absolute" b="$3" l={inset} r={inset} px="$4">
+          <YStack position="absolute" b="3" l={inset} r={inset} px="4">
             <Recitatif numberOfLines={2} testID="exercise-hero-name">
               {name}
             </Recitatif>
@@ -207,7 +208,7 @@ export function ExerciseHero({
       {nameBelow ? (
         <YStack
           testID="exercise-hero-name-below"
-          px="$4"
+          px="4"
           onLayout={(e) => setTitleH(Math.round(e.nativeEvent.layout.height))}
         >
           <Recitatif numberOfLines={2} testID="exercise-hero-name">

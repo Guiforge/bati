@@ -13,20 +13,20 @@ export function AdventureFooter({ meta, xp }: { meta: string; xp: string }) {
       items="center"
       justify="space-between"
       flexWrap="wrap"
-      columnGap="$2"
-      rowGap="$1"
+      columnGap="2"
+      rowGap="1"
     >
       <Text
         testID="adventure-card-meta"
         shrink={1}
         fontSize={12}
         fontWeight="700"
-        color="$textSecondary"
+        color="textSecondary"
       >
         {meta}
       </Text>
       {/* The reward reads in gold, the same resource colour as the quest gallery. */}
-      <Text fontSize={14} fontWeight="700" color="$resourceGold">
+      <Text fontSize={14} fontWeight="700" color="resourceGold">
         {xp}
       </Text>
     </XStack>

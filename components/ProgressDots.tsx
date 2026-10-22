@@ -13,13 +13,13 @@ export function ProgressDots({ current, total }: ProgressDotsProps) {
       width={i === current - 1 ? 24 : 10}
       height={10}
       rounded={5}
-      bg={i < current ? "$primary" : "$text"}
+      bg={`${i < current ? "primary" : "text"}`}
       opacity={i < current ? 1 : 0.3}
     />
   ));
 
   return (
-    <XStack gap="$2" justify="center" py="$4">
+    <XStack gap="2" justify="center" py="4">
       {dots}
     </XStack>
   );

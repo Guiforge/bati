@@ -218,7 +218,7 @@ export function BackupSecurityRows({
           a server or shared folder kept in step across devices. The sheet behind it decides. */}
       <SettingRow
         testID="settings-sync"
-        icon={<CloudUpload size={22} color="$text" />}
+        icon={<CloudUpload size={22} color="text" />}
         label={t("shelter.row")}
         value={shelterValue}
         disabled={disabled || deviceSync.running}
@@ -235,7 +235,7 @@ export function BackupSecurityRows({
           onPress={() => openEncryptionSheet({ kind: "enable" })}
         >
           <YStack minH={44} justify="center">
-            <Text fontSize="$3" color="$textSecondary" px="$1">
+            <Text fontSize="3" color="textSecondary" px="1">
               {t("backup.gpsNotice")}
             </Text>
           </YStack>
@@ -247,7 +247,7 @@ export function BackupSecurityRows({
           did not follow) nothing is written until the password is set again. */}
       <SettingRow
         testID="settings-encrypt-backup"
-        icon={<Lock size={22} color="$text" />}
+        icon={<Lock size={22} color="text" />}
         label={t("backup.encryption")}
         value={encryptionValue}
         disabled={disabled}

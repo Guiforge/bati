@@ -80,11 +80,11 @@ export function VillageSceneViewer({
         <VillageEmbers heroHeight={width} heroWidth={width} tier={tier} />
       </YStack>
 
-      <YStack position="absolute" b={insets.bottom + 24} px="$4" gap="$1" items="center">
-        <Text fontFamily="$heading" fontWeight="700" fontSize={22} color="$text">
+      <YStack position="absolute" b={insets.bottom + 24} px="4" gap="1" items="center">
+        <Text fontFamily="heading" fontWeight="700" fontSize={22} color="text">
           {title}
         </Text>
-        <Text fontSize={13} color="$muted">
+        <Text fontSize={13} color="muted">
           {t("village.tap_to_close")}
         </Text>
       </YStack>

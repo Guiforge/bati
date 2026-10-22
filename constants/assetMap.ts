@@ -611,6 +611,13 @@ export function carriedPhoto(value: string | null | undefined): { uri: string } 
 }
 
 /**
+ * What every getter here hands out: a bundled `require` id or a URI. Narrower than either image
+ * library's own source type on purpose, so one value fits expo-image and RN's `Image` alike (RN
+ * 0.88 made its array form readonly, which expo-image's mutable array refuses).
+ */
+export type ArtSource = number | { uri: string };
+
+/**
  * Get exercise asset by ID (with fallback to placeholder)
  */
 export function getExerciseAsset(id: string) {

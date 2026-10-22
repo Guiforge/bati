@@ -43,16 +43,15 @@ export function ShareButton({
         height={36}
         px={12}
         gap={6}
-        rounded="$3"
+        rounded="3"
         borderWidth={1}
-        borderColor="$glassBorder"
-        bg="$bgOverlaySoft"
+        borderColor="glassBorder"
+        bg="bgOverlaySoft press:ink900"
         items="center"
         // 36 tall like the back button facing it; the hit area is taken back to the 44 floor.
         hitSlop={4}
-        pressStyle={{ bg: "$ink900" }}
       >
-        <Share2 size={16} color="$text" strokeWidth={2.5} />
+        <Share2 size={16} color="text" strokeWidth={2.5} />
         <NText fontWeight="500" fontSize={14}>
           {t("share.open")}
         </NText>
@@ -67,10 +66,10 @@ export function ShareButton({
       fullWidth={fullWidth}
       // Spread, not `height={undefined}`: an explicit undefined would overwrite AppButton's own.
       {...(height ? { height } : null)}
-      size="$3"
+      size="3"
       fontSize={16}
-      px="$3"
-      icon={<Share2 size={18} color="$text" strokeWidth={2.5} />}
+      px="3"
+      icon={<Share2 size={18} color="text" strokeWidth={2.5} />}
       onPress={open}
       accessibilityLabel={t("share.open")}
     >

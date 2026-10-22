@@ -91,7 +91,8 @@ type of the same name). Unused locals, fallthrough and console are Biome's job: 
 `process.env["EXPO_PUBLIC_X"]`) and `exactOptionalPropertyTypes` — measured on 2026-08-16 at 50
 errors, nearly all in dependency types: Tamagui's `transition`/`enterStyle` and expo-image's
 `ImageSource` do not accept an explicit `undefined`, and `reducedMotion ? undefined : "bouncy"`
-is how every animation here is switched off. Re-measure with
+is how every animation here is switched off. Re-measured on 2026-10-22 after Tamagui 3: 139,
+now spread through the app's own code as much as dependency types. Re-measure with
 `npx tsc --noEmit --exactOptionalPropertyTypes` when Tamagui is bumped; enable it under 20.
 
 Under `noUncheckedIndexedAccess` a test that needs `rows[0]` as a *value* — not inside an
@@ -99,18 +100,22 @@ Under `noUncheckedIndexedAccess` a test that needs `rows[0]` as a *value* — no
 function; `expect(row).toBeDefined()` is not, and `!` is banned everywhere. Inside `expect()`,
 `?.` is enough: `expect(rows[0]?.value)` fails loudly on an empty array.
 
-Biome runs `react`, `reactNative` and `types` domains, but their React Native and type-aware
-rules are all still `nursery`, and a domain does not switch nursery rules on: each one is named
-in `biome.json` (`noFloatingPromises`, `noReactNativeRawText`, …). `noReactNativeRawText` only
+Biome runs `react`, `reactNative` and `types` domains. Its React Native rules left `nursery` in
+2.6 (`noReactNativeRawText` is `correctness` now); the type-aware ones are still there, and a
+domain does not switch nursery rules on, so each is named in `biome.json` (`noFloatingPromises`).
+Tests run the `test` domain whole, except `useConsistentTestIt`: the suites mix `test` and `it`,
+and its autofix rewrote every one in a staged file. Markdown is not formatted. `noReactNativeRawText` only
 trusts `<Text>`; every project component that renders its children inside one is on its `skip`
-list — add a new wrapper there, do not turn the rule off. Five GritQL plugins under
+list — add a new wrapper there, do not turn the rule off. Six GritQL plugins under
 `.biome/plugins/` cover what no rule does: raw hex colours, identical ternary arms, dynamic
 `process.env` access (Babel inlines literal `EXPO_PUBLIC_*` reads at build time; `process.env[k]`
 or a destructuring is `undefined` in a production build and fine in dev), and any network call
 (`fetch`, sockets, expo-file-system transfers) outside `src/updateCheck.ts` and `src/cloudSync.ts`.
 A third module there is a change to the privacy policy first; see the plugin's header. A fifth
 rejects a `Sheet.ScrollView` without `onMoveShouldSetResponder`: Tamagui's hook there cancels the
-first tap of every button inside it, on a phone only (`adb input tap` sends no move).
+first tap of every button inside it, on a phone only (`adb input tap` sends no move). A sixth
+rejects a Tamagui 2 token spelling (`"$text"`, `"$4"`) outside the tests: Tamagui 3 takes tokens
+bare (`color="text"`, `p="4"`) and renders a sigil as nothing, while `tsc` lets most of them through.
 
 `types/expo.d.ts` is versioned so a fresh checkout type-checks with the same ambient types as a
 machine that has run the dev server. Typed routes (`.expo/types/router.d.ts`) are still only

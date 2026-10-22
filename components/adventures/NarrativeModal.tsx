@@ -4,8 +4,9 @@ import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import { Modal, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Paragraph, ScrollView, YStack } from "tamagui";
+import { ScrollView, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { Paragraph } from "@/components/common/Paragraph";
 import { Recitatif } from "@/components/common/Recitatif";
 import { CONTENT_MAX_WIDTH, narrativeArtHeight } from "@/constants/layout";
 import { fade, rawColors } from "@/constants/rawColors";
@@ -54,11 +55,11 @@ export function NarrativeModal({
       statusBarTranslucent
       navigationBarTranslucent
     >
-      <YStack flex={1} bg="$bgDark">
+      <YStack flex={1} bg="bgDark">
         <YStack flex={1} width="100%" maxW={CONTENT_MAX_WIDTH} self="center">
           {image ? (
             // 4:3 like a quest cover; the gradient melts the foot of the painting into the ground.
-            <YStack width="100%" height={narrativeArtHeight(width, height)} bg="$surface2">
+            <YStack width="100%" height={narrativeArtHeight(width, height)} bg="surface2">
               <Image
                 source={image}
                 style={{ width: "100%", height: "100%" }}
@@ -70,20 +71,20 @@ export function NarrativeModal({
                 locations={[0.5, 0.8, 1]}
                 style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}
               />
-              <YStack position="absolute" b={0} l={0} r={0} px="$5">
+              <YStack position="absolute" b={0} l={0} r={0} px="5">
                 <Recitatif>{title}</Recitatif>
               </YStack>
             </YStack>
           ) : (
-            <YStack px="$5" pt={insets.top + 24}>
+            <YStack px="5" pt={insets.top + 24}>
               <Recitatif>{title}</Recitatif>
             </YStack>
           )}
 
-          <YStack flex={1} px="$5" pt="$4" pb={insets.bottom + 24} gap="$4">
+          <YStack flex={1} px="5" pt="4" pb={insets.bottom + 24} gap="4">
             {/* Scrolls rather than pushing the action off the screen. */}
             <ScrollView flex={1}>
-              <Paragraph fontFamily="$body" size="$5" lineHeight={30} color="$text">
+              <Paragraph fontFamily="body" size="5" lineHeight="30px" color="text">
                 {text}
               </Paragraph>
             </ScrollView>

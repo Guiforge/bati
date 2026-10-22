@@ -33,10 +33,10 @@ function End({ end, stacked, right }: { end: BarEnd; stacked: boolean; right: bo
       {shown.map((line) => (
         <Text
           key={line}
-          fontFamily="$body"
+          fontFamily="body"
           fontSize={11.5}
           fontWeight="600"
-          color="$textSecondary"
+          color="textSecondary"
           style={{ textAlign: right ? "right" : "left" }}
         >
           {line}
@@ -49,8 +49,8 @@ function End({ end, stacked, right }: { end: BarEnd; stacked: boolean; right: bo
 export function ProgressBar({
   progress,
   height = 8,
-  color = "$primary",
-  trackColor = "$surface2",
+  color = "primary",
+  trackColor = "surface2",
   testID,
   caption,
   ends,
@@ -76,13 +76,13 @@ export function ProgressBar({
   return (
     <YStack gap={6} width="100%">
       {!caption ? null : (
-        <Text fontFamily="$body" fontSize={13} fontWeight="700" color="$resourceGold">
+        <Text fontFamily="body" fontSize={13} fontWeight="700" color="resourceGold">
           {caption}
         </Text>
       )}
       {bar}
       {ends === undefined ? null : (
-        <XStack justify="space-between" gap="$2">
+        <XStack justify="space-between" gap="2">
           <End end={ends.left} stacked={stacked} right={false} />
           <End end={ends.right} stacked={stacked} right />
         </XStack>

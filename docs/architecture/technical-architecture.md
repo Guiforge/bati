@@ -21,7 +21,7 @@ source from which progression systems are derived.
 | --- | --- | --- |
 | Framework | `expo` `~57.0.30` (SDK 57), React `19.2.3`, React Native `0.86.3` | Mobile app runtime |
 | Navigation | `expo-router` `~57.0.28` | File-based routes in `app/` |
-| UI | `tamagui` / `@tamagui/*` `^2.7.7` | Tokenized dark UI primitives |
+| UI | `tamagui` / `@tamagui/*` `3.1.2` | Tokenized dark UI primitives |
 | State | `zustand` `^5.0.15` | Session, settings, and user state |
 | Database | `expo-sqlite` `~57.0.4`, `drizzle-orm` `^0.45.3` | Offline-first local persistence |
 | Localization | `i18next`, `react-i18next`, `expo-localization` | English, French, German, Spanish and Russian UI and content (`locales/*.json`) |

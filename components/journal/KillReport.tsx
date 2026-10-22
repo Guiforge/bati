@@ -28,7 +28,7 @@ import { adventureHref } from "@/src/adventureOrigin";
 import type { Localized } from "@/src/i18n/deviceLanguage";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
-const HURT_FILLS = ["$resourceGold", "$gold600", "$gold700", "$gold800"] as const;
+const HURT_FILLS = ["resourceGold", "gold600", "gold700", "gold800"] as const;
 const HURT_SHOWN = 4;
 
 const pick = (text: Localized, language: AppLanguage) => text[language] || text.en;
@@ -92,10 +92,10 @@ function WhatHurtIt({ report }: { report: KillReportData }) {
         {hurt.map((entry, index) => (
           <YStack key={String(entry.exerciseId)} gap={5}>
             <XStack justify="space-between" items="baseline">
-              <NText fontSize={12.5} lineHeight={17}>
+              <NText fontSize={12.5} lineHeight="17px">
                 {hurtName(entry.name)}
               </NText>
-              <NText fontSize={12.5} lineHeight={17}>
+              <NText fontSize={12.5} lineHeight="17px">
                 <NNum fontSize={12.5}>{number(language, entry.damage)}</NNum>
                 <NMuted fontSize={11}>
                   {" "}
@@ -106,12 +106,12 @@ function WhatHurtIt({ report }: { report: KillReportData }) {
             <NBar
               progress={(entry.damage / maxHurt) * 100}
               height={6}
-              fill={HURT_FILLS[index] ?? "$gold800"}
+              fill={HURT_FILLS[index] ?? "gold800"}
             />
           </YStack>
         ))}
       </YStack>
-      <NMuted fontSize={11.5} lineHeight={17} mt={11}>
+      <NMuted fontSize={11.5} lineHeight="17px" mt={11}>
         {t("journal.hurt_note")}
       </NMuted>
     </NBlock>
@@ -156,10 +156,10 @@ export function KillReport({
         sessionId={session.id}
       >
         <XStack items="center" gap={6}>
-          <Skull size={15} color="$resourceGold" strokeWidth={2.5} />
+          <Skull size={15} color="resourceGold" strokeWidth={2.5} />
           <NKicker>{t("journal.felled_on", { date: felled })}</NKicker>
         </XStack>
-        <NTitle fontSize={28} lineHeight={34} mt={6}>
+        <NTitle fontSize={28} lineHeight="34px" mt={6}>
           {pick(report.title, language)}
         </NTitle>
         <NMuted fontSize={12.5} mt={2}>
@@ -176,14 +176,7 @@ export function KillReport({
             <NKickerQuiet>{t("journal.health_title")}</NKickerQuiet>
             <NNum fontSize={12}>0 / {number(language, report.pool)}</NNum>
           </XStack>
-          <YStack
-            height={7}
-            mt={8}
-            rounded={4}
-            bg="$ink900"
-            borderWidth={1}
-            borderColor="$ink800"
-          />
+          <YStack height={7} mt={8} rounded={4} bg="ink900" borderWidth={1} borderColor="ink800" />
           <NMuted fontSize={11} mt={6}>
             {t("journal.health_emptied", { count: report.steps })}
           </NMuted>
@@ -196,12 +189,12 @@ export function KillReport({
         <NBlock mt={6} gap={11} testID="journal-left">
           <NKickerQuiet>{t("journal.left_title")}</NKickerQuiet>
           <NFact>
-            <NText fontSize={13.5} lineHeight={19}>
+            <NText fontSize={13.5} lineHeight="19px">
               {t("journal.left_lair", { building: BUILDING_LABELS.dragon_lair[language] })}
             </NText>
           </NFact>
           <NFact>
-            <NText fontSize={13.5} lineHeight={19}>
+            <NText fontSize={13.5} lineHeight="19px">
               {t("journal.moved_xp", { xp: number(language, report.xpSession) })}
               <NMuted fontSize={13.5}>
                 {" · "}
@@ -210,7 +203,7 @@ export function KillReport({
             </NText>
           </NFact>
           <NFact tone="quiet">
-            <NMuted fontSize={13.5} lineHeight={19}>
+            <NMuted fontSize={13.5} lineHeight="19px">
               {t("journal.left_victories", { count: report.victories })}{" "}
               {report.nextBoss
                 ? t("journal.left_next", { boss: pick(report.nextBoss, language) })
@@ -243,7 +236,7 @@ export function KillReport({
         {session.notes ? (
           <NBlock mb={17}>
             <NKickerQuiet>{t("journal.notes")}</NKickerQuiet>
-            <NText mt={6} fontSize={13.5} lineHeight={20}>
+            <NText mt={6} fontSize={13.5} lineHeight="20px">
               {session.notes}
             </NText>
           </NBlock>

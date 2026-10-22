@@ -31,7 +31,7 @@ export function MapStyleRow() {
     <>
       <SettingRow
         testID="settings-map-style"
-        icon={<MapIcon size={22} color="$text" />}
+        icon={<MapIcon size={22} color="text" />}
         label={t("settings.map_style")}
         value={t(STYLE_LABEL[style])}
         onPress={() => {
@@ -39,7 +39,7 @@ export function MapStyleRow() {
           setStyle(next).catch((error) => reportError("settings.mapStyleWrite", error));
         }}
       />
-      <Text testID="settings-map-style-note" fontSize="$2" color="$textSecondary" px="$3">
+      <Text testID="settings-map-style-note" fontSize="2" color="textSecondary" px="3">
         {t("settings.map_style_note")}
       </Text>
     </>

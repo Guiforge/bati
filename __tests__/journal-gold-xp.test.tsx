@@ -83,8 +83,9 @@ test("the status band is an ink band that never takes a touch", async () => {
     await render(wrap(<StatusBand />, 24));
   });
   const band = screen.getByTestId("status-band");
-  expect(band.props.pointerEvents).toBe("none");
   const style = StyleSheet.flatten(band.props.style);
+  // Tamagui 3 hands RN `pointerEvents` as a style, which RN honours as the prop.
+  expect(style.pointerEvents).toBe("none");
   expect(style.height).toBe(24);
   // Opaque: at 0.92 a heading scrolled under the clock still read as ghost text.
   expect(style.backgroundColor).toBe(rawColors.bgDark);

@@ -17,7 +17,7 @@ export function Skeleton({
   width = "100%",
   height = 20,
   radius = 8,
-  bg = "$bgLight",
+  bg = "bgLight",
   testID,
 }: SkeletonProps) {
   const reducedMotion = useReducedMotion();
@@ -39,7 +39,7 @@ export function Skeleton({
  */
 export function SkeletonCard({ children }: { children?: React.ReactNode }) {
   return (
-    <YStack bg="$bgLight" p="$4" rounded="$6" borderWidth={1} borderColor="$borderStrong" gap="$3">
+    <YStack bg="bgLight" p="4" rounded="6" borderWidth={1} borderColor="borderStrong" gap="3">
       {children || (
         <>
           <Skeleton height={24} width="60%" />

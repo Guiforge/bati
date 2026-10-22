@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react-native";
-import { Button, TamaguiProvider, Text } from "tamagui";
-
+import { TamaguiProvider, Text } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { Button } from "@/components/common/Button";
 import { Card } from "@/components/common/Card";
 import config from "@/tamagui.config";
 

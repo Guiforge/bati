@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, XStack, YStack } from "tamagui";
+import { XStack, YStack } from "tamagui";
 import { AppText } from "@/components/common/AppText";
+import { Button } from "@/components/common/Button";
 import { Pause } from "@/components/icons";
 import { getBossAsset, getExerciseAsset, getQuestAsset } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
@@ -110,7 +111,7 @@ export function CountdownView() {
   const _firstStep = { exercise: first.exercise, targetType: first.target.type };
   // The same dark ground the set screen it counts into uses. A countdown in the muscle's pastel
   // and a session in the dark would change the room's colour the moment the number hits zero.
-  const screenBg = phaseLook?.bgToken ?? "$bgDark";
+  const screenBg = phaseLook?.bgToken ?? "bgDark";
   const screenBgRaw = phaseLook?.bgRaw ?? rawColors.bgDark;
 
   // What the hero is setting out against: the monster, else the quest's own cover. A quest a hero
@@ -123,7 +124,7 @@ export function CountdownView() {
   const title = bossFight ? bossDisplayName(bossFight, language) : localizedTitle(quest, language);
 
   return (
-    <YStack flex={1} bg={screenBg} pb={insets.bottom + 16} gap="$3">
+    <YStack flex={1} bg={screenBg} pb={insets.bottom + 16} gap="3">
       <ExerciseHero
         source={art}
         name={title}
@@ -139,8 +140,8 @@ export function CountdownView() {
       <XStack
         position="absolute"
         t={insets.top + 8}
-        l="$4"
-        r="$4"
+        l="4"
+        r="4"
         z={10}
         justify="space-between"
         items="center"
@@ -148,7 +149,7 @@ export function CountdownView() {
         <AppText
           fontSize={13}
           fontWeight="700"
-          color="$text"
+          color="text"
           letterSpacing={1}
           textTransform="uppercase"
           {...OVER_ART_SHADOW}
@@ -157,19 +158,19 @@ export function CountdownView() {
         </AppText>
         <Button
           testID="session-pause"
-          size="$3"
+          size="3"
+          opacity="press:0.7"
           hitSlop={8}
           circular
-          icon={<Pause size={20} color="$text" />}
+          icon={<Pause size={20} color="text" />}
           onPress={pauseSession}
           chromeless
-          pressStyle={{ opacity: 0.7 }}
           accessibilityLabel={t("session.pause_accessibility")}
           accessibilityRole="button"
         />
       </XStack>
 
-      <YStack px="$5">
+      <YStack px="5">
         <PrepView
           compact
           kicker={t("session.start_first")}

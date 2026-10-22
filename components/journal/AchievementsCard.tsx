@@ -55,10 +55,10 @@ export function AchievementsCard({ showAll = false }: { showAll?: boolean }) {
     <YStack gap={6}>
       <NBlock>
         <XStack items="baseline" justify="space-between" gap={8}>
-          <NText fontSize={13.5} lineHeight={19}>
+          <NText fontSize={13.5} lineHeight="19px">
             {t("achievements.progress", { unlocked, total })}
           </NText>
-          <NNum fontSize={21} lineHeight={26} color="$resourceGold">
+          <NNum fontSize={21} lineHeight="26px" color="resourceGold">
             {formatShare(language, total > 0 ? (unlocked / total) * 100 : 0)}
           </NNum>
         </XStack>
@@ -88,7 +88,7 @@ export function AchievementsCard({ showAll = false }: { showAll?: boolean }) {
       {sorted.length > COLLAPSED_ROWS && (
         <NText
           fontSize={12.5}
-          color="$resourceGold"
+          color="resourceGold"
           style={{ textAlign: "center" }}
           py={11}
           hitSlop={12}
@@ -118,9 +118,9 @@ function AchievementRow({
       <XStack gap={11} items="center">
         <YStack width={32} items="center">
           {isUnlocked ? (
-            <AchievementIcon icon={definition.icon} size={26} color="$resourceGold" />
+            <AchievementIcon icon={definition.icon} size={26} color="resourceGold" />
           ) : (
-            <Lock size={18} color="$muted" />
+            <Lock size={18} color="muted" />
           )}
         </YStack>
         <YStack flex={1} minW={0}>
@@ -128,14 +128,14 @@ function AchievementRow({
             <NText
               flex={1}
               fontSize={14}
-              lineHeight={20}
+              lineHeight="20px"
               numberOfLines={1}
-              color={isUnlocked ? "$text" : "$textSecondary"}
+              color={isUnlocked ? "text" : "textSecondary"}
             >
               {localizedTitle(definition, language)}
             </NText>
             {isUnlocked ? null : (
-              <NNum fontSize={11.5} lineHeight={16} color="$textSecondary">
+              <NNum fontSize={11.5} lineHeight="16px" color="textSecondary">
                 {formatCount(language, currentValue)}/{formatCount(language, targetValue)}
               </NNum>
             )}
@@ -143,7 +143,7 @@ function AchievementRow({
           <NMuted numberOfLines={1}>{localizedText(definition, "description", language)}</NMuted>
           {!isUnlocked && targetValue > 1 ? (
             <YStack mt={6}>
-              <NBar progress={progress} height={3} fill="$gold700" />
+              <NBar progress={progress} height={3} fill="gold700" />
             </YStack>
           ) : null}
         </YStack>

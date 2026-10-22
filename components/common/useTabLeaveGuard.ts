@@ -2,7 +2,7 @@ import { type RefObject, useEffect } from "react";
 
 /**
  * The tab bar's half of a dirty-form guard. `popToTopOnBlur` unmounts the editor only after the
- * other tab is already showing, so the `beforeRemove` question (useDiscardGuard and the editors'
+ * other tab is already showing, so the `usePreventRemove` question (useDiscardGuard and the editors'
  * own) landed on top of the wrong screen and Cancel left the hero there. Asking on `tabPress`
  * keeps the hero on the editor until they answer.
  *
@@ -25,7 +25,7 @@ export function interceptTabPress(
 ) {
   if (!guard || guard.skipRef.current) return;
   const { index, routes } = tabs.getState();
-  // The active tab's own press is a popToTop, and the editors' beforeRemove asks about that.
+  // The active tab's own press is a popToTop, and the editors' remove guard asks about that.
   if (e.target === routes[index]?.key) return;
   const name = routes.find((r) => r.key === e.target)?.name;
   if (!name) return;
@@ -53,7 +53,7 @@ export function useTabLeaveGuard(
 }
 
 /**
- * Whether an editor's `beforeRemove` lets the removal through without asking.
+ * Whether an editor's remove guard (`usePreventRemove`) lets the removal through without asking.
  *
  * A removal while the tab is not focused is `popToTopOnBlur` tidying a tab the hero already left
  * (a deep link, the home CTA), not the hero leaving the editor. Asking there blocked the pop, so the

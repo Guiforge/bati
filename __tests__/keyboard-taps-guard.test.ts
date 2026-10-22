@@ -93,14 +93,10 @@ describe("a keyboard must not eat the first tap", () => {
       .filter(eatsTheFirstTap)
       .map((file) => `  ${path.relative(ROOT, file)}`);
 
-    if (offenders.length > 0) {
-      throw new Error(
-        'A scrolling view holds a text field and does not set keyboardShouldPersistTaps="handled".\n' +
-          "With the keyboard up its first tap is spent dismissing it, which reads as a button that\n" +
-          "did nothing (react-native#4087):\n" +
-          offenders.join("\n"),
-      );
-    }
+    // Each of these is a scrolling view that holds a text field and does not set
+    // keyboardShouldPersistTaps="handled". With the keyboard up its first tap is spent dismissing
+    // it, which reads as a button that did nothing (react-native#4087).
+    expect(offenders).toEqual([]);
   });
 
   test("the scan can still find a file, so a green bar means something", () => {

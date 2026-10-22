@@ -29,7 +29,7 @@ export function RuleDisclosure({
   const [inner, setInner] = useState(false);
   const open = controlled ?? inner;
   return (
-    <YStack gap="$1">
+    <YStack gap="1">
       <Pressable
         testID={`${testID}-link`}
         accessibilityRole="button"
@@ -37,15 +37,15 @@ export function RuleDisclosure({
         style={{ minHeight: 44, justifyContent: "center" }}
         onPress={onToggle ?? (() => setInner((v) => !v))}
       >
-        <XStack gap="$2" items="center">
-          <Info size={16} color="$textSecondary" />
-          <Text fontSize={14} color="$textSecondary" textDecorationLine="underline">
+        <XStack gap="2" items="center">
+          <Info size={16} color="textSecondary" />
+          <Text fontSize={14} color="textSecondary" textDecorationLine="underline">
             {t("past_session.rule_link")}
           </Text>
         </XStack>
       </Pressable>
       {open ? (
-        <Text testID={testID} fontSize={14} color="$text">
+        <Text testID={testID} fontSize={14} color="text">
           {text}
         </Text>
       ) : null}

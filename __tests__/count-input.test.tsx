@@ -11,27 +11,37 @@ import config from "@/tamagui.config";
  * would accept, so what the ghost line and the Done button read is never an empty string or a 0.
  */
 
+// biome-ignore lint/style/useComponentExportOnlyModules: a test file exports nothing
+function Harness({
+  initial,
+  onChange,
+  max,
+}: {
+  initial: number;
+  onChange: jest.Mock;
+  max: number;
+}) {
+  const [value, setValue] = useState(initial);
+  return (
+    <CountInput
+      testID="count"
+      value={value}
+      max={max}
+      fontSize={80}
+      accessibilityLabel="reps"
+      onChange={(next) => {
+        onChange(next);
+        setValue(next);
+      }}
+    />
+  );
+}
+
 async function mount(initial: number, onChange: jest.Mock, max = 999) {
-  function Harness() {
-    const [value, setValue] = useState(initial);
-    return (
-      <CountInput
-        testID="count"
-        value={value}
-        max={max}
-        fontSize={80}
-        accessibilityLabel="reps"
-        onChange={(next) => {
-          onChange(next);
-          setValue(next);
-        }}
-      />
-    );
-  }
   await act(async () => {
     await render(
       <TamaguiProvider config={config} defaultTheme="dark">
-        <Harness />
+        <Harness initial={initial} onChange={onChange} max={max} />
       </TamaguiProvider>,
     );
   });

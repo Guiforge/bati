@@ -99,20 +99,22 @@ test("a failure is reported and said", async () => {
   expect(screen.getByText("common.error")).toBeTruthy();
 });
 
+// biome-ignore lint/style/useComponentExportOnlyModules: a test file exports nothing
+function ByHandProbe() {
+  const { confirmForget, confirmDropDistance, dialog } = useConfirmForget();
+  return (
+    <>
+      <Pressable
+        testID="forget-by-hand"
+        onPress={() => confirmForget(7, onForgotten, { byHand: true })}
+      />
+      <Pressable testID="drop" onPress={() => confirmDropDistance(7, onForgotten)} />
+      {dialog}
+    </>
+  );
+}
+
 describe("a session the hero wrote down", () => {
-  function ByHandProbe() {
-    const { confirmForget, confirmDropDistance, dialog } = useConfirmForget();
-    return (
-      <>
-        <Pressable
-          testID="forget-by-hand"
-          onPress={() => confirmForget(7, onForgotten, { byHand: true })}
-        />
-        <Pressable testID="drop" onPress={() => confirmDropDistance(7, onForgotten)} />
-        {dialog}
-      </>
-    );
-  }
   const open = async (testID: string) => {
     await render(
       <TamaguiProvider config={config} defaultTheme="dark">

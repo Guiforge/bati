@@ -25,7 +25,7 @@ export function HeroSizeLine() {
   if (sizes === null) return null;
   const mb = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 });
   return (
-    <Text testID="settings-hero-size" fontSize="$2" color="$textSecondary" px="$3">
+    <Text testID="settings-hero-size" fontSize="2" color="textSecondary" px="3">
       {t("backup.heroSize", {
         total: mb.format(sizes.total / MB),
         photos: mb.format(sizes.photos / MB),

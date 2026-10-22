@@ -91,7 +91,7 @@ export default function SessionDetailScreen() {
 
   if (!sessionId || loaded.status === "error") {
     return (
-      <YStack flex={1} bg="$bgDark" pt={insets.top} px={11}>
+      <YStack flex={1} bg="bgDark" pt={insets.top} px={11}>
         <NPageHeader
           title={t("journal.session_not_found")}
           onBack={() => router.back()}
@@ -111,16 +111,16 @@ export default function SessionDetailScreen() {
 
   if (loaded.status === "loading" || forgotten) {
     return (
-      <YStack flex={1} bg="$bgDark" pt={insets.top} px={11} gap={6}>
-        <Skeleton height={150} bg="$surface2" />
-        <Skeleton height={90} bg="$surface2" />
-        <Skeleton height={120} bg="$surface2" />
+      <YStack flex={1} bg="bgDark" pt={insets.top} px={11} gap={6}>
+        <Skeleton height={150} bg="surface2" />
+        <Skeleton height={90} bg="surface2" />
+        <Skeleton height={120} bg="surface2" />
       </YStack>
     );
   }
 
   return (
-    <YStack flex={1} bg="$bgDark">
+    <YStack flex={1} bg="bgDark">
       {/* The window does not resize under the keyboard here, so without this the note editor and
           its Save and Cancel sat under it and the hero typed blind. Same pairing as village-setup. */}
       <KeyboardAvoidingView
@@ -152,7 +152,7 @@ export default function SessionDetailScreen() {
               onDropDistance={() => confirmDropDistance(sessionId, () => load(sessionId))}
             />
             {/* An outline AppButton like every other secondary action. The red stays on the edge as
-              the raw colour (the Journal theme folds `$error` into its inks); the label stays
+              the raw colour (the Journal theme folds `error` into its inks); the label stays
               bone, in the family's face. */}
             <AppButton
               testID="journal-forget-session"

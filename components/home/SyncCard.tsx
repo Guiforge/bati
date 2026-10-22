@@ -1,10 +1,12 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, Paragraph, XStack } from "tamagui";
+import { XStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
+import { Button } from "@/components/common/Button";
 import { Card } from "@/components/common/Card";
+import { Paragraph } from "@/components/common/Paragraph";
 import { syncNoticeKind } from "@/components/home/syncNoticeKind";
 import { X } from "@/components/icons";
 import {
@@ -147,25 +149,25 @@ function SyncNotice({
   closeLabel?: string;
 }) {
   return (
-    <Card testID={testID} mx="$4" mt="$3" gap="$3">
-      <XStack items="flex-start" gap="$2">
-        <AppText flex={1} fontSize="$5" fontWeight="700" color="$text">
+    <Card testID={testID} mx="4" mt="3" gap="3">
+      <XStack items="flex-start" gap="2">
+        <AppText flex={1} fontSize="5" fontWeight="700" color="text">
           {title}
         </AppText>
         {onClose ? (
           <Button
             testID={`${testID}-close`}
-            size="$2"
+            size="2"
             circular
             chromeless
             onPress={onClose}
-            icon={<X size={18} color="$textSecondary" />}
+            icon={<X size={18} color="textSecondary" />}
             accessibilityRole="button"
             accessibilityLabel={closeLabel}
           />
         ) : null}
       </XStack>
-      <Paragraph color="$textSecondary" fontSize="$3">
+      <Paragraph color="textSecondary" fontSize="3">
         {body}
       </Paragraph>
       {action && onAction ? (

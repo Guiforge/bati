@@ -68,7 +68,7 @@ import { useSettingsStore } from "@/stores/settings";
  * What an expedition looks like when it is over: the ground covered, and the three numbers that
  * ground is worth.
  *
- * The map is the screen rather than a panel on it — `$bgDark` ground, no border, no card, fading
+ * The map is the screen rather than a panel on it — `bgDark` ground, no border, no card, fading
  * into the page at top and bottom, camera locked to this run's bounds with every gesture off. A
  * recap map you can pan is a map you can pan into the next town, which is where a road map lives.
  * Locked, it is a picture of this outing. See docs/designs/map-immersion.md.
@@ -200,10 +200,10 @@ function SpeedLegend({
   const paceAt = (speed: number) => formatRateAt(speed, unit, language, rate);
 
   return (
-    <YStack gap="$2" testID="recap-speed-legend">
+    <YStack gap="2" testID="recap-speed-legend">
       {range === null ? null : (
-        <XStack items="center" gap="$3">
-          <Text testID="recap-pace-slow" fontSize={11} color="$textSecondary">
+        <XStack items="center" gap="3">
+          <Text testID="recap-pace-slow" fontSize={11} color="textSecondary">
             {paceAt(range[0])}
           </Text>
           <LinearGradient
@@ -212,7 +212,7 @@ function SpeedLegend({
             end={{ x: 1, y: 0 }}
             style={{ flex: 1, height: 4, borderRadius: 2 }}
           />
-          <Text testID="recap-pace-fast" fontSize={11} color="$textSecondary">
+          <Text testID="recap-pace-fast" fontSize={11} color="textSecondary">
             {paceAt(range[1])}
           </Text>
         </XStack>
@@ -224,7 +224,7 @@ function SpeedLegend({
           screen compares it to the last time the same ground was covered: the route ghost is a
           line with a date, no time. */}
       {best === null ? null : (
-        <Text testID="recap-best-league" fontSize={11} color="$textSecondary">
+        <Text testID="recap-best-league" fontSize={11} color="textSecondary">
           {t("recap.best_league", {
             pace: formatRate(best.metres, best.ms, unit, language, rate),
           })}
@@ -246,7 +246,7 @@ function GapLines({ fixes, language }: { fixes: readonly LocationFix[]; language
     // A hole of 40 s inside one minute read "from 21:58 to 21:58": the seconds then.
     const second = clock(gap.from) === clock(gap.to) ? "2-digit" : undefined;
     return (
-      <Text key={gap.from} testID="recap-gap" fontSize={12} color="$textSecondary">
+      <Text key={gap.from} testID="recap-gap" fontSize={12} color="textSecondary">
         {t("recap.gap", { from: clock(gap.from, second), to: clock(gap.to, second) })}
       </Text>
     );
@@ -278,7 +278,7 @@ function Figures({
   const rate = useRateKind(locomotion);
   const { t } = useTranslation();
   return (
-    <YStack gap="$3">
+    <YStack gap="3">
       <XStack>
         {/* The same three keys the victory screen reads. They were `recap.*` here and
           `session.expedition_*` there, so one value wore "Distance" on one screen and
@@ -341,7 +341,7 @@ function RoadLine({ road, language }: { road: VillageBuilding | null; language: 
   if (!road) return null;
 
   return (
-    <Text fontSize={14} fontWeight="700" color="$resourceGold">
+    <Text fontSize={14} fontWeight="700" color="resourceGold">
       {roadLine(road, language, t)}
     </Text>
   );
@@ -396,7 +396,7 @@ function RouteGhostLegend({
   const { t } = useTranslation();
   if (shape === null) return null;
   return (
-    <Text testID="recap-route-ghost-legend" fontSize={11} color="$textSecondary">
+    <Text testID="recap-route-ghost-legend" fontSize={11} color="textSecondary">
       {t("recap.route_ghost_legend", {
         date: getDateTimeFormat(language, { dateStyle: "medium" }).format(shape.performedAt),
       })}
@@ -522,27 +522,27 @@ export default function ExpeditionRecapScreen() {
   const footnote = trace.bounds === null ? null : <MapFootnote />;
 
   const header = (
-    <XStack items="center" gap="$3" px="$5" pt={insets.top + 12} pb="$3">
+    <XStack items="center" gap="3" px="5" pt={insets.top + 12} pb="3">
       <AppIconButton
         onPress={() => router.back()}
         accessibilityRole="button"
         accessibilityLabel={t("common.go_back")}
       >
-        <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
+        <ChevronLeft size={22} color="text" strokeWidth={2.5} />
       </AppIconButton>
       {/* Which outing, and when. Two runs reached from the journal opened two identical cards
           titled "The ground covered", which is the name of the screen rather than of the walk.
           The generic title stays as the fallback for a session whose row names no quest. */}
-      <YStack flex={1} gap="$1">
+      <YStack flex={1} gap="1">
         {recap === null ? (
-          <Skeleton height={18} width="60%" bg="$surface" />
+          <Skeleton height={18} width="60%" bg="surface" />
         ) : (
           <>
             <Text
-              fontFamily="$heading"
+              fontFamily="heading"
               fontWeight="700"
               fontSize={20}
-              color="$text"
+              color="text"
               // Two lines: "La Parole Doit Passer" lost its last words to the share button at 130 %.
               numberOfLines={2}
             >
@@ -552,7 +552,7 @@ export default function ExpeditionRecapScreen() {
               <Text
                 testID="recap-date"
                 fontSize={12}
-                color="$textSecondary"
+                color="textSecondary"
                 // Two lines, like the title: at 130 % the hour was cut to "20 oct. 2026, 2…".
                 numberOfLines={2}
               >
@@ -574,10 +574,10 @@ export default function ExpeditionRecapScreen() {
   );
 
   return (
-    // `$bgDark` and not `$background`: the theme background is translucent over the app's city
+    // `bgDark` and not `background`: the theme background is translucent over the app's city
     // illustration, and the map's ground is opaque `bgDark`. Painting the page in anything else
     // draws exactly the rectangle edge this whole design exists to remove.
-    <YStack testID="expedition-recap-screen" flex={1} bg="$bgDark">
+    <YStack testID="expedition-recap-screen" flex={1} bg="bgDark">
       {header}
 
       <YStack flex={1}>
@@ -585,17 +585,17 @@ export default function ExpeditionRecapScreen() {
           // The map's place, held open. "Chargement…" in the middle of the page is a sentence
           // where a picture is about to be, and it reads as a verdict on the walk when the read
           // then comes back empty.
-          <YStack testID="recap-loading" flex={1} px="$5" justify="center">
-            <Skeleton height={260} radius={16} bg="$surface" />
+          <YStack testID="recap-loading" flex={1} px="5" justify="center">
+            <Skeleton height={260} radius={16} bg="surface" />
           </YStack>
         ) : trace.bounds === null ? (
           // No fixes, which is every strength quest ever logged. An empty basemap centred on
           // nowhere is worse than no map: it says the trace was lost when there never was one.
-          <YStack flex={1} items="center" justify="center" px="$6">
+          <YStack flex={1} items="center" justify="center" px="6">
             <Text
               testID="recap-no-trace"
               fontSize={15}
-              color="$textSecondary"
+              color="textSecondary"
               style={{ textAlign: "center" }}
             >
               {t("recap.no_trace")}

@@ -282,8 +282,8 @@ describe("reading an adventure file", () => {
     try {
       load().adv.parseAdventureData(value);
     } catch (error) {
-      assert(error instanceof load().adv.AdventureFileError);
-      return error.reason;
+      if (error instanceof load().adv.AdventureFileError) return error.reason;
+      throw error;
     }
     return null;
   };
@@ -1163,8 +1163,8 @@ describe("the boss's voice in the file", () => {
     try {
       parse(end);
     } catch (error) {
-      assert(error instanceof load().adv.AdventureFileError);
-      return error.reason;
+      if (error instanceof load().adv.AdventureFileError) return error.reason;
+      throw error;
     }
     return null;
   };

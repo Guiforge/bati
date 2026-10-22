@@ -46,7 +46,8 @@ describe("the rest note", () => {
           const line = i18n.t(key, { count });
           expect(line).not.toContain("rest_messages");
           expect(line).not.toContain("{{");
-          if (reason !== "deload") expect(line).toContain(String(count));
+          // A deload line names no count; every other one says it.
+          expect(reason === "deload" || line.includes(String(count))).toBe(true);
         }
       }
     }

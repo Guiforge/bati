@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, XStack, YStack } from "tamagui";
+import { XStack, YStack } from "tamagui";
+import { Button } from "@/components/common/Button";
 import { Minus, Plus } from "@/components/icons";
 import { NButton, NText } from "@/components/journal/nocturne";
 import { CountInput } from "@/components/session/CountInput";
@@ -38,7 +39,7 @@ export function SetEditor({
         </NText>
         <XStack items="center" gap={11} shrink={0}>
           <Button
-            size="$3"
+            size="3"
             circular
             hitSlop={8}
             icon={<Minus size={16} />}
@@ -57,7 +58,7 @@ export function SetEditor({
             {time ? <NText fontSize={20}>s</NText> : null}
           </XStack>
           <Button
-            size="$3"
+            size="3"
             circular
             hitSlop={8}
             icon={<Plus size={16} />}

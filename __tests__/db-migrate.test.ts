@@ -225,11 +225,9 @@ describe("db/migrate", () => {
     expect(rows[1]?.tzOffsetMin).toBe(jsSummer);
 
     // Read per row, not once for "now": in a zone with summer time the two rows must differ, and
-    // by the same amount `Date` says. On a runner in UTC — which CI is — there is no difference
-    // to see and this proves nothing, so it is stated rather than asserted into a false green.
-    if (jsWinter !== jsSummer) {
-      expect((rows[1]?.tzOffsetMin ?? 0) - (rows[0]?.tzOffsetMin ?? 0)).toBe(jsSummer - jsWinter);
-    }
+    // by the same amount `Date` says. On a runner in UTC — which CI is — both sides are 0 and this
+    // proves nothing beyond the two lines above.
+    expect((rows[1]?.tzOffsetMin ?? 0) - (rows[0]?.tzOffsetMin ?? 0)).toBe(jsSummer - jsWinter);
 
     // A UNIQUE index the backfill could violate would fail every launch forever, which is the
     // failure mode 0035 was written about.

@@ -120,6 +120,7 @@
       "./plugins/withAndroidReleaseSigning",
       "./plugins/withAndroidGradleMemory",
       "./plugins/withAndroidReleaseFlags",
+      "./plugins/withAndroidKeepRules",
       "./plugins/withAndroidTrimPermissions",
       "./plugins/withAndroidMailtoQuery",
       "./plugins/withAndroidFileIntentScheme",

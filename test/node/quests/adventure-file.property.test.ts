@@ -175,8 +175,8 @@ function insideTheRules(file: ReturnType<typeof parse>): void {
   expect(a.title.length).toBeLessThanOrEqual(60);
   expect(a.description.length).toBeLessThanOrEqual(280);
   expect(lonePair.test(a.title + a.description)).toBe(false);
-  if (a.cover !== null) expect(a.cover).toMatch(KEY);
-  if (a.end.kind === "boss") expect(a.end.monster).toMatch(KEY);
+  expect(a.cover === null || KEY.test(a.cover)).toBe(true);
+  expect(a.end.kind !== "boss" || KEY.test(a.end.monster)).toBe(true);
   for (const step of file.steps) {
     expect(step.narrative.length).toBeLessThanOrEqual(160);
     expect(step.outro.length).toBeLessThanOrEqual(160);
@@ -210,13 +210,13 @@ describe("an adventure file with random damage", () => {
     fc.assert(
       fc.property(edited, (file) => {
         const { adventure, error } = attempt(file);
-        if (error) {
-          expect(error).toBeInstanceOf(device.app.adventure.AdventureFileError);
-          expect(device.app.adventure.ADVENTURE_FILE_REFUSALS).toContain(
-            (error as { reason: never }).reason,
-          );
-          return;
-        }
+        // Refused with a reason the app can say, or not refused at all.
+        expect(
+          error === undefined ||
+            (error instanceof device.app.adventure.AdventureFileError &&
+              device.app.adventure.ADVENTURE_FILE_REFUSALS.includes(error.reason)),
+        ).toBe(true);
+        if (error) return;
         if (!adventure) throw new Error("expected an adventure");
         insideTheRules(adventure);
       }),

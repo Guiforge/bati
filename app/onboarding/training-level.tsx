@@ -5,8 +5,9 @@ import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { H1, Paragraph, Text, XStack, YStack } from "tamagui";
+import { H1, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { Paragraph } from "@/components/common/Paragraph";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { useToast } from "@/components/common/Toast";
 import { ProgressDots } from "@/components/ProgressDots";
@@ -66,7 +67,7 @@ export default function TrainingLevelStep() {
   );
 
   return (
-    <YStack flex={1} bg="$bgDark">
+    <YStack flex={1} bg="bgDark">
       <Image
         source={require("../../assets/onboardings/splash-bg1.webp")}
         style={{ position: "absolute", width: "100%", height: "100%" }}
@@ -81,21 +82,21 @@ export default function TrainingLevelStep() {
         style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "70%" }}
       />
 
-      <YStack flex={1} pt={insets.top + 8} pb={insets.bottom + 20} px="$5" gap="$3">
+      <YStack flex={1} pt={insets.top + 8} pb={insets.bottom + 20} px="5" gap="3">
         {/* The way back and the way past, where no font scale can push them off the screen. */}
-        <XStack justify="space-between" items="center" mx="$-3">
+        <XStack justify="space-between" items="center" mx="-3">
           <ScreenBackButton />
           <ProgressDots current={CURRENT_STEP} total={TOTAL_STEPS} />
           <Text
             testID="onboarding-level-skip"
-            color="$text"
+            color="text"
             fontSize={15}
             fontWeight="700"
-            px="$3"
-            py="$3"
+            px="3"
+            py="3"
             textShadowColor={fade(rawColors.bgDark, 0.8)}
             textShadowRadius={6}
-            pressStyle={{ opacity: 0.6 }}
+            opacity="press:0.6"
             onPress={() => complete(null)}
             accessibilityRole="button"
           >
@@ -109,10 +110,10 @@ export default function TrainingLevelStep() {
           contentContainerStyle={{ flexGrow: 1, justifyContent: "space-between", gap: 16 }}
           showsVerticalScrollIndicator={false}
         >
-          <YStack gap="$3" items="center">
+          <YStack gap="3" items="center">
             <H1
               text="center"
-              color="$text"
+              color="text"
               fontSize={30}
               fontWeight="700"
               textShadowColor={fade(rawColors.black, 0.5)}
@@ -122,7 +123,7 @@ export default function TrainingLevelStep() {
             </H1>
             <Paragraph
               text="center"
-              color="$textSecondary"
+              color="textSecondary"
               fontSize={15}
               textShadowColor={fade(rawColors.black, 0.5)}
               textShadowRadius={4}
@@ -131,7 +132,7 @@ export default function TrainingLevelStep() {
             </Paragraph>
           </YStack>
 
-          <YStack gap="$3">
+          <YStack gap="3">
             {ANSWERS.map(({ id, labelKey }) => {
               const isSelected = selected === id;
               return (
@@ -139,15 +140,16 @@ export default function TrainingLevelStep() {
                   key={id}
                   testID={`onboarding-level-${id}`}
                   minH={56}
-                  py="$2"
-                  px="$3"
-                  rounded="$3"
-                  bg="$surface"
+                  py="2"
+                  px="3"
+                  rounded="3"
+                  bg="surface"
                   borderWidth={2}
-                  borderColor={isSelected ? "$primary" : "$borderStrong"}
+                  borderColor={`${isSelected ? "primary" : "borderStrong"}`}
                   items="center"
                   justify="center"
-                  pressStyle={{ scale: 0.98, opacity: 0.9 }}
+                  scale="press:0.98"
+                  opacity="press:0.9"
                   onPress={() => {
                     selection();
                     setSelected(id);
@@ -157,8 +159,8 @@ export default function TrainingLevelStep() {
                   accessibilityState={{ selected: isSelected }}
                 >
                   <Text
-                    fontFamily="$heading"
-                    color={isSelected ? "$primary" : "$text"}
+                    fontFamily="heading"
+                    color={`${isSelected ? "primary" : "text"}`}
                     fontSize={18}
                     fontWeight="700"
                     text="center"
@@ -174,12 +176,12 @@ export default function TrainingLevelStep() {
         <Paragraph
           testID="onboarding-safety-line"
           text="center"
-          color="$textSecondary"
+          color="textSecondary"
           fontSize={14}
           minH={48}
           verticalAlign="middle"
           textDecorationLine="underline"
-          pressStyle={{ opacity: 0.6 }}
+          opacity="press:0.6"
           onPress={() => router.push("/safety" as never)}
           accessibilityRole="button"
         >

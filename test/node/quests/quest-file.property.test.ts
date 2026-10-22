@@ -167,13 +167,13 @@ describe("a quest file with random damage", () => {
     fc.assert(
       fc.property(edited, (file) => {
         const { quest, error } = attempt(file);
-        if (error) {
-          expect(error).toBeInstanceOf(device.app.quest.QuestFileError);
-          expect(device.app.quest.QUEST_FILE_REFUSALS).toContain(
-            (error as { reason: never }).reason,
-          );
-          return;
-        }
+        // Refused with a reason the app can say, or not refused at all.
+        expect(
+          error === undefined ||
+            (error instanceof device.app.quest.QuestFileError &&
+              device.app.quest.QUEST_FILE_REFUSALS.includes(error.reason)),
+        ).toBe(true);
+        if (error) return;
         assert(quest);
         insideTheRules(quest);
       }),

@@ -47,11 +47,11 @@ export function RestNote() {
   const text = t(restMessageKey(reason, `${dayKey(new Date())}:${reason}`), { count });
 
   return (
-    <XStack gap="$2" items="flex-start" px="$4" pt="$2.5">
+    <XStack gap="2" items="flex-start" px="4" pt="2-5">
       <YStack pt={1}>
-        <Moon size={13} color="$textSecondary" />
+        <Moon size={13} color="textSecondary" />
       </YStack>
-      <AppText fontSize={11} color="$textSecondary" flex={1} lineHeight={15}>
+      <AppText fontSize={11} color="textSecondary" flex={1} lineHeight="15px">
         {text}
       </AppText>
     </XStack>

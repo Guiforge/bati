@@ -28,7 +28,7 @@ describe("AppButton, the seal", () => {
   it("gives a light signal fill, set as backgroundColor, no edge and an ink label", async () => {
     await render(
       themed(
-        <AppButton testID="ok" backgroundColor="$success">
+        <AppButton testID="ok" backgroundColor="success">
           Easy
         </AppButton>,
       ),
@@ -73,7 +73,7 @@ describe("AppButton, the seal", () => {
       );
     const view = await render(ui({}));
     expect(edge()).toBe(3);
-    await view.rerender(ui({ backgroundColor: "$success" }));
+    await view.rerender(ui({ backgroundColor: "success" }));
     expect(edge()).not.toBe(3);
     await view.rerender(ui({}));
     expect(edge()).toBe(3);
@@ -83,12 +83,27 @@ describe("AppButton, the seal", () => {
     expect(edge()).toBe(3);
   });
 
-  it("refuses a caller's pressStyle and rounded", () => {
-    // @ts-expect-error the seal owns its press and its radius
-    const a = <AppButton pressStyle={{}}>x</AppButton>;
+  it("refuses a caller's press clauses and rounded", () => {
+    // @ts-expect-error the seal owns its press: a caller's `y` would replace its `press:2px`
+    const a = <AppButton y="press:4px">x</AppButton>;
+    // @ts-expect-error the seal owns its press opacity: a caller gives a resting number only
+    const b = <AppButton opacity="press:0.5">x</AppButton>;
+    // @ts-expect-error the seal owns its press edge colour
+    const c = <AppButton borderBottomColor="error">x</AppButton>;
     // @ts-expect-error the seal owns its radius
-    const b = <AppButton rounded="$6">x</AppButton>;
-    expect([a, b]).toHaveLength(2);
+    const d = <AppButton rounded="6">x</AppButton>;
+    expect([a, b, c, d]).toHaveLength(4);
+  });
+
+  it("keeps a caller's resting opacity (the start CTAs dim while starting)", async () => {
+    await render(
+      themed(
+        <AppButton testID="dim" opacity={0.6}>
+          Start
+        </AppButton>,
+      ),
+    );
+    expect(StyleSheet.flatten(screen.getByTestId("dim").props.style).opacity).toBe(0.6);
   });
 
   it("keeps the outline variant flat and bone", async () => {
@@ -107,7 +122,7 @@ describe("AppButton, the seal", () => {
   it("writes a destructive label in bgDark on the light red, with no braise edge", async () => {
     await render(
       themed(
-        <AppButton testID="del" backgroundColor="$error">
+        <AppButton testID="del" backgroundColor="error">
           Delete
         </AppButton>,
       ),
@@ -139,7 +154,8 @@ describe("AppButton, the seal", () => {
       });
     });
     expect(
-      JSON.stringify(StyleSheet.flatten(screen.getByTestId("off").props.style).transform),
+      // No transform at all is no translate: Tamagui 3 drops an empty one.
+      JSON.stringify(StyleSheet.flatten(screen.getByTestId("off").props.style).transform ?? []),
     ).not.toContain("translateY");
     await act(() => fireEvent.press(screen.getByTestId("off")));
     expect(onPress).not.toHaveBeenCalled();

@@ -20,7 +20,7 @@ export function OutingDisplayRow() {
   return (
     <SettingRow
       testID="settings-outing-display"
-      icon={<SlidersHorizontal size={22} color="$text" />}
+      icon={<SlidersHorizontal size={22} color="text" />}
       label={t("settings.outing_display")}
       value={
         customised ? t("settings.outing_display_custom") : t("settings.outing_display_default")

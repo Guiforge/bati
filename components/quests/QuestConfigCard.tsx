@@ -103,12 +103,12 @@ function OutingGoalRow({
   const byDistance = goal.type === "distance";
 
   return (
-    <YStack gap="$2">
-      <XStack items="center" justify="space-between" gap="$3">
-        <Text fontWeight="700" fontSize={15} color="$text">
+    <YStack gap="2">
+      <XStack items="center" justify="space-between" gap="3">
+        <Text fontWeight="700" fontSize={15} color="text">
           {byDistance ? t("quests.config_distance") : t("quests.config_duration")}
         </Text>
-        <Text fontWeight="700" fontSize={17} color="$text">
+        <Text fontWeight="700" fontSize={17} color="text">
           {byDistance
             ? formatDistance(goal.metres, unit, language)
             : formatDuration(goal.seconds, language)}
@@ -259,31 +259,31 @@ export function QuestConfigCard({
   };
 
   return (
-    <Card bg="$surface">
-      <YStack gap="$3">
+    <Card bg="surface">
+      <YStack gap="3">
         <XStack
           items="center"
-          gap="$2"
+          gap="2"
           onPress={() => setOpen((v) => !v)}
           accessibilityRole="button"
           accessibilityLabel={t("quests.config_title")}
           accessibilityState={{ expanded: open }}
         >
-          <SlidersHorizontal size={18} color="$text" />
-          <Text flex={1} fontWeight="700" fontSize={16} color="$text">
+          <SlidersHorizontal size={18} color="text" />
+          <Text flex={1} fontWeight="700" fontSize={16} color="text">
             {t("quests.config_title")}
           </Text>
           {modified ? <Tag label={t("quests.config_modified")} /> : null}
           {open ? (
-            <ChevronUp size={20} color="$text" opacity={0.6} />
+            <ChevronUp size={20} color="text" opacity={0.6} />
           ) : (
-            <ChevronDown size={20} color="$text" opacity={0.6} />
+            <ChevronDown size={20} color="text" opacity={0.6} />
           )}
         </XStack>
 
         {open ? (
-          <YStack gap="$3">
-            <Text fontSize={12} color="$textSecondary">
+          <YStack gap="3">
+            <Text fontSize={12} color="textSecondary">
               {t("quests.config_hint")}
             </Text>
 
@@ -296,7 +296,7 @@ export function QuestConfigCard({
               onChange={onChange}
             />
 
-            <Separator borderColor="$borderStrong" />
+            <Separator borderColor="borderStrong" />
 
             {goal ? (
               <>
@@ -310,7 +310,7 @@ export function QuestConfigCard({
                     one is done, here where the twenty minutes are read. Gone as soon as the goal
                     is theirs, a duration they set or a distance. */}
                 {walkRun ? (
-                  <Text testID="goal-walk-run" fontSize={13} color="$textSecondary">
+                  <Text testID="goal-walk-run" fontSize={13} color="textSecondary">
                     {t("quests.goal_walk_run")}
                   </Text>
                 ) : null}
@@ -335,7 +335,7 @@ export function QuestConfigCard({
             ) : null}
 
             {quest.exercises.map((qex) => (
-              <XStack key={qex.id} items="center" gap="$2">
+              <XStack key={qex.id} items="center" gap="2">
                 <YStack flex={1}>
                   {goal ? (
                     // The goal above is the outing's only control, in either unit: a five-second
@@ -343,7 +343,7 @@ export function QuestConfigCard({
                     // 360 taps to go from 15 minutes to 45. The swap button still needs a row of
                     // its own to sit beside — otherwise the icon floats next to nothing and the
                     // movement it swaps is unnamed.
-                    <Text fontWeight="700" fontSize={15} color="$text" numberOfLines={2}>
+                    <Text fontWeight="700" fontSize={15} color="text" numberOfLines={2}>
                       {localizedName(qex.exercise, language)}
                     </Text>
                   ) : (
@@ -361,7 +361,7 @@ export function QuestConfigCard({
                   accessibilityLabel={t("quests.swap_exercise")}
                   onPress={() => onSwap(qex.id)}
                 >
-                  <Repeat size={18} color="$text" strokeWidth={2.5} />
+                  <Repeat size={18} color="text" strokeWidth={2.5} />
                 </AppIconButton>
               </XStack>
             ))}

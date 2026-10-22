@@ -8,7 +8,6 @@
 # too. See README.md for the convention and the device-locale pin.
 
 appId: com.guiforge.bati.dev
-
 ---
 # Fresh install: no stored preferences, no training history.
 - launchApp:

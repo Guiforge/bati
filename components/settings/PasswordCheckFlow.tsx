@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Keyboard } from "react-native";
-import { Input, Text } from "tamagui";
+import { Text } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { FormSheet } from "@/components/common/FormSheet";
+import { Input } from "@/components/common/Input";
 import { type EncryptionActions, EncryptionSheet } from "@/components/settings/EncryptionSheet";
 import { useBackupEncryption } from "@/hooks/useBackupEncryption";
 import { i18n } from "@/i18n";
@@ -95,7 +96,7 @@ export function PasswordCheckFlow({ open, onClose, onAnswer }: Props) {
       >
         {result === "right" ? (
           <>
-            <Text testID="vault-check-right" color="$text">
+            <Text testID="vault-check-right" color="text">
               {t("vault.checkRight")}
             </Text>
             <AppButton testID="vault-check-close" onPress={() => finish(false)}>
@@ -104,10 +105,13 @@ export function PasswordCheckFlow({ open, onClose, onAnswer }: Props) {
           </>
         ) : (
           <>
-            <Text color="$textSecondary">{t("vault.checkBody")}</Text>
+            <Text color="textSecondary">{t("vault.checkBody")}</Text>
             <Input
               testID="vault-check-input"
               minH={44}
+              bg="background"
+              borderColor={`${result === "wrong" ? "error" : "borderStrong"}`}
+              color="text"
               value={password}
               onChangeText={setPassword}
               autoCapitalize="none"
@@ -117,12 +121,9 @@ export function PasswordCheckFlow({ open, onClose, onAnswer }: Props) {
               returnKeyType="done"
               onSubmitEditing={submit}
               placeholder={t("vault.checkPlaceholder")}
-              bg="$background"
-              borderColor={result === "wrong" ? "$error" : "$borderStrong"}
-              color="$text"
             />
             {result === "wrong" ? (
-              <Text testID="vault-check-wrong" color="$textSecondary">
+              <Text testID="vault-check-wrong" color="textSecondary">
                 {t("vault.checkWrong")}
               </Text>
             ) : null}

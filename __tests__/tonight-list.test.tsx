@@ -805,7 +805,7 @@ describe("TonightList style", () => {
   });
   const dark = config.themes.dark as unknown as Record<string, { val: string }>;
   const weight = (node: { props: { style?: unknown } }) =>
-    (StyleSheet.flatten(node.props.style as never) as { fontWeight?: string }).fontWeight;
+    String((StyleSheet.flatten(node.props.style as never) as { fontWeight?: unknown }).fontWeight);
   const record = (over: Record<string, unknown>) =>
     rank({
       newRecords: [

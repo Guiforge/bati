@@ -50,9 +50,9 @@ export type CrestProps = {
   onPainting?: boolean;
 };
 
-/** A token like `$animalBear` as the colour Svg takes: Svg cannot read a Tamagui token. */
+/** A token like `animalBear` as the colour Svg takes: Svg cannot read a Tamagui token. */
 const fillOf = (token: (typeof ANIMAL_TOKEN)[keyof typeof ANIMAL_TOKEN]): string =>
-  rawColors[token.slice(1) as keyof typeof rawColors];
+  rawColors[token];
 const practiceFill = (p: Practice): string => {
   const a = ANIMAL_OF[p];
   return fillOf(ANIMAL_TOKEN[a]);
@@ -188,13 +188,7 @@ export function Crest({ crest, size, onPainting = false }: CrestProps) {
   );
   if (!onPainting) return drawn;
   return (
-    <YStack
-      bg="$bgDark"
-      borderColor="$glassBorder"
-      borderWidth={1}
-      p={CREST_PLATE_PAD}
-      rounded="$2"
-    >
+    <YStack bg="bgDark" borderColor="glassBorder" borderWidth={1} p={CREST_PLATE_PAD} rounded="2">
       {drawn}
     </YStack>
   );

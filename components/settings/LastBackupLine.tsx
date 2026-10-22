@@ -23,7 +23,7 @@ export function LastBackupLine({ folderOn }: { folderOn: boolean }) {
   if (!folderOn || days === null) return null;
 
   return (
-    <Text testID="settings-last-backup" fontSize="$2" color="$textSecondary" px="$3">
+    <Text testID="settings-last-backup" fontSize="2" color="textSecondary" px="3">
       {days === 0 ? t("backup.lastBackupToday") : t("backup.lastBackupDays", { count: days })}
     </Text>
   );

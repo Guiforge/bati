@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Linking } from "react-native";
-import { Paragraph, XStack, YStack } from "tamagui";
+import { XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
 import { Card } from "@/components/common/Card";
+import { Paragraph } from "@/components/common/Paragraph";
 import { RuleDisclosure } from "@/components/common/RuleDisclosure";
 import { Tag } from "@/components/common/Tag";
 import { MapPinOff, Mountain } from "@/components/icons";
@@ -81,17 +82,17 @@ function GoalBar({
     ? formatDistance(goal.metres, unit, language)
     : formatDuration(goal.seconds, language);
   return (
-    <YStack gap="$2" testID="expedition-goal">
-      <YStack height={4} rounded="$10" bg="$bgOverlay" overflow="hidden">
+    <YStack gap="2" testID="expedition-goal">
+      <YStack height={4} rounded="10" bg="bgOverlay" overflow="hidden">
         <YStack
           height={4}
-          testID="expedition-goal-fill"
           width={`${share * 100}%`}
-          bg={reached ? "$success" : "$text"}
+          bg={reached ? "success" : "text"}
           opacity={reached ? 1 : 0.55}
+          testID="expedition-goal-fill"
         />
       </YStack>
-      <AppText fontSize={15} color="$textSecondary">
+      <AppText fontSize={15} color="textSecondary">
         {t("session.expedition_goal_of", { goal: label })}
       </AppText>
     </YStack>
@@ -115,9 +116,9 @@ function Reading({
 }) {
   if (bare) return <>{children}</>;
   return (
-    <YStack items={end ? "flex-end" : "flex-start"} gap="$1">
+    <YStack items={end ? "flex-end" : "flex-start"} gap="1">
       {children}
-      <AppText fontSize={13} color="$textSecondary">
+      <AppText fontSize={13} color="textSecondary">
         {label}
       </AppText>
     </YStack>
@@ -153,7 +154,7 @@ export function BigReading({
         variant="display"
         fontSize={fontSize}
         fontWeight="700"
-        color={ctx.track.paused ? "$textSecondary" : "$text"}
+        color={ctx.track.paused ? "textSecondary" : "text"}
         numberOfLines={1}
         adjustsFontSizeToFit
         minimumFontScale={0.5}
@@ -181,7 +182,7 @@ function SmallFigures({
   text: (metric: OutingMetric) => string;
   rate: RateKind;
   stacked: boolean;
-  color: "$text" | "$textSecondary";
+  color: "text" | "textSecondary";
 }) {
   const { t } = useTranslation();
   return (
@@ -189,7 +190,7 @@ function SmallFigures({
       justify="space-between"
       items="flex-start"
       flexDirection={stacked ? "column" : "row"}
-      gap={stacked ? "$3" : undefined}
+      gap={stacked ? "3" : undefined}
     >
       {metrics.map((metric, index) => (
         <Reading
@@ -197,7 +198,7 @@ function SmallFigures({
           label={t(metricLabelKey(metric, rate))}
           end={!stacked && index === metrics.length - 1 && index > 0}
         >
-          <XStack items="center" gap="$1">
+          <XStack items="center" gap="1">
             {metric === "climb" ? <Mountain size={16} color={color} /> : null}
             <AppText
               testID={`expedition-${metric}`}
@@ -251,12 +252,12 @@ function StatusBand({
       {/* The thin band: the status in words, and the accuracy beside it. Worth keeping while the
         sky is being found, it is the one thing on screen that visibly improves. 15 px, not 13:
         it is the line that says the clock stopped on purpose, read at arm's length. */}
-      <XStack items="center" gap="$2" flexWrap="wrap">
-        <AppText fontSize={15} color={track.paused || error !== null ? "$textSecondary" : "$text"}>
+      <XStack items="center" gap="2" flexWrap="wrap">
+        <AppText fontSize={15} color={track.paused || error !== null ? "textSecondary" : "text"}>
           {status}
         </AppText>
         {lastFix ? (
-          <Paragraph fontSize={15} color="$textSecondary">
+          <Paragraph fontSize={15} color="textSecondary">
             {/* Through the same formatter as the distance above, and for the same reason: a hero
               walking in feet was reading "1.2 mi" over "within 8 m", two units on one line,
               from the one file that is allowed to convert. */}
@@ -269,7 +270,7 @@ function StatusBand({
 
       {/* The sentence that keeps a hero from deciding the app is broken while nothing moves. */}
       {acquiring && error === null ? (
-        <Paragraph fontSize={13} color="$textSecondary">
+        <Paragraph fontSize={13} color="textSecondary">
           {t("session.expedition_acquiring_hint")}
         </Paragraph>
       ) : null}
@@ -282,7 +283,7 @@ function StatusBand({
         the battery this was all for is spent on looking. Said once, early, and gone by the time
         it would be clutter. */}
       {!acquiring && error === null && recorded < POCKET_HINT_SECONDS && showPocketHint ? (
-        <Paragraph fontSize={13} color="$textSecondary">
+        <Paragraph fontSize={13} color="textSecondary">
           {t("session.expedition_pocket_hint")}
         </Paragraph>
       ) : null}
@@ -293,7 +294,7 @@ function StatusBand({
       {denied ? (
         <AppButton
           variant="outline"
-          backgroundColor="$surface2"
+          backgroundColor="surface2"
           onPress={() =>
             Linking.openSettings().catch((e: unknown) => reportError("expedition.openSettings", e))
           }
@@ -317,11 +318,11 @@ function StatusBand({
 function NoGpsBadge() {
   const { t } = useTranslation();
   return (
-    <YStack gap="$1" items="flex-start">
+    <YStack gap="1" items="flex-start">
       <Tag
         testID="expedition-no-gps"
         label={t("session.no_gps_badge")}
-        icon={<MapPinOff size={14} color="$text" />}
+        icon={<MapPinOff size={14} color="text" />}
       />
       <RuleDisclosure testID="expedition-no-gps-rule" text={t("past_session.rule_no_gps")} />
     </YStack>
@@ -380,7 +381,7 @@ export function ExpeditionPanelView({
    * nothing says the clock stopped on purpose. Dimming them together is what the status line
    * already did alone, and movement returning them to full colour is the un-pause.
    */
-  const figureColor = track.paused ? "$textSecondary" : "$text";
+  const figureColor = track.paused ? "textSecondary" : "text";
 
   const recorded = recordedSeconds;
   const ctx = figureContext(
@@ -393,7 +394,7 @@ export function ExpeditionPanelView({
   const bigFigures = view.layout === "bigFigures";
 
   return (
-    <Card p="$4" gap="$3">
+    <Card p="4" gap="3">
       {noGps ? <NoGpsBadge /> : null}
       {note}
       {hideBig ? null : (
@@ -431,7 +432,7 @@ export function ExpeditionPanelView({
       )}
 
       {noGps && showPocketHint ? (
-        <Paragraph testID="expedition-no-gps-pocket" fontSize={13} color="$textSecondary">
+        <Paragraph testID="expedition-no-gps-pocket" fontSize={13} color="textSecondary">
           {t("session.no_gps_pocket")}
         </Paragraph>
       ) : null}

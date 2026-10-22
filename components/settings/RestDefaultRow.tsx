@@ -38,20 +38,20 @@ export function RestDefaultRow() {
   return (
     <YStack
       testID="settings-rest-default"
-      bg="$surface"
-      borderColor="$borderStrong"
+      bg="surface"
+      borderColor="borderStrong"
       borderWidth={1}
-      rounded="$4"
-      p="$3"
-      gap="$3"
+      rounded="4"
+      p="3"
+      gap="3"
     >
-      <XStack items="center" gap="$3">
-        <Timer size={22} color="$text" />
-        <Text flex={1} fontSize="$4" fontWeight="bold" color="$text">
+      <XStack items="center" gap="3">
+        <Timer size={22} color="text" />
+        <Text flex={1} fontSize="4" fontWeight="bold" color="text">
           {t("settings.rest_default")}
         </Text>
       </XStack>
-      <XStack flexWrap="wrap" gap="$2" role="radiogroup">
+      <XStack flexWrap="wrap" gap="2" role="radiogroup">
         {REST_CHOICES.map((choice) => {
           const selected = choice === rest;
           return (
@@ -79,7 +79,7 @@ export function RestDefaultRow() {
         })}
       </XStack>
       {/* db/quests.ts `questHead` skips a hero's own quest: say so, or the setting looks dead. */}
-      <Text testID="settings-rest-default-note" fontSize="$2" color="$textSecondary">
+      <Text testID="settings-rest-default-note" fontSize="2" color="textSecondary">
         {t("settings.rest_default_note")}
       </Text>
     </YStack>

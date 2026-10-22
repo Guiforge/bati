@@ -204,15 +204,18 @@ describe("a new vault", () => {
   });
 
   test.each([
-    ["fourteen characters", "a".repeat(14), false],
-    ["fifteen", "a".repeat(15), true],
-    ["fifteen accented ones, whatever their bytes", "é".repeat(15), true],
-    ["fifteen accents typed as two code points each", `${"é".repeat(14)}x`.normalize("NFD"), true],
-    ["fourteen accented ones", "é".repeat(14), false],
-  ])("a password of %s is %s", async (_label, password, accepted) => {
-    const made = c.enableEncryption(password, "en");
-    if (accepted) await expect(made).resolves.toBeTruthy();
-    else await expect(made).rejects.toThrow("PASSWORD_TOO_SHORT");
+    ["fifteen", "a".repeat(15)],
+    ["fifteen accented ones, whatever their bytes", "é".repeat(15)],
+    ["fifteen accents typed as two code points each", `${"é".repeat(14)}x`.normalize("NFD")],
+  ])("a password of %s is accepted", async (_label, password) => {
+    await expect(c.enableEncryption(password, "en")).resolves.toBeTruthy();
+  });
+
+  test.each([
+    ["fourteen characters", "a".repeat(14)],
+    ["fourteen accented ones", "é".repeat(14)],
+  ])("a password of %s is refused", async (_label, password) => {
+    await expect(c.enableEncryption(password, "en")).rejects.toThrow("PASSWORD_TOO_SHORT");
   });
 
   test("a rejected password leaves no vault behind", async () => {

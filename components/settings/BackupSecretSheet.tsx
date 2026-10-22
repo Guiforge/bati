@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Keyboard, Pressable } from "react-native";
-import { Input, Text, XStack } from "tamagui";
+import { Text, XStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { FormSheet } from "@/components/common/FormSheet";
+import { Input } from "@/components/common/Input";
 import { Eye, EyeOff } from "@/components/icons";
 import type { SecretRequest } from "@/hooks/useBackup";
 import { reportError } from "@/src/reportError";
@@ -75,9 +76,9 @@ export function BackupSecretSheet({
       onClose={cancel}
       endOnKeyboard
     >
-      <Text color="$textSecondary">{body ?? t("backup.secretBody")}</Text>
+      <Text color="textSecondary">{body ?? t("backup.secretBody")}</Text>
 
-      <XStack items="center" gap="$2">
+      <XStack items="center" gap="2">
         <Input
           testID="backup-secret-input"
           flex={1}
@@ -96,9 +97,9 @@ export function BackupSecretSheet({
           returnKeyType="done"
           onSubmitEditing={submit}
           placeholder={t("backup.secretPlaceholder")}
-          bg="$background"
-          borderColor={request.wrong ? "$error" : "$borderStrong"}
-          color="$text"
+          bg="background"
+          borderColor={`${request.wrong ? "error" : "borderStrong"}`}
+          color="text"
         />
         <Pressable
           hitSlop={12}
@@ -107,15 +108,15 @@ export function BackupSecretSheet({
           onPress={() => setShown((value) => !value)}
         >
           {shown ? (
-            <EyeOff size={22} color="$textSecondary" />
+            <EyeOff size={22} color="textSecondary" />
           ) : (
-            <Eye size={22} color="$textSecondary" />
+            <Eye size={22} color="textSecondary" />
           )}
         </Pressable>
       </XStack>
-      {request.wrong && !busy ? <Text color="$error">{t("backup.secretWrong")}</Text> : null}
+      {request.wrong && !busy ? <Text color="error">{t("backup.secretWrong")}</Text> : null}
       {request.wrong && !busy && forgotHint ? (
-        <Text color="$textSecondary" fontSize="$3">
+        <Text color="textSecondary" fontSize="3">
           {forgotHint}
         </Text>
       ) : null}

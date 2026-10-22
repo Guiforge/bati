@@ -45,7 +45,7 @@ export function PauseRow() {
   return (
     <SettingRow
       testID="settings-pause"
-      icon={<Pause size={22} color="$text" />}
+      icon={<Pause size={22} color="text" />}
       label={t("pause.title")}
       value={value}
       onPress={() => router.push("/pause" as never)}

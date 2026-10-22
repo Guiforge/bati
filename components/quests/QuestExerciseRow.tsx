@@ -1,14 +1,14 @@
 import { Image } from "expo-image";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ImageSourcePropType } from "react-native";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
+import { Paragraph } from "@/components/common/Paragraph";
 import { Tag } from "@/components/common/Tag";
 import { ChevronDown, ChevronUp, Dumbbell, Footprints } from "@/components/icons";
 import { slotCaption } from "@/components/quests/substitutionCaption";
-import { getExerciseThumb } from "@/constants/assetMap";
+import { type ArtSource, getExerciseThumb } from "@/constants/assetMap";
 import { formatDuration } from "@/db/estimate";
 import type { Exercise } from "@/db/exercises";
 import { EQUIPMENT_LABELS, MUSCLE_LABELS } from "@/db/labels";
@@ -23,7 +23,7 @@ const MAX_THUMBS = 4;
 /** Same cut the gallery card makes: past four muscles the row stops being a summary. */
 const MUSCLES_SHOWN = 4;
 
-function resolveExerciseImage(path?: string | null): ImageSourcePropType | null {
+function resolveExerciseImage(path?: string | null): ArtSource | null {
   if (!path) return null;
   return getExerciseThumb(path);
 }
@@ -73,9 +73,9 @@ function ExerciseDetail({
     });
 
   return (
-    <YStack gap="$2">
+    <YStack gap="2">
       {thumbs.length > 0 ? (
-        <XStack gap="$2">
+        <XStack gap="2">
           {thumbs.map((thumb) => (
             <YStack
               key={thumb.key}
@@ -83,9 +83,9 @@ function ExerciseDetail({
               height={64}
               rounded={12}
               overflow="hidden"
-              bg="$surface"
+              bg="surface"
               borderWidth={1}
-              borderColor="$borderStrong"
+              borderColor="borderStrong"
             >
               <Image
                 source={thumb.source}
@@ -98,11 +98,11 @@ function ExerciseDetail({
         </XStack>
       ) : null}
 
-      <Paragraph color="$textSecondary" size="$3">
+      <Paragraph color="textSecondary" size="3">
         {localizedText(qex.exercise, "description", language)}
       </Paragraph>
 
-      <XStack gap="$2" flexWrap="wrap">
+      <XStack gap="2" flexWrap="wrap">
         <Tag
           label={EQUIPMENT_LABELS[qex.exercise.equipment]?.[language] ?? qex.exercise.equipment}
         />
@@ -124,7 +124,7 @@ function ExerciseDetail({
       <AppButton
         fullWidth={false}
         variant="outline"
-        size="$3"
+        size="3"
         fontSize={14}
         onPress={onOpenExercise}
       >
@@ -137,7 +137,7 @@ function ExerciseDetail({
         <AppButton
           fullWidth={false}
           variant="outline"
-          size="$3"
+          size="3"
           fontSize={14}
           onPress={() => {
             if (qex.substitutedFor) onPutBack(qex.substitutedFor.id);
@@ -159,7 +159,7 @@ function ExerciseDetail({
           testID="quest-pin-written"
           fullWidth={false}
           variant="outline"
-          size="$3"
+          size="3"
           fontSize={14}
           onPress={() => {
             if (qex.substitutedFor) onPin(qex.id, qex.substitutedFor.id);
@@ -175,7 +175,7 @@ function ExerciseDetail({
           testID="quest-unpin-written"
           fullWidth={false}
           variant="outline"
-          size="$3"
+          size="3"
           fontSize={14}
           onPress={() => onPin(qex.id, null)}
         >
@@ -189,7 +189,7 @@ function ExerciseDetail({
         <AppButton
           fullWidth={false}
           variant="outline"
-          size="$3"
+          size="3"
           fontSize={14}
           onPress={() => onReplace(qex.id)}
         >
@@ -251,14 +251,14 @@ export function QuestExerciseRow({
   const Chevron = expanded ? ChevronUp : ChevronDown;
 
   return (
-    <Card gap="$3">
+    <Card gap="3">
       {/* The press sits on the header rather than on the card: the panel it opens carries its own
           button, and a nested control inside a pressable card is a tap two handlers argue over. */}
       <XStack
-        gap="$3"
+        gap="3"
         items="center"
+        opacity="press:0.6"
         onPress={() => setExpanded((open) => !open)}
-        pressStyle={{ opacity: 0.6 }}
         accessibilityRole="button"
         accessibilityState={{ expanded }}
       >
@@ -271,9 +271,9 @@ export function QuestExerciseRow({
           width={44}
           height={44}
           rounded={22}
-          bg="$surface"
+          bg="surface"
           borderWidth={1}
-          borderColor="$borderStrong"
+          borderColor="borderStrong"
           justify="center"
           items="center"
           overflow="hidden"
@@ -287,19 +287,19 @@ export function QuestExerciseRow({
               accessible={false}
             />
           ) : qex.exercise.style === NON_REP_STYLE ? (
-            <Footprints size={22} color="$text" strokeWidth={2.5} />
+            <Footprints size={22} color="text" strokeWidth={2.5} />
           ) : (
-            <Dumbbell size={22} color="$text" strokeWidth={2.5} />
+            <Dumbbell size={22} color="text" strokeWidth={2.5} />
           )}
         </YStack>
 
-        <YStack flex={1} minW={0} gap="$1">
+        <YStack flex={1} minW={0} gap="1">
           {/* The name gets the row's width, and the tags sit under it.
               They used to share the line: two tags and a chevron hold their width on the right,
               so "2. Wall Push-Up" beside "10 reps" and "Last: 19 reps" was starved down to
               "2. Wall…" with its subtitle broken one word per line. A name is what the hero is
               scanning for, so it is the thing that must never be the one that gives. */}
-          <Text fontWeight="700" fontSize={17} color="$text" numberOfLines={2}>
+          <Text fontWeight="700" fontSize={17} color="text" numberOfLines={2}>
             {index + 1}. {name}
           </Text>
 
@@ -307,12 +307,12 @@ export function QuestExerciseRow({
               or the card disagrees with the quest for no visible reason — and the movement it
               names stays one tap away through swap. */}
           {caption ? (
-            <Text fontSize={12} color="$textSecondary" fontFamily="$body">
+            <Text fontSize={12} color="textSecondary" fontFamily="body">
               {caption}
             </Text>
           ) : null}
 
-          <XStack items="center" gap="$2" flexWrap="wrap">
+          <XStack items="center" gap="2" flexWrap="wrap">
             {showTarget ? (
               <Tag
                 label={targetLabel(qex, language)}
@@ -340,7 +340,7 @@ export function QuestExerciseRow({
           </XStack>
         </YStack>
 
-        <Chevron size={18} color="$textSecondary" strokeWidth={2.5} />
+        <Chevron size={18} color="textSecondary" strokeWidth={2.5} />
       </XStack>
 
       {expanded ? (

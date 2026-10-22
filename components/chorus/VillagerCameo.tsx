@@ -2,7 +2,8 @@ import { Image } from "expo-image";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, useWindowDimensions } from "react-native";
-import { Paragraph, Text, View, XStack, YStack } from "tamagui";
+import { Text, View, XStack, YStack } from "tamagui";
+import { Paragraph } from "@/components/common/Paragraph";
 
 import { getVillagerAsset } from "@/constants/assetMap";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
@@ -86,7 +87,8 @@ export function VillagerCameo({ band }: { band: CameoBand | null }) {
       r={0}
       z={900}
       transition={reducedMotion ? undefined : "bouncy"}
-      enterStyle={reducedMotion ? undefined : { opacity: 0, y: 48 }}
+      opacity={reducedMotion ? undefined : "enter:0"}
+      y={reducedMotion ? undefined : "enter:48px"}
     >
       <Pressable
         testID="villager-zone"
@@ -101,7 +103,7 @@ export function VillagerCameo({ band }: { band: CameoBand | null }) {
         accessibilityHint={t("villagers.send_away")}
         style={{ paddingHorizontal: 12, height: "100%", justifyContent: "flex-end" }}
       >
-        <XStack gap="$2" items="flex-end">
+        <XStack gap="2" items="flex-end">
           <Image
             testID="villager-figure"
             source={getVillagerAsset(current_.villager, current_.pose)}
@@ -112,9 +114,9 @@ export function VillagerCameo({ band }: { band: CameoBand | null }) {
           />
           <YStack
             testID="villager-bubble"
-            bg="$parchment"
-            p="$3"
-            rounded="$1"
+            bg="parchment"
+            p="3"
+            rounded="1"
             maxW={Math.min(columnWidth - figureWidth - 40, Math.round(columnWidth * 0.42))}
             // Pinned to the top of the band while the figure keeps its place: on day one the line
             // points at the cabin roof, and a bubble at the figure's feet sat on it. Narrow and
@@ -136,15 +138,15 @@ export function VillagerCameo({ band }: { band: CameoBand | null }) {
               borderRightWidth={9}
               borderTopColor="transparent"
               borderBottomColor="transparent"
-              borderRightColor="$parchment"
+              borderRightColor="parchment"
             />
-            <Text fontSize={12} fontWeight="700" color="$ink800" accessible={false}>
+            <Text fontSize={12} fontWeight="700" color="ink800" accessible={false}>
               {name}
             </Text>
             {/* The rest of the line is transparent rather than omitted, so the bubble is its final
                 size from the first character. */}
-            <Paragraph color="$bgDark" fontSize={14} accessible={false}>
-              <Paragraph testID="villager-line" color="$bgDark" fontSize={14}>
+            <Paragraph color="bgDark" fontSize={14} accessible={false}>
+              <Paragraph testID="villager-line" color="bgDark" fontSize={14}>
                 {shown}
               </Paragraph>
               <Paragraph color="transparent" fontSize={14}>

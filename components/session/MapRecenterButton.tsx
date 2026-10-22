@@ -24,12 +24,12 @@ export function MapRecenterButton({
       testID={testID}
       position="absolute"
       t={top}
-      r="$4"
+      r="4"
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={t("recap.map_recenter")}
     >
-      <LocateFixed size={20} color="$text" strokeWidth={2.5} />
+      <LocateFixed size={20} color="text" strokeWidth={2.5} />
     </AppIconButton>
   );
 }

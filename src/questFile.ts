@@ -204,7 +204,7 @@ export async function shareJsonFile(fileName: string, json: string): Promise<voi
   const file = new File(Paths.cache, fileName);
   if (file.exists) file.delete();
   file.create();
-  file.write(json);
+  await file.write(json);
 
   await Sharing.shareAsync(file.uri, {
     mimeType: "application/json",
@@ -703,11 +703,11 @@ export function readBatiFile(uri: string): unknown {
   if (file.size != null && file.size > MAX_FILE_BYTES) throw new QuestFileError("not_a_quest");
   // Never `file.text()`: a provider that reports no size (a chat app's, often) would stream a
   // file of any length into memory. One byte past the limit is enough to know it is too big.
-  // `readBytes` is synchronous: at most 8 MB, a few milliseconds.
+  // `readBytesSync`: at most 8 MB, a few milliseconds.
   let bytes: Uint8Array;
   const handle = file.open();
   try {
-    bytes = handle.readBytes(MAX_FILE_BYTES + 1);
+    bytes = handle.readBytesSync(MAX_FILE_BYTES + 1);
   } finally {
     handle.close();
   }

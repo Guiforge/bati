@@ -2,12 +2,11 @@ import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ImageSourcePropType } from "react-native";
 import { ScrollView } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { useToast } from "@/components/common/Toast";
 import { ImagePlus } from "@/components/icons";
-import { carriedPhoto } from "@/constants/assetMap";
+import { type ArtSource, carriedPhoto } from "@/constants/assetMap";
 import { encodePhoto } from "@/src/exercisePhoto";
 import { reportError } from "@/src/reportError";
 
@@ -44,9 +43,9 @@ export type ImageChoiceFieldProps = {
   /** Keys of the art already in the APK this field offers. */
   choices: readonly string[];
   /** Key or URI -> the source the preview renders. */
-  resolve: (key: string) => ImageSourcePropType;
+  resolve: (key: string) => ArtSource;
   /** The same, thumbnail-sized, for the strip. */
-  resolveThumb: (key: string) => ImageSourcePropType;
+  resolveThumb: (key: string) => ArtSource;
   /**
    * The art's own shape — exercise illustrations are 1:1, quest covers 4:3 — so the preview
    * never letterboxes and the photo the hero crops comes back the shape it will be shown at.
@@ -115,22 +114,22 @@ export function ImageChoiceField({
   };
 
   return (
-    <YStack gap="$3">
+    <YStack gap="3">
       <YStack
         testID="image-choice-preview"
         onPress={() => setOpen((v) => !v)}
         width={PREVIEW_WIDTH}
         height={(PREVIEW_WIDTH * aspect[1]) / aspect[0]}
         self="center"
-        bg="$bgDark"
+        bg="bgDark"
         borderWidth={open ? 2 : 1}
-        borderColor={open ? "$primaryText" : "$borderStrong"}
-        rounded="$8"
-        shadowColor="$text"
+        borderColor={`${open ? "primaryText" : "borderStrong"}`}
+        rounded="8"
+        shadowColor="text"
         shadowRadius={0}
         shadowOffset={{ width: 0, height: 5 }}
         overflow="hidden"
-        pressStyle={{ opacity: 0.85 }}
+        opacity="press:0.85"
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
         accessibilityLabel={label ?? t("exercise_editor.image")}
@@ -144,7 +143,7 @@ export function ImageChoiceField({
       </YStack>
 
       {open ? null : (
-        <Text fontSize={12} color="$textSecondary" style={{ textAlign: "center" }}>
+        <Text fontSize={12} color="textSecondary" style={{ textAlign: "center" }}>
           {t("settings.tap_change")}
         </Text>
       )}
@@ -155,7 +154,7 @@ export function ImageChoiceField({
         two kinds of picture is in play. */}
       {open ? (
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <XStack gap="$2">
+          <XStack gap="2">
             {photos ? (
               <YStack
                 testID="image-choice-photo"
@@ -166,13 +165,12 @@ export function ImageChoiceField({
                 height={TILE}
                 items="center"
                 justify="center"
-                bg="$surface2"
+                bg="surface2"
                 borderWidth={2}
-                borderColor={isPhoto ? "$primaryText" : "$borderStrong"}
-                rounded="$4"
+                borderColor={`${isPhoto ? "primaryText" : "borderStrong"}`}
+                rounded="4"
                 overflow="hidden"
-                opacity={busy ? 0.6 : 1}
-                pressStyle={{ opacity: 0.8 }}
+                opacity={`${busy ? 0.6 : 1} press:0.8`}
                 accessibilityRole="button"
                 accessibilityState={{ selected: isPhoto }}
                 accessibilityLabel={t("exercise_editor.image_from_photos")}
@@ -180,7 +178,7 @@ export function ImageChoiceField({
                 {photo ? (
                   <Image source={photo} style={{ width: TILE, height: TILE }} />
                 ) : (
-                  <ImagePlus size={22} color="$textSecondary" />
+                  <ImagePlus size={22} color="textSecondary" />
                 )}
               </YStack>
             ) : null}
@@ -196,10 +194,10 @@ export function ImageChoiceField({
                 width={TILE}
                 height={TILE}
                 borderWidth={2}
-                borderColor={value === key ? "$primaryText" : "$borderStrong"}
-                rounded="$4"
+                borderColor={`${value === key ? "primaryText" : "borderStrong"}`}
+                rounded="4"
                 overflow="hidden"
-                pressStyle={{ opacity: 0.8 }}
+                opacity="press:0.8"
                 accessibilityRole="button"
                 accessibilityState={{ selected: value === key }}
                 accessibilityLabel={choiceLabel?.(key) ?? key}

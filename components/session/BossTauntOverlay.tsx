@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Paragraph, YStack } from "tamagui";
+import { YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
+import { Paragraph } from "@/components/common/Paragraph";
 import { HUD_HEIGHT, REST_HEADER_HEIGHT } from "@/components/session/sessionArt";
 import { bossVoice } from "@/constants/bosses";
 import type { DamageResult } from "@/db/bossFights";
@@ -83,8 +84,9 @@ export function BossTauntOverlay() {
       position="absolute"
       pointerEvents="none"
       transition={reducedMotion ? undefined : "bouncy"}
-      enterStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.5, y: -20 }}
-      exitStyle={reducedMotion ? undefined : { opacity: 0, scale: 0.5, y: -20 }}
+      opacity={reducedMotion ? undefined : "enter:0 exit:0"}
+      scale={reducedMotion ? undefined : "enter:0.5 exit:0.5"}
+      y={reducedMotion ? undefined : "enter:-20px exit:-20px"}
       style={{
         // Under whatever the screen puts above it, which is not the same thing on the two
         // screens the boss speaks on: the arena while the set runs, the flame header once it is
@@ -99,15 +101,15 @@ export function BossTauntOverlay() {
       {/* The arena already shows the boss's real art — the bubble only needs its voice, and its
           tail points back up at the portrait. */}
       <Card
-        bg="$surface"
-        p="$3"
-        rounded="$4"
+        bg="surface"
+        p="3"
+        rounded="4"
         borderWidth={1}
-        borderColor="$borderStrong"
+        borderColor="borderStrong"
         maxW={180}
         style={{ borderTopRightRadius: 0 }}
       >
-        <Paragraph color="$text" fontWeight="700" fontSize={14}>
+        <Paragraph color="text" fontWeight="700" fontSize={14}>
           {taunt}
         </Paragraph>
       </Card>

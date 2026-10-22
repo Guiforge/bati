@@ -13,18 +13,18 @@ export type ExerciseColorTokens = {
 };
 
 const MUSCLE_BG: Record<MuscleCode, ColorTokens> = {
-  arms: "$pastelPink",
-  back: "$pastelBlue",
-  shoulder: "$bgLight",
-  chest: "$pastelYellow",
-  abs: "$pastelGreen",
+  arms: "pastelPink",
+  back: "pastelBlue",
+  shoulder: "bgLight",
+  chest: "pastelYellow",
+  abs: "pastelGreen",
   // No dedicated "pastelOrange" in the theme for now.
-  legs: "$pastelYellow",
+  legs: "pastelYellow",
 };
 
 const TARGET_BG: Record<QuestTargetType, ColorTokens> = {
-  time: "$pastelBlue",
-  reps: "$pastelYellow",
+  time: "pastelBlue",
+  reps: "pastelYellow",
 };
 
 export function getExerciseColorKey(input: {
@@ -41,32 +41,32 @@ export function getExerciseColorKey(input: {
 export function getExerciseColorTokens(key: ExerciseColorKey): ExerciseColorTokens {
   if (key === "mixed") {
     return {
-      bg: "$bgLight",
-      accent: "$primary",
-      text: "$color",
+      bg: "bgLight",
+      accent: "primary",
+      text: "color",
     };
   }
 
   if (key === "default") {
     return {
-      bg: "$bgLight",
-      accent: "$primary",
-      text: "$color",
+      bg: "bgLight",
+      accent: "primary",
+      text: "color",
     };
   }
 
   if (key === "time" || key === "reps") {
     return {
       bg: TARGET_BG[key],
-      accent: "$primary",
-      text: "$color",
+      accent: "primary",
+      text: "color",
     };
   }
 
   return {
     bg: MUSCLE_BG[key],
-    accent: "$primary",
-    text: "$color",
+    accent: "primary",
+    text: "color",
   };
 }
 

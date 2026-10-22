@@ -184,7 +184,7 @@ export const DIAMOND = "M77 41L82 46L77 51L72 46Z";
 export const ANIMAL_BOX = { x: 25, y: 28, size: 46 } as const;
 
 /** The plate a crest sits on over a painting (`Crest`): its padding token, plus a 1 border. */
-export const CREST_PLATE_PAD = "$1.5";
+export const CREST_PLATE_PAD = "1-5";
 
 /** The room a crest takes, plate included, so a skeleton can hold exactly its place. */
 export function crestFootprint(size: CrestSize, onPainting = false) {

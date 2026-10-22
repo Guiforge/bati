@@ -2,13 +2,13 @@ import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { ImageSourcePropType } from "react-native";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Paragraph, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { Paragraph } from "@/components/common/Paragraph";
 import { PathStrip } from "@/components/common/PathStrip";
 import { Recitatif } from "@/components/common/Recitatif";
 import { SectionLabel } from "@/components/common/SectionLabel";
@@ -19,7 +19,7 @@ import { useToast } from "@/components/common/Toast";
 import { ChevronLeft, ChevronRight, Dumbbell, Timer } from "@/components/icons";
 import { shortDate } from "@/components/journal/journalFormat";
 import { recordWhen } from "@/components/journal/stats/wall";
-import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
+import { type ArtSource, getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import {
   deleteUserExercise,
   getExerciseById,
@@ -51,7 +51,7 @@ type Status = "loading" | "ready" | "error";
  * resolution in memory, not its slot (docs/architecture/performance.md). Every small slot reads
  * the 128 px thumbnail, which is what `ProgressionCard` and the "Tonight" cards already do.
  */
-const resolveThumb = (path?: string | null): ImageSourcePropType => getExerciseThumb(path ?? "");
+const resolveThumb = (path?: string | null): ArtSource => getExerciseThumb(path ?? "");
 
 const parseId = (raw?: string | string[]): number | null => {
   const val = Array.isArray(raw) ? raw[0] : raw;
@@ -66,17 +66,17 @@ const parseId = (raw?: string | string[]): number | null => {
 function Header({ onBack, title }: { onBack: () => void; title: string }) {
   const { t } = useTranslation();
   return (
-    <XStack items="center" gap="$3">
+    <XStack items="center" gap="3">
       <AppIconButton
         onPress={onBack}
         accessibilityRole="button"
         accessibilityLabel={t("quests.go_back")}
       >
-        <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
+        <ChevronLeft size={22} color="text" strokeWidth={2.5} />
       </AppIconButton>
-      <XStack items="center" gap="$2">
-        <Dumbbell size={18} color="$text" strokeWidth={2.5} />
-        <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
+      <XStack items="center" gap="2">
+        <Dumbbell size={18} color="text" strokeWidth={2.5} />
+        <Text fontFamily="heading" fontWeight="700" fontSize={20} color="text">
           {title}
         </Text>
       </XStack>
@@ -88,11 +88,11 @@ function ErrorCard({ message, onRetry }: { message: string; onRetry: () => void 
   const { t } = useTranslation();
   return (
     <Card>
-      <YStack gap="$3" items="center" py="$2">
-        <Text fontWeight="700" fontSize={16} color="$text">
+      <YStack gap="3" items="center" py="2">
+        <Text fontWeight="700" fontSize={16} color="text">
           {t("exercises.load_error")}
         </Text>
-        <Paragraph color="$text" opacity={0.6} size="$3">
+        <Paragraph color="text" opacity={0.6} size="3">
           {message}
         </Paragraph>
         <AppButton fullWidth={false} variant="outline" onPress={onRetry}>
@@ -108,7 +108,7 @@ function LoadingCard() {
   // is a guess drifts from what lands in it, and a fixed 200 under a square frame let the screen
   // jump by a third of the image.
   return (
-    <YStack gap="$4">
+    <YStack gap="4">
       <ExerciseImage />
       <SkeletonCard>
         <Skeleton height={24} width="60%" />
@@ -120,7 +120,7 @@ function LoadingCard() {
 }
 
 /** Also the loading state, with nothing in it. */
-function ExerciseImage({ source, name }: { source?: ImageSourcePropType; name?: string }) {
+function ExerciseImage({ source, name }: { source?: ArtSource; name?: string }) {
   return (
     <YStack
       width="100%"
@@ -129,11 +129,11 @@ function ExerciseImage({ source, name }: { source?: ImageSourcePropType; name?: 
       // width on empty background, which `contentFit="contain"` had to letterbox (exercise sheet
       // audit, 2026-09-15). The "Tonight" cards already frame the same art square.
       aspectRatio={1}
-      bg="$bgLight"
+      bg="bgLight"
       borderWidth={1}
-      borderColor="$borderStrong"
-      rounded="$3"
-      shadowColor="$text"
+      borderColor="borderStrong"
+      rounded="3"
+      shadowColor="text"
       shadowRadius={0}
       shadowOffset={{ width: 0, height: 5 }}
       overflow="hidden"
@@ -149,7 +149,7 @@ function ExerciseImage({ source, name }: { source?: ImageSourcePropType; name?: 
         />
       )}
       {name ? (
-        <YStack position="absolute" b="$3" l="$3" r="$3">
+        <YStack position="absolute" b="3" l="3" r="3">
           <Recitatif testID="exercise-detail-name">{name}</Recitatif>
         </YStack>
       ) : null}
@@ -192,16 +192,19 @@ function PathCard({ chain }: { chain: Chain }) {
         target === null ? undefined : t("exercises.path_you_are_on", { name: hereName })
       }
     >
-      <YStack gap="$2">
-        <XStack items="flex-start" gap="$2">
+      <YStack gap="2">
+        <XStack items="flex-start" gap="2">
           <YStack flex={1}>
             <PathStrip chain={chain} />
           </YStack>
-          {target === null ? null : <ChevronRight size={16} color="$textSecondary" mt="$1" />}
+          {/* An icon takes no style props in Tamagui 3: v2's `mt` space token 1 was 2 px. */}
+          {target === null ? null : (
+            <ChevronRight size={16} color="textSecondary" style={{ marginTop: 2 }} />
+          )}
         </XStack>
 
         {isClimbed ? null : (
-          <Paragraph color="$text" opacity={0.7} size="$3">
+          <Paragraph color="text" opacity={0.7} size="3">
             {target === null
               ? t("exercises.path_you_are_here")
               : t("exercises.path_you_are_on", {
@@ -234,14 +237,14 @@ function NextStepCard({ progression }: { progression: NextProgression }) {
     >
       {/* The pose was always in the payload and never rendered — a named step you cannot see is
           a to-do list item, an illustrated one is a movement you want to try. */}
-      <XStack gap="$3" items="center">
+      <XStack gap="3" items="center">
         <YStack
           width={80}
           height={80}
-          rounded="$8"
-          bg="$bgLight"
+          rounded="8"
+          bg="bgLight"
           borderWidth={1}
-          borderColor="$borderStrong"
+          borderColor="borderStrong"
           overflow="hidden"
         >
           <Image
@@ -252,12 +255,12 @@ function NextStepCard({ progression }: { progression: NextProgression }) {
           />
         </YStack>
 
-        <YStack gap="$2" flex={1}>
+        <YStack gap="2" flex={1}>
           <SectionLabel>{t("exercises.next_step")}</SectionLabel>
-          <Text color="$text" fontWeight="700" fontSize={18}>
+          <Text color="text" fontWeight="700" fontSize={18}>
             {name}
           </Text>
-          <Paragraph color="$text" opacity={0.7} size="$3">
+          <Paragraph color="text" opacity={0.7} size="3">
             {progression.isEarned
               ? t("exercises.next_step_earned")
               : t("exercises.next_step_progress", {
@@ -271,7 +274,7 @@ function NextStepCard({ progression }: { progression: NextProgression }) {
               The sentence is `progression.*` because the quest log and the victory screen say it
               too, about the same fork. */}
           {progression.alsoNext.length === 0 ? null : (
-            <Paragraph color="$textSecondary" size="$2">
+            <Paragraph color="textSecondary" size="2">
               {t("progression.rung_also_leads_to", {
                 names: formatList(
                   progression.alsoNext.map((m) => localizedName(m, language)),
@@ -282,7 +285,7 @@ function NextStepCard({ progression }: { progression: NextProgression }) {
           )}
         </YStack>
 
-        <ChevronRight size={20} color="$textSecondary" />
+        <ChevronRight size={20} color="textSecondary" />
       </XStack>
     </Card>
   );
@@ -352,7 +355,7 @@ function HeroActions({ exercise, onGone }: { exercise: Exercise; onGone: () => v
 
   return (
     <Card>
-      <YStack gap="$3">
+      <YStack gap="3">
         <AppButton
           testID="exercise-edit"
           variant="outline"
@@ -483,20 +486,20 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
   }, [exercise.id]);
 
   return (
-    <YStack gap="$4">
+    <YStack gap="4">
       <ExerciseImage source={img} name={title} />
 
       <Card>
-        <YStack gap="$3">
+        <YStack gap="3">
           {/* Description */}
           {desc ? (
-            <Paragraph color="$text" opacity={0.7} size="$4" lineHeight={22}>
+            <Paragraph color="text" opacity={0.7} size="4" lineHeight="22px">
               {desc}
             </Paragraph>
           ) : null}
 
           {/* Tags */}
-          <XStack gap="$2" flexWrap="wrap">
+          <XStack gap="2" flexWrap="wrap">
             <Tag label={equipmentLabel} />
             {/* A tempo is seconds per repetition, and neither a hold nor an expedition has
                 repetitions: one is measured in seconds held, the other in ground covered
@@ -505,7 +508,7 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
                 not get a chip. `QuestExerciseRow` already drew the line at a hold. */}
             {exercise.measure === "time" || exercise.style === NON_REP_STYLE ? null : (
               <Tag
-                icon={<Timer size={12} color="$text" opacity={0.7} />}
+                icon={<Timer size={12} color="text" opacity={0.7} />}
                 label={t("exercises.seconds_per_rep", {
                   count: exercise.secondsPerRep,
                 })}
@@ -518,44 +521,44 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
               screen uses for it: the number they are trying to beat is the gold one, wherever
               they meet it. */}
           {loggedHere.length > 0 && (
-            <YStack gap="$2">
+            <YStack gap="2">
               <SectionLabel>{t("exercises.your_numbers")}</SectionLabel>
               {loggedHere.map(({ type, ghost }) => (
                 // Two halves that wrap as wholes. One flat wrapping row broke wherever the width
                 // ran out, and "Record 1,000 reps" left its "Aug 15" alone on the next line.
-                <XStack key={type} items="baseline" gap="$2" flexWrap="wrap">
-                  <XStack items="baseline" gap="$2">
-                    <Text fontSize={12} color="$textSecondary">
+                <XStack key={type} items="baseline" gap="2" flexWrap="wrap">
+                  <XStack items="baseline" gap="2">
+                    <Text fontSize={12} color="textSecondary">
                       {t("session.ghost_last_label")}
                     </Text>
-                    <Text fontSize={15} fontWeight="700" color="$text">
+                    <Text fontSize={15} fontWeight="700" color="text">
                       {formatSlotTarget(
                         { target: { type, value: ghost.last }, exercise },
                         language,
                       )}
                     </Text>
-                    <Text fontSize={12} color="$textSecondary">
+                    <Text fontSize={12} color="textSecondary">
                       {shortDate(language, new Date(ghost.at), now)}
                     </Text>
                   </XStack>
                   {ghost.best > ghost.last ? (
-                    <XStack testID="exercise-record" items="baseline" gap="$2">
-                      <Text fontSize={12} color="$textSecondary" opacity={0.5}>
+                    <XStack testID="exercise-record" items="baseline" gap="2">
+                      <Text fontSize={12} color="textSecondary" opacity={0.5}>
                         ·
                       </Text>
                       {/* The Journal's word and the Journal's date. This line said "best 60s"
                           with no date while the wall two taps away said "Record 1:00 · 10 months
                           ago" about the same hold, and an undated number reads as tonight's. */}
-                      <Text fontSize={12} color="$textSecondary">
+                      <Text fontSize={12} color="textSecondary">
                         {t("exercises.record_label")}
                       </Text>
-                      <Text fontSize={15} fontWeight="700" color="$resourceGold">
+                      <Text fontSize={15} fontWeight="700" color="resourceGold">
                         {formatSlotTarget(
                           { target: { type, value: ghost.best }, exercise },
                           language,
                         )}
                       </Text>
-                      <Text fontSize={12} color="$textSecondary">
+                      <Text fontSize={12} color="textSecondary">
                         {recordWhen(t, language, new Date(ghost.bestAt), now)}
                       </Text>
                     </XStack>
@@ -567,9 +570,9 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
 
           {/* Muscles */}
           {exercise.muscles.length > 0 && (
-            <YStack gap="$2">
+            <YStack gap="2">
               <SectionLabel>{t("exercises.muscles")}</SectionLabel>
-              <XStack gap="$2" flexWrap="wrap">
+              <XStack gap="2" flexWrap="wrap">
                 {exercise.muscles.map((m) => (
                   <Tag key={m} label={MUSCLE_LABELS[m]?.[language] ?? m} tone="success" />
                 ))}
@@ -642,21 +645,21 @@ function SetAsideCard({
 
   return (
     <Card>
-      <YStack gap="$3">
+      <YStack gap="3">
         {aside ? <Tag self="flex-start" label={t("setAside.set_aside_tag")} /> : null}
-        <Text fontSize={14} color="$textSecondary">
+        <Text fontSize={14} color="textSecondary">
           {t("setAside.hint")}
         </Text>
         {/* What it costs, said before the tap rather than discovered after: the path stops at a
             rung that is never earned again, and an oath on it cannot move. No dialog, the button
             turns into "Put back" the moment it is pressed. */}
         {!aside && hasNextStep ? (
-          <Text fontSize={14} color="$textSecondary">
+          <Text fontSize={14} color="textSecondary">
             {t("setAside.stops_path")}
           </Text>
         ) : null}
         {!aside && sworn ? (
-          <Text fontSize={14} color="$textSecondary">
+          <Text fontSize={14} color="textSecondary">
             {t("setAside.oath_stalls")}
           </Text>
         ) : null}
@@ -687,9 +690,9 @@ function SetAsideCard({
 function InvalidIdView({ onBack }: { onBack: () => void }) {
   const { t } = useTranslation();
   return (
-    <YStack flex={1} bg="$background" justify="center" items="center" p="$6" gap="$4">
+    <YStack flex={1} bg="background" justify="center" items="center" p="6" gap="4">
       <Text fontSize={48}>🤷</Text>
-      <Text fontWeight="700" fontSize={18} color="$text">
+      <Text fontWeight="700" fontSize={18} color="text">
         {t("exercises.invalid_id")}
       </Text>
       <AppButton fullWidth={false} variant="outline" onPress={onBack}>
@@ -748,7 +751,7 @@ export default function ExerciseDetails() {
   if (!exerciseId) return <InvalidIdView onBack={goBack} />;
 
   return (
-    <YStack flex={1} bg="$background">
+    <YStack flex={1} bg="background">
       <ScrollView
         contentContainerStyle={{
           paddingBottom: insets.bottom + 24,
@@ -756,7 +759,7 @@ export default function ExerciseDetails() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <YStack p="$5" pt={insets.top + 12} gap="$5">
+        <YStack p="5" pt={insets.top + 12} gap="5">
           <Header onBack={goBack} title={t("exercises.details_title")} />
 
           {status === "loading" && <LoadingCard />}

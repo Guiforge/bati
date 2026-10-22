@@ -1,7 +1,9 @@
 import { Component, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, Paragraph, Text, YStack } from "tamagui";
+import { H1, Text, YStack } from "tamagui";
+import { Button } from "@/components/common/Button";
+import { Paragraph } from "@/components/common/Paragraph";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -62,34 +64,34 @@ function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
   return (
     <YStack
       flex={1}
-      bg="$background"
+      bg="background"
       pt={insets.top + 24}
       pb={insets.bottom + 24}
-      px="$5"
+      px="5"
       items="center"
       justify="center"
-      gap="$4"
+      gap="4"
     >
       <Text fontSize={64}>😵</Text>
-      <YStack items="center" gap="$2">
-        <H1 color="$text" fontWeight="700" fontSize={24} style={{ textAlign: "center" }}>
+      <YStack items="center" gap="2">
+        <H1 color="text" fontWeight="700" fontSize={24} style={{ textAlign: "center" }}>
           {t("errors.something_went_wrong")}
         </H1>
-        <Paragraph color="$text" opacity={0.6} style={{ textAlign: "center" }}>
+        <Paragraph color="text" opacity={0.6} style={{ textAlign: "center" }}>
           {t("errors.try_again_message")}
         </Paragraph>
       </YStack>
 
       {__DEV__ && !!error && (
         <YStack
-          bg="$pastelPink"
-          p="$3"
-          rounded="$6"
+          bg="pastelPink"
+          p="3"
+          rounded="6"
           borderWidth={1}
-          borderColor="$borderStrong"
+          borderColor="borderStrong"
           maxW="100%"
         >
-          <Text fontSize={12} color="$text" numberOfLines={5}>
+          <Text fontSize={12} color="text" numberOfLines={5}>
             {error.message}
           </Text>
         </YStack>
@@ -97,12 +99,13 @@ function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
 
       {!!onRetry && (
         <Button
-          bg="$primary"
+          bg="primary"
           borderWidth={1}
-          borderColor="$borderStrong"
-          rounded="$6"
+          borderColor="borderStrong"
+          rounded="6"
+          opacity="press:0.9"
+          scale="press:0.98"
           onPress={onRetry}
-          pressStyle={{ opacity: 0.9, scale: 0.98 }}
         >
           <Text fontWeight="700" color="white">
             {t("errors.try_again")}

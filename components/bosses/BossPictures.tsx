@@ -33,8 +33,8 @@ export function BossPictures({ art, monster, monsterLabel, onChange }: Props) {
   const picture = (form: BossArtState) => {
     const { tier, state } = PAINTED_FORM[form];
     return (
-      <YStack key={form} gap="$2" testID={`editor-boss-art-${form}`}>
-        <Text fontWeight="700" fontSize={14} color="$textSecondary">
+      <YStack key={form} gap="2" testID={`editor-boss-art-${form}`}>
+        <Text fontWeight="700" fontSize={14} color="textSecondary">
           {t(`adventures.editor_boss_art_${form}`)}
         </Text>
         <ImageChoiceField
@@ -60,15 +60,15 @@ export function BossPictures({ art, monster, monsterLabel, onChange }: Props) {
     );
   };
   return (
-    <YStack gap="$3">
-      <Text testID="editor-boss-art-hint" fontSize={13} color="$textSecondary">
+    <YStack gap="3">
+      <Text testID="editor-boss-art-hint" fontSize={13} color="textSecondary">
         {t("boss_editor.pictures_hint")}
       </Text>
       {picture("fresh")}
       <Fold testID="editor-boss-art-others-toggle" title={t("boss_editor.other_pictures")}>
         {BOSS_ART_STATES.filter((form) => form !== "fresh").map(picture)}
       </Fold>
-      <Text testID="editor-boss-art-consent" fontSize={13} color="$textSecondary">
+      <Text testID="editor-boss-art-consent" fontSize={13} color="textSecondary">
         {t("adventures.editor_boss_art_consent")}
       </Text>
     </YStack>

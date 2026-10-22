@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
-import { Paragraph, XStack, YStack } from "tamagui";
+import { XStack, YStack } from "tamagui";
 import { AppText } from "@/components/common/AppText";
 import { Card } from "@/components/common/Card";
+import { Paragraph } from "@/components/common/Paragraph";
 import { Skeleton } from "@/components/common/Skeleton";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { DIFFICULTY_COLORS, rawColors } from "@/constants/rawColors";
@@ -80,9 +81,9 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
   if (loading) {
     return (
       <Card>
-        <YStack gap="$3">
+        <YStack gap="3">
           <Skeleton height={16} width="40%" />
-          <XStack gap="$2" items="flex-end" justify="center" pt="$4">
+          <XStack gap="2" items="flex-end" justify="center" pt="4">
             <Skeleton width={24} height={60} radius={4} />
             <Skeleton width={24} height={90} radius={4} />
             <Skeleton width={24} height={45} radius={4} />
@@ -98,12 +99,12 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
   if (failed) {
     return (
       <Card>
-        <YStack gap="$2" items="center" py="$2">
+        <YStack gap="2" items="center" py="2">
           <AppText fontSize={24}>😵</AppText>
-          <AppText fontWeight="700" fontSize={14} color="$text">
+          <AppText fontWeight="700" fontSize={14} color="text">
             {t("chart.error")}
           </AppText>
-          <Paragraph color="$text" opacity={0.6} size="$2">
+          <Paragraph color="text" opacity={0.6} size="2">
             {t("errors.generic")}
           </Paragraph>
         </YStack>
@@ -114,12 +115,12 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
   if (sessions.length === 0) {
     return (
       <Card>
-        <YStack gap="$2" items="center" py="$4">
+        <YStack gap="2" items="center" py="4">
           <AppText fontSize={32}>📈</AppText>
-          <AppText fontWeight="700" fontSize={14} color="$text">
+          <AppText fontWeight="700" fontSize={14} color="text">
             {t("chart.no_data")}
           </AppText>
-          <Paragraph color="$text" opacity={0.6} size="$2" style={{ textAlign: "center" }}>
+          <Paragraph color="text" opacity={0.6} size="2" style={{ textAlign: "center" }}>
             {t("chart.complete_more")}
           </Paragraph>
         </YStack>
@@ -175,13 +176,13 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
 
   return (
     <Card>
-      <YStack gap="$4">
+      <YStack gap="4">
         {/* Title */}
-        <YStack gap="$1">
-          <AppText fontFamily="$heading" fontWeight="700" fontSize={16} color="$text">
+        <YStack gap="1">
+          <AppText fontFamily="heading" fontWeight="700" fontSize={16} color="text">
             {title || t("chart.progression_title")}
           </AppText>
-          <Paragraph color="$text" opacity={0.6} size="$2">
+          <Paragraph color="text" opacity={0.6} size="2">
             {/* The figures below are over this window, never over every run: "10 workouts, 262
                 total mins" sat above a session that was the quest's 10th of 15. */}
             {mode === "quest"
@@ -191,35 +192,35 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
         </YStack>
 
         {/* Stats Row */}
-        <XStack gap="$4" justify="space-around">
+        <XStack gap="4" justify="space-around">
           <YStack items="center">
-            <AppText fontWeight="700" fontSize={24} color="$text">
+            <AppText fontWeight="700" fontSize={24} color="text">
               {sessions.length}
             </AppText>
-            <AppText fontSize={12} color="$text" opacity={0.6}>
+            <AppText fontSize={12} color="text" opacity={0.6}>
               {t("chart.workouts")}
             </AppText>
           </YStack>
           <YStack items="center">
-            <AppText fontWeight="700" fontSize={24} color="$text">
+            <AppText fontWeight="700" fontSize={24} color="text">
               {totalMinutes}
             </AppText>
-            <AppText fontSize={12} color="$text" opacity={0.6}>
+            <AppText fontSize={12} color="text" opacity={0.6}>
               {t("chart.total_mins")}
             </AppText>
           </YStack>
           <YStack items="center">
-            <AppText fontWeight="700" fontSize={24} color="$text">
+            <AppText fontWeight="700" fontSize={24} color="text">
               {avgMinutes}
             </AppText>
-            <AppText fontSize={12} color="$text" opacity={0.6}>
+            <AppText fontSize={12} color="text" opacity={0.6}>
               {t("chart.avg_mins")}
             </AppText>
           </YStack>
         </XStack>
 
         {/* Chart */}
-        <YStack items="center" py="$2">
+        <YStack items="center" py="2">
           <BarChart
             data={chartData}
             width={plotWidth}
@@ -251,16 +252,16 @@ export function ProgressionChart({ questId, limit = 10, title }: ProgressionChar
         </YStack>
 
         {/* Legend: the fills mean difficulty, in the same three colours the bars use. */}
-        <XStack gap="$4" justify="center" flexWrap="wrap">
+        <XStack gap="4" justify="center" flexWrap="wrap">
           {LEGEND.map((level) => (
-            <XStack key={level} items="center" gap="$2" testID={`chart-legend-${level}`}>
+            <XStack key={level} items="center" gap="2" testID={`chart-legend-${level}`}>
               <YStack
                 width={12}
                 height={12}
                 rounded={6}
                 style={{ backgroundColor: DIFFICULTY_COLORS[level] }}
               />
-              <AppText fontSize={11} color="$text" opacity={0.7}>
+              <AppText fontSize={11} color="text" opacity={0.7}>
                 {t(`quests.level_${level}`)}
               </AppText>
             </XStack>

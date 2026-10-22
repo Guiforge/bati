@@ -15,12 +15,12 @@ export function Figure({ label, value, testID }: { label: string; value: string;
   return (
     // From the bottom: a label shrunk to fit is shorter than its neighbours, and from the top it
     // lifted its own number out of the row ("3:21" above "1493 ft" on the recap at 130%).
-    <YStack flex={1} gap="$1" items="center" justify="flex-end">
+    <YStack flex={1} gap="1" items="center" justify="flex-end">
       {/* One line too: at 130% "EN MOUVEMENT" wrapped mid-word ("EN MOUVE" over "MENT"). */}
       <Text
         fontSize={11}
         letterSpacing={2}
-        color="$textSecondary"
+        color="textSecondary"
         textTransform="uppercase"
         numberOfLines={1}
         adjustsFontSizeToFit
@@ -32,7 +32,7 @@ export function Figure({ label, value, testID }: { label: string; value: string;
         testID={testID}
         fontSize={22}
         fontWeight="700"
-        color="$text"
+        color="text"
         numberOfLines={1}
         adjustsFontSizeToFit
       >

@@ -4,8 +4,9 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { H1, H2, Paragraph, Text, XStack, YStack } from "tamagui";
+import { H1, H2, Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { Paragraph } from "@/components/common/Paragraph";
 import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import { ArrowRight } from "@/components/icons";
 import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
@@ -41,7 +42,7 @@ export default function Presentation() {
     });
 
   return (
-    <YStack flex={1} bg="$background">
+    <YStack flex={1} bg="background">
       <Image
         source={require("../../assets/onboardings/building.webp")}
         style={{ position: "absolute", width: "100%", height: "100%" }}
@@ -62,9 +63,9 @@ export default function Presentation() {
         style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "66%" }}
       />
 
-      <YStack flex={1} justify="space-between" pt={insets.top + 20} pb={insets.bottom + 20} px="$5">
+      <YStack flex={1} justify="space-between" pt={insets.top + 20} pb={insets.bottom + 20} px="5">
         {/* Logo + Title */}
-        <YStack items="center" gap="$3">
+        <YStack items="center" gap="3">
           {/* Use Bati branding here (avoid game icons on presentation) */}
           <Image
             source={require("@/assets/adaptive-icon.png")}
@@ -72,7 +73,7 @@ export default function Presentation() {
             contentFit="contain"
           />
           <H1
-            color="$text"
+            color="text"
             fontSize={40}
             fontWeight="700"
             textShadowColor={fade(rawColors.black, 0.5)}
@@ -84,23 +85,23 @@ export default function Presentation() {
         </YStack>
 
         {/* Copy + CTA */}
-        <YStack gap="$5">
-          <YStack gap="$2">
+        <YStack gap="5">
+          <YStack gap="2">
             <H2
-              color="$text"
+              color="text"
               fontSize={32}
               fontWeight="700"
+              lineHeight="38px"
               style={{ textAlign: "center" }}
-              lineHeight={38}
             >
               {t("onboarding.presentation_title")}
             </H2>
             <Paragraph
-              color="$textSecondary"
-              style={{ textAlign: "center" }}
+              color="textSecondary"
               fontSize={16}
-              lineHeight={24}
-              px="$2"
+              lineHeight="24px"
+              px="2"
+              style={{ textAlign: "center" }}
             >
               {t("onboarding.presentation_description")}
             </Paragraph>
@@ -112,12 +113,12 @@ export default function Presentation() {
             onPress={() => router.push("/onboarding/village-setup")}
             borderWidth={0}
           >
-            <XStack items="center" gap="$2">
-              <Text color="$onPrimary" fontFamily="$heading" fontWeight="700" fontSize={18}>
+            <XStack items="center" gap="2">
+              <Text color="onPrimary" fontFamily="heading" fontWeight="700" fontSize={18}>
                 {t("onboarding.finish")}
               </Text>
 
-              <ArrowRight size={20} color="$onPrimary" strokeWidth={3} />
+              <ArrowRight size={20} color="onPrimary" strokeWidth={3} />
             </XStack>
           </AppButton>
 
@@ -126,7 +127,7 @@ export default function Presentation() {
               asking twice. No "are you sure" before the restore: there is no history to lose yet. */}
           <Text
             testID="onboarding-restore"
-            color="$textSecondary"
+            color="textSecondary"
             fontSize={15}
             textDecorationLine="underline"
             style={{ textAlign: "center" }}

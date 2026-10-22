@@ -4,8 +4,10 @@ import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, H1, Paragraph, Text, YStack } from "tamagui";
+import { H1, Text, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
+import { Button } from "@/components/common/Button";
+import { Paragraph } from "@/components/common/Paragraph";
 import { useToast } from "@/components/common/Toast";
 import { ProgressDots } from "@/components/ProgressDots";
 import { getQuestAsset } from "@/constants/assetMap";
@@ -104,7 +106,7 @@ export default function FirstSessionStep() {
     : [];
 
   return (
-    <YStack flex={1} bg="$bgDark">
+    <YStack flex={1} bg="bgDark">
       {/* The quest's own cover: the victory screen shows it again a session later, and closes
           the panel this one opens. Ink while it loads, the old sky if the quest never does. */}
       {quest?.imagePath || offerDead ? (
@@ -128,12 +130,12 @@ export default function FirstSessionStep() {
         style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "60%" }}
       />
 
-      <YStack flex={1} justify="space-between" pt={insets.top + 20} pb={insets.bottom + 20} px="$5">
-        <YStack gap="$3" items="center">
+      <YStack flex={1} justify="space-between" pt={insets.top + 20} pb={insets.bottom + 20} px="5">
+        <YStack gap="3" items="center">
           <ProgressDots current={CURRENT_STEP} total={TOTAL_STEPS} />
           <H1
             text="center"
-            color="$text"
+            color="text"
             fontSize={30}
             fontWeight="700"
             textShadowColor={fade(rawColors.bgDark, 0.8)}
@@ -143,24 +145,24 @@ export default function FirstSessionStep() {
           </H1>
         </YStack>
 
-        <YStack gap="$3">
+        <YStack gap="3">
           {/* What the hero is about to do, on a plate: the clouds above are the brightest thing
               on the page and no halo made a sentence readable there. Every figure comes from the
               quest as loaded, so it is the session that starts. */}
           {quest ? (
             <YStack
               testID="onboarding-first-session-plate"
-              bg="$surface"
+              bg="surface"
               borderWidth={1}
-              borderColor="$borderStrong"
-              rounded="$3"
-              p="$3"
-              gap="$2"
+              borderColor="borderStrong"
+              rounded="3"
+              p="3"
+              gap="2"
             >
-              <Text text="center" color="$text" fontSize={16} fontWeight="700">
+              <Text text="center" color="text" fontSize={16} fontWeight="700">
                 {movements.join(" · ")}
               </Text>
-              <Paragraph text="center" color="$textSecondary" fontSize={14}>
+              <Paragraph text="center" color="textSecondary" fontSize={14}>
                 {[
                   t("quests.rounds", { count: quest.rounds }),
                   t("quests.estimate", {
@@ -193,11 +195,11 @@ export default function FirstSessionStep() {
             <Button
               testID="onboarding-first-session-skip"
               chromeless
-              size="$3"
+              size="3"
               onPress={skip}
               hitSlop={8}
             >
-              <Text color="$textSecondary" fontSize={15}>
+              <Text color="textSecondary" fontSize={15}>
                 {t("onboarding.first_session_later")}
               </Text>
             </Button>

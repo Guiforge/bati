@@ -1,6 +1,6 @@
 import { act, fireEvent, render, waitFor, within } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
-import { getAnimatedStyle } from "react-native-reanimated";
+import * as Reanimated from "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
@@ -10,6 +10,12 @@ import type { RecentFeeds } from "@/db/milestone";
 import * as feedDb from "@/db/milestoneFeed";
 import { type BuildingCode, buildingDefinitions } from "@/db/schema";
 import * as village from "@/db/village";
+
+// Reanimated 4.7 types `getAnimatedStyle` from its web stub (`(): void`); jest runs the native one.
+const getAnimatedStyle = Reanimated.getAnimatedStyle as unknown as (component: {
+  props: Record<string, unknown>;
+}) => { opacity?: unknown };
+
 import { i18n } from "@/i18n";
 import * as reporting from "@/src/reportError";
 import { useChorusStore } from "@/stores/chorus";

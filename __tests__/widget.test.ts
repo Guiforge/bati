@@ -6,6 +6,8 @@ const { completedQuest, userPreferences } = schema;
 
 const ensureMigrations = jest.fn();
 const reportError = jest.fn();
+// The widget primitives, rendered as nothing: the suite reads what the task hands them.
+const renderNothing = () => null;
 
 /** What the OS says the device speaks. Swapped per test. */
 let deviceLocales: { languageCode: string; languageTag: string }[] = [];
@@ -33,8 +35,8 @@ describe("src/widget", () => {
       FLAME_PIVOT: new Date(2000, 0, 1),
     }));
     jest.doMock("react-native-android-widget", () => ({
-      FlexWidget: () => null,
-      TextWidget: () => null,
+      FlexWidget: renderNothing,
+      TextWidget: renderNothing,
       requestWidgetUpdate: jest.fn().mockResolvedValue(undefined),
     }));
     // The real `expo-localization`, so the widget resolves its language through the same

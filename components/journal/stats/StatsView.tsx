@@ -171,11 +171,11 @@ export function Lead({ stats, mode }: { stats: JournalStats; mode: Mode }) {
           : regularLead(t, language, stats);
 
   return (
-    <NText testID="journal-lead" px="$5" pb={11} fontSize={15} lineHeight={22}>
+    <NText testID="journal-lead" px="5" pb={11} fontSize={15} lineHeight="22px">
       {plain}
       {accent ? " " : ""}
       {accent ? (
-        <NText fontWeight="600" color="$gold300">
+        <NText fontWeight="600" color="gold300">
           {accent}
         </NText>
       ) : null}
@@ -249,11 +249,10 @@ export function WallRow({
       p={8}
       minH={48}
       rounded={8}
-      bg="$surface2"
+      bg="surface2"
       borderWidth={fresh ? 1 : 0}
-      borderColor="$gold700"
-      opacity={entry.best == null ? 0.8 : 1}
-      pressStyle={{ opacity: 0.85 }}
+      borderColor="gold700"
+      opacity={`${entry.best == null ? 0.8 : 1} press:0.85`}
     >
       <NImage source={getExerciseThumb(entry.imagePath)} size={44} />
       <YStack flex={1} minW={0}>
@@ -270,8 +269,8 @@ export function WallRow({
             )}
           </NText>
           {fresh ? (
-            <YStack bg="$gold800" rounded={6} px={7} py={1}>
-              <NText fontSize={9.5} lineHeight={14} letterSpacing={0.8} color="$gold100">
+            <YStack bg="gold800" rounded={6} px={7} py={1}>
+              <NText fontSize={9.5} lineHeight="14px" letterSpacing={0.8} color="gold100">
                 {t("journal.wall_new")}
               </NText>
             </YStack>
@@ -285,7 +284,7 @@ export function WallRow({
           {sub.when && recordSession != null ? (
             <NMuted
               testID="journal-wall-record-day"
-              color="$resourceGold"
+              color="resourceGold"
               accessibilityRole="link"
               onPress={() => router.push(`/journal/${recordSession}` as never)}
             >
@@ -301,7 +300,7 @@ export function WallRow({
           to do one rep. The first try sets the record, which the kicker says. */}
       {entry.best == null || !showTarget ? null : (
         <YStack items="flex-end">
-          <NNum fontSize={24} lineHeight={26} color="$resourceGold">
+          <NNum fontSize={24} lineHeight="26px" color="resourceGold">
             {formatTargetValue({ type: entry.type, value: target }, language)}
           </NNum>
           <NKickerQuiet fontSize={9.5}>
@@ -333,7 +332,7 @@ function Wall({ stats, mode }: { stats: JournalStats; mode: Mode }) {
 
   return (
     <YStack testID="journal-wall">
-      <HeaderRow px="$5">
+      <HeaderRow px="5">
         <NKicker>{title}</NKicker>
         <NMuted fontSize={11} style={CAPTION_STYLE}>
           {mode === "firstDay"
@@ -343,7 +342,7 @@ function Wall({ stats, mode }: { stats: JournalStats; mode: Mode }) {
               : t("journal.wall_meta")}
         </NMuted>
       </HeaderRow>
-      <YStack px="$5" pt={8} gap={6}>
+      <YStack px="5" pt={8} gap={6}>
         {stats.wall.map((entry) => (
           <WallRow
             key={`${entry.exerciseId}:${entry.type}`}
@@ -418,20 +417,20 @@ export function FlameBlock({ stats }: { stats: JournalStats }) {
     .join(" ");
 
   return (
-    <NBlock testID="journal-flame" mx="$5" mt={17}>
+    <NBlock testID="journal-flame" mx="5" mt={17}>
       <XStack items="center" gap={8}>
-        <Flame size={18} color={flame.litUntil ? "$resourceGold" : "$muted"} strokeWidth={2.5} />
+        <Flame size={18} color={flame.litUntil ? "resourceGold" : "muted"} strokeWidth={2.5} />
         {/* "0 days lit" beside today's gold dot told a hero with one session that nothing counted.
             Until the flame is lit, the dots and the note below say where she stands. */}
         {/* Asleep comes before the guard below: the hero back once a week, with a session in
             the window and the flame still out, is the one who most needs to see the count. */}
         {flame.dormant > 0 ? (
-          <NNum fontSize={19} lineHeight={24}>
+          <NNum fontSize={19} lineHeight="24px">
             {number(language, flame.dormant)}
             <NMuted fontSize={12}> {t("journal.flame_dormant")}</NMuted>
           </NNum>
         ) : flame.current === 0 && flame.inWindow > 0 ? null : (
-          <NNum fontSize={19} lineHeight={24}>
+          <NNum fontSize={19} lineHeight="24px">
             {number(language, flame.current)}
             <NMuted fontSize={12}> {t("journal.flame_lit", { count: flame.current })}</NMuted>
           </NNum>
@@ -449,7 +448,7 @@ export function FlameBlock({ stats }: { stats: JournalStats }) {
           ))}
         </XStack>
       </XStack>
-      <NMuted mt={8} lineHeight={17}>
+      <NMuted mt={8} lineHeight="17px">
         {note}
       </NMuted>
     </NBlock>
@@ -478,7 +477,7 @@ function Delta({
   const diff = Math.round(now - was);
   if (diff === 0) return <NMuted fontSize={11}>{t("journal.delta_same", { month })}</NMuted>;
   return (
-    <NText fontSize={11} lineHeight={15} color={diff > 0 ? "$gold300" : "$textSecondary"}>
+    <NText fontSize={11} lineHeight="15px" color={diff > 0 ? "gold300" : "textSecondary"}>
       {t(diff > 0 ? "journal.delta_up" : "journal.delta_down", {
         value: number(language, Math.abs(diff)),
         month,
@@ -499,7 +498,7 @@ function Figure({
   return (
     <YStack width="47%">
       <XStack items="baseline" gap={5}>
-        <NNum fontSize={21} lineHeight={26}>
+        <NNum fontSize={21} lineHeight="26px">
           {value}
         </NNum>
         {unit ? <NMuted fontSize={11.5}>{unit}</NMuted> : null}
@@ -537,7 +536,7 @@ export function MonthBlock({ stats }: { stats: JournalStats }) {
   const todayKey = dayKey(now);
 
   return (
-    <NBlock testID="journal-month" mx="$5" mt={6}>
+    <NBlock testID="journal-month" mx="5" mt={6}>
       <HeaderRow>
         <NKickerQuiet>
           {t("journal.month_so_far", { month: monthName(language, now) })}
@@ -629,7 +628,7 @@ export function MonthBlock({ stats }: { stats: JournalStats }) {
           );
         })}
       </XStack>
-      <NMuted fontSize={11} mt={8} lineHeight={16}>
+      <NMuted fontSize={11} mt={8} lineHeight="16px">
         {t("journal.frieze_legend")}
       </NMuted>
     </NBlock>
@@ -655,26 +654,26 @@ function DayMark({
   shrink?: boolean;
 }) {
   const filled = kind === "quest" || kind === "both";
-  let bg: "$resourceGold" | "$ink900" | "$ink800" | undefined = "$ink800";
-  if (filled) bg = "$resourceGold";
+  let bg: "resourceGold" | "ink900" | "ink800" | undefined = "ink800";
+  if (filled) bg = "resourceGold";
   else if (kind === "outing") bg = undefined;
-  else if (future) bg = "$ink900";
+  else if (future) bg = "ink900";
   return (
     <YStack
       {...(shrink ? { flex: 1, maxW: 9, aspectRatio: 1 } : { width: 9, height: 9 })}
       rounded={round ? 5 : 2}
       bg={bg}
       borderWidth={today || kind === "outing" ? 1.5 : 0}
-      borderColor={today ? "$text" : "$gold600"}
+      borderColor={today ? "text" : "gold600"}
       items="center"
       justify="center"
     >
-      {kind === "both" ? <YStack width={3} height={3} rounded={1} bg="$surface2" /> : null}
+      {kind === "both" ? <YStack width={3} height={3} rounded={1} bg="surface2" /> : null}
     </YStack>
   );
 }
 
-const WORK_FILLS = ["$resourceGold", "$gold600", "$gold700", "$gold800"] as const;
+const WORK_FILLS = ["resourceGold", "gold600", "gold700", "gold800"] as const;
 
 function WorkBlock({ stats }: { stats: JournalStats }) {
   const { t } = useTranslation();
@@ -697,7 +696,7 @@ function WorkBlock({ stats }: { stats: JournalStats }) {
     text.length * 5.6 + 6 <= ((rowWidth - 2 * (shown.length - 1)) * pct) / total;
 
   return (
-    <NBlock testID="journal-work" mx="$5" mt={6}>
+    <NBlock testID="journal-work" mx="5" mt={6}>
       <HeaderRow>
         <NKickerQuiet>{t("journal.work_title")}</NKickerQuiet>
         <NMuted fontSize={11} style={CAPTION_STYLE}>
@@ -712,9 +711,9 @@ function WorkBlock({ stats }: { stats: JournalStats }) {
               key={m.muscle}
               flex={m.percentage}
               height={`${Math.max(16, (m.percentage / (shown[0]?.percentage || 1)) * 100)}%`}
-              bg={weak ? "$ink800" : (WORK_FILLS[index] ?? "$gold800")}
+              bg={weak ? "ink800" : (WORK_FILLS[index] ?? "gold800")}
               borderWidth={weak ? 1 : 0}
-              borderColor="$resourceGold"
+              borderColor="resourceGold"
               borderTopLeftRadius={2}
               borderTopRightRadius={2}
             />
@@ -729,7 +728,7 @@ function WorkBlock({ stats }: { stats: JournalStats }) {
               key={m.muscle}
               flex={m.percentage}
               fontSize={10}
-              lineHeight={13}
+              lineHeight="13px"
               numberOfLines={1}
             >
               {fits(text, m.percentage) ? text : ""}
@@ -738,14 +737,14 @@ function WorkBlock({ stats }: { stats: JournalStats }) {
         })}
       </XStack>
       <XStack mt={11} flexWrap="wrap" items="baseline" gap={6}>
-        <NText fontSize={12.5} lineHeight={18}>
+        <NText fontSize={12.5} lineHeight="18px">
           {verdict.text}
         </NText>
         <NText
           testID="journal-work-link"
           fontSize={12.5}
-          lineHeight={18}
-          color="$resourceGold"
+          lineHeight="18px"
+          color="resourceGold"
           onPress={() => router.push("/journal/balance" as never)}
           accessibilityRole="link"
         >
@@ -763,11 +762,11 @@ function HardSetsBlock({ stats }: { stats: JournalStats }) {
   if (stats.hardSets.length === 0) return null;
 
   return (
-    <NBlock testID="journal-hard-sets" mx="$5" mt={6}>
+    <NBlock testID="journal-hard-sets" mx="5" mt={6}>
       <NKickerQuiet>{t("journal.hard_sets_title")}</NKickerQuiet>
       <YStack mt={9} gap={4}>
         {stats.hardSets.map(({ pattern, sets }) => (
-          <NText key={pattern} fontSize={12.5} lineHeight={18}>
+          <NText key={pattern} fontSize={12.5} lineHeight="18px">
             {t("journal.hard_sets_line", {
               pattern: PATTERN_LABELS[pattern][language],
               count: sets,
@@ -801,7 +800,7 @@ export function LevelBlock({ stats }: { stats: JournalStats }) {
           : t("journal.shelf_next_special", { title: nextTitle });
 
   return (
-    <NBlock testID="journal-level" mx="$5" mt={6}>
+    <NBlock testID="journal-level" mx="5" mt={6}>
       <HeaderRow>
         <NKickerQuiet>
           {t("journal.level_kicker", { title: level.title[language], level: level.level })}
@@ -809,8 +808,8 @@ export function LevelBlock({ stats }: { stats: JournalStats }) {
         <NText
           testID="journal-level-xp"
           fontSize={11}
-          lineHeight={17}
-          color="$resourceGold"
+          lineHeight="17px"
+          color="resourceGold"
           style={CAPTION_STYLE}
         >
           {t("journal.level_meta", {
@@ -823,8 +822,8 @@ export function LevelBlock({ stats }: { stats: JournalStats }) {
         <InkGauge
           testIDPrefix="journal-level-gauge"
           progress={level.xpProgress / 100}
-          fill="$resourceGold"
-          track="$gold800"
+          fill="resourceGold"
+          track="gold800"
           frame={rawColors.borderStrong}
         />
       </YStack>
@@ -850,11 +849,11 @@ export function LevelBlock({ stats }: { stats: JournalStats }) {
         minH={44}
         onPress={() => router.push("/journal/achievements" as never)}
         accessibilityRole="button"
-        pressStyle={{ opacity: 0.85 }}
+        opacity="press:0.85"
       >
-        <Medal size={20} color="$resourceGold" strokeWidth={2.5} />
+        <Medal size={20} color="resourceGold" strokeWidth={2.5} />
         <YStack flex={1} minW={0}>
-          <NText fontSize={13.5} lineHeight={19}>
+          <NText fontSize={13.5} lineHeight="19px">
             {t("journal.shelf_count", { unlocked: shelf.unlocked, total: shelf.total })}
           </NText>
           <NMuted fontSize={11.5} numberOfLines={1}>
@@ -884,7 +883,7 @@ export function StatsView({ stats }: { stats: JournalStats }) {
       <WorkBlock stats={stats} />
       <HardSetsBlock stats={stats} />
       <LevelBlock stats={stats} />
-      <XStack mx="$5" mt={17} flexWrap="wrap" gap={6}>
+      <XStack mx="5" mt={17} flexWrap="wrap" gap={6}>
         <NButton
           testID="journal-chip-lifetime"
           onPress={() => router.push("/journal/lifetime" as never)}

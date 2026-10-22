@@ -1,9 +1,22 @@
-import { useFocusEffect, useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import {
+  useFocusEffect,
+  useLocalSearchParams,
+  useNavigation,
+  usePreventRemove,
+  useRouter,
+} from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Keyboard, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  type ScrollViewInstance,
+  type TextInputInstance,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Input, type TamaguiElement, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { balanceFacts, balanceSentence } from "@/components/adventures/balanceFacts";
 import { type EditorEnd, EditorEndSection } from "@/components/adventures/EditorEnd";
 import { type EditorStep, EditorStepCard } from "@/components/adventures/EditorStepCard";
@@ -14,6 +27,7 @@ import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Card } from "@/components/common/Card";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { ImageChoiceField } from "@/components/common/ImageChoiceField";
+import { Input } from "@/components/common/Input";
 import { StatusBand } from "@/components/common/StatusBand";
 import { useToast } from "@/components/common/Toast";
 import { leavesWithoutAsking, useTabLeaveGuard } from "@/components/common/useTabLeaveGuard";
@@ -184,8 +198,8 @@ export default function AdventureEditor() {
   const [stepsMissing, setStepsMissing] = useState(false);
   const typing = useKeyboardShown();
   const nextUid = useRef(0);
-  const nameRef = useRef<TamaguiElement>(null);
-  const scrollRef = useRef<ScrollView>(null);
+  const nameRef = useRef<TextInputInstance>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const nameCardY = useRef(0);
   const addStepY = useRef(0);
   const skipGuardRef = useRef(false);
@@ -200,25 +214,25 @@ export default function AdventureEditor() {
   // The ref is read when the hero leaves, never during render (the React Compiler skips a screen
   // that reads one in its body). Same guard as the quest editor: one tap on back lost the draft.
   const navigation = useNavigation();
-  useEffect(() => {
-    return navigation.addListener("beforeRemove", (e) => {
-      if (leavesWithoutAsking(navigation, isDirty, skipGuardRef)) return;
-      e.preventDefault();
-      setDialog({
-        title: t("quests.editor_discard_title"),
-        body: t("quests.editor_discard_body"),
-        confirmLabel: t("quests.editor_discard"),
-        cancelLabel: t("common.cancel"),
-        destructive: true,
-        onConfirm: () => {
-          // The field that was being typed in is about to unmount; without this the keyboard
-          // outlives it and sits over the screen the hero lands on.
-          Keyboard.dismiss();
-          navigation.dispatch(e.data.action);
-        },
-      });
+  usePreventRemove(isDirty, ({ repeat }) => {
+    if (leavesWithoutAsking(navigation, isDirty, skipGuardRef)) {
+      repeat();
+      return;
+    }
+    setDialog({
+      title: t("quests.editor_discard_title"),
+      body: t("quests.editor_discard_body"),
+      confirmLabel: t("quests.editor_discard"),
+      cancelLabel: t("common.cancel"),
+      destructive: true,
+      onConfirm: () => {
+        // The field that was being typed in is about to unmount; without this the keyboard
+        // outlives it and sits over the screen the hero lands on.
+        Keyboard.dismiss();
+        repeat();
+      },
     });
-  }, [navigation, t, isDirty]);
+  });
 
   useTabLeaveGuard(isDirty, skipGuardRef, (go) =>
     setDialog({
@@ -460,7 +474,7 @@ export default function AdventureEditor() {
   ].filter(Boolean);
 
   return (
-    <YStack flex={1} bg="$background">
+    <YStack flex={1} bg="background">
       {/* The window does not resize under the keyboard here (edge-to-edge), so without this the
           focused field and the save bar sat under it. Same pairing as journal/[id]. */}
       <KeyboardAvoidingView
@@ -473,16 +487,16 @@ export default function AdventureEditor() {
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingBottom: 24 }}
         >
-          <YStack p="$5" pt={insets.top + 12} gap="$4">
-            <XStack items="center" gap="$3">
+          <YStack p="5" pt={insets.top + 12} gap="4">
+            <XStack items="center" gap="3">
               <AppIconButton
                 onPress={() => router.back()}
                 accessibilityRole="button"
                 accessibilityLabel={t("quests.go_back")}
               >
-                <ChevronLeft size={22} color="$text" strokeWidth={2.5} />
+                <ChevronLeft size={22} color="text" strokeWidth={2.5} />
               </AppIconButton>
-              <Text fontFamily="$heading" fontWeight="700" fontSize={20} color="$text">
+              <Text fontFamily="heading" fontWeight="700" fontSize={20} color="text">
                 {adventureId == null ? t("adventures.editor_title_new") : t("adventures.edit")}
               </Text>
             </XStack>
@@ -493,7 +507,7 @@ export default function AdventureEditor() {
                 onPress={prefill}
                 minH={44}
                 fontWeight="700"
-                color="$primaryText"
+                color="primaryText"
                 accessibilityRole="button"
               >
                 {t("adventures.editor_from_recent")}
@@ -507,9 +521,9 @@ export default function AdventureEditor() {
                 nameCardY.current = e.nativeEvent.layout.y;
               }}
             >
-              <YStack gap="$3">
-                <YStack gap="$2">
-                  <Text fontWeight="700" fontSize={14} color="$textSecondary">
+              <YStack gap="3">
+                <YStack gap="2">
+                  <Text fontWeight="700" fontSize={14} color="textSecondary">
                     {t("adventures.editor_name")}
                   </Text>
                   <Input
@@ -521,24 +535,24 @@ export default function AdventureEditor() {
                       setNameMissing(false);
                     }}
                     maxLength={MAX_TITLE}
-                    bg="$background"
-                    borderColor={nameMissing ? "$error" : "$borderStrong"}
-                    color="$text"
+                    bg="background"
+                    borderColor={`${nameMissing ? "error" : "borderStrong"}`}
+                    color="text"
                   />
                   {nameMissing ? (
                     <Text
                       testID="adventure-name-error"
                       accessibilityLiveRegion="polite"
                       fontSize={13}
-                      color="$error"
+                      color="error"
                     >
                       {t("adventures.editor_name_missing")}
                     </Text>
                   ) : null}
                 </YStack>
 
-                <YStack gap="$2">
-                  <Text fontWeight="700" fontSize={14} color="$textSecondary">
+                <YStack gap="2">
+                  <Text fontWeight="700" fontSize={14} color="textSecondary">
                     {t("adventures.editor_description")}
                   </Text>
                   <Input
@@ -547,9 +561,9 @@ export default function AdventureEditor() {
                     maxLength={MAX_DESCRIPTION}
                     multiline
                     py={8}
-                    bg="$background"
-                    borderColor="$borderStrong"
-                    color="$text"
+                    bg="background"
+                    borderColor="borderStrong"
+                    color="text"
                   />
                 </YStack>
               </YStack>
@@ -564,11 +578,11 @@ export default function AdventureEditor() {
               aspect={[4, 3]}
             />
 
-            <Text fontWeight="700" fontSize={18} color="$text">
+            <Text fontWeight="700" fontSize={18} color="text">
               {t("adventures.editor_steps")}
             </Text>
             {frozen ? (
-              <Text testID="editor-frozen" fontSize={13} color="$textSecondary">
+              <Text testID="editor-frozen" fontSize={13} color="textSecondary">
                 {t("adventures.editor_frozen")}
               </Text>
             ) : null}
@@ -601,7 +615,7 @@ export default function AdventureEditor() {
                 <AppButton
                   testID="editor-add-step"
                   variant="outline"
-                  icon={<Plus size={20} color="$text" strokeWidth={2.5} />}
+                  icon={<Plus size={20} color="text" strokeWidth={2.5} />}
                   onPress={() => setPickerOpen(true)}
                 >
                   {t("adventures.editor_add_step")}
@@ -613,13 +627,13 @@ export default function AdventureEditor() {
                 testID="adventure-steps-error"
                 accessibilityLiveRegion="polite"
                 fontSize={13}
-                color="$error"
+                color="error"
               >
                 {t("adventures.editor_steps_missing")}
               </Text>
             ) : null}
 
-            <Text fontWeight="700" fontSize={18} color="$text">
+            <Text fontWeight="700" fontSize={18} color="text">
               {t("adventures.editor_end")}
             </Text>
             <EditorEndSection
@@ -638,11 +652,11 @@ export default function AdventureEditor() {
               onChange={(next) => patch({ end: next })}
             />
 
-            <Text testID="editor-summary" fontSize={13} color="$textSecondary">
+            <Text testID="editor-summary" fontSize={13} color="textSecondary">
               {summary.join(" · ")}
             </Text>
             {sentences.map((sentence) => (
-              <Text key={sentence} testID="editor-balance" fontSize={13} color="$textSecondary">
+              <Text key={sentence} testID="editor-balance" fontSize={13} color="textSecondary">
                 {sentence}
               </Text>
             ))}
@@ -653,7 +667,7 @@ export default function AdventureEditor() {
                 onPress={confirmRetire}
                 minH={44}
                 fontWeight="700"
-                color="$textSecondary"
+                color="textSecondary"
                 accessibilityRole="button"
               >
                 {t("adventures.editor_retire")}
@@ -675,11 +689,11 @@ export default function AdventureEditor() {
         <StatusBand />
 
         <YStack
-          p="$4"
+          p="4"
           pb={typing ? 16 : insets.bottom + 16}
-          bg="$bgDark"
+          bg="bgDark"
           borderTopWidth={1}
-          borderColor="$borderStrong"
+          borderColor="borderStrong"
         >
           <AppButton testID="adventure-save" height={56} disabled={busy} onPress={save}>
             {t("adventures.editor_save")}

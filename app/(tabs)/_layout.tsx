@@ -21,7 +21,9 @@ export default function TabsLayout() {
           const tabs = navigation.getState();
           // A root screen pushed over the tabs blurs this tab too; only a real tab change unwinds.
           if (tabs.routes[tabs.index]?.key === route.key) return;
-          const key = tabs.routes.find((r) => r.key === route.key)?.state?.key;
+          const key = tabs.routes.find(
+            (r: { key: string; state?: { key?: string } }) => r.key === route.key,
+          )?.state?.key;
           // Plain action: importing StackActions pulls @react-navigation/native, which Expo Router 56+ refuses.
           if (key) navigation.dispatch({ type: "POP_TO_TOP", target: key });
         },
@@ -52,7 +54,7 @@ export default function TabsLayout() {
           title: t("tabs.home"),
           tabBarIcon: ({ focused, size }) => (
             <Home
-              color={focused ? "$primaryText" : "$text"}
+              color={`${focused ? "primaryText" : "text"}`}
               fill={focused ? theme.primaryText?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
@@ -71,7 +73,7 @@ export default function TabsLayout() {
           popToTopOnBlur: true,
           tabBarIcon: ({ focused, size }) => (
             <Sparkles
-              color={focused ? "$primaryText" : "$text"}
+              color={`${focused ? "primaryText" : "text"}`}
               fill={focused ? theme.primaryText?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
@@ -93,7 +95,7 @@ export default function TabsLayout() {
           popToTopOnBlur: true,
           tabBarIcon: ({ focused, size }) => (
             <MapIcon
-              color={focused ? "$primaryText" : "$text"}
+              color={`${focused ? "primaryText" : "text"}`}
               fill={focused ? theme.primaryText?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
@@ -110,7 +112,7 @@ export default function TabsLayout() {
           title: t("tabs.village"),
           tabBarIcon: ({ focused, size }) => (
             <Castle
-              color={focused ? "$primaryText" : "$text"}
+              color={`${focused ? "primaryText" : "text"}`}
               fill={focused ? theme.primaryText?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}
@@ -127,7 +129,7 @@ export default function TabsLayout() {
           title: t("tabs.journal"),
           tabBarIcon: ({ focused, size }) => (
             <Scroll
-              color={focused ? "$primaryText" : "$text"}
+              color={`${focused ? "primaryText" : "text"}`}
               fill={focused ? theme.primaryText?.val : "none"}
               opacity={focused ? 1 : 0.55}
               size={size ?? 22}

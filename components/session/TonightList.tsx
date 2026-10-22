@@ -316,14 +316,14 @@ function cardOf(
         id: f.id,
         title: ageLine(t, f, language),
         body: [ageBody(t, f)],
-        art: <GameIcon name="crown" size={32} color="$resourceGold" />,
+        art: <GameIcon name="crown" size={32} color="resourceGold" />,
       };
     case "anniversary":
       return {
         id: f.id,
         title: t("session.tonight_anniversary", { count: f.years }),
         body: [anniversaryBody(t, f, language)].filter(Boolean),
-        art: <GameIcon name="crown" size={32} color="$resourceGold" />,
+        art: <GameIcon name="crown" size={32} color="resourceGold" />,
       };
     case "boss":
       return {
@@ -335,7 +335,7 @@ function cardOf(
           // An adventure the hero wrote pays its sessions and nothing more: said once, here.
           f.own ? t("boss.own_pays_sessions") : null,
         ].filter((line) => line !== null),
-        art: <GameIcon name="sword" size={32} color="$resourceGold" />,
+        art: <GameIcon name="sword" size={32} color="resourceGold" />,
       };
     case "oath":
       return {
@@ -350,7 +350,7 @@ function cardOf(
             ? t("oath.fulfilled_xp_bonus", { count: formatCount(language, f.bonusXp) })
             : t("oath.fulfilled_bonus_taken", { count: formatCount(language, OATH_XP_BONUS) }),
         ],
-        art: <GameIcon name="scroll" size={32} color="$resourceGold" />,
+        art: <GameIcon name="scroll" size={32} color="resourceGold" />,
       };
     case "rung":
       return {
@@ -401,7 +401,7 @@ function cardOf(
         id: f.id,
         title: localizedTitle(f.achievement.definition, language),
         body: [localizedText(f.achievement.definition, "description", language)],
-        art: <AchievementIcon icon={f.achievement.definition.icon} size={32} color="$text" />,
+        art: <AchievementIcon icon={f.achievement.definition.icon} size={32} color="text" />,
       };
     default:
       return null;
@@ -417,12 +417,12 @@ function LineRow({ line }: { line: Line }) {
   return (
     <XStack
       items="center"
-      gap="$3"
+      gap="3"
       accessible
       accessibilityLabel={spoken({ title: plain, body: badge ? [badge] : [] })}
     >
-      {line.art ?? <YStack width={8} height={8} rounded={4} bg="$resourceGold" />}
-      <AppText flex={1} fontSize={15} color="$text">
+      {line.art ?? <YStack width={8} height={8} rounded={4} bg="resourceGold" />}
+      <AppText flex={1} fontSize={15} color="text">
         {line.text.split(/<b>|<\/b>/).map((part, i) =>
           i % 2 ? (
             // biome-ignore lint/suspicious/noArrayIndexKey: a static split, never reordered
@@ -435,8 +435,8 @@ function LineRow({ line }: { line: Line }) {
         )}
       </AppText>
       {badge ? (
-        <YStack borderWidth={1} borderColor="$glassBorder" rounded="$2" px="$2" py="$1">
-          <AppText fontSize={12} color="$textSecondary">
+        <YStack borderWidth={1} borderColor="glassBorder" rounded="2" px="2" py="1">
+          <AppText fontSize={12} color="textSecondary">
             {badge}
           </AppText>
         </YStack>
@@ -456,7 +456,7 @@ function CapAction({ offer }: { offer: CapOffer }) {
   const next = localizedName(offer.next, language);
   if (saved) {
     return (
-      <AppText fontSize={13} color="$textSecondary">
+      <AppText fontSize={13} color="textSecondary">
         {t("progression.cap_offer_done", { next })}
       </AppText>
     );
@@ -472,7 +472,7 @@ function CapAction({ offer }: { offer: CapOffer }) {
       }}
       style={{ minHeight: 44, justifyContent: "center" }}
     >
-      <AppText fontSize={15} color="$resourceGold" textDecorationLine="underline">
+      <AppText fontSize={15} color="resourceGold" textDecorationLine="underline">
         {t("progression.cap_offer_action", { next })}
       </AppText>
     </Pressable>
@@ -483,26 +483,21 @@ function CardRow({ card }: { card: CardData }) {
   return (
     // A card with a button in it cannot be one accessibility element: the button would be unreachable.
     <Card
-      bg="$background"
-      p="$3"
+      bg="background"
+      p="3"
       accessible={!card.action}
       accessibilityLabel={card.action ? undefined : spoken(card)}
     >
-      <XStack items="center" gap="$3">
+      <XStack items="center" gap="3">
         <YStack minW={64} items="center" importantForAccessibility="no-hide-descendants">
           {card.art}
         </YStack>
-        <YStack flex={1} gap="$1">
-          <AppText
-            fontFamily={headingFont(card.title)}
-            fontWeight="700"
-            fontSize={17}
-            color="$text"
-          >
+        <YStack flex={1} gap="1">
+          <AppText fontFamily={headingFont(card.title)} fontWeight="700" fontSize={17} color="text">
             {card.title}
           </AppText>
           {card.body?.map((line) => (
-            <AppText key={line} fontSize={13} color="$textSecondary">
+            <AppText key={line} fontSize={13} color="textSecondary">
               {line}
             </AppText>
           ))}
@@ -557,10 +552,10 @@ export function TonightList({
   );
 
   return (
-    <YStack width="100%" maxW={520} gap="$3" testID="tonight-list">
+    <YStack width="100%" maxW={520} gap="3" testID="tonight-list">
       <SectionLabel>{t("session.tonight_title")}</SectionLabel>
       {lines.length > 0 ? (
-        <YStack gap="$3">
+        <YStack gap="3">
           {(allLines ? lines : lines.slice(0, LINES_SHOWN)).map((line) => (
             <LineRow key={line.id} line={line} />
           ))}
@@ -571,7 +566,7 @@ export function TonightList({
               onPress={() => setAllLines(true)}
               style={{ minHeight: 44, justifyContent: "center" }}
             >
-              <AppText fontSize={15} color="$primaryText" textDecorationLine="underline">
+              <AppText fontSize={15} color="primaryText" textDecorationLine="underline">
                 {t("session.tonight_more", { count: lines.length - LINES_SHOWN })}
               </AppText>
             </Pressable>
@@ -588,7 +583,7 @@ export function TonightList({
           onPress={onViewVillage}
           style={{ minHeight: 44, minWidth: 44, justifyContent: "center" }}
         >
-          <AppText fontSize={15} color="$primaryText" textDecorationLine="underline">
+          <AppText fontSize={15} color="primaryText" textDecorationLine="underline">
             {t("session.village_growth_cta")}
           </AppText>
         </Pressable>

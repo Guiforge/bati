@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
+import { Button } from "@/components/common/Button";
 import { Minus, Plus } from "@/components/icons";
 
 /**
@@ -142,24 +143,24 @@ export function Stepper({
   const hold = useHoldRepeat(value, min, max, step, onChange);
 
   return (
-    <XStack items="center" justify="space-between" gap="$3">
+    <XStack items="center" justify="space-between" gap="3">
       <YStack flex={1}>
         {/* Two lines, since a label here can be a movement name: "Course du Messager" next to a
             value reading "13 min" rather than "900s" no longer fits on one, and truncating the
             movement is worse than wrapping it. */}
-        <Text fontWeight="700" fontSize={15} color="$text" numberOfLines={2}>
+        <Text fontWeight="700" fontSize={15} color="text" numberOfLines={2}>
           {label}
         </Text>
         {hint ? (
-          <Text fontSize={12} color="$textSecondary">
+          <Text fontSize={12} color="textSecondary">
             {hint}
           </Text>
         ) : null}
       </YStack>
 
-      <XStack items="center" gap="$3">
+      <XStack items="center" gap="3">
         <Button
-          size="$3"
+          size="3"
           // A rep count adjusted between two sets, with the hands that just did them: `$3` is
           // 36 dp, and this is the control least able to afford a miss.
           hitSlop={8}
@@ -178,19 +179,19 @@ export function Stepper({
         <Text
           fontWeight="700"
           fontSize={18}
-          color="$text"
+          color="text"
           style={{ minWidth: 64, textAlign: "center" }}
         >
           {display ? display(value) : `${value}${suffix}`}
         </Text>
         <Button
-          size="$3"
+          size="3"
+          opacity={value >= max ? 0.4 : 1}
           hitSlop={8}
           circular
           icon={<Plus size={16} />}
           disabled={value >= max}
           aria-disabled={value >= max}
-          opacity={value >= max ? 0.4 : 1}
           accessibilityLabel={t("common.increase", { label })}
           onPressIn={() => hold.start(1)}
           onPressOut={hold.stop}

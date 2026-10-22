@@ -1,6 +1,7 @@
 import { Image } from "expo-image";
 import { useTranslation } from "react-i18next";
-import { Paragraph, Text, View, XStack, YStack } from "tamagui";
+import { Text, View, XStack, YStack } from "tamagui";
+import { Paragraph } from "@/components/common/Paragraph";
 
 import { getVillagerAsset } from "@/constants/assetMap";
 import { type FaceFrame, VILLAGER_FACES } from "@/constants/villagerFaces";
@@ -56,7 +57,7 @@ export function VillagerLine({ owner, reserve }: { owner: CueOwner; reserve?: nu
 
   if (reserve == null)
     return block ? (
-      <YStack px="$4" pb="$2">
+      <YStack px="4" pb="2">
         {block}
       </YStack>
     ) : null;
@@ -93,7 +94,7 @@ export function VillagerSays({
       testID="villager-line-block"
       accessible
       accessibilityLabel={`${t(`villagers.names.${villager}`)}. ${shown}${rest}`}
-      gap="$2"
+      gap="2"
       items="flex-start"
     >
       {/* The face, not the figure: at this size a full body is a smudge. It sits in an ink
@@ -103,9 +104,9 @@ export function VillagerSays({
         width={48}
         height={48}
         rounded={24}
-        bg="$bgDark"
+        bg="bgDark"
         borderWidth={1.5}
-        borderColor="$borderStrong"
+        borderColor="borderStrong"
         items="center"
         justify="center"
       >
@@ -125,7 +126,7 @@ export function VillagerSays({
       {/* A parchment bubble beside the medallion, in the banner and in the flow alike. Its tail
           sits in the gap beside the medallion (overlapping it by 1 dp) and points at the face, so
           the slot's overflow never clips it. */}
-      <YStack testID="villager-bubble" flex={1} minW={0} bg="$parchment" rounded="$1" p="$2">
+      <YStack testID="villager-bubble" flex={1} minW={0} bg="parchment" rounded="1" p="2">
         <View
           testID="villager-tail"
           position="absolute"
@@ -138,26 +139,26 @@ export function VillagerSays({
           borderRightWidth={8}
           borderTopColor="transparent"
           borderBottomColor="transparent"
-          borderRightColor="$parchment"
+          borderRightColor="parchment"
         />
         {/* The speaker is the cue that this is speech; the line itself is regular weight, so it
             does not read as the screen's own instruction. */}
-        <Text fontSize={12} fontWeight="700" color="$ink800" accessible={false}>
+        <Text fontSize={12} fontWeight="700" color="ink800" accessible={false}>
           {t(`villagers.names.${villager}`)}
         </Text>
         {/* The untyped remainder is transparent rather than omitted, so the line is its final
             size from the first character. */}
         <Paragraph
-          color="$bgDark"
+          color="bgDark"
           fontSize={14}
-          lineHeight={18}
+          lineHeight="18px"
           numberOfLines={numberOfLines}
           accessible={false}
         >
-          <Paragraph testID="villager-line" color="$bgDark" fontSize={14} lineHeight={18}>
+          <Paragraph testID="villager-line" color="bgDark" fontSize={14} lineHeight="18px">
             {shown}
           </Paragraph>
-          <Paragraph color="transparent" fontSize={14} lineHeight={18}>
+          <Paragraph color="transparent" fontSize={14} lineHeight="18px">
             {rest}
           </Paragraph>
         </Paragraph>

@@ -8,7 +8,8 @@ import config from "@/tamagui.config";
 /**
  * Home fits its viewport on most phones, so its ScrollView never scrolls and never takes a touch
  * away from the pressable under it. Tamagui fires `onPress` on release whatever the finger did in
- * between, so a swipe up the scene opened the quest screen. On a Fairphone 6 that navigation was
+ * between (since Tamagui 3: as long as it stays on the pressable, which the scene is big enough
+ * for), so a swipe up the scene opened the quest screen. On a Fairphone 6 that navigation was
  * measured as "Home scrolls at 29 ms a frame".
  *
  * RNTL does not run the responder negotiation, so these drive the handlers the way it does: the
@@ -49,7 +50,11 @@ function touch(dx: number, dy: number) {
     previousTimeStamp: 0,
   };
   return {
-    nativeEvent: { touches: [{}] },
+    nativeEvent: { touches: [{ pageX: 100 + dx, pageY: 100 + dy }] },
+    // Tamagui 3 presses through RN's Pressability, which persists the event, ignores a release
+    // with no responder, and measures it to drop a finger that leaves it: a scene-sized pressable.
+    persist: () => {},
+    currentTarget: { measure: (cb: (...n: number[]) => void) => cb(0, 0, 400, 900, 0, 0) },
     touchHistory: {
       numberActiveTouches: 1,
       indexOfSingleActiveTouch: 0,
@@ -104,7 +109,7 @@ test("a Tamagui pressable still presses on a release after a drag, and yields wh
   const onPress = jest.fn();
   await render(
     <TamaguiProvider config={config} defaultTheme="dark">
-      <YStack testID="door" onPress={onPress} pressStyle={{ opacity: 0.8 }} />
+      <YStack testID="door" onPress={onPress} opacity="press:0.8" />
     </TamaguiProvider>,
   );
   const door = screen.getByTestId("door").props as Handlers & {

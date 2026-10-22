@@ -215,6 +215,7 @@ describe("slow walks", () => {
   });
 
   test("0.4 m/s, which is a walking frame or a very old hero, does not collapse either", () => {
+    expect.hasAssertions();
     const state = walked(0.4, HALF_HOUR);
     within5pc(state.distanceM, 0.4 * HALF_HOUR);
     within5pc(state.movingMs, HALF_HOUR * 1000);

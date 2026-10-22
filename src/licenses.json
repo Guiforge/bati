@@ -4928,7 +4928,7 @@
     },
     {
       "name": "i18next",
-      "version": "26.5.4",
+      "version": "26.5.5",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2011-present i18next"], "text": 2 }]
     },
@@ -6750,7 +6750,7 @@
     },
     {
       "name": "react-i18next",
-      "version": "17.1.0",
+      "version": "17.1.2",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2015-present i18next"], "text": 2 }]
     },
@@ -8087,7 +8087,7 @@
     },
     {
       "name": "zustand",
-      "version": "5.0.15",
+      "version": "5.0.16",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2019 Paul Henschel"], "text": 4 }]
     }

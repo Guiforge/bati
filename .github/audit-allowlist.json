@@ -1,10 +1,10 @@
 [
   {
     "id": "GHSA-vfj7-8cjw-p6xm",
-    "reason": "braces (stack exhaustion on deeply nested glob patterns) arrives through micromatch in Metro and Jest's file watcher. It runs on the developer's and CI's machine over this repository's own globs, never inside the app. Checked 2026-10-17; delete when Expo's Metro drops braces <=3.0.3."
+    "reason": "braces (stack exhaustion on deeply nested glob patterns) arrives through micromatch in Metro and Jest's file watcher. It runs on the developer's and CI's machine over this repository's own globs, never inside the app. Checked 2026-10-17, again on Expo SDK 58 on 2026-10-22; delete when Expo's Metro drops braces <=3.0.3."
   },
   {
     "id": "GHSA-86w9-cpqp-85rv",
-    "reason": "node-forge RSA signature verification, reached through @expo/code-signing-certificates in the Expo CLI (expo-updates code signing, a build and publish step). No node-forge in the app bundle, no signature verified at runtime. Checked 2026-10-17; delete when @expo/code-signing-certificates takes node-forge >1.4.0."
+    "reason": "node-forge RSA signature verification, reached through @expo/code-signing-certificates in the Expo CLI (expo-updates code signing, a build and publish step). No node-forge in the app bundle, no signature verified at runtime. Checked 2026-10-17, again on Expo SDK 58 on 2026-10-22; delete when @expo/code-signing-certificates takes node-forge >1.4.0."
   }
 ]

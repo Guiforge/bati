@@ -37,7 +37,7 @@
     "expo-system-ui": "~58.0.6",
     "i18next": "^26.5.5",
     "react": "19.3.0",
-    "react-dom": "19.3.0",
+    "react-dom": "19.3.1",
     "react-i18next": "^17.1.2",
     "react-native": "0.88.0",
     "react-native-android-widget": "^0.23.0",
@@ -212,7 +212,7 @@
       "@tamagui/helpers-icon": "3.1.2"
     },
     "@tamagui/web": "3.1.2",
-    "react-dom": "19.3.0",
+    "react-dom": "19.3.1",
     "esbuild": "^0.28.2",
     "jest-environment-node": "30.4.1",
     "jest-environment-jsdom": "30.4.1"

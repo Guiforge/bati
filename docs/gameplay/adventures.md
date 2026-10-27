@@ -39,6 +39,8 @@ Everything is free: no quota, no Bati+ lock, no offer (`db/heroAdventures.ts` is
   cannot be deleted; the quest editor says which adventure.
 - **Home.** The oath comes before a hero adventure under way; a game adventure under way keeps its
   place before the oath, even when a newer run of the hero's own is active.
+- **The gallery.** Every adventure with a run under way shows its own step track and "Step x/y", not
+  only the newest run: a game adventure and one of the hero's own can both be going.
 - **The zone.** A hero quest used as a step that would work the zone being spared wears a line on the
   detail screen. The game's quests substitute their slots and are never flagged.
 

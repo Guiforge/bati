@@ -118,7 +118,8 @@ interface AdventureRun {
 | `startAdventureRun(adventureId)` | Start a new adventure run |
 | `leaveAdventureRun(adventureId)` | Leave the active run (`left`); the boss keeps its HP |
 | `getActiveAdventureRun(adventureId)` | Get active run for adventure |
-| `getAnyActiveAdventureRun()` | Get any active adventure run |
+| `getAnyActiveAdventureRun()` | Get the newest active adventure run (Home reads it, once per owner) |
+| `activeRunProgress()` | Progress of every adventure with a run under way, newest first, one entry per adventure: what the gallery draws on each poster |
 | `completeAdventureRunStep({ runStepId, completedSessionId, questId })` | Mark step complete. Refuses, writing nothing and returning the ordinary-training result, when the run is not active, the step's quest is not `questId`, or the step's status is not `"active"` |
 | `setAdventureRunDifficultyOverride(runId, level)` | Set difficulty override |
 

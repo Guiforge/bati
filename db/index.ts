@@ -3,12 +3,14 @@
 
 export type {
   ActiveAdventureRun,
+  ActiveRunProgress,
   Adventure,
   AdventureDetails,
   AdventureStepTemplate,
 } from "./adventures";
 export {
   activeRunAdventureIds,
+  activeRunProgress,
   adventureOrder,
   completeAdventureRunStep,
   getActiveAdventureRun,

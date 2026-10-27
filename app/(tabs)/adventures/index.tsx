@@ -23,10 +23,11 @@ import { ForgeButton } from "@/components/forge/ForgeButton";
 import { Skull, Sparkles } from "@/components/icons";
 import { type ArtSource, getAdventureAsset } from "@/constants/assetMap";
 import {
+  type ActiveRunProgress,
   type Adventure,
   activeRunAdventureIds,
+  activeRunProgress,
   adventureOrder,
-  getAnyActiveAdventureRun,
   getFinishedRunCountsByAdventure,
   getRecentSessionHistory,
   listAdventures,
@@ -92,13 +93,6 @@ type AdventureRow = {
   byHero: boolean;
 };
 
-/** How the hero is doing in the one campaign that can be active at a time. */
-type AdventureProgress = {
-  adventureId: number;
-  completedCount: number;
-  currentIndex: number;
-};
-
 function buildAdventureRow(
   a: Adventure,
   finishedCount: number,
@@ -159,7 +153,7 @@ function AdventureCard({
   onPressAdventure,
 }: {
   row: AdventureRow;
-  progress: AdventureProgress | null;
+  progress: ActiveRunProgress | null;
   onPressAdventure: (id: number) => void;
 }) {
   const { t } = useTranslation();
@@ -263,7 +257,7 @@ function AdventureCard({
           ) : null}
         </YStack>
 
-        {/* Step track — the campaign's signature. Filled only on the active run. */}
+        {/* Step track — the campaign's signature. Filled for every run under way. */}
         <XStack px="4" pt="3" gap={3} accessibilityLabel={stepProgressLabel ?? row.stepsLabel}>
           {Array.from({ length: item.stepsCount }, (_, i) => (
             <YStack
@@ -430,7 +424,8 @@ export default function AdventuresGallery() {
     adventures: [],
     previews: new Map(),
   });
-  const [activeProgress, setActiveProgress] = useState<AdventureProgress | null>(null);
+  // Every run under way, newest first: each poster reads its own.
+  const [runProgress, setRunProgress] = useState<ActiveRunProgress[]>([]);
   const [finishedCounts, setFinishedCounts] = useState<Map<number, number>>(new Map());
   const [runningIds, setRunningIds] = useState<ReadonlySet<number>>(new Set());
 
@@ -443,7 +438,7 @@ export default function AdventuresGallery() {
     await Promise.all([
       listAdventures(),
       listExercises(),
-      getAnyActiveAdventureRun(),
+      activeRunProgress(),
       getFinishedRunCountsByAdventure(),
       getAllQuestConfigs(),
       getRecentSessionHistory(10),
@@ -451,17 +446,9 @@ export default function AdventuresGallery() {
       activeRunAdventureIds(),
     ])
       .then(
-        ([adventures, exercises, activeRun, finished, questConfigs, history, answer, running]) => {
-          const progress: AdventureProgress | null = activeRun
-            ? {
-                adventureId: activeRun.adventureId,
-                completedCount: activeRun.activeRun.steps.filter((s) => s.status === "completed")
-                  .length,
-                currentIndex: activeRun.activeRun.activeStep?.stepIndex ?? 0,
-              }
-            : null;
+        ([adventures, exercises, progress, finished, questConfigs, history, answer, running]) => {
           // Same content, same identity: a focus with nothing new re-renders no poster.
-          setActiveProgress((previous) => keepIfSame(previous, progress));
+          setRunProgress((previous) => keepIfSame(previous, progress));
           setFinishedCounts((previous) => keepIfSame(previous, finished));
           setRunningIds((previous) => keepIfSame(previous, running));
           const exercisesById = Object.fromEntries(exercises.map((e) => [e.id, e] as const));
@@ -519,10 +506,8 @@ export default function AdventuresGallery() {
     // Ordered before the rows are built, so the sort reads the adventures themselves rather
     // than the display strings derived from them.
     // Under way first (every run, not only the newest), then the rest in `adventureOrder`.
-    // ponytail: the progress chip stays with the newest run only (`getAnyActiveAdventureRun`);
-    // per-run progress on each poster is the fix if two runs at once turns out to be common.
     const order = (list: Adventure[]) =>
-      adventureOrder(list, activeProgress?.adventureId ?? null, finishedCounts).sort(
+      adventureOrder(list, runProgress[0]?.adventureId ?? null, finishedCounts).sort(
         (a, b) => Number(runningIds.has(b.id)) - Number(runningIds.has(a.id)),
       );
     const game = adventures.filter((a) => a.author !== USER_QUEST_AUTHOR);
@@ -535,7 +520,7 @@ export default function AdventuresGallery() {
     const rows: GalleryItem[] = order(game).map(build);
     if (own.length > 0) rows.push({ yoursHeader: true }, ...order(own).map(build));
     return rows;
-  }, [adventures, finishedCounts, runningIds, language, t, previews, activeProgress, pace]);
+  }, [adventures, finishedCounts, runningIds, language, t, previews, runProgress, pace]);
 
   const title = t("adventures.gallery_title");
 
@@ -548,9 +533,7 @@ export default function AdventuresGallery() {
     ) : (
       <AdventureCard
         row={item}
-        progress={
-          activeProgress && activeProgress.adventureId === item.adventure.id ? activeProgress : null
-        }
+        progress={runProgress.find((p) => p.adventureId === item.adventure.id) ?? null}
         onPressAdventure={onPressAdventure}
       />
     );

@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, or, sql } from "drizzle-orm";
 import { FIRST_QUEST_TITLE } from "@/constants/onboarding";
 import { getBossFightByAdventure, resetBossFight } from "./bossFights";
 import { db, schema } from "./client";
@@ -617,6 +617,55 @@ export async function activeRunAdventureIds(): Promise<Set<number>> {
     .from(adventureRuns)
     .where(eq(adventureRuns.status, "active"));
   return new Set(rows.map((r) => r.id));
+}
+
+/** How far a run under way has got, as the gallery draws it on that adventure's poster. */
+export type ActiveRunProgress = {
+  adventureId: number;
+  completedCount: number;
+  /** The step the hero is on; 0 when none is active, as for a run with no step rows. */
+  currentIndex: number;
+};
+
+/**
+ * The progress of every adventure with a run under way, the newest run first, one entry per
+ * adventure. A game adventure and one of the hero's own can both be under way
+ * (`getAnyActiveAdventureRun` answers for a single run, which is what Home wants), and each
+ * poster shows its own. Like `activeRunAdventureIds`, it does not filter `adventures.isActive`:
+ * an adventure retired on another device stays listed while a run of it is active.
+ */
+export async function activeRunProgress(): Promise<ActiveRunProgress[]> {
+  const runs = await db
+    .select({ id: adventureRuns.id, adventureId: adventureRuns.adventureId })
+    .from(adventureRuns)
+    .where(eq(adventureRuns.status, "active"))
+    .orderBy(desc(adventureRuns.id));
+
+  // Newest first, so the first run seen for an adventure is the one `getActiveAdventureRun` reads.
+  const newestRunOf = new Map<number, number>();
+  for (const run of runs) {
+    if (!newestRunOf.has(run.adventureId)) newestRunOf.set(run.adventureId, run.id);
+  }
+  if (newestRunOf.size === 0) return [];
+
+  const steps = await db
+    .select({
+      runId: adventureRunSteps.runId,
+      stepIndex: adventureRunSteps.stepIndex,
+      status: adventureRunSteps.status,
+    })
+    .from(adventureRunSteps)
+    .where(inArray(adventureRunSteps.runId, [...newestRunOf.values()]))
+    .orderBy(asc(adventureRunSteps.stepIndex));
+
+  return [...newestRunOf].map(([adventureId, runId]) => {
+    const own = steps.filter((s) => s.runId === runId);
+    return {
+      adventureId,
+      completedCount: own.filter((s) => s.status === "completed").length,
+      currentIndex: own.find((s) => s.status === "active")?.stepIndex ?? 0,
+    };
+  });
 }
 
 /**

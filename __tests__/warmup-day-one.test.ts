@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import type { WarmupQuest } from "@/constants/warmup";
 import type { MovementPattern } from "@/db/schema";
 import { clientMock, createTestDb } from "./helpers/testDb";
@@ -124,6 +125,28 @@ describe("the warm-up on day one", () => {
     for (const steps of built) expect(steps[0]).toBe("Glute Bridge");
     expect(built.flat()).not.toContain("Mountain Climber");
     expect(built.flat()).not.toContain("Bear Crawl");
+  });
+
+  // Squat's easier rung is Wall Sit, and the fallback ends a day-one warm-up on it: a Wall Sit held,
+  // ten seconds, then a Wall Sit asked for. The first exercise names itself, as a served rung does.
+  test("a hero whose quest opens on Wall Sit is not warmed up with it", async () => {
+    const { unavailableMovements } = require("../db/exercises") as typeof import("../db/exercises");
+    const { buildWarmup } = require("../constants/warmup") as typeof import("../constants/warmup");
+    const unavailable = await unavailableMovements();
+    const plain = quest(["squat", "squat", "core"]);
+    const [head, ...rest] = plain.exercises;
+    assert(head);
+    const served = {
+      ...plain,
+      exercises: [{ ...head, exercise: { ...head.exercise, enName: "Wall Sit" } }, ...rest],
+    };
+
+    const before = buildWarmup(plain, 0, unavailable);
+    const after = buildWarmup(served, 0, unavailable);
+
+    expect(before.at(-1)?.exerciseName).toBe("Wall Sit");
+    expect(after.at(-1)?.exerciseName).not.toBe("Wall Sit");
+    expect(after).toHaveLength(before.length);
   });
 
   test("the brisk movements come back with the jumps, after three sessions", async () => {

@@ -40,6 +40,12 @@ jest.mock("@/components/journal/PastSessionSheet", () => ({
   },
 }));
 
+// Yesterday, not a fixed date: a hand-written session is correctable for a few days only, and a
+// date written into the test ran out of window on its own.
+const yesterday = new Date();
+yesterday.setDate(yesterday.getDate() - 1);
+yesterday.setHours(18, 0, 0, 0);
+
 const base = {
   id: 5,
   uuid: "u5",
@@ -48,7 +54,7 @@ const base = {
   durationSeconds: 2700,
   xpEarned: 75,
   notes: "",
-  performedAt: new Date(2026, 9, 16, 18, 0),
+  performedAt: yesterday,
   leaguesM: null,
   movingSeconds: null,
   ascentM: null,

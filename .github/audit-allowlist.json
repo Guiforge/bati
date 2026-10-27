@@ -6,5 +6,9 @@
   {
     "id": "GHSA-86w9-cpqp-85rv",
     "reason": "node-forge RSA signature verification, reached through @expo/code-signing-certificates in the Expo CLI (expo-updates code signing, a build and publish step). No node-forge in the app bundle, no signature verified at runtime. Checked 2026-10-17, again on Expo SDK 58 on 2026-10-22; delete when @expo/code-signing-certificates takes node-forge >1.4.0."
+  },
+  {
+    "id": "GHSA-mrhx-c7xc-m3w5",
+    "reason": "zod 3.25.76 (memory exhaustion on oversized constrained collections) arrives only through @expo/cli, the Expo CLI's dev-server MCP schemas. Nothing in the app imports zod, and the CLI never runs on a phone. No 3.x fix exists (patched in 4.6.6). Checked 2026-10-27; delete when @expo/cli takes zod >=4.6.6."
   }
 ]

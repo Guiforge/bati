@@ -108,7 +108,6 @@ function sheet(
 let write: jest.SpyInstance;
 let shipped: string[];
 beforeAll(() => i18n.changeLanguage("fr"));
-afterAll(() => i18n.changeLanguage("en"));
 beforeEach(() => {
   shipped = [...DELIVERED_COATS];
   write = jest.spyOn(preferences, "setCrestAnimal").mockResolvedValue();
@@ -120,6 +119,7 @@ afterEach(() => {
   set.clear();
   for (const slug of shipped) set.add(slug);
 });
+afterAll(() => i18n.changeLanguage("en"));
 
 describe("Pourquoi l'Ours ?", () => {
   it("the animal of the sessions: title, bars and the shield's sentence", async () => {

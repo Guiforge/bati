@@ -165,10 +165,6 @@ const back = () => (mockDialog?.onDismiss ?? mockDialog?.onCancel ?? mockDialog?
 
 const run = jest.fn(() => Promise.resolve());
 
-afterEach(async () => {
-  await cleanup();
-});
-
 beforeEach(() => {
   mockAlerts.length = 0;
   mockDialog = null;
@@ -190,6 +186,10 @@ beforeEach(() => {
   mockSheet = null;
   useSyncStore.setState({ result: null, offered: [], run });
   useSessionStore.setState({ status: "idle" });
+});
+
+afterEach(async () => {
+  await cleanup();
 });
 
 test("mounts the backup's own dialog, which an adopt's failure and join question need", async () => {

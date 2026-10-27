@@ -234,7 +234,13 @@ export type WarmupQuest = {
   restSeconds: number;
   roundRestSeconds: number | null;
   exercises: {
-    exercise: { pattern: MovementPattern | null; secondsPerRep: number; style: ExerciseStyle };
+    exercise: {
+      /** The first exercise's name is what the last warm-up step must not repeat. */
+      enName?: string;
+      pattern: MovementPattern | null;
+      secondsPerRep: number;
+      style: ExerciseStyle;
+    };
     target: Target;
   }[];
 };
@@ -375,11 +381,23 @@ export function buildWarmup(
     (quest.archetype === "skill" || patterns.includes("push_vertical")) &&
     !unavailable.has(WRISTS.exerciseName);
 
-  return [
+  const opening = [
     ...fill(RAISE, raise, offset, used),
     ...fill(MOBILISE, mobilise, offset, used),
     ...fill(activatePool, activate, offset, used),
     ...(needsWrists ? [WRISTS] : []),
-    ...fill(potentiatePool, potentiate, offset, used),
   ];
+
+  // The last step is close to the work, never the work: the first exercise follows it after a ten
+  // second wait, so repeating it was a Wall Sit held, then a Wall Sit asked for (a player's
+  // report). Only this phase is told, so every other phase keeps the rotation it had.
+  const first = quest.exercises[0]?.exercise.enName;
+  const closing = fill(
+    potentiatePool,
+    potentiate,
+    offset,
+    new Set(first ? [...used, first] : used),
+  );
+
+  return [...opening, ...closing];
 }

@@ -851,6 +851,33 @@ describe("content invariants", () => {
     expect(offenders).toEqual([]);
   });
 
+  // A warm-up that ends on the movement its quest opens with is a movement held, a ten second
+  // wait, and the same movement asked for again. Seeded quests that do it are the measure here
+  // (Table Row, Jump Squat before the fix); the served-rung case, a day-one Wall Sit, is
+  // `warmup-day-one`'s, since every rung is owned in this file. The length must not pay for it.
+  test("no warm-up ends on the movement its quest opens with, and none is shorter for it", async () => {
+    const { buildWarmup } = require("../constants/warmup") as typeof import("../constants/warmup");
+    const all = await loadQuests();
+
+    const offenders = all.flatMap((quest) => {
+      const first = quest.exercises[0]?.exercise.enName;
+      const unnamed = {
+        ...quest,
+        exercises: quest.exercises.map((qex, i) =>
+          i === 0 ? { ...qex, exercise: { ...qex.exercise, enName: undefined } } : qex,
+        ),
+      };
+      return Array.from({ length: 12 }, (_, i) => i).flatMap((i) => {
+        const steps = buildWarmup(quest, i);
+        const ends = steps.at(-1)?.exerciseName === first;
+        const shorter = steps.length !== buildWarmup(unnamed, i).length;
+        return ends || shorter ? [`${quest.enTitle} (${i}): ${first}`] : [];
+      });
+    });
+
+    expect(offenders).toEqual([]);
+  });
+
   // `0068` names its movements by `enName`, so a typo or a later rename leaves a one-sided
   // movement timed as one side again, without a sound. The warm-up's two are the ones it used to
   // keep in a list of its own.

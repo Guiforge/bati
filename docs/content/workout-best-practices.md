@@ -308,12 +308,19 @@ pretend otherwise.
   motivation without harming gains). Rotation only changes *which* movement fills a phase — never
   the length, the order, or the wrist step.
 
-  **Every movement is shown before its clock runs.** Thirty seconds of movement, then a wait of
-  `PREP_SECONDS` (10 s) or until GO, which the hero chooses in Settings. Ten seconds is the
-  transition of the 7-minute workout (Klika & Jordan 2013), a protocol built for speed that still
-  kept it; Bati ran zero, and four players described a clock running on a movement they were still
-  reading about. It costs 40 s on the shortest warm-up and under two minutes on the longest. See
-  [`../designs/warmup-prep.md`](../designs/warmup-prep.md).
+  **Waits.** The first movement of the warm-up and the first exercise each wait `PREP_SECONDS`
+  (10 s) or until GO, which the hero chooses in Settings. Between two warm-up movements the gap
+  is `transitionSeconds`: 10 s during the first three sessions, then 5 s, or whatever the hero
+  chose (5 s, 10 s, GO, none). Ten seconds is the transition of the 7-minute workout (Klika &
+  Jordan 2013). A transition is for changing position, not for reading or resting, because a
+  RAMP warm-up stays continuous. See [`../designs/warmup-prep.md`](../designs/warmup-prep.md).
+
+  **The last step is never the session's first exercise.** It is "close to the real work", not
+  the work: the first exercise follows after a wait, and a Wall Sit held then asked for again
+  was a player's report. Only the last phase is told, so the rotation of the others is
+  unchanged. The evidence here is thin: potentiation studies use loaded protocols and minutes of
+  rest (Wilson 2013, Seitz & Haff 2016), and nothing tests a bodyweight bout followed by 10 s,
+  so this is a prudent reading of fatigue, not a proven effect.
 
   **Only dynamic movements, ever.** §11 puts static stretching after training or in standalone
   sessions, so `Pigeon Pose`, `Standing Forward Fold`, `Warrior Pose` and `Cobra Stretch` are

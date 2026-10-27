@@ -130,3 +130,12 @@ puis les 3 premières séances, puis 5 s.
 - « Change de côté » venait d'une liste de noms en dur (`ONE_SIDED`). Depuis `0068`, il lit
   `exercises.perSide`, la même colonne que les quêtes, via `useSideSwitch` : vibration et deux
   bips courts à mi-parcours.
+
+### 27/10/2026
+
+Un joueur : le dernier mouvement de l'échauffement était la chaise contre le mur, puis le même
+exercice 10 s après. Cause : `buildWarmup` ne regardait pas la quête, et le repli `NO_IMPACT` finit
+un échauffement de jour un sur Wall Sit, l'échelon facile du Squat. Règle : la dernière étape n'est
+jamais le premier exercice (`enName` lu sur `quest.exercises[0]`), pour tous les héros, dans la
+seule phase finale. L'attente de 10 s avant le premier exercice reste fixe : on s'y place pour
+l'effort, ce que les 5 s d'enchaînement ne servent pas.

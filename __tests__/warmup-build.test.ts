@@ -366,3 +366,53 @@ describe("warm-up transitions", () => {
     expect(secondsAhead([], "5", 0)).toBe(0);
   });
 });
+
+// The last step is the movement closest to the work, not the work: a hero who finishes 30 s of
+// Wall Sit and ten seconds later is asked for Wall Sit again has been warmed up by the session.
+describe("the last warm-up step and the first exercise", () => {
+  const opening = (first: string, patterns: (MovementPattern | null)[]) => {
+    const q = quest(patterns);
+    const [head, ...rest] = q.exercises;
+    return {
+      ...q,
+      exercises: [{ ...head, exercise: { ...head?.exercise, enName: first } }, ...rest],
+    } as WarmupQuest;
+  };
+  const last = (q: WarmupQuest, sessionCount: number, unavailable?: ReadonlySet<string>) =>
+    names(q, sessionCount, unavailable).at(-1);
+
+  it("never ends on the movement the session opens with, whichever way it rotates", () => {
+    const pushing = ["push_horizontal", "push_horizontal", "core"] as const;
+    for (const first of ["Push-ups", "Wall Push-Up"]) {
+      for (let n = 0; n < 12; n++) {
+        expect(last(opening(first, [...pushing]), n)).not.toBe(first);
+      }
+    }
+  });
+
+  it("does it on day one too, where the fallback is all there is", () => {
+    const dayOne: ReadonlySet<string> = new Set([
+      "Jumping Jack",
+      "High Knees",
+      "Star Jump",
+      "Skater Hop",
+      "Mountain Climber",
+      "Jump Squat",
+      "Bear Crawl",
+      "Squat",
+      "Lunge",
+    ]);
+    const plain = quest(["squat", "squat", "core"]);
+    const q = opening("Wall Sit", ["squat", "squat", "core"]);
+    // The guard is worth nothing if the unnamed warm-up never ended on it.
+    expect(last(plain, 0, dayOne)).toBe("Wall Sit");
+    expect(last(q, 0, dayOne)).not.toBe("Wall Sit");
+    expect(names(q, 0, dayOne)).toHaveLength(names(plain, 0, dayOne).length);
+  });
+
+  it("leaves every other warm-up exactly as it was", () => {
+    const plain = quest(["squat", "hinge", "pull_vertical", "pull_horizontal"]);
+    const named = opening("Burpee", ["squat", "hinge", "pull_vertical", "pull_horizontal"]);
+    for (let n = 0; n < 12; n++) expect(names(named, n)).toEqual(names(plain, n));
+  });
+});

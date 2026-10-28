@@ -683,7 +683,7 @@ export async function previewAdventure(
   const bringing = file.steps.flatMap(({ quest }, i) =>
     statuses[i]?.status === "brings" && "own" in quest ? [quest.own] : [],
   );
-  const arrives = arrivals(bringing, catalogue);
+  const arrives = arrivals(bringing, catalogue, templates);
   // A boss this phone already holds is kept as it is, so its pictures are no arrival.
   const carried = sent ? carriedBoss(file) : null;
   const boss = carried ? await getHeroBossByUuid(carried.uuid) : null;

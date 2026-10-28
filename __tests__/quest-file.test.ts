@@ -1315,6 +1315,65 @@ describe("previewing a quest file", () => {
 
   // The preview warns before a file overwrites one of the hero's quests; it has to find that
   // quest by the uuid the import will use, and only that one.
+  test("names an arriving movement that carries a game exercise's name, once, whatever its case", async () => {
+    const { file } = load();
+    const named = (name: string, uuid: string) => {
+      const q = received();
+      const slot = ownSlot(uuid);
+      assert("own" in slot.movement);
+      return { ...q, slots: [{ ...slot, movement: { own: { ...slot.movement.own, name } } }] };
+    };
+    const game = await file.previewQuest(named("push-UPS", "0192a000-0000-7000-8000-0000000000e1"));
+    expect(game.gameNames).toEqual(["push-UPS"]);
+    expect(game.clashes).toEqual([]);
+    const unique = await file.previewQuest(
+      named("Zxq unique", "0192a000-0000-7000-8000-0000000000e2"),
+    );
+    expect(unique.gameNames).toEqual([]);
+    // Here by uuid: not an arrival, so a re-import of the hero's own movement stays silent.
+    expect((await file.previewQuest(received())).gameNames).toEqual([]);
+  });
+
+  test("a name that is both the hero's and the game's is one note, the hero's", async () => {
+    const { file, exercises } = load();
+    await exercises.createUserExercise({
+      ...exercises.DEFAULT_USER_EXERCISE_DRAFT,
+      name: "Push-ups",
+      description: "x",
+      muscles: ["chest"],
+    });
+    const q = received();
+    const slot = ownSlot("0192a000-0000-7000-8000-0000000000e3");
+    assert("own" in slot.movement);
+    const both = {
+      ...q,
+      slots: [{ ...slot, movement: { own: { ...slot.movement.own, name: "Push-ups" } } }],
+    };
+    const preview = await file.previewQuest(both);
+    expect(preview.clashes).toEqual(["Push-ups"]);
+    expect(preview.gameNames).toEqual([]);
+  });
+
+  test("names an arriving quest titled like a game quest, but not the hero's own being updated", async () => {
+    const { file } = load();
+    const seed = t.sqlite
+      .prepare("SELECT enTitle FROM quests WHERE author = 'Admin' LIMIT 1")
+      .get() as { enTitle: string };
+    const title = (en: string, uuid: string) => {
+      const q = received({ uuid });
+      return { ...q, quest: { ...q.quest, title: { ...q.quest.title, en } } };
+    };
+    const hit = await file.previewQuest(
+      title(seed.enTitle.toUpperCase(), "0192a000-0000-7000-8000-0000000000e4"),
+    );
+    expect(hit.gameQuests).toEqual([seed.enTitle.toUpperCase()]);
+    const miss = await file.previewQuest(
+      title("Zxq unique", "0192a000-0000-7000-8000-0000000000e5"),
+    );
+    expect(miss.gameQuests).toEqual([]);
+    expect((await file.previewQuest(received())).gameQuests).toEqual([]);
+  });
+
   test("names the hero's quest the file would update, and only that one", async () => {
     const { file, quests } = load();
     const mine = (await quests.listQuestTemplates()).find((q) => q.uuid === QUEST_UUID);

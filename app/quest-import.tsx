@@ -42,6 +42,7 @@ import {
   readBatiFile,
 } from "@/src/questFile";
 import { reportError } from "@/src/reportError";
+import { isSessionLive, useSessionStore } from "@/stores/session";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
 /** What the file turned out to be. Null while that is unknown: a refusal before the kind is read. */
@@ -115,16 +116,38 @@ export default function QuestImportScreen() {
   const leave = () =>
     router.canGoBack() ? router.back() : router.replace(galleryOf(loaded) as never);
 
+  // Whether the quest this would update is being played. A boolean selector: no churn per tick.
+  const existing = loaded.status === "ready" ? loaded.preview.existing : null;
+  const running = useSessionStore((s) => playsQuest(s, existing));
+  // A session keeps its own copy of the quest, so updating the hero's here would not corrupt it,
+  // but its recap would read slots that are not the ones played. The copy is offered instead.
+  // ponytail: only this door is guarded. The quest editor and the sync merge can rewrite the same
+  // quest mid-session too; harmless for the same reason (the session owns its copy and
+  // `saveSession` writes by exerciseId and sortOrder), and the editor is a deliberate walk.
+
   const kept = keep.filter(Boolean).length;
   const canImport = loaded.status === "ready" && kept > 0 && title.trim() !== "" && !busy;
-  const updating = loaded.status === "ready" && loaded.preview.existing !== null && !asCopy;
+  const updating = existing !== null && !asCopy && !running;
+
+  const arrivesTicked = (name: string) =>
+    loaded.status === "ready" &&
+    loaded.file.slots.some(
+      ({ movement }, i) => keep[i] && "own" in movement && movement.own.name === name,
+    );
 
   const onImport = async () => {
     if (loaded.status !== "ready" || working.current) return;
     working.current = true;
     setBusy(true);
+    // The live store, not the render: a session that started since the last render still counts.
+    const playingNow = playsQuest(useSessionStore.getState(), loaded.preview.existing);
     const done = await save(
-      editQuestFile(loaded.file, { title, language: titleLanguage, keep, asCopy }),
+      editQuestFile(loaded.file, {
+        title,
+        language: titleLanguage,
+        keep,
+        asCopy: asCopy || playingNow,
+      }),
     );
     working.current = false;
     setBusy(false);
@@ -181,17 +204,16 @@ export default function QuestImportScreen() {
                 quest={loaded.preview.existing}
                 language={language}
                 asCopy={asCopy}
+                running={running}
                 onChange={setAsCopy}
               />
             ) : null}
 
             {/* An unticked movement does not arrive, so it sits beside nothing. */}
             <ImportClashes
-              names={loaded.preview.clashes.filter((name) =>
-                loaded.file.slots.some(
-                  ({ movement }, i) => keep[i] && "own" in movement && movement.own.name === name,
-                ),
-              )}
+              names={loaded.preview.clashes.filter(arrivesTicked)}
+              gameNames={loaded.preview.gameNames.filter(arrivesTicked)}
+              gameQuests={loaded.preview.gameQuests}
             />
 
             <YStack gap="2">
@@ -269,6 +291,14 @@ function OtherStates({
     return <AdventureImport file={loaded.file} preview={loaded.preview} language={language} />;
   }
   return null;
+}
+
+/** The same live test the store applies when a session starts (`isSessionLive`), on one quest. */
+function playsQuest(
+  s: Pick<ReturnType<typeof useSessionStore.getState>, "status" | "quest">,
+  existing: QuestTemplate | null,
+) {
+  return existing !== null && isSessionLive(s.status) && s.quest?.id === existing.id;
 }
 
 function galleryOf(loaded: Loaded): string {
@@ -436,11 +466,13 @@ function ExistingQuest({
   quest,
   language,
   asCopy,
+  running,
   onChange,
 }: {
   quest: QuestTemplate;
   language: AppLanguage;
   asCopy: boolean;
+  running: boolean;
   onChange: (asCopy: boolean) => void;
 }) {
   const { t } = useTranslation();
@@ -453,20 +485,26 @@ function ExistingQuest({
           {t("quests.import_existing", { title: localizedTitle(quest, language) })}
         </Text>
       </XStack>
-      <XStack gap="2" flexWrap="wrap">
-        <Chip
-          testID="quest-import-update"
-          label={t("quests.import_choice_update")}
-          tone={asCopy ? "default" : "primary"}
-          onPress={() => onChange(false)}
-        />
-        <Chip
-          testID="quest-import-copy"
-          label={t("quests.import_choice_copy")}
-          tone={asCopy ? "primary" : "default"}
-          onPress={() => onChange(true)}
-        />
-      </XStack>
+      {running ? (
+        <Text testID="quest-import-running" color="textSecondary" fontSize={13}>
+          {t("quests.import_running")}
+        </Text>
+      ) : (
+        <XStack gap="2" flexWrap="wrap">
+          <Chip
+            testID="quest-import-update"
+            label={t("quests.import_choice_update")}
+            tone={asCopy ? "default" : "primary"}
+            onPress={() => onChange(false)}
+          />
+          <Chip
+            testID="quest-import-copy"
+            label={t("quests.import_choice_copy")}
+            tone={asCopy ? "primary" : "default"}
+            onPress={() => onChange(true)}
+          />
+        </XStack>
+      )}
     </Card>
   );
 }

@@ -457,13 +457,25 @@ export type Arrivals = {
   photos: number;
   /** Names of arriving movements the hero already has under another uuid: both will stay. */
   clashes: string[];
+  /**
+   * Names of arriving movements that are also the name of a game exercise, minus those already in
+   * `clashes` (one note per movement). The two stay separate: the import finds a hero movement by
+   * uuid only, and the hero and game names are different populations (exercise-ownership.md).
+   */
+  gameNames: string[];
+  /** Titles of arriving quests that are also the title of a game quest. */
+  gameQuests: string[];
 };
 
 /**
  * Read once for the previews. A name is never a key (a hero may name two movements alike, 0036), so a
  * same-name movement with another uuid arrives as a second row: this says so before it does.
  */
-export function arrivals(bodies: readonly QuestBody[], catalogue: readonly Exercise[]): Arrivals {
+export function arrivals(
+  bodies: readonly QuestBody[],
+  catalogue: readonly Exercise[],
+  templates: readonly QuestTemplate[],
+): Arrivals {
   const names = new Set(
     catalogue
       .filter((e) => isUserExercise(e) && !e.retiredAt)
@@ -483,14 +495,36 @@ export function arrivals(bodies: readonly QuestBody[], catalogue: readonly Exerc
     }
   }
   const arriving = [...fresh.values()];
+  // ponytail: English names only, so a French file naming "Pompes" is not flagged. The ceiling is a
+  // missed hint, cosmetic; the fix is to compare the localized names too.
+  const lower = (n: string) => n.trim().toLowerCase();
+  const gameExercises = new Set(
+    catalogue.filter((e) => !isUserExercise(e)).map((e) => lower(e.enName)),
+  );
+  const gameQuests = new Set(templates.filter((q) => !isUserQuest(q)).map((q) => lower(q.enTitle)));
+  const mine = new Set(templates.filter(isUserQuest).map((q) => q.uuid));
+  const clashes = [...new Set(arriving.filter((m) => names.has(lower(m.name))).map((m) => m.name))];
+  const clashed = new Set(clashes.map(lower));
   return {
     quests: quests.length,
     movements: arriving.length,
     photos:
       quests.filter((b) => b.quest.image?.startsWith("data:")).length +
       arriving.filter((m) => m.image.startsWith("data:")).length,
-    clashes: [
-      ...new Set(arriving.filter((m) => names.has(m.name.trim().toLowerCase())).map((m) => m.name)),
+    clashes,
+    gameNames: [
+      ...new Set(
+        arriving
+          .filter((m) => gameExercises.has(lower(m.name)) && !clashed.has(lower(m.name)))
+          .map((m) => m.name),
+      ),
+    ],
+    gameQuests: [
+      ...new Set(
+        quests
+          .filter((b) => !mine.has(b.quest.uuid) && gameQuests.has(lower(b.quest.title.en)))
+          .map((b) => b.quest.title.en),
+      ),
     ],
   };
 }
@@ -499,6 +533,9 @@ export type QuestPreview = {
   slots: PreviewSlot[];
   /** Same-name movements of the file next to the hero's own, by name. */
   clashes: string[];
+  /** Movements and quests of the file named like a game exercise or quest (see `Arrivals`). */
+  gameNames: string[];
+  gameQuests: string[];
   /** The hero's own quest this file would update, when it carries that quest's uuid. */
   existing: QuestTemplate | null;
 };
@@ -510,6 +547,7 @@ export type QuestPreview = {
  */
 export async function previewQuest(file: QuestFile): Promise<QuestPreview> {
   const [catalogue, templates] = await Promise.all([listExercises(), listQuestTemplates()]);
+  const found = arrivals([file], catalogue, templates);
   return {
     slots: file.slots.map((s) => {
       const target = (style: Exercise["style"] | undefined) => ({
@@ -528,7 +566,9 @@ export async function previewQuest(file: QuestFile): Promise<QuestPreview> {
       const here = catalogue.find((e) => isUserExercise(e) && e.uuid === own.uuid) ?? null;
       return { exercise: here, available: true, target: target(here?.style ?? own.style) };
     }),
-    clashes: arrivals([file], catalogue).clashes,
+    clashes: found.clashes,
+    gameNames: found.gameNames,
+    gameQuests: found.gameQuests,
     existing: templates.find((q) => isUserQuest(q) && q.uuid === file.quest.uuid) ?? null,
   };
 }

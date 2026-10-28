@@ -12,6 +12,7 @@ import { formatTarget } from "@/db/targets";
 import { holdIncomingFile, incomingFile } from "@/src/incomingFile";
 import { parseQuestData, type QuestFile, QuestFileError, type QuestPreview } from "@/src/questFile";
 import { reportError } from "@/src/reportError";
+import { useSessionStore } from "@/stores/session";
 import config from "@/tamagui.config";
 
 /**
@@ -99,8 +100,13 @@ const file: QuestFile = parseQuestData({
   ],
 });
 
-const preview = (existing: QuestTemplate | null = null, clashes: string[] = []): QuestPreview => ({
+const preview = (
+  existing: QuestTemplate | null = null,
+  clashes: string[] = [],
+  game: Pick<QuestPreview, "gameNames" | "gameQuests"> = { gameNames: [], gameQuests: [] },
+): QuestPreview => ({
   clashes,
+  ...game,
   slots: [
     { exercise: null, available: true, target: { type: "reps" as const, value: 10 } },
     { exercise: null, available: false, target: { type: "reps" as const, value: 5 } },
@@ -128,8 +134,12 @@ async function mount() {
   await render(wrap(<QuestImportScreen />));
 }
 
-async function mountReady(existing: QuestTemplate | null = null, clashes: string[] = []) {
-  mockPreview.mockResolvedValue(preview(existing, clashes));
+async function mountReady(
+  existing: QuestTemplate | null = null,
+  clashes: string[] = [],
+  game?: Pick<QuestPreview, "gameNames" | "gameQuests">,
+) {
+  mockPreview.mockResolvedValue(preview(existing, clashes, game));
   await mount();
   await screen.findByTestId("quest-import-title");
 }
@@ -174,6 +184,22 @@ test("an exercise named like one of the hero's says both will stay; none, no lin
   expect(
     screen.getByText("You already have an exercise named Bear crawl: both will stay."),
   ).toBeTruthy();
+});
+
+test("a game name is said once and the file's exercise stays separate; an unticked one goes", async () => {
+  await mountReady(null, [], { gameNames: ["Bear crawl"], gameQuests: ["Iron Dawn"] });
+  expect(
+    screen.getByText(
+      "Bear crawl is also the name of a game exercise. The one in this file stays separate.",
+    ),
+  ).toBeTruthy();
+  expect(
+    screen.getByText(
+      "Iron Dawn is also the name of a game quest. The one in this file stays separate.",
+    ),
+  ).toBeTruthy();
+  await fireEvent.press(slot(2));
+  expect(screen.queryByText(/game exercise/)).toBeNull();
 });
 
 test("an unticked exercise does not arrive, so its clash line goes", async () => {
@@ -307,6 +333,56 @@ test("a quest the hero has says it will update, and keeping both imports under a
   const sent = imported();
   expect(sent.quest.uuid).not.toBe(UUID);
   expect(sent.quest.uuid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-7/);
+});
+
+// A session keeps its own copy of the quest; updating the hero's under it would only leave the
+// recap reading slots nobody played. The real store, so the live test is the app's own.
+describe("a quest being played", () => {
+  const mine = { id: 9, enTitle: "Iron Dawn", frTitle: "", deTitle: "", esTitle: "" };
+  const play = (status: ReturnType<typeof useSessionStore.getState>["status"], id = 9) =>
+    useSessionStore.setState({ status, quest: { id, exercises: [] } as never });
+  afterEach(() => useSessionStore.setState(useSessionStore.getInitialState(), true));
+
+  test.each(["warmup", "countdown", "running", "resting", "paused"] as const)(
+    "while %s, the import arrives as a copy and offers no update",
+    async (status) => {
+      play(status);
+      await mountReady(mine as unknown as QuestTemplate);
+      expect(screen.getByTestId("quest-import-running")).toBeTruthy();
+      expect(
+        screen.getByText("A session of it is under way, so this one arrives beside it."),
+      ).toBeTruthy();
+      expect(screen.queryByTestId("quest-import-update")).toBeNull();
+      expect(screen.queryByTestId("quest-import-copy")).toBeNull();
+      expect(screen.getByText("Add to my quests")).toBeTruthy();
+      await fireEvent.press(confirm());
+      expect(imported().quest.uuid).not.toBe(UUID);
+    },
+  );
+
+  test.each([
+    ["idle", 9],
+    ["finished", 9],
+    ["running", 10],
+  ] as const)("with %s on quest %s the hero still chooses", async (status, id) => {
+    play(status, id);
+    await mountReady(mine as unknown as QuestTemplate);
+    expect(screen.queryByTestId("quest-import-running")).toBeNull();
+    expect(screen.getByTestId("quest-import-update")).toBeTruthy();
+    expect(screen.getByText("Update my quest")).toBeTruthy();
+    await fireEvent.press(confirm());
+    expect(imported().quest.uuid).toBe(UUID);
+  });
+
+  test("a session that starts after the render still forces the copy at tap time", async () => {
+    await mountReady(mine as unknown as QuestTemplate);
+    useSessionStore.setState(
+      { status: "running", quest: { id: 9, exercises: [] } as never },
+      false,
+    );
+    await fireEvent.press(confirm());
+    expect(imported().quest.uuid).not.toBe(UUID);
+  });
 });
 
 // A refused file showed a raw key, or nothing, instead of why.

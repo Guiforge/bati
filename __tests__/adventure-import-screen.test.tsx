@@ -81,7 +81,7 @@ const raw = {
 };
 
 const preview = (over: Partial<AdventurePreview> = {}): AdventurePreview => ({
-  arrives: { quests: 1, movements: 0, photos: 0, clashes: [] },
+  arrives: { quests: 1, movements: 0, photos: 0, clashes: [], gameNames: [], gameQuests: [] },
   steps: [
     { status: "here", questId: 1, title: "Iron Dawn" },
     { status: "brings", questId: null, title: "Moon Walk" },
@@ -143,7 +143,9 @@ test("an adventure shows its text and each step with where it comes from", async
 });
 
 test("says what arrives, in counts, and leaves out what is zero", async () => {
-  await mountReady({ arrives: { quests: 2, movements: 5, photos: 0, clashes: [] } });
+  await mountReady({
+    arrives: { quests: 2, movements: 5, photos: 0, clashes: [], gameNames: [], gameQuests: [] },
+  });
   expect(screen.getByTestId("import-arrives")).toBeTruthy();
   expect(screen.getByText("What arrives")).toBeTruthy();
   expect(screen.getByText("Quests")).toBeTruthy();
@@ -154,13 +156,22 @@ test("says what arrives, in counts, and leaves out what is zero", async () => {
 });
 
 test("nothing arrives when every quest is already here: no card", async () => {
-  await mountReady({ arrives: { quests: 0, movements: 0, photos: 0, clashes: [] } });
+  await mountReady({
+    arrives: { quests: 0, movements: 0, photos: 0, clashes: [], gameNames: [], gameQuests: [] },
+  });
   expect(screen.queryByTestId("import-arrives")).toBeNull();
 });
 
 test("a same-name exercise is named, and both stay", async () => {
   await mountReady({
-    arrives: { quests: 1, movements: 1, photos: 1, clashes: ["Weighted push-up"] },
+    arrives: {
+      quests: 1,
+      movements: 1,
+      photos: 1,
+      clashes: ["Weighted push-up"],
+      gameNames: [],
+      gameQuests: [],
+    },
   });
   expect(
     screen.getByText("You already have an exercise named Weighted push-up: both will stay."),
@@ -473,6 +484,8 @@ test("a quest file opened from the adventure editor lands on the quest", async (
   mockPreviewQuest.mockResolvedValue({
     slots: [{ exercise: null, available: true, target: { type: "reps", value: 8 } }],
     clashes: [],
+    gameNames: [],
+    gameQuests: [],
     existing: null,
   });
   mockImportQuest.mockResolvedValue({ id: 42, updated: false });

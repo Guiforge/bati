@@ -31,7 +31,7 @@
     <script>
       (function () {
         var l = localStorage.getItem("bati-lang");
-        var supported = ["en", "fr", "de", "es"];
+        var supported = ["en", "fr", "de", "es", "ru"];
         if (supported.indexOf(l) < 0) l = navigator.language.slice(0, 2);
         if (supported.indexOf(l) < 0) l = "en";
         document.documentElement.dataset.lang = l;
@@ -48,10 +48,10 @@
           Bati
         </a>
         <nav class="site-nav">
-          <a href="/#screens"><span lang="en">Screens</span><span lang="fr">Écrans</span><span lang="de">Bildschirme</span><span lang="es">Pantallas</span></a>
-          <a href="/#systems"><span lang="en">Systems</span><span lang="fr">Systèmes</span><span lang="de">Systeme</span><span lang="es">Sistemas</span></a>
-          <a href="/#privacy"><span lang="en">Privacy</span><span lang="fr">Vie privée</span><span lang="de">Datenschutz</span><span lang="es">Privacidad</span></a>
-          <a href="/#install"><span lang="en">Install</span><span lang="fr">Installer</span><span lang="de">Installieren</span><span lang="es">Instalar</span></a>
+          <a href="/#screens"><span lang="en">Screens</span><span lang="fr">Écrans</span><span lang="de">Bildschirme</span><span lang="es">Pantallas</span><span lang="ru">Экраны</span></a>
+          <a href="/#systems"><span lang="en">Systems</span><span lang="fr">Systèmes</span><span lang="de">Systeme</span><span lang="es">Sistemas</span><span lang="ru">Системы</span></a>
+          <a href="/#privacy"><span lang="en">Privacy</span><span lang="fr">Vie privée</span><span lang="de">Datenschutz</span><span lang="es">Privacidad</span><span lang="ru">Конфиденциальность</span></a>
+          <a href="/#install"><span lang="en">Install</span><span lang="fr">Installer</span><span lang="de">Installieren</span><span lang="es">Instalar</span><span lang="ru">Установка</span></a>
         </nav>
         <a class="head-link" href="https://github.com/Guiforge/bati">GitHub</a>
         <div class="langs" role="group" aria-label="Language">
@@ -59,6 +59,7 @@
           <button type="button" data-set-lang="fr" aria-pressed="false">FR</button>
           <button type="button" data-set-lang="de" aria-pressed="false">DE</button>
           <button type="button" data-set-lang="es" aria-pressed="false">ES</button>
+          <button type="button" data-set-lang="ru" aria-pressed="false">RU</button>
         </div>
       </div>
     </header>
@@ -74,13 +75,13 @@
         <nav>
           <a href="/privacy/"
             ><span lang="en">Privacy policy</span
-            ><span lang="fr">Politique de confidentialité</span><span lang="de">Datenschutzerklärung</span><span lang="es">Política de privacidad</span></a
+            ><span lang="fr">Politique de confidentialité</span><span lang="de">Datenschutzerklärung</span><span lang="es">Política de privacidad</span><span lang="ru">Политика конфиденциальности</span></a
           >
           <a href="https://github.com/Guiforge/bati"
-            ><span lang="en">Source code</span><span lang="fr">Code source</span><span lang="de">Quellcode</span><span lang="es">Código fuente</span></a
+            ><span lang="en">Source code</span><span lang="fr">Code source</span><span lang="de">Quellcode</span><span lang="es">Código fuente</span><span lang="ru">Исходный код</span></a
           >
           <a href="https://github.com/Guiforge/bati/releases"
-            ><span lang="en">Releases</span><span lang="fr">Versions</span><span lang="de">Versionen</span><span lang="es">Versiones</span></a
+            ><span lang="en">Releases</span><span lang="fr">Versions</span><span lang="de">Versionen</span><span lang="es">Versiones</span><span lang="ru">Релизы</span></a
           >
           <a href="mailto:contact@getbati.app">contact@getbati.app</a>
         </nav>
@@ -94,7 +95,7 @@
             >Bati est un logiciel libre : MIT pour le code, CC BY-SA 4.0 pour les illustrations.
             Icônes <a href="https://lucide.dev">Lucide</a> (ISC). Polices : Alegreya et Noto Sans (SIL OFL 1.1). Ce site fait partie du dépôt : il
             ne charge ni script, ni police, ni traqueur tiers.</span
-          ><span lang="de">Bati ist freie Software: MIT für den Code, CC BY-SA 4.0 für die Illustrationen. Icons von <a href="https://lucide.dev">Lucide</a> (ISC). Schriften: Alegreya und Noto Sans (SIL OFL 1.1). Diese Website ist Teil des Repositorys: Sie lädt keine Skripte, Schriften oder Tracker von Dritten.</span><span lang="es">Bati es software libre: MIT para el código, CC BY-SA 4.0 para las ilustraciones. Iconos de <a href="https://lucide.dev">Lucide</a> (ISC). Tipografías: Alegreya y Noto Sans (SIL OFL 1.1). Este sitio forma parte del repositorio: no carga scripts, fuentes ni rastreadores de terceros.</span>
+          ><span lang="de">Bati ist freie Software: MIT für den Code, CC BY-SA 4.0 für die Illustrationen. Icons von <a href="https://lucide.dev">Lucide</a> (ISC). Schriften: Alegreya und Noto Sans (SIL OFL 1.1). Diese Website ist Teil des Repositorys: Sie lädt keine Skripte, Schriften oder Tracker von Dritten.</span><span lang="es">Bati es software libre: MIT para el código, CC BY-SA 4.0 para las ilustraciones. Iconos de <a href="https://lucide.dev">Lucide</a> (ISC). Tipografías: Alegreya y Noto Sans (SIL OFL 1.1). Este sitio forma parte del repositorio: no carga scripts, fuentes ni rastreadores de terceros.</span><span lang="ru">Bati является свободным ПО: MIT для кода, CC BY-SA 4.0 для иллюстраций. Иконки <a href="https://lucide.dev">Lucide</a> (ISC). Шрифты: Alegreya и Noto Sans (SIL OFL 1.1). Этот сайт входит в состав репозитория: он не загружает сторонние скрипты, шрифты и трекеры.</span>
         </p>
       </div>
     </footer>
@@ -110,7 +111,7 @@
             b.setAttribute("aria-pressed", String(b.dataset.setLang === lang));
           });
           document.querySelectorAll("img[data-shot]").forEach(function (img) {
-            img.src = "/assets/shots/" + lang + "/" + img.dataset.shot + ".webp";
+            img.src = "/assets/shots/" + (lang === "ru" ? "en" : lang) + "/" + img.dataset.shot + ".webp";
           });
         }
         buttons.forEach(function (b) {

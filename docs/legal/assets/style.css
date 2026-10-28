@@ -131,14 +131,16 @@ section[id] {
 html:not([data-lang="en"]) [lang="en"],
 html:not([data-lang="fr"]) [lang="fr"],
 html:not([data-lang="de"]) [lang="de"],
-html:not([data-lang="es"]) [lang="es"] {
+html:not([data-lang="es"]) [lang="es"],
+html:not([data-lang="ru"]) [lang="ru"] {
   display: none;
 }
 
-/* The privacy policy exists in English and French only: German and Spanish read the English
-   one, under a note in their own language that says so. */
+/* The privacy policy exists in English and French only: German, Spanish and Russian read the
+   English one, under a note in their own language that says so. */
 html[data-lang="de"] .prose > [lang="en"],
-html[data-lang="es"] .prose > [lang="en"] {
+html[data-lang="es"] .prose > [lang="en"],
+html[data-lang="ru"] .prose > [lang="en"] {
   display: revert;
 }
 

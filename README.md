@@ -14,7 +14,7 @@ and the village you build is made of what you actually lifted.
 
 <br />
 
-**[getbati.app](https://getbati.app/)**, the site, in English, French, German and Spanish
+**[getbati.app](https://getbati.app/)**, the site, in English, French, German, Spanish and Russian
 
 [![CI](https://github.com/Guiforge/bati/actions/workflows/ci.yml/badge.svg)](https://github.com/Guiforge/bati/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/Guiforge/bati?label=release&color=C2410C)](https://github.com/Guiforge/bati/releases/latest)
@@ -122,7 +122,7 @@ Nothing else leaves the phone. [Privacy policy](https://getbati.app/privacy/).
 
 Bati is for people aged 16 and over.
 
-All of this is also on [the site](https://getbati.app/#install), in English, French, German and Spanish.
+All of this is also on [the site](https://getbati.app/#install), in English, French, German, Spanish and Russian.
 
 ### F-Droid, the one that updates itself
 

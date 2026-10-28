@@ -65,7 +65,7 @@ WHERE `enName` = 'Plank' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
     `ruName` = 'Скручивания',
-    `ruDescription` = 'Лёжа на спине, колени согнуты, стопы на полу, скрути верх спины, поднимая плечи к потолку и не подтягивая шею руками, затем под контролем опустись.',
+    `ruDescription` = 'Лёжа на спине, колени согнуты, стопы на полу, скрути верхнюю часть спины, поднимая плечи к потолку и не подтягивая шею руками, затем под контролем опустись.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Crunch' AND `creator` = 'Admin';
 --> statement-breakpoint
@@ -94,7 +94,7 @@ UPDATE `exercises` SET
 WHERE `enName` = 'Dip' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
-    `ruName` = 'Отжимания уголком',
+    `ruName` = 'Отжимания горкой',
     `ruDescription` = 'Из упора лёжа подведи стопы ближе и подними таз, образуя перевёрнутую букву V, затем согни локти, опуская макушку к полу, и выжмись обратно.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Pike Push-Up' AND `creator` = 'Admin';
@@ -124,7 +124,7 @@ UPDATE `exercises` SET
 WHERE `enName` = 'Diamond Push-Up' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
-    `ruName` = 'Тяга на одной ноге',
+    `ruName` = 'Румынская тяга на одной ноге',
     `ruDescription` = 'Стоя на одной ноге, наклони корпус вперёд и тянись к полу, пока свободная нога уходит назад, затем вернись в вертикальное положение с прямой спиной.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Single-Leg Deadlift' AND `creator` = 'Admin';
@@ -137,7 +137,7 @@ WHERE `enName` = 'Cobra Stretch' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
     `ruName` = 'Поза воина',
-    `ruDescription` = 'В позе воина II встань в широкую стойку, передняя стопа смотрит прямо, задняя повёрнута наружу. Согни переднее колено над щиколоткой, разведи руки параллельно полу на одной линии с ногами и смотри за переднюю руку.',
+    `ruDescription` = 'В позе воина II встань в широкую стойку, передняя стопа смотрит прямо, задняя повёрнута наружу. Согни переднее колено над щиколоткой, разведи руки параллельно полу на одной линии с ногами и смотри поверх передней руки.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Warrior Pose' AND `creator` = 'Admin';
 --> statement-breakpoint
@@ -149,7 +149,7 @@ WHERE `enName` = 'Skater Hop' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
     `ruName` = 'Холлоу-бади',
-    `ruDescription` = 'Лёжа на спине, прижми поясницу к полу и приподними плечи и ноги на несколько сантиметров, руки над головой, и удерживай эту форму банана.',
+    `ruDescription` = 'Лёжа на спине, прижми поясницу к полу и приподними плечи и ноги на несколько сантиметров, руки над головой, и держи форму банана.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Hollow Body Hold' AND `creator` = 'Admin';
 --> statement-breakpoint
@@ -233,13 +233,13 @@ WHERE `enName` = 'Hanging Leg Raise' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
     `ruName` = 'Приседания с прыжком',
-    `ruDescription` = 'Присядь, затем взрывно выпрыгни вверх и мягко приземлись в следующее приседание.',
+    `ruDescription` = 'Присядь, затем взрывно выпрыгни вверх и мягко приземлись сразу в следующий присед.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Jump Squat' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
     `ruName` = 'Обратные скручивания',
-    `ruDescription` = 'Лёжа на спине с согнутыми коленями, оторви таз от пола, скручивая его, и подтяни колени к груди.',
+    `ruDescription` = 'Лёжа на спине с согнутыми коленями, оторви таз от пола, подворачивая его, и подтяни колени к груди.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Reverse Crunch' AND `creator` = 'Admin';
 --> statement-breakpoint
@@ -298,7 +298,7 @@ UPDATE `exercises` SET
 WHERE `enName` = 'Cat-Cow' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
-    `ruName` = 'Продеть нитку в иголку',
+    `ruName` = 'Нитка в иголку',
     `ruDescription` = 'С четверенек проведи одну руку под другой и положи плечо на пол. Держи таз над коленями, чтобы вращение шло из верхней части спины.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Thread the Needle' AND `creator` = 'Admin';
@@ -311,7 +311,7 @@ WHERE `enName` = 'Standing Forward Fold' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
     `ruName` = 'Собака мордой вниз',
-    `ruDescription` = 'Из упора на руках и ногах подними таз высоко, а пятки тяни вниз, руки прямые, голова между плеч. Шагай ногами на месте, поочерёдно растягивая икры и заднюю поверхность бёдер.',
+    `ruDescription` = 'Из упора на руках и ногах подними таз высоко, а пятки тяни вниз, руки прямые, голова между рук. Поочерёдно сгибай колени, как на педалях, растягивая икры и заднюю поверхность бёдер.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Downward Dog' AND `creator` = 'Admin';
 --> statement-breakpoint
@@ -335,7 +335,7 @@ WHERE `enName` = 'Knee Push-Up' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
     `ruName` = 'Стойка на руках у стены',
-    `ruDescription` = 'Лицом к стене: из планки упрись стопами в стену и шагай ими вверх по стене, приближая руки примерно на шаг к стене. Спиной к стене: поочерёдно забрось одну ногу, затем другую, пока пятки не обопрутся о стену. Руки прямые, рёбра подтянуты, взгляд между ладоней, дыши.',
+    `ruDescription` = 'Лицом к стене: из планки упрись стопами в стену и шагай ими вверх по стене, подводя руки примерно на шаг к ней. Спиной к стене: поочерёдно забрось одну ногу, затем другую, пока пятки не обопрутся о стену. Руки прямые, рёбра втянуты, взгляд между ладоней, дыши.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Wall Handstand' AND `creator` = 'Admin';
 --> statement-breakpoint
@@ -347,7 +347,7 @@ WHERE `enName` = 'Dead Hang' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
     `ruName` = 'Негативные подтягивания',
-    `ruDescription` = 'Запрыгни или заступи в верхнюю точку подтягивания, подбородок над перекладиной, затем опускайся как можно медленнее, цель: пять секунд, и вернись наверх для следующего повторения.',
+    `ruDescription` = 'Запрыгни или встань на опору так, чтобы оказаться в верхней точке подтягивания, подбородок над перекладиной, затем опускайся как можно медленнее, цель: пять секунд, и снова поднимись наверх для следующего повторения.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Negative Pull-Up' AND `creator` = 'Admin';
 --> statement-breakpoint
@@ -365,7 +365,7 @@ WHERE `enName` = 'Single-Leg Glute Bridge' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
     `ruName` = 'Болгарский сплит-присед',
-    `ruDescription` = 'Положи подъём задней стопы на стул позади, затем опускайся прямо вниз, пока переднее бедро не станет параллельно полу, а переднее колено не согнётся до 90 градусов, и выжмись обратно, держа корпус прямо.',
+    `ruDescription` = 'Положи подъём задней стопы на стул позади, затем опускайся прямо вниз, пока переднее бедро не станет параллельно полу, а переднее колено не согнётся до 90 градусов, и поднимись обратно, держа корпус прямо.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Bulgarian Split Squat' AND `creator` = 'Admin';
 --> statement-breakpoint
@@ -394,13 +394,13 @@ UPDATE `exercises` SET
 WHERE `enName` = 'Pistol Squat' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
-    `ruName` = 'Драконий флаг',
+    `ruName` = 'Флаг дракона',
     `ruDescription` = 'Лёжа на полу или на скамье, возьмись за что-нибудь прочное за головой и подними всё тело на плечи одной жёсткой линией, затем медленно опусти, не давая тазу складываться.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Dragon Flag' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
-    `ruName` = 'Планш с группировкой',
+    `ruName` = 'Планш в группировке',
     `ruDescription` = 'Присядь и поставь ладони плоско на пол на ширине плеч. Наклони плечи далеко за линию запястий, локти прямые, пока стопы не оторвутся от пола, колени подтянуты к груди, и неподвижно удерживай равновесие.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Tuck Planche' AND `creator` = 'Admin';
@@ -418,8 +418,8 @@ UPDATE `exercises` SET
 WHERE `enName` = 'Messenger''s Run' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
-    `ruName` = 'Езда дозорного',
-    `ruDescription` = 'Езди плавно и ровно, без рывков, на передаче, при которой ноги легко крутят педали.',
+    `ruName` = 'Поездка дозорного',
+    `ruDescription` = 'Крути педали плавно и ровно, без рывков, на передаче, при которой ноги вращаются легко.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Outrider''s Ride' AND `creator` = 'Admin';
 --> statement-breakpoint
@@ -442,7 +442,7 @@ UPDATE `quests` SET
 WHERE `enTitle` = 'Tower Climb' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `quests` SET
-    `ruTitle` = 'Толчок рыцаря',
+    `ruTitle` = 'Жим рыцаря',
     `ruDescription` = 'Рыцарь целый день держит щит на вытянутой руке, и в конце концов руки этому учатся.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'Knight Push' AND `author` = 'Admin';
@@ -497,12 +497,12 @@ WHERE `enTitle` = 'Climb the Titan''s Tower' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `quests` SET
     `ruTitle` = 'Возведи оплот',
-    `ruDescription` = 'Камень за камнем растёт стена. Криво построенная работа в конце концов рушится, как и тело, которое её строило.',
+    `ruDescription` = 'Камень за камнем растёт стена. Что построено криво, в конце концов рушится, и тело, которое это строило, тоже.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'Build the Stronghold' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `quests` SET
-    `ruTitle` = 'Железное испытание',
+    `ruTitle` = 'Железная рукавица',
     `ruDescription` = 'Мало кто выходит через эту дверь обратно, и те, кто выходит, до конца держались на ногах.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'The Iron Gauntlet Challenge' AND `author` = 'Admin';
@@ -514,13 +514,13 @@ UPDATE `quests` SET
 WHERE `enTitle` = 'Escape the Collapsing Mine' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `quests` SET
-    `ruTitle` = 'Охрана ворот крепости',
+    `ruTitle` = 'Защита ворот крепости',
     `ruDescription` = 'Враг идёт в атаку, а ты один у ворот. Держись, сколько потребуется. За твоей спиной некому тебя сменить.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'Guard the Fortress Gate' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `quests` SET
-    `ruTitle` = 'Тайное испытание',
+    `ruTitle` = 'Чародейская рукавица',
     `ruDescription` = 'Маг чертит круг, отступает, и всё происходит в центре тела, неподвижно, пока держится линия.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'The Arcane Gauntlet' AND `author` = 'Admin';
@@ -563,13 +563,13 @@ WHERE `enTitle` = 'The Cellar Hauler' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `quests` SET
     `ruTitle` = 'Обет пахаря',
-    `ruDescription` = 'Ни одна деревня не живёт одним воинским клинком. Согни спину над полем и заслужи в нём своё место.',
+    `ruDescription` = 'Ни одна деревня не живёт одним клинком воина. Согни спину над полем и заслужи в нём своё место.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'The Ploughman''s Vow' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `quests` SET
     `ruTitle` = 'Вороний подъём',
-    `ruDescription` = 'Вороны гнездятся там, куда не достаёт ни одна лестница. Бери стену руками и вись, пока она не отпустит тебя наверх.',
+    `ruDescription` = 'Вороны гнездятся там, куда не достаёт ни одна лестница. Бери стену руками и виси, пока она не отпустит тебя наверх.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'The Crow''s Ascent' AND `author` = 'Admin';
 --> statement-breakpoint
@@ -586,14 +586,14 @@ UPDATE `quests` SET
 WHERE `enTitle` = 'Storm of Blades' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `quests` SET
-    `ruTitle` = 'Кольцо змеи',
-    `ruDescription` = 'Змея не бьёт. Она обвивает и ждёт, когда твой центр сдастся. Не сдавайся.',
+    `ruTitle` = 'Кольца змеи',
+    `ruDescription` = 'Змея не нападает. Она обвивает и ждёт, пока твой центр не сдастся. Не сдавайся.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'The Serpent''s Coil' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `quests` SET
     `ruTitle` = 'Обряд рассвета',
-    `ruDescription` = 'Пока крепость не проснулась, старый обряд: раскрыть бёдра, разомкнуть позвоночник, вспомнить, что тело принадлежит тебе. День не начнётся, пока это не сделано.',
+    `ruDescription` = 'Пока крепость не проснулась, старый обряд: раскрыть бёдра, размять позвоночник, вспомнить, что тело принадлежит тебе. День не начнётся, пока это не сделано.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'The Dawn Ritual' AND `author` = 'Admin';
 --> statement-breakpoint
@@ -604,8 +604,8 @@ UPDATE `quests` SET
 WHERE `enTitle` = 'The Hearthside Unbinding' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `quests` SET
-    `ruTitle` = 'Бдение на руках',
-    `ruDescription` = 'Каждый, кто стоит на руках, учится этому на своей шкуре: запястья сдают задолго до плеч. Позаботься о них накануне вечером, а не наутро после.',
+    `ruTitle` = 'Бдение перед стойкой',
+    `ruDescription` = 'Каждый, кто стоит на руках, учится этому на собственном опыте: запястья сдают задолго до плеч. Позаботься о них накануне вечером, а не наутро после.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'The Handler''s Vigil' AND `author` = 'Admin';
 --> statement-breakpoint
@@ -617,7 +617,7 @@ WHERE `enTitle` = 'The Patient Ascent' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `quests` SET
     `ruTitle` = 'Фундамент каменщика',
-    `ruDescription` = 'Каждая стена, поднятая в деревне, стоит на основании, которое кто-то выкопал, стоя на одном колене. Одна нога за раз, одна сторона за раз: это работа, которой никто не видит, а на ней держится всё.',
+    `ruDescription` = 'Каждая стена, поднятая в деревне, стоит на основании, которое кто-то выкопал, стоя на одном колене. Одна нога за раз, одна сторона за раз: это работа, которую никто не видит, а на ней держится всё.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'The Mason''s Footing' AND `author` = 'Admin';
 --> statement-breakpoint
@@ -635,7 +635,7 @@ WHERE `enTitle` = 'The Straight-Arm Vigil' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `quests` SET
     `ruTitle` = 'Обход Стража',
-    `ruDescription` = 'Стены стоят, потому что кто-то по ним ходит. Каждую ночь обход достаётся ещё одной паре сапог, и земля видна благодаря этому.',
+    `ruDescription` = 'Стены стоят, потому что кто-то по ним ходит. Каждую ночь обход достаётся ещё одной паре сапог, и благодаря этому землю видно.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'The Warden''s Round' AND `author` = 'Admin';
 --> statement-breakpoint
@@ -647,12 +647,12 @@ WHERE `enTitle` = 'Word Must Travel' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `quests` SET
     `ruTitle` = 'Дальний рубеж',
-    `ruDescription` = 'Карта перестаёт быть слухом там, где побывал дозорный. Всё за этой чертой: пересказ торговцев.',
+    `ruDescription` = 'Карта перестаёт быть слухом там, где побывал дозорный. Всё за этой чертой известно лишь со слов торговцев.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'The Long Reach' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `adventures` SET
-    `ruTitle` = 'Лесной путь',
+    `ruTitle` = 'Дорога дровосека',
     `ruDescription` = 'Построй своё первое убежище. Руби дрова, собирай камни, возводи стены.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'The Lumber Route' AND `author` = 'Admin';
@@ -664,14 +664,14 @@ UPDATE `adventures` SET
 WHERE `enTitle` = 'The Golem' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `adventures` SET
-    `ruTitle` = 'Покорение Железного Владыки',
-    `ruDescription` = 'Все испытания крепости одно за другим, и Железный Владыка в конце. Никто ещё не проходил этот путь за один раз.',
+    `ruTitle` = 'Покорение Владыки Ржавчины',
+    `ruDescription` = 'Все испытания крепости одно за другим, и Владыка Ржавчины в конце. Никто ещё не проходил этот путь за один раз.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'The Iron Lord''s Conquest' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `adventures` SET
     `ruTitle` = 'Путь оруженосца',
-    `ruDescription` = 'Каждый герой начинает с того, кто носит щит. Пять переходов, чтобы заслужить право поднять клинок: без перекладины, без весов, без оправданий.',
+    `ruDescription` = 'Каждый герой начинает как тот, кто носит щит. Пять переходов, чтобы заслужить право поднять клинок: без перекладины, без весов, без оправданий.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'The Squire''s Path' AND `author` = 'Admin';
 --> statement-breakpoint
@@ -688,14 +688,14 @@ UPDATE `adventures` SET
 WHERE `enTitle` = 'The Scout''s Trial' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `adventures` SET
-    `ruTitle` = 'Путь следопыта',
-    `ruDescription` = 'Лиги пути, встречи по дороге и выносливость как единственный скакун на дороге, которая не становится короче.',
+    `ruTitle` = 'Странствие следопыта',
+    `ruDescription` = 'Лиги пути, встречи по дороге и выносливость вместо коня на пути, который не становится короче.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'The Ranger''s Journey' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `adventures` SET
     `ruTitle` = 'Клятва хранителя',
-    `ruDescription` = 'Ворота не падают, пока за ними кто-то стоит. Спина и корпус держат эту клятву, вахта за вахтой.',
+    `ruDescription` = 'Ворота не падают, пока за ними кто-то стоит. Спина и корпус держат эту клятву, смена за сменой.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'The Guardian''s Oath' AND `author` = 'Admin';
 --> statement-breakpoint
@@ -740,7 +740,7 @@ WHERE `stepIndex` = 1
     );
 --> statement-breakpoint
 UPDATE `adventure_steps` SET
-    `ruNarrative` = 'В зал Железного Владыки без оружия не входят. Сначала выкуй.',
+    `ruNarrative` = 'В зал Владыки Ржавчины без оружия не входят. Сначала выкуй.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `stepIndex` = 0
     AND `adventureId` = (
@@ -772,7 +772,7 @@ WHERE `stepIndex` = 3
     );
 --> statement-breakpoint
 UPDATE `adventure_steps` SET
-    `ruNarrative` = 'Перчатка осталась от тех, кто не вышел обратно.',
+    `ruNarrative` = 'Латная рукавица осталась от тех, кто не вышел обратно.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `stepIndex` = 4
     AND `adventureId` = (
@@ -788,7 +788,7 @@ WHERE `stepIndex` = 5
     );
 --> statement-breakpoint
 UPDATE `adventure_steps` SET
-    `ruNarrative` = 'Железный Владыка сражается вверх ногами. Ты тоже будешь.',
+    `ruNarrative` = 'Владыка Ржавчины сражается вверх ногами. Тебе придётся так же.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `stepIndex` = 6
     AND `adventureId` = (
@@ -796,7 +796,7 @@ WHERE `stepIndex` = 6
     );
 --> statement-breakpoint
 UPDATE `adventure_steps` SET
-    `ruNarrative` = 'Хитрого не осталось. Переживи его.',
+    `ruNarrative` = 'Хитростей не осталось. Переживи его.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `stepIndex` = 7
     AND `adventureId` = (
@@ -812,7 +812,7 @@ WHERE `stepIndex` = 0
     );
 --> statement-breakpoint
 UPDATE `adventure_steps` SET
-    `ruNarrative` = 'Сосны поглощают тропу. Двигайся на двух ногах, а если надо, то на четырёх.',
+    `ruNarrative` = 'Сосны проглатывают тропу. Двигайся на двух ногах, а если придётся, то на четырёх.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `stepIndex` = 1
     AND `adventureId` = (
@@ -877,7 +877,7 @@ WHERE `stepIndex` = 3
     );
 --> statement-breakpoint
 UPDATE `adventure_steps` SET
-    `ruNarrative` = 'Разведчики выходят на рассвете. Разбуди каждую мышцу до рожка.',
+    `ruNarrative` = 'Разведчики выходят на рассвете. Разбуди каждую мышцу до сигнала рога.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `stepIndex` = 0
     AND `adventureId` = (
@@ -933,7 +933,7 @@ WHERE `stepIndex` = 1
     );
 --> statement-breakpoint
 UPDATE `adventure_steps` SET
-    `ruNarrative` = 'Что-то последовало за тобой из-за кромки леса. Не дай ему задавать темп.',
+    `ruNarrative` = 'Что-то увязалось за тобой от кромки леса. Не дай ему задавать темп.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `stepIndex` = 2
     AND `adventureId` = (
@@ -957,7 +957,7 @@ WHERE `stepIndex` = 4
     );
 --> statement-breakpoint
 UPDATE `adventure_steps` SET
-    `ruNarrative` = 'Ног не чувствуешь. Проползи остаток сосен, если больше нечем.',
+    `ruNarrative` = 'Ног не чувствуешь. Проползи последний отрезок через сосны, если больше нечем.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `stepIndex` = 5
     AND `adventureId` = (
@@ -1013,7 +1013,7 @@ WHERE `stepIndex` = 4
     );
 --> statement-breakpoint
 UPDATE `adventure_steps` SET
-    `ruNarrative` = 'Снова к воротам, последняя вахта. Камень ломает камень.',
+    `ruNarrative` = 'Снова к воротам, последняя смена. Камень ломает камень.',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `stepIndex` = 5
     AND `adventureId` = (

@@ -232,7 +232,7 @@ photo (`db/preferences.ts`).
 Invariant: for each merged key, post-merge value = value of the input with the greater
 updatedAt, local on a tie.
 
-**R22. A device with no sessions, no hero exercises, no hero quests and no hero adventures ("fresh") takes every peer
+**R22. A device with no sessions, no hero exercises, no hero quests, no hero adventures and no hero bosses ("fresh") takes every peer
 preference in R7 regardless of dates.** `db/merge.ts:105-108, 184`.
 Invariant: merging a populated peer into an empty device yields the peer's R7 values.
 

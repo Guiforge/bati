@@ -45,6 +45,7 @@ export type AdventureStepTemplate = {
   frNarrative: string;
   deNarrative: string;
   esNarrative: string;
+  ruNarrative: string;
   quest: QuestTemplate;
   imagePath: string | null;
 };
@@ -80,10 +81,12 @@ export type Adventure = {
   frTitle: string;
   deTitle: string;
   esTitle: string;
+  ruTitle: string;
   enDescription: string;
   frDescription: string;
   deDescription: string;
   esDescription: string;
+  ruDescription: string;
   coverQuest: QuestTemplate;
   stepsCount: number;
   imagePath: string | null;
@@ -116,10 +119,12 @@ export type AdventureDetails = {
     | "frTitle"
     | "deTitle"
     | "esTitle"
+    | "ruTitle"
     | "enDescription"
     | "frDescription"
     | "deDescription"
     | "esDescription"
+    | "ruDescription"
     | "coverQuestId"
     | "imagePath"
     | "focus"
@@ -166,10 +171,12 @@ type CoverQuestRow = {
   frTitle: string | null;
   deTitle: string | null;
   esTitle: string | null;
+  ruTitle: string | null;
   enDescription: string | null;
   frDescription: string | null;
   deDescription: string | null;
   esDescription: string | null;
+  ruDescription: string | null;
   questAuthor: QuestTemplate["author"] | null;
   questUuid: string | null;
   rounds: number | null;
@@ -190,10 +197,12 @@ function coverQuestOf(r: CoverQuestRow): QuestTemplate {
     frTitle: r.frTitle ?? "",
     deTitle: r.deTitle ?? "",
     esTitle: r.esTitle ?? "",
+    ruTitle: r.ruTitle ?? "",
     enDescription: r.enDescription ?? "",
     frDescription: r.frDescription ?? "",
     deDescription: r.deDescription ?? "",
     esDescription: r.esDescription ?? "",
+    ruDescription: r.ruDescription ?? "",
     author: r.questAuthor ?? ADMIN_CREATOR,
     uuid: r.questUuid,
     rounds: r.rounds ?? 1,
@@ -221,10 +230,12 @@ async function fetchAdventures(): Promise<Adventure[]> {
       advFrTitle: adventures.frTitle,
       advDeTitle: adventures.deTitle,
       advEsTitle: adventures.esTitle,
+      advRuTitle: adventures.ruTitle,
       advEnDescription: adventures.enDescription,
       advFrDescription: adventures.frDescription,
       advDeDescription: adventures.deDescription,
       advEsDescription: adventures.esDescription,
+      advRuDescription: adventures.ruDescription,
       advImagePath: adventures.imagePath,
       advUpdatedAt: adventures.updatedAt,
 
@@ -232,10 +243,12 @@ async function fetchAdventures(): Promise<Adventure[]> {
       frTitle: quests.frTitle,
       deTitle: quests.deTitle,
       esTitle: quests.esTitle,
+      ruTitle: quests.ruTitle,
       enDescription: quests.enDescription,
       frDescription: quests.frDescription,
       deDescription: quests.deDescription,
       esDescription: quests.esDescription,
+      ruDescription: quests.ruDescription,
       questAuthor: quests.author,
       questUuid: quests.uuid,
       rounds: quests.rounds,
@@ -296,10 +309,12 @@ async function fetchAdventures(): Promise<Adventure[]> {
         frTitle: r.advFrTitle,
         deTitle: r.advDeTitle,
         esTitle: r.advEsTitle,
+        ruTitle: r.advRuTitle,
         enDescription: r.advEnDescription,
         frDescription: r.advFrDescription,
         deDescription: r.advDeDescription,
         esDescription: r.advEsDescription,
+        ruDescription: r.advRuDescription,
         coverQuest: quest,
         stepsCount: stepQuestIds.length,
         imagePath: r.advImagePath,
@@ -416,10 +431,12 @@ async function fetchAdventureDetails(adventureId: number): Promise<AdventureDeta
       frTitle: adventures.frTitle,
       deTitle: adventures.deTitle,
       esTitle: adventures.esTitle,
+      ruTitle: adventures.ruTitle,
       enDescription: adventures.enDescription,
       frDescription: adventures.frDescription,
       deDescription: adventures.deDescription,
       esDescription: adventures.esDescription,
+      ruDescription: adventures.ruDescription,
       imagePath: adventures.imagePath,
     })
     .from(adventures)
@@ -439,6 +456,7 @@ async function fetchAdventureDetails(adventureId: number): Promise<AdventureDeta
       frNarrative: adventureSteps.frNarrative,
       deNarrative: adventureSteps.deNarrative,
       esNarrative: adventureSteps.esNarrative,
+      ruNarrative: adventureSteps.ruNarrative,
       imagePath: adventureSteps.imagePath,
     })
     .from(adventureSteps)
@@ -458,6 +476,7 @@ async function fetchAdventureDetails(adventureId: number): Promise<AdventureDeta
             frNarrative: "",
             deNarrative: "",
             esNarrative: "",
+            ruNarrative: "",
             imagePath: first.imagePath,
           },
         ];
@@ -480,6 +499,7 @@ async function fetchAdventureDetails(adventureId: number): Promise<AdventureDeta
       frNarrative: s.frNarrative,
       deNarrative: s.deNarrative,
       esNarrative: s.esNarrative,
+      ruNarrative: s.ruNarrative,
       quest: q,
       imagePath: s.imagePath,
     });
@@ -497,10 +517,12 @@ async function fetchAdventureDetails(adventureId: number): Promise<AdventureDeta
       frTitle: first.frTitle,
       deTitle: first.deTitle,
       esTitle: first.esTitle,
+      ruTitle: first.ruTitle,
       enDescription: first.enDescription,
       frDescription: first.frDescription,
       deDescription: first.deDescription,
       esDescription: first.esDescription,
+      ruDescription: first.ruDescription,
       imagePath: first.imagePath,
       focus: trainingFocus(
         resolved.map((s) => s.quest),
@@ -700,6 +722,7 @@ export type FinishedAdventureSummary = {
   frTitle: string;
   deTitle: string;
   esTitle: string;
+  ruTitle: string;
   imagePath: string | null;
   /** The monster's own painting for a boss campaign — a trophy shows what you beat, not the poster. */
   bossImagePath: string | null;
@@ -724,6 +747,7 @@ export async function listFinishedRunSummaries(): Promise<FinishedAdventureSumma
       frTitle: adventures.frTitle,
       deTitle: adventures.deTitle,
       esTitle: adventures.esTitle,
+      ruTitle: adventures.ruTitle,
       imagePath: adventures.imagePath,
       bossImagePath: adventures.bossImagePath,
       timesFinished: count(),
@@ -746,6 +770,7 @@ export async function listFinishedRunSummaries(): Promise<FinishedAdventureSumma
       frTitle: r.frTitle,
       deTitle: r.deTitle,
       esTitle: r.esTitle,
+      ruTitle: r.ruTitle,
       imagePath: r.imagePath,
       bossImagePath: r.bossImagePath,
       timesFinished: Number(r.timesFinished),

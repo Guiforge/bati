@@ -2,7 +2,7 @@
 title: Adding a language
 type: technical
 status: active
-updated: 2026-10-11
+updated: 2026-10-28
 related: [../product/writing.md, ../product/glossary.md, data-safety.md, ../../AGENTS.md]
 ---
 
@@ -75,11 +75,18 @@ The columns are `NOT NULL DEFAULT ''`, and `localizedText` reads an empty column
 language can ship with its interface translated and its catalogue still in English. Then add the
 columns to `db/schema.ts` and to each query `tsc` points at.
 
-A language can also ship before its migration, which is what Russian did. `SEEDED_LANGUAGES` in
+A language can also ship before its migration, which is what Russian did until
+[`0080`](../../drizzle/0080_the_catalogue_in_russian.sql). `SEEDED_LANGUAGES` in
 [`src/i18n/localized.ts`](../../src/i18n/localized.ts) lists the languages that have columns, and
 `seededLanguage()` sends any other to the English side of a row and of a quest file. `tsc` is then
 left with the nine places in `db/` that build a `{ en, fr, … }` from a row: give each the English
 column. The migration later adds the code to that list and replaces those nine.
+
+`0080` did both halves in one migration (columns, then text), which keeps a release at one
+migration and needs no `-- multi-migration-ok:`. Its fill is generated from a table of English
+keys to translations and checked on a database built from the whole journal: no Admin row with an
+empty Russian column where the English one is filled. Rows a hero wrote before it have an empty
+Russian column and read as English, which is the hero's own text.
 
 ## 5. The surfaces no compiler sees
 

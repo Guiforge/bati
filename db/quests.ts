@@ -207,10 +207,12 @@ export type QuestHead = {
   frTitle: string;
   deTitle: string;
   esTitle: string;
+  ruTitle: string;
   enDescription: string;
   frDescription: string;
   deDescription: string;
   esDescription: string;
+  ruDescription: string;
   author: ContentOwner;
   /** The quest's name off this database (0066). Null on seed quests. */
   uuid: string | null;
@@ -344,10 +346,12 @@ export async function createQuestTemplate(
       frTitle: input.frTitle,
       deTitle: input.deTitle,
       esTitle: input.esTitle,
+      ruTitle: input.ruTitle,
       enDescription: input.enDescription,
       frDescription: input.frDescription,
       deDescription: input.deDescription,
       esDescription: input.esDescription,
+      ruDescription: input.ruDescription,
       author,
       imagePath: input.imagePath ?? null,
       rounds: clampToRange(input.rounds, ROUNDS_RANGE),
@@ -411,10 +415,12 @@ export async function createQuestFromOuting(
     | "frTitle"
     | "deTitle"
     | "esTitle"
+    | "ruTitle"
     | "enDescription"
     | "frDescription"
     | "deDescription"
     | "esDescription"
+    | "ruDescription"
   > & {
     /** Widened from `Quest`, where readers have already defaulted it: null is "no cover". */
     imagePath: string | null;
@@ -439,10 +445,12 @@ export async function createQuestFromOuting(
     frTitle: quest.frTitle,
     deTitle: quest.deTitle,
     esTitle: quest.esTitle,
+    ruTitle: quest.ruTitle,
     enDescription: quest.enDescription,
     frDescription: quest.frDescription,
     deDescription: quest.deDescription,
     esDescription: quest.esDescription,
+    ruDescription: quest.ruDescription,
     author: USER_QUEST_AUTHOR,
     archetype: null,
     imagePath: quest.imagePath,
@@ -476,10 +484,12 @@ const questColumns = () => ({
   frTitle: quests.frTitle,
   deTitle: quests.deTitle,
   esTitle: quests.esTitle,
+  ruTitle: quests.ruTitle,
   enDescription: quests.enDescription,
   frDescription: quests.frDescription,
   deDescription: quests.deDescription,
   esDescription: quests.esDescription,
+  ruDescription: quests.ruDescription,
   author: quests.author,
   rounds: quests.rounds,
   restSeconds: quests.restSeconds,
@@ -495,10 +505,12 @@ type QuestHeadRow = {
   frTitle: string;
   deTitle: string;
   esTitle: string;
+  ruTitle: string;
   enDescription: string;
   frDescription: string;
   deDescription: string;
   esDescription: string;
+  ruDescription: string;
   author: ContentOwner;
   rounds: number;
   restSeconds: number;
@@ -563,10 +575,12 @@ function questHead(r: QuestHeadRow, restDefault: number | null): QuestHead {
     frTitle: r.frTitle,
     deTitle: r.deTitle,
     esTitle: r.esTitle,
+    ruTitle: r.ruTitle,
     enDescription: r.enDescription,
     frDescription: r.frDescription,
     deDescription: r.deDescription,
     esDescription: r.esDescription,
+    ruDescription: r.ruDescription,
     author: r.author,
     rounds: r.rounds,
     restSeconds: rest ?? r.restSeconds,
@@ -669,10 +683,12 @@ type SlotRow = {
   exFrName: string;
   exDeName: string;
   exEsName: string;
+  exRuName: string;
   exEnDescription: string;
   exFrDescription: string;
   exDeDescription: string;
   exEsDescription: string;
+  exRuDescription: string;
   exImagePath: string;
   exCreator: ContentOwner;
   exUuid: string | null;
@@ -1030,10 +1046,12 @@ function buildSlot(
     frName: r.exFrName,
     deName: r.exDeName,
     esName: r.exEsName,
+    ruName: r.exRuName,
     enDescription: r.exEnDescription,
     frDescription: r.exFrDescription,
     deDescription: r.exDeDescription,
     esDescription: r.exEsDescription,
+    ruDescription: r.exRuDescription,
     imagePath: r.exImagePath,
     creator: r.exCreator,
     uuid: r.exUuid,
@@ -1093,6 +1111,7 @@ function buildSlot(
             frName: r.exFrName,
             deName: r.exDeName,
             esName: r.exEsName,
+            ruName: r.exRuName,
             imagePath: r.exImagePath,
             ...(asWritten ? { target: asWritten } : {}),
           }
@@ -1107,6 +1126,7 @@ export function movementRef(e: Exercise): MovementRef {
     frName: e.frName,
     deName: e.deName,
     esName: e.esName,
+    ruName: e.ruName,
     imagePath: e.imagePath,
   };
 }
@@ -1129,10 +1149,12 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
       exFrName: exercises.frName,
       exDeName: exercises.deName,
       exEsName: exercises.esName,
+      exRuName: exercises.ruName,
       exEnDescription: exercises.enDescription,
       exFrDescription: exercises.frDescription,
       exDeDescription: exercises.deDescription,
       exEsDescription: exercises.esDescription,
+      exRuDescription: exercises.ruDescription,
       exImagePath: exercises.imagePath,
       exCreator: exercises.creator,
       exUuid: exercises.uuid,
@@ -1222,13 +1244,15 @@ export async function getQuestById(id: number, userLevel: UserLevel): Promise<Qu
 /**
  * Adventures that name this quest: active ones, and any with a run under way (a retired adventure
  * with an active run still plays its copied steps). A retired adventure with no run never blocks a
- * quest. Returns the four titles of each, for the refusal sentence. Lives here and not in
+ * quest. Returns the titles of each, for the refusal sentence. Lives here and not in
  * `db/adventures.ts` because that file imports this one.
  */
 export async function adventuresUsingQuest(
   questId: number,
   exec: typeof db | TransactionTx = db,
-): Promise<{ enTitle: string; frTitle: string; deTitle: string; esTitle: string }[]> {
+): Promise<
+  { enTitle: string; frTitle: string; deTitle: string; esTitle: string; ruTitle: string }[]
+> {
   const named = exec
     .select({ id: adventureSteps.adventureId })
     .from(adventureSteps)
@@ -1244,6 +1268,7 @@ export async function adventuresUsingQuest(
       frTitle: adventures.frTitle,
       deTitle: adventures.deTitle,
       esTitle: adventures.esTitle,
+      ruTitle: adventures.ruTitle,
     })
     .from(adventures)
     .where(
@@ -1292,10 +1317,12 @@ export async function updateQuestMeta(
       | "frTitle"
       | "deTitle"
       | "esTitle"
+      | "ruTitle"
       | "enDescription"
       | "frDescription"
       | "deDescription"
       | "esDescription"
+      | "ruDescription"
       | "rounds"
       | "restSeconds"
       | "roundRestSeconds"

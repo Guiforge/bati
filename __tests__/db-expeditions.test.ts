@@ -38,10 +38,12 @@ function makeExercise(over: Partial<Exercise> & Pick<Exercise, "id">): Exercise 
     frName: "Exercice",
     deName: "Exercice",
     esName: "Exercice",
+    ruName: "Exercice",
     enDescription: "",
     frDescription: "",
     deDescription: "",
     esDescription: "",
+    ruDescription: "",
     imagePath: "assets/placeholder.webp",
     creator: "Admin",
     difficulty: "medium",
@@ -67,10 +69,12 @@ function makeQuest(id: number, enTitle: string, exerciseIds: number[]): QuestTem
     frTitle: enTitle,
     deTitle: enTitle,
     esTitle: enTitle,
+    ruTitle: enTitle,
     enDescription: "",
     frDescription: "",
     deDescription: "",
     esDescription: "",
+    ruDescription: "",
     author: "Admin",
     rounds: 1,
     restSeconds: 30,
@@ -94,6 +98,7 @@ const walk = makeExercise({
   frName: "Marche",
   deName: "Marche",
   esName: "Marche",
+  ruName: "Marche",
   style: "expedition",
 });
 const run = makeExercise({
@@ -103,6 +108,7 @@ const run = makeExercise({
   frName: "Course",
   deName: "Course",
   esName: "Course",
+  ruName: "Course",
   style: "expedition",
 });
 const pushUp = makeExercise({
@@ -112,6 +118,7 @@ const pushUp = makeExercise({
   frName: "Pompe",
   deName: "Pompe",
   esName: "Pompe",
+  ruName: "Pompe",
 });
 
 const exercisesById: Record<number, Exercise> = { 1: walk, 2: run, 3: pushUp };

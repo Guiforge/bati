@@ -7,7 +7,13 @@ import type { Age, YearSummary } from "./villageYearsRules";
  */
 
 /** A movement's name in every language, as the ladder rows hold it. */
-export type MovementNames = { enName: string; frName: string; deName: string; esName: string };
+export type MovementNames = {
+  enName: string;
+  frName: string;
+  deName: string;
+  esName: string;
+  ruName: string;
+};
 
 /** The id an Age is marked under in `bigFeastsShown`: its level. */
 export const ageKey = (level: number) => `age:${level}`;

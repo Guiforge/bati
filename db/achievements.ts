@@ -69,10 +69,12 @@ export interface AchievementDefinition {
   frTitle: string;
   deTitle: string;
   esTitle: string;
+  ruTitle: string;
   enDescription: string;
   frDescription: string;
   deDescription: string;
   esDescription: string;
+  ruDescription: string;
   category: "sessions" | "streaks" | "xp" | "special";
 }
 
@@ -248,10 +250,12 @@ export const achievementDefinitions: AchievementDefinition[] = DEFINITIONS.map((
     frTitle: copy.fr.title,
     deTitle: copy.de.title,
     esTitle: copy.es.title,
+    ruTitle: copy.ru.title,
     enDescription: copy.en.description,
     frDescription: copy.fr.description,
     deDescription: copy.de.description,
     esDescription: copy.es.description,
+    ruDescription: copy.ru.description,
   };
 });
 

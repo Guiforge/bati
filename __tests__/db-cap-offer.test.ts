@@ -176,7 +176,15 @@ test("no offer when the slot stands on an easier rung of its written movement", 
   const { questId, slot } = quest();
   sessions(questId, 3);
   const stepped = await slotOf(slot, {
-    substitutedFor: { id: 1, enName: "Squat", frName: "", deName: "", esName: "", imagePath: "" },
+    substitutedFor: {
+      id: 1,
+      enName: "Squat",
+      frName: "",
+      deName: "",
+      esName: "",
+      ruName: "",
+      imagePath: "",
+    },
   });
   expect(await checkCapOffers(questId, [stepped], "medium")).toEqual([]);
 });

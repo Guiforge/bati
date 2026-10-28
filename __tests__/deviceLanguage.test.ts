@@ -73,6 +73,7 @@ describe("localizedText", () => {
     frDescription: "Tiens bon.",
     deDescription: "Tiens bon.",
     esDescription: "Tiens bon.",
+    ruDescription: "Tiens bon.",
   };
 
   it("reads the language's own column", () => {
@@ -83,7 +84,7 @@ describe("localizedText", () => {
   it("falls back to English when the language's column is empty", () => {
     expect(
       localizedText(
-        { ...row, frDescription: "", deDescription: "", esDescription: "" },
+        { ...row, frDescription: "", deDescription: "", esDescription: "", ruDescription: "" },
         "description",
         "fr",
       ),

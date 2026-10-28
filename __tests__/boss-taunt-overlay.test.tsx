@@ -47,6 +47,7 @@ function makeBossFight(currentHp: number): BossFight {
     frName: "Le Gardien",
     deName: "Le Gardien",
     esName: "Le Gardien",
+    ruName: "Le Gardien",
     tier: 0,
     shiny: false,
   };

@@ -990,10 +990,12 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
       exFrName: exercises.frName,
       exDeName: exercises.deName,
       exEsName: exercises.esName,
+      exRuName: exercises.ruName,
       exEnDescription: exercises.enDescription,
       exFrDescription: exercises.frDescription,
       exDeDescription: exercises.deDescription,
       exEsDescription: exercises.esDescription,
+      exRuDescription: exercises.ruDescription,
       exImagePath: exercises.imagePath,
       exCreator: exercises.creator,
       exUuid: exercises.uuid,
@@ -1040,10 +1042,12 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
           frName: r.exFrName,
           deName: r.exDeName,
           esName: r.exEsName,
+          ruName: r.exRuName,
           enDescription: r.exEnDescription,
           frDescription: r.exFrDescription,
           deDescription: r.exDeDescription,
           esDescription: r.exEsDescription,
+          ruDescription: r.exRuDescription,
           imagePath: r.exImagePath,
           creator: r.exCreator,
           uuid: r.exUuid,
@@ -1157,6 +1161,7 @@ export type ContributingSession = {
   frTitle: string | null;
   deTitle: string | null;
   esTitle: string | null;
+  ruTitle: string | null;
 };
 
 /**
@@ -1179,6 +1184,7 @@ export async function getRecentContributingSessions(
       frTitle: quests.frTitle,
       deTitle: quests.deTitle,
       esTitle: quests.esTitle,
+      ruTitle: quests.ruTitle,
     })
     .from(completedQuest)
     .innerJoin(completedExercises, eq(completedExercises.sessionId, completedQuest.id))
@@ -1207,6 +1213,7 @@ export async function getRecentContributingSessions(
     frTitle: r.frTitle,
     deTitle: r.deTitle,
     esTitle: r.esTitle,
+    ruTitle: r.ruTitle,
   }));
 }
 

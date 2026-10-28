@@ -382,7 +382,7 @@ async function exerciseName(oath: Oath): Promise<Localized | null> {
       fr: exercises.frName,
       de: exercises.deName,
       es: exercises.esName,
-      ru: exercises.enName,
+      ru: exercises.ruName,
     })
     .from(exercises)
     .where(eq(exercises.id, oath.exerciseId))

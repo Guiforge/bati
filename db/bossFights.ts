@@ -69,6 +69,7 @@ export type BossFight = {
   frName: string;
   deName: string;
   esName: string;
+  ruName: string;
   /**
    * Whose adventure this is. Optional on purpose: `SavedSessionState` persists the fight, so one
    * restored from a session saved by a build before 0076 has none, and that fight is the game's
@@ -392,6 +393,7 @@ export async function getOrCreateBossFight(
       frTitle: adventures.frTitle,
       deTitle: adventures.deTitle,
       esTitle: adventures.esTitle,
+      ruTitle: adventures.ruTitle,
     })
     .from(adventures)
     .where(eq(adventures.id, adventureId))
@@ -433,6 +435,7 @@ export async function getOrCreateBossFight(
       frName: adventure.frTitle,
       deName: adventure.deTitle,
       esName: adventure.esTitle,
+      ruName: adventure.ruTitle,
       author: adventure.author,
       bossName: look.bossName,
       bossLines: look.bossLines,
@@ -477,6 +480,7 @@ export async function getOrCreateBossFight(
     frName: adventure.frTitle,
     deName: adventure.deTitle,
     esName: adventure.esTitle,
+    ruName: adventure.ruTitle,
     author: adventure.author,
     bossName: look.bossName,
     bossLines: look.bossLines,
@@ -529,6 +533,7 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
       frTitle: adventures.frTitle,
       deTitle: adventures.deTitle,
       esTitle: adventures.esTitle,
+      ruTitle: adventures.ruTitle,
     })
     .from(bossFights)
     .innerJoin(adventures, eq(bossFights.adventureId, adventures.id))
@@ -559,6 +564,7 @@ export async function getBossFightByAdventure(adventureId: number): Promise<Boss
     frName: row.frTitle,
     deName: row.deTitle,
     esName: row.esTitle,
+    ruName: row.ruTitle,
     author: row.author,
     bossName: look.bossName,
     bossLines: look.bossLines,

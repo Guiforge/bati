@@ -7,7 +7,7 @@ import type { AppLanguage } from "@/stores/settings";
  * interface translated and its catalogue in English, until a migration gives it columns
  * (`docs/architecture/adding-a-language.md`, step 4) and its code is added to this list.
  */
-const SEEDED_LANGUAGES = ["en", "fr", "de", "es"] as const satisfies readonly AppLanguage[];
+const SEEDED_LANGUAGES = ["en", "fr", "de", "es", "ru"] as const satisfies readonly AppLanguage[];
 
 export type SeededLanguage = (typeof SEEDED_LANGUAGES)[number];
 

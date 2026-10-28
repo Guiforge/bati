@@ -268,7 +268,7 @@ Five things stay out of those files, each for a reason:
 | The widget's four words | `src/widget.tsx` | It runs in a headless task, and reading a locale file there loads all of them. `__tests__/widget.test.ts` fails if it ever does |
 | The unit words: reps, s, min, per side | `db/targets.ts` | "s" against " s" is spacing, and a value that is a leading space is what a translation tool trims. They were in the locale files once and drifted |
 | Per-language settings | `LANGUAGE_NAMES`, `MACHINE_TRANSLATED`, `WEEK_START`, `CAPITALISED_NOUNS` | Facts about a language, not prose |
-| Quests, adventures, movements | the database, one column per seeded language (`SEEDED_LANGUAGES` in `src/i18n/localized.ts`) | Seeded content, written by migrations. Russian has no column yet and reads the English one |
+| Quests, adventures, movements | the database, one column per seeded language (`SEEDED_LANGUAGES` in `src/i18n/localized.ts`) | Seeded content, written by migrations. Russian since `0080` |
 
 A JSON file has no comments, so a note a translator needs (why a word was refused, what must stay
 short) goes in [`glossary.md`](glossary.md), on the row of the term.

@@ -64,7 +64,7 @@ const MAX_IMAGE_SIDE = 1_024;
 const MAX_SLOTS = 40;
 export const MAX_FILE_BYTES = 8_000_000;
 
-type Text4 = { en: string; fr: string; de: string; es: string };
+type QuestText = { en: string; fr: string; de: string; es: string; ru: string };
 
 type OwnMovement = {
   uuid: string;
@@ -96,8 +96,8 @@ export type QuestFile = {
   version: typeof VERSION;
   quest: {
     uuid: string;
-    title: Text4;
-    description: Text4;
+    title: QuestText;
+    description: QuestText;
     rounds: number;
     restSeconds: number;
     roundRestSeconds: number | null;
@@ -146,12 +146,19 @@ export function questToFile(quest: QuestTemplate, catalogue: readonly Exercise[]
     version: VERSION,
     quest: {
       uuid: nameOf(quest.uuid, `Quest ${quest.id}`),
-      title: { en: quest.enTitle, fr: quest.frTitle, de: quest.deTitle, es: quest.esTitle },
+      title: {
+        en: quest.enTitle,
+        fr: quest.frTitle,
+        de: quest.deTitle,
+        es: quest.esTitle,
+        ru: quest.ruTitle,
+      },
       description: {
         en: quest.enDescription,
         fr: quest.frDescription,
         de: quest.deDescription,
         es: quest.esDescription,
+        ru: quest.ruDescription,
       },
       rounds: quest.rounds,
       restSeconds: quest.restSeconds,
@@ -280,14 +287,14 @@ export function oneOf<T extends string>(values: readonly T[], value: unknown): T
   throw new QuestFileError(typeof value === "string" ? "newer" : "not_a_quest");
 }
 
-/** Four translations of one text. The English one is required for a title, never for a description. */
-function text4(value: unknown, max: number, required: boolean): Text4 {
+/** The translations of one text. The English one is required for a title, never for a description. */
+function questText(value: unknown, max: number, required: boolean): QuestText {
   if (!isRecord(value)) throw new QuestFileError("not_a_quest");
   const read = (v: unknown) => (required ? text(v, max) : text(v, max, true));
   const en = required ? name(value.en, max) : read(value.en);
   // A missing translation reads as English, as every untranslated seed row already does.
   const or = (v: unknown) => (v === undefined ? en : read(v) || en);
-  return { en, fr: or(value.fr), de: or(value.de), es: or(value.es) };
+  return { en, fr: or(value.fr), de: or(value.de), es: or(value.es), ru: or(value.ru) };
 }
 
 // The header parser lives in `carriedImage`; `quest-file.test.ts` still reaches it from here.
@@ -381,8 +388,8 @@ export function parseQuestBody(data: unknown): QuestBody {
   const body: QuestBody = {
     quest: {
       uuid: uuid(q.uuid),
-      title: text4(q.title, MAX_NAME, true),
-      description: text4(q.description, MAX_TEXT, false),
+      title: questText(q.title, MAX_NAME, true),
+      description: questText(q.description, MAX_TEXT, false),
       rounds: count(q.rounds, ROUNDS_RANGE),
       restSeconds: count(q.restSeconds, REST_RANGE),
       roundRestSeconds: q.roundRestSeconds == null ? null : count(q.roundRestSeconds, REST_RANGE),
@@ -527,7 +534,7 @@ export async function previewQuest(file: QuestFile): Promise<QuestPreview> {
 export type QuestFileEdits = {
   /** The title as shown, in the hero's language. */
   title: string;
-  language: keyof Text4;
+  language: keyof QuestText;
   /** One per slot of the file: false leaves that movement out. */
   keep: readonly boolean[];
   /** Import beside the hero's own copy instead of updating it. */
@@ -546,7 +553,7 @@ export function editQuestFile(file: QuestFile, edits: QuestFileEdits): QuestFile
     quest: {
       ...file.quest,
       uuid: edits.asCopy ? uuidv7() : file.quest.uuid,
-      title: renamed ? { en: title, fr: title, de: title, es: title } : file.quest.title,
+      title: renamed ? { en: title, fr: title, de: title, es: title, ru: title } : file.quest.title,
     },
     slots: file.slots.filter((_, i) => edits.keep[i] === true),
   };
@@ -628,10 +635,12 @@ export async function writeImportedQuest(
     frTitle: q.title.fr,
     deTitle: q.title.de,
     esTitle: q.title.es,
+    ruTitle: q.title.ru,
     enDescription: q.description.en,
     frDescription: q.description.fr,
     deDescription: q.description.de,
     esDescription: q.description.es,
+    ruDescription: q.description.ru,
     rounds: q.rounds,
     restSeconds: q.restSeconds,
     roundRestSeconds: q.roundRestSeconds,

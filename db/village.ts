@@ -88,6 +88,7 @@ export type BossBanner = {
   frTitle: string;
   deTitle: string;
   esTitle: string;
+  ruTitle: string;
   /**
    * The *monster's* painting when the campaign has one, else the campaign cover. A trophy shows
    * the thing you beat, not the poster for the journey — resolve with getBossAsset(), whose
@@ -114,6 +115,7 @@ export async function getBossBanners(): Promise<BossBanner[]> {
         frTitle: adventures.frTitle,
         deTitle: adventures.deTitle,
         esTitle: adventures.esTitle,
+        ruTitle: adventures.ruTitle,
         imagePath: adventures.imagePath,
         bossImagePath: adventures.bossImagePath,
         defeatedAt: bossFights.defeatedAt,
@@ -135,6 +137,7 @@ export async function getBossBanners(): Promise<BossBanner[]> {
       frTitle: s.frTitle,
       deTitle: s.deTitle,
       esTitle: s.esTitle,
+      ruTitle: s.ruTitle,
       imagePath: s.bossImagePath ?? s.imagePath ?? PLACEHOLDER_IMAGE_PATH,
       defeatedAt: s.lastFinishedAt,
     });
@@ -149,6 +152,7 @@ export async function getBossBanners(): Promise<BossBanner[]> {
       frTitle: row.frTitle,
       deTitle: row.deTitle,
       esTitle: row.esTitle,
+      ruTitle: row.ruTitle,
       imagePath: row.bossImagePath ?? row.imagePath ?? PLACEHOLDER_IMAGE_PATH,
       defeatedAt: row.defeatedAt,
     });
@@ -224,6 +228,7 @@ export type VillageBuilding = {
   frName: string;
   deName: string;
   esName: string;
+  ruName: string;
   unlockCondition: string;
   /** The 6 muscle buildings have no icon of their own; they borrow that muscle's sport sprite. */
   relatedMuscle: MuscleCode | null;
@@ -613,6 +618,7 @@ export async function getVillageBuildings(): Promise<VillageBuilding[]> {
       frName: BUILDING_LABELS[code].fr,
       deName: BUILDING_LABELS[code].de,
       esName: BUILDING_LABELS[code].es,
+      ruName: BUILDING_LABELS[code].ru,
       unlockCondition: buildingDefinitions[code].unlockCondition,
       relatedMuscle: buildingDefinitions[code].relatedMuscle,
       driver: derived?.driver ?? "tier",
@@ -653,6 +659,7 @@ export type VillageGrowth = {
   frName: string;
   deName: string;
   esName: string;
+  ruName: string;
   relatedMuscle: MuscleCode | null;
   oldLevel: number;
   newLevel: number;
@@ -759,6 +766,7 @@ export function diffVillageGrowth(
       frName: b.frName,
       deName: b.deName,
       esName: b.esName,
+      ruName: b.ruName,
       relatedMuscle: b.relatedMuscle,
       oldLevel: beforeLevel.get(b.code) ?? 0,
       newLevel: b.level,

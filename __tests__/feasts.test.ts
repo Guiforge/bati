@@ -21,7 +21,13 @@ const age = (level = 50): AgeNews => ({
   source: "rung",
   reachedAtLevel: 47,
   practice: null,
-  movement: { enName: "Diamond push-up", frName: "Pompe diamant", deName: "D", esName: "E" },
+  movement: {
+    enName: "Diamond push-up",
+    frName: "Pompe diamant",
+    deName: "D",
+    esName: "E",
+    ruName: "E",
+  },
 });
 const anniversary = (years = 1): AnniversaryNews => ({ years, sessions: 120, best: null });
 const tierUp = { oldTier: 2, newTier: 3 } as const;

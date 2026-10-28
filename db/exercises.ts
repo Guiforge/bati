@@ -46,10 +46,12 @@ export type Exercise = {
   frName: string;
   deName: string;
   esName: string;
+  ruName: string;
   enDescription: string;
   frDescription: string;
   deDescription: string;
   esDescription: string;
+  ruDescription: string;
   imagePath: string;
   creator: string;
   difficulty: DifficultyCode;
@@ -144,10 +146,12 @@ const exerciseColumns = () => ({
   frName: exercises.frName,
   deName: exercises.deName,
   esName: exercises.esName,
+  ruName: exercises.ruName,
   enDescription: exercises.enDescription,
   frDescription: exercises.frDescription,
   deDescription: exercises.deDescription,
   esDescription: exercises.esDescription,
+  ruDescription: exercises.ruDescription,
   imagePath: exercises.imagePath,
   creator: exercises.creator,
   difficulty: exercises.difficulty,
@@ -171,10 +175,12 @@ type ExerciseRow = {
   frName: string;
   deName: string;
   esName: string;
+  ruName: string;
   enDescription: string;
   frDescription: string;
   deDescription: string;
   esDescription: string;
+  ruDescription: string;
   imagePath: string;
   creator: string;
   difficulty: DifficultyCode;
@@ -199,10 +205,12 @@ function exerciseFromRow(r: ExerciseRow): Exercise {
     frName: r.frName,
     deName: r.deName,
     esName: r.esName,
+    ruName: r.ruName,
     enDescription: r.enDescription,
     frDescription: r.frDescription,
     deDescription: r.deDescription,
     esDescription: r.esDescription,
+    ruDescription: r.ruDescription,
     imagePath: r.imagePath,
     creator: r.creator,
     difficulty: r.difficulty,
@@ -371,6 +379,7 @@ export type MovementRef = {
   frName: string;
   deName: string;
   esName: string;
+  ruName: string;
   imagePath: string;
 };
 
@@ -408,6 +417,7 @@ export async function fetchLadderRows(): Promise<LadderRow[]> {
       frName: exercises.frName,
       deName: exercises.deName,
       esName: exercises.esName,
+      ruName: exercises.ruName,
       imagePath: exercises.imagePath,
       prerequisiteExerciseId: exercises.prerequisiteExerciseId,
     })
@@ -483,6 +493,7 @@ const stripPrerequisite = ({
   frName,
   deName,
   esName,
+  ruName,
   imagePath,
 }: LadderRow): MovementRef => ({
   id,
@@ -490,6 +501,7 @@ const stripPrerequisite = ({
   frName,
   deName,
   esName,
+  ruName,
   imagePath,
 });
 
@@ -1066,10 +1078,12 @@ export async function createUserExercise(
       frName: draft.name,
       deName: draft.name,
       esName: draft.name,
+      ruName: draft.name,
       enDescription: draft.description,
       frDescription: draft.description,
       deDescription: draft.description,
       esDescription: draft.description,
+      ruDescription: draft.description,
       imagePath: draft.imagePath,
       creator: USER_EXERCISE_CREATOR,
       difficulty: draft.difficulty,
@@ -1104,10 +1118,12 @@ export async function updateUserExercise(id: number, draft: UserExerciseDraft): 
       frName: draft.name,
       deName: draft.name,
       esName: draft.name,
+      ruName: draft.name,
       enDescription: draft.description,
       frDescription: draft.description,
       deDescription: draft.description,
       esDescription: draft.description,
+      ruDescription: draft.description,
       imagePath: draft.imagePath,
       difficulty: draft.difficulty,
       equipment: draft.equipment,

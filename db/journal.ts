@@ -66,12 +66,18 @@ const {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-const nameOf = (r: { enName: string; frName: string; deName: string; esName: string }) => ({
+const nameOf = (r: {
+  enName: string;
+  frName: string;
+  deName: string;
+  esName: string;
+  ruName: string;
+}) => ({
   en: r.enName,
   fr: r.frName,
   de: r.deName,
   es: r.esName,
-  ru: r.enName,
+  ru: r.ruName,
 });
 
 /** A left-joined exercise: all four names, or none. */
@@ -80,6 +86,7 @@ const joinedName = (r: {
   frName: string | null;
   deName: string | null;
   esName: string | null;
+  ruName: string | null;
 }): Localized | null =>
   r.enName == null
     ? null
@@ -90,6 +97,7 @@ const titleOf = (r: {
   frTitle: string | null;
   deTitle: string | null;
   esTitle: string | null;
+  ruTitle: string | null;
 }): Localized | null =>
   r.enTitle == null
     ? null
@@ -98,7 +106,7 @@ const titleOf = (r: {
         fr: r.frTitle ?? "",
         de: r.deTitle ?? "",
         es: r.esTitle ?? "",
-        ru: r.enTitle,
+        ru: r.ruTitle ?? "",
       };
 
 // ------------------------------------------------------------
@@ -197,6 +205,7 @@ export async function getStarterWall(limit = 4): Promise<WallEntry[]> {
       frName: exercises.frName,
       deName: exercises.deName,
       esName: exercises.esName,
+      ruName: exercises.ruName,
       imagePath: exercises.imagePath,
       perSide: exercises.perSide,
       type: questExercises.targetType,
@@ -287,6 +296,7 @@ async function readRecordRows(
               frName: exercises.frName,
               deName: exercises.deName,
               esName: exercises.esName,
+              ruName: exercises.ruName,
             })
             .from(exercises)
             .where(eq(exercises.id, exerciseId));
@@ -480,6 +490,7 @@ async function bestSessionBy(metric: "duration" | "xp" | "ground"): Promise<Sess
       frTitle: quests.frTitle,
       deTitle: quests.deTitle,
       esTitle: quests.esTitle,
+      ruTitle: quests.ruTitle,
     })
     .from(completedQuest)
     .leftJoin(quests, eq(quests.id, completedQuest.questId))
@@ -507,6 +518,7 @@ async function mostRepsSession(): Promise<SessionBest | null> {
       frTitle: quests.frTitle,
       deTitle: quests.deTitle,
       esTitle: quests.esTitle,
+      ruTitle: quests.ruTitle,
     })
     .from(completedQuest)
     .innerJoin(completedExercises, eq(completedExercises.sessionId, completedQuest.id))
@@ -563,6 +575,7 @@ export async function getBossKills(): Promise<BossKill[]> {
       frTitle: adventures.frTitle,
       deTitle: adventures.deTitle,
       esTitle: adventures.esTitle,
+      ruTitle: adventures.ruTitle,
       imagePath: adventures.imagePath,
       bossImagePath: adventures.bossImagePath,
       finishedAt: adventureRuns.finishedAt,
@@ -967,6 +980,7 @@ type Hit = {
   frName: string | null;
   deName: string | null;
   esName: string | null;
+  ruName: string | null;
   imagePath: string | null;
 };
 
@@ -1046,6 +1060,7 @@ export async function getStandingBosses(): Promise<StandingBoss[]> {
       frTitle: adventures.frTitle,
       deTitle: adventures.deTitle,
       esTitle: adventures.esTitle,
+      ruTitle: adventures.ruTitle,
       imagePath: adventures.imagePath,
       bossImagePath: adventures.bossImagePath,
     })
@@ -1061,7 +1076,7 @@ export async function getStandingBosses(): Promise<StandingBoss[]> {
         fr: a.frTitle,
         de: a.deTitle,
         es: a.esTitle,
-        ru: a.enTitle,
+        ru: a.ruTitle,
       }),
       imagePath: a.bossImagePath ?? a.imagePath,
     }));
@@ -1093,6 +1108,7 @@ export async function getKillReport(session: CompletedSession): Promise<KillRepo
       frTitle: adventures.frTitle,
       deTitle: adventures.deTitle,
       esTitle: adventures.esTitle,
+      ruTitle: adventures.ruTitle,
       imagePath: adventures.imagePath,
       bossImagePath: adventures.bossImagePath,
       heroBossUuid: adventures.heroBossUuid,
@@ -1130,6 +1146,7 @@ export async function getKillReport(session: CompletedSession): Promise<KillRepo
       frName: exercises.frName,
       deName: exercises.deName,
       esName: exercises.esName,
+      ruName: exercises.ruName,
       imagePath: exercises.imagePath,
     })
     .from(bossDamageLog)
@@ -1195,7 +1212,7 @@ export async function getKillReport(session: CompletedSession): Promise<KillRepo
           fr: step.frTitle,
           de: step.deTitle,
           es: step.esTitle,
-          ru: step.enTitle,
+          ru: step.ruTitle,
         }),
     bossImagePath,
     bossArt: parseBossArt(hero?.artJson),

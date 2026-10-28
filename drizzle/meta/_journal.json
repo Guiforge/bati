@@ -561,6 +561,13 @@
       "when": 1792972800000,
       "tag": "0079_the_boss_is_a_creation",
       "breakpoints": true
+    },
+    {
+      "idx": 80,
+      "version": "6",
+      "when": 1793059200000,
+      "tag": "0080_the_catalogue_in_russian",
+      "breakpoints": true
     }
   ]
 }

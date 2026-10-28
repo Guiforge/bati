@@ -39,6 +39,7 @@ function b(
     frName: code,
     deName: code,
     esName: code,
+    ruName: code,
     unlockCondition: "",
     relatedMuscle: def.relatedMuscle,
     driver: def.tier === 1 ? "tier" : def.tier === 3 ? "prereq" : "muscle",

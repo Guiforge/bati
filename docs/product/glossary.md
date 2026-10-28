@@ -31,9 +31,10 @@ the language. Two naming questions are still open, listed at the end.
 Russian ships too and has no column on this page yet. Most of `ru.json` came from a contributor
 (PR #174); a model wrote the blocks that were tables in the code at the time (bosses, badges,
 labels, rest messages), the keys added since, and the `ru-RU` listing, which is why its flag is up
-and its listing ends on the same warning. Its catalogue (quests, movements, adventures) is in
-English: it has no column in the database, see
-[`adding-a-language.md`](../architecture/adding-a-language.md) step 4.
+and its listing ends on the same warning. Its catalogue (quests, movements, adventures) was written
+by a model too, in migration `0080`, from the English with the French beside it and against the
+vocabulary of `ru.json` (`кор` for the core, `задание` for a quest, `клятва` for an oath). It has no
+column on this page yet.
 
 ## Register
 

@@ -264,6 +264,7 @@ export function WallRow({
                 frName: entry.name.fr,
                 deName: entry.name.de,
                 esName: entry.name.es,
+                ruName: entry.name.ru,
               },
               language,
             )}

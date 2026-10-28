@@ -1940,6 +1940,7 @@ describe("useSessionStore", () => {
         frName: "Squat",
         deName: "",
         esName: "",
+        ruName: "",
         imagePath: "",
         target: { type: "reps" as const, value: 17 },
       };
@@ -1974,6 +1975,7 @@ describe("useSessionStore", () => {
         frName: "Squat",
         deName: "",
         esName: "",
+        ruName: "",
         imagePath: "",
         target: { type: "reps" as const, value: 17 },
       };

@@ -69,7 +69,13 @@ export const emptyHeroBossDraft = (monster: BossAssetKey): HeroBossDraft => ({
   art: {},
 });
 
-type BossUser = { enTitle: string; frTitle: string; deTitle: string; esTitle: string };
+type BossUser = {
+  enTitle: string;
+  frTitle: string;
+  deTitle: string;
+  esTitle: string;
+  ruTitle: string;
+};
 
 /** Thrown when a boss is deleted while an adventure still ends on it, as for a quest. */
 export class HeroBossInUseError extends Error {
@@ -137,6 +143,7 @@ export async function adventuresUsingBoss(uuid: string, exec: Exec = db): Promis
       frTitle: adventures.frTitle,
       deTitle: adventures.deTitle,
       esTitle: adventures.esTitle,
+      ruTitle: adventures.ruTitle,
     })
     .from(adventures)
     .where(and(eq(adventures.heroBossUuid, uuid), eq(adventures.isActive, 1)));

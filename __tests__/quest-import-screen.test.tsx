@@ -257,7 +257,13 @@ test("an unticked movement and a new title are what gets imported", async () => 
 
   const sent = imported();
   expect(sent.slots).toEqual([file.slots[2]]);
-  expect(sent.quest.title).toEqual({ en: "My dawn", fr: "My dawn", de: "My dawn", es: "My dawn" });
+  expect(sent.quest.title).toEqual({
+    en: "My dawn",
+    fr: "My dawn",
+    de: "My dawn",
+    es: "My dawn",
+    ru: "My dawn",
+  });
 });
 
 // A quest with no movement, or no name, cannot be started once filed.

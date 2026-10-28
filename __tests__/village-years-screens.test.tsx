@@ -51,6 +51,7 @@ const building = (code: BuildingCode, level: number): village.VillageBuilding =>
   frName: code,
   deName: code,
   esName: code,
+  ruName: code,
   unlockCondition: "",
   relatedMuscle: buildingDefinitions[code].relatedMuscle,
   driver: "tier",
@@ -147,7 +148,9 @@ describe("the stones in the Ramparts' sheet", () => {
     };
     jest.spyOn(years, "loadVillageYears").mockResolvedValue({
       years: { stones: [...stonesFrom(13), stone(34, record)], banners: [], ages: [] },
-      names: new Map([[7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "" }]]),
+      names: new Map([
+        [7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "", ruName: "" }],
+      ]),
     });
     const screen = await openRamparts();
     expect(await screen.findAllByTestId(/^village-stone-(record-)?\d+$/)).toHaveLength(14);
@@ -215,7 +218,9 @@ describe("the marks on the stones", () => {
       value: 14,
       at: 0,
     };
-    const names = new Map([[7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "" }]]);
+    const names = new Map([
+      [7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "", ruName: "" }],
+    ]);
     jest.spyOn(years, "loadVillageYears").mockResolvedValue({
       years: {
         stones: [...stonesFrom(12), stone(33, record), stone(50)],
@@ -269,7 +274,9 @@ describe("the marks on the stones", () => {
           },
         ],
       },
-      names: new Map([[7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "" }]]),
+      names: new Map([
+        [7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "", ruName: "" }],
+      ]),
     });
     const screen = await openRamparts();
     expect(await screen.findByTestId("village-stone-age-50")).toBeTruthy();
@@ -383,7 +390,9 @@ describe("the Seasons section", () => {
         ],
         ages: [],
       },
-      names: new Map([[7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "" }]]),
+      names: new Map([
+        [7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "", ruName: "" }],
+      ]),
     });
     const screen = await renderScene();
     expect(await screen.findByLabelText("Année 1, Été : Pompes, de 10 à 14")).toBeTruthy();

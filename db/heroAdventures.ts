@@ -224,8 +224,8 @@ async function endColumns(end: HeroAdventureDraft["end"], exec: Exec = db) {
   } as const;
 }
 
-/** The hero's text sits in the four language columns, the same in each (ru reads en). */
-const texts = (t: string) => ({ en: t, fr: t, de: t, es: t });
+/** The hero's text sits in every language column, the same in each. */
+const texts = (t: string) => ({ en: t, fr: t, de: t, es: t, ru: t });
 
 function titleColumns(c: Clean) {
   const title = texts(c.title);
@@ -235,10 +235,12 @@ function titleColumns(c: Clean) {
     frTitle: title.fr,
     deTitle: title.de,
     esTitle: title.es,
+    ruTitle: title.ru,
     enDescription: description.en,
     frDescription: description.fr,
     deDescription: description.de,
     esDescription: description.es,
+    ruDescription: description.ru,
     imagePath: c.imagePath,
   };
 }
@@ -249,10 +251,12 @@ function stepColumns(step: Clean["steps"][number]) {
     frNarrative: step.narrative,
     deNarrative: step.narrative,
     esNarrative: step.narrative,
+    ruNarrative: step.narrative,
     enOutroNarrative: step.outro,
     frOutroNarrative: step.outro,
     deOutroNarrative: step.outro,
     esOutroNarrative: step.outro,
+    ruOutroNarrative: step.outro,
   };
 }
 

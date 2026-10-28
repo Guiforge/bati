@@ -1,5 +1,6 @@
 import { File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
+import { isBundledArt } from "@/constants/assetMap";
 import { type TransactionTx, transactionOrFallback } from "@/db/client";
 import {
   createUserExercise,
@@ -319,10 +320,13 @@ function carriedSize(base64: string): Size | null {
  * tracking pixel the privacy policy promises does not exist; `file:` and `content:` would point
  * at whatever is on this phone. Anything else becomes the placeholder.
  *
+ * `art` says which bundled names are accepted: a movement's or a quest cover's. Left out, only a
+ * carried picture is (the adventure's photos and boss art are never bundled names).
+ *
  * A carried picture is sized from its header too: a few hundred KB of PNG can be a 16000 px
  * square, a gigabyte of memory on every screen that draws it.
  */
-export function safeImage(value: unknown): string | null {
+export function safeImage(value: unknown, art?: "exercise" | "quest"): string | null {
   if (typeof value !== "string" || value.length > MAX_IMAGE_CHARS) return null;
   const data = /^data:image\/(?:jpeg|png|webp);base64,([A-Za-z0-9+/]+=*)$/.exec(value);
   if (data) {
@@ -330,11 +334,10 @@ export function safeImage(value: unknown): string | null {
     if (!size || size.width < 1 || size.height < 1) return null;
     return size.width <= MAX_IMAGE_SIDE && size.height <= MAX_IMAGE_SIDE ? value : null;
   }
-  // A leading "/" is an absolute path on this phone, not an asset that ships with the app.
-  if (/^[A-Za-z0-9_\-./]+$/.test(value) && !value.includes("..") && !value.startsWith("/")) {
-    return value;
-  }
-  return null;
+  // The placeholders are what a hero movement made without a picture, or a coverless quest, is
+  // stored as (`DEFAULT_USER_EXERCISE_DRAFT`, `questHead`); they ship with the app but in no art map.
+  if (value === "assets/placeholder.jpg" || value === "assets/placeholder.webp") return value;
+  return art && isBundledArt(art, value) ? value : null;
 }
 
 function ownMovement(value: unknown): OwnMovement {
@@ -344,7 +347,7 @@ function ownMovement(value: unknown): OwnMovement {
     uuid: uuid(value.uuid),
     name: name(value.name),
     description: text(value.description, MAX_TEXT, true),
-    image: safeImage(value.image) ?? "assets/placeholder.jpg",
+    image: safeImage(value.image, "exercise") ?? "assets/placeholder.jpg",
     // A muscle this version does not know is left out: the movement still trains the others.
     muscles: [...new Set(value.muscles.filter((m) => muscleCodes.includes(m)))],
     style: oneOf(exerciseStyles, value.style),
@@ -393,7 +396,7 @@ export function parseQuestBody(data: unknown): QuestBody {
       rounds: count(q.rounds, ROUNDS_RANGE),
       restSeconds: count(q.restSeconds, REST_RANGE),
       roundRestSeconds: q.roundRestSeconds == null ? null : count(q.roundRestSeconds, REST_RANGE),
-      image: safeImage(q.image),
+      image: safeImage(q.image, "quest"),
     },
     slots: data.slots.map(slot),
   };

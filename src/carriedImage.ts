@@ -6,7 +6,9 @@
  */
 export function imageSize(bytes: Uint8Array): Size | null {
   const r = reader(bytes);
-  if (r.ascii(0, 8) === "\x89PNG\r\n\x1a\n") return { width: r.u32be(16), height: r.u32be(20) };
+  if (r.ascii(0, 8) === "\x89PNG\r\n\x1a\n") {
+    return isAnimatedPng(r) ? null : { width: r.u32be(16), height: r.u32be(20) };
+  }
   if (r.ascii(0, 4) === "RIFF" && r.ascii(8, 4) === "WEBP") return webpSize(r);
   if (r.at(0) === 0xff && r.at(1) === 0xd8) return jpegSize(r);
   return null;
@@ -30,10 +32,31 @@ function reader(bytes: Uint8Array) {
   };
 }
 
+/**
+ * An APNG announces itself with an `acTL` chunk before the first `IDAT`. Every frame is a decode
+ * and a bitmap, which the size cap on the first one does not bound. The walk has no iteration
+ * cap on purpose: a cap that gives up "fine" is a bypass, and the input is already bounded (a
+ * chunk is at least 12 bytes, and `safeImage` refuses more than a few hundred KB). On render only
+ * the first 12 KB are read, so an `acTL` behind a huge chunk is missed there; the import gate
+ * reads the whole picture and is the one that counts.
+ */
+function isAnimatedPng(r: Reader): boolean {
+  let i = 8;
+  while (i + 8 <= r.length) {
+    const type = r.ascii(i + 4, 4);
+    if (type === "acTL") return true;
+    if (type === "IDAT" || type === "IEND") return false;
+    i += 12 + r.u32be(i);
+  }
+  return false;
+}
+
 function webpSize(r: Reader): Size | null {
   const chunk = r.ascii(12, 4);
   if (chunk === "VP8 ") return { width: r.u16le(26) & 0x3fff, height: r.u16le(28) & 0x3fff };
-  if (chunk === "VP8X") return { width: 1 + r.u24le(24), height: 1 + r.u24le(27) };
+  // Flags byte, bit 0x02: the animation flag. Animated WebP is refused like an APNG.
+  if (chunk === "VP8X")
+    return r.at(20) & 0x02 ? null : { width: 1 + r.u24le(24), height: 1 + r.u24le(27) };
   if (chunk !== "VP8L") return null;
   const b = (i: number) => r.at(21 + i);
   return {

@@ -9,6 +9,7 @@ import { getExerciseThumb } from "@/constants/assetMap";
 import { buildWarmup, PREP_SECONDS, secondsAhead, type WarmupQuest } from "@/constants/warmup";
 import { formatDurationEstimate } from "@/db/estimate";
 import { type Exercise, officialByName } from "@/db/exercises";
+import { SECONDS_SUFFIX } from "@/db/targets";
 import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { loadWarmupContext } from "@/stores/session";
@@ -141,7 +142,8 @@ export function WarmupPreview({
                   {i + 1}. {exercise ? localizedName(exercise, language) : step.exerciseName}
                 </Text>
                 <Text fontSize={13} color="textSecondary">
-                  {step.seconds}s
+                  {step.seconds}
+                  {SECONDS_SUFFIX[language]}
                 </Text>
               </XStack>
             );

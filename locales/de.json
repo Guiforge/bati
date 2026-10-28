@@ -1404,6 +1404,7 @@
     "crest_boar_of": "Ein Wildschwein, das {{first}} und {{second}} vereint.",
     "crest_manual": "{{what}} Das ist deine Wahl.",
     "crest_place": "dein Dorf",
+    "crest_place_named": "{{name}}",
     "crest_line_glow": "Etwas beobachtet {{place}}.",
     "crest_line_one": "{{animal}} wacht über {{place}}.",
     "crest_line_one_t": "{{animal}} wacht seit heute über {{place}}.",

@@ -35,7 +35,9 @@ type Reveal = Extract<Feast, { kind: "reveal" }>;
 export function revealTitle(t: TFunction, f: Reveal, villageName: string): string {
   return t("village.crest_line_one", {
     animal: sentence(t(`village.crest_${f.animal}`)),
-    place: villageName || t("village.crest_place"),
+    place: villageName
+      ? t("village.crest_place_named", { name: villageName })
+      : t("village.crest_place"),
   });
 }
 

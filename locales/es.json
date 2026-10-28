@@ -1473,6 +1473,7 @@
     "crest_boar_of": "Un jabalí que reúne {{first}} y {{second}}.",
     "crest_manual": "{{what}} Es tu elección.",
     "crest_place": "tu aldea",
+    "crest_place_named": "{{name}}",
     "crest_line_glow": "Algo observa {{place}}.",
     "crest_line_one": "{{animal}} vela por {{place}}.",
     "crest_line_one_t": "{{animal}} vela por {{place}} desde hoy.",

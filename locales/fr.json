@@ -1493,6 +1493,7 @@
     "crest_boar_of": "Un sanglier qui mêle {{first}} et {{second}}.",
     "crest_manual": "{{what}} C'est ton choix.",
     "crest_place": "ton village",
+    "crest_place_named": "{{name}}",
     "crest_line_glow": "Quelque chose observe {{place}}.",
     "crest_line_one": "{{animal}} veille sur {{place}}.",
     "crest_line_one_t": "{{animal}} veille sur {{place}} depuis aujourd'hui.",

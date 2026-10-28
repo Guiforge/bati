@@ -21,7 +21,9 @@ export function useCrestLine(
   revealedToday: boolean,
 ): string {
   const { t } = useTranslation();
-  const place = villageName || t("village.crest_place");
+  const place = villageName
+    ? t("village.crest_place_named", { name: villageName })
+    : t("village.crest_place");
   if (crest === null) return t("village.crest_line_glow", { place });
 
   const name = (a: Animal, stage: CrestStage) =>

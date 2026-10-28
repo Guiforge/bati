@@ -1404,6 +1404,7 @@
     "crest_boar_of": "A boar that blends {{first}} and {{second}}.",
     "crest_manual": "{{what}} It is your choice.",
     "crest_place": "your village",
+    "crest_place_named": "{{name}}",
     "crest_line_glow": "Something watches {{place}}.",
     "crest_line_one": "{{animal}} watches over {{place}}.",
     "crest_line_one_t": "{{animal}} now watches over {{place}}.",

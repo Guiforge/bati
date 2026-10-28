@@ -24,6 +24,7 @@ appId: com.guiforge.bati.dev
 - scrollUntilVisible:
     element:
       text: "3y"
+    timeout: 60000
     direction: DOWN
 - tapOn: "3y" # ~550 sessions: streaks, records, achievements, muscle balance
 # No "Max out village" step: the button is gone, the village derives from the seeded history.
@@ -31,6 +32,7 @@ appId: com.guiforge.bati.dev
 - scrollUntilVisible:
     element:
       text: "+5"
+    timeout: 60000
     direction: UP
 - tapOn: "+5"
 - tapOn: "+5"

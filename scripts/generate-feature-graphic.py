@@ -63,6 +63,7 @@ TAGLINES = {
     "fr-FR": "BÂTIS TON CORPS.\nBÂTIS TON VILLAGE.",
     "de-DE": "BAU DEINEN KÖRPER.\nBAU DEIN DORF.",
     "es-ES": "FORJA TU CUERPO.\nLEVANTA TU ALDEA.",
+    "ru-RU": "ТРЕНИРУЙ ТЕЛО.\nСТРОЙ ДЕРЕВНЮ.",
 }
 
 

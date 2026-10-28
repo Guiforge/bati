@@ -4514,5 +4514,10 @@
     "derived_from": "assets/icon.png",
     "how": "resized to 512x512 for the store listing",
     "licence": "same as the source render; see that entry"
+  },
+  "fastlane/metadata/android/ru-RU/images/featureGraphic.png": {
+    "derived_from": "fastlane/featureGraphic-bg.jpg",
+    "how": "cover-crop + left ink fade + cartouche tagline",
+    "licence": "same as the source render; see that entry"
   }
 }

@@ -15,7 +15,7 @@ function shots(locale: string): string[] {
 }
 
 describe("Play store listing", () => {
-  test.each(["en-US", "fr-FR", "de-DE", "es-ES"])(
+  test.each(["en-US", "fr-FR", "de-DE", "es-ES", "ru-RU"])(
     "%s ships at most 8 phone screenshots",
     (locale) => {
       const files = shots(locale);

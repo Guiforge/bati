@@ -114,6 +114,19 @@ tags:
 - takeScreenshot: 6-victory
 - tapOn:
     id: "session-victory-continue"
+# A hero past their 8th session gets the village's animal revealed once, right after the first
+# victory. It covers the tab bar; close it, the village shot is the one that shows its result.
+- extendedWaitUntil:
+    visible:
+      id: "big-feast"
+    timeout: 8000
+    optional: true
+- runFlow:
+    when:
+      visible:
+        id: "big-feast"
+    commands:
+      - back
 
 # --- 7. The village, maxed --------------------------------------------------
 - tapOn:
@@ -172,6 +185,8 @@ tags:
     element:
       id: "dev-seed-expedition"
     direction: DOWN
+    timeout: 90000
+    speed: 90
 - tapOn:
     id: "dev-seed-expedition"
 - extendedWaitUntil:
@@ -188,6 +203,8 @@ tags:
     element:
       text: "Jump to boss fight"
     direction: DOWN
+    timeout: 90000
+    speed: 90
 - tapOn: "Jump to boss fight"
 
 # The jump lands on the boss step's quest screen, not inside the session — the fight still has to

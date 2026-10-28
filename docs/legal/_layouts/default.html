@@ -111,7 +111,7 @@
             b.setAttribute("aria-pressed", String(b.dataset.setLang === lang));
           });
           document.querySelectorAll("img[data-shot]").forEach(function (img) {
-            img.src = "/assets/shots/" + (lang === "ru" ? "en" : lang) + "/" + img.dataset.shot + ".webp";
+            img.src = "/assets/shots/" + lang + "/" + img.dataset.shot + ".webp";
           });
         }
         buttons.forEach(function (b) {

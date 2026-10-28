@@ -1095,7 +1095,7 @@
     },
     {
       "name": "@expo/cli",
-      "version": "58.1.15",
+      "version": "58.1.16",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 },
@@ -1174,7 +1174,7 @@
     },
     {
       "name": "@expo/fingerprint",
-      "version": "0.21.6",
+      "version": "0.21.7",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 }
@@ -1244,7 +1244,7 @@
     },
     {
       "name": "@expo/metro-config",
-      "version": "58.0.17",
+      "version": "58.0.18",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 }
@@ -1316,7 +1316,7 @@
     },
     {
       "name": "@expo/router-server",
-      "version": "58.0.17",
+      "version": "58.0.18",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 }
@@ -3574,7 +3574,7 @@
     },
     {
       "name": "babel-preset-expo",
-      "version": "58.0.20",
+      "version": "58.0.21",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 }
@@ -4413,7 +4413,7 @@
     },
     {
       "name": "expo",
-      "version": "58.0.19",
+      "version": "58.0.20",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 }
@@ -4453,7 +4453,7 @@
     },
     {
       "name": "expo-file-system",
-      "version": "58.0.11",
+      "version": "58.0.12",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 }
@@ -4557,7 +4557,7 @@
     },
     {
       "name": "expo-modules-cli",
-      "version": "0.3.2",
+      "version": "0.3.3",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 }
@@ -4565,7 +4565,7 @@
     },
     {
       "name": "expo-modules-core",
-      "version": "58.0.26",
+      "version": "58.0.27",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 }
@@ -4573,7 +4573,7 @@
     },
     {
       "name": "expo-modules-jsi",
-      "version": "58.0.19",
+      "version": "58.0.20",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 }
@@ -4581,7 +4581,7 @@
     },
     {
       "name": "expo-modules-macros",
-      "version": "0.22.0",
+      "version": "0.24.0",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 }
@@ -4597,7 +4597,7 @@
     },
     {
       "name": "expo-router",
-      "version": "58.0.26",
+      "version": "58.0.27",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 },
@@ -6419,7 +6419,7 @@
     },
     {
       "name": "node-forge",
-      "version": "1.4.1",
+      "version": "1.4.2",
       "license": "(BSD-3-Clause OR GPL-2.0)",
       "notices": [{ "copyright": [], "text": 75 }]
     },
@@ -6448,7 +6448,7 @@
     },
     {
       "name": "noxcturnal",
-      "version": "0.1.10",
+      "version": "0.1.11",
       "license": "MIT",
       "notices": [
         {

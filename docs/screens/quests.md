@@ -78,6 +78,18 @@ catalogue the import writes into:
   exercise arrives as a second row beside the hero's own. The match ignores case and surrounding spaces
   and looks only at the hero's own exercises, never the seeded ones. Neutral, not a warning. In a quest
   file, an exercise the hero unticks does not arrive, so its line goes with it.
+- **A name the game already uses** (both kinds, `ImportClashes`): an arriving exercise named like a game
+  exercise, or a quest titled like a game quest, says so ("... The one in this file stays separate.",
+  `quests.import_game_name`, `quests.import_game_quest`). The import finds a hero exercise by uuid only
+  and the hero and game names are separate populations ([exercise ownership](../architecture/exercise-ownership.md)),
+  so the two never merge. English names, case-insensitive; a name that is also a hero clash gets the
+  clash line alone.
+
+A quest file carrying the uuid of a quest whose session is under way (warm-up to paused, the same live
+test as starting a session) is forced to a copy: the update and keep-both choices give way to one line,
+`quests.import_running`, as an adventure under way does. The test is read again at the tap. Only this
+door is guarded: the quest editor and the sync merge can rewrite the quest mid-session, harmlessly,
+because the session keeps its own copy.
 
 The adventure preview reads in the order of the decision: cover and title, the "already here" notice
 (update or keep both), **What arrives**, the same-name exercise line, the steps, then the boss (its name,

@@ -597,6 +597,15 @@ function lookup<T>(map: Record<string, T>, id: string): T | undefined {
 }
 
 /**
+ * Whether a path names art this app ships for that use: a movement picture (the exercise
+ * editor's own set) or a quest cover. Same key rule as the getters, so "lunge" and
+ * "assets/images/exercises/lunge.webp" agree, and a map's inherited names never count.
+ */
+export function isBundledArt(kind: "exercise" | "quest", id: string): boolean {
+  return lookup(kind === "exercise" ? EXERCISE_ASSETS : QUEST_ASSETS, id) !== undefined;
+}
+
+/**
  * A hero-authored movement carries its picture in the row itself: either a bundled illustration
  * it picked from the app's own art, or a `data:` URI of a photo (see `0035` and the exercise
  * editor). Both getters below take all three forms, so the five screens that render an exercise

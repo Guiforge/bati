@@ -38,20 +38,34 @@ export function ImportArrives({ arrives }: { arrives: Arrivals }) {
 }
 
 /**
- * An exercise that arrives under a name the hero already uses for one of theirs: the two stay side
- * by side, neither replaces the other. Neutral, not a warning: nothing is lost, and the file is
- * not at fault.
+ * An exercise that arrives under a name the hero already uses for one of theirs, or that the game
+ * already uses for one of its own (and a quest under a game quest's title): the two stay side by
+ * side, neither replaces the other. Neutral, not a warning: nothing is lost, and the file is not at
+ * fault.
  */
-export function ImportClashes({ names }: { names: readonly string[] }) {
+export function ImportClashes({
+  names,
+  gameNames,
+  gameQuests,
+}: {
+  names: readonly string[];
+  gameNames: readonly string[];
+  gameQuests: readonly string[];
+}) {
   const { t } = useTranslation();
-  if (names.length === 0) return null;
+  const rows = [
+    ...names.map((name) => ({ name, key: "quests.import_clash" })),
+    ...gameNames.map((name) => ({ name, key: "quests.import_game_name" })),
+    ...gameQuests.map((name) => ({ name, key: "quests.import_game_quest" })),
+  ];
+  if (rows.length === 0) return null;
   return (
     <YStack testID="import-clashes" gap="2">
-      {names.map((name) => (
-        <XStack key={name} gap="2" items="flex-start">
+      {rows.map(({ name, key }) => (
+        <XStack key={`${key}:${name}`} gap="2" items="flex-start">
           <Info size={16} color="textSecondary" />
           <Text flex={1} fontSize={13} color="textSecondary">
-            {t("quests.import_clash", { name })}
+            {t(key, { name })}
           </Text>
         </XStack>
       ))}

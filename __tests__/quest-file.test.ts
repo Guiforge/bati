@@ -298,14 +298,16 @@ describe("reading a quest file", () => {
   test("a picture is carried in the file or shipped with the app, never fetched", () => {
     const { safeImage } = load().file;
     expect(safeImage(PHOTO)).toBe(PHOTO);
-    expect(safeImage("assets/images/quests/forge.webp")).toBe("assets/images/quests/forge.webp");
+    expect(safeImage("assets/images/quests/escape_collapsing_mine.webp", "quest")).toBe(
+      "assets/images/quests/escape_collapsing_mine.webp",
+    );
     // Each of these would make the app reach a stranger's server or read this phone's files.
     expect(safeImage("https://tracker.example/pixel.png")).toBeNull();
     expect(safeImage("http://tracker.example/pixel.png")).toBeNull();
     expect(safeImage("file:///data/data/com.guiforge.bati/databases/bati.db")).toBeNull();
     expect(safeImage("content://media/external/images/1")).toBeNull();
     expect(safeImage("/data/user/0/app/files/a.jpg")).toBeNull();
-    expect(safeImage("squat")).toBe("squat");
+    expect(safeImage("squat", "exercise")).toBe("squat");
     expect(safeImage("data:text/html;base64,PHNjcmlwdD4=")).toBeNull();
     expect(safeImage("../../secrets")).toBeNull();
   });
@@ -361,12 +363,141 @@ describe("reading a quest file", () => {
 
   // The bundled names are what every seed movement and every hero cover picked from the app's art
   // travels as; sizing must not touch them.
-  test("a bundled picture's name still passes, sized or not", () => {
+  test("a bundled picture's name still passes, for the use it belongs to", () => {
     const { safeImage } = load().file;
-    expect(safeImage("assets/images/exercises/squat.png")).toBe(
+    expect(safeImage("assets/images/exercises/squat.png", "exercise")).toBe(
       "assets/images/exercises/squat.png",
     );
-    expect(safeImage("escape_collapsing_mine")).toBe("escape_collapsing_mine");
+    expect(safeImage("lunge", "exercise")).toBe("lunge");
+    expect(safeImage("escape_collapsing_mine", "quest")).toBe("escape_collapsing_mine");
+    expect(safeImage("assets/placeholder.jpg", "exercise")).toBe("assets/placeholder.jpg");
+    expect(safeImage("assets/placeholder.webp", "exercise")).toBe("assets/placeholder.webp");
+  });
+
+  test("a path that names no bundled picture for that use is refused", () => {
+    const { safeImage } = load().file;
+    for (const art of ["exercise", "quest"] as const) {
+      for (const bad of [
+        "__proto__",
+        "constructor",
+        "toString",
+        "/data/x",
+        "foo/bar.png",
+        "lunge/../x",
+        "Lunge",
+        "assets/images/exercises/nope.webp",
+      ]) {
+        expect(safeImage(bad, art)).toBeNull();
+      }
+    }
+    // A quest cover's name is not a movement's picture, nor the other way round.
+    expect(safeImage("escape_collapsing_mine", "exercise")).toBeNull();
+    expect(safeImage("assets/images/exercises/lunge.webp", "quest")).toBeNull();
+    // No use named: a carried picture only.
+    expect(safeImage("lunge")).toBeNull();
+  });
+
+  test("what the app exports for a movement and a cover reads back unchanged", () => {
+    const { file } = load();
+    const base = received();
+    const covers = ["escape_collapsing_mine", null];
+    const images = ["lunge", "assets/images/exercises/lunge.webp", "assets/placeholder.webp"];
+    for (const cover of covers) {
+      for (const image of images) {
+        const slots = base.slots.map((s) =>
+          "own" in s.movement ? { ...s, movement: { own: { ...s.movement.own, image } } } : s,
+        );
+        const read = file.parseQuestData({
+          ...base,
+          quest: { ...base.quest, image: cover },
+          slots,
+        });
+        expect(read.quest.image).toBe(cover);
+        const own = read.slots.find((s) => "own" in s.movement)?.movement;
+        assert(own && "own" in own);
+        expect(own.own.image).toBe(image);
+      }
+    }
+  });
+
+  test("a movement picture that is no bundled name reads as the placeholder", () => {
+    const base = received();
+    const slots = base.slots.map((s) =>
+      "own" in s.movement
+        ? { ...s, movement: { own: { ...s.movement.own, image: "__proto__" } } }
+        : s,
+    );
+    const read = load().file.parseQuestData({ ...base, slots });
+    const own = read.slots.find((s) => "own" in s.movement)?.movement;
+    assert(own && "own" in own);
+    expect(own.own.image).toBe("assets/placeholder.jpg");
+  });
+
+  describe("animated pictures", () => {
+    const chunk = (type: string, body: number[] = []) => [
+      ...be32(body.length),
+      ...[...type].map((c) => c.charCodeAt(0)),
+      ...body,
+      0,
+      0,
+      0,
+      0,
+    ];
+    const IHDR = [...be32(13), 73, 72, 68, 82, ...be32(64), ...be32(48), 8, 6, 0, 0, 0, 0, 0, 0, 0];
+    const apng = (...chunks: number[][]) => bytes(0x89, "PNG\r\n\x1a\n", ...IHDR, ...chunks.flat());
+    const vp8x = (flags: number) => riff("VP8X", [flags, 0, 0, 0, ...le24(63), ...le24(47)]);
+    const size = (data: Uint8Array) => load().file.imageSize(data);
+    const safeImage = (v: string) => load().file.safeImage(v);
+
+    test("an APNG is refused, however far behind other chunks its acTL sits", () => {
+      const acTL = chunk("acTL", [0, 0, 0, 2, 0, 0, 0, 0]);
+      expect(size(apng(acTL, chunk("IDAT", [1])))).toBeNull();
+      expect(
+        size(apng(chunk("iCCP", Array<number>(3000).fill(1)), acTL, chunk("IDAT"))),
+      ).toBeNull();
+      expect(size(apng(...Array.from({ length: 2000 }, () => chunk("tEXt")), acTL))).toBeNull();
+      expect(safeImage(dataUri("png", apng(acTL, chunk("IDAT"))))).toBeNull();
+    });
+
+    test("a plain PNG still reads, and an acTL after IDAT is not looked for", () => {
+      expect(size(apng(chunk("IDAT", [1]), chunk("IEND")))).toEqual({ width: 64, height: 48 });
+      expect(size(apng(chunk("IDAT"), chunk("acTL", [0, 0, 0, 2, 0, 0, 0, 0])))).toEqual({
+        width: 64,
+        height: 48,
+      });
+    });
+
+    test("a truncated or hostile chunk walk ends quietly", () => {
+      expect(size(apng(chunk("iCCP", [1, 2, 3, 4])).subarray(0, 41))).toEqual({
+        width: 64,
+        height: 48,
+      });
+      expect(size(apng([0xff, 0xff, 0xff, 0xff, 116, 69, 88, 116, 1]))).toEqual({
+        width: 64,
+        height: 48,
+      });
+      expect(size(apng(chunk("zzzz")))).toEqual({ width: 64, height: 48 });
+    });
+
+    test("an animated WebP is refused whatever its mime type says, a static one is not", () => {
+      expect(size(vp8x(0x02))).toBeNull();
+      expect(size(vp8x(0x12))).toBeNull();
+      expect(size(vp8x(0x10))).toEqual({ width: 64, height: 48 });
+      expect(safeImage(dataUri("png", vp8x(0x02)))).toBeNull();
+      expect(safeImage(dataUri("webp", vp8x(0x00)))).not.toBeNull();
+    });
+
+    test("the render path refuses them too", () => {
+      const carried = require("../src/carriedImage") as typeof import("../src/carriedImage");
+      expect(carried.carriedImageSize(dataUri("webp", vp8x(0x02)))).toBeNull();
+      expect(carried.carriedImageSize(dataUri("webp", vp8x(0)))).toEqual({ width: 64, height: 48 });
+    });
+
+    test("a GIF stays refused", () => {
+      expect(
+        safeImage(`data:image/gif;base64,${Buffer.from("GIF89a").toString("base64")}`),
+      ).toBeNull();
+    });
   });
 });
 
@@ -1184,6 +1315,65 @@ describe("previewing a quest file", () => {
 
   // The preview warns before a file overwrites one of the hero's quests; it has to find that
   // quest by the uuid the import will use, and only that one.
+  test("names an arriving movement that carries a game exercise's name, once, whatever its case", async () => {
+    const { file } = load();
+    const named = (name: string, uuid: string) => {
+      const q = received();
+      const slot = ownSlot(uuid);
+      assert("own" in slot.movement);
+      return { ...q, slots: [{ ...slot, movement: { own: { ...slot.movement.own, name } } }] };
+    };
+    const game = await file.previewQuest(named("push-UPS", "0192a000-0000-7000-8000-0000000000e1"));
+    expect(game.gameNames).toEqual(["push-UPS"]);
+    expect(game.clashes).toEqual([]);
+    const unique = await file.previewQuest(
+      named("Zxq unique", "0192a000-0000-7000-8000-0000000000e2"),
+    );
+    expect(unique.gameNames).toEqual([]);
+    // Here by uuid: not an arrival, so a re-import of the hero's own movement stays silent.
+    expect((await file.previewQuest(received())).gameNames).toEqual([]);
+  });
+
+  test("a name that is both the hero's and the game's is one note, the hero's", async () => {
+    const { file, exercises } = load();
+    await exercises.createUserExercise({
+      ...exercises.DEFAULT_USER_EXERCISE_DRAFT,
+      name: "Push-ups",
+      description: "x",
+      muscles: ["chest"],
+    });
+    const q = received();
+    const slot = ownSlot("0192a000-0000-7000-8000-0000000000e3");
+    assert("own" in slot.movement);
+    const both = {
+      ...q,
+      slots: [{ ...slot, movement: { own: { ...slot.movement.own, name: "Push-ups" } } }],
+    };
+    const preview = await file.previewQuest(both);
+    expect(preview.clashes).toEqual(["Push-ups"]);
+    expect(preview.gameNames).toEqual([]);
+  });
+
+  test("names an arriving quest titled like a game quest, but not the hero's own being updated", async () => {
+    const { file } = load();
+    const seed = t.sqlite
+      .prepare("SELECT enTitle FROM quests WHERE author = 'Admin' LIMIT 1")
+      .get() as { enTitle: string };
+    const title = (en: string, uuid: string) => {
+      const q = received({ uuid });
+      return { ...q, quest: { ...q.quest, title: { ...q.quest.title, en } } };
+    };
+    const hit = await file.previewQuest(
+      title(seed.enTitle.toUpperCase(), "0192a000-0000-7000-8000-0000000000e4"),
+    );
+    expect(hit.gameQuests).toEqual([seed.enTitle.toUpperCase()]);
+    const miss = await file.previewQuest(
+      title("Zxq unique", "0192a000-0000-7000-8000-0000000000e5"),
+    );
+    expect(miss.gameQuests).toEqual([]);
+    expect((await file.previewQuest(received())).gameQuests).toEqual([]);
+  });
+
   test("names the hero's quest the file would update, and only that one", async () => {
     const { file, quests } = load();
     const mine = (await quests.listQuestTemplates()).find((q) => q.uuid === QUEST_UUID);

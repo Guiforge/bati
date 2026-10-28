@@ -136,7 +136,11 @@ export function AdventureImport({
         ) : null}
 
         <ImportArrives arrives={preview.arrives} />
-        <ImportClashes names={preview.arrives.clashes} />
+        <ImportClashes
+          names={preview.arrives.clashes}
+          gameNames={preview.arrives.gameNames}
+          gameQuests={preview.arrives.gameQuests}
+        />
 
         <YStack gap="2">
           <Text fontWeight="700" fontSize={14} color="textSecondary">

@@ -780,6 +780,8 @@ describe("previewing an adventure file", () => {
       movements: 2,
       photos: 2,
       clashes: [" weighted PUSH-up "].map((n) => n.trim()),
+      gameNames: [],
+      gameQuests: [],
     });
   });
 

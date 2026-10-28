@@ -124,6 +124,9 @@ import { requestWidgetsUpdate } from "@/src/widget";
 import { bindSession, isExpedition, useExpeditionStore } from "@/stores/expedition";
 import { useSettingsStore } from "@/stores/settings";
 
+/** Whether a session is under way: the one test for it, here and wherever a screen must not disturb it. */
+export const isSessionLive = (status: SessionStatus) => status !== "idle" && status !== "finished";
+
 export type SessionStatus =
   | "idle"
   | "warmup"
@@ -1474,8 +1477,7 @@ export const useSessionStore = create<SessionState>()(
        * Returning without touching the store is the whole refusal: each caller pushes
        * `/session` next, which is where a live session already is.
        */
-      const live = get().status;
-      if (live !== "idle" && live !== "finished") return;
+      if (isSessionLive(get().status)) return;
 
       // Load boss fight if this is a boss adventure. Callers only ever hold the run step id —
       // it is what the adventure screen puts in the URL and what the victory screen chains to —

@@ -188,13 +188,14 @@ async function mergeInto(
     CREATE TEMP TABLE fresh (uuid TEXT PRIMARY KEY);
     CREATE TEMP TABLE sess_map (peer INTEGER PRIMARY KEY, local INTEGER);`);
 
-  // A device with nothing of its own yet (fresh from onboarding) takes the other's preferences
+  // A device with nothing of its own yet (no session, hero movement, quest, adventure or boss; fresh from onboarding) takes the other's preferences
   // whatever their dates: its village name and avatar are an hour old and nobody chose them twice.
   const fresh =
     (await count(conn, "SELECT 1 FROM main.completed_sessions")) === 0 &&
     (await count(conn, "SELECT 1 FROM main.exercises WHERE creator = 'hero'")) === 0 &&
     (await count(conn, "SELECT 1 FROM main.quests WHERE author = 'hero'")) === 0 &&
-    (await count(conn, "SELECT 1 FROM main.adventures WHERE author = 'hero'")) === 0;
+    (await count(conn, "SELECT 1 FROM main.adventures WHERE author = 'hero'")) === 0 &&
+    (await count(conn, "SELECT 1 FROM main.hero_bosses")) === 0;
 
   // Deletions of hero content first, as a union keeping the later stamp: from here on
   // `main.deleted_content` alone says what is gone, and `mergeAuthored` skips what it kills.

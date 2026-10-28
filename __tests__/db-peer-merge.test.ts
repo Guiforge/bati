@@ -454,6 +454,26 @@ test("a device fresh from onboarding takes the other's preferences, whatever the
   });
 });
 
+test("a device whose only content is a hero boss is not fresh: its newer preference wins", async () => {
+  const file = await peer("phone.db", (sqlite) => {
+    addSession(sqlite, 1_000);
+    setPref(sqlite, "villageName", "Hautecombe", 100);
+  });
+  t.sqlite
+    .prepare(
+      `INSERT INTO hero_bosses (uuid, name, monster, weaknessMuscle, artJson, createdAt, updatedAt)
+       VALUES ('0192d000-0000-7000-8000-00000000000a', 'Mine', 'assets/images/bosses/iron_golem.jpg', 'chest', NULL, 1, 1)`,
+    )
+    .run();
+  setPref(t.sqlite, "villageName", "New village", 900);
+
+  await merge().mergePeer(file);
+
+  expect(
+    t.sqlite.prepare("SELECT value FROM user_preferences WHERE key = 'villageName'").get(),
+  ).toEqual({ value: "New village" });
+});
+
 test("a tablet that found its hero from onboarding leaves onboarding, whatever it said", async () => {
   const file = await peer("phone.db", (sqlite) => {
     addSession(sqlite, 1_000);

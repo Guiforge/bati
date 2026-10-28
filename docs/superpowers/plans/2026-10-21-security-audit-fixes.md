@@ -273,3 +273,19 @@ Hardening from the deep-link hunter (`db/adventures.ts:901-960`).
 | Server text in bug-report mail | The hero reads the mail before sending it. |
 | Widget provider prefix check | Library code: `startsWith` without a trailing separator (`RNWidgetImageProvider.java:39-41`), reachable only through a sibling directory whose name starts with `widget_images`, and none exists. It goes into the upstream issue text from task 3. |
 | Deferred audit units (secret rotation, reminder extras) | Not audited yet; they are the next audit run, not this branch. |
+
+## Import hardening follow-up (S1 to S9)
+
+The second pass over the file readers (`src/questFile.ts`, `src/adventureFile.ts`, `src/carriedImage.ts`).
+
+| Item | Status |
+| --- | --- |
+| ~~S1~~ unbounded read | Already fixed: `readBatiFile` reads `MAX_FILE_BYTES + 1` bytes, never `file.text()`. |
+| ~~S2~~ EXIF in a carried photo | Already fixed: `safeImage` refuses a JPEG that holds EXIF. Residual: `hasExif` reads JPEG only, so an EXIF chunk in a WebP or PNG still passes. |
+| S3 schemeless image path | Done. A path must name bundled art for its use (`isBundledArt("exercise" or "quest", path)`, the same key rule as the getters) or be one of the two placeholders. A movement's picture and a quest's cover are checked against their own maps. |
+| ~~S4~~ held file | Already fixed: a random token (`holdIncomingFile`). |
+| ~~S5~~ repeated uuids | Already fixed: `refuseRepeatedUuids`, for quest and adventure files. |
+| S6 animated pictures | Done. `imageSize` returns null for a WebP with the VP8X animation flag and for a PNG with an `acTL` chunk before the first `IDAT`, for import and render alike. The render path reads only the first 16 384 base64 characters, so import is the gate that counts. |
+| S7 JSON nesting depth | Verified on a release build (x86_64 emulator, 2026-10-28), no code: a 7.9 MB file of `[` opened through the in-app picker and through Files "Open with" gets the "unreadable" refusal, the app keeps its pid and the crash buffer stays empty. Hermes throws a catchable error, so no depth scan is needed. |
+| S8 name shared with the game | Done. The preview says when an arriving exercise or quest carries a game exercise's or quest's name (English name, case-insensitive; one note per exercise, the hero-clash line wins). A French file naming "Pompes" is not flagged. |
+| S9 update during a session | Done for the import screen: while a session of the quest is under way the file arrives as a copy. The quest editor and the sync merge are not guarded; the session owns its copy of the quest, so both are harmless to it. |

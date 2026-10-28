@@ -1,5 +1,6 @@
 import { File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
+import { isBundledArt } from "@/constants/assetMap";
 import { type TransactionTx, transactionOrFallback } from "@/db/client";
 import {
   createUserExercise,
@@ -319,10 +320,13 @@ function carriedSize(base64: string): Size | null {
  * tracking pixel the privacy policy promises does not exist; `file:` and `content:` would point
  * at whatever is on this phone. Anything else becomes the placeholder.
  *
+ * `art` says which bundled names are accepted: a movement's or a quest cover's. Left out, only a
+ * carried picture is (the adventure's photos and boss art are never bundled names).
+ *
  * A carried picture is sized from its header too: a few hundred KB of PNG can be a 16000 px
  * square, a gigabyte of memory on every screen that draws it.
  */
-export function safeImage(value: unknown): string | null {
+export function safeImage(value: unknown, art?: "exercise" | "quest"): string | null {
   if (typeof value !== "string" || value.length > MAX_IMAGE_CHARS) return null;
   const data = /^data:image\/(?:jpeg|png|webp);base64,([A-Za-z0-9+/]+=*)$/.exec(value);
   if (data) {
@@ -330,11 +334,10 @@ export function safeImage(value: unknown): string | null {
     if (!size || size.width < 1 || size.height < 1) return null;
     return size.width <= MAX_IMAGE_SIDE && size.height <= MAX_IMAGE_SIDE ? value : null;
   }
-  // A leading "/" is an absolute path on this phone, not an asset that ships with the app.
-  if (/^[A-Za-z0-9_\-./]+$/.test(value) && !value.includes("..") && !value.startsWith("/")) {
-    return value;
-  }
-  return null;
+  // The placeholders are what a hero movement made without a picture, or a coverless quest, is
+  // stored as (`DEFAULT_USER_EXERCISE_DRAFT`, `questHead`); they ship with the app but in no art map.
+  if (value === "assets/placeholder.jpg" || value === "assets/placeholder.webp") return value;
+  return art && isBundledArt(art, value) ? value : null;
 }
 
 function ownMovement(value: unknown): OwnMovement {
@@ -344,7 +347,7 @@ function ownMovement(value: unknown): OwnMovement {
     uuid: uuid(value.uuid),
     name: name(value.name),
     description: text(value.description, MAX_TEXT, true),
-    image: safeImage(value.image) ?? "assets/placeholder.jpg",
+    image: safeImage(value.image, "exercise") ?? "assets/placeholder.jpg",
     // A muscle this version does not know is left out: the movement still trains the others.
     muscles: [...new Set(value.muscles.filter((m) => muscleCodes.includes(m)))],
     style: oneOf(exerciseStyles, value.style),
@@ -393,7 +396,7 @@ export function parseQuestBody(data: unknown): QuestBody {
       rounds: count(q.rounds, ROUNDS_RANGE),
       restSeconds: count(q.restSeconds, REST_RANGE),
       roundRestSeconds: q.roundRestSeconds == null ? null : count(q.roundRestSeconds, REST_RANGE),
-      image: safeImage(q.image),
+      image: safeImage(q.image, "quest"),
     },
     slots: data.slots.map(slot),
   };
@@ -454,13 +457,25 @@ export type Arrivals = {
   photos: number;
   /** Names of arriving movements the hero already has under another uuid: both will stay. */
   clashes: string[];
+  /**
+   * Names of arriving movements that are also the name of a game exercise, minus those already in
+   * `clashes` (one note per movement). The two stay separate: the import finds a hero movement by
+   * uuid only, and the hero and game names are different populations (exercise-ownership.md).
+   */
+  gameNames: string[];
+  /** Titles of arriving quests that are also the title of a game quest. */
+  gameQuests: string[];
 };
 
 /**
  * Read once for the previews. A name is never a key (a hero may name two movements alike, 0036), so a
  * same-name movement with another uuid arrives as a second row: this says so before it does.
  */
-export function arrivals(bodies: readonly QuestBody[], catalogue: readonly Exercise[]): Arrivals {
+export function arrivals(
+  bodies: readonly QuestBody[],
+  catalogue: readonly Exercise[],
+  templates: readonly QuestTemplate[],
+): Arrivals {
   const names = new Set(
     catalogue
       .filter((e) => isUserExercise(e) && !e.retiredAt)
@@ -480,14 +495,36 @@ export function arrivals(bodies: readonly QuestBody[], catalogue: readonly Exerc
     }
   }
   const arriving = [...fresh.values()];
+  // ponytail: English names only, so a French file naming "Pompes" is not flagged. The ceiling is a
+  // missed hint, cosmetic; the fix is to compare the localized names too.
+  const lower = (n: string) => n.trim().toLowerCase();
+  const gameExercises = new Set(
+    catalogue.filter((e) => !isUserExercise(e)).map((e) => lower(e.enName)),
+  );
+  const gameQuests = new Set(templates.filter((q) => !isUserQuest(q)).map((q) => lower(q.enTitle)));
+  const mine = new Set(templates.filter(isUserQuest).map((q) => q.uuid));
+  const clashes = [...new Set(arriving.filter((m) => names.has(lower(m.name))).map((m) => m.name))];
+  const clashed = new Set(clashes.map(lower));
   return {
     quests: quests.length,
     movements: arriving.length,
     photos:
       quests.filter((b) => b.quest.image?.startsWith("data:")).length +
       arriving.filter((m) => m.image.startsWith("data:")).length,
-    clashes: [
-      ...new Set(arriving.filter((m) => names.has(m.name.trim().toLowerCase())).map((m) => m.name)),
+    clashes,
+    gameNames: [
+      ...new Set(
+        arriving
+          .filter((m) => gameExercises.has(lower(m.name)) && !clashed.has(lower(m.name)))
+          .map((m) => m.name),
+      ),
+    ],
+    gameQuests: [
+      ...new Set(
+        quests
+          .filter((b) => !mine.has(b.quest.uuid) && gameQuests.has(lower(b.quest.title.en)))
+          .map((b) => b.quest.title.en),
+      ),
     ],
   };
 }
@@ -496,6 +533,9 @@ export type QuestPreview = {
   slots: PreviewSlot[];
   /** Same-name movements of the file next to the hero's own, by name. */
   clashes: string[];
+  /** Movements and quests of the file named like a game exercise or quest (see `Arrivals`). */
+  gameNames: string[];
+  gameQuests: string[];
   /** The hero's own quest this file would update, when it carries that quest's uuid. */
   existing: QuestTemplate | null;
 };
@@ -507,6 +547,7 @@ export type QuestPreview = {
  */
 export async function previewQuest(file: QuestFile): Promise<QuestPreview> {
   const [catalogue, templates] = await Promise.all([listExercises(), listQuestTemplates()]);
+  const found = arrivals([file], catalogue, templates);
   return {
     slots: file.slots.map((s) => {
       const target = (style: Exercise["style"] | undefined) => ({
@@ -525,7 +566,9 @@ export async function previewQuest(file: QuestFile): Promise<QuestPreview> {
       const here = catalogue.find((e) => isUserExercise(e) && e.uuid === own.uuid) ?? null;
       return { exercise: here, available: true, target: target(here?.style ?? own.style) };
     }),
-    clashes: arrivals([file], catalogue).clashes,
+    clashes: found.clashes,
+    gameNames: found.gameNames,
+    gameQuests: found.gameQuests,
     existing: templates.find((q) => isUserQuest(q) && q.uuid === file.quest.uuid) ?? null,
   };
 }

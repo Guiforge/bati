@@ -1,0 +1,4 @@
+- Les exercices, les quêtes et les aventures sont maintenant traduits en russe, pas seulement l'interface.
+- Dans la galerie des aventures, chaque aventure en cours affiche sa propre progression.
+- L'échauffement ne se termine plus sur le mouvement qui ouvre ta séance.
+- Les durées de l'échauffement s'affichent dans les unités de ta langue.

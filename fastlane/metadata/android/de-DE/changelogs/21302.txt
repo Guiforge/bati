@@ -1,0 +1,4 @@
+- Übungen, Quests und Abenteuer gibt es jetzt auch auf Russisch, nicht nur die Oberfläche.
+- In der Abenteuergalerie zeigt jedes laufende Abenteuer seinen eigenen Fortschritt.
+- Das Aufwärmen endet nie mehr mit der Bewegung, mit der deine Einheit beginnt.
+- Die Dauer beim Aufwärmen steht in den Einheiten deiner Sprache.

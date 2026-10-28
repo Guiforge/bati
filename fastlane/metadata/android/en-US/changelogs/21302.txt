@@ -1,0 +1,4 @@
+- Exercises, quests and adventures are now in Russian too, not only the interface.
+- In the adventures gallery, every adventure under way shows its own progress.
+- The warm-up never ends on the movement your session opens with.
+- Warm-up durations use your language's units.

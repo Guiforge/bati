@@ -1,0 +1,4 @@
+- Los ejercicios, las misiones y las aventuras ya están en ruso, no solo la interfaz.
+- En la galería de aventuras, cada aventura en curso muestra su propio progreso.
+- El calentamiento ya no termina con el movimiento con el que empieza tu sesión.
+- Las duraciones del calentamiento usan las unidades de tu idioma.

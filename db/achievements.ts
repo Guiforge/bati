@@ -70,11 +70,13 @@ export interface AchievementDefinition {
   deTitle: string;
   esTitle: string;
   ruTitle: string;
+  zhTitle: string;
   enDescription: string;
   frDescription: string;
   deDescription: string;
   esDescription: string;
   ruDescription: string;
+  zhDescription: string;
   category: "sessions" | "streaks" | "xp" | "special";
 }
 
@@ -251,11 +253,13 @@ export const achievementDefinitions: AchievementDefinition[] = DEFINITIONS.map((
     deTitle: copy.de.title,
     esTitle: copy.es.title,
     ruTitle: copy.ru.title,
+    zhTitle: copy.zh.title,
     enDescription: copy.en.description,
     frDescription: copy.fr.description,
     deDescription: copy.de.description,
     esDescription: copy.es.description,
     ruDescription: copy.ru.description,
+    zhDescription: copy.zh.description,
   };
 });
 

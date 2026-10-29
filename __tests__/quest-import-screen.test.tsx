@@ -289,6 +289,7 @@ test("an unticked movement and a new title are what gets imported", async () => 
     de: "My dawn",
     es: "My dawn",
     ru: "My dawn",
+    zh: "My dawn",
   });
 });
 

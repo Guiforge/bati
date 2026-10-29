@@ -13,6 +13,7 @@ export type MovementNames = {
   deName: string;
   esName: string;
   ruName: string;
+  zhName: string;
 };
 
 /** The id an Age is marked under in `bigFeastsShown`: its level. */

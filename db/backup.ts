@@ -375,8 +375,8 @@ export function canonical(
         ? "NULL"
         : table === "adventures"
           ? `(SELECT json_group_array(json_array(${questIdentity(schema, "s.questId")}, s.stepIndex,
-              s.enNarrative, s.frNarrative, s.deNarrative, s.esNarrative, s.ruNarrative,
-              s.enOutroNarrative, s.frOutroNarrative, s.deOutroNarrative, s.esOutroNarrative, s.ruOutroNarrative,
+              s.enNarrative, s.frNarrative, s.deNarrative, s.esNarrative, s.ruNarrative, s.zhNarrative,
+              s.enOutroNarrative, s.frOutroNarrative, s.deOutroNarrative, s.esOutroNarrative, s.ruOutroNarrative, s.zhOutroNarrative,
               s.imagePath) ORDER BY s.stepIndex)
             FROM ${schema}.adventure_steps s WHERE s.adventureId = ${alias}.id)`
           : `(SELECT json_group_array(json_array(${exerciseIdentity(schema, "qe.exerciseId")}, qe.sortOrder,

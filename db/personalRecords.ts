@@ -226,6 +226,7 @@ export type MovementRecord = {
   deName: string;
   esName: string;
   ruName: string;
+  zhName: string;
   imagePath: string;
   perSide: boolean;
   /** Reps and seconds are different records on the same movement, so the unit is part of one. */
@@ -266,6 +267,7 @@ export async function getMovementRecords(limit = 6): Promise<MovementRecord[]> {
       deName: exercises.deName,
       esName: exercises.esName,
       ruName: exercises.ruName,
+      zhName: exercises.zhName,
       imagePath: exercises.imagePath,
       perSide: exercises.perSide,
     })
@@ -296,6 +298,7 @@ export async function getMovementRecords(limit = 6): Promise<MovementRecord[]> {
         deName: row.deName,
         esName: row.esName,
         ruName: row.ruName,
+        zhName: row.zhName,
         imagePath: row.imagePath,
         perSide: row.perSide,
         type: row.type,
@@ -470,6 +473,7 @@ export async function getSessionStanding(
       deName: exercises.deName,
       esName: exercises.esName,
       ruName: exercises.ruName,
+      zhName: exercises.zhName,
       perSide: exercises.perSide,
     })
     .from(completedExercises)
@@ -531,6 +535,7 @@ export async function getSessionStanding(
           de: row.deName,
           es: row.esName,
           ru: row.ruName,
+          zh: row.zhName,
         },
         type: row.type,
         perSide: row.perSide,
@@ -669,6 +674,7 @@ export async function checkForNewRecords(
       deName: exercises.deName,
       esName: exercises.esName,
       ruName: exercises.ruName,
+      zhName: exercises.zhName,
       perSide: exercises.perSide,
     })
     .from(completedExercises)
@@ -708,6 +714,7 @@ export async function checkForNewRecords(
           de: result.deName,
           es: result.esName,
           ru: result.ruName,
+          zh: result.zhName,
         },
         perSide: result.perSide,
       });

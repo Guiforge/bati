@@ -272,6 +272,7 @@ describe("BigFeastView", () => {
         deName: "",
         esName: "",
         ruName: "",
+        zhName: "",
       },
     };
     const show = (feast: Feast) =>

@@ -16,11 +16,13 @@ function makeExercise(over: Partial<Exercise> & Pick<Exercise, "id">): Exercise 
     deName: "Exercice",
     esName: "Exercice",
     ruName: "Exercice",
+    zhName: "Exercice",
     enDescription: "",
     frDescription: "",
     deDescription: "",
     esDescription: "",
     ruDescription: "",
+    zhDescription: "",
     imagePath: "assets/placeholder.webp",
     creator: "Admin",
     difficulty: "medium",
@@ -47,6 +49,7 @@ const tableRow = makeExercise({
   deName: "Tirage sous table",
   esName: "Tirage sous table",
   ruName: "Tirage sous table",
+  zhName: "Tirage sous table",
   muscles: ["back"],
   pattern: "pull_horizontal",
 });
@@ -58,6 +61,7 @@ const invertedRow = makeExercise({
   deName: "Tirage australien",
   esName: "Tirage australien",
   ruName: "Tirage australien",
+  zhName: "Tirage australien",
   muscles: ["back", "arms"],
   pattern: "pull_horizontal",
   prerequisiteExerciseId: 1,
@@ -70,6 +74,7 @@ const pullUp = makeExercise({
   deName: "Traction",
   esName: "Traction",
   ruName: "Traction",
+  zhName: "Traction",
   muscles: ["back"],
   equipment: "pullup_bar",
   pattern: "pull_vertical",
@@ -84,6 +89,7 @@ const pushUp = makeExercise({
   deName: "Pompe",
   esName: "Pompe",
   ruName: "Pompe",
+  zhName: "Pompe",
   muscles: ["chest"],
   pattern: "push_horizontal",
 });
@@ -311,6 +317,7 @@ describe("hero-authored facets", () => {
     deName: "Squat",
     esName: "Squat",
     ruName: "Squat",
+    zhName: "Squat",
   });
   const mine = makeExercise({
     id: 2,
@@ -320,6 +327,7 @@ describe("hero-authored facets", () => {
     deName: "Archer Squat",
     esName: "Archer Squat",
     ruName: "Archer Squat",
+    zhName: "Archer Squat",
     creator: "hero",
   });
   const retired = makeExercise({
@@ -330,6 +338,7 @@ describe("hero-authored facets", () => {
     deName: "Old Note",
     esName: "Old Note",
     ruName: "Old Note",
+    zhName: "Old Note",
     creator: "hero",
     retiredAt: new Date(),
   });

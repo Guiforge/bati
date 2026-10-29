@@ -114,6 +114,7 @@ const squat = {
   deName: "Kniebeuge",
   esName: "Sentadilla",
   ruName: "Sentadilla",
+  zhName: "Sentadilla",
   imagePath: "",
 };
 

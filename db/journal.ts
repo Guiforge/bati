@@ -72,12 +72,14 @@ const nameOf = (r: {
   deName: string;
   esName: string;
   ruName: string;
+  zhName: string;
 }) => ({
   en: r.enName,
   fr: r.frName,
   de: r.deName,
   es: r.esName,
   ru: r.ruName,
+  zh: r.zhName,
 });
 
 /** A left-joined exercise: all four names, or none. */
@@ -87,10 +89,18 @@ const joinedName = (r: {
   deName: string | null;
   esName: string | null;
   ruName: string | null;
+  zhName: string | null;
 }): Localized | null =>
   r.enName == null
     ? null
-    : { en: r.enName, fr: r.frName ?? "", de: r.deName ?? "", es: r.esName ?? "", ru: r.enName };
+    : {
+        en: r.enName,
+        fr: r.frName ?? "",
+        de: r.deName ?? "",
+        es: r.esName ?? "",
+        ru: r.enName,
+        zh: r.zhName ?? "",
+      };
 
 const titleOf = (r: {
   enTitle: string | null;
@@ -98,6 +108,7 @@ const titleOf = (r: {
   deTitle: string | null;
   esTitle: string | null;
   ruTitle: string | null;
+  zhTitle: string | null;
 }): Localized | null =>
   r.enTitle == null
     ? null
@@ -107,6 +118,7 @@ const titleOf = (r: {
         de: r.deTitle ?? "",
         es: r.esTitle ?? "",
         ru: r.ruTitle ?? "",
+        zh: r.zhTitle ?? "",
       };
 
 // ------------------------------------------------------------
@@ -206,6 +218,7 @@ export async function getStarterWall(limit = 4): Promise<WallEntry[]> {
       deName: exercises.deName,
       esName: exercises.esName,
       ruName: exercises.ruName,
+      zhName: exercises.zhName,
       imagePath: exercises.imagePath,
       perSide: exercises.perSide,
       type: questExercises.targetType,
@@ -297,6 +310,7 @@ async function readRecordRows(
               deName: exercises.deName,
               esName: exercises.esName,
               ruName: exercises.ruName,
+              zhName: exercises.zhName,
             })
             .from(exercises)
             .where(eq(exercises.id, exerciseId));
@@ -491,6 +505,7 @@ async function bestSessionBy(metric: "duration" | "xp" | "ground"): Promise<Sess
       deTitle: quests.deTitle,
       esTitle: quests.esTitle,
       ruTitle: quests.ruTitle,
+      zhTitle: quests.zhTitle,
     })
     .from(completedQuest)
     .leftJoin(quests, eq(quests.id, completedQuest.questId))
@@ -519,6 +534,7 @@ async function mostRepsSession(): Promise<SessionBest | null> {
       deTitle: quests.deTitle,
       esTitle: quests.esTitle,
       ruTitle: quests.ruTitle,
+      zhTitle: quests.zhTitle,
     })
     .from(completedQuest)
     .innerJoin(completedExercises, eq(completedExercises.sessionId, completedQuest.id))
@@ -576,6 +592,7 @@ export async function getBossKills(): Promise<BossKill[]> {
       deTitle: adventures.deTitle,
       esTitle: adventures.esTitle,
       ruTitle: adventures.ruTitle,
+      zhTitle: adventures.zhTitle,
       imagePath: adventures.imagePath,
       bossImagePath: adventures.bossImagePath,
       finishedAt: adventureRuns.finishedAt,
@@ -621,7 +638,14 @@ export async function getBossKills(): Promise<BossKill[]> {
         title: bossLocalizedName(
           run.bossImagePath ?? run.imagePath,
           runs.filter((r) => r.adventureId === run.adventureId && r.runId < run.runId).length,
-          { en: run.enTitle, fr: run.frTitle, de: run.deTitle, es: run.esTitle, ru: run.enTitle },
+          {
+            en: run.enTitle,
+            fr: run.frTitle,
+            de: run.deTitle,
+            es: run.esTitle,
+            ru: run.enTitle,
+            zh: run.zhTitle,
+          },
         ),
         imagePath: run.bossImagePath ?? run.imagePath,
         felledAt: run.finishedAt,
@@ -981,6 +1005,7 @@ type Hit = {
   deName: string | null;
   esName: string | null;
   ruName: string | null;
+  zhName: string | null;
   imagePath: string | null;
 };
 
@@ -1061,6 +1086,7 @@ export async function getStandingBosses(): Promise<StandingBoss[]> {
       deTitle: adventures.deTitle,
       esTitle: adventures.esTitle,
       ruTitle: adventures.ruTitle,
+      zhTitle: adventures.zhTitle,
       imagePath: adventures.imagePath,
       bossImagePath: adventures.bossImagePath,
     })
@@ -1077,6 +1103,7 @@ export async function getStandingBosses(): Promise<StandingBoss[]> {
         de: a.deTitle,
         es: a.esTitle,
         ru: a.ruTitle,
+        zh: a.zhTitle,
       }),
       imagePath: a.bossImagePath ?? a.imagePath,
     }));
@@ -1109,6 +1136,7 @@ export async function getKillReport(session: CompletedSession): Promise<KillRepo
       deTitle: adventures.deTitle,
       esTitle: adventures.esTitle,
       ruTitle: adventures.ruTitle,
+      zhTitle: adventures.zhTitle,
       imagePath: adventures.imagePath,
       bossImagePath: adventures.bossImagePath,
       heroBossUuid: adventures.heroBossUuid,
@@ -1147,6 +1175,7 @@ export async function getKillReport(session: CompletedSession): Promise<KillRepo
       deName: exercises.deName,
       esName: exercises.esName,
       ruName: exercises.ruName,
+      zhName: exercises.zhName,
       imagePath: exercises.imagePath,
     })
     .from(bossDamageLog)
@@ -1206,13 +1235,14 @@ export async function getKillReport(session: CompletedSession): Promise<KillRepo
   return {
     adventureId: step.adventureId,
     title: bossName
-      ? { en: bossName, fr: bossName, de: bossName, es: bossName, ru: bossName }
+      ? { en: bossName, fr: bossName, de: bossName, es: bossName, ru: bossName, zh: bossName }
       : bossLocalizedName(bossImagePath, foughtAtTier, {
           en: step.enTitle,
           fr: step.frTitle,
           de: step.deTitle,
           es: step.esTitle,
           ru: step.ruTitle,
+          zh: step.zhTitle,
         }),
     bossImagePath,
     bossArt: parseBossArt(hero?.artJson),

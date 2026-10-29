@@ -312,6 +312,7 @@ export type SuggestedQuest = {
   deTitle: string;
   esTitle: string;
   ruTitle: string;
+  zhTitle: string;
   matchingMuscles: MuscleCode[];
   matchScore: number; // Higher = better match for weak areas
 };
@@ -353,6 +354,7 @@ export async function getSuggestedQuestsForWeakAreas(limit = 3): Promise<Suggest
       deTitle: quests.deTitle,
       esTitle: quests.esTitle,
       ruTitle: quests.ruTitle,
+      zhTitle: quests.zhTitle,
       muscle: exerciseMuscles.muscle,
     })
     .from(quests)
@@ -370,6 +372,7 @@ export async function getSuggestedQuestsForWeakAreas(limit = 3): Promise<Suggest
       deTitle: string;
       esTitle: string;
       ruTitle: string;
+      zhTitle: string;
       muscles: Set<MuscleCode>;
     }
   >();
@@ -382,6 +385,7 @@ export async function getSuggestedQuestsForWeakAreas(limit = 3): Promise<Suggest
         deTitle: row.deTitle,
         esTitle: row.esTitle,
         ruTitle: row.ruTitle,
+        zhTitle: row.zhTitle,
         muscles: new Set(),
       });
     }
@@ -401,6 +405,7 @@ export async function getSuggestedQuestsForWeakAreas(limit = 3): Promise<Suggest
       deTitle: data.deTitle,
       esTitle: data.esTitle,
       ruTitle: data.ruTitle,
+      zhTitle: data.zhTitle,
       matchingMuscles: [...data.muscles],
       matchScore: data.muscles.size,
     });

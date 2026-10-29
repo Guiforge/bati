@@ -34,7 +34,7 @@ describe("release changelogs", () => {
 
   test("the metadata tree still has the locales this asserts against", () => {
     // Without this, a renamed or emptied metadata tree would make every test below pass vacuously.
-    expect(locales.sort()).toEqual(["de-DE", "en-US", "es-ES", "fr-FR", "ru-RU"]);
+    expect(locales.sort()).toEqual(["de-DE", "en-US", "es-ES", "fr-FR", "ru-RU", "zh-CN"]);
   });
 
   test.each(localeDirs())("%s has release notes for the versionCode being shipped", (locale) => {

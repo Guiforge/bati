@@ -27,6 +27,7 @@ const age = (level = 50): AgeNews => ({
     deName: "D",
     esName: "E",
     ruName: "E",
+    zhName: "Z",
   },
 });
 const anniversary = (years = 1): AnniversaryNews => ({ years, sessions: 120, best: null });

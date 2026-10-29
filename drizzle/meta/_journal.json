@@ -568,6 +568,13 @@
       "when": 1793059200000,
       "tag": "0080_the_catalogue_in_russian",
       "breakpoints": true
+    },
+    {
+      "idx": 81,
+      "version": "6",
+      "when": 1793145600000,
+      "tag": "0081_the_catalogue_in_chinese",
+      "breakpoints": true
     }
   ]
 }

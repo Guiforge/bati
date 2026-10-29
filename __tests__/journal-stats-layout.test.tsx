@@ -37,7 +37,14 @@ test("a card header wraps, so the caption drops under the title instead of clipp
 test("the wall's sub-line may take two lines, so a record keeps its year", async () => {
   const entry: WallEntry = {
     exerciseId: 1,
-    name: { en: "Push-ups", fr: "Pompes", de: "Liegestuetze", es: "Flexiones", ru: "Push-ups" },
+    name: {
+      en: "Push-ups",
+      fr: "Pompes",
+      de: "Liegestuetze",
+      es: "Flexiones",
+      ru: "Push-ups",
+      zh: "Push-ups",
+    },
     imagePath: "",
     type: "reps",
     perSide: false,
@@ -60,6 +67,7 @@ test("a one-sided movement's wall row says its figure is per side", async () => 
       de: "Seitstütz",
       es: "Plancha lateral",
       ru: "Side Plank",
+      zh: "Side Plank",
     },
     imagePath: "",
     type: "time",
@@ -77,7 +85,7 @@ test("a one-sided movement's wall row says its figure is per side", async () => 
 test("in a light week the wall row sets no target above the objective", async () => {
   const entry: WallEntry = {
     exerciseId: 2,
-    name: { en: "Plank", fr: "Gainage", de: "Brett", es: "Plancha", ru: "Plank" },
+    name: { en: "Plank", fr: "Gainage", de: "Brett", es: "Plancha", ru: "Plank", zh: "Plank" },
     imagePath: "",
     type: "time",
     perSide: false,

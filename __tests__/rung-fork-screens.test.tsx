@@ -38,6 +38,7 @@ const movement = (id: number, enName: string) => ({
   deName: enName,
   esName: enName,
   ruName: enName,
+  zhName: enName,
   imagePath: "exercises/push-ups.webp",
 });
 

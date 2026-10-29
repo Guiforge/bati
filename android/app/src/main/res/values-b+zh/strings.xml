@@ -1,0 +1,6 @@
+<resources>
+  <string name="widget_flame_label">"Bati：火焰"</string>
+  <string name="widget_flame_description">"你的训练火焰。"</string>
+  <string name="widget_weekly_label">"Bati：本周"</string>
+  <string name="widget_weekly_description">"本周训练与你的誓言。"</string>
+</resources>

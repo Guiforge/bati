@@ -52,6 +52,7 @@ const building = (code: BuildingCode, level: number): village.VillageBuilding =>
   deName: code,
   esName: code,
   ruName: code,
+  zhName: code,
   unlockCondition: "",
   relatedMuscle: buildingDefinitions[code].relatedMuscle,
   driver: "tier",
@@ -87,7 +88,14 @@ function renderScene(wall = building("castle_wall", 1)) {
   jest.spyOn(village, "getVillageScene").mockResolvedValue({
     tier: 4,
     level: 8,
-    title: { en: "Champion", fr: "Champion", de: "Champion", es: "Champion", ru: "Champion" },
+    title: {
+      en: "Champion",
+      fr: "Champion",
+      de: "Champion",
+      es: "Champion",
+      ru: "Champion",
+      zh: "Champion",
+    },
     totalXp: 3180,
     flame: 0,
     streakDays: 0,
@@ -149,7 +157,10 @@ describe("the stones in the Ramparts' sheet", () => {
     jest.spyOn(years, "loadVillageYears").mockResolvedValue({
       years: { stones: [...stonesFrom(13), stone(34, record)], banners: [], ages: [] },
       names: new Map([
-        [7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "", ruName: "" }],
+        [
+          7,
+          { enName: "Push-ups", frName: "Pompes", deName: "", esName: "", ruName: "", zhName: "" },
+        ],
       ]),
     });
     const screen = await openRamparts();
@@ -219,7 +230,7 @@ describe("the marks on the stones", () => {
       at: 0,
     };
     const names = new Map([
-      [7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "", ruName: "" }],
+      [7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "", ruName: "", zhName: "" }],
     ]);
     jest.spyOn(years, "loadVillageYears").mockResolvedValue({
       years: {
@@ -275,7 +286,10 @@ describe("the marks on the stones", () => {
         ],
       },
       names: new Map([
-        [7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "", ruName: "" }],
+        [
+          7,
+          { enName: "Push-ups", frName: "Pompes", deName: "", esName: "", ruName: "", zhName: "" },
+        ],
       ]),
     });
     const screen = await openRamparts();
@@ -391,7 +405,10 @@ describe("the Seasons section", () => {
         ages: [],
       },
       names: new Map([
-        [7, { enName: "Push-ups", frName: "Pompes", deName: "", esName: "", ruName: "" }],
+        [
+          7,
+          { enName: "Push-ups", frName: "Pompes", deName: "", esName: "", ruName: "", zhName: "" },
+        ],
       ]),
     });
     const screen = await renderScene();

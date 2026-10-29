@@ -183,6 +183,7 @@ test("no offer when the slot stands on an easier rung of its written movement", 
       deName: "",
       esName: "",
       ruName: "",
+      zhName: "",
       imagePath: "",
     },
   });

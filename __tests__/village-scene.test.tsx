@@ -70,6 +70,7 @@ function building(
     deName: code,
     esName: code,
     ruName: code,
+    zhName: code,
     unlockCondition: "",
     relatedMuscle: def.relatedMuscle,
     driver: "tier",
@@ -90,7 +91,14 @@ function mockScene(buildings: village.VillageBuilding[], over: Partial<village.V
   jest.spyOn(village, "getVillageScene").mockResolvedValue({
     tier: 4,
     level: 8,
-    title: { en: "Champion", fr: "Champion", de: "Champion", es: "Champion", ru: "Чемпион" },
+    title: {
+      en: "Champion",
+      fr: "Champion",
+      de: "Champion",
+      es: "Champion",
+      ru: "Чемпион",
+      zh: "Champion",
+    },
     totalXp: 3180,
     flame: 0,
     streakDays: 0,
@@ -382,7 +390,7 @@ describe("VillageScene", () => {
     const scene = (name: string): village.VillageScene => ({
       tier: 4,
       level: 8,
-      title: { en: name, fr: name, de: name, es: name, ru: name },
+      title: { en: name, fr: name, de: name, es: name, ru: name, zh: name },
       totalXp: 3180,
       flame: 0,
       streakDays: 0,
@@ -430,7 +438,7 @@ describe("VillageScene", () => {
       answers[1]?.ok({
         tier: 4,
         level: 8,
-        title: { en: "Newer", fr: "Newer", de: "Newer", es: "Newer", ru: "Newer" },
+        title: { en: "Newer", fr: "Newer", de: "Newer", es: "Newer", ru: "Newer", zh: "Newer" },
         totalXp: 3180,
         flame: 0,
         streakDays: 0,

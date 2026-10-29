@@ -102,6 +102,7 @@ describe("bossDisplayName with the hero's name", () => {
     deName: "T",
     esName: "T",
     ruName: "T",
+    zhName: "T",
   };
 
   test("replaces the painted name at every tier and keeps the shiny prefix", () => {

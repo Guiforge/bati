@@ -110,6 +110,7 @@ const road = (over: Partial<VillageBuilding>): VillageBuilding => ({
   deName: "Grand Chemin",
   esName: "Grand Chemin",
   ruName: "Grand Chemin",
+  zhName: "Grand Chemin",
   unlockCondition: "leagues",
   relatedMuscle: null,
   driver: "leagues",
@@ -127,11 +128,13 @@ const expeditionQuest = {
   deTitle: "La longue marche",
   esTitle: "La longue marche",
   ruTitle: "La longue marche",
+  zhTitle: "La longue marche",
   enDescription: "Out and back",
   frDescription: "Aller et retour",
   deDescription: "Aller et retour",
   esDescription: "Aller et retour",
   ruDescription: "Aller et retour",
+  zhDescription: "Aller et retour",
   imagePath: "assets/placeholder.jpg",
   exercises: [
     {

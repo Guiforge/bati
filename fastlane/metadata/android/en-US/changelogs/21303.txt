@@ -1,0 +1,4 @@
+- Bati now speaks Chinese, thanks to a player who translated it. It is machine translated for now: if a word sounds wrong, tell us.
+- The whole interface is in Russian now.
+- Importing a quest or an adventure names the parts that reuse the game's own exercises and quests, and a quest you are playing is imported as a copy.
+- Sync: a device whose only creation is a boss is no longer taken for an empty one.

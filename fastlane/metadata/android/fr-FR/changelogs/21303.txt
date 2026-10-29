@@ -1,0 +1,4 @@
+- Bati parle chinois, grâce à un joueur qui l'a traduit. C'est une traduction automatique pour l'instant : si un mot sonne faux, dis-le-nous.
+- Toute l'interface est maintenant en russe.
+- L'import d'une quête ou d'une aventure nomme ce qui reprend les exercices et quêtes du jeu, et une quête en cours est importée en copie.
+- Synchro : un appareil dont la seule création est un boss n'est plus pris pour vide.

@@ -1,0 +1,4 @@
+- Bati spricht Chinesisch, dank eines Spielers, der es übersetzt hat. Vorerst maschinell übersetzt: Klingt ein Wort falsch, sag es uns.
+- Die ganze Oberfläche ist jetzt auf Russisch.
+- Der Import einer Quest oder eines Abenteuers nennt, was Übungen und Quests des Spiels übernimmt, und eine laufende Quest wird als Kopie importiert.
+- Sync: Ein Gerät, dessen einzige Schöpfung ein Boss ist, gilt nicht mehr als leer.

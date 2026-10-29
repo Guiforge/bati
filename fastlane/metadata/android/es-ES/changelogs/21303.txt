@@ -1,0 +1,4 @@
+- Bati habla chino, gracias a un jugador que lo tradujo. Por ahora es una traducción automática: si una palabra suena mal, dínoslo.
+- Toda la interfaz está ya en ruso.
+- Al importar una misión o una aventura se nombra lo que reutiliza ejercicios y misiones del juego, y una misión en curso se importa como copia.
+- Sincronización: un dispositivo cuya única creación es un jefe ya no se toma por vacío.

@@ -2,7 +2,9 @@
 # One emulator per worktree, so two sessions never drive the same one.
 #
 #   scripts/emu.sh claim     # print this worktree's emulator serial, taking a free one if needed
+#   scripts/emu.sh start     # same, but boots a free AVD slot when nothing is free (max two)
 #   scripts/emu.sh release   # give it back
+#   scripts/emu.sh stop      # give it back and shut it down, to free the RAM
 #   scripts/emu.sh list      # who holds what
 #
 #   S=$(scripts/emu.sh claim) || exit 1
@@ -14,12 +16,48 @@
 # hours, so call `claim` every time you need the serial instead of caching it.
 #
 # A worktree never changes emulator without being told: if the one it holds has gone, `claim`
-# fails until `release`. It never starts an emulator and never hands out a phone.
+# fails until `release` (or `start`, which reboots it). Only `start` boots, never `claim`, and
+# nothing here ever hands out a phone.
 set -euo pipefail
 
 ttl_minutes=120
 dir="${XDG_CACHE_HOME:-$HOME/.cache}/bati-emu"
 mkdir -p "$dir"
+# Two slots because a third emulator freezes the machine. Fixed ports, so a slot's serial is
+# known before it boots and can be claimed first.
+slots=("5554 bati-bench" "5556 bati-bench2")
+
+# Called with the lock held and the slot already claimed; drops the lock for the minute-long boot.
+boot() {
+  local serial="$1" port="${1#emulator-}" avd="" slot pid _
+  for slot in "${slots[@]}"; do
+    [ "${slot% *}" = "$port" ] && avd="${slot#* }"
+  done
+  [ -n "$avd" ] || {
+    echo "$serial is not an emu.sh slot; start it by hand or \`scripts/emu.sh release\`." >&2
+    exit 1
+  }
+  echo "$me" >"$dir/$serial"
+  exec 9>&-
+  setsid nohup "$HOME/Android/Sdk/emulator/emulator" -avd "$avd" -port "$port" -no-audio \
+    -no-snapshot -gpu host -feature -Vulkan >"$dir/log-$serial" 2>&1 </dev/null &
+  pid=$!
+  for _ in $(seq 120); do
+    if ! kill -0 "$pid" 2>/dev/null; then
+      rm -f "$dir/$serial"
+      echo "$avd exited while booting:" >&2
+      tail -5 "$dir/log-$serial" >&2
+      exit 1
+    fi
+    [ "$(adb -s "$serial" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1 ] && {
+      echo "$serial"
+      exit 0
+    }
+    sleep 2
+  done
+  echo "$serial still booting after 4 min, still yours; log: $dir/log-$serial" >&2
+  exit 1
+}
 
 list() {
   local f
@@ -41,9 +79,9 @@ case "$cmd" in
     list
     exit 0
     ;;
-  claim | release) ;;
+  claim | start | release | stop) ;;
   *)
-    echo "Usage: scripts/emu.sh [claim|release|list]" >&2
+    echo "Usage: scripts/emu.sh [claim|start|release|stop|list]" >&2
     exit 2
     ;;
 esac
@@ -66,8 +104,11 @@ for f in "$dir"/emulator-*; do
   fi
 done
 
-if [ "$cmd" = release ]; then
-  [ -z "$held" ] || rm -f "$dir/$held"
+if [ "$cmd" = release ] || [ "$cmd" = stop ]; then
+  if [ -n "$held" ]; then
+    [ "$cmd" = release ] || adb -s "$held" emu kill 9>&- >/dev/null 2>&1 || true
+    rm -f "$dir/$held"
+  fi
   exit 0
 fi
 
@@ -87,6 +128,7 @@ if [ -n "$held" ]; then
   esac
   # Not dropped: adb lists nothing for a second while its server restarts, and dropping the
   # claim then would let two sessions swap emulators and land on each other's build and data.
+  [ "$cmd" = start ] && boot "$held"
   echo "This worktree holds $held, which adb does not list (running: ${running[*]:-none})." >&2
   echo "Restart it, or \`scripts/emu.sh release\` to take another: it will not have your build or database." >&2
   exit 1
@@ -100,9 +142,20 @@ for s in "${ready[@]}"; do
   [ -z "$(find "$dir/$s" -mmin "+$ttl_minutes")" ] || take "$s"
 done
 
+if [ "$cmd" = start ] && [ "${#running[@]}" -lt "${#slots[@]}" ]; then
+  for slot in "${slots[@]}"; do
+    s="emulator-${slot% *}"
+    case " ${running[*]} " in *" $s "*) continue ;; esac
+    # A claim on a stopped slot is a session about to restart it; an AVD can run once only.
+    [ -e "$dir/$s" ] && continue
+    pgrep -f -- "-avd ${slot#* }( |$)" >/dev/null && continue
+    boot "$s"
+  done
+fi
+
 {
   echo "No free emulator for $me. Running: ${running[*]:-none}. Held:"
   list
-  echo "Wait for one, or start another only if fewer than two are running."
+  echo "Wait for one, or \`scripts/emu.sh start\` to boot a free slot (max two)."
 } >&2
 exit 1

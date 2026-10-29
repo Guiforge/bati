@@ -149,3 +149,14 @@ test("an oath sworn before the third session keeps its strip", async () => {
 
   await waitFor(() => expect(screen.getByTestId("home-oath-card")).toBeTruthy());
 });
+
+test("Home's sections never share a key", async () => {
+  // The three sections are keyed on the light-week revision to remount together; one bare number
+  // on all three put React's duplicate-key toast on every dev launch.
+  const error = jest.spyOn(console, "error").mockImplementation(() => {});
+  logSessions(0);
+  await mountHome();
+  const duplicates = error.mock.calls.filter((c) => String(c[0]).includes("same key"));
+  error.mockRestore();
+  expect(duplicates).toEqual([]);
+});

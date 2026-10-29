@@ -52,6 +52,8 @@ describe("zh.json is translated", () => {
   it("no value equals its English one", () => {
     const same = [...zhLeaves]
       .filter(([k, v]) => enLeaves.get(k)?.replace(NBSP, " ") === v.replace(NBSP, " "))
+      // Placeholders and symbols only ("{{name}}", "×{{count}}"): nothing to translate.
+      .filter(([, v]) => /\p{L}/u.test(stripped(v)))
       .map(([k]) => k)
       .filter((k) => !(k in EXCEPTIONS));
     expect(same).toEqual([]);

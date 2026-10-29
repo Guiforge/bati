@@ -38,7 +38,7 @@ ALTER TABLE `adventure_steps` ADD `zhOutroNarrative` text DEFAULT '' NOT NULL;
 --> statement-breakpoint
 UPDATE `exercises` SET
     `zhName` = '深蹲',
-    `zhDescription` = '双脚与肩同宽，臀部向后下方坐，像坐进一张椅子，腰背挺直、脚跟踩实，直到髋窝低于膝盖。蹬全脚站起，膝盖对准脚尖方向。',
+    `zhDescription` = '双脚与肩同宽，臀部向后下方坐，像坐进一张椅子，腰背挺直、脚跟踩实，直到髋部低于膝盖。蹬全脚站起，膝盖对准脚尖方向。',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Squat' AND `creator` = 'Admin';
 --> statement-breakpoint
@@ -152,7 +152,7 @@ WHERE `enName` = 'Skater Hop' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
     `zhName` = '空心体保持',
-    `zhDescription` = '仰卧，下背贴地，肩与腿抬起几寸，手臂上举，保持这个香蕉形。',
+    `zhDescription` = '仰卧，下背贴地，肩与腿抬起几厘米，手臂上举，保持这个香蕉形。',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Hollow Body Hold' AND `creator` = 'Admin';
 --> statement-breakpoint
@@ -211,8 +211,8 @@ UPDATE `exercises` SET
 WHERE `enName` = 'Wall Push-Up' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
-    `zhName` = '仰卧抬腿',
-    `zhDescription` = '仰卧，前臂撑地，双腿伸直离地几寸，交替小幅上下打腿，腰不要弓。',
+    `zhName` = '仰卧交替踢腿',
+    `zhDescription` = '仰卧，前臂撑地，双腿伸直离地几厘米，交替小幅上下打腿，腰不要弓。',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Flutter Kicks' AND `creator` = 'Admin';
 --> statement-breakpoint
@@ -235,7 +235,7 @@ UPDATE `exercises` SET
 WHERE `enName` = 'Hanging Leg Raise' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
-    `zhName` = '跳跃深蹲',
+    `zhName` = '深蹲跳',
     `zhDescription` = '下蹲后向上爆发跳起，轻柔落回下一个蹲。',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Jump Squat' AND `creator` = 'Admin';
@@ -254,7 +254,7 @@ WHERE `enName` = 'Curtsy Squat' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
     `zhName` = '肩胛引体',
-    `zhDescription` = '单杠直臂悬垂，不屈肘，下沉后收肩胛把身体略微带起。这是每次引体的第一段。',
+    `zhDescription` = '单杠直臂悬垂，手肘不弯，让肩胛向下并向内收紧，身体随之略微上提。这是每次引体的第一段。',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Scapular Pull-Up' AND `creator` = 'Admin';
 --> statement-breakpoint
@@ -284,7 +284,7 @@ WHERE `enName` = 'Table Row' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
     `zhName` = '毛巾门划船',
-    `zhDescription` = '关紧门，站在向你打开的一侧，毛巾绕过门把。抓两端，直臂后仰，再收肘把胸拉向门。脚越靠近门越难。',
+    `zhDescription` = '关紧门，站在门朝远离你的方向打开的一侧，毛巾绕过门把。抓两端，直臂后仰，再收肘把胸拉向门。脚越靠近门越难。',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Towel Door Row' AND `creator` = 'Admin';
 --> statement-breakpoint
@@ -308,7 +308,7 @@ WHERE `enName` = 'Thread the Needle' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
     `zhName` = '站立前屈',
-    `zhDescription` = '从髋部铰合让上体垂挂，膝微屈。让重力拉大腿后侧，不要弹振。',
+    `zhDescription` = '以髋为轴前屈，让上体垂挂，膝微屈。让重力拉大腿后侧，不要弹振。',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Standing Forward Fold' AND `creator` = 'Admin';
 --> statement-breakpoint
@@ -325,8 +325,8 @@ UPDATE `exercises` SET
 WHERE `enName` = 'Pigeon Pose' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
-    `zhName` = '全球最佳拉伸',
-    `zhDescription` = '迈成深弓步，两手放在前脚外侧。另一肘顶向前脚内侧，再转胸举手向天花板。这一式同时拉开后髋、内收肌和上背。',
+    `zhName` = '世界最伟大拉伸',
+    `zhDescription` = '迈成深弓步，对侧手撑在前脚外侧地面。另一侧肘顶向前脚内侧，再转胸举手向天花板。这一式同时拉开后髋屈肌、内收肌和上背。',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'World''s Greatest Stretch' AND `creator` = 'Admin';
 --> statement-breakpoint
@@ -349,7 +349,7 @@ UPDATE `exercises` SET
 WHERE `enName` = 'Dead Hang' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
-    `zhName` = '退让引体',
+    `zhName` = '离心引体向上',
     `zhDescription` = '跳或踩到引体最高位、下巴过杠，再尽可能慢地下放，目标五秒，然后踩回开始下一次。',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Negative Pull-Up' AND `creator` = 'Admin';
@@ -403,7 +403,7 @@ UPDATE `exercises` SET
 WHERE `enName` = 'Dragon Flag' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
-    `zhName` = '团身平举',
+    `zhName` = '团身俄式挺身',
     `zhDescription` = '下蹲双手平放地面、与肩同宽。肩远远越过手腕、肘锁紧，直到双脚离地、膝收向胸，保持这个平衡不动。',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Tuck Planche' AND `creator` = 'Admin';
@@ -415,7 +415,7 @@ UPDATE `exercises` SET
 WHERE `enName` = 'Warden''s Walk' AND `creator` = 'Admin';
 --> statement-breakpoint
 UPDATE `exercises` SET
-    `zhName` = '信使疾走',
+    `zhName` = '信使奔跑',
     `zhDescription` = '以一个能撑很久的稳定配速奔跑。需要走就走，呼吸顺过来再出发。',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enName` = 'Messenger''s Run' AND `creator` = 'Admin';
@@ -488,7 +488,7 @@ WHERE `enTitle` = 'Golem Core' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `quests` SET
     `zhTitle` = '锻龙刃',
-    `zhDescription` = '铁已经出炉，凉得不会太久。趁它服软，锤下去，胸和臂都压在锤后。',
+    `zhDescription` = '铁已经出炉，热不了多久。趁它服软，锤下去，胸和臂都压在锤后。',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'Forge the Dragon Blade' AND `author` = 'Admin';
 --> statement-breakpoint
@@ -554,7 +554,7 @@ WHERE `enTitle` = 'The Squire''s Awakening' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `quests` SET
     `zhTitle` = '熊道',
-    `zhDescription` = '主堡在松林里半天的路程。两条腿走还是四条腿爬都行，天亮前赶到。',
+    `zhDescription` = '主堡在松林里半天的路程。两条腿走还是四条腿爬都行，天黑前赶到。',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'The Bear''s Road' AND `author` = 'Admin';
 --> statement-breakpoint
@@ -607,14 +607,14 @@ UPDATE `quests` SET
 WHERE `enTitle` = 'The Hearthside Unbinding' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `quests` SET
-    `zhTitle` = '支撑者守夜',
+    `zhTitle` = '倒立者守夜',
     `zhDescription` = '每个练倒立的人都是用艰难的方式学会的：手腕总比肩膀先垮。前一晚照料它们，别等第二天早上。',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'The Handler''s Vigil' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `quests` SET
     `zhTitle` = '耐心的登高',
-    `zhDescription` = '没人一天就被拉到塔顶。悬、再撑、再慢放：杠子不白给任何东西，可它一旦给了，就一直是你的。',
+    `zhDescription` = '没人一天就被拉到塔顶。悬、再撑、再慢放：杠子不会白送你什么，可它一旦给了，就一直是你的。',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'The Patient Ascent' AND `author` = 'Admin';
 --> statement-breakpoint
@@ -649,7 +649,7 @@ UPDATE `quests` SET
 WHERE `enTitle` = 'Word Must Travel' AND `author` = 'Admin';
 --> statement-breakpoint
 UPDATE `quests` SET
-    `zhTitle` = '长伸手',
+    `zhTitle` = '更远的边界',
     `zhDescription` = '地图在先锋走过的地方才不再是传闻，那条线以外全是商人的道听途说。',
     `updatedAt` = strftime('%s', 'now') * 1000
 WHERE `enTitle` = 'The Long Reach' AND `author` = 'Admin';

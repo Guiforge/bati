@@ -2066,23 +2066,7 @@
     },
     {
       "name": "@react-native/asset-utils",
-      "version": "0.88.0",
-      "license": "MIT",
-      "notices": [
-        { "copyright": ["Copyright (c) Meta Platforms, Inc. and affiliates."], "text": 4 }
-      ]
-    },
-    {
-      "name": "@react-native/asset-utils",
       "version": "0.88.1",
-      "license": "MIT",
-      "notices": [
-        { "copyright": ["Copyright (c) Meta Platforms, Inc. and affiliates."], "text": 4 }
-      ]
-    },
-    {
-      "name": "@react-native/babel-plugin-codegen",
-      "version": "0.88.0",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) Meta Platforms, Inc. and affiliates."], "text": 4 }
@@ -2098,15 +2082,7 @@
     },
     {
       "name": "@react-native/babel-preset",
-      "version": "0.88.0",
-      "license": "MIT",
-      "notices": [
-        { "copyright": ["Copyright (c) Meta Platforms, Inc. and affiliates."], "text": 4 }
-      ]
-    },
-    {
-      "name": "@react-native/codegen",
-      "version": "0.88.0",
+      "version": "0.88.1",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) Meta Platforms, Inc. and affiliates."], "text": 4 }
@@ -2122,16 +2098,8 @@
     },
     {
       "name": "@react-native/community-cli-plugin",
-      "version": "0.88.0",
+      "version": "0.88.1",
       "license": "MIT",
-      "notices": [
-        { "copyright": ["Copyright (c) Meta Platforms, Inc. and affiliates."], "text": 4 }
-      ]
-    },
-    {
-      "name": "@react-native/debugger-frontend",
-      "version": "0.88.0",
-      "license": "BSD-3-Clause",
       "notices": [
         { "copyright": ["Copyright (c) Meta Platforms, Inc. and affiliates."], "text": 4 }
       ]
@@ -2146,23 +2114,7 @@
     },
     {
       "name": "@react-native/debugger-shell",
-      "version": "0.88.0",
-      "license": "MIT",
-      "notices": [
-        { "copyright": ["Copyright (c) Meta Platforms, Inc. and affiliates."], "text": 4 }
-      ]
-    },
-    {
-      "name": "@react-native/debugger-shell",
       "version": "0.88.1",
-      "license": "MIT",
-      "notices": [
-        { "copyright": ["Copyright (c) Meta Platforms, Inc. and affiliates."], "text": 4 }
-      ]
-    },
-    {
-      "name": "@react-native/dev-middleware",
-      "version": "0.88.0",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) Meta Platforms, Inc. and affiliates."], "text": 4 }
@@ -2178,15 +2130,7 @@
     },
     {
       "name": "@react-native/gradle-plugin",
-      "version": "0.88.0",
-      "license": "MIT",
-      "notices": [
-        { "copyright": ["Copyright (c) Meta Platforms, Inc. and affiliates."], "text": 4 }
-      ]
-    },
-    {
-      "name": "@react-native/js-polyfills",
-      "version": "0.88.0",
+      "version": "0.88.1",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) Meta Platforms, Inc. and affiliates."], "text": 4 }
@@ -2202,7 +2146,7 @@
     },
     {
       "name": "@react-native/metro-babel-transformer",
-      "version": "0.88.0",
+      "version": "0.88.1",
       "license": "MIT",
       "notices": [
         {
@@ -2213,7 +2157,7 @@
     },
     {
       "name": "@react-native/metro-config",
-      "version": "0.88.0",
+      "version": "0.88.1",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) Meta Platforms, Inc. and affiliates."], "text": 4 }
@@ -2245,14 +2189,6 @@
     },
     {
       "name": "@react-native/normalize-colors",
-      "version": "0.88.0",
-      "license": "MIT",
-      "notices": [
-        { "copyright": ["Copyright (c) Meta Platforms, Inc. and affiliates."], "text": 4 }
-      ]
-    },
-    {
-      "name": "@react-native/normalize-colors",
       "version": "0.88.1",
       "license": "MIT",
       "notices": [
@@ -2261,7 +2197,7 @@
     },
     {
       "name": "@react-native/virtualized-lists",
-      "version": "0.88.0",
+      "version": "0.88.1",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) Meta Platforms, Inc. and affiliates."], "text": 4 }
@@ -5017,7 +4953,7 @@
     },
     {
       "name": "hermes-compiler",
-      "version": "260318099.0.4",
+      "version": "260318099.0.5",
       "license": "MIT",
       "notices": [{ "copyright": ["hermes-compiler (declared in package.json)"], "text": 4 }]
     },
@@ -7062,7 +6998,7 @@
     },
     {
       "name": "react-native",
-      "version": "0.88.0",
+      "version": "0.88.1",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) Meta Platforms, Inc. and affiliates."], "text": 4 }

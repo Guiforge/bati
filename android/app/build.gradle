@@ -92,8 +92,8 @@ android {
         applicationId 'com.guiforge.bati'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 21302
-        versionName "2.13.2"
+        versionCode 21303
+        versionName "2.13.3"
 // @generated begin expo-localization-supported-locales - expo prebuild (DO NOT MODIFY) sync-93822d2a77bd9d2670b301b84955f1f221d24609
         resourceConfigurations += ["b+en", "b+fr", "b+de", "b+es", "b+ru", "b+zh"]
 // @generated end expo-localization-supported-locales

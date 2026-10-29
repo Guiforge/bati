@@ -177,11 +177,13 @@ type CoverQuestRow = {
   deTitle: string | null;
   esTitle: string | null;
   ruTitle: string | null;
+  zhTitle: string | null;
   enDescription: string | null;
   frDescription: string | null;
   deDescription: string | null;
   esDescription: string | null;
   ruDescription: string | null;
+  zhDescription: string | null;
   questAuthor: QuestTemplate["author"] | null;
   questUuid: string | null;
   rounds: number | null;
@@ -189,6 +191,8 @@ type CoverQuestRow = {
   roundRestSeconds: number | null;
   questImagePath: string | null;
 };
+
+const orEmpty = (v: string | null): string => v ?? "";
 
 /**
  * The gallery only needs the cover quest's identity, not its shape. The quest is left-joined: one
@@ -198,18 +202,18 @@ type CoverQuestRow = {
 function coverQuestOf(r: CoverQuestRow): QuestTemplate {
   return {
     id: r.coverQuestId,
-    enTitle: r.enTitle ?? "",
-    frTitle: r.frTitle ?? "",
-    deTitle: r.deTitle ?? "",
-    esTitle: r.esTitle ?? "",
-    ruTitle: r.ruTitle ?? "",
-    zhTitle: r.zhTitle ?? "",
-    enDescription: r.enDescription ?? "",
-    frDescription: r.frDescription ?? "",
-    deDescription: r.deDescription ?? "",
-    esDescription: r.esDescription ?? "",
-    ruDescription: r.ruDescription ?? "",
-    zhDescription: r.zhDescription ?? "",
+    enTitle: orEmpty(r.enTitle),
+    frTitle: orEmpty(r.frTitle),
+    deTitle: orEmpty(r.deTitle),
+    esTitle: orEmpty(r.esTitle),
+    ruTitle: orEmpty(r.ruTitle),
+    zhTitle: orEmpty(r.zhTitle),
+    enDescription: orEmpty(r.enDescription),
+    frDescription: orEmpty(r.frDescription),
+    deDescription: orEmpty(r.deDescription),
+    esDescription: orEmpty(r.esDescription),
+    ruDescription: orEmpty(r.ruDescription),
+    zhDescription: orEmpty(r.zhDescription),
     author: r.questAuthor ?? ADMIN_CREATOR,
     uuid: r.questUuid,
     rounds: r.rounds ?? 1,

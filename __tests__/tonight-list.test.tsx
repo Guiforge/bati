@@ -153,6 +153,7 @@ describe("TonightList", () => {
       deName: code,
       esName: code,
       ruName: code,
+      zhName: code,
       relatedMuscle: null,
       oldLevel: 1,
       newLevel: 2,
@@ -919,6 +920,7 @@ describe("TonightList cap offer", () => {
     deName: name,
     esName: name,
     ruName: name,
+    zhName: name,
     imagePath: "squat.webp",
   });
   const offer = {

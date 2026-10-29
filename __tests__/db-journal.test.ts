@@ -420,6 +420,7 @@ describe("db/journal", () => {
       de: "Nightcoil",
       es: "Nightcoil",
       ru: "Nightcoil",
+      zh: "Nightcoil",
     });
     expect(report.bossArt).toEqual({ defeated: "data:image/jpeg;base64,D" });
   });

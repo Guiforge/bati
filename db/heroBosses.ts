@@ -75,6 +75,7 @@ type BossUser = {
   deTitle: string;
   esTitle: string;
   ruTitle: string;
+  zhTitle: string;
 };
 
 /** Thrown when a boss is deleted while an adventure still ends on it, as for a quest. */
@@ -144,6 +145,7 @@ export async function adventuresUsingBoss(uuid: string, exec: Exec = db): Promis
       deTitle: adventures.deTitle,
       esTitle: adventures.esTitle,
       ruTitle: adventures.ruTitle,
+      zhTitle: adventures.zhTitle,
     })
     .from(adventures)
     .where(and(eq(adventures.heroBossUuid, uuid), eq(adventures.isActive, 1)));

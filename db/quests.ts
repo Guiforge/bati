@@ -1273,7 +1273,14 @@ export async function adventuresUsingQuest(
   questId: number,
   exec: typeof db | TransactionTx = db,
 ): Promise<
-  { enTitle: string; frTitle: string; deTitle: string; esTitle: string; ruTitle: string }[]
+  {
+    enTitle: string;
+    frTitle: string;
+    deTitle: string;
+    esTitle: string;
+    ruTitle: string;
+    zhTitle: string;
+  }[]
 > {
   const named = exec
     .select({ id: adventureSteps.adventureId })
@@ -1291,6 +1298,7 @@ export async function adventuresUsingQuest(
       deTitle: adventures.deTitle,
       esTitle: adventures.esTitle,
       ruTitle: adventures.ruTitle,
+      zhTitle: adventures.zhTitle,
     })
     .from(adventures)
     .where(

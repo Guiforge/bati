@@ -25,6 +25,7 @@ const fight = (intro: string[]): BossFight => ({
   deName: "Nightcoil",
   esName: "Nightcoil",
   ruName: "Nightcoil",
+  zhName: "Nightcoil",
   tier: 0,
   shiny: false,
   bossLines: { intro, idle: [], crit: [], enrage: [], defeat: [] },

@@ -643,12 +643,9 @@ describe("cleaning the text of a quest file", () => {
   // A description may be empty: a quest needs a name, not a blurb.
   test("an empty description is read as empty, not refused", () => {
     const read = parse(
-      JSON.stringify(received({ description: { en: "", fr: "", de: "", es: "", ru: "" } })),
+      JSON.stringify(received({ description: { en: "", fr: "", de: "", es: "", ru: "", zh: "" } })),
     );
-    expect(read.quest.description).toEqual({ en: "", fr: "", de: "", es: "", ru: "" });
-      JSON.stringify(received({ description: { en: "", fr: "", de: "", es: "", zh: "" } })),
-    );
-    expect(read.quest.description).toEqual({ en: "", fr: "", de: "", es: "", zh: "" });
+    expect(read.quest.description).toEqual({ en: "", fr: "", de: "", es: "", ru: "", zh: "" });
   });
 
   // Past the editor's own limit is cut; far past it is not a quest an editor wrote, and reading
@@ -1176,8 +1173,7 @@ describe("importing a quest file", () => {
 
     const hostile = received({
       uuid: questUuid,
-      title: { en: "Owned", fr: "", de: "", es: "", ru: "" },
-      title: { en: "Owned", fr: "", de: "", es: "", zh: "" },
+      title: { en: "Owned", fr: "", de: "", es: "", ru: "", zh: "" },
     });
     const own = hostile.slots[1]?.movement;
     assert(own && "own" in own);
@@ -1225,8 +1221,10 @@ describe("importing a quest file", () => {
     const preview = await file.previewQuest(received({ uuid: questUuid }));
     const outcome = await file
       .importQuest(
-        received({ uuid: questUuid, title: { en: "Owned", fr: "", de: "", es: "", ru: "" } }),
-        received({ uuid: questUuid, title: { en: "Owned", fr: "", de: "", es: "", zh: "" } }),
+        received({
+          uuid: questUuid,
+          title: { en: "Owned", fr: "", de: "", es: "", ru: "", zh: "" },
+        }),
       )
       .catch((error: unknown) => error);
     const after = t.sqlite.prepare("SELECT id, enTitle FROM quests WHERE id = ?").get(seedQuest.id);

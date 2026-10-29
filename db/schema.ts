@@ -116,16 +116,12 @@ export const exercises = sqliteTable(
 
     enName: text().notNull(),
     frName: text().notNull(),
-    // German and Spanish since 0058, Russian since 0080. Empty until a row is translated, and `localizedText` reads
-    // an empty column as English, so an untranslated row is never a blank card.
+    // German and Spanish since 0058, Russian since 0080, Chinese since 0081. Empty until a row is
+    // translated, and `localizedText` reads an empty column as English, so an untranslated row is
+    // never a blank card.
     deName: text().notNull().default(""),
     esName: text().notNull().default(""),
     ruName: text().notNull().default(""),
-    // German and Spanish since 0058, Chinese since 0074. Empty until a row is translated, and
-    // `localizedText` reads an empty column as English, so an untranslated row is never a blank
-    // card.
-    deName: text().notNull().default(""),
-    esName: text().notNull().default(""),
     zhName: text().notNull().default(""),
     enDescription: text().notNull(),
     frDescription: text().notNull(),

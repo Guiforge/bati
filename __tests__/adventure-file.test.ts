@@ -1120,7 +1120,14 @@ describe("copy", () => {
   ];
 
   test("every sentence exists, non-empty, in each locale the app has", () => {
-    expect(locales.sort()).toEqual(["de.json", "en.json", "es.json", "fr.json", "ru.json"]);
+    expect(locales.sort()).toEqual([
+      "de.json",
+      "en.json",
+      "es.json",
+      "fr.json",
+      "ru.json",
+      "zh.json",
+    ]);
     for (const file of locales) {
       const json = JSON.parse(fs.readFileSync(path.join(dir, file), "utf8"));
       const reasons = load().adv.ADVENTURE_FILE_REFUSALS.map((r) => `import_${r}`);

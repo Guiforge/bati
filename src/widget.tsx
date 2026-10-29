@@ -118,6 +118,7 @@ const STRINGS: Localized<WidgetStrings> = {
   },
   zh: {
     flame: "火焰",
+    dormant: "休眠",
     days: { one: "天", other: "天" },
     week: "本周",
     sessions: { one: "次", other: "次" },

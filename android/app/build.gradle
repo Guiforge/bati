@@ -94,8 +94,8 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 21302
         versionName "2.13.2"
-// @generated begin expo-localization-supported-locales - expo prebuild (DO NOT MODIFY) sync-c9f73454f3727185f1bd674e1d7b291f937b066c
-        resourceConfigurations += ["b+en", "b+fr", "b+de", "b+es", "b+ru"]
+// @generated begin expo-localization-supported-locales - expo prebuild (DO NOT MODIFY) sync-93822d2a77bd9d2670b301b84955f1f221d24609
+        resourceConfigurations += ["b+en", "b+fr", "b+de", "b+es", "b+ru", "b+zh"]
 // @generated end expo-localization-supported-locales
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""

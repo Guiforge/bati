@@ -85,7 +85,7 @@ test("a one-sided movement's wall row says its figure is per side", async () => 
 test("in a light week the wall row sets no target above the objective", async () => {
   const entry: WallEntry = {
     exerciseId: 2,
-    name: { en: "Plank", fr: "Gainage", de: "Brett", es: "Plancha", ru: "Plank" },
+    name: { en: "Plank", fr: "Gainage", de: "Brett", es: "Plancha", ru: "Plank", zh: "Plank" },
     imagePath: "",
     type: "time",
     perSide: false,

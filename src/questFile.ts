@@ -65,8 +65,7 @@ const MAX_IMAGE_SIDE = 1_024;
 const MAX_SLOTS = 40;
 export const MAX_FILE_BYTES = 8_000_000;
 
-type QuestText = { en: string; fr: string; de: string; es: string; ru: string };
-type Text4 = { en: string; fr: string; de: string; es: string; zh: string };
+type QuestText = { en: string; fr: string; de: string; es: string; ru: string; zh: string };
 
 type OwnMovement = {
   uuid: string;
@@ -298,8 +297,14 @@ function questText(value: unknown, max: number, required: boolean): QuestText {
   const en = required ? name(value.en, max) : read(value.en);
   // A missing translation reads as English, as every untranslated seed row already does.
   const or = (v: unknown) => (v === undefined ? en : read(v) || en);
-  return { en, fr: or(value.fr), de: or(value.de), es: or(value.es), ru: or(value.ru) };
-  return { en, fr: or(value.fr), de: or(value.de), es: or(value.es), zh: or(value.zh) };
+  return {
+    en,
+    fr: or(value.fr),
+    de: or(value.de),
+    es: or(value.es),
+    ru: or(value.ru),
+    zh: or(value.zh),
+  };
 }
 
 // The header parser lives in `carriedImage`; `quest-file.test.ts` still reaches it from here.
@@ -600,8 +605,9 @@ export function editQuestFile(file: QuestFile, edits: QuestFileEdits): QuestFile
     quest: {
       ...file.quest,
       uuid: edits.asCopy ? uuidv7() : file.quest.uuid,
-      title: renamed ? { en: title, fr: title, de: title, es: title, ru: title } : file.quest.title,
-      title: renamed ? { en: title, fr: title, de: title, es: title, zh: title } : file.quest.title,
+      title: renamed
+        ? { en: title, fr: title, de: title, es: title, ru: title, zh: title }
+        : file.quest.title,
     },
     slots: file.slots.filter((_, i) => edits.keep[i] === true),
   };

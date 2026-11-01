@@ -68,6 +68,14 @@ repos:
         pass_filenames: false
         files: ^(fastlane/(metadata|play)/|app\.json$)
 
+      # A licence surprise costs a release cycle at F-Droid, and only a lockfile change can bring one.
+      - id: licenses
+        name: dependency licences
+        entry: npm run -s licenses:check
+        language: system
+        pass_filenames: false
+        files: ^package-lock\.json$
+
       - id: jest
         name: npm test
         entry: npm test

@@ -11,7 +11,7 @@
     },
     "flux_spent_session": 2.03,
     "subagent_runs_budget": 80,
-    "subagent_runs_used": 14,
+    "subagent_runs_used": 15,
     "flux_note": "Plafond dur réel 40 $ (reste 5,584 $) tant que Guillaume n'écrit pas la ligne sous ## Lignes de VALIDATIONS.md. L'exemple 2026-11-05 du fichier ne compte pas."
   },
   "mode": "garde V1 débranché (settings.local.json absent). Implémenteurs : arbre iso, je commite. Émulateur : emu.sh + emu-adb.sh, chef seul.",
@@ -41,7 +41,7 @@
       "question": "Parquer, reprendre avec un contrat refait, ou fusionner ?"
     },
     "bc": {
-      "status": "attend le checkpoint"
+      "status": "fondations sans FLUX sur loupe-bc, non fusionnée (G03 retiré, cuiseur, checks core et forest) ; tours et peinture attendent le checkpoint"
     }
   },
   "locked_crops": [],

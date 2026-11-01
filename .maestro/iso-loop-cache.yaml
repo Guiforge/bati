@@ -1,0 +1,20 @@
+# Visual loop: empty Glide's image cache (it survives `install -r` and can serve another build's sprite).
+# The script force-stops the app afterwards.
+appId: com.guiforge.bati.perf
+---
+- launchApp:
+    stopApp: false
+- extendedWaitUntil:
+    visible:
+      id: "iso-mode-village"
+    timeout: 20000
+- tapOn:
+    id: "iso-mode-village"
+- extendedWaitUntil:
+    visible:
+      id: "iso-vider-cache"
+    timeout: 20000
+- tapOn:
+    id: "iso-vider-cache"
+- waitForAnimationToEnd:
+    timeout: 2000

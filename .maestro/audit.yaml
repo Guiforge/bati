@@ -171,6 +171,14 @@ tags:
 - waitForAnimationToEnd:
     timeout: 2000
 - takeScreenshot: 15-village-scrolled
+# Flag on (T45): the list sits in the drawer, behind the strip at the foot of the map.
+- runFlow:
+    when:
+      visible:
+        id: "village-drawer-open"
+    commands:
+      - tapOn:
+          id: "village-drawer-open"
 - tapOn:
     id: "village-building-row"
     index: 0

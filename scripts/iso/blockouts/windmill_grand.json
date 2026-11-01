@@ -1,0 +1,29 @@
+{
+  "canvas": "building2x2",
+  "parts": [
+    { "type": "box", "at": [0, 0, 0], "size": [2, 2, 0.16], "mat": "stone" },
+    { "type": "cyl", "center": [1, 1, 0.16], "r": 0.78, "h": 0.5, "mat": "stone" },
+    { "type": "cyl", "center": [1, 1, 0.66], "r": 0.68, "h": 1.5, "mat": "plaster" },
+    { "type": "cyl", "center": [1, 1, 1.32], "r": 0.7, "h": 0.06, "mat": "iron" },
+    { "type": "cone", "center": [1, 1, 2.16], "r": 0.84, "r2": 0.05, "h": 0.72, "mat": "tile" },
+    {
+      "type": "box",
+      "at": [0.8, 1.74, 0.16],
+      "size": [0.4, 0.06, 0.62],
+      "mat": "darkwood",
+      "accroche": "porte"
+    },
+    { "type": "box", "at": [0.5, 1.6, 0.9], "size": [0.22, 0.06, 0.5], "mat": "banner" },
+    { "type": "box", "at": [1.12, 1.6, 1.45], "size": [0.2, 0.06, 0.22], "mat": "amber" },
+    {
+      "type": "cyl",
+      "center": [1.27, 1.27, 2.36],
+      "r": 0.08,
+      "h": 0.46,
+      "mat": "iron",
+      "axis": [0.612, 0.612, 0.5]
+    }
+  ],
+  "pivot": [1.54, 1.54, 2.59],
+  "sailsScale": 1.15
+}

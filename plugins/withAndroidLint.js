@@ -40,6 +40,13 @@ const { withAppBuildGradle, withGradleProperties } = require("expo/config-plugin
  * one-handed app used between two sets, and the 32 screens are laid out for a tall window. The
  * check fires on the `android:screenOrientation="portrait"` that decision generates.
  *
+ * One screen is the exception: the Village tab with its iso map may turn (Guillaume, 30/10, the
+ * map is the screen and a landscape phone shows more of it). `components/village/VillageScene.tsx`
+ * unlocks the orientation with expo-screen-orientation while that tab is focused, and locks
+ * portrait again on blur; the manifest keeps `portrait`, so every other screen and the app's
+ * start are unchanged. Behind the `INTEGRATION` flag (`constants/isoPoc.ts`) until the iso map
+ * ships.
+ *
  * What the Play Console reports about it is worth reading carefully. From Android 16 the
  * attribute is *already ignored* on large screens, meaning tablets and unfolded foldables
  * resize the app today whether the manifest asks for it or not. So the lock costs nothing there

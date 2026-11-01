@@ -210,6 +210,9 @@ def generate(
     attempts: int = 3,
     seed: int | None = None,
     references: tuple[pathlib.Path, ...] = (),
+    extra: dict | None = None,
+    submitted_log: list | None = None,
+    endpoint: str | None = None,
 ) -> bool:
     """Render one prompt to `out`. Returns False if it could not be produced.
 
@@ -222,6 +225,8 @@ def generate(
     The shared STYLE paragraph holds a family together well enough without it.
     """
     key = load_key()
+    endpoint = endpoint or ENDPOINT  # a per-call model (the iso Klein trial); ENDPOINT otherwise
+    klein = endpoint.endswith("flux-3-image-klein")
     seed = seed_for(slug) if seed is None else seed
     payload = {
         "prompt": prompt,
@@ -235,7 +240,15 @@ def generate(
     for index, reference in enumerate(references):
         name = "input_image" if index == 0 else f"input_image_{index + 1}"
         payload[name] = base64.b64encode(reference.read_bytes()).decode("ascii")
-    if "flux-3" in ENDPOINT:
+    if klein:
+        # FLUX 3 Image Klein takes a seed, an exact size and PNG, its references as one list, and
+        # refuses any field outside its schema (additionalProperties: false), so no `grounding`.
+        # Its prompt upsampler runs server-side and has no switch.
+        payload = {"prompt": prompt, "width": width, "height": height, "seed": seed,
+                   "output_format": payload["output_format"]}
+        if references:
+            payload["images"] = [base64.b64encode(r.read_bytes()).decode("ascii") for r in references]
+    elif "flux-3" in endpoint:
         # FLUX 3 Image takes its references as one list and has no seed. Grounding is on by default
         # and searches the web for images before drawing: off, or the ledger could no longer say
         # what an image was made from.
@@ -247,10 +260,15 @@ def generate(
         }
         if references:
             payload["images"] = [base64.b64encode(r.read_bytes()).decode("ascii") for r in references]
+    # Fields a caller needs beyond the common ones (the iso POC sends `disable_pup`).
+    payload.update(extra or {})
 
     for attempt in range(1, attempts + 1):
         try:
-            submitted = _json(ENDPOINT, key, payload)
+            submitted = _json(endpoint, key, payload)
+            # Each POST is billed, retries included: the caller that keeps a budget reads `cost` here.
+            if submitted_log is not None:
+                submitted_log.append({k: v for k, v in submitted.items() if k != "polling_url"})
             polling_url = submitted.get("polling_url")
             if not polling_url:
                 raise RuntimeError(f"no polling_url in response: {submitted}")
@@ -292,16 +310,18 @@ def generate(
     # just do not enter the ledger — it records what ships, and the crash it used to throw here
     # happened *after* the image was paid for and written, which is the worst possible moment.
     entry = {
-        "model": ENDPOINT.rsplit("/", 1)[-1],
+        "model": endpoint.rsplit("/", 1)[-1],
         "provider": "Black Forest Labs (direct API)",
         "licence": LICENCE,
         "signed_original": {"file": f"{digest[:16]}{kind}", "sha256": digest},
         "prompt": prompt,
-        "seed": None if "flux-3" in ENDPOINT else seed,  # FLUX 3 takes no seed
+        "seed": None if "flux-3" in endpoint and not klein else seed,  # FLUX 3 Image takes no seed, Klein does
         "width": width,
         "height": height,
         "generated": time.strftime("%Y-%m-%d"),
     }
+    if extra:
+        entry["extra"] = extra
     if references:
         entry["references"] = [
             {

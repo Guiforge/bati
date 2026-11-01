@@ -1,0 +1,294 @@
+{
+  "canvas": "decor1x1",
+  "parts": [
+    {
+      "type": "cyl",
+      "center": [0.18, 0.276, 0.055],
+      "r": 0.055,
+      "h": 0.6,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "wood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.78, 0.276, 0.055],
+      "r": 0.044,
+      "h": 0.01,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "darkwood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.18, 0.388, 0.055],
+      "r": 0.055,
+      "h": 0.6,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "wood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.78, 0.388, 0.055],
+      "r": 0.044,
+      "h": 0.01,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "darkwood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.18, 0.5, 0.055],
+      "r": 0.055,
+      "h": 0.6,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "wood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.78, 0.5, 0.055],
+      "r": 0.044,
+      "h": 0.01,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "darkwood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.18, 0.612, 0.055],
+      "r": 0.055,
+      "h": 0.6,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "wood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.78, 0.612, 0.055],
+      "r": 0.044,
+      "h": 0.01,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "darkwood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.18, 0.724, 0.055],
+      "r": 0.055,
+      "h": 0.6,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "wood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.78, 0.724, 0.055],
+      "r": 0.044,
+      "h": 0.01,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "darkwood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.18, 0.332, 0.1536],
+      "r": 0.055,
+      "h": 0.6,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "wood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.78, 0.332, 0.1536],
+      "r": 0.044,
+      "h": 0.01,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "darkwood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.18, 0.444, 0.1536],
+      "r": 0.055,
+      "h": 0.6,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "wood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.78, 0.444, 0.1536],
+      "r": 0.044,
+      "h": 0.01,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "darkwood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.18, 0.556, 0.1536],
+      "r": 0.055,
+      "h": 0.6,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "wood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.78, 0.556, 0.1536],
+      "r": 0.044,
+      "h": 0.01,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "darkwood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.18, 0.668, 0.1536],
+      "r": 0.055,
+      "h": 0.6,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "wood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.78, 0.668, 0.1536],
+      "r": 0.044,
+      "h": 0.01,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "darkwood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.18, 0.388, 0.2521],
+      "r": 0.055,
+      "h": 0.6,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "wood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.78, 0.388, 0.2521],
+      "r": 0.044,
+      "h": 0.01,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "darkwood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.18, 0.5, 0.2521],
+      "r": 0.055,
+      "h": 0.6,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "wood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.78, 0.5, 0.2521],
+      "r": 0.044,
+      "h": 0.01,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "darkwood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.18, 0.612, 0.2521],
+      "r": 0.055,
+      "h": 0.6,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "wood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.78, 0.612, 0.2521],
+      "r": 0.044,
+      "h": 0.01,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "darkwood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.18, 0.444, 0.3507],
+      "r": 0.055,
+      "h": 0.6,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "wood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.78, 0.444, 0.3507],
+      "r": 0.044,
+      "h": 0.01,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "darkwood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.18, 0.556, 0.3507],
+      "r": 0.055,
+      "h": 0.6,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "wood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.78, 0.556, 0.3507],
+      "r": 0.044,
+      "h": 0.01,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "darkwood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.1, 0.08, 0.0],
+      "r": 0.075,
+      "h": 0.17,
+      "axis": [0.0, 0.0, 1.0],
+      "mat": "wood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.1, 0.08, 0.17],
+      "r": 0.06,
+      "h": 0.005,
+      "axis": [0.0, 0.0, 1.0],
+      "mat": "darkwood",
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.1, 0.1, 0.18],
+      "r": 0.012,
+      "h": 0.147,
+      "axis": [0.6804, 0.2722, 0.6804],
+      "mat": "wood",
+      "roof": false
+    },
+    {
+      "type": "box",
+      "at": [0.175, 0.1425, 0.27],
+      "size": [0.07, 0.015, 0.06],
+      "mat": "iron",
+      "roof": false
+    }
+  ],
+  "pxScale": 2.111,
+  "anchorPx": [264, 686],
+  "lineScale": 0.7106
+}

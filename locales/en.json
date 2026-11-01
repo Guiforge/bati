@@ -173,7 +173,8 @@
     "report_bug_count_other": "{{count}} crashes",
     "no_mail_client": "No email app found on this device",
     "photos_denied": "Photo access is off. Allow it in system settings.",
-    "sound": "Countdown beeps",
+    "sound": "Sounds",
+    "sound_hint": "Workout beeps and the village's ambient sound.",
     "villagers": "Villagers",
     "replay_guides": "Review the guides",
     "replay_guides_done": "The guides will show again",
@@ -208,6 +209,9 @@
     "cc_by_30_subtitle": "Licence terms",
     "attribution_example": "Example attribution (from game-icons.net): \"Icons made by {author}. Available on https://game-icons.net\".",
     "view_authors": "View authors",
+    "sounds_title": "Village sounds",
+    "sounds_note": "The ambient sounds of the village come from BigSoundBank, released into the public domain (CC0). No credit is required; we give it anyway.",
+    "sound_subtitle": "{{author}}, BigSoundBank, CC0",
     "open_source_title": "Open-source software",
     "open_source_body": "Built with Expo + React Native, Tamagui, Zustand, Drizzle ORM, i18next, and more.",
     "illustrations_title": "Exercise illustrations",
@@ -714,8 +718,8 @@
     "side_two_go": "Go, side 2",
     "skip_rest": "I'm ready",
     "skip_rest_accessibility": "Skip rest and start next exercise",
-    "sound_off": "Countdown beeps: off",
-    "sound_on": "Countdown beeps: on",
+    "sound_off": "Sounds: off",
+    "sound_on": "Sounds: on",
     "summary_too_short_title": "That was a short one",
     "summary_too_short_body": "You trained for {{duration}}. Keep it and it counts toward your flame and your oath, or discard it and nothing happened.",
     "summary_too_short_keep": "Keep it",
@@ -1393,6 +1397,122 @@
     "smith_greeting": "Everything gets forged here, even your monsters. Tell me what you need, I'll bring the fire."
   },
   "village": {
+    "iso": {
+      "habitant": "Villager",
+      "statue": "Animal statue ({{animal}}, {{matiere}}): opens your crest",
+      "statue_nu": "Statue plinth, still empty: opens your sheet",
+      "matiere_young": "wood",
+      "matiere_adult": "stone",
+      "matiere_venerable": "bronze",
+      "matiere_legendary": "gold",
+      "legende": {
+        "campfire": {
+          "rough": "One spark takes. The dark backs off a step.",
+          "solid": "The woodpile is taller than the man who stacked it.",
+          "grand": "A shepherd two hills away has spotted the smoke."
+        },
+        "tent": {
+          "rough": "They pulled a canvas tight and made a home of it.",
+          "solid": "Patched canvas, dry bed. Rain can knock all it likes.",
+          "grand": "A striped pavilion with a banner, and a dog asleep in the best spot."
+        },
+        "training_dummy": {
+          "rough": "Bound to a post with rope, the straw dummy takes every blow in silence.",
+          "solid": "The dummy got an iron cap. It already has a dent.",
+          "grand": "A new coat of straw is being stitched onto the dummy."
+        },
+        "archery_range": {
+          "rough": "Three targets lean on a fence that has seen worse.",
+          "solid": "Nobody misses the straw anymore.",
+          "grand": "At dusk the archers snuff a candle at forty paces."
+        },
+        "quarry": {
+          "rough": "The first stone leaves the hill.",
+          "solid": "Carts are already rumbling out of the quarry before daylight.",
+          "grand": "A hillside is becoming walls, block after block."
+        },
+        "forge": {
+          "rough": "The anvil is cold and the bellows wheeze. Sparks will come.",
+          "solid": "Hammer blows ring out until the soup goes cold.",
+          "grand": "The forge hasn't gone out at night in months."
+        },
+        "well": {
+          "rough": "A ring of stones, a rope. The village can drink.",
+          "solid": "Cold, clear water comes up on the first pull.",
+          "grand": "The well got a roof and a bell, and there is a queue by breakfast."
+        },
+        "windmill": {
+          "rough": "Four bare sails wait for the first real wind.",
+          "solid": "Even on a calm day, the sails catch the faintest breeze.",
+          "grand": "Flour dust hangs in the evening light. Everyone goes home a little whiter."
+        },
+        "farm": {
+          "rough": "The scarecrow is up before there is anything to guard.",
+          "solid": "Green fields run right up to the fence.",
+          "grand": "Sheaves are being stacked higher than the scarecrow."
+        },
+        "wizard_tower": {
+          "rough": "A crooked tower with one lit window at the top.",
+          "solid": "Every night a new rune appears on the stones.",
+          "grand": "The orb on top hums, and the cat on the stairs pretends not to hear."
+        },
+        "druid_grove": {
+          "rough": "Seven saplings in a circle, and one owl on night duty.",
+          "solid": "Fireflies moved into the grove last night.",
+          "grand": "Under the great oak sit a bench and a bowl of acorns."
+        },
+        "watchtower": {
+          "rough": "Climb the ladder and the valley opens up.",
+          "solid": "From up there, the road looks short.",
+          "grand": "A fisherman on the far coast steers by its beacon."
+        },
+        "castle_wall": {
+          "rough": "A line of stakes keeps the night at a polite distance.",
+          "solid": "Along the new stone walkway, boots pass on the hour.",
+          "grand": "The gate stands open, banners snapping above it."
+        },
+        "armory": {
+          "rough": "Nothing hangs on the racks yet, but the air already smells of oil.",
+          "solid": "Blades hang in order of length, shortest first.",
+          "grand": "Shields shine in the lamplight, and nobody dares leave a thumbprint."
+        },
+        "fountain": {
+          "rough": "A stone basin waits for its first drops.",
+          "solid": "Hold your breath and you can hear the jet humming.",
+          "grand": "A mason is chiselling the last figure on the rim."
+        },
+        "observatory": {
+          "rough": "A small dome opens one eye on the sky.",
+          "solid": "Each star on the chart has a name and a pencil mark.",
+          "grand": "The great lens swings open. The moon had better behave."
+        },
+        "barn": {
+          "rough": "Fresh planks, still sticky with sap, and a door not yet hung.",
+          "solid": "The loft is full and the doors have stopped closing properly.",
+          "grand": "Come January, this barn will still be feeding the village."
+        },
+        "dragon_lair": {
+          "rough": "Something that lives here left claw marks as long as an arm.",
+          "solid": "At night, warm smoke curls out of the cave.",
+          "grand": "A single gold coin lies in the ash, still hot."
+        },
+        "heroes_hall": {
+          "rough": "A long table and a roof with room for a name.",
+          "solid": "Each beam carries a carved deed.",
+          "grand": "The banner over the door is stitched with real gold thread."
+        },
+        "champion_arena": {
+          "rough": "A rope rings the raked sand. Three onlookers are already here.",
+          "solid": "Seats go quickly when a match is posted.",
+          "grand": "An apprentice carries the practice spears from the arena to the armory."
+        },
+        "high_road": {
+          "rough": "A beaten-earth track, and a first boot print.",
+          "solid": "Milestones count your leagues.",
+          "grand": "Travellers ask for directions to a road you built."
+        }
+      }
+    },
     "forge_enter": "Enter the forge",
     "crest_bear": "a bear",
     "crest_stag": "a stag",
@@ -1584,7 +1704,17 @@
     "cta_route": "Find a route",
     "changes_title": "Since your last quest",
     "risen": "Risen",
+    "claim_action": "Evolve",
+    "claim_all": "Evolve all",
+    "claim_ready": "Ready to evolve",
+    "claim_ready_body": "Your {{name}} can move on to the next stage.",
+    "claim_ready_a11y": "{{name}} ready to evolve",
+    "claim_action_a11y": "Evolve {{name}}",
+    "evolve_done_all": "Your buildings have evolved.",
+    "evolve_done": "{{name}} has evolved.",
     "foot": "Nothing is managed here. Every level comes from a logged session.",
+    "drawer_open": "Your village, tier {{tier}}",
+    "drawer_title": "Your village",
     "done_title": "{{name}} is complete",
     "done_body": "Muscles, styles, upgrades and starters: all at their ceiling.",
     "done_deeds": "The deeds are just below.",

@@ -1,0 +1,214 @@
+{
+  "canvas": "tower1x1",
+  "lineScale": 0.35,
+  "parts": [
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0],
+      "r": 0.44,
+      "r2": 0.42,
+      "h": 0.13,
+      "mat": "stone",
+      "roof": false,
+      "verts": 8
+    },
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0.13],
+      "r": 0.36,
+      "r2": 0.36,
+      "h": 0.05,
+      "mat": "stone",
+      "roof": false,
+      "verts": 8
+    },
+    {
+      "type": "cone",
+      "center": [0.38, 0.4325, 0.18],
+      "r": 0.0525,
+      "r2": 0.042,
+      "h": 0.1725,
+      "axis": [0.0, 0.0, 1.0],
+      "mat": "stone",
+      "roof": false,
+      "verts": 8
+    },
+    {
+      "type": "cone",
+      "center": [0.38, 0.4325, 0.18],
+      "r": 0.0683,
+      "r2": 0.0683,
+      "h": 0.0225,
+      "mat": "stone",
+      "roof": false,
+      "verts": 8
+    },
+    {
+      "type": "cone",
+      "center": [0.38, 0.5675, 0.18],
+      "r": 0.0525,
+      "r2": 0.042,
+      "h": 0.1725,
+      "axis": [0.0, 0.0, 1.0],
+      "mat": "stone",
+      "roof": false,
+      "verts": 8
+    },
+    {
+      "type": "cone",
+      "center": [0.38, 0.5675, 0.18],
+      "r": 0.0683,
+      "r2": 0.0683,
+      "h": 0.0225,
+      "mat": "stone",
+      "roof": false,
+      "verts": 8
+    },
+    {
+      "type": "cone",
+      "center": [0.62, 0.4325, 0.18],
+      "r": 0.0525,
+      "r2": 0.042,
+      "h": 0.1725,
+      "axis": [0.0, 0.0, 1.0],
+      "mat": "stone",
+      "roof": false,
+      "verts": 8
+    },
+    {
+      "type": "cone",
+      "center": [0.62, 0.4325, 0.18],
+      "r": 0.0683,
+      "r2": 0.0683,
+      "h": 0.0225,
+      "mat": "stone",
+      "roof": false,
+      "verts": 8
+    },
+    {
+      "type": "cone",
+      "center": [0.62, 0.5675, 0.18],
+      "r": 0.0525,
+      "r2": 0.042,
+      "h": 0.1725,
+      "axis": [0.0, 0.0, 1.0],
+      "mat": "stone",
+      "roof": false,
+      "verts": 8
+    },
+    {
+      "type": "cone",
+      "center": [0.62, 0.5675, 0.18],
+      "r": 0.0683,
+      "r2": 0.0683,
+      "h": 0.0225,
+      "mat": "stone",
+      "roof": false,
+      "verts": 8
+    },
+    {
+      "type": "cone",
+      "center": [0.335, 0.5, 0.3675],
+      "r": 0.135,
+      "r2": 0.1275,
+      "h": 0.315,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "stone",
+      "roof": false,
+      "verts": 8
+    },
+    {
+      "type": "cone",
+      "center": [0.47, 0.5, 0.4275],
+      "r": 0.12,
+      "r2": 0.042,
+      "h": 0.135,
+      "mat": "stone",
+      "roof": false,
+      "verts": 8
+    },
+    {
+      "type": "cone",
+      "center": [0.395, 0.5, 0.4275],
+      "r": 0.0975,
+      "r2": 0.0341,
+      "h": 0.15,
+      "mat": "stone",
+      "roof": false,
+      "verts": 8
+    },
+    {
+      "type": "cone",
+      "center": [0.35, 0.5, 0.3825],
+      "r": 0.1125,
+      "r2": 0.075,
+      "h": 0.075,
+      "mat": "stone",
+      "roof": false,
+      "verts": 8
+    },
+    {
+      "type": "cone",
+      "center": [0.635, 0.5, 0.3975],
+      "r": 0.075,
+      "r2": 0.06,
+      "h": 0.1209,
+      "axis": [0.4961, 0.0, 0.8682],
+      "mat": "stone",
+      "roof": false,
+      "verts": 8
+    },
+    {
+      "type": "cone",
+      "center": [0.68, 0.5, 0.4725],
+      "r": 0.075,
+      "r2": 0.06,
+      "h": 0.075,
+      "axis": [1.0, 0.0, 0.0],
+      "mat": "stone",
+      "roof": false,
+      "verts": 8
+    },
+    {
+      "type": "cone",
+      "center": [0.755, 0.5, 0.4575],
+      "r": 0.045,
+      "r2": 0.03,
+      "h": 0.0808,
+      "axis": [0.9285, 0.0, -0.3714],
+      "mat": "stone",
+      "roof": false,
+      "verts": 8
+    },
+    {
+      "type": "cone",
+      "center": [0.83, 0.5, 0.4275],
+      "r": 0.0188,
+      "r2": 0.0188,
+      "h": 0.0225,
+      "mat": "stone",
+      "roof": false,
+      "verts": 8
+    },
+    {
+      "type": "cone",
+      "center": [0.695, 0.425, 0.5325],
+      "r": 0.0338,
+      "r2": 0.0118,
+      "h": 0.0375,
+      "mat": "stone",
+      "roof": false,
+      "verts": 8
+    },
+    {
+      "type": "cone",
+      "center": [0.695, 0.575, 0.5325],
+      "r": 0.0338,
+      "r2": 0.0118,
+      "h": 0.0375,
+      "mat": "stone",
+      "roof": false,
+      "verts": 8
+    }
+  ]
+}

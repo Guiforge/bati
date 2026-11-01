@@ -1,0 +1,28 @@
+# Visual loop: the forge centred, then 8 presses of "+".
+#   scripts/iso/team/emu-maestro.sh test -e PALIER=12 .maestro/iso-loop-zoom.yaml
+appId: com.guiforge.bati.perf
+---
+- launchApp:
+    stopApp: false
+- extendedWaitUntil:
+    visible:
+      id: "iso-palier-12"
+    timeout: 20000
+- tapOn:
+    id: "iso-palier-${PALIER}"
+- tapOn:
+    id: "iso-zoom-cadrer"
+# The forge at tier 12 sits 144 px right of and 14 px above the middle of the map area (1080x2400
+# emulator, framed): a drag brings it to the middle, then "+" zooms about the middle.
+- swipe:
+    start: "540,1730"
+    end: "396,1744"
+    duration: 600
+- repeat:
+    times: 8
+    commands:
+      - tapOn:
+          id: "iso-zoom-plus"
+          retryTapIfNoChange: false
+- waitForAnimationToEnd:
+    timeout: 3000

@@ -1,0 +1,88 @@
+{
+  "auditor": "anim",
+  "iter": 5,
+  "scores": { "magic": 6.5, "craft": 6 },
+  "issues": [
+    {
+      "id": "anim-40",
+      "severity": "high",
+      "area": "E",
+      "effort": "S",
+      "where": "jour 50-53 ; nuit 53-58",
+      "what": "L'ordre clignote encore avant le gel. Jour : échafaudage vide, un bâtiment réapparaît dessous, puis la silhouette. Nuit : échafaudage vide, anneau et poteaux qui surgissent, stade à moitié dessiné sans silhouette, silhouette, puis le nouveau stade.",
+      "fix": "Une seule timeline : ancien stade caché jusqu'au gel, échafaudage en fondu sous la silhouette, nouveau stade monté à l'impact. Vérifier que le décor de nuit (anneau du feu) n'est pas un calque à part à opacité 1."
+    },
+    {
+      "id": "anim-41",
+      "severity": "medium",
+      "area": "E",
+      "effort": "S",
+      "where": "jour 28-30 ; nuit 28-30",
+      "what": "Arbres du premier plan à pleine opacité sur le noir avant le sol et le village.",
+      "fix": "Premier plan sous la même opacité que le monde, ou entrée 150 ms après."
+    },
+    {
+      "id": "anim-34",
+      "severity": "medium",
+      "area": "E",
+      "effort": "M",
+      "needs_paint": true,
+      "flux_usd": 0.1,
+      "where": "jour 41-54 ; nuit 41-56",
+      "what": "Échafaudage toujours en cube filaire noir.",
+      "fix": "Échafaudage peint (bois, cordes, échelle), halo qui respire."
+    },
+    {
+      "id": "anim-42",
+      "severity": "medium",
+      "area": "E",
+      "effort": "S",
+      "where": "jour 55-58 ; nuit 58-63",
+      "what": "Impact faible : de jour 7-8 étincelles sans poussière ni onde, de nuit rien après la silhouette.",
+      "fix": "Étincelles 300-400 ms, poussière brune 40-50 % sur 400 ms, onde dorée additive la nuit, pas dans la même image que la silhouette."
+    },
+    {
+      "id": "anim-13",
+      "severity": "medium",
+      "area": "E",
+      "effort": "S",
+      "where": "repos, repos-60s",
+      "what": "Moulin, fumée et oiseaux bougent, mais ombres de nuages et rais de lumière invisibles.",
+      "fix": "Une ombre de nuage large à -15 % qui traverse en 20-25 s, rais à 12-18 % qui varient de ±40 %, ou les retirer."
+    },
+    {
+      "id": "anim-43",
+      "severity": "low",
+      "area": "E",
+      "effort": "S",
+      "where": "glisse 81-88",
+      "what": "Fumée bleu-gris froid à contour épais, une bouffée sans cheminée.",
+      "fix": "Gris chaud, contour fin, opacité qui tombe, ancrée sur une cheminée."
+    },
+    {
+      "id": "anim-44",
+      "severity": "low",
+      "area": "E",
+      "effort": "S",
+      "where": "jour 55 ; nuit 58",
+      "what": "Silhouette ocre générique, pas la forme du nouveau stade.",
+      "fix": "Silhouette tirée du masque alpha du nouveau stade."
+    },
+    {
+      "id": "anim-45",
+      "severity": "low",
+      "area": "E",
+      "effort": "S",
+      "where": "nuit 32",
+      "what": "Pendant le fondu, les flaques de lumière sont plus fortes que les bâtiments.",
+      "fix": "Même courbe d'opacité, ou départ 100 ms plus tard."
+    }
+  ],
+  "better": [
+    "anim-31, 33, 35, 36, 37, 38, 39 réglés.",
+    "Ouverture sans squelette.",
+    "Étincelles lisibles de jour, fumée visible au repos."
+  ],
+  "worse": ["Premier plan à pleine opacité sur le noir pendant l'ouverture."],
+  "note_fr": "Le cadre de la montée est bon (silhouette ocre, glissé après l'impact, cartouche). Le cœur clignote encore (anim-40), surtout la nuit, et l'impact de nuit ne montre rien. 1 haut, 4 moyens : sortie non atteinte côté anim. Lu à 8 i/s sans les mp4."
+}

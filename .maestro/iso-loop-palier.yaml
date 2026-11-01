@@ -1,0 +1,17 @@
+# Visual loop (scripts/iso/loop_capture.sh): the dev-iso map at tier ${PALIER}, framed by "Cadrer".
+# .perf build, no clearState. The link bati://dev-iso?... is opened by the script before this flow.
+#   scripts/iso/team/emu-maestro.sh test -e PALIER=6 .maestro/iso-loop-palier.yaml
+appId: com.guiforge.bati.perf
+---
+- launchApp:
+    stopApp: false
+- extendedWaitUntil:
+    visible:
+      id: "iso-palier-12"
+    timeout: 20000
+- tapOn:
+    id: "iso-palier-${PALIER}"
+- tapOn:
+    id: "iso-zoom-cadrer"
+- waitForAnimationToEnd:
+    timeout: 3000

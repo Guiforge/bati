@@ -14,4 +14,8 @@ config.resolver.sourceExts.push("mjs");
 // treat .wasm as an asset by default, so web bundling fails to resolve it without this.
 config.resolver.assetExts.push("wasm");
 
+// The village ambience (assets/sounds/village/) ships as Ogg Vorbis, which Expo's defaults
+// leave out of assetExts (mp3 and wav only): jest never sees it, the release bundle fails.
+config.resolver.assetExts.push("ogg");
+
 module.exports = config;

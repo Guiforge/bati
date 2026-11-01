@@ -130,7 +130,7 @@ export function NextToRise({ building, dayOne, language, feeds, onOpen }: NextPr
           items="flex-start"
           onPress={() => onOpen(building)}
           accessibilityRole="button"
-          accessibilityLabel={nameOf(building, language)}
+          accessibilityLabel={`${nameOf(building, language)}, ${levelText(building, t)}`}
         >
           <BuildingThumb building={building} size={40} />
           <YStack flex={1} minW={0} gap={4}>
@@ -232,10 +232,23 @@ type FamiliesProps = {
   next: BuildingCode | null;
   language: AppLanguage;
   stones: number;
+  /** Buildings ready to improve (iso map on): said on their row, in words. */
+  ready?: ReadonlySet<BuildingCode>;
+  /** The sheet's "Evolve", as a screen-reader action on the row: one handler for both doors. */
+  onClaim?: (building: VillageBuilding) => void;
   onOpen: (building: VillageBuilding) => void;
 };
 
-export function Families({ families, risen, next, language, stones, onOpen }: FamiliesProps) {
+export function Families({
+  families,
+  risen,
+  next,
+  language,
+  stones,
+  ready,
+  onClaim,
+  onOpen,
+}: FamiliesProps) {
   const { t } = useTranslation();
   return (
     <YStack testID="village-families" gap={18}>
@@ -254,6 +267,8 @@ export function Families({ families, risen, next, language, stones, onOpen }: Fa
               key={building.code}
               building={building}
               risen={risen.has(building.code)}
+              ready={ready?.has(building.code) ?? false}
+              onClaim={onClaim ? () => onClaim(building) : undefined}
               isNext={building.code === next}
               language={language}
               stones={stones}
@@ -269,6 +284,8 @@ export function Families({ families, risen, next, language, stones, onOpen }: Fa
 type RowProps = {
   building: VillageBuilding;
   risen: boolean;
+  ready: boolean;
+  onClaim?: () => void;
   isNext: boolean;
   language: AppLanguage;
   /** How many stones the wall holds: said on the Ramparts' row only. */
@@ -277,7 +294,16 @@ type RowProps = {
 };
 
 /** Readable without a tap: the name, the next rung in words, and the level on its real ceiling. */
-function BuildingRow({ building, risen, isNext, language, stones, onPress }: RowProps) {
+function BuildingRow({
+  building,
+  risen,
+  ready,
+  onClaim,
+  isNext,
+  language,
+  stones,
+  onPress,
+}: RowProps) {
   const { t } = useTranslation();
   const name = nameOf(building, language);
   const built = building.level > 0;
@@ -294,7 +320,17 @@ function BuildingRow({ building, risen, isNext, language, stones, onPress }: Row
       opacity="press:0.85"
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={name}
+      accessibilityActions={
+        ready && onClaim ? [{ name: "evolve", label: t("village.claim_action") }] : undefined
+      }
+      onAccessibilityAction={(e) => {
+        if (e.nativeEvent.actionName === "evolve") onClaim?.();
+      }}
+      accessibilityLabel={
+        ready
+          ? `${t("village.claim_ready_a11y", { name })}, ${levelText(building, t)}`
+          : `${name}, ${levelText(building, t)}`
+      }
     >
       {/* In the page's gutter, not in the row: a left border pushed this one icon out of line
           with every other row, and read as a glitch. */}
@@ -329,6 +365,11 @@ function BuildingRow({ building, risen, isNext, language, stones, onPress }: Row
             t,
           )}
         </Text>
+        {ready ? (
+          <Text fontSize={11.5} fontWeight="600" color="resourceGold">
+            {t("village.claim_ready")}
+          </Text>
+        ) : null}
       </YStack>
       <YStack items="flex-end" gap={5}>
         <Text

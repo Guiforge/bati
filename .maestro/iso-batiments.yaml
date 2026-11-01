@@ -1,0 +1,67 @@
+# Village iso V1, criterion 4: a tap on a building of the iso map opens that building's sheet.
+# .perf build, no clearState. The village holds the hero's 10 buildings (the tier slider only
+# exists in the map-only mode).
+#   scripts/iso/team/emu-maestro.sh test .maestro/iso-batiments.yaml
+appId: com.guiforge.bati.perf
+---
+# retryTapIfNoChange is off on the buildings: Maestro would re-tap a map whose sheet is still sliding in,
+# and that second tap lands as a double-tap (recentre) or closes the sheet.
+# Open the map first with an explicit package, because .dev and .perf both own bati://:
+#   scripts/iso/team/emu-adb.sh shell am start -W -a android.intent.action.VIEW -d "bati://dev-iso?fige=1" com.guiforge.bati.perf
+# `?fige=1` (T16) freezes every animation of the map, both modes, as reduced motion does: the
+# screen is still between two taps.
+- launchApp:
+    stopApp: false
+# The app reopens in the last mode used: switch only when the map-only mode is showing.
+- extendedWaitUntil:
+    visible:
+      id: "iso-mode-.*"
+    timeout: 20000
+- runFlow:
+    when:
+      visible:
+        id: "iso-mode-village"
+    commands:
+      - tapOn:
+          id: "iso-mode-village"
+# The map is hidden from the screen reader (the village list is its door), so the buildings are
+# tapped by point: emulator 1080x2400 points, at dev-iso's starting frame in Village mode;
+# measure them again if a sprite or the framing changes.
+- extendedWaitUntil:
+    visible:
+      id: "iso-mode-carte"
+    timeout: 20000
+# The focus wave moves the map for a few seconds after the mode switch (L4-AUD run 1 missed a point):
+# let it settle, Maestro has no sleep, so a 20 s busy wait.
+- evalScript: ${ var t = Date.now(); while (Date.now() - t < 20000) {} }
+# Points re-measured on 30/10 (T16 qa) on the hero's 13-building village. A tap opens the bubble
+# (T14). It closes with the system Back, as a user does, and no point to keep in step with the
+# bubble's height (T38: a tap at 1000,330 landed inside the taller quarry bubble). `tapOn: "Close"`
+# would press the backdrop's centre, on the island, and may open a building there. T38: the opening
+# frame now leaves a margin (MARGE_CADRAGE), so the building points above move: measure them again.
+# 31/10 (qa-3110): re-measured at MARGE_CADRAGE 0.92 on the emulator, the four points still land on the
+# windmill, the forge, the archery range and the watchtower: flow green, unchanged.
+- tapOn:
+    point: "263,1110"
+    retryTapIfNoChange: false
+- assertVisible: "Rises with your shoulders"
+- back
+- assertNotVisible: "Rises with your shoulders"
+- tapOn:
+    point: "665,1100"
+    retryTapIfNoChange: false
+- assertVisible: "Rises with your chest"
+- back
+- assertNotVisible: "Rises with your chest"
+- tapOn:
+    point: "796,1190"
+    retryTapIfNoChange: false
+- assertVisible: "Rises with your back"
+- back
+- assertNotVisible: "Rises with your back"
+- tapOn:
+    point: "859,975"
+    retryTapIfNoChange: false
+- assertVisible: "Rises with every rep of calisthenics"
+- back
+- assertNotVisible: "Rises with every rep of calisthenics"

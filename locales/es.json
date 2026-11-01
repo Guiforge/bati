@@ -179,7 +179,8 @@
     "report_bug_count_many": "{{count}} cierres inesperados",
     "no_mail_client": "No se ha encontrado ninguna app de correo en este dispositivo",
     "photos_denied": "El acceso a las fotos está desactivado. Permítelo en los ajustes del sistema.",
-    "sound": "Pitidos de cuenta atrás",
+    "sound": "Sonidos",
+    "sound_hint": "Los pitidos de la sesión y el ambiente del pueblo.",
     "villagers": "Aldeanos",
     "replay_guides": "Volver a ver las guías",
     "replay_guides_done": "Las guías volverán a aparecer",
@@ -214,6 +215,9 @@
     "cc_by_30_subtitle": "Condiciones de la licencia",
     "attribution_example": "Ejemplo de atribución (de game-icons.net): «Icons made by {author}. Available on https://game-icons.net».",
     "view_authors": "Ver autores",
+    "sounds_title": "Sonidos del pueblo",
+    "sounds_note": "Los sonidos ambientales del pueblo vienen de BigSoundBank, en el dominio público (CC0). No se exige crédito, pero lo damos igualmente.",
+    "sound_subtitle": "{{author}}, BigSoundBank, CC0",
     "open_source_title": "Software libre",
     "open_source_body": "Hecho con Expo + React Native, Tamagui, Zustand, Drizzle ORM, i18next y más.",
     "illustrations_title": "Ilustraciones de ejercicios",
@@ -741,8 +745,8 @@
     "side_two_go": "Vamos, lado 2",
     "skip_rest": "Seguimos",
     "skip_rest_accessibility": "Saltar el descanso y empezar el siguiente ejercicio",
-    "sound_off": "Pitidos de cuenta atrás: desactivados",
-    "sound_on": "Pitidos de cuenta atrás: activados",
+    "sound_off": "Sonidos: desactivados",
+    "sound_on": "Sonidos: activados",
     "summary_too_short_title": "Ha sido corta",
     "summary_too_short_body": "Has entrenado {{duration}}. Guárdala y cuenta para tu llama y tu juramento, o descártala y aquí no ha pasado nada.",
     "summary_too_short_keep": "Guardar",
@@ -1462,6 +1466,122 @@
     "smith_greeting": "Aquí se forja todo, hasta tus monstruos. Dime qué necesitas, yo pongo el fuego."
   },
   "village": {
+    "iso": {
+      "habitant": "Aldeano",
+      "statue": "Estatua del animal ({{animal}}, {{matiere}}): abre tu escudo",
+      "statue_nu": "Pedestal de la estatua, aún vacío: abre tu ficha",
+      "matiere_young": "madera",
+      "matiere_adult": "piedra",
+      "matiere_venerable": "bronce",
+      "matiere_legendary": "oro",
+      "legende": {
+        "campfire": {
+          "rough": "Una chispa prende. La oscuridad retrocede un paso.",
+          "solid": "La pila de leña es más alta que quien la apiló.",
+          "grand": "Un pastor, dos colinas más allá, ha visto el humo."
+        },
+        "tent": {
+          "rough": "Tensaron una lona y hicieron de ella un hogar.",
+          "solid": "Lona remendada, cama seca. La lluvia puede llamar cuanto quiera.",
+          "grand": "Un pabellón de rayas con estandarte y un perro dormido en el mejor sitio."
+        },
+        "training_dummy": {
+          "rough": "Atado a su poste, el muñeco de paja encaja cada golpe en silencio.",
+          "solid": "El muñeco recibió un casco de hierro. Ya tiene una abolladura.",
+          "grand": "Le cosen al muñeco una capa nueva de paja."
+        },
+        "archery_range": {
+          "rough": "Tres dianas apoyadas en una valla que ha visto cosas peores.",
+          "solid": "Ya nadie falla la paca de paja.",
+          "grand": "Al anochecer, los arqueros apagan una vela a cuarenta pasos."
+        },
+        "quarry": {
+          "rough": "La primera piedra deja la colina.",
+          "solid": "Antes de que salga el sol ya rugen carretas fuera de la cantera.",
+          "grand": "Una ladera se vuelve muros, bloque tras bloque."
+        },
+        "forge": {
+          "rough": "El yunque está frío y el fuelle resuella. Las chispas llegarán.",
+          "solid": "Los martillazos suenan hasta que la sopa se enfría.",
+          "grand": "La forja lleva meses sin apagarse de noche."
+        },
+        "well": {
+          "rough": "Un anillo de piedras, una soga. El pueblo puede beber.",
+          "solid": "Con el primer tirón sube agua fría y clara.",
+          "grand": "El pozo tiene techo y campana, y a la hora del desayuno hay cola."
+        },
+        "windmill": {
+          "rough": "Cuatro aspas desnudas esperan el primer viento de verdad.",
+          "solid": "Incluso en calma, las aspas atrapan la brisa más leve.",
+          "grand": "Polvo de harina en la luz de la tarde. Todos vuelven algo más blancos."
+        },
+        "farm": {
+          "rough": "El espantapájaros ya está puesto, antes de que haya algo que guardar.",
+          "solid": "Campos verdes llegan hasta la cerca.",
+          "grand": "Apilan las gavillas más altas que el espantapájaros."
+        },
+        "wizard_tower": {
+          "rough": "Una torre torcida con una ventana encendida arriba.",
+          "solid": "Cada noche aparece una runa nueva en las piedras.",
+          "grand": "El orbe zumba, y el gato de la escalera finge no oír nada."
+        },
+        "druid_grove": {
+          "rough": "Siete brotes en círculo y un búho de guardia nocturna.",
+          "solid": "Anoche se mudaron luciérnagas al bosquecillo.",
+          "grand": "Bajo el gran roble hay un banco y un cuenco de bellotas."
+        },
+        "watchtower": {
+          "rough": "Sube la escalera y se abre el valle.",
+          "solid": "Desde arriba el camino parece corto.",
+          "grand": "Un pescador de la costa lejana se guía por su fanal."
+        },
+        "castle_wall": {
+          "rough": "Una hilera de estacas mantiene la noche a distancia cortés.",
+          "solid": "Por el nuevo adarve de piedra pasan botas cada hora.",
+          "grand": "La puerta sigue abierta y los estandartes restallan encima."
+        },
+        "armory": {
+          "rough": "En los soportes aún no cuelga nada, pero ya huele a aceite.",
+          "solid": "Las hojas cuelgan por tamaño, la más corta primero.",
+          "grand": "Los escudos brillan a la luz de la lámpara y nadie se atreve a dejar una huella."
+        },
+        "fountain": {
+          "rough": "Una pila de piedra espera sus primeras gotas.",
+          "solid": "Contén el aliento y oirás el chorro tararear.",
+          "grand": "Un cantero cincela la última figura en el brocal."
+        },
+        "observatory": {
+          "rough": "Una cúpula pequeña abre un ojo al cielo.",
+          "solid": "Cada estrella del mapa tiene un nombre y una marca de lápiz.",
+          "grand": "La gran lente se abre. Más vale que la luna se porte bien."
+        },
+        "barn": {
+          "rough": "Tablas nuevas, aún pegajosas de savia, y una puerta sin colgar.",
+          "solid": "El pajar está tan lleno que las puertas ya no cierran bien.",
+          "grand": "En enero, esta granja seguirá alimentando al pueblo."
+        },
+        "dragon_lair": {
+          "rough": "Lo que vive aquí dejó marcas de garras largas como un brazo.",
+          "solid": "De noche sale humo tibio de la cueva.",
+          "grand": "Una sola moneda de oro yace en la ceniza, aún caliente."
+        },
+        "heroes_hall": {
+          "rough": "Una mesa larga y un techo con sitio para un nombre.",
+          "solid": "Cada viga lleva una hazaña tallada.",
+          "grand": "El estandarte sobre la puerta está bordado con hilo de oro de verdad."
+        },
+        "champion_arena": {
+          "rough": "Una cuerda rodea la arena rastrillada. Ya hay tres curiosos.",
+          "solid": "Los asientos vuelan cuando se anuncia un combate.",
+          "grand": "Un aprendiz lleva las lanzas de entrenamiento de la arena a la armería."
+        },
+        "high_road": {
+          "rough": "Un sendero de tierra apisonada y la primera huella de bota.",
+          "solid": "Los mojones cuentan tus leguas.",
+          "grand": "Unos viajeros piden indicaciones en un camino que tú construiste."
+        }
+      }
+    },
     "forge_enter": "Entrar en la forja",
     "crest_bear": "un oso",
     "crest_stag": "un ciervo",
@@ -1662,7 +1782,17 @@
     "cta_route": "Buscar una ruta",
     "changes_title": "Desde tu última misión",
     "risen": "Ha subido",
+    "claim_action": "Hacer evolucionar",
+    "claim_all": "Evolucionar todo",
+    "claim_ready": "Listo para evolucionar",
+    "claim_ready_body": "Tu {{name}} puede pasar a la siguiente etapa.",
+    "claim_ready_a11y": "{{name}} listo para evolucionar",
+    "claim_action_a11y": "Hacer evolucionar {{name}}",
+    "evolve_done_all": "Tus edificios han evolucionado.",
+    "evolve_done": "{{name}} ha evolucionado.",
     "foot": "Aquí no se gestiona nada. Cada nivel sale de una sesión registrada.",
+    "drawer_open": "Tu aldea, rango {{tier}}",
+    "drawer_title": "Tu aldea",
     "done_title": "{{name}} está completa",
     "done_body": "Músculos, estilos, mejoras y cimientos: todo en el tope.",
     "done_deeds": "Las hazañas están justo debajo.",

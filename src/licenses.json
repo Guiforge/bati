@@ -4605,6 +4605,14 @@
       ]
     },
     {
+      "name": "expo-screen-orientation",
+      "version": "58.0.3",
+      "license": "MIT",
+      "notices": [
+        { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 }
+      ]
+    },
+    {
       "name": "expo-secure-store",
       "version": "58.0.2",
       "license": "MIT",

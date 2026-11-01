@@ -1,5 +1,5 @@
 import { and, count, eq, gte, isNotNull, lt, sql, sum } from "drizzle-orm";
-import { buildingCeiling, T3_MAX_LEVEL } from "@/constants/buildingLevels";
+import { buildingCeiling, buildingStage, T3_MAX_LEVEL } from "@/constants/buildingLevels";
 
 export { buildingCeiling };
 
@@ -11,7 +11,7 @@ import { DEED_ADVENTURE } from "./deed";
 import { METRES_PER_LEAGUE, totalLeaguesM } from "./gps";
 import { pickSessionMilestone, type RecentFeeds } from "./milestone";
 import { getMuscleBalance } from "./muscleBalance";
-import { getPreference } from "./preferences";
+import { getPreference, setPreference } from "./preferences";
 import {
   type BuildingCode,
   type BuildingTier,
@@ -552,6 +552,73 @@ function deriveLevel(code: BuildingCode, inputs: LevelInputs): DerivedLevel {
     nextTarget: nextFloor(level, VOLUME_FLOORS),
   };
 }
+
+/** The stage each building was claimed at (L6-T13), as a level: `{ forge: 3 }`. Only read with the iso map on. */
+export type ClaimedStages = Partial<Record<BuildingCode, number>>;
+
+const CLAIMED_KEY = "villageScenesPlayed";
+
+/** Anything malformed is dropped: a code that is no building, a level that is no whole number above 0. */
+export function parseClaimed(raw: string | null): ClaimedStages {
+  try {
+    const json: unknown = JSON.parse(raw ?? "{}");
+    if (typeof json !== "object" || json === null) return {};
+    return Object.fromEntries(
+      Object.entries(json).filter(
+        ([code, level]) =>
+          (buildingCodes as readonly string[]).includes(code) &&
+          Number.isInteger(level) &&
+          (level as number) > 0,
+      ),
+    );
+  } catch {
+    // Not JSON: nothing was claimed, and every building reads at its derived level.
+    return {};
+  }
+}
+
+export async function getClaimedStages(): Promise<ClaimedStages> {
+  return parseClaimed(await getPreference(CLAIMED_KEY));
+}
+
+/** The level the map draws: the derived one, held back to the claimed one. A code never claimed is as derived. */
+export function drawnLevel(b: Pick<VillageBuilding, "code" | "level">, claimed: ClaimedStages) {
+  return Math.min(b.level, claimed[b.code] ?? b.level);
+}
+
+const STAGE_RANK = ["rough", "solid", "grand"] as const;
+const stageRank = (level: number) => STAGE_RANK.indexOf(buildingStage(level));
+
+/** Buildings whose stage (the drawing) is above the claimed one. A building not built is never claimable. */
+export function claimable(
+  buildings: readonly Pick<VillageBuilding, "code" | "level">[],
+  claimed: ClaimedStages,
+): BuildingCode[] {
+  return buildings
+    .filter((b) => b.level > 0 && stageRank(b.level) > stageRank(drawnLevel(b, claimed)))
+    .map((b) => b.code);
+}
+
+/**
+ * The one writer of the claimed stages: every given building at its derived level, in a single
+ * write, never down. Called when the site is over and the new stage is on screen, not before.
+ */
+export function claimStage(
+  items: readonly Pick<VillageBuilding, "code" | "level">[],
+): Promise<ClaimedStages> {
+  // Read-modify-write, so two calls in flight would each start from the same key and the second
+  // write would drop the first: they run one after the other.
+  const run = claimWrites.then(async () => {
+    const next = await getClaimedStages();
+    for (const { code, level } of items) next[code] = Math.max(next[code] ?? 0, level);
+    await setPreference(CLAIMED_KEY, JSON.stringify(next));
+    return next;
+  });
+  claimWrites = run.catch(() => undefined);
+  return run;
+}
+
+let claimWrites: Promise<unknown> = Promise.resolve();
 
 /**
  * Buildings are a pure function of training history — no unlock button, no resource

@@ -1,0 +1,47 @@
+{
+  "_doc": "The forest tiles of the world around the island (L6-T17), read by monde.ts and by generer.py, which draws each into a webp next to this file (python3 components/village/iso/mondeTuiles/generer.py). A tile is 320 x 320 dp of map space; its trees' feet lie inside that square, their crowns may rise 64 dp above it and 32 dp either side. `arbres` counts the three species, `buissons` and `rochers` the low things, `hauteur` is a tree's [min, max] in dp. `rives` are the two shore tiles (192 x 320 dp: sand, foam and water, the water running on to the sea). Colours are the iso* tokens of constants/rawColors.ts.",
+  "tuiles": {
+    "dense": {
+      "graine": 11,
+      "arbres": { "rond": 30, "conifere": 28, "clair": 12 },
+      "buissons": 8,
+      "rochers": 2,
+      "hauteur": [40, 62]
+    },
+    "coni": {
+      "graine": 23,
+      "arbres": { "rond": 8, "conifere": 56, "clair": 2 },
+      "buissons": 4,
+      "rochers": 3,
+      "hauteur": [42, 62]
+    },
+    "mixte": {
+      "graine": 37,
+      "arbres": { "rond": 14, "conifere": 10, "clair": 12 },
+      "buissons": 12,
+      "rochers": 4,
+      "hauteur": [38, 58]
+    },
+    "bouleaux": {
+      "graine": 41,
+      "arbres": { "rond": 8, "conifere": 2, "clair": 30 },
+      "buissons": 10,
+      "rochers": 2,
+      "hauteur": [36, 56]
+    },
+    "clairiere": {
+      "graine": 59,
+      "arbres": { "rond": 1, "conifere": 0, "clair": 1 },
+      "buissons": 14,
+      "rochers": 5,
+      "hauteur": [26, 34]
+    },
+    "rochers": {
+      "graine": 67,
+      "arbres": { "rond": 2, "conifere": 4, "clair": 1 },
+      "buissons": 6,
+      "rochers": 18,
+      "hauteur": [34, 52]
+    }
+  }
+}

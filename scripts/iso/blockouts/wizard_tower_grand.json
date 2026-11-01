@@ -1,0 +1,55 @@
+{
+  "canvas": "tower1x1",
+  "parts": [
+    { "type": "box", "at": [0.0, 0.0, 0.0], "size": [1.0, 1.0, 0.1], "mat": "stone" },
+    { "type": "cyl", "center": [0.5, 0.5, 0.1], "r": 0.43, "h": 0.08, "mat": "stone" },
+    { "type": "cyl", "center": [0.5, 0.5, 0.18], "r": 0.37, "h": 0.18, "mat": "stone" },
+    { "type": "cyl", "center": [0.5, 0.5, 0.36], "r": 0.3, "h": 1.94, "mat": "stone" },
+    {
+      "type": "box",
+      "at": [0.6521, 0.6521, 0.36],
+      "size": [0.12, 0.12, 0.42],
+      "mat": "stone",
+      "rotZ": 45
+    },
+    {
+      "type": "box",
+      "at": [0.2279, 0.6521, 0.36],
+      "size": [0.12, 0.12, 0.42],
+      "mat": "stone",
+      "rotZ": 45
+    },
+    {
+      "type": "box",
+      "at": [0.6521, 0.2279, 0.36],
+      "size": [0.12, 0.12, 0.42],
+      "mat": "stone",
+      "rotZ": 45
+    },
+    { "type": "cyl", "center": [0.5, 0.5, 1.42], "r": 0.41, "h": 0.05, "mat": "darkwood" },
+    { "type": "cyl", "center": [0.5, 0.5, 1.47], "r": 0.41, "h": 0.015, "mat": "iron" },
+    { "type": "cyl", "center": [0.5, 0.5, 2.3], "r": 0.355, "h": 0.12, "mat": "stone" },
+    { "type": "cone", "center": [0.5, 0.5, 2.42], "r": 0.43, "r2": 0.0, "h": 0.92, "mat": "tile" },
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 3.33],
+      "r": 0.025,
+      "r2": 0.0,
+      "h": 0.16,
+      "mat": "iron",
+      "roof": false
+    },
+    { "type": "box", "at": [0.39, 0.77, 0.36], "size": [0.22, 0.05, 0.46], "mat": "stone" },
+    {
+      "type": "box",
+      "at": [0.41, 0.8, 0.36],
+      "size": [0.18, 0.04, 0.4],
+      "mat": "darkwood",
+      "accroche": "porte"
+    },
+    { "type": "box", "at": [0.46, 0.77, 1.1], "size": [0.08, 0.05, 0.16], "mat": "amber" },
+    { "type": "box", "at": [0.77, 0.46, 0.95], "size": [0.05, 0.08, 0.16], "mat": "amber" },
+    { "type": "box", "at": [0.46, 0.77, 1.85], "size": [0.08, 0.05, 0.16], "mat": "amber" },
+    { "type": "box", "at": [0.77, 0.46, 2.0], "size": [0.05, 0.08, 0.16], "mat": "amber" }
+  ]
+}

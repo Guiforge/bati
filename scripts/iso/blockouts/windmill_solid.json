@@ -1,0 +1,35 @@
+{
+  "canvas": "building2x2",
+  "_doc": "No sails: cap and bare axle only. The axle points at the camera (grid 0.612, 0.612, 0.5: 30 degrees up), so the sails, a separate sprite, turn in a plane facing the view and a 2D rotation is exact. `pivot` is the axle's front end.",
+  "parts": [
+    { "type": "box", "at": [0, 0, 0], "size": [2, 2, 0.08], "mat": "stone" },
+    { "type": "cyl", "center": [1, 1, 0.08], "r": 0.68, "h": 1.62, "mat": "stone" },
+    {
+      "type": "cone",
+      "center": [1, 1, 1.7],
+      "r": 0.8,
+      "r2": 0.05,
+      "h": 0.62,
+      "mat": "wood",
+      "roof": true
+    },
+    {
+      "type": "box",
+      "at": [0.82, 1.66, 0.08],
+      "size": [0.36, 0.06, 0.55],
+      "mat": "darkwood",
+      "accroche": "porte"
+    },
+    { "type": "box", "at": [1.08, 1.6, 0.95], "size": [0.2, 0.06, 0.22], "mat": "amber" },
+    {
+      "type": "cyl",
+      "center": [1.25, 1.25, 1.88],
+      "r": 0.07,
+      "h": 0.42,
+      "mat": "wood",
+      "axis": [0.612, 0.612, 0.5]
+    }
+  ],
+  "pivot": [1.49, 1.49, 2.08],
+  "sailsScale": 1.0
+}

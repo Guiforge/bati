@@ -1,0 +1,25 @@
+{
+  "canvas": "building2x2",
+  "parts": [
+    { "type": "box", "at": [0, 0, 0], "size": [2, 2, 0.05], "mat": "wood" },
+    { "type": "cyl", "center": [1, 1, 0.05], "r": 0.56, "h": 1.15, "mat": "wood" },
+    { "type": "cone", "center": [1, 1, 1.2], "r": 0.68, "r2": 0.04, "h": 0.5, "mat": "thatch" },
+    {
+      "type": "box",
+      "at": [0.86, 1.5, 0.05],
+      "size": [0.3, 0.06, 0.48],
+      "mat": "darkwood",
+      "accroche": "porte"
+    },
+    {
+      "type": "cyl",
+      "center": [1.2, 1.2, 1.32],
+      "r": 0.06,
+      "h": 0.36,
+      "mat": "wood",
+      "axis": [0.612, 0.612, 0.5]
+    }
+  ],
+  "pivot": [1.4, 1.4, 1.5],
+  "sailsScale": 0.85
+}

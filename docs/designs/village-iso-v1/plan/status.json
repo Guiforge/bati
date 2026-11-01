@@ -1,0 +1,208 @@
+{
+  "T20": {
+    "etat": "fait",
+    "passes": true,
+    "tours": 2,
+    "note": "onglet palier 1 à 278 Mo, à remesurer en T06 contre un témoin ; île décollée vue une fois, à surveiller en T21"
+  },
+  "T21": {
+    "etat": "fait",
+    "passes": true,
+    "tours": 4,
+    "note": "close au 4e tour accordé par Guillaume ; restent 4 images d'ancienne mise en page à la rotation ; ordre TalkBack reporté en T04 (reviews/T21.md)"
+  },
+  "T14": {
+    "etat": "fait",
+    "passes": true,
+    "tours": 2,
+    "note": "tap pendant la vague d'ouverture reporté en T27 (reviews/T14.md)"
+  },
+  "T02b": {
+    "etat": "fait",
+    "passes": true,
+    "tours": 2,
+    "note": "défauts mineurs reportés en T03 (reviews/T02b.md)"
+  },
+  "T03": {
+    "etat": "fait",
+    "passes": true,
+    "tours": 3,
+    "note": "close au plafond ; une image de 33 ms reportée en T27 ; fenêtre de forge_grand index 2 éteinte, export d'accroche à refaire par blender (reviews/T03.md)"
+  },
+  "T15": {
+    "etat": "fait",
+    "passes": true,
+    "tours": 3,
+    "note": "jour sur toute la carte sans calque, contraste des étiquettes 7 à 14,5:1 ; fenêtres cuites dans les sprites encore allumées le jour ; arbres fantômes du bord reportés au lot 3 de l'audit DA"
+  },
+  "T16": {
+    "etat": "fait",
+    "passes": true,
+    "tours": 2
+  },
+  "T04": {
+    "etat": "fait",
+    "passes": true,
+    "tours": 2,
+    "note": "nom plus coupé à 200 % en paysage ; ordre TalkBack lu dans l'arbre d'accessibilité (nom avant la liste), pas au doigt : balayages injectés impossibles sur l'émulateur"
+  },
+  "T22": {
+    "etat": "fait",
+    "passes": true,
+    "tours": 3,
+    "note": "routes texturées sans traits ; ruisseau d'eau de nuit qui serpente, cascade lisible à 0,6 ; un rocher flou près du barrage à voir en T27"
+  },
+  "T23": {
+    "etat": "fait",
+    "passes": true,
+    "tours": 1
+  },
+  "T24": {
+    "etat": "fait",
+    "passes": true,
+    "tours": 2,
+    "note": "étendard sur la place, 3 bannières au plus au palier 12 ; écu nu non vu à l'écran (couvert par test)"
+  },
+  "T25": {
+    "etat": "fait",
+    "passes": true,
+    "tours": 3,
+    "note": "6 statues sur leur socle peint, matière par stade, or au légendaire (qa : 9 cas vus) ; échelles 1 à 1,3 et rocher déplacé après la qa, à revoir à la capture suivante ; hermine et saumon jeunes petits et pâles"
+  },
+  "T26": {
+    "etat": "fait",
+    "passes": true,
+    "tours": 2,
+    "note": "habitants, 4 marcheurs, fête une fois par séance, pratique dominante, toucher d'un villageois (qa-3110 vu bon) ; fête vue en marche vers la place, saut et mouvement réduit réel à revoir en T33 ; en mouvement normal seuls les marcheurs de la vague vont à la fête (budget)"
+  },
+  "T27": {
+    "etat": "fait",
+    "passes": true,
+    "tours": 2,
+    "note": "vitesses ; paires jugées (peinture en T36) ; détails par l'audit DA et T38 ; 5 effets de métier (qa : runes vues, étoile de l'observatoire corrigée, lucioles du bosquet non vues sur appareil)"
+  },
+  "T28": {
+    "etat": "fait",
+    "passes": true,
+    "tours": 2,
+    "note": "488 images fautives avant, 0 après au test ; 4 vagues filmées sans faute"
+  },
+  "T30": {
+    "etat": "fait",
+    "passes": true,
+    "tours": 2,
+    "note": "ombre b lisse, plaques fondues, ombres douces sur les routes (qa pass) ; ombre au sol pendant le rebond et anneau du feu retiré au lot 1 de l'audit DA"
+  },
+  "T31": {
+    "etat": "fait",
+    "passes": true,
+    "tours": 2,
+    "note": "machine de comportements branchée, pose fixe au repos (qa-3110) ; clips peints et rat dans T36 lot G ; rare plus rare qu'une session sur dix, à revoir au test des 3 minutes de T33"
+  },
+  "T32": {
+    "etat": "fait",
+    "passes": true,
+    "tours": 2,
+    "note": "fond jour et nuit, forge et moulin au zoom, marteau ; qa : nuit, pause, réglage Sons, musique d'une autre app intacte ; non mesurés : zoom de proximité (pas de pincement par adb), jour, changement d'onglet ; écoute par Guillaume à faire"
+  },
+  "T36": {
+    "etat": "fait",
+    "passes": true,
+    "tours": 3,
+    "note": "13 bâtiments, 7 villageois, chat qui dort, arbre, lanterne entrés ; observatory_rough en attente de Guillaume ; le reste après la V1 (TODO.md § 4)"
+  },
+  "T37": {
+    "etat": "fait",
+    "passes": true,
+    "tours": 2,
+    "note": "ressort sur le nœud existant, vibration au stade posé ; délai réel à mesurer au Fairphone (émulateur sans GPU : 3,4 à 4,2 s, jest : 2 s)"
+  },
+  "T38": {
+    "etat": "fait",
+    "passes": true,
+    "tours": 4,
+    "note": "tous les reliquats traités ; rotation et bulle après rotation à voir sur bati-tablet (Guillaume lance l'émulateur) ; test_exports.py et heights.py rouges sur les rendus de statues de T25 hors git"
+  },
+  "T39": {
+    "etat": "en_cours",
+    "passes": false,
+    "tours": 2,
+    "note": "sol encré, arbre, lanterne commités ; hunk de Monde.tsx avec le commit perf de Guillaume ; qa et regard neuf à refaire (TODO.md § 2, 3)"
+  },
+  "T40": {
+    "etat": "en_cours",
+    "passes": false,
+    "tours": 3,
+    "note": "10 poses peintes et placées, aucun habitant caché ; qa à refaire sur une build aux assets frais (TODO.md § 2)"
+  },
+  "T41": {
+    "etat": "en_cours",
+    "passes": false,
+    "tours": 3,
+    "note": "révélation v2 et effets de dernier stade faits ; peinture du tour 2 (3 planches à juger, ferme) et point 4 restent"
+  },
+  "T42": {
+    "etat": "fait",
+    "passes": true,
+    "tours": 2,
+    "note": "rôle du bâtiment voisin, sprite de métier gardé ; poses de métier et dos à peindre"
+  },
+  "T43": {
+    "etat": "en_cours",
+    "passes": false,
+    "tours": 1,
+    "note": "tour 1 : Mara 4/5/3, Théo 4/4/3 ; correctifs rapides faits"
+  },
+  "T44": {
+    "etat": "en_cours",
+    "passes": false,
+    "tours": 1,
+    "note": "règles et blocs de couleur en dev ; vocation et sprites restent"
+  },
+  "T33": {
+    "etat": "a_faire",
+    "passes": false,
+    "tours": 0
+  },
+  "T09": {
+    "etat": "a_faire",
+    "passes": false,
+    "tours": 0
+  },
+  "T05": {
+    "etat": "a_faire",
+    "passes": false,
+    "tours": 0
+  },
+  "T06": {
+    "etat": "a_faire",
+    "passes": false,
+    "tours": 0
+  },
+  "T34": {
+    "etat": "pret_revue",
+    "passes": false,
+    "tours": 0
+  },
+  "AUD": {
+    "etat": "a_faire",
+    "passes": false,
+    "tours": 0
+  },
+  "T35": {
+    "etat": "a_faire",
+    "passes": false,
+    "tours": 0
+  },
+  "HF": {
+    "etat": "a_faire",
+    "passes": false,
+    "tours": 0
+  },
+  "T45": {
+    "etat": "en_cours",
+    "passes": false,
+    "tours": 1,
+    "note": "tour 1 commité, relecture neuve à refaire (TODO § 0)"
+  }
+}

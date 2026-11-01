@@ -1,3 +1,4 @@
+import "./helpers/gestureRuntime";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";

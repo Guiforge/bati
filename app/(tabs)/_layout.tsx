@@ -5,6 +5,13 @@ import { useTheme } from "tamagui";
 import { TabLabel } from "@/components/common/TabLabel";
 import { interceptTabPress } from "@/components/common/useTabLeaveGuard";
 import { Castle, Home, Map as MapIcon, Scroll, Sparkles } from "@/components/icons";
+import { colonneOnglets } from "@/components/village/iso/disposition";
+import { INTEGRATION } from "@/constants/isoPoc";
+import { CONTENT_MAX_WIDTH } from "@/constants/layout";
+
+// Flag on, the root stack leaves the content column to the tabs (colonneLibre): the bar and every
+// scene but the Village one keep it here, so only the iso map takes the whole window (L6-T21).
+const colonne = colonneOnglets(INTEGRATION, CONTENT_MAX_WIDTH);
 
 export default function TabsLayout() {
   const { t } = useTranslation();
@@ -35,7 +42,9 @@ export default function TabsLayout() {
         tabBarActiveTintColor: theme.primaryText?.val,
         tabBarInactiveTintColor: theme.color?.val,
         tabBarLabel: ({ color, children }) => <TabLabel color={color} label={children} />,
+        sceneStyle: colonne,
         tabBarStyle: {
+          ...colonne,
           backgroundColor: theme.bgLight?.val,
           borderTopWidth: 1,
           borderTopColor: theme.borderStrong?.val,
@@ -110,6 +119,8 @@ export default function TabsLayout() {
         options={{
           tabBarButtonTestID: "tab-village",
           title: t("tabs.village"),
+          // The iso map's whole window; with the flag off the root column already holds it.
+          sceneStyle: undefined,
           tabBarIcon: ({ focused, size }) => (
             <Castle
               color={`${focused ? "primaryText" : "text"}`}

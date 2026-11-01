@@ -1,0 +1,34 @@
+// A built-in the app's Hermes does not have is `undefined is not a function` on the phone, and
+// nothing before the phone sees it: tsc reads `lib` (ES2023+), jest runs on Node, which has it.
+// `Array.prototype.toSorted` crashed `bati://dev-iso` in the `.perf` build that way (L1-T09).
+//
+// The list is what the shipped engine lacks, read from its own built-in name table, not guessed:
+// `strings` on `libhermesvm.so` (Hermes 260318099.0.4, React Native 0.88) has `toReversed`,
+// `toSpliced`, `with`, `findLast`, `findLastIndex`, `groupBy`, `union` and the other Set methods,
+// and has neither `toSorted` nor `fromAsync` nor `structuredClone`. Re-read it when React Native is
+// bumped:
+// `strings android/app/build/intermediates/stripped_native_libs/release/*/out/lib/x86_64/libhermesvm.so`.
+//
+// Caught: `x.toSorted()`, `x?.toSorted()`, `Array.fromAsync()`, `globalThis.Array.fromAsync()`,
+// `structuredClone()`. Not caught: a call through an alias (`const f = Array.fromAsync`) or a
+// computed member (`x["toSorted"]`); write the call plainly.
+//
+// Tests, mocks, scripts, config plugins and the Node test stage run on Node, so they are out of
+// scope. Scoped by $filename for the reason given in noTamaguiSigil.grit.
+language js
+
+or {
+  `$_.toSorted($...)`,
+  `$_?.toSorted($...)`,
+  `Array.fromAsync($...)`,
+  `globalThis.Array.fromAsync($...)`,
+  `structuredClone($...)`
+} as $call where {
+  $filename <: not r".*__tests__/.*",
+  $filename <: not r".*__mocks__/.*",
+  $filename <: not r".*scripts/.*",
+  $filename <: not r".*plugins/.*",
+  $filename <: not r"test/.*",
+  $filename <: not r".*/test/.*",
+  register_diagnostic(span=$call, message="Not in the app's Hermes: `toSorted`, `Array.fromAsync` and `structuredClone` are `undefined is not a function` on the phone while jest (Node) passes. Sort a fresh copy (`[...x].sort()`), loop over the promises, or copy the object by hand. See .biome/plugins/noMissingHermesApi.grit.")
+}

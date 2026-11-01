@@ -1,0 +1,34 @@
+{
+  "iso_branch": "feat/village-iso",
+  "tip_at_start": "0fad239616887f3580eda0a203cc815b4318af3b",
+  "track": "surroundings",
+  "budget": {
+    "flux_session_usd": 20,
+    "flux_registry_at_start": { "spent": 34.416, "ceiling": 40.0, "left": 5.584 },
+    "flux_spent_session": 0,
+    "subagent_runs_budget": 80,
+    "subagent_runs_used": 0
+  },
+  "mode": "garde V1 encore actif : implémenteurs dans l'arbre iso, pas de branche par loupe, commits par scripts/iso/team/commit.sh, adb par emu-adb.sh, maestro par emu-maestro.sh",
+  "step0": {
+    "prompt_saved": true,
+    "h0_cache": "en cours",
+    "budget_listed": true,
+    "flux_capabilities": "édition d'image par références : oui (flux-3-image, flux-2-pro-preview). Masques : non.",
+    "tools": "en cours",
+    "k_calibrated": false,
+    "baseline": false,
+    "target_screens": false,
+    "calibration": false,
+    "cards": false,
+    "checkpoint": false
+  },
+  "waiting_on_guillaume": [
+    "Écrire 2026-11-01 BUDGET_FLUX_V1: 60 sous ## Lignes de VALIDATIONS.md (toujours absent, plafond réel 40 $)",
+    "Retirer guard-team.sh de settings.local.json (toujours actif)",
+    "Commiter les six fichiers en attente (toujours en attente)"
+  ],
+  "loupes": {},
+  "locked_crops": [],
+  "parked": []
+}

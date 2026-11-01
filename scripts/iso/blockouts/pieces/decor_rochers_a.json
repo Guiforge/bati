@@ -1,0 +1,35 @@
+{
+  "canvas": "decor1x1",
+  "parts": [
+    {
+      "type": "cone",
+      "center": [0.42, 0.45, 0.0],
+      "r": 0.3,
+      "r2": 0.15,
+      "h": 0.38,
+      "mat": "stone",
+      "verts": 4,
+      "rotZ": 12.0
+    },
+    {
+      "type": "cone",
+      "center": [0.72, 0.68, 0.0],
+      "r": 0.2,
+      "r2": 0.09,
+      "h": 0.24,
+      "mat": "stone",
+      "verts": 4,
+      "rotZ": -20.0
+    },
+    {
+      "type": "cone",
+      "center": [0.24, 0.76, 0.0],
+      "r": 0.14,
+      "r2": 0.06,
+      "h": 0.16,
+      "mat": "stone",
+      "verts": 4,
+      "rotZ": 35.0
+    }
+  ]
+}

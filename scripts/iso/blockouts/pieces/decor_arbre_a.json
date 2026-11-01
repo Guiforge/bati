@@ -1,0 +1,68 @@
+{
+  "canvas": "decor1x1",
+  "parts": [
+    { "type": "cyl", "center": [0.5, 0.5, 0.0], "r": 0.07, "h": 0.62, "mat": "wood" },
+    {
+      "type": "cyl",
+      "center": [0.5, 0.5, 0.4],
+      "r": 0.03,
+      "h": 0.3263,
+      "mat": "wood",
+      "axis": [-0.5209, 0.3064, 0.7967]
+    },
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0.55],
+      "r": 0.198,
+      "r2": 0.36,
+      "h": 0.36,
+      "mat": "thatch",
+      "roof": true
+    },
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0.91],
+      "r": 0.36,
+      "r2": 0.108,
+      "h": 0.54,
+      "mat": "thatch",
+      "roof": true
+    },
+    {
+      "type": "cone",
+      "center": [0.3, 0.62, 0.55],
+      "r": 0.11,
+      "r2": 0.2,
+      "h": 0.168,
+      "mat": "thatch",
+      "roof": true
+    },
+    {
+      "type": "cone",
+      "center": [0.3, 0.62, 0.718],
+      "r": 0.2,
+      "r2": 0.06,
+      "h": 0.252,
+      "mat": "thatch",
+      "roof": true
+    },
+    {
+      "type": "cone",
+      "center": [0.68, 0.36, 0.66],
+      "r": 0.11,
+      "r2": 0.2,
+      "h": 0.16,
+      "mat": "thatch",
+      "roof": true
+    },
+    {
+      "type": "cone",
+      "center": [0.68, 0.36, 0.82],
+      "r": 0.2,
+      "r2": 0.06,
+      "h": 0.24,
+      "mat": "thatch",
+      "roof": true
+    }
+  ]
+}

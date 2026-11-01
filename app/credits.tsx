@@ -12,6 +12,34 @@ import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { ChevronRight, ExternalLink, ScrollText } from "@/components/icons";
 import notice from "@/constants/mapStyles/notice.json";
 
+// The four village sounds (T32), CC0 from BigSoundBank; the same lines are in assets/sounds/village/CREDITS.md.
+const VILLAGE_SOUNDS = [
+  {
+    id: "0097",
+    name: "Countryside",
+    author: "Joseph SARDIN",
+    url: "https://bigsoundbank.com/campagne-s0097.html",
+  },
+  {
+    id: "1880",
+    name: "Campaign at Night 4",
+    author: "Joseph SARDIN",
+    url: "https://bigsoundbank.com/campaign-at-night-4-s1880.html",
+  },
+  {
+    id: "3589",
+    name: "Anvil 1",
+    author: "Pablo BERGEL",
+    url: "https://bigsoundbank.com/anvil-1-s3589.html",
+  },
+  {
+    id: "2754",
+    name: "Mountain stream #1",
+    author: "Pierre SIBANARCO",
+    url: "https://bigsoundbank.com/mountain-stream-1-s2754.html",
+  },
+] as const;
+
 type CreditLinkProps = {
   title: string;
   subtitle?: string;
@@ -106,6 +134,25 @@ export default function CreditsScreen() {
             url="https://creativecommons.org/licenses/by-sa/4.0/"
             onPress={openUrl}
           />
+        </Card>
+
+        <Card gap="3" testID="credits-sounds">
+          <Text fontSize="4" fontWeight="700" color="text">
+            {t("credits.sounds_title")}
+          </Text>
+          <Paragraph color="textSecondary">{t("credits.sounds_note")}</Paragraph>
+
+          <Separator />
+
+          {VILLAGE_SOUNDS.map((s) => (
+            <CreditLink
+              key={s.id}
+              title={`${s.name} #${s.id}`}
+              subtitle={t("credits.sound_subtitle", { author: s.author })}
+              url={s.url}
+              onPress={openUrl}
+            />
+          ))}
         </Card>
 
         <Card gap="3" testID="credits-map-styles">

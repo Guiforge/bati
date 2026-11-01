@@ -1,0 +1,495 @@
+{
+  "_doc": "The lisiere's pieces, chosen by components/village/iso/lisiereChoix.ts from isoLayout.json and the mock-ups. Generated: UPDATE_LISIERE=1 npx jest iso-lisiere. The app reads this and never runs the choice (L4-T08a).",
+  "pieces": [
+    {
+      "famille": "decor",
+      "nom": "rochers_a",
+      "kind": "rochers",
+      "case": [4, -4],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_a",
+      "kind": "rochers",
+      "case": [8, -4],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "bosquet_b",
+      "kind": "bosquet",
+      "case": [13, -4],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [20, -4],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_b",
+      "kind": "rochers",
+      "case": [6, -3],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [9, -3],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_b",
+      "kind": "rochers",
+      "case": [14, -3],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "bosquet_b",
+      "kind": "bosquet",
+      "case": [16, -3],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [18, -3],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_b",
+      "kind": "rochers",
+      "case": [-3, -2],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_a",
+      "kind": "rochers",
+      "case": [0, -2],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_a",
+      "kind": "rochers",
+      "case": [4, -2],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "bosquet_b",
+      "kind": "bosquet",
+      "case": [11, -2],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [20, -1],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [4, 0],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [8, 0],
+      "batiment": "windmill"
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [21, 0],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [-4, 1],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "bosquet_a",
+      "kind": "bosquet",
+      "case": [5, 1],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "bosquet_b",
+      "kind": "bosquet",
+      "case": [-1, 2],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_b",
+      "kind": "rochers",
+      "case": [11, 2],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [-3, 3],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_a",
+      "kind": "rochers",
+      "case": [12, 4],
+      "batiment": "druid_grove"
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_b",
+      "kind": "rochers",
+      "case": [20, 5],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [23, 5],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_b",
+      "kind": "rochers",
+      "case": [-1, 6],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_a",
+      "kind": "rochers",
+      "case": [20, 6],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "bosquet_b",
+      "kind": "bosquet",
+      "case": [21, 6],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_b",
+      "kind": "rochers",
+      "case": [14, 7],
+      "batiment": "forge"
+    },
+    {
+      "famille": "decor",
+      "nom": "bosquet_b",
+      "kind": "bosquet",
+      "case": [22, 7],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_a",
+      "kind": "rochers",
+      "case": [18, 8],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [19, 8],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_b",
+      "kind": "rochers",
+      "case": [21, 8],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [23, 8],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_a",
+      "kind": "rochers",
+      "case": [17, 9],
+      "batiment": "castle_wall"
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_a",
+      "kind": "rochers",
+      "case": [18, 10],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "bosquet_b",
+      "kind": "bosquet",
+      "case": [19, 10],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "bosquet_a",
+      "kind": "bosquet",
+      "case": [22, 10],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_a",
+      "kind": "rochers",
+      "case": [-1, 11],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [23, 11],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [-2, 13],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_b",
+      "kind": "rochers",
+      "case": [14, 13],
+      "batiment": "archery_range"
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_b",
+      "kind": "rochers",
+      "case": [20, 13],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_b",
+      "kind": "rochers",
+      "case": [22, 13],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_a",
+      "kind": "rochers",
+      "case": [-4, 14],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [17, 15],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [19, 15],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_b",
+      "kind": "rochers",
+      "case": [-3, 16],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [20, 16],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_a",
+      "kind": "rochers",
+      "case": [22, 16],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "bosquet_b",
+      "kind": "bosquet",
+      "case": [23, 16],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_b",
+      "kind": "rochers",
+      "case": [14, 17],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "bosquet_a",
+      "kind": "bosquet",
+      "case": [15, 17],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_a",
+      "kind": "rochers",
+      "case": [6, 18],
+      "batiment": "champion_arena"
+    },
+    {
+      "famille": "decor",
+      "nom": "bosquet_a",
+      "kind": "bosquet",
+      "case": [-2, 20],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [15, 20],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [22, 20],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_a",
+      "kind": "rochers",
+      "case": [1, 21],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [6, 21],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [9, 21],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [11, 21],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [13, 21],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "bosquet_b",
+      "kind": "bosquet",
+      "case": [16, 21],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [20, 21],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "bosquet_a",
+      "kind": "bosquet",
+      "case": [4, 22],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "rochers_b",
+      "kind": "rochers",
+      "case": [13, 22],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "bosquet_a",
+      "kind": "bosquet",
+      "case": [14, 22],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "bosquet_a",
+      "kind": "bosquet",
+      "case": [5, 23],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "bosquet_b",
+      "kind": "bosquet",
+      "case": [10, 23],
+      "batiment": null
+    },
+    {
+      "famille": "decor",
+      "nom": "arbre_a",
+      "kind": "arbre",
+      "case": [15, 23],
+      "batiment": null
+    }
+  ]
+}

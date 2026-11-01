@@ -39,12 +39,18 @@ describe("the floating villager", () => {
 
   it("is rendered by the Village scene inside the hero painting, above the cards", () => {
     const scene = readFileSync(join(ROOT, "components", "village", "VillageScene.tsx"), "utf8");
-    const hero = scene.indexOf('testID="village-hero"');
+    // The hero layers are a fragment built above the render (L6-T21), then placed in the painting.
+    const layers = scene.indexOf("const heroLayers");
     const cameo = scene.search(/<VillagerCameo\b/);
-    const cards = scene.indexOf("<VillageTier");
-    expect(hero).toBeGreaterThan(-1);
-    expect(cameo).toBeGreaterThan(hero);
-    expect(cards).toBeGreaterThan(cameo);
+    // Placed twice since T45: on the iso map, then in the painting; the painting's is the last.
+    const placed = scene.lastIndexOf("{heroLayers}");
+    // The list is one `panel`, built above the render and placed under the painting (or in the drawer).
+    const cards = scene.lastIndexOf("{panel}");
+    expect(layers).toBeGreaterThan(-1);
+    expect(cameo).toBeGreaterThan(layers);
+    expect(placed).toBeGreaterThan(cameo);
+    expect(scene.indexOf('testID="village-hero"')).toBeLessThan(placed);
+    expect(cards).toBeGreaterThan(placed);
   });
 
   it("is not mounted at the root, and the root no longer watches every touch", () => {

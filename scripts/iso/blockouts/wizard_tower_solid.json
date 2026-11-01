@@ -1,0 +1,29 @@
+{
+  "canvas": "tower1x1",
+  "parts": [
+    { "type": "box", "at": [0.0, 0.0, 0.0], "size": [1.0, 1.0, 0.08], "mat": "stone" },
+    { "type": "cyl", "center": [0.5, 0.5, 0.08], "r": 0.36, "h": 0.14, "mat": "stone" },
+    { "type": "cyl", "center": [0.5, 0.5, 0.22], "r": 0.3, "h": 1.78, "mat": "stone" },
+    { "type": "cyl", "center": [0.5, 0.5, 2.0], "r": 0.345, "h": 0.09, "mat": "stone" },
+    { "type": "cone", "center": [0.5, 0.5, 2.09], "r": 0.41, "r2": 0.0, "h": 0.72, "mat": "tile" },
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 2.79],
+      "r": 0.03,
+      "r2": 0.0,
+      "h": 0.1,
+      "mat": "iron",
+      "roof": false
+    },
+    {
+      "type": "box",
+      "at": [0.41, 0.78, 0.22],
+      "size": [0.18, 0.05, 0.4],
+      "mat": "darkwood",
+      "accroche": "porte"
+    },
+    { "type": "box", "at": [0.46, 0.77, 1.05], "size": [0.08, 0.05, 0.15], "mat": "amber" },
+    { "type": "box", "at": [0.77, 0.46, 1.6], "size": [0.05, 0.08, 0.15], "mat": "amber" },
+    { "type": "box", "at": [0.84, 0.82, 0.08], "size": [0.1, 0.1, 0.14], "mat": "wood" }
+  ]
+}

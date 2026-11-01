@@ -1,0 +1,33 @@
+{
+  "canvas": "decor1x1",
+  "parts": [
+    { "type": "cyl", "center": [0.5, 0.5, 0.0], "r": 0.06, "h": 0.4, "mat": "wood" },
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0.25],
+      "r": 0.4,
+      "r2": 0.12,
+      "h": 0.5,
+      "mat": "thatch",
+      "roof": true
+    },
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0.6],
+      "r": 0.31,
+      "r2": 0.08,
+      "h": 0.45,
+      "mat": "thatch",
+      "roof": true
+    },
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0.95],
+      "r": 0.21,
+      "r2": 0.0,
+      "h": 0.53,
+      "mat": "thatch",
+      "roof": true
+    }
+  ]
+}

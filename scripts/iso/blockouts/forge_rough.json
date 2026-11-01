@@ -1,0 +1,45 @@
+{
+  "canvas": "building2x2",
+  "parts": [
+    { "type": "box", "at": [0, 0, 0], "size": [2, 2, 0.05], "mat": "wood" },
+    {
+      "type": "box",
+      "at": [0.15, 0.25, 0.05],
+      "size": [0.95, 1.5, 0.55],
+      "mat": "wood",
+      "rotZ": 4
+    },
+    {
+      "type": "roof",
+      "at": [0.1, 0.2, 0.6],
+      "size": [1.05, 1.6, 0.4],
+      "ridge": "y",
+      "mat": "thatch",
+      "rotZ": 4
+    },
+    {
+      "type": "box",
+      "at": [0.3, 0.4, 0.6],
+      "size": [0.28, 0.28, 0.55],
+      "mat": "stone",
+      "accroche": "cheminee",
+      "rotZ": -6
+    },
+    {
+      "type": "box",
+      "at": [1.35, 0.35, 0.05],
+      "size": [0.45, 0.5, 0.3],
+      "mat": "stone",
+      "rotZ": 7
+    },
+    {
+      "type": "box",
+      "at": [1.42, 0.43, 0.35],
+      "size": [0.31, 0.34, 0.03],
+      "mat": "fire",
+      "rotZ": 7
+    },
+    { "type": "cyl", "center": [1.55, 1.4, 0.05], "r": 0.12, "h": 0.22, "mat": "darkwood" },
+    { "type": "box", "at": [1.43, 1.33, 0.27], "size": [0.26, 0.15, 0.08], "mat": "iron" }
+  ]
+}

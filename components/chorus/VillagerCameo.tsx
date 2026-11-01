@@ -78,6 +78,9 @@ export function VillagerCameo({ band }: { band: CameoBand | null }) {
   return (
     <YStack
       testID="villager-cameo"
+      // The band itself never takes a touch, only its villager zone: an empty band must not
+      // stand between the iso map and the finger (RNGH targets any view under it).
+      pointerEvents="box-none"
       position="absolute"
       t={band.top}
       height={band.height}

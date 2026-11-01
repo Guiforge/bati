@@ -1,0 +1,152 @@
+#!/usr/bin/env python3
+"""Self-test of ab_pairs.py, loupe_crop.py and loupe_checks.py on fixtures made on the fly.
+
+    python3 scripts/iso/test_loupes.py
+"""
+
+import json
+import pathlib
+import random
+import shutil
+import subprocess
+import tempfile
+
+from PIL import Image
+
+import ab_pairs
+import loupe_checks as C
+import loupe_crop as K
+
+tmp = pathlib.Path(tempfile.mkdtemp(prefix="test-loupes-"))
+CAM = {"zoom": 1.0, "tx": 200, "ty": 0, "tileW": 64, "tileH": 32, "screenW": 400, "screenH": 400}
+
+
+def solid(path, rgb, size=(64, 48)):
+    Image.new("RGB", size, rgb).save(path)
+
+
+def noise(size, seed=1):
+    rng = random.Random(seed)
+    im = Image.new("RGB", size)
+    im.putdata([(v := rng.randrange(256), v, v) for _ in range(size[0] * size[1])])
+    return im
+
+
+# ---- ab_pairs ----
+lp = tmp / "loupes"
+for d in ("baseline", "forest/r1", "targets"):
+    (lp / d).mkdir(parents=True)
+for n, (old, new) in {"a.png": ((10, 10, 10), (200, 0, 0)), "b.png": ((20, 20, 20), (0, 200, 0))}.items():
+    solid(lp / "baseline" / n, old)
+    solid(lp / "forest/r1" / n, new)
+solid(lp / "targets" / "a.png", (250, 250, 250))
+ab_pairs.CACHE = tmp / "cache"
+out, key = ab_pairs.build("forest", "1", loupes=lp, seed=7)
+out2, key2 = ab_pairs.build("forest", "1", swap=True, loupes=lp)
+pairs, sw = (json.loads(k.read_text())["pairs"] for k in (key, key2))
+assert len(list(out.glob("pair-*.png"))) == 3 and len(list(out2.glob("pair-*.png"))) == 3
+assert {p["kind"] for p in pairs} == {"crop", "canary"}
+assert all(a["pair"] == b["pair"] and a["left"] == b["right"] for a, b in zip(pairs, sw))
+assert "key" not in str(out) and str(key).startswith(str(tmp / "cache")), "key stays out of the batch folder"
+
+
+def answers(pairs_, who):  # who: 'new' for everything, picks the side holding it
+    return {p["pair"]: "left" if p[("left")] == who else "right" for p in pairs_}
+
+
+ok = score_a = ab_pairs.score("forest", "1", answers(pairs, "new"), answers(sw, "new"))
+assert sorted(ok["wins"]) == ["a.png", "b.png"] and not ok["void"], ok
+old_wins = ab_pairs.score("forest", "1", answers(pairs, "old"), answers(sw, "old"))
+assert old_wins["void"] == ["as made", "swapped"] and not old_wins["wins"], old_wins  # canary missed
+half = ab_pairs.score("forest", "1", answers(pairs, "new"), {p["pair"]: "tie" for p in sw})
+assert not half["wins"] and half["void"] == ["swapped"], half  # one context tied the canary: void, no win
+print("ab_pairs ok:", ok)
+
+# ---- loupe_crop ----
+assert K.tile_to_px(CAM, 2, 1) == (232.0, 48.0)
+assert K.tile_rect_px(CAM, 0, 0, 0, 0) == (168, 0, 232, 32)
+im = noise((400, 400))
+assert K.crop_tiles(im, CAM, (0, 0, 1, 1)).size == (128, 64)
+a, b = tmp / "a.png", tmp / "b.png"
+noise((100, 100)).save(a)
+img = noise((100, 100))
+img.paste((0, 0, 0), (0, 0, 10, 10))  # 1 % of the pixels
+img.save(b)
+assert K.diff_percent(Image.open(a), Image.open(a)) == 0
+assert 0.9 < K.diff_percent(Image.open(a), Image.open(b)) <= 1.0 and K.diff_percent(Image.open(a), Image.open(b)) < K.KEEP_MAX
+assert K.diff_percent(Image.open(a), Image.new("RGB", (5, 5))) == 100.0
+if shutil.which("ffmpeg"):
+    vid, sheet = tmp / "v.mp4", tmp / "sheet.png"
+    subprocess.run(["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "testsrc=size=64x64:rate=10:duration=2",
+                    "-pix_fmt", "yuv420p", str(vid)], check=True)
+    K.contact_sheet(vid, sheet)
+    assert Image.open(sheet).size == (64 * 6, 64 * 2)
+    try:
+        K.contact_sheet(vid, sheet)
+        raise AssertionError("must not replace")
+    except FileExistsError:
+        pass
+print("loupe_crop ok")
+
+# ---- dump-check ----
+def spr(id_, i, j, flip=False, w=80, h=80, x=100, y=100, **kw):
+    return {"id": id_, "x": x, "y": y, "w": w, "h": h, "flip": flip, "tileI": i, "tileJ": j, "z": 0, **kw}
+
+
+def dump(*s):
+    return {"camera": CAM, "sprites": list(s)}
+
+assert C.dump_check(dump(spr("hut", 0, 0), spr("hut", 8, 0, flip=True))) == []
+assert len(C.dump_check(dump(spr("hut", 0, 0), spr("hut", 8, 0)))) == 1  # same way
+assert len(C.dump_check(dump(spr("hut", 0, 0), spr("hut", 3, 0, flip=True)))) == 1  # too close
+assert C.dump_check(dump(spr("hut", 0, 0, w=40, h=40), spr("hut", 1, 0, w=40, h=40))) == []  # small
+assert C.dump_check(dump(spr("hut", 0, 0), spr("hut", 1, 0, x=900))) == []  # second one off screen
+assert C.dump_check(dump(spr("tree_a", 0, 0), spr("tree_a", 4, 0))) == []  # mass, apart
+assert len(C.dump_check(dump(spr("tree_a", 0, 0), spr("tree_a", 1, 1)))) == 1  # mass, touching
+stamps = [{"asset": "grass", "tile": [0, 0], "flip": False, "band": "g"}, {"asset": "grass", "tile": [2, 0], "flip": False, "band": "g"}]
+assert len(C.dump_check(dump(), stamps)) == 1
+assert C.dump_check(dump(spr("flame_a", 0, 0, container="hearth_1", w=10, h=10))) == []
+assert "G17" in C.dump_check(dump(spr("flame_a", 0, 0, w=10, h=10)))[0]
+print("dump-check ok")
+
+# ---- vector-pixels ----
+mixed = Image.new("RGB", (64, 32), (90, 90, 90))  # left half flat, right half noise
+mixed.paste(noise((32, 32), 3), (32, 0))
+stds, _ = C.block_stds(mixed)
+assert all(v < 0.01 for (bx, _), v in stds.items() if bx < 2) and all(v > 20 for (bx, _), v in stds.items() if bx >= 2)
+txt, _ = C.vector_pixels(mixed, k=3)
+assert txt.startswith("4/8 blocks") and "##.." in txt, txt
+assert "p50=" in C.vector_pixels(mixed)[0]
+assert C.vector_pixels(mixed, 3, (32, 0, 32, 32))[0].startswith("0/4")
+alpha0 = Image.new("RGBA", (32, 16), (0, 0, 0, 0))
+assert C.block_stds(alpha0)[0] == {}
+print("vector-pixels ok")
+
+# ---- thumb ----
+bright = Image.new("L", (128, 128), 20)
+bright.paste(noise((32, 32), 5).convert("L"), (96, 0))  # top-right cell: bright and contrasted
+size, cells = C.thumb(bright)
+assert size == (16, 16) and max(cells, key=lambda k: cells[k][1]) == (0, 3)
+assert "(0, 3)" in C.thumb_report(bright)
+print("thumb ok")
+
+# ---- vector-code, on a fake tree ----
+root = tmp / "repo"
+(root / "components/village/iso").mkdir(parents=True)
+(root / "app").mkdir()
+(root / "components/village/iso/Lueur.tsx").write_text(
+    'import Svg, { Ellipse, Path } from "react-native-svg";\nconst a = <Ellipse cx={1} />;\nconst b = <Path d="" />;\n')
+(root / "components/village/iso/Nope.tsx").write_text('import { Rect } from "react-native-svg";\n<Rect />\n')
+(root / "components/village/iso/Plain.tsx").write_text('import { View } from "react-native";\n<View />\n')
+(root / "app/dev-iso.tsx").write_text("export default 1;\n")
+al = tmp / "al.json"
+al.write_text(json.dumps({"files": {"components/village/iso/Lueur.tsx": {"allow": ["Ellipse"]}}}))
+failing, allowed = C.vector_code(root, al)
+assert failing == [("components/village/iso/Lueur.tsx", 3, "Path"), ("components/village/iso/Nope.tsx", 2, "Rect")], failing
+assert allowed == [("components/village/iso/Lueur.tsx", 2, "Ellipse")]
+real_fail, _ = C.vector_code()
+assert real_fail, "the real tree must report decor drawn in vector (Rempart, Fierte, ...)"
+print(f"vector-code ok ({len(real_fail)} real items outside the allowlist)")
+
+shutil.rmtree(tmp)
+print("test_loupes: all green")

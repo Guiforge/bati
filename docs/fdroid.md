@@ -230,6 +230,8 @@ granted went to Mammouth and no further.
 Everything is regenerated against Black Forest Labs directly. The FLUX licence is explicit where
 Mammouth is silent: no ownership claim over outputs, any purpose including commercial, and outputs
 are not derivatives of the model. That grant follows the API key, which is now ours.
+The village sprites come from FLUX.2 and from FLUX 3 Image Klein, both through the same API
+account and under the same Developer Terms.
 `assets/` is CC BY-SA 4.0, and `scripts/provenance.json` records model, prompt and seed for each
 image so the claim can be checked rather than taken on trust.
 

@@ -37,8 +37,7 @@ When the user's request matches an available skill, invoke it via the Skill tool
 
 - Search with `rg` (`rtk rg`), never `grep -r` or `/usr/bin/grep -r` across the repo: it walks
   `node_modules/` and `android/`.
-- At most 2 subagents in parallel. Each one that runs jest, tsc or Gradle holds gigabytes, and
-  heavy suites already OOM under load.
+- At most 2 heavy commands at a time (full jest, tsc, Gradle, Blender Cycles), and only one Gradle. Outside agent-team mode that means at most 2 subagents in parallel. In agent-team mode (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`), every heavy command goes through `scripts/iso/team/heavy.sh`, which enforces it.
 - After any Gradle build (`npx expo run:android`, `npm run android:release`, `./gradlew …`), run
   `cd android && ./gradlew --stop`, so the Gradle (2 GB) and Kotlin (1 GB) daemons don't sit
   idle in memory.

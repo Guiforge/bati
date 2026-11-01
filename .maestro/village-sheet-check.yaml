@@ -38,6 +38,14 @@ appId: com.guiforge.bati.dev
     id: "village-screen"
 
 # --- 1. hardware back -------------------------------------------------------------
+# Flag on (T45): the list is in the drawer, behind the strip at the foot of the map. Flag off: no strip.
+- runFlow:
+    when:
+      visible:
+        id: "village-drawer-open"
+    commands:
+      - tapOn:
+          id: "village-drawer-open"
 - tapOn:
     id: "village-building-row"
     index: 0
@@ -58,6 +66,14 @@ appId: com.guiforge.bati.dev
 - tapOn:
     id: "tab-village"
     waitToSettleTimeoutMs: 500
+# Flag on (T45): the list is in the drawer, behind the strip at the foot of the map. Flag off: no strip.
+- runFlow:
+    when:
+      visible:
+        id: "village-drawer-open"
+    commands:
+      - tapOn:
+          id: "village-drawer-open"
 - tapOn:
     id: "village-building-row"
     index: 0
@@ -79,6 +95,14 @@ appId: com.guiforge.bati.dev
 - tapOn:
     id: "tab-village"
     waitToSettleTimeoutMs: 500
+# Flag on (T45): the list is in the drawer, behind the strip at the foot of the map. Flag off: no strip.
+- runFlow:
+    when:
+      visible:
+        id: "village-drawer-open"
+    commands:
+      - tapOn:
+          id: "village-drawer-open"
 - tapOn:
     id: "village-building-row"
     index: 0

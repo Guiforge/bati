@@ -10,6 +10,7 @@ import { ImageViewer } from "@/components/common/ImageViewer";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { SectionLabel } from "@/components/common/SectionLabel";
 import { tamaguiRef } from "@/components/common/tamaguiRef";
+import { DATE_OPTIONS, type Extra, loadExtra } from "@/components/village/detailExtra";
 import { LevelPips } from "@/components/village/LevelPips";
 import { buildingMilestoneLine } from "@/components/village/milestoneLine";
 import {
@@ -28,11 +29,9 @@ import { getAdventureAsset, getBossAsset, getBuildingIconAsset } from "@/constan
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { rawColors } from "@/constants/rawColors";
-import { type FinishedAdventureSummary, listFinishedRunSummaries } from "@/db/adventures";
-import { type ContributingSession, getRecentContributingSessions } from "@/db/completed";
 import { MUSCLE_LABELS } from "@/db/labels";
 import type { RecentFeeds } from "@/db/milestone";
-import { buildingDefinitions } from "@/db/schema";
+import { type BuildingCode, buildingDefinitions } from "@/db/schema";
 import { formatCount } from "@/db/targets";
 import {
   type BossBanner,
@@ -64,13 +63,10 @@ type Props = {
   feeds: RecentFeeds | null;
   /** The stones for the ramparts' sheet; null until read, then the sheet shows none. */
   years?: VillageYearsView | null;
+  /** Buildings ready to improve (iso map on), and what the button does; both absent otherwise. */
+  ready?: ReadonlySet<BuildingCode>;
+  onClaim?: (building: VillageBuilding) => void;
   bottomInset: number;
-};
-
-const DATE_OPTIONS: Intl.DateTimeFormatOptions = {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
 };
 
 // "Recent work" rows can land three sessions on the same day; the date alone can't tell them
@@ -82,55 +78,14 @@ const RECENT_WORK_DATE_OPTIONS: Intl.DateTimeFormatOptions = {
   minute: "2-digit",
 };
 
-/** The detail sheet's second half: the deeds behind the number, fetched only when opened. */
-type Extra =
-  | { kind: "sessions"; sessions: ContributingSession[] }
-  | { kind: "adventures"; adventures: FinishedAdventureSummary[] }
-  | null;
-
-async function loadExtra(selected: VillageSelection): Promise<Extra> {
-  if (selected.kind === "boss") {
-    return { kind: "adventures", adventures: await listFinishedRunSummaries() };
-  }
-
-  const building = selected.building;
-
-  // The hall lists the routes that raised it, the arena the bosses fought again: the same
-  // split as the tally, so the list never shows a campaign the level did not count.
-  if (building.driver === "routes" || building.driver === "rematches") {
-    const summaries = await listFinishedRunSummaries();
-    return {
-      kind: "adventures",
-      adventures:
-        building.driver === "routes"
-          ? summaries.filter((s) => s.kind !== "boss")
-          : summaries.filter((s) => s.kind === "boss" && s.timesFinished > 1),
-    };
-  }
-
-  if (building.driver === "muscle" && building.relatedMuscle) {
-    return {
-      kind: "sessions",
-      sessions: await getRecentContributingSessions({ muscle: building.relatedMuscle }),
-    };
-  }
-
-  if (building.driver === "style") {
-    const style = buildingDefinitions[building.code].relatedStyle;
-    if (style) {
-      return { kind: "sessions", sessions: await getRecentContributingSessions({ style }) };
-    }
-  }
-
-  return null;
-}
-
 export function VillageDetailSheet({
   selected,
   onClose,
   language,
   feeds,
   years = null,
+  ready,
+  onClaim,
   bottomInset,
 }: Props) {
   const { t } = useTranslation();
@@ -238,6 +193,14 @@ export function VillageDetailSheet({
                 years={years}
                 formatDate={formatDate}
                 onClose={onClose}
+                onClaim={
+                  onClaim && ready?.has(shown.building.code)
+                    ? () => {
+                        onClose();
+                        onClaim(shown.building);
+                      }
+                    : undefined
+                }
               />
             ) : null}
             {shown?.kind === "boss" ? (
@@ -265,21 +228,77 @@ type DetailProps = {
   formatDate: (date: Date) => string;
 };
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: one branch per driver, flat — the alternative is seven near-identical components
-function BuildingDetail({
-  building,
-  extra,
-  language,
-  formatDate,
-  feeds,
-  years,
-  onClose,
-}: DetailProps & {
+type FactsProps = DetailProps & {
   building: VillageBuilding;
   feeds: RecentFeeds | null;
   years: VillageYearsView | null;
   onClose: () => void;
-}) {
+  /** Set when the building is ready to improve. */
+  onClaim?: () => void;
+};
+
+function BuildingDetail(props: FactsProps) {
+  const { t } = useTranslation();
+  const { building, language } = props;
+  const built = building.level > 0;
+  const unbuiltMuscle = building.driver === "muscle" && building.level === 0;
+  return (
+    <YStack gap="4">
+      <XStack gap={13} items="center">
+        <Image
+          source={getBuildingIconAsset(building.code, building.relatedMuscle, building.level)}
+          style={{ width: 54, height: 54 }}
+          contentFit="contain"
+          tintColor={built ? undefined : rawColors.muted}
+        />
+        <YStack flex={1} minW={0} gap={3}>
+          <Text fontFamily="heading" fontWeight="700" fontSize={20} color="text">
+            {nameOf(building, language)}
+          </Text>
+          {/* An unbuilt muscle building already says "Built by training your arms" below, and
+              "Rises with your arms" right above it was the same sentence twice. */}
+          {unbuiltMuscle ? null : (
+            <Text fontSize={12.5} color="textSecondary">
+              {feedsLine(building, t, language)}
+            </Text>
+          )}
+        </YStack>
+        <BuildingLevel building={building} />
+      </XStack>
+      <BuildingFacts {...props} />
+    </YStack>
+  );
+}
+
+/** The building's level and its pips: in the sheet's header, and in the iso map's bubble. */
+export function BuildingLevel({ building }: { building: VillageBuilding }) {
+  const { t } = useTranslation();
+  const built = building.level > 0;
+  return (
+    <YStack items="flex-end" gap={5}>
+      <Text fontSize={13} fontWeight="600" color={`${built ? "resourceGold" : "textSecondary"}`}>
+        {levelText(building, t)}
+      </Text>
+      {built ? <LevelPips level={building.level} max={buildingCeiling(building)} /> : null}
+    </YStack>
+  );
+}
+
+/**
+ * What a building's figures say, under its name: the driver, the bar, the milestone, the deeds,
+ * the claim and the links. One writer for the sheet (list, Journal, flag off) and the iso bubble.
+ */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: one branch per driver, flat — the alternative is seven near-identical components
+export function BuildingFacts({
+  building,
+  extra,
+  language,
+  feeds,
+  years,
+  formatDate,
+  onClose,
+  onClaim,
+}: FactsProps) {
   const { t } = useTranslation();
   const router = useRouter();
   const built = building.level > 0;
@@ -310,7 +329,6 @@ function BuildingDetail({
   // above "Built by your first rematch" said the same zero three times.
   const unbuiltDeed = building.tier === 4 && progress === null && !built;
 
-  const unbuiltMuscle = building.driver === "muscle" && building.level === 0;
   // The driver line already says "Appears when the Forge reaches rank 3, it is at rank 1": the
   // next line under the bar would repeat the first half.
   const unbuiltPrereq = building.driver === "prereq" && building.level === 0;
@@ -371,39 +389,9 @@ function BuildingDetail({
         }))
       : [];
 
+  // A fragment: its rows are the parent's, so the sheet's gaps are the ones it always had.
   return (
-    <YStack gap="4">
-      <XStack gap={13} items="center">
-        <Image
-          source={getBuildingIconAsset(building.code, building.relatedMuscle, building.level)}
-          style={{ width: 54, height: 54 }}
-          contentFit="contain"
-          tintColor={built ? undefined : rawColors.muted}
-        />
-        <YStack flex={1} minW={0} gap={3}>
-          <Text fontFamily="heading" fontWeight="700" fontSize={20} color="text">
-            {nameOf(building, language)}
-          </Text>
-          {/* An unbuilt muscle building already says "Built by training your arms" below, and
-              "Rises with your arms" right above it was the same sentence twice. */}
-          {unbuiltMuscle ? null : (
-            <Text fontSize={12.5} color="textSecondary">
-              {feedsLine(building, t, language)}
-            </Text>
-          )}
-        </YStack>
-        <YStack items="flex-end" gap={5}>
-          <Text
-            fontSize={13}
-            fontWeight="600"
-            color={`${built ? "resourceGold" : "textSecondary"}`}
-          >
-            {levelText(building, t)}
-          </Text>
-          {built ? <LevelPips level={building.level} max={buildingCeiling(building)} /> : null}
-        </YStack>
-      </XStack>
-
+    <>
       <YStack gap="2">
         <Text fontSize={13.5} lineHeight="20px" color="text">
           {driverLine}
@@ -520,6 +508,26 @@ function BuildingDetail({
         />
       ) : null}
 
+      {onClaim ? (
+        <YStack gap="2">
+          <Text fontSize={13} color="textSecondary">
+            {t("village.claim_ready_body", { name: nameOf(building, language) })}
+          </Text>
+          <AppButton
+            testID="village-claim"
+            // The bubble's one action (village-bulle.md): 48 dp, over AppButton's 44.
+            minH={48}
+            onPress={onClaim}
+            accessibilityRole="button"
+            accessibilityLabel={t("village.claim_action_a11y", {
+              name: nameOf(building, language),
+            })}
+          >
+            {t("village.claim_action")}
+          </AppButton>
+        </YStack>
+      ) : null}
+
       {link ? (
         <QuestLink
           label={ctaLabel(building, t)}
@@ -541,7 +549,7 @@ function BuildingDetail({
           }}
         />
       ) : null}
-    </YStack>
+    </>
   );
 }
 

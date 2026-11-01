@@ -1,3 +1,4 @@
+import "./helpers/gestureRuntime";
 import { act, render } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";

@@ -1,3 +1,4 @@
+import "./helpers/gestureRuntime";
 import { act, fireEvent, render, within } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
@@ -113,7 +114,9 @@ function renderScene(wall = building("castle_wall", 1)) {
 
 async function openRamparts(wall?: village.VillageBuilding) {
   const screen = await renderScene(wall);
-  await fireEvent.press(await screen.findByLabelText(village.BUILDING_LABELS.castle_wall.en));
+  await fireEvent.press(
+    await screen.findByLabelText(new RegExp(`^${village.BUILDING_LABELS.castle_wall.en}, `)),
+  );
   return screen;
 }
 

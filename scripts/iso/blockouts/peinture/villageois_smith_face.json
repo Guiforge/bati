@@ -1,0 +1,164 @@
+{
+  "canvas": "villager",
+  "parts": [
+    {
+      "type": "cyl",
+      "center": [0.4753, 0.5247, 0.0],
+      "r": 0.024,
+      "h": 0.2,
+      "mat": "darkwood",
+      "axis": [0.0, 0.0, 1.0],
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.5247, 0.4753, 0.0],
+      "r": 0.024,
+      "h": 0.2,
+      "mat": "darkwood",
+      "axis": [0.0, 0.0, 1.0],
+      "roof": false
+    },
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0.17],
+      "r": 0.084,
+      "r2": 0.072,
+      "h": 0.17,
+      "mat": "plaster",
+      "roof": false,
+      "rotZ": 0.0
+    },
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0.3],
+      "r": 0.0744,
+      "r2": 0.084,
+      "h": 0.06,
+      "mat": "plaster",
+      "roof": false,
+      "rotZ": 0.0
+    },
+    {
+      "type": "cyl",
+      "center": [0.4389, 0.5611, 0.345],
+      "r": 0.024,
+      "h": 0.1466,
+      "mat": "plaster",
+      "axis": [-0.0444, 0.1408, -0.989],
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.4324, 0.5817, 0.21],
+      "r": 0.0228,
+      "h": 0.0404,
+      "mat": "plaster",
+      "axis": [0.0455, 0.1296, -0.9905],
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.5611, 0.4389, 0.345],
+      "r": 0.024,
+      "h": 0.1466,
+      "mat": "plaster",
+      "axis": [0.1408, -0.0444, -0.989],
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.5817, 0.4324, 0.21],
+      "r": 0.0228,
+      "h": 0.0404,
+      "mat": "plaster",
+      "axis": [0.1296, 0.0455, -0.9905],
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.5, 0.5, 0.36],
+      "r": 0.022,
+      "h": 0.03,
+      "mat": "plaster",
+      "rotZ": 0.0,
+      "roof": false
+    },
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0.385],
+      "r": 0.034,
+      "r2": 0.05,
+      "h": 0.045,
+      "mat": "plaster",
+      "roof": false,
+      "rotZ": 0.0
+    },
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0.43],
+      "r": 0.05,
+      "r2": 0.02,
+      "h": 0.06,
+      "mat": "plaster",
+      "roof": false,
+      "rotZ": 0.0
+    },
+    {
+      "type": "box",
+      "at": [0.5547, 0.5072, 0.12],
+      "size": [0.025, 0.12, 0.24],
+      "mat": "darkwood",
+      "rotZ": 45.0,
+      "roof": false
+    },
+    {
+      "type": "box",
+      "at": [0.5274, 0.5174, 0.375],
+      "size": [0.03, 0.05, 0.04],
+      "mat": "stone",
+      "rotZ": 45.0,
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.5707, 0.4293, 0.22],
+      "r": 0.012,
+      "h": 0.1404,
+      "mat": "wood",
+      "axis": [0.0504, -0.0504, -0.9975],
+      "verts": 4,
+      "roof": false
+    },
+    {
+      "type": "box",
+      "at": [0.5578, 0.3872, 0.06],
+      "size": [0.04, 0.07, 0.04],
+      "mat": "iron",
+      "rotZ": 45.0,
+      "roof": false
+    },
+    {
+      "type": "cone",
+      "center": [0.5849, 0.4576, 0.17],
+      "r": 0.016,
+      "r2": 0.016,
+      "h": 0.2717,
+      "axis": [0.078, -0.078, 0.9939],
+      "mat": "wood",
+      "roof": false
+    },
+    {
+      "type": "box",
+      "at": [0.5761, 0.3714, 0.41],
+      "size": [0.06, 0.13, 0.07],
+      "mat": "iron",
+      "rotZ": 45,
+      "roof": false
+    }
+  ],
+  "pxScale": 4.97,
+  "anchorPx": [347, 669],
+  "lineScale": 0.3018,
+  "light": [0.55, 0.55, 0.63]
+}

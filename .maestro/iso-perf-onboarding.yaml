@@ -1,0 +1,39 @@
+# Village iso V1: finish onboarding once on the .perf release build, then never reset it.
+# No clearState: the hero's .perf data must survive. If onboarding is already done, the
+# conditional block is skipped and the flow only checks the tab bar.
+# Steps mirror subflows/complete-onboarding.yaml, inlined because that file is pinned to .dev.
+#   scripts/iso/team/emu-maestro.sh test .maestro/iso-perf-onboarding.yaml
+appId: com.guiforge.bati.perf
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "onboarding-presentation-continue|tab-home"
+    timeout: 30000
+- runFlow:
+    when:
+      visible:
+        id: "onboarding-presentation-continue"
+    commands:
+      - tapOn:
+          id: "onboarding-presentation-continue"
+      - assertVisible:
+          id: "onboarding-village-name"
+      - tapOn:
+          id: "onboarding-village-name"
+      # The field arrives with a drawn name.
+      - eraseText: 20
+      - inputText: "Isoville"
+      - hideKeyboard
+      - tapOn:
+          id: "onboarding-village-continue"
+      - assertVisible:
+          id: "onboarding-level-skip"
+      - tapOn:
+          id: "onboarding-level-skip"
+      - assertVisible:
+          id: "onboarding-first-session-skip"
+      - tapOn:
+          id: "onboarding-first-session-skip"
+- assertVisible:
+    id: "tab-home"

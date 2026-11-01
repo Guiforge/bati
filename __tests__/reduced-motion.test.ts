@@ -35,7 +35,7 @@ const ANIMATES = [
 ];
 
 /** Either door to the preference: the raw flag, or the helper that returns `{}` when it is set. */
-const ASKS = ["reducedMotion", "useAnimationProps"];
+const ASKS = ["reducedMotion", "useAnimationProps", "useMouvementReduit"];
 
 /**
  * Comments do not animate, and one file turns on it: `TimerBar` explains at length why its fill

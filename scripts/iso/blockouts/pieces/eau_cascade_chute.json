@@ -1,0 +1,51 @@
+{
+  "canvas": "sails",
+  "parts": [
+    {
+      "type": "box",
+      "at": [0.14, 1.0, -0.62],
+      "size": [0.72, 0.05, 0.62],
+      "mat": "thatch",
+      "roof": false,
+      "noShadow": true
+    },
+    {
+      "type": "box",
+      "at": [0.18, 1.05, -0.62],
+      "size": [0.64, 0.04, 0.5],
+      "mat": "thatch",
+      "roof": false,
+      "noShadow": true
+    },
+    {
+      "type": "cone",
+      "center": [0.3, 1.09, -0.7],
+      "r": 0.08,
+      "r2": 0.03,
+      "h": 0.08,
+      "mat": "canvas",
+      "noShadow": true,
+      "roof": false
+    },
+    {
+      "type": "cone",
+      "center": [0.5, 1.09, -0.7],
+      "r": 0.08,
+      "r2": 0.03,
+      "h": 0.08,
+      "mat": "canvas",
+      "noShadow": true,
+      "roof": false
+    },
+    {
+      "type": "cone",
+      "center": [0.7, 1.09, -0.7],
+      "r": 0.08,
+      "r2": 0.03,
+      "h": 0.08,
+      "mat": "canvas",
+      "noShadow": true,
+      "roof": false
+    }
+  ]
+}

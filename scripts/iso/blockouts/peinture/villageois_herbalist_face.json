@@ -1,0 +1,194 @@
+{
+  "canvas": "villager",
+  "parts": [
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0.0],
+      "r": 0.0765,
+      "r2": 0.054,
+      "h": 0.34,
+      "mat": "wood",
+      "roof": false,
+      "rotZ": 0.0
+    },
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0.3],
+      "r": 0.0558,
+      "r2": 0.063,
+      "h": 0.06,
+      "mat": "wood",
+      "roof": false,
+      "rotZ": 0.0
+    },
+    {
+      "type": "cyl",
+      "center": [0.4542, 0.5458, 0.345],
+      "r": 0.018,
+      "h": 0.1461,
+      "mat": "wood",
+      "axis": [-0.0213, 0.1181, -0.9928],
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.4511, 0.5631, 0.21],
+      "r": 0.0171,
+      "h": 0.0404,
+      "mat": "plaster",
+      "axis": [0.0561, 0.1192, -0.9913],
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.5458, 0.4542, 0.345],
+      "r": 0.018,
+      "h": 0.1461,
+      "mat": "wood",
+      "axis": [0.1181, -0.0213, -0.9928],
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.5631, 0.4511, 0.21],
+      "r": 0.0171,
+      "h": 0.0404,
+      "mat": "plaster",
+      "axis": [0.1192, 0.0561, -0.9913],
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.5, 0.5, 0.36],
+      "r": 0.022,
+      "h": 0.03,
+      "mat": "plaster",
+      "rotZ": 0.0,
+      "roof": false
+    },
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0.385],
+      "r": 0.034,
+      "r2": 0.05,
+      "h": 0.045,
+      "mat": "canvas",
+      "roof": false,
+      "rotZ": 0.0
+    },
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0.43],
+      "r": 0.05,
+      "r2": 0.02,
+      "h": 0.06,
+      "mat": "canvas",
+      "roof": false,
+      "rotZ": 0.0
+    },
+    {
+      "type": "box",
+      "at": [0.5133, 0.4983, 0.4],
+      "size": [0.03, 0.06, 0.05],
+      "mat": "plaster",
+      "rotZ": 45.0,
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.5, 0.5, 0.24],
+      "r": 0.072,
+      "h": 0.025,
+      "mat": "darkwood",
+      "rotZ": 0.0,
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.5141, 0.5707, 0.2],
+      "r": 0.012,
+      "h": 0.04,
+      "mat": "tile",
+      "rotZ": 0.0,
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.5424, 0.5424, 0.2],
+      "r": 0.012,
+      "h": 0.04,
+      "mat": "tile",
+      "rotZ": 0.0,
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.5707, 0.5141, 0.2],
+      "r": 0.012,
+      "h": 0.04,
+      "mat": "tile",
+      "rotZ": 0.0,
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.5778, 0.4929, 0.18],
+      "r": 0.014,
+      "h": 0.1221,
+      "mat": "thatch",
+      "axis": [0.1738, -0.0579, 0.9831],
+      "verts": 4,
+      "roof": false
+    },
+    {
+      "type": "cone",
+      "center": [0.4576, 0.599, 0.2],
+      "r": 0.016,
+      "r2": 0.016,
+      "h": 0.201,
+      "axis": [-0.0706, 0.0701, 0.995],
+      "mat": "wood",
+      "roof": false
+    },
+    {
+      "type": "cone",
+      "center": [0.4434, 0.6131, 0.36],
+      "r": 0.0455,
+      "r2": 0.065,
+      "h": 0.048,
+      "mat": "thatch",
+      "roof": false
+    },
+    {
+      "type": "cone",
+      "center": [0.4434, 0.6131, 0.408],
+      "r": 0.065,
+      "r2": 0.0325,
+      "h": 0.072,
+      "mat": "thatch",
+      "roof": false
+    },
+    {
+      "type": "cone",
+      "center": [0.6414, 0.4434, 0.04],
+      "r": 0.056,
+      "r2": 0.08,
+      "h": 0.036,
+      "mat": "wood",
+      "roof": false
+    },
+    {
+      "type": "cone",
+      "center": [0.6414, 0.4434, 0.076],
+      "r": 0.08,
+      "r2": 0.04,
+      "h": 0.054,
+      "mat": "wood",
+      "roof": false
+    }
+  ],
+  "pxScale": 4.694,
+  "anchorPx": [362, 636],
+  "lineScale": 0.3196,
+  "light": [0.55, 0.55, 0.63]
+}

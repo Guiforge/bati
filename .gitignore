@@ -103,5 +103,10 @@ ds-bundle/
 .design-sync/learnings/
 .design-sync/node_modules
 
+# Thronebreaker mood screenshots for the village loop: never committed, never sent to FLUX.
+moodboard/
+docs/designs/village-loop/iter-*/frames/
+docs/designs/village-loop/iter-*/*-planche.png
+
 # WorkBuddy agent state (session memory, not project data)
 .workbuddy/

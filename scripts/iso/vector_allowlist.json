@@ -1,0 +1,39 @@
+{
+  "_doc": "PROMPT.md rule 1: vector only for light, glow, particles, masks, cast shadows, the edge vignette and UI. Per file, the react-native-svg drawing components allowed. Anything else drawing in components/village/iso or app/dev-iso.tsx is reported by `loupe_checks.py vector-code`. Files absent here (Fierte, EnsembleVocation, Rempart, Statue, Retouches, FeuxDessines, CorbeauxToits, petitsDetails) draw decor in vector and must fail until painted; IsoCarteDemo Path/Polygon/Text and RuesDessinees Path and Chantier Path/Polygon likewise. Review before trusting: written from reading file headers, not from rendering.",
+  "files": {
+    "components/village/iso/AmbianceCarte.tsx": {
+      "allow": ["Ellipse"],
+      "why": "light of the map, night pools"
+    },
+    "components/village/iso/OmbresNuages.tsx": {
+      "allow": ["Ellipse"],
+      "why": "cloud cast shadows"
+    },
+    "components/village/iso/OmbreContact.tsx": {
+      "allow": ["Ellipse"],
+      "why": "contact cast shadow"
+    },
+    "components/village/iso/Reclame.tsx": { "allow": ["Ellipse"], "why": "soft halo (light)" },
+    "components/village/iso/Marteau.tsx": { "allow": ["Path"], "why": "UI hammer icon" },
+    "components/village/iso/Effets.tsx": {
+      "allow": ["Circle", "Path"],
+      "why": "particles (runes, motes, embers, sparks)"
+    },
+    "components/village/iso/Revelation.tsx": {
+      "allow": ["Path"],
+      "why": "reveal particles and light ring"
+    },
+    "components/village/iso/VeillesDessinees.tsx": {
+      "allow": ["Ellipse", "Polygon"],
+      "why": "lit windows and door glow (light)"
+    },
+    "components/village/iso/MotifsSol.tsx": {
+      "allow": ["Rect"],
+      "why": "fills a tile with a painted Pattern image (mask carrier, draws no vector shape of its own)"
+    },
+    "components/village/iso/Chantier.tsx": {
+      "allow": ["Ellipse"],
+      "why": "dust (particles); Path and Polygon are scaffold or ground, so they fail"
+    }
+  }
+}

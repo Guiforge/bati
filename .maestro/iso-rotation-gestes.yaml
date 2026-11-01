@@ -1,0 +1,17 @@
+# Village iso V1, T21: the gestures before a rotation test. A double tap then a drag on the iso map
+# of the Village tab, so the camera holds a view the hero moved. No launchApp: the tab must already
+# be showing (.perf build, INTEGRATION on), portrait.
+#   scripts/iso/team/emu-adb.sh shell am start -W -a android.intent.action.VIEW -d bati://village com.guiforge.bati.perf
+#   scripts/iso/team/emu-maestro.sh test .maestro/iso-rotation-gestes.yaml
+# Then rotate (settings put system user_rotation 1, then 0) while screenrecord runs.
+appId: com.guiforge.bati.perf
+---
+- assertVisible:
+    id: "village-(hero|map-side)"
+# The map is hidden from the screen reader, so it is touched by point (upper part of the hero).
+- doubleTapOn:
+    point: "45%,30%"
+- swipe:
+    start: "60%,35%"
+    end: "35%,25%"
+    duration: 700

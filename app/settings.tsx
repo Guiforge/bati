@@ -552,6 +552,7 @@ export default function SettingsScreen() {
             testID="settings-sound"
             icon={<Volume2 size={22} color="text" />}
             label={t("settings.sound")}
+            hint={t("settings.sound_hint")}
             value={soundEnabled ? t("common.on") : t("common.off")}
             onPress={() => {
               haptics.selection();

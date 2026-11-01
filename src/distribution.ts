@@ -36,3 +36,6 @@ export const DISTRIBUTION = parse(process.env.EXPO_PUBLIC_DISTRIBUTION ?? "githu
  *   a risk against its policies for nothing.
  */
 export const UPDATE_CHECK_OFFERED = DISTRIBUTION === "github";
+
+/** The free Play build keeps one fixed daylight on the village map (VI-15); the other channels follow the hour. */
+export const JOUR_SEUL = DISTRIBUTION === "play";

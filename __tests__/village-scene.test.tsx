@@ -1,10 +1,15 @@
+import "./helpers/gestureRuntime";
 import { act, fireEvent, render, waitFor, within } from "@testing-library/react-native";
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import * as Reanimated from "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
+import type { Ouverture } from "@/components/village/iso/bulle";
 import { VillageScene } from "@/components/village/VillageScene";
+import { getVillageTierAsset } from "@/constants/assetMap";
+import { INTEGRATION } from "@/constants/isoPoc";
 import * as crestDb from "@/db/crest";
 import type { RecentFeeds } from "@/db/milestone";
 import * as feedDb from "@/db/milestoneFeed";
@@ -33,11 +38,18 @@ jest.mock("@/db/adventures", () => ({ listFinishedRunSummaries: jest.fn().mockRe
 jest.mock("@/db/completed", () => ({
   getRecentContributingSessions: jest.fn().mockResolvedValue([]),
 }));
+// The screen turns only with the iso map and the flag on (L6-T21); the flag is off here.
+jest.mock("expo-screen-orientation", () => ({
+  unlockAsync: jest.fn().mockResolvedValue(undefined),
+  lockAsync: jest.fn().mockResolvedValue(undefined),
+  OrientationLock: { PORTRAIT_UP: 1 },
+}));
 let mockParams: { grown?: string } = {};
 let mockFocusTick = 0;
 jest.mock("expo-router", () => ({
   useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb, mockFocusTick]),
   useIsFocused: () => true,
+  usePathname: () => "/village",
   useLocalSearchParams: () => mockParams,
   useRouter: () => ({ push: jest.fn() }),
 }));
@@ -48,6 +60,41 @@ jest.mock("@/hooks/useReducedMotion", () => ({
   ...jest.requireActual("@/hooks/useReducedMotion"),
   useReducedMotion: () => true,
 }));
+
+// Flag off, the iso map is never required (mock-up index, isoSpec.json): every read of the export is
+// counted, so a test compares before and after and does not depend on the tests that ran earlier.
+let mockIsoAcces = 0;
+const mockIsoProps: {
+  width?: number;
+  height?: number;
+  margeBas?: number;
+  croissance?: { cle: string };
+  onCroissanceFinie?: () => void;
+  reclamables?: string[];
+  niveauxReclames?: Record<string, number>;
+  onBulle?: (o: Ouverture) => void;
+  viseur?: { current: ((x: number, y: number) => Ouverture | null) | undefined };
+}[] = [];
+// Each mount of the map counts once: a rotation must not remount it (L6-T21).
+let mockIsoMontages = 0;
+jest.mock("@/components/village/iso/IsoVillage", () => {
+  const { View } = require("react-native");
+  const React = require("react");
+  // One component for every read, as a real module export is: a fresh one per read remounts.
+  const Carte = (props: (typeof mockIsoProps)[number]) => {
+    mockIsoProps.push(props);
+    React.useEffect(() => {
+      mockIsoMontages++;
+    }, []);
+    return React.createElement(View, { testID: "iso-village" });
+  };
+  return {
+    get IsoVillage() {
+      mockIsoAcces++;
+      return Carte;
+    },
+  };
+});
 
 const METRICS = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
@@ -115,11 +162,13 @@ function mockFeeds(over: Partial<RecentFeeds> = {}) {
     .mockResolvedValue({ muscle: {}, style: {}, outing: [], ...over });
 }
 
-function renderScene() {
+function renderScene(iso?: boolean) {
   return render(
     <SafeAreaProvider initialMetrics={METRICS}>
       <TamaguiProvider config={config} defaultTheme="dark">
-        <VillageScene />
+        <GestureHandlerRootView>
+          <VillageScene iso={iso} />
+        </GestureHandlerRootView>
       </TamaguiProvider>
     </SafeAreaProvider>,
   );
@@ -130,10 +179,13 @@ describe("VillageScene", () => {
     jest.spyOn(crestDb, "getCrest").mockResolvedValue(null);
     mockFeeds();
   });
+  // The window a rotation test turned is put back upright.
+  const portrait = Dimensions.get("window");
   afterEach(() => {
     jest.restoreAllMocks();
     mockParams = {};
     mockFocusTick = 0;
+    Dimensions.set({ window: portrait });
   });
 
   it("puts the closest rung first, in reps, with its unit at both ends of the bar", async () => {
@@ -171,6 +223,537 @@ describe("VillageScene", () => {
     const name = within(await findByTestId("village-next")).getByText("Forge");
 
     expect(StyleSheet.flatten(name.props.style).fontFamily).toMatch(/Alegreya/i);
+  });
+
+  it("paints the tier's image, not the iso map, while INTEGRATION is off", async () => {
+    mockScene([campfire, forge]);
+    const avant = mockIsoAcces;
+
+    const { findByTestId, queryByTestId, toJSON } = await renderScene();
+    await findByTestId("village-next");
+
+    expect(queryByTestId("iso-village")).toBeNull();
+    expect(mockIsoAcces).toBe(avant);
+    expect(JSON.stringify(toJSON())).toContain(JSON.stringify(getVillageTierAsset(4)));
+  });
+
+  it("flag off: no strip, no drawer, the list scrolls under the painting, as before T45", async () => {
+    mockParams = { grown: "forge:2:3" };
+    mockScene([campfire, forge]);
+    const { findByTestId, queryByTestId, getByTestId } = await renderScene();
+    expect(INTEGRATION).toBe(false);
+    await findByTestId("village-next");
+    expect(queryByTestId("village-drawer-open")).toBeNull();
+    expect(queryByTestId("village-drawer")).toBeNull();
+    expect(within(getByTestId("village-scroll")).getByTestId("village-hero")).toBeTruthy();
+    expect(within(getByTestId("village-scroll")).getByTestId("village-next")).toBeTruthy();
+    expect(within(getByTestId("village-scroll")).getByTestId("village-tier")).toBeTruthy();
+    // The golden card still comes up over the painting.
+    expect(await findByTestId("village-reward")).toBeTruthy();
+    expect(queryByTestId("village-hero-room")).toBeNull();
+  });
+
+  describe("ready to improve (L6-T13)", () => {
+    // The forge stands at rank 4 (solid) and was claimed at rank 2 (rough); the farm is as claimed.
+    const forgeUp = building("forge", 4, { driver: "muscle", metricValue: 300, nextTarget: 500 });
+    const farmUp = building("farm", 4, { driver: "muscle", metricValue: 650, nextTarget: 1000 });
+    const last = () => mockIsoProps.at(-1);
+    // The list is in the drawer on the iso page (T45): open it, as the hero does.
+    const renderIsoDrawer = async () => {
+      const scene = await renderScene(true);
+      await fireEvent.press(await scene.findByTestId("village-drawer-open"));
+      return scene;
+    };
+
+    it("flag off: the claimed stages are neither read nor written", async () => {
+      mockScene([campfire, forgeUp]);
+      const read = jest.spyOn(village, "getClaimedStages");
+      const write = jest.spyOn(village, "claimStage");
+      const { findByTestId, queryByText } = await renderScene();
+      await findByTestId("village-next");
+      expect(read).not.toHaveBeenCalled();
+      expect(write).not.toHaveBeenCalled();
+      expect(queryByText("Ready to evolve")).toBeNull();
+    });
+
+    it("says it on the row and to TalkBack, draws the claimed level, writes nothing yet", async () => {
+      mockScene([campfire, forgeUp]);
+      jest.spyOn(village, "getClaimedStages").mockResolvedValue({ forge: 2 });
+      const write = jest.spyOn(village, "claimStage").mockResolvedValue({ forge: 4 });
+      mockIsoProps.length = 0;
+      const { findByText, findAllByTestId } = await renderIsoDrawer();
+      await findByText("Ready to evolve");
+      const labels = (await findAllByTestId("village-building-row")).map(
+        (r) => r.props.accessibilityLabel as string,
+      );
+      expect(labels).toContain("Forge ready to evolve, rank 4");
+      expect(last()?.reclamables).toEqual(["forge"]);
+      expect(last()?.niveauxReclames).toEqual({ forge: 2 });
+      expect(write).not.toHaveBeenCalled();
+    });
+
+    it("the sheet's button starts the site, and the key is written when the site is over", async () => {
+      mockScene([campfire, forgeUp]);
+      jest.spyOn(village, "getClaimedStages").mockResolvedValue({ forge: 2 });
+      const write = jest.spyOn(village, "claimStage").mockResolvedValue({ forge: 4 });
+      const { findByLabelText, findByTestId } = await renderIsoDrawer();
+      await fireEvent.press(await findByLabelText("Forge ready to evolve, rank 4"));
+      await fireEvent.press(await findByTestId("village-claim"));
+      await waitFor(() => expect(last()?.croissance).toBeDefined());
+      // The new stage shows from the first frame of the site; nothing is written before its end.
+      expect(last()?.niveauxReclames).toEqual({ forge: 4 });
+      expect(last()?.reclamables).toEqual([]);
+      expect(write).not.toHaveBeenCalled();
+      await act(async () => last()?.onCroissanceFinie?.());
+      expect(write).toHaveBeenCalledTimes(1);
+      expect(write).toHaveBeenCalledWith([forgeUp]);
+    });
+
+    it("a tap on the map opens the bubble, not the sheet; its Evolve starts the same site", async () => {
+      mockScene([campfire, forgeUp]);
+      jest.spyOn(village, "getClaimedStages").mockResolvedValue({ forge: 2 });
+      jest.spyOn(village, "claimStage").mockResolvedValue({ forge: 4 });
+      const scene = await renderIsoDrawer();
+      await scene.findByText("Ready to evolve");
+      const forgeTap: Ouverture = { cible: { type: "batiment", code: "forge" }, ancre: [195, 400] };
+      await act(async () => last()?.onBulle?.(forgeTap));
+      expect(scene.getByTestId("iso-bulle-nom").props.accessibilityLabel).toBe(
+        "Forge ready to evolve, rank 4",
+      );
+      expect(scene.queryByTestId("village-detail")).toBeNull();
+      await fireEvent.press(scene.getByTestId("village-claim"));
+      await waitFor(() => expect(last()?.croissance).toBeDefined());
+      // jest's window reads text at 200 %: this was the sheet, which keeps its words as it slides shut.
+      expect(scene.queryByTestId("village-claim")).toBeNull();
+    });
+
+    it("the bubble's outside tap asks the map what lies there: the same building closes it", async () => {
+      mockScene([campfire, forgeUp]);
+      jest.spyOn(village, "getClaimedStages").mockResolvedValue({ forge: 2 });
+      jest.spyOn(village, "claimStage").mockResolvedValue({ forge: 4 });
+      // Text at 100 %, so the bubble is the framed one with its outside backdrop.
+      Dimensions.set({ window: { ...portrait, fontScale: 1 } });
+      const scene = await renderIsoDrawer();
+      await scene.findByText("Ready to evolve");
+      const forgeTap: Ouverture = { cible: { type: "batiment", code: "forge" }, ancre: [195, 400] };
+      const viseur = last()?.viseur;
+      await act(async () => last()?.onBulle?.(forgeTap));
+      expect(scene.getByTestId("iso-bulle-nom")).toBeTruthy();
+      const dehors = scene.getByTestId("iso-bulle-dehors", { includeHiddenElements: true });
+      const ici = { nativeEvent: { pageX: 195, pageY: 420 } };
+      const vise = jest.fn(() => forgeTap);
+      if (viseur) viseur.current = vise;
+      await fireEvent(dehors, "pressIn", ici);
+      await fireEvent.press(dehors, ici);
+      expect(vise).toHaveBeenCalledWith(195, 420);
+      expect(scene.queryByTestId("iso-bulle-nom", { includeHiddenElements: true })).toBeNull();
+    });
+
+    it("unmounted during the site: nothing is written, the building is ready again", async () => {
+      mockScene([campfire, forgeUp]);
+      jest.spyOn(village, "getClaimedStages").mockResolvedValue({ forge: 2 });
+      const write = jest.spyOn(village, "claimStage").mockResolvedValue({ forge: 4 });
+      const first = await renderIsoDrawer();
+      await fireEvent.press(await first.findByLabelText("Forge ready to evolve, rank 4"));
+      await fireEvent.press(await first.findByTestId("village-claim"));
+      await waitFor(() => expect(last()?.croissance).toBeDefined());
+      await first.unmount();
+      expect(write).not.toHaveBeenCalled();
+      mockIsoProps.length = 0;
+      await renderIsoDrawer();
+      await waitFor(() => expect(last()?.reclamables).toEqual(["forge"]));
+    });
+
+    it("upgrade all from two ready buildings: one write for both", async () => {
+      mockScene([campfire, forgeUp, farmUp]);
+      jest.spyOn(village, "getClaimedStages").mockResolvedValue({ forge: 2, farm: 2 });
+      const write = jest.spyOn(village, "claimStage").mockResolvedValue({ forge: 4, farm: 4 });
+      const { findByTestId, queryByTestId } = await renderIsoDrawer();
+      await fireEvent.press(await findByTestId("village-claim-all"));
+      await waitFor(() => expect(last()?.croissance).toBeDefined());
+      await act(async () => last()?.onCroissanceFinie?.());
+      expect(write).toHaveBeenCalledTimes(1);
+      expect(write.mock.calls[0]?.[0].map((b) => b.code).sort()).toEqual(["farm", "forge"]);
+      expect(queryByTestId("village-claim-all")).toBeNull();
+    });
+
+    it("reduced motion plays no scene: a sentence says it, and the key is written", async () => {
+      mockScene([campfire, forgeUp]);
+      jest.spyOn(village, "getClaimedStages").mockResolvedValue({ forge: 2 });
+      jest.spyOn(village, "claimStage").mockResolvedValue({ forge: 4 });
+      const { findByLabelText, findByTestId } = await renderIsoDrawer();
+      await fireEvent.press(await findByLabelText("Forge ready to evolve, rank 4"));
+      await fireEvent.press(await findByTestId("village-claim"));
+      await waitFor(() => expect(last()?.croissance).toBeDefined());
+      await act(async () => last()?.onCroissanceFinie?.());
+      expect((await findByTestId("village-evolved")).props.accessibilityLiveRegion).toBe("polite");
+    });
+
+    it("a counted session evolves what was already ready, scene-less; the new gain waits", async () => {
+      // The forge was ready before the session (claimed 2, stood at 3); the farm rose to 4 in it.
+      mockParams = { grown: "forge:3:4,farm:3:4" };
+      mockScene([campfire, forgeUp, farmUp]);
+      jest.spyOn(village, "getClaimedStages").mockResolvedValue({ forge: 2, farm: 3 });
+      const write = jest.spyOn(village, "claimStage").mockResolvedValue({ forge: 3, farm: 3 });
+      mockIsoProps.length = 0;
+      await renderIsoDrawer();
+      await waitFor(() => expect(write).toHaveBeenCalledTimes(1));
+      expect(write).toHaveBeenCalledWith([{ code: "forge", level: 3 }]);
+      expect(mockIsoProps.every((p) => p.croissance === undefined)).toBe(true);
+    });
+
+    it("a counted session with nothing ready before writes nothing", async () => {
+      mockParams = { grown: "farm:4:5" };
+      mockScene([
+        campfire,
+        building("farm", 5, { driver: "muscle", metricValue: 900, nextTarget: 1000 }),
+      ]);
+      jest.spyOn(village, "getClaimedStages").mockResolvedValue({ farm: 4 });
+      const write = jest.spyOn(village, "claimStage").mockResolvedValue({});
+      const { findByText } = await renderIsoDrawer();
+      await findByText("Ready to evolve");
+      expect(write).not.toHaveBeenCalled();
+    });
+
+    it("end to end from a key that was never written: the session's gain is ready, then played and written", async () => {
+      // Memory stands for the preference: the real reader and writer run on top of it.
+      const mem: village.ClaimedStages = {};
+      jest.spyOn(village, "getClaimedStages").mockImplementation(() => Promise.resolve({ ...mem }));
+      const write = jest.spyOn(village, "claimStage").mockImplementation((items) => {
+        for (const { code, level } of items) mem[code] = Math.max(mem[code] ?? 0, level);
+        return Promise.resolve({ ...mem });
+      });
+      // The forge crossed into solid (2 -> 3) in the session just counted.
+      mockParams = { grown: "forge:2:3" };
+      mockScene([
+        campfire,
+        building("forge", 3, { driver: "muscle", metricValue: 300, nextTarget: 500 }),
+      ]);
+      mockIsoProps.length = 0;
+      const { findByLabelText, findByTestId } = await renderIsoDrawer();
+      // Seeded at the level it stood at before the session: nothing was ready, now the forge is.
+      await waitFor(() => expect(last()?.reclamables).toEqual(["forge"]));
+      expect(mem).toEqual({ forge: 2, campfire: 4 });
+      expect(last()?.niveauxReclames).toEqual({ forge: 2, campfire: 4 });
+      write.mockClear();
+      await fireEvent.press(await findByLabelText("Forge ready to evolve, rank 3"));
+      await fireEvent.press(await findByTestId("village-claim"));
+      await waitFor(() => expect(last()?.croissance).toBeDefined());
+      expect(write).not.toHaveBeenCalled();
+      await act(async () => last()?.onCroissanceFinie?.());
+      expect(write).toHaveBeenCalledWith([expect.objectContaining({ code: "forge", level: 3 })]);
+      expect(mem.forge).toBe(3);
+    });
+
+    it("the first time the flag is on, one write of the present levels changes nothing on screen", async () => {
+      const mem: village.ClaimedStages = {};
+      jest.spyOn(village, "getClaimedStages").mockImplementation(() => Promise.resolve({ ...mem }));
+      const write = jest.spyOn(village, "claimStage").mockImplementation((items) => {
+        for (const { code, level } of items) mem[code] = level;
+        return Promise.resolve({ ...mem });
+      });
+      mockScene([campfire, forgeUp]);
+      mockIsoProps.length = 0;
+      await renderIsoDrawer();
+      await waitFor(() => expect(write).toHaveBeenCalledTimes(1));
+      expect(mem).toEqual({ campfire: 4, forge: 4 });
+      expect(last()?.reclamables).toEqual([]);
+    });
+
+    it("TalkBack: the row of a ready building carries an Evolve action, the sheet's handler", async () => {
+      mockScene([campfire, forgeUp]);
+      jest.spyOn(village, "getClaimedStages").mockResolvedValue({ forge: 2 });
+      const write = jest.spyOn(village, "claimStage").mockResolvedValue({ forge: 4 });
+      const { findByLabelText } = await renderIsoDrawer();
+      const row = await findByLabelText("Forge ready to evolve, rank 4");
+      expect(row.props.accessibilityActions).toEqual([{ name: "evolve", label: "Evolve" }]);
+      await fireEvent(row, "accessibilityAction", { nativeEvent: { actionName: "evolve" } });
+      await waitFor(() => expect(last()?.croissance).toBeDefined());
+      await act(async () => last()?.onCroissanceFinie?.());
+      expect(write).toHaveBeenCalledWith([forgeUp]);
+    });
+
+    it("a single ready building has no upgrade-all button", async () => {
+      mockScene([campfire, forgeUp]);
+      jest.spyOn(village, "getClaimedStages").mockResolvedValue({ forge: 2 });
+      const { findByText, queryByTestId } = await renderIsoDrawer();
+      await findByText("Ready to evolve");
+      expect(queryByTestId("village-claim-all")).toBeNull();
+    });
+  });
+
+  it("opens the painting's viewer on a press of the hero, and not when the iso map is up", async () => {
+    mockScene([campfire, forge]);
+
+    const painting = await renderScene();
+    await fireEvent.press(await painting.findByTestId("village-hero"));
+    expect(painting.queryByTestId("village-scene-viewer")).toBeTruthy();
+    await painting.unmount();
+
+    // The map's taps would also reach a press on the hero and cover the building's sheet.
+    const iso = await renderScene(true);
+    const hero = await iso.findByTestId("village-hero");
+    expect(hero.props.onPress).toBeUndefined();
+    await fireEvent.press(hero);
+    expect(iso.queryByTestId("village-scene-viewer")).toBeNull();
+  });
+
+  it("reads the rank with the name on the rows and the next card", async () => {
+    mockScene([campfire, forge]);
+
+    const { findByTestId, findAllByTestId } = await renderScene();
+    const rows = await findAllByTestId("village-building-row");
+    const labels = rows.map((r) => r.props.accessibilityLabel as string);
+    expect(labels).toContain("Forge, rank 1");
+    expect(labels.every((l) => /, (rank \d+|Not built yet)$/.test(l))).toBe(true);
+    const next = within(await findByTestId("village-next")).getByLabelText(/^Forge, /);
+    expect(next).toBeTruthy();
+  });
+
+  it("lets the map under the title keep its touches in iso, as on the painting", async () => {
+    mockScene([campfire, forge]);
+
+    const painting = await renderScene();
+    const titre = await painting.findByTestId("village-title");
+    expect(titre.props.pointerEvents ?? StyleSheet.flatten(titre.props.style)?.pointerEvents).toBe(
+      "box-none",
+    );
+    await painting.unmount();
+
+    const iso = await renderScene(true);
+    const titreIso = await iso.findByTestId("village-title");
+    expect(
+      titreIso.props.pointerEvents ?? StyleSheet.flatten(titreIso.props.style)?.pointerEvents,
+    ).toBe("box-none");
+  });
+
+  it("fills the hero under the title and frames the island above it", async () => {
+    mockScene([campfire, forge]);
+    mockIsoProps.length = 0;
+    await renderScene(true);
+    const { height, margeBas } = mockIsoProps.at(-1) ?? {};
+    expect(margeBas).toBeGreaterThanOrEqual(50);
+    expect(height).toBeGreaterThan(margeBas ?? 0);
+  });
+
+  // RNGH's Android hit test makes a handlerless leaf (a gradient) or a backgrounded view the
+  // touch target when it lies over the detector, so the map's gestures never started (qa, L3-T07a).
+  it("lets the map's touches through every layer drawn over it", async () => {
+    mockScene([campfire, forge]);
+    const iso = await renderScene(true);
+    const hero = await iso.findByTestId("village-hero");
+    const enfants = (hero.children as unknown[]).filter(
+      (k): k is Parameters<typeof within>[0] => typeof k !== "string",
+    );
+    const carte = enfants.findIndex(
+      (k) => k.props.testID === "iso-village" || within(k).queryByTestId("iso-village") !== null,
+    );
+    expect(carte).toBeGreaterThanOrEqual(0);
+    const dessus = enfants.slice(carte + 1);
+    expect(dessus.length).toBeGreaterThan(2);
+    for (const k of dessus) {
+      const mode = k.props.pointerEvents ?? StyleSheet.flatten(k.props.style)?.pointerEvents;
+      expect([k.props.testID ?? k.type, mode]).toEqual([
+        k.props.testID ?? k.type,
+        expect.stringMatching(/^(none|box-none)$/),
+      ]);
+    }
+  });
+
+  it("shows the iso map when the dev route asks for it, without touching the flag", async () => {
+    mockScene([campfire, forge]);
+
+    const { findByTestId } = await renderScene(true);
+
+    await findByTestId("iso-village");
+    expect(INTEGRATION).toBe(false);
+  });
+
+  it("never unlocks the orientation while INTEGRATION is off, even with the iso map up", async () => {
+    mockScene([campfire, forge]);
+    const orientation = jest.requireMock("expo-screen-orientation") as { unlockAsync: jest.Mock };
+    orientation.unlockAsync.mockClear();
+
+    await (await renderScene(true)).findByTestId("iso-village");
+
+    expect(INTEGRATION).toBe(false);
+    expect(orientation.unlockAsync).not.toHaveBeenCalled();
+  });
+
+  // The window turns first, then the screen's area is laid out again, as on a phone.
+  const turn = async (scene: Awaited<ReturnType<typeof renderScene>>, w: number, h: number) => {
+    await act(() => Dimensions.set({ window: { ...portrait, width: w, height: h + 60 } }));
+    await act(() =>
+      fireEvent(scene.getByTestId("village-screen"), "layout", {
+        nativeEvent: { layout: { x: 0, y: 0, width: w, height: h } },
+      }),
+    );
+  };
+
+  it("lays the iso map over the whole width in landscape too, the title over it", async () => {
+    mockScene([campfire, forge]);
+    const scene = await renderScene(true);
+    await scene.findByTestId("village-hero");
+
+    await turn(scene, 850, 330);
+
+    const side = scene.getByTestId("village-map-side");
+    expect(within(side).getByTestId("iso-village")).toBeTruthy();
+    // The page less the drawer's strip (56).
+    expect(StyleSheet.flatten(side.props.style)).toMatchObject({ width: 850, height: 274 });
+    expect(scene.queryByTestId("village-hero")).toBeNull();
+    expect(within(side).getByTestId("village-title")).toBeTruthy();
+    expect(scene.queryByTestId("village-scroll")).toBeNull();
+  });
+
+  // A remount lost the dragged view on the way back to portrait and redrew the world without its
+  // buildings (qa, T21). The same instance keeps its camera, and a resize keeps the view
+  // (iso-camera, "keeps a zoomed view when the area turns").
+  it("keeps the same map instance through a rotation and back, only its size changes", async () => {
+    mockScene([campfire, forge]);
+    const scene = await renderScene(true);
+    await scene.findByTestId("iso-village");
+    await turn(scene, 390, 760);
+    const montages = mockIsoMontages;
+    const taille = () => [mockIsoProps.at(-1)?.width, mockIsoProps.at(-1)?.height];
+    const enPortrait = taille();
+
+    await turn(scene, 850, 330);
+    expect(scene.getByTestId("village-map-side")).toBeTruthy();
+    expect(taille()).toEqual([850, 274]);
+    await turn(scene, 390, 760);
+    expect(scene.getByTestId("village-hero")).toBeTruthy();
+
+    expect(mockIsoMontages).toBe(montages);
+    expect(taille()).toEqual(enPortrait);
+  });
+
+  it("lays out the new orientation as soon as the window turns, before the area is measured", async () => {
+    mockScene([campfire, forge]);
+    const scene = await renderScene(true);
+    await turn(scene, 390, 760);
+
+    // The area still holds the portrait measure, which no longer fits the landscape window.
+    await act(() => Dimensions.set({ window: { ...portrait, width: 850, height: 390 } }));
+
+    expect(scene.getByTestId("village-map-side")).toBeTruthy();
+  });
+
+  // The map's layout in the window alone (area not yet measured) is the one the measured area
+  // confirms: no second jump when onLayout arrives (T38 lot 3). Bar = 60 over the 34 dp inset.
+  it.each([
+    ["phone portrait", 390, 844],
+    ["phone landscape", 844, 390],
+    ["tablet portrait", 800, 1280],
+    ["tablet landscape", 1280, 800],
+  ])(
+    "keeps the map's size when the area is measured after the window turned (%s)",
+    async (_n, w, h) => {
+      mockScene([campfire, forge]);
+      const scene = await renderScene(true);
+      await scene.findByTestId("iso-village");
+      // The last area is the other orientation's, wider or taller than the new window: stale.
+      await (w > h ? turn(scene, 300, 1500) : turn(scene, 1500, 300));
+      await act(() => Dimensions.set({ window: { ...portrait, width: w, height: h } }));
+      const taille = () => [mockIsoProps.at(-1)?.width, mockIsoProps.at(-1)?.height];
+      const avant = taille();
+      await act(() =>
+        fireEvent(scene.getByTestId("village-screen"), "layout", {
+          nativeEvent: { layout: { x: 0, y: 0, width: w, height: h - 60 - 34 } },
+        }),
+      );
+      expect(taille()).toEqual(avant);
+    },
+  );
+
+  // TalkBack reads in tree order, and Fabric reorders by zIndex: the strip is first in the tree and
+  // nothing in the iso page carries a zIndex (T45).
+  it("puts the drawer's strip first in the iso tree, then the title, with no zIndex anywhere", async () => {
+    mockScene([campfire, forge]);
+    const scene = await renderScene(true);
+    await scene.findByTestId("village-drawer-open");
+    const arbre = JSON.stringify(scene.toJSON());
+    expect(arbre.indexOf('"village-drawer-open"')).toBeGreaterThan(-1);
+    expect(arbre.indexOf('"village-drawer-open"')).toBeLessThan(arbre.indexOf('"village-title"'));
+    expect(
+      StyleSheet.flatten(scene.getByTestId("village-hero").props.style).zIndex,
+    ).toBeUndefined();
+    expect(arbre).not.toContain('"zIndex"');
+  });
+
+  it("is a single button with the tier, no badge, that the list answers to", async () => {
+    mockScene([campfire, forge]);
+    const scene = await renderScene(true);
+    const strip = await scene.findByTestId("village-drawer-open");
+    expect(strip.props.accessibilityRole).toBe("button");
+    expect(strip.props.accessibilityLabel).toMatch(/^Your village, tier \d+$/);
+    // Nothing of the list is on the page until the drawer opens.
+    expect(scene.queryByTestId("village-next")).toBeNull();
+    expect(scene.queryByTestId("village-scroll")).toBeNull();
+    await fireEvent.press(strip);
+    expect(await scene.findByTestId("village-next")).toBeTruthy();
+    expect((await scene.findAllByTestId("village-building-row")).length).toBeGreaterThan(0);
+    expect(scene.getByTestId("village-tier")).toBeTruthy();
+  });
+
+  it("leaves the drawer when one of its rows opens a building", async () => {
+    mockScene([campfire, forge]);
+    const scene = await renderScene(true);
+    await fireEvent.press(await scene.findByTestId("village-drawer-open"));
+    const rows = await scene.findAllByTestId("village-building-row");
+    await fireEvent.press(rows[0] as (typeof rows)[number]);
+    expect(await scene.findByTestId("village-detail")).toBeTruthy();
+  });
+
+  // The shield's press stays on the title, and the title is read as it stands: no hidden copy.
+  it("speaks the iso title where it stands, with the shield as a button", async () => {
+    mockScene([campfire, forge]);
+    jest.spyOn(crestDb, "getCrest").mockResolvedValue({
+      animal: "bear",
+      stage: "young",
+      manual: false,
+      picked: "auto",
+      second: null,
+      quarters: null,
+      revealedIndex: 7,
+      evidence: {
+        firstEight: { strength: 0, calisthenics: 0, yoga: 0, run: 0, ride: 0 },
+        firstEightOrder: [],
+        totals: { strength: 0, calisthenics: 0, yoga: 0, run: 0, ride: 0 },
+        first: "bear",
+        secondFromSessions: null,
+        boarQuarters: null,
+      },
+      longestFlame: 0,
+      rings: 0,
+      revealedAt: new Date(2020, 0, 1),
+    });
+    const scene = await renderScene(true);
+    const crest = await scene.findByTestId("village-crest");
+    expect(crest.props.accessibilityRole).toBe("button");
+    expect(crest.props.accessibilityLabel).toBe("Why the Bear?");
+
+    // A one-word name is never split mid-word: one line, shrunk to fit.
+    const word = within(await scene.findByTestId("village-name-cartouche")).getByText(/./);
+    expect(word.props.children).not.toMatch(/[\s-]/);
+    expect(word.props.numberOfLines).toBe(1);
+    expect(word.props.adjustsFontSizeToFit).toBe(true);
+    const titre = scene.getByTestId("village-title");
+    expect(titre.props.importantForAccessibility).toBe("auto");
+    expect(scene.queryByTestId("village-hero-room")).toBeNull();
+    expect(within(titre).getByText(/Level\s8\s·\sChampion/)).toBeTruthy();
+    expect(scene.getByTestId("village-crest-line").props.children).toBeTruthy();
+
+    await fireEvent.press(crest);
+    expect(await scene.findByText("Why the Bear?")).toBeTruthy();
+  });
+
+  it("keeps the painting's title plain and spoken where it stands", async () => {
+    mockScene([campfire, forge]);
+    const scene = await renderScene();
+    await scene.findByTestId("village-title");
+    expect(scene.queryByTestId("village-name-cartouche")).toBeNull();
+    expect(scene.getByTestId("village-title").props.importantForAccessibility).toBe("auto");
   });
 
   it("says nothing of when for a building nothing has fed", async () => {
@@ -358,7 +941,7 @@ describe("VillageScene", () => {
     expect(next.queryByText("1 rematch for level 1")).toBeNull();
 
     // The sheet says the condition once, instead of "0 rematches won" above it.
-    await fireEvent.press(next.getByLabelText("Champion Arena"));
+    await fireEvent.press(next.getByLabelText(/^Champion Arena, /));
     const sheet = within(await findByTestId("village-detail"));
     expect(sheet.getAllByText("Built when you beat a boss a second time")).toHaveLength(1);
     expect(sheet.queryByText("0 rematches won")).toBeNull();
@@ -376,7 +959,7 @@ describe("VillageScene", () => {
 
     const { findByTestId, findByText } = await renderScene();
     const deeds = within(await findByTestId("village-family-deed"));
-    await fireEvent.press(deeds.getByLabelText("Hall of Heroes"));
+    await fireEvent.press(deeds.getByLabelText(/^Hall of Heroes, /));
 
     expect(await findByText(/carries over from what you had done before/)).toBeTruthy();
     expect(within(await findByTestId("village-detail")).getByText("7 routes")).toBeTruthy();
@@ -464,7 +1047,7 @@ describe("VillageScene", () => {
 
     const { findByTestId, findByText } = await renderScene();
     const muscles = within(await findByTestId("village-family-muscle"));
-    await fireEvent.press(muscles.getByLabelText("Forge"));
+    await fireEvent.press(muscles.getByLabelText(/^Forge, /));
 
     // The driver, where it stands, and what the next level costs. In reps, with the one exchange
     // rate that is not one-to-one named on the same line.
@@ -483,7 +1066,7 @@ describe("VillageScene", () => {
 
     const { findByTestId, findByText } = await renderScene();
     const muscles = within(await findByTestId("village-family-muscle"));
-    await fireEvent.press(muscles.getByLabelText("Forge"));
+    await fireEvent.press(muscles.getByLabelText(/^Forge, /));
 
     // (600 - 350) over the 112.5 a session brings, rounded up.
     expect(
@@ -498,7 +1081,7 @@ describe("VillageScene", () => {
 
     const { findByTestId, findByText } = await renderScene();
     const muscles = within(await findByTestId("village-family-muscle"));
-    await fireEvent.press(muscles.getByLabelText("Quarry"));
+    await fireEvent.press(muscles.getByLabelText(/^Quarry, /));
 
     expect(await findByText("Built by training your back")).toBeTruthy();
   });
@@ -517,6 +1100,28 @@ describe("VillageScene", () => {
 
     await fireEvent.press(reward);
     await waitFor(() => expect(queryByTestId("village-reward")).toBeNull());
+  });
+
+  it("a return from a session no longer plays the golden card over the iso map, nor the growth", async () => {
+    // The ready-to-improve signal replaces the growth (L6-T13): the claim is the celebration. The
+    // card was the painting's; the map's caption says it (T45, inventory point 12).
+    mockParams = { grown: "forge:2:3" };
+    mockScene([campfire, forge]);
+    mockIsoProps.length = 0;
+
+    const { findByTestId, queryByTestId } = await renderScene(true);
+    await findByTestId("iso-village");
+    await act(() => new Promise((done) => setTimeout(done, 1400)));
+    expect(queryByTestId("village-reward")).toBeNull();
+    expect(mockIsoProps.every((p) => p.croissance === undefined)).toBe(true);
+  });
+
+  it("hands nothing to the map for a plain visit", async () => {
+    mockParams = {};
+    mockScene([campfire, forge]);
+    mockIsoProps.length = 0;
+    await (await renderScene(true)).findByTestId("iso-village");
+    expect(mockIsoProps.every((p) => p.croissance === undefined)).toBe(true);
   });
 
   it("caps the return card's text, so a long list of risen buildings never grows it off the screen", async () => {

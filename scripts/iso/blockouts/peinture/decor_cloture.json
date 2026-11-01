@@ -1,0 +1,61 @@
+{
+  "canvas": "decor1x1",
+  "parts": [
+    {
+      "type": "box",
+      "at": [0.045, 0.465, 0.0],
+      "size": [0.07, 0.07, 0.34],
+      "mat": "darkwood",
+      "rotZ": -12.0,
+      "roof": false
+    },
+    {
+      "type": "box",
+      "at": [0.325, 0.465, 0.0],
+      "size": [0.07, 0.07, 0.32],
+      "mat": "darkwood",
+      "rotZ": -4.0,
+      "roof": false
+    },
+    {
+      "type": "box",
+      "at": [0.605, 0.465, 0.0],
+      "size": [0.07, 0.07, 0.34],
+      "mat": "darkwood",
+      "rotZ": 4.0,
+      "roof": false
+    },
+    {
+      "type": "box",
+      "at": [0.885, 0.465, 0.0],
+      "size": [0.07, 0.07, 0.32],
+      "mat": "darkwood",
+      "rotZ": 12.0,
+      "roof": false
+    },
+    {
+      "type": "box",
+      "at": [0.05, 0.5275, 0.12],
+      "size": [0.9, 0.035, 0.05],
+      "mat": "wood",
+      "roof": false
+    },
+    {
+      "type": "box",
+      "at": [0.05, 0.5275, 0.25],
+      "size": [0.9, 0.035, 0.05],
+      "mat": "wood",
+      "roof": false
+    },
+    {
+      "type": "box",
+      "at": [0.19, 0.44, 0.2],
+      "size": [0.62, 0.03, 0.04],
+      "mat": "wood",
+      "roof": false
+    }
+  ],
+  "pxScale": 2.442,
+  "anchorPx": [262, 716],
+  "lineScale": 0.6143
+}

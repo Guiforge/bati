@@ -1,0 +1,307 @@
+{
+  "budget": {
+    "loop_usd": 40,
+    "registry_cap_usd": 60.2,
+    "spent_in_loop_usd": 0.96,
+    "note": "sonde probe-00 : 0,81 $ + reprise 0,15 $"
+  },
+  "lots": [
+    {
+      "id": "A1",
+      "area": "A",
+      "files": [
+        "components/village/iso/Monde.tsx",
+        "components/village/iso/ambiance*",
+        "constants/rawColors.ts (iso)",
+        "constants/isoSpec.json (ambiances)"
+      ],
+      "goal": "proud",
+      "sources": ["M0-01", "M0-02", "T0-04", "H0-02", "FIN-LUM"],
+      "acceptance": "Jour : fin d'après-midi dorée (voile #F2E2B4, vignette #2E3552 25 % dans l'espace carte, LinearGradient d'écran retiré). Nuit : sol bleu nuit ~35 %, toutes fenêtres et lanternes #F0A848 avec flaque au sol, feu et forge qui palpitent, jamais vert sur vert. Drapeaux pas plus vifs que leur rôle.",
+      "effort": "M",
+      "flux_estimate_usd": 0,
+      "status": "todo",
+      "passes": false
+    },
+    {
+      "id": "A2",
+      "area": "A",
+      "files": ["components/village/iso/ (couche atmosphère)"],
+      "goal": "fun",
+      "sources": ["M0-13", "T0-11", "bible §5"],
+      "acceptance": "Ombres de nuages floues qui traversent en 40-60 s, rais de lumière de gauche qui respirent ; brume de bord seulement si Guillaume la valide.",
+      "effort": "M",
+      "flux_estimate_usd": 0,
+      "status": "todo",
+      "passes": false
+    },
+    {
+      "id": "B1",
+      "area": "B",
+      "files": [
+        "constants/isoLayout.json",
+        "components/village/iso/camera*",
+        "components/village/iso/carteDemo.ts (cadrage)"
+      ],
+      "goal": "proud",
+      "sources": ["M0-04", "T0-02", "anim-08", "anim-09"],
+      "acceptance": "Cadrage d'ouverture serré : le village remplit la largeur, salle des héros point focal au centre, chemins qui convergent vers elle ; zoom au bouton sans glissé tardif (cible bornée avant l'animation) ; cadrage Prêt en 600-800 ms.",
+      "effort": "M",
+      "flux_estimate_usd": 0,
+      "status": "todo",
+      "passes": false
+    },
+    {
+      "id": "B2",
+      "area": "B",
+      "files": [
+        "components/village/iso/IsoCarteDemo.tsx (sol, champs, lisière)",
+        "components/village/iso/carteDemo.ts (décor)"
+      ],
+      "goal": "proud",
+      "sources": [
+        "M0-06",
+        "M0-11",
+        "M0-12",
+        "T0-06",
+        "T0-07",
+        "H0-01",
+        "FIN-CAR",
+        "FIN-DEC",
+        "FIN-ROU"
+      ],
+      "acceptance": "Champs sans encre, bords cassés, sillons 2 tons, haies, collés aux fermes ; arbres ronds plats remplacés par bosquets encrés ; palier 1 en sentier courbe, plus de croix ; plus de taches ni d'arcs sur l'herbe.",
+      "effort": "M",
+      "flux_estimate_usd": 0,
+      "status": "todo",
+      "passes": false
+    },
+    {
+      "id": "B3",
+      "area": "B",
+      "files": ["components/village/iso/ (eau, pont)", "assets/images/village/iso/ (pont)"],
+      "goal": "fun",
+      "sources": ["M0-14", "T0-07"],
+      "acceptance": "Rivière de bord à bord, plus large, 2 tons, sans encre, rides animées ; pont de bois encré peint.",
+      "effort": "M",
+      "flux_estimate_usd": 0.5,
+      "status": "todo",
+      "passes": false
+    },
+    {
+      "id": "B4",
+      "area": "B",
+      "files": [
+        "assets/images/village/iso/mondeTuiles/",
+        "components/village/iso/IsoCarteDemo.tsx (Tuile)"
+      ],
+      "goal": "proud",
+      "sources": ["M0-13", "FIN-CAR tours 2-3", "bible §1.1"],
+      "acceptance": "Sol peint au pinceau en 3 valeurs (FLUX, ancre de style), raccords invisibles, plus d'aplat vectoriel.",
+      "effort": "L",
+      "flux_estimate_usd": 3,
+      "status": "todo",
+      "passes": false
+    },
+    {
+      "id": "C1",
+      "area": "C",
+      "files": [
+        "components/village/iso/histoires.ts (nouveau)",
+        "components/village/iso/habitants.ts (placement)"
+      ],
+      "goal": "fun",
+      "sources": ["M0-15", "T0-08", "H0-10"],
+      "acceptance": "3 petites histoires visibles sans toucher avec les sprites existants (vieux qui dort contre un tonneau près du feu, dispute devant la forge, apprenti au seau sur le chantier), dérivées du journal, déterministes ; place jamais vide ; plus d'assis sur rien.",
+      "effort": "M",
+      "flux_estimate_usd": 0,
+      "status": "todo",
+      "passes": false
+    },
+    {
+      "id": "C2",
+      "area": "C",
+      "files": ["assets/images/village/iso/ (accessoires, histoires)"],
+      "goal": "fun",
+      "sources": ["M0-15", "bible §8"],
+      "acceptance": "Chat sur la grange, pêcheur au pont, charrette, tas de bois, linge, puits peints ; densité d'accessoires par case bâtie.",
+      "effort": "L",
+      "flux_estimate_usd": 2.5,
+      "status": "todo",
+      "passes": false
+    },
+    {
+      "id": "D1",
+      "area": "D",
+      "files": ["components/village/iso/habitants.ts", "components/village/iso/marcheurs.ts"],
+      "goal": "fun",
+      "sources": ["M0-16", "FIN-VIL"],
+      "acceptance": "Villageois en scènes groupées, échelle ~1,15, une pose d'action par métier, jamais figés sauf les dormeurs avec des Z.",
+      "effort": "M",
+      "flux_estimate_usd": 0,
+      "status": "todo",
+      "passes": false
+    },
+    {
+      "id": "D2",
+      "area": "D",
+      "files": ["assets/images/village/iso/villageois/"],
+      "goal": "fun",
+      "sources": ["T42 poses de métier", "T42 7 dos"],
+      "acceptance": "Poses de métier peintes (forgeron, mage, fermier, garde, archer) et 7 dos, même encre que les bâtiments.",
+      "effort": "L",
+      "flux_estimate_usd": 3,
+      "status": "todo",
+      "passes": false
+    },
+    {
+      "id": "E1",
+      "area": "E",
+      "files": [
+        "constants/isoPoc.ts",
+        "components/village/iso/horloge.ts",
+        "docs/architecture/performance.md (exception)"
+      ],
+      "goal": "fun",
+      "sources": ["M0-03", "T0-01", "anim-01", "anim-10", "anim-11"],
+      "acceptance": "Le village vit au repos : fumées ancrées aux cheminées, bannières, rides, bosquets déphasés, 1-2 marcheurs ; horloge unique, coupée hors focus, en mouvement réduit, sous lecteur d'écran, en fige/E2E, après 60 s sans toucher ; exception écrite dans performance.md ; dette dans perf-debt.md.",
+      "effort": "M",
+      "flux_estimate_usd": 0,
+      "status": "todo",
+      "passes": false
+    },
+    {
+      "id": "E2",
+      "area": "E",
+      "files": ["components/village/iso/Revelation.tsx", "components/village/iso/revelation.ts"],
+      "goal": "fun",
+      "sources": ["anim-02..07", "M0-08", "M0-09", "M0-10", "M0-20", "T0-09", "H0-07", "H0-09"],
+      "acceptance": "Montée en petit spectacle : rien du nouveau stade avant 240 ms, échange net au gel, secousse 3 px / 120 ms puis glissé, 8-12 points qui montent et retombent depuis le toit, onde sous les bâtiments à bord fondu, halo chaud qui respire sur le chantier prêt (plus d'étoiles d'interface), phrase sous le bâtiment avec fondu ; planche factice hors APK.",
+      "effort": "M",
+      "flux_estimate_usd": 0,
+      "status": "todo",
+      "passes": false
+    },
+    {
+      "id": "E3",
+      "area": "E",
+      "files": ["assets/images/village/iso/echafaudage*"],
+      "goal": "fun",
+      "sources": ["M0-07"],
+      "acceptance": "2 échafaudages peints encrés (poutres, échelle, seau, bâche) à la place du cube en fil de fer.",
+      "effort": "M",
+      "flux_estimate_usd": 0.8,
+      "status": "todo",
+      "passes": false
+    },
+    {
+      "id": "E4",
+      "area": "E",
+      "files": [
+        "components/village/iso/effets.ts",
+        "components/village/iso/Effets.tsx",
+        "components/village/iso/oiseaux*"
+      ],
+      "goal": "fun",
+      "sources": ["FIN-MAG", "FIN-ANI", "H0-04", "H0-05", "M0-17"],
+      "acceptance": "Faisceau de l'observatoire lisible, lucioles du druide au centre, jet de fontaine 2 tons, effets peints (planches) pour les moments clés, oiseaux de jour refaits.",
+      "effort": "L",
+      "flux_estimate_usd": 4,
+      "status": "todo",
+      "passes": false
+    },
+    {
+      "id": "F1",
+      "area": "F",
+      "files": ["assets/images/village/iso/{heroes_hall,forge,windmill,barn,farm,well,campfire}/"],
+      "goal": "proud",
+      "sources": ["M0-05", "probe-00", "FIN-BAT"],
+      "acceptance": "Bâtiments les plus visibles repeints avec la recette de la boucle (ancre jour), sans dalle, pierre chaude ; salle des héros -15 % ; audit A, taille et ancre passent.",
+      "effort": "L",
+      "flux_estimate_usd": 9,
+      "status": "todo",
+      "passes": false
+    },
+    {
+      "id": "F2",
+      "area": "F",
+      "files": [
+        "assets/images/village/iso/{ramparts,tower,dragon_lair,archery_range,champion_arena,observatory,high_road,training_dummy,druid_grove}/"
+      ],
+      "goal": "proud",
+      "sources": ["M0-05", "T0-10", "FIN-BAT pires", "H0-08", "T36 observatory_rough"],
+      "acceptance": "Bâtiments froids et les pires de FIN-BAT (grand-route, observatoire, mannequin, bosquet) repeints en pierre chaude, silhouettes lisibles ; pixel blanc de l'observatoire disparu.",
+      "effort": "L",
+      "flux_estimate_usd": 8,
+      "status": "todo",
+      "passes": false
+    },
+    {
+      "id": "F3",
+      "area": "F",
+      "files": ["assets/images/village/iso/{champion_arena,tent,wizard_tower,farm}/grand*"],
+      "goal": "proud",
+      "sources": ["T41 peinture tour 2"],
+      "acceptance": "3 planches de T41 jugées, ferme repeinte, acceptés entrés.",
+      "effort": "S",
+      "flux_estimate_usd": 0.5,
+      "status": "todo",
+      "passes": false
+    },
+    {
+      "id": "G1",
+      "area": "G",
+      "files": [
+        "db/village.ts",
+        "components/village/iso/quartiers.ts",
+        "app/dev-iso.tsx (graines coureur et callisthénie)"
+      ],
+      "goal": "personal",
+      "sources": ["M0-21", "T0-03", "FIN-VOC", "T44"],
+      "acceptance": "Vocation calculée du journal ; quartier dominant au centre et plus riche ; graines de dev coureur et callisthénie ; deux villages se distinguent d'un coup d'œil.",
+      "effort": "L",
+      "flux_estimate_usd": 0,
+      "status": "todo",
+      "passes": false
+    },
+    {
+      "id": "G2",
+      "area": "G",
+      "files": ["assets/images/village/iso/quartiers/"],
+      "goal": "personal",
+      "sources": ["T44 sprites", "M0-21"],
+      "acceptance": "Sprites de quartiers (maisons, échoppes, piste, relais, barres, anneaux) en une seule taille d'image par famille.",
+      "effort": "L",
+      "flux_estimate_usd": 4,
+      "status": "todo",
+      "passes": false
+    },
+    {
+      "id": "H1",
+      "area": "H",
+      "files": [
+        "components/village/iso/IsoCarteDemo.tsx (profondeur des paires)",
+        "assets/images/village/iso/observatory/solid.nuit.webp"
+      ],
+      "goal": "proud",
+      "sources": ["H0-06", "H0-08", "T40"],
+      "acceptance": "Profondeur de la paire sur la boîte des deux cases ; pixel blanc retouché.",
+      "effort": "S",
+      "flux_estimate_usd": 0,
+      "status": "todo",
+      "passes": false
+    },
+    {
+      "id": "H2",
+      "area": "H",
+      "files": ["app/dev-iso.tsx", "scripts/iso/loop_capture.sh", ".maestro/iso-loop-*.yaml"],
+      "goal": "proud",
+      "sources": ["H0-03", "H0-11", "manifest iter-00"],
+      "acceptance": "Captures sans barre de dev (paramètre de lien qui la cache), montée filmable de jour, capture palier-1-nuit, émulateur en français.",
+      "effort": "S",
+      "flux_estimate_usd": 0,
+      "status": "todo",
+      "passes": false
+    }
+  ]
+}

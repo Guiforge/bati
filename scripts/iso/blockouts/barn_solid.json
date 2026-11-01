@@ -1,0 +1,137 @@
+{
+  "canvas": "building2x3",
+  "parts": [
+    { "type": "box", "at": [0.0, 0.0, 0.0], "size": [2.0, 3.0, 0.08], "mat": "stone" },
+    { "type": "box", "at": [0.18, 0.22, 0.08], "size": [1.42, 2.4, 0.26], "mat": "stone" },
+    { "type": "box", "at": [0.2, 0.24, 0.34], "size": [1.38, 2.36, 0.5], "mat": "wood" },
+    { "type": "box", "at": [0.19, 0.23, 0.34], "size": [0.07, 0.07, 0.5], "mat": "darkwood" },
+    { "type": "box", "at": [0.19, 2.57, 0.34], "size": [0.07, 0.07, 0.5], "mat": "darkwood" },
+    { "type": "box", "at": [1.52, 0.23, 0.34], "size": [0.07, 0.07, 0.5], "mat": "darkwood" },
+    { "type": "box", "at": [1.52, 2.57, 0.34], "size": [0.07, 0.07, 0.5], "mat": "darkwood" },
+    { "type": "box", "at": [1.57, 0.23, 0.6], "size": [0.03, 2.4, 0.05], "mat": "darkwood" },
+    {
+      "type": "roof",
+      "at": [0.05, 0.12, 0.84],
+      "size": [1.68, 2.62, 0.92],
+      "ridge": "y",
+      "mat": "tile"
+    },
+    {
+      "type": "roof",
+      "at": [0.16, 2.62, 0.84],
+      "size": [1.46, 0.03, 0.84],
+      "ridge": "y",
+      "mat": "wood",
+      "roof": false
+    },
+    { "type": "box", "at": [0.68, 2.65, 1.0], "size": [0.42, 0.03, 0.4], "mat": "darkwood" },
+    {
+      "type": "box",
+      "at": [0.72, 2.66, 1.0],
+      "size": [0.34, 0.06, 0.1],
+      "mat": "thatch",
+      "roof": false
+    },
+    { "type": "box", "at": [0.86, 2.4, 1.48], "size": [0.06, 0.5, 0.08], "mat": "darkwood" },
+    {
+      "type": "cyl",
+      "center": [0.89, 2.84, 1.36],
+      "r": 0.05,
+      "h": 0.04,
+      "mat": "iron",
+      "axis": [1, 0, 0]
+    },
+    {
+      "type": "box",
+      "at": [0.39, 2.6, 0.08],
+      "size": [1.0, 0.03, 0.74],
+      "mat": "darkwood",
+      "accroche": "porte"
+    },
+    {
+      "type": "box",
+      "at": [0.3315, 2.7757, 0.08],
+      "size": [0.5, 0.03, 0.74],
+      "mat": "wood",
+      "rotZ": 40
+    },
+    {
+      "type": "box",
+      "at": [0.9485, 2.7757, 0.08],
+      "size": [0.5, 0.03, 0.74],
+      "mat": "wood",
+      "rotZ": -40
+    },
+    { "type": "box", "at": [0.34, 2.6, 0.82], "size": [1.1, 0.06, 0.07], "mat": "darkwood" },
+    {
+      "type": "box",
+      "at": [0.62, 2.66, 0.08],
+      "size": [0.5, 0.18, 0.05],
+      "mat": "thatch",
+      "rotZ": -6,
+      "roof": false
+    },
+    { "type": "box", "at": [0.77, 0.95, 1.56], "size": [0.24, 0.24, 0.16], "mat": "wood" },
+    {
+      "type": "cone",
+      "center": [0.89, 1.07, 1.72],
+      "r": 0.2263,
+      "r2": 0.0,
+      "h": 0.12,
+      "mat": "tile",
+      "verts": 4,
+      "rotZ": 45.0
+    },
+    { "type": "box", "at": [1.6, 0.5, 0.46], "size": [0.03, 0.14, 0.15], "mat": "amber" },
+    { "type": "box", "at": [1.6, 2.0, 0.46], "size": [0.03, 0.14, 0.15], "mat": "amber" },
+    {
+      "type": "box",
+      "at": [1.66, 0.75, 0.08],
+      "size": [0.3, 0.4, 0.2],
+      "mat": "thatch",
+      "roof": false
+    },
+    {
+      "type": "box",
+      "at": [1.66, 1.17, 0.08],
+      "size": [0.3, 0.4, 0.2],
+      "mat": "thatch",
+      "roof": false
+    },
+    {
+      "type": "box",
+      "at": [1.66, 1.59, 0.08],
+      "size": [0.3, 0.4, 0.2],
+      "mat": "thatch",
+      "roof": false
+    },
+    {
+      "type": "box",
+      "at": [1.66, 0.98, 0.28],
+      "size": [0.3, 0.4, 0.2],
+      "mat": "thatch",
+      "roof": false
+    },
+    {
+      "type": "box",
+      "at": [1.66, 1.4, 0.28],
+      "size": [0.3, 0.4, 0.2],
+      "mat": "thatch",
+      "roof": false
+    },
+    {
+      "type": "box",
+      "at": [1.66, 1.21, 0.48],
+      "size": [0.3, 0.4, 0.2],
+      "mat": "thatch",
+      "roof": false
+    },
+    { "type": "box", "at": [0.05, 2.9, 0.08], "size": [0.06, 0.06, 0.28], "mat": "wood" },
+    { "type": "box", "at": [0.3, 2.9, 0.08], "size": [0.06, 0.06, 0.28], "mat": "wood" },
+    { "type": "box", "at": [1.62, 2.9, 0.08], "size": [0.06, 0.06, 0.28], "mat": "wood" },
+    { "type": "box", "at": [1.9, 2.9, 0.08], "size": [0.06, 0.06, 0.28], "mat": "wood" },
+    { "type": "box", "at": [0.05, 2.91, 0.28], "size": [0.31, 0.04, 0.05], "mat": "wood" },
+    { "type": "box", "at": [1.62, 2.91, 0.28], "size": [0.34, 0.04, 0.05], "mat": "wood" },
+    { "type": "box", "at": [1.62, 2.55, 0.08], "size": [0.34, 0.16, 0.14], "mat": "darkwood" }
+  ]
+}

@@ -16,6 +16,7 @@ related: [../README.md]
 - [ui-checklist.md](ui-checklist.md) — PR merge gate (checks the rules in design-system.md)
 - [components/past-session-sheet.md](components/past-session-sheet.md): The form that writes down a session Bati did not see
 - [components/gps-chip.md](components/gps-chip.md): "GPS : oui / non" on the outing goal sheet
+- [components/village-bulle.md](components/village-bulle.md): The iso village bubble, hammer marker and banner (draft, L6-T14)
 - [components/hand-mark.md](components/hand-mark.md): "saisie à la main", the one mark for a typed figure
 - [exercise-colors.md](exercise-colors.md) — Muscle group → color mapping
 - [audit-protocol.md](audit-protocol.md) — Capturing every screen, then judging it with adversarial personas

@@ -1,0 +1,651 @@
+// The village tab's iso map (flag INTEGRATION, constants/isoPoc.ts): the hero's island and
+// buildings. The island is the village tier's, widened by the buildings that stand (a built
+// building is never cut off); a building shows when its level is above 0, at the stage
+// buildingStage gives its level, within the stages it has. The drawing is the demo's (IsoCarte).
+// The camera starts framed on the island; pan, pinch (zoom bounded by isoSpec.zoom), a short
+// inertia and a double-tap to frame again run on the UI thread (useCameraIso). A tap reads the
+// sprites' masks (tapBatiment.ts) and opens the building through `onOpen`, the handler the
+// village list uses. The map is hidden from the screen reader: the list is its door.
+
+import { useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { View, type ViewInstance } from "react-native";
+import { GestureDetector, type NativeGesture } from "react-native-gesture-handler";
+import Animated, {
+  Easing,
+  type SharedValue,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import { buildingStage } from "@/constants/buildingLevels";
+import spec from "@/constants/isoSpec.json";
+import type { BuildingCode } from "@/db/schema";
+import type { VillageBuilding, VillageTier } from "@/db/village";
+import { PremierPlanSiPeint } from "./Alentours";
+import { mesurerFenetre, type Ouverture } from "./bulle";
+import {
+  COTE,
+  CROISSANCE_CAMERA_MS,
+  CROISSANCE_MS,
+  centreBatiment,
+  ecranXY,
+  etatAvec,
+  HAUTEUR,
+  LARGEUR,
+  stadeReel,
+  type Vue,
+  vueSur,
+  ZOOM_CAPTURE,
+  ZOOM_MAX,
+} from "./carteDemo";
+import { CHANTIER_MS, ECHAFAUDAGE_APRES_MS } from "./chantier";
+import { PalierContext } from "./detail";
+import { CroissanceContext, useBascule } from "./familles";
+import { accrochesDe } from "./feux";
+import { legendaire } from "./fierte";
+import { FigeContext, useMouvementReduit } from "./fige";
+import { type PriseVillageois, villageoisAuPoint } from "./habitants";
+import { DepartContext, EffroiContext, HorlogeContext, useHorloge } from "./horloge";
+import { IsoCarte } from "./IsoCarteDemo";
+import type { Ambiance, Biome, Stade } from "./isoSpec";
+import { Monde } from "./Monde";
+import { carteDepuisEcran, ecranDepuisCarte } from "./navigation";
+import { OmbresNuages } from "./OmbresNuages";
+import { useFonduOuverture } from "./ouverture";
+import { Lucioles, Oiseaux } from "./petitsDetails";
+import { LegendeRevelation } from "./Revelation";
+import { ReclamablesContext, repartirReclamables } from "./reclame";
+import {
+  ameliore,
+  GLISSE_ZOOM,
+  IMPACT_MS,
+  ONDE_MS,
+  planOnde,
+  RevelationContext,
+  type RevelationVillage,
+  SECOUSSE_MS,
+} from "./revelation";
+import { type BlasonCrest, etatStatue, statueAuPoint } from "./statue";
+import { ancreBatiment, batimentAuPoint, cibles } from "./tapBatiment";
+import { type MemoireCamera, useCameraIso } from "./useCameraIso";
+import { useSonVillage } from "./useSonVillage";
+
+// isoSpec.json `zoom.min`, in demo units (a game zoom of 1 is a cell of `cellDp`).
+const ZOOM_MIN_JEU = (spec.zoom.min * spec.cellDp) / COTE;
+
+/**
+ * Growths played at once: each mounts 2 animated nodes (1 for the dust while its site stands, then
+ * the 2 of the fade: never more than 2 at a time).
+ * ponytail: the third growth and later snap to their new stage unplayed; queue them for the next
+ * visit if a hero reports missing a rise.
+ */
+const CROISSANCES_MAX = 2;
+
+/** A touched villager turns towards the finger this long before its bubble opens, ms (T26). */
+const TOURNE_MS = 180;
+
+/** Buildings that rose on return from a session; `cle` is the route's `grown` string, one play per value. */
+export type Croissance = {
+  cle: string;
+  items: readonly { code: BuildingCode; oldLevel: number }[];
+};
+
+/** The owner's ref is written here, outside the component: the compiler rejects a prop written in its body. */
+function brancher<T>(ref: { current: T }, valeur: T) {
+  ref.current = valeur;
+}
+
+/** AUDIT-DA 36: a building on its site wears no ready glow (the yellow oval over the scaffold). */
+function sansChantier(
+  codes: readonly BuildingCode[] = [],
+  monte: readonly { code: BuildingCode }[],
+  enScene: boolean,
+): readonly BuildingCode[] {
+  return enScene ? codes.filter((c) => !monte.some((i) => i.code === c)) : codes;
+}
+
+/**
+ * The reveal's timing, 0 to ONDE_MS once `joue`, and whether the village is still quiet: the
+ * silence ends with the wave, even when the growth step stays at 2 (the owner drops it later).
+ */
+function useTempsOnde(joue: boolean, cle: string | undefined) {
+  const t = useSharedValue(0);
+  const [fini, setFini] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    t.set(0);
+    if (!joue) return;
+    t.set(withTiming(ONDE_MS, { duration: ONDE_MS, easing: Easing.linear }));
+    const id = setTimeout(() => setFini(cle), ONDE_MS);
+    return () => clearTimeout(id);
+  }, [joue, cle, t]);
+  return { t, revele: joue && fini !== cle };
+}
+
+/** The timers of one growth, in order; the caller clears them (see the effect that mounts them). */
+function planifierCroissance({
+  cle,
+  reduit,
+  avecChantier: chantier,
+  reveler,
+  terminer,
+  setPose,
+  setLance,
+}: {
+  cle: string;
+  reduit: boolean;
+  avecChantier: boolean;
+  reveler: () => void;
+  terminer: () => void;
+  setPose: (cle: string) => void;
+  setLance: (v: { cle: string; etape: 1 | 2 }) => void;
+}) {
+  // The camera moves first, the site stands, then the cross-fade and spring (played together
+  // they drown in the zoom); the owner drops the growth, once, when the new stage has settled.
+  const duree = chantier ? CHANTIER_MS : 0;
+  if (reduit) reveler();
+  // No step 1 without a site: two timers of the same delay may fire in either order on Android
+  // (T02b-qa: step 2 then step 1 left the scaffold up for good once the claim was written).
+  // The site works while the camera moves (T37: the new stage under 2 s after the tap).
+  const ouvre = duree > 0 ? duree : CROISSANCE_CAMERA_MS;
+  return [
+    setTimeout(() => setPose(cle), ECHAFAUDAGE_APRES_MS),
+    ...(duree > 0 ? [setTimeout(() => setLance({ cle, etape: 1 }), 0)] : []),
+    setTimeout(() => setLance({ cle, etape: 2 }), ouvre),
+    setTimeout(terminer, reduit ? 0 : ouvre + CROISSANCE_MS - CROISSANCE_CAMERA_MS),
+  ];
+}
+
+/**
+ * E2, anim-39: the shake at the impact, then the slide toward the building (bible §10.7), timed from
+ * the commit that mounts the growth layer (its clock starts there), so the camera never moves
+ * before the silhouette has struck. Kept apart so a skip can drop them.
+ */
+function planifierCamera(
+  premier: BuildingCode | undefined,
+  joue: boolean,
+  camera: Pick<ReturnType<typeof useCameraIso>, "secouer" | "glisser">,
+) {
+  if (!premier || !joue) return [];
+  return [
+    setTimeout(camera.secouer, IMPACT_MS),
+    setTimeout(
+      () => camera.glisser(vueSur(centreBatiment(premier), ZOOM_CAPTURE * GLISSE_ZOOM)),
+      IMPACT_MS + SECOUSSE_MS,
+    ),
+  ];
+}
+
+/** The top of building `code` in the frame's dp, through the camera as it stands (the caption's anchor). */
+function hautAEcran(
+  code: BuildingCode | undefined,
+  liste: ReturnType<typeof cibles>,
+  vue: Vue,
+  aire: { w: number; h: number },
+): readonly [number, number] | null {
+  const haut = code ? ancreBatiment(code, liste) : null;
+  return haut ? ecranDepuisCarte(haut, vue, aire, { largeur: LARGEUR, hauteur: HAUTEUR }) : null;
+}
+
+/** Whether the reveal plays: a growth has a first building, motion is on, and the new stage shows. */
+function jouerRevelation(
+  premier: BuildingCode | undefined,
+  reduit: boolean,
+  etape: 1 | 2 | undefined,
+): boolean {
+  return premier !== undefined && !reduit && etape === 2;
+}
+
+/** FIN-MAG: the first building to rise tells its story in one line when its stage changed (or it is new). */
+function legendeDe(
+  cle: string | undefined,
+  premier: BuildingCode | undefined,
+  reduit: boolean,
+  changes: readonly { code: BuildingCode }[],
+  stade: (code: BuildingCode) => Stade,
+) {
+  if (cle === undefined || !premier || reduit || !changes.some((i) => i.code === premier))
+    return null;
+  return { cle, code: premier, stade: stade(premier) };
+}
+
+/** The ready glows keep still (no animated node) in reduced motion and during the reveal. */
+const sansSignal = (reduit: boolean, revele: boolean): boolean => reduit || revele;
+
+/** T41: the reveal's plan, from the first building that rose (revelation.ts `planOnde`); null when none plays. */
+function planRevelation(
+  joue: boolean,
+  source: BuildingCode | undefined,
+  t: SharedValue<number>,
+  construits: readonly BuildingCode[],
+  monte: readonly { code: BuildingCode }[],
+  stade: (code: BuildingCode) => Stade,
+  jour: boolean,
+): RevelationVillage | null {
+  if (!joue || !source) return null;
+  return {
+    t,
+    source,
+    jour,
+    ...planOnde(
+      ecranXY(centreBatiment(source)),
+      construits
+        .filter((code) => !monte.some((i) => i.code === code))
+        .map((code) => ({
+          code,
+          centre: ecranXY(centreBatiment(code)),
+          ameliore: ameliore(stade(code)),
+          fenetres: (accrochesDe(code, stade(code))?.fenetres.length ?? 0) > 0,
+        })),
+    ),
+  };
+}
+
+export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
+  tier,
+  buildings,
+  width,
+  height,
+  onOpen,
+  onBulle,
+  viseur,
+  bloque,
+  margeBas,
+  croissance,
+  onCroissanceFinie,
+  onRevelation,
+  reclamables,
+  niveauxReclames,
+  ambiance = "nuit",
+  lumiere = "nuit",
+  biome = "defaut",
+  memoire,
+  blason,
+  fete,
+  sonActif = false,
+}: {
+  tier: VillageTier;
+  buildings: readonly B[];
+  /** The area the island is framed in, in dp. */
+  width: number;
+  height: number;
+  /** A tap on a building: the village list's own handler (the list is TalkBack's way in). */
+  onOpen?: (building: B) => void;
+  /**
+   * A tap on a building opens its bubble (T14), with the point its tail aims at in window dp; when
+   * set, `onOpen` is not called. Villagers are not tappable yet: T26 will add them (bulle.ts `CibleBulle`).
+   */
+  onBulle?: (o: Ouverture) => void;
+  /** Filled by the map: what a tap at a window point would open, for the bubble's outside tap. */
+  viseur?: { current: ((x: number, y: number) => Ouverture | null) | undefined };
+  /** The page's scroll gesture, blocked by the map's pan so the page does not scroll under it. */
+  bloque?: NativeGesture;
+  /** Height at the bottom the island's framing leaves free: the village title lies over it. */
+  margeBas?: number;
+  /**
+   * A growth to play: the camera frames the first building that rose, the sprites cross-fade.
+   * Its buildings stay hidden while it is set: the owner must drop it in `onCroissanceFinie`.
+   */
+  croissance?: Croissance;
+  /** Called once the play is over, so the owner can drop `croissance` and never replay it. */
+  onCroissanceFinie?: () => void;
+  /** Called once per growth, the moment the new stage shows (at the tap with reduced motion). */
+  onRevelation?: () => void;
+  /** Buildings ready to improve (L6-T13): they signal during a wave, the sheet offers the upgrade. */
+  reclamables?: readonly BuildingCode[];
+  /** The level each building was claimed at; the map draws the lower of it and the building's own. */
+  niveauxReclames?: Readonly<Partial<Record<BuildingCode, number>>>;
+  /** The light of the pieces' sprites (decor, water, villagers): only `nuit` has some; the buildings follow `lumiere`. */
+  ambiance?: Ambiance;
+  /** The light of the map (lumiere.ts `choisirLumiere`): `jour` washes the ground and puts the night's lights out. */
+  lumiere?: Ambiance;
+  /** The ground, decor, water and world colours. */
+  biome?: Biome;
+  /** Held by the owner: a remount (the map changes side on a rotation) keeps the camera's view. */
+  memoire?: { current: MemoireCamera | undefined };
+  /** The hero's crest on the square (T24); a tap on it calls `onPress`, the header's own handler. */
+  blason?: { crest: BlasonCrest | null; onPress: () => void };
+  /** The session's key (the route's `grown`): the first wave after a new one is a party (T26), once per key. */
+  fete?: string;
+  /** The hero's sound setting (T32), read by the owner so the map does not import the store. */
+  sonActif?: boolean;
+}) {
+  const parCode = new Map<BuildingCode, B>(buildings.map((b) => [b.code, b]));
+  const niveaux = new Map<BuildingCode, number>(
+    buildings.map((b) => [b.code, Math.min(b.level, niveauxReclames?.[b.code] ?? b.level)]),
+  );
+  const { visible, montres } = etatAvec(
+    tier,
+    buildings.filter((b) => b.level > 0).map((b) => b.code),
+  );
+  const construits = montres.filter((code) => (niveaux.get(code) ?? 0) > 0);
+  const stadeNiveau = (code: BuildingCode, niveau: number) =>
+    stadeReel(code, buildingStage(niveau));
+  const horloge = useHorloge();
+  const fondu = useFonduOuverture();
+  // The map's top left in the window, read at each tap: the bubble lies over the whole screen.
+  const racine = useRef<ViewInstance>(null);
+  const origine = useRef<readonly [number, number]>([0, 0]);
+  const reduit = useMouvementReduit();
+  const fige = useContext(FigeContext);
+  const cle = croissance?.cle;
+  // Two nodes per growth, so at most two are played (the node budget, L5-AUD I1): the others show
+  // their new stage at once, with no animation. ponytail: not replayed on the next visit.
+  const monte = (croissance?.items.filter((i) => construits.includes(i.code)) ?? []).slice(
+    0,
+    CROISSANCES_MAX,
+  );
+  const premier = monte[0]?.code;
+  // A site (L6-T02) before the new stage, for the buildings whose stage changes (or that were not
+  // there); one whose rank rises inside a stage only gets the spring. The new stage is the
+  // building's own level: the claimed one is still the old until the end callback writes it.
+  const vise = (code: BuildingCode) =>
+    monte.some((i) => i.code === code) ? (parCode.get(code)?.level ?? 0) : (niveaux.get(code) ?? 0);
+  const avecChantier = monte.filter(
+    (i) => i.oldLevel <= 0 || stadeNiveau(i.code, i.oldLevel) !== stadeNiveau(i.code, vise(i.code)),
+  );
+  // The `cle` whose steps have started, and the step it is at: 1 once the camera has moved (the
+  // site stands), 2 once it is over (the new stage fades in and springs, then the owner drops the
+  // growth). Before step 2 the old stage is what stands; reduced motion shows the new one at once.
+  const [lance, setLance] = useState<{ cle: string; etape: 1 | 2 } | undefined>(undefined);
+  const etape = lance?.cle === cle ? lance?.etape : undefined;
+  const enCours = cle !== undefined && !reduit && etape !== 2;
+  // T16: a growth takes the families' turning seat from the next cycle boundary (familles.ts).
+  const bascule = useBascule(cle !== undefined && !reduit, horloge.c);
+  const sites = new Set(enCours && etape === 1 ? avecChantier.map((i) => i.code) : []);
+  // The scaffold stands from the scene's start, so the camera never frames a bare plot, and a beat
+  // into the cross-fade, while the growth layer's images decode (T02b-qa: one bare frame there).
+  const [parti, setParti] = useState<string | undefined>(undefined);
+  const echafaudages = new Set(
+    cle !== undefined && !reduit && parti !== cle ? avecChantier.map((i) => i.code) : [],
+  );
+  useEffect(() => {
+    if (cle === undefined || etape !== 2) return;
+    // The scaffold goes at the impact, under the dust, not a timer's lag later.
+    const t = setTimeout(() => setParti(cle), IMPACT_MS);
+    return () => clearTimeout(t);
+  }, [cle, etape]);
+  const anciens = new Map(enCours ? avecChantier.map((i) => [i.code, i.oldLevel] as const) : []);
+  const stade = (code: BuildingCode) => {
+    const ancien = anciens.get(code);
+    return stadeNiveau(code, ancien !== undefined && ancien > 0 ? ancien : vise(code));
+  };
+  // T41: from the new stage on, the village is quiet (no night lights, trade effects, glows or
+  // glints) and the burst and the golden wave play on their own timing, once, over ONDE_MS.
+  const { t: tOnde, revele } = useTempsOnde(jouerRevelation(premier, reduit, etape), cle);
+  const plan = planRevelation(revele, premier, tOnde, construits, monte, stade, lumiere === "jour");
+  // H4-08: the hammers the map draws are the only ones a tap can hit (none over a site in play).
+  const prets = sansChantier(reclamables, monte, cle !== undefined && !reduit);
+  const touchables = cibles(construits, stade, visible, prets);
+  const legendaires = new Set(
+    construits.filter((code) => legendaire(code, niveaux.get(code) ?? 0)),
+  );
+  // The new stage is hidden while its layer plays over it, and a building that was not there
+  // until the site is over.
+  // A building that was not there is hidden (its heap of stones shown) only once its scaffold has
+  // stood a beat: its image decodes on the first frame, the heap is drawn at once (T03-qa: one frame
+  // of a bare heap at the tap).
+  const [pose, setPose] = useState<string | undefined>(undefined);
+  const masques = new Set(
+    reduit
+      ? []
+      : monte
+          .filter((i) => etape === 2 || (enCours && i.oldLevel <= 0 && pose === cle))
+          .map((i) => i.code),
+  );
+  // The growth layers, played by the map in each building's place in the depth order.
+  const croissances = new Map(
+    cle === undefined || reduit || etape !== 2
+      ? []
+      : monte.map((i) => [
+          i.code,
+          { cle, ancien: i.oldLevel > 0 ? stadeReel(i.code, buildingStage(i.oldLevel)) : null },
+        ]),
+  );
+  // The owner is told once per growth, whether the scene ran its course or a touch skipped it.
+  const dit = useRef<string | undefined>(undefined);
+  const terminer = () => {
+    if (cle === undefined || dit.current === cle) return;
+    dit.current = cle;
+    onCroissanceFinie?.();
+  };
+  const saute = useRef<string | undefined>(undefined);
+  // The shake and slide timers of the growth: a touch that skips the scene drops them (H2-13).
+  const mouvement = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const [legende, setLegende] = useState<{ cle: string; code: BuildingCode; stade: Stade } | null>(
+    null,
+  );
+  const annonce = useRef<string | undefined>(undefined);
+  const reveler = () => {
+    // Frozen mode (E2E, captures) also reads as reduced motion: no buzz, no sound there.
+    if (fige || cle === undefined || annonce.current === cle) return;
+    annonce.current = cle;
+    onRevelation?.();
+  };
+  const passer = () => {
+    if (cle === undefined) return;
+    for (const x of mouvement.current) clearTimeout(x);
+    mouvement.current = [];
+    saute.current = cle;
+    setLegende(null);
+    setLance({ cle, etape: 2 });
+    reveler();
+    terminer();
+  };
+  /** The bubble a tap at (x, y) of the area opens: the building under it, aimed at its mask's top. */
+  const prise = useRef<PriseVillageois | undefined>(undefined);
+  // A villager (T26) before a building: it stands in front of it. `sens` is the side of the finger.
+  const ouvertureEn = (
+    x: number,
+    y: number,
+    vue: () => Vue,
+  ): (Ouverture & { tourner?: { id: string; sens: 1 | -1 } }) | null => {
+    const aire = { w: width, h: height };
+    const carte = { largeur: LARGEUR, hauteur: HAUTEUR };
+    const p = carteDepuisEcran([x, y], vue(), aire, carte);
+    const v = villageoisAuPoint(p, prise.current?.cibles() ?? []);
+    if (v) {
+      const [ex, ey] = ecranDepuisCarte([v.pied[0], v.pied[1] - v.h], vue(), aire, carte);
+      return {
+        cible: { type: "villageois", id: v.id, role: v.role, habitant: v.habitant },
+        ancre: [ex + origine.current[0], ey + origine.current[1]],
+        tourner: { id: v.id, sens: p[0] >= v.pied[0] ? 1 : -1 },
+      };
+    }
+    const code = batimentAuPoint(p, touchables);
+    const haut = code ? ancreBatiment(code, touchables) : null;
+    if (!code || !haut) return null;
+    const [ex, ey] = ecranDepuisCarte(haut, vue(), aire, carte);
+    return {
+      cible: { type: "batiment", code },
+      ancre: [ex + origine.current[0], ey + origine.current[1]],
+    };
+  };
+  const retard = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const camera = useCameraIso({
+    visible,
+    w: width,
+    h: height,
+    zmin: ZOOM_MIN_JEU,
+    zmax: ZOOM_MAX,
+    bloque,
+    margeBas,
+    onToucher: horloge.touche,
+    memoire,
+    onTap: (x, y, vue) => {
+      const p = carteDepuisEcran(
+        [x, y],
+        vue(),
+        { w: width, h: height },
+        {
+          largeur: LARGEUR,
+          hauteur: HAUTEUR,
+        },
+      );
+      if (blason && !enCours && statueAuPoint(p, visible, etatStatue(blason.crest))) {
+        blason.onPress();
+        return;
+      }
+      const code = batimentAuPoint(p, touchables);
+      const b = code ? parCode.get(code) : undefined;
+      // A touch skips the scene (VI-29): the new stage shows at once and the owner is told.
+      // A touch on a building still opens it (T38): the tap must not be lost to the skip.
+      if (enCours) passer();
+      if (onBulle) {
+        mesurerFenetre(racine.current, (ox, oy) => {
+          origine.current = [ox, oy];
+          // One pending bubble at most: a new tap replaces the villager's delayed one.
+          if (retard.current) clearTimeout(retard.current);
+          const o = ouvertureEn(x, y, vue);
+          if (!o) return;
+          // A villager turns towards the finger first, then its bubble opens (reduced motion: no turn).
+          if (o.tourner && !reduit) {
+            prise.current?.tourner(o.tourner.id, o.tourner.sens);
+            retard.current = setTimeout(() => onBulle(o), TOURNE_MS);
+          } else onBulle(o);
+        });
+      } else if (b) onOpen?.(b);
+    },
+  });
+  // The buzz leaves once the new stage's layer is committed, not with the timer that asks for it.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `reveler` is once per `cle`
+  useEffect(() => {
+    if (etape !== 2) return;
+    // Not after a skip: the touch already dropped the scene's camera moves.
+    mouvement.current = planifierCamera(premier, !reduit && saute.current !== cle, camera);
+    reveler();
+    // FIN-MAG: a stage that changes (or a new building) tells its story in one line.
+    setLegende(legendeDe(cle, premier, reduit || saute.current === cle, avecChantier, stade));
+  }, [cle, etape]);
+  // T32: the village's ground sound, and the forge and the mill once zoomed on them.
+  useSonVillage({
+    suivi: camera.suivi,
+    sonActif,
+    zmin: camera.zmin,
+    zmax: ZOOM_MAX,
+    aire: { w: width, h: height },
+    ambiance: lumiere,
+    construits,
+  });
+  useEffect(
+    () => () => {
+      if (retard.current) clearTimeout(retard.current);
+    },
+    [],
+  );
+  useLayoutEffect(() => {
+    if (viseur)
+      brancher(viseur, (x, y) =>
+        ouvertureEn(x - origine.current[0], y - origine.current[1], camera.vue),
+      );
+  });
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `cle` stands for the growth
+  useEffect(() => {
+    if (cle === undefined) return;
+    if (premier) camera.vers(vueSur(centreBatiment(premier), ZOOM_CAPTURE));
+    const autres = planifierCroissance({
+      cle,
+      reduit,
+      avecChantier: avecChantier.length > 0,
+      reveler,
+      terminer,
+      setPose,
+      setLance,
+    });
+    return () => {
+      for (const x of [...autres, ...mouvement.current]) clearTimeout(x);
+      mouvement.current = [];
+    };
+  }, [cle]);
+  return (
+    <View
+      ref={racine}
+      testID="iso-village"
+      // The village list under the map is the screen reader's one door to each building.
+      importantForAccessibility="no-hide-descendants"
+      accessibilityElementsHidden
+      style={{ width, height, overflow: "hidden", alignItems: "center", justifyContent: "center" }}
+    >
+      {/* The world around the island (no sky: an iso view looks down, T23); it follows the camera. */}
+      <Monde
+        biome={biome}
+        width={width}
+        height={height}
+        fond={[camera.fond, fondu]}
+        zoomMin={camera.zmin}
+        visible={visible}
+        lumiere={lumiere}
+      />
+      <GestureDetector gesture={camera.gestes}>
+        <Animated.View style={{ width, height, alignItems: "center", justifyContent: "center" }}>
+          <Animated.View testID="iso-camera" style={[camera.style, fondu]}>
+            <HorlogeContext.Provider value={horloge.c}>
+              <DepartContext.Provider value={horloge.depart}>
+                {/* T16: a growth takes the turning seat of the families (familles.ts). */}
+                <CroissanceContext.Provider value={bascule}>
+                  <EffroiContext.Provider value={horloge.effroi}>
+                    <PalierContext.Provider value={camera.detail}>
+                      <ReclamablesContext.Provider
+                        value={
+                          reclamables
+                            ? repartirReclamables(prets, sansSignal(reduit, revele))
+                            : null
+                        }
+                      >
+                        <RevelationContext.Provider value={plan}>
+                          <IsoCarte
+                            visible={visible}
+                            montres={construits}
+                            stade={stade}
+                            masques={masques}
+                            chantiers={sites}
+                            echafaudages={echafaudages}
+                            legendaires={legendaires}
+                            croissances={croissances}
+                            ambiance={ambiance}
+                            lumiere={lumiere}
+                            biome={biome}
+                            blason={blason}
+                            palier={tier}
+                            fete={fete}
+                            prise={prise}
+                          />
+                        </RevelationContext.Provider>
+                      </ReclamablesContext.Provider>
+                      <Lucioles
+                        visible={visible}
+                        biome={biome}
+                        ambiance={lumiere === "jour" ? lumiere : ambiance}
+                      />
+                      {/* E5: two cloud shadows drift over the whole map by day, on the one clock. */}
+                      <OmbresNuages lumiere={lumiere} />
+                    </PalierContext.Provider>
+                  </EffroiContext.Provider>
+                </CroissanceContext.Provider>
+              </DepartContext.Provider>
+            </HorlogeContext.Provider>
+          </Animated.View>
+        </Animated.View>
+      </GestureDetector>
+      {/* The crows fly over the whole map, after the camera layer: they do not pan with the land. */}
+      <Oiseaux
+        biome={biome}
+        ambiance={lumiere}
+        width={width}
+        height={height}
+        horloge={horloge.c}
+        depart={horloge.depart}
+      />
+      {/* The foreground leaves over the whole frame, under the reveal's legend (alentours, flag `plan`). */}
+      <PremierPlanSiPeint width={width} height={height} lumiere={lumiere} suivi={camera.suivi} />
+      <LegendeRevelation
+        legende={legende}
+        onFin={() => setLegende(null)}
+        place={{
+          ancre: () => hautAEcran(legende?.code, touchables, camera.vue(), { w: width, h: height }),
+          w: width,
+          h: height,
+          bas: margeBas,
+        }}
+      />
+    </View>
+  );
+}

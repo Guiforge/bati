@@ -177,6 +177,14 @@ Generic guides push these; the stack already gives them, so skip:
   four times (4.8 s) on focus; each ember climbs once (the field is out after about 10 s). Coming
   back to the tab plays it again, which is the only time anyone is looking.
 
+  **Exception, the iso Village map (Guillaume, 01/11, "sublime" loop; perf to be measured later).**
+  The map's one clock (`components/village/iso/horloge.ts`, `MODE_VIE = "continu"`) runs while the
+  screen has the focus and stops 60 s after the last touch, which restarts it. It is also off with
+  reduced motion, under a screen reader (`AccessibilityInfo.isScreenReaderEnabled`), in the frozen
+  mode (`?fige=1`) and in E2E, so idle, Maestro and TalkBack still get their rest. Everything that
+  moves reads that one clock; none loops on its own. The 60 s are the bound, not a promise of
+  cheapness: the cost is listed in `docs/designs/village-loop/perf-debt.md`.
+
   Three measurements are worth keeping, because they decide the shape of any ambient effect
   added later. First, **writing a shared value the value it already holds costs nothing**:
   Reanimated's `useAnimatedStyle` diffs before it commits, so a hold inside a sequence draws no

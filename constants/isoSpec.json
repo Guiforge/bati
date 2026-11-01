@@ -1,0 +1,539 @@
+{
+  "_doc": "The iso grammar of the village POC, read by scripts/iso/*.py and by components/village/iso/*. One source: nothing here is copied anywhere else. Grid: gx grows to screen right-down, gy to screen left-down, z up, one unit = one cell edge. Blender: x = gx, y = -gy, z = z. Camera orthographic, rotation (60, 0, 45) degrees, looking along (-0.612, 0.612, -0.5): the front of the scene is large gx + gy.",
+  "S": 384,
+  "cellDp": 128,
+  "pxPerUnit": 271.529,
+  "cameraRotationDeg": [60, 0, 45],
+  "gridToBlender": {
+    "x": ["gx", 1],
+    "y": ["gy", -1],
+    "z": ["z", 1]
+  },
+  "cellToScreen": "screen.x = (gx - gy) * S / 2, screen.y = (gx + gy) * S / 4; the point is the grid corner (gx, gy) at ground level, relative to the corner (0, 0)",
+  "anchorMarginPx": 64,
+  "canvases": {
+    "building2x2": {
+      "w": 896,
+      "h": 1344,
+      "footprint": [2, 2],
+      "anchor": "footprintBottom"
+    },
+    "building2x3": {
+      "w": 1280,
+      "h": 1280,
+      "footprint": [2, 3],
+      "anchor": "footprintBottom"
+    },
+    "building3x3": {
+      "w": 1280,
+      "h": 1600,
+      "footprint": [3, 3],
+      "anchor": "footprintBottom"
+    },
+    "building1x2": {
+      "w": 896,
+      "h": 1152,
+      "footprint": [1, 2],
+      "anchor": "footprintBottom"
+    },
+    "building1x3": {
+      "w": 1280,
+      "h": 1216,
+      "footprint": [1, 3],
+      "anchor": "footprintBottom"
+    },
+    "tower1x1": {
+      "w": 512,
+      "h": 1280,
+      "footprint": [1, 1],
+      "anchor": "footprintBottom"
+    },
+    "decor1x1": {
+      "w": 512,
+      "h": 768,
+      "footprint": [1, 1],
+      "anchor": "footprintBottom"
+    },
+    "sails": {
+      "w": 768,
+      "h": 768,
+      "footprint": [0, 0],
+      "anchor": "center"
+    },
+    "villager": {
+      "w": 768,
+      "h": 768,
+      "footprint": [1, 1],
+      "anchor": "cellCenter",
+      "pxScale": 2
+    }
+  },
+  "triptych": {
+    "w": 2688,
+    "h": 1344,
+    "canvas": "building2x2",
+    "count": 3
+  },
+  "moon": {
+    "_doc": "The one light, fixed for good: azimuth 225 deg, elevation 55 deg. L points toward the moon, in Blender coordinates. It comes from screen left: the visible -y face (grid +gy, screen left) is lit (n.L 0.41), the visible +x face (screen right) is in shadow, the top is lightest (n.L 0.82). A pole's shadow runs toward screen right, about 0.70 x its height on screen.",
+    "azimuthDeg": 225,
+    "elevationDeg": 55,
+    "L": [-0.4056, -0.4056, 0.8192]
+  },
+  "tones": {
+    "_doc": "Three tones per material, chosen by n.L: top if n.L >= top, lit if n.L > lit, shadow otherwise, or if the pixel is occluded (direct light < occludedRatio x n.L).",
+    "top": 0.7,
+    "lit": 0.15,
+    "occludedRatio": 0.5
+  },
+  "lineThicknessPx": 8,
+  "_lineThickness": "Ink on tier_6's houses is about 2 px on buildings about 150 px wide, so about 10 px at our 768 px; 8 keeps the small parts (anvil, hood posts) from drowning.",
+  "materials": {
+    "_doc": "Three already-lit values per material [top, lit, shadow], final colours: the preamble asks FLUX to keep them as they are. Pipetted on the tier 1-7 buildings (2026-10-28), never on the sky or tier_6's cold windows; the source is beside each.",
+    "stone": {
+      "tones": ["#5A6266", "#4A4F52", "#22282E"],
+      "source": "tier_3 cottage gable #3E4547, tier_6 gate tower #615751 lit, #20272E shadow"
+    },
+    "plaster": {
+      "tones": ["#7A6E62", "#6A5A4C", "#2A2A2E"],
+      "source": "tier_6 half-timbered walls #664E3F"
+    },
+    "wood": {
+      "tones": ["#5A4E44", "#4E443C", "#241E1C"],
+      "source": "tier_3 timber frame #4E443C"
+    },
+    "darkwood": {
+      "tones": ["#4A3A30", "#46362D", "#1E1816"],
+      "source": "tier_6 gate doors #46362D"
+    },
+    "thatch": {
+      "tones": ["#3E5258", "#2C3A40", "#111F28"],
+      "source": "tier_3 roofs: moonlit rim #2B4048, shadow side #111F28"
+    },
+    "tile": {
+      "tones": ["#6A403A", "#55312E", "#241A1E"],
+      "source": "tier_6 red-brown roofs #302227 to #6B3A35"
+    },
+    "iron": {
+      "tones": ["#4C5560", "#3A424C", "#1A1E24"],
+      "source": "tier_6 lamp posts and hinges"
+    },
+    "canvas": {
+      "tones": ["#8A8478", "#6E6A60", "#2E2E30"],
+      "source": "tier_6 awnings, desaturated"
+    },
+    "banner": {
+      "tones": ["#6A2E28", "#5A2622", "#2A1416"],
+      "source": "tier_6 shop signs, dark red-brown, far from the magenta key"
+    }
+  },
+  "emissive": {
+    "_doc": "Warm sources: flat, never shaded, never shadowed, and they cast no shadow.",
+    "amber": "#E2BE7C",
+    "fire": "#F08A2E",
+    "_ember": "A banked bed of coals, darker and smaller than `fire`: the v5 probe's first attempt read the bright orange square as a lamp and lit the wall beside it on 8 renders out of 8.",
+    "ember": "#A8401C"
+  },
+  "pools": {
+    "_doc": "A window's light pool: the window quad projected onto the ground from a lamp F inside, lampInset behind the face and lampAbove its top edge. Only vertical emissive faces facing -y or +x, whose bottom edge is below maxSill.",
+    "lampInset": 0.3,
+    "lampAbove": 0.15,
+    "maxSill": 1.2
+  },
+  "background": {
+    "key": "#FF00FF",
+    "legacy": "#0B0F19",
+    "green": "#00FF00"
+  },
+  "island": {
+    "w": 8,
+    "h": 8
+  },
+  "zoom": {
+    "min": 0.3,
+    "max": 1.0
+  },
+  "vieParAmbiance": {
+    "_doc": "What the app draws by ambiance, beyond the painted images: the fireflies, the hearths' flames and their warm glow. Only `nuit` has any of it but two: `animaux` (the small animals walk a little in a wave) and `corbeaux` (crows perch on some roofs and fly off at a touch, L5-T10) live by day and by night. `oiseaux` is the gull flock crossing the frame: day only (audit T43 round 1, no bird at night). `jour` is allowed and draws only those two until a day exists (§7 of the V1 prompt). Read by Lucioles, Feux, the walkers' plan and the roof crows through isoSpec.ts `vieDe`.",
+    "nuit": {
+      "lucioles": true,
+      "lueurFeux": true,
+      "animaux": true,
+      "corbeaux": true,
+      "oiseaux": false
+    },
+    "jour": {
+      "lucioles": false,
+      "lueurFeux": false,
+      "animaux": true,
+      "corbeaux": true,
+      "oiseaux": true
+    }
+  },
+  "ambiances": {
+    "_doc": "Palettes and light, by ambiance (§7 of the V1 prompt). V1 fills `nuit` only; `jour` is an allowed name, absent until it is painted. Each field names the top-level block that holds it: scripts/iso/*.py read moon, tones, materials, emissive and pools at the top level, so nuit's values stay there instead of being copied. When `jour` arrives, move nuit's blocks in here and teach isolib.py to read them. Constraint on every ambiance's light: azimuth 225 deg and elevation 55 deg or higher. The master grid's spacing rule (constants/isoLayout.json) is built for shadows that fall toward +gx and -gy and reach no further than heights.json says; another azimuth or a lower light breaks it. __tests__/iso-layout.test.ts runs the spacing rule under every light listed here (a named block or an inline { azimuthDeg, elevationDeg }) and turns red on one that breaks it.",
+    "permises": ["nuit", "jour"],
+    "nuit": {
+      "lumiere": "moon",
+      "tons": "tones",
+      "matieres": "materials",
+      "emissifs": "emissive",
+      "flaques": "pools"
+    }
+  },
+  "nomImage": "<slug>/<stade>.<ambiance>.webp",
+  "biomes": {
+    "_doc": "Ground colours, decor, water and the world around the island, by biome (§7). V1 fills `defaut` only. Colours are token names of constants/rawColors.ts, the one place hex lives in the app. `decors` and `eau` give the piece family (the folder part of the image key, pieces.ts) and the colours of the vector ground under the pieces; lot 2 may add families per biome.",
+    "defaut": {
+      "feu": {
+        "flamme": "isoFlamme",
+        "coeur": "isoFlammeCoeur",
+        "lueur": "isoLueur",
+        "fumee": "isoFumee",
+        "encre": "isoInk"
+      },
+      "fierte": {
+        "tissu": "isoBanniere",
+        "lisere": "resourceGold",
+        "hampe": "isoTronc",
+        "eclat": "isoEclat",
+        "fenetre": "isoLueur",
+        "encre": "isoInk"
+      },
+      "vivant": {
+        "corbeau": "isoCorbeau",
+        "corbeauBord": "isoCorbeauBord",
+        "luciole": "isoLuciole",
+        "rat": "isoRat",
+        "ratBord": "isoInk"
+      },
+      "sol": {
+        "herbe": "isoPre",
+        "herbeAlt": "isoPreAlt",
+        "herbeOmbre": "isoPreOmbre",
+        "chemin": "isoChemin",
+        "cheminOmbre": "isoCheminOmbre",
+        "falaise": "isoCliff",
+        "falaiseOmbre": "isoCliffShadow",
+        "flaque": "isoAmberPool",
+        "encre": "isoInk",
+        "parcelle": "isoTerre",
+        "socleOmbre": "isoSocleShadow",
+        "rueEmpierree": "isoRueEmpierree",
+        "ruePave": "isoRuePave",
+        "lisiere": "isoForetSol"
+      },
+      "variantes": {
+        "_doc": "Ground variants and decals, drawn in the vector tiles (solVarie.ts). Every cell draws one colour per ground kind, picked by a hash of its coordinates and `graine`, weighted by `poids`; another biome gives other colours and another seed. `decals` are small inked shapes on a few cells (`chance` inside, `chanceBord` within 1 cell of the island edge or a path); `surChemin` lets a decal stand on the path. `bordChemin` is the pebble colour on a grass cell that touches the path (`galet`: its half-axes and ink width in dp), each decal has its own ink width `trait` (0 draws solid shapes with no outline), `assombri` the ink laid over cells 1, 2 and 3 cells from the island edge. `tache` is the size in cells of the soft patches of the lawn and the path: a grid of that period holds a smooth value noise that picks the variant (the variant lists run from dark to light), the per-cell hash only nudges it.",
+        "graine": 7,
+        "tache": 4,
+        "herbe": [
+          {
+            "couleur": "isoPreProfond",
+            "poids": 2
+          },
+          {
+            "couleur": "isoPreAlt",
+            "poids": 3
+          },
+          {
+            "couleur": "isoPre",
+            "poids": 5
+          },
+          {
+            "couleur": "isoPreMousse",
+            "poids": 1
+          },
+          {
+            "couleur": "isoPreClair",
+            "poids": 2
+          },
+          {
+            "couleur": "isoPreSauge",
+            "poids": 2
+          },
+          {
+            "couleur": "isoPreSec",
+            "poids": 1
+          }
+        ],
+        "chemin": [
+          {
+            "couleur": "isoCheminSombre",
+            "poids": 2
+          },
+          {
+            "couleur": "isoChemin",
+            "poids": 5
+          },
+          {
+            "couleur": "isoCheminClair",
+            "poids": 2
+          }
+        ],
+        "terre": [
+          {
+            "couleur": "isoTerre",
+            "poids": 4
+          },
+          {
+            "couleur": "isoTerreAlt",
+            "poids": 2
+          },
+          {
+            "couleur": "isoTerreSombre",
+            "poids": 2
+          }
+        ],
+        "decals": {
+          "touffe": {
+            "couleur": "isoTouffe",
+            "poids": 4,
+            "surChemin": false,
+            "trait": 1.2
+          },
+          "fleur": {
+            "couleur": "isoFleur",
+            "poids": 1,
+            "surChemin": false,
+            "trait": 1.2
+          },
+          "caillou": {
+            "couleur": "isoCaillou",
+            "poids": 3,
+            "surChemin": true,
+            "trait": 1.2
+          },
+          "feuille": {
+            "couleur": "isoFeuille",
+            "poids": 0,
+            "surChemin": true,
+            "trait": 1.2
+          },
+          "buisson": {
+            "couleur": "isoBuisson",
+            "poids": 2,
+            "surChemin": false,
+            "trait": 1.2
+          },
+          "herbeHaute": {
+            "couleur": "isoHerbeHaute",
+            "poids": 3,
+            "surChemin": false,
+            "trait": 1.2
+          },
+          "rocaille": {
+            "couleur": "isoRocaille",
+            "poids": 1,
+            "surChemin": false,
+            "trait": 1.2
+          }
+        },
+        "chance": 0.15,
+        "chanceBord": 0.24,
+        "bordChemin": "isoRocaille",
+        "galet": {
+          "rx": 1.8,
+          "ry": 1,
+          "trait": 1.1
+        },
+        "assombri": {
+          "couleur": "isoInk",
+          "opacites": [0.4, 0.24, 0.1]
+        }
+      },
+      "decors": {
+        "famille": "decor",
+        "couleurs": {
+          "arbre": "isoTree",
+          "bosquet": "isoTree",
+          "rochers": "isoRock"
+        }
+      },
+      "eau": {
+        "famille": "eau",
+        "couleurs": {
+          "eau": "isoEauNuit",
+          "eauOmbre": "isoEauNuitOmbre",
+          "coeur": "isoEauNuitCoeur",
+          "ecume": "isoEcumeNuit",
+          "voile": "isoShadowVeil",
+          "berge": "isoTerreSombre",
+          "bergeOmbre": "isoCheminOmbre"
+        }
+      },
+      "monde": {
+        "_doc": "The world around the island (L6-T10, monde.ts), drawn once by the app in map space behind the island: the forest of three species and rocks. It covers the whole frame: an iso view looks down on the ground and has no sky (T23). `graine` fixes every tile (no randomness: the world is the same on every visit). Colours are tokens of rawColors.ts; `voile` and `voileNul` are the night's veil, fixed to the frame's edges.",
+        "graine": 20261030,
+        "couleurs": {
+          "foretLoin": "isoForetLoin",
+          "foretSol": "isoForetSol",
+          "arbreRond": "isoArbreRond",
+          "arbreConifere": "isoArbreConifere",
+          "arbreClair": "isoArbreClair",
+          "tronc": "isoTronc",
+          "roche": "isoRocheMonde",
+          "voile": "isoNuitVoile",
+          "voileNul": "isoNuitVoileNul",
+          "encre": "isoInk"
+        }
+      }
+    }
+  },
+  "pointsAccroche": {
+    "_doc": "Where season and event decor lands on a stage (§7). Each stage's .anchor.json export holds `pointsAccroche` in two forms: `px` (sprite pixels, origin at the sprite's top left, points [x, y]) and `grid` (grid units from the footprint's back corner, points [gx, gy, z]). `faite`, `porte` and `cheminee` are null on a stage without that part (forge rough has no door, the sails have no point at all); `avantToits` lists the eave points, empty without a roof. Schema only: the values come with each stage's exports, from `blender`; components/village/iso/isoSpec.ts types them (PointsAccroche). Beside `px` and `grid`, `pointsAccroche` also holds `foyer` ({px, grid, demiLargeur}: top-face middle of the `fire` volume, else the largest `ember`, half-width in px; null without a hearth) and `fenetres` ([{px, grid, largeur, hauteur, face}]: the lit panes the camera sees, size in px, face `gauche` = wall facing +gy, `droite` = facing +gx). Same px convention as the other points (sprite top left); subtract `anchor` for footprint-relative.",
+    "noms": ["faite", "porte", "cheminee", "avantToits"],
+    "extras": ["foyer", "fenetres"]
+  },
+  "exportsParStade": [
+    "volumes",
+    "masqueEmissif",
+    "pointsAccroche",
+    "masqueToit",
+    "ombre",
+    "flaques",
+    "masqueTap",
+    "ancrage"
+  ],
+  "couches": {
+    "_doc": "Draw order of one building, bottom to top. `decorSaison` is reserved right above the sprite and below the effects, empty in V1.",
+    "ordre": ["sol", "ombre", "flaques", "sprite", "decorSaison", "effets", "ui"],
+    "effets": ["flamme", "fumee", "ailes", "banniere"]
+  },
+  "fenetresSansMur": {
+    "_doc": "Windows of a stage's attach points (constants/isoAccroches.json, by index) the painting has no wall for: the app lights none there. Empty since T38: forge_grand's window 2 is re-exported on its lit part (scripts/iso/exports/accroches.py visible())."
+  },
+  "socle": {
+    "_doc": "L3-T01 (H1): the painted sprites do not carry the building's own shadow on its socle's top; the app draws it (ombres.ts ombreSocle, in the biome's `socleOmbre`) over the sprite, on the socle only. `dejaPeinte` lists the painted images that carry that shadow already: the app draws none over them. Empty since iter 4 (H3-15): the day sprites carry none. Keys are image names (isoSpec `nomImage`).",
+    "dejaPeinte": []
+  },
+  "batiments": {
+    "_doc": "The 21 buildings of db/schema.ts buildingCodes. Tier 3 has two stages (T3_MAX_LEVEL). `emprise` (footprint in cells, [along gx, along gy]) is copied from scripts/iso/exports/heights.json by L0-T03; __tests__/iso-layout.test.ts fails if the two disagree. `repere` names what makes the building recognisable at 30 % zoom, by its visible parts (checklist item 7), validated by Guillaume at H0.",
+    "campfire": {
+      "tier": 1,
+      "stades": ["rough", "solid", "grand"],
+      "emprise": [1, 1],
+      "repere": "cercle de pierres autour de bûches croisées"
+    },
+    "tent": {
+      "tier": 1,
+      "stades": ["rough", "solid", "grand"],
+      "emprise": [2, 2],
+      "repere": "toile en pointe sur deux mâts, rabat ouvert"
+    },
+    "training_dummy": {
+      "tier": 1,
+      "stades": ["rough", "solid", "grand"],
+      "emprise": [1, 1],
+      "repere": "mannequin de paille sur un poteau en croix"
+    },
+    "archery_range": {
+      "tier": 2,
+      "stades": ["rough", "solid", "grand"],
+      "emprise": [2, 3],
+      "repere": "cible ronde sur un chevalet devant une palissade basse"
+    },
+    "quarry": {
+      "tier": 2,
+      "stades": ["rough", "solid", "grand"],
+      "emprise": [2, 2],
+      "repere": "front de roche taillé en gradins, blocs empilés au pied"
+    },
+    "forge": {
+      "tier": 2,
+      "stades": ["rough", "solid", "grand"],
+      "emprise": [2, 2],
+      "repere": "enclume et foyer, la cheminée à partir du stade solid"
+    },
+    "well": {
+      "tier": 2,
+      "stades": ["rough", "solid", "grand"],
+      "emprise": [1, 1],
+      "repere": "margelle ronde en pierre sous un petit toit à treuil"
+    },
+    "windmill": {
+      "tier": 2,
+      "stades": ["rough", "solid", "grand"],
+      "emprise": [2, 2],
+      "repere": "tour et chapeau"
+    },
+    "farm": {
+      "tier": 2,
+      "stades": ["rough", "solid", "grand"],
+      "emprise": [2, 3],
+      "repere": "maison basse au bord de carrés de sillons"
+    },
+    "wizard_tower": {
+      "tier": 2,
+      "stades": ["rough", "solid", "grand"],
+      "emprise": [1, 1],
+      "repere": "tour fine coiffée d'un cône pointu"
+    },
+    "druid_grove": {
+      "tier": 2,
+      "stades": ["rough", "solid", "grand"],
+      "emprise": [2, 2],
+      "repere": "cercle de pierres levées gravées, mangé de lierre"
+    },
+    "watchtower": {
+      "tier": 3,
+      "stades": ["rough", "solid"],
+      "emprise": [1, 1],
+      "repere": "plate-forme haute sur des pieux"
+    },
+    "castle_wall": {
+      "tier": 3,
+      "stades": ["rough", "solid"],
+      "emprise": [1, 3],
+      "repere": "pan de rempart crénelé percé d'une porte"
+    },
+    "armory": {
+      "tier": 3,
+      "stades": ["rough", "solid"],
+      "emprise": [2, 2],
+      "repere": "bâtisse trapue en pierre, râtelier d'armes contre le mur"
+    },
+    "fountain": {
+      "tier": 3,
+      "stades": ["rough", "solid"],
+      "emprise": [2, 2],
+      "repere": "bassin rond autour d'une colonne"
+    },
+    "observatory": {
+      "tier": 3,
+      "stades": ["rough", "solid"],
+      "emprise": [2, 2],
+      "repere": "dôme fendu sur une tour basse"
+    },
+    "barn": {
+      "tier": 3,
+      "stades": ["rough", "solid"],
+      "emprise": [2, 3],
+      "repere": "grand toit à deux pans au-dessus d'une porte double"
+    },
+    "dragon_lair": {
+      "tier": 4,
+      "stades": ["rough", "solid", "grand"],
+      "emprise": [3, 3],
+      "repere": "gueule de grotte dans un rocher, ossements devant"
+    },
+    "heroes_hall": {
+      "tier": 4,
+      "stades": ["rough", "solid", "grand"],
+      "emprise": [3, 3],
+      "repere": "arche de pierre entre deux bannières, trophée au fond"
+    },
+    "champion_arena": {
+      "tier": 4,
+      "stades": ["rough", "solid", "grand"],
+      "emprise": [3, 3],
+      "repere": "enceinte ronde à gradins, ouverte au ciel"
+    },
+    "high_road": {
+      "tier": 4,
+      "stades": ["rough", "solid", "grand"],
+      "emprise": [1, 2],
+      "repere": "poteau à deux flèches sur un tas de pierres, une lanterne pendue"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+# Visual loop: the "Prêt" mode of dev-iso at the current tier (the reveal plays on a tap of the glowing building).
+#   scripts/iso/team/emu-maestro.sh test .maestro/iso-loop-pret.yaml
+appId: com.guiforge.bati.perf
+---
+- launchApp:
+    stopApp: false
+- extendedWaitUntil:
+    visible:
+      id: "iso-mode-pret"
+    timeout: 20000
+- tapOn:
+    id: "iso-mode-pret"
+- waitForAnimationToEnd:
+    timeout: 4000

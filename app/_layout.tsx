@@ -23,6 +23,9 @@ import { ToastProvider } from "@/components/common/Toast";
 import { DatabaseProvider } from "@/components/DatabaseProvider";
 import { LanguageWatch } from "@/components/LanguageWatch";
 import { SyncPrompt } from "@/components/SyncPrompt";
+import { viderCacheSiSpritesChanges } from "@/components/village/iso/cacheImages";
+import { colonneLibre } from "@/components/village/iso/disposition";
+import { INTEGRATION } from "@/constants/isoPoc";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { installCrashHandler, recordCrash } from "@/src/crashLog";
 import { keepRemindersInStep, replanRemindersNow } from "@/src/reminders";
@@ -118,6 +121,8 @@ export default function RootLayout() {
     // Starts the 14 days a format 2 vault is left alone (src/vaultUpdateDelay.ts). Noted once and
     // never throws, so nothing waits on it.
     noteFirstLaunch().catch((e) => reportError("vault.firstSeen", e));
+    // A same-version install over new sprites would show the old ones (village/iso/cacheImages.ts).
+    viderCacheSiSpritesChanges().catch((e) => reportError("village.imageCache", e));
   }, [loadUserFromDatabase, loadSettingsFromDatabase, hydrateChorus]);
 
   useEffect(() => {
@@ -199,7 +204,7 @@ export default function RootLayout() {
                       its own chevron; a native header would sit on top of them.
                     */}
                     <Stack
-                      screenOptions={{
+                      screenOptions={({ route }) => ({
                         headerShown: false,
                         // One content column, whatever the window: see constants/layout.ts.
                         // Here rather than on the tab navigator because Settings, the oath, the
@@ -209,10 +214,15 @@ export default function RootLayout() {
                         // outside this stack and still fills the window.
                         contentStyle: {
                           width: "100%",
-                          maxWidth: CONTENT_MAX_WIDTH,
+                          // Flag on, the tabs keep the column themselves, all but the Village
+                          // scene, whose iso map takes the whole window (L6-T21). Per screen, so
+                          // a route pushed over the tabs does not shrink them underneath.
+                          maxWidth: colonneLibre(route.name, INTEGRATION)
+                            ? undefined
+                            : CONTENT_MAX_WIDTH,
                           alignSelf: "center",
                         },
-                      }}
+                      })}
                     />
                     {/* Offers another device's newer version after a sync. Renders nothing. */}
                     <SyncPrompt />

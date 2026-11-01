@@ -159,7 +159,7 @@
     "report_bug_count_other": "{{count}} 次崩溃",
     "no_mail_client": "此设备上没有找到邮件应用",
     "photos_denied": "照片访问已关闭，请在系统设置中允许。",
-    "sound": "倒计时提示音",
+    "sound": "声音",
     "villagers": "村民",
     "replay_guides": "重看指南",
     "replay_guides_done": "指南会重新出现",
@@ -185,7 +185,8 @@
     "map_style_ember": "余烬",
     "map_style_dark": "夜色",
     "map_style_fiord": "峡湾",
-    "map_style_note": "夜色和峡湾是 OpenFreeMap 的样式，各自从 tiles.openfreemap.org 获取瓦片。"
+    "map_style_note": "夜色和峡湾是 OpenFreeMap 的样式，各自从 tiles.openfreemap.org 获取瓦片。",
+    "sound_hint": "训练提示音和村庄的环境音。"
   },
   "credits": {
     "title": "致谢",
@@ -224,7 +225,10 @@
     "openfreemap_styles": "OpenFreeMap 样式",
     "openfreemap_styles_subtitle": "MIT 许可证",
     "openmaptiles_styles": "OpenMapTiles Dark Matter and Fiord Color",
-    "openmaptiles_styles_subtitle": "代码 BSD 3-Clause，设计 CC BY 4.0，基于 Stamen 和 Paul Norman 的 CartoDB Basemaps"
+    "openmaptiles_styles_subtitle": "代码 BSD 3-Clause，设计 CC BY 4.0，基于 Stamen 和 Paul Norman 的 CartoDB Basemaps",
+    "sounds_title": "村庄的声音",
+    "sounds_note": "村庄的环境音来自 BigSoundBank，已进入公有领域（CC0）。无需署名，但我们还是署上了。",
+    "sound_subtitle": "{{author}}，BigSoundBank，公有领域（CC0）"
   },
   "progression": {
     "new_rung_from": "已掌握：{{name}}",
@@ -687,8 +691,8 @@
     "side_two_go": "开始第 2 侧",
     "skip_rest": "我准备好了",
     "skip_rest_accessibility": "跳过休息，开始下一个动作",
-    "sound_off": "倒计时提示音：关",
-    "sound_on": "倒计时提示音：开",
+    "sound_off": "声音：关",
+    "sound_on": "声音：开",
     "summary_too_short_title": "这次有点短",
     "summary_too_short_body": "你训练了 {{duration}}。保留，它就算入你的火焰和誓言；放弃，就当什么都没发生。",
     "summary_too_short_keep": "保留",
@@ -1632,7 +1636,133 @@
     "crest_the_boar": "野猪",
     "crest_to_boar": "野猪",
     "forge_enter": "走进锻炉",
-    "crest_place_named": "{{name}}"
+    "crest_place_named": "{{name}}",
+    "claim_action": "进化",
+    "claim_all": "全部进化",
+    "claim_ready": "可以进化",
+    "claim_ready_body": "你的{{name}}可以进入下一个阶段了。",
+    "claim_ready_a11y": "{{name}}可以进化",
+    "claim_action_a11y": "进化{{name}}",
+    "evolve_done_all": "你的建筑都进化了。",
+    "evolve_done": "{{name}}进化了。",
+    "drawer_open": "你的村庄，阶段 {{tier}}",
+    "drawer_title": "你的村庄",
+    "iso": {
+      "habitant": "村民",
+      "statue": "动物雕像（{{animal}}，{{matiere}}）：打开你的纹章",
+      "statue_nu": "雕像底座，还空着：打开你的角色页",
+      "matiere_young": "木",
+      "matiere_adult": "石",
+      "matiere_venerable": "青铜",
+      "matiere_legendary": "金",
+      "legende": {
+        "campfire": {
+          "rough": "一点火星燃了起来。黑暗退后了一步。",
+          "solid": "柴堆比码柴的人还高。",
+          "grand": "两座山外的牧羊人看见了这缕烟。"
+        },
+        "tent": {
+          "rough": "他们拉紧一块帆布，把它当成了家。",
+          "solid": "补过的帆布，干爽的床铺。雨尽管来敲。",
+          "grand": "一座挂着旗帜的条纹帐篷，最好的位置上睡着一条狗。"
+        },
+        "training_dummy": {
+          "rough": "稻草人用绳子绑在木桩上，默默承受每一次击打。",
+          "solid": "稻草人戴上了铁帽，上面已经有一道凹痕。",
+          "grand": "人们正在给稻草人缝上新的一层稻草。"
+        },
+        "archery_range": {
+          "rough": "三个靶子靠在一道见过更糟日子的围栏上。",
+          "solid": "现在没人会射偏稻草靶了。",
+          "grand": "黄昏时，射手们在四十步外熄灭一支蜡烛。"
+        },
+        "quarry": {
+          "rough": "第一块石头离开了山丘。",
+          "solid": "天还没亮，运石的车就已经隆隆驶出采石场。",
+          "grand": "一整面山坡正一块接一块变成城墙。"
+        },
+        "forge": {
+          "rough": "铁砧冰凉，风箱喘着气。火花很快就会来。",
+          "solid": "锤声一直响到汤都凉了。",
+          "grand": "这座铁匠铺已经好几个月夜里没熄过火。"
+        },
+        "well": {
+          "rough": "一圈石头，一根绳子。村子有水喝了。",
+          "solid": "第一桶就能提上清凉透亮的水。",
+          "grand": "水井有了屋顶和钟，早饭前就排起了队。"
+        },
+        "windmill": {
+          "rough": "四片光秃秃的风帆，等着第一阵真正的风。",
+          "solid": "就算无风的日子，风帆也能接住最轻的微风。",
+          "grand": "面粉的灰尘悬在傍晚的光里。大家回家时都白了一点。"
+        },
+        "farm": {
+          "rough": "田里还没有要守的东西，稻草人已经立起来了。",
+          "solid": "绿油油的田一直铺到围栏边。",
+          "grand": "麦捆堆得比稻草人还高。"
+        },
+        "wizard_tower": {
+          "rough": "一座歪斜的塔，顶上亮着一扇窗。",
+          "solid": "每天夜里，石头上都会多出一个新的符文。",
+          "grand": "塔顶的水晶球嗡嗡作响，楼梯上的猫假装没听见。"
+        },
+        "druid_grove": {
+          "rough": "七棵小树围成一圈，还有一只值夜的猫头鹰。",
+          "solid": "昨晚，萤火虫搬进了这片林子。",
+          "grand": "大橡树下摆着一张长凳和一碗橡果。"
+        },
+        "watchtower": {
+          "rough": "爬上梯子，山谷就在眼前展开。",
+          "solid": "从上面看，那条路显得很短。",
+          "grand": "远处海岸的渔夫靠它的灯火掌舵。"
+        },
+        "castle_wall": {
+          "rough": "一排木桩让黑夜保持着礼貌的距离。",
+          "solid": "在新砌的石头走道上，靴子每到整点就走过一遍。",
+          "grand": "城门敞开着，旗帜在上方猎猎作响。"
+        },
+        "armory": {
+          "rough": "架子上还什么都没挂，空气里已经有了油味。",
+          "solid": "刀剑按长短排列，最短的在最前面。",
+          "grand": "盾牌在灯光下闪亮，没人敢留下指纹。"
+        },
+        "fountain": {
+          "rough": "一只石盆，等着它的第一滴水。",
+          "solid": "屏住呼吸，就能听见水柱在嗡嗡作响。",
+          "grand": "一位石匠正在池边凿最后一座雕像。"
+        },
+        "observatory": {
+          "rough": "一座小圆顶，朝天空睁开一只眼。",
+          "solid": "星图上的每颗星都有名字，旁边有一道铅笔印。",
+          "grand": "巨大的镜片转开了。月亮最好乖一点。"
+        },
+        "barn": {
+          "rough": "新木板上的树脂还黏着，门也还没装上。",
+          "solid": "阁楼堆满了，门已经关不严了。",
+          "grand": "到了一月，这座谷仓还在养着整个村子。"
+        },
+        "dragon_lair": {
+          "rough": "住在这里的东西留下了一臂长的爪痕。",
+          "solid": "夜里，温热的烟从洞里卷出来。",
+          "grand": "灰烬里躺着一枚金币，还是烫的。"
+        },
+        "heroes_hall": {
+          "rough": "一张长桌，一个能容下名字的屋顶。",
+          "solid": "每根梁上都刻着一桩功绩。",
+          "grand": "门上方的旗帜是用真金线绣的。"
+        },
+        "champion_arena": {
+          "rough": "一圈绳子围着耙平的沙地，已经来了三个看客。",
+          "solid": "比赛一张贴出来，座位就被抢光了。",
+          "grand": "一名学徒把练习用的长矛从竞技场搬去军械库。"
+        },
+        "high_road": {
+          "rough": "一条夯实的土路，和第一个靴印。",
+          "solid": "里程碑替你数着走过的里。",
+          "grand": "旅人向别人打听那条你修的路怎么走。"
+        }
+      }
+    }
   },
   "errors": {
     "save_session_failed": "训练保存失败，请重试。",

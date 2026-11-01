@@ -173,7 +173,8 @@
     "report_bug_count_other": "{{count}} Abstürze",
     "no_mail_client": "Keine E-Mail-App auf diesem Gerät gefunden",
     "photos_denied": "Der Zugriff auf Fotos ist aus. Erlaube ihn in den Systemeinstellungen.",
-    "sound": "Countdown-Töne",
+    "sound": "Töne",
+    "sound_hint": "Töne im Training und die Klänge des Dorfes.",
     "villagers": "Dorfbewohner",
     "replay_guides": "Hinweise erneut ansehen",
     "replay_guides_done": "Die Hinweise erscheinen wieder",
@@ -208,6 +209,9 @@
     "cc_by_30_subtitle": "Lizenzbedingungen",
     "attribution_example": "Beispiel für die Nennung (von game-icons.net): \"Icons made by {author}. Available on https://game-icons.net\".",
     "view_authors": "Autoren ansehen",
+    "sounds_title": "Dorfklänge",
+    "sounds_note": "Die Umgebungsklänge des Dorfes stammen von BigSoundBank und sind gemeinfrei (CC0). Eine Nennung ist nicht nötig, wir nennen sie trotzdem.",
+    "sound_subtitle": "{{author}}, BigSoundBank, CC0",
     "open_source_title": "Open-Source-Software",
     "open_source_body": "Gebaut mit Expo + React Native, Tamagui, Zustand, Drizzle ORM, i18next und mehr.",
     "illustrations_title": "Übungsillustrationen",
@@ -714,8 +718,8 @@
     "side_two_go": "Los, Seite 2",
     "skip_rest": "Ich bin bereit",
     "skip_rest_accessibility": "Pause überspringen und nächste Übung starten",
-    "sound_off": "Countdown-Töne: aus",
-    "sound_on": "Countdown-Töne: an",
+    "sound_off": "Töne: aus",
+    "sound_on": "Töne: an",
     "summary_too_short_title": "Das war kurz",
     "summary_too_short_body": "Du hast {{duration}} trainiert. Behalte sie, und sie zählt für deine Flamme und deinen Schwur, oder verwirf sie, und es ist nichts passiert.",
     "summary_too_short_keep": "Behalten",
@@ -1393,6 +1397,122 @@
     "smith_greeting": "Hier wird alles geschmiedet, sogar deine Monster. Sag mir, was du brauchst, ich sorge für das Feuer."
   },
   "village": {
+    "iso": {
+      "habitant": "Dorfbewohner",
+      "statue": "Tierstatue ({{animal}}, {{matiere}}): öffnet dein Wappen",
+      "statue_nu": "Statuensockel, noch leer: öffnet dein Blatt",
+      "matiere_young": "Holz",
+      "matiere_adult": "Stein",
+      "matiere_venerable": "Bronze",
+      "matiere_legendary": "Gold",
+      "legende": {
+        "campfire": {
+          "rough": "Ein Funke fängt. Die Dunkelheit weicht einen Schritt zurück.",
+          "solid": "Der Holzstapel ist höher als der Mann, der ihn aufgeschichtet hat.",
+          "grand": "Ein Schäfer, zwei Hügel weiter, hat den Rauch bemerkt."
+        },
+        "tent": {
+          "rough": "Man hat eine Plane gespannt und ein Zuhause daraus gemacht.",
+          "solid": "Geflickte Plane, trockenes Bett. Der Regen kann klopfen, so viel er will.",
+          "grand": "Ein gestreiftes Zelt mit Banner und ein Hund, der am besten Platz schläft."
+        },
+        "training_dummy": {
+          "rough": "An seinen Pfahl gebunden, steckt der Strohmann jeden Schlag stumm ein.",
+          "solid": "Der Strohmann hat eine Eisenkappe bekommen. Eine Delle ist schon drin.",
+          "grand": "Dem Strohmann wird eine neue Strohschicht aufgenäht."
+        },
+        "archery_range": {
+          "rough": "Drei Scheiben lehnen an einem Zaun, der schon Schlimmeres gesehen hat.",
+          "solid": "Niemand verfehlt den Strohballen mehr.",
+          "grand": "In der Dämmerung löschen die Schützen auf vierzig Schritt eine Kerze."
+        },
+        "quarry": {
+          "rough": "Der erste Stein verlässt den Hügel.",
+          "solid": "Schon vor Tagesanbruch rumpeln Karren aus dem Steinbruch.",
+          "grand": "Ein Hang wird Block für Block zu Mauern."
+        },
+        "forge": {
+          "rough": "Der Amboss ist kalt, der Blasebalg keucht. Die Funken kommen noch.",
+          "solid": "Hammerschläge klingen, bis die Suppe kalt wird.",
+          "grand": "Die Schmiede ist seit Monaten auch nachts nicht mehr ausgegangen."
+        },
+        "well": {
+          "rough": "Ein Ring aus Steinen, ein Seil. Das Dorf kann trinken.",
+          "solid": "Beim ersten Zug kommt kaltes, klares Wasser herauf.",
+          "grand": "Der Brunnen hat Dach und Glocke bekommen, und zum Frühstück steht man an."
+        },
+        "windmill": {
+          "rough": "Vier nackte Flügel warten auf den ersten echten Wind.",
+          "solid": "Selbst bei Flaute fangen die Flügel den leisesten Hauch.",
+          "grand": "Mehlstaub hängt im Abendlicht. Alle gehen etwas weißer nach Hause."
+        },
+        "farm": {
+          "rough": "Die Vogelscheuche steht schon, bevor es etwas zu bewachen gibt.",
+          "solid": "Grüne Felder reichen bis an den Zaun.",
+          "grand": "Die Garben werden höher gestapelt als die Vogelscheuche."
+        },
+        "wizard_tower": {
+          "rough": "Ein schiefer Turm mit einem erleuchteten Fenster ganz oben.",
+          "solid": "Jede Nacht erscheint eine neue Rune auf den Steinen.",
+          "grand": "Die Kugel oben brummt, und die Katze auf der Treppe tut, als hörte sie nichts."
+        },
+        "druid_grove": {
+          "rough": "Sieben Setzlinge im Kreis und eine Eule im Nachtdienst.",
+          "solid": "Letzte Nacht sind Glühwürmchen in den Hain gezogen.",
+          "grand": "Unter der großen Eiche stehen eine Bank und eine Schale Eicheln."
+        },
+        "watchtower": {
+          "rough": "Steig die Leiter hoch, und das Tal öffnet sich.",
+          "solid": "Von dort oben wirkt die Straße kurz.",
+          "grand": "Ein Fischer an der fernen Küste richtet sich nach ihrem Leuchtfeuer."
+        },
+        "castle_wall": {
+          "rough": "Eine Pfahlreihe hält die Nacht auf höflichem Abstand.",
+          "solid": "Auf dem neuen Wehrgang aus Stein gehen jede Stunde Stiefel vorbei.",
+          "grand": "Das Tor steht offen, darüber knattern Banner."
+        },
+        "armory": {
+          "rough": "An den Gestellen hängt noch nichts, aber es riecht schon nach Öl.",
+          "solid": "Die Klingen hängen nach Länge, die kürzeste zuerst.",
+          "grand": "Die Schilde glänzen im Lampenlicht, und keiner wagt einen Fingerabdruck."
+        },
+        "fountain": {
+          "rough": "Ein Steinbecken wartet auf seine ersten Tropfen.",
+          "solid": "Halt den Atem an, und du hörst den Strahl summen.",
+          "grand": "Ein Steinmetz meißelt die letzte Figur in den Rand."
+        },
+        "observatory": {
+          "rough": "Eine kleine Kuppel öffnet ein Auge zum Himmel.",
+          "solid": "Jeder Stern auf der Karte hat einen Namen und einen Bleistiftstrich.",
+          "grand": "Die große Linse schwenkt auf. Der Mond sollte sich benehmen."
+        },
+        "barn": {
+          "rough": "Frische Bretter, noch klebrig vom Harz, und eine Tür, die noch nicht hängt.",
+          "solid": "Der Heuboden ist so voll, dass die Tore nicht mehr richtig schließen.",
+          "grand": "Im Januar wird diese Scheune das Dorf noch immer ernähren."
+        },
+        "dragon_lair": {
+          "rough": "Was hier wohnt, hat armlange Kratzspuren hinterlassen.",
+          "solid": "Nachts kringelt warmer Rauch aus der Höhle.",
+          "grand": "Eine einzelne Goldmünze liegt in der Asche, noch heiß."
+        },
+        "heroes_hall": {
+          "rough": "Ein langer Tisch und ein Dach mit Platz für einen Namen.",
+          "solid": "Jeder Balken trägt eine geschnitzte Heldentat.",
+          "grand": "Das Banner über der Tür ist mit echtem Goldfaden gestickt."
+        },
+        "champion_arena": {
+          "rough": "Ein Seil umgibt den geharkten Sand. Drei Neugierige sind schon da.",
+          "solid": "Die Plätze sind schnell weg, wenn ein Kampf angeschlagen wird.",
+          "grand": "Ein Lehrling trägt die Übungsspeere von der Arena zur Waffenkammer."
+        },
+        "high_road": {
+          "rough": "Ein festgetretener Pfad und der erste Stiefelabdruck.",
+          "solid": "Meilensteine zählen deine Meilen.",
+          "grand": "Reisende fragen nach dem Weg auf einer Straße, die du gebaut hast."
+        }
+      }
+    },
     "forge_enter": "Die Schmiede betreten",
     "crest_bear": "ein Bär",
     "crest_stag": "ein Hirsch",
@@ -1584,7 +1704,17 @@
     "cta_route": "Eine Route finden",
     "changes_title": "Seit deiner letzten Quest",
     "risen": "Gewachsen",
+    "claim_action": "Weiterentwickeln",
+    "claim_all": "Alle weiterentwickeln",
+    "claim_ready": "Bereit zur Weiterentwicklung",
+    "claim_ready_body": "Dein {{name}} kann die nächste Stufe erreichen.",
+    "claim_ready_a11y": "{{name}} bereit zur Weiterentwicklung",
+    "claim_action_a11y": "{{name}} weiterentwickeln",
+    "evolve_done_all": "Deine Gebäude haben sich weiterentwickelt.",
+    "evolve_done": "{{name}} hat sich weiterentwickelt.",
     "foot": "Hier wird nichts verwaltet. Jedes Level kommt aus einer erfassten Einheit.",
+    "drawer_open": "Dein Dorf, Ausbaustufe {{tier}}",
+    "drawer_title": "Dein Dorf",
     "done_title": "{{name}} ist vollendet",
     "done_body": "Muskeln, Stile, Ausbauten und Fundament: alles am Maximum.",
     "done_deeds": "Die Heldentaten stehen gleich darunter.",

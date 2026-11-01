@@ -119,7 +119,9 @@ describe("db/restSuggestions", () => {
     /** Four sessions in the week that ended `weeksAgo` weeks ago. */
     async function heavyWeek(weeksAgo: number): Promise<void> {
       const base = weeksAgo * 7;
-      for (const offset of [1, 2, 4, 6]) await addSessionOnDate(base + offset);
+      // Offsets stay a day clear of the week's edge: sessions sit at midnight, so a late run on the
+      // far side of a clock change measured the 6th as the 7th and moved it a week back.
+      for (const offset of [1, 2, 3, 5]) await addSessionOnDate(base + offset);
     }
 
     test("four heavy weeks in a row earn an easier one", async () => {

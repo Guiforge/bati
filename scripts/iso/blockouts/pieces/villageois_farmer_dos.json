@@ -1,0 +1,108 @@
+{
+  "canvas": "villager",
+  "light": [0.55, 0.55, 0.63],
+  "lineScale": 0.5,
+  "parts": [
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0.0],
+      "r": 0.102,
+      "r2": 0.072,
+      "h": 0.34,
+      "mat": "wood",
+      "roof": false,
+      "rotZ": 180.0
+    },
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0.3],
+      "r": 0.0744,
+      "r2": 0.084,
+      "h": 0.06,
+      "mat": "wood",
+      "roof": false,
+      "rotZ": 180.0
+    },
+    {
+      "type": "cyl",
+      "center": [0.5611, 0.4389, 0.345],
+      "r": 0.024,
+      "h": 0.1466,
+      "mat": "wood",
+      "axis": [0.0444, -0.1408, -0.989],
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.5676, 0.4183, 0.21],
+      "r": 0.0228,
+      "h": 0.0404,
+      "mat": "plaster",
+      "axis": [-0.0455, -0.1296, -0.9905],
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.4389, 0.5611, 0.345],
+      "r": 0.024,
+      "h": 0.1466,
+      "mat": "wood",
+      "axis": [-0.1408, 0.0444, -0.989],
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.4183, 0.5676, 0.21],
+      "r": 0.0228,
+      "h": 0.0404,
+      "mat": "plaster",
+      "axis": [-0.1296, -0.0455, -0.9905],
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.5, 0.5, 0.36],
+      "r": 0.022,
+      "h": 0.03,
+      "mat": "plaster",
+      "rotZ": 180.0,
+      "roof": false
+    },
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0.385],
+      "r": 0.034,
+      "r2": 0.05,
+      "h": 0.045,
+      "mat": "canvas",
+      "roof": false,
+      "rotZ": 180.0
+    },
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0.43],
+      "r": 0.05,
+      "r2": 0.02,
+      "h": 0.06,
+      "mat": "canvas",
+      "roof": false,
+      "rotZ": 180.0
+    },
+    {
+      "type": "box",
+      "at": [0.4567, 0.4417, 0.4],
+      "size": [0.03, 0.06, 0.05],
+      "mat": "plaster",
+      "rotZ": 225.0,
+      "roof": false
+    },
+    {
+      "type": "box",
+      "at": [0.4133, 0.3708, 0.06],
+      "size": [0.025, 0.11, 0.22],
+      "mat": "canvas",
+      "rotZ": 225.0,
+      "roof": false
+    }
+  ]
+}

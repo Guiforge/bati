@@ -404,6 +404,9 @@
     "mr_yoga_subtitle": "Photo servant de modèle de pose, Wikimedia Commons",
     "open": "Ouvrir",
     "open_source_body": "Construit avec Expo + React Native, Tamagui, Zustand, Drizzle ORM, i18next, et plus encore.",
+    "sounds_title": "Sons du village",
+    "sounds_note": "Les sons d'ambiance du village viennent de BigSoundBank, placés dans le domaine public (CC0). Aucun crédit n'est exigé, nous le donnons quand même.",
+    "sound_subtitle": "{{author}}, BigSoundBank, CC0",
     "open_source_title": "Logiciels open-source",
     "third_party_body": "Bati utilise des ressources tierces et des logiciels open-source. Merci aux créateurs !",
     "third_party_title": "Ressources tierces",
@@ -1196,8 +1199,8 @@
     "side_two_go": "C'est parti, côté 2",
     "skip_rest": "On y va",
     "skip_rest_accessibility": "Passer le repos et commencer le prochain exercice",
-    "sound_off": "Bips du décompte : coupés",
-    "sound_on": "Bips du décompte : activés",
+    "sound_off": "Sons : coupés",
+    "sound_on": "Sons : activés",
     "summary_too_short_title": "C'était court",
     "summary_too_short_body": "Tu as tenu {{duration}}. Garde cette séance et elle compte pour ta flamme et ton serment, ou jette-la, et il ne s'est rien passé.",
     "summary_too_short_keep": "Garder",
@@ -1434,7 +1437,8 @@
     "rest_default_note": "Les quêtes que tu as écrites gardent leur propre repos.",
     "rest_default_own": "Selon la quête",
     "rest_default_value": "{{seconds}} s",
-    "sound": "Bips du décompte",
+    "sound": "Sons",
+    "sound_hint": "Les bips de séance et l'ambiance du village.",
     "villagers": "Villageois",
     "replay_guides": "Revoir les guides",
     "replay_guides_done": "Les guides reviendront",
@@ -1482,6 +1486,122 @@
     "smith_greeting": "Ici, tout se forge, même tes monstres. Dis-moi ce qu'il te faut, je fournis le feu."
   },
   "village": {
+    "iso": {
+      "habitant": "Habitant",
+      "statue": "Statue de l'animal ({{animal}}, {{matiere}}) : ouvre ton blason",
+      "statue_nu": "Socle de la statue, encore vide : ouvre ta fiche",
+      "matiere_young": "bois",
+      "matiere_adult": "pierre",
+      "matiere_venerable": "bronze",
+      "matiere_legendary": "or",
+      "legende": {
+        "campfire": {
+          "rough": "Une étincelle prend. La nuit recule d'un pas.",
+          "solid": "Le tas de bois est plus haut que celui qui l'a empilé.",
+          "grand": "Un berger, deux collines plus loin, a repéré la fumée."
+        },
+        "tent": {
+          "rough": "On a tendu une toile et on en a fait une maison.",
+          "solid": "Toile rapiécée, lit au sec. La pluie peut toujours tambouriner.",
+          "grand": "Un pavillon rayé, une bannière, et un chien endormi à la meilleure place."
+        },
+        "training_dummy": {
+          "rough": "Ficelé à son poteau, le mannequin de paille encaisse tout sans un mot.",
+          "solid": "Le mannequin a reçu un casque de fer. Il y a déjà une bosse.",
+          "grand": "On recoud une épaisse couche de paille sur le mannequin."
+        },
+        "archery_range": {
+          "rough": "Trois cibles adossées à une palissade qui en a vu d'autres.",
+          "solid": "Plus personne ne rate la botte de paille.",
+          "grand": "Au crépuscule, les archers soufflent une bougie à quarante pas."
+        },
+        "quarry": {
+          "rough": "La première pierre quitte la colline.",
+          "solid": "Les charrettes grondent déjà hors de la carrière avant le jour.",
+          "grand": "Une colline prend la forme de murs, bloc après bloc."
+        },
+        "forge": {
+          "rough": "Une enclume froide, un soufflet qui s'essouffle. Les étincelles viendront.",
+          "solid": "Le marteau cogne jusqu'à ce que la soupe refroidisse.",
+          "grand": "La forge ne s'éteint plus, même la nuit."
+        },
+        "well": {
+          "rough": "Un cercle de pierres, une corde. Le village peut boire.",
+          "solid": "L'eau remonte froide et claire dès le premier seau.",
+          "grand": "Le puits a un toit et une cloche. Dès le matin, on y fait la queue."
+        },
+        "windmill": {
+          "rough": "Quatre ailes nues attendent le premier vrai vent.",
+          "solid": "Même par temps calme, les ailes attrapent la moindre brise.",
+          "grand": "La farine flotte dans la lueur du soir. Chacun rentre un peu plus blanc."
+        },
+        "farm": {
+          "rough": "L'épouvantail est déjà planté, et il n'y a encore rien à garder.",
+          "solid": "Les champs verts vont jusqu'à la clôture.",
+          "grand": "On empile les gerbes plus haut que l'épouvantail."
+        },
+        "wizard_tower": {
+          "rough": "Une tour de travers, une seule fenêtre allumée tout en haut.",
+          "solid": "Chaque nuit, une rune de plus apparaît sur les pierres.",
+          "grand": "L'orbe ronronne, et le chat de l'escalier fait semblant de ne rien entendre."
+        },
+        "druid_grove": {
+          "rough": "Sept jeunes arbres en cercle, et un hibou de garde.",
+          "solid": "Des lucioles ont emménagé dans le bosquet la nuit dernière.",
+          "grand": "Sous le grand chêne, on a laissé un banc et un bol de glands."
+        },
+        "watchtower": {
+          "rough": "Au sommet de l'échelle, la vallée s'ouvre.",
+          "solid": "De là-haut, la route paraît courte.",
+          "grand": "Un pêcheur de la côte lointaine se guide sur son fanal."
+        },
+        "castle_wall": {
+          "rough": "Une ligne de pieux tient la nuit à bonne distance.",
+          "solid": "Sur le chemin de ronde neuf, des bottes passent à chaque heure.",
+          "grand": "La porte reste ouverte, sous des bannières qui claquent."
+        },
+        "armory": {
+          "rough": "Rien ne pend encore aux râteliers, mais l'air sent déjà l'huile.",
+          "solid": "Les lames sont accrochées par longueur, la plus courte d'abord.",
+          "grand": "Les boucliers brillent à la lampe, et personne n'ose y poser un doigt."
+        },
+        "fountain": {
+          "rough": "Un bassin de pierre attend ses premières gouttes.",
+          "solid": "Retiens ton souffle et tu entends le jet fredonner.",
+          "grand": "Un tailleur de pierre cisèle la dernière figure sur la margelle."
+        },
+        "observatory": {
+          "rough": "Un petit dôme ouvre un œil sur le ciel.",
+          "solid": "Chaque étoile de la carte a un nom et un trait de crayon.",
+          "grand": "La grande lentille pivote. La lune n'a qu'à bien se tenir."
+        },
+        "barn": {
+          "rough": "Des planches neuves, encore collantes de sève, et une porte pas encore posée.",
+          "solid": "Le fenil est plein et les portes ne ferment plus.",
+          "grand": "En janvier, cette grange nourrira encore le village."
+        },
+        "dragon_lair": {
+          "rough": "Ce qui vit ici a laissé des griffures longues comme un bras.",
+          "solid": "La nuit, une fumée tiède s'enroule hors de la caverne.",
+          "grand": "Une seule pièce d'or dans la cendre, encore chaude."
+        },
+        "heroes_hall": {
+          "rough": "Une longue table et un toit avec de la place pour un nom.",
+          "solid": "Chaque poutre porte un exploit gravé.",
+          "grand": "La bannière au-dessus de la porte est brodée de fil d'or véritable."
+        },
+        "champion_arena": {
+          "rough": "Du sable ratissé, une corde pour ring. Trois curieux attendent déjà.",
+          "solid": "Les places partent vite quand un combat est affiché.",
+          "grand": "Un apprenti porte les lances d'entraînement de l'arène à l'armurerie."
+        },
+        "high_road": {
+          "rough": "Un chemin de terre battue, et une première trace de botte.",
+          "solid": "Des bornes comptent tes lieues.",
+          "grand": "Des voyageurs demandent la route que tu as ouverte."
+        }
+      }
+    },
     "forge_enter": "Entrer dans la forge",
     "crest_bear": "un ours",
     "crest_stag": "un cerf",
@@ -1682,7 +1802,17 @@
     "cta_route": "Trouver une route",
     "changes_title": "Depuis ta dernière quête",
     "risen": "Monté",
+    "claim_action": "Faire évoluer",
+    "claim_all": "Tout faire évoluer",
+    "claim_ready": "Prêt à évoluer",
+    "claim_ready_body": "Ton {{name}} peut passer au stade suivant.",
+    "claim_ready_a11y": "{{name}} prêt à évoluer",
+    "claim_action_a11y": "Faire évoluer {{name}}",
+    "evolve_done_all": "Tes bâtiments ont évolué.",
+    "evolve_done": "{{name}} a évolué.",
     "foot": "Rien ne se gère ici. Chaque niveau vient d'une séance enregistrée.",
+    "drawer_open": "Ton village, palier {{tier}}",
+    "drawer_title": "Ton village",
     "done_title": "{{name}}, village achevé",
     "done_body": "Muscles, styles, améliorations et fondations : tout est au plafond.",
     "done_deeds": "Les hauts faits sont juste en dessous.",

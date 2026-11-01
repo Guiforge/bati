@@ -1,0 +1,12 @@
+# Village iso V1: play two sessions on the .perf build so the village has buildings. No
+# clearState. The subflows are pinned to .dev, but a subflow's appId is ignored by Maestro.
+#   scripts/iso/team/emu-maestro.sh test .maestro/iso-perf-sessions.yaml
+appId: com.guiforge.bati.perf
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "tab-quests"
+    timeout: 30000
+- runFlow: subflows/start-a-quest-session.yaml
+- runFlow: subflows/start-a-quest-session.yaml

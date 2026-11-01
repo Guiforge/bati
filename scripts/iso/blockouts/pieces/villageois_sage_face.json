@@ -1,0 +1,101 @@
+{
+  "canvas": "villager",
+  "light": [0.55, 0.55, 0.63],
+  "lineScale": 0.5,
+  "parts": [
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0.0],
+      "r": 0.0808,
+      "r2": 0.057,
+      "h": 0.34,
+      "mat": "thatch",
+      "roof": false,
+      "rotZ": 0.0
+    },
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0.3],
+      "r": 0.0589,
+      "r2": 0.0665,
+      "h": 0.06,
+      "mat": "thatch",
+      "roof": false,
+      "rotZ": 0.0
+    },
+    {
+      "type": "cyl",
+      "center": [0.4516, 0.5484, 0.345],
+      "r": 0.019,
+      "h": 0.1461,
+      "mat": "thatch",
+      "axis": [-0.0252, 0.1219, -0.9922],
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.448, 0.5662, 0.21],
+      "r": 0.0181,
+      "h": 0.0404,
+      "mat": "plaster",
+      "axis": [0.0543, 0.1209, -0.9912],
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.5484, 0.4516, 0.345],
+      "r": 0.019,
+      "h": 0.1461,
+      "mat": "thatch",
+      "axis": [0.1219, -0.0252, -0.9922],
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.5662, 0.448, 0.21],
+      "r": 0.0181,
+      "h": 0.0404,
+      "mat": "plaster",
+      "axis": [0.1209, 0.0543, -0.9912],
+      "roof": false
+    },
+    {
+      "type": "cyl",
+      "center": [0.5, 0.5, 0.36],
+      "r": 0.022,
+      "h": 0.03,
+      "mat": "plaster",
+      "rotZ": 0.0,
+      "roof": false
+    },
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0.385],
+      "r": 0.034,
+      "r2": 0.05,
+      "h": 0.045,
+      "mat": "plaster",
+      "roof": false,
+      "rotZ": 0.0
+    },
+    {
+      "type": "cone",
+      "center": [0.5, 0.5, 0.43],
+      "r": 0.05,
+      "r2": 0.02,
+      "h": 0.06,
+      "mat": "plaster",
+      "roof": false,
+      "rotZ": 0.0
+    },
+    {
+      "type": "cyl",
+      "center": [0.546, 0.546, 0.27],
+      "r": 0.03,
+      "h": 0.01,
+      "mat": "iron",
+      "axis": [0.7071, 0.7071, 0],
+      "roof": false
+    }
+  ]
+}

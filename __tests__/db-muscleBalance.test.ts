@@ -245,10 +245,16 @@ describe("db/muscleBalance", () => {
     const tonight = await decideHomeOffer("en");
     assert(tonight?.kind === "done_today");
     expect(tonight.next?.quest.id).toBe(older.id);
-    const day = 86400;
+    // Calendar days, not 86400 s: the offer counts calendar days, and a clock change in between
+    // made nine days of seconds read as eight.
+    const daysAgo = (n: number) => {
+      const d = new Date();
+      d.setDate(d.getDate() - n);
+      return Math.floor(d.getTime() / 1000);
+    };
     t.sqlite.exec(`
-      UPDATE completed_sessions SET questId = ${newer.id}, performedAt = ${now - 2 * day} WHERE id IN (1, 2);
-      UPDATE completed_sessions SET questId = ${older.id}, performedAt = ${now - 9 * day} WHERE id = 3;
+      UPDATE completed_sessions SET questId = ${newer.id}, performedAt = ${daysAgo(2)} WHERE id IN (1, 2);
+      UPDATE completed_sessions SET questId = ${older.id}, performedAt = ${daysAgo(9)} WHERE id = 3;
     `);
     const offer = await decideHomeOffer("en");
     expect(offer?.kind).toBe("stale_quest");

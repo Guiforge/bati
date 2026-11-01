@@ -6,7 +6,7 @@ import { createAnimations } from "@tamagui/animations-react-native";
 // space 18 -> 16, `$10` 60 -> 40. Do not switch to v6 as part of this migration.
 import { defaultConfig } from "@tamagui/config/v5";
 import { createFont, createTamagui, createTokens } from "tamagui";
-import { rawColors } from "@/constants/rawColors";
+import { fade, rawColors } from "@/constants/rawColors";
 
 // -------------------------------------------------------------------------
 // 1. TYPOGRAPHY (The Voice of the RPG)
@@ -204,6 +204,27 @@ const journal = {
   pastelBlue: rawColors.ink800,
 };
 
+// The iso bubble's parchment (`<Theme name="parchment">` in components/village/iso/Bulle.tsx): the
+// shared figures (level, pips, bar, deeds) read ink on paper without knowing it. Ink 12.6:1,
+// gold700 for the gold (6:1), a lighter paper for the bar's track.
+const parchment = {
+  ...rawColors,
+  background: rawColors.parchment,
+  color: rawColors.bgDark,
+  text: rawColors.bgDark,
+  textSecondary: rawColors.ink800,
+  resourceGold: rawColors.gold700,
+  // Text in the braise ramp (QuestLink and its chevron): the light braise is 1.6:1 on paper.
+  primaryText: rawColors.primaryPress,
+  warning: rawColors.primaryPress,
+  // The bar's track and the skeleton, a tone under the paper.
+  surface: fade(rawColors.bgDark, 0.18),
+  surface2: fade(rawColors.bgDark, 0.18),
+  bgLight: fade(rawColors.bgDark, 0.18),
+  borderColor: rawColors.ink800,
+  borderStrong: rawColors.ink800,
+};
+
 // -------------------------------------------------------------------------
 // 4. CONFIG EXPORT
 // -------------------------------------------------------------------------
@@ -242,6 +263,7 @@ const config = createTamagui({
     // achievements list, the balance card, a history row) takes its ground and its one accent
     // without knowing it is on another tab. The braise, green and red fold into the gold ramp.
     dark_journal: { ...journal, ...kebabTwins(journal) },
+    dark_parchment: { ...parchment, ...kebabTwins(parchment) },
   },
 });
 

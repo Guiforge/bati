@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Text, XStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { Button } from "@/components/common/Button";
 
 type SettingRowProps = {
@@ -7,12 +7,21 @@ type SettingRowProps = {
   icon: ReactNode;
   label: string;
   value?: string;
+  hint?: string;
   onPress: () => void;
   disabled?: boolean;
 };
 
 /** One row of Settings: an icon, a label, and the current value on the right. */
-export function SettingRow({ testID, icon, label, value, onPress, disabled }: SettingRowProps) {
+export function SettingRow({
+  testID,
+  icon,
+  label,
+  value,
+  hint,
+  onPress,
+  disabled,
+}: SettingRowProps) {
   return (
     <Button
       testID={testID}
@@ -31,9 +40,16 @@ export function SettingRow({ testID, icon, label, value, onPress, disabled }: Se
     >
       <XStack flex={1} items="center" gap="3">
         {icon}
-        <Text flex={1} fontSize="4" fontWeight="bold" color="text">
-          {label}
-        </Text>
+        <YStack flex={1}>
+          <Text fontSize="4" fontWeight="bold" color="text">
+            {label}
+          </Text>
+          {hint ? (
+            <Text fontSize="3" color="textSecondary">
+              {hint}
+            </Text>
+          ) : null}
+        </YStack>
         {value ? (
           // Capped at just over half the row, and truncated rather than wrapped. `label` holds
           // the `flex={1}`, so it is the half that gives way: an unbounded value — a folder

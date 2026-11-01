@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { muscleCodes } from "@/db/schema";
+import { buildingCodes, muscleCodes } from "@/db/schema";
 
 /**
  * Keys the code builds from a value instead of naming them, so no grep for the literal finds a
@@ -16,6 +16,10 @@ const BUILT: Record<string, readonly string[]> = {
   "village.detail_unlock_muscle_": muscleCodes,
   // components/village/Banners.tsx, from the `kind` of a banner (db/villageYearsRules.ts).
   "village.season_": ["winter", "spring", "summer", "autumn"],
+  // components/village/iso/Revelation.tsx, the story line of a stage: one per building and stage.
+  "village.iso.legende.": buildingCodes.flatMap((c) =>
+    ["rough", "solid", "grand"].map((s) => `${c}.${s}`),
+  ),
 };
 
 const LOCALES = ["en", "fr", "de", "es", "zh"] as const;

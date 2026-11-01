@@ -43,7 +43,8 @@
     "./.biome/plugins/noDynamicEnvAccess.grit",
     "./.biome/plugins/noJsNetwork.grit",
     "./.biome/plugins/noBareSheetScrollView.grit",
-    "./.biome/plugins/noTamaguiSigil.grit"
+    "./.biome/plugins/noTamaguiSigil.grit",
+    "./.biome/plugins/noMissingHermesApi.grit"
   ],
   "linter": {
     "enabled": true,

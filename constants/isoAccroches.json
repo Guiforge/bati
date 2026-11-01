@@ -1,0 +1,678 @@
+{
+  "_doc": "The attach points of each painted stage that has some, in sprite px (origin top left): foyer (flame base, half-width, height z in grid units), cheminee, fenetres, porte. Generated from scripts/iso/blockouts/renders/*.anchor.json: UPDATE_ACCROCHES=1 npx jest iso-accroches. The app reads this, never scripts/ (L5-T03).",
+  "stades": {
+    "armory_rough": {
+      "size": [896, 1344],
+      "foyer": {
+        "px": [156.16, 1045.43],
+        "z": 0.23,
+        "demiLargeur": 23.04
+      },
+      "cheminee": null,
+      "fenetres": [
+        {
+          "px": [588.93, 1024.32],
+          "largeur": 28.25,
+          "hauteur": 32.92,
+          "face": "droite"
+        }
+      ],
+      "porte": [267.616, 1092.591]
+    },
+    "armory_solid": {
+      "size": [896, 1344],
+      "foyer": {
+        "px": [127.36, 1003.25],
+        "z": 0.34,
+        "demiLargeur": 19.2
+      },
+      "cheminee": [444.16, 581.155],
+      "fenetres": [
+        {
+          "px": [678.4, 964.23],
+          "largeur": 30.72,
+          "hauteur": 51.73,
+          "face": "droite"
+        }
+      ],
+      "porte": [560.32, 1083.883]
+    },
+    "barn_rough": {
+      "size": [1280, 1280],
+      "foyer": null,
+      "cheminee": null,
+      "fenetres": [
+        {
+          "px": [887.73, 925.27],
+          "largeur": 27.8,
+          "hauteur": 32.92,
+          "face": "droite"
+        }
+      ],
+      "porte": [514.585, 1050.632]
+    },
+    "barn_solid": {
+      "size": [1280, 1280],
+      "foyer": null,
+      "cheminee": null,
+      "fenetres": [
+        {
+          "px": [1035.52, 821.39],
+          "largeur": 26.88,
+          "hauteur": 35.27,
+          "face": "droite"
+        },
+        {
+          "px": [747.52, 965.39],
+          "largeur": 26.88,
+          "hauteur": 35.27,
+          "face": "droite"
+        }
+      ],
+      "porte": [500.8, 1053.668]
+    },
+    "campfire_grand": {
+      "size": [512, 768],
+      "foyer": {
+        "px": [256, 556.27],
+        "z": 0.22,
+        "demiLargeur": 26.88
+      },
+      "cheminee": null,
+      "fenetres": [],
+      "porte": null
+    },
+    "campfire_rough": {
+      "size": [512, 768],
+      "foyer": {
+        "px": [256, 577.43],
+        "z": 0.13,
+        "demiLargeur": 23.04
+      },
+      "cheminee": null,
+      "fenetres": [],
+      "porte": null
+    },
+    "campfire_solid": {
+      "size": [512, 768],
+      "foyer": {
+        "px": [256, 568.02],
+        "z": 0.17,
+        "demiLargeur": 26.88
+      },
+      "cheminee": null,
+      "fenetres": [],
+      "porte": null
+    },
+    "castle_wall_rough": {
+      "size": [1280, 1216],
+      "foyer": null,
+      "cheminee": null,
+      "fenetres": [
+        {
+          "px": [961.6, 825.82],
+          "largeur": 9.6,
+          "hauteur": 18.81,
+          "face": "droite"
+        }
+      ],
+      "porte": [832, 950.594]
+    },
+    "castle_wall_solid": {
+      "size": [1280, 1216],
+      "foyer": null,
+      "cheminee": null,
+      "fenetres": [
+        {
+          "px": [939.52, 584.51],
+          "largeur": 15.36,
+          "hauteur": 51.73,
+          "face": "gauche"
+        },
+        {
+          "px": [963.52, 815.53],
+          "largeur": 9.6,
+          "hauteur": 21.16,
+          "face": "droite"
+        },
+        {
+          "px": [846.4, 874.09],
+          "largeur": 9.6,
+          "hauteur": 21.16,
+          "face": "droite"
+        }
+      ],
+      "porte": [832, 941.188]
+    },
+    "champion_arena_grand": {
+      "size": [1280, 1600],
+      "foyer": {
+        "px": [348.79, 1078.59],
+        "z": 1.24,
+        "demiLargeur": 22.46
+      },
+      "cheminee": null,
+      "fenetres": [],
+      "porte": [640, 1350.842]
+    },
+    "champion_arena_rough": {
+      "size": [1280, 1600],
+      "foyer": {
+        "px": [333.07, 1188.51],
+        "z": 0.71,
+        "demiLargeur": 22.46
+      },
+      "cheminee": null,
+      "fenetres": [],
+      "porte": [640, 1235.067]
+    },
+    "champion_arena_solid": {
+      "size": [1280, 1600],
+      "foyer": {
+        "px": [322.55, 1092.73],
+        "z": 1.05,
+        "demiLargeur": 22.46
+      },
+      "cheminee": null,
+      "fenetres": [],
+      "porte": [640, 1364.951]
+    },
+    "dragon_lair_grand": {
+      "size": [1280, 1600],
+      "foyer": {
+        "px": [576.64, 1256.16],
+        "z": 0.1,
+        "demiLargeur": 63.36
+      },
+      "cheminee": null,
+      "fenetres": [
+        {
+          "px": [350.08, 1112.53],
+          "largeur": 13.44,
+          "hauteur": 23.52,
+          "face": "gauche"
+        },
+        {
+          "px": [595.84, 1235.41],
+          "largeur": 13.44,
+          "hauteur": 23.51,
+          "face": "gauche"
+        }
+      ],
+      "porte": [519.04, 1299.073]
+    },
+    "dragon_lair_rough": {
+      "size": [1280, 1600],
+      "foyer": {
+        "px": [601.6, 1244.12],
+        "z": 0.09,
+        "demiLargeur": 42.24
+      },
+      "cheminee": null,
+      "fenetres": [],
+      "porte": [558.4, 1279.394]
+    },
+    "dragon_lair_solid": {
+      "size": [1280, 1600],
+      "foyer": {
+        "px": [584.32, 1253.5],
+        "z": 0.095,
+        "demiLargeur": 55.68
+      },
+      "cheminee": null,
+      "fenetres": [],
+      "porte": [540.16, 1288.513]
+    },
+    "farm_grand": {
+      "size": [1280, 1280],
+      "foyer": null,
+      "cheminee": [1004.8, 579.439],
+      "fenetres": [
+        {
+          "px": [808, 810.73],
+          "largeur": 32.64,
+          "hauteur": 35.27,
+          "face": "gauche"
+        },
+        {
+          "px": [871.36, 842.41],
+          "largeur": 32.64,
+          "hauteur": 35.27,
+          "face": "gauche"
+        },
+        {
+          "px": [1028.8, 829.93],
+          "largeur": 32.64,
+          "hauteur": 35.27,
+          "face": "droite"
+        }
+      ],
+      "porte": [733.12, 849.188]
+    },
+    "farm_rough": {
+      "size": [1280, 1280],
+      "foyer": null,
+      "cheminee": null,
+      "fenetres": [
+        {
+          "px": [828.16, 840.41],
+          "largeur": 23.04,
+          "hauteur": 23.52,
+          "face": "gauche"
+        }
+      ],
+      "porte": [765.76, 855.714]
+    },
+    "farm_solid": {
+      "size": [1280, 1280],
+      "foyer": null,
+      "cheminee": null,
+      "fenetres": [
+        {
+          "px": [823.36, 837.34],
+          "largeur": 32.64,
+          "hauteur": 32.92,
+          "face": "gauche"
+        },
+        {
+          "px": [1017.28, 845.02],
+          "largeur": 32.64,
+          "hauteur": 32.92,
+          "face": "droite"
+        }
+      ],
+      "porte": [736.959, 850.051]
+    },
+    "forge_grand": {
+      "size": [896, 1344],
+      "foyer": {
+        "px": [664, 961.45],
+        "z": 0.63,
+        "demiLargeur": 89.28
+      },
+      "cheminee": [448, 319.08],
+      "fenetres": [
+        {
+          "px": [135.04, 830.44],
+          "largeur": 38.4,
+          "hauteur": 51.73,
+          "face": "gauche"
+        },
+        {
+          "px": [250.24, 888.04],
+          "largeur": 38.4,
+          "hauteur": 51.73,
+          "face": "gauche"
+        },
+        {
+          "px": [421.49, 1032.41],
+          "largeur": 40,
+          "hauteur": 22,
+          "face": "droite"
+        }
+      ],
+      "porte": [198.4, 1116.519]
+    },
+    "forge_rough": {
+      "size": [896, 1344],
+      "foyer": {
+        "px": [635.2, 1015.44],
+        "z": 0.38,
+        "demiLargeur": 62.29
+      },
+      "cheminee": [428.8, 719.657],
+      "fenetres": [],
+      "porte": null
+    },
+    "forge_solid": {
+      "size": [896, 1344],
+      "foyer": {
+        "px": [644.8, 984.78],
+        "z": 0.49,
+        "demiLargeur": 52.8
+      },
+      "cheminee": [438.4, 541.514],
+      "fenetres": [
+        {
+          "px": [269.44, 1069.11],
+          "largeur": 38.4,
+          "hauteur": 51.73,
+          "face": "gauche"
+        },
+        {
+          "px": [424.96, 1035.51],
+          "largeur": 57.6,
+          "hauteur": 51.73,
+          "face": "droite"
+        }
+      ],
+      "porte": [197.44, 1119.588]
+    },
+    "heroes_hall_grand": {
+      "size": [1280, 1600],
+      "foyer": null,
+      "cheminee": [643.84, 486.071],
+      "fenetres": [
+        {
+          "px": [688, 681.71],
+          "largeur": 15.36,
+          "hauteur": 56.44,
+          "face": "gauche"
+        },
+        {
+          "px": [737.92, 706.67],
+          "largeur": 15.36,
+          "hauteur": 56.44,
+          "face": "gauche"
+        },
+        {
+          "px": [849.28, 685.55],
+          "largeur": 15.36,
+          "hauteur": 56.44,
+          "face": "droite"
+        },
+        {
+          "px": [461.44, 974.68],
+          "largeur": 30.72,
+          "hauteur": 70.54,
+          "face": "gauche"
+        },
+        {
+          "px": [832, 1159.96],
+          "largeur": 30.72,
+          "hauteur": 70.55,
+          "face": "gauche"
+        },
+        {
+          "px": [1068.16, 1099.48],
+          "largeur": 30.72,
+          "hauteur": 70.55,
+          "face": "droite"
+        },
+        {
+          "px": [972.16, 1147.48],
+          "largeur": 30.72,
+          "hauteur": 70.55,
+          "face": "droite"
+        },
+        {
+          "px": [273.28, 1011.18],
+          "largeur": 13.44,
+          "hauteur": 23.52,
+          "face": "gauche"
+        },
+        {
+          "px": [572.8, 1160.94],
+          "largeur": 13.44,
+          "hauteur": 23.51,
+          "face": "gauche"
+        }
+      ],
+      "porte": [650.56, 1172.175]
+    },
+    "heroes_hall_rough": {
+      "size": [1280, 1600],
+      "foyer": null,
+      "cheminee": null,
+      "fenetres": [
+        {
+          "px": [744.06, 1235.03],
+          "largeur": 25.68,
+          "hauteur": 28.22,
+          "face": "gauche"
+        }
+      ],
+      "porte": [536.109, 1174.974]
+    },
+    "heroes_hall_solid": {
+      "size": [1280, 1600],
+      "foyer": null,
+      "cheminee": [649.6, 554.556],
+      "fenetres": [
+        {
+          "px": [764.8, 1179.97],
+          "largeur": 30.72,
+          "hauteur": 56.44,
+          "face": "gauche"
+        },
+        {
+          "px": [822.4, 1208.77],
+          "largeur": 30.72,
+          "hauteur": 56.44,
+          "face": "gauche"
+        },
+        {
+          "px": [1035.52, 1142.53],
+          "largeur": 30.72,
+          "hauteur": 56.44,
+          "face": "droite"
+        },
+        {
+          "px": [315.52, 1038.53],
+          "largeur": 13.44,
+          "hauteur": 23.52,
+          "face": "gauche"
+        },
+        {
+          "px": [565.12, 1163.33],
+          "largeur": 13.44,
+          "hauteur": 23.51,
+          "face": "gauche"
+        }
+      ],
+      "porte": [470.08, 1123.787]
+    },
+    "high_road_grand": {
+      "size": [896, 1152],
+      "foyer": null,
+      "cheminee": null,
+      "fenetres": [
+        {
+          "px": [476.8, 611.88],
+          "largeur": 11.52,
+          "hauteur": 21.16,
+          "face": "gauche"
+        },
+        {
+          "px": [622.72, 684.84],
+          "largeur": 11.52,
+          "hauteur": 21.16,
+          "face": "gauche"
+        }
+      ],
+      "porte": [590.08, 902.148]
+    },
+    "observatory_rough": {
+      "size": [896, 1344],
+      "foyer": null,
+      "cheminee": null,
+      "fenetres": [
+        {
+          "px": [576.64, 879.59],
+          "largeur": 19.2,
+          "hauteur": 32.92,
+          "face": "droite"
+        }
+      ],
+      "porte": [344.32, 1118.483]
+    },
+    "observatory_solid": {
+      "size": [896, 1344],
+      "foyer": null,
+      "cheminee": null,
+      "fenetres": [
+        {
+          "px": [582.4, 948.31],
+          "largeur": 19.2,
+          "hauteur": 42.33,
+          "face": "droite"
+        }
+      ],
+      "porte": [334.72, 1092.713]
+    },
+    "quarry_grand": {
+      "size": [896, 1344],
+      "foyer": null,
+      "cheminee": null,
+      "fenetres": [
+        {
+          "px": [180.16, 1050.65],
+          "largeur": 28.8,
+          "hauteur": 30.57,
+          "face": "gauche"
+        }
+      ],
+      "porte": [126.4, 1073.799]
+    },
+    "tent_grand": {
+      "size": [896, 1344],
+      "foyer": null,
+      "cheminee": null,
+      "fenetres": [],
+      "porte": [310.72, 1114.313]
+    },
+    "tent_rough": {
+      "size": [896, 1344],
+      "foyer": null,
+      "cheminee": null,
+      "fenetres": [],
+      "porte": [358.72, 1123.233]
+    },
+    "tent_solid": {
+      "size": [896, 1344],
+      "foyer": null,
+      "cheminee": null,
+      "fenetres": [],
+      "porte": [325.12, 1125.828]
+    },
+    "watchtower_solid": {
+      "size": [512, 1280],
+      "foyer": null,
+      "cheminee": null,
+      "fenetres": [
+        {
+          "px": [160, 681.24],
+          "largeur": 15.36,
+          "hauteur": 23.51,
+          "face": "gauche"
+        }
+      ],
+      "porte": null
+    },
+    "well_grand": {
+      "size": [512, 768],
+      "foyer": null,
+      "cheminee": null,
+      "fenetres": [
+        {
+          "px": [184.96, 424.83],
+          "largeur": 11.52,
+          "hauteur": 23.52,
+          "face": "gauche"
+        }
+      ],
+      "porte": null
+    },
+    "windmill_grand": {
+      "size": [896, 1344],
+      "foyer": null,
+      "cheminee": null,
+      "fenetres": [
+        {
+          "px": [363.52, 805.64],
+          "largeur": 38.4,
+          "hauteur": 51.73,
+          "face": "gauche"
+        }
+      ],
+      "porte": [300.16, 1124.296]
+    },
+    "windmill_rough": {
+      "size": [896, 1344],
+      "foyer": null,
+      "cheminee": null,
+      "fenetres": [],
+      "porte": [348.16, 1128.083]
+    },
+    "windmill_solid": {
+      "size": [896, 1344],
+      "foyer": null,
+      "cheminee": null,
+      "fenetres": [
+        {
+          "px": [355.84, 919.38],
+          "largeur": 38.4,
+          "hauteur": 51.73,
+          "face": "gauche"
+        }
+      ],
+      "porte": [315.52, 1135.428]
+    },
+    "wizard_tower_grand": {
+      "size": [512, 1280],
+      "foyer": null,
+      "cheminee": null,
+      "fenetres": [
+        {
+          "px": [194.56, 873.24],
+          "largeur": 15.36,
+          "hauteur": 37.62,
+          "face": "gauche"
+        },
+        {
+          "px": [317.44, 908.51],
+          "largeur": 15.36,
+          "hauteur": 37.62,
+          "face": "droite"
+        },
+        {
+          "px": [194.56, 696.88],
+          "largeur": 15.36,
+          "hauteur": 37.62,
+          "face": "gauche"
+        },
+        {
+          "px": [317.44, 661.61],
+          "largeur": 15.36,
+          "hauteur": 37.62,
+          "face": "droite"
+        }
+      ],
+      "porte": [194.56, 1066.065]
+    },
+    "wizard_tower_rough": {
+      "size": [512, 1280],
+      "foyer": null,
+      "cheminee": null,
+      "fenetres": [
+        {
+          "px": [204.16, 793.51],
+          "largeur": 15.36,
+          "hauteur": 30.57,
+          "face": "gauche"
+        }
+      ],
+      "porte": [198.4, 1138.002]
+    },
+    "wizard_tower_solid": {
+      "size": [512, 1280],
+      "foyer": null,
+      "cheminee": null,
+      "fenetres": [
+        {
+          "px": [194.56, 886.17],
+          "largeur": 15.36,
+          "hauteur": 35.27,
+          "face": "gauche"
+        },
+        {
+          "px": [317.44, 756.84],
+          "largeur": 15.36,
+          "hauteur": 35.27,
+          "face": "droite"
+        }
+      ],
+      "porte": [197.44, 1097.547]
+    }
+  }
+}

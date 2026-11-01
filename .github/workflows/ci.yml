@@ -61,7 +61,7 @@ jobs:
       # BSD/GPL dual (node-forge), all redistributable.
       #
       # This checks the npm tree, which is what Metro bundles. It says nothing about the Gradle
-      # side: release.yml reads the foss APK itself for Google code.
+      # side: that one is on the SDK's own licensing.
       - name: Dependency licences
         run: npm run licenses:check
 

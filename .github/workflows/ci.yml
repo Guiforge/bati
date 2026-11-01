@@ -52,23 +52,18 @@ jobs:
 
       # Double distribution makes a licence surprise expensive: F-Droid rejects a tree it cannot
       # redistribute, and it does so at the end of a release cycle, not when the dependency lands.
-      # --failOn names only what would actually block — an allowlist would turn main red every
-      # time somebody adds an MIT package, which is a gate nobody reads. --excludePrivatePackages
-      # skips this repo, which npm reports as UNLICENSED because it is `private`.
+      # A blocklist, because an allowlist would turn main red every time somebody adds an MIT
+      # package, which is a gate nobody reads. scripts/license-lib.ts holds the list and the reason
+      # it is a pattern; the same script runs at commit when the lockfile changes.
       #
-      # Verified against the tree on 2026-08-28: the only non-MIT-family entries are MPL-2.0
-      # (lightningcss), CC-BY-4.0 (caniuse-lite), Python-2.0 (argparse) and one BSD/GPL dual
-      # (node-forge) — all redistributable. Five @tamagui subpackages report UNKNOWN for a
-      # missing field in their own package.json; Tamagui itself is MIT, and the notices asset
-      # (scripts/generate-licenses.mjs, LICENSE_OVERRIDES) records it with the repository's text.
+      # Verified against the tree on 2026-11-01: the only entries outside the MIT family are MPL-2.0
+      # (lightningcss), CC-BY-4.0 (caniuse-lite), Python-2.0 (argparse), OFL-1.1 (the fonts) and one
+      # BSD/GPL dual (node-forge), all redistributable.
       #
       # This checks the npm tree, which is what Metro bundles. It says nothing about the Gradle
-      # side — that one is on the SDK's own licensing.
+      # side: that one is on the SDK's own licensing.
       - name: Dependency licences
-        run: >-
-          npx --yes license-checker-rseidelsohn@4.4.2 --production --excludePrivatePackages
-          --summary --failOn
-          "GPL-1.0;GPL-2.0;GPL-3.0;AGPL-1.0;AGPL-3.0;LGPL-2.0;LGPL-2.1;LGPL-3.0;SSPL-1.0;BUSL-1.1;UNLICENSED"
+        run: npm run licenses:check
 
       # Known vulnerabilities in what ships (audit G2). High and critical only, production tree
       # only; each accepted advisory is an entry with its reason in .github/audit-allowlist.json,
@@ -99,3 +94,22 @@ jobs:
           npx expo prebuild -p android --clean
           git add -A android
           git diff --cached --exit-code --stat -- android
+
+  # The pre-commit hook reads staged changes only, and --no-verify skips it. This reads every commit
+  # and is its own job so that one full clone is not paid for by the checks above.
+  # Accepted findings are in .gitleaksignore, by fingerprint. The binary and not the Docker image:
+  # the image scanned 0 commits and passed when git could not read the mounted repository.
+  secrets:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Secrets in the git history
+        run: |
+          curl -fsSL -o gitleaks.tar.gz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  gitleaks.tar.gz" | sha256sum -c -
+          tar xzf gitleaks.tar.gz gitleaks
+          ./gitleaks git --redact --no-banner .

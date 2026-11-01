@@ -1,0 +1,10 @@
+# Findings of the full-history scan (2026-11-01) read one by one and found not to be secrets.
+# story_key slugs and a file manifest's SHA-256 from the old _bmad tooling, and two game-icons
+# names ("token", "usb-key") beside their paths. Add a line only after reading the value.
+2f9c4680f1ac9f8df4bc883b18c62b8812dfe957:_bmad-output/implementation-artifacts/12-1-remove-floating-navigation.md:generic-api-key:3
+2f9c4680f1ac9f8df4bc883b18c62b8812dfe957:_bmad-output/implementation-artifacts/2-5-coach-suggestions-after-7-days.md:generic-api-key:3
+2f9c4680f1ac9f8df4bc883b18c62b8812dfe957:_bmad/_config/files-manifest.csv:generic-api-key:15
+2f9c4680f1ac9f8df4bc883b18c62b8812dfe957:_bmad/_config/files-manifest.csv:generic-api-key:18
+2f9c4680f1ac9f8df4bc883b18c62b8812dfe957:_bmad/_config/files-manifest.csv:generic-api-key:45
+16d9dc0036754b05ee5406dd9fabc51d6a50b055:src/icons/gameIcons.all.ts:generic-api-key:2066
+16d9dc0036754b05ee5406dd9fabc51d6a50b055:src/icons/gameIcons.all.ts:generic-api-key:2148

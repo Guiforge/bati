@@ -76,7 +76,12 @@
         "noUndeclaredVariables": "error",
         "noSelfAssign": "error",
         "noVoidTypeReturn": "error",
-        "noUndeclaredDependencies": "error",
+        "noUndeclaredDependencies": {
+          "level": "error",
+          "options": {
+            "devDependencies": false
+          }
+        },
         "noReactNativeRawText": {
           "level": "error",
           "options": {
@@ -140,7 +145,8 @@
         "noRedeclare": "error",
         "useAwait": "warn",
         "noEmptyBlockStatements": "error",
-        "noReactNativeDeepImports": "error"
+        "noReactNativeDeepImports": "error",
+        "noImportCycles": "error"
       },
       "nursery": {
         "noFloatingPromises": "error"
@@ -251,6 +257,45 @@
           },
           "correctness": {
             "noUnusedVariables": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/__tests__/**", "test/node/**", "drizzle.config.ts"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUndeclaredDependencies": {
+              "level": "error",
+              "options": {
+                "devDependencies": true
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "db/completed.ts",
+        "db/exercises.ts",
+        "db/handEntries.ts",
+        "db/lightWeek.ts",
+        "db/outingHabit.ts",
+        "db/pause.ts",
+        "db/personalRecords.ts",
+        "db/questConfig.ts",
+        "db/quests.ts",
+        "db/setAside.ts",
+        "db/streaks.ts",
+        "db/zone.ts",
+        "src/reminders.ts"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noImportCycles": "off"
           }
         }
       }

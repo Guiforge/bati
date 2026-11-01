@@ -48,12 +48,12 @@ La bible des abords dit « chemins et champs restent dessinés par le code ». L
 
 ![S-night](s-night/avant-apres.webp)
 
-4 tours, le maximum. **Résultat : les mesures progressent, mais l'œil préfère l'ancienne nuit.**
+4 tours, le maximum. **Résultat : les mesures progressent, mais la périphérie y perd, et le tour ne remplit pas les conditions de fin.**
 
 - Corrigé : le sol a du relief (0,37 à 0,68, il fallait 0,60), les champs ne brillent plus en orange, et on reconnaît encore leur culture à l'aveugle (3 sur 3).
 - Le critère de rang échoue encore : p12 à 0,985 pour 0,987. Le seuil vient d'un resserrage automatique que j'ai appliqué au contrat. La baseline était à 0,974. Il bute sur les rues du code, hors de la loupe.
-- **Le juge A/B valide donne les 9 extraits à l'ancienne version**, y compris les 3 à garder (fenêtres, feu, villageois). Le test est imparfait : l'autre passage a manqué deux fois le canari, et aucun passage ne penche nettement sans biais de côté. Mais env dit la même chose, sur images :
-- **Forêt d'un seul bleu**, essences perdues. **Blé gris comme de la cendre**. **Pavés ocre qui brillent** en flaques sur le sol bleu. Étal et accessoires gris au cœur du village.
+- **A/B : 0 gain sur 9 selon la règle, mais le test ne tranche pas vraiment.** Un contexte a manqué le canari deux fois, donc il est nul : sa relance donne les 10 paires à la baseline. L'autre est valide et partagé : 5 extraits pour le tour 4 (village, sol, fenêtres, lisière, feu), 4 pour la baseline (champs nord et est, route, villageois), avec un fort biais vers l'image de gauche (9 sur 10).
+- **Env est plus net, sur images** : le sol et le cœur vont mieux, mais **forêt d'un seul bleu**, essences perdues, **blé gris comme de la cendre**, **pavés ocre qui brillent** en flaques sur le sol bleu, étal et accessoires gris au cœur du village. À l'œil, je partage son avis.
 
 Ma lecture : mes critères de couleur ont poussé toute la périphérie sous un seul filtre bleu. C'est mon contrat qu'il faut revoir plus que le travail.
 

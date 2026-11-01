@@ -37,7 +37,7 @@
       "status": "parquée, non fusionnée, branche loupe-s-night",
       "round": 4,
       "best_round": 4,
-      "resultat": "critère 1 FAIL sur p12 (0,9849 pour 0,987), le reste du contrat PASS. A/B : 0 gain sur 9, KEEP perdus. Contexte 1 nul deux fois (canari manqué, 10 sur 10 pour la baseline). Env : forêt monochrome, blé gris, pavés qui brillent.",
+      "resultat": "critère 1 FAIL sur p12 (0,9849 pour 0,987), le reste du contrat PASS. A/B : 0 gain sur 9 selon la règle, peu probant. Contexte 1 nul deux fois (canari manqué, relance 10 sur 10 pour la baseline). Contexte 2 valide : 5 pour le tour, 4 pour la baseline, 9 sur 10 à gauche. Env : forêt monochrome, blé gris, pavés qui brillent.",
       "question": "Parquer, reprendre avec un contrat refait, ou fusionner ?"
     },
     "bc": {

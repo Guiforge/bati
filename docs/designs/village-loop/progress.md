@@ -69,5 +69,5 @@ Dans le jeu de référence, les animations sont légères : très peu de mouveme
 
 ## Phase 2, loupes (01/11, session 1)
 - Étape 0 finie, checkpoint écrit : baseline, écrans cibles, calibration, outils (dump, nuit), contrats S-night et BC.
-- S-night, 4 tours, parquée, non fusionnée [P1, P2] : le sol retrouve du relief et les champs ne brillent plus, mais la forêt, le blé et les rues y perdent, et l'A/B donne les 9 extraits à la baseline.
+- S-night, 4 tours, parquée, non fusionnée [P1, P2] : le sol retrouve du relief et les champs ne brillent plus, mais la forêt, le blé et les rues y perdent (env). A/B : 0 gain sur 9 selon la règle, un contexte nul, l'autre partagé à 5 contre 4 avec un biais vers la gauche.
 - Leçon : un contrat fait de mesures de couleur pousse vers un filtre uniforme. La prochaine version garde une teinte par essence et par culture.

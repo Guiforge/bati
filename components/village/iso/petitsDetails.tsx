@@ -23,6 +23,7 @@ import { COTE, ecranXY } from "./carteDemo";
 import { Grain } from "./Effets";
 import { FORMES_GRAIN } from "./effets";
 import { useTour } from "./familles";
+import { LumieresContext } from "./fige";
 import { type Depart, HorlogeContext } from "./horloge";
 import { type Ambiance, type Biome, biomes, vieDe } from "./isoSpec";
 import { AnimauxContext } from "./useMarcheurs";
@@ -164,6 +165,7 @@ export function Lucioles({
   biome?: Biome;
 }) {
   const horloge = useContext(HorlogeContext);
+  const lumieres = useContext(LumieresContext);
   const b = biomes[biome].vivant;
   const tour = useTour("lucioles");
   const style = useAnimatedStyle(() => {
@@ -171,7 +173,7 @@ export function Lucioles({
     const l = lueurLucioles(tour(horloge.get()));
     return { opacity: l.opacite, transform: [{ translateX: l.dx }, { translateY: l.dy }] };
   });
-  if (!vieDe(ambiance).lucioles) return null;
+  if (!lumieres || !vieDe(ambiance).lucioles) return null;
   const points = lucioles(visible);
   return (
     <Animated.View

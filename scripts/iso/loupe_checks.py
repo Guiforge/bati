@@ -19,6 +19,13 @@ Shared JSON formats (the app's dev hook writes the dump, the ground baker writes
       brazier, torch or lantern holding it. A flame with no container is G17 failing.
   stamps.json [{"asset": str, "tile": [i, j], "flip": bool, "band": str}]   one entry per baked stamp
   Camera projection: x = (i - j) * tileW / 2 * zoom + tx ; y = (i + j) * tileH / 2 * zoom + ty.
+    As the app writes it (dev-iso `?dump=`, components/village/iso/dumpSprites.ts `cameraDump`), checked
+    against the map's transform: tileW = 48 and tileH = 24 (dp of one cell at map zoom 1), zoom = the
+    camera's zoom x the display density (px per map dp), tx and ty already in screen px with the map
+    area's offset and the map's centred pivot folded in. So the formula is exact in pixels, no dpr
+    left to apply. A sprite flagged "screenFixed": true does not move with the camera (foreground).
+    Optional "layer": str on a sprite (building, decor, forest, field, prop, wall, animal, villager,
+    flame, foreground, ...).
 
 Rule 3 (art rules, section 6) as coded: a sprite or stamp bigger than 48 px (w or h) that appears twice
 in the same screen fails unless one of the two is flipped against the other AND they stand at least 6

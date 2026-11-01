@@ -121,6 +121,7 @@ import { type Champs, champsDe, tuilesBlocs, tuilesChamps } from "./champs";
 import { COUP_MS, COUPS, RETOUR_COUP_MS } from "./chantier";
 import { CODES_A_CORBEAU } from "./corbeaux";
 import { PalierContext, palierPour, SondeContext, tailleDecode } from "./detail";
+import { entreePlanche, useDump } from "./dumpSprites";
 import { Effets } from "./Effets";
 import { BannieresVocation, ChoseDeVocation, SolVocation } from "./EnsembleVocation";
 import { Feux } from "./FeuxDessines";
@@ -845,6 +846,8 @@ export function Planche({
 }) {
   const detail = useContext(PalierContext);
   const sonde = useContext(SondeContext);
+  // Dev-iso `?dump=`: tells the sprite dump where this image stands; a null context does nothing.
+  useDump(() => entreePlanche({ s, rect, ancre, miroir, reduit, invisible, testID }));
   // Nothing to show, nothing mounted: a hidden image is still a native view (L4-T02).
   if (rect === null || s === undefined) return null;
   const niveau = Math.min(palierPour(detail.palier, detail.zone, ancre ?? rect), plafond);

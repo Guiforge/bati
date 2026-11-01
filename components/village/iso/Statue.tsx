@@ -8,6 +8,7 @@ import { Pressable } from "react-native";
 import Svg, { Polygon } from "react-native-svg";
 import { rawColors } from "@/constants/rawColors";
 import type { Rect } from "./carteDemo";
+import { useDump } from "./dumpSprites";
 import { nomFichier } from "./isoSpec";
 import { MAQUETTES } from "./maquettes";
 import { type EtatStatue, MATIERES, NOM_STATUE, VIDE_H, VIDE_L } from "./statue";
@@ -37,6 +38,17 @@ export function Statue({
     : null;
   const matiere = etat ? MATIERES[etat.stade] : null;
   const taille = { left: 0, top: 0, width: boite.w, height: boite.h };
+  useDump(() =>
+    etat
+      ? {
+          id: `statue_${NOM_STATUE[etat.animal]}`,
+          layer: "statue",
+          ...boite,
+          flip: false,
+          pied: [boite.x + boite.w / 2, boite.y + boite.h],
+        }
+      : null,
+  );
   return (
     <Pressable
       testID="iso-statue"

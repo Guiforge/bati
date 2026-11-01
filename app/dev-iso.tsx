@@ -6,8 +6,14 @@
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
-import { type ReactNode, useContext, useEffect, useState } from "react";
-import { type LayoutChangeEvent, View } from "react-native";
+import { type ReactNode, useContext, useEffect, useRef, useState } from "react";
+import {
+  Dimensions,
+  type LayoutChangeEvent,
+  PixelRatio,
+  View,
+  type ViewInstance,
+} from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -32,9 +38,15 @@ import {
 } from "@/components/village/iso/carteDemo";
 import { croissanceDemo } from "@/components/village/iso/croissanceDemo";
 import { PalierContext, SondeContext } from "@/components/village/iso/detail";
+import {
+  construireDump,
+  DumpContext,
+  type EntreeDump,
+  ecrireDump,
+} from "@/components/village/iso/dumpSprites";
 import { EFFETS, EffetForceContext } from "@/components/village/iso/effets";
 import { SANS_BANNIERE } from "@/components/village/iso/fierte";
-import { FigeContext } from "@/components/village/iso/fige";
+import { FigeContext, LumieresContext } from "@/components/village/iso/fige";
 import { useHorloge } from "@/components/village/iso/horloge";
 import { IsoCarteDemo } from "@/components/village/iso/IsoCarteDemo";
 import { IsoVillage } from "@/components/village/iso/IsoVillage";
@@ -90,7 +102,13 @@ export default function DevIsoRoute() {
     jouer,
     foyer,
     zoom,
+    dump,
+    lumieres,
   } = useLocalSearchParams<{
+    /** `?dump=<name>`: once the map has settled, its sprites are written to logcat for scripts/iso/loupe_dump_pull.py (dumpSprites.ts). */
+    dump?: string;
+    /** `?lumieres=0`: every light layer is hidden, for the pixel checks on raw sprites. */
+    lumieres?: string;
     /** `?foyer=<building code>`: opens framed close on that building, if the tier shows it (capture folders). */
     foyer?: string;
     /** `?zoom=1.6` with `foyer`: the closeness, in demo units. */
@@ -122,19 +140,36 @@ export default function DevIsoRoute() {
       {/* Perf A/B (reports/perf-regression-audit3.md): `?ech=0.5&flaques=0&bornes=0`, the default when absent. */}
       <VariantesContext.Provider value={variantesDe({ ech, flaques, bornes })}>
         <AlentoursContext.Provider value={alentoursDe(peint)}>
-          <DevIso
-            lumiere={ambianceForcee(ambiance) ?? "nuit"}
-            nu={nu === "1"}
-            depart={{ palier: palierDe(palier), mode: mode === "pret" ? "pret" : "carte" }}
-            jouer={jouer === "1"}
-            foyer={buildingCodes.find((c) => c === foyer)}
-            zoomFoyer={Number(zoom) > 0 ? Number(zoom) : 1.6}
-            crest={blasonFactice(vocationAnimal(vocation) ?? animal, stade)}
-          />
+          <LumieresContext.Provider value={lumieres !== "0"}>
+            <PorteDump actif={nomDump(dump) !== undefined}>
+              <DevIso
+                lumiere={ambianceForcee(ambiance) ?? "nuit"}
+                nu={nu === "1"}
+                depart={{ palier: palierDe(palier), mode: mode === "pret" ? "pret" : "carte" }}
+                jouer={jouer === "1"}
+                foyer={buildingCodes.find((c) => c === foyer)}
+                zoomFoyer={Number(zoom) > 0 ? Number(zoom) : 1.6}
+                crest={blasonFactice(vocationAnimal(vocation) ?? animal, stade)}
+                dump={nomDump(dump)}
+              />
+            </PorteDump>
+          </LumieresContext.Provider>
         </AlentoursContext.Provider>
       </VariantesContext.Provider>
     </FigeContext.Provider>
   );
+}
+
+/** The dump's name from the link, kept to what a logcat line and a file name carry; absent or empty: no dump. */
+const nomDump = (v: string | undefined) => v?.replace(/[^\w.-]/g, "") || undefined;
+
+/** How long the map rests before the dump is taken: sprites mounted, the camera framed, the opening fade over. */
+const DELAI_DUMP_MS = 4000;
+
+/** The collector of `?dump=`: one per mount, handed to the whole map; no collector when the link has no dump. */
+function PorteDump({ actif, children }: { actif: boolean; children: ReactNode }) {
+  const [collecteur] = useState(() => new Map<string, string>());
+  return <DumpContext.Provider value={actif ? collecteur : null}>{children}</DumpContext.Provider>;
 }
 
 // The village tab with the iso map whatever the flag says: qa tests it in the `.perf` build with
@@ -372,7 +407,10 @@ function DevIso({
   jouer,
   foyer,
   zoomFoyer,
+  dump,
 }: {
+  /** The sprite dump's name (`?dump=`); only the map mode writes one. */
+  dump?: string;
   foyer?: BuildingCode;
   zoomFoyer: number;
   jouer: boolean;
@@ -400,6 +438,8 @@ function DevIso({
   const [blocs, setBlocs] = useState(false);
   const [aire, setAire] = useState({ w: 0, h: 0 });
   const { montres } = etatCarte(palier, tousDebout);
+  const collecteur = useContext(DumpContext);
+  const aireRef = useRef<ViewInstance>(null);
 
   const { visible } = etatCarte(palier, tousDebout);
   const horloge = useHorloge();
@@ -436,6 +476,25 @@ function DevIso({
     if (foyer && aire.w > 0 && montres.includes(foyer))
       poser(vueFoyer(foyer, palier, lumiere, aire.w, aire.h, zoomFoyer));
   }, [aire.w, aire.h]);
+
+  // Dev `?dump=`: once, after the map has rested, the camera and every collected sprite go to logcat.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the area is what re-arms the timer; `vue` is read when it fires
+  useEffect(() => {
+    if (!dump || !collecteur || aire.w === 0) return;
+    const t = setTimeout(() => {
+      aireRef.current?.measureInWindow((x, y, w, h) => {
+        const entrees = [...collecteur.values()].map((v) => JSON.parse(v) as EntreeDump);
+        ecrireDump(
+          dump,
+          construireDump(entrees, vue(), { x, y, w, h }, PixelRatio.get(), {
+            w: Dimensions.get("screen").width,
+            h: Dimensions.get("screen").height,
+          }),
+        );
+      });
+    }, DELAI_DUMP_MS);
+    return () => clearTimeout(t);
+  }, [dump, collecteur, aire.w, aire.h]);
 
   if (mode === "pret") {
     return (
@@ -680,7 +739,12 @@ function DevIso({
           </XStack>
         </>
       )}
-      <View testID="iso-aire" style={{ flex: 1, overflow: "hidden" }} onLayout={mesurer}>
+      <View
+        ref={aireRef}
+        testID="iso-aire"
+        style={{ flex: 1, overflow: "hidden" }}
+        onLayout={mesurer}
+      >
         <Sonde palier={palier} actif={sondes}>
           {/* The world around the island, as in the tab (the forest and sea follow the camera). */}
           {aire.w > 0 ? (

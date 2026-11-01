@@ -8,6 +8,9 @@
 The camera is the one in the sprite dump (see loupe_checks.py header). Projection assumed:
   x = (i - j) * tileW / 2 * zoom + tx      y = (i + j) * tileH / 2 * zoom + ty
 (i, j) is a tile corner; tile (i, j) covers corners (i, j) to (i+1, j+1).
+This is the app's exact projection in screen pixels (tileW 48, tileH 24, zoom = camera zoom x display
+density, tx/ty with the map area's offset and pivot folded in): see loupe_checks.py and
+components/village/iso/dumpSprites.ts `cameraDump`.
 """
 
 import argparse

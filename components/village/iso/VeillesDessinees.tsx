@@ -11,6 +11,7 @@ import { rawColors } from "@/constants/rawColors";
 import type { BuildingCode } from "@/db/schema";
 import type { Rect } from "./carteDemo";
 import { accrochesDe, variante } from "./feux";
+import { LumieresContext } from "./fige";
 import { HorlogeContext } from "./horloge";
 import { type Ambiance, type Biome, biomes, type SpriteIso, type Stade, vieDe } from "./isoSpec";
 import { allumeOnde, RevelationContext } from "./revelation";
@@ -46,9 +47,10 @@ export function Veilles({
   const horloge = useContext(HorlogeContext);
   const veille = useContext(VeilleContext);
   const revelation = useContext(RevelationContext);
+  const lumieres = useContext(LumieresContext);
   const a = accrochesDe(code, stade);
   // F2: by day the map shows the day painting, so no night window needs covering (T38's panes are gone).
-  if (!a || !veille || !horloge || !vieDe(ambiance).lueurFeux) return null;
+  if (!lumieres || !a || !veille || !horloge || !vieDe(ambiance).lueurFeux) return null;
   const k = corps.w / s.size[0];
   const couleur = rawColors[biomes[biome].feu.lueur];
   // T41: during a reveal the wave's lights and door glows are off; the golden wave lights its own windows.

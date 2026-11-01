@@ -17,7 +17,8 @@ import { rawColors } from "@/constants/rawColors";
 import { TerrainPeint } from "./Alentours";
 import { AlentoursContext } from "./alentours";
 import { HAUTEUR, LARGEUR, ZOOM_MIN } from "./carteDemo";
-import { useMouvementReduit } from "./fige";
+import { useDump } from "./dumpSprites";
+import { LumieresContext, useMouvementReduit } from "./fige";
 import { type Ambiance, type Biome, biomes } from "./isoSpec";
 import { LUMIERES } from "./lumiere";
 import { casesMonde, etendue, IMAGE, MARGE_HAUT, MARGE_X, type Tuile } from "./monde";
@@ -62,8 +63,26 @@ export function Monde({
   // The painted surroundings (alentours.ts): the terrain over a floor of its own edge's tone, and
   // the forest drawn by the map (IsoCarte, under its light) in place of these tiles.
   const peint = useContext(AlentoursContext);
+  const lumieres = useContext(LumieresContext);
   const solPret = useSolPret();
   const reduit = useMouvementReduit();
+  const arbres = peint.foret ? [] : casesMonde(zone, graine, visible);
+  // Dev-iso `?dump=`: each tile image scaled about its centre; its foot is the image's bottom middle.
+  useDump(() =>
+    arbres.map((k) => {
+      const [cx, cy] = [k.x - MARGE_X + IMAGE / 2, k.y - MARGE_HAUT + IMAGE / 2];
+      return {
+        id: `tree_monde_${k.tuile}`,
+        layer: "forest",
+        x: cx - (IMAGE * k.echelle) / 2,
+        y: cy - (IMAGE * k.echelle) / 2,
+        w: IMAGE * k.echelle,
+        h: IMAGE * k.echelle,
+        flip: k.miroir,
+        pied: [cx, cy + (IMAGE * k.echelle) / 2] as const,
+      };
+    }),
+  );
   return (
     <View pointerEvents="none" testID="iso-monde-terre" style={PLEIN}>
       {/* T39: a flat floor, no airbrushed gradient (the forest images carry the depth). */}
@@ -83,7 +102,7 @@ export function Monde({
           style={[PLEIN, { backgroundColor: rawColors.bgDark }]}
         />
       ) : null}
-      {jour ? (
+      {jour && lumieres ? (
         <View
           pointerEvents="none"
           testID="iso-monde-lavis"
@@ -105,7 +124,7 @@ export function Monde({
         ]}
       >
         {peint.sol ? <TerrainPeint lumiere={lumiere} /> : null}
-        {(peint.foret ? [] : casesMonde(zone, graine, visible)).map((k) => (
+        {arbres.map((k) => (
           <Image
             key={`${k.x},${k.y}`}
             testID={`iso-monde-${k.genre}`}

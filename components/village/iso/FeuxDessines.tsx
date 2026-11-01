@@ -14,6 +14,7 @@ import Svg, { Ellipse, Path } from "react-native-svg";
 import { rawColors } from "@/constants/rawColors";
 import type { BuildingCode } from "@/db/schema";
 import type { Rect } from "./carteDemo";
+import { useDump } from "./dumpSprites";
 import { Grain } from "./Effets";
 import { FORMES_GRAIN } from "./effets";
 import {
@@ -30,6 +31,7 @@ import {
   VOLUTE,
   variante,
 } from "./feux";
+import { LumieresContext } from "./fige";
 import { HorlogeContext } from "./horloge";
 import { type Ambiance, type Biome, biomes, type SpriteIso, type Stade, vieDe } from "./isoSpec";
 import { flareOnde, ondeDe, RevelationContext } from "./revelation";
@@ -91,6 +93,24 @@ export function Feux({
   const horloge = useContext(HorlogeContext);
   const revelation = useContext(RevelationContext);
   const a = accrochesDe(code, stade);
+  // Dev-iso `?dump=`: the drawn flame is a sprite for the dump, held by this building (its id per
+  // building: a drawn flame is not an asset that repeats).
+  useDump(() => {
+    if (!a?.foyer || !vieDe(ambiance).lueurFeux) return null;
+    const g = geometrieFlamme(a.foyer, corps.w / s.size[0]);
+    const [x, y] = [corps.x + g.left, corps.y + g.top];
+    return {
+      id: `flame_${code}`,
+      layer: "flame",
+      x,
+      y,
+      w: g.w,
+      h: g.h,
+      flip: false,
+      pied: [x + g.w / 2, y + g.origine],
+      container: code,
+    };
+  });
   if (!a || (!a.foyer && !a.cheminee)) return null;
   const k = corps.w / s.size[0];
   const src = sourceFumee(a, code, k);
@@ -147,6 +167,7 @@ function Flamme({
   testID: string;
 }) {
   const g = geometrieFlamme(foyer, k);
+  const lumieres = useContext(LumieresContext);
   const { flamme: cFlamme, coeur, lueur, encre } = biomes[biome].feu;
   const style = useAnimatedStyle(() => {
     const f = horloge ? flamme(horloge.get(), n) : FLAMME_REPOS;
@@ -166,7 +187,7 @@ function Flamme({
     >
       <Svg width={g.w} height={g.h} viewBox={`${50 - g.rx} 0 ${2 * g.rx} ${g.hu}`}>
         {/* Many faint flat bands, no gradient: the edge fades in small steps. */}
-        {BANDES_LUEUR.map(([echelle, opacite, dx, r]) => (
+        {(lumieres ? BANDES_LUEUR : []).map(([echelle, opacite, dx, r]) => (
           <Ellipse
             key={echelle}
             cx={50 + g.rx * dx}

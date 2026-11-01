@@ -12,7 +12,7 @@ import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import Svg, { Defs, Ellipse, RadialGradient, Stop } from "react-native-svg";
 import { rawColors } from "@/constants/rawColors";
 import { HAUTEUR, LARGEUR } from "./carteDemo";
-import { useMouvementReduit } from "./fige";
+import { LumieresContext, useMouvementReduit } from "./fige";
 import { HorlogeContext } from "./horloge";
 import type { Ambiance } from "./isoSpec";
 import { NUAGES, nuageA } from "./vivant";
@@ -24,7 +24,8 @@ const OPACITE = 0.13;
 
 export function OmbresNuages({ lumiere = "nuit" }: { lumiere?: Ambiance }) {
   const reduit = useMouvementReduit();
-  if (reduit || lumiere !== "jour") return null;
+  const lumieres = useContext(LumieresContext);
+  if (reduit || !lumieres || lumiere !== "jour") return null;
   return (
     <>
       {NUAGES.map((n, i) => (

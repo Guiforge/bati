@@ -15,6 +15,8 @@ import Animated, {
 } from "react-native-reanimated";
 import Svg, { Path } from "react-native-svg";
 import { rawColors } from "@/constants/rawColors";
+import { ecranXY } from "./carteDemo";
+import { useDump } from "./dumpSprites";
 import { useMouvementReduit } from "./fige";
 import type { Case } from "./isoLayout";
 import type { Ambiance, Stade } from "./isoSpec";
@@ -121,6 +123,18 @@ export function PanRempart({
   if (!fond && repos !== stade) setRepos(stade);
   const dessin = (s: Stade) =>
     PANS_VECTORIELS ? vectoriel(cases, s, lumiere) : peint(piecesPeintes(cases, s), lumiere);
+  // Dev-iso `?dump=`: the painted pieces (the vector fallback is not a sprite), each on its cell.
+  useDump(() =>
+    PANS_VECTORIELS
+      ? null
+      : piecesPeintes(cases, stade).map((p) => ({
+          id: `wall_${p.nom}`,
+          layer: "wall",
+          ...p.rect,
+          flip: false,
+          pied: ecranXY([p.case[0] + 1, p.case[1] + 1]),
+        })),
+  );
   const contenu = dessin(stade);
   const ancien = fond && repos !== stade ? dessin(repos) : null;
   // The same two slots at rest and in a growth: the new stage first, the old one over it, fading.

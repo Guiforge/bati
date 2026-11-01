@@ -148,5 +148,18 @@ real_fail, _ = C.vector_code()
 assert real_fail, "the real tree must report decor drawn in vector (Rempart, Fierte, ...)"
 print(f"vector-code ok ({len(real_fail)} real items outside the allowlist)")
 
+# ---- loupe_dump_pull: chunks out of a logcat, the last complete set wins ----
+import loupe_dump_pull as P
+
+dump = {"camera": CAM, "sprites": [{"id": "forge/solid", "x": 1, "y": 2, "w": 3, "h": 4, "flip": False, "tileI": 5, "tileJ": 6, "z": 11}]}
+raw = json.dumps(dump, separators=(",", ":"))
+cut = [raw[:40], raw[40:90], raw[90:]]
+pre = "11-01 12:00:00.000  1  2 E ReactNativeJS: "
+log = "\n".join(
+    [pre + "ISO_DUMP other 1/1 {}", pre + f"ISO_DUMP a 1/3 {cut[0]}", pre + f"ISO_DUMP a 2/3 {cut[1]}"]  # first start: incomplete
+    + [pre + f"ISO_DUMP a 1/3 {cut[0]}", pre + f"ISO_DUMP a 2/3 {cut[1]}", pre + f"ISO_DUMP a 3/3 {cut[2]}'", "noise"])
+assert P.rebuild(log, "a") == dump and P.rebuild(log, "missing") is None
+print("dump-pull ok")
+
 shutil.rmtree(tmp)
 print("test_loupes: all green")

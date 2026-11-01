@@ -34,6 +34,7 @@ import {
 } from "./alentours";
 import { COTE, ecranXY, pose, spriteDe } from "./carteDemo";
 import type { Culture, TuileChamp } from "./champs";
+import { useDump } from "./dumpSprites";
 import { useMouvementReduit } from "./fige";
 import { type Depart, HorlogeContext } from "./horloge";
 import type { Ambiance, Stade } from "./isoSpec";
@@ -371,6 +372,17 @@ export function TerrainPeint({ lumiere = "nuit" }: { lumiere?: Ambiance }) {
 /** One mass, scaled about its foot (a translation undoes the centre's drift: one layout size for all). */
 function UneMasse({ m, lumiere }: { m: Masse; lumiere: Ambiance }) {
   const { w, h } = TOILE_FORET;
+  // The mass is scaled about its foot: the box is the scaled canvas standing on it.
+  useDump(() => ({
+    id: `tree_${m.nom}`,
+    layer: "forest",
+    x: m.x - (w * m.echelle) / 2,
+    y: m.y - h * m.echelle,
+    w: w * m.echelle,
+    h: h * m.echelle,
+    flip: false,
+    pied: [m.x, m.y],
+  }));
   return (
     <Image
       testID="iso-foret-peinte"
@@ -449,6 +461,13 @@ const CHAMPS: Record<Culture | `${Culture}_nu`, { jour: number; nuit: number }> 
 
 /** One painted field tile on its cell (champs.ts), by day or by night as the light says. */
 export function ChampPeint({ t, lumiere }: { t: TuileChamp; lumiere: Ambiance }) {
+  useDump(() => ({
+    id: `field_${t.culture}${t.haie ? "" : "_nu"}`,
+    layer: "field",
+    ...t.rect,
+    flip: false,
+    pied: ecranXY([t.case[0] + 0.5, t.case[1] + 0.5]),
+  }));
   return (
     <Image
       testID={`iso-champ-${t.case.join("-")}`}
@@ -477,6 +496,16 @@ export function AccessoirePeint({
 }) {
   const pied = (a.sur ? surLeToit(a.sur, stade(a.sur)) : null) ?? piedAccessoire(a);
   const { w, h, pied: k } = TOILE_ACCESSOIRE;
+  useDump(() => ({
+    id: `prop_${a.nom}`,
+    layer: "prop",
+    x: pied[0] - w / 2,
+    y: pied[1] - h * k,
+    w,
+    h,
+    flip: false,
+    pied,
+  }));
   return (
     <Image
       testID={`iso-accessoire-${a.nom}`}
@@ -700,6 +729,20 @@ export function PremierPlan({
     { cle: "droite", nom: "dense", x: width * 1.06, y: height + 0.38 * h, e: 1.9 },
     { cle: "bord", nom: "dense", x: -0.16 * width, y: height * 0.78, e: 1.15 },
   ] as const;
+  // Screen space, at the place the leaves mount; the parallax drift after a drag is not followed.
+  useDump(() =>
+    masses.map((m) => ({
+      id: `plan_${m.nom}`,
+      layer: "foreground",
+      x: m.x - (w * m.e) / 2,
+      y: m.y - h * m.e,
+      w: w * m.e,
+      h: h * m.e,
+      flip: false,
+      pied: [m.x, m.y] as const,
+      screenFixed: true,
+    })),
+  );
   return (
     <View pointerEvents="none" testID="iso-premier-plan" style={{ position: "absolute", inset: 0 }}>
       <Animated.View pointerEvents="none" style={[{ position: "absolute", inset: 0 }, decalage]}>

@@ -18,6 +18,7 @@ import type { BuildingCode } from "@/db/schema";
 import { AlentoursContext } from "./alentours";
 import { type Bande, bandes, DEBORD } from "./bandesBord";
 import { ecranXY, HAUTEUR, LANTERNES, LARGEUR, lanterneVisible } from "./carteDemo";
+import { LumieresContext } from "./fige";
 import { CYCLE_MS, HorlogeContext } from "./horloge";
 import { type Ambiance, type Biome, biomes, type Stade } from "./isoSpec";
 import { estChaude, type Flaque, flaquesDe, horsCentre, PENTE_RAIS, RAIS } from "./lueurs";
@@ -140,10 +141,12 @@ export function AmbianceCarte({
   const jour = LUMIERES[lumiere];
   const variantes = useContext(VariantesContext);
   const peint = useContext(AlentoursContext);
+  const lumieres = useContext(LumieresContext);
   // Over the painted ground the vignette (a cone pegged on the map, H3-09) is the painting's own fade
   // and the night is baked in the layers (H3-04): the veil is only for the vector bits beneath.
   const nuitPeinte = peint.sol && peint.foret;
   const [pl, ph] = [LARGEUR + 2 * DEBORD, HAUTEUR + 2 * DEBORD];
+  if (!lumieres) return null;
   if (jour) {
     return (
       <View pointerEvents="none" testID="iso-monde-jour" style={ABSOLU}>

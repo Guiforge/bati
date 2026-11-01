@@ -202,3 +202,6 @@ Lecture :
 6. **Accessoires du camp et sillons des champs** (`IsoCarteDemo.tsx` `Accessoires`, 6 `Path` par tuile même vides ; 2 traits de sillons au lieu de 1) : statique, redessiné au zoom ; faible.
 8. Iter 3 E3 : le point des mâts (`Fierte.tsx` `Scintille`) garde son nœud animé mais n'est qu'un cercle de 2 dp (même calque d'opacité que le point 3) ; les oiseaux (`petitsDetails.tsx`) ont 35 % de surface en plus (`VOL_ECHELLE` 1,35) et un liseré clair de 0,8 : même nœud, un peu plus de remplissage. La poussière de chantier passe de volutes à 5 ellipses sans trait : moins de tracé.
 7. Gain : tailles d'image des habitants arrondies à un dp pair (`IsoCarteDemo.tsx` `HabitantVue`), moins de tailles distinctes, moins de décodages (scratch de glisse 87 à 58 entrées).
+
+9. S-night (branche `loupe-s-night`, non fusionnée) : le relief amplifié de `nuit_sol` alourdit les WebP de nuit, `sol` + `champs` passent de 497 Ko à environ 920 Ko à q80. Aucun effet à l'exécution. À revoir si la branche revient.
+10. APK arm64 mesuré à 71,1 MiB (74 566 802 octets) sur `e723cfe2`, avant toute loupe, pour une limite de 55 MiB dans le prompt de phase 2 (retirée d'`AGENTS.md` le 18/10).

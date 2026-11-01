@@ -302,6 +302,36 @@
       "flux_estimate_usd": 0,
       "status": "todo",
       "passes": false
+    },
+    {
+      "id": "S-night",
+      "loupe": "s-night",
+      "files": [
+        "components/village/iso/AmbianceCarte.tsx",
+        "scripts/iso/nuit_alentours.py",
+        "assets/images/village/iso/{sol,champs,foret,accessoires,rempart}/*.nuit.webp",
+        "constants/rawColors.ts"
+      ],
+      "goal": "G15",
+      "status": "parked",
+      "passes": false
+    },
+    {
+      "id": "BC",
+      "loupe": "bc",
+      "files": [
+        "components/village/iso/Alentours.tsx",
+        "components/village/iso/alentours.ts",
+        "constants/isoPoc.ts",
+        "components/village/iso/champs.ts",
+        "components/village/iso/RuesDessinees.tsx",
+        "components/village/iso/monde.ts",
+        "assets/images/village/iso/{sol,foret,accessoires,champs}/",
+        "scripts/iso/cuire_sol.py"
+      ],
+      "goal": "G01 G02 G03 G04 G05 G06 G07",
+      "status": "todo",
+      "passes": false
     }
   ]
 }

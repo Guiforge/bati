@@ -1,0 +1,157 @@
+[
+  {
+    "id": 1,
+    "name": "valeurs gardees (Spearman jour/nuit, 1/8)",
+    "values": {
+      "p06": 0.9903,
+      "p06_cells": 30753,
+      "p12": 0.9849,
+      "p12_cells": 29259
+    },
+    "threshold": ">= 0.987 sur p06 et p12",
+    "pass": false
+  },
+  {
+    "id": 2,
+    "name": "sol vivant (mediane std 16 px, nuit/jour)",
+    "values": {
+      "jour": 4.474,
+      "nuit": 3.03,
+      "ratio": 0.677,
+      "pixels": 370490
+    },
+    "threshold": ">= 0.60",
+    "pass": true
+  },
+  {
+    "id": 3,
+    "name": "pas d'aplat violet (teinte de la couleur mediane)",
+    "values": {
+      "rgb": [44, 49, 72],
+      "teinte": 229.3
+    },
+    "threshold": "205 a 240 deg",
+    "pass": true
+  },
+  {
+    "id": 4,
+    "name": "les champs ne brillent pas (champ/pre)",
+    "values": {
+      "champs-nord": {
+        "L_ratio_jour": 0.987,
+        "L_ratio_nuit": 0.968,
+        "RB_ecart_jour": 15.4,
+        "RB_ecart_nuit": 3.1,
+        "px": [15556, 25441]
+      },
+      "champs-est": {
+        "L_ratio_jour": 0.947,
+        "L_ratio_nuit": 0.968,
+        "RB_ecart_jour": 19.75,
+        "RB_ecart_nuit": 4.68,
+        "px": [8188, 18579]
+      }
+    },
+    "threshold": "L nuit <= 1.10 x jour ET R-B nuit <= 60 % jour",
+    "pass": true
+  },
+  {
+    "id": 5,
+    "name": "pas de grilles sombres (part L<25, partie pixels)",
+    "values": {
+      "champs-nord": {
+        "sombres_jour": 0.0,
+        "sombres_nuit": 0.017,
+        "ecart_pts": 1.7
+      },
+      "champs-est": {
+        "sombres_jour": 0.001,
+        "sombres_nuit": 0.014,
+        "ecart_pts": 1.3
+      }
+    },
+    "threshold": "nuit - jour <= 10 points",
+    "pass": true
+  },
+  {
+    "id": 6,
+    "name": "les chemins ne brillent pas (route/pre)",
+    "values": {
+      "route-porte": {
+        "L_ratio_jour": 1.353,
+        "L_ratio_nuit": 1.279,
+        "RB_ecart_jour": 34.26,
+        "RB_ecart_nuit": -7.88,
+        "px": [1715, 5145],
+        "tuiles_route": 5,
+        "tuiles_pre": 15
+      },
+      "p06-sud": {
+        "L_ratio_jour": 1.311,
+        "L_ratio_nuit": 1.247,
+        "RB_ecart_jour": 30.3,
+        "RB_ecart_nuit": -6.83,
+        "px": [3430, 5816],
+        "tuiles_route": 10,
+        "tuiles_pre": 17
+      }
+    },
+    "threshold": "meme double mesure que 4, >= 8 tuiles (ici 15)",
+    "pass": true
+  },
+  {
+    "id": 7,
+    "name": "ombres froides (10 % les plus sombres, partie pixels)",
+    "values": {
+      "sol-sud": {
+        "rgb_moyen": [33.0, 38.7, 59.1],
+        "L_mediane": 39.7,
+        "B>R": true,
+        "B>G": true
+      },
+      "pre champs-nord": {
+        "rgb_moyen": [40.7, 47.2, 71.2],
+        "L_mediane": 49.5,
+        "B>R": true,
+        "B>G": true
+      }
+    },
+    "threshold": "B>R, B>G, L mediane >= 30",
+    "pass": true
+  },
+  {
+    "id": 9,
+    "name": "la nuit reste la nuit (L mediane nuit/jour)",
+    "values": {
+      "ratio": 0.441
+    },
+    "threshold": "0.25 a 0.55",
+    "pass": true
+  },
+  {
+    "id": 10,
+    "name": "le coeur reste le plus lumineux (miniature 1/8)",
+    "values": {
+      "p06": {
+        "coeur_moy": 55.79,
+        "coeur_std": 14.18,
+        "fenetres": 2577,
+        "fenetres_au_dessus": 0,
+        "max_moy_fenetre": 54.83,
+        "max_std_fenetre": 10.49,
+        "boite_cellules": [107, 76]
+      },
+      "p12": {
+        "coeur_moy": 55.82,
+        "coeur_std": 13.24,
+        "fenetres": 71,
+        "fenetres_au_dessus": 0,
+        "max_moy_fenetre": 55.14,
+        "max_std_fenetre": 10.32,
+        "boite_cellules": [135, 82]
+      }
+    },
+    "threshold": "aucune fenetre (recouvrement < 25 %) avec moy ou std >=",
+    "pass": true
+  }
+]

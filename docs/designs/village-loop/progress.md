@@ -66,3 +66,8 @@ Dans le jeu de référence, les animations sont légères : très peu de mouveme
 - Notes : Mara 7 / 5,5 / 6,5 / 5,5 (moy. 6,13, +0,5), Théo 7,5 / 6 / 7,5 / 6,5 (moy. 6,88, +0,75), Anim magie 6,5 finition 6, Tech stabilité 7 correction 6 (pas de crash ; vocation qui recouvre le feu, TK5-01).
 - Reculs : places de vocation en clipart vectoriel plus visible, fanions de vocation hors palette, premier plan opaque sur le noir à l'ouverture.
 - Fin de boucle : 5 itérations faites (condition 2). Bilan dans summary.md.
+
+## Phase 2, loupes (01/11, session 1)
+- Étape 0 finie, checkpoint écrit : baseline, écrans cibles, calibration, outils (dump, nuit), contrats S-night et BC.
+- S-night, 4 tours, parquée, non fusionnée [P1, P2] : le sol retrouve du relief et les champs ne brillent plus, mais la forêt, le blé et les rues y perdent, et l'A/B donne les 9 extraits à la baseline.
+- Leçon : un contrat fait de mesures de couleur pousse vers un filtre uniforme. La prochaine version garde une teinte par essence et par culture.

@@ -1,0 +1,75 @@
+{
+  "_doc": "Road tiles of criterion 6, frozen. p12: isoLayout.json chemin cells (code roads) in route-porte; p06: the road baked in the painted ground, tiles whose day core reads as road (loupe_night.py derive_painted). Each road tile lists its meadow neighbours (exactly 2 tiles away, nothing on them). Re-derive: loupe_night.py tuiles <dir>.",
+  "p06": {
+    "capture": "p06",
+    "source": "painted road, colour of the day core",
+    "roads": [
+      {
+        "tile": [24, 24],
+        "pres": [[22, 25], [22, 26], [25, 22]]
+      },
+      {
+        "tile": [24, 25],
+        "pres": [[22, 25], [22, 26], [22, 27], [23, 27], [24, 27]]
+      },
+      {
+        "tile": [25, 24],
+        "pres": [[25, 22], [27, 22], [27, 23]]
+      },
+      {
+        "tile": [25, 25],
+        "pres": [[23, 27], [24, 27], [27, 23]]
+      },
+      {
+        "tile": [26, 26],
+        "pres": [[24, 27], [24, 28], [25, 28], [26, 28]]
+      },
+      {
+        "tile": [27, 25],
+        "pres": [[27, 23], [28, 23], [29, 24]]
+      },
+      {
+        "tile": [27, 26],
+        "pres": [[25, 28], [26, 28], [29, 24]]
+      },
+      {
+        "tile": [28, 26],
+        "pres": [[26, 28], [29, 24], [30, 25]]
+      },
+      {
+        "tile": [28, 27],
+        "pres": [[26, 28], [26, 29], [27, 29], [30, 25]]
+      },
+      {
+        "tile": [29, 27],
+        "pres": [[27, 29], [30, 25], [31, 26]]
+      }
+    ]
+  },
+  "p12": {
+    "capture": "p12",
+    "source": "isoLayout.json chemin cells the sprites leave free + the painted road in 20..26",
+    "roads": [
+      {
+        "tile": [24, 24],
+        "pres": [[22, 25], [22, 26], [25, 22]]
+      },
+      {
+        "tile": [24, 25],
+        "pres": [[22, 25], [22, 26], [22, 27], [23, 27], [24, 27]]
+      },
+      {
+        "tile": [25, 24],
+        "pres": [[25, 22], [27, 22], [27, 23]]
+      },
+      {
+        "tile": [25, 25],
+        "pres": [[23, 27], [24, 27], [27, 23]]
+      },
+      {
+        "tile": [26, 26],
+        "pres": [[24, 27], [24, 28], [25, 28], [26, 28], [27, 28], [28, 24], [28, 25], [28, 28]]
+      }
+    ]
+  }
+}

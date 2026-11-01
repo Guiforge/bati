@@ -1,0 +1,87 @@
+[
+  {
+    "name": "p01-jour",
+    "query": "ambiance=jour&palier=1&fige=1&peint=tout"
+  },
+  {
+    "name": "p03-jour",
+    "query": "ambiance=jour&palier=3&fige=1&peint=tout"
+  },
+  {
+    "name": "p06-jour",
+    "query": "ambiance=jour&palier=6&fige=1&peint=tout"
+  },
+  {
+    "name": "p09-jour",
+    "query": "ambiance=jour&palier=9&fige=1&peint=tout"
+  },
+  {
+    "name": "p12-jour",
+    "query": "ambiance=jour&palier=12&fige=1&peint=tout"
+  },
+  {
+    "name": "p01-nuit",
+    "query": "ambiance=nuit&palier=1&fige=1&peint=tout"
+  },
+  {
+    "name": "p06-nuit",
+    "query": "ambiance=nuit&palier=6&fige=1&peint=tout"
+  },
+  {
+    "name": "p12-nuit",
+    "query": "ambiance=nuit&palier=12&fige=1&peint=tout"
+  },
+  {
+    "name": "p01-jour-brut",
+    "query": "ambiance=jour&palier=1&fige=1&peint=tout&lumieres=0"
+  },
+  {
+    "name": "p06-jour-brut",
+    "query": "ambiance=jour&palier=6&fige=1&peint=tout&lumieres=0"
+  },
+  {
+    "name": "p12-jour-brut",
+    "query": "ambiance=jour&palier=12&fige=1&peint=tout&lumieres=0"
+  },
+  {
+    "name": "p06-castle_wall-jour",
+    "query": "ambiance=jour&palier=6&fige=1&peint=tout&foyer=castle_wall"
+  },
+  {
+    "name": "p06-heroes_hall-jour",
+    "query": "ambiance=jour&palier=6&fige=1&peint=tout&foyer=heroes_hall"
+  },
+  {
+    "name": "p12-observatory-jour",
+    "query": "ambiance=jour&palier=12&fige=1&peint=tout&foyer=observatory"
+  },
+  {
+    "name": "p12-forge-jour",
+    "query": "ambiance=jour&palier=12&fige=1&peint=tout&foyer=forge"
+  },
+  {
+    "name": "p06-gate-nuit",
+    "query": "ambiance=nuit&palier=6&fige=1&peint=tout&foyer=castle_wall"
+  },
+  {
+    "name": "p06-gate-brut",
+    "query": "ambiance=jour&palier=6&fige=1&peint=tout&foyer=castle_wall&lumieres=0"
+  },
+  {
+    "name": "p12-forge-nuit",
+    "query": "ambiance=nuit&palier=12&fige=1&peint=tout&foyer=forge"
+  },
+  {
+    "name": "p12-vie-jour",
+    "query": "ambiance=jour&palier=12&peint=tout&foyer=heroes_hall",
+    "video": 5
+  },
+  {
+    "name": "p06-course",
+    "query": "ambiance=jour&palier=6&fige=1&peint=tout&vocation=course"
+  },
+  {
+    "name": "p06-callisthenie",
+    "query": "ambiance=jour&palier=6&fige=1&peint=tout&vocation=callisthenie"
+  }
+]

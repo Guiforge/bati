@@ -161,5 +161,30 @@ log = "\n".join(
 assert P.rebuild(log, "a") == dump and P.rebuild(log, "missing") is None
 print("dump-pull ok")
 
+# ---- loupe_night: Spearman on a known list, a mask on a tiny synthetic dump ----
+import loupe_night as N
+
+assert abs(N.spearman([1, 2, 3, 4], [10, 20, 30, 40]) - 1) < 1e-9
+assert abs(N.spearman([1, 2, 3, 4], [4, 3, 2, 1]) + 1) < 1e-9
+assert abs(N.spearman([1, 2, 3, 4, 5], [2, 1, 4, 3, 5]) - 0.8) < 1e-9  # textbook: 1 - 6*4/(5*24)
+assert abs(N.spearman([1, 2, 2, 3], [1, 2, 2, 3]) - 1) < 1e-9  # ties share their mean rank
+ncam = {"zoom": 1.0, "tx": 200, "ty": 150, "tileW": 64, "tileH": 32, "screenW": 400, "screenH": 2400}
+nd = {"camera": ncam, "sprites": [{"id": "forge/solid", "layer": "building", "x": 100, "y": 200, "w": 50, "h": 40, "flip": False, "tileI": 0, "tileJ": 0, "z": 1},
+                                  {"id": "field_ble", "layer": "field", "x": 0, "y": 0, "w": 10, "h": 10, "flip": False, "tileI": 2, "tileJ": 2, "z": 0}]}
+nd["sprites"][1].update(x=200 - 48, y=150 + 2 * 32 - 16, w=96, h=72)
+(tmp / "n").mkdir()
+Image.new("RGB", (400, 2400), (60, 60, 60)).save(tmp / "n/a.png")
+(tmp / "n/a.json").write_text(json.dumps(nd))
+cap = N.Cap(tmp / "n", "a")
+bx = N.boxes(cap.size, cap.sprites[:1])
+assert N.count(bx) == 50 * 40
+rect = N.rect_mask(cap, (0, 0, 3, 3))
+hit = N.count(N.inter(rect, bx))
+assert hit > 0 and N.count(N.minus(rect, bx)) == N.count(rect) - hit  # ground = crop minus the box
+f, pre = N.field_pre(cap, cap, (0, 0, 6, 6), set())
+assert N.count(f) > 0 and N.count(pre) > 0 and N.count(N.inter(f, pre)) == 0
+assert N.count(N.inter(N.not_bars(cap.size), N.boxes(cap.size, [{"x": 0, "y": 0, "w": 400, "h": 100}]))) == 0  # a system bar is never measured
+print("loupe_night ok")
+
 shutil.rmtree(tmp)
 print("test_loupes: all green")

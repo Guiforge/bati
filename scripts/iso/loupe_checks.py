@@ -46,7 +46,7 @@ from PIL import Image, ImageStat
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 MIN_PX, MIN_TILES = 48, 6
-FIRE = re.compile(r"flame|fire|feu", re.I)
+FIRE = re.compile(r"flame|(^|_)fire|(^|_)feu(_|$)", re.I)
 
 
 # ---- dump-check --------------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 {
   "iso_branch": "feat/village-iso",
-  "tip_at_start": "292f62d5",
+  "tip_at_start": "e723cfe2",
   "track": "surroundings",
   "budget": {
     "flux_session_usd": 20,
@@ -9,9 +9,9 @@
       "ceiling": 40.0,
       "left": 5.584
     },
-    "flux_spent_session": 0,
+    "flux_spent_session": 2.03,
     "subagent_runs_budget": 80,
-    "subagent_runs_used": 1,
+    "subagent_runs_used": 6,
     "flux_note": "Plafond dur réel 40 $ (reste 5,584 $) tant que Guillaume n'écrit pas la ligne sous ## Lignes de VALIDATIONS.md. L'exemple 2026-11-05 du fichier ne compte pas."
   },
   "mode": "garde V1 débranché (settings.local.json absent). Implémenteurs : arbre iso, je commite. Émulateur : emu.sh + emu-adb.sh, chef seul.",
@@ -20,18 +20,28 @@
     "h0_cache": "fait : empreinte + purge (cacheKey n'atteint pas res:), __tests__/iso-cache-images.test.ts vert",
     "budget_listed": true,
     "flux_capabilities": "édition d'image par références : oui (flux-3-image, flux-2-pro-preview). Masques : non.",
-    "tools": "outils Python faits et testés ; hook de dump, lumieres=0, loupe_capture.sh en cours (run 1)",
-    "k_calibrated": false,
-    "baseline": false,
-    "target_screens": false,
-    "calibration": false,
-    "cards": false,
-    "checkpoint": false
+    "tools": "fait : outils Python, hook dump (logcat), lumieres=0, loupe_capture.sh. Le cuiseur de sol et son manifeste arrivent avec BC, premier besoin.",
+    "k_calibrated": "aucun k ne sépare le vectoriel du peint (mesuré sur 17 crops) : signal pixel abandonné, check code + juges",
+    "baseline": true,
+    "target_screens": "peints, deux tours pour p01 et p06, trois pour p12 ; choix de Guillaume attendu",
+    "calibration": "env réussit, juge 1. Mara réussit au retest (notes dans calibration/notes-mara.md), juge 2 A/B.",
+    "cards": "S-night gelé (seuils mesurés). BC amendé, gel après la réponse 5 du checkpoint.",
+    "checkpoint": "écrit, réponses attendues : écrans cibles, ligne de budget, routes peintes",
+    "apk_arm64_mib": 71.1
   },
   "waiting_on_guillaume": [
-    "Écrire 2026-11-01 BUDGET_FLUX_V1: 60 sous ## Lignes de VALIDATIONS.md (toujours absent, plafond réel 40 $)"
+    "checkpoint.md : 5 réponses (3 écrans cibles, ligne BUDGET_FLUX_V1, routes peintes)"
   ],
-  "loupes": {},
+  "loupes": {
+    "s-night": {
+      "status": "en cours sur la branche loupe-s-night, non fusionnée",
+      "round": 0,
+      "best_round": null
+    },
+    "bc": {
+      "status": "attend le checkpoint"
+    }
+  },
   "locked_crops": [],
   "parked": []
 }

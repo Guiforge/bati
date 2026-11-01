@@ -1,63 +1,69 @@
-# Point d'arrêt avant l'étape 0
+# Checkpoint de l'étape 0
 
-Rien n'est lancé : aucun sous-agent, aucun appel FLUX, aucun commit.
+Étape 0 finie. Il me faut tes 5 réponses avant le coin de beauté. Réponds par exemple : `1A 2A 3A 4 oui 5 oui`.
 
-## Tes réponses (01/11)
+Pendant ton absence, seule la loupe S-night a avancé : elle ne coûte rien en FLUX et ne dépend d'aucune de ces réponses. Elle reste sur sa branche, `loupe-s-night`, jamais fusionnée sans ton accord. Son état est en bas de page.
 
-- Piste : `surroundings`.
-- FLUX : +20 $, plafond à 60.
-- `env.md`, garde, commit : tu t'en occupes avant la relance.
-- Passages de sous-agents : pas encore confirmé, 80 si tu ne dis rien d'autre.
+## 1. Écran cible du palier 1
 
-**Reste à faire de ton côté :**
+![p01](targets/p01-jour/choix.webp)
 
-1. Enregistrer `.claude/agents/env.md`.
-2. Écrire `2026-11-01 BUDGET_FLUX_V1: 60` sous `## Lignes` de `VALIDATIONS.md`.
-3. Retirer `guard-team.sh` de `.claude/settings.local.json`.
-4. Commiter les six fichiers en attente.
-5. Relancer la session avec le prompt rempli.
+- **A (recommandé)** : clairière nette, piste de terre, meule et épouvantail.
+- B : même idée, mais il reste un grand arbre dans le coin bas à droite (il sera retiré en jeu de toute façon).
 
-La suite de cette page est le détail d'origine de chaque question.
+## 2. Écran cible du palier 6
 
-Branche retenue : `feat/village-iso-v1`, la seule qui contient `0fad2396` (c'est sa pointe).
+![p06](targets/p06-jour/choix.webp)
 
-## 1. L'agent `env` est absent : bloquant
+- **A (recommandé)** : hameaux, champs vivants, c'est le plus proche de ta liste.
+- B : le plus riche en forêt, avec les quatre champs bien lisibles.
+- C : hameaux seuls, plus calme.
 
-Le prompt dit de s'arrêter dans ce cas. `.claude/agents/env.md` n'existe pas, et son texte n'était pas joint au prompt.
+Il reste des arbres de coin sur ces images. Ils partiront quand même (G03) : c'est une référence, pas ce qui sera livré.
 
-**À faire :** enregistre le fichier, puis relance la session pour que l'agent soit chargé.
+## 3. Écran cible du palier 12
 
-## 2. Quelle piste ?
+![p12](targets/p12-jour/choix.webp)
 
-- **`surroundings` (recommandé)** : elle porte le plus de défauts que tu as signalés, et 80 passages couvrent S-night, le coin de beauté et R1.
-- `vector`
-- `buildings`
+- **A (recommandé)** : faubourg le long de la route, ville au loin sur la terre ferme, sans ciel.
+- B : plus d'abondance et plus de meules, mais une bande de ciel en haut, donc une caméra moins juste.
 
-## 3. Combien de FLUX pour cette session ?
+Il n'y a que deux choix ici : deux autres variantes sont écartées car des bâtiments avaient bougé (15 et 30 px). Sur les 3 écrans, tu peux aussi refuser en une ligne, pour une seule régénération (1 $ au plus).
 
-Dépensé : 34,42 $. Plafond : 40 $, la valeur par défaut, car `VALIDATIONS.md` n'a aucune ligne `BUDGET_FLUX_V1`. **Reste : 5,58 $.**
+## 4. Budget FLUX : à toi d'écrire la ligne
 
-Ordre de grandeur, à prendre comme une estimation et non une mesure : écrans cibles 2 à 3 $, coin de beauté et R1 10 à 20 $.
+Dépensé : 36,45 $ sur 40 $, dont 2,03 $ cette session. **Reste : 3,55 $.** Le coin de beauté et R1 ont besoin de 10 à 20 $ de plus (estimation). La ligne n'est toujours pas dans `VALIDATIONS.md`, et je n'ai pas le droit de l'écrire.
 
-- **+20 $ (recommandé)** : écris toi-même `BUDGET_FLUX_V1: 60` sous `## Lignes`, avec la date.
-- +10 $ : plafond à 50. Le coin de beauté passe, R1 risque de s'arrêter en route.
-- +0 $ : écrans cibles et quelques sondes seulement.
+- **Oui (recommandé)** : écris `2026-11-02 BUDGET_FLUX_V1: 60` sous `## Lignes` de `docs/designs/village-iso-v1/VALIDATIONS.md`.
+- Non : je m'arrête aux sondes du coin de beauté, 3 $ au plus.
 
-## 4. 80 passages de sous-agents, ça te va ?
+## 5. Routes peintes : je modifie la bible ?
 
-Oui ou non (sinon, donne le nombre). Je m'arrête à 80 % du budget.
+La bible des abords dit « chemins et champs restent dessinés par le code ». Le prompt de phase 2 demande des routes et des champs peints (G04, G05, G06). Les deux ne tiennent pas ensemble, et le contrat du coin de beauté en dépend.
 
-## 5. Le garde de la V1 bloque le travail par loupes
+- **Oui (recommandé)** : route et champs deviennent peints et cuits dans le sol, et j'écris ta décision dans la bible.
+- Non : ils restent en code, et G05, G06 et G04 se feront avec un meilleur dessin, sans peinture.
 
-`guard-team.sh` est toujours actif dans `.claude/settings.local.json`. Il n'autorise que le git en lecture, et les commits passent par `commit.sh`. Il bloque donc `git switch -c loupe-<id>`, les fusions et l'adb direct (`emu-adb.sh` le remplace sans problème).
+## À savoir, sans réponse demandée sauf si tu n'es pas d'accord
 
-Par ailleurs, six fichiers suivis ne sont pas commités, dont `iso_loop.py` avec la variante FLUX 3 et sa garde de budget. Il y a aussi environ 600 rendus et preuves modifiés ou non suivis. Un implémenteur qui part de `0fad2396` n'aura rien de tout ça.
+- **APK arm64 : 71,1 MiB**, déjà au-dessus de la limite de 55 MiB du prompt, avant toute loupe. `AGENTS.md` dit que tu as retiré ce budget le 18/10. Je continue donc à mesurer et à noter, sans bloquer. Dis-moi si la limite doit revenir.
+- **H0, cache d'images** : pas de hash dans la clé de cache comme demandé, car `cacheKey` n'atteint pas les images embarquées (`res:`). À la place, l'empreinte des sprites vide le cache quand elle change. Les 3 tests passent.
+- **Check vectoriel en pixels : abandonné.** Aucun k ne sépare le vectoriel du peint : le pré peint a 27 à 93 % de blocs plats, le rack et les fanions vectoriels 0 à 60 %. G05, G06 et G08 reposent donc sur le check de code et les juges.
+- **Calibration** : env réussit (5 défauts sur 6, 2 bons sur 3 gardés), il sera juge 1. Mara échoue au premier test (1 bon sur 3 gardé), puis réussit le retest avec ses notes : 3 labels justes sur 3, mais une cause fausse sur la route et la porte. Je la garde pour le juge 2, l'A/B à l'aveugle, qui ne demande pas de cause. Les deux ont manqué le même défaut : des arbres collés, qui ne se voient pas sur un seul extrait. Le dump le couvre.
+- **Baseline** : 21 prises dans `baseline/`, faites une seule fois.
+- **Écrans cibles** : le premier tour était trop timide, j'en ai relancé deux avec un prompt plus strict, d'où 2,03 $ au lieu d'environ 2 $ prévus.
 
-- **A (recommandé)** : tu retires le garde de `settings.local.json` et tu commites les six fichiers avant la relance. Pour les rendus et les preuves, c'est toi qui décides.
-- B : tu gardes le garde et tu me dis comment créer les branches et fusionner. Les implémenteurs restent alors sans ces changements si tu ne les commites pas.
+## Estimations de la suite
 
-## Déjà vérifié
+| Poste | FLUX | Passages de sous-agents |
+| --- | --- | --- |
+| Déjà utilisé | 2,03 $ | 6 sur 80 |
+| S-night | 0 $ | 10 à 15 |
+| Coin de beauté | 8 à 12 $ | 20 à 30 |
+| R1 | 5 à 8 $ | 15 à 20 |
 
-- FLUX : l'édition d'image par références existe (`scripts/lib/flux.py`, `flux-2-pro-preview`, `flux-3-image`). Je n'ai pas vu de prise en charge des masques, et les écrans cibles n'en ont pas besoin.
-- Émulateur : l'AVD `bati-bench` existe, mais il n'est pas démarré. Je le démarrerai au lancement.
-- gstack est installé.
+Je m'arrête à 64 passages (80 %), et chaque lot FLUX reste sous 10 $.
+
+## État de S-night
+
+En cours, voir `s-night/` et `state.json`.

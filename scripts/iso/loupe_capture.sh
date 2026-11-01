@@ -67,7 +67,8 @@ attend_dump() { # name
 }
 
 fail=0
-while IFS= read -r entry; do
+# On fd 3: adb and maestro read stdin and would swallow the rest of the list.
+while IFS= read -r entry <&3; do
   name=$(jq -r '.name' <<<"$entry")
   query=$(jq -r '.query' <<<"$entry")
   secs=$(jq -r '.video // 0' <<<"$entry")
@@ -91,7 +92,7 @@ while IFS= read -r entry; do
     $adb pull $f "$vids/$name.mp4" >/dev/null && $adb shell rm $f
     scripts/iso/loupe_crop.py sheet "$vids/$name.mp4" "$out/$name-planche.png" || fail=1
   fi
-done < <(jq -c '.[]' "$spec")
+done 3< <(jq -c '.[]' "$spec")
 $adb shell am force-stop $pkg
 [ "$fail" -eq 0 ] && echo "loupe_capture.sh: done, $out" || echo "loupe_capture.sh: done with failures, $out" >&2
 exit "$fail"

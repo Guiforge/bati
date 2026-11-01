@@ -38,20 +38,19 @@ export const MODE_VIE: "vagues" | "continu" = "continu";
 export const DUREE_VIE_MS = 60000;
 
 /** The painted surroundings' layers (docs/designs/village-surroundings, stage 5), each behind its own flag. */
-export const COUCHES_ALENTOURS = ["sol", "foret", "decor", "animaux", "plan"] as const;
+export const COUCHES_ALENTOURS = ["sol", "foret", "decor", "animaux"] as const;
 export type Alentours = Readonly<Record<(typeof COUCHES_ALENTOURS)[number], boolean>>;
 
 // Read in release too, like INTEGRATION, and all off until each layer is judged: `sol` the painted
 // terrain under the vector paths and fields, `foret` the painted masses in groups round the island
 // (in place of the vector forest tiles and the lisiere's round trees), `decor` the painted props and
-// stories, `animaux` the painted mice and birds (in place of the drawn rat and crows), `plan` the
-// foreground leaves at the screen's bottom corners. app/dev-iso.tsx turns them on for a capture with
-// `?peint=sol,foret,decor,animaux,plan` (or `?peint=tout`).
+// stories, `animaux` the painted mice and birds (in place of the drawn rat and crows). No
+// screen-fixed foreground plane: it is gone for good (loupe BC, G03). app/dev-iso.tsx turns them on for a capture with
+// `?peint=sol,foret,decor,animaux` (or `?peint=tout`).
 // shortcut: source constants, like INTEGRATION; turn a layer on here once Guillaume has judged it.
 export const ALENTOURS: Alentours = {
   sol: false,
   foret: false,
   decor: false,
   animaux: false,
-  plan: false,
 };

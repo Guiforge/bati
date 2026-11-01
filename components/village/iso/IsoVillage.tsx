@@ -20,7 +20,6 @@ import { buildingStage } from "@/constants/buildingLevels";
 import spec from "@/constants/isoSpec.json";
 import type { BuildingCode } from "@/db/schema";
 import type { VillageBuilding, VillageTier } from "@/db/village";
-import { PremierPlanSiPeint } from "./Alentours";
 import { mesurerFenetre, type Ouverture } from "./bulle";
 import {
   COTE,
@@ -634,8 +633,6 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
         horloge={horloge.c}
         depart={horloge.depart}
       />
-      {/* The foreground leaves over the whole frame, under the reveal's legend (alentours, flag `plan`). */}
-      <PremierPlanSiPeint width={width} height={height} lumiere={lumiere} suivi={camera.suivi} />
       <LegendeRevelation
         legende={legende}
         onFin={() => setLegende(null)}

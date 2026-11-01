@@ -186,5 +186,72 @@ assert N.count(f) > 0 and N.count(pre) > 0 and N.count(N.inter(f, pre)) == 0
 assert N.count(N.inter(N.not_bars(cap.size), N.boxes(cap.size, [{"x": 0, "y": 0, "w": 400, "h": 100}]))) == 0  # a system bar is never measured
 print("loupe_night ok")
 
+# ---- loupe_checks: tile filter, core, forest ----
+fd = {"camera": CAM, "sprites": [spr("arbre_a", 0, 0, w=100), spr("arbre_a", 1, 0, w=100), spr("arbre_a", 30, 30, w=100),
+                                 {**spr("caisse", 1, 1, w=100), "layer": "prop"}]}
+for q in fd["sprites"][:3]:
+    q["layer"] = "forest"
+assert len(C.dump_check(fd, mass_prefix="arbre_")) == 1  # (0,0)-(1,0) touch; (30,30) is far
+assert C.dump_check(fd, mass_prefix="arbre_", tiles=(5, 5, 40, 40)) == []  # only the far one counts
+assert len(C.dump_check(fd, mass_prefix="arbre_", tiles=(0, 0, 1, 1))) == 1  # the prop is ignored, the touching pair stays
+cimg = Image.new("RGB", (400, 2400), (60, 60, 60))
+cimg.paste(Image.new("RGB", (160, 160), (200, 120, 80)), (120, 400))  # a bright saturated village box
+cd_ = {"camera": CAM, "sprites": [{**spr("forge/solid", 0, 0, x=120, y=400, w=160, h=160), "layer": "building"}]}
+lines, ok = C.core(cd_, cimg)
+assert not ok and "FAIL" in lines[-1]  # ratio far over 1.50 and surroundings are not the box
+cimg2 = Image.new("RGB", (400, 2400), (120, 120, 120))
+chk = Image.new("RGB", (160, 160))
+for bx in range(10):
+    for by in range(10):  # 16 px cells alternate, so the 1/8 thumbnail keeps a texture
+        chk.paste((230, 190, 150) if (bx + by) % 2 else (150, 110, 70), (bx * 16, by * 16, bx * 16 + 16, by * 16 + 16))
+cimg2.paste(chk, (120, 400))
+lines, ok = C.core(cd_, cimg2)
+assert ok, lines  # brighter (1.3x), more textured and more saturated than its surroundings
+ff = [{**spr(f"arbre_{k}", 2 * k, 0, w=w), "layer": "forest"} for k, w in enumerate((60, 60, 100, 100, 140, 140, 150, 150))]
+ff.append({**spr("forge/solid", 0, 0), "layer": "building"})
+lines, ok = C.forest({"camera": CAM, "sprites": ff})
+assert ok and "max/min 2.50" in lines[0], lines  # three classes, small near the village, big far
+print("loupe_checks ok")
+
+# ---- cuire_sol: a synthetic decal on a temp copy of two ground tiles ----
+import cuire_sol as G
+
+sol = tmp / "sol"
+sol.mkdir()
+for r in range(G.ROWS):
+    for c in range(G.COLS):
+        Image.new("RGBA", (40, 30), (50, 90, 50, 255)).save(sol / f"terrain_{r}{c}.webp")
+dec = Image.new("RGBA", (6, 6), (0, 0, 0, 0))
+dec.paste(Image.new("RGBA", (4, 4), (250, 200, 50, 255)), (1, 1))
+dec.save(tmp / "dirt.png")
+G.PX, G.LARGEUR, G.TERRAIN_XY = 1, 0, (-20, 0)  # 1 px a dp: tile (0,0) centres on pixel (20, 12) of chunk 00
+st = [{"asset": "dirt.png", "tile": [0, 0], "flip": False, "band": "t1-3"},
+      {"asset": "dirt.png", "tile": [1, 0], "flip": True, "band": "t7-9"}]
+assert G.centre_px(0, 0) == (20, 12) and G.centre_px(1, 0) == (44, 24)
+out = tmp / "baked"
+names = G.bake(out, st, sol, tmp)
+assert names == ["terrain_00.t1-3", "terrain_00.t4-6", "terrain_00.t7-9", "terrain_01.t7-9", "terrain_00.t10-12", "terrain_01.t10-12"]
+assert not list(sol.glob("*.t*")), "day files untouched, output apart"
+assert all((out / f"{n}.nuit.webp").exists() for n in names)
+assert json.loads((out / "stamps.json").read_text()) == st
+px = lambda n, xy: Image.open(out / f"{n}.webp").getpixel(xy)[:3]
+assert px("terrain_00.t1-3", (20, 12))[0] > 200 and px("terrain_00.t1-3", (2, 2))[0] < 80  # decal in, ground kept
+assert px("terrain_00.t10-12", (20, 12))[0] > 200 and px("terrain_01.t7-9", (4, 24))[0] > 200  # bands add
+assert Image.open(out / "terrain_00.t1-3.nuit.webp").size == (40, 30)
+pb = G.per_band(st)
+assert [len(pb[b]) for b in G.BANDS] == [1, 1, 2, 2]
+for bad in ([{"asset": "a", "tile": [0, 0], "flip": False, "band": "nope"}],):
+    try:
+        G.per_band(bad)
+        raise SystemExit("unknown band accepted")
+    except AssertionError:
+        pass
+try:
+    G.bake(sol, st, sol, tmp)
+    raise SystemExit("bake over the day files accepted")
+except AssertionError:
+    pass
+print("cuire_sol ok")
+
 shutil.rmtree(tmp)
 print("test_loupes: all green")

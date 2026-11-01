@@ -46,7 +46,6 @@ describe("the layers' flags", () => {
       foret: false,
       decor: false,
       animaux: true,
-      plan: false,
     });
     expect(Object.values(alentoursDe("tout")).every(Boolean)).toBe(true);
   });
@@ -170,14 +169,13 @@ describe("the map with every painted layer", () => {
     expect(screen.getAllByTestId("iso-souris")).toHaveLength(1);
     expect(screen.queryAllByTestId("iso-rongeur")).toHaveLength(0);
     expect(screen.queryAllByTestId(/^iso-lisiere-/)).toHaveLength(0);
-    expect(screen.getAllByTestId("iso-premier-plan")).toHaveLength(1);
+    expect(screen.queryAllByTestId("iso-premier-plan")).toHaveLength(0);
     for (const v of [
       ...screen.getAllByTestId("iso-terrain-peint"),
       ...screen.getAllByTestId("iso-terrain-tuile"),
       ...screen.getAllByTestId("iso-foret-peinte"),
       ...screen.getAllByTestId(/^iso-accessoire-/),
       ...screen.getAllByTestId("iso-souris"),
-      ...screen.getAllByTestId("iso-premier-plan"),
     ])
       expect(v.props.pointerEvents).toBe("none");
   });
@@ -190,7 +188,7 @@ describe("the map with every painted layer", () => {
       </GestureHandlerRootView>,
     );
     expect(
-      screen.queryAllByTestId(/^iso-(terrain-peint|foret-peinte|accessoire-|souris|premier-plan)/),
+      screen.queryAllByTestId(/^iso-(terrain-peint|foret-peinte|accessoire-|souris)/),
     ).toHaveLength(0);
     expect(screen.getAllByTestId("iso-rongeur")).toHaveLength(1);
   });

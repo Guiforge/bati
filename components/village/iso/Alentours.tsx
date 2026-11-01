@@ -1,20 +1,16 @@
 // The painted surroundings, drawn (alentours.ts is the pure side): the terrain under the map's
 // vector paths (Monde), the forest masses between the ground and the sprites (IsoCarte), the props in
-// the depth order (IsoCarte), the painted mice and birds (petitsDetails.tsx picks them) and the
-// foreground leaves over the whole frame. Each behind its flag. Painted by day, and every layer has its night
+// the depth order (IsoCarte), the painted mice and birds (petitsDetails.tsx picks them).
+// Each behind its flag. Painted by day, and every layer has its night
 // baked from the same curve as the buildings' (scripts/iso/nuit_alentours.py, famille_jour.nuit): the
-// ground, the forest, the props, the mice and the foreground pick their `.nuit` file by the light.
+// ground, the forest, the props and the mice pick their `.nuit` file by the light.
 // Never a tap target: every
 // view is `pointerEvents="none"` and the building tap reads the sprites' masks (tapBatiment.ts).
 
 import { Image } from "expo-image";
 import { useContext } from "react";
 import { View } from "react-native";
-import Animated, {
-  type SharedValue,
-  useAnimatedStyle,
-  useSharedValue,
-} from "react-native-reanimated";
+import Animated, { type SharedValue, useAnimatedStyle } from "react-native-reanimated";
 import type { BuildingCode } from "@/db/schema";
 import {
   type Accessoire,
@@ -35,7 +31,6 @@ import {
 import { COTE, ecranXY, pose, spriteDe } from "./carteDemo";
 import type { Culture, TuileChamp } from "./champs";
 import { useDump } from "./dumpSprites";
-import { useMouvementReduit } from "./fige";
 import { type Depart, HorlogeContext } from "./horloge";
 import type { Ambiance, Stade } from "./isoSpec";
 import { solCharge } from "./ouverture";
@@ -154,17 +149,6 @@ const FORET: Record<NomForet, { jour: number; nuit: number }> = {
     nuit: require("@/assets/images/village/iso/foret/bord_crete.nuit.webp"),
   },
 };
-
-const PLAN = {
-  feuillus: {
-    jour: require("@/assets/images/village/iso/foret/plan_feuillus.webp"),
-    nuit: require("@/assets/images/village/iso/foret/plan_feuillus.nuit.webp"),
-  },
-  dense: {
-    jour: require("@/assets/images/village/iso/foret/plan_dense.webp"),
-    nuit: require("@/assets/images/village/iso/foret/plan_dense.nuit.webp"),
-  },
-} as const;
 
 // Metro needs every require spelled out: one line per file, day and night.
 const ACCESSOIRES_IMAGES: Record<NomAccessoire, { jour: number; nuit: number }> = {
@@ -683,94 +667,6 @@ export function OiseauxPeints({
       ))}
     </Animated.View>
   );
-}
-
-/**
- * The foreground (Guillaume, 01/11: several planes, things close to the camera): inked leaves at the
- * screen's bottom corners, over the map, darker than the forest (out of the village's light). Screen
- * space, a little ahead of the camera (anim-37): it follows the drag at `PARALLAXE` times and grows
- * with the zoom at `ZOOM_PREMIER_PLAN` of its rate, from where the camera stood when it mounted;
- * still under reduced motion. The forest family's one canvas size, scaled by a transform.
- */
-const PARALLAXE = 1.2;
-const ZOOM_PREMIER_PLAN = 0.3;
-export function PremierPlan({
-  width,
-  height,
-  lumiere = "nuit",
-  suivi,
-}: {
-  width: number;
-  height: number;
-  lumiere?: Ambiance;
-  /** The camera's shared values (useCameraIso `suivi`); absent, the leaves stand still. */
-  suivi?: { zoom: SharedValue<number>; x: SharedValue<number>; y: SharedValue<number> };
-}) {
-  const reduit = useMouvementReduit();
-  const depart = useSharedValue({
-    zoom: suivi?.zoom.get() ?? 1,
-    x: suivi?.x.get() ?? 0,
-    y: suivi?.y.get() ?? 0,
-  });
-  const decalage = useAnimatedStyle(() => {
-    if (!suivi || reduit) return {};
-    const d = depart.get();
-    return {
-      transform: [
-        { translateX: (PARALLAXE - 1) * (suivi.x.get() - d.x) },
-        { translateY: (PARALLAXE - 1) * (suivi.y.get() - d.y) },
-        { scale: (suivi.zoom.get() / d.zoom) ** ZOOM_PREMIER_PLAN },
-      ],
-    };
-  });
-  const { w, h } = TOILE_FORET;
-  const masses = [
-    { cle: "gauche", nom: "feuillus", x: -0.08 * width, y: height + 0.32 * h, e: 1.7 },
-    { cle: "droite", nom: "dense", x: width * 1.06, y: height + 0.38 * h, e: 1.9 },
-    { cle: "bord", nom: "dense", x: -0.16 * width, y: height * 0.78, e: 1.15 },
-  ] as const;
-  // Screen space, at the place the leaves mount; the parallax drift after a drag is not followed.
-  useDump(() =>
-    masses.map((m) => ({
-      id: `plan_${m.nom}`,
-      layer: "foreground",
-      x: m.x - (w * m.e) / 2,
-      y: m.y - h * m.e,
-      w: w * m.e,
-      h: h * m.e,
-      flip: false,
-      pied: [m.x, m.y] as const,
-      screenFixed: true,
-    })),
-  );
-  return (
-    <View pointerEvents="none" testID="iso-premier-plan" style={{ position: "absolute", inset: 0 }}>
-      <Animated.View pointerEvents="none" style={[{ position: "absolute", inset: 0 }, decalage]}>
-        {masses.map((m) => (
-          <Image
-            key={m.cle}
-            pointerEvents="none"
-            source={PLAN[m.nom][moment(lumiere)]}
-            contentFit="fill"
-            style={{
-              position: "absolute",
-              left: m.x - w / 2,
-              top: m.y - h,
-              width: w,
-              height: h,
-              transform: [{ translateY: ((1 - m.e) * h) / 2 }, { scale: m.e }],
-            }}
-          />
-        ))}
-      </Animated.View>
-    </View>
-  );
-}
-
-/** The foreground when its layer is on (alentours.ts `plan`): the map screens mount this one. */
-export function PremierPlanSiPeint(p: React.ComponentProps<typeof PremierPlan>) {
-  const { plan } = useContext(AlentoursContext);
-  return plan ? <PremierPlan {...p} /> : null;
 }
 
 /** The painted forest when its layer is on (alentours.ts `foret`): IsoCarte mounts this one. */

@@ -1,7 +1,7 @@
 // The painted surroundings (docs/designs/village-surroundings, stage 5), the pure side: which layer
 // is on, where the painted terrain lies, where the forest masses and the props stand. Every layer
 // is behind its own flag (constants/isoPoc.ts ALENTOURS, off until judged; app/dev-iso.tsx turns
-// them on with `?peint=sol,foret,decor,animaux,plan` or `?peint=tout`). Alentours.tsx draws them.
+// them on with `?peint=sol,foret,decor,animaux` or `?peint=tout`). Alentours.tsx draws them.
 //
 // The images come from stage-5/assets.py, one canvas size per family (the image-size ratchet of
 // __tests__/iso-perf-compteur.test.tsx counts view sizes): TOILE_* below are its numbers in dp.
@@ -371,7 +371,7 @@ export function piedAccessoire(a: Accessoire): readonly [number, number] {
   return ecranXY([a.case[0] + 0.5 + (h() - 0.5) * 0.24, a.case[1] + 0.5 + (h() - 0.5) * 0.24]);
 }
 
-// --- Animals and foreground ----------------------------------------------------------------------
+// --- Animals ----------------------------------------------------------------------
 
 /** One running or flying frame, dp; a strip holds four side by side (64 x 56 px, 4 px a dp). */
 export const IMAGE_ANIMAL = { w: 16, h: 14 } as const;

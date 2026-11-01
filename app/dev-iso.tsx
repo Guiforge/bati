@@ -20,7 +20,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
-import { PremierPlanSiPeint } from "@/components/village/iso/Alentours";
 import { AlentoursContext, alentoursDe, cadreSerre } from "@/components/village/iso/alentours";
 import {
   CRAN,
@@ -115,7 +114,7 @@ export default function DevIsoRoute() {
     zoom?: string;
     /** `?jouer=1` with `mode=pret`: the ready building is claimed 1.5 s in, for a capture no finger plays (H3-01). */
     jouer?: string;
-    /** `?peint=sol,foret,decor,animaux,plan` or `?peint=tout`: the painted surroundings' layers on (alentours.ts), whatever constants/isoPoc.ts ALENTOURS says. */
+    /** `?peint=sol,foret,decor,animaux` or `?peint=tout`: the painted surroundings' layers on (alentours.ts), whatever constants/isoPoc.ts ALENTOURS says. */
     peint?: string;
     /** `?nu=1`: hides the dev controls above the map, which then fills the screen (loop captures). */
     nu?: string;
@@ -451,7 +450,6 @@ function DevIso({
     fond,
     zmin,
     detail,
-    suivi,
   } = useCameraIso({
     visible,
     w: aire.w,
@@ -788,7 +786,6 @@ function DevIso({
             horloge={horloge.c}
             depart={horloge.depart}
           />
-          <PremierPlanSiPeint width={aire.w} height={aire.h} lumiere={lumiere} suivi={suivi} />
         </Sonde>
       </View>
     </YStack>

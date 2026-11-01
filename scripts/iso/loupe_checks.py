@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Objective loupe checks (PROMPT.md section 9). Dev only, stdlib + Pillow.
 
-    loupe_checks.py dump-check <dump.json> [--stamps stamps.json] [--mass-prefix tree]
+    loupe_checks.py dump-check <dump.json> [--stamps stamps.json] [--mass-prefix tree] [--tiles i0,j0,i1,j1]
+    loupe_checks.py core <dump.json> <img>        (BC criterion 9: the village against its surroundings, 1/8 thumbnail)
+    loupe_checks.py forest <dump.json> [--tiles i0,j0,i1,j1]   (BC criterion 4: width ratio, classes, near/far medians)
     loupe_checks.py vector-code [--allowlist scripts/iso/vector_allowlist.json]
     loupe_checks.py vector-pixels <img> [--k K] [--rect x,y,w,h]
     loupe_checks.py thumb <img>
@@ -33,6 +35,8 @@ tiles apart (Chebyshev distance on tiles). Sprites whose id starts with --mass-p
 are single trees of a forest mass: they fail only when an identical pair touches (distance <= 1 tile).
 Stamps carry no size, so every stamp is checked as if bigger than 48 px; only those inside the screen
 count (projected with the camera).
+With --tiles i0,j0,i1,j1 (both ends included) only the layer=forest sprites whose foot tile is in the box and the
+manifest stamps in the box are checked (a flame is not, G17 is a whole-screen check).
 """
 
 import argparse
@@ -71,8 +75,15 @@ def _repeat_problems(label, items, mass_prefix):
     return out
 
 
-def dump_check(dump, stamps=None, mass_prefix="tree"):
+def in_tiles(i, j, tiles):
+    return tiles[0] <= i <= tiles[2] and tiles[1] <= j <= tiles[3]
+
+
+def dump_check(dump, stamps=None, mass_prefix="tree", tiles=None):
     cam, sprites = dump["camera"], dump["sprites"]
+    if tiles:
+        sprites = [s for s in sprites if s.get("layer") == "forest" and in_tiles(s["tileI"], s["tileJ"], tiles)]
+        stamps = [st for st in stamps or [] if in_tiles(*st["tile"], tiles)]
     sw, sh = cam["screenW"], cam["screenH"]
     problems = []
     big = [s for s in sprites
@@ -190,6 +201,95 @@ def thumb_report(img):
     return "\n".join(lines)
 
 
+# ---- core (BC criterion 9) ---------------------------------------------------------------------
+
+BAR_TOP, BAR_BOT = 130, 2340  # system bars of the 1080 x 2400 captures (same as loupe_night.py)
+
+
+def _stats(lum, box):
+    st = ImageStat.Stat(lum.crop(box))
+    return st.mean[0], st.stddev[0]
+
+
+def core(dump, img):
+    """Returns (lines, ok). The box of the layer=building sprites on the 1/8 thumbnail, bars out."""
+    k = 8
+    size = img.size
+    blds = [s for s in dump["sprites"] if s.get("layer") == "building"]
+    if not blds:
+        return ["no layer=building sprite in the dump"], False
+    top, bot = BAR_TOP // k, BAR_BOT // k
+    x0 = max(0, int(min(s["x"] for s in blds) // k))
+    x1 = min(size[0] // k, -int(-max(s["x"] + s["w"] for s in blds) // k))
+    y0 = max(top, int(min(s["y"] for s in blds) // k))
+    y1 = min(bot, -int(-max(s["y"] + s["h"] for s in blds) // k))
+    box = (x0, y0, x1, y1)
+    bw, bh = x1 - x0, y1 - y0
+    thumb_ = img.convert("RGB").reduce(k)
+    lum, sat = thumb_.convert("L"), thumb_.convert("HSV").getchannel("S")
+    mean, std = _stats(lum, box)
+    beat, n = [], 0
+    for wy in range(top, bot - bh + 1):
+        for wx in range(0, thumb_.width - bw + 1):
+            ix = max(0, min(wx + bw, x1) - max(wx, x0))
+            iy = max(0, min(wy + bh, y1) - max(wy, y0))
+            if ix * iy >= 0.25 * bw * bh:
+                continue
+            n += 1
+            m, sd = _stats(lum, (wx, wy, wx + bw, wy + bh))
+            if m >= mean or sd >= std:
+                beat.append((wx, wy, m, sd))
+    area = lambda im, b: sum(im.crop(b).get_flattened_data())
+    band = (0, top, thumb_.width, bot)
+    n_band = (bot - top) * thumb_.width
+    n_box = bw * bh
+    def outside(im):
+        return (area(im, band) - area(im, box)) / (n_band - n_box)
+    lv, ls = mean, outside(lum)
+    sv, ss = area(sat, box) / n_box, outside(sat)
+    ratio = lv / ls
+    lines = [
+        f"village box {box} on the {thumb_.width}x{thumb_.height} thumbnail ({bw}x{bh}), mean {mean:.1f} std {std:.1f}",
+        f"{n} windows of the same size overlapping it under 25 %, {len(beat)} with mean >= or std >= the box"
+        + "".join(f"\n  window ({w[0]},{w[1]}) mean {w[2]:.1f} std {w[3]:.1f}" for w in sorted(beat, key=lambda w: -w[2])[:5]),
+        f"L village {lv:.1f} / L surroundings {ls:.1f} = {ratio:.2f} (wanted 1.10 to 1.50)",
+        f"mean saturation village {sv:.1f}, surroundings {ss:.1f} (wanted surroundings < village)",
+    ]
+    ok = not beat and 1.10 <= ratio <= 1.50 and ss < sv
+    return lines + ["core: " + ("ok" if ok else "FAIL")], ok
+
+
+# ---- forest (BC criterion 4) -------------------------------------------------------------------
+
+def forest(dump, tiles=None):
+    """Returns (lines, ok): width max/min (>= 1.8), size classes (>= 3), median width near vs far quarter."""
+    cam = dump["camera"]
+    fs = [s for s in dump["sprites"] if s.get("layer") == "forest"
+          and s["x"] < cam["screenW"] and s["x"] + s["w"] > 0 and s["y"] < cam["screenH"] and s["y"] + s["h"] > 0
+          and (not tiles or in_tiles(s["tileI"], s["tileJ"], tiles))]
+    blds = [s for s in dump["sprites"] if s.get("layer") == "building"]
+    if len(fs) < 4 or not blds:
+        return [f"{len(fs)} forest sprites and {len(blds)} buildings: too few to judge"], False
+    ci = sum(b["tileI"] for b in blds) / len(blds)
+    cj = sum(b["tileJ"] for b in blds) / len(blds)
+    fs.sort(key=lambda s: _dist((s["tileI"], s["tileJ"]), (ci, cj)))
+    ws = sorted(s["w"] for s in fs)
+    ratio = ws[-1] / ws[0]
+    classes = 1 + sum(b / a > 1.25 for a, b in zip(ws, ws[1:]))
+    q = max(1, len(fs) // 4)
+    med = lambda v: sorted(v)[len(v) // 2]
+    near, far = med([s["w"] for s in fs[:q]]), med([s["w"] for s in fs[-q:]])
+    ids = sorted({s["id"] for s in fs})
+    lines = [
+        f"{len(fs)} forest sprites on screen, widths {ws[0]:.0f} to {ws[-1]:.0f} px, max/min {ratio:.2f} (wanted >= 1.80)",
+        f"{classes} size classes (gap > 25 % between sorted widths, wanted >= 3)",
+        f"median width, quarter nearest the village {near:.0f} px, farthest {far:.0f} px (wanted nearest < farthest)",
+        f"ids: {', '.join(ids)}  (birch, oak and pine all visible: judged by eye)",
+    ]
+    ok = ratio >= 1.8 and classes >= 3 and near < far
+    return lines + ["forest: " + ("ok" if ok else "FAIL")], ok
+
+
 # ---- cli ---------------------------------------------------------------------------------------
 
 def main(argv=None):
@@ -197,6 +297,11 @@ def main(argv=None):
     sub = ap.add_subparsers(dest="cmd", required=True)
     d = sub.add_parser("dump-check")
     d.add_argument("dump"); d.add_argument("--stamps"); d.add_argument("--mass-prefix", default="tree")
+    d.add_argument("--tiles")
+    c = sub.add_parser("core")
+    c.add_argument("dump"); c.add_argument("img")
+    f = sub.add_parser("forest")
+    f.add_argument("dump"); f.add_argument("--tiles")
     v = sub.add_parser("vector-code")
     v.add_argument("--allowlist", default=str(HERE / "vector_allowlist.json"))
     p = sub.add_parser("vector-pixels")
@@ -206,9 +311,18 @@ def main(argv=None):
     a = ap.parse_args(argv)
     if a.cmd == "dump-check":
         stamps = json.load(open(a.stamps)) if a.stamps else None
-        probs = dump_check(json.load(open(a.dump)), stamps, a.mass_prefix)
+        tiles = tuple(int(x) for x in a.tiles.split(",")) if a.tiles else None
+        probs = dump_check(json.load(open(a.dump)), stamps, a.mass_prefix, tiles)
         print("\n".join(probs) if probs else "dump-check: clean")
         return 1 if probs else 0
+    if a.cmd in ("core", "forest"):
+        dump = json.load(open(a.dump))
+        if a.cmd == "core":
+            lines, ok = core(dump, Image.open(a.img))
+        else:
+            lines, ok = forest(dump, tuple(int(x) for x in a.tiles.split(",")) if a.tiles else None)
+        print("\n".join(lines))
+        return 0 if ok else 1
     if a.cmd == "vector-code":
         failing, allowed = vector_code(ROOT, a.allowlist)
         print(f"allowed: {len(allowed)} drawing elements")

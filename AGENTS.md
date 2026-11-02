@@ -95,7 +95,7 @@ type of the same name). Unused locals, fallthrough and console are Biome's job: 
 `process.env["EXPO_PUBLIC_X"]`) and `exactOptionalPropertyTypes` — measured on 2026-08-16 at 50
 errors, nearly all in dependency types: Tamagui's `transition`/`enterStyle` and expo-image's
 `ImageSource` do not accept an explicit `undefined`, and `reducedMotion ? undefined : "bouncy"`
-is how every animation here is switched off. Re-measured on 2026-10-22 after Tamagui 3: 139,
+is how every animation here is switched off. Re-measured on 2026-10-22 after Tamagui 3: 139 (143 on 3.1.10, 2026-11-01),
 now spread through the app's own code as much as dependency types. Re-measure with
 `npx tsc --noEmit --exactOptionalPropertyTypes` when Tamagui is bumped; enable it under 20.
 

@@ -63,8 +63,8 @@ describe("the painted forest", () => {
       expect(dist(m.x, m.y)).toBeGreaterThanOrEqual(clair);
       expect(dist(m.x, m.y - TOILE_FORET.h * m.echelle * 0.9)).toBeGreaterThanOrEqual(clair);
     }
-    // The ring and the border: three classes, 0.7, 1 and 1.3 by distance from the village (the south lisiere, 0.85 to 1.2, has its own test).
-    for (const m of masses) expect([0.7, 0.85, 1, 1.2, 1.3]).toContain(m.echelle);
+    // The ring and the border: three classes, 0.65, 0.9 and 1.2 by distance from the village (the south lisiere, 1.1 to 1.5, has its own test).
+    for (const m of masses) expect([0.65, 0.9, 1.2, 1.1, 1.3, 1.5]).toContain(m.echelle);
     // Back to front.
     expect(masses.map((m) => m.y)).toEqual(masses.map((m) => m.y).toSorted((a, b) => a - b));
   });

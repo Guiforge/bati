@@ -11,7 +11,7 @@ import { createContext } from "react";
 import { ALENTOURS, type Alentours, COUCHES_ALENTOURS } from "@/constants/isoPoc";
 import type { BuildingCode } from "@/db/schema";
 import type { VillageTier } from "@/db/village";
-import { COTE, ecranXY, LARGEUR } from "./carteDemo";
+import { COTE, ecranXY, etatCarte, LARGEUR } from "./carteDemo";
 import { PARCELLES } from "./champs";
 import type { Case } from "./isoLayout";
 import { clairiere, distCases, mulberry32 } from "./monde";
@@ -96,7 +96,7 @@ export type Masse = {
   /** The foot (the canvas' bottom centre), map dp. */
   x: number;
   y: number;
-  /** About the foot. The ring and the border: 0.7, 1 or 1.3 by distance from the village (small toward it); 0.85, 1 or 1.2 on the south lisiere. */
+  /** About the foot. The ring and the border: 0.65, 0.9 or 1.2 by distance from the village (small toward it); 1.1, 1.3 or 1.5 on the south lisiere. */
   echelle: number;
   /** Mirrored in turn: every mass, so neighbours of one asset never stand alike. */
   flip: boolean;
@@ -141,6 +141,27 @@ const ROUTES: readonly (readonly [number, number])[] = SORTIES.flatMap((s) =>
 );
 
 /**
+ * The forest's glades (loupe BC r4): ground shows in a ring of about 4 cells, irregular, fixed in the
+ * world (the same at every tier). Centres in grid cells: the north mass near screen px (620, 520) at
+ * p06, the south-west one and the south-east one a little inside the painted ground's edge (36.8),
+ * so the glade never opens onto the grey. `r` is the mean radius in cells.
+ */
+const CLAIRIERES = [
+  { gx: -8.9, gy: -12.1, r: 1.9, a: 0.7, b: 2.4 },
+  { gx: 25.7, gy: 34.6, r: 1.6, a: 2.1, b: 0.5 },
+  { gx: 34.6, gy: 26.8, r: 1.6, a: 4.0, b: 1.3 },
+] as const;
+/** Whether grid point (gx, gy) lies in a glade: a radius that swells and shrinks with the angle. */
+export const dansClairiere = (gx: number, gy: number): boolean =>
+  CLAIRIERES.some((c) => {
+    const t = Math.atan2(gy - c.gy, gx - c.gx);
+    return (
+      Math.hypot(gx - c.gx, gy - c.gy) <
+      c.r * (1 + 0.16 * Math.sin(2 * t + c.a) + 0.1 * Math.sin(3 * t + c.b))
+    );
+  });
+
+/**
  * Whether a mass of `largeur` x `hauteur` dp standing on (x, y) keeps clear of everything the
  * village draws on the ground: its foot and crown never on the island and its clearing, a field, a
  * road leaving the village or the river. The forest lies under the sprites, so a crown over the
@@ -161,6 +182,10 @@ function libre(
     )
   )
     return false;
+  // Its crown's middle too: a big mass must not stand over a glade between its samples.
+  const coeur = [-0.2, 0, 0.2].map((d): [number, number] => [x + d * largeur, y - hauteur * 0.45]);
+  if ([[x, y] as const, ...coeur].some(([px, py]) => dansClairiere(...grille(px, py))))
+    return false;
   const points = [
     [x, y],
     [x - largeur * 0.42, y - hauteur * 0.2],
@@ -173,6 +198,7 @@ function libre(
     if (dist(px, py) < clair) return false;
     const [gx, gy] = grille(px, py);
     if (gx > RIVIERE_GX[0] && gx < RIVIERE_GX[1]) return false;
+    if (dansClairiere(gx, gy)) return false;
     if (
       champs.some(
         ([cx, cy, w, h]) =>
@@ -231,19 +257,32 @@ export const TUILES_ROUTE_SUD: readonly Point[] = [
   [35, 34],
   [35, 35],
   [36, 36],
+  [37, 36],
+  [37, 37],
+  [38, 37],
+  [39, 38],
+  [39, 39],
+  [39, 40],
+  [40, 40],
+  [40, 41],
+  [40, 42],
+  [41, 43],
+  [42, 43],
+  [43, 43],
+  [44, 44],
 ];
 
 /**
  * Map points no mass box may cover: the south road's cells (centre, four inner points and the
  * middle of each step), its line, and a 1 cell lattice over each plot and cottage. A mass' box is
  * its whole canvas on its foot (168 x 144 dp times its scale), so neither foot nor crown reaches them.
- * Not the last tile, nor the line's last samples (gx + gy from 71): the road meets the map's edge
- * there, and the lisiere's masses may overlap that tile's box so that no grey notch shows under
- * the tip (loupe BC r3). `libre`'s crown samples still keep 0.9 cell off the road line.
+ * Every cell and every sample of the line, to the bottom of the screen: the road leaves the frame
+ * (round 4), so no mass box, border masses included, crosses the corridor. `libre`'s crown samples
+ * keep 0.9 cell off the road line as well.
  */
 export const POINTS_DEGAGES: readonly (readonly [number, number])[] = [
-  ...ROUTE_SUD.filter(([gx, gy]) => gx + gy < 71).map((p) => ecranXY(p)),
-  ...TUILES_ROUTE_SUD.slice(0, -1).flatMap(([gx, gy], k): (readonly [number, number])[] => {
+  ...ROUTE_SUD.map((p) => ecranXY(p)),
+  ...TUILES_ROUTE_SUD.flatMap(([gx, gy], k): (readonly [number, number])[] => {
     const [x, y] = ecranXY([gx + 0.5, gy + 0.5]);
     const n = TUILES_ROUTE_SUD[k + 1];
     const mid = n ? ecranXY([(gx + n[0]) / 2 + 0.5, (gy + n[1]) / 2 + 0.5]) : null;
@@ -308,7 +347,7 @@ export function massesForet(
  * The south lisiere (loupe BC). The painted ground is the square gx, gy under 36.8, its tip the
  * south road's end; past its two south edges the baked terrain is grey noise, which the forest hides.
  * Whole masses only, never cut: a lattice of feet over everything past the edge (to 50 cells), three
- * size classes by depth (0.85 near the village, 1.0, 1.2 at the map's edge), four species in a cycle
+ * size classes by depth (1.1 near the village, 1.3, 1.5 at the map's edge: nearer the viewer than the north's 0.65, 0.9, 1.2), four species in a cycle
  * that keeps every repeat 6 cells or more apart, mirrored by the parity of the column (with the strip index, no neighbour of the eight wears the same pair). No `bord_*` border sprite here: they show their slab inside a forest, they belong to
  * the map's true edge (`bordure`). No mass covers a cell of the south road (`POINTS_DEGAGES`), so
  * the road runs clear to its last cell. A function of the terrain only, not of the tier: the same
@@ -324,7 +363,7 @@ const ESPECES_LISIERE: readonly NomForet[] = ["bouleaux", "feuillus", "dense", "
 const classeLisiere = (gx: number, gy: number) => {
   const alea = mulberry32(Math.round(gx * 8) * 104729 + Math.round(gy * 8) * 7919 + 5)();
   const somme = gx + gy + (alea - 0.5) * 16;
-  return somme < 74 ? 0.85 : somme < 88 ? 1 : 1.2;
+  return somme < 74 ? 1.1 : somme < 88 ? 1.3 : 1.5;
 };
 const dansLisiere = (gx: number, gy: number, debut = LISIERE_DEBUT) => gx > debut || gy > debut;
 /** The undergrowth strip a lattice index picks: three in turn, so a neighbour never wears the same. */
@@ -423,7 +462,7 @@ function boucher(ok: OkMasse, deja: readonly Masse[]): Masse[] {
       );
       const essais = pieds.flatMap(([fx, fy]) => {
         const [gfx, gfy] = grille(fx, fy);
-        return [classeLisiere(gfx, gfy), 0.85].map((echelle): [number, number, number] => [
+        return [classeLisiere(gfx, gfy), 1.1].map((echelle): [number, number, number] => [
           fx,
           fy,
           echelle,
@@ -467,7 +506,26 @@ function lisiereSud(ok: OkMasse): Masse[] {
     }
   }
   const rempli = [...out, ...combler(ok, out)];
-  return [...rempli, ...boucher(ok, rempli)];
+  return varierSousBois([...rempli, ...boucher(ok, rempli)]);
+}
+
+/**
+ * Back to front over the whole lisiere: the first (undergrowth strip, mirror) pair, the mass's own
+ * mirror first, that no mass within 3 cells wears (the lattice, `combler` and `boucher` each pick
+ * theirs blind to the others, and the near forest's big masses crowd more than three neighbours).
+ */
+function varierSousBois(masses: readonly Masse[]): Masse[] {
+  const out: Masse[] = [];
+  for (const m of masses) {
+    const voisins = out.filter((o) => pres(o, m, 3.01));
+    const libre = [m.flip, !m.flip].flatMap((flip) =>
+      SOUSBOIS.filter((n) => !voisins.some((o) => o.flip === flip && o.sb === n)).map(
+        (n): Masse => ({ ...m, flip, sb: n }),
+      ),
+    );
+    out.push(libre[0] ?? m);
+  }
+  return out;
 }
 
 /**
@@ -486,7 +544,8 @@ type Graine = Masse & { i: number; j: number; garde: number };
 let GRAINES_ANNEAU: readonly Graine[] | null = null;
 /** The village's middle, cells, and the distances that cut the size classes (Chebyshev). */
 const CENTRE_VILLAGE = 10;
-const CLASSES_ANNEAU = [0.7, 1, 1.3] as const;
+// North classes (loupe BC r4): the largest stays at 1.2, the ratio of the largest to the smallest 1.85.
+const CLASSES_ANNEAU = [0.65, 0.9, 1.2] as const;
 const COUPURES_ANNEAU = [14, 20] as const;
 const modulo = (n: number, m: number) => ((n % m) + m) % m;
 
@@ -501,27 +560,74 @@ function especeAnneau(q: number, j: number, classe: number): NomForet {
 }
 
 /**
- * A patch with no wooded neighbour on the lattice stands alone on the meadow: two of them in one
- * viewport (720 x 1600 dp) never wear the same asset (loupe BC r3), the first species no other
- * isolated one nearby has, else the one fewest of them have. Static: the lattice alone decides,
- * so a mass never changes between tiers.
+ * A patch with at most three wooded neighbours on the lattice at tier 6 stands (almost) alone on the
+ * meadow, and the eye reads two of them as twins when they share an asset: in one viewport (720 x 1600 dp)
+ * they never wear the same asset (the first species no neighbour and no other such patch nearby
+ * has, else the one fewest have), never the same size (the class fewest of them wear, the lattice's
+ * own when it is free), and a twin never stands within 6 cells (the later one is moved off
+ * along the larger axis). Loupe BC r3 asked for the assets, r4 for the sizes and the distance after
+ * two of the r3 pair, one asset mirrored, showed up top left. Static: the lattice alone decides, so
+ * a mass never changes between tiers.
  */
 function isolesDistincts(graines: readonly Graine[]): readonly Graine[] {
-  const vivantes = graines.filter((g) => boisee(g.i, g.j) && g.garde <= 0.85);
-  const seul = (g: Graine) =>
-    vivantes.every(
-      (v) =>
-        v === g || ((v.x - g.x) / PAS_ANNEAU[0]) ** 2 + ((v.y - g.y) / PAS_ANNEAU[1]) ** 2 >= 3,
+  // What stands at tier 6 (the screen the loupe judges) decides who is alone: a patch whose
+  // neighbours the clearing pushes back is alone on the meadow, and keeps what it is given at every tier.
+  const { visible } = etatCarte(6, false);
+  const [dist, clair] = [distCases(visible), clairiere(visible)];
+  const vivantes = graines.filter(
+    (g) => boisee(g.i, g.j) && g.garde <= 0.85 && dist(g.x, g.y) >= clair + RECUL_ANNEAU,
+  );
+  const voisins = (g: Graine) =>
+    vivantes.filter(
+      (v) => v !== g && ((v.x - g.x) / PAS_ANNEAU[0]) ** 2 + ((v.y - g.y) / PAS_ANNEAU[1]) ** 2 < 3,
     );
-  const choisis = new Map<Graine, NomForet>();
-  for (const g of vivantes.filter(seul)) {
-    const proches = [...choisis].filter(
-      ([o]) => Math.abs(o.x - g.x) < 720 && Math.abs(o.y - g.y) < 1600,
+  const choisis = new Map<Graine, Graine>();
+  for (const g of vivantes.filter((v) => voisins(v).length <= 3)) {
+    const proches = [...choisis.values()].filter(
+      (o) => Math.abs(o.x - g.x) < 720 && Math.abs(o.y - g.y) < 1600,
     );
-    const emploi = (n: NomForet) => proches.filter(([, nom]) => nom === n).length;
-    choisis.set(g, [...MASSES].sort((a, b) => emploi(a) - emploi(b))[0] ?? g.nom);
+    const pris = voisins(g).map((v) => v.nom);
+    const emploi = (n: NomForet) => proches.filter((o) => o.nom === n).length;
+    const taille = (e: number) => proches.filter((o) => o.echelle === e).length;
+    const jumeaux = (n: NomForet) => proches.filter((o) => o.nom === n && pres(o, g, 6)).length;
+    const nom =
+      [...MASSES].sort(
+        (x, y) =>
+          jumeaux(x) - jumeaux(y) || emploi(x) - emploi(y) || +pris.includes(x) - +pris.includes(y),
+      )[0] ?? g.nom;
+    const echelle =
+      [...CLASSES_ANNEAU].sort(
+        (x, y) => taille(x) - taille(y) || +(y === g.echelle) - +(x === g.echelle),
+      )[0] ?? g.echelle;
+    const [x, y] = ecarte(
+      g,
+      proches.filter((o) => o.nom === nom),
+    );
+    choisis.set(g, { ...g, nom, echelle, x, y });
   }
-  return graines.map((g) => (choisis.has(g) ? { ...g, nom: choisis.get(g) ?? g.nom } : g));
+  return graines.map((g) => choisis.get(g) ?? g);
+}
+
+/** Whether two masses' feet lie within `d` cells of each other (Chebyshev). */
+const pres = (a: Masse, b: Masse, d: number) => {
+  const [[ax, ay], [bx, by]] = [grille(a.x, a.y), grille(b.x, b.y)] as const;
+  return Math.max(Math.abs(ax - bx), Math.abs(ay - by)) < d;
+};
+
+/** The foot of `g`, moved off along its larger axis by 0.6 cell steps until no mass of `autres` stands within 6 cells of it. */
+function ecarte(g: Graine, autres: readonly Graine[]): [number, number] {
+  let [gx, gy] = grille(g.x, g.y);
+  for (let k = 0; k < 8; k++) {
+    const gene = autres
+      .map((o) => grille(o.x, o.y))
+      .find(([ox, oy]) => Math.max(Math.abs(ox - gx), Math.abs(oy - gy)) < 6);
+    if (!gene) break;
+    const [dx, dy] = [gx - gene[0], gy - gene[1]];
+    const pas = (d: number) => (d < 0 ? -0.6 : 0.6);
+    if (Math.abs(dx) >= Math.abs(dy)) gx += pas(dx);
+    else gy += pas(dy);
+  }
+  return [...ecranXY([gx, gy])] as [number, number];
 }
 
 function grainesAnneau(): readonly Graine[] {
@@ -593,7 +699,7 @@ function bordure(ok: OkMasse): Masse[] {
       if (hasard() < saute) continue;
       hasard(); // the old scale draw: the species keeps its place in the sequence
       const nom = hasard() < 0.65 ? "bord_coniferes" : "bord_crete";
-      if (ok(x, y, 1.3)) out.push({ nom, x, y, echelle: 1.3, flip: i % 2 === 1 });
+      if (ok(x, y, 1.2)) out.push({ nom, x, y, echelle: 1.2, flip: i % 2 === 1 });
     }
   }
   return out;
@@ -604,7 +710,7 @@ function bordure(ok: OkMasse): Masse[] {
 /** The veil's ellipse in map dp: clear inside the island's own extent (`dedans` of the radius), slate `force` at the rim and beyond. */
 export type Voile = { cx: number; cy: number; rx: number; ry: number; dedans: number };
 /** How far past the island's half width the veil reaches its full strength (dp; down it is the same ratio), and that strength. Simulated on the p06 capture: 0.96 becomes 1.19. */
-export const VOILE_PORTEE = { x: 560, force: 0.36 } as const;
+export const VOILE_PORTEE = { x: 560, force: 0.3 } as const;
 const CACHE_VOILE = new WeakMap<readonly (readonly boolean[])[], Voile>();
 
 /** The veil of a tier: centred on the island's middle, as wide as the island plus `VOILE_PORTEE`, so it grows with the tier and darkens the surroundings only. */

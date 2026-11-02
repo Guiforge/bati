@@ -13,7 +13,7 @@ const cle = (m: { nom: string; x: number; y: number; echelle: number; flip: bool
   `${m.nom}@${Math.round(m.x)},${Math.round(m.y)}x${m.echelle}${m.flip ? "f" : ""}`;
 
 describe("loupe BC round 2: the forest", () => {
-  test("north crop (tiles -12,-12,6,8) at tier 6: three classes 0.7 to 1.3, small toward the village, half mirrored", () => {
+  test("north crop (tiles -12,-12,6,8) at tier 6: three classes 0.65 to 1.2, small toward the village, half mirrored", () => {
     const ms = massesForet(etatCarte(6, false).visible).filter((m) => {
       const [gx, gy] = grille(m.x, m.y);
       return gx >= -12 && gx <= 6 && gy >= -12 && gy <= 8;

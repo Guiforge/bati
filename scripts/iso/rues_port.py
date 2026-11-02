@@ -64,7 +64,7 @@ def serpente(depart, d, derive, sel, n):
     return pts
 
 
-PASSAGES_SUD = [(13, 20.6), (15.5, 21), (19, 21.5), (22, 22), (24, 25), (27, 26), (29, 30), (33, 32), (36, 36)]
+PASSAGES_SUD = [(13, 20.6), (15.5, 21), (19, 21.5), (22, 22), (24, 25), (27, 26), (29, 30), (33, 32), (36, 36), (39, 38), (41, 43), (44, 44)]
 
 
 def courbe(pts, n=5):
@@ -132,7 +132,7 @@ if __name__ == "__main__":
     doc = {
         "doc": "Frozen tile list of the south road (loupe BC), from components/village/iso/rues.ts SORTIES via "
         "scripts/iso/rues_port.py. rue = the gate street (12, 16) to (12, 19), island cells; route = the road from "
-        "(12, 19) screen-down to the painted ground's tip (gx + gy < 72), voie = the track it forks into; the west and "
+        "(12, 19) screen-down to the bottom of the p06 screen (gx + gy up to 88), voie = the track it forks into; the west and "
         "east exits are listed to prove they did not move. Cells are [gx, gy]; paliers_rue = the tier each gate-street cell joins the island; parcelles = champs.ts PARCELLES, the wheat, the vegetable plot and the pasture, [gx0, gy0, gx1, gy1].",
         "gate": list(PORTE_SUD),
         "rue": rue,

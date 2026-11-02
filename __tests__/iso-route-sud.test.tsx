@@ -76,7 +76,7 @@ describe("the south road (loupe BC)", () => {
     }
   });
 
-  test("it heads screen-down, never crosses the river, and ends on the painted ground's tip", () => {
+  test("it heads screen-down, never crosses the river, and carries on below the painted ground's tip, out of the frame", () => {
     const sud = SORTIES.find((s) => s.fin[0] === 12);
     const route = sud?.branches[0] ?? [];
     expect(route.length).toBeGreaterThan(20);
@@ -85,10 +85,10 @@ describe("the south road (loupe BC)", () => {
       expect(gy).toBeGreaterThan(19);
     }
     const [gx, gy] = route[route.length - 1] ?? [0, 0];
-    expect(gx + gy).toBeGreaterThan(70);
-    expect(gx + gy).toBeLessThanOrEqual(72.001); // the last waypoint, (36, 36)
-    // The tip of the ground lies at gx + gy about 73.7, so the next step would be past it.
-    expect(ecranXY([gx, gy])[1]).toBeGreaterThan(840);
+    expect(gx + gy).toBeGreaterThan(86);
+    expect(gx + gy).toBeLessThanOrEqual(88.001); // the last waypoint, (44, 44)
+    // The tip of the ground lies at gx + gy about 73.7: the road runs 14 on, below the p06 screen (y 1002 dp).
+    expect(ecranXY([gx, gy])[1]).toBeGreaterThan(1040);
   });
 
   test("the plots sit off the grid, clear of the road and its fork, in the frozen file's numbers", () => {

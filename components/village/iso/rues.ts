@@ -257,7 +257,7 @@ function serpente(depart: Point, [dx, dy]: Point, derive: number, sel: number, n
 
 /**
  * The south road (loupe BC, round 3): an explicit path of grid points through the middle of the
- * screen, from the gate street's last cell to the painted ground's tip (gx + gy = 72), between the
+ * screen, from the gate street's last cell and on below the painted ground's tip (36.8) to the bottom of the screen at the widest zoom (gx + gy = 88, y about 2480 px at p06), between the
  * wheat on its left and the vegetable plot, cottages and pasture on its right. The first waypoint
  * steps down off the grid before turning east, so no cell of the island is crossed; the line is a
  * Catmull-Rom curve through them, 5 samples a segment, the first tangent running down the street.
@@ -273,6 +273,9 @@ const PASSAGES_SUD: readonly Point[] = [
   [29, 30],
   [33, 32],
   [36, 36],
+  [39, 38],
+  [41, 43],
+  [44, 44],
 ];
 const PAS_ECHANTILLONS = 5;
 
@@ -320,7 +323,7 @@ const contourSortie = (branches: readonly (readonly Point[])[], depart: Point): 
 /**
  * The village's roads go on beyond the island: the west and east ones run 8 cells out from their
  * end, meandering and forking at 3.5 cells into a second track, the south one is the explicit
- * road above, down to the painted ground's tip, one line. Every point is a hash of the end: the same roads on
+ * road above, down past the painted ground's tip to the screen's bottom, one line. Every point is a hash of the end: the same roads on
  * every visit.
  */
 export const SORTIES: readonly Sortie[] = BOUTS.filter(([gx, gy]) => estRue(gx, gy)).map(

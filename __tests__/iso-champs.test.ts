@@ -75,10 +75,11 @@ describe("the roads leave the village (FIN-CAR, FIN-DIS)", () => {
         .flat()
         .some(([gx, gy]) => (s.fin[0] === 0 ? gx < -2 : s.fin[0] === 19 ? gx > 21 : gy > 21));
       expect(hors).toBe(true);
-      // And it stays inside the map's box, which the ground tiles cover (the south road runs on to
-      // the painted ground's tip, gx + gy under 72: iso-route-sud.test.tsx).
+      // And it stays inside the map's box, which the ground tiles cover (the south road runs on out of
+      // the frame, to gx + gy = 88, 2480 px at p06: iso-route-sud.test.tsx).
       const pts = s.branches.flat();
-      for (const [gx, gy] of pts) expect(gx + gy).toBeLessThanOrEqual(72.001);
+      for (const [gx, gy] of pts)
+        expect(gx + gy).toBeLessThanOrEqual(s.fin[0] === 12 ? 88.001 : 72.001);
       for (const [gx, gy] of s.fin[0] === 12 ? [] : pts) {
         const [x, y] = ecranXY([gx, gy]);
         expect(x).toBeGreaterThan(0);

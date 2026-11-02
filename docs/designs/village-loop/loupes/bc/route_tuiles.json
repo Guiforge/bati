@@ -1,5 +1,5 @@
 {
-  "doc": "Frozen tile list of the south road (loupe BC), from components/village/iso/rues.ts SORTIES via scripts/iso/rues_port.py. rue = the gate street (12, 16) to (12, 19), island cells; route = the road from (12, 19) screen-down to the painted ground's tip (gx + gy < 72), voie = the track it forks into; the west and east exits are listed to prove they did not move. Cells are [gx, gy]; paliers_rue = the tier each gate-street cell joins the island; parcelles = champs.ts PARCELLES, the wheat, the vegetable plot and the pasture, [gx0, gy0, gx1, gy1].",
+  "doc": "Frozen tile list of the south road (loupe BC), from components/village/iso/rues.ts SORTIES via scripts/iso/rues_port.py. rue = the gate street (12, 16) to (12, 19), island cells; route = the road from (12, 19) screen-down to the bottom of the p06 screen (gx + gy up to 88), voie = the track it forks into; the west and east exits are listed to prove they did not move. Cells are [gx, gy]; paliers_rue = the tier each gate-street cell joins the island; parcelles = champs.ts PARCELLES, the wheat, the vegetable plot and the pasture, [gx0, gy0, gx1, gy1].",
   "gate": [12, 16],
   "rue": [[12, 16], [12, 17], [12, 18], [12, 19]],
   "paliers_rue": [5, 7, 8, 8],
@@ -104,7 +104,20 @@
         [34, 34],
         [35, 34],
         [35, 35],
-        [36, 36]
+        [36, 36],
+        [37, 36],
+        [37, 37],
+        [38, 37],
+        [39, 38],
+        [39, 39],
+        [39, 40],
+        [40, 40],
+        [40, 41],
+        [40, 42],
+        [41, 43],
+        [42, 43],
+        [43, 43],
+        [44, 44]
       ],
       "voie": [],
       "noeuds_route": [
@@ -149,11 +162,26 @@
         [31.376, 31.152],
         [32.232, 31.504],
         [33.0, 32.0],
-        [33.664, 32.672],
-        [34.272, 33.456],
-        [34.848, 34.304],
-        [35.416, 35.168],
-        [36.0, 36.0]
+        [33.664, 32.704],
+        [34.272, 33.552],
+        [34.848, 34.448],
+        [35.416, 35.296],
+        [36.0, 36.0],
+        [36.616, 36.48],
+        [37.248, 36.8],
+        [37.872, 37.08],
+        [38.464, 37.44],
+        [39.0, 38.0],
+        [39.448, 38.872],
+        [39.824, 39.976],
+        [40.176, 41.144],
+        [40.552, 42.208],
+        [41.0, 43.0],
+        [41.536, 43.456],
+        [42.128, 43.688],
+        [42.752, 43.792],
+        [43.384, 43.864],
+        [44.0, 44.0]
       ]
     }
   }

@@ -302,6 +302,8 @@ export const rawColors = {
   isoOmbrePeinte: "rgba(46, 53, 82, 0.4)",
   /** The bible's slate, #2E3552, as a bare colour (loupe BC): the forest masses' ground shadows (Alentours.tsx), given its opacity by its gradient stops. */
   isoArdoise: "#2E3552",
+  /** The cart's cast shadow (loupe BC r4): a plain slate, greener than isoArdoise, which read violet on the road. */
+  isoArdoiseNeutre: "#303B4D",
   /** The day veil on the surroundings (AmbianceCarte.tsx): a deep olive, so it darkens the ground and forest without greying them as the slate did (BC round 2, saturation 65 to 35). */
   isoVoileJour: "#2A2C18",
   /** FIN-CAR: the fields round the village (champs.ts): two greens and a dark ochre, close to the rim's dusk; the hedge between them. */

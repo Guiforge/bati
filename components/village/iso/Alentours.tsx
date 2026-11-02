@@ -379,6 +379,48 @@ export function TerrainPeint({ lumiere = "nuit", palier }: { lumiere?: Ambiance;
 /** The undergrowth strip, against its mass: lowered by this share of the mass' height and scaled by this much (loupe BC r3). */
 const SOUSBOIS_BAS = 0.15;
 const SOUSBOIS_ECHELLE = 0.8;
+/** The strip's width: the whole canvas, so it reaches the outer trunks (their feet spread over 8 to 94 % of it), and a narrow second strip's. */
+const SOUSBOIS_LARGEUR = 1;
+const SOUSBOIS_ETROIT = 0.55;
+
+/** One undergrowth strip over a mass's feet: lower and flatter than the mass, so some trunk shows above the ferns and the edge is no plate. */
+function BandeSousBois({
+  m,
+  n,
+  lumiere,
+  etroit = false,
+}: {
+  m: Masse;
+  n: number;
+  lumiere: Ambiance;
+  etroit?: boolean;
+}) {
+  const { w, h } = TOILE_FORET;
+  const strip = SOUSBOIS[n];
+  if (!strip) return null;
+  const sens = m.flip ? -1 : 1;
+  const largeur = etroit ? SOUSBOIS_ETROIT : SOUSBOIS_LARGEUR;
+  return (
+    <Image
+      testID="iso-sousbois"
+      pointerEvents="none"
+      source={strip[moment(lumiere)]}
+      contentFit="fill"
+      style={{
+        position: "absolute",
+        left: m.x - w / 2 + (etroit ? sens * -0.17 * w * m.echelle : 0),
+        top: m.y - h,
+        width: w,
+        height: h,
+        transform: [
+          { translateY: ((1 - m.echelle) * h) / 2 + (etroit ? 0.2 : SOUSBOIS_BAS) * h * m.echelle },
+          { scaleX: m.echelle * largeur * sens },
+          { scaleY: m.echelle * SOUSBOIS_ECHELLE },
+        ],
+      }}
+    />
+  );
+}
 
 /** One mass, scaled about its foot (a translation undoes the centre's drift: one layout size for all). */
 function UneMasse({ m, lumiere }: { m: Masse; lumiere: Ambiance }) {
@@ -416,22 +458,10 @@ function UneMasse({ m, lumiere }: { m: Masse; lumiere: Ambiance }) {
         contentFit="fill"
         style={style}
       />
-      {sousbois ? (
-        <Image
-          testID="iso-sousbois"
-          pointerEvents="none"
-          source={sousbois[moment(lumiere)]}
-          contentFit="fill"
-          style={{
-            ...style,
-            // Lower and smaller than the mass: some trunk shows above the ferns, the strip's edge is no plate.
-            transform: [
-              { translateY: ((1 - m.echelle) * h) / 2 + SOUSBOIS_BAS * h * m.echelle },
-              { scale: m.echelle * SOUSBOIS_ECHELLE },
-              { scaleX: m.flip ? -1 : 1 },
-            ],
-          }}
-        />
+      {sousbois ? <BandeSousBois m={m} n={m.sb ?? 0} lumiere={lumiere} /> : null}
+      {/* A wide mass (the near south forest) gets a second strip of another asset on its trunks' middle. */}
+      {sousbois && m.echelle >= 1.3 ? (
+        <BandeSousBois m={m} n={((m.sb ?? 0) + 1) % 3} lumiere={lumiere} etroit />
       ) : null}
     </>
   );
@@ -439,8 +469,9 @@ function UneMasse({ m, lumiere }: { m: Masse; lumiere: Ambiance }) {
 
 /** A forest mass' shadow: a 2:1 ellipse under its crown, pushed to the screen's right like every cast shadow of the map (the moon, isoSpec.json), flat with a soft edge. */
 const ID_OMBRE = "ombre-foret";
-// Long along the shadow vector (screen bottom right) and readable on the painted ground (loupe BC r3): 0.6 by day.
-const OMBRE_FORET = { decalage: 0.36, demi: 0.56, opacite: 0.6 } as const;
+const ID_OMBRE_PIED = "ombre-pied";
+// Crisp and light (loupe BC r4, "dirty blurry patches"): 0.42 by day, flat over 80 % of the ellipse then a short soft edge, narrow on the ground and pushed along the shadow vector (screen bottom right).
+const OMBRE_FORET = { decalage: 0.46, demi: 0.42, opacite: 0.42, plat: 0.8 } as const;
 
 /**
  * Every forest mass' ground shadow, and the cart's, in ONE Svg over the ground and under the
@@ -457,11 +488,16 @@ function OmbresForet({
   lumiere: Ambiance;
 }) {
   const { w, h } = TOILE_FORET;
-  const { decalage, demi, opacite } = OMBRE_FORET;
+  const { decalage, demi, opacite, plat } = OMBRE_FORET;
   const force = moment(lumiere) === "nuit" ? opacite * 0.6 : opacite;
   const formes = [
-    ...masses.map((m) => ({ x: m.x, y: m.y - 0.03 * h * m.echelle, l: w * m.echelle })),
-    ...pieds.map(([x, y]) => ({ x, y, l: TOILE_ACCESSOIRE.w * 0.9 })),
+    ...masses.map((m) => ({
+      x: m.x,
+      y: m.y - 0.03 * h * m.echelle,
+      l: w * m.echelle,
+      pied: false,
+    })),
+    ...pieds.map(([x, y]) => ({ x, y, l: TOILE_ACCESSOIRE.w * 0.9, pied: true })),
   ];
   return (
     <Svg
@@ -473,11 +509,18 @@ function OmbresForet({
       style={{ position: "absolute", left: TERRAIN.x, top: TERRAIN.y }}
     >
       <Defs>
-        <RadialGradient id={ID_OMBRE}>
-          <Stop offset="0" stopColor={rawColors.isoArdoise} stopOpacity={force} />
-          <Stop offset="0.55" stopColor={rawColors.isoArdoise} stopOpacity={force * 0.8} />
-          <Stop offset="1" stopColor={rawColors.isoArdoise} stopOpacity={0} />
-        </RadialGradient>
+        {(
+          [
+            [ID_OMBRE, rawColors.isoArdoise],
+            [ID_OMBRE_PIED, rawColors.isoArdoiseNeutre],
+          ] as const
+        ).map(([id, couleur]) => (
+          <RadialGradient key={id} id={id}>
+            <Stop offset="0" stopColor={couleur} stopOpacity={force} />
+            <Stop offset={plat} stopColor={couleur} stopOpacity={force} />
+            <Stop offset="1" stopColor={couleur} stopOpacity={0} />
+          </RadialGradient>
+        ))}
       </Defs>
       {formes.map((f) => (
         <Ellipse
@@ -486,7 +529,7 @@ function OmbresForet({
           cy={f.y}
           rx={f.l * demi}
           ry={f.l * demi * 0.5}
-          fill={`url(#${ID_OMBRE})`}
+          fill={`url(#${f.pied ? ID_OMBRE_PIED : ID_OMBRE})`}
         />
       ))}
     </Svg>

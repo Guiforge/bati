@@ -74,3 +74,6 @@ Dans le jeu de référence, les animations sont légères : très peu de mouveme
 
 ### Décisions de Guillaume (02/11, checkpoint)
 - Écrans cibles A, A, A. Ligne de budget écrite : plafond 60 $. Routes et champs peints et cuits, écrit dans la bible. S-night parquée, on y revient après BC.
+
+### Décision de Guillaume (02/11)
+- Rendu seulement : le critère est le design et la peinture. Limite APK de 55 MiB retirée, optimisations plus tard. Délais de tests dépassés non bloquants (son ordinateur passe en mode économie).

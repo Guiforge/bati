@@ -3,6 +3,7 @@ jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }
 import {
   ACCESSOIRES,
   accessoiresMontres,
+  dansClairiere,
   type Masse,
   massesForet,
   TUILES_ROUTE_SUD,
@@ -51,9 +52,10 @@ describe("the south lisiere hides the grey past the painted ground (loupe BC)", 
       const l = ms.filter((m) => m.echelle === e).map(prof);
       return l.reduce((a, b) => a + b, 0) / Math.max(1, l.length);
     };
-    expect(Math.max(...ms.map((m) => m.echelle))).toBeLessThanOrEqual(1.2);
-    expect(moy(0.85)).toBeLessThan(moy(1));
-    expect(moy(1)).toBeLessThan(moy(1.2));
+    // Nearer the viewer than the north (0.65, 0.9, 1.2): 1.1, 1.3 and 1.5.
+    expect([...new Set(ms.map((m) => m.echelle))].toSorted()).toEqual([1.1, 1.3, 1.5]);
+    expect(moy(1.1)).toBeLessThan(moy(1.3));
+    expect(moy(1.3)).toBeLessThan(moy(1.5));
   });
 
   test("an identical mass is never within 3 cells of its twin (6 on the lattice, 3 where a hole needed filling)", () => {
@@ -74,14 +76,14 @@ describe("the south lisiere hides the grey past the painted ground (loupe BC)", 
       return ((x - m.x) / (0.45 * w)) ** 2 + ((y - (m.y - 0.5 * h)) / (0.45 * h)) ** 2 < 1;
     });
 
-  test("no mass box, foot or crown, covers a cell of the south road up to the one before its last, at any tier (the last meets the map edge: the lisiere may overlap its box, its crown samples keep off the line)", () => {
+  test("no mass box, foot or crown, covers a cell of the south road down to its last, below the screen's bottom, at any tier", () => {
     const cellules = tuiles.sorties["12,19"].route;
-    expect(cellules.at(-1)).toEqual([36, 36]);
+    expect(cellules.at(-1)).toEqual([44, 44]);
     expect(cellules).toEqual(TUILES_ROUTE_SUD);
     for (const p of PALIERS)
       for (const m of masses(p)) {
         const [w, h] = [168 * m.echelle, 144 * m.echelle];
-        for (const [gx = 0, gy = 0] of cellules.slice(0, -1)) {
+        for (const [gx = 0, gy = 0] of cellules) {
           const [x, y] = ecranXY([gx + 0.5, gy + 0.5]);
           expect([m.nom, gx, gy, Math.abs(x - m.x) < w / 2 && y > m.y - h && y < m.y]).toEqual([
             m.nom,
@@ -110,15 +112,19 @@ describe("the south lisiere hides the grey past the painted ground (loupe BC)", 
     }
   });
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: one walk of the p06 window, clearer whole
   test("no grey world edge or bare dark ground shows below the forest line on the p06 screen", () => {
     const ms = masses(6);
     let gris = 0;
     let nus = 0;
     // The p06 window in map dp: x 144 to 864, from the forest line (y 735) to the screen's bottom (1001).
+    // The road's corridor (1.5 cells either side of its line) is bare on purpose: the ground there is painted over the grey.
+    const route = SORTIES.flatMap((s) => (s.fin[0] === 12 ? s.branches.flat() : []));
     for (let x = 144; x <= 864; x += 12)
       for (let y = 735; y <= 1001; y += 12) {
         const [gx, gy] = grille(x, y);
         if (gx <= 36.8 && gy <= 36.8) continue;
+        if (route.some(([rx, ry]) => Math.hypot(gx - rx, gy - ry) < 1.5)) continue;
         gris++;
         if (!couvert(x, y, ms)) nus++;
       }
@@ -126,13 +132,44 @@ describe("the south lisiere hides the grey past the painted ground (loupe BC)", 
     expect(nus / gris).toBeLessThan(0.03);
   });
 
-  test("the two dark holes of the p06 screen, at screen px (408, 2202) and (588, 2190), lie under a crown", () => {
+  test("the two dark holes of the p06 screen, at screen px (408, 2202) and (588, 2190), lie under a crown or on the road's own ground (2.2 cells of its line, painted over the grey)", () => {
+    const route = SORTIES.flatMap((s) => (s.fin[0] === 12 ? s.branches.flat() : []));
     // Screen px to map dp at p06: x = (px - 504) / 1.5 + 480, y = (py - 897) / 1.5.
     for (const [px, py] of [
       [408, 2202],
       [588, 2190],
-    ] as const)
-      expect(couvert((px - 504) / 1.5 + 480, (py - 897) / 1.5, masses(6))).toBe(true);
+    ] as const) {
+      const [x, y] = [(px - 504) / 1.5 + 480, (py - 897) / 1.5];
+      const [gx, gy] = grille(x, y);
+      const sol = route.some(([rx, ry]) => Math.hypot(gx - rx, gy - ry) < 2.2);
+      expect(couvert(x, y, masses(6)) || sol).toBe(true);
+    }
+  });
+
+  test("the glades stay bare at every tier: no mass stands over one, and the south ones lie inside the painted ground", () => {
+    const centres = [
+      [-8.9, -12.1],
+      [25.7, 34.6],
+      [34.6, 26.8],
+    ] as const;
+    expect(centres.map(([gx, gy]) => dansClairiere(gx, gy))).toEqual([true, true, true]);
+    for (const p of PALIERS)
+      for (const m of masses(p)) {
+        const [w, h] = [168 * m.echelle, 144 * m.echelle];
+        const sur = [
+          [0, 0],
+          [0, 0.45],
+          [-0.2, 0.45],
+          [0.2, 0.45],
+        ].map(([dx = 0, dy = 0]) => dansClairiere(...grille(m.x + dx * w, m.y - dy * h)));
+        expect(sur).toEqual([false, false, false, false]);
+      }
+    // Short of the grey (36.8) at every angle and radius a south glade can reach.
+    const dehors = Array.from({ length: 72 * 48 }, (_, k) => {
+      const [t, r] = [(k % 72) * 5 * (Math.PI / 180), 0.05 * Math.floor(k / 72)];
+      return [25.7 + r * Math.cos(t), 34.6 + r * Math.sin(t)] as const;
+    }).filter(([gx, gy]) => dansClairiere(gx, gy) && Math.max(gx, gy) >= 36.8);
+    expect(dehors).toEqual([]);
   });
 
   test("the lone clusters of the meadow never share an asset within one viewport, whatever the tier", () => {

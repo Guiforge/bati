@@ -10,7 +10,7 @@ isolib.blender (one at a time, sequential), and writes under docs/designs/villag
     <code>_<stage>.mask.png          alpha >= 128 in white, for `bldtools.py footprint`
     windmill_<stage>_sails.png       tower with its sail variant turned to X, scaled per the card
     silhouettes/<code>_<stage>.png   black silhouette (no ground slab, no stand-ins), + .96.png blurred
-    silhouettes/windmill_<stage>_X.png, _plus.png   with sails in two poses (mythic: + storm-cloud blob)
+    silhouettes/windmill_<stage>_X.png, _plus.png   with sails in two poses
     strip_windmill.png, strip_observatory.png, footprint.txt, report.json
 
 A round folder that exists is never written again: pick a new name. Scratch (passes, rgba) goes to
@@ -31,14 +31,13 @@ CACHE = pathlib.Path.home() / ".cache" / "bati-buildings"
 os.environ["ART_LOOP_DIR"] = str(CACHE / "art-loop")  # isolib's WORK: not the art loop's passes
 sys.path.insert(0, str(ROOT / "scripts" / "iso"))
 sys.path.insert(0, str(HERE))
-from PIL import Image, ImageDraw  # noqa: E402
+from PIL import Image  # noqa: E402
 
 import bldtools as T  # noqa: E402
 import isolib as L  # noqa: E402
 
 SPECS = ROOT / "scripts" / "iso" / "blockouts" / "bld"
 STAGES = ["rough", "solid", "grand", "legendary", "mythic"]
-CLOUD = (700, 75, 880, 145)  # card: centre (790, 110), 180 x 70 px; a silhouette-only stand-in
 EPS = 1e-4
 
 
@@ -49,12 +48,6 @@ def sails_composite(tower: Image.Image, sails: Image.Image, pivot, scale, plus: 
     out = tower.copy()
     out.alpha_composite(s, (round(pivot[0] - n / 2), round(pivot[1] - n / 2)))
     return out
-
-
-def with_cloud(im: Image.Image) -> Image.Image:
-    im = im.copy()
-    ImageDraw.Draw(im).ellipse(CLOUD, fill=(0, 0, 0, 255))
-    return im
 
 
 def silhouette(rgba_path: pathlib.Path, prefix: pathlib.Path) -> None:
@@ -138,8 +131,6 @@ def main(argv=None) -> int:
                 report[name][f"sails_{pose}_bbox"] = box
                 if box and (box[0] < 0 or box[1] < 0 or box[2] > base.width or box[3] > base.height):
                     report[name].setdefault("sailsOutsideCanvas", []).append(pose)
-                if st == "mythic":
-                    comp = with_cloud(comp)
                 p = work / f"{name}_{pose}.rgba.png"
                 comp.save(p)
                 silhouette(p, sil / f"{name}_{pose}")

@@ -238,13 +238,21 @@ def cylinder(p, cone=False):
     return obj
 
 
+def sphere(p):
+    """A faceted ball: `verts` segments (8 by default) by `rings` (6), flat-shaded like every part."""
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=p.get("verts", 8), ring_count=p.get("rings", 6),
+                                         radius=p["r"], location=blender(p["center"]))
+    return bpy.context.object
+
+
 def sails(p):
-    """Four bare, symmetric blades in the plane facing the camera, so a 2D rotation is exact."""
+    """`count` (4 by default) bare, symmetric blades in the plane facing the camera, so a 2D rotation is exact."""
     length, width = p["length"], p["width"]
     mesh = bpy.data.meshes.new("sails")
     bm = bmesh.new()
-    for i in range(4):
-        angle = math.radians(45 + 90 * i)
+    count = p.get("count", 4)
+    for i in range(count):
+        angle = math.radians(45 + 360 / count * i)
         d = Vector((math.cos(angle), math.sin(angle), 0))
         n = Vector((-d.y, d.x, 0))
         start = d * p.get("hub", 0.08)
@@ -270,7 +278,8 @@ right, up, back = CAM_ROT @ Vector((1, 0, 0)), CAM_ROT @ Vector((0, 1, 0)), CAM_
 built = []  # (spec part, object), in spec order: the volumes and anchor points read them
 for part in spec.get("parts", []):
     kind = part["type"]
-    builder = {"box": box, "roof": roof, "cyl": cylinder, "cone": lambda p: cylinder(p, cone=True), "sails": sails}[kind]
+    builder = {"box": box, "roof": roof, "cyl": cylinder, "cone": lambda p: cylinder(p, cone=True), "sails": sails,
+               "sphere": sphere}[kind]
     obj = builder(part)
     # The socle: the one box at the origin covering the whole footprint (as the L1-T18 audit finds it).
     is_socle = (kind == "box" and part["at"] == [0, 0, 0] and part["size"][:2] == list(canvas["footprint"])

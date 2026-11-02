@@ -74,6 +74,8 @@ import {
   accessoiresMontres,
   empriseAccessoire,
   horsTerrain,
+  piedAccessoire,
+  voileVillage,
 } from "./alentours";
 import { bordDe, PORTEE_BORD } from "./bord";
 import { Echafaudage, Poussiere } from "./Chantier";
@@ -2372,9 +2374,20 @@ export function IsoCarte({
       ))}
       <SolVocation vocation={sienne} nuit={nuit} />
       {/* The painted forest: over the ground and the vector roads it keeps clear of, under the light (graded at night) and the sprites. */}
-      <ForetSiPeinte visible={visible} champs={champs.blocs} lumiere={lumiere} />
+      <ForetSiPeinte
+        visible={visible}
+        champs={champs.blocs}
+        pieds={decor.filter((a) => a.hors && a.nom === "charrette_1").map(piedAccessoire)}
+        lumiere={lumiere}
+      />
       {/* The light of the map: over the ground, UNDER every sprite (windows stay lit), one source of night pools. */}
-      <AmbianceCarte lumiere={lumiere} biome={biome} montres={montres} stade={stade} />
+      <AmbianceCarte
+        lumiere={lumiere}
+        biome={biome}
+        montres={montres}
+        stade={stade}
+        voileAlentours={voileVillage(visible)}
+      />
       {/* The reveal's ring and dust are ground light: below the objects, never over a neighbour in front. */}
       {revelation ? (
         <AnneauRevelation

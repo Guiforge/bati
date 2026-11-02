@@ -300,6 +300,8 @@ export const rawColors = {
   isoSolPeintFond: "#504C3F",
   /** A cast shadow on the painted terrain (alentours, flag `sol`): #2E3552 at 40 %, the bible's mix, over the painting. */
   isoOmbrePeinte: "rgba(46, 53, 82, 0.4)",
+  /** The bible's slate, #2E3552, as a bare colour (loupe BC): the forest masses' ground shadows (Alentours.tsx) and the day veil on the surroundings (AmbianceCarte.tsx), each given its own opacity by its gradient stops. */
+  isoArdoise: "#2E3552",
   /** FIN-CAR: the fields round the village (champs.ts): two greens and a dark ochre, close to the rim's dusk; the hedge between them. */
   isoChampA: "#2B4631",
   isoChampB: "#36533A",

@@ -12,10 +12,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useContext } from "react";
 import { View } from "react-native";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
-import Svg, { Defs, Ellipse, RadialGradient, Stop } from "react-native-svg";
+import Svg, { Defs, Ellipse, RadialGradient, Rect, Stop } from "react-native-svg";
 import { rawColors } from "@/constants/rawColors";
 import type { BuildingCode } from "@/db/schema";
-import { AlentoursContext } from "./alentours";
+import { AlentoursContext, TERRAIN, VOILE_PORTEE, type Voile } from "./alentours";
 import { type Bande, bandes, DEBORD } from "./bandesBord";
 import { ecranXY, HAUTEUR, LANTERNES, LARGEUR, lanterneVisible } from "./carteDemo";
 import { LumieresContext } from "./fige";
@@ -28,6 +28,8 @@ import { VariantesContext } from "./variantes";
 /** Half-width of the lantern's pool, dp. */
 const R_LANTERNE = 32;
 const ABSOLU = { position: "absolute" } as const;
+/** One veil per map: a fixed gradient id (a literal would trip the unique-id rule). */
+const ID_VOILE = "voile-alentours";
 // Off the cell's middle like every pool (lueurs.ts horsCentre): a lantern's pool is never wedged on a path cell.
 const [lx, ly] = ecranXY([
   horsCentre(LANTERNES[0]?.case[0] ?? 0, 0.5),
@@ -127,16 +129,64 @@ function Rais() {
   );
 }
 
+/**
+ * The day's veil on the surroundings (loupe BC, criterion 9): slate, clear over the island and
+ * growing with it, easing to `VOILE_PORTEE.force` past it, so the village is the lightest and
+ * most contrasted place of the map and each species keeps its tint under a soft cool cast. In map
+ * space (it pans and zooms with the ground), one Rect, no animated node.
+ */
+function VoileAlentours({ v }: { v: Voile }) {
+  const { force } = VOILE_PORTEE;
+  return (
+    <Svg
+      testID="iso-voile-alentours"
+      width={TERRAIN.w}
+      height={TERRAIN.h}
+      viewBox={`${TERRAIN.x} ${TERRAIN.y} ${TERRAIN.w} ${TERRAIN.h}`}
+      style={{ ...ABSOLU, left: TERRAIN.x, top: TERRAIN.y }}
+    >
+      <Defs>
+        <RadialGradient
+          id={ID_VOILE}
+          gradientUnits="userSpaceOnUse"
+          cx={v.cx}
+          cy={v.cy}
+          rx={v.rx}
+          ry={v.ry}
+        >
+          <Stop offset={v.dedans} stopColor={rawColors.isoArdoise} stopOpacity={0} />
+          <Stop
+            offset={v.dedans + (1 - v.dedans) * 0.5}
+            stopColor={rawColors.isoArdoise}
+            stopOpacity={force * 0.5}
+          />
+          <Stop offset="1" stopColor={rawColors.isoArdoise} stopOpacity={force} />
+        </RadialGradient>
+      </Defs>
+      <Rect
+        x={TERRAIN.x}
+        y={TERRAIN.y}
+        width={TERRAIN.w}
+        height={TERRAIN.h}
+        fill={`url(#${ID_VOILE})`}
+      />
+    </Svg>
+  );
+}
+
 export function AmbianceCarte({
   lumiere,
   biome,
   montres,
   stade,
+  voileAlentours,
 }: {
   lumiere: Ambiance;
   biome: Biome;
   montres: readonly BuildingCode[];
   stade: (code: BuildingCode) => Stade;
+  /** The surroundings' veil (alentours.ts `voileVillage`), by day over the painted ground only. */
+  voileAlentours?: Voile;
 }) {
   const jour = LUMIERES[lumiere];
   const variantes = useContext(VariantesContext);
@@ -152,6 +202,7 @@ export function AmbianceCarte({
       <View pointerEvents="none" testID="iso-monde-jour" style={ABSOLU}>
         <View style={rect(-DEBORD, -DEBORD, pl, ph, jour.voile)} />
         {peint.sol ? null : <Bords bord={jour.vignette} nul={jour.vignetteNul} />}
+        {voileAlentours && nuitPeinte ? <VoileAlentours v={voileAlentours} /> : null}
         <Rais />
       </View>
     );

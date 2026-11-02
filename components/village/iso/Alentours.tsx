@@ -11,6 +11,8 @@ import { Image } from "expo-image";
 import { useContext } from "react";
 import { View } from "react-native";
 import Animated, { type SharedValue, useAnimatedStyle } from "react-native-reanimated";
+import Svg, { Defs, Ellipse, RadialGradient, Stop } from "react-native-svg";
+import { rawColors } from "@/constants/rawColors";
 import type { BuildingCode } from "@/db/schema";
 import {
   type Accessoire,
@@ -150,6 +152,22 @@ const FORET: Record<NomForet, { jour: number; nuit: number }> = {
     nuit: require("@/assets/images/village/iso/foret/bord_crete.nuit.webp"),
   },
 };
+
+/** The undergrowth strips (448 x 384 px, the masses' own canvas), laid over a mass's feet on the south and north edges. */
+const SOUSBOIS: readonly { jour: number; nuit: number }[] = [
+  {
+    jour: require("@/assets/images/village/iso/foret/sousbois_1.webp"),
+    nuit: require("@/assets/images/village/iso/foret/sousbois_1.nuit.webp"),
+  },
+  {
+    jour: require("@/assets/images/village/iso/foret/sousbois_2.webp"),
+    nuit: require("@/assets/images/village/iso/foret/sousbois_2.nuit.webp"),
+  },
+  {
+    jour: require("@/assets/images/village/iso/foret/sousbois_3.webp"),
+    nuit: require("@/assets/images/village/iso/foret/sousbois_3.nuit.webp"),
+  },
+];
 
 // Metro needs every require spelled out: one line per file, day and night.
 const ACCESSOIRES_IMAGES: Record<NomAccessoire, { jour: number; nuit: number }> = {
@@ -372,25 +390,93 @@ function UneMasse({ m, lumiere }: { m: Masse; lumiere: Ambiance }) {
     flip: m.flip === true,
     pied: [m.x, m.y],
   }));
+  const style = {
+    position: "absolute",
+    left: m.x - w / 2,
+    top: m.y - h,
+    width: w,
+    height: h,
+    transform: [
+      { translateY: ((1 - m.echelle) * h) / 2 },
+      { scale: m.echelle },
+      { scaleX: m.flip ? -1 : 1 },
+    ],
+  } as const;
+  const sousbois = m.sb === undefined ? undefined : SOUSBOIS[m.sb];
   return (
-    <Image
-      testID="iso-foret-peinte"
+    <>
+      <Image
+        testID="iso-foret-peinte"
+        pointerEvents="none"
+        source={FORET[m.nom][moment(lumiere)]}
+        contentFit="fill"
+        style={style}
+      />
+      {sousbois ? (
+        <Image
+          testID="iso-sousbois"
+          pointerEvents="none"
+          source={sousbois[moment(lumiere)]}
+          contentFit="fill"
+          style={style}
+        />
+      ) : null}
+    </>
+  );
+}
+
+/** A forest mass' shadow: a 2:1 ellipse under its crown, pushed to the screen's right like every cast shadow of the map (the moon, isoSpec.json), flat with a soft edge. */
+const ID_OMBRE = "ombre-foret";
+const OMBRE_FORET = { decalage: 0.2, demi: 0.46, opacite: 0.42 } as const;
+
+/**
+ * Every forest mass' ground shadow, and the cart's, in ONE Svg over the ground and under the
+ * sprites: one radial gradient (slate, soft edge) shared by one ellipse each, nothing animated.
+ * Static, so reduced motion changes nothing.
+ */
+function OmbresForet({
+  masses,
+  pieds,
+  lumiere,
+}: {
+  masses: readonly Masse[];
+  pieds: readonly (readonly [number, number])[];
+  lumiere: Ambiance;
+}) {
+  const { w, h } = TOILE_FORET;
+  const { decalage, demi, opacite } = OMBRE_FORET;
+  const force = moment(lumiere) === "nuit" ? opacite * 0.6 : opacite;
+  const formes = [
+    ...masses.map((m) => ({ x: m.x, y: m.y - 0.03 * h * m.echelle, l: w * m.echelle })),
+    ...pieds.map(([x, y]) => ({ x, y, l: TOILE_ACCESSOIRE.w * 0.9 })),
+  ];
+  return (
+    <Svg
+      testID="iso-ombres-foret"
       pointerEvents="none"
-      source={FORET[m.nom][moment(lumiere)]}
-      contentFit="fill"
-      style={{
-        position: "absolute",
-        left: m.x - w / 2,
-        top: m.y - h,
-        width: w,
-        height: h,
-        transform: [
-          { translateY: ((1 - m.echelle) * h) / 2 },
-          { scale: m.echelle },
-          { scaleX: m.flip ? -1 : 1 },
-        ],
-      }}
-    />
+      width={TERRAIN.w}
+      height={TERRAIN.h}
+      viewBox={`${TERRAIN.x} ${TERRAIN.y} ${TERRAIN.w} ${TERRAIN.h}`}
+      style={{ position: "absolute", left: TERRAIN.x, top: TERRAIN.y }}
+    >
+      <Defs>
+        <RadialGradient id={ID_OMBRE}>
+          <Stop offset="0" stopColor={rawColors.isoArdoise} stopOpacity={force} />
+          <Stop offset="0.55" stopColor={rawColors.isoArdoise} stopOpacity={force * 0.8} />
+          <Stop offset="1" stopColor={rawColors.isoArdoise} stopOpacity={0} />
+        </RadialGradient>
+      </Defs>
+      {formes.map((f) => (
+        <Ellipse
+          key={`${Math.round(f.x)},${Math.round(f.y)}`}
+          cx={f.x + f.l * decalage}
+          cy={f.y}
+          rx={f.l * demi}
+          ry={f.l * demi * 0.5}
+          fill={`url(#${ID_OMBRE})`}
+        />
+      ))}
+    </Svg>
   );
 }
 
@@ -398,16 +484,21 @@ function UneMasse({ m, lumiere }: { m: Masse; lumiere: Ambiance }) {
 export function ForetPeinte({
   visible,
   champs,
+  pieds = [],
   lumiere = "nuit",
 }: {
   visible: readonly (readonly boolean[])[];
   /** The fields off the island (champs.ts `blocs`): no mass stands on one. */
   champs: readonly (readonly [number, number, number, number])[];
+  /** Feet that cast the same shadow without being masses (the cart off the island). */
+  pieds?: readonly (readonly [number, number])[];
   lumiere?: Ambiance;
 }) {
+  const masses = massesForet(visible, champs);
   return (
     <View pointerEvents="none" style={{ position: "absolute", left: 0, top: 0 }}>
-      {massesForet(visible, champs).map((m) => (
+      <OmbresForet masses={masses} pieds={pieds} lumiere={lumiere} />
+      {masses.map((m) => (
         <UneMasse key={`${m.nom}${Math.round(m.x)},${Math.round(m.y)}`} m={m} lumiere={lumiere} />
       ))}
     </View>
@@ -683,6 +774,7 @@ export function OiseauxPeints({
 export function ForetSiPeinte(p: {
   visible: readonly (readonly boolean[])[];
   champs: readonly (readonly [number, number, number, number])[];
+  pieds?: readonly (readonly [number, number])[];
   lumiere?: Ambiance;
 }) {
   const { foret } = useContext(AlentoursContext);

@@ -2,8 +2,12 @@
   "_doc": "PROMPT.md rule 1: vector only for light, glow, particles, masks, cast shadows, the edge vignette and UI. Per file, the react-native-svg drawing components allowed. Anything else drawing in components/village/iso or app/dev-iso.tsx is reported by `loupe_checks.py vector-code`. Files absent here (Fierte, EnsembleVocation, Rempart, Statue, Retouches, FeuxDessines, CorbeauxToits, petitsDetails) draw decor in vector and must fail until painted; IsoCarteDemo Path/Polygon/Text and RuesDessinees Path and Chantier Path/Polygon likewise. Review before trusting: written from reading file headers, not from rendering.",
   "files": {
     "components/village/iso/AmbianceCarte.tsx": {
+      "allow": ["Ellipse", "Rect"],
+      "why": "light of the map, night pools, the day veil on the surroundings"
+    },
+    "components/village/iso/Alentours.tsx": {
       "allow": ["Ellipse"],
-      "why": "light of the map, night pools"
+      "why": "cast shadows of the forest masses, one soft ellipse each in a single Svg"
     },
     "components/village/iso/OmbresNuages.tsx": {
       "allow": ["Ellipse"],

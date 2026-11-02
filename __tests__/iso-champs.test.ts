@@ -107,7 +107,9 @@ describe("the roads leave the village (FIN-CAR, FIN-DIS)", () => {
       // With the painted tiles on, nothing is drawn (A7 H4-04: the off-island blocks are tiles too), the blocks stay listed.
       const peint = champsDe(vu, true);
       expect(peint.blocs).toEqual(
-        champsDe(vu).blocs.filter(([x, y, w, h]) => !surParcelle(x, y, x + w, y + h)),
+        champsDe(vu).blocs.filter(
+          ([x, y, w, h]) => !surParcelle(x, y, x + w, y + h) && !(x === 18 && y === 16),
+        ),
       );
       expect(peint.teintes.join("")).toBe("");
     }

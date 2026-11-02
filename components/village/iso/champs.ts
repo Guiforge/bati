@@ -82,6 +82,12 @@ export const PARCELLES = {
   potager: [22.5, 13, 26.5, 16],
   paturage: [27.5, 21.5, 31.5, 25],
 } as const;
+/**
+ * Lattice blocks the painted ground paves over (loupe BC): the checkerboard of wheat with its
+ * hedge by the gate, cells 18 to 20, 16 to 17. None is laid while the ground is painted, at any
+ * tier, so none shows late or goes; the island's own fields are untouched.
+ */
+const SANS_BLOC = [[18, 16, 21, 18]] as const;
 /** The lattice block's margin round a plot, cells. */
 const MARGE_PARCELLE = 0.5;
 
@@ -196,6 +202,11 @@ export function champsDe(
       if (surRoute(...r)) continue;
       // The painted ground carries the south corner's plots: no lattice block on them.
       if (planPeint && surParcelle(gx0, gy0, gx0 + PAS_X, gy0 + PAS_Y)) continue;
+      if (
+        planPeint &&
+        SANS_BLOC.some(([a, b, c, d]) => gx0 + PAS_X > a && gx0 < c && gy0 + PAS_Y > b && gy0 < d)
+      )
+        continue;
       let proche = false;
       let libre = true;
       for (let x = gx0; x < gx0 + PAS_X && libre; x++)

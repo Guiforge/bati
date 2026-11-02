@@ -154,13 +154,13 @@ function VoileAlentours({ v }: { v: Voile }) {
           rx={v.rx}
           ry={v.ry}
         >
-          <Stop offset={v.dedans} stopColor={rawColors.isoArdoise} stopOpacity={0} />
+          <Stop offset={v.dedans} stopColor={rawColors.isoVoileJour} stopOpacity={0} />
           <Stop
             offset={v.dedans + (1 - v.dedans) * 0.5}
-            stopColor={rawColors.isoArdoise}
+            stopColor={rawColors.isoVoileJour}
             stopOpacity={force * 0.5}
           />
-          <Stop offset="1" stopColor={rawColors.isoArdoise} stopOpacity={force} />
+          <Stop offset="1" stopColor={rawColors.isoVoileJour} stopOpacity={force} />
         </RadialGradient>
       </Defs>
       <Rect

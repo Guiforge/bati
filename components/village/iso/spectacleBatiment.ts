@@ -84,11 +84,6 @@ export function planSpectacle(
   return { genre, deRang, versRang, deBase, versBase, etapes, total: t, reduit };
 }
 
-/** The step running at `t` ms; null before the start, after the end, and with reduced motion. */
-export function etapeA(plan: PlanSpectacle, t: number): Etape | null {
-  return plan.etapes.find((e) => t >= e.debut && t < e.fin)?.etape ?? null;
-}
-
 const debutDe = (plan: PlanSpectacle, etape: Etape) =>
   plan.etapes.find((e) => e.etape === etape)?.debut;
 

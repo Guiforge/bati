@@ -123,9 +123,11 @@ import { type Champs, champsDe, tuilesChamps } from "./champs";
 import { COUP_MS, COUPS, RETOUR_COUP_MS } from "./chantier";
 import { CODES_A_CORBEAU } from "./corbeaux";
 import { PalierContext, palierPour, SondeContext, tailleDecode } from "./detail";
+import { DONNEES_BLD } from "./donneesBld";
 import { entreePlanche, useDump } from "./dumpSprites";
 import { Effets } from "./Effets";
 import { BannieresVocation, ChoseDeVocation, SolVocation } from "./EnsembleVocation";
+import { EtatBldContext } from "./etatBld";
 import { Feux } from "./FeuxDessines";
 import { Fierte } from "./Fierte";
 import { useTour } from "./familles";
@@ -164,6 +166,7 @@ import {
 } from "./isoSpec";
 import { echelleLisiere, retournee } from "./lisiere";
 import { LUMIERES } from "./lumiere";
+import { MoteurBld } from "./MoteurBld";
 import { MAQUETTES } from "./maquettes";
 import {
   borneRang,
@@ -1019,9 +1022,31 @@ function Maquette({
   const corps = s ? pose(code, s) : null;
   const rectAiles = corps && s && ailes ? poseAiles(corps, s, ailes) : null;
   const socle = corps ? ombreSocleDe(code, stade) : null;
+  // The buildings engine, for a capture link with moteur=1 only (etatBld.ts); otherwise null.
+  const bld = useContext(EtatBldContext);
+  const moteur = bld?.moteur && bld.code === code ? (DONNEES_BLD[code] ?? null) : null;
   return (
     <>
-      <Planche s={s} rect={corps} invisible={masque} testID={`iso-maquette-${code}`} />
+      {moteur && bld && s && corps ? (
+        <MoteurBld
+          data={moteur}
+          etat={bld}
+          corps={corps}
+          taille={s.size}
+          ancre={s.anchor}
+          nuit={vie === "nuit"}
+        >
+          <Planche
+            s={s}
+            rect={{ x: 0, y: 0, w: corps.w, h: corps.h }}
+            ancre={corps}
+            invisible={masque}
+            testID={`iso-maquette-${code}`}
+          />
+        </MoteurBld>
+      ) : (
+        <Planche s={s} rect={corps} invisible={masque} testID={`iso-maquette-${code}`} />
+      )}
       {/* Hidden with its sprite: over a heap of stones it was a shadow of nothing, and the growth layer draws its own. */}
       {masque ? null : <OmbreSocle code={code} socle={socle} biome={biome} />}
       {ailes && rectAiles ? (

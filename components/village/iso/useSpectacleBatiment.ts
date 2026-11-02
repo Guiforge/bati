@@ -3,7 +3,7 @@ import type { BuildingData } from "@/constants/buildingData";
 import type { StageRule } from "@/constants/buildingStages";
 import type { SpectacleEnCours } from "./BatimentMoteur";
 import { useMouvementReduit } from "./fige";
-import { genreDe, planSpectacle } from "./spectacleBatiment";
+import { type Genre, genreDe, planSpectacle } from "./spectacleBatiment";
 
 /**
  * The parent's handle: `jouer` is the only way a moment starts, and it is meant for a tap handler.
@@ -18,10 +18,10 @@ export function useSpectacleBatiment() {
     code: BuildingData["code"],
     deRang: number,
     versRang: number,
-    options?: { deBase?: number; versBase?: number; rule?: StageRule },
+    options?: { deBase?: number; versBase?: number; rule?: StageRule; genre?: Genre },
   ) => {
     if (spectacle && !spectacle.plan.reduit) return null;
-    const genre = genreDe(code, deRang, versRang, options);
+    const genre = options?.genre ?? genreDe(code, deRang, versRang, options);
     if (!genre) return null;
     n.current += 1;
     const next = {

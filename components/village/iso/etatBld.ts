@@ -30,6 +30,8 @@ export type EtatBld = {
   /** Tier of the island: 12 for a lone building (the same frame for all), 1 to 3 for the first week. */
   palier: VillageTier;
   semaine: boolean;
+  /** `moteur=1`: the buildings engine (BatimentMoteur) is on for this link only. */
+  moteur?: boolean;
 };
 
 /**
@@ -39,7 +41,7 @@ export type EtatBld = {
 export const EtatBldContext = createContext<EtatBld | null>(null);
 
 type Params = Record<
-  "bld" | "rang" | "base" | "avant" | "avantbase" | "show" | "palier" | "semaine",
+  "bld" | "rang" | "base" | "avant" | "avantbase" | "show" | "palier" | "semaine" | "moteur",
   string | undefined
 >;
 
@@ -70,5 +72,6 @@ export function etatBldDe(p: Partial<Params>): EtatBld | null {
     show: p.show === "stade" || p.show === "rang" ? p.show : undefined,
     palier: palier as VillageTier,
     semaine,
+    moteur: p.moteur === "1" ? true : undefined,
   };
 }

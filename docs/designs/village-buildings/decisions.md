@@ -57,5 +57,12 @@ Réponses prises, que Guillaume peut rayer au checkpoint :
 - Point 8 : `VillageScene.tsx:514` fait évoluer seul un bâtiment prêt avant une séance, sans tap. C'est contraire à la promesse et ça existe déjà aujourd'hui. Sous le drapeau par rang, ce chemin ne réclame plus rien ; drapeau éteint, l'application ne change pas. Le choix produit reste à Guillaume : checkpoint.
 - Atlantes : lus « Well » 8 fois sur 8. Je tente une seule retouche de maquette à 0 $ (A2), car c'est la direction que le catalogue demande. Si elle échoue, l'astrolabe C reste seul.
 
+### Exploration (nuit du 02 au 03/11)
+- E3 : FLUX 3 Image. Il garde la maquette. FLUX.2 pro gagne S-D avec des ailes et des objets qu'il ne doit pas peindre. `explore/E3/verdict.md`.
+- E5 : finition (b), contour plus épais et intérieur fin. `explore/E5/verdict.md`.
+- E4 : peinture neuve avec le stade précédent en référence. La chaîne gagne l'A/B mais perd le contrefort : G-CONT dure tranche. Ce qui plaît entre dans la maquette. `explore/E4/verdict.md`.
+- Sol : peint une seule fois par emplacement, en contexte, jamais avec le bâtiment. Le prompt ne gagne pas contre le losange de la maquette.
+- Atlantes A2 : échoue aussi (« Champion Arena »). Mythique de l'observatoire : astrolabe C, seul survivant. Les atlantes restent la demande du catalogue : checkpoint.
+
 Conséquences de la planche de cartes :
 - La carte `campfire.md` de la prep est à réécrire : le Ménestrel remplace le cuistot.

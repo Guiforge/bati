@@ -43,5 +43,19 @@ Réponses prises, que Guillaume peut rayer au checkpoint :
 - Comptes rendus et specs E1 générées exclus de Biome : on ne reformate pas des archives.
 - `golden.spec.json` des loupes garde `peint=tout` : ses réglages sont verrouillés.
 
+### Réponses de Guillaume avant la nuit (02/11)
+- Planche : tout gardé pour l'instant, il rayera le matin. Les [wink] restent non approuvés : on prévoit leur repli.
+- UPGRADE_RULE : B. Une amélioration dont l'aspect change a son propre marqueur et son tap.
+- Questions de la prep : mes réponses par défaut.
+- Battement de rang sur tap : oui, le marqueur s'étend à chaque rang. Les éléments de la section 6 restent statiques.
+- Tailles d'image : relevées là où il faut.
+- Go, dans la limite de 30 $ et 250 passages. Guillaume autorise le changement du registre (« I put 30$ it is ok we can change registre ») : ligne `BUDGET_FLUX_V1: 75` écrite à sa demande, soit 44,84 $ déjà dépensés plus 30 $.
+- Il maintenait l'arrêt sur un retest de calibration raté (mara et theo à 2 sur 3). Interrogé, il a répondu : continuer, juges notés. Mara et theo restent juges avec leurs notes, l'écart va dans le rapport, il juge lui-même au checkpoint de verrouillage. Risque connu : ils peuvent laisser passer un défaut vectoriel de nuit.
+
+### Moteur, revue de tech
+- Verdict PAS PRÊT. Points 1 à 7 corrigés avant toute peinture, points 8 à 16 au branchement.
+- Point 8 : `VillageScene.tsx:514` fait évoluer seul un bâtiment prêt avant une séance, sans tap. C'est contraire à la promesse et ça existe déjà aujourd'hui. Sous le drapeau par rang, ce chemin ne réclame plus rien ; drapeau éteint, l'application ne change pas. Le choix produit reste à Guillaume : checkpoint.
+- Atlantes : lus « Well » 8 fois sur 8. Je tente une seule retouche de maquette à 0 $ (A2), car c'est la direction que le catalogue demande. Si elle échoue, l'astrolabe C reste seul.
+
 Conséquences de la planche de cartes :
 - La carte `campfire.md` de la prep est à réécrire : le Ménestrel remplace le cuistot.

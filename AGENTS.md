@@ -45,17 +45,21 @@ dev, `--no-dev --minify` and `.perf` release workflows.
   SDK's React Native, and a version the SDK does not expect is their build error, not ours.
 
 - Three gates run only in CI, so run them by hand if a change plausibly moves one:
-  **dependency licences** (`npx license-checker-rseidelsohn --production --excludePrivatePackages
-  --summary --failOn "…"` in [`ci.yml`](.github/workflows/ci.yml)) blocks GPL/AGPL/LGPL/SSPL/BUSL
-  in the shipped tree, because F-Droid rejects what it cannot redistribute and does so a release
-  cycle late; it is a blocklist, not an allowlist, so adding an MIT package must never turn main
-  red. APK size has no gate since 2026-10-18 (the 55 MiB budget was removed by choice); the
+  **dependency licences** (`npm run licenses:check`, also at commit when the lockfile changes)
+  blocks GPL/AGPL/LGPL/SSPL/BUSL in the shipped tree, whatever the suffix (`-only`, `-or-later`),
+  because F-Droid rejects what it cannot redistribute and does so a release cycle late; it is a
+  blocklist, not an allowlist, so adding an MIT package must never turn main red. APK size has no gate since 2026-10-18 (the 55 MiB budget was removed by choice); the
   measured breakdown of where the megabytes are is in
   [`docs/architecture/performance.md`](docs/architecture/performance.md) § Binary size.
   **16 KB pages** ([`release.yml`](.github/workflows/release.yml)) fails the release if any `.so` in the APK or the AAB has a
   `LOAD` segment aligned under 0x4000, which Play refuses from 2027-02-01. By hand, after
   adding a native dependency: `unzip -o <apk> 'lib/*' -d /tmp/so && readelf -lW /tmp/so/lib/*/*.so
   | grep LOAD`, every last column `0x4000` or more.
+
+- **Secrets** are read twice: gitleaks on staged changes at commit, and on the whole history in
+  [`ci.yml`](.github/workflows/ci.yml), which is what catches a `--no-verify`. An accepted finding
+  goes in `.gitleaksignore` by fingerprint, after reading the value. If one is real, rotate it:
+  ignoring it or rewriting history does not take it back from a public repository.
 
 - **Android lint** runs in [`android-lint.yml`](.github/workflows/android-lint.yml), on any push
   that touches `app.json`, `plugins/`, `android/` or the lockfile:
@@ -91,7 +95,7 @@ type of the same name). Unused locals, fallthrough and console are Biome's job: 
 `process.env["EXPO_PUBLIC_X"]`) and `exactOptionalPropertyTypes` — measured on 2026-08-16 at 50
 errors, nearly all in dependency types: Tamagui's `transition`/`enterStyle` and expo-image's
 `ImageSource` do not accept an explicit `undefined`, and `reducedMotion ? undefined : "bouncy"`
-is how every animation here is switched off. Re-measured on 2026-10-22 after Tamagui 3: 139,
+is how every animation here is switched off. Re-measured on 2026-10-22 after Tamagui 3: 139 (143 on 3.1.10, 2026-11-01),
 now spread through the app's own code as much as dependency types. Re-measure with
 `npx tsc --noEmit --exactOptionalPropertyTypes` when Tamagui is bumped; enable it under 20.
 
@@ -103,6 +107,11 @@ function; `expect(row).toBeDefined()` is not, and `!` is banned everywhere. Insi
 Biome runs `react`, `reactNative` and `types` domains. Its React Native rules left `nursery` in
 2.6 (`noReactNativeRawText` is `correctness` now); the type-aware ones are still there, and a
 domain does not switch nursery rules on, so each is named in `biome.json` (`noFloatingPromises`).
+`noImportCycles` is an error everywhere except the 13 files already in a cycle, listed in the last
+override of `biome.json`: a ratchet, so shrink that list and never add to it. `devDependencies: false`
+keeps a dev dependency out of app code; only the tests and `drizzle.config.ts` may import one.
+dependency-cruiser is not an alternative while TypeScript is at 7: it needs `typescript` below 7,
+and without it reads 0 modules and exits 0.
 Tests run the `test` domain whole, except `useConsistentTestIt`: the suites mix `test` and `it`,
 and its autofix rewrote every one in a staged file. Markdown is not formatted. `noReactNativeRawText` only
 trusts `<Text>`; every project component that renders its children inside one is on its `skip`
@@ -282,6 +291,7 @@ Managed by [prek](https://github.com/j178/prek) via [`.pre-commit-config.yaml`](
   store listing suites (`language-surfaces`, `changelog`) when `fastlane/metadata/` or `app.json`
   is: Play's length limits and the release notes of every listed language, which 2.12.0 found out
   about in the `play` job, after the tag.
+  `licenses:check` runs when `package-lock.json` is staged.
 - **pre-push**: `npm test`.
 
 - Run everything by hand: `npx prek run --all-files`

@@ -1,326 +1,326 @@
 [
  {
   "name": "campfire-r1",
-  "query": "bld=campfire&rang=1&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=campfire&rang=1&ambiance=jour&fige=1"
  },
  {
   "name": "campfire-r3",
-  "query": "bld=campfire&rang=3&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=campfire&rang=3&ambiance=jour&fige=1"
  },
  {
   "name": "campfire-r5",
-  "query": "bld=campfire&rang=5&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=campfire&rang=5&ambiance=jour&fige=1"
  },
  {
   "name": "campfire-village-palier12",
-  "query": "foyer=campfire&palier=12&ambiance=jour&fige=1&peint=tout"
+  "query": "foyer=campfire&palier=12&ambiance=jour&fige=1"
  },
  {
   "name": "tent-r1",
-  "query": "bld=tent&rang=1&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=tent&rang=1&ambiance=jour&fige=1"
  },
  {
   "name": "tent-r3",
-  "query": "bld=tent&rang=3&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=tent&rang=3&ambiance=jour&fige=1"
  },
  {
   "name": "tent-r5",
-  "query": "bld=tent&rang=5&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=tent&rang=5&ambiance=jour&fige=1"
  },
  {
   "name": "tent-village-palier12",
-  "query": "foyer=tent&palier=12&ambiance=jour&fige=1&peint=tout"
+  "query": "foyer=tent&palier=12&ambiance=jour&fige=1"
  },
  {
   "name": "training_dummy-r1",
-  "query": "bld=training_dummy&rang=1&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=training_dummy&rang=1&ambiance=jour&fige=1"
  },
  {
   "name": "training_dummy-r3",
-  "query": "bld=training_dummy&rang=3&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=training_dummy&rang=3&ambiance=jour&fige=1"
  },
  {
   "name": "training_dummy-r5",
-  "query": "bld=training_dummy&rang=5&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=training_dummy&rang=5&ambiance=jour&fige=1"
  },
  {
   "name": "training_dummy-village-palier12",
-  "query": "foyer=training_dummy&palier=12&ambiance=jour&fige=1&peint=tout"
+  "query": "foyer=training_dummy&palier=12&ambiance=jour&fige=1"
  },
  {
   "name": "archery_range-r1",
-  "query": "bld=archery_range&rang=1&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=archery_range&rang=1&ambiance=jour&fige=1"
  },
  {
   "name": "archery_range-r3",
-  "query": "bld=archery_range&rang=3&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=archery_range&rang=3&ambiance=jour&fige=1"
  },
  {
   "name": "archery_range-r5",
-  "query": "bld=archery_range&rang=5&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=archery_range&rang=5&ambiance=jour&fige=1"
  },
  {
   "name": "archery_range-village-palier12",
-  "query": "foyer=archery_range&palier=12&ambiance=jour&fige=1&peint=tout"
+  "query": "foyer=archery_range&palier=12&ambiance=jour&fige=1"
  },
  {
   "name": "quarry-r1",
-  "query": "bld=quarry&rang=1&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=quarry&rang=1&ambiance=jour&fige=1"
  },
  {
   "name": "quarry-r3",
-  "query": "bld=quarry&rang=3&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=quarry&rang=3&ambiance=jour&fige=1"
  },
  {
   "name": "quarry-r5",
-  "query": "bld=quarry&rang=5&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=quarry&rang=5&ambiance=jour&fige=1"
  },
  {
   "name": "quarry-village-palier12",
-  "query": "foyer=quarry&palier=12&ambiance=jour&fige=1&peint=tout"
+  "query": "foyer=quarry&palier=12&ambiance=jour&fige=1"
  },
  {
   "name": "forge-r1",
-  "query": "bld=forge&rang=1&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=forge&rang=1&ambiance=jour&fige=1"
  },
  {
   "name": "forge-r3",
-  "query": "bld=forge&rang=3&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=forge&rang=3&ambiance=jour&fige=1"
  },
  {
   "name": "forge-r5",
-  "query": "bld=forge&rang=5&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=forge&rang=5&ambiance=jour&fige=1"
  },
  {
   "name": "forge-village-palier12",
-  "query": "foyer=forge&palier=12&ambiance=jour&fige=1&peint=tout"
+  "query": "foyer=forge&palier=12&ambiance=jour&fige=1"
  },
  {
   "name": "well-r1",
-  "query": "bld=well&rang=1&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=well&rang=1&ambiance=jour&fige=1"
  },
  {
   "name": "well-r3",
-  "query": "bld=well&rang=3&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=well&rang=3&ambiance=jour&fige=1"
  },
  {
   "name": "well-r5",
-  "query": "bld=well&rang=5&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=well&rang=5&ambiance=jour&fige=1"
  },
  {
   "name": "well-village-palier12",
-  "query": "foyer=well&palier=12&ambiance=jour&fige=1&peint=tout"
+  "query": "foyer=well&palier=12&ambiance=jour&fige=1"
  },
  {
   "name": "windmill-r1",
-  "query": "bld=windmill&rang=1&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=windmill&rang=1&ambiance=jour&fige=1"
  },
  {
   "name": "windmill-r3",
-  "query": "bld=windmill&rang=3&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=windmill&rang=3&ambiance=jour&fige=1"
  },
  {
   "name": "windmill-r5",
-  "query": "bld=windmill&rang=5&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=windmill&rang=5&ambiance=jour&fige=1"
  },
  {
   "name": "windmill-village-palier12",
-  "query": "foyer=windmill&palier=12&ambiance=jour&fige=1&peint=tout"
+  "query": "foyer=windmill&palier=12&ambiance=jour&fige=1"
  },
  {
   "name": "farm-r1",
-  "query": "bld=farm&rang=1&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=farm&rang=1&ambiance=jour&fige=1"
  },
  {
   "name": "farm-r3",
-  "query": "bld=farm&rang=3&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=farm&rang=3&ambiance=jour&fige=1"
  },
  {
   "name": "farm-r5",
-  "query": "bld=farm&rang=5&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=farm&rang=5&ambiance=jour&fige=1"
  },
  {
   "name": "farm-village-palier12",
-  "query": "foyer=farm&palier=12&ambiance=jour&fige=1&peint=tout"
+  "query": "foyer=farm&palier=12&ambiance=jour&fige=1"
  },
  {
   "name": "wizard_tower-r1",
-  "query": "bld=wizard_tower&rang=1&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=wizard_tower&rang=1&ambiance=jour&fige=1"
  },
  {
   "name": "wizard_tower-r3",
-  "query": "bld=wizard_tower&rang=3&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=wizard_tower&rang=3&ambiance=jour&fige=1"
  },
  {
   "name": "wizard_tower-r5",
-  "query": "bld=wizard_tower&rang=5&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=wizard_tower&rang=5&ambiance=jour&fige=1"
  },
  {
   "name": "wizard_tower-village-palier12",
-  "query": "foyer=wizard_tower&palier=12&ambiance=jour&fige=1&peint=tout"
+  "query": "foyer=wizard_tower&palier=12&ambiance=jour&fige=1"
  },
  {
   "name": "druid_grove-r1",
-  "query": "bld=druid_grove&rang=1&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=druid_grove&rang=1&ambiance=jour&fige=1"
  },
  {
   "name": "druid_grove-r3",
-  "query": "bld=druid_grove&rang=3&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=druid_grove&rang=3&ambiance=jour&fige=1"
  },
  {
   "name": "druid_grove-r5",
-  "query": "bld=druid_grove&rang=5&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=druid_grove&rang=5&ambiance=jour&fige=1"
  },
  {
   "name": "druid_grove-village-palier12",
-  "query": "foyer=druid_grove&palier=12&ambiance=jour&fige=1&peint=tout"
+  "query": "foyer=druid_grove&palier=12&ambiance=jour&fige=1"
  },
  {
   "name": "watchtower-r1",
-  "query": "bld=watchtower&rang=1&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=watchtower&rang=1&ambiance=jour&fige=1"
  },
  {
   "name": "watchtower-r3",
-  "query": "bld=watchtower&rang=3&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=watchtower&rang=3&ambiance=jour&fige=1"
  },
  {
   "name": "watchtower-village-palier12",
-  "query": "foyer=watchtower&palier=12&ambiance=jour&fige=1&peint=tout"
+  "query": "foyer=watchtower&palier=12&ambiance=jour&fige=1"
  },
  {
   "name": "castle_wall-r1",
-  "query": "bld=castle_wall&rang=1&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=castle_wall&rang=1&ambiance=jour&fige=1"
  },
  {
   "name": "castle_wall-r3",
-  "query": "bld=castle_wall&rang=3&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=castle_wall&rang=3&ambiance=jour&fige=1"
  },
  {
   "name": "castle_wall-village-palier12",
-  "query": "foyer=castle_wall&palier=12&ambiance=jour&fige=1&peint=tout"
+  "query": "foyer=castle_wall&palier=12&ambiance=jour&fige=1"
  },
  {
   "name": "armory-r1",
-  "query": "bld=armory&rang=1&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=armory&rang=1&ambiance=jour&fige=1"
  },
  {
   "name": "armory-r3",
-  "query": "bld=armory&rang=3&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=armory&rang=3&ambiance=jour&fige=1"
  },
  {
   "name": "armory-village-palier12",
-  "query": "foyer=armory&palier=12&ambiance=jour&fige=1&peint=tout"
+  "query": "foyer=armory&palier=12&ambiance=jour&fige=1"
  },
  {
   "name": "fountain-r1",
-  "query": "bld=fountain&rang=1&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=fountain&rang=1&ambiance=jour&fige=1"
  },
  {
   "name": "fountain-r3",
-  "query": "bld=fountain&rang=3&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=fountain&rang=3&ambiance=jour&fige=1"
  },
  {
   "name": "fountain-village-palier12",
-  "query": "foyer=fountain&palier=12&ambiance=jour&fige=1&peint=tout"
+  "query": "foyer=fountain&palier=12&ambiance=jour&fige=1"
  },
  {
   "name": "observatory-r1",
-  "query": "bld=observatory&rang=1&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=observatory&rang=1&ambiance=jour&fige=1"
  },
  {
   "name": "observatory-r3",
-  "query": "bld=observatory&rang=3&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=observatory&rang=3&ambiance=jour&fige=1"
  },
  {
   "name": "observatory-village-palier12",
-  "query": "foyer=observatory&palier=12&ambiance=jour&fige=1&peint=tout"
+  "query": "foyer=observatory&palier=12&ambiance=jour&fige=1"
  },
  {
   "name": "barn-r1",
-  "query": "bld=barn&rang=1&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=barn&rang=1&ambiance=jour&fige=1"
  },
  {
   "name": "barn-r3",
-  "query": "bld=barn&rang=3&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=barn&rang=3&ambiance=jour&fige=1"
  },
  {
   "name": "barn-village-palier12",
-  "query": "foyer=barn&palier=12&ambiance=jour&fige=1&peint=tout"
+  "query": "foyer=barn&palier=12&ambiance=jour&fige=1"
  },
  {
   "name": "dragon_lair-r1",
-  "query": "bld=dragon_lair&rang=1&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=dragon_lair&rang=1&ambiance=jour&fige=1"
  },
  {
   "name": "dragon_lair-r3",
-  "query": "bld=dragon_lair&rang=3&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=dragon_lair&rang=3&ambiance=jour&fige=1"
  },
  {
   "name": "dragon_lair-r5",
-  "query": "bld=dragon_lair&rang=5&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=dragon_lair&rang=5&ambiance=jour&fige=1"
  },
  {
   "name": "dragon_lair-village-palier12",
-  "query": "foyer=dragon_lair&palier=12&ambiance=jour&fige=1&peint=tout"
+  "query": "foyer=dragon_lair&palier=12&ambiance=jour&fige=1"
  },
  {
   "name": "heroes_hall-r1",
-  "query": "bld=heroes_hall&rang=1&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=heroes_hall&rang=1&ambiance=jour&fige=1"
  },
  {
   "name": "heroes_hall-r3",
-  "query": "bld=heroes_hall&rang=3&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=heroes_hall&rang=3&ambiance=jour&fige=1"
  },
  {
   "name": "heroes_hall-r5",
-  "query": "bld=heroes_hall&rang=5&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=heroes_hall&rang=5&ambiance=jour&fige=1"
  },
  {
   "name": "heroes_hall-village-palier12",
-  "query": "foyer=heroes_hall&palier=12&ambiance=jour&fige=1&peint=tout"
+  "query": "foyer=heroes_hall&palier=12&ambiance=jour&fige=1"
  },
  {
   "name": "champion_arena-r1",
-  "query": "bld=champion_arena&rang=1&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=champion_arena&rang=1&ambiance=jour&fige=1"
  },
  {
   "name": "champion_arena-r3",
-  "query": "bld=champion_arena&rang=3&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=champion_arena&rang=3&ambiance=jour&fige=1"
  },
  {
   "name": "champion_arena-r5",
-  "query": "bld=champion_arena&rang=5&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=champion_arena&rang=5&ambiance=jour&fige=1"
  },
  {
   "name": "champion_arena-village-palier12",
-  "query": "foyer=champion_arena&palier=12&ambiance=jour&fige=1&peint=tout"
+  "query": "foyer=champion_arena&palier=12&ambiance=jour&fige=1"
  },
  {
   "name": "high_road-r1",
-  "query": "bld=high_road&rang=1&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=high_road&rang=1&ambiance=jour&fige=1"
  },
  {
   "name": "high_road-r3",
-  "query": "bld=high_road&rang=3&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=high_road&rang=3&ambiance=jour&fige=1"
  },
  {
   "name": "high_road-r5",
-  "query": "bld=high_road&rang=5&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=high_road&rang=5&ambiance=jour&fige=1"
  },
  {
   "name": "high_road-village-palier12",
-  "query": "foyer=high_road&palier=12&ambiance=jour&fige=1&peint=tout"
+  "query": "foyer=high_road&palier=12&ambiance=jour&fige=1"
  },
  {
   "name": "semaine-p1",
-  "query": "bld=campfire&rang=1&semaine=1&palier=1&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=campfire&rang=1&semaine=1&palier=1&ambiance=jour&fige=1"
  },
  {
   "name": "semaine-p2",
-  "query": "bld=campfire&rang=2&semaine=1&palier=2&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=campfire&rang=2&semaine=1&palier=2&ambiance=jour&fige=1"
  },
  {
   "name": "semaine-p3",
-  "query": "bld=campfire&rang=3&semaine=1&palier=3&ambiance=jour&fige=1&peint=tout"
+  "query": "bld=campfire&rang=3&semaine=1&palier=3&ambiance=jour&fige=1"
  }
 ]

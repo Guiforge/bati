@@ -57,7 +57,7 @@ esac
   done
   for t in 1 2 3; do # first week: tier t, rank t
     [ "$t" -le "$max" ] || continue
-    jq -n --arg n "$code-semaine-$t" --arg q "bld=$code&rang=$t&semaine=1&palier=$t&ambiance=jour&fige=1&peint=tout" '{name: $n, query: $q}'
+    jq -n --arg n "$code-semaine-$t" --arg q "bld=$code&rang=$t&semaine=1&palier=$t&ambiance=jour&fige=1" '{name: $n, query: $q}'
   done
 } | jq -s --arg m "${MOTEUR:+&moteur=1}" 'map(.query += $m)' >"$out" # MOTEUR=1: the buildings engine on in every link
 [ "$out" = /dev/stdout ] || echo "capture.sh: $(jq length "$out") entries in $out" >&2

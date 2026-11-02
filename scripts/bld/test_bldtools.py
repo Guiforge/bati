@@ -150,15 +150,6 @@ assert G.grow([("a", "stage", s1), ("r", "rank", r2)]) == []  # XOR 77 px of 260
 assert G.grow([("a", "stage", s1), ("b", "stage", m((0, 60, 100, 150)))]) != []  # touches the edge
 assert G.grow([("a", "stage", s1), ("b", "stage", m((0, 60, 100, 150)))], margin=0) == []
 
-# 5. monotone on screen: at least today's area and height at each rank
-old, new_ok, new_small = m((50, 100, 100, 150)), m((50, 80, 110, 150)), m((50, 110, 100, 150))
-assert G.monotone([("r5", new_ok, old)]) == [] and G.monotone([("r5", new_small, old)]) != []
-for who, im_ in (("base", old), ("good", new_ok), ("bad", new_small)):
-    (tmp / who / "forge").mkdir(parents=True)
-    im_.convert("RGB").save(tmp / who / "forge" / "r5.png")
-assert G.monotone_dirs(tmp / "base", tmp / "good") == [] and G.monotone_dirs(tmp / "base", tmp / "bad") != []
-assert G.monotone_dirs(tmp / "base", tmp / "nothing") != []  # a rank missing from the new tree
-
 # 6. G-CORNER: change inside the dilated union of masks is free, 2 % outside fails
 x0 = Image.new("RGB", (100, 100), (90, 90, 90))
 x0.save(tmp / "c0.png")

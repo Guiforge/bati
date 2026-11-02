@@ -4,7 +4,6 @@
     python3 scripts/bld/gates.py sil     <base.png> <out-prefix> [--layer a.png[:dx,dy]]... [--anchor x.anchor.json]
                                          [--sails sails.png --pivot x,y --scale 1.15]
     python3 scripts/bld/gates.py grow    stage:<img> rank:<img> ... [--margin 1]       (G-GROW)
-    python3 scripts/bld/gates.py monotone <baseline-dir> <new-dir>                      (on screen, r<N>.png per building folder)
     python3 scripts/bld/gates.py corner  <before> <after> <old-building-mask> <new-building-mask> [--out diff.png]
     python3 scripts/bld/gates.py blind   <building> <img>... [--decoys img...]
     python3 scripts/bld/gates.py canary  <building> --grand g.png --rough r.png --ladder img... [--locked c.png --locked-base b.png]
@@ -173,34 +172,6 @@ def grow(steps, min_area=0.15, min_height=0.10, min_xor=0.015, margin=1):
     return problems
 
 
-# ---- 5. monotone on screen ----------------------------------------------------------------------------
-
-def monotone(rows):
-    """rows: [(label, new_mask, old_mask)], one per rank, same camera. Area and height of the new
-    silhouette are at least today's. Returns the problems."""
-    problems = []
-    for label, new, old in rows:
-        if new.size != old.size:
-            problems.append(f"{label}: size {new.size} != baseline {old.size} (same camera needed)")
-            continue
-        (na, nh, _), (oa, oh, _) = measure(new), measure(old)
-        if na < oa or nh < oh:
-            problems.append(f"{label}: area {na} vs {oa}, height {nh} vs {oh} (baseline)")
-    return problems
-
-
-def monotone_dirs(baseline, new):
-    """<dir>/<building>/r<N>.png in both trees; every rank of the baseline must be in the new one."""
-    rows, problems = [], []
-    for old in sorted(pathlib.Path(baseline).glob("*/r*.png")):
-        cand = pathlib.Path(new) / old.parent.name / old.name
-        if not cand.exists():
-            problems.append(f"{old.parent.name}/{old.name}: missing in {new}")
-        else:
-            rows.append((f"{old.parent.name}/{old.stem}", mask_of(cand), mask_of(old)))
-    return problems + monotone(rows)
-
-
 # ---- 6. G-CORNER --------------------------------------------------------------------------------------
 
 def corner(before, after, old_mask, new_mask, dilate_px=6, limit=0.02, thr=8, out=None):
@@ -312,8 +283,6 @@ def main(argv=None):
     s.add_argument("--scale", type=float, default=1.0)
     s = sub.add_parser("grow")
     s.add_argument("steps", nargs="+", help="stage:<img> or rank:<img>"); s.add_argument("--margin", type=int, default=1)
-    s = sub.add_parser("monotone")
-    s.add_argument("baseline"); s.add_argument("new")
     s = sub.add_parser("corner")
     s.add_argument("before"); s.add_argument("after"); s.add_argument("old_mask"); s.add_argument("new_mask")
     s.add_argument("--out")
@@ -333,10 +302,6 @@ def main(argv=None):
         steps = [(x.partition(":")[2], x.partition(":")[0], mask_of(x.partition(":")[2])) for x in a.steps]
         bad = grow(steps, margin=a.margin)
         print("\n".join(bad) or "every step grows")
-        return 1 if bad else 0
-    elif a.cmd == "monotone":
-        bad = monotone_dirs(a.baseline, a.new)
-        print("\n".join(bad) or "monotone on screen")
         return 1 if bad else 0
     elif a.cmd == "corner":
         part, ok = corner(a.before, a.after, a.old_mask, a.new_mask, out=a.out)

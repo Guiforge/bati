@@ -5,10 +5,10 @@
 #   scripts/iso/loupe_capture.sh <out-dir> <spec.json>
 #
 # spec.json is a list of {name, query, video?}:
-#   [{"name": "palier-12-jour", "query": "palier=12&ambiance=jour&fige=1&peint=tout"},
+#   [{"name": "palier-12-jour", "query": "palier=12&ambiance=jour&fige=1"},
 #    {"name": "forge-pres",     "query": "foyer=forge&zoom=2&lumieres=0", "video": 5}]
 # `query` is the query string of bati://dev-iso (palier=, ambiance=, zoom=, foyer=, vocation=, fige=1,
-# peint=tout, lumieres=0, ...). nu=1 is added unless the query has its own `nu=` (the bare map fills the
+# lumieres=0, ...). nu=1 is added unless the query has its own `nu=` (the bare map fills the
 # screen); dump=<name> is added by this script. Per entry it writes <out>/<name>.png and
 # <out>/<name>.json (the dump, loupe_checks.py's format). With "video": N (seconds), the map is then
 # recorded for N seconds, and loupe_crop.py sheet makes <out>/<name>-planche.png; the mp4 stays out of
@@ -17,6 +17,11 @@
 # The dump comes from logcat (ReactNativeJS, level E), because a release build is not debuggable and
 # run-as is not available: scripts/iso/loupe_dump_pull.py rebuilds it. By hand:
 #   scripts/iso/team/emu-adb.sh logcat -d -s ReactNativeJS:E | scripts/iso/loupe_dump_pull.py <name> > <name>.json
+#
+# Before any capture it checks the build (scripts/iso/build_guard.py, record written by
+# scripts/iso/team/install-build.sh): the device must still hold that install, and the build's commit
+# must be HEAD, or differ from it by docs/ only. Else it refuses. It then writes <out>/build-commit.txt
+# and <out>/manifest.tsv (name, build sha, the full URL really opened, nu=1 and dump= included).
 #
 # Refuses a non-empty output folder and replaces no file. Empties Glide's image cache first, as
 # loop_capture.sh does. Never resets the app's data.
@@ -31,14 +36,20 @@ jq -e 'type == "array" and length > 0 and all(.[]; (.name | type == "string" and
   { echo "loupe_capture.sh: $spec must be a list of {name (letters, digits, _ . -), query, video?}." >&2; exit 1; }
 dup=$(jq -r '[.[].name] | group_by(.) | map(select(length > 1) | .[0]) | .[]' "$spec")
 [ -z "$dup" ] || { echo "loupe_capture.sh: duplicate names in the spec: $dup" >&2; exit 1; }
+pkg=com.guiforge.bati.perf
+rec="$HOME/.cache/bati-builds/$pkg.json"
+[ -f "$rec" ] || { echo "loupe_capture.sh: $rec missing, install with scripts/iso/team/install-build.sh." >&2; exit 1; }
+devtime=$(scripts/iso/team/emu-adb.sh shell dumpsys package $pkg | tr -d '\r' | sed -n 's/^ *lastUpdateTime=//p' | head -1)
+scripts/iso/build_guard.py check "$rec" "$devtime" || exit 1
+buildsha=$(jq -r .sha "$rec")
 vids="$HOME/.cache/bati-art-loop/iso/loupe/$(basename "$out")"
 for d in "$out" "$vids"; do
   if [ -d "$d" ] && [ -n "$(ls -A "$d")" ]; then echo "loupe_capture.sh: $d is not empty, refusing." >&2; exit 1; fi
 done
 mkdir -p "$out" "$vids" || exit 1
+echo "$buildsha" >"$out/build-commit.txt"
 adb=scripts/iso/team/emu-adb.sh
 maestro=scripts/iso/team/emu-maestro.sh
-pkg=com.guiforge.bati.perf
 
 # Cold start on the map each time: no state left from the previous entry. logcat is cleared first so
 # the dump found afterwards is this start's.
@@ -77,6 +88,7 @@ while IFS= read -r entry <&3; do
   done
   case "&$query&" in *"&nu="*) ;; *) query="nu=1${query:+&$query}" ;; esac
   case "&$query&" in *"&dump="*) ;; *) query="$query&dump=$name" ;; esac
+  printf '%s\t%s\t%s\n' "$name" "$buildsha" "bati://dev-iso?$query" >>"$out/manifest.tsv"
   open_link "$query"
   if ! attend_dump "$name"; then echo "loupe_capture.sh: $name: no dump in the log after 25 s (map mode only; a ready demo writes none)." >&2; fail=1; fi
   sleep 1

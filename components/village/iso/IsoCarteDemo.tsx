@@ -1993,7 +1993,7 @@ const decorDe = (
   visible: readonly (readonly boolean[])[],
   montres: readonly BuildingCode[],
   palier: VillageTier | undefined,
-) => (peint.decor ? accessoiresMontres(visible, montres, palier ?? 12) : []);
+) => (peint.decor ? accessoiresMontres(visible, montres, palier ?? 12, peint.sol) : []);
 
 /** The mounted indices, less the lisiere when the painted forest stands in its place. */
 const sansLisiere = (indices: readonly number[], peint: Alentours) =>
@@ -2252,7 +2252,12 @@ export function IsoCarte({
       (liste, a, k) =>
         insere(
           liste,
-          <AccessoirePeint key={`d${a.nom}`} a={a} lumiere={lumiere} stade={stade} />,
+          <AccessoirePeint
+            key={`d${a.nom}${a.case.join(",")}`}
+            a={a}
+            lumiere={lumiere}
+            stade={stade}
+          />,
           rangsDecor[k] ?? null,
         ),
       insere(vues.map(noeud), statue, rangStatue),

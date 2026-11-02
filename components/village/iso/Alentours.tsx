@@ -375,7 +375,7 @@ function UneMasse({ m, lumiere }: { m: Masse; lumiere: Ambiance }) {
     y: m.y - h * m.echelle,
     w: w * m.echelle,
     h: h * m.echelle,
-    flip: false,
+    flip: m.flip === true,
     pied: [m.x, m.y],
   }));
   return (
@@ -390,7 +390,11 @@ function UneMasse({ m, lumiere }: { m: Masse; lumiere: Ambiance }) {
         top: m.y - h,
         width: w,
         height: h,
-        transform: [{ translateY: ((1 - m.echelle) * h) / 2 }, { scale: m.echelle }],
+        transform: [
+          { translateY: ((1 - m.echelle) * h) / 2 },
+          { scale: m.echelle },
+          { scaleX: m.flip ? -1 : 1 },
+        ],
       }}
     />
   );
@@ -498,7 +502,7 @@ export function AccessoirePeint({
     y: pied[1] - h * k,
     w,
     h,
-    flip: false,
+    flip: a.flip === true,
     pied,
   }));
   return (
@@ -513,6 +517,7 @@ export function AccessoirePeint({
         top: pied[1] - h * k,
         width: w,
         height: h,
+        transform: a.flip ? [{ scaleX: -1 }] : undefined,
       }}
     />
   );

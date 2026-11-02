@@ -62,7 +62,9 @@ describe("the painted forest", () => {
       // The foot and the crown's top: never on the village (the forest lies under the sprites).
       expect(dist(m.x, m.y)).toBeGreaterThanOrEqual(clair);
       expect(dist(m.x, m.y - TOILE_FORET.h * m.echelle * 0.9)).toBeGreaterThanOrEqual(clair);
-      // Never mirrored: a scale, ±10 % round 1 (1.3 for the border).
+    }
+    // The ring and the border are never mirrored: a scale, ±10 % round 1 (1.3 for the border). The south lisiere (mirrored in turn, 0.85 to 1.6) has its own test.
+    for (const m of masses.filter((n) => n.flip === undefined)) {
       expect(m.echelle).toBeGreaterThanOrEqual(0.9);
       expect(m.echelle).toBeLessThanOrEqual(1.43);
     }
@@ -117,7 +119,8 @@ describe("the painted props", () => {
     const murs = new Set(rempart.map(([x, y]) => `${x},${y}`));
     for (const a of ACCESSOIRES) {
       const k = a.case.join(",");
-      if (a.sur) continue;
+      // The corner's props stand off the grid (iso-lisiere-sud.test.ts).
+      if (a.sur || a.hors) continue;
       expect([a.nom, sol[a.case[1]]?.[a.case[0]]]).toEqual([
         a.nom,
         a.nom === "pecheur_1" ? "eau" : "herbe",
@@ -135,7 +138,7 @@ describe("the painted props", () => {
         expect([...avant].filter((n) => !ici.has(n))).toEqual([]);
         avant = ici;
       }
-      expect(avant.size).toBe(ACCESSOIRES.length);
+      expect(avant.size).toBe(ACCESSOIRES.filter((a) => !a.hors).length);
     }
     // The camp shows from tier 1.
     const { visible, montres } = etatCarte(1, false);

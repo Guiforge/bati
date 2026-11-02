@@ -57,7 +57,7 @@ export function Monde({
   /** The light of the map (lumiere.ts): by day, the warm wash under the land. */
   lumiere?: Ambiance;
   /** The village tier: the painted ground draws that tier's baked band (alentours.ts `bandesJusqua`). */
-  palier?: number;
+  palier: number;
 }) {
   const { graine, couleurs: c } = biomes[biome].monde;
   const col = (t: keyof typeof c) => rawColors[c[t]];

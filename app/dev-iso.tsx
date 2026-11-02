@@ -754,6 +754,7 @@ function DevIso({
               zoomMin={zmin}
               visible={visible}
               lumiere={lumiere}
+              palier={palier}
             />
           ) : null}
           <GestureDetector gesture={gestes}>

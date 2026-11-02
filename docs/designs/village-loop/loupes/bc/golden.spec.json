@@ -1,0 +1,9 @@
+[
+  { "name": "p03-jour", "query": "ambiance=jour&palier=3&fige=1&peint=tout" },
+  { "name": "p04-jour", "query": "ambiance=jour&palier=4&fige=1&peint=tout" },
+  { "name": "p06-jour", "query": "ambiance=jour&palier=6&fige=1&peint=tout" },
+  { "name": "p06-nuit", "query": "ambiance=nuit&palier=6&fige=1&peint=tout" },
+  { "name": "p07-jour", "query": "ambiance=jour&palier=7&fige=1&peint=tout" },
+  { "name": "p09-jour", "query": "ambiance=jour&palier=9&fige=1&peint=tout" },
+  { "name": "p12-jour", "query": "ambiance=jour&palier=12&fige=1&peint=tout" }
+]

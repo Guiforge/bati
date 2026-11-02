@@ -319,13 +319,7 @@ const BANDE = { width: IMAGE_ANIMAL.w * 4, height: IMAGE_ANIMAL.h } as const;
 const JOINT = 1;
 
 /** The painted terrain in map space, under the map (Monde.tsx): a grid of tiles of one size in a fixed box (alentours.ts TERRAIN). `palier` picks the tier's baked variants; without it, the first band's. */
-export function TerrainPeint({
-  lumiere = "nuit",
-  palier = 0,
-}: {
-  lumiere?: Ambiance;
-  palier?: number;
-}) {
+export function TerrainPeint({ lumiere = "nuit", palier }: { lumiere?: Ambiance; palier: number }) {
   return (
     <View
       testID="iso-terrain-peint"

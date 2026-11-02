@@ -1,7 +1,7 @@
 // The village tab's iso map (flag INTEGRATION, constants/isoPoc.ts): the hero's island and
 // buildings. The island is the village tier's, widened by the buildings that stand (a built
 // building is never cut off); a building shows when its level is above 0, at the stage
-// buildingStage gives its level, within the stages it has. The drawing is the demo's (IsoCarte).
+// buildingStage (buildingStageFor under the engine flag) gives its level, within the stages it has. The drawing is the demo's (IsoCarte).
 // The camera starts framed on the island; pan, pinch (zoom bounded by isoSpec.zoom), a short
 // inertia and a double-tap to frame again run on the UI thread (useCameraIso). A tap reads the
 // sprites' masks (tapBatiment.ts) and opens the building through `onOpen`, the handler the
@@ -16,7 +16,6 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { buildingStage } from "@/constants/buildingLevels";
 import spec from "@/constants/isoSpec.json";
 import type { BuildingCode } from "@/db/schema";
 import type { VillageBuilding, VillageTier } from "@/db/village";
@@ -30,7 +29,7 @@ import {
   etatAvec,
   HAUTEUR,
   LARGEUR,
-  stadeReel,
+  stadeDuNiveau,
   type Vue,
   vueSur,
   ZOOM_CAPTURE,
@@ -316,8 +315,7 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
     buildings.filter((b) => b.level > 0).map((b) => b.code),
   );
   const construits = montres.filter((code) => (niveaux.get(code) ?? 0) > 0);
-  const stadeNiveau = (code: BuildingCode, niveau: number) =>
-    stadeReel(code, buildingStage(niveau));
+  const stadeNiveau = (code: BuildingCode, niveau: number) => stadeDuNiveau(code, niveau);
   const horloge = useHorloge();
   const fondu = useFonduOuverture();
   // The map's top left in the window, read at each tap: the bubble lies over the whole screen.
@@ -396,7 +394,7 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
       ? []
       : monte.map((i) => [
           i.code,
-          { cle, ancien: i.oldLevel > 0 ? stadeReel(i.code, buildingStage(i.oldLevel)) : null },
+          { cle, ancien: i.oldLevel > 0 ? stadeDuNiveau(i.code, i.oldLevel) : null },
         ]),
   );
   // The owner is told once per growth, whether the scene ran its course or a touch skipped it.

@@ -26,6 +26,7 @@ describe("the iso flags by build", () => {
   test("a published build keeps everything off", () => {
     const m = flags({ dev: false, uri: PUBLIE, env: "production" });
     expect(m?.INTEGRATION).toBe(false);
+    expect(m?.BATIMENT_MOTEUR).toBe(false);
     expect(m && tout(m)).toEqual([false, false, false, false]);
   });
 
@@ -36,6 +37,7 @@ describe("the iso flags by build", () => {
       env: "production",
     });
     expect(m?.INTEGRATION).toBe(true);
+    expect(m?.BATIMENT_MOTEUR).toBe(true);
     expect(m && tout(m)).toEqual([true, true, true, true]);
   });
 
@@ -48,6 +50,7 @@ describe("the iso flags by build", () => {
   test("jest sees the shipped values although __DEV__ is true", () => {
     const m = flags({ dev: true, uri: PUBLIE, env: "test" });
     expect(m?.INTEGRATION).toBe(false);
+    expect(m?.BATIMENT_MOTEUR).toBe(false);
     expect(m && tout(m)).toEqual([false, false, false, false]);
   });
 });

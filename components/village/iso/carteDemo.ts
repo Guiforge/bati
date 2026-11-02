@@ -1,8 +1,10 @@
 // Geometry and state of the demo map (app/dev-iso.tsx, IsoCarteDemo.tsx), kept out of the component
 // module so Fast Refresh keeps working on it.
 
+import { buildingStage } from "@/constants/buildingLevels";
+import { buildingStageFor, type VisualStage } from "@/constants/buildingStages";
 import orderRaw from "@/constants/isoOrdre.json";
-import type { Alentours } from "@/constants/isoPoc";
+import { type Alentours, BATIMENT_MOTEUR } from "@/constants/isoPoc";
 import spec from "@/constants/isoSpec.json";
 import { type BuildingCode, buildingCodes, buildingDefinitions } from "@/db/schema";
 import type { VillageTier } from "@/db/village";
@@ -338,6 +340,10 @@ function palierDuTerrain(code: BuildingCode): VillageTier {
 
 const ORDRE_STADES: readonly Stade[] = ["rough", "solid", "grand"];
 
+/** The engine's stages past the painted ones (legendary, mythic) draw as the last painted stage. */
+export const enStade = (v: VisualStage): Stade =>
+  v === "legendary" || v === "mythic" ? "grand" : v;
+
 /**
  * The stage a hero's building level shows (constants/buildingLevels.ts `buildingStage`), within
  * the stages the building has: the highest one not past the wanted stage, else its first.
@@ -347,6 +353,16 @@ export function stadeReel(code: BuildingCode, voulu: Stade): Stade {
   const max = ORDRE_STADES.indexOf(voulu);
   return stades.filter((s) => ORDRE_STADES.indexOf(s) <= max).at(-1) ?? stades[0] ?? "rough";
 }
+
+/**
+ * The stage a hero's building level draws. Flag off: today's mapping (buildingStage). Flag on: the
+ * stage table's (buildingStageFor), so a rank past 6 can draw its own stage once one is painted.
+ */
+export const stadeDuNiveau = (code: BuildingCode, niveau: number): Stade =>
+  stadeReel(
+    code,
+    BATIMENT_MOTEUR ? enStade(buildingStageFor(code, niveau)) : buildingStage(niveau),
+  );
 
 /**
  * The demo's stage rule: rough at the tier its plot joins the island, then one stage more per
@@ -378,10 +394,26 @@ export const spriteDe = (
   ambiance: Ambiance = "nuit",
 ): SpriteIso | undefined =>
   MAQUETTES[nomImage(code, stade, ambiance)] ?? MAQUETTES[nomImage(code, stade, "nuit")];
-/** The sails' sheet beside a windmill's stages: `windmill_sails.webp` is the night's. */
-export const ailesDe = (code: BuildingCode, ambiance: Ambiance = "nuit"): SpriteIso | undefined =>
-  (ambiance === "nuit" ? undefined : MAQUETTES[`${code}_sails.${ambiance}.webp`]) ??
-  MAQUETTES[`${code}_sails.webp`];
+/**
+ * The sails' sheet beside a windmill's stages: `windmill_sails.webp` is the night's. A stage that
+ * has its own sheet (`windmill_sails_grand.webp`, the engine's bigger sails) wears it; every stage
+ * without one keeps the shared sheet, so nothing changes until one is painted.
+ */
+export const ailesDe = (
+  code: BuildingCode,
+  stade?: Stade,
+  ambiance: Ambiance = "nuit",
+): SpriteIso | undefined => {
+  const propre = stade
+    ? ((ambiance === "nuit" ? undefined : MAQUETTES[`${code}_sails_${stade}.${ambiance}.webp`]) ??
+      MAQUETTES[`${code}_sails_${stade}.webp`])
+    : undefined;
+  return (
+    propre ??
+    (ambiance === "nuit" ? undefined : MAQUETTES[`${code}_sails.${ambiance}.webp`]) ??
+    MAQUETTES[`${code}_sails.webp`]
+  );
+};
 
 /** A decor or water image standing on one cell of the master grid. */
 export type PieceCarte = PieceEau & { case: Case; decor: boolean };
@@ -708,7 +740,7 @@ export function ombresDe(code: BuildingCode, stade: Stade, ambiance: Ambiance = 
   const s = spriteDe(code, stade, ambiance);
   if (!s) return [];
   const [gx, gy] = emplacements[code].coin;
-  const ailes = ailesDe(code);
+  const ailes = ailesDe(code, stade);
   const locales = [
     ...s.ombre.map(paires),
     ...(s.ailes && ailes?.volumes

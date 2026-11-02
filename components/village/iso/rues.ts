@@ -237,59 +237,66 @@ const dansCarte = ([gx, gy]: Point) => {
   );
 };
 
-/** How a line sways off its heading: the axis the sway pushes along, a slow wave on top of the hash's jitter, and where it stops. */
-type Allure = {
-  /** Default: the axis across the heading, for a west or east line. */
-  lateral?: Point;
-  /** The wave: its amplitude (added to the heading's bend) and its period in steps. */
-  onde?: readonly [amplitude: number, periode: number];
-  /** Whether a point is still on the map. Default: inside the map's box. */
-  reste?: (p: Point) => boolean;
-};
-
 /**
  * A wandering line from `depart` heading `(dx, dy)` for `n` steps of 0.8 cell: the heading bends
  * slowly by a hash of `sel`, so no two exits run alike. Stops at the map's edge. A heading along
- * one axis sways along the other; the south road, heading screen-down on the diagonal, gives its
- * `lateral` axis and a wave, so it winds instead of only jittering.
+ * one axis sways along the other.
  */
-function serpente(
-  depart: Point,
-  [dx, dy]: Point,
-  derive: number,
-  sel: number,
-  n: number,
-  { lateral = [Math.abs(dy), Math.abs(dx)], onde, reste = dansCarte }: Allure = {},
-): Point[] {
+function serpente(depart: Point, [dx, dy]: Point, derive: number, sel: number, n: number): Point[] {
   const pts: Point[] = [depart];
   let [x, y] = depart;
-  const phase = onde ? 2 * Math.PI * hasard(sel, 0, 73, GRAINE) : 0;
   for (let k = 1; k <= n; k++) {
-    const vague = onde ? onde[0] * Math.sin((2 * Math.PI * k) / onde[1] + phase) : 0;
-    const biais = derive + (hasard(sel, k, 70, GRAINE) - 0.5) * 0.5 + vague;
-    x += 0.8 * (dx + lateral[0] * biais);
-    y += 0.8 * (dy + lateral[1] * biais);
-    if (!reste([x, y])) break;
+    const biais = derive + (hasard(sel, k, 70, GRAINE) - 0.5) * 0.5;
+    x += 0.8 * (dx + Math.abs(dy) * biais);
+    y += 0.8 * (dy + Math.abs(dx) * biais);
+    if (!dansCarte([x, y])) break;
     pts.push([x, y]);
   }
   return pts;
 }
 
 /**
- * The south road runs screen-down (gx and gy both up) from the gate to the tip of the painted
- * ground, which lies at gx + gy about 73.7: it stops at 72, on the ground's last cells (loupe BC).
- * It leans toward the middle of the screen (the gate stands 7 cells left of it) and winds on a
- * wave of 12 steps. Static: the same road at every tier and on every visit.
+ * The south road (loupe BC, round 3): an explicit path of grid points through the middle of the
+ * screen, from the gate street's last cell to the painted ground's tip (gx + gy = 72), between the
+ * wheat on its left and the vegetable plot, cottages and pasture on its right. The first waypoint
+ * steps down off the grid before turning east, so no cell of the island is crossed; the line is a
+ * Catmull-Rom curve through them, 5 samples a segment, the first tangent running down the street.
+ * Static: the same road at every tier and on every visit. Ported in scripts/iso/rues_port.py.
  */
-const FIN_SUD = 72;
-const DERIVE_SUD = 0.17;
-const ALLURE_SUD: Allure = {
-  lateral: [1, -1],
-  onde: [0.5, 12],
-  reste: ([gx, gy]) => gx + gy < FIN_SUD,
-};
-/** An upper bound on the south road's steps: `FIN_SUD` stops it first (25 steps). */
-const PAS_SUD = 40;
+const PASSAGES_SUD: readonly Point[] = [
+  [13, 20.6],
+  [15.5, 21],
+  [19, 21.5],
+  [22, 22],
+  [24, 25],
+  [27, 26],
+  [29, 30],
+  [33, 32],
+  [36, 36],
+];
+const PAS_ECHANTILLONS = 5;
+
+/** Catmull-Rom through `pts`; the tangent at the start runs along +gy (the street's), at the end it carries on. */
+function courbe(pts: readonly Point[]): Point[] {
+  const zero: Point = [0, 0];
+  const [p0, pn, pm] = [pts[0] ?? zero, pts.at(-1) ?? zero, pts.at(-2) ?? zero];
+  const P: Point[] = [[p0[0], p0[1] - 1], ...pts, [2 * pn[0] - pm[0], 2 * pn[1] - pm[1]]];
+  const out: Point[] = [p0];
+  for (let i = 1; i < P.length - 2; i++) {
+    const [a, b, c, d] = [P[i - 1], P[i], P[i + 1], P[i + 2]] as [Point, Point, Point, Point];
+    for (let k = 1; k <= PAS_ECHANTILLONS; k++) {
+      const t = k / PAS_ECHANTILLONS;
+      const f = (j: 0 | 1) =>
+        0.5 *
+        (2 * b[j] +
+          (-a[j] + c[j]) * t +
+          (2 * a[j] - 5 * b[j] + 4 * c[j] - d[j]) * t * t +
+          (-a[j] + 3 * b[j] - 3 * c[j] + d[j]) * t ** 3);
+      out.push([f(0), f(1)]);
+    }
+  }
+  return out;
+}
 
 /** Where the roads leave the plan (FIN-DIS): the grand-route's two ends and the south gate's road. */
 const BOUTS: readonly Case[] = [
@@ -298,45 +305,45 @@ const BOUTS: readonly Case[] = [
   [12, TAILLE - 1],
 ];
 
+/** A road's outline: narrower as it leaves, to a thread at the far end, and a fork thinner still. */
+const contourSortie = (branches: readonly (readonly Point[])[], depart: Point): string =>
+  cheminRuban(
+    branches.flatMap((b, i) => {
+      const demi = b.map(
+        (_, k) =>
+          ((i === 0 ? LARGEURS[0] : SENTIER) / 2) * (1 - 0.65 * (k / Math.max(1, b.length - 1))),
+      );
+      return [ruban(b, demi), disque(b[0] ?? depart, demi[0] ?? 0.1)];
+    }),
+  );
+
 /**
  * The village's roads go on beyond the island: the west and east ones run 8 cells out from their
- * end, meandering, the south one down to the painted ground's tip, and each forks at 3.5 cells
- * into a second track. Every point is a hash of the end: the same roads on
+ * end, meandering and forking at 3.5 cells into a second track, the south one is the explicit
+ * road above, down to the painted ground's tip, one line. Every point is a hash of the end: the same roads on
  * every visit.
  */
 export const SORTIES: readonly Sortie[] = BOUTS.filter(([gx, gy]) => estRue(gx, gy)).map(
   ([gx, gy]): Sortie => {
-    // Outward: across the west or the east edge, else screen-down from the south gate.
+    // Outward: across the west or the east edge, else the explicit south road.
     const sud = gx !== 0 && gx !== TAILLE - 1;
-    const cap: Point = gx === 0 ? [-1, 0] : gx === TAILLE - 1 ? [1, 0] : [1, 1];
-    const allure = sud ? ALLURE_SUD : {};
+    const cap: Point = gx === 0 ? [-1, 0] : [1, 0];
     const depart = noeud([gx, gy]);
+    if (sud) {
+      const route = courbe([depart, ...PASSAGES_SUD]);
+      return { fin: [gx, gy], branches: [route], d: contourSortie([route], depart) };
+    }
     const route = serpente(
       depart,
       cap,
-      sud ? DERIVE_SUD : (hasard(gx, gy, 71, GRAINE) - 0.5) * 0.3,
+      (hasard(gx, gy, 71, GRAINE) - 0.5) * 0.3,
       gx + gy + 1,
-      sud ? PAS_SUD : PORTEE_SORTIE / 0.8,
-      allure,
+      PORTEE_SORTIE / 0.8,
     );
     const iF = Math.min(route.length - 1, Math.round(FOURCHE / 0.8));
     const origine = route[iF] ?? depart;
     const cote = hasard(gx, gy, 72, GRAINE) < 0.5 ? -1 : 1;
-    const voie = serpente(origine, cap, cote * 0.55, gx + gy + 5, (PORTEE_SORTIE - FOURCHE) / 0.8, {
-      ...allure,
-      onde: undefined,
-    });
-    const branches = [route, voie];
-    const d = cheminRuban(
-      branches.flatMap((b, i) => {
-        // Narrower as it leaves, to a thread at the far end, and the second track thinner still.
-        const demi = b.map(
-          (_, k) =>
-            ((i === 0 ? LARGEURS[0] : SENTIER) / 2) * (1 - 0.65 * (k / Math.max(1, b.length - 1))),
-        );
-        return [ruban(b, demi), disque(b[0] ?? depart, demi[0] ?? 0.1)];
-      }),
-    );
-    return { fin: [gx, gy], branches, d };
+    const voie = serpente(origine, cap, cote * 0.55, gx + gy + 5, (PORTEE_SORTIE - FOURCHE) / 0.8);
+    return { fin: [gx, gy], branches: [route, voie], d: contourSortie([route, voie], depart) };
   },
 );

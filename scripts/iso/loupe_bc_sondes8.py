@@ -38,7 +38,7 @@ CW, CH = (X1 - X0) * UP, (Y1 - Y0) * UP
 FADE = (2150, 2236)  # the road fades only here, at its very end
 
 # Cottage footprints, cells [i0, j0, i1, j1]: A shifted one cell down and right of the brief so that its roof clears the vegetable plot.
-COTTAGES = {"A": (27.0, 17.5, 29.5, 19.5), "B": (23.5, 25.0, 26.0, 27.0)}
+COTTAGES = {"A": (25.5, 21.0, 28.0, 23.5), "B": (20.5, 26.5, 23.5, 29.0)}
 # Thin worn tracks, grid cells: a lane north of the wheat to cottage A and the vegetable plot, a spur to the wheat, the road to cottage B and on to the pasture gate.
 TRACKS = {
     "lane": [(12.45, 19.9), (14.6, 20.2), (17.2, 19.4), (20.0, 18.9), (23.5, 19.0), (26.0, 19.1), (27.0, 19.4)],

@@ -50,46 +50,55 @@ def dans_carte(g):
     return 20 < x < 960 - 20 and 20 < y < 480 - 20
 
 
-def serpente(depart, d, derive, sel, n, lateral=None, onde=None, reste=dans_carte):
-    """rues.ts serpente, bit for bit: lateral defaults to the axis across the heading, onde = (amplitude, period)."""
-    lateral = lateral or (abs(d[1]), abs(d[0]))
+def serpente(depart, d, derive, sel, n):
+    """rues.ts serpente, bit for bit (the west and east exits)."""
     pts = [depart]
     x, y = depart
-    phase = 2 * math.pi * hasard(sel, 0, 73, RUES_GRAINE) if onde else 0
     for k in range(1, math.floor(n) + 1):
-        vague = onde[0] * math.sin(2 * math.pi * k / onde[1] + phase) if onde else 0
-        biais = derive + (hasard(sel, k, 70, RUES_GRAINE) - 0.5) * 0.5 + vague
-        x += 0.8 * (d[0] + lateral[0] * biais)
-        y += 0.8 * (d[1] + lateral[1] * biais)
-        if not reste((x, y)):
+        biais = derive + (hasard(sel, k, 70, RUES_GRAINE) - 0.5) * 0.5
+        x += 0.8 * (d[0] + abs(d[1]) * biais)
+        y += 0.8 * (d[1] + abs(d[0]) * biais)
+        if not dans_carte((x, y)):
             break
         pts.append((x, y))
     return pts
 
 
-FIN_SUD, DERIVE_SUD, PAS_SUD = 72, 0.17, 40
+PASSAGES_SUD = [(13, 20.6), (15.5, 21), (19, 21.5), (22, 22), (24, 25), (27, 26), (29, 30), (33, 32), (36, 36)]
+
+
+def courbe(pts, n=5):
+    """rues.ts courbe: Catmull-Rom, first tangent along +gy, n samples a segment."""
+    p0, pn, pm = pts[0], pts[-1], pts[-2]
+    P = [(p0[0], p0[1] - 1)] + list(pts) + [(2 * pn[0] - pm[0], 2 * pn[1] - pm[1])]
+    out = [p0]
+    for i in range(1, len(P) - 2):
+        a, b, c, d = P[i - 1], P[i], P[i + 1], P[i + 2]
+        for k in range(1, n + 1):
+            t = k / n
+            out.append(tuple(0.5 * (2 * b[j] + (-a[j] + c[j]) * t + (2 * a[j] - 5 * b[j] + 4 * c[j] - d[j]) * t * t
+                                    + (-a[j] + 3 * b[j] - 3 * c[j] + d[j]) * t ** 3) for j in (0, 1)))
+    return out
 
 
 def sortie(gx, gy):
-    """rues.ts SORTIES for the exit (gx, gy): the road and the track it forks into."""
-    sud = gx not in (0, 19)
-    cap = (-1, 0) if gx == 0 else (1, 0) if gx == 19 else (1, 1)
-    allure = dict(lateral=(1, -1), reste=lambda g: g[0] + g[1] < FIN_SUD) if sud else {}
+    """rues.ts SORTIES for the exit (gx, gy): the road and the track it forks into (none for the south road)."""
     depart = noeud(gx, gy)
-    derive = DERIVE_SUD if sud else (hasard(gx, gy, 71, RUES_GRAINE) - 0.5) * 0.3
-    route = serpente(depart, cap, derive, gx + gy + 1, PAS_SUD if sud else 8 / 0.8,
-                     onde=(0.5, 12) if sud else None, **allure)
+    if gx not in (0, 19):
+        return courbe([depart] + PASSAGES_SUD), []
+    cap = (-1, 0) if gx == 0 else (1, 0)
+    route = serpente(depart, cap, (hasard(gx, gy, 71, RUES_GRAINE) - 0.5) * 0.3, gx + gy + 1, 8 / 0.8)
     i_f = min(len(route) - 1, round(3.5 / 0.8))
     cote = -1 if hasard(gx, gy, 72, RUES_GRAINE) < 0.5 else 1
-    voie = serpente(route[i_f], cap, cote * 0.55, gx + gy + 5, (8 - 3.5) / 0.8, **allure)
+    voie = serpente(route[i_f], cap, cote * 0.55, gx + gy + 5, (8 - 3.5) / 0.8)
     return route, voie
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 BOUTS = [(0, 10), (19, 10), (12, 19)]
 PORTE_SUD = (12, 16)
-# champs.ts PARCELLES, [gx0, gy0, gx1, gy1] in cells: wheat, a vegetable plot and a pasture, all right of the road
-PARCELLES = {"ble": [21, 19.5, 26, 23.5], "potager": [22.5, 13, 26.5, 16], "paturage": [27.5, 21.5, 31.5, 25]}
+# champs.ts PARCELLES, [gx0, gy0, gx1, gy1] in cells: wheat, a vegetable plot and a pasture, the wheat left of the road
+PARCELLES = {"ble": [14, 23, 19.5, 26.5], "potager": [22, 14, 27, 18], "paturage": [30, 21.5, 34.5, 25.5]}
 
 
 def cases(line):

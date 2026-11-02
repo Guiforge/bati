@@ -268,7 +268,7 @@ froze = json.loads((R.ROOT / "docs/designs/village-loop/loupes/bc/route_tuiles.j
 assert R.tuiles() == froze["sorties"] and R.PARCELLES == froze["parcelles"], "rues_port.py and route_tuiles.json differ"
 sud = froze["sorties"]["12,19"]["route"]
 assert sud[0] == [12, 19] and len(sud) > 30
-assert sum(froze["sorties"]["12,19"]["noeuds_route"][-1]) < R.FIN_SUD
+assert sum(froze["sorties"]["12,19"]["noeuds_route"][-1]) == 72 and froze["sorties"]["12,19"]["voie"] == []
 print("rues_port ok")
 
 shutil.rmtree(tmp)

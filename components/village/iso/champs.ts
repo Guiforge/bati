@@ -74,20 +74,23 @@ const surRoute = (x0: number, y0: number, x1: number, y1: number) =>
 /**
  * The three plots the painted ground carries beside the south road (loupe BC, frozen in
  * docs/designs/village-loop/loupes/bc/route_tuiles.json): wheat on the road's left, a vegetable
- * plot on its right, [gx0, gy0, gx1, gy1] in cells, both off the 20x20 grid. The painted ground
+ * plot and a pasture on its right, [gx0, gy0, gx1, gy1] in cells, all off the 20x20 grid. The painted ground
  * draws them, so no block of the lattice below stands on them (`surParcelle`).
  */
 export const PARCELLES = {
-  ble: [21, 19.5, 26, 23.5],
-  potager: [22.5, 13, 26.5, 16],
-  paturage: [27.5, 21.5, 31.5, 25],
+  ble: [14, 23, 19.5, 26.5],
+  potager: [22, 14, 27, 18],
+  paturage: [30, 21.5, 34.5, 25.5],
 } as const;
 /**
  * Lattice blocks the painted ground paves over (loupe BC): the checkerboard of wheat with its
- * hedge by the gate, cells 18 to 20, 16 to 17. None is laid while the ground is painted, at any
- * tier, so none shows late or goes; the island's own fields are untouched.
+ * hedge by the gate, cells 18 to 20, and the two blocks south of the wall, cells 12 to 17, 16 to 17
+ * (round 3: the island grew over them at tier 5, they went, and the plan's field came back at
+ * tier 7; they also lay on the gate street's cells). Rows 16 and 17, gx 12 to 20, hold no block
+ * while the ground is painted, at any tier, so none shows late or goes; the island's own fields
+ * are untouched.
  */
-const SANS_BLOC = [[18, 16, 21, 18]] as const;
+const SANS_BLOC = [[12, 16, 21, 18]] as const;
 /** The lattice block's margin round a plot, cells. */
 const MARGE_PARCELLE = 0.5;
 

@@ -120,7 +120,7 @@ describe("H4-04: the blocks off the island are painted tiles", () => {
       const peint = champsDe(vu, true);
       expect(peint.blocs).toEqual(
         champsDe(vu).blocs.filter(
-          ([x, y, w, h]) => !surParcelle(x, y, x + w, y + h) && !(x === 18 && y === 16),
+          ([x, y, w, h]) => !surParcelle(x, y, x + w, y + h) && !(x >= 12 && x < 21 && y === 16),
         ),
       );
       expect([peint.teintes.join(""), peint.sillons, peint.sillonsClairs, peint.haies]).toEqual([

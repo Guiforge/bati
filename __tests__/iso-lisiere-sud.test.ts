@@ -74,14 +74,14 @@ describe("the south lisiere hides the grey past the painted ground (loupe BC)", 
       return ((x - m.x) / (0.45 * w)) ** 2 + ((y - (m.y - 0.5 * h)) / (0.45 * h)) ** 2 < 1;
     });
 
-  test("no mass box, foot or crown, covers a cell of the south road up to its last one, at any tier", () => {
+  test("no mass box, foot or crown, covers a cell of the south road up to the one before its last, at any tier (the last meets the map edge: the lisiere may overlap its box, its crown samples keep off the line)", () => {
     const cellules = tuiles.sorties["12,19"].route;
-    expect(cellules.at(-1)).toEqual([34, 35]);
+    expect(cellules.at(-1)).toEqual([36, 36]);
     expect(cellules).toEqual(TUILES_ROUTE_SUD);
     for (const p of PALIERS)
       for (const m of masses(p)) {
         const [w, h] = [168 * m.echelle, 144 * m.echelle];
-        for (const [gx = 0, gy = 0] of cellules) {
+        for (const [gx = 0, gy = 0] of cellules.slice(0, -1)) {
           const [x, y] = ecranXY([gx + 0.5, gy + 0.5]);
           expect([m.nom, gx, gy, Math.abs(x - m.x) < w / 2 && y > m.y - h && y < m.y]).toEqual([
             m.nom,
@@ -96,8 +96,8 @@ describe("the south lisiere hides the grey past the painted ground (loupe BC)", 
   test("no mass box covers a plot or a cottage either", () => {
     const rects = [
       ...Object.values(PARCELLES),
-      [27, 17.5, 29.5, 19.5],
-      [23.5, 25, 26, 27],
+      [25.5, 21, 28, 23.5],
+      [20.5, 26.5, 23.5, 29],
     ] as const;
     for (const m of masses(12)) {
       const [w, h] = [168 * m.echelle, 144 * m.echelle];
@@ -126,13 +126,48 @@ describe("the south lisiere hides the grey past the painted ground (loupe BC)", 
     expect(nus / gris).toBeLessThan(0.03);
   });
 
+  test("the two dark holes of the p06 screen, at screen px (408, 2202) and (588, 2190), lie under a crown", () => {
+    // Screen px to map dp at p06: x = (px - 504) / 1.5 + 480, y = (py - 897) / 1.5.
+    for (const [px, py] of [
+      [408, 2202],
+      [588, 2190],
+    ] as const)
+      expect(couvert((px - 504) / 1.5 + 480, (py - 897) / 1.5, masses(6))).toBe(true);
+  });
+
+  test("the lone clusters of the meadow never share an asset within one viewport, whatever the tier", () => {
+    for (const p of PALIERS) {
+      const ms = masses(p).filter((m) => !lisiere(m) && !m.nom.startsWith("bord_"));
+      const seuls = ms.filter((a) =>
+        ms.every((b) => b === a || ((a.x - b.x) / 128) ** 2 + ((a.y - b.y) / 56) ** 2 >= 3),
+      );
+      for (const [i, a] of seuls.entries())
+        for (const b of seuls.slice(i + 1))
+          expect([
+            a.nom === b.nom && Math.abs(a.x - b.x) < 720 && Math.abs(a.y - b.y) < 1600,
+            p,
+          ]).toEqual([false, p]);
+    }
+  });
+
+  test("the south lisiere is not mirrored about gx = gy: a foot and its mirror rarely wear the same asset and size", () => {
+    const ms = sud(masses(12));
+    const cell = (m: Masse) => grille(m.x, m.y).map((v) => Math.round(v / 3));
+    const noms = new Map(ms.map((m) => [cell(m).join(","), `${m.nom}${m.echelle}`]));
+    const miroirs = ms.filter((m) => {
+      const [a = 0, b = 0] = cell(m);
+      return noms.get(`${b},${a}`) === `${m.nom}${m.echelle}`;
+    });
+    expect(miroirs.length / ms.length).toBeLessThan(0.4);
+  });
+
   test("a plot's block is never taken away by the plots, at any tier", () => {
     for (const p of PALIERS) {
       const { visible } = etatCarte(p, false);
       const vu = (gx: number, gy: number) => visible[gy]?.[gx] === true;
-      // The painted ground drops the checkerboard block by the gate (18, 16) and nothing else.
+      // The painted ground drops the blocks south of the wall (12 to 20, 16 to 17: the gate street's, the checkerboard) and nothing else.
       expect(champsDe(vu, true).blocs).toEqual(
-        champsDe(vu).blocs.filter(([x, y]) => !(x === 18 && y === 16)),
+        champsDe(vu).blocs.filter(([x, y]) => !(x >= 12 && x < 21 && y === 16)),
       );
     }
   });
@@ -161,14 +196,14 @@ describe("the corner's props (loupe BC)", () => {
       ),
     );
 
-  test("the cart alone is left off the island, against the wheat plot's edge, mirrored", () => {
+  test("the cart alone is left off the island, on the road's edge beside the wheat plot, mirrored", () => {
     expect(hors.map((a) => a.nom)).toEqual(["charrette_1"]);
     const a = hors[0];
     expect(a?.flip).toBe(true);
     const g = a?.pied ?? [0, 0];
     expect(bord(g, [PARCELLES.ble])).toBeLessThanOrEqual(1);
     for (const [rx, ry] of SORTIES.flatMap((s) => s.branches.flat()))
-      expect(Math.hypot(g[0] - rx, g[1] - ry)).toBeGreaterThan(1);
+      expect(Math.hypot(g[0] - rx, g[1] - ry)).toBeGreaterThan(0.6); // on the road's edge, not on it
     // Its twin on the island is 6 cells or more away.
     for (const b of ACCESSOIRES.filter((o) => o.nom === a?.nom && !o.hors))
       expect(

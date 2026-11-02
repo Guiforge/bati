@@ -376,6 +376,10 @@ export function TerrainPeint({ lumiere = "nuit", palier }: { lumiere?: Ambiance;
   );
 }
 
+/** The undergrowth strip, against its mass: lowered by this share of the mass' height and scaled by this much (loupe BC r3). */
+const SOUSBOIS_BAS = 0.15;
+const SOUSBOIS_ECHELLE = 0.8;
+
 /** One mass, scaled about its foot (a translation undoes the centre's drift: one layout size for all). */
 function UneMasse({ m, lumiere }: { m: Masse; lumiere: Ambiance }) {
   const { w, h } = TOILE_FORET;
@@ -418,7 +422,15 @@ function UneMasse({ m, lumiere }: { m: Masse; lumiere: Ambiance }) {
           pointerEvents="none"
           source={sousbois[moment(lumiere)]}
           contentFit="fill"
-          style={style}
+          style={{
+            ...style,
+            // Lower and smaller than the mass: some trunk shows above the ferns, the strip's edge is no plate.
+            transform: [
+              { translateY: ((1 - m.echelle) * h) / 2 + SOUSBOIS_BAS * h * m.echelle },
+              { scale: m.echelle * SOUSBOIS_ECHELLE },
+              { scaleX: m.flip ? -1 : 1 },
+            ],
+          }}
         />
       ) : null}
     </>
@@ -427,7 +439,8 @@ function UneMasse({ m, lumiere }: { m: Masse; lumiere: Ambiance }) {
 
 /** A forest mass' shadow: a 2:1 ellipse under its crown, pushed to the screen's right like every cast shadow of the map (the moon, isoSpec.json), flat with a soft edge. */
 const ID_OMBRE = "ombre-foret";
-const OMBRE_FORET = { decalage: 0.2, demi: 0.46, opacite: 0.42 } as const;
+// Long along the shadow vector (screen bottom right) and readable on the painted ground (loupe BC r3): 0.6 by day.
+const OMBRE_FORET = { decalage: 0.36, demi: 0.56, opacite: 0.6 } as const;
 
 /**
  * Every forest mass' ground shadow, and the cart's, in ONE Svg over the ground and under the

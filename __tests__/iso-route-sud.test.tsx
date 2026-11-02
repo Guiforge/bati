@@ -86,7 +86,7 @@ describe("the south road (loupe BC)", () => {
     }
     const [gx, gy] = route[route.length - 1] ?? [0, 0];
     expect(gx + gy).toBeGreaterThan(70);
-    expect(gx + gy).toBeLessThan(72);
+    expect(gx + gy).toBeLessThanOrEqual(72.001); // the last waypoint, (36, 36)
     // The tip of the ground lies at gx + gy about 73.7, so the next step would be past it.
     expect(ecranXY([gx, gy])[1]).toBeGreaterThan(840);
   });

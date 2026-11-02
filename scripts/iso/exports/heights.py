@@ -193,6 +193,10 @@ def part_vertices(p):
         pts = circle(cx, cy, cz, r, n, phase)
         pts += circle(cx, cy, cz + h, r2, n, phase) if r2 > 0 else [(cx, cy, cz + h)]
         return pts
+    if kind == "sphere":  # its ring and poles: enough for the hull and the height
+        cx, cy, cz = p["center"]
+        r = p["r"]
+        return circle(cx, cy, cz, r, SEGMENTS) + [(cx, cy, cz + r), (cx, cy, cz - r)]
     raise ValueError(f"unknown part {kind}")
 
 
@@ -358,8 +362,34 @@ def bld_stages():
             continue  # the sails are a separate sprite, read with their tower
         code, stage = path.stem.rsplit("_", 1)
         spec, verts = blockout_vertices(f"bld/{path.stem}")
-        out.setdefault(code, {})[stage] = {"canevas": spec["canvas"], "hauteurMax": round(max(z for _, _, z in verts), 4)}
+        out.setdefault(code, {})[stage] = {
+            "canevas": spec["canvas"],
+            "hauteurMax": round(max(z for _, _, z in verts), 4),
+            "sommetPx": sommet_px(spec),
+        }
     return out
+
+
+def sommet_px(spec):
+    """The py, in the canvas, of the highest point of any part (emissive ones too), with the real
+    projection of iso_blockout.py: the footprint's far-front corner (fw, fh) sits at the anchor
+    (anchorPx, else the bottom centre minus anchorMarginPx); a point moves (gx - fw) + (gy - fh)
+    times S/4 down the screen and z times pxPerUnit * sin(tilt) up. Negative means off the top."""
+    canvas = SPEC["canvases"][spec["canvas"]]
+    fw, fh = canvas["footprint"]
+    ay = spec.get("anchorPx", (canvas["w"] / 2, canvas["h"] - SPEC["anchorMarginPx"]))[1]
+    k = SPEC["pxPerUnit"] * math.sin(math.radians(SPEC["cameraRotationDeg"][0]))
+    def py(x, y, z):
+        return ay + ((x - fw) + (y - fh)) * SPEC["S"] / 4 - z * k
+
+    # A sphere's outline is a disc of radius r * pxPerUnit round its centre, whatever the tilt.
+    tops = [py(*p["center"]) - p["r"] * SPEC["pxPerUnit"] if p["type"] == "sphere"
+            else min(py(*v) for v in part_vertices(p)) for p in spec["parts"]]
+    if "pivot" in spec:  # the sails, composited at a fixed 45 degrees: the upper arm's tip
+        sails = json.loads((ISO / "blockouts" / "windmill_sails.json").read_text())["parts"][0]
+        reach = math.hypot(sails["hub"] + sails["length"], sails["width"] / 2) * spec.get("sailsScale", 1.0)
+        tops.append(py(*spec["pivot"]) - reach * SPEC["pxPerUnit"] * math.sin(math.radians(45)))
+    return round(min(tops), 1)
 
 
 def build():

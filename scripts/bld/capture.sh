@@ -59,5 +59,5 @@ esac
     [ "$t" -le "$max" ] || continue
     jq -n --arg n "$code-semaine-$t" --arg q "bld=$code&rang=$t&semaine=1&palier=$t&ambiance=jour&fige=1&peint=tout" '{name: $n, query: $q}'
   done
-} | jq -s '.' >"$out"
+} | jq -s --arg m "${MOTEUR:+&moteur=1}" 'map(.query += $m)' >"$out" # MOTEUR=1: the buildings engine on in every link
 [ "$out" = /dev/stdout ] || echo "capture.sh: $(jq length "$out") entries in $out" >&2

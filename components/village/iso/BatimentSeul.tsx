@@ -27,7 +27,8 @@ export function BatimentSeul({ etat, lumiere }: { etat: EtatBld; lumiere: Ambian
     const t = setTimeout(() => setJouee(true), DELAI_SHOW_MS);
     return () => clearTimeout(t);
   }, [show]);
-  const attend = show !== undefined && !fini;
+  // The engine plays its own show (MoteurBld); IsoVillage's claim would play over it.
+  const attend = show !== undefined && !fini && !etat.moteur;
   const batiments = etat.semaine
     ? etatCarte(etat.palier, false).montres.map((c) => ({ code: c, level: rang }))
     : [{ code, level: rang }];

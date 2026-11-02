@@ -2257,45 +2257,55 @@
     "observatory": {
       "grand": {
         "canevas": "building2x2",
-        "hauteurMax": 3.2843
+        "hauteurMax": 3.2843,
+        "sommetPx": 336.2
       },
       "legendary": {
         "canevas": "building2x2",
-        "hauteurMax": 3.2843
+        "hauteurMax": 3.2843,
+        "sommetPx": 336.2
       },
       "mythic": {
         "canevas": "building2x2",
-        "hauteurMax": 4.02
+        "hauteurMax": 4.02,
+        "sommetPx": 118.5
       },
       "rough": {
         "canevas": "building2x2",
-        "hauteurMax": 2.6748
+        "hauteurMax": 2.6748,
+        "sommetPx": 482.9
       },
       "solid": {
         "canevas": "building2x2",
-        "hauteurMax": 2.8957
+        "hauteurMax": 2.8957,
+        "sommetPx": 428.6
       }
     },
     "windmill": {
       "grand": {
         "canevas": "building2x2",
-        "hauteurMax": 3.3
+        "hauteurMax": 3.3,
+        "sommetPx": 284.9
       },
       "legendary": {
         "canevas": "building2x2",
-        "hauteurMax": 3.7
+        "hauteurMax": 3.7,
+        "sommetPx": 161.8
       },
       "mythic": {
         "canevas": "building2x2",
-        "hauteurMax": 3.8
+        "hauteurMax": 3.8,
+        "sommetPx": 161.8
       },
       "rough": {
         "canevas": "building2x2",
-        "hauteurMax": 1.7
+        "hauteurMax": 1.7,
+        "sommetPx": 592.0
       },
       "solid": {
         "canevas": "building2x2",
-        "hauteurMax": 2.8
+        "hauteurMax": 2.8,
+        "sommetPx": 424.8
       }
     }
   },

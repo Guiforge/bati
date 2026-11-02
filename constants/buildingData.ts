@@ -36,6 +36,29 @@ export interface LightAnchor {
   fromRank: number;
 }
 
+/** A site teaser (PROMPT.md §6): the start of the next stage's element, on site from `fromRank` until `untilRank` (excluded), when the next painting paints it finished. */
+export interface Teaser {
+  fromRank: number;
+  untilRank: number;
+  sprite: string | null;
+  /** Offset from the building's anchor, px. */
+  anchorOffset: Point;
+}
+
+/** The one object that only exists at night (a low moon, an aurora), keyed. */
+export interface NightSprite {
+  fromRank: number;
+  sprite: string | null;
+  anchorOffset: Point;
+}
+
+/** Where the keeper stands. It reacts to a show; it has no name and no lines. */
+export interface GuardianSlot {
+  fromRank: number;
+  at: Point;
+  sprite: string | null;
+}
+
 export interface BuildingData {
   code: BuildingCode;
   /** True while the entries are empty or invented for the shape: no art exists yet. */
@@ -50,6 +73,10 @@ export interface BuildingData {
   lights: readonly LightAnchor[];
   /** Pennant (solid) to glowing crest (mythic) share one position. Null until fixed. */
   clanMark: Point | null;
+  /** The buildings engine's extra layers (components/village/iso/batiment.ts); absent means none. */
+  teasers?: readonly Teaser[];
+  nightSprite?: NightSprite;
+  guardian?: GuardianSlot;
 }
 
 /** The one beat showing at `rank`: the latest beat not past it, or null before the first. */

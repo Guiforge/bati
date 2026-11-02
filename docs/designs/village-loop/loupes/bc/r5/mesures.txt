@@ -1,0 +1,18 @@
+BC tour 5, mesures (02/11). Aucune capture de ce tour n'existe : ce qui en demande une est marque "A MESURER".
+
+Critere 12, cliquet de taille d'image (__tests__/iso-perf-compteur.test.tsx, palier 12, tout peint, horloge figee) :
+  tailles distinctes mesurees = 24, jour comme nuit, pour un plafond de 26. Cliquet inchange.
+  (liste: 553x539 sol, 168x144 masses, 57.6x52.8 accessoires, 64x48, 112x168, 110.4x110.4, 48x48, 160x160, 16x16, 64x96, 64x160, 64x14, 22x22, 160x200, 20x20, 96x96, 64x80, 18x18, 160x152, 112x144, trois tailles d animaux et une sans taille.)
+
+Critere 13, intouchable : __tests__/iso-bc-r5-toucher.test.tsx rend IsoVillage palier 12, tout peint, jour et nuit, et
+  verifie que chaque noeud des familles iso-terrain-peint, iso-terrain-tuile (le sol cuit porte les parcelles et chaumieres),
+  iso-foret-peinte, iso-sousbois, iso-champ-*, iso-accessoire-*, iso-ombres-foret et iso-voile-alentours a pointerEvents="none"
+  et aucun gestionnaire de toucher. Le voile n'avait pas pointerEvents="none" : ajoute. Le toucher d'un batiment lit les
+  masques des sprites de batiments (tapBatiment.ts), rien d'autre.
+
+Critere 10, ombres bleues : scripts/iso/mesure_ombres_bleues.py <capture> <x,y,w,h> [--share 0.10], 10 % les plus sombres du
+  rectangle, moyennes R G B et part des pixels B>R et B>G, PASS si B moyen > R moyen et > G moyen. A MESURER sur une capture
+  du tour 5, sur un rectangle de sol seul (pied d'une masse, ombre de la charrette). Sur la capture r4 p06, deux rectangles
+  de sol au sud donnent des moyennes [62 56 40] et [73 67 46] : FAIL, ce qui montre que le script discrimine.
+
+Critere 9 (clairiere nord), critere 15 (KEEP), dump-check route et coin bas, loupe_checks core : A MESURER, il faut une capture.

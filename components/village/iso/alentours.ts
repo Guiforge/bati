@@ -102,6 +102,8 @@ export type Masse = {
   flip: boolean;
   /** The undergrowth strip laid over its feet (foret/sousbois_{sb + 1}), on the south and north edges only. */
   sb?: 0 | 1 | 2;
+  /** Stands (almost) alone on the meadow (`isolesDistincts`): its undergrowth strip is drawn smaller, so no oval litter of one size rings a lone cluster. */
+  isole?: boolean;
 };
 
 /** The ring's lattice step, dp (the island's 2:1 diamond), how far past the clearing it starts and how far from the island it stops. */
@@ -149,6 +151,8 @@ const CLAIRIERES = [
   { gx: -8.9, gy: -12.1, r: 1.9, a: 0.7, b: 2.4 },
   { gx: 25.7, gy: 34.6, r: 1.6, a: 2.1, b: 0.5 },
   { gx: 34.6, gy: 26.8, r: 1.6, a: 4.0, b: 1.3 },
+  // Round 5: one more small glade in the south mass, east of the road (about 140 px from it), inside the painted edge: 35.0 + 1.3 x 1.26 stays under 36.8.
+  { gx: 35.0, gy: 30.2, r: 1.3, a: 5.2, b: 0.9 },
 ] as const;
 /** Whether grid point (gx, gy) lies in a glade: a radius that swells and shrinks with the angle. */
 export const dansClairiere = (gx: number, gy: number): boolean =>
@@ -505,7 +509,55 @@ function lisiereSud(ok: OkMasse): Masse[] {
     }
   }
   const rempli = [...out, ...combler(ok, out)];
-  return varierSousBois([...rempli, ...boucher(ok, rempli)]);
+  return [...varierSousBois([...rempli, ...boucher(ok, rempli)]), ...bouleauxDuPre(ok)];
+}
+
+/**
+ * Round 5, "more air in the south forest": one small birch cluster pulled out of the wall onto the meadow
+ * north of the south-west glade (about screen px (170, 1925) at p06, its crown over (90-250, 1785-1925)),
+ * clear of the glade itself and of the cottage. A lone cluster, so its undergrowth strip is the small one.
+ */
+function bouleauxDuPre(ok: OkMasse): Masse[] {
+  const [x, y] = ecranXY([23.9, 33.2]);
+  return ok(x, y, 0.65)
+    ? [{ nom: "bouleaux", x, y, echelle: 0.65, flip: true, sb: 1, isole: true }]
+    : [];
+}
+
+/** The south road's centre line in map dp, a point every 0.3 cell: what a ground shadow must keep off. */
+const AXE_ROUTE_SUD: readonly (readonly [number, number])[] = ROUTE_SUD.slice(1).flatMap((p, i) => {
+  const q = ROUTE_SUD[i] ?? p;
+  const n = Math.max(1, Math.ceil(Math.hypot(p[0] - q[0], p[1] - q[1]) / 0.3));
+  return Array.from({ length: n }, (_, k) =>
+    ecranXY([q[0] + ((p[0] - q[0]) * k) / n, q[1] + ((p[1] - q[1]) * k) / n]),
+  );
+});
+/** The road corridor's half width, dp (about 36 px on screen, plus a margin). */
+const DEMI_ROUTE = 34;
+
+/**
+ * A ground shadow's ellipse (centre, radii, map dp) made to keep off the south road (loupe BC r5, "no
+ * ground shadow on the road corridor"): shrunk about the foot (fx, fy) until no point of the road's
+ * axis lies within a corridor half width of it, or dropped (null) when even the smallest still
+ * reaches the road. Edges stay as crisp as the caller draws them.
+ */
+export function ombreHorsRoute(
+  fx: number,
+  fy: number,
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+): { cx: number; cy: number; rx: number; ry: number } | null {
+  for (const k of [1, 0.8, 0.6, 0.45]) {
+    const e = { cx: fx + (cx - fx) * k, cy: fy + (cy - fy) * k, rx: rx * k, ry: ry * k };
+    const touche = AXE_ROUTE_SUD.some(
+      ([px, py]) =>
+        ((px - e.cx) / (e.rx + DEMI_ROUTE)) ** 2 + ((py - e.cy) / (e.ry + DEMI_ROUTE / 2)) ** 2 < 1,
+    );
+    if (!touche) return e;
+  }
+  return null;
 }
 
 /**
@@ -602,7 +654,7 @@ function isolesDistincts(graines: readonly Graine[]): readonly Graine[] {
       g,
       proches.filter((o) => o.nom === nom),
     );
-    choisis.set(g, { ...g, nom, echelle, x, y });
+    choisis.set(g, { ...g, nom, echelle, x, y, isole: true });
   }
   return graines.map((g) => choisis.get(g) ?? g);
 }
@@ -627,6 +679,95 @@ function ecarte(g: Graine, autres: readonly Graine[]): [number, number] {
     else gy += pas(dy);
   }
   return [...ecranXY([gx, gy])] as [number, number];
+}
+
+/** The p06 screen (1080 x 2400 px at zoom 1.5, camera 504, 897.6) in map dp, the screen the loupe's golden crops are taken on. */
+const VUE_P06 = { x0: LARGEUR / 2 - 336, x1: LARGEUR / 2 + 384, y0: -598, y1: 1002 } as const;
+
+/**
+ * Rule 3 on the north edge (loupe BC r5): two masses of one asset in a view need opposite mirrors AND
+ * 6 cells between them, so one view holds at most two of each asset (4 assets, 8 places). For the
+ * north masses the p06 view shows at tier 6, the first assignment of (asset, mirror) that breaks
+ * no pair is searched, the lattice's own choice tried first, the least visible mass last: when the
+ * places run out (more than 8 masses) that last one keeps its own and is the one repeat left.
+ * Static, a function of the lattice only, like everything the ring does.
+ */
+function sansRepetitionNord(graines: readonly Graine[]): readonly Graine[] {
+  const { visible } = etatCarte(6, false);
+  const [dist, clair] = [distCases(visible), clairiere(visible)];
+  // The golden crops' tile box (loupe_checks.py dump-check --tiles=-12,-12,6,8), by the mass's foot tile.
+  const vu = (g: Graine) => {
+    const [i, j] = grille(g.x, g.y).map(Math.floor) as [number, number];
+    return i >= -12 && i <= 6 && j >= -12 && j <= 8;
+  };
+  const items = graines
+    .filter(
+      (g) =>
+        g.sb !== undefined &&
+        boisee(g.i, g.j) &&
+        g.garde <= 0.85 &&
+        dist(g.x, g.y) >= clair + RECUL_ANNEAU &&
+        dist(g.x, g.y) <= PORTEE_ANNEAU &&
+        libre(dist, clair, [], g.x, g.y, TOILE_FORET.w * g.echelle, TOILE_FORET.h * g.echelle) &&
+        vu(g),
+    )
+    .map((g) => ({
+      g,
+      // The share of the box inside the view, so the barely visible one goes last.
+      part:
+        Math.max(
+          0,
+          Math.min(g.x + (TOILE_FORET.w * g.echelle) / 2, VUE_P06.x1) -
+            Math.max(g.x - (TOILE_FORET.w * g.echelle) / 2, VUE_P06.x0),
+        ) *
+        Math.max(
+          0,
+          Math.min(g.y, VUE_P06.y1) - Math.max(g.y - TOILE_FORET.h * g.echelle, VUE_P06.y0),
+        ),
+    }))
+    .sort((a, b) => b.part - a.part)
+    .map((i) => i.g);
+  if (items.length === 0 || items.length > 12) return graines;
+  type Place = { nom: NomForet; flip: boolean };
+  const choix: (Place | null)[] = [];
+  const compatible = (k: number, p: Place) =>
+    choix.slice(0, k).every((c, j) => {
+      const autre = items[j];
+      const g = items[k];
+      return !c || !autre || !g || c.nom !== p.nom || (c.flip !== p.flip && !pres(autre, g, 6));
+    });
+  const places = (g: Graine): Place[] => [
+    { nom: g.nom, flip: g.flip },
+    ...MASSES.flatMap((nom) => [false, true].map((flip) => ({ nom, flip }))).filter(
+      (p) => p.nom !== g.nom || p.flip !== g.flip,
+    ),
+  ];
+  // `saute`: the one mass left as it is (-1 when every mass fits), tried from the least visible up.
+  const cherche = (k: number, saute: number): boolean => {
+    const g = items[k];
+    if (!g) return true;
+    if (k === saute) {
+      choix[k] = null;
+      return cherche(k + 1, saute);
+    }
+    for (const p of places(g)) {
+      if (!compatible(k, p)) continue;
+      choix[k] = p;
+      if (cherche(k + 1, saute)) return true;
+    }
+    choix.length = k;
+    return false;
+  };
+  for (const saute of [-1, ...items.map((_, k) => items.length - 1 - k)]) {
+    choix.length = 0;
+    if (cherche(0, saute)) break;
+    choix.length = 0;
+  }
+  const refait = new Map(items.map((g, k) => [g, choix[k]] as const));
+  return graines.map((g) => {
+    const p = refait.get(g);
+    return p ? { ...g, nom: p.nom, flip: p.flip } : g;
+  });
 }
 
 function grainesAnneau(): readonly Graine[] {
@@ -660,7 +801,7 @@ function grainesAnneau(): readonly Graine[] {
       });
     }
   }
-  GRAINES_ANNEAU = isolesDistincts(out);
+  GRAINES_ANNEAU = sansRepetitionNord(isolesDistincts(out));
   return GRAINES_ANNEAU;
 }
 
@@ -671,7 +812,7 @@ function anneau(dist: (x: number, y: number) => number, clair: number, ok: OkMas
       return d >= clair + RECUL_ANNEAU && d <= PORTEE_ANNEAU && boisee(g.i, g.j) && g.garde <= 0.85;
     })
     .filter((g) => ok(g.x, g.y, g.echelle))
-    .map(({ nom, x, y, echelle, flip, sb }) => ({ nom, x, y, echelle, flip, sb }));
+    .map(({ nom, x, y, echelle, flip, sb, isole }) => ({ nom, x, y, echelle, flip, sb, isole }));
 }
 
 /** Whether the 3 x 3 patch of the lattice holding cell (i, j) is wooded: its own hash says. */
@@ -710,6 +851,20 @@ function bordure(ok: OkMasse): Masse[] {
 export type Voile = { cx: number; cy: number; rx: number; ry: number; dedans: number };
 /** How far past the island's half width the veil reaches its full strength (dp; down it is the same ratio), and that strength. Simulated on the p06 capture: 0.96 becomes 1.19. */
 export const VOILE_PORTEE = { x: 560, force: 0.36 } as const;
+/**
+ * The north clearing's local darkening (loupe BC r5, criterion 9): the bright peach glade near screen px
+ * (580-840, 470-720) at p06 out-shone the village by 0.2 in three windows. A soft ellipse fixed in the
+ * world inside the veil's Svg, in the veil's own deep olive (isoVoileJour, never grey): `opacite` at
+ * its centre, flat to `plat` of its radius, then a soft edge. Centre in grid cells, radii in map dp.
+ * Not measured here (it needs a capture and loupe_checks.py core): 0.30 is an estimate meant to leave about 5 % of margin.
+ */
+export const CLAIRIERE_NORD_ASSOMBRIE = {
+  centre: [-5.5, -11.3],
+  rx: 135,
+  ry: 90,
+  opacite: 0.3,
+  plat: 0.45,
+} as const;
 const CACHE_VOILE = new WeakMap<readonly (readonly boolean[])[], Voile>();
 
 /** The veil of a tier: centred on the island's middle, as wide as the island plus `VOILE_PORTEE`, so it grows with the tier and darkens the surroundings only. */
@@ -846,7 +1001,8 @@ export const ACCESSOIRES: readonly Accessoire[] = [
   { nom: "charrette_cassee_1", case: [13, 18], palier: 10 },
   { nom: "renard_1", case: [1, 6], batiment: "farm", palier: 4 },
   // The south corner, off the island: the cart alone, on the road's edge beside the wheat plot (docs/designs/village-loop/loupes/bc/route_tuiles.json). The painted ground carries its own fence, hay, barrels and crates. It repeats the prop 6 cells or more away on the island, so mirrored.
-  { nom: "charrette_1", case: [18, 22], pied: [18.2, 22.15], palier: 4, hors: true, flip: true },
+  // Round 5: wholly on the road, near its east edge, never across it. The painted road is about 150 px wide here (x 255 to 405 at y 1600 on p06) and the cart's art 71 px, so the foot at screen px (346, 1630) keeps the wheel 20 px inside the edge.
+  { nom: "charrette_1", case: [18, 22], pied: [18.15, 22.54], palier: 4, hors: true, flip: true },
 ];
 
 /** The props that show on the island of `visible`, with the buildings `montres` and the tier `palier`. */

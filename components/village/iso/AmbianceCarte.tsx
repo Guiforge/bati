@@ -15,7 +15,13 @@ import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import Svg, { Defs, Ellipse, RadialGradient, Rect, Stop } from "react-native-svg";
 import { rawColors } from "@/constants/rawColors";
 import type { BuildingCode } from "@/db/schema";
-import { AlentoursContext, TERRAIN, VOILE_PORTEE, type Voile } from "./alentours";
+import {
+  AlentoursContext,
+  CLAIRIERE_NORD_ASSOMBRIE,
+  TERRAIN,
+  VOILE_PORTEE,
+  type Voile,
+} from "./alentours";
 import { type Bande, bandes, DEBORD } from "./bandesBord";
 import { ecranXY, HAUTEUR, LANTERNES, LARGEUR, lanterneVisible } from "./carteDemo";
 import { LumieresContext } from "./fige";
@@ -30,6 +36,7 @@ const R_LANTERNE = 32;
 const ABSOLU = { position: "absolute" } as const;
 /** One veil per map: a fixed gradient id (a literal would trip the unique-id rule). */
 const ID_VOILE = "voile-alentours";
+const ID_CLAIRIERE = "clairiere-assombrie";
 // Off the cell's middle like every pool (lueurs.ts horsCentre): a lantern's pool is never wedged on a path cell.
 const [lx, ly] = ecranXY([
   horsCentre(LANTERNES[0]?.case[0] ?? 0, 0.5),
@@ -140,6 +147,7 @@ function VoileAlentours({ v }: { v: Voile }) {
   return (
     <Svg
       testID="iso-voile-alentours"
+      pointerEvents="none"
       width={TERRAIN.w}
       height={TERRAIN.h}
       viewBox={`${TERRAIN.x} ${TERRAIN.y} ${TERRAIN.w} ${TERRAIN.h}`}
@@ -162,6 +170,19 @@ function VoileAlentours({ v }: { v: Voile }) {
           />
           <Stop offset="1" stopColor={rawColors.isoVoileJour} stopOpacity={force} />
         </RadialGradient>
+        <RadialGradient id={ID_CLAIRIERE} cx="50%" cy="50%" rx="50%" ry="50%">
+          <Stop
+            offset="0"
+            stopColor={rawColors.isoVoileJour}
+            stopOpacity={CLAIRIERE_NORD_ASSOMBRIE.opacite}
+          />
+          <Stop
+            offset={CLAIRIERE_NORD_ASSOMBRIE.plat}
+            stopColor={rawColors.isoVoileJour}
+            stopOpacity={CLAIRIERE_NORD_ASSOMBRIE.opacite}
+          />
+          <Stop offset="1" stopColor={rawColors.isoVoileJour} stopOpacity={0} />
+        </RadialGradient>
       </Defs>
       <Rect
         x={TERRAIN.x}
@@ -169,6 +190,13 @@ function VoileAlentours({ v }: { v: Voile }) {
         width={TERRAIN.w}
         height={TERRAIN.h}
         fill={`url(#${ID_VOILE})`}
+      />
+      <Ellipse
+        cx={ecranXY([...CLAIRIERE_NORD_ASSOMBRIE.centre])[0]}
+        cy={ecranXY([...CLAIRIERE_NORD_ASSOMBRIE.centre])[1]}
+        rx={CLAIRIERE_NORD_ASSOMBRIE.rx}
+        ry={CLAIRIERE_NORD_ASSOMBRIE.ry}
+        fill={`url(#${ID_CLAIRIERE})`}
       />
     </Svg>
   );

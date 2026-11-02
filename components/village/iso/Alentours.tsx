@@ -23,6 +23,7 @@ import {
   massesForet,
   type NomAccessoire,
   type NomForet,
+  ombreHorsRoute,
   piedAccessoire,
   SOURIS,
   TERRAIN,
@@ -382,6 +383,8 @@ const SOUSBOIS_ECHELLE = 0.8;
 /** The strip's width: the whole canvas, so it reaches the outer trunks (their feet spread over 8 to 94 % of it), and a narrow second strip's. */
 const SOUSBOIS_LARGEUR = 1;
 const SOUSBOIS_ETROIT = 0.55;
+/** A lone cluster's strip is drawn 15 % smaller (loupe BC r5): on open meadow every full-size strip left the same oval of litter. */
+const SOUSBOIS_ISOLE = 0.85;
 
 /** One undergrowth strip over a mass's feet: lower and flatter than the mass, so some trunk shows above the ferns and the edge is no plate. */
 function BandeSousBois({
@@ -414,8 +417,8 @@ function BandeSousBois({
         height: h,
         transform: [
           { translateY: ((1 - m.echelle) * h) / 2 + (etroit ? 0.2 : SOUSBOIS_BAS) * h * m.echelle },
-          { scaleX: m.echelle * largeur * sens },
-          { scaleY: m.echelle * SOUSBOIS_ECHELLE },
+          { scaleX: m.echelle * largeur * sens * (m.isole ? SOUSBOIS_ISOLE : 1) },
+          { scaleY: m.echelle * SOUSBOIS_ECHELLE * (m.isole ? SOUSBOIS_ISOLE : 1) },
         ],
       }}
     />
@@ -522,16 +525,27 @@ function OmbresForet({
           </RadialGradient>
         ))}
       </Defs>
-      {formes.map((f) => (
-        <Ellipse
-          key={`${Math.round(f.x)},${Math.round(f.y)}`}
-          cx={f.x + f.l * decalage}
-          cy={f.y}
-          rx={f.l * demi}
-          ry={f.l * demi * 0.5}
-          fill={`url(#${f.pied ? ID_OMBRE_PIED : ID_OMBRE})`}
-        />
-      ))}
+      {formes.map((f) => {
+        const [cx, cy, rx, ry] = [
+          f.x + f.l * decalage,
+          f.y + (f.pied ? f.l * 0.05 : 0),
+          f.l * demi * (f.pied ? 0.8 : 1),
+          // The cart's shadow is thinner and slides to the screen's bottom right (round 5).
+          f.l * demi * (f.pied ? 0.28 : 0.5),
+        ];
+        // No shadow of a mass falls on the south road's corridor (loupe BC r5); the cart stands on it by design.
+        const e = f.pied ? { cx, cy, rx, ry } : ombreHorsRoute(f.x, f.y, cx, cy, rx, ry);
+        return e ? (
+          <Ellipse
+            key={`${Math.round(f.x)},${Math.round(f.y)}`}
+            cx={e.cx}
+            cy={e.cy}
+            rx={e.rx}
+            ry={e.ry}
+            fill={`url(#${f.pied ? ID_OMBRE_PIED : ID_OMBRE})`}
+          />
+        ) : null;
+      })}
     </Svg>
   );
 }

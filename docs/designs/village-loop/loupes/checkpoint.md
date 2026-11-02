@@ -1,5 +1,7 @@
 # Checkpoint de l'étape 0
 
+**Réponse de Guillaume, 02/11 : « on suit tes reco », soit `1 A A A, 2 oui, 3 oui, 4 P`.** Il a écrit la ligne de budget lui-même : plafond 60 $. Les écrans choisis sont dans `targets/<état>/cible.png`.
+
 Étape 0 finie. Il me faut 4 réponses avant le coin de beauté. Réponds par exemple : `1 A A A, 2 oui, 3 oui, 4 P`.
 
 Pendant ton absence, j'ai aussi tenté S-night, qui ne coûte rien en FLUX. **Elle a échoué** et n'est pas fusionnée. Du coin de beauté, seules les fondations sans FLUX sont faites, sur la branche `loupe-bc`, non fusionnée : arbres fixes retirés (G03), cuiseur de sol et manifeste de tampons, checks `core` et `forest`. Ni peinture ni tour : la suite demande 8 à 12 $, et il en reste 3,55 $.

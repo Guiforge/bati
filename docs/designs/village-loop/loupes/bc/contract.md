@@ -1,4 +1,4 @@
-# Contrat BC (amendé par env le 01/11, gel après la réponse de Guillaume sur les routes)
+# Contrat BC (amendé par env le 01/11, gelé le 02/11 : routes et champs peints, écran cible p06 A)
 
 Chaque critère vaut oui ou non. Un seul non fait échouer le tour. Seuils à confirmer sur la baseline avant le tour 1. Barres système exclues partout.
 
@@ -15,6 +15,7 @@ Chaque critère vaut oui ou non. Un seul non fait échouer le tour. Seuils à co
 11. **G01 local** : sur `route` et `coin-bas`, au moins 60 % des fenêtres de 4x4 tuiles contiennent un tampon ou un accessoire, le reste fait les zones de repos. Aucune limite de sol droite de 3 tuiles ou plus. La pointe claire de l'île vers 37,37 n'est pas laissée à nu.
 12. **Une taille d'image par famille**, cliquet inchangé (à 26).
 13. **Promesses** : rien ne recule d'un palier à l'autre sauf la lisière (décision du 01/11), rien de neuf n'est touchable, les bandes de palier ne font qu'ajouter.
-14. **Nuit** : les nouveaux assets ont leur `.nuit.webp` par `nuit_alentours.py`, le contrat S-night reste vert sur le coin.
+14. **Nuit** : les nouveaux assets ont leur `.nuit.webp` par `nuit_alentours.py` tel qu'il est sur la branche iso. S-night est parquée (réponse 4), donc son contrat ne s'applique pas ; la nuit du coin ne doit pas être pire que la baseline, au jugement d'env, et une teinte par essence et par culture reste lisible.
 15. **KEEP** : `fenetres`, `villageois`, renard et feu de camp passent sous 2 % ou gagnent leur A/B.
 16. **Sondes** : aucun défaut de la liste slop.
+17. **Variété** (leçon de S-night) : sur le coin, les couleurs mesurées ne passent pas par un filtre uniforme. Bouleau, chêne, pin, blé, potager et pré gardent chacun leur teinte, au jugement d'env sur images.

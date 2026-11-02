@@ -78,7 +78,7 @@ const surRoute = (x0: number, y0: number, x1: number, y1: number) =>
  * draws them, so no block of the lattice below stands on them (`surParcelle`).
  */
 export const PARCELLES = {
-  ble: [8.2, 21.8, 11.6, 24.4],
+  ble: [18.1, 27.5, 21.5, 30.1],
   potager: [16.6, 21.0, 20.2, 23.2],
 } as const;
 /** The lattice block's margin round a plot, cells. */

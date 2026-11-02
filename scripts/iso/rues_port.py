@@ -89,7 +89,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 BOUTS = [(0, 10), (19, 10), (12, 19)]
 PORTE_SUD = (12, 16)
 # champs.ts PARCELLES, [gx0, gy0, gx1, gy1] in cells: wheat on the road's left, a vegetable plot on its right
-PARCELLES = {"ble": [8.2, 21.8, 11.6, 24.4], "potager": [16.6, 21.0, 20.2, 23.2]}
+PARCELLES = {"ble": [18.1, 27.5, 21.5, 30.1], "potager": [16.6, 21.0, 20.2, 23.2]}
 
 
 def cases(line):

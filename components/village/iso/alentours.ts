@@ -862,7 +862,7 @@ export const CLAIRIERE_NORD_ASSOMBRIE = {
   centre: [-5.5, -11.3],
   rx: 135,
   ry: 90,
-  opacite: 0.3,
+  opacite: 0.18,
   plat: 0.45,
 } as const;
 const CACHE_VOILE = new WeakMap<readonly (readonly boolean[])[], Voile>();

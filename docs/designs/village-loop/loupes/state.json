@@ -9,9 +9,9 @@
       "ceiling": 40.0,
       "left": 5.584
     },
-    "flux_spent_session": 10.06,
+    "flux_spent_session": 10.43,
     "subagent_runs_budget": 80,
-    "subagent_runs_used": 63,
+    "subagent_runs_used": 65,
     "flux_note": "Plafond du registre 60 $, ligne écrite par Guillaume le 02/11. Plafond de session : 20 $ en plus des 34,416 $ du départ, soit 54,416 $.",
     "alert_ack": "chef, 40 $, le 02/11"
   },
@@ -50,7 +50,7 @@
         "Sortie sud de rues.ts déplacée pour suivre l'écran cible."
       ],
       "question_checkpoint": "Critère 2 : règle 3 impossible sur une forêt entière avec 6 masses. Assouplir, ou payer de nouvelles masses.",
-      "resultat": "Tour 6, captures-7 : env NOTES sur 2 et 3. A/B 5 sur 8 sur captures-6, 6 sur 8 sur captures-4. Reste dans loupes/r1/contrat-entree.md.",
+      "resultat": "Verrouillé sur captures-7. Env NOTES sur 2 et 3. A/B final 7 sur 8 (mara, theo), pieds perdus. Suite dans loupes/r1/contrat-entree.md.",
       "notes_guillaume": [
         "lumière du sud plus claire et plus franche, ombres nettes et froides, ombres des chaumières refroidies",
         "haut de la route droit dans la porte, sans crochet",
@@ -121,7 +121,7 @@
     }
   ],
   "parked": ["s-night"],
-  "current": "intégration finale, puis bilan et fin de session",
+  "current": "session terminée, R1 dans une nouvelle session",
   "priorite": "Décision de Guillaume du 02/11 : rendu seulement. Limite APK de 55 MiB retirée. Délais de tests dépassés non bloquants, assertions bloquantes. Optimisations plus tard.",
   "session_scope": "Coin de beauté, intégration finale, bilan, puis fin de session. R1 part dans une nouvelle session avec son propre budget (Guillaume, 02/11).",
   "r1_a_reprendre": ["voir loupes/r1/contrat-entree.md"]

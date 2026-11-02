@@ -23,6 +23,12 @@ Décisions de Guillaume du 02/11. R1 part dans une nouvelle session, avec son pr
 - **Forêt** : la répétition reste admise dans une masse. Peindre plus de masses est permis.
 - **Lumière** : L village / L alentours d'au moins 0,98, le cœur restant le plus clair sur la vignette floue.
 
+## Vu par mara et theo à l'intégration finale, pas encore décidé par Guillaume
+- Le palier 3 fait vieux, et le saut vers le palier 4 est trop sec. Peindre un sud pauvre, avec route seule, qui se remplit ensuite. Ça rejoint la prospérité.
+- Le hameau reste éteint la nuit : deux fenêtres chaudes et une lueur au sol.
+- La route est la forme la plus claire de l'écran, surtout de nuit.
+- Route et porte non alignées à partir du palier 7, et cadre coupé au palier 12 : voir les décisions du bilan.
+
 ## Références
 - Extraits verrouillés du coin, pour la règle 10.1 : `loupes/bc/r6/bc-*.png`, capture `loupes/bc/r6/captures-7/`. Ces images restent locales, comme la baseline.
 - Méthode de peinture : `iso-paint-ground-in-context` en mémoire, repeindre la vraie capture. Déformer la peinture existante coûte 0 $ et garde sa matière (`warp_head` dans `scripts/iso/loupe_bc_sondes12.py`).

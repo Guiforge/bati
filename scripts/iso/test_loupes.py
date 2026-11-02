@@ -230,13 +230,21 @@ st = [{"asset": "dirt.png", "tile": [0, 0], "flip": False, "band": "t1-3"},
 assert G.centre_px(0, 0) == (20, 12) and G.centre_px(1, 0) == (44, 24)
 out = tmp / "baked"
 names = G.bake(out, st, sol, tmp)
-assert names == ["terrain_00.t1-3", "terrain_00.t4-6", "terrain_00.t7-9", "terrain_01.t7-9", "terrain_00.t10-12", "terrain_01.t10-12"]
+# a band that adds nothing to a chunk is not written (the app takes the band below)
+assert names == ["terrain_00.t1-3", "terrain_01.t7-9"], names
 assert not list(sol.glob("*.t*")), "day files untouched, output apart"
 assert all((out / f"{n}.nuit.webp").exists() for n in names)
 assert json.loads((out / "stamps.json").read_text()) == st
 px = lambda n, xy: Image.open(out / f"{n}.webp").getpixel(xy)[:3]
 assert px("terrain_00.t1-3", (20, 12))[0] > 200 and px("terrain_00.t1-3", (2, 2))[0] < 80  # decal in, ground kept
-assert px("terrain_00.t10-12", (20, 12))[0] > 200 and px("terrain_01.t7-9", (4, 24))[0] > 200  # bands add
+assert px("terrain_01.t7-9", (4, 24))[0] > 200  # the second stamp lands in the next chunk, in its own band
+# --install: the variants join the sol folder beside the day files, and the table of static requires lists them
+sol2, ts = tmp / "sol2", tmp / "solBandes.ts"
+shutil.copytree(sol, sol2)
+assert G.install(out, sol2, ts) == names
+table = ts.read_text()
+assert 'terrain_01.t7-9.nuit.webp' in table and table.count("require(") == 4 and (sol2 / "terrain_00.webp").exists()
+assert '"00.t1-3"' in table and '"01.t7-9"' in table
 assert Image.open(out / "terrain_00.t1-3.nuit.webp").size == (40, 30)
 pb = G.per_band(st)
 assert [len(pb[b]) for b in G.BANDS] == [1, 1, 2, 2]
@@ -252,6 +260,16 @@ try:
 except AssertionError:
     pass
 print("cuire_sol ok")
+
+import rues_port as R
+
+# The port of rues.ts gives the frozen list that __tests__/iso-route-sud.test.tsx holds the TS road to.
+froze = json.loads((R.ROOT / "docs/designs/village-loop/loupes/bc/route_tuiles.json").read_text())
+assert R.tuiles() == froze["sorties"] and R.PARCELLES == froze["parcelles"], "rues_port.py and route_tuiles.json differ"
+sud = froze["sorties"]["12,19"]["route"]
+assert sud[0] == [12, 19] and len(sud) > 30
+assert sum(froze["sorties"]["12,19"]["noeuds_route"][-1]) < R.FIN_SUD
+print("rues_port ok")
 
 shutil.rmtree(tmp)
 print("test_loupes: all green")

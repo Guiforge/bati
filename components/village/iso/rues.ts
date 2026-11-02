@@ -237,23 +237,59 @@ const dansCarte = ([gx, gy]: Point) => {
   );
 };
 
+/** How a line sways off its heading: the axis the sway pushes along, a slow wave on top of the hash's jitter, and where it stops. */
+type Allure = {
+  /** Default: the axis across the heading, for a west or east line. */
+  lateral?: Point;
+  /** The wave: its amplitude (added to the heading's bend) and its period in steps. */
+  onde?: readonly [amplitude: number, periode: number];
+  /** Whether a point is still on the map. Default: inside the map's box. */
+  reste?: (p: Point) => boolean;
+};
+
 /**
- * A wandering line from `depart` heading `(dx, dy)` (a unit axis of the grid) for `n` steps of 0.8
- * cell: the heading bends slowly by a hash of `sel`, so no two exits run alike. Stops at the map's edge.
+ * A wandering line from `depart` heading `(dx, dy)` for `n` steps of 0.8 cell: the heading bends
+ * slowly by a hash of `sel`, so no two exits run alike. Stops at the map's edge. A heading along
+ * one axis sways along the other; the south road, heading screen-down on the diagonal, gives its
+ * `lateral` axis and a wave, so it winds instead of only jittering.
  */
-function serpente(depart: Point, [dx, dy]: Point, derive: number, sel: number, n: number): Point[] {
+function serpente(
+  depart: Point,
+  [dx, dy]: Point,
+  derive: number,
+  sel: number,
+  n: number,
+  { lateral = [Math.abs(dy), Math.abs(dx)], onde, reste = dansCarte }: Allure = {},
+): Point[] {
   const pts: Point[] = [depart];
   let [x, y] = depart;
+  const phase = onde ? 2 * Math.PI * hasard(sel, 0, 73, GRAINE) : 0;
   for (let k = 1; k <= n; k++) {
-    const biais = derive + (hasard(sel, k, 70, GRAINE) - 0.5) * 0.5;
-    // The lateral drift is along the other axis, so the line meanders around its heading.
-    x += 0.8 * (dx + (dy === 0 ? 0 : biais));
-    y += 0.8 * (dy + (dx === 0 ? 0 : biais));
-    if (!dansCarte([x, y])) break;
+    const vague = onde ? onde[0] * Math.sin((2 * Math.PI * k) / onde[1] + phase) : 0;
+    const biais = derive + (hasard(sel, k, 70, GRAINE) - 0.5) * 0.5 + vague;
+    x += 0.8 * (dx + lateral[0] * biais);
+    y += 0.8 * (dy + lateral[1] * biais);
+    if (!reste([x, y])) break;
     pts.push([x, y]);
   }
   return pts;
 }
+
+/**
+ * The south road runs screen-down (gx and gy both up) from the gate to the tip of the painted
+ * ground, which lies at gx + gy about 73.7: it stops at 72, on the ground's last cells (loupe BC).
+ * It leans toward the middle of the screen (the gate stands 7 cells left of it) and winds on a
+ * wave of 12 steps. Static: the same road at every tier and on every visit.
+ */
+const FIN_SUD = 72;
+const DERIVE_SUD = 0.17;
+const ALLURE_SUD: Allure = {
+  lateral: [1, -1],
+  onde: [0.5, 12],
+  reste: ([gx, gy]) => gx + gy < FIN_SUD,
+};
+/** An upper bound on the south road's steps: `FIN_SUD` stops it first (25 steps). */
+const PAS_SUD = 40;
 
 /** Where the roads leave the plan (FIN-DIS): the grand-route's two ends and the south gate's road. */
 const BOUTS: readonly Case[] = [
@@ -263,26 +299,33 @@ const BOUTS: readonly Case[] = [
 ];
 
 /**
- * The village's roads go on beyond the island: each runs 8 cells out from its end, meandering,
- * and forks at 3.5 cells into a second track. Every point is a hash of the end: the same roads on
+ * The village's roads go on beyond the island: the west and east ones run 8 cells out from their
+ * end, meandering, the south one down to the painted ground's tip, and each forks at 3.5 cells
+ * into a second track. Every point is a hash of the end: the same roads on
  * every visit.
  */
 export const SORTIES: readonly Sortie[] = BOUTS.filter(([gx, gy]) => estRue(gx, gy)).map(
   ([gx, gy]): Sortie => {
-    // Outward: across the west or the east edge, else across the south one.
-    const cap: Point = gx === 0 ? [-1, 0] : gx === TAILLE - 1 ? [1, 0] : [0, 1];
+    // Outward: across the west or the east edge, else screen-down from the south gate.
+    const sud = gx !== 0 && gx !== TAILLE - 1;
+    const cap: Point = gx === 0 ? [-1, 0] : gx === TAILLE - 1 ? [1, 0] : [1, 1];
+    const allure = sud ? ALLURE_SUD : {};
     const depart = noeud([gx, gy]);
     const route = serpente(
       depart,
       cap,
-      (hasard(gx, gy, 71, GRAINE) - 0.5) * 0.3,
+      sud ? DERIVE_SUD : (hasard(gx, gy, 71, GRAINE) - 0.5) * 0.3,
       gx + gy + 1,
-      PORTEE_SORTIE / 0.8,
+      sud ? PAS_SUD : PORTEE_SORTIE / 0.8,
+      allure,
     );
     const iF = Math.min(route.length - 1, Math.round(FOURCHE / 0.8));
     const origine = route[iF] ?? depart;
     const cote = hasard(gx, gy, 72, GRAINE) < 0.5 ? -1 : 1;
-    const voie = serpente(origine, cap, cote * 0.55, gx + gy + 5, (PORTEE_SORTIE - FOURCHE) / 0.8);
+    const voie = serpente(origine, cap, cote * 0.55, gx + gy + 5, (PORTEE_SORTIE - FOURCHE) / 0.8, {
+      ...allure,
+      onde: undefined,
+    });
     const branches = [route, voie];
     const d = cheminRuban(
       branches.flatMap((b, i) => {

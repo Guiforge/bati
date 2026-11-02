@@ -16,6 +16,7 @@ import type { Case } from "./isoLayout";
 import { clairiere, distCases, mulberry32 } from "./monde";
 import type { Emprise } from "./profondeur";
 import { SORTIES } from "./rues";
+import { BANDES_TERRAIN } from "./solBandes";
 import { FONDU_TERRAIN, TERRAIN } from "./terrain";
 
 export type { Alentours };
@@ -45,6 +46,29 @@ export const TUILE_TERRAIN = {
   w: TERRAIN.w / TUILES_TERRAIN.colonnes,
   h: TERRAIN.h / TUILES_TERRAIN.rangees,
 } as const;
+
+/** The ground's tier bands (scripts/iso/cuire_sol.py): a baked chunk exists per band, each one adding to the band below. */
+const BANDES_SOL = ["t1-3", "t4-6", "t7-9", "t10-12"] as const;
+
+/** The bands a tier may draw, the highest first: its own, then each one below (a chunk with no variant in a band keeps the band under it). */
+export const bandesJusqua = (palier: number): readonly string[] =>
+  BANDES_SOL.slice(0, Math.min(BANDES_SOL.length, Math.max(1, Math.ceil(palier / 3)))).toReversed();
+
+/**
+ * A terrain tile's pair of images at a tier: the highest band's variant it has at or under the tier
+ * (a stamp's road or field baked into the chunk, solBandes.ts), else the plain ground. Bands only
+ * add, so a tier never draws less than the one before it.
+ */
+export function tuileTerre(
+  { r, c, jour, nuit }: { r: number; c: number; jour: number; nuit: number },
+  palier: number,
+): { jour: number; nuit: number } {
+  for (const b of bandesJusqua(palier)) {
+    const v = BANDES_TERRAIN[`${r}${c}.${b}`];
+    if (v) return v;
+  }
+  return { jour, nuit };
+}
 
 /** An `evenodd` path: the box `r` (with a margin) less the painted terrain, where the vector ground still shows. */
 export function horsTerrain(r: { x: number; y: number; w: number; h: number }): string {

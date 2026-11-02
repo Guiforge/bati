@@ -9,10 +9,11 @@
       "ceiling": 40.0,
       "left": 5.584
     },
-    "flux_spent_session": 2.03,
+    "flux_spent_session": 6.84,
     "subagent_runs_budget": 80,
-    "subagent_runs_used": 15,
-    "flux_note": "Plafond du registre 60 $, ligne écrite par Guillaume le 02/11. Plafond de session : 20 $ en plus des 34,416 $ du départ, soit 54,416 $."
+    "subagent_runs_used": 25,
+    "flux_note": "Plafond du registre 60 $, ligne écrite par Guillaume le 02/11. Plafond de session : 20 $ en plus des 34,416 $ du départ, soit 54,416 $.",
+    "alert_ack": "chef, 40 $, le 02/11"
   },
   "mode": "garde V1 débranché (settings.local.json absent). Implémenteurs : arbre iso, je commite. Émulateur : emu.sh + emu-adb.sh, chef seul.",
   "step0": {
@@ -39,13 +40,19 @@
       "question": "Réponse de Guillaume : parquée. On y revient après BC, sur les nouveaux assets."
     },
     "bc": {
-      "status": "en cours, branche loupe-bc",
-      "round": 0,
+      "status": "tour 1 en cours, branche loupe-bc. Sondes : 5 séries, env a rejeté les 3 premières, 4 écartée par le chef, 5 retenue comme méthode, pas encore jugée.",
+      "round": 1,
       "best_round": null,
-      "flux_spent": 0
+      "flux_spent": 4.85,
+      "methode": "Pré propre d'abord, puis repeinture en contexte d'un recadrage de capture, sol seul gardé et reprojeté. Arbres : masses du jeu entières.",
+      "ecarts_a_signaler_au_checkpoint": [
+        "Pas de bordures de pierres aux paliers 4 à 6 : l'écran cible choisi prime sur la section 12.",
+        "Sol repeint en contexte au lieu de décals sur fond plat : écart à la section 12.",
+        "Sortie sud de rues.ts déplacée pour suivre l'écran cible."
+      ]
     }
   },
   "locked_crops": [],
   "parked": ["s-night"],
-  "current": "BC, sondes du tour 1, branche loupe-bc"
+  "current": "BC tour 1 : tracé de la route et plomberie de cuisson, puis peinture, puis capture"
 }

@@ -27,6 +27,7 @@ import {
   TOILE_ACCESSOIRE,
   TOILE_FORET,
   TUILE_TERRAIN,
+  tuileTerre,
 } from "./alentours";
 import { COTE, ecranXY, pose, spriteDe } from "./carteDemo";
 import type { Culture, TuileChamp } from "./champs";
@@ -317,8 +318,14 @@ const BANDE = { width: IMAGE_ANIMAL.w * 4, height: IMAGE_ANIMAL.h } as const;
 /** The tiles' overlap on their right and bottom neighbours, dp (3 px of the painting). */
 const JOINT = 1;
 
-/** The painted terrain in map space, under the map (Monde.tsx): a grid of tiles of one size in a fixed box (alentours.ts TERRAIN). */
-export function TerrainPeint({ lumiere = "nuit" }: { lumiere?: Ambiance }) {
+/** The painted terrain in map space, under the map (Monde.tsx): a grid of tiles of one size in a fixed box (alentours.ts TERRAIN). `palier` picks the tier's baked variants; without it, the first band's. */
+export function TerrainPeint({
+  lumiere = "nuit",
+  palier = 0,
+}: {
+  lumiere?: Ambiance;
+  palier?: number;
+}) {
   return (
     <View
       testID="iso-terrain-peint"
@@ -331,24 +338,28 @@ export function TerrainPeint({ lumiere = "nuit" }: { lumiere?: Ambiance }) {
         height: TERRAIN.h,
       }}
     >
-      {TERRE.map(({ r, c, jour, nuit }) => (
-        <Image
-          key={`${r}${c}`}
-          testID="iso-terrain-tuile"
-          pointerEvents="none"
-          onLoad={solCharge}
-          source={moment(lumiere) === "nuit" ? nuit : jour}
-          contentFit="fill"
-          style={{
-            position: "absolute",
-            left: c * TUILE_TERRAIN.w,
-            top: r * TUILE_TERRAIN.h,
-            // H3-14: one dp of overlap, so no seam shows between rows or columns; every tile has this one size.
-            width: TUILE_TERRAIN.w + JOINT,
-            height: TUILE_TERRAIN.h + JOINT,
-          }}
-        />
-      ))}
+      {TERRE.map((t) => {
+        const { r, c } = t;
+        const { jour, nuit } = tuileTerre(t, palier);
+        return (
+          <Image
+            key={`${r}${c}`}
+            testID="iso-terrain-tuile"
+            pointerEvents="none"
+            onLoad={solCharge}
+            source={moment(lumiere) === "nuit" ? nuit : jour}
+            contentFit="fill"
+            style={{
+              position: "absolute",
+              left: c * TUILE_TERRAIN.w,
+              top: r * TUILE_TERRAIN.h,
+              // H3-14: one dp of overlap, so no seam shows between rows or columns; every tile has this one size.
+              width: TUILE_TERRAIN.w + JOINT,
+              height: TUILE_TERRAIN.h + JOINT,
+            }}
+          />
+        );
+      })}
     </View>
   );
 }

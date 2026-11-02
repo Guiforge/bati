@@ -7,7 +7,7 @@ import * as Reanimated from "react-native-reanimated";
 import Svg from "react-native-svg";
 import { AlentoursContext, alentoursDe } from "@/components/village/iso/alentours";
 import { etatCarte, stadeDemo } from "@/components/village/iso/carteDemo";
-import { champsDe, tuilesBlocs } from "@/components/village/iso/champs";
+import { champsDe, surParcelle, tuilesBlocs } from "@/components/village/iso/champs";
 import { IsoCarte } from "@/components/village/iso/IsoCarteDemo";
 import { IsoVillage } from "@/components/village/iso/IsoVillage";
 import { TAILLE } from "@/components/village/iso/isoLayout";
@@ -118,7 +118,9 @@ describe("H4-04: the blocks off the island are painted tiles", () => {
       const { visible } = etatCarte(p, false);
       const vu = (gx: number, gy: number) => visible[gy]?.[gx] === true;
       const peint = champsDe(vu, true);
-      expect(peint.blocs).toEqual(champsDe(vu).blocs);
+      expect(peint.blocs).toEqual(
+        champsDe(vu).blocs.filter(([x, y, w, h]) => !surParcelle(x, y, x + w, y + h)),
+      );
       expect([peint.teintes.join(""), peint.sillons, peint.sillonsClairs, peint.haies]).toEqual([
         "",
         "",

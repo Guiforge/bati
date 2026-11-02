@@ -572,6 +572,7 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
         zoomMin={camera.zmin}
         visible={visible}
         lumiere={lumiere}
+        palier={tier}
       />
       <GestureDetector gesture={camera.gestes}>
         <Animated.View style={{ width, height, alignItems: "center", justifyContent: "center" }}>

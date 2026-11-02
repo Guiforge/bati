@@ -219,6 +219,8 @@ describe("a touch on a villager (T26)", () => {
   });
 
   /** A finger on inhabitant `h0`'s body, `decale` dp to the left of its feet; its bubble is asked for. */
+  // A villager rests mirrored one day in two (habitants.ts): "has not turned" means "same as at rest".
+  let auRepos = false;
   async function toucher(decale: number, fois = 1, ecart = 0) {
     const onBulle = jest.fn();
     await render(
@@ -233,6 +235,7 @@ describe("a touch on a villager (T26)", () => {
       </GestureHandlerRootView>,
     );
     const image = screen.getByTestId("iso-habitant-h0");
+    auRepos = retourne();
     const st = StyleSheet.flatten(image.props.style);
     // The sprite's feet are at 704/768 of its box, in the middle (its anchor).
     const [px, py] = [st.left + st.width / 2 - decale, st.top + st.height * (704 / 768) - 18];
@@ -271,7 +274,7 @@ describe("a touch on a villager (T26)", () => {
   test("reduced motion: no turn, the bubble opens at once", async () => {
     mockReduit = true;
     const onBulle = await toucher(8);
-    expect(retourne()).toBe(false);
+    expect(retourne()).toBe(auRepos);
     expect(onBulle).toHaveBeenCalledTimes(1);
     expect(onBulle.mock.calls[0]?.[0].cible.type).toBe("villageois");
   });

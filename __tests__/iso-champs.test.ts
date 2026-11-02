@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { ecranXY, etatCarte, HAUTEUR, LARGEUR } from "@/components/village/iso/carteDemo";
-import { champsDe, tuilesChamps } from "@/components/village/iso/champs";
+import { champsDe, surParcelle, tuilesChamps } from "@/components/village/iso/champs";
 import { champsDuPlan } from "@/components/village/iso/isoLayout";
 import { SORTIES } from "@/components/village/iso/rues";
 import { rawColors } from "@/constants/rawColors";
@@ -74,8 +74,11 @@ describe("the roads leave the village (FIN-CAR, FIN-DIS)", () => {
         .flat()
         .some(([gx, gy]) => (s.fin[0] === 0 ? gx < -2 : s.fin[0] === 19 ? gx > 21 : gy > 21));
       expect(hors).toBe(true);
-      // And it stays inside the map's box, which the ground tiles cover.
-      for (const [gx, gy] of s.branches.flat()) {
+      // And it stays inside the map's box, which the ground tiles cover (the south road runs on to
+      // the painted ground's tip, gx + gy under 72: iso-route-sud.test.tsx).
+      const pts = s.branches.flat();
+      for (const [gx, gy] of pts) expect(gx + gy).toBeLessThan(72);
+      for (const [gx, gy] of s.fin[0] === 12 ? [] : pts) {
         const [x, y] = ecranXY([gx, gy]);
         expect(x).toBeGreaterThan(0);
         expect(x).toBeLessThan(LARGEUR);
@@ -103,7 +106,9 @@ describe("the roads leave the village (FIN-CAR, FIN-DIS)", () => {
       avant = ici;
       // With the painted tiles on, nothing is drawn (A7 H4-04: the off-island blocks are tiles too), the blocks stay listed.
       const peint = champsDe(vu, true);
-      expect(peint.blocs).toEqual(champsDe(vu).blocs);
+      expect(peint.blocs).toEqual(
+        champsDe(vu).blocs.filter(([x, y, w, h]) => !surParcelle(x, y, x + w, y + h)),
+      );
       expect(peint.teintes.join("")).toBe("");
     }
     const t = tuilesChamps(vuDe(12));

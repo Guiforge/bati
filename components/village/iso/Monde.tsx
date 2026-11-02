@@ -43,6 +43,7 @@ export function Monde({
   zoomMin = ZOOM_MIN,
   visible,
   lumiere = "nuit",
+  palier,
 }: {
   biome: Biome;
   width: number;
@@ -55,6 +56,8 @@ export function Monde({
   visible?: readonly (readonly boolean[])[];
   /** The light of the map (lumiere.ts): by day, the warm wash under the land. */
   lumiere?: Ambiance;
+  /** The village tier: the painted ground draws that tier's baked band (alentours.ts `bandesJusqua`). */
+  palier?: number;
 }) {
   const { graine, couleurs: c } = biomes[biome].monde;
   const col = (t: keyof typeof c) => rawColors[c[t]];
@@ -123,7 +126,7 @@ export function Monde({
           fond,
         ]}
       >
-        {peint.sol ? <TerrainPeint lumiere={lumiere} /> : null}
+        {peint.sol ? <TerrainPeint lumiere={lumiere} palier={palier} /> : null}
         {arbres.map((k) => (
           <Image
             key={`${k.x},${k.y}`}

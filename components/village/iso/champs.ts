@@ -71,6 +71,29 @@ const surRoute = (x0: number, y0: number, x1: number, y1: number) =>
     ([x, y]) => x > x0 - DEGAGE && x < x1 + DEGAGE && y > y0 - DEGAGE && y < y1 + DEGAGE,
   );
 
+/**
+ * The two plots the painted ground carries beside the south road (loupe BC, frozen in
+ * docs/designs/village-loop/loupes/bc/route_tuiles.json): wheat on the road's left, a vegetable
+ * plot on its right, [gx0, gy0, gx1, gy1] in cells, both off the 20x20 grid. The painted ground
+ * draws them, so no block of the lattice below stands on them (`surParcelle`).
+ */
+export const PARCELLES = {
+  ble: [8.2, 21.8, 11.6, 24.4],
+  potager: [16.6, 21.0, 20.2, 23.2],
+} as const;
+/** The lattice block's margin round a plot, cells. */
+const MARGE_PARCELLE = 0.5;
+
+/** Whether a rectangle (cells) touches a plot of the south corner, margin included. */
+export const surParcelle = (x0: number, y0: number, x1: number, y1: number) =>
+  Object.values(PARCELLES).some(
+    ([a, b, c, d]) =>
+      x1 > a - MARGE_PARCELLE &&
+      x0 < c + MARGE_PARCELLE &&
+      y1 > b - MARGE_PARCELLE &&
+      y0 < d + MARGE_PARCELLE,
+  );
+
 /** The ring (1 to `CONTACT`) of the nearest shown cell, in king moves, from a cell off the island; 0 when none is near. */
 function anneau(vu: (gx: number, gy: number) => boolean, gx: number, gy: number) {
   for (let r = 1; r <= CONTACT; r++)
@@ -170,6 +193,8 @@ export function champsDe(
       const r: Rect4 = [gx0 + RUELLE, gy0 + RUELLE, gx0 + PAS_X - RUELLE, gy0 + PAS_Y - RUELLE];
       if (!quad(...r).every(dansCarte)) continue;
       if (surRoute(...r)) continue;
+      // The painted ground carries the south corner's plots: no lattice block on them.
+      if (planPeint && surParcelle(gx0, gy0, gx0 + PAS_X, gy0 + PAS_Y)) continue;
       let proche = false;
       let libre = true;
       for (let x = gx0; x < gx0 + PAS_X && libre; x++)

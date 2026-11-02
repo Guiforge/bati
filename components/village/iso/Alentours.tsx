@@ -471,7 +471,7 @@ function UneMasse({ m, lumiere }: { m: Masse; lumiere: Ambiance }) {
 const ID_OMBRE = "ombre-foret";
 const ID_OMBRE_PIED = "ombre-pied";
 // Crisp and light (loupe BC r4, "dirty blurry patches"): 0.42 by day, flat over 80 % of the ellipse then a short soft edge, narrow on the ground and pushed along the shadow vector (screen bottom right).
-const OMBRE_FORET = { decalage: 0.46, demi: 0.42, opacite: 0.42, plat: 0.8 } as const;
+const OMBRE_FORET = { decalage: 0.22, demi: 0.42, opacite: 0.42, plat: 0.8 } as const;
 
 /**
  * Every forest mass' ground shadow, and the cart's, in ONE Svg over the ground and under the

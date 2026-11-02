@@ -710,7 +710,7 @@ function bordure(ok: OkMasse): Masse[] {
 /** The veil's ellipse in map dp: clear inside the island's own extent (`dedans` of the radius), slate `force` at the rim and beyond. */
 export type Voile = { cx: number; cy: number; rx: number; ry: number; dedans: number };
 /** How far past the island's half width the veil reaches its full strength (dp; down it is the same ratio), and that strength. Simulated on the p06 capture: 0.96 becomes 1.19. */
-export const VOILE_PORTEE = { x: 560, force: 0.3 } as const;
+export const VOILE_PORTEE = { x: 560, force: 0.34 } as const;
 const CACHE_VOILE = new WeakMap<readonly (readonly boolean[])[], Voile>();
 
 /** The veil of a tier: centred on the island's middle, as wide as the island plus `VOILE_PORTEE`, so it grows with the tier and darkens the surroundings only. */

@@ -303,6 +303,12 @@ turns off Fresco's GIF decoders in the same pass (0.56 MiB — Fresco only backs
 at install instead, so the device carries roughly 8 MiB more; that is the price. WebP stays
 enabled on purpose — the same argument applies and a wrong call there is 295 blank images.
 
+**32-bit ARM costs 10.8 MiB, and every foss user pays it.** Since #227 the foss APK carries
+`armeabi-v7a` beside `arm64-v8a` (10.8 and 12.4 MiB deflated, measured on 2.13.3), because a
+phone sold with a 32-bit Android, like the Galaxy A02, can install nothing else. Per-ABI APKs would
+give those megabytes back at the price of a new versionCode scheme on two F-Droid repositories.
+Play keeps arm64 alone.
+
 What is left is the 21 MiB of art. Every file is already WebP and has been through one sizing
 pass; a second pass has to start by measuring the slot each one actually renders into, the way
 the exercise thumbnails were derived — not by re-compressing blind.

@@ -53,8 +53,8 @@ dev, `--no-dev --minify` and `.perf` release workflows.
   [`docs/architecture/performance.md`](docs/architecture/performance.md) § Binary size.
   **16 KB pages** ([`release.yml`](.github/workflows/release.yml)) fails the release if any `.so` in the APK or the AAB has a
   `LOAD` segment aligned under 0x4000, which Play refuses from 2027-02-01. By hand, after
-  adding a native dependency: `unzip -o <apk> 'lib/*' -d /tmp/so && readelf -lW /tmp/so/lib/*/*.so
-  | grep LOAD`, every last column `0x4000` or more.
+  adding a native dependency: `unzip -o <apk> 'lib/*' -d /tmp/so && readelf -lW /tmp/so/lib/arm64-v8a/*.so
+  | grep LOAD`, every last column `0x4000` or more. Only arm64 is held to it: `armeabi-v7a` links at 4 KB.
 
 - **Secrets** are read twice: gitleaks on staged changes at commit, and on the whole history in
   [`ci.yml`](.github/workflows/ci.yml), which is what catches a `--no-verify`. An accepted finding

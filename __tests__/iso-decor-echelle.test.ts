@@ -3,12 +3,18 @@ import {
   ECHELLE_ROCHER_POSE,
   ombresPiece,
   PIECES,
+  type PieceCarte,
   posePiece,
   reduitPiece,
 } from "@/components/village/iso/carteDemo";
 import { MAQUETTES } from "@/components/village/iso/maquettes";
 
-const rochers = PIECES.filter((p) => p.decor && p.cle.startsWith("decor/rochers"));
+// Round 6 (loupe BC): the master grid carries no rock any more (the two left stood on the painted meadow
+// with no base), but the lisiere still draws `decor/rochers_a`: the scale and the shadow are tested on a cell.
+const rochers: PieceCarte[] = [
+  ...PIECES.filter((p) => p.decor && p.cle.startsWith("decor/rochers")),
+  { cle: "decor/rochers_a.nuit.webp", miroir: false, case: [13, 1], decor: true },
+];
 
 describe("rocks at the villagers' scale", () => {
   test("only rocks are reduced", () => {

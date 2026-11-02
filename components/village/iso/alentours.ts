@@ -770,6 +770,142 @@ function sansRepetitionNord(graines: readonly Graine[]): readonly Graine[] {
   });
 }
 
+/**
+ * Round 6, Guillaume's rule: repetition is fine inside a forest mass, but clumps standing alone on the
+ * meadow never share an asset within one viewport (720 x 1600 dp, the span `isolesDistincts` uses),
+ * mirrored or not: a mirrored twin still reads as a twin. `sansRepetitionNord` can hand two of them one
+ * asset, and four assets cannot tell five clumps apart, so the later of two such clumps (those the
+ * p06 view shows are kept first) takes an asset none nearby wears, else a lone one is merged into the
+ * forest edge: dropped, it was alone, no hole is left. "Alone" is read from what the ring really draws
+ * at tier 6, not from the lattice (`isolesDistincts` counts neighbours the plots or the lisiere then
+ * remove, so the twin the loupe BC r6 judge saw at p06, a clump with one neighbour left, kept no `isole`).
+ */
+function sansIsoleJumeau(graines: readonly Graine[]): readonly Graine[] {
+  const { visible: carte } = etatCarte(6, false);
+  const [dist, clair] = [distCases(carte), clairiere(carte)];
+  const exclus = [...PARCELLES_RECTS, ...COTTAGES_RECTS];
+  // What the ring really draws at tier 6 (the lattice's own `vivantes` also count neighbours that the
+  // plots, the lisiere or a crowded canvas then remove, which is how a clump the eye reads as alone kept no `isole`).
+  const montree = (g: Graine) =>
+    boisee(g.i, g.j) &&
+    g.garde <= 0.85 &&
+    dist(g.x, g.y) >= clair + RECUL_ANNEAU &&
+    dist(g.x, g.y) <= PORTEE_ANNEAU &&
+    !dansLisiere(...grille(g.x, g.y), DEBUT_ANNEAU) &&
+    libre(dist, clair, exclus, g.x, g.y, TOILE_FORET.w * g.echelle, TOILE_FORET.h * g.echelle);
+  const dessinees = graines.filter(montree);
+  const seule = (g: Graine) =>
+    dessinees.filter(
+      (v) => v !== g && ((v.x - g.x) / PAS_ANNEAU[0]) ** 2 + ((v.y - g.y) / PAS_ANNEAU[1]) ** 2 < 3,
+    ).length <= 3;
+  const visible = (g: Graine) => g.x >= VUE_P06.x0 && g.x <= VUE_P06.x1;
+  // The clumps that count: the lattice's lone ones, and those the p06 view shows standing alone.
+  const compte = (g: Graine) =>
+    dessinees.includes(g) && (g.isole === true || (visible(g) && seule(g)));
+  // The view first: a clump whose asset a kept one nearby wears takes one that none wears, and none
+  // of its lattice neighbours if possible (changing the art beats a hole); with none left (a fifth) it is merged into the edge.
+  const gardes = new Map<Graine, Graine>();
+  for (const g of graines
+    .filter(compte)
+    .sort((a, b) => +visible(b) - +visible(a) || +(a.isole === true) - +(b.isole === true))) {
+    const proches = [...gardes.values()].filter(
+      (o) => Math.abs(o.x - g.x) < 720 && Math.abs(o.y - g.y) < 1600,
+    );
+    const voisins = dessinees.filter(
+      (v) => v !== g && ((v.x - g.x) / PAS_ANNEAU[0]) ** 2 + ((v.y - g.y) / PAS_ANNEAU[1]) ** 2 < 8,
+    );
+    const libres = [g.nom, ...MASSES].filter((n) => !proches.some((o) => o.nom === n));
+    const nom = libres.find((n) => !voisins.some((v) => v.nom === n)) ?? libres[0];
+    if (nom) gardes.set(g, { ...g, nom, isole: true });
+    else if (!g.isole) gardes.set(g, g); // not alone by the lattice, no asset left: kept as it is
+  }
+  return graines.flatMap((g) => (compte(g) ? (gardes.get(g) ?? []) : [g]));
+}
+
+/** Twins closer than this (dp) are the two masses of one clump group, which the eye reads as one clump. */
+const GROUPE_JUMEAUX = 160;
+/** Two lone clumps of one asset on one screen stand at least this far apart (dp), where the four assets allow it. */
+const ECART_JUMEAUX = 650;
+
+/** The masses of the ring that tier `t` draws (the same tests as `anneau`, the plots and cottages included). */
+function dessineesAuPalier(graines: readonly Graine[], t: number): readonly Graine[] {
+  const { visible: carte } = etatCarte(t as VillageTier, false);
+  const [dist, clair] = [distCases(carte), clairiere(carte)];
+  const exclus = [...PARCELLES_RECTS, ...COTTAGES_RECTS];
+  return graines.filter(
+    (g) =>
+      boisee(g.i, g.j) &&
+      g.garde <= 0.85 &&
+      dist(g.x, g.y) >= clair + RECUL_ANNEAU &&
+      dist(g.x, g.y) <= PORTEE_ANNEAU &&
+      !dansLisiere(...grille(g.x, g.y), DEBUT_ANNEAU) &&
+      libre(dist, clair, exclus, g.x, g.y, TOILE_FORET.w * g.echelle, TOILE_FORET.h * g.echelle),
+  );
+}
+
+const voisinsDe = (d: readonly Graine[], g: Graine) =>
+  d.filter(
+    (v) => v !== g && ((v.x - g.x) / PAS_ANNEAU[0]) ** 2 + ((v.y - g.y) / PAS_ANNEAU[1]) ** 2 < 3,
+  );
+/** The lone clumps the p06 screen shows among the drawn masses `d`: three drawn neighbours at most. */
+const seulesVues = (d: readonly Graine[]) =>
+  d.filter(
+    (g) =>
+      g.x >= VUE_P06.x0 &&
+      g.x <= VUE_P06.x1 &&
+      g.y > VUE_P06.y0 &&
+      g.y < VUE_P06.y1 + 300 &&
+      g.echelle <= 1.2 &&
+      voisinsDe(d, g).length <= 3,
+  );
+const ecart = (a: Graine, b: Graine) => Math.hypot(a.x - b.x, a.y - b.y);
+
+/**
+ * Loupe BC r6, criterion 2 at every tier: `sansIsoleJumeau` reads the lone clumps at tier 6 only, and the
+ * ring draws other masses at the lower tiers (the clearing is smaller), so p03 and p04 showed twins
+ * (melangee 239 dp apart, bouleaux 580). Per tier from 1 to 12, the clumps the ring draws with at most
+ * three drawn neighbours that the screen shows are the lone ones; of two of one asset closer than
+ * `ECART_JUMEAUX` the movable one (neither marked `isole` nor lone at tier 6, so p06 never moves) takes the
+ * asset whose nearest lone twin is the farthest, never one a drawn neighbour wears when another is free.
+ * Only the art changes: no clump is removed. Static, like the rest of the ring.
+ */
+function sansJumeauParPalier(graines: readonly Graine[]): readonly Graine[] {
+  const dessins = Array.from({ length: 12 }, (_, k) => dessineesAuPalier(graines, k + 1));
+  const fige = new Set<Graine>([
+    ...graines.filter((g) => g.isole),
+    ...seulesVues(dessins[5] ?? []),
+  ]);
+  const noms = new Map<Graine, NomForet>();
+  const nomDe = (g: Graine) => noms.get(g) ?? g.nom;
+  const reprend = (d: readonly Graine[], seules: readonly Graine[], g: Graine): boolean => {
+    const jumeaux = seules.filter(
+      (o) =>
+        o !== g &&
+        nomDe(o) === nomDe(g) &&
+        ecart(o, g) >= GROUPE_JUMEAUX &&
+        ecart(o, g) < ECART_JUMEAUX,
+    );
+    if (jumeaux.length === 0) return false;
+    const portes = voisinsDe(d, g).map(nomDe);
+    const score = (n: NomForet) =>
+      Math.min(...seules.filter((o) => o !== g && nomDe(o) === n).map((o) => ecart(o, g)), 1e6);
+    const [n] = MASSES.filter((m) => m !== nomDe(g) && !portes.includes(m)).sort(
+      (a, b) => score(b) - score(a),
+    );
+    if (!n || score(n) <= Math.min(...jumeaux.map((o) => ecart(o, g)))) return false;
+    noms.set(g, n);
+    return true;
+  };
+  for (let tour = 0; tour < 8; tour++) {
+    const change = dessins.flatMap((d) => {
+      const seules = seulesVues(d);
+      return seules.filter((g) => !fige.has(g) && reprend(d, seules, g));
+    });
+    if (change.length === 0) break;
+  }
+  return graines.map((g) => (noms.has(g) ? { ...g, nom: nomDe(g) } : g));
+}
+
 function grainesAnneau(): readonly Graine[] {
   if (GRAINES_ANNEAU) return GRAINES_ANNEAU;
   const out: Graine[] = [];
@@ -801,7 +937,12 @@ function grainesAnneau(): readonly Graine[] {
       });
     }
   }
-  GRAINES_ANNEAU = sansRepetitionNord(isolesDistincts(out));
+  const ring = sansJumeauParPalier(sansIsoleJumeau(sansRepetitionNord(isolesDistincts(out))));
+  // Loupe BC r6, criterion 3: a lone clump shows its base on the meadow, so it gets the undergrowth over
+  // its roots too (the north edge had it alone, and the lone clumps stood on bare roots elsewhere).
+  GRAINES_ANNEAU = ring.map((g) =>
+    g.sb === undefined && g.isole ? { ...g, sb: sbDe(g.i + 2 * g.j) } : g,
+  );
   return GRAINES_ANNEAU;
 }
 
@@ -850,7 +991,7 @@ function bordure(ok: OkMasse): Masse[] {
 /** The veil's ellipse in map dp: clear inside the island's own extent (`dedans` of the radius), slate `force` at the rim and beyond. */
 export type Voile = { cx: number; cy: number; rx: number; ry: number; dedans: number };
 /** How far past the island's half width the veil reaches its full strength (dp; down it is the same ratio), and that strength. Simulated on the p06 capture: 0.96 becomes 1.19. */
-export const VOILE_PORTEE = { x: 560, force: 0.36 } as const;
+export const VOILE_PORTEE = { x: 560, force: 0.2 } as const;
 /**
  * The north clearing's local darkening (loupe BC r5, criterion 9): the bright peach glade near screen px
  * (580-840, 470-720) at p06 out-shone the village by 0.2 in three windows. A soft ellipse fixed in the
@@ -863,6 +1004,19 @@ export const CLAIRIERE_NORD_ASSOMBRIE = {
   rx: 135,
   ry: 90,
   opacite: 0.18,
+  plat: 0.45,
+} as const;
+/**
+ * The same olive veil, wider (loupe BC r6, criterion 9): the whole bright north meadow, which as windows the size
+ * of the village out-shone it by 3 points of mean at p06. Its bottom edge fades out at the village's top.
+ * Simulated on the r6 capture (scripts/iso/simule_voile_coeur.py): 0.20 on top of the clearing's 0.18 leaves
+ * the brightest window about 2 points under the village's mean. Not measured on a new capture.
+ */
+export const PRAIRIE_NORD_ASSOMBRIE = {
+  centre: [-5.8, -9.6],
+  rx: 333,
+  ry: 153,
+  opacite: 0.2,
   plat: 0.45,
 } as const;
 const CACHE_VOILE = new WeakMap<readonly (readonly boolean[])[], Voile>();

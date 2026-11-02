@@ -90,3 +90,12 @@ Usage : 1 référence (l'ancre jour réduite à 640 × 800, poids bas dit dans l
 - **Palette** : 8 hex au lieu de 17, tous voisins d'un hex de la bible du 31/10. La lumière mesurée `#DEC28B` est plus sombre que `#F2E2B4` : c'est le vrai ton des faces éclairées de l'ancre, `#F2E2B4` reste le lavis de lumière en code.
 - **Ancre** : la bible du 31/10 prend des sprites de nuit comme références de style ; ici le décor se cale sur l'ancre de jour pour la couleur, et sur les sprites livrés pour le trait et l'ombre ardoise.
 - **Bâtiments** : tranché le 01/11 (option A, voir Références). Le test de chaque asset se fait sur deux planches : de jour à côté de l'ancre, et sous l'étalonnage de nuit à côté d'un sprite de nuit.
+
+## Les alentours prospèrent avec les paliers (demande de Guillaume, 02/11)
+
+Aux premiers paliers, tout autour reste très simple, presque tribal. Puis les alentours s'améliorent peu à peu : les fermes peintes grossissent, les champs et les chemins s'étoffent. Pas besoin de mille choses, ni d'un changement à chaque palier, mais on doit sentir une évolution très positive. Ça reste du dessin, et une seule règle : rien ne recule. Moyen prévu : les bandes de sol (t1-3, t4-6, t7-9, t10-12), qui ne font qu'ajouter. À faire dans R1.
+
+## Règle pour le contrat de R1 (Guillaume, 02/11)
+
+- Un arbre qui disparaît laisse une souche, un champ ou une construction, jamais un trou vide.
+- Ombres froides du sol : critère obligatoire, c'est l'exception du verrou du coin de beauté.

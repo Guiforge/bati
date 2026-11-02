@@ -1,0 +1,9 @@
+BC tour 6, capture finale captures-7
+village box (12, 106, 119, 182) on the 135x300 thumbnail (107x76), mean 118.7 std 29.8
+2606 windows of the same size overlapping it under 25 %, 0 with mean >= or std >= the box
+L village 118.7 / L surroundings 112.4 = 1.06 (wanted 0.98 to 1.50)
+mean saturation village 88.3, surroundings 74.6 (wanted surroundings < village)
+core: ok
+
+A/B a l'aveugle, canari valide : captures-4, 6 sur 8 (lisiere, pieds perdus). captures-6, 5 sur 8 (lisiere, keep-feu, keep-villageois perdus, memes pixels que captures-4).
+jest, Node 24, etat final : suite complete 7233 sur 7236, 2 echecs par delai ; ces deux suites seules avec 120 s : 39 sur 39. Accepte par Guillaume pour cette fois.

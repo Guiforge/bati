@@ -11,7 +11,7 @@
     },
     "flux_spent_session": 10.06,
     "subagent_runs_budget": 80,
-    "subagent_runs_used": 48,
+    "subagent_runs_used": 63,
     "flux_note": "Plafond du registre 60 $, ligne écrite par Guillaume le 02/11. Plafond de session : 20 $ en plus des 34,416 $ du départ, soit 54,416 $.",
     "alert_ack": "chef, 40 $, le 02/11"
   },
@@ -29,9 +29,7 @@
     "cards": "S-night gelé. BC gelé le 02/11.",
     "checkpoint": "répondu le 02/11 : 1 A A A, 2 oui, 3 oui, 4 P"
   },
-  "waiting_on_guillaume": [
-    "checkpoint.md : coin de beauté (notes, verrouiller, direction), règle 3 sur la forêt, ombres peintes des chaumières"
-  ],
+  "waiting_on_guillaume": [],
   "loupes": {
     "s-night": {
       "status": "parquée sur décision de Guillaume, non fusionnée, branche loupe-s-night",
@@ -41,10 +39,10 @@
       "question": "Réponse de Guillaume : parquée. On y revient après BC, sur les nouveaux assets."
     },
     "bc": {
-      "status": "5 tours faits, maximum atteint, branche loupe-bc non fusionnée. Checkpoint écrit, réponse attendue.",
-      "round": 5,
-      "best_round": 5,
-      "flux_spent": 8.03,
+      "status": "verrouillé par décision de Guillaume le 02/11, exceptions dans contract.md, fusionné sur feat/village-iso, non poussé",
+      "round": 6,
+      "best_round": 6,
+      "flux_spent": 8.4,
       "methode": "Pré propre d'abord, puis repeinture en contexte d'un recadrage de capture, sol seul gardé et reprojeté. Arbres : masses du jeu entières.",
       "ecarts_a_signaler_au_checkpoint": [
         "Pas de bordures de pierres aux paliers 4 à 6 : l'écran cible choisi prime sur la section 12.",
@@ -52,12 +50,79 @@
         "Sortie sud de rues.ts déplacée pour suivre l'écran cible."
       ],
       "question_checkpoint": "Critère 2 : règle 3 impossible sur une forêt entière avec 6 masses. Assouplir, ou payer de nouvelles masses.",
-      "resultat": "Tour 5 : contrat 12 PASS, FAIL sur 2, 10, 16, non vérifié sur 6, 15. A/B 4 sur 6, lisière et pieds perdus, KEEP comptés perdus (artefact de date). Tour 4 : 9 PASS, A/B 6 sur 6.",
-      "a_faire_si_notes": "Retirer les deux champs du plan restants (9,18 et 13,17). Reprendre lisière et pieds perdus au tour 5."
+      "resultat": "Tour 6, captures-7 : env NOTES sur 2 et 3. A/B 5 sur 8 sur captures-6, 6 sur 8 sur captures-4. Reste dans loupes/r1/contrat-entree.md.",
+      "notes_guillaume": [
+        "lumière du sud plus claire et plus franche, ombres nettes et froides, ombres des chaumières refroidies",
+        "haut de la route droit dans la porte, sans crochet",
+        "bouquets isolés du nord tous différents, répétition admise dans la forêt",
+        "retirer les deux champs du plan restants",
+        "reprendre lisière et pieds perdus en A/B au tour 5",
+        "aucune croix dans les champs"
+      ],
+      "decisions_02_11": "1 A : dernier lot, un verdict d'env, sans relance. 2 : KEEP par la règle 10.1. 3 : bouquets retirés comptés comme lisière. Commit et verrou seulement si jest complet vert."
     }
   },
-  "locked_crops": [],
+  "locked_crops": [
+    {
+      "loupe": "bc",
+      "crop": "bc-porte",
+      "path": "docs/designs/village-loop/loupes/bc/r6/bc-porte.png",
+      "capture": "docs/designs/village-loop/loupes/bc/r6/captures-7",
+      "locked": "2026-11-02"
+    },
+    {
+      "loupe": "bc",
+      "crop": "bc-route",
+      "path": "docs/designs/village-loop/loupes/bc/r6/bc-route.png",
+      "capture": "docs/designs/village-loop/loupes/bc/r6/captures-7",
+      "locked": "2026-11-02"
+    },
+    {
+      "loupe": "bc",
+      "crop": "bc-champ",
+      "path": "docs/designs/village-loop/loupes/bc/r6/bc-champ.png",
+      "capture": "docs/designs/village-loop/loupes/bc/r6/captures-7",
+      "locked": "2026-11-02"
+    },
+    {
+      "loupe": "bc",
+      "crop": "bc-lisiere",
+      "path": "docs/designs/village-loop/loupes/bc/r6/bc-lisiere.png",
+      "capture": "docs/designs/village-loop/loupes/bc/r6/captures-7",
+      "locked": "2026-11-02"
+    },
+    {
+      "loupe": "bc",
+      "crop": "bc-pieds",
+      "path": "docs/designs/village-loop/loupes/bc/r6/bc-pieds.png",
+      "capture": "docs/designs/village-loop/loupes/bc/r6/captures-7",
+      "locked": "2026-11-02"
+    },
+    {
+      "loupe": "bc",
+      "crop": "bc-coin-bas",
+      "path": "docs/designs/village-loop/loupes/bc/r6/bc-coin-bas.png",
+      "capture": "docs/designs/village-loop/loupes/bc/r6/captures-7",
+      "locked": "2026-11-02"
+    },
+    {
+      "loupe": "bc",
+      "crop": "bc-keep-feu",
+      "path": "docs/designs/village-loop/loupes/bc/r6/bc-keep-feu.png",
+      "capture": "docs/designs/village-loop/loupes/bc/r6/captures-7",
+      "locked": "2026-11-02"
+    },
+    {
+      "loupe": "bc",
+      "crop": "bc-keep-villageois",
+      "path": "docs/designs/village-loop/loupes/bc/r6/bc-keep-villageois.png",
+      "capture": "docs/designs/village-loop/loupes/bc/r6/captures-7",
+      "locked": "2026-11-02"
+    }
+  ],
   "parked": ["s-night"],
-  "current": "pause au checkpoint du coin de beauté, branche loupe-bc",
-  "priorite": "Décision de Guillaume du 02/11 : rendu seulement. Limite APK de 55 MiB retirée. Délais de tests dépassés non bloquants, assertions bloquantes. Optimisations plus tard."
+  "current": "intégration finale, puis bilan et fin de session",
+  "priorite": "Décision de Guillaume du 02/11 : rendu seulement. Limite APK de 55 MiB retirée. Délais de tests dépassés non bloquants, assertions bloquantes. Optimisations plus tard.",
+  "session_scope": "Coin de beauté, intégration finale, bilan, puis fin de session. R1 part dans une nouvelle session avec son propre budget (Guillaume, 02/11).",
+  "r1_a_reprendre": ["voir loupes/r1/contrat-entree.md"]
 }

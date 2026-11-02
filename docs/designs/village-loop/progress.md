@@ -82,3 +82,8 @@ Dans le jeu de référence, les animations sont légères : très peu de mouveme
 - Sol repeint sur la vraie capture : route au centre, blé, potager, enclos, deux chaumières, forêt en masse avec clairières, plus d'arbres fixés à l'écran ni de champs calculés.
 - Contrat : 12 critères sur 17 au tour 5. A/B : 4 extraits sur 6 au tour 5, 6 sur 6 au tour 4. Env recommande des notes, pas un verrouillage : lumière plus terne que l'écran A.
 - Leçon : peindre hors contexte échoue, repeindre la vraie capture marche. Avant / après : `loupes/bc/avant-apres.webp`.
+
+## Coin de beauté verrouillé (02/11), tour 6 [P1, P2]
+- Plus clair, route en courbe douce vers la porte, ombres d'arbres en vraies silhouettes, plus de champs calculés. Avant / après : `loupes/bc/avant-apres.webp`.
+- A/B 5 extraits sur 8. Env garde NOTES sur les critères 2 et 3 : verrouillé par décision de Guillaume, avec exceptions écrites.
+- Tout ce qui reste est obligatoire dans R1 : `loupes/r1/contrat-entree.md`.

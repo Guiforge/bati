@@ -18,6 +18,7 @@ import type { BuildingCode } from "@/db/schema";
 import {
   AlentoursContext,
   CLAIRIERE_NORD_ASSOMBRIE,
+  PRAIRIE_NORD_ASSOMBRIE,
   TERRAIN,
   VOILE_PORTEE,
   type Voile,
@@ -37,6 +38,11 @@ const ABSOLU = { position: "absolute" } as const;
 /** One veil per map: a fixed gradient id (a literal would trip the unique-id rule). */
 const ID_VOILE = "voile-alentours";
 const ID_CLAIRIERE = "clairiere-assombrie";
+const ID_PRAIRIE = "prairie-assombrie";
+const ASSOMBRIES = [
+  [ID_CLAIRIERE, CLAIRIERE_NORD_ASSOMBRIE],
+  [ID_PRAIRIE, PRAIRIE_NORD_ASSOMBRIE],
+] as const;
 // Off the cell's middle like every pool (lueurs.ts horsCentre): a lantern's pool is never wedged on a path cell.
 const [lx, ly] = ecranXY([
   horsCentre(LANTERNES[0]?.case[0] ?? 0, 0.5),
@@ -170,19 +176,13 @@ function VoileAlentours({ v }: { v: Voile }) {
           />
           <Stop offset="1" stopColor={rawColors.isoVoileJour} stopOpacity={force} />
         </RadialGradient>
-        <RadialGradient id={ID_CLAIRIERE} cx="50%" cy="50%" rx="50%" ry="50%">
-          <Stop
-            offset="0"
-            stopColor={rawColors.isoVoileJour}
-            stopOpacity={CLAIRIERE_NORD_ASSOMBRIE.opacite}
-          />
-          <Stop
-            offset={CLAIRIERE_NORD_ASSOMBRIE.plat}
-            stopColor={rawColors.isoVoileJour}
-            stopOpacity={CLAIRIERE_NORD_ASSOMBRIE.opacite}
-          />
-          <Stop offset="1" stopColor={rawColors.isoVoileJour} stopOpacity={0} />
-        </RadialGradient>
+        {ASSOMBRIES.map(([id, a]) => (
+          <RadialGradient key={id} id={id} cx="50%" cy="50%" rx="50%" ry="50%">
+            <Stop offset="0" stopColor={rawColors.isoVoileJour} stopOpacity={a.opacite} />
+            <Stop offset={a.plat} stopColor={rawColors.isoVoileJour} stopOpacity={a.opacite} />
+            <Stop offset="1" stopColor={rawColors.isoVoileJour} stopOpacity={0} />
+          </RadialGradient>
+        ))}
       </Defs>
       <Rect
         x={TERRAIN.x}
@@ -191,13 +191,16 @@ function VoileAlentours({ v }: { v: Voile }) {
         height={TERRAIN.h}
         fill={`url(#${ID_VOILE})`}
       />
-      <Ellipse
-        cx={ecranXY([...CLAIRIERE_NORD_ASSOMBRIE.centre])[0]}
-        cy={ecranXY([...CLAIRIERE_NORD_ASSOMBRIE.centre])[1]}
-        rx={CLAIRIERE_NORD_ASSOMBRIE.rx}
-        ry={CLAIRIERE_NORD_ASSOMBRIE.ry}
-        fill={`url(#${ID_CLAIRIERE})`}
-      />
+      {ASSOMBRIES.map(([id, a]) => (
+        <Ellipse
+          key={id}
+          cx={ecranXY([...a.centre])[0]}
+          cy={ecranXY([...a.centre])[1]}
+          rx={a.rx}
+          ry={a.ry}
+          fill={`url(#${id})`}
+        />
+      ))}
     </Svg>
   );
 }

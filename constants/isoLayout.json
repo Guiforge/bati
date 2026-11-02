@@ -12,7 +12,7 @@
   },
   "sol": [
     "..~.................",
-    ".T~..........R......",
+    ".T~.................",
     "..~.....#..#........",
     "T.~...###..#..####..",
     "..~...#.#..#..#.....",
@@ -29,7 +29,7 @@
     "T.~##############...",
     "..~.........#.......",
     "..~.....#####.....T.",
-    "..~.....#...#...R...",
+    "..~.....#...#.......",
     "T.W.....#.T.#.T...T."
   ],
   "paliers": [
@@ -101,7 +101,7 @@
     [16, 16],
     [17, 16]
   ],
-  "champs": [[3, 14, 3, 1], [0, 16, 2, 3], [3, 17, 2, 3], [9, 18, 3, 1], [13, 17, 3, 2]],
+  "champs": [[3, 14, 3, 1], [0, 16, 2, 3], [3, 17, 2, 3]],
   "lieux": {
     "_doc": "Named places of the small lives (L5-AUD I6): the fireflies' patch of ground, the cells [from, to) in gx and gy, and the rat's run along one row, from gx0 to gx1 in the row gy, drawn `decalage` cells below the row's middle. The rat's cells are the whole cells of the run.",
     "lucioles": {

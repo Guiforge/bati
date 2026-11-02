@@ -1,4 +1,33 @@
+**Décision de Guillaume, 02/11 : verrouiller, preuve jest acceptée pour cette fois.** Exceptions dans `bc/contract.md`, suite dans `r1/contrat-entree.md`.
+
+# Dernier verdict d'env, à toi de trancher (02/11)
+
+Env : NOTES, sur les critères 2 et 3. Le 5 passe maintenant. Rien n'est relancé, comme demandé.
+
+- **Critère 2** : deux bosquets de bouleaux jumeaux en miroir aux paliers 3 et 4. Un joueur attentif peut le voir. Rien aux paliers 6, 7, 9 et 12. Le test garde moins de 300 unités, ces deux-là sont à 320 : jest vert ne prouve donc pas ce critère.
+- **Critère 3** : une racine nue au bord droit du palier 6, environ 45 px, presque invisible. Même cause, plus visible, sur un bosquet aux paliers 3 et 4.
+
+Réponse attendue : `verrouiller` (les deux critères deviennent des exceptions écrites, obligatoires dans R1) ou `corriger` (un lot de plus).
+
+**Réponse de Guillaume au tour 6, 02/11** : 1 A, 2 oui (règle 10.1), 3 oui (lisière, et dans R1 un arbre qui disparaît laisse une souche, un champ ou une construction). Si env refuse encore, on ne relance rien : il tranche. Commit et verrou seulement si jest complet vert.
+
+# Tour 6 : ta décision pour le verrou (02/11)
+
+Env refuse encore le verrou, sur les critères 2, 3 et 5. Il reste environ 3 passages avant l'arrêt à 64, et il en faudrait 4. Réponds par exemple : `1 A, 2 oui, 3 oui`.
+
+**1. La suite**
+- **A (recommandé)** : un dernier lot de corrections (jumeaux aux paliers 3 et 4, racines, bord du blé, seuil de test), un dernier verdict d'env, puis l'intégration finale avec mara et theo. Environ 65 passages, un de plus que l'arrêt à 64, et moins que le plafond de 80. Si env refuse encore, c'est toi qui tranches, sans nouveau tour.
+- B : tu verrouilles maintenant, les trois critères deviennent des exceptions écrites et obligatoires dans R1. Environ 63 passages.
+
+**2. Extraits à préserver** : le prompt demande de n'en perdre aucun. Feu et villageois sont comptés perdus au dernier A/B. Les mêmes pixels (0 d'écart) étaient gagnés au passage précédent, et env les passe à l'œil. Tu acceptes de ne pas compter ce vote comme un recul ?
+
+**3. Bouquets retirés** : trois bouquets du pré disparaissent du palier 4 au palier 6, et le bouleau central du palier 9 au palier 12. La règle dit que rien ne recule, sauf la lisière. Tu acceptes de les compter comme lisière ?
+
 # Checkpoint du coin de beauté
+
+**Réponse de Guillaume, 02/11** : 1 notes (les 3 proposées). 2 répétitions admises en forêt, peindre reste permis. 3 ombres gardées et refroidies. En plus : pas de croix dans les champs, celle de l'écran A ne doit pas revenir. Tour 6 en cours.
+
+**Décisions de Guillaume pour finir le tour 6, 02/11** : seuil de lumière à 0,98 au moins, si le cœur reste le plus clair sur la vignette floue. Ombres froides du sol : décalage de teinte simple s'il suffit, sinon exception écrite et critère obligatoire dans R1. Croix interdite. Le chef ne fait ni le travail des sous-agents ni le jugement. Après verrou et fusion du coin : intégration finale, bilan, fin de session. R1 part dans une nouvelle session, avec son propre budget.
 
 5 tours faits, le maximum. Il me faut 3 réponses. Réponds par exemple : `1 notes, 2 assouplir, 3 oui`.
 

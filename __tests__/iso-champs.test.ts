@@ -74,7 +74,8 @@ describe("over the painted ground, every tier", () => {
       expect(champsDe(vu, true).blocs).toEqual([]);
       avant = ici;
     }
-    expect(avant.size).toBeGreaterThan(0);
+    // Round 6: the two plan fields the painted ground kept (tiers 8 and 9) are gone; the rest sit on the river or the road.
+    expect(avant.size).toBe(0);
   });
 });
 

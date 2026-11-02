@@ -154,9 +154,9 @@ it.each(["nuit", "jour"] as const)(
     const apres = compter();
     expect(famille("iso-foret-peinte").size).toBe(1);
     expect(famille(/^iso-accessoire-/).size).toBe(1);
-    // F4: the painted wall (on whatever the flags) and the plan's painted fields, one size each.
+    // F4: the painted wall (on whatever the flags), one size. Round 6: no plan field is painted any more.
     expect(famille(/^iso-pan-/).size).toBe(1);
-    expect(famille(/^iso-champ-/).size).toBe(1);
+    expect(famille(/^iso-champ-/).size).toBe(0);
     expect(screen.getAllByTestId("iso-terrain-peint")).toHaveLength(1);
     // The vector forest tiles are gone.
     expect(screen.queryAllByTestId("iso-monde-foret")).toHaveLength(0);

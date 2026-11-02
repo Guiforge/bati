@@ -18,7 +18,7 @@ describe("loupe BC round 2: the forest", () => {
       const [gx, gy] = grille(m.x, m.y);
       return gx >= -12 && gx <= 6 && gy >= -12 && gy <= 8;
     });
-    expect(ms.length).toBeGreaterThanOrEqual(8);
+    expect(ms.length).toBeGreaterThanOrEqual(6); // r6: at most four lone clumps per screen, four assets, so the lone ones that cannot take an asset are merged into the edge (was 8)
     const ws = ms.map((m) => m.echelle).toSorted((a, b) => a - b);
     expect(ws.at(-1) ?? 0).toBeGreaterThanOrEqual(1.8 * (ws[0] ?? 1));
     expect(1 + ws.slice(1).filter((b, i) => b / (ws[i] ?? 1) > 1.25).length).toBeGreaterThanOrEqual(
@@ -58,12 +58,12 @@ describe("loupe BC round 2: the forest", () => {
       expect(Math.min(m.x - t.x, t.x + t.w - m.x, m.y - t.y, t.y + t.h - m.y)).toBeLessThan(140);
   });
 
-  test("undergrowth: one strip at most a mass, south and north edges only, no identical pair within 3 cells", () => {
+  test("undergrowth: one strip at most a mass, south and north edges and lone clumps only, no identical pair within 3 cells", () => {
     const ms = massesForet(etatCarte(6, false).visible).filter((m) => m.sb !== undefined);
     expect(ms.length).toBeGreaterThan(10);
     for (const m of ms) {
       const [gx, gy] = grille(m.x, m.y);
-      expect(gx > 35.2 || gy > 35.2 || gx + gy < 6).toBe(true);
+      expect(gx > 35.2 || gy > 35.2 || gx + gy < 6 || m.isole === true).toBe(true); // r6: a lone clump shows its base
     }
     for (const [i, a] of ms.entries())
       for (const b of ms.slice(i + 1)) {

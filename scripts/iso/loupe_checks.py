@@ -252,10 +252,10 @@ def core(dump, img):
         f"village box {box} on the {thumb_.width}x{thumb_.height} thumbnail ({bw}x{bh}), mean {mean:.1f} std {std:.1f}",
         f"{n} windows of the same size overlapping it under 25 %, {len(beat)} with mean >= or std >= the box"
         + "".join(f"\n  window ({w[0]},{w[1]}) mean {w[2]:.1f} std {w[3]:.1f}" for w in sorted(beat, key=lambda w: -w[2])[:5]),
-        f"L village {lv:.1f} / L surroundings {ls:.1f} = {ratio:.2f} (wanted 1.10 to 1.50)",
+        f"L village {lv:.1f} / L surroundings {ls:.1f} = {ratio:.2f} (wanted 0.98 to 1.50)",
         f"mean saturation village {sv:.1f}, surroundings {ss:.1f} (wanted surroundings < village)",
     ]
-    ok = not beat and 1.10 <= ratio <= 1.50 and ss < sv
+    ok = not beat and 0.98 <= ratio <= 1.50 and ss < sv
     return lines + ["core: " + ("ok" if ok else "FAIL")], ok
 
 

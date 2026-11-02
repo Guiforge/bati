@@ -404,7 +404,7 @@ describe("the iso demo screen (L0-T06)", () => {
     // FIN-DIS: the tier-1 island holds the hall's socle and the square, so more of its edge and more
     // inhabitants show (18 to 29); the full map has fewer decor cells in the plan (108 to 94).
     // F4: castle_wall's 22 painted wall pieces, one image a cell, in place of 5 Svgs (94 to 116).
-    expect(vus).toEqual({ 1: 29, 12: 116 }); // T43 round 1: thickets, 156 lisiere pieces became about 70; C1: the forge dispute is one image for two inhabitants
+    expect(vus).toEqual({ 1: 29, 12: 112 }); // loupe BC r6: the two grid rocks are gone (116 to 112, each was a piece image and its ink-darkened twin); T43 round 1: thickets, 156 lisiere pieces became about 70; C1: the forge dispute is one image for two inhabitants
     expect(screen.queryAllByTestId(/^iso-voile-/)).toHaveLength(2);
   });
 
@@ -507,7 +507,7 @@ describe("the iso demo screen (L0-T06)", () => {
     try {
       await ouvrir();
       const vues = screen.queryAllByTestId(/^iso-(maquette|ailes|piece|chute|figurine)-/);
-      expect(vues.length).toBeGreaterThan(40);
+      expect(vues.length).toBeGreaterThan(38); // 39 since loupe BC r6 removed the two grid rocks (41 before)
       expect(vues.map((v) => v.props.source[0].uri)).toEqual(vues.map(() => actif.uri));
     } finally {
       resoudre.mockRestore();

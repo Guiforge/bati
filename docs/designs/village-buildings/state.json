@@ -88,7 +88,10 @@
     "maxRoundsPilot": 6,
     "maxRoundsLater": 4,
     "device": "emulator-5554",
-    "sources": "~/Téléchargements (xdg de ~/Downloads sur cette machine)"
+    "sources": "~/Téléchargements (xdg de ~/Downloads sur cette machine)",
+    "PUSH": "yes",
+    "apkGuard": "aucune, retirée par Guillaume le 02/11",
+    "fluxRegistreRestant": 15.157
   },
   "flux": {
     "registreAuDepart": {
@@ -99,17 +102,48 @@
     "depenseSession": 0.0
   },
   "subagentRuns": {
-    "used": 0,
+    "used": 40,
     "budget": 250,
     "alerte80": 200
   },
   "step0": {
     "1": "done",
-    "2": "done: registre 15,157 $ restants; copie du verrou faite, 83 fichiers"
+    "2": "done : registre 15,157 $ restants, copie du verrou 83 fichiers",
+    "3": "done : bld-prep fusionnée, suites lourdes à 120 s",
+    "4": "done : outils, états de capture, commit de build sur chaque capture",
+    "5": "code done et fusionné, jugement de tech et anim à faire",
+    "6": "done : headroom.md",
+    "7": "à refaire sur la base propre",
+    "8": "done : retest raté à 2 sur 3 pour mara et theo, à porter au checkpoint",
+    "9": "done : decisions.md",
+    "10": "done : card-sheet.md",
+    "11": "done : E1 verdict, références de style de mara",
+    "12": "à écrire"
   },
-  "exploration": {},
+  "exploration": {
+    "E1": {
+      "survivants": ["windmill_A", "windmill_B", "windmill_C", "observatory_C"],
+      "ecartes": ["observatory_A", "observatory_B"],
+      "verdict": "explore/E1/verdict.md"
+    }
+  },
   "recipeLocked": false,
   "waves": ["W1", "W2", "W3", "W4", "W5", "W6"],
   "buildings": {},
-  "parkedQuestions": []
+  "parkedQuestions": [],
+  "baseClean": {
+    "codeTip": "bb2d9a82422b9a09a485a0b660803e435dbafe12",
+    "date": "2026-11-02",
+    "suite": "526 suites, 7305 tests verts d'un seul coup, Node 24, sur bb2d9a82",
+    "buildsEmulateur": {
+      "perf": "bb2d9a82",
+      "dev": "bb2d9a82"
+    },
+    "mainFusionnee": "a14aade1",
+    "coinVerifie": "docs/designs/village-buildings/verif-coin/corner-2 : 8 extraits verrouillés à 0,000 %",
+    "archives": [
+      "~/bati-archives/2026-11-02-loupes.tgz",
+      "~/bati-archives/2026-11-02-iso-evidence.tgz"
+    ]
+  }
 }

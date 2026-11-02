@@ -35,5 +35,13 @@ Réponses prises, que Guillaume peut rayer au checkpoint :
 - Références de style FLUX, choix de mara : `castle_wall/solid.jour.webp`, `druid_grove/grand.jour.webp`, `high_road/solid.jour.webp`. Trois objets sans forme commune, seul le style passe. Quand le sujet est l'un des trois, retirer sa propre image. Le prompt impose l'ardoise `#2E3552` pour les ombres : ces sprites tirent vers l'olive.
 - Calibration : mara et theo échouent au premier test (1 ÉCHEC sur 5, 3 BON sur 3), notes écrites, puis 2 sur 3 chacun au retest. Section 11 : on s'arrête et on demande : checkpoint.
 
+### Base propre (demande de Guillaume, 02/11)
+- Plus de garde APK : retirée par Guillaume, la question du checkpoint tombe. Le prompt à jour le dit aussi.
+- Drapeaux iso allumés dans les builds dev et perf, éteints en publié, testé par `iso-poc-flags`.
+- `transformOrigin` à deux valeurs : l'onglet Village plantait en dev seulement, invisible à jest et au build perf. Sept sites corrigés, un test les parcourt.
+- Cycles d'import cassés plutôt que contournés : `noImportCycles` venu de main est un cliquet.
+- Comptes rendus et specs E1 générées exclus de Biome : on ne reformate pas des archives.
+- `golden.spec.json` des loupes garde `peint=tout` : ses réglages sont verrouillés.
+
 Conséquences de la planche de cartes :
 - La carte `campfire.md` de la prep est à réécrire : le Ménestrel remplace le cuistot.

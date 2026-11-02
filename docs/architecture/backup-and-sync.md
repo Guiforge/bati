@@ -594,6 +594,11 @@ Evidence, `.perf` release build of `fix/security-audit-run-1`, x86_64 emulator (
   `com.google.android.apps.nexuslauncher` from `AppWidgetHostView`. The library draws through
   `RemoteViews.setImageViewUri` (`RNWidget.java:78,94,104`) and never grants the URI to the host.
 
+Update, 2026-11-01, react-native-android-widget 0.26: the provider is still exported, but each picture
+is now named with a random 256-bit token (`widget_<id>_mode_<mode>_<token>.png`, added in 0.24), so the
+URI can no longer be guessed. The read above returns `Image not found` on a placed widget. An app has
+to learn the name another way, so the upstream issue below is no longer worth filing as written.
+
 Why it is not fixed here: the fix is in the library's Java, either granting the URI to the widget
 host or drawing a bitmap instead of a URI. This repo has no patch tooling, and adding patch-package
 or vendoring the library breaks the no-new-dependency rule and F-Droid's build of an unmodified

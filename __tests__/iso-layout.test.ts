@@ -326,6 +326,39 @@ describe("isoLayout.json, the master grid (L0-T03)", () => {
     expect(perimes).toEqual([]);
   });
 
+  // The buildings-track specs (scripts/iso/blockouts/bld/) are read apart from `batiments`:
+  // iso-spec.test.ts keeps its 200 px of free height for the stages in `batiments`, and the pilot
+  // maquettes go higher (3.8 and 4.02 against 2.96 in 2x2). Here the only limit is the canvas, with
+  // the one margin already in the spec (anchorMarginPx). The 200 px threshold stays Guillaume's call.
+  test("buildings-track specs are measured, and each fits its canvas", () => {
+    const dossier = path.join(__dirname, "../scripts/iso/blockouts/bld");
+    const stems = readdirSync(dossier)
+      .filter((f) => f.endsWith(".json") && !f.startsWith("windmill_sails"))
+      .map((f) => f.slice(0, -".json".length))
+      .toSorted();
+    const mesures: Record<
+      string,
+      Record<string, { canevas: string; hauteurMax: number }>
+    > = heightsRaw.batimentsBld;
+    const lus = Object.entries(mesures)
+      .flatMap(([code, stades]) => Object.keys(stades).map((st) => `${code}_${st}`))
+      .toSorted();
+    expect(lus).toEqual(stems);
+    const pxParHauteur =
+      spec.pxPerUnit * Math.sin((spec.cameraRotationDeg[0] ?? 0) * (Math.PI / 180));
+    for (const [code, stades] of Object.entries(mesures))
+      for (const [stade, m] of Object.entries(stades)) {
+        const c = spec.canvases[m.canevas as keyof typeof spec.canvases];
+        const [fw = 0, fh = 0] = c.footprint;
+        const libre = c.h - spec.anchorMarginPx - ((fw + fh) * spec.S) / 4;
+        expect({ code, stade, assez: libre - m.hauteurMax * pxParHauteur >= 0 }).toEqual({
+          code,
+          stade,
+          assez: true,
+        });
+      }
+  });
+
   test("no shadow hangs over the void: it lands on cells already there when its plot is", () => {
     const vide: string[] = [];
     for (const code of buildingCodes) {

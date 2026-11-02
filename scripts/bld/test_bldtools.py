@@ -86,4 +86,135 @@ assert T.main(["diff", str(tmp / "d0.png"), str(tmp / "d1.png"), str(tmp / "m_ou
 assert T.main(["diff", str(tmp / "d0.png"), str(tmp / "d1.png"), str(tmp / "m_out.png"), "--max", "100"]) == 0
 assert T.main(["footprint", a, c]) == 1
 
+# ---- gates.py ------------------------------------------------------------------------------------
+import gates as G  # noqa: E402
+
+
+def blob(name, box, canvas=(160, 200), colour=(120, 90, 60, 255)):
+    im = Image.new("RGBA", canvas, (0, 0, 0, 0))
+    ImageDraw.Draw(im).rectangle(box, fill=colour)
+    p = tmp / f"{name}.png"
+    im.save(p)
+    return str(p)
+
+
+# 1b. footprint: a wing 25 px above the foot escaped the old 12 px band, the whole mask sees it
+wing = Image.open(b).convert("RGBA")
+ImageDraw.Draw(wing).rectangle((120, 100, 150, 165), fill=(120, 90, 60, 255))
+wing.save(tmp / "wing.png")
+assert T.footprint([b, str(tmp / "wing.png")]) != [] and T.footprint([b, b]) == []
+# an explicit .contact.png (the maquette's socle) wins over the lower profile
+sock = Image.new("L", (160, 200), 0)
+ImageDraw.Draw(sock).rectangle((40, 170, 120, 190), fill=255)
+sock.save(tmp / "grand.contact.png")
+assert T.contact(b)[0].getbbox() == (40, 170, 121, 191)
+
+# 3. silhouette: layers and sails composed, patch removed, nothing written in the locked folders
+body = blob("body", (60, 60, 100, 160))
+teaser = blob("teaser", (0, 0, 20, 20))
+patch = Image.new("L", (160, 200), 0)
+ImageDraw.Draw(patch).rectangle((0, 150, 160, 200), fill=255)
+area, h = G.stage_silhouette(body, tmp / "ss", patch=patch)
+assert (area, h) == (41 * 90, 90), (area, h)  # rows 60..149 stay
+area2, h2 = G.stage_silhouette(body, tmp / "ss2", layers=[(teaser, (70, 20))], patch=patch)
+assert area2 == area + 21 * 21 and h2 == 130, (area2, h2)
+sails = blob("sails", (0, 0, 39, 39), canvas=(40, 40))
+area3, _ = G.stage_silhouette(body, tmp / "ss3", sails=(sails, (140, 40), 1.0), patch=patch)
+assert area3 == area + 1600, area3
+assert Image.open(tmp / "ss.sil.png").getpixel((80, 100)) == (0, 0, 0)
+assert Image.open(tmp / "ss.sil.png").getpixel((80, 170)) == T.BG
+try:
+    G.stage_silhouette(body, pathlib.Path.home() / ".cache/bati-loupes-lock/x", patch=patch)
+    raise AssertionError("a silhouette inside the lock must be refused")
+except SystemExit:
+    pass
+# the patch from a real maquette export: socle dilated, tall volumes kept out
+real = G.L.ROOT / "scripts/iso/blockouts/renders/forge_grand.anchor.json"
+pm = G.patch_mask(real)
+assert pm.size == (896, 1344) and pm.getbbox()[3] > 1250 and pm.getbbox()[1] > 900  # a flat diamond at the foot only
+
+# 4. G-GROW: bigger stage passes, same size fails; ranks need a 1.5 % XOR; the canvas edge fails
+def m(box, canvas=(200, 200)):
+    x = Image.new("L", canvas, 0)
+    ImageDraw.Draw(x).rectangle(box, fill=255)
+    return x
+
+
+s1, s2, s2b = m((50, 100, 100, 150)), m((50, 80, 100, 150)), m((50, 98, 100, 150))
+assert G.grow([("a", "stage", s1), ("b", "stage", s2)]) == []  # +40 % height, +40 % area
+assert G.grow([("a", "stage", s1), ("b", "stage", s2b)]) != []  # +4 %
+r1 = m((50, 100, 100, 150))
+r2 = m((50, 100, 100, 150)); ImageDraw.Draw(r2).rectangle((100, 140, 106, 150), fill=255)
+assert G.grow([("a", "stage", s1), ("r", "rank", r1)]) != []  # identical
+assert G.grow([("a", "stage", s1), ("r", "rank", r2)]) == []  # XOR 77 px of 2600 = 3 %
+assert G.grow([("a", "stage", s1), ("b", "stage", m((0, 60, 100, 150)))]) != []  # touches the edge
+assert G.grow([("a", "stage", s1), ("b", "stage", m((0, 60, 100, 150)))], margin=0) == []
+
+# 5. monotone on screen: at least today's area and height at each rank
+old, new_ok, new_small = m((50, 100, 100, 150)), m((50, 80, 110, 150)), m((50, 110, 100, 150))
+assert G.monotone([("r5", new_ok, old)]) == [] and G.monotone([("r5", new_small, old)]) != []
+for who, im_ in (("base", old), ("good", new_ok), ("bad", new_small)):
+    (tmp / who / "forge").mkdir(parents=True)
+    im_.convert("RGB").save(tmp / who / "forge" / "r5.png")
+assert G.monotone_dirs(tmp / "base", tmp / "good") == [] and G.monotone_dirs(tmp / "base", tmp / "bad") != []
+assert G.monotone_dirs(tmp / "base", tmp / "nothing") != []  # a rank missing from the new tree
+
+# 6. G-CORNER: change inside the dilated union of masks is free, 2 % outside fails
+x0 = Image.new("RGB", (100, 100), (90, 90, 90))
+x0.save(tmp / "c0.png")
+x1 = x0.copy()
+ImageDraw.Draw(x1).rectangle((30, 30, 39, 39), fill=(250, 0, 0))  # next to the new mask: inside the 6 px ring
+x1.save(tmp / "c1.png")
+om, nm = m((10, 10, 20, 20), (100, 100)), m((25, 25, 35, 35), (100, 100))
+om.save(tmp / "om.png"); nm.save(tmp / "nm.png")
+assert G.corner(tmp / "c0.png", tmp / "c1.png", tmp / "om.png", tmp / "nm.png")[1] is True
+far = x0.copy()
+ImageDraw.Draw(far).rectangle((60, 60, 79, 79), fill=(250, 0, 0))  # 400 px of ~9000 = 4 %
+far.save(tmp / "c2.png")
+part, ok = G.corner(tmp / "c0.png", tmp / "c2.png", tmp / "om.png", tmp / "nm.png")
+assert not ok and 0.03 < part < 0.06, part
+try:
+    G.corner(tmp / "c0.png", tmp / "c2.png", tmp / "om.png", tmp / "nm.png", out=G.LOCKED[0] / "d.png")
+    raise AssertionError("a diff written inside the lock must be refused")
+except SystemExit:
+    pass
+
+# 7. blind set: neutral folder name, NN.png only, no metadata, key outside the folder and the repo
+from PIL import PngImagePlugin  # noqa: E402
+tagged = Image.open(a).convert("RGBA")
+info = PngImagePlugin.PngInfo(); info.add_text("Source", "windmill_grand_round3")
+tagged.save(tmp / "tagged.png", pnginfo=info)
+assert "Source" in Image.open(tmp / "tagged.png").text
+folder, key = G.blind("demo", [str(tmp / "tagged.png"), b], [decoy], parent=tmp, seed=3)
+import re  # noqa: E402
+assert re.fullmatch(r"blind-[0-9a-f]{8}", folder.name)
+assert sorted(p.name for p in folder.iterdir()) == ["01.png", "02.png", "03.png"]
+assert all(not getattr(Image.open(p), "text", {}) and not Image.open(p).info.get("exif") for p in folder.iterdir())
+assert sorted(v["role"] for v in json.loads(key.read_text()).values()) == ["decoy", "stage", "stage"]
+assert tmp / "keys" in key.parents and folder not in key.parents
+
+# 7b. canaries: three known-answer pairs, the strangers' folder shows no giveaway name, wrong answer is caught
+ladder = [sprite(f"l{i}", 40 + 30 * i) for i in range(3)]
+(tmp / "scratch").mkdir()
+pairs = G.canary_pairs(tmp / "scratch", b, a, ladder, locked=b, locked_base=a)
+assert len(pairs) == 3 and all(p[2] == "canary" for p in pairs)
+out = G.neutral_dir(tmp)
+kp = T.ab("demo", pairs, out, seed=5)
+assert sorted(p.name for p in out.iterdir()) == ["pair_01.png", "pair_02.png", "pair_03.png"]
+ck = json.loads(kp.read_text())
+right = {n: ("left" if k["left"] == k["canary_winner"] else "right") for n, k in ck.items()}
+wrong = {n: ("right" if v == "left" else "left") for n, v in right.items()}
+assert G.check_canaries(kp, right) == [] and G.check_canaries(kp, wrong) == ["01", "02", "03"]
+
+# 8. lock_check: a lock that holds, then one altered file
+import lock_check as K  # noqa: E402
+(tmp / "lsrc" / "bc").mkdir(parents=True); (tmp / "ldst" / "bc").mkdir(parents=True)
+for root in ("lsrc", "ldst"):
+    (tmp / root / "bc" / "x.png").write_bytes(b"locked art")
+(tmp / "ldst" / "sha256.txt").write_text(f"{K.sha(tmp / 'lsrc' / 'bc' / 'x.png')}  bc/x.png\n")
+assert K.check(tmp / "lsrc", tmp / "ldst") == []
+(tmp / "lsrc" / "bc" / "x.png").write_bytes(b"repainted")
+assert len(K.check(tmp / "lsrc", tmp / "ldst")) == 1
+assert K.check(tmp / "lsrc", tmp / "nolock") != []
+
 print("bldtools: all checks passed")

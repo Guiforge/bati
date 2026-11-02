@@ -348,6 +348,20 @@ def decors():
     }
 
 
+def bld_stages():
+    """Heights of the buildings-track stage specs (blockouts/bld/<code>_<stage>.json), apart from
+    `batiments`: iso-spec.test.ts wants 200 px free above every stage in `batiments`, and these
+    maquettes go higher on purpose. A separate test checks them against the canvas alone."""
+    out = {}
+    for path in sorted((ISO / "blockouts" / "bld").glob("*.json")):
+        if path.stem.startswith("windmill_sails"):
+            continue  # the sails are a separate sprite, read with their tower
+        code, stage = path.stem.rsplit("_", 1)
+        spec, verts = blockout_vertices(f"bld/{path.stem}")
+        out.setdefault(code, {})[stage] = {"canevas": spec["canvas"], "hauteurMax": round(max(z for _, _, z in verts), 4)}
+    return out
+
+
 def build():
     assert sorted(CODES) == sorted(ESTIMATES), (CODES, sorted(ESTIMATES))
     buildings = {}
@@ -373,6 +387,7 @@ def build():
                 "isoLayout.json's `legende`, one cell each, estimated.",
         "lune": {"L": [LX, LY, LZ], "decalageParUnite": [round(SHIFT[0], 4), round(SHIFT[1], 4)]},
         "batiments": buildings,
+        "batimentsBld": bld_stages(),
         "decors": decors(),
     }
 

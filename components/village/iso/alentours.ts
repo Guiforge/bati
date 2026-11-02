@@ -212,16 +212,17 @@ export function massesForet(
  * The south lisiere (loupe BC). The painted ground is the square gx, gy under 36.8, its tip the
  * south road's end; past its two south edges the baked terrain is grey noise, which the forest hides.
  * Whole masses only, never cut: a lattice of feet over everything past the edge (to 50 cells), three
- * size classes by depth (small near the village, large at the map's edge), six species in a cycle
- * that keeps every repeat 9 cells or more apart, mirrored by the parity of the cell so the repeats
- * alternate. Two large masses flank the road's last stretch and close over its end. A function of
- * the terrain only, not of the tier: the same masses at every tier (the ring leaves this land to
- * it), so nothing appears late or goes.
+ * size classes by depth (0.85 near the village, 1.0, 1.2 at the map's edge), six species in a cycle
+ * that keeps every repeat 6 cells or more apart, mirrored by the parity of the cell so the repeats
+ * alternate. A curtain of masses stands along the road's last stretch, each foot beside it and its
+ * crown over it, so the road goes in behind the trees and ends there. A function of the terrain
+ * only, not of the tier: the same masses at every tier (the ring leaves this land to it), so
+ * nothing appears late or goes.
  */
 const LISIERE_DEBUT = 35.2;
 /** The ring stops here (a 2 cell strip of meadow between it and the lisiere). */
 const DEBUT_ANNEAU = 33;
-const PAS_LISIERE = 4.5;
+const PAS_LISIERE = 3.6;
 const FOND_LISIERE = 50;
 const ESPECES_LISIERE: readonly NomForet[] = [
   "bouleaux",
@@ -231,53 +232,116 @@ const ESPECES_LISIERE: readonly NomForet[] = [
   "bord_crete",
   "melangee",
 ];
-const classeLisiere = (somme: number) => (somme < 74 ? 0.85 : somme < 88 ? 1.15 : 1.5);
+const classeLisiere = (somme: number) => (somme < 74 ? 0.85 : somme < 88 ? 1 : 1.2);
 const dansLisiere = (gx: number, gy: number, debut = LISIERE_DEBUT) => gx > debut || gy > debut;
-/** The road's last nodes, where the two flanking masses stand across it. */
-const FIN_ROUTE: Point | undefined = SORTIES.find((s) => s.fin[0] === 12)?.branches[0]?.at(-1);
-/** The road's samples before its last stretch: the flanking masses' crowns may cover the rest. */
-const ROUTES_AMONT = ROUTES.filter(([gx, gy]) => gx + gy < 66);
+/** The south road's nodes, and the stretch from `RIDEAU_DEPUIS` (gx + gy) that the curtain hides. */
+const ROUTE_SUD: readonly Point[] = SORTIES.find((s) => s.fin[0] === 12)?.branches[0] ?? [];
+const RIDEAU_DEPUIS = 60;
+/** How far beside the road a curtain mass stands, cells: the nearest of these that fits. */
+const FLANCS_RIDEAU = [1.6, 2, 2.4, 3] as const;
+/** A curtain foot stands this far in front of its node (toward the screen's bottom), cells: the crown, drawn above the foot, then covers the node. */
+const DEVANT_RIDEAU = 1.8;
 
 type OkMasse = (x: number, y: number, echelle: number, routes?: typeof ROUTES) => boolean;
 
-/** The two large masses across the road's end, one each side, their crowns closing over its last stretch. */
-function flancsDeRoute(ok: OkMasse): Masse[] {
-  if (!FIN_ROUTE) return [];
-  const [fx, fy] = FIN_ROUTE;
-  const cotes = [
-    { g: [fx - 2.8, fy + 3.3], nom: "bord_coniferes", flip: false },
-    { g: [fx + 2.6, fy - 2.0], nom: "feuillus", flip: true },
-  ] as const;
-  return cotes.flatMap(({ g, nom, flip }): Masse[] => {
-    const [x, y] = ecranXY([g[0], g[1]]);
-    // Its foot stays clear of the whole road; only its crown may cover the last stretch.
-    const loin = ROUTES.every(([rx, ry]) => Math.hypot(g[0] - rx, g[1] - ry) >= DEGAGE_ROUTE + 1);
-    return loin && ok(x, y, 1.7, ROUTES_AMONT) ? [{ nom, x, y, echelle: 1.7, flip }] : [];
+/**
+ * The curtain: a mass beside every other node of the road's last stretch and one past its end,
+ * sides alternating, species all different. Its foot keeps clear of the road (the nearest side and
+ * distance that fit), its crown covers it.
+ */
+function rideauDeRoute(ok: OkMasse): Masse[] {
+  const dernier = ROUTE_SUD.at(-1);
+  const avant = ROUTE_SUD.at(-2);
+  if (!dernier || !avant) return [];
+  const bout: Point = [dernier[0] + (dernier[0] - avant[0]), dernier[1] + (dernier[1] - avant[1])];
+  const points = [...ROUTE_SUD.filter(([gx, gy]) => gx + gy >= RIDEAU_DEPUIS), bout].filter(
+    (_, k, tous) => k % 2 === 0 || k === tous.length - 1,
+  );
+  return points.flatMap(([gx, gy], k): Masse[] => {
+    const echelle = k === points.length - 1 ? 1.2 : 1;
+    const nom = ESPECES_LISIERE[(k * 5 + 1) % ESPECES_LISIERE.length] ?? "melangee";
+    const pied = pieds(ok, [gx, gy], k % 2 === 0 ? 1 : -1, echelle);
+    return pied ? [{ nom, x: pied[0], y: pied[1], echelle, flip: k % 2 === 1 }] : [];
   });
 }
 
+/** A foot beside a road node, on the preferred side first, the nearest distance that keeps clear of the road and fits. */
+function pieds(ok: OkMasse, [gx, gy]: Point, pref: number, echelle: number): Point | null {
+  for (const d of FLANCS_RIDEAU) {
+    for (const cote of [pref, -pref]) {
+      const g: Point = [
+        gx + (cote * d) / Math.SQRT2 + DEVANT_RIDEAU,
+        gy - (cote * d) / Math.SQRT2 + DEVANT_RIDEAU,
+      ];
+      const [x, y] = ecranXY(g);
+      const loin = ROUTES.every(
+        ([rx, ry]) => Math.hypot(g[0] - rx, g[1] - ry) >= DEGAGE_ROUTE + 0.2,
+      );
+      if (loin && ok(x, y, echelle, [])) return [x, y];
+    }
+  }
+  return null;
+}
+
+/** Whether a map point lies under a mass's crown (an ellipse over its canvas). */
+const sousCouronne = (x: number, y: number, m: Masse) => {
+  const [w, h] = [TOILE_FORET.w * m.echelle, TOILE_FORET.h * m.echelle];
+  return ((x - m.x) / (0.45 * w)) ** 2 + ((y - (m.y - 0.5 * h)) / (0.45 * h)) ** 2 < 1;
+};
+
+/**
+ * Fills what the lattice left bare past the painted ground's edge: every point of a 1.5 cell
+ * lattice under no crown gets a mass centred on it, of the first species with no twin within 6 cells.
+ */
+function combler(ok: OkMasse, deja: readonly Masse[]): Masse[] {
+  const tous = [...deja];
+  const ajouts: Masse[] = [];
+  for (let gy = 36; gy <= FOND_LISIERE; gy += 1.5) {
+    for (let gx = 14; gx <= FOND_LISIERE; gx += 1.5) {
+      if ((gx <= LISIERE_DEBUT && gy <= LISIERE_DEBUT) || Math.abs(gx - gy) > 20) continue;
+      const [px, py] = ecranXY([gx, gy]);
+      if (tous.some((m) => sousCouronne(px, py, m))) continue;
+      const echelle = classeLisiere(gx + gy);
+      const [x, y] = [px, py + 0.5 * TOILE_FORET.h * echelle];
+      const [fx, fy] = grille(x, y);
+      const nom = ESPECES_LISIERE.find((n) =>
+        tous.every((m) => {
+          const [mx, my] = grille(m.x, m.y);
+          return m.nom !== n || Math.max(Math.abs(mx - fx), Math.abs(my - fy)) >= 6;
+        }),
+      );
+      if (!nom || !ok(x, y, echelle)) continue;
+      const m: Masse = { nom, x, y, echelle, flip: tous.length % 2 === 1 };
+      tous.push(m);
+      ajouts.push(m);
+    }
+  }
+  return ajouts;
+}
+
 function lisiereSud(ok: OkMasse): Masse[] {
-  const flancs = flancsDeRoute(ok);
-  const pres = flancs.map((f) => ({ nom: f.nom, g: grille(f.x, f.y) }));
+  const rideau = rideauDeRoute(ok);
+  const pres = rideau.map((f) => ({ nom: f.nom, g: grille(f.x, f.y) }));
   const out: Masse[] = [];
   const n = Math.floor((FOND_LISIERE - 14) / PAS_LISIERE) + 1;
   for (let j = 0; j < n; j++) {
     for (let i = 0; i < n; i++) {
       const hasard = mulberry32(90001 + j * 104729 + i * 7919);
-      const gx = 14 + (i + (hasard() - 0.5) * 0.5) * PAS_LISIERE;
-      const gy = 14 + (j + (hasard() - 0.5) * 0.5) * PAS_LISIERE;
+      const gx = 14 + (i + (hasard() - 0.5) * 0.2) * PAS_LISIERE;
+      const gy = 14 + (j + (hasard() - 0.5) * 0.2) * PAS_LISIERE;
       if (!dansLisiere(gx, gy) || Math.abs(gx - gy) > 20) continue;
       const nom = ESPECES_LISIERE[(i + 2 * j) % ESPECES_LISIERE.length] ?? "melangee";
-      // Nothing stands against a flanking mass, and no twin of one within 6 cells.
+      // Nothing stands against a curtain mass, and no twin of one within 6 cells.
       const loin = (p: (typeof pres)[number]) =>
-        Math.max(Math.abs(p.g[0] - gx), Math.abs(p.g[1] - gy)) >= (p.nom === nom ? 6 : 3.5);
+        Math.max(Math.abs(p.g[0] - gx), Math.abs(p.g[1] - gy)) >= (p.nom === nom ? 6 : 2.5);
       if (!pres.every(loin)) continue;
       const [x, y] = ecranXY([gx, gy]);
       const echelle = classeLisiere(gx + gy);
       if (ok(x, y, echelle)) out.push({ nom, x, y, echelle, flip: (i + j) % 2 === 1 });
     }
   }
-  return [...out, ...flancs];
+  const base = [...out, ...rideau];
+  return [...base, ...combler(ok, base)];
 }
 
 /**
@@ -461,18 +525,27 @@ export const ACCESSOIRES: readonly Accessoire[] = [
   { nom: "sieste_1", case: [7, 9], palier: 3 },
   { nom: "charrette_cassee_1", case: [13, 18], palier: 10 },
   { nom: "renard_1", case: [1, 6], batiment: "farm", palier: 4 },
-  // The south corner, off the island, tied to the painted plots (docs/designs/village-loop/loupes/bc/route_tuiles.json): the vegetable plot's water barrel and crate, the wheat's hay and cart. Each a repeat of a prop 13 cells or more away, so mirrored.
-  { nom: "tonneaux_2", case: [15, 21], pied: [15.9, 21.9], palier: 4, hors: true, flip: true },
-  { nom: "caisses_2", case: [20, 22], pied: [20.9, 22.6], palier: 4, hors: true, flip: true },
+  // The south corner, off the island, each prop against an edge of a painted plot (docs/designs/village-loop/loupes/bc/route_tuiles.json). Every one repeats a prop 6 cells or more away on the island, so mirrored.
+  { nom: "charrette_1", case: [20, 21], pied: [20.5, 21.6], palier: 4, hors: true, flip: true },
   {
     nom: "bottes_de_foin_1",
-    case: [17, 28],
-    pied: [17.3, 28.8],
+    case: [26, 19],
+    pied: [26.4, 19.9],
     palier: 4,
     hors: true,
     flip: true,
   },
-  { nom: "charrette_1", case: [19, 31], pied: [19.6, 31.0], palier: 4, hors: true, flip: true },
+  { nom: "tonneaux_2", case: [22, 15], pied: [22.1, 15.4], palier: 4, hors: true, flip: true },
+  { nom: "caisses_2", case: [26, 13], pied: [26.9, 13.6], palier: 4, hors: true, flip: true },
+  { nom: "cloture_1", case: [29, 25], pied: [29.5, 25.5], palier: 4, hors: true, flip: true },
+  {
+    nom: "bottes_de_foin_2",
+    case: [27, 23],
+    pied: [27.1, 23.2],
+    palier: 4,
+    hors: true,
+    flip: true,
+  },
 ];
 
 /** The props that show on the island of `visible`, with the buildings `montres` and the tier `palier`. */

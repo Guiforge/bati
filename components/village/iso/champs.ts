@@ -72,14 +72,15 @@ const surRoute = (x0: number, y0: number, x1: number, y1: number) =>
   );
 
 /**
- * The two plots the painted ground carries beside the south road (loupe BC, frozen in
+ * The three plots the painted ground carries beside the south road (loupe BC, frozen in
  * docs/designs/village-loop/loupes/bc/route_tuiles.json): wheat on the road's left, a vegetable
  * plot on its right, [gx0, gy0, gx1, gy1] in cells, both off the 20x20 grid. The painted ground
  * draws them, so no block of the lattice below stands on them (`surParcelle`).
  */
 export const PARCELLES = {
-  ble: [18.1, 27.5, 21.5, 30.1],
-  potager: [16.6, 21.0, 20.2, 23.2],
+  ble: [21, 19.5, 26, 23.5],
+  potager: [22.5, 13, 26.5, 16],
+  paturage: [27.5, 21.5, 31.5, 25],
 } as const;
 /** The lattice block's margin round a plot, cells. */
 const MARGE_PARCELLE = 0.5;

@@ -96,7 +96,8 @@ describe("the south road (loupe BC)", () => {
     const sud = SORTIES.find((s) => s.fin[0] === 12);
     for (const [x0, y0, x1, y1] of Object.values(PARCELLES))
       for (const [gx, gy] of sud?.branches.flat() ?? []) {
-        expect(y0).toBeGreaterThan(TAILLE);
+        expect(Math.min(x0, y0)).toBeGreaterThanOrEqual(0);
+        expect(Math.max(x0, y0)).toBeGreaterThanOrEqual(TAILLE);
         const dx = Math.max(x0 - gx, 0, gx - x1);
         const dy = Math.max(y0 - gy, 0, gy - y1);
         expect(Math.hypot(dx, dy)).toBeGreaterThan(1);

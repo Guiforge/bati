@@ -88,8 +88,8 @@ def sortie(gx, gy):
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 BOUTS = [(0, 10), (19, 10), (12, 19)]
 PORTE_SUD = (12, 16)
-# champs.ts PARCELLES, [gx0, gy0, gx1, gy1] in cells: wheat on the road's left, a vegetable plot on its right
-PARCELLES = {"ble": [18.1, 27.5, 21.5, 30.1], "potager": [16.6, 21.0, 20.2, 23.2]}
+# champs.ts PARCELLES, [gx0, gy0, gx1, gy1] in cells: wheat, a vegetable plot and a pasture, all right of the road
+PARCELLES = {"ble": [21, 19.5, 26, 23.5], "potager": [22.5, 13, 26.5, 16], "paturage": [27.5, 21.5, 31.5, 25]}
 
 
 def cases(line):
@@ -124,7 +124,7 @@ if __name__ == "__main__":
         "doc": "Frozen tile list of the south road (loupe BC), from components/village/iso/rues.ts SORTIES via "
         "scripts/iso/rues_port.py. rue = the gate street (12, 16) to (12, 19), island cells; route = the road from "
         "(12, 19) screen-down to the painted ground's tip (gx + gy < 72), voie = the track it forks into; the west and "
-        "east exits are listed to prove they did not move. Cells are [gx, gy]; paliers_rue = the tier each gate-street cell joins the island; parcelles = champs.ts PARCELLES, the wheat and the vegetable plot, [gx0, gy0, gx1, gy1].",
+        "east exits are listed to prove they did not move. Cells are [gx, gy]; paliers_rue = the tier each gate-street cell joins the island; parcelles = champs.ts PARCELLES, the wheat, the vegetable plot and the pasture, [gx0, gy0, gx1, gy1].",
         "gate": list(PORTE_SUD),
         "rue": rue,
         "paliers_rue": ["123456789abc".index(layout["paliers"][c[1]][c[0]]) + 1 for c in rue],

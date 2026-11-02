@@ -7,7 +7,7 @@ import {
   massesForet,
 } from "@/components/village/iso/alentours";
 import { ecranXY, etatCarte } from "@/components/village/iso/carteDemo";
-import { PARCELLES } from "@/components/village/iso/champs";
+import { champsDe, PARCELLES } from "@/components/village/iso/champs";
 import { SORTIES } from "@/components/village/iso/rues";
 
 const PALIERS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
@@ -47,8 +47,9 @@ describe("the south lisiere hides the grey past the painted ground (loupe BC)", 
       const l = ms.filter((m) => m.echelle === e).map(prof);
       return l.reduce((a, b) => a + b, 0) / Math.max(1, l.length);
     };
-    expect(moy(0.85)).toBeLessThan(moy(1.15));
-    expect(moy(1.15)).toBeLessThan(moy(1.5));
+    expect(Math.max(...ms.map((m) => m.echelle))).toBeLessThanOrEqual(1.2);
+    expect(moy(0.85)).toBeLessThan(moy(1));
+    expect(moy(1)).toBeLessThan(moy(1.2));
   });
 
   test("an identical mass is never within 6 cells of its twin", () => {
@@ -63,15 +64,46 @@ describe("the south lisiere hides the grey past the painted ground (loupe BC)", 
       }
   });
 
-  test("two large masses stand either side of the road's end and close over it", () => {
-    const [ex] = ecranXY([fin[0], fin[1]]);
-    const flancs = masses(12).filter((m) => m.echelle === 1.7);
-    expect(flancs).toHaveLength(2);
-    const dx = flancs.map((m) => m.x - ex).toSorted((a, b) => a - b);
-    expect(dx[0]).toBeLessThan(0);
-    expect(dx[1]).toBeGreaterThan(0);
-    // Each one's half width (84 dp x 1.7) reaches the road's end, give or take its own half width (6 dp).
-    for (const d of dx) expect(Math.abs(d)).toBeLessThan(84 * 1.7 + 6);
+  /** Whether a map point lies under a mass's crown (an ellipse over its canvas). */
+  const couvert = (x: number, y: number, ms: readonly Masse[]) =>
+    ms.some((m) => {
+      const [w, h] = [168 * m.echelle, 144 * m.echelle];
+      return ((x - m.x) / (0.45 * w)) ** 2 + ((y - (m.y - 0.5 * h)) / (0.45 * h)) ** 2 < 1;
+    });
+
+  test("the road's last stretch goes in behind crowns, with no fragment left past them", () => {
+    const ms = masses(12);
+    const fin2: [number, number] = [fin[0] + 1.2, fin[1] + 2];
+    const nodes = [...route.filter(([gx, gy]) => gx + gy >= 64), fin2];
+    expect(nodes.length).toBeGreaterThan(3);
+    for (const [gx, gy] of nodes) {
+      const [x, y] = ecranXY([gx, gy]);
+      expect([gx, gy, couvert(x, y, ms)]).toEqual([gx, gy, true]);
+    }
+  });
+
+  test("no grey world edge or bare dark ground shows below the forest line on the p06 screen", () => {
+    const ms = masses(6);
+    let gris = 0;
+    let nus = 0;
+    // The p06 window in map dp: x 144 to 864, from the forest line (y 735) to the screen's bottom (1001).
+    for (let x = 144; x <= 864; x += 12)
+      for (let y = 735; y <= 1001; y += 12) {
+        const [gx, gy] = grille(x, y);
+        if (gx <= 36.8 && gy <= 36.8) continue;
+        gris++;
+        if (!couvert(x, y, ms)) nus++;
+      }
+    expect(gris).toBeGreaterThan(300);
+    expect(nus / gris).toBeLessThan(0.03);
+  });
+
+  test("a plot's block is never taken away by the plots, at any tier", () => {
+    for (const p of PALIERS) {
+      const { visible } = etatCarte(p, false);
+      const vu = (gx: number, gy: number) => visible[gy]?.[gx] === true;
+      expect(champsDe(vu, true).blocs).toEqual(champsDe(vu).blocs);
+    }
   });
 
   test("no mass foot on the road or on a plot, at any tier", () => {
@@ -88,20 +120,28 @@ describe("the south lisiere hides the grey past the painted ground (loupe BC)", 
 
 describe("the corner's props (loupe BC)", () => {
   const hors = ACCESSOIRES.filter((a) => a.hors);
-  const bord = (g: readonly [number, number]) =>
+  const bord = (
+    g: readonly [number, number],
+    plots: readonly (readonly [number, number, number, number])[] = Object.values(PARCELLES),
+  ) =>
     Math.min(
-      ...Object.values(PARCELLES).map(([x0, y0, x1, y1]) =>
+      ...plots.map(([x0, y0, x1, y1]) =>
         Math.hypot(Math.max(x0 - g[0], 0, g[0] - x1), Math.max(y0 - g[1], 0, g[1] - y1)),
       ),
     );
 
-  test("two to four, each within 3 cells of a plot, off the grid, clear of the road, mirrored repeats", () => {
+  test("each against a plot's edge, none alone, off the grid, clear of the road, mirrored repeats", () => {
     expect(hors.length).toBeGreaterThanOrEqual(2);
-    expect(hors.length).toBeLessThanOrEqual(4);
+    expect(hors.length).toBeLessThanOrEqual(6);
+    // Every plot has a prop touching its edge (within 1 cell).
+    for (const r of Object.values(PARCELLES))
+      expect(hors.some((a) => bord(a.pied ?? [a.case[0] + 0.5, a.case[1] + 0.5], [r]) <= 1)).toBe(
+        true,
+      );
     for (const a of hors) {
       const g = a.pied ?? [a.case[0] + 0.5, a.case[1] + 0.5];
-      expect(bord(g)).toBeLessThanOrEqual(3);
-      expect(g[1]).toBeGreaterThan(20);
+      expect(bord(g)).toBeLessThanOrEqual(1);
+      expect(Math.max(g[0], g[1])).toBeGreaterThan(20);
       expect(a.flip).toBe(true);
       for (const [rx, ry] of SORTIES.flatMap((s) => s.branches.flat()))
         expect(Math.hypot(g[0] - rx, g[1] - ry)).toBeGreaterThan(1);

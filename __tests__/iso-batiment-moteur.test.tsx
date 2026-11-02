@@ -35,6 +35,8 @@ jest.mock("@/hooks/useReducedMotion", () => ({ useReducedMotion: () => mockRedui
 
 configure({ defaultIncludeHiddenElements: true });
 
+// The real canvas of the windmill, 896 x 1344 px, at 1/8 dp a px.
+const BOITE = { x: 0, y: 0, w: 112, h: 168 };
 const RANGS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const rule = "B" as const;
 const etat = (r: number, nuit = false) => etatBatiment(data, r, { nuit, rule });
@@ -66,9 +68,15 @@ describe("the flags are off by default", () => {
     const nu = JSON.stringify(screen.toJSON());
     await screen.unmount();
     await render(
-      <BatimentMoteur data={data} rank={10} nuit corps={{ w: 100, h: 100 }} ancre={[50, 90]}>
-        {corps}
-      </BatimentMoteur>,
+      <BatimentMoteur
+        data={data}
+        rank={10}
+        nuit
+        corps={BOITE}
+        taille={[896, 1344]}
+        ancre={[448, 1300]}
+        sprite={() => corps}
+      />,
     );
     expect(JSON.stringify(screen.toJSON())).toBe(nu);
   });
@@ -215,7 +223,15 @@ describe("the two moments, as plans", () => {
 
 // A parent that does what IsoVillage will: a tap starts the moment, nothing else does.
 // biome-ignore lint/style/useComponentExportOnlyModules: a test harness
-function Parent({ nuit = false, rank = 3 }: { nuit?: boolean; rank?: number }) {
+function Parent({
+  nuit = false,
+  rank = 3,
+  masque = false,
+}: {
+  nuit?: boolean;
+  rank?: number;
+  masque?: boolean;
+}) {
   const { spectacle, jouer, fini } = useSpectacleBatiment();
   const [rang, setRang] = useState(rank);
   return (
@@ -233,13 +249,18 @@ function Parent({ nuit = false, rank = 3 }: { nuit?: boolean; rank?: number }) {
         rank={rang}
         nuit={nuit}
         rule={rule}
-        corps={{ w: 140, h: 170 }}
-        ancre={[70, 150]}
+        corps={BOITE}
+        taille={[896, 1344]}
+        ancre={[448, 1300]}
         spectacle={spectacle}
         onFini={fini}
-      >
-        <View testID="sprite" />
-      </BatimentMoteur>
+        sprite={(stade, suivant) => (
+          <View testID={suivant ? `sprite-${stade}-suivant` : "sprite"} />
+        )}
+        couches={<View testID="couches" />}
+        reclame={<View testID="reclame" />}
+        masque={masque}
+      />
     </View>
   );
 }

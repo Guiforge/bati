@@ -112,7 +112,6 @@ export default function DevIsoRoute() {
     avantbase,
     show,
     semaine,
-    moteur,
   } = useLocalSearchParams<{
     /** `?bld=<code>&rang=N` (+ `base`, `show=stade|rang`, `avant`, `semaine=1`): the buildings track's capture states (etatBld.ts). */
     bld?: string;
@@ -122,8 +121,6 @@ export default function DevIsoRoute() {
     avantbase?: string;
     show?: string;
     semaine?: string;
-    /** `?moteur=1` with `bld`: the buildings engine is on (etatBld.ts). */
-    moteur?: string;
     /** `?dump=<name>`: once the map has settled, its sprites are written to logcat for scripts/iso/loupe_dump_pull.py (dumpSprites.ts). */
     dump?: string;
     /** `?lumieres=0`: every light layer is hidden, for the pixel checks on raw sprites. */
@@ -154,7 +151,7 @@ export default function DevIsoRoute() {
     stade?: string;
   }>();
   if (!ISO_POC) return <Redirect href="/" />;
-  const etat = etatBldDe({ bld, rang, base, avant, avantbase, show, semaine, palier, moteur });
+  const etat = etatBldDe({ bld, rang, base, avant, avantbase, show, semaine, palier });
   return (
     <FigeContext.Provider value={fige === "1"}>
       {/* Perf A/B (reports/perf-regression-audit3.md): `?ech=0.5&flaques=0&bornes=0`, the default when absent. */}

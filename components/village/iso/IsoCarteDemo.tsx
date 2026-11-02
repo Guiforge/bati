@@ -59,6 +59,9 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import Svg, { ClipPath, Defs, G, Path, Polygon, Text } from "react-native-svg";
+import type { BuildingData } from "@/constants/buildingData";
+import type { VisualStage } from "@/constants/buildingStages";
+import { BATIMENT_MOTEUR } from "@/constants/isoPoc";
 import { rawColors } from "@/constants/rawColors";
 import type { Practice } from "@/db/crestRules";
 import { type BuildingCode, buildingCodes } from "@/db/schema";
@@ -93,6 +96,7 @@ import {
   ecran,
   ecranXY,
   elementsMontes,
+  enStade,
   etatCarte,
   HAUTEUR,
   LARGEUR,
@@ -114,6 +118,7 @@ import {
   reduitPiece,
   spriteDe,
   stadeDemo,
+  stadeReel,
   tuiles,
   VERRES_LANTERNE,
   voileDe,
@@ -121,10 +126,9 @@ import {
 import { type Champs, champsDe, tuilesChamps } from "./champs";
 import { COUP_MS, COUPS, RETOUR_COUP_MS } from "./chantier";
 import { CODES_A_CORBEAU } from "./corbeaux";
-import { DONNEES_BLD } from "./donneesBld";
 import { Effets } from "./Effets";
 import { BannieresVocation, ChoseDeVocation, SolVocation } from "./EnsembleVocation";
-import { EtatBldContext } from "./etatBld";
+import { type EtatBld, EtatBldContext } from "./etatBld";
 import { Feux } from "./FeuxDessines";
 import { Fierte } from "./Fierte";
 import { useTour } from "./familles";
@@ -833,8 +837,78 @@ function AilesVivantes({
   );
 }
 
-/** One building's image and, for a windmill, its sails right above it (the effects layer). */
-function Maquette({
+/** The engine's version of Maquette (see below): the map's own layers go inside the engine's body. */
+function MaquetteMoteur({
+  code,
+  stade,
+  masque,
+  biome,
+  donnees,
+  bld,
+  s,
+  corps,
+  vie,
+  couches,
+}: {
+  code: BuildingCode;
+  stade: Stade;
+  masque: boolean;
+  biome: Biome;
+  donnees: BuildingData;
+  bld: EtatBld;
+  s: SpriteIso;
+  corps: Rect;
+  vie: Ambiance;
+  /** The shadow on the socle and the sails. */
+  couches: ReactNode;
+}) {
+  const image = (v: VisualStage, suivant: boolean) => {
+    const st = spriteDe(code, stadeReel(code, enStade(v)), vie);
+    return (
+      <Planche
+        s={st}
+        rect={st ? pose(code, st) : null}
+        invisible={masque || suivant}
+        testID={suivant ? `iso-maquette-${code}-suivant` : `iso-maquette-${code}`}
+      />
+    );
+  };
+  return (
+    <MoteurBld
+      data={donnees}
+      etat={bld}
+      corps={corps}
+      s={s}
+      nuit={vie === "nuit"}
+      masque={masque}
+      sprite={image}
+      couches={
+        <>
+          {couches}
+          {masque ? null : (
+            <>
+              <Feux code={code} stade={stade} s={s} corps={corps} biome={biome} ambiance={vie} />
+              <Veilles code={code} stade={stade} s={s} corps={corps} biome={biome} ambiance={vie} />
+              <Effets code={code} stade={stade} s={s} corps={corps} ambiance={vie} />
+              <Retouches code={code} stade={stade} s={s} corps={corps} />
+            </>
+          )}
+        </>
+      }
+      reclame={masque ? null : <Reclame code={code} stade={stade} s={s} corps={corps} />}
+    />
+  );
+}
+
+/**
+ * One building's image and, for a windmill, its sails right above it (the effects layer). A
+ * building with engine data and a capture state (BatimentSeul, the engine flag on) goes through
+ * the engine instead: one view at the top, always mounted, bounces the sprite and every layer of
+ * this function together, and the engine's own pieces stand around it in this order: behind, the
+ * sprite, these layers, in front, the dust, the ready mark. The engine draws its own clan mark, so
+ * the pride banner is left out. Every other building is the tree it always was.
+ */
+export function Maquette({
   code,
   stade,
   masque,
@@ -866,40 +940,35 @@ function Maquette({
   // watch lights are the night's: the day lights none of them.
   const vie = lumiere === "jour" ? lumiere : ambiance;
   const s = spriteDe(code, stade, vie);
-  const ailes = ailesDe(code, vie);
+  const ailes = ailesDe(code, stade, vie);
   const corps = s ? pose(code, s) : null;
   const rectAiles = corps && s && ailes ? poseAiles(corps, s, ailes) : null;
   const socle = corps ? ombreSocleDe(code, stade) : null;
-  // The buildings engine, for a capture link with moteur=1 only (etatBld.ts); otherwise null.
+  // The buildings engine: only a capture state naming this building, with its data, and the flag.
   const bld = useContext(EtatBldContext);
-  const moteur = bld?.moteur && bld.code === code ? (DONNEES_BLD[code] ?? null) : null;
+  const donnees = BATIMENT_MOTEUR && bld?.code === code ? bld.donnees : undefined;
+  const ombre = masque ? null : <OmbreSocle code={code} socle={socle} biome={biome} />;
+  const voiles =
+    ailes && rectAiles ? <Ailes s={ailes} rect={rectAiles} testID={`iso-ailes-${code}`} /> : null;
+  if (donnees && bld && s && corps) {
+    return (
+      <MaquetteMoteur
+        {...{ code, stade, masque, biome, donnees, bld, s, corps, vie }}
+        couches={
+          <>
+            {ombre}
+            {voiles}
+          </>
+        }
+      />
+    );
+  }
   return (
     <>
-      {moteur && bld && s && corps ? (
-        <MoteurBld
-          data={moteur}
-          etat={bld}
-          corps={corps}
-          taille={s.size}
-          ancre={s.anchor}
-          nuit={vie === "nuit"}
-        >
-          <Planche
-            s={s}
-            rect={{ x: 0, y: 0, w: corps.w, h: corps.h }}
-            ancre={corps}
-            invisible={masque}
-            testID={`iso-maquette-${code}`}
-          />
-        </MoteurBld>
-      ) : (
-        <Planche s={s} rect={corps} invisible={masque} testID={`iso-maquette-${code}`} />
-      )}
+      <Planche s={s} rect={corps} invisible={masque} testID={`iso-maquette-${code}`} />
       {/* Hidden with its sprite: over a heap of stones it was a shadow of nothing, and the growth layer draws its own. */}
-      {masque ? null : <OmbreSocle code={code} socle={socle} biome={biome} />}
-      {ailes && rectAiles ? (
-        <Ailes s={ailes} rect={rectAiles} testID={`iso-ailes-${code}`} />
-      ) : null}
+      {ombre}
+      {voiles}
       {s && corps && !masque ? (
         <>
           <Fierte

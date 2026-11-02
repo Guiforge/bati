@@ -9,9 +9,14 @@
 
 import { Paths } from "expo-file-system";
 
+/** A `.perf` or other local build (application id with a suffix); the published id is exactly com.guiforge.bati. */
+export function estBuildLocal(uri: string): boolean {
+  return /\/com\.guiforge\.bati\.[^/]+\//.test(uri);
+}
+
 function estBuildPerf(): boolean {
   try {
-    return /\/com\.guiforge\.bati\.perf\//.test(Paths.document.uri);
+    return estBuildLocal(Paths.document.uri);
   } catch {
     // No files directory to read (web, a test without the native module): not the .perf build.
     return false;
@@ -20,13 +25,18 @@ function estBuildPerf(): boolean {
 
 export const ISO_POC: boolean = __DEV__ || estBuildPerf();
 
+// A local build: a dev client or a `.perf` release. Jest is __DEV__ too, so the suites keep seeing
+// the shipped values: `process.env.NODE_ENV` is a literal Babel inlines ("test" under jest,
+// "development" in a dev client), not a dynamic env read, and a published build has no __DEV__ and
+// the bare application id.
+const BUILD_LOCAL: boolean = (__DEV__ && process.env.NODE_ENV !== "test") || estBuildPerf();
+
 // Whether the village tab draws the iso map (components/village/iso/IsoVillage.tsx) in place of the
-// painted scene. Read in release too (the F-Droid build included), and off by default: nothing iso
-// shows until it is turned on.
-// shortcut: a source constant, no setting or remote switch; turn it on by changing `false` to
-// `true` here (then build the `.perf` release), and back before any tag, until the lot 3 gate
-// decides how it ships.
-export const INTEGRATION = false;
+// painted scene. On in local builds (dev, `.perf`), off in every published build (F-Droid, GitHub,
+// Play) and under jest.
+// shortcut: a source rule, no setting or remote switch; a published build stays off until the lot 3
+// gate decides how it ships, then this becomes `true`.
+export const INTEGRATION: boolean = BUILD_LOCAL;
 
 // How the iso map lives (PROMPT-EQUIPE-V1.md §6). `continu` (Guillaume, 01/11): the one clock runs
 // while the screen has the focus and stops 60 s after the last touch, with reduced motion, under a
@@ -47,10 +57,11 @@ export type Alentours = Readonly<Record<(typeof COUCHES_ALENTOURS)[number], bool
 // stories, `animaux` the painted mice and birds (in place of the drawn rat and crows). No
 // screen-fixed foreground plane: it is gone for good (loupe BC, G03). app/dev-iso.tsx turns them on for a capture with
 // `?peint=sol,foret,decor,animaux` (or `?peint=tout`).
-// shortcut: source constants, like INTEGRATION; turn a layer on here once Guillaume has judged it.
+// shortcut: source rule, like INTEGRATION: all on in local builds, all off in a published one until
+// Guillaume has judged each layer; then flip that layer's value to `true` here.
 export const ALENTOURS: Alentours = {
-  sol: false,
-  foret: false,
-  decor: false,
-  animaux: false,
+  sol: BUILD_LOCAL,
+  foret: BUILD_LOCAL,
+  decor: BUILD_LOCAL,
+  animaux: BUILD_LOCAL,
 };

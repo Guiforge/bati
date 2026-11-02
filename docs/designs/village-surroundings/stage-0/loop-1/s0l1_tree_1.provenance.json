@@ -1,0 +1,23 @@
+{
+  "model": "flux-2-pro-preview",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+    "file": "4f62ed8f0675af21.png",
+    "sha256": "4f62ed8f0675af21af5d02d14a60d049bd322506c0ecf780a82c7e0dc203c003"
+  },
+  "prompt": "Image 1 is a reference for style only, very low weight: never copy its building, take only its painting and its light. Paint one single broadleaf oak tree, sturdy and slightly exaggerated, a short thick trunk of brown bark on a small tuft of grass and two pebbles, a crown made of three or four big rounded clumps of leaves, each clump painted with its own lit top, mid tone and shaded underside, the clumps separated by ink lines, a few leaf strokes breaking the silhouette. Hand-painted Belgian comic game art, three-quarter isometric view from above, matching image 1's brushwork. Thick regular black ink outline (#0F1518) around the whole silhouette, about eight pixels, thinner inner lines. Visible brush strokes, two or three values per surface, matte, no gloss, no gradient sheen. Warm late-afternoon light from the upper left: left and top surfaces lit warm (#DEC28B, #C8965E), right side in cool slate shadow (#2E3552). Earth #6E5941, dark earth #554232, foliage #4C7A3E, moss #435A36. No cast shadow outside the object's own base. One object alone, centred, on a flat uniform pure magenta (#FF00FF) backdrop from edge to edge, all four corners. No text, no signature.",
+  "seed": 3644120625,
+  "width": 768,
+  "height": 1024,
+  "generated": "2026-11-01",
+  "extra": {
+    "disable_pup": true
+  },
+  "references": [
+    {
+      "path": "ref_ancre_640.png",
+      "sha256": "9c0319e26b93f58d387673f6b6b84c96dbc68a36d441bfd33b041abeb51f33f6"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+    "file": "1ca773e3cd4c8c46.png",
+    "sha256": "1ca773e3cd4c8c463f801e9aefbc59c90219d3983a35febd6bead9070480e002"
+  },
+  "prompt": "Image 1 gives only the mood and the brushwork, very low weight: never copy its building. A row of three separate pictures side by side, evenly spaced with wide empty gaps, never touching, same scale: hay bales; one round bale, two square bales stacked, a loose haystack with a pitchfork. Each one stands alone on the backdrop with nothing under it: no ground, no grass tile, no shadow, no base. Franco-Belgian comic game art, three-quarter isometric view from above. First the ink: a bold, clean, confident black outline (#0F1518) of even width around the whole silhouette, about nine pixels wide, thinner inner lines. Then the colour, painted inside the ink with visible brush strokes, two or three values per surface, matte, no gloss; the brush stays inside the lines and never breaks the outline. Warm late-afternoon light from the upper left: left and top surfaces lit warm (#DEC28B, #C8965E); the shaded side of every form is cool slate blue-grey (#2E3552), never brown. Earth #6E5941, dark earth #554232, foliage #4C7A3E, moss #435A36. Image 1 gives only the mood: do not copy its thin line or its brown shadows. No cast shadow outside the object's own base. The objects on a flat uniform pure magenta (#FF00FF) backdrop from edge to edge, all four corners. No text, no signature.",
+  "seed": null,
+  "width": 1344,
+  "height": 896,
+  "generated": "2026-11-01",
+  "extra": {
+    "width": 1344,
+    "height": 896
+  },
+  "references": [
+    {
+      "path": "ref_ancre_640.png",
+      "sha256": "9c0319e26b93f58d387673f6b6b84c96dbc68a36d441bfd33b041abeb51f33f6"
+    }
+  ]
+}

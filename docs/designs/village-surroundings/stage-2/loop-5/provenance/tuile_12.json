@@ -1,0 +1,28 @@
+{
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+    "file": "e7c0fe18af6382a4.png",
+    "sha256": "e7c0fe18af6382a444d82331f89f7479f421c5b77126894634cff0c6d9df1aae"
+  },
+  "prompt": "Image 1 fixes the layout exactly, zone by zone, edge to edge: follow its shapes and nothing else. Image 2 is only a small swatch of the painting to match, its brushwork and its colours; never copy its shapes. Image 1 is a flat colour map seen from the game's isometric camera. Repaint it as hand-painted natural terrain, keeping every zone where it is. Colour key of image 1: olive green = open meadow grass with natural variation, tufts, a few wildflowers and small bare patches, no paths, no plots, no fields, no geometric shapes; light warm khaki = the worn heart of the village, grass trampled thin, lighter and warmer, with soft irregular edges fading into the meadow; slate blue = a river with grassy banks and a few stones at the water's edge; dark olive-brown = bare forest-floor soil with moss and dead leaves, flat ground only, no trees, no bushes; darkest brown = the same forest floor in deeper shade at the edge of the world. Image 2 gives only the mood and the brushwork, very low weight: never copy its building or its layout. Paint only the terrain: no road, no path, no building, no fence, no field, no tree, no character, no prop, nothing standing up, no cast shadow. No drawn lines on the ground, colour against colour only. Franco-Belgian comic game art, three-quarter isometric view from above. No ink outline at all, soft painted edges between zones. Colour painted with visible brush strokes, two or three values per surface, matte, no gloss. Warm late-afternoon light from the upper left, even over the whole picture, no vignette. Meadow #6A7442, earth #6E5941, dark earth #554232, foliage #4C7A3E, moss #435A36, ochre #C8965E, light #DEC28B, slate shadow #2E3552. The picture fills the whole frame from edge to edge. No text, no signature.",
+  "seed": null,
+  "width": 2048,
+  "height": 2048,
+  "generated": "2026-11-01",
+  "extra": {
+    "width": 2048,
+    "height": 2048
+  },
+  "references": [
+    {
+      "path": "aplats_t12.png",
+      "sha256": "5028892b2cf0089edadef9f892ce86823bdef82968f8ba3958797c6096c48efb"
+    },
+    {
+      "path": "echantillon_v1.png",
+      "sha256": "e3a7c4dddb23c0a6dbb5b597903c99a0df782c441798e1f8900e1a6b503630f6"
+    }
+  ]
+}

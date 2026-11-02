@@ -1,0 +1,291 @@
+{
+ "tonneaux": {
+  "groupe": "camp",
+  "variantes_demandees": 3,
+  "variantes_obtenues": 3,
+  "trait_brut_S": [
+   1.7,
+   1.7,
+   2.1
+  ],
+  "trait_vise_S": 6
+ },
+ "caisses": {
+  "groupe": "camp",
+  "variantes_demandees": 3,
+  "variantes_obtenues": 3,
+  "trait_brut_S": [
+   1.3,
+   1.3,
+   1.3
+  ],
+  "trait_vise_S": 6
+ },
+ "tas_de_bois": {
+  "groupe": "camp",
+  "variantes_demandees": 3,
+  "variantes_obtenues": 3,
+  "trait_brut_S": [
+   1.6,
+   1.6,
+   1.6
+  ],
+  "trait_vise_S": 6
+ },
+ "sacs_de_grain": {
+  "groupe": "camp",
+  "variantes_demandees": 3,
+  "variantes_obtenues": 3,
+  "trait_brut_S": [
+   1.8,
+   1.8,
+   1.4
+  ],
+  "trait_vise_S": 6
+ },
+ "bottes_de_foin": {
+  "groupe": "camp",
+  "variantes_demandees": 3,
+  "variantes_obtenues": 3,
+  "trait_brut_S": [
+   1.5,
+   1.5,
+   1.5
+  ],
+  "trait_vise_S": 6
+ },
+ "ratelier": {
+  "groupe": "camp",
+  "variantes_demandees": 2,
+  "variantes_obtenues": 2,
+  "trait_brut_S": [
+   1.4,
+   1.4
+  ],
+  "trait_vise_S": 6
+ },
+ "lanterne": {
+  "groupe": "camp",
+  "variantes_demandees": 2,
+  "variantes_obtenues": 2,
+  "trait_brut_S": [
+   1.4,
+   1.4
+  ],
+  "trait_vise_S": 6
+ },
+ "cloture": {
+  "groupe": "camp",
+  "variantes_demandees": 3,
+  "variantes_obtenues": 3,
+  "trait_brut_S": [
+   1.8,
+   0.9,
+   1.8
+  ],
+  "trait_vise_S": 6
+ },
+ "poteau_indicateur": {
+  "groupe": "camp",
+  "variantes_demandees": 3,
+  "variantes_obtenues": 3,
+  "trait_brut_S": [
+   0.5,
+   0.5,
+   0.5
+  ],
+  "trait_vise_S": 6
+ },
+ "menhir": {
+  "groupe": "camp",
+  "variantes_demandees": 3,
+  "variantes_obtenues": 3,
+  "trait_brut_S": [
+   2.0,
+   2.0,
+   2.0
+  ],
+  "trait_vise_S": 6
+ },
+ "etal": {
+  "groupe": "ville",
+  "variantes_demandees": 3,
+  "variantes_obtenues": 3,
+  "trait_brut_S": [
+   2.4,
+   3.6,
+   3.6
+  ],
+  "trait_vise_S": 6
+ },
+ "linge": {
+  "groupe": "ville",
+  "variantes_demandees": 2,
+  "variantes_obtenues": 2,
+  "trait_brut_S": [
+   2.1,
+   2.1
+  ],
+  "trait_vise_S": 6
+ },
+ "charrette": {
+  "groupe": "ville",
+  "variantes_demandees": 2,
+  "variantes_obtenues": 2,
+  "trait_brut_S": [
+   2.6,
+   2.6
+  ],
+  "trait_vise_S": 6
+ },
+ "outils": {
+  "groupe": "ville",
+  "variantes_demandees": 3,
+  "variantes_obtenues": 3,
+  "trait_brut_S": [
+   1.3,
+   1.3,
+   1.3
+  ],
+  "trait_vise_S": 6
+ },
+ "potager": {
+  "groupe": "ville",
+  "variantes_demandees": 2,
+  "variantes_obtenues": 2,
+  "trait_brut_S": [
+   0.6,
+   0.6
+  ],
+  "trait_vise_S": 6
+ },
+ "epouvantail": {
+  "groupe": "ville",
+  "variantes_demandees": 2,
+  "variantes_obtenues": 2,
+  "trait_brut_S": [
+   0.6,
+   0.6
+  ],
+  "trait_vise_S": 6
+ },
+ "poulailler": {
+  "groupe": "ville",
+  "variantes_demandees": 2,
+  "variantes_obtenues": 2,
+  "trait_brut_S": [
+   1.2,
+   1.2
+  ],
+  "trait_vise_S": 6
+ },
+ "chat": {
+  "groupe": "histoire",
+  "variantes_demandees": 3,
+  "variantes_obtenues": 3,
+  "trait_brut_S": [
+   0.5,
+   0.5,
+   0.8
+  ],
+  "trait_vise_S": 6
+ },
+ "pecheur": {
+  "groupe": "histoire",
+  "variantes_demandees": 2,
+  "variantes_obtenues": 2,
+  "trait_brut_S": [
+   1.2,
+   1.2
+  ],
+  "trait_vise_S": 6
+ },
+ "charrette_cassee": {
+  "groupe": "histoire",
+  "variantes_demandees": 2,
+  "variantes_obtenues": 2,
+  "trait_brut_S": [
+   0.6,
+   0.6
+  ],
+  "trait_vise_S": 6
+ },
+ "sieste": {
+  "groupe": "histoire",
+  "variantes_demandees": 2,
+  "variantes_obtenues": 2,
+  "trait_brut_S": [
+   3.8,
+   3.8
+  ],
+  "trait_vise_S": 6
+ },
+ "renard": {
+  "groupe": "histoire",
+  "variantes_demandees": 3,
+  "variantes_obtenues": 3,
+  "trait_brut_S": [
+   0.3,
+   0.7,
+   0.7
+  ],
+  "trait_vise_S": 6
+ },
+ "souris_grise": {
+  "groupe": "animal",
+  "variantes_demandees": 4,
+  "variantes_obtenues": 2,
+  "trait_brut_S": [
+   0.2,
+   0.2
+  ],
+  "trait_vise_S": 3
+ },
+ "souris_brune": {
+  "groupe": "animal",
+  "variantes_demandees": 4,
+  "variantes_obtenues": 3,
+  "trait_brut_S": [
+   0.2,
+   0.2,
+   0.2
+  ],
+  "trait_vise_S": 3
+ },
+ "souris_noire": {
+  "groupe": "animal",
+  "variantes_demandees": 4,
+  "variantes_obtenues": 4,
+  "trait_brut_S": [
+   0.5,
+   0.2,
+   0.2,
+   0.2
+  ],
+  "trait_vise_S": 3
+ },
+ "oiseau": {
+  "groupe": "animal",
+  "variantes_demandees": 4,
+  "variantes_obtenues": 4,
+  "trait_brut_S": [
+   0.6,
+   0.6,
+   0.6,
+   0.6
+  ],
+  "trait_vise_S": 3
+ },
+ "oiseau_b": {
+  "groupe": "animal",
+  "variantes_demandees": 4,
+  "variantes_obtenues": 4,
+  "trait_brut_S": [
+   0.5,
+   0.5,
+   0.5,
+   0.5
+  ],
+  "trait_vise_S": 3
+ }
+}

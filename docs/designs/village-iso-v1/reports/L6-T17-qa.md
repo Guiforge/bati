@@ -1,0 +1,12 @@
+# L6-T17-qa : monde sans bord, sur émulateur
+
+Statut proposé : prêt pour revue (vue partielle : marteau non vu)
+Auteur : qa. emulator-5554, `.perf` neuf de HEAD b56ce746 (BUILD SUCCESSFUL 2m27, `evidence/L6-T17/build.log`), `install -r` Success, « Vider cache images » fait puis relance. Planche : `evidence/L6-T17/planche-controle.jpg`.
+
+## Verdicts
+1. **Monde sans bord : oui, avec réserves.** Glissé à chaque bord (onglet Village palier 1, Carte seule paliers 1 et 12) : aucun vide, forêt, rochers, herbe jusqu'aux bords du cadre ; l'îlot garde un morceau visible (environ 15 à 25 % du cadre) à gauche, à droite et en bas ; en haut et en bas de l'onglet Village le morceau reste sous le dégradé du héros (`village-4-bords.jpg`, `village-bord-bas.jpg`). Berge et mer au bord droit en Carte seule palier 12 (`09-carte12-bord-droit.png`). Horizon : coupe propre, pas de couture ni de voile gênant. Tap sur un bâtiment juste après un glissé : juste (Forge ouverte, `07-tap-apres-glisse.png`). Réserves : (a) au zoom mini la forêt du bas répète des plaques claires ovales à intervalle régulier (`zoom-min-et-max.jpg`) ; (b) au zoom max (8 appuis sur +) la forêt, les buissons et l'herbe sont mous (attendu, tuiles à 1,5 px/dp) ; (c) un texte de debug blanc (« forge 187x280 … ask … got … src 896x1344 ») recouvre le haut de l'écran sur tout le build : non lié au monde, à faire retirer ; (d) le bouton « 0,6 » agrandit au lieu de dézoomer (le zoom mini passe par « - »).
+2. **Coup de marteau : non vu.** `dev-iso` ne passe pas `reclamables` (seul `VillageScene` le fait, derrière `INTEGRATION = false`) ; aucun drapeau de démo. Marteau, lueur, scène de 3 s et passage au toucher : à tester quand le drapeau sera allumé ou qu'un réglage de démo existera.
+3. **Mesures** (dumpsys, une passe, Graphics 0 sur émulateur donc sans valeur) : Carte seule palier 12 : PSS 353 859 Ko, Native 186 168 (T10 : 361 281 et 187 736, stable). Onglet Village palier 1 : PSS 268 085 Ko, Native 132 664 (T10 : 221 744 et 93 252, soit +46 Mo et +39 Mo, le coût des tuiles du monde dans l'onglet). Glissé jusqu'au bord, Carte seule 12 : 239 trames, 1 lente (0,42 %), p99 16 ms ; onglet Village : 153 trames, 0 lente, p99 24 ms. Vague « tous debout » : 700 trames, 2 lentes (0,29 %), p99 29 ms. 10 s après la vague : 0 trame. Repos 10 s : 0.
+
+## Réserves
+Une passe par mesure, pas de témoin ; le glissé d'onglet Village se fait par adb (le défilement de page peut s'y mêler). Émulateur seulement.

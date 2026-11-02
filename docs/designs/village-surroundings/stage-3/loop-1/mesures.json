@@ -1,0 +1,75 @@
+{
+ "sprites": {
+  "feuillus": {
+   "fond": "#E50FF0",
+   "ilots_retires_px": 0,
+   "liseré_repeint_px": 542,
+   "liseré_restant_px": 0,
+   "trait_brut_px_S": 6,
+   "dilatation_px": 0,
+   "trait_final_px_S": 6
+  },
+  "bouleaux": {
+   "fond": "#F21AFA",
+   "ilots_retires_px": 0,
+   "liseré_repeint_px": 564,
+   "liseré_restant_px": 0,
+   "trait_brut_px_S": 7.0,
+   "dilatation_px": 0,
+   "trait_final_px_S": 7.0
+  },
+  "dense": {
+   "fond": "#F21BF8",
+   "ilots_retires_px": 0,
+   "liseré_repeint_px": 411,
+   "liseré_restant_px": 0,
+   "trait_brut_px_S": 6.0,
+   "dilatation_px": 0,
+   "trait_final_px_S": 6.0
+  },
+  "bord_coniferes": {
+   "fond": "#EE17FA",
+   "ilots_retires_px": 0,
+   "liseré_repeint_px": 287,
+   "liseré_restant_px": 0,
+   "trait_brut_px_S": 8.0,
+   "dilatation_px": 0,
+   "trait_final_px_S": 8.0
+  },
+  "bord_crete": {
+   "fond": "#EE1AF9",
+   "ilots_retires_px": 0,
+   "liseré_repeint_px": 379,
+   "liseré_restant_px": 0,
+   "trait_brut_px_S": 4,
+   "dilatation_px": 1,
+   "trait_final_px_S": 4.0
+  }
+ },
+ "placements": {
+  "1": {
+   "feuillus": 96,
+   "melangee": 95,
+   "bouleaux": 8,
+   "dense": 142,
+   "bord_coniferes": 436,
+   "bord_crete": 245
+  },
+  "6": {
+   "feuillus": 77,
+   "melangee": 79,
+   "bouleaux": 7,
+   "dense": 120,
+   "bord_coniferes": 436,
+   "bord_crete": 245
+  },
+  "12": {
+   "feuillus": 67,
+   "melangee": 68,
+   "bouleaux": 6,
+   "dense": 110,
+   "bord_coniferes": 436,
+   "bord_crete": 245
+  }
+ }
+}

@@ -1,0 +1,21 @@
+{
+ "cadre_dp": [
+  132.1739130434783,
+  -150.66022544283408,
+  827.8260869565217,
+  630.6602254428341
+ ],
+ "taille_px": [
+  896,
+  1008
+ ],
+ "palier": 12,
+ "prompt_sujet": "Image 1 is a flat colour map seen from the game's isometric camera. Repaint it as hand-painted ground, keeping every zone exactly where it is and the same size, so the painting lines up pixel for pixel with image 1. Colour key of image 1: olive green = meadow grass; sandy beige = dirt paths; pale cream = the village square of packed earth and a few flagstones; flat brown = packed earth where houses will stand; muted khaki = trodden grass with bare patches around the houses; ochre = ploughed fields with furrows; slate blue = river water; very dark green = shaded forest floor with moss and fallen leaves. Image 2 gives only the mood and the brushwork, very low weight: never copy its building. Paint only the ground: no building, no tree, no character, no prop, nothing standing up, no cast shadow of anything. ",
+ "bloc": "Franco-Belgian comic game art, three-quarter isometric view from above. No ink outline at all, soft painted edges between zones. Colour painted with visible brush strokes, two or three values per surface, matte, no gloss. Warm late-afternoon light from the upper left; the ground gets a little darker and cooler toward the edges of the picture, the centre stays lightest. Earth #6E5941, dark earth #554232, foliage #4C7A3E, moss #435A36, ochre #C8965E, light #DEC28B, slate shadow #2E3552. The picture fills the whole frame from edge to edge. No text, no signature.",
+ "variantes": {
+  "v1": "",
+  "v2": " Broad, loose brush strokes, big simple shapes, very few small details.",
+  "v3": " Fine brush strokes with small tufts of grass, pebbles and wheel ruts on the paths, still calm and readable.",
+  "v4": " Soft dappled patches of light and cool shade drift across the meadow, like the shadows of passing clouds."
+ }
+}

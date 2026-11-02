@@ -1,0 +1,6 @@
+# qa-couverture-fix
+
+1. Lanterne : `Figurine` (IsoCarteDemo.tsx) reçoit `lumiere` (passé depuis l'appel, comme `Batiment`) et calcule `vie = lumiere === "jour" ? lumiere : ambiance`, la même règle que les fenêtres. Test ajouté dans `__tests__/iso-lanterne.test.tsx` : ambiance nuit + lumiere jour monte la vitre (cas dev-iso) ; jour seul et nuit seule inchangés. L'onglet Village passe par IsoVillage `lumiere` vers le même IsoCarte, donc le même chemin (pas de test IsoVillage propre : ce fichier est à l'autre ingénieur).
+2. Couvertures : `PAD = round(2 / ECHELLE_DECODE)` = 4 px de sprite (2 px écran au facteur 0,5) dans couvre_fenetres.py. Régénéré : `couvre_fenetres.py`, puis `UPDATE_ACCROCHES=1 npx jest iso-accroches` pour constants/isoAccroches.json. Aucun fichier de assets/images touché.
+3. test_couvre_fenetres.py : marge de la règle « au plus 3 fois » = PAD, seuil de poussière (10+2*PAD)^2, et nouveau cas réduit (sprite réduit en BOX à 0,5, teinte ambre fondue, fenêtres couvertes seulement). Discrimination vérifiée : PAD 2 laisse 5 pixels ambre hors coque, PAD 4 aucun.
+4. Résultats : `python3 -I scripts/iso/exports/test_couvre_fenetres.py` rc=0 ; `rtk proxy npx jest iso- village-scene` Test Suites: 74 passed, 74 total (776 tests) ; `heavy.sh npx tsc --noEmit` sans erreur ; biome --write sur IsoCarteDemo.tsx et iso-lanterne.test.tsx propre.

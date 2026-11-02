@@ -1,0 +1,100 @@
+{
+  "auditor": "anim",
+  "iter": 3,
+  "scores": { "magic": 5, "craft": 5 },
+  "issues": [
+    {
+      "id": "anim-20",
+      "severity": "high",
+      "area": "E",
+      "effort": "S",
+      "where": "montées jour et nuit 1-96",
+      "what": "Aucune montée dans les deux vidéos (capture ratée).",
+      "fix": "Refilmer avec un vrai toucher sur un chantier prêt ; vérifier une image entre 25 et 40."
+    },
+    {
+      "id": "anim-21",
+      "severity": "medium",
+      "area": "E",
+      "effort": "S",
+      "where": "palier-12-jour, zoom-defaut ; repos ; nuit 34, 50, 90",
+      "what": "Palissade bleu marine et petits arbres bleu nuit le jour ; arbres vert menthe la nuit : teintes inversées.",
+      "fix": "Brancher palissade et arbres sur l'ambiance."
+    },
+    {
+      "id": "anim-22",
+      "severity": "medium",
+      "area": "E",
+      "effort": "S",
+      "where": "nuit 34, 50, 90",
+      "what": "Grands arbres du premier plan éclairés comme de jour la nuit.",
+      "fix": "Teinte de nuit sur le premier plan."
+    },
+    {
+      "id": "anim-11",
+      "severity": "medium",
+      "area": "E",
+      "effort": "S",
+      "where": "glisse 90-96",
+      "what": "Une bouffée grise au ras du sol sans cheminée.",
+      "fix": "Ancrer sur la cheminée ou supprimer."
+    },
+    {
+      "id": "anim-23",
+      "severity": "medium",
+      "area": "E",
+      "effort": "S",
+      "where": "zoom-max-forge ; glisse 70-96",
+      "what": "Échelle debout seule au milieu du chemin.",
+      "fix": "La retirer ou la poser contre le chantier."
+    },
+    {
+      "id": "anim-13",
+      "severity": "medium",
+      "area": "E",
+      "effort": "M",
+      "where": "repos, repos-60s, zoom-defaut",
+      "what": "Oiseaux visibles (toutes les 10-30 s) mais villageois, drapeaux et flammes invisibles au cadrage d'ouverture.",
+      "fix": "Cadrage plus serré, bannières et villageois plus gros, un marcheur sur un chemin."
+    },
+    {
+      "id": "anim-24",
+      "severity": "low",
+      "area": "E",
+      "effort": "S",
+      "where": "repos 81-86 ; repos-60s 91, 181, 421",
+      "what": "Formation d'oiseaux rigide.",
+      "fix": "Décalage vertical sinusoïdal par oiseau, phase propre."
+    },
+    {
+      "id": "anim-25",
+      "severity": "low",
+      "area": "E",
+      "effort": "S",
+      "where": "zoom-max-forge, glisse 70-96",
+      "what": "Tache noire pleine immobile sur un faîtage (souris ou corbeau ?).",
+      "fix": "Sprite peint sans teinte noire, qui bouge parfois."
+    },
+    {
+      "id": "anim-14",
+      "severity": "low",
+      "area": "E",
+      "effort": "S",
+      "where": "glisse 31-46",
+      "what": "Le zoom flotte vers le haut à gauche.",
+      "fix": "Zoom autour du point touché ou du centre."
+    }
+  ],
+  "better": [
+    "Oiseaux visibles.",
+    "Fumée qui part de la cheminée de la forge.",
+    "Plus d'éclat blanc sur les mâts.",
+    "Moulin animé, flaques de nuit qui varient."
+  ],
+  "worse": [
+    "Teintes jour et nuit inversées sur palissade et petits arbres.",
+    "Échelle orpheline.",
+    "Captures de montée vides."
+  ],
+  "note_fr": "Montée non filmée, donc les reprises de la montée ne sont ni confirmées ni infirmées. Oiseaux et fumée en partie réglés. Nouveaux : teintes inversées, premier plan non teinté la nuit, échelle orpheline, tache noire sur un toit."
+}

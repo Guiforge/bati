@@ -1,0 +1,46 @@
+{
+ "terrain_v1": {
+  "masque_lisible": 0.79,
+  "riviere_rappel": 0.74,
+  "riviere_precision": 0.85,
+  "encre": 0.006,
+  "palette9_40": 0.64,
+  "lum_centre": 152,
+  "lum_bord": 91,
+  "sat_centre": 54,
+  "sat_bord": 25
+ },
+ "terrain_v2": {
+  "masque_lisible": 0.7,
+  "riviere_rappel": 0.64,
+  "riviere_precision": 0.51,
+  "encre": 0.001,
+  "palette9_40": 0.68,
+  "lum_centre": 150,
+  "lum_bord": 95,
+  "sat_centre": 58,
+  "sat_bord": 25
+ },
+ "terrain_v3": {
+  "masque_lisible": 0.82,
+  "riviere_rappel": 0.79,
+  "riviere_precision": 0.79,
+  "encre": 0.014,
+  "palette9_40": 0.81,
+  "lum_centre": 156,
+  "lum_bord": 94,
+  "sat_centre": 59,
+  "sat_bord": 27
+ },
+ "terrain_v4": {
+  "masque_lisible": 0.71,
+  "riviere_rappel": 0.7,
+  "riviere_precision": 0.32,
+  "encre": 0.004,
+  "palette9_40": 0.68,
+  "lum_centre": 157,
+  "lum_bord": 87,
+  "sat_centre": 59,
+  "sat_bord": 23
+ }
+}

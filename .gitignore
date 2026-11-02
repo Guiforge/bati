@@ -121,3 +121,23 @@ docs/designs/village-buildings/*/r[0-9]*/*
 !docs/designs/village-buildings/maquettes/r*/footprint.txt
 !docs/designs/village-buildings/maquettes/r3/strip_windmill.png
 !docs/designs/village-buildings/maquettes/r3/strip_observatory.png
+
+# Capture sets of the village iso tracks stay local, archived in ~/bati-archives/ (F-Droid clones this repo)
+docs/designs/village-iso-v1/evidence/
+docs/designs/village-loop/evidence/
+docs/designs/village-loop/iter-00/
+docs/designs/village-loop/iter-*-captures*/
+docs/designs/village-loop/vue-ensemble/
+docs/designs/village-loop/build.log
+docs/designs/village-loop/loupes/baseline/
+docs/designs/village-loop/loupes/**/captures*/
+docs/designs/village-loop/loupes/**/sondes*/
+docs/designs/village-loop/loupes/**/*.png
+docs/designs/village-loop/loupes/**/*.webp
+!docs/designs/village-loop/loupes/bc/r6/bc-*.png
+docs/designs/village-surroundings/**/*.png
+docs/designs/village-surroundings/**/*.webp
+docs/designs/village-buildings/baseline-wrong/
+docs/designs/village-buildings/verif-coin/
+docs/designs/village-buildings/calibration/**/*.png
+.claude/settings.local.json.v1-bak

@@ -1,0 +1,38 @@
+{
+ "sol_v1": {
+  "masque_lisible": 0.72,
+  "chemins_rappel": 0.77,
+  "chemins_precision": 0.76,
+  "encre": 0.0,
+  "palette_40": 0.52,
+  "lum_centre": 139,
+  "lum_bord": 104
+ },
+ "sol_v2": {
+  "masque_lisible": 0.73,
+  "chemins_rappel": 0.89,
+  "chemins_precision": 0.91,
+  "encre": 0.002,
+  "palette_40": 0.52,
+  "lum_centre": 146,
+  "lum_bord": 101
+ },
+ "sol_v3": {
+  "masque_lisible": 0.72,
+  "chemins_rappel": 0.81,
+  "chemins_precision": 0.77,
+  "encre": 0.0,
+  "palette_40": 0.55,
+  "lum_centre": 148,
+  "lum_bord": 99
+ },
+ "sol_v4": {
+  "masque_lisible": 0.7,
+  "chemins_rappel": 0.89,
+  "chemins_precision": 0.92,
+  "encre": 0.002,
+  "palette_40": 0.62,
+  "lum_centre": 144,
+  "lum_bord": 93
+ }
+}

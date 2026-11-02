@@ -1,0 +1,30 @@
+{
+ "heros_v1.png": {
+  "masque_lisible": 0.76,
+  "riviere_rappel": 0.89,
+  "riviere_precision": 0.89,
+  "encre": 0.0,
+  "palette9_40": 0.78
+ },
+ "heros_v2.png": {
+  "masque_lisible": 0.8,
+  "riviere_rappel": 0.84,
+  "riviere_precision": 0.88,
+  "encre": 0.0,
+  "palette9_40": 0.79
+ },
+ "heros_v3.png": {
+  "masque_lisible": 0.58,
+  "riviere_rappel": 0.84,
+  "riviere_precision": 0.74,
+  "encre": 0.004,
+  "palette9_40": 0.78
+ },
+ "heros_v4.png": {
+  "masque_lisible": 0.68,
+  "riviere_rappel": 0.78,
+  "riviere_precision": 0.69,
+  "encre": 0.002,
+  "palette9_40": 0.85
+ }
+}

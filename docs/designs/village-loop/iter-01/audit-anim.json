@@ -1,0 +1,122 @@
+{
+  "auditor": "anim",
+  "iter": 1,
+  "scores": { "magic": 5, "craft": 5 },
+  "issues": [
+    {
+      "id": "anim-12",
+      "severity": "high",
+      "area": "E",
+      "effort": "S",
+      "where": "montée 18-95 (21, 34, 44, 51)",
+      "what": "Flaques de nuit = ellipses orange plates à bord dur, PAR-DESSUS les bâtiments (château, cabane, échafaudage).",
+      "fix": "Sur la couche sol sous les sprites, dégradé radial à bord fondu, une ellipse, 25-35 %, palpitation déphasée pour feu et forge."
+    },
+    {
+      "id": "anim-13",
+      "severity": "high",
+      "area": "E",
+      "effort": "M",
+      "where": "repos 1-95",
+      "what": "Au cadrage par défaut la vie ne se voit pas : fumée illisible, villageois de 3 px, moulin au même angle, bannières trop petites ; seul un éclat blanc.",
+      "fix": "Fumées plus hautes et opaques (30-40 px), ailes du moulin (1 tour / 6 s), oiseaux en V sombres, ombres de nuages."
+    },
+    {
+      "id": "anim-10",
+      "severity": "medium",
+      "area": "E",
+      "effort": "S",
+      "where": "repos 21-33 ; glisse 46-59",
+      "what": "Étoile blanche en haut des mâts toujours là.",
+      "fix": "La retirer, ou #F2E2B4 40 % 2 px phase aléatoire."
+    },
+    {
+      "id": "anim-02",
+      "severity": "high",
+      "area": "E",
+      "effort": "S",
+      "where": "montée 35-38",
+      "what": "Ni secousse ni glissé à l'impact.",
+      "fix": "Secousse 3 px / 120 ms puis glissé ease-out 500 ms."
+    },
+    {
+      "id": "anim-03",
+      "severity": "medium",
+      "area": "E",
+      "effort": "S",
+      "where": "montée 34, 38",
+      "what": "Révélation trop tôt, échafaudage qui traîne.",
+      "fix": "Rien avant 240 ms, échange net, échafaudage retiré à la même image."
+    },
+    {
+      "id": "anim-04",
+      "severity": "medium",
+      "area": "E",
+      "effort": "S",
+      "where": "montée 38",
+      "what": "Grosses étoiles en bloc sur la tente voisine.",
+      "fix": "8-12 points nés au toit du bâtiment monté, gravité, fondu."
+    },
+    {
+      "id": "anim-05",
+      "severity": "medium",
+      "area": "E",
+      "effort": "S",
+      "where": "montée 36-38",
+      "what": "Anneau en losange dur par-dessus les bâtiments.",
+      "fix": "Onde sous les sprites, bord fondu."
+    },
+    {
+      "id": "anim-06",
+      "severity": "medium",
+      "area": "E",
+      "effort": "S",
+      "where": "montée 51-61",
+      "what": "Phrase en boîte crème, coupée sous les boutons de dev, en anglais.",
+      "fix": "Fondu + 6 px, cartouche parchemin, sous la barre ; langue de l'émulateur."
+    },
+    {
+      "id": "anim-07",
+      "severity": "low",
+      "area": "E",
+      "effort": "S",
+      "where": "montée 21-34",
+      "what": "Chantier prêt avec la même flaque que les autres, sans respiration.",
+      "fix": "Halo propre au chantier, respiration 2 s."
+    },
+    {
+      "id": "anim-09",
+      "severity": "low",
+      "area": "E",
+      "effort": "S",
+      "where": "montée 20-21",
+      "what": "Cadrage Prêt x2,5 en une image.",
+      "fix": "600-800 ms ease-in-out."
+    },
+    {
+      "id": "anim-11",
+      "severity": "low",
+      "area": "E",
+      "effort": "S",
+      "where": "montée 44",
+      "what": "Bouffées grises au sol sans cheminée (rivière, pied du mât de la tente).",
+      "fix": "Ancrer au haut d'une cheminée."
+    },
+    {
+      "id": "anim-14",
+      "severity": "low",
+      "area": "E",
+      "effort": "S",
+      "where": "glisse 46-60",
+      "what": "Le dernier cran zoome autour d'un pivot qui n'est pas le centre.",
+      "fix": "Zoomer autour du centre de l'écran ou du point touché."
+    }
+  ],
+  "better": [
+    "anim-08 réglé : zoom continu.",
+    "anim-01 en partie : la vie tourne au repos, mais illisible au cadrage par défaut.",
+    "anim-07 en partie : le chantier a une lueur."
+  ],
+  "worse": ["Flaques de nuit sur les bâtiments (anim-12)."],
+  "note_fr": "La vie existe au repos mais on ne la voit pas au zoom par défaut. La nuit, les flaques dures sur les bâtiments sont le défaut le plus visible. Montée pas encore retravaillée."
+}

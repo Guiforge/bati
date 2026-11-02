@@ -1,0 +1,104 @@
+{
+  "auditor": "theo",
+  "iter": 2,
+  "scores": { "style": 4.5, "fun": 5, "proud": 5, "personal": 3 },
+  "journal_fr": "Plein écran : le village fait ~18 % de la hauteur, deux tiers de pré vide. La nuit fait sourire : lumière douce au pied des bâtiments, fenêtres allumées, feu de camp et tente éclairée au palier 1. Montée de jour : poussière, losange doré lisible, villageois qui regardent ; caméra qui saute encore. Repos 60 s : 20 vignettes identiques à cette taille. Course contre callisthénie : seuls les drapeaux et une statue minuscule changent.",
+  "issues": [
+    {
+      "id": "T2-01",
+      "severity": "high",
+      "area": "B",
+      "effort": "M",
+      "what": "Village à ~18 % de la hauteur en plein écran, ~65 % de pré vide, forêt en frange.",
+      "fix": "Cadrage qui remplit la hauteur (village sur 45-55 %), forêt dense jusqu'au village, brume dans le vide."
+    },
+    {
+      "id": "T2-02",
+      "severity": "high",
+      "area": "G",
+      "effort": "L",
+      "needs_paint": true,
+      "flux_usd": 2,
+      "what": "La vocation ne change que la couleur des drapeaux et une statue de quelques pixels.",
+      "fix": "Quartier de vocation lisible à 0,6 : piste et coureurs ; barres, anneaux et villageois en tractions ; grandes bannières."
+    },
+    {
+      "id": "T2-03",
+      "severity": "high",
+      "area": "E",
+      "effort": "M",
+      "what": "Repos 60 s au cadrage d'ouverture : rien de visible ne bouge.",
+      "fix": "Après T2-01 : fumées visibles de loin, oiseaux au repos, mouvement assez gros."
+    },
+    {
+      "id": "T2-04",
+      "severity": "medium",
+      "area": "E",
+      "effort": "M",
+      "what": "Caméra qui saute encore (images 16-21) ; la nuit, halos pleins et losange peu lisible.",
+      "fix": "Glisse ~1 s, halos voisins baissés pendant la montée, anneau plus clair la nuit."
+    },
+    {
+      "id": "T2-05",
+      "severity": "medium",
+      "area": "A",
+      "effort": "S",
+      "what": "Jour vert olive uniforme sans brume ni soleil chaud ; nuit bleu uni.",
+      "fix": "Brume aux bords, teinte chaude au cœur, bords plus sombres la nuit ; à revoir avec le sol peint."
+    },
+    {
+      "id": "T2-06",
+      "severity": "low",
+      "area": "H",
+      "effort": "S",
+      "what": "Phrase d'histoire en bandeau en haut.",
+      "fix": "Sous le bâtiment qui monte."
+    },
+    {
+      "id": "T2-07",
+      "severity": "low",
+      "area": "C",
+      "effort": "S",
+      "what": "Deux balayeurs identiques au palier 1.",
+      "fix": "Varier le sprite ou l'action."
+    },
+    {
+      "id": "T2-08",
+      "severity": "low",
+      "area": "D",
+      "effort": "S",
+      "what": "Contour de caisse translucide fantôme derrière un balayeur (palier 1).",
+      "fix": "Le retirer ou le rendre opaque."
+    },
+    {
+      "id": "T2-09",
+      "severity": "low",
+      "area": "A",
+      "effort": "S",
+      "what": "Fin liseré orange net sous l'arène et le château la nuit.",
+      "fix": "Fondre le bord du dégradé."
+    },
+    {
+      "id": "T2-10",
+      "severity": "low",
+      "area": "F",
+      "effort": "L",
+      "needs_paint": true,
+      "what": "Dalles et rochers bleus pas encore repeints.",
+      "fix": "Report."
+    }
+  ],
+  "better": [
+    "Halos de nuit doux sous les sprites, fenêtres allumées.",
+    "Feu de camp et tente éclairée au palier 1 la nuit.",
+    "Montée de jour lisible, villageois qui regardent.",
+    "Lucioles près de l'observatoire.",
+    "Chemins sinueux au palier 1.",
+    "Plus de rectangle en glisse."
+  ],
+  "worse": [
+    "Vide autour du village en plein écran.",
+    "Repos toujours immobile au cadrage d'ouverture."
+  ],
+  "note_fr": "La nuit fait un vrai saut. Mais le village est minuscule dans un pré vide, rien ne bouge à cette taille, et la vocation se réduit à une couleur de drapeau."
+}

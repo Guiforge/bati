@@ -1,0 +1,9 @@
+{
+ "bande_mos.png": {
+  "masque_lisible": 0.75,
+  "riviere_rappel": 0.89,
+  "riviere_precision": 0.55,
+  "encre": 0.016,
+  "palette9_40": 0.88
+ }
+}

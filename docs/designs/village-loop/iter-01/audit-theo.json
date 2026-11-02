@@ -1,0 +1,121 @@
+{
+  "auditor": "theo",
+  "iter": 1,
+  "scores": { "style": 4, "fun": 4, "proud": 5, "personal": 2.5 },
+  "journal_fr": "Même cadrage, pré vide, arbres-sucettes ; vert plus gris et plus froid. Oiseaux en V pendant la glisse et corbeau sur la forge : sourires. Au cadrage par défaut presque rien ne bouge. Nuit : enfin de la lumière orange au sol, mais en ronds plats à double bord posés par-dessus les bâtiments, comme des autocollants. Montée : losange doré noyé sous les halos, caméra qui saute, phrase en anglais en haut. Pas de frisson Thronebreaker.",
+  "issues": [
+    {
+      "id": "T1-01",
+      "severity": "high",
+      "area": "A",
+      "effort": "M",
+      "where": "palier-12-nuit, montée 21-91",
+      "what": "Halos de nuit = ellipses orange plates à double bord net, dessinées par-dessus les bâtiments.",
+      "fix": "Dégradé radial doux sans bord, sous les sprites ; lumière sur façades et fenêtres ; moins de halos, mieux placés."
+    },
+    {
+      "id": "T1-02",
+      "severity": "high",
+      "area": "B",
+      "effort": "M",
+      "where": "zoom-defaut, palier-12-jour",
+      "what": "Cadrage identique, village à 40 %, pré vide, sucettes, ni forêt dense ni brume.",
+      "fix": "Ouvrir plus serré, forêt dense aux bords, brume, retirer les sucettes isolées."
+    },
+    {
+      "id": "T1-03",
+      "severity": "high",
+      "area": "E",
+      "effort": "M",
+      "where": "repos",
+      "what": "Au repos au cadrage par défaut, seules de petites étincelles bougent (vu sur planche).",
+      "fix": "Fumée lisible à 0,6, 2-3 villageois qui traversent la place, reflets, oiseaux aussi au repos."
+    },
+    {
+      "id": "T1-04",
+      "severity": "medium",
+      "area": "A",
+      "effort": "S",
+      "where": "palier-12-jour vs iter-00",
+      "what": "Jour plus gris et plus froid qu'à l'iter 0.",
+      "fix": "Teinte de soleil chaude côté lumière, ombres froides seulement dans les creux."
+    },
+    {
+      "id": "T1-05",
+      "severity": "medium",
+      "area": "B",
+      "effort": "S",
+      "where": "glisse-zoom 16-31 (x≈455, y≈940 image 21)",
+      "what": "Rectangle plus sombre à bords nets dans le pré pendant la glisse.",
+      "fix": "Couche de la taille de toute la carte ou bords fondus."
+    },
+    {
+      "id": "T1-06",
+      "severity": "medium",
+      "area": "E",
+      "effort": "M",
+      "where": "montée 16-46",
+      "what": "Saut de cadrage en 0,5 s, losange doré en trait simple noyé, ni secousse ni poussière.",
+      "fix": "Glisse ~1 s, halos baissés pendant la montée, anneau qui pulse, poussière, secousse 3 px."
+    },
+    {
+      "id": "T1-07",
+      "severity": "medium",
+      "area": "H",
+      "effort": "S",
+      "where": "montée 51-61",
+      "what": "Phrase en anglais en haut, loin du bâtiment.",
+      "fix": "Langue de l'émulateur ; phrase sous le bâtiment."
+    },
+    {
+      "id": "T1-08",
+      "severity": "medium",
+      "area": "C",
+      "effort": "M",
+      "where": "zoom-max-forge, palier-6",
+      "what": "Histoires visibles au zoom max seulement, rien n'invite à zoomer.",
+      "fix": "Petit mouvement qui attire l'œil à 0,6, une histoire par quartier."
+    },
+    {
+      "id": "T1-09",
+      "severity": "high",
+      "area": "G",
+      "effort": "L",
+      "where": "manifest",
+      "what": "Aucune vocation.",
+      "fix": "Quartier de la vocation au centre ; villages coureur et callisthénie."
+    },
+    {
+      "id": "T1-10",
+      "severity": "low",
+      "area": "B",
+      "effort": "S",
+      "where": "palier-1-jour",
+      "what": "Chemins en patte étoilée, grandes formes claires floues dans l'herbe (520,1100 et 170,1600).",
+      "fix": "Courbes inégales vers les bords ; retirer les formes floues."
+    },
+    {
+      "id": "T1-11",
+      "severity": "low",
+      "area": "F",
+      "effort": "L",
+      "where": "palier-6, 12",
+      "what": "Dalles et repaire en rochers bleus illisible (pas encore repeint).",
+      "fix": "Report T0-05, T0-10."
+    }
+  ],
+  "better": [
+    "Oiseaux en V pendant la glisse.",
+    "Corbeau sur la forge, bûche au zoom max.",
+    "Chemins de terre au palier 1.",
+    "Champs discrets.",
+    "Lumière chaude au sol la nuit (intention).",
+    "Losange doré de la montée."
+  ],
+  "worse": [
+    "Halos de nuit en autocollants sur les bâtiments.",
+    "Jour plus gris et froid.",
+    "Rectangle à bords nets pendant la glisse."
+  ],
+  "note_fr": "Un peu plus vivant, mais repos encore pauvre au cadrage par défaut, même cadrage, halos en autocollants. Priorités : lumière douce sous les sprites, fumée et passants lisibles à 0,6, cadrage serré et forêt dense, puis la vocation."
+}

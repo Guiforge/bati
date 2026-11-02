@@ -30,5 +30,10 @@ Réponses prises, que Guillaume peut rayer au checkpoint :
 Écart signalé par la prep :
 - Garde-fou de 55 MiB : le prompt v2 le maintient, alors que Guillaume l'a retiré le 02/11 et que `AGENTS.md` le dit retiré depuis le 18/10. Je mesure après chaque fusion et je suis le prompt, le plus récent : checkpoint pour confirmer.
 
+### Exploration et références
+- E1 : le test de silhouette écarte l'observatoire A (atlantes, lu « Well » 8 fois sur 8) et B. Survivants : moulin A, B, C ; observatoire C. Voir `explore/E1/verdict.md`. Les atlantes étaient la demande du catalogue : checkpoint.
+- Références de style FLUX, choix de mara : `castle_wall/solid.jour.webp`, `druid_grove/grand.jour.webp`, `high_road/solid.jour.webp`. Trois objets sans forme commune, seul le style passe. Quand le sujet est l'un des trois, retirer sa propre image. Le prompt impose l'ardoise `#2E3552` pour les ombres : ces sprites tirent vers l'olive.
+- Calibration : mara et theo échouent au premier test (1 ÉCHEC sur 5, 3 BON sur 3), notes écrites, puis 2 sur 3 chacun au retest. Section 11 : on s'arrête et on demande : checkpoint.
+
 Conséquences de la planche de cartes :
 - La carte `campfire.md` de la prep est à réécrire : le Ménestrel remplace le cuistot.

@@ -1,0 +1,6 @@
+[
+ {"name":"k-obs-brut","query":"ambiance=jour&palier=12&fige=1&peint=tout&foyer=observatory&lumieres=0"},
+ {"name":"k-calli-brut","query":"ambiance=jour&palier=12&fige=1&peint=tout&foyer=campfire&vocation=callisthenie&lumieres=0"},
+ {"name":"k-course-brut","query":"ambiance=jour&palier=12&fige=1&peint=tout&foyer=campfire&vocation=course&lumieres=0"},
+ {"name":"k-hall-brut","query":"ambiance=jour&palier=6&fige=1&peint=tout&foyer=heroes_hall&lumieres=0"}
+]

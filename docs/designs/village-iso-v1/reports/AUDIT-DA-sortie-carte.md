@@ -1,0 +1,8 @@
+# AUDIT-DA-sortie-carte
+
+- 6 fumées : `fumee()` (feux.ts) faisait monter les bouffées en boucle avec un décalage de phase, donc à la pose de repos (horloge sur un multiple de CYCLE_MS) elles étaient à mi-montée et opaques. Chaque bouffée a maintenant un départ dans le cycle et une montée de 44 % du cycle, finie avant la borne : opacité 0 au repos et en mouvement réduit. Sources inchangées (cheminée du stade, ou au-dessus du feu de camp seulement) ; testées par `iso-accroches`.
+- 12 trait en V : les « bosses » du bord étaient dans le chemin de la pelouse tracé avec un contour de 1 (IsoCarteDemo.tsx), qui dessinait leurs cordes. Les bosses sont maintenant un chemin à part, sans contour ; le clip, le lavis et les ombres les voient toujours (`dedansTerre`). Non revérifié à l'écran.
+- 11 lignes verticales : cause NON trouvée, rien changé. Non périodiques, donc ni raccords de tuiles (pas 392 dp) ni motif (192). Piste : qa compare avec `Tuile` sans `Rues`, ou sans ombres.
+- 17 : durées lues dans le code, sans changement. Scène avec chantier = caméra 0,5 s puis CHANTIER_MS 1,5 s puis fondu, terminée à CHANTIER_MS + CROISSANCE_MS = 3 s après le tap. L'échafaudage tient tout le chantier, puis encore 120 ms. Le marteau part avec `reclame` (fini). Je n'ai pas pu reproduire « fini avant 3 s » ; `IsoVillage.tsx` est à l'autre ingénieur.
+- 8 : l'assombrissement des rochers ne s'appliquait pas aux rochers de lisière (premier plan, avec opacité). Appliqué à tous, 0,35 -> 0,45. Coût : +10 nœuds d'image (test dev-screen 31 / 121). 14 ruines : aucun code « ruine » trouvé, non fait.
+- Checks : jest `__tests__/iso-` 57 suites vertes, biome sur mes fichiers, `heavy.sh tsc` sans erreur.

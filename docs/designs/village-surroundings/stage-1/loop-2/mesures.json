@@ -1,0 +1,87 @@
+{
+ "monde": {
+  "x0_dp": -348,
+  "y0_dp": -836,
+  "w": 1656,
+  "h": 2152,
+  "dp_par_px": 1,
+  "etendue_palier12": {
+   "x0": -339.478260869565,
+   "x1": 1299.478260869565,
+   "y0": -827.9806763285022,
+   "y1": 1307.9806763285023
+  }
+ },
+ "classes": [
+  "pre",
+  "champ",
+  "foret",
+  "bordure",
+  "desordre",
+  "place",
+  "chemin",
+  "eau",
+  "batiment"
+ ],
+ "foret_groupes_px": [
+  255248,
+  243904,
+  92448,
+  50176,
+  43152,
+  16608
+ ],
+ "bordure_fermee": true,
+ "ajout_seul_px_perdus": {
+  "1->2": 0,
+  "2->3": 0,
+  "3->4": 0,
+  "4->5": 28,
+  "5->6": 0,
+  "6->7": 28,
+  "7->8": 0,
+  "8->9": 0,
+  "9->10": 0,
+  "10->11": 0,
+  "11->12": 0
+ },
+ "ajout_seul_detail": {
+  "chemin>eau": 32,
+  "champ>desordre": 24
+ },
+ "alignement": {
+  "1": {
+   "verdeur_chemins_a_0": 4.0,
+   "verdeur_anneau_herbe": 11.0,
+   "meilleur_decalage_px": [
+    0,
+    0
+   ],
+   "meilleure_echelle": 1.0,
+   "verdeur_au_meilleur": 4.0,
+   "px_mesures": 256397
+  },
+  "6": {
+   "verdeur_chemins_a_0": 1.8,
+   "verdeur_anneau_herbe": 6.7,
+   "meilleur_decalage_px": [
+    0,
+    0
+   ],
+   "meilleure_echelle": 1.0,
+   "verdeur_au_meilleur": 1.8,
+   "px_mesures": 194730
+  },
+  "12": {
+   "verdeur_chemins_a_0": 1.6,
+   "verdeur_anneau_herbe": 6.4,
+   "meilleur_decalage_px": [
+    0,
+    0
+   ],
+   "meilleure_echelle": 1.0,
+   "verdeur_au_meilleur": 1.6,
+   "px_mesures": 116877
+  }
+ }
+}

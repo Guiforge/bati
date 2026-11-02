@@ -1,0 +1,10 @@
+Paint over image 1, a screenshot of an isometric village game, keeping its exact camera and framing.
+ABSOLUTE RULE: every building, wall, fence, villager and the river stay exactly where they are, same size, same shape, same silhouette. Do not move, add or remove any building. Do not change the camera. The walled village stays the same.
+Change only the land around the village, so that it looks like a hand-painted fantasy world map: rich, inked, painted with visible brush strokes, warm late-afternoon light from the top left. The style is given by images 2 and 3: Franco-Belgian comic ink, matte, two or three values per surface.
+What to paint around the village:
+- Forests as overlapping clusters of mixed species (birch, oak, pine) in three sizes, smaller at the edge, every trunk rooted in undergrowth, roots and tufts, never sitting on a visible shape. Forest edges frame the view, placed in the world on the ground. No big tree in the foreground corners of the screen unless it stands on the same ground as everything else.
+- Everything touches the ground: dirt rings, tufts, pebbles at the foot of every object. Nothing floats.
+- Surroundings one or two value steps darker and less saturated than the village core; the village stays the brightest and most contrasted area. Open ground keeps calm rest areas, detail falls off away from paths and walls.
+- Shadows fall to the bottom right, cool slate blue (#2E3552), never black.
+No text, no letters, no runes, no glossy surfaces, no noise texture, no perfect symmetry, no parallax, no vignette frame.
+This village is at mid growth: hamlets of two or three small cottages stand along the road outside the walls. The road is packed gravel with edge stones, its edges broken by tufts, reaching the village gate. Fields are hand-painted vignettes tied to the road or river with soft blended edges, not rectangles: wheat with stooks and a scarecrow, vegetable rows with a fence and a well, an orchard with a cart, a pasture with a sheep pen and hay.

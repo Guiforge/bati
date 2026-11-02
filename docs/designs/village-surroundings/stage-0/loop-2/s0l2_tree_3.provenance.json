@@ -1,0 +1,24 @@
+{
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+    "file": "0164aee70c4b9b00.png",
+    "sha256": "0164aee70c4b9b0020e5babd1ea0fb3a34e3d62b0ff93fdcc0a0d2df0a4d0ce1"
+  },
+  "prompt": "Image 1 is a reference for style only, very low weight: never copy its building, take only its painting and its light. Paint one single broadleaf oak tree, sturdy and slightly exaggerated, a short thick trunk of brown bark on a small tuft of grass and two pebbles, a crown made of three or four big rounded clumps of leaves, each clump painted with its own lit top, mid tone and shaded underside, the clumps separated by ink lines, a few leaf strokes breaking the silhouette. Franco-Belgian comic game art, three-quarter isometric view from above. First the ink: a bold, clean, confident black outline (#0F1518) of even width around the whole silhouette, about nine pixels wide, thinner inner lines. Then the colour, painted inside the ink with visible brush strokes, two or three values per surface, matte, no gloss; the brush stays inside the lines and never breaks the outline. Warm late-afternoon light from the upper left: left and top surfaces lit warm (#DEC28B, #C8965E); the shaded side of every form is cool slate blue-grey (#2E3552), never brown. Earth #6E5941, dark earth #554232, foliage #4C7A3E, moss #435A36. Image 1 gives only the mood: do not copy its thin line or its brown shadows. No cast shadow outside the object's own base. One object alone, centred, on a flat uniform pure magenta (#FF00FF) backdrop from edge to edge, all four corners. No text, no signature.",
+  "seed": null,
+  "width": 768,
+  "height": 1024,
+  "generated": "2026-11-01",
+  "extra": {
+    "width": 768,
+    "height": 1024
+  },
+  "references": [
+    {
+      "path": "ref_ancre_640.png",
+      "sha256": "9c0319e26b93f58d387673f6b6b84c96dbc68a36d441bfd33b041abeb51f33f6"
+    }
+  ]
+}

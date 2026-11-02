@@ -1,0 +1,28 @@
+{
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+    "file": "7441d90ea953c113.png",
+    "sha256": "7441d90ea953c1131523f3de8835e09d3ef94c0d724b89ffb11b88378b476354"
+  },
+  "prompt": "Image 1 shows the hand to match: its ink, its brushwork, its light; never copy the tree itself. Image 2 gives only the mood, very low weight: never copy its building. Paint one forest mass seen from the game's isometric camera: several trees that overlap into one clump, read as a single silhouette with a varied, broken top edge. Each crown is made of big rounded clumps of leaves with a lit top on the left, a mid tone and a cool slate shaded side on the right. No single leaf drawn on its own, no floating leaves, no leaf shapes stamped on the crowns. No ground tile, no turf base, no square or diamond of grass under the trees: the trunks end directly on the backdrop. A long low ridge of grey rocks with dark firs growing on and behind it, a closed edge of the world, rock faces lit on the left and slate in shade on the right. Franco-Belgian comic game art, three-quarter isometric view from above. First the ink: a bold, clean, confident black outline (#0F1518) of even width around the whole silhouette, about five pixels wide, thinner inner lines. Then the colour, painted inside the ink with visible brush strokes, two or three values per surface, matte, no gloss; the brush stays inside the lines and never breaks the outline. Warm late-afternoon light from the upper left: left and top surfaces lit warm (#DEC28B, #C8965E); the shaded side of every form is cool slate blue-grey (#2E3552), never brown. Earth #6E5941, dark earth #554232, foliage #4C7A3E, moss #435A36. Image 1 gives only the mood: do not copy its thin line or its brown shadows. No cast shadow outside the object's own base. One object alone, centred, on a flat uniform pure magenta (#FF00FF) backdrop from edge to edge, all four corners. No text, no signature.",
+  "seed": null,
+  "width": 1344,
+  "height": 896,
+  "generated": "2026-11-01",
+  "extra": {
+    "width": 1344,
+    "height": 896
+  },
+  "references": [
+    {
+      "path": "ref_arbre.png",
+      "sha256": "002f7a8dda102fa9ad17d6d52fc6257b122a828401329353a2e1167196928639"
+    },
+    {
+      "path": "ref_ancre_640.png",
+      "sha256": "9c0319e26b93f58d387673f6b6b84c96dbc68a36d441bfd33b041abeb51f33f6"
+    }
+  ]
+}

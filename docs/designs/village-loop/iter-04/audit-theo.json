@@ -1,0 +1,108 @@
+{
+  "auditor": "theo",
+  "iter": 4,
+  "scores": { "style": 7, "fun": 5.5, "proud": 7, "personal": 5 },
+  "journal_fr": "Palier 1 toujours mignon, lampadaire bleu et trait gris disparus ; la nuit les grands arbres passent au bleu et le feu chauffe la place, mais champs vert pomme fluo et chemins jaune moutarde. Palier 12 : remparts en pierre peinte, plus d'arbres-sucettes, bourg fortifié qui a de l'allure ; petit frisson la nuit. Montée enfin visible : glisse, liseré doré, bâtiment, phrase du berger qui fait sourire ; mais c'est un clin d'œil, pas un spectacle, et la phrase sort dans une barre grise. Repos : oiseaux seulement. Course contre callisthénie : ça se distingue en cherchant (bannières, arche ou portique), personne ne pratique.",
+  "issues": [
+    {
+      "id": "T4-01",
+      "severity": "high",
+      "area": "E",
+      "effort": "M",
+      "what": "Montée visible mais minuscule ; liseré presque invisible de jour, pas de poussière ni d'éclat, personne ne réagit.",
+      "fix": "Temps fort de 1,5 s : poussière ou étincelles, rebond, rayon chaud, villageois qui accourent ; liseré lisible de jour."
+    },
+    {
+      "id": "T4-02",
+      "severity": "high",
+      "area": "G",
+      "effort": "L",
+      "needs_paint": true,
+      "flux_usd": 2,
+      "what": "Vocation lisible en cherchant seulement ; personne ne pratique ; « >> » fait icône d'interface.",
+      "fix": "Piste autour des remparts avec coureurs ; quartier de barres avec tractions ; blasons peints."
+    },
+    {
+      "id": "T4-03",
+      "severity": "high",
+      "area": "A",
+      "effort": "S",
+      "what": "La nuit, champs vert pomme saturé et chemins jaune moutarde (régression).",
+      "fix": "Même filtre nuit pour champs et chemins."
+    },
+    {
+      "id": "T4-04",
+      "severity": "medium",
+      "area": "B",
+      "effort": "M",
+      "needs_paint": true,
+      "flux_usd": 1,
+      "what": "Village au tiers de l'écran sur un losange de terre vide ; bord du plateau et brume plate visibles.",
+      "fix": "Cadrage plus serré au palier 12 ou faubourgs jusqu'au bord ; forêt dense et brume en nappes."
+    },
+    {
+      "id": "T4-05",
+      "severity": "medium",
+      "area": "F",
+      "effort": "M",
+      "needs_paint": true,
+      "flux_usd": 1,
+      "what": "Champs verts encore vectoriels rayés hors plan ; chemins du palier 1 en taches plates.",
+      "fix": "Tuiles peintes partout ; chemins de terre peints."
+    },
+    {
+      "id": "T4-06",
+      "severity": "medium",
+      "area": "C",
+      "effort": "S",
+      "what": "Phrase d'histoire dans une barre grise en petite police.",
+      "fix": "Cartouche peint, police du jeu, près du bâtiment."
+    },
+    {
+      "id": "T4-07",
+      "severity": "medium",
+      "area": "E",
+      "effort": "M",
+      "what": "Repos 60 s : oiseaux seulement.",
+      "fix": "Fumées visibles de loin, ailes nettes, groupes de villageois qui marchent."
+    },
+    {
+      "id": "T4-08",
+      "severity": "low",
+      "area": "A",
+      "effort": "S",
+      "what": "La nuit, l'arène et un élément près de la porte virent au bleu saturé.",
+      "fix": "Même teinte de nuit que les autres pierres."
+    },
+    {
+      "id": "T4-09",
+      "severity": "low",
+      "area": "F",
+      "effort": "S",
+      "needs_paint": true,
+      "flux_usd": 0.5,
+      "what": "Caisses bleu violet ou vertes unies (palier 6, palier 1).",
+      "fix": "Famille bois."
+    },
+    {
+      "id": "T4-10",
+      "severity": "low",
+      "area": "H",
+      "effort": "S",
+      "what": "Au démarrage, écran gris avec le squelette des chemins avant le sol peint.",
+      "fix": "Attendre le sol ou fondu depuis le noir."
+    }
+  ],
+  "better": [
+    "Remparts peints.",
+    "Arbres-sucettes retirés.",
+    "Premier plan pris par la nuit.",
+    "Lampadaire et trait disparus.",
+    "Montée filmée avec glisse.",
+    "Première phrase d'histoire.",
+    "Nuit du palier 12 qui brille.",
+    "Vocations distinctes un peu."
+  ],
+  "worse": ["Champs fluo et chemins jaunes la nuit.", "Bandeau d'histoire gris."],
+  "note_fr": "Beau ménage. La montée existe mais reste un clin d'œil, la vocation se lit en cherchant, champs fluo la nuit. Frisson au palier 6, petit au palier 12 la nuit."
+}

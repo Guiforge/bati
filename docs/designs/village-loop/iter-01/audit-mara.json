@@ -1,0 +1,122 @@
+{
+  "auditor": "mara",
+  "iter": 1,
+  "scores": { "style": 4, "fun": 4, "proud": 3.5, "personal": 2 },
+  "issues": [
+    {
+      "id": "M1-01",
+      "severity": "high",
+      "area": "A",
+      "effort": "S",
+      "what": "Jour plus gris et froid qu'à l'iter 0 : voile gris-bleu partout, ni or ni rais.",
+      "fix": "Voile chaud #F2E2B4 12-15 % en multiply/overlay, pas de gris sur le village, herbe vers #6A7442 au centre, 3 rais à 10 %, vignette dans les coins seulement."
+    },
+    {
+      "id": "M1-02",
+      "severity": "high",
+      "area": "A",
+      "effort": "M",
+      "what": "Flaques de nuit = ellipses orange plates à deux anneaux nets, PAR-DESSUS les bâtiments, parfois sans source ; fenêtres noires.",
+      "fix": "Flaques sous les sprites, dégradé radial doux sans bord, une par vraie source, ~0,6 case, 25-35 % ; fenêtres #F0A848 en code ; feu et forge qui palpitent."
+    },
+    {
+      "id": "M1-03",
+      "severity": "high",
+      "area": "H",
+      "effort": "S",
+      "what": "Voile = rectangle dont le bord se voit pendant la glisse ; hors du rectangle, arbres ronds clairs.",
+      "fix": "Voile accroché au monde ou débordant largement à tous les zooms ; bosquets encrés au bord."
+    },
+    {
+      "id": "M1-04",
+      "severity": "high",
+      "area": "E",
+      "effort": "M",
+      "what": "Peu de vie lisible au cadrage d'ouverture ; grands oiseaux blancs vectoriels en V plus gros qu'un villageois ; étoile qui clignote.",
+      "fix": "Lisible à 0,6 : 3 fumées, ailes du moulin, bannières, 2 marcheurs ; oiseaux 2x plus petits, encrés, 2 tons, vol lent."
+    },
+    {
+      "id": "M1-05",
+      "severity": "high",
+      "area": "B",
+      "effort": "M",
+      "what": "Composition inchangée : salle des héros coupée au bord droit, village au tiers de l'écran.",
+      "fix": "Salle des héros au centre, chemins qui convergent, cadrage ~0,8 centré sur elle, brume de bord à l'essai."
+    },
+    {
+      "id": "M1-06",
+      "severity": "medium",
+      "area": "E",
+      "effort": "S",
+      "what": "Onde dorée en losange net ; étoiles blanches sur les drapeaux prêts.",
+      "fix": "Anneau radial flou, halo qui respire, étincelles en points."
+    },
+    {
+      "id": "M1-07",
+      "severity": "high",
+      "area": "C",
+      "effort": "M",
+      "what": "Histoires illisibles au cadrage d'ouverture ; au zoom max, rien ne dit dispute ou geste.",
+      "fix": "Chaque histoire autour d'un accessoire lisible, échelle 1,15, au moins une lisible à 0,6."
+    },
+    {
+      "id": "M1-08",
+      "severity": "medium",
+      "area": "B",
+      "effort": "S",
+      "what": "Chemin du palier 1 = aplat ocre en étoile de mer avec contour sombre.",
+      "fix": "Sans contour, 2-3 tons, traces de roues, herbe qui déborde, sentiers étroits qui serpentent."
+    },
+    {
+      "id": "M1-09",
+      "severity": "medium",
+      "area": "H",
+      "effort": "S",
+      "what": "Grandes taches pâles en feuille à bord net sur l'herbe au palier 1.",
+      "fix": "Les retirer."
+    },
+    {
+      "id": "M1-10",
+      "severity": "high",
+      "area": "F",
+      "effort": "L",
+      "needs_paint": true,
+      "flux_usd": 3.6,
+      "what": "Bâtiments en pierre bleu-violet sur dalles (pas encore repeints).",
+      "fix": "Repeindre en jour doré, pierre chaude, sans dalle, les 4 plus visibles d'abord."
+    },
+    {
+      "id": "M1-11",
+      "severity": "high",
+      "area": "G",
+      "effort": "L",
+      "needs_paint": true,
+      "flux_usd": 1.2,
+      "what": "Vocation non codée.",
+      "fix": "Quartier dominant au centre, 2 bâtiments signature par vocation."
+    },
+    {
+      "id": "M1-12",
+      "severity": "low",
+      "area": "B",
+      "effort": "S",
+      "what": "Champs encore rectangles sur la grille, tous pareils.",
+      "fix": "Bords cassés, haie sur un côté, décalés, 2 cultures."
+    }
+  ],
+  "better": [
+    "Nuit bleue partout, plus vert sur vert.",
+    "Champs sans encre.",
+    "Palier 1 plus serré, bûches et tonneau autour du feu.",
+    "Chantier en charpente de bois.",
+    "Rien de copié."
+  ],
+  "worse": [
+    "Jour plus gris et froid.",
+    "Flaques en ellipses sur les bâtiments.",
+    "Bord du voile visible en glisse.",
+    "Chemin du palier 1 en aplat ocre encré, pavés disparus.",
+    "Grands oiseaux blancs vectoriels."
+  ],
+  "note_fr": "4 / 4 / 3,5 / 2. La nuit a gagné son bleu mais ses lumières font autocollant ; le jour a perdu sa chaleur. Moins cher, en code : voile chaud (M1-01), flaques douces sous les sprites et fenêtres (M1-02), voile accroché au monde (M1-03), vie lisible à l'ouverture (M1-04), salle des héros au centre (M1-05), losange et étoiles (M1-06)."
+}

@@ -1,0 +1,28 @@
+{
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+    "file": "5ca9b9e9f4e6ef7f.png",
+    "sha256": "5ca9b9e9f4e6ef7f62e6ecd285e55c92f457f61b051e6766980e7f4ca6958f4f"
+  },
+  "prompt": "Image 1 is a flat colour map seen from the game's isometric camera. Repaint it as hand-painted ground, keeping every zone exactly where it is and the same size, so the painting lines up pixel for pixel with image 1. Colour key of image 1: olive green = meadow grass; sandy beige = dirt paths; pale cream = the village square of packed earth and a few flagstones; warm light brown = bare packed earth where houses will stand, flat and smooth, no furrows, no crops, no planks; muted khaki = trampled grass worn down to the soil in irregular patches around the houses, no rows, no stripes; ochre = ploughed fields with furrows; slate blue = river water; dark olive-brown = bare forest-floor soil with moss and dead leaves, flat ground only, no trees, no bushes, no trunks. Image 2 gives only the mood and the brushwork, very low weight: never copy its building. Paint only the ground: no building, no tree, no character, no prop, nothing standing up, no cast shadow of anything. Franco-Belgian comic game art, three-quarter isometric view from above. No ink outline at all, soft painted edges between zones. Colour painted with visible brush strokes, two or three values per surface, matte, no gloss. Warm late-afternoon light from the upper left; the ground gets a little darker and cooler toward the edges of the picture, the centre stays lightest. Earth #6E5941, dark earth #554232, foliage #4C7A3E, moss #435A36, ochre #C8965E, light #DEC28B, slate shadow #2E3552. The picture fills the whole frame from edge to edge. No text, no signature. Fine brush strokes with small tufts of grass, pebbles and wheel ruts on the paths, still calm and readable.",
+  "seed": null,
+  "width": 896,
+  "height": 1008,
+  "generated": "2026-11-01",
+  "extra": {
+    "width": 896,
+    "height": 1008
+  },
+  "references": [
+    {
+      "path": "blockout_palier12.png",
+      "sha256": "debe3d9a6092915369054e66cd163001beae9750c892c4502bf3a65421f6d22e"
+    },
+    {
+      "path": "ref_ancre_640.png",
+      "sha256": "9c0319e26b93f58d387673f6b6b84c96dbc68a36d441bfd33b041abeb51f33f6"
+    }
+  ]
+}

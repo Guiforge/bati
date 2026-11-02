@@ -1,0 +1,92 @@
+{
+  "auditor": "tech",
+  "iter": 4,
+  "scores": { "stability": 6.5, "visual_correctness": 4.5 },
+  "issues": [
+    {
+      "id": "H4-01",
+      "severity": "high",
+      "area": "A",
+      "effort": "S",
+      "where": "AmbianceCarte.tsx:106,129 ; MotifsSol.tsx:38 ; motifs.ts ; RuesDessinees.tsx:125-127 ; IsoCarteDemo.tsx:342, 568-588",
+      "what": "Nuit : rues texturées et champs dessinés sans nuit propre ; le voile est passé à 18 %, d'où chemins ocre et champs verts.",
+      "fix": "MotifsSol : voile froid de nuit à la place d'isoRueVoile ; isoChampANuit/BNuit/OcreNuit/isoHaieNuit choisis dans Tuile la nuit."
+    },
+    {
+      "id": "H4-02",
+      "severity": "high",
+      "area": "A",
+      "effort": "S",
+      "where": "IsoCarteDemo.tsx:882 (cachePolicy disk) ; loop_capture.sh",
+      "what": "Arène, donjon et observatoire bleus la nuit = anciens fichiers servis par le cache d'images (clé sans version). Les audits jugent des pixels périmés ; en produit, un sprite repeint sous le même nom peut garder l'ancienne peinture.",
+      "fix": "Captures : vider le cache avant chaque série (flux iso-loop-cache). Produit : cacheKey avec la version de l'app pour les sources embarquées, ou cachePolicy memory."
+    },
+    {
+      "id": "H4-03",
+      "severity": "medium",
+      "area": "A",
+      "effort": "S",
+      "where": "ouverture.ts:19-27 ; Monde.tsx ; IsoVillage.tsx:305, 553, 560",
+      "what": "Démarrage : squelette vectoriel, puis sol par morceaux, forêt, bâtiments 0,6 s après.",
+      "fix": "Fondu lancé au onLoad des 12 tuiles (plafond 1,5 s), opacité 0 avant."
+    },
+    {
+      "id": "H4-04",
+      "severity": "medium",
+      "area": "A",
+      "effort": "S",
+      "where": "champs.ts:166-186 ; IsoCarteDemo.tsx:2153-2154",
+      "what": "Champs hors plan (blocs de champsDe) encore vectoriels.",
+      "fix": "Sous peint.sol, paver les blocs avec ChampPeint (tuiles et nuit existent)."
+    },
+    {
+      "id": "H4-05",
+      "severity": "medium",
+      "area": "E",
+      "effort": "S",
+      "where": "Revelation.tsx:53-58, 151-163",
+      "what": "La montée joue toute la séquence ; de jour, onde et poussière sans contraste sur le sable.",
+      "fix": "Anneau plus sombre et chaud de jour, poussière plus foncée que le sol."
+    },
+    {
+      "id": "H4-06",
+      "severity": "low",
+      "area": "F",
+      "effort": "S",
+      "where": "palier-6-jour, [15,8]",
+      "what": "Pile de blocs bleu violet : sans doute image périmée (H4-02).",
+      "fix": "Vider le cache, refaire la capture."
+    },
+    {
+      "id": "H4-07",
+      "severity": "low",
+      "area": "F",
+      "effort": "S",
+      "where": "IsoCarteDemo.tsx:2311 ; Rempart.tsx",
+      "what": "Pendant la croissance du rempart, l'ancien disparaît d'un coup ; double remontage.",
+      "fix": "Clé stable, ancien stade gardé dessous pendant le fondu."
+    },
+    {
+      "id": "H4-08",
+      "severity": "low",
+      "area": "E",
+      "effort": "S",
+      "where": "IsoVillage.tsx:357 vs 569-571",
+      "what": "Cible du marteau active même quand le marteau est masqué pendant une montée.",
+      "fix": "Même liste filtrée que ReclamablesContext."
+    }
+  ],
+  "better": [
+    "H3-01, H3-02 résolus.",
+    "Rempart peint, masques de toucher cohérents.",
+    "Nuit cuite du sol, de la forêt, des accessoires.",
+    "H3-13, H3-14, H3-15 résolus.",
+    "Aucun crash, aucune promesse cassée."
+  ],
+  "worse": [
+    "Nuit des rues et champs vectoriels (H4-01).",
+    "Démarrage en squelette (H4-03).",
+    "Textures +9 Mo, +62 vues, toujours 12 i/s."
+  ],
+  "note_fr": "Trois constats de Théo viennent d'un même manque (rues et champs sans nuit). Arène et porte bleues = cache d'images périmé : à vider avant chaque capture. La montée joue bien ; de jour elle manque de contraste."
+}

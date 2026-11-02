@@ -1,0 +1,97 @@
+{
+ "sprites": {
+  "feuillus": {
+   "fond": "#CB67A5",
+   "ilots_retires_px": 6034,
+   "liseré_repeint_px": 1,
+   "liseré_restant_px": 0,
+   "source": "loop-2",
+   "trait_brut_px_S": 1,
+   "dilatation_px": 4,
+   "trait_final_px_S": 6,
+   "socle_taches_par_ligne": 4.02
+  },
+  "melangee": {
+   "fond": "#D463B3",
+   "ilots_retires_px": 3389,
+   "liseré_repeint_px": 24,
+   "liseré_restant_px": 0,
+   "source": "loop-2",
+   "trait_brut_px_S": 2,
+   "dilatation_px": 3,
+   "trait_final_px_S": 6.0,
+   "socle_taches_par_ligne": 5.35
+  },
+  "bouleaux": {
+   "fond": "#DB54AE",
+   "ilots_retires_px": 2362,
+   "liseré_repeint_px": 6,
+   "liseré_restant_px": 0,
+   "source": "loop-3",
+   "trait_brut_px_S": 1,
+   "dilatation_px": 4,
+   "trait_final_px_S": 6,
+   "socle_taches_par_ligne": 5.34
+  },
+  "dense": {
+   "fond": "#D551BA",
+   "ilots_retires_px": 8,
+   "liseré_repeint_px": 1,
+   "liseré_restant_px": 0,
+   "source": "loop-3",
+   "trait_brut_px_S": 1,
+   "dilatation_px": 4,
+   "trait_final_px_S": 7,
+   "socle_taches_par_ligne": 4.85
+  },
+  "bord_coniferes": {
+   "fond": "#D652BA",
+   "ilots_retires_px": 11,
+   "liseré_repeint_px": 9,
+   "liseré_restant_px": 0,
+   "source": "loop-2",
+   "trait_brut_px_S": 4.0,
+   "dilatation_px": 1,
+   "trait_final_px_S": 5,
+   "socle_taches_par_ligne": 3.85
+  },
+  "bord_crete": {
+   "fond": "#DB4CA7",
+   "ilots_retires_px": 153,
+   "liseré_repeint_px": 0,
+   "liseré_restant_px": 0,
+   "source": "loop-3",
+   "trait_brut_px_S": 2,
+   "dilatation_px": 3,
+   "trait_final_px_S": 5.0,
+   "socle_taches_par_ligne": 1.49,
+   "rejete": true
+  }
+ },
+ "placements": {
+  "1": {
+   "feuillus": 54,
+   "melangee": 60,
+   "bouleaux": 7,
+   "dense": 90,
+   "bord_coniferes": 254,
+   "bord_crete": 127
+  },
+  "6": {
+   "feuillus": 46,
+   "melangee": 44,
+   "bouleaux": 6,
+   "dense": 71,
+   "bord_coniferes": 254,
+   "bord_crete": 127
+  },
+  "12": {
+   "feuillus": 41,
+   "melangee": 41,
+   "bouleaux": 2,
+   "dense": 67,
+   "bord_coniferes": 254,
+   "bord_crete": 127
+  }
+ }
+}

@@ -4,6 +4,8 @@ A menu, not a spec. Guillaume strikes, keeps or swaps any idea before the
 buildings track paints it. The planner turns the kept ideas into one card per
 building: fewer, bigger, readable ideas beat many small ones.
 
+Today's iso look of a building is not a constraint: nothing was shipped, so a card may keep it, rework it or start over completely. Only the emprise (the village map is built around it) and the ranks, thresholds, XP and unlock rules stay.
+
 Rules from the prompt (sections 6 and 7), in short:
 - **Mythic** adds three new things: one towering element + one magic or prestige layer (visible by day AND by night) + the gag finale. Earlier add-ons stay, painted in, smaller and calmer.
 - **Growth**: each stage is bigger than the one before (at least +15 % silhouette area or +10 % height) and adds a new element on its silhouette. Never just "taller with nicer materials".

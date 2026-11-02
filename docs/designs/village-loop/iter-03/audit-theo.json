@@ -1,0 +1,107 @@
+{
+  "auditor": "theo",
+  "iter": 3,
+  "scores": { "style": 6.5, "fun": 5, "proud": 6.5, "personal": 3 },
+  "journal_fr": "Wow, plus rien à voir : rivière, forêts peintes, champs, chemin qui serpente. Palier 1 : le camp au bord de l'eau fait sourire, la nuit le feu chauffe la place. Palier 6 : le vrai frisson de Thronebreaker. Zoom max superbe. Palier 12 : remparts bleu électrique en pâte à modeler, arbres-sucettes bleu-noir, brume marron plate en haut et bord du losange visible. Après un mois : du camp au bourg fortifié, je me sens plus fort ; oiseaux toutes les 30 s. Ennuis : montée de stade invisible, vocation identique, nuit à moitié faite.",
+  "issues": [
+    {
+      "id": "T3-01",
+      "severity": "high",
+      "area": "G",
+      "effort": "L",
+      "needs_paint": true,
+      "flux_usd": 2,
+      "what": "La vocation ne change que la couleur des drapeaux.",
+      "fix": "Quartier de vocation lisible à 0,6 : piste et coureurs ; barres, anneaux et villageois en tractions ; grandes bannières peintes."
+    },
+    {
+      "id": "T3-02",
+      "severity": "high",
+      "area": "E",
+      "effort": "M",
+      "what": "Montée de stade invisible au cadrage (aucune glisse, losange, phrase). Note du chef : la capture n'a pas déclenché la montée (bâtiment prêt tiré au hasard, tap fixe à côté) ; à refilmer avec un déclenchement automatique.",
+      "fix": "Refilmer ; puis vérifier la montée à l'échelle du nouveau cadrage."
+    },
+    {
+      "id": "T3-03",
+      "severity": "high",
+      "area": "F",
+      "effort": "M",
+      "needs_paint": true,
+      "flux_usd": 1,
+      "what": "Remparts bleu saturé et caisses bleues en blocs, sans texture.",
+      "fix": "Peindre rempart et caisses dans la famille pierre et bois."
+    },
+    {
+      "id": "T3-04",
+      "severity": "medium",
+      "area": "F",
+      "effort": "S",
+      "what": "Arbres en sucette bleu-noir autour du village.",
+      "fix": "Les remplacer par des arbres peints ou les retirer."
+    },
+    {
+      "id": "T3-05",
+      "severity": "medium",
+      "area": "B",
+      "effort": "M",
+      "what": "Brume marron plate en haut, bord du losange du terrain visible : un plateau sur une table.",
+      "fix": "Forêt et relief jusqu'aux bords, bord fondu, brume en nappes."
+    },
+    {
+      "id": "T3-06",
+      "severity": "medium",
+      "area": "A",
+      "effort": "S",
+      "what": "La nuit ne touche pas les grands arbres du premier plan ni chemins, champs, accessoires et villageois du palier 1.",
+      "fix": "Filtre nuit sur toutes les couches."
+    },
+    {
+      "id": "T3-07",
+      "severity": "medium",
+      "area": "F",
+      "effort": "M",
+      "needs_paint": true,
+      "flux_usd": 1,
+      "what": "Chemins en taches brunes plates, champs en rectangles vectoriels.",
+      "fix": "Chemins et champs peints."
+    },
+    {
+      "id": "T3-08",
+      "severity": "medium",
+      "area": "E",
+      "effort": "M",
+      "what": "Au repos, oiseaux toutes les 30 s mais ni fumée visible ni place qui bouge.",
+      "fix": "Fumées visibles de loin, ailes du moulin, petits groupes de villageois."
+    },
+    {
+      "id": "T3-09",
+      "severity": "low",
+      "area": "D",
+      "effort": "S",
+      "what": "Fine ligne horizontale à gauche au palier 1 (y≈1285).",
+      "fix": "Trouver la jointure et la recouvrir."
+    },
+    {
+      "id": "T3-10",
+      "severity": "low",
+      "area": "D",
+      "effort": "S",
+      "needs_paint": true,
+      "flux_usd": 0.5,
+      "what": "Lampadaire bleu foncé et caisse verte en blocs de maquette au palier 1.",
+      "fix": "Les repeindre."
+    }
+  ],
+  "better": [
+    "Monde peint.",
+    "Village qui remplit l'écran.",
+    "Palier 6 : frisson.",
+    "Zoom max superbe.",
+    "Camp vers bourg fortifié lisible.",
+    "Oiseaux au repos.",
+    "Nuit chaude."
+  ],
+  "worse": ["Montée invisible (capture ratée).", "Remparts bleus.", "Nuit appliquée à moitié."],
+  "note_fr": "Énorme saut, frisson au palier 6. Le bleu des remparts sort du tableau, la montée n'a pas été filmée, la vocation reste une couleur de drapeau."
+}

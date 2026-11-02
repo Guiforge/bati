@@ -1,3 +1,4 @@
+// biome-ignore-all lint/correctness/noUndeclaredVariables: a script run by bun, which provides the Bun global
 // Construit dump_monde.mjs en un seul fichier, les modules natifs (React Native, Expo) remplacés par un
 // objet vide : la géométrie du village n'en a pas besoin. shortcut: un module qui lirait une vraie valeur
 // native au chargement recevrait un proxy vide ; le vidage échouerait alors, il ne mentirait pas en silence.
@@ -6,13 +7,20 @@ const stub = {
   name: "stub-natif",
   setup(build) {
     build.onResolve(
-      { filter: /^(react-native|react-native-[\w-]+|expo|expo-[\w-]+|@expo\/[\w-]+|@react-native[\w/-]*|@shopify\/[\w-]+|react-native-reanimated|react|tamagui|@tamagui\/[\w-]+)(\/.*)?$/ },
+      {
+        filter:
+          /^(react-native|react-native-[\w-]+|expo|expo-[\w-]+|@expo\/[\w-]+|@react-native[\w/-]*|@shopify\/[\w-]+|react-native-reanimated|react|tamagui|@tamagui\/[\w-]+)(\/.*)?$/,
+      },
       (args) => ({ path: args.path, namespace: "stub" }),
     );
-    build.onResolve({ filter: /\.(webp|png|jpg|ogg|mp3|ttf)$/ }, (args) => ({ path: args.path, namespace: "stub" }));
+    build.onResolve({ filter: /\.(webp|png|jpg|ogg|mp3|ttf)$/ }, (args) => ({
+      path: args.path,
+      namespace: "stub",
+    }));
     // La base SQLite s'ouvre au chargement de db/client : jamais ici.
     build.onResolve({ filter: /client$/ }, (args) =>
-      args.path.includes("db/client") || (args.path === "./client" && args.importer.includes("/db/"))
+      args.path.includes("db/client") ||
+      (args.path === "./client" && args.importer.includes("/db/"))
         ? { path: args.path, namespace: "stub" }
         : undefined,
     );

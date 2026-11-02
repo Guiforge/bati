@@ -36,12 +36,12 @@ import {
 import { CHANTIER_MS } from "@/components/village/iso/chantier";
 import { croissanceDemo } from "@/components/village/iso/croissanceDemo";
 import { PalierContext } from "@/components/village/iso/detail";
-import { Planche } from "@/components/village/iso/IsoCarteDemo";
 import { IsoCroissance } from "@/components/village/iso/IsoCroissance";
 import { type Croissance, IsoVillage } from "@/components/village/iso/IsoVillage";
 import { batiments, vieDe } from "@/components/village/iso/isoSpec";
 import { bornesPan, ileCentree, type Limites, ramener } from "@/components/village/iso/navigation";
 import { dureeFondu, FONDU_OUVERTURE_MS } from "@/components/village/iso/ouverture";
+import { Planche } from "@/components/village/iso/PlancheCarte";
 import { NOEUDS_RECLAMABLES, repartirReclamables } from "@/components/village/iso/reclame";
 import { NOUVEAU_MS } from "@/components/village/iso/revelation";
 import {

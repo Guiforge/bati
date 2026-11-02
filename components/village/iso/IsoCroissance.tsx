@@ -23,8 +23,8 @@ import { PopFin } from "./Chantier";
 import { ombreSocleDe, pose, spriteDe } from "./carteDemo";
 import { Fierte } from "./Fierte";
 import { useMouvementReduit } from "./fige";
-import { OmbreSocle, Planche } from "./IsoCarteDemo";
 import type { Ambiance, Biome, Stade } from "./isoSpec";
+import { OmbreSocle, Planche } from "./PlancheCarte";
 import { EclatRevelation } from "./Revelation";
 import {
   IMPACT_MS,

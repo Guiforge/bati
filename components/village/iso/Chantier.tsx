@@ -28,9 +28,9 @@ import {
   pop,
 } from "./chantier";
 import { useMouvementReduit } from "./fige";
-import { Planche } from "./IsoCarteDemo";
 import { emplacements } from "./isoLayout";
 import { MAQUETTES } from "./maquettes";
+import { Planche } from "./PlancheCarte";
 import { RevelationContext } from "./revelation";
 
 const LARGEUR_POUSSIERE = COTE * 1.5;

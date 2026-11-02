@@ -1,5 +1,6 @@
 import { and, count, eq, gte, isNotNull, lt, sql, sum } from "drizzle-orm";
 import { buildingCeiling, buildingStage, T3_MAX_LEVEL } from "@/constants/buildingLevels";
+import { baseOf, buildingStageFor } from "@/constants/buildingStages";
 
 export { buildingCeiling };
 
@@ -619,6 +620,65 @@ export function claimStage(
 }
 
 let claimWrites: Promise<unknown> = Promise.resolve();
+
+// Rule B: an upgrade's last stages follow the rank of the building it extends. The map never reads
+// that rank live: it draws the base rank the hero has claimed with a tap, one number per upgrade,
+// under its own key next to CLAIMED_KEY. No schema change.
+const BASES_KEY = "villageUpgradeBases";
+
+/** Code -> the base building's rank the hero has seen the upgrade at. Same shape and parser as the claimed stages. */
+export type ClaimedBases = ClaimedStages;
+
+export async function getClaimedBases(): Promise<ClaimedBases> {
+  return parseClaimed(await getPreference(BASES_KEY));
+}
+
+/** The rank of the building `code` extends in `buildings`, 0 when it is not built or `code` is no upgrade. */
+export function baseRankOf(
+  buildings: readonly Pick<VillageBuilding, "code" | "level">[],
+  code: BuildingCode,
+): number {
+  const base = baseOf(code);
+  return base ? (buildings.find((b) => b.code === base)?.level ?? 0) : 0;
+}
+
+/**
+ * Upgrades whose look would change with a tap: `stageFor(own, baseNow) != stageFor(own, baseSeen)`,
+ * rule B, at the own rank the map draws. A base never claimed counts as 0, so a hero who already
+ * had a high base meets the marker once instead of a silent change of look.
+ */
+export function claimableBases(
+  buildings: readonly Pick<VillageBuilding, "code" | "level">[],
+  claimed: ClaimedStages,
+  bases: ClaimedBases,
+): BuildingCode[] {
+  return buildings
+    .filter((b) => {
+      if (b.level <= 0 || baseOf(b.code) === null) return false;
+      const own = drawnLevel(b, claimed);
+      return (
+        buildingStageFor(b.code, own, baseRankOf(buildings, b.code), "B") !==
+        buildingStageFor(b.code, own, bases[b.code] ?? 0, "B")
+      );
+    })
+    .map((b) => b.code);
+}
+
+/** The one writer of the claimed base ranks, never down, in the same queue as `claimStage`. */
+export function claimBases(
+  items: readonly { code: BuildingCode; base: number }[],
+): Promise<ClaimedBases> {
+  const run = claimWrites.then(async () => {
+    const next = await getClaimedBases();
+    for (const { code, base } of items) {
+      if (base > 0) next[code] = Math.max(next[code] ?? 0, base);
+    }
+    await setPreference(BASES_KEY, JSON.stringify(next));
+    return next;
+  });
+  claimWrites = run.catch(() => undefined);
+  return run;
+}
 
 /**
  * Buildings are a pure function of training history — no unlock button, no resource

@@ -208,9 +208,9 @@ HU = unit([TIP_XY[0] - FOOT_XY[0], TIP_XY[1] - FOOT_XY[1], 0])  # horizontal dir
 DIAG = 0.7071
 
 
-def telescope(foot_z, tip_z, r_start, mat, sleeve=False):
-    foot = [FOOT_XY[0], FOOT_XY[1], foot_z]
-    tip = [TIP_XY[0], TIP_XY[1], tip_z]
+def telescope(foot_z, tip_z, r_start, mat, sleeve=False, foot_xy=FOOT_XY, tip_xy=TIP_XY):
+    foot = [foot_xy[0], foot_xy[1], foot_z]
+    tip = [tip_xy[0], tip_xy[1], tip_z]
     d = sub(tip, foot)
     L, u = norm(d), unit(d)
     radii = [r_start + (0.13 - r_start) * i / 3 for i in range(4)]

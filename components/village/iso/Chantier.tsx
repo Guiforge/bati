@@ -152,7 +152,7 @@ export function Poussiere({ code }: { code: BuildingCode }) {
           top: y - HAUTEUR_POUSSIERE,
           width: LARGEUR_POUSSIERE,
           height: HAUTEUR_POUSSIERE,
-          transformOrigin: [LARGEUR_POUSSIERE / 2, HAUTEUR_POUSSIERE],
+          transformOrigin: [LARGEUR_POUSSIERE / 2, HAUTEUR_POUSSIERE, 0],
         },
         style,
       ]}
@@ -213,7 +213,7 @@ export function PopFin({ code, delai = 0 }: { code: BuildingCode; delai?: number
           top: y - HAUTEUR_POUSSIERE,
           width: LARGEUR_POUSSIERE,
           height: HAUTEUR_POUSSIERE,
-          transformOrigin: [LARGEUR_POUSSIERE / 2, HAUTEUR_POUSSIERE],
+          transformOrigin: [LARGEUR_POUSSIERE / 2, HAUTEUR_POUSSIERE, 0],
         },
         style,
       ]}

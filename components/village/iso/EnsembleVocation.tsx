@@ -190,7 +190,7 @@ function Banniere({
         style={[
           ABSOLU,
           { left: x - w / 2, top: haut + 6, width: w, height: h },
-          { transformOrigin: [w / 2, 0] },
+          { transformOrigin: [w / 2, 0, 0] },
           style,
         ]}
       >

@@ -168,7 +168,7 @@ function Flotte({
       style={[
         ABSOLU,
         { left: boite.x, top: boite.y, width: boite.w, height: boite.h },
-        { transformOrigin: [(12 / 100) * boite.w, boite.h] },
+        { transformOrigin: [(12 / 100) * boite.w, boite.h, 0] },
         style,
       ]}
     >

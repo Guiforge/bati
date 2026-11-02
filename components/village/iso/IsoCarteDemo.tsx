@@ -826,7 +826,7 @@ function AilesVivantes({
   return (
     <Animated.View
       pointerEvents="none"
-      style={[place(rect), { transformOrigin: [s.anchor[0] * k, s.anchor[1] * k] }, style]}
+      style={[place(rect), { transformOrigin: [s.anchor[0] * k, s.anchor[1] * k, 0] }, style]}
     >
       <Planche s={s} rect={{ ...rect, x: 0, y: 0 }} ancre={rect} testID={testID} />
     </Animated.View>
@@ -1506,7 +1506,7 @@ function Marcheur({
         pointerEvents="none"
         testID={`${id}-${marche ? "noeud" : "fixe"}`}
         // A strike or a work gesture leans the villager about its feet.
-        style={[place(rect), { transformOrigin: [ax - rect.x, ay - rect.y] }, style]}
+        style={[place(rect), { transformOrigin: [ax - rect.x, ay - rect.y, 0] }, style]}
       >
         <Planche s={s} rect={{ ...rect, x: 0, y: 0 }} ancre={rect} miroir={miroir} testID={id} />
       </Animated.View>

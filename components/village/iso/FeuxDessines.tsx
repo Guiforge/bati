@@ -181,7 +181,7 @@ function Flamme({
       style={[
         ABSOLU,
         { left: corps.x + g.left, top: corps.y + g.top, width: g.w, height: g.h },
-        { transformOrigin: [g.w / 2, g.origine] },
+        { transformOrigin: [g.w / 2, g.origine, 0] },
         style,
       ]}
     >

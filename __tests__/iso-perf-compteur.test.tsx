@@ -20,6 +20,9 @@ jest.mock("@/hooks/useReducedMotion", () => ({ useReducedMotion: () => false }))
 
 configure({ defaultIncludeHiddenElements: true });
 
+// Weight, not a hang: each test mounts the whole map (every building, tier 12); alone it takes seconds, under a parallel full run tens of seconds.
+jest.setTimeout(120_000);
+
 type Compte = {
   noeuds: number;
   svg: number;

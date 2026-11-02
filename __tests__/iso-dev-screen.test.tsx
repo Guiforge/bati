@@ -168,7 +168,8 @@ const clipDe = (n: Noeud | undefined): string =>
   );
 
 // Measured 2026-10-31, calm machine, with coverage: slowest test 6.7 s, a dozen above 1.5 s; the 5 s default tripped under load.
-jest.setTimeout(20_000);
+// Weight, not a hang: each test mounts the whole map (every building, tier 12); alone it takes seconds, under a parallel full run tens of seconds.
+jest.setTimeout(120_000);
 
 describe("the iso demo screen (L0-T06)", () => {
   test("the settings the reveal reads are loaded when the screen opens, not at the tap", async () => {

@@ -156,7 +156,8 @@ jest.mock("@/constants/isoPoc", () => ({
   DUREE_VIE_MS: 30000,
 }));
 
-jest.setTimeout(15_000);
+// Weight, not a hang: each test mounts the whole map (every building, tier 12); alone it takes seconds, under a parallel full run tens of seconds.
+jest.setTimeout(120_000);
 
 describe("the whole map's animated nodes", () => {
   const buildings = buildingCodes.map((code) => ({ code, level: 5 }));
@@ -538,5 +539,5 @@ describe("the building site (L6-T02)", () => {
     } finally {
       jest.useRealTimers();
     }
-  }, 40_000);
+  }, 120_000);
 });

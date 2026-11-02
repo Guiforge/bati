@@ -7,7 +7,7 @@ import * as Reanimated from "react-native-reanimated";
 import Svg from "react-native-svg";
 import { AlentoursContext, alentoursDe } from "@/components/village/iso/alentours";
 import { etatCarte, stadeDemo } from "@/components/village/iso/carteDemo";
-import { champsDe, surParcelle, tuilesBlocs } from "@/components/village/iso/champs";
+import { champsDe } from "@/components/village/iso/champs";
 import { IsoCarte } from "@/components/village/iso/IsoCarteDemo";
 import { IsoVillage } from "@/components/village/iso/IsoVillage";
 import { TAILLE } from "@/components/village/iso/isoLayout";
@@ -112,49 +112,19 @@ describe("H4-01: the night has its own streets and fields", () => {
   });
 });
 
-describe("H4-04: the blocks off the island are painted tiles", () => {
-  test("over the painted ground no tint, furrow or hedge is drawn, and every block is paved", () => {
+describe("over the painted ground no field stands off the island", () => {
+  test("no block, no tint, furrow or hedge, at any tier", () => {
     for (const p of [1, 6, 12] as const) {
       const { visible } = etatCarte(p, false);
-      const vu = (gx: number, gy: number) => visible[gy]?.[gx] === true;
-      const peint = champsDe(vu, true);
-      expect(peint.blocs).toEqual(
-        champsDe(vu).blocs.filter(
-          ([x, y, w, h]) => !surParcelle(x, y, x + w, y + h) && !(x >= 12 && x < 21 && y === 16),
-        ),
-      );
+      const peint = champsDe((gx, gy) => visible[gy]?.[gx] === true, true);
+      expect([peint.nombre, peint.blocs]).toEqual([0, []]);
       expect([peint.teintes.join(""), peint.sillons, peint.sillonsClairs, peint.haies]).toEqual([
         "",
         "",
         "",
         "",
       ]);
-      const t = tuilesBlocs(peint.blocs);
-      expect(t).toHaveLength(peint.blocs.reduce((n, [, , w, h]) => n + w * h, 0));
-      for (const [gx, gy, w, h] of peint.blocs) {
-        const ici = t.filter(
-          (x) => x.case[0] >= gx && x.case[0] < gx + w && x.case[1] >= gy && x.case[1] < gy + h,
-        );
-        expect(ici).toHaveLength(w * h);
-        expect(new Set(ici.map((x) => x.culture)).size).toBe(1);
-        expect(ici.filter((x) => x.haie)).toHaveLength(w);
-        expect(ici.filter((x) => x.haie).every((x) => x.case[1] === gy)).toBe(true);
-      }
     }
-  });
-
-  test("the painted map mounts them", async () => {
-    const { visible, montres } = etatCarte(1, false);
-    const vu = (gx: number, gy: number) => visible[gy]?.[gx] === true;
-    const blocs = tuilesBlocs(champsDe(vu, true).blocs);
-    expect(blocs.length).toBeGreaterThan(0);
-    await render(
-      <AlentoursContext.Provider value={alentoursDe("sol")}>
-        <IsoCarte visible={visible} montres={montres} stade={stade} lumiere="nuit" />
-      </AlentoursContext.Provider>,
-    );
-    for (const t of blocs)
-      expect(screen.getAllByTestId(`iso-champ-${t.case.join("-")}`)).toHaveLength(1);
   });
 });
 

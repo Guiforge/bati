@@ -198,14 +198,11 @@ describe("the south lisiere hides the grey past the painted ground (loupe BC)", 
     expect(miroirs.length / ms.length).toBeLessThan(0.4);
   });
 
-  test("a plot's block is never taken away by the plots, at any tier", () => {
+  test("the painted ground holds no lattice block, at any tier", () => {
     for (const p of PALIERS) {
       const { visible } = etatCarte(p, false);
       const vu = (gx: number, gy: number) => visible[gy]?.[gx] === true;
-      // The painted ground drops the blocks south of the wall (12 to 20, 16 to 17: the gate street's, the checkerboard) and nothing else.
-      expect(champsDe(vu, true).blocs).toEqual(
-        champsDe(vu).blocs.filter(([x, y]) => !(x >= 12 && x < 21 && y === 16)),
-      );
+      expect(champsDe(vu, true).blocs).toEqual([]);
     }
   });
 

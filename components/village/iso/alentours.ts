@@ -12,7 +12,7 @@ import { ALENTOURS, type Alentours, COUCHES_ALENTOURS } from "@/constants/isoPoc
 import type { BuildingCode } from "@/db/schema";
 import type { VillageTier } from "@/db/village";
 import { COTE, ecranXY, etatCarte, LARGEUR } from "./carteDemo";
-import { PARCELLES } from "./champs";
+import { EAU_GX, PARCELLES } from "./champs";
 import type { Case } from "./isoLayout";
 import { clairiere, distCases, mulberry32 } from "./monde";
 import type { Point } from "./ombres";
@@ -112,7 +112,6 @@ const PORTEE_ANNEAU = 460;
 const PART_BOISEE = 0.68;
 /** How far a mass keeps from a road leaving the village and from the river, grid cells. */
 const DEGAGE_ROUTE = 0.9;
-const RIVIERE_GX: readonly [number, number] = [1.5, 3.5];
 
 /** A map point in grid coordinates (the inverse of `ecranXY`). */
 const grille = (x: number, y: number): [number, number] => {
@@ -197,7 +196,7 @@ function libre(
   return points.every(([px, py]) => {
     if (dist(px, py) < clair) return false;
     const [gx, gy] = grille(px, py);
-    if (gx > RIVIERE_GX[0] && gx < RIVIERE_GX[1]) return false;
+    if (gx > EAU_GX[0] && gx < EAU_GX[1]) return false;
     if (dansClairiere(gx, gy)) return false;
     if (
       champs.some(
@@ -710,7 +709,7 @@ function bordure(ok: OkMasse): Masse[] {
 /** The veil's ellipse in map dp: clear inside the island's own extent (`dedans` of the radius), slate `force` at the rim and beyond. */
 export type Voile = { cx: number; cy: number; rx: number; ry: number; dedans: number };
 /** How far past the island's half width the veil reaches its full strength (dp; down it is the same ratio), and that strength. Simulated on the p06 capture: 0.96 becomes 1.19. */
-export const VOILE_PORTEE = { x: 560, force: 0.34 } as const;
+export const VOILE_PORTEE = { x: 560, force: 0.36 } as const;
 const CACHE_VOILE = new WeakMap<readonly (readonly boolean[])[], Voile>();
 
 /** The veil of a tier: centred on the island's middle, as wide as the island plus `VOILE_PORTEE`, so it grows with the tier and darkens the surroundings only. */

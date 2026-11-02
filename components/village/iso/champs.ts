@@ -75,33 +75,28 @@ const surRoute = (x0: number, y0: number, x1: number, y1: number) =>
  * The three plots the painted ground carries beside the south road (loupe BC, frozen in
  * docs/designs/village-loop/loupes/bc/route_tuiles.json): wheat on the road's left, a vegetable
  * plot and a pasture on its right, [gx0, gy0, gx1, gy1] in cells, all off the 20x20 grid. The painted ground
- * draws them, so no block of the lattice below stands on them (`surParcelle`).
+ * draws them (the lattice holds no block at all over the painted ground).
  */
 export const PARCELLES = {
   ble: [14, 23, 19.5, 26.5],
   potager: [22, 14, 27, 18],
   paturage: [30, 21.5, 34.5, 25.5],
 } as const;
-/**
- * Lattice blocks the painted ground paves over (loupe BC): the checkerboard of wheat with its
- * hedge by the gate, cells 18 to 20, and the two blocks south of the wall, cells 12 to 17, 16 to 17
- * (round 3: the island grew over them at tier 5, they went, and the plan's field came back at
- * tier 7; they also lay on the gate street's cells). Rows 16 and 17, gx 12 to 20, hold no block
- * while the ground is painted, at any tier, so none shows late or goes; the island's own fields
- * are untouched.
- */
-const SANS_BLOC = [[12, 16, 21, 18]] as const;
-/** The lattice block's margin round a plot, cells. */
-const MARGE_PARCELLE = 0.5;
-
-/** Whether a rectangle (cells) touches a plot of the south corner, margin included. */
-export const surParcelle = (x0: number, y0: number, x1: number, y1: number) =>
-  Object.values(PARCELLES).some(
-    ([a, b, c, d]) =>
-      x1 > a - MARGE_PARCELLE &&
-      x0 < c + MARGE_PARCELLE &&
-      y1 > b - MARGE_PARCELLE &&
-      y0 < d + MARGE_PARCELLE,
+/** The river's band, gx in cells: the water cells (gx 2, every row of the master grid) with the stream's meander and banks. */
+export const EAU_GX: readonly [number, number] = [1.5, 3.5];
+/** How near the south road a plan field may stand over the painted ground, cells. */
+const MARGE_ROUTE = 0.3;
+const surRouteSud = (x0: number, y0: number, x1: number, y1: number) =>
+  ECHANTILLONS.some(
+    ([x, y]) =>
+      x > x0 - MARGE_ROUTE && x < x1 + MARGE_ROUTE && y > y0 - MARGE_ROUTE && y < y1 + MARGE_ROUTE,
+  );
+/** The plan's fields the painted ground keeps: none touches the river or a road (the farmers' district, tiers 8 and 9). */
+const CHAMPS_PEINTS = champsDuPlan
+  .map((f, i) => ({ ...f, i })) // the crop follows the plan's order, kept fields included
+  .filter(
+    ({ coin: [x, y], taille: [w, h] }) =>
+      !(x + w > EAU_GX[0] && x < EAU_GX[1]) && !surRouteSud(x, y, x + w, y + h),
   );
 
 /** The ring (1 to `CONTACT`) of the nearest shown cell, in king moves, from a cell off the island; 0 when none is near. */
@@ -150,7 +145,7 @@ function contour(i: number, j: number, [x0, y0, x1, y1]: Rect4): Point[] {
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: one lattice walk, each block a short list of steps
 export function champsDe(
   vu: (gx: number, gy: number) => boolean,
-  /** The ground is painted: the plan's fields (`tuilesChamps`) and the blocks off the island (`tuilesBlocs`) are tiles, nothing is drawn here but the blocks' list. */
+  /** The ground is painted: no field is drawn off the island at any tier (the plan's are tiles, `tuilesChamps`). */
   planPeint = false,
 ): Champs {
   const teintes = ["", "", ""];
@@ -196,20 +191,14 @@ export function champsDe(
       hedges.push(ruban(ligne, demi));
     }
   };
-  for (let j = -4; j < 12; j++)
+  // Over the painted ground the lattice stays empty, at every tier, so no field comes or goes.
+  for (let j = -4; !planPeint && j < 12; j++)
     for (let i = -4; i < 11; i++) {
       const [gx0, gy0] = [i * PAS_X, j * PAS_Y];
       if (hasard(i, j, 1, GRAINE) < 0.32) continue;
       const r: Rect4 = [gx0 + RUELLE, gy0 + RUELLE, gx0 + PAS_X - RUELLE, gy0 + PAS_Y - RUELLE];
       if (!quad(...r).every(dansCarte)) continue;
       if (surRoute(...r)) continue;
-      // The painted ground carries the south corner's plots: no lattice block on them.
-      if (planPeint && surParcelle(gx0, gy0, gx0 + PAS_X, gy0 + PAS_Y)) continue;
-      if (
-        planPeint &&
-        SANS_BLOC.some(([a, b, c, d]) => gx0 + PAS_X > a && gx0 < c && gy0 + PAS_Y > b && gy0 < d)
-      )
-        continue;
       let proche = false;
       let libre = true;
       for (let x = gx0; x < gx0 + PAS_X && libre; x++)
@@ -221,8 +210,7 @@ export function champsDe(
           if (anneau(vu, x, y) > 0) proche = true;
         }
       if (!libre || !proche) continue;
-      // Over the painted ground the block is paved with painted tiles instead (`tuilesBlocs`).
-      if (!planPeint) poser(i, j, r, Math.floor(hasard(i, j, 2, GRAINE) * 3));
+      poser(i, j, r, Math.floor(hasard(i, j, 2, GRAINE) * 3));
       nombre++;
       blocs.push([gx0, gy0, PAS_X, PAS_Y]);
     }
@@ -264,19 +252,17 @@ export type TuileChamp = {
 };
 
 /**
- * The plan's fields, each paved with painted tiles once all its cells show (as the drawn ones: the
+ * The plan's fields (those off the water and the road), each paved with painted tiles once all its cells show (the
  * island never shrinks, so a field never goes). One crop a field, the plan's order through
  * CULTURES, so two fields side by side ([0, 16] and [3, 17]) never share it; the hedge on the
  * back row only. Back to front.
  */
 export function tuilesChamps(vu: (gx: number, gy: number) => boolean): TuileChamp[] {
-  return champsDuPlan
-    .flatMap(({ coin: [fx, fy], taille: [fw, fh] }, i) => {
-      const cases = cellules(fx, fy, fw, fh);
-      if (!cases.every(([gx, gy]) => vu(gx, gy))) return [];
-      return paver(cases, fy, CULTURES[i % CULTURES.length] ?? "ble");
-    })
-    .sort(dos);
+  return CHAMPS_PEINTS.flatMap(({ coin: [fx, fy], taille: [fw, fh], i }) => {
+    const cases = cellules(fx, fy, fw, fh);
+    if (!cases.every(([gx, gy]) => vu(gx, gy))) return [];
+    return paver(cases, fy, CULTURES[i % CULTURES.length] ?? "ble");
+  }).sort(dos);
 }
 
 const dos = (a: TuileChamp, b: TuileChamp) => a.case[0] + a.case[1] - (b.case[0] + b.case[1]);
@@ -293,24 +279,4 @@ function paver(cases: readonly (readonly [number, number])[], fy: number, cultur
       rect: { x: x - ancre[0], y: y - ancre[1], w, h },
     };
   });
-}
-
-/**
- * The blocks off the island (`champsDe(...).blocs`), paved with the same painted tiles (H4-04):
- * one crop a block, drawn by the hash of its corner, the hedge on its back row. Back to front.
- */
-export function tuilesBlocs(
-  blocs: readonly (readonly [gx: number, gy: number, w: number, h: number])[],
-  /** Whether the ground is painted: without it, no tile (the blocks are drawn by `champsDe`). */
-  peint = true,
-): TuileChamp[] {
-  return (peint ? blocs : [])
-    .flatMap(([gx, gy, w, h]) =>
-      paver(
-        cellules(gx, gy, w, h),
-        gy,
-        CULTURES[Math.floor(hasard(gx, gy, 4, GRAINE) * 3)] ?? "ble",
-      ),
-    )
-    .sort(dos);
 }

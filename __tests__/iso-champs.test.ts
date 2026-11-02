@@ -1,13 +1,14 @@
 import assert from "node:assert/strict";
 import { ecranXY, etatCarte, HAUTEUR, LARGEUR } from "@/components/village/iso/carteDemo";
-import { champsDe, surParcelle, tuilesChamps } from "@/components/village/iso/champs";
+import { champsDe, EAU_GX, tuilesChamps } from "@/components/village/iso/champs";
 import { champsDuPlan } from "@/components/village/iso/isoLayout";
+import { chaineEau } from "@/components/village/iso/riviere";
 import { SORTIES } from "@/components/village/iso/rues";
 import { rawColors } from "@/constants/rawColors";
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 
-const vuDe = (palier: 1 | 6 | 12) => {
+const vuDe = (palier: Parameters<typeof etatCarte>[0]) => {
   const { visible } = etatCarte(palier, false);
   return (gx: number, gy: number) => visible[gy]?.[gx] === true;
 };
@@ -61,6 +62,22 @@ describe("fields and hedges at the village's contact (FIN-CAR)", () => {
   });
 });
 
+describe("over the painted ground, every tier", () => {
+  test("no field sprite stands on a river cell and the fields only grow", () => {
+    const eau = new Set(chaineEau().map((c) => c.join(",")));
+    let avant = new Set<string>();
+    for (const p of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const) {
+      const vu = vuDe(p);
+      const ici = new Set(tuilesChamps(vu).map((x) => x.case.join(",")));
+      expect([...ici].filter((c) => eau.has(c))).toEqual([]);
+      expect([...avant].filter((c) => !ici.has(c))).toEqual([]);
+      expect(champsDe(vu, true).blocs).toEqual([]);
+      avant = ici;
+    }
+    expect(avant.size).toBeGreaterThan(0);
+  });
+});
+
 describe("the roads leave the village (FIN-CAR, FIN-DIS)", () => {
   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: one assertion list over the three exits, clearer whole
   test("three exits, west, east and south, the west and east ones forking into a second track, the south one a single line", () => {
@@ -108,16 +125,14 @@ describe("the roads leave the village (FIN-CAR, FIN-DIS)", () => {
       avant = ici;
       // With the painted tiles on, nothing is drawn (A7 H4-04: the off-island blocks are tiles too), the blocks stay listed.
       const peint = champsDe(vu, true);
-      expect(peint.blocs).toEqual(
-        champsDe(vu).blocs.filter(
-          ([x, y, w, h]) => !surParcelle(x, y, x + w, y + h) && !(x >= 12 && x < 21 && y === 16),
-        ),
-      );
+      expect(peint.blocs).toEqual([]);
       expect(peint.teintes.join("")).toBe("");
     }
     const t = tuilesChamps(vuDe(12));
-    expect(t).toHaveLength(champsDuPlan.reduce((n, f) => n + f.taille[0] * f.taille[1], 0));
-    for (const { coin, taille } of champsDuPlan) {
+    // Over the painted ground the fields on the river or against the south road are not kept.
+    const gardes = champsDuPlan.filter(({ coin }) => coin[0] >= EAU_GX[1]);
+    expect(t).toHaveLength(gardes.reduce((n, f) => n + f.taille[0] * f.taille[1], 0));
+    for (const { coin, taille } of gardes) {
       const champ = t.filter(
         (x) =>
           x.case[0] >= coin[0] &&
@@ -128,10 +143,6 @@ describe("the roads leave the village (FIN-CAR, FIN-DIS)", () => {
       expect(new Set(champ.map((x) => x.culture)).size).toBe(1);
       for (const x of champ) expect(x.haie).toBe(x.case[1] === coin[1]);
     }
-    // The two fields side by side south west of the wall never share a crop.
-    const culture = (gx: number, gy: number) =>
-      t.find((x) => x.case.join() === [gx, gy].join())?.culture;
-    expect(culture(0, 16)).not.toBe(culture(3, 17));
     // Back to front, each on its cell's bottom corner.
     const rangs = t.map((x) => x.case[0] + x.case[1]);
     expect(rangs).toEqual(rangs.toSorted((a, b) => a - b));

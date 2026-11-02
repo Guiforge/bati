@@ -119,7 +119,7 @@ import {
   VERRES_LANTERNE,
   voileDe,
 } from "./carteDemo";
-import { type Champs, champsDe, tuilesBlocs, tuilesChamps } from "./champs";
+import { type Champs, champsDe, tuilesChamps } from "./champs";
 import { COUP_MS, COUPS, RETOUR_COUP_MS } from "./chantier";
 import { CODES_A_CORBEAU } from "./corbeaux";
 import { PalierContext, palierPour, SondeContext, tailleDecode } from "./detail";
@@ -2168,8 +2168,6 @@ export function IsoCarte({
   // F4: with the painted ground, the plan's fields are painted tiles; the drawn ones stay off the island.
   const champs = champsDe(vu, peint.sol);
   const tuilesChamp = peint.sol ? tuilesChamps(vu) : [];
-  // H4-04: the blocks off the island are paved with the same tiles, flat on the ground, hedge row included.
-  const tuilesHors = tuilesBlocs(champs.blocs, peint.sol);
   // The back row's hedge stands up: in the depth order, so the wall behind it never covers it.
   const haies = tuilesChamp.filter((t) => t.haie);
   const ruisseau = ruisseauDe(visible);
@@ -2369,9 +2367,11 @@ export function IsoCarte({
       ))}
       {/* G3: the vocation's grounds over the tiles and their shadows, under the night's veil and every sprite. */}
       {/* F4: the plan's fields, painted, flat rows on the ground (the hedge rows stand in the depth order). */}
-      {[...tuilesHors, ...tuilesChamp.filter((t) => !t.haie)].map((t) => (
-        <ChampPeint key={`c${t.case.join(",")}`} t={t} lumiere={lumiere} />
-      ))}
+      {tuilesChamp
+        .filter((t) => !t.haie)
+        .map((t) => (
+          <ChampPeint key={`c${t.case.join(",")}`} t={t} lumiere={lumiere} />
+        ))}
       <SolVocation vocation={sienne} nuit={nuit} />
       {/* The painted forest: over the ground and the vector roads it keeps clear of, under the light (graded at night) and the sprites. */}
       <ForetSiPeinte

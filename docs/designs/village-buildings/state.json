@@ -1,0 +1,115 @@
+{
+  "_doc": "Etat du chantier batiments v2. La session froide lit PROMPT.md puis ce fichier, et saute ce qui est done.",
+  "ISO_BRANCH": "feat/village-iso",
+  "UPGRADE_RULE": "B-par-defaut-a-confirmer",
+  "prep": {
+    "date": "2026-11-02",
+    "branche": "bld-prep",
+    "base": "feat/village-iso @ a45a453d, rebase demande par Guillaume le 02/11",
+    "subagentRuns": {
+      "utilises": 22,
+      "budget": 40,
+      "note": "une relance de theo comptee : lance par erreur en Sonnet, arrete"
+    },
+    "etapes": {
+      "1_pipeline": {
+        "statut": "done",
+        "fichier": "pipeline.md"
+      },
+      "2_donnees_scripts": {
+        "statut": "done",
+        "fichiers": [
+          "constants/buildingStages.ts",
+          "constants/buildingData.ts",
+          "constants/buildings/windmill.ts",
+          "__tests__/iso-building-stages.test.ts",
+          "scripts/bld/bldtools.py",
+          "scripts/bld/test_bldtools.py"
+        ],
+        "flag": "BUILDING_STAGES_RULE = old, rien dans l'app ne lit encore la table",
+        "resteDeLEtape0Point4": ["etats de capture", "cartes de calibration"]
+      },
+      "3_cartes": {
+        "statut": "done",
+        "gel": false,
+        "fichiers": [
+          "cards/windmill.md",
+          "cards/observatory.md",
+          "cards/campfire.md",
+          "cards/tent.md",
+          "cards/training_dummy.md"
+        ],
+        "revues": "theo et mara, une fois chacun"
+      },
+      "4_maquettes": {
+        "statut": "parked",
+        "tours": 3,
+        "meilleurTour": "r3",
+        "specs": "scripts/iso/blockouts/bld/, generes par scripts/bld/gen_pilot_specs.py",
+        "rendu": "python3 scripts/bld/render_pilot.py <tour>, refuse d'ecraser un tour",
+        "gId": {
+          "r1": {
+            "S-A": "11/12",
+            "S-B": "9/12"
+          },
+          "r2": {
+            "S-A": "11/12",
+            "S-B": "8/12"
+          },
+          "r3": {
+            "S-A": "10/12",
+            "S-B": "10/12",
+            "echecs": ["observatory_mythic", "observatory_mythic.96"]
+          }
+        },
+        "windmill": "passe au tour 3, flou compris",
+        "observatory": "passe au tour 3 sauf le mythic, nomme Champion Arena"
+      },
+      "5_etat": {
+        "statut": "done"
+      },
+      "6_resume": {
+        "statut": "done",
+        "fichier": "prep-summary.md"
+      }
+    },
+    "questionsParquees": [
+      "Mythic de l'observatoire : garder Atlas et accepter l'echec, ajouter des signes celestes, reduire la figure, ou la retirer"
+    ],
+    "aRefaire": [
+      "Relancer iso-layout et heights.py avec les nouvelles hauteurs : les specs de bld/ ne sont pas lues par ces controles",
+      "Le controle d'empreinte ne compare qu'une bande de 12 px au coin avant : a remplacer par un vrai masque de contact au sol"
+    ]
+  },
+  "session": 1,
+  "settings": {
+    "fluxSessionUsd": 30,
+    "subagentRunsBudget": 250,
+    "maxRoundsPilot": 6,
+    "maxRoundsLater": 4,
+    "device": "emulator-5554",
+    "sources": "~/Téléchargements (xdg de ~/Downloads sur cette machine)"
+  },
+  "flux": {
+    "registreAuDepart": {
+      "spent": 44.843,
+      "ceiling": 60.0,
+      "left": 15.157
+    },
+    "depenseSession": 0.0
+  },
+  "subagentRuns": {
+    "used": 0,
+    "budget": 250,
+    "alerte80": 200
+  },
+  "step0": {
+    "1": "done",
+    "2": "done: registre 15,157 $ restants; copie du verrou faite, 83 fichiers"
+  },
+  "exploration": {},
+  "recipeLocked": false,
+  "waves": ["W1", "W2", "W3", "W4", "W5", "W6"],
+  "buildings": {},
+  "parkedQuestions": []
+}

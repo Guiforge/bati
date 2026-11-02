@@ -1,0 +1,52 @@
+{
+  "windmill_rough": {
+    "hauteurMax": 1.7,
+    "outsideFootprint": [],
+    "sails_X_bbox": [198, 562, 699, 1063],
+    "sails_plus_bbox": [133, 497, 764, 1128]
+  },
+  "windmill_solid": {
+    "hauteurMax": 2.8,
+    "outsideFootprint": [],
+    "sails_X_bbox": [155, 400, 741, 985],
+    "sails_plus_bbox": [78, 323, 818, 1063]
+  },
+  "windmill_grand": {
+    "hauteurMax": 3.3,
+    "outsideFootprint": [],
+    "sails_X_bbox": [109, 244, 786, 921],
+    "sails_plus_bbox": [22, 157, 873, 1008]
+  },
+  "windmill_legendary": {
+    "hauteurMax": 3.7,
+    "outsideFootprint": [],
+    "sails_X_bbox": [78, 146, 818, 886],
+    "sails_plus_bbox": [10, 78, 886, 954]
+  },
+  "windmill_mythic": {
+    "hauteurMax": 3.8,
+    "outsideFootprint": [],
+    "sails_X_bbox": [78, 146, 818, 886],
+    "sails_plus_bbox": [10, 78, 886, 954]
+  },
+  "observatory_rough": {
+    "hauteurMax": 1.725,
+    "outsideFootprint": []
+  },
+  "observatory_solid": {
+    "hauteurMax": 2.896,
+    "outsideFootprint": []
+  },
+  "observatory_grand": {
+    "hauteurMax": 3.284,
+    "outsideFootprint": []
+  },
+  "observatory_legendary": {
+    "hauteurMax": 3.284,
+    "outsideFootprint": []
+  },
+  "observatory_mythic": {
+    "hauteurMax": 4.0,
+    "outsideFootprint": []
+  }
+}

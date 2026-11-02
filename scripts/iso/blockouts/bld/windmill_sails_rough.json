@@ -1,0 +1,4 @@
+{
+  "canvas": "sails",
+  "parts": [{ "type": "sails", "length": 1.25, "width": 0.3, "hub": 0.09, "mat": "canvas" }]
+}

@@ -1,0 +1,21 @@
+--- core
+  window (24,51) mean 118.2 std 20.2
+  window (23,51) mean 118.2 std 20.2
+  window (25,51) mean 118.1 std 20.1
+L village 118.0 / L surroundings 104.0 = 1.13 (wanted 1.10 to 1.50)
+mean saturation village 88.3, surroundings 75.5 (wanted surroundings < village)
+core: FAIL
+--- forest lisiere
+9 forest sprites on screen, widths 164 to 302 px, max/min 1.85 (wanted >= 1.80)
+3 size classes (gap > 25 % between sorted widths, wanted >= 3)
+median width, quarter nearest the village 164 px, farthest 302 px (wanted nearest < farthest)
+ids: tree_bouleaux, tree_dense, tree_feuillus, tree_melangee  (birch, oak and pine all visible: judged by eye)
+forest: ok
+--- dump-check lisiere
+sprite tree_feuillus: repeated at (-8, -6) and (-1, -8) (same orientation, needs flipped and 6+ tiles)
+sprite tree_feuillus: repeated at (-8, -6) and (4, -11) (same orientation, needs flipped and 6+ tiles)
+sprite tree_feuillus: repeated at (-1, -8) and (4, -11) (same orientation, needs flipped and 6+ tiles)
+sprite tree_dense: repeated at (-3, -1) and (-9, 8) (same orientation, needs flipped and 6+ tiles)
+--- repeat lines now vs baseline
+555
+714

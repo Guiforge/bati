@@ -2253,6 +2253,52 @@
       }
     }
   },
+  "batimentsBld": {
+    "observatory": {
+      "grand": {
+        "canevas": "building2x2",
+        "hauteurMax": 3.2843
+      },
+      "legendary": {
+        "canevas": "building2x2",
+        "hauteurMax": 3.2843
+      },
+      "mythic": {
+        "canevas": "building2x2",
+        "hauteurMax": 4.02
+      },
+      "rough": {
+        "canevas": "building2x2",
+        "hauteurMax": 2.6748
+      },
+      "solid": {
+        "canevas": "building2x2",
+        "hauteurMax": 2.8957
+      }
+    },
+    "windmill": {
+      "grand": {
+        "canevas": "building2x2",
+        "hauteurMax": 3.3
+      },
+      "legendary": {
+        "canevas": "building2x2",
+        "hauteurMax": 3.7
+      },
+      "mythic": {
+        "canevas": "building2x2",
+        "hauteurMax": 3.8
+      },
+      "rough": {
+        "canevas": "building2x2",
+        "hauteurMax": 1.7
+      },
+      "solid": {
+        "canevas": "building2x2",
+        "hauteurMax": 2.8
+      }
+    }
+  },
   "decors": {
     "arbre": {
       "emprise": [1, 1],

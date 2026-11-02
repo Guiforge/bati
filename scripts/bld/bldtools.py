@@ -75,7 +75,8 @@ def ab(building, pairs, out_dir, seed=None):
     out = pathlib.Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     key = {}
-    for n, (a, b) in enumerate(pairs, 1):
+    for n, pair in enumerate(pairs, 1):
+        a, b = pair[:2]  # a third item, "canary", says a is the known winner (PROMPT.md section 10)
         left, right = (a, b) if rng.random() < 0.5 else (b, a)
         ims = [flat(left), flat(right)]
         w = max(i.width for i in ims)
@@ -85,6 +86,8 @@ def ab(building, pairs, out_dir, seed=None):
         sheet.paste(ims[1], (w + 8, 0))
         sheet.save(out / f"pair_{n:02d}.png")
         key[f"{n:02d}"] = {"left": str(left), "right": str(right), "a": str(a), "b": str(b)}
+        if len(pair) > 2:
+            key[f"{n:02d}"]["canary_winner"] = str(a)
     return write_key(building, "ab", key)
 
 
@@ -104,22 +107,32 @@ def grid(src, out, cols, rows):
 
 
 def contact(path, band=12):
-    """The ground contact: opaque pixels in the `band` rows above the lowest opaque row. Reads the
-    alpha of an RGBA image, or the brightness of a grey `.mask.png` (white = building, as the
-    pipeline's masks are).
-    shortcut: only the band at the foot of the silhouette, i.e. the diamond's front corner; a real
-    ground-contact mask (the socle alone) would be stricter, add it if a stage ever moves its socle."""
-    im = Image.open(path)
+    """The whole ground contact mask: for every column of the silhouette, the `band` px above its
+    lowest opaque pixel, i.e. the entire lower profile (both front faces of the base), not only the
+    band at the lowest row. A `<name>.contact.png` beside the image (white = ground contact, the
+    socle alone, e.g. from the maquette) wins over this reading. Reads the alpha of an RGBA image,
+    or the brightness of a grey `.mask.png`. The anchor is the middle of the lowest row, the foot.
+    shortcut: the lower profile stands for the socle, so a stage that puts a porch in front of the
+    base moves it (that is a footprint change anyway); export a `.contact.png` to be exact."""
+    p = pathlib.Path(path)
+    explicit = p.with_name(p.name.split(".")[0] + ".contact.png")
+    im = Image.open(p)
     a = A.binary(im.getchannel("A") if "A" in im.getbands() else im.convert("L"))
     box = a.getbbox()
     if box is None:
         raise SystemExit(f"{path}: empty image")
-    bottom = box[3]
-    mask = a.copy()
-    ImageDraw.Draw(mask).rectangle((0, 0, a.width, bottom - band - 1), fill=0)
-    cb = mask.getbbox()
-    assert cb is not None
-    return mask, ((cb[0] + cb[2]) / 2, cb[3] - 1)
+    if explicit.exists():
+        mask = A.binary(Image.open(explicit).convert("L"))
+    else:
+        mask = Image.new("L", a.size, 0)
+        draw = ImageDraw.Draw(mask)
+        for x in range(box[0], box[2]):
+            col = a.crop((x, 0, x + 1, a.height)).getbbox()
+            if col:
+                draw.line((x, max(0, col[3] - band), x, col[3] - 1), fill=255)
+    foot = a.crop((0, box[3] - 1, a.width, box[3])).getbbox()
+    assert foot is not None
+    return mask, ((foot[0] + foot[2]) / 2, box[3] - 1)
 
 
 def footprint(paths, min_iou=0.98, anchor_px=1.0):
@@ -143,7 +156,11 @@ def silhouette(src, out_prefix, dp=96, density=2.75):
     """Black silhouette on the neutral ground, and the picture at `dp` on its long side, i.e.
     dp * density px, blurred by 1 dp (density px).
     shortcut: density 2.75 px/dp is assumed, not measured; replace it with a real device figure."""
-    a = A.binary(L.alpha(pathlib.Path(src)), 128)
+    return silhouette_of(A.binary(L.alpha(pathlib.Path(src)), 128), out_prefix, dp, density)
+
+
+def silhouette_of(a, out_prefix, dp=96, density=2.75):
+    """The same from a binary mask (255 = building)."""
     sil = Image.new("RGB", a.size, BG)
     sil.paste((0, 0, 0), (0, 0), a)
     sil.save(f"{out_prefix}.sil.png")

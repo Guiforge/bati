@@ -21,6 +21,7 @@ import { Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { AlentoursContext, alentoursDe, cadreSerre } from "@/components/village/iso/alentours";
+import { BatimentSeul } from "@/components/village/iso/BatimentSeul";
 import {
   CRAN,
   cadrage,
@@ -44,6 +45,7 @@ import {
   ecrireDump,
 } from "@/components/village/iso/dumpSprites";
 import { EFFETS, EffetForceContext } from "@/components/village/iso/effets";
+import { etatBldDe } from "@/components/village/iso/etatBld";
 import { SANS_BANNIERE } from "@/components/village/iso/fierte";
 import { FigeContext, LumieresContext } from "@/components/village/iso/fige";
 import { useHorloge } from "@/components/village/iso/horloge";
@@ -103,7 +105,22 @@ export default function DevIsoRoute() {
     zoom,
     dump,
     lumieres,
+    bld,
+    rang,
+    base,
+    avant,
+    avantbase,
+    show,
+    semaine,
   } = useLocalSearchParams<{
+    /** `?bld=<code>&rang=N` (+ `base`, `show=stade|rang`, `avant`, `semaine=1`): the buildings track's capture states (etatBld.ts). */
+    bld?: string;
+    rang?: string;
+    base?: string;
+    avant?: string;
+    avantbase?: string;
+    show?: string;
+    semaine?: string;
     /** `?dump=<name>`: once the map has settled, its sprites are written to logcat for scripts/iso/loupe_dump_pull.py (dumpSprites.ts). */
     dump?: string;
     /** `?lumieres=0`: every light layer is hidden, for the pixel checks on raw sprites. */
@@ -134,24 +151,29 @@ export default function DevIsoRoute() {
     stade?: string;
   }>();
   if (!ISO_POC) return <Redirect href="/" />;
+  const etat = etatBldDe({ bld, rang, base, avant, avantbase, show, semaine, palier });
   return (
     <FigeContext.Provider value={fige === "1"}>
       {/* Perf A/B (reports/perf-regression-audit3.md): `?ech=0.5&flaques=0&bornes=0`, the default when absent. */}
       <VariantesContext.Provider value={variantesDe({ ech, flaques, bornes })}>
         <AlentoursContext.Provider value={alentoursDe(peint)}>
           <LumieresContext.Provider value={lumieres !== "0"}>
-            <PorteDump actif={nomDump(dump) !== undefined}>
-              <DevIso
-                lumiere={ambianceForcee(ambiance) ?? "nuit"}
-                nu={nu === "1"}
-                depart={{ palier: palierDe(palier), mode: mode === "pret" ? "pret" : "carte" }}
-                jouer={jouer === "1"}
-                foyer={buildingCodes.find((c) => c === foyer)}
-                zoomFoyer={Number(zoom) > 0 ? Number(zoom) : 1.6}
-                crest={blasonFactice(vocationAnimal(vocation) ?? animal, stade)}
-                dump={nomDump(dump)}
-              />
-            </PorteDump>
+            {etat ? (
+              <BatimentSeul etat={etat} lumiere={ambianceForcee(ambiance) ?? "jour"} />
+            ) : (
+              <PorteDump actif={nomDump(dump) !== undefined}>
+                <DevIso
+                  lumiere={ambianceForcee(ambiance) ?? "nuit"}
+                  nu={nu === "1"}
+                  depart={{ palier: palierDe(palier), mode: mode === "pret" ? "pret" : "carte" }}
+                  jouer={jouer === "1"}
+                  foyer={buildingCodes.find((c) => c === foyer)}
+                  zoomFoyer={Number(zoom) > 0 ? Number(zoom) : 1.6}
+                  crest={blasonFactice(vocationAnimal(vocation) ?? animal, stade)}
+                  dump={nomDump(dump)}
+                />
+              </PorteDump>
+            )}
           </LumieresContext.Provider>
         </AlentoursContext.Provider>
       </VariantesContext.Provider>

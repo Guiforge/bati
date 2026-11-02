@@ -72,3 +72,23 @@ Aucun stade ni règle « legendary » ou « mythic » pour un bâtiment. Rencont
 - La commande `isolib.blender` directe n'a pas été exécutée ; le chemin sûr, `iso_loop.py blockout`, est interdit pour l'instant.
 - Les deux règles d'amélioration du prompt (A et B) et les stades `legendary` / `mythic` sont à créer ; `BuildingStage`, `buildingStage()`, `stades` dans `isoSpec.json` et `famille_jour.RETENUS` seraient à étendre ensemble.
 - `scripts/iso/team/heavy.sh` (cité par CLAUDE.md) n'existe pas dans cette branche.
+
+## 7. Ce que `iso_loop.py` sait faire pour FLUX (relevé du 02/11/2026)
+
+Lu dans `scripts/iso/iso_loop.py` et `scripts/lib/flux.py`, puis comparé à la doc de l'API (docs.bfl.ml, pages « FLUX 3 Image », « bounding boxes », « Klein », « FLUX.1 Fill »). `iso_loop.py` n'est pas modifié.
+
+| Besoin | Ce que fait le script aujourd'hui | Comment |
+| --- | --- | --- |
+| FLUX.2 pro | Oui, c'est le modèle par défaut | `flux.ENDPOINT` = `flux-2-pro-preview`. Seuls `flux-2-pro-preview` et `flux-3-image` passent `guard_endpoint`; `flux-2-pro` (sans `-preview`) serait refusé |
+| FLUX 3 Image | Oui, variante `f3` | `candidates <slug> <n> f3`. Envoie `images` (liste), `aspect_ratio` `1:1` ou `auto`, `resolution` `1k`, `grounding: false`. Pas de graine. Coût réservé 0,10 $ par image |
+| FLUX 3 Image Klein | Oui, variantes `w5gk` (essai) et `w5gp` (prod) | Envoie `width`, `height`, `seed`, `images`. Aucun autre champ (schéma fermé). Prix par palier de pixels (`klein_price`), plafonds `PROBE_CAPS` |
+| Édition d'image | Pas de commande à part. Une édition est un appel avec références | `f3` repeint un sprite fini : image 1 = la maquette verte, image 2 = le sprite d'aujourd'hui. Aucune variante n'édite une capture du village (la cible « target screen » du 9.2 est à écrire) |
+| Références | Oui, jusqu'à ce que l'API accepte | FLUX.2 : `input_image`, `input_image_2`... en base64. FLUX 3 et Klein : `images`, liste en base64. L'API dit 8 références pour FLUX.2 pro/max/flex et 4 pour FLUX.2 klein ; le script n'impose pas de limite |
+| Boîtes englobantes | Non. `prompt_for` ne fabrique que du texte | L'API les accepte pour FLUX 3 Image et les annonce pour Klein, mais pas par un champ : elles vont dans la chaîne `prompt`, après l'instruction, sous forme d'un tableau JSON de lignes. Coordonnées `[haut, gauche, bas, droite]`, entiers de 0 à 1000 quelle que soit la taille. Génération : `id`, `desc`, `bbox`. Édition : `id`, `desc`, `from` (`ref_image_0` pour la première image), `src_bbox`, `tgt_bbox` ; `from` et `src_bbox` à `null` pour ajouter, `tgt_bbox` à `null` pour retirer. Elles guident, ce ne sont pas des masques durs : un élément peut dépasser un peu |
+| Masque en édition | Non, et l'API n'en offre pas pour FLUX.2, FLUX 3 ni Klein | Seuls FLUX.1 Fill (`/v1/flux-pro-1.0-fill`, image + masque) et FLUX Erase prennent un masque. Hors du script, hors de la liste des modèles permis. Pour limiter une édition à une zone, deux voies : les boîtes (FLUX 3 Image), puis le diff de pixels qui jette les variantes qui ont changé hors de la silhouette dilatée (`gates.py corner`) |
+
+À retenir pour l'outillage des bâtiments :
+
+- Pour peindre avec des boîtes ou éditer la capture (9.2, 9.3), il faut une petite commande nouvelle qui construit `prompt + " " + json.dumps(lignes)` et appelle `flux.generate(..., endpoint=FLUX3, references=...)`. Elle réutilise le budget et le registre de `iso_loop.py`, sans les copier.
+- `flux.generate` est volontairement texte seul pour FLUX.2 et envoie un `width`/`height` figé pour FLUX 3 (`1:1` ou `auto`) : une édition sur une capture non carrée passe par `auto`, la taille de sortie suit alors l'image 1.
+- Non vérifié en vrai : aucun appel n'a été fait (pas de FLUX dans cette tâche). Les boîtes de Klein viennent d'une ligne « Yes » du tableau de sa page, pas d'un exemple.

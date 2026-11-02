@@ -1,4 +1,3 @@
-// biome-ignore-all lint/suspicious/noConsole: a command-line script, its output is stdout
 // Étape 1 : vide les données réelles du village en coordonnées du monde (cases gx, gy et dp de carte
 // au zoom 1), en lisant le code de l'app tel quel. Lecture seule.
 // Lancer depuis la racine du dépôt : construit par stub_rn.mjs (bun), puis : bun <dump.js> > <sortie.json>

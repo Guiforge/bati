@@ -1,4 +1,3 @@
-// biome-ignore-all lint/correctness/noUndeclaredVariables: a script run by bun, which provides the Bun global
 // Construit dump_monde.mjs en un seul fichier, les modules natifs (React Native, Expo) remplacés par un
 // objet vide : la géométrie du village n'en a pas besoin. shortcut: un module qui lirait une vraie valeur
 // native au chargement recevrait un proxy vide ; le vidage échouerait alors, il ne mentirait pas en silence.

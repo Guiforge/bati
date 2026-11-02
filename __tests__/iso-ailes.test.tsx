@@ -49,7 +49,7 @@ describe("the windmill's sails", () => {
     const { s, rect } = feuille();
     const k = rect.w / s.size[0];
     const style = StyleSheet.flatten(tournante().props.style) as { transformOrigin?: number[] };
-    expect(style.transformOrigin).toEqual([s.anchor[0] * k, s.anchor[1] * k]);
+    expect(style.transformOrigin).toEqual([s.anchor[0] * k, s.anchor[1] * k, 0]);
     expect(angle()).toBe(0);
   });
 

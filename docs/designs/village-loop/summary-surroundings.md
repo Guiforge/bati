@@ -1,6 +1,6 @@
 # Piste surroundings : bilan intermédiaire
 
-**La piste n'est pas finie.** Ce bilan décrit la pause du 01/11, en attente des 4 réponses de `loupes/checkpoint.md`. Du coin de beauté (BC), seules les fondations sans FLUX sont faites, sur `loupe-bc`, non fusionnée. Aucun tour de BC n'a eu lieu, R1 n'a pas commencé, et l'intégration finale non plus. Il sera remplacé par le bilan final.
+**La piste n'est pas finie.** Ce bilan date du 01/11 et n'est pas à jour. Le 02/11, le coin de beauté a fait ses 5 tours sur `loupe-bc`, non fusionnée : voir `loupes/checkpoint.md`, qui attend les réponses de Guillaume. R1 et l'intégration finale n'ont pas commencé. Il sera remplacé par le bilan final.
 
 ## État des défauts
 

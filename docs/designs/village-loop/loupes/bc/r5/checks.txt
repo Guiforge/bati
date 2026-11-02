@@ -1,0 +1,19 @@
+--- core
+village box (12, 106, 119, 182) on the 135x300 thumbnail (107x76), mean 117.9 std 29.5
+2606 windows of the same size overlapping it under 25 %, 0 with mean >= or std >= the box
+L village 117.9 / L surroundings 103.7 = 1.14 (wanted 1.10 to 1.50)
+mean saturation village 88.1, surroundings 75.8 (wanted surroundings < village)
+core: ok
+--- forest lisiere
+9 forest sprites on screen, widths 164 to 302 px, max/min 1.85 (wanted >= 1.80)
+3 size classes (gap > 25 % between sorted widths, wanted >= 3)
+median width, quarter nearest the village 164 px, farthest 302 px (wanted nearest < farthest)
+ids: tree_bouleaux, tree_dense, tree_feuillus, tree_melangee  (birch, oak and pine all visible: judged by eye)
+forest: ok
+--- dump-check lisiere
+sprite tree_dense: repeated at (-3, -1) and (-9, 8) (same orientation, needs flipped and 6+ tiles)
+--- repeat lines now vs baseline
+557
+714
+{'n': 45000, 'mean_rgb': [64.3, 60.0, 42.1], 'share_b_gt_r': 0.006, 'share_b_gt_g': 0.004, 'pass': False}
+FAIL

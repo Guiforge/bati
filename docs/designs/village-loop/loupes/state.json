@@ -9,9 +9,9 @@
       "ceiling": 40.0,
       "left": 5.584
     },
-    "flux_spent_session": 9.24,
+    "flux_spent_session": 10.06,
     "subagent_runs_budget": 80,
-    "subagent_runs_used": 36,
+    "subagent_runs_used": 48,
     "flux_note": "Plafond du registre 60 $, ligne écrite par Guillaume le 02/11. Plafond de session : 20 $ en plus des 34,416 $ du départ, soit 54,416 $.",
     "alert_ack": "chef, 40 $, le 02/11"
   },
@@ -29,7 +29,9 @@
     "cards": "S-night gelé. BC gelé le 02/11.",
     "checkpoint": "répondu le 02/11 : 1 A A A, 2 oui, 3 oui, 4 P"
   },
-  "waiting_on_guillaume": [],
+  "waiting_on_guillaume": [
+    "checkpoint.md : coin de beauté (notes, verrouiller, direction), règle 3 sur la forêt, ombres peintes des chaumières"
+  ],
   "loupes": {
     "s-night": {
       "status": "parquée sur décision de Guillaume, non fusionnée, branche loupe-s-night",
@@ -39,21 +41,23 @@
       "question": "Réponse de Guillaume : parquée. On y revient après BC, sur les nouveaux assets."
     },
     "bc": {
-      "status": "tour 3 en capture, branche loupe-bc. Tours 1 et 2 refusés par env (r1, r2/verdict-env.md).",
-      "round": 3,
-      "best_round": null,
-      "flux_spent": 7.21,
+      "status": "5 tours faits, maximum atteint, branche loupe-bc non fusionnée. Checkpoint écrit, réponse attendue.",
+      "round": 5,
+      "best_round": 5,
+      "flux_spent": 8.03,
       "methode": "Pré propre d'abord, puis repeinture en contexte d'un recadrage de capture, sol seul gardé et reprojeté. Arbres : masses du jeu entières.",
       "ecarts_a_signaler_au_checkpoint": [
         "Pas de bordures de pierres aux paliers 4 à 6 : l'écran cible choisi prime sur la section 12.",
         "Sol repeint en contexte au lieu de décals sur fond plat : écart à la section 12.",
         "Sortie sud de rues.ts déplacée pour suivre l'écran cible."
       ],
-      "question_checkpoint": "Critère 2 : règle 3 impossible sur une forêt entière avec 6 masses. Assouplir, ou payer de nouvelles masses."
+      "question_checkpoint": "Critère 2 : règle 3 impossible sur une forêt entière avec 6 masses. Assouplir, ou payer de nouvelles masses.",
+      "resultat": "Tour 5 : contrat 12 PASS, FAIL sur 2, 10, 16, non vérifié sur 6, 15. A/B 4 sur 6, lisière et pieds perdus, KEEP comptés perdus (artefact de date). Tour 4 : 9 PASS, A/B 6 sur 6.",
+      "a_faire_si_notes": "Retirer les deux champs du plan restants (9,18 et 13,17). Reprendre lisière et pieds perdus au tour 5."
     }
   },
   "locked_crops": [],
   "parked": ["s-night"],
-  "current": "BC tour 3 : build et captures, puis env et A/B",
+  "current": "pause au checkpoint du coin de beauté, branche loupe-bc",
   "priorite": "Décision de Guillaume du 02/11 : rendu seulement. Limite APK de 55 MiB retirée. Délais de tests dépassés non bloquants, assertions bloquantes. Optimisations plus tard."
 }

@@ -1,83 +1,71 @@
-# Checkpoint de l'étape 0
+# Checkpoint du coin de beauté
 
-**Réponse de Guillaume, 02/11 : « on suit tes reco », soit `1 A A A, 2 oui, 3 oui, 4 P`.** Il a écrit la ligne de budget lui-même : plafond 60 $. Les écrans choisis sont dans `targets/<état>/cible.png`.
+5 tours faits, le maximum. Il me faut 3 réponses. Réponds par exemple : `1 notes, 2 assouplir, 3 oui`.
 
-Étape 0 finie. Il me faut 4 réponses avant le coin de beauté. Réponds par exemple : `1 A A A, 2 oui, 3 oui, 4 P`.
+![avant, maintenant, écran A](bc/avant-apres.webp)
 
-Pendant ton absence, j'ai aussi tenté S-night, qui ne coûte rien en FLUX. **Elle a échoué** et n'est pas fusionnée. Du coin de beauté, seules les fondations sans FLUX sont faites, sur la branche `loupe-bc`, non fusionnée : arbres fixes retirés (G03), cuiseur de sol et manifeste de tampons, checks `core` et `forest`. Ni peinture ni tour : la suite demande 8 à 12 $, et il en reste 3,55 $.
+![autres paliers et nuit](bc/paliers.webp)
 
-## 1. Quel écran cible par palier ?
+**En bref** : très au-dessus de l'avant, et la ferme et la route approchent ton écran A. La lumière reste plus terne que lui. Rien n'est fusionné : tout est sur `loupe-bc`.
 
-**Palier 1**
+## 1. Le coin : on en fait quoi ?
 
-![p01](targets/p01-jour/choix.webp)
+- **Notes (recommandé, env aussi)** : un tour de plus avec ces 3 notes, ou les tiennes :
+  1. Lumière du sud : pré et blé plus clairs et plus francs, ombres nettes et froides.
+  2. Haut de la route : retirer le crochet, l'amener droit dans la porte.
+  3. Bouquets du nord : casser le trio de pins et la paire de chênes qui se voient deux fois.
+- Verrouiller tel quel : je fusionne, et ce rendu devient la référence de R1. Risque : la lumière terne se propage à toute la carte.
+- Changer de direction : dis-moi laquelle en une ligne. Je ne le conseille pas, la direction marche.
 
-- **A (recommandé)** : clairière nette, piste de terre, meule et épouvantail.
-- B : même idée, mais il reste un grand arbre dans le coin bas à droite.
+## 2. Répétition de la forêt
 
-**Palier 6**
+Le contrat interdit de voir deux fois la même masse, sauf en miroir et à 6 tuiles. Avec 6 masses peintes, c'est impossible sur une forêt entière. À l'œil, la répétition se voit au nord et pas au sud.
 
-![p06](targets/p06-jour/choix.webp)
+- **Assouplir (recommandé)** : dans une forêt, deux masses identiques ne se touchent pas. Les bouquets isolés sur le pré restent tous différents.
+- Peindre plus de masses : 8 à 10 de plus, environ 2 à 4 $, au moment de R1. Mes sondes d'arbres neufs ont toutes été rejetées jusqu'ici, donc c'est un pari.
 
-- **A (recommandé)** : hameaux et champs vivants, le plus proche de ta liste.
-- B : le plus riche en forêt, avec les quatre champs bien lisibles.
-- C : hameaux seuls, plus calme.
+## 3. Ombres peintes sous les chaumières
 
-**Palier 12**
+Le prompt les interdit, et elles sont brun-noir au lieu de froides. Leur direction est juste.
 
-![p12](targets/p12-jour/choix.webp)
+- **Oui, on les garde (recommandé)** : je les refroidis à la cuisson avec la note 1. Elles sont peintes dans le sol, et leur forme ne gêne pas l'œil.
+- Non : je les repeins sans ombre, et le code en pose une, environ 0,50 $.
 
-- **A (recommandé)** : faubourg le long de la route, ville au loin sur la terre ferme, sans ciel.
-- B : plus d'abondance, mais une bande de ciel en haut, donc une caméra moins juste.
+## Où en sont les contrôles
 
-Il reste des arbres de coin sur certaines images. Ils partiront quand même en jeu (G03). Le palier 12 n'a que deux choix : deux autres variantes sont écartées car des bâtiments avaient bougé (15 et 30 px). Tu peux aussi refuser un palier en une ligne, pour une seule régénération (1 $ au plus).
-
-## 2. Budget FLUX : à toi d'écrire la ligne
-
-Dépensé : 36,45 $ sur 40 $, dont 2,03 $ cette session. **Reste : 3,55 $.** Le coin de beauté et R1 ont besoin de 13 à 20 $ (estimation). La ligne n'est toujours pas dans `VALIDATIONS.md`, et je n'ai pas le droit de l'écrire.
-
-- **Oui (recommandé)** : écris `2026-11-02 BUDGET_FLUX_V1: 60` sous `## Lignes` de `docs/designs/village-iso-v1/VALIDATIONS.md`.
-- Non : je m'arrête aux sondes du coin de beauté, 3 $ au plus.
-
-## 3. Routes et champs peints : je modifie la bible ?
-
-La bible des abords dit « chemins et champs restent dessinés par le code ». Le prompt de phase 2 les demande peints (G04, G05, G06). Les deux ne tiennent pas ensemble, et le contrat du coin de beauté en dépend.
-
-- **Oui (recommandé)** : ils deviennent peints et cuits dans le sol, et j'écris ta décision dans la bible.
-- Non : ils restent en code, avec un meilleur dessin, sans peinture.
-
-## 4. S-night : on fait quoi de la nuit ?
-
-![S-night](s-night/avant-apres.webp)
-
-4 tours, le maximum. **Résultat : les mesures progressent, mais la périphérie y perd, et le tour ne remplit pas les conditions de fin.**
-
-- Corrigé : le sol a du relief (0,37 à 0,68, il fallait 0,60), les champs ne brillent plus en orange, et on reconnaît encore leur culture à l'aveugle (3 sur 3).
-- Le critère de rang échoue encore : p12 à 0,985 pour 0,987. Le seuil vient d'un resserrage automatique que j'ai appliqué au contrat. La baseline était à 0,974. Il bute sur les rues du code, hors de la loupe.
-- **A/B : 0 gain sur 9 selon la règle, mais le test ne tranche pas vraiment.** Un contexte a manqué le canari deux fois, donc il est nul : sa relance donne les 10 paires à la baseline. L'autre est valide et partagé : 5 extraits pour le tour 4 (village, sol, fenêtres, lisière, feu), 4 pour la baseline (champs nord et est, route, villageois), avec un fort biais vers l'image de gauche (9 sur 10).
-- **Env est plus net, sur images** : le sol et le cœur vont mieux, mais **forêt d'un seul bleu**, essences perdues, **blé gris comme de la cendre**, **pavés ocre qui brillent** en flaques sur le sol bleu, étal et accessoires gris au cœur du village. À l'œil, je partage son avis.
-
-Ma lecture : mes critères de couleur ont poussé toute la périphérie sous un seul filtre bleu. C'est mon contrat qu'il faut revoir plus que le travail.
-
-- **P, parquer (recommandé)** : la nuit actuelle reste en place, `loupe-s-night` reste de côté, et on passe au coin de beauté. On y revient après, sur les nouveaux assets, puisque la nuit en dérive.
-- R, reprendre : 2 tours de plus, avec un contrat refait. On garde le relief du sol, on rend une teinte par essence et par culture, on abaisse la valeur des rues, on retire le critère de rang.
-- F, fusionner quand même : à toi de voir sur l'image, je ne le recommande pas.
-
-## À savoir, sans réponse demandée sauf si tu n'es pas d'accord
-
-- **APK arm64 : 71,1 MiB**, au-dessus de la limite de 55 MiB du prompt, et ce avant toute loupe. `AGENTS.md` dit que tu as retiré ce budget le 18/10. Je mesure et je note sans bloquer. Dis-moi si la limite doit revenir.
-- **H0, cache d'images** : pas de hash dans la clé de cache comme demandé, car `cacheKey` n'atteint pas les images embarquées (`res:`). À la place, l'empreinte des sprites vide le cache quand elle change. Les 3 tests passent.
-- **Check vectoriel en pixels : abandonné.** Aucun k ne sépare le vectoriel du peint : le pré peint a 27 à 93 % de blocs plats, le rack et les fanions 0 à 60 %. G05, G06 et G08 reposent sur le check de code et les juges.
-- **Calibration** : env réussit (5 défauts sur 6, 2 bons sur 3), il est juge 1. Mara échoue d'abord (1 bon sur 3), puis réussit le retest avec ses notes : 3 labels justes, mais une cause fausse sur la route et la porte. Je la garde pour l'A/B. Les deux ont manqué les arbres collés, qui ne se voient pas sur un seul extrait. Le dump le couvre.
-- **Biais de l'A/B** : les juges penchent vers l'image de gauche. La double passe le neutralise, mais il faudra un canari plus franc au coin de beauté. Celui de S-night passait par la même courbe froide, donc il testait la même chose que le tour.
-- **Écrans cibles** : premier tour trop timide, relancé avec un prompt plus strict, d'où 2,03 $ pour environ 2 $ prévus.
-
-## Estimations de la suite
-
-| Poste | FLUX | Passages de sous-agents |
+| Tour | Contrat, selon env | A/B à l'aveugle, 6 extraits |
 | --- | --- | --- |
-| Déjà utilisé | 2,03 $ | 15 sur 80 |
-| Coin de beauté | 8 à 12 $ | 20 à 30 |
-| R1 | 5 à 8 $ | 15 à 20 |
+| 4 | 9 oui sur 17 | 6 gagnés |
+| 5 (actuel) | **12 oui sur 17** | 4 gagnés |
 
-Je m'arrête à 64 passages (80 %), et chaque lot FLUX reste sous 10 $.
+- **Contrat, non au tour 5** : répétition (question 2), couleur des ombres et ombres peintes (question 3). Non vérifiés : le test de la route, dont env n'a pas vu la sortie, et les extraits à préserver. Le critère de la route est bon à l'image.
+- **Le tour 5 a reculé en A/B** : lisière et pieds d'arbres sont perdus, alors qu'ils étaient gagnés au tour 4. Les juges parlent de « bosquets sur des tapis, ombres en taches ». Je compte le reprendre si tu choisis les notes.
+- **Extraits de nuit, feu et villageois** : comptés perdus aux tours 4 et 5, sans vote pour la baseline des deux côtés. Mais hors villageois, l'écart avec la baseline est de 0,00 % (mesuré sur environ la moitié de chaque extrait, au tour 4, et 14 % sur l'image entière). Les villageois sont placés selon la date, et la baseline a été capturée la veille. Je le lis comme un artefact, pas comme un recul.
+- **A/B, deux erreurs à savoir** : le lot du tour 3 est nul, par ma faute (canari noir). Au tour 5, un contexte a inversé deux étiquettes, je l'ai corrigé en vérifiant la taille des images.
+
+## Décisions prises sans toi
+
+Dis-moi si l'une te gêne :
+
+- **Pas de bordures de pierres aux paliers 4 à 6** : ton écran A n'en a pas, le prompt en demandait.
+- **Sol repeint sur la vraie capture**, au lieu de decals sur fond plat. Les 4 premières séries de sondes échouaient, et celle-ci a marché du premier coup.
+- **Sortie sud de la route déplacée dans le code**, pour passer au centre comme sur ton écran. Le tracé est donc celui que suivent les routes aux paliers 4 et plus.
+- **Voile de jour** olive sombre autour du village pour qu'il ressorte, et clôtures droites admises parce que ton écran en a.
+- **Champs calculés retirés** à ta demande, à tous les paliers. **Il en reste deux du plan**, aux paliers 8 et 9, et env les signale (haies droites à côté de la route). Je les retire aussi au prochain tour, sauf avis contraire.
+
+## Restent visibles, hors de ce coin
+
+Sol du nord avec ses grandes formes sombres, aplat gris en haut, châtelet et grand-route est (R2), palier 3 sans sol peint : le saut avec le palier 4 se voit.
+
+## Budget
+
+| Poste | Utilisé | Plafond |
+| --- | --- | --- |
+| FLUX du coin | 8,03 $ | 12 $ |
+| FLUX de la session | 10,06 $ | 20 $ |
+| Registre | 44,47 $ | 60 $ |
+| Sous-agents | environ 48 passages | 80, arrêt à 64 |
+
+**Un tour de notes** : environ 1 $ et 6 passages. **R1 ensuite** : 5 à 8 $ prévus et 15 à 20 passages, ce qui tient dans le budget.
+
+**Non mesuré** : la fluidité sur appareil, écartée pour l'instant à ta demande. La forêt a beaucoup grossi, c'est noté dans `perf-debt.md` pour plus tard. La suite jest complète n'a pas été relancée après le dernier petit réglage (la clairière nord) : je le ferai avant toute fusion.

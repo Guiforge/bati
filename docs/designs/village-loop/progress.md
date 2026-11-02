@@ -77,3 +77,8 @@ Dans le jeu de référence, les animations sont légères : très peu de mouveme
 
 ### Décision de Guillaume (02/11)
 - Rendu seulement : le critère est le design et la peinture. Limite APK de 55 MiB retirée, optimisations plus tard. Délais de tests dépassés non bloquants (son ordinateur passe en mode économie).
+
+## Coin de beauté (02/11), 5 tours, au checkpoint [P1, P2]
+- Sol repeint sur la vraie capture : route au centre, blé, potager, enclos, deux chaumières, forêt en masse avec clairières, plus d'arbres fixés à l'écran ni de champs calculés.
+- Contrat : 12 critères sur 17 au tour 5. A/B : 4 extraits sur 6 au tour 5, 6 sur 6 au tour 4. Env recommande des notes, pas un verrouillage : lumière plus terne que l'écran A.
+- Leçon : peindre hors contexte échoue, repeindre la vraie capture marche. Avant / après : `loupes/bc/avant-apres.webp`.

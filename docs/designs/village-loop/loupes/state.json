@@ -11,8 +11,8 @@
     },
     "flux_spent_session": 2.03,
     "subagent_runs_budget": 80,
-    "subagent_runs_used": 14,
-    "flux_note": "Plafond dur réel 40 $ (reste 5,584 $) tant que Guillaume n'écrit pas la ligne sous ## Lignes de VALIDATIONS.md. L'exemple 2026-11-05 du fichier ne compte pas."
+    "subagent_runs_used": 15,
+    "flux_note": "Plafond du registre 60 $, ligne écrite par Guillaume le 02/11. Plafond de session : 20 $ en plus des 34,416 $ du départ, soit 54,416 $."
   },
   "mode": "garde V1 débranché (settings.local.json absent). Implémenteurs : arbre iso, je commite. Émulateur : emu.sh + emu-adb.sh, chef seul.",
   "step0": {
@@ -23,28 +23,29 @@
     "tools": "fait : outils Python, hook dump (logcat), lumieres=0, loupe_capture.sh. Le cuiseur de sol et son manifeste arrivent avec BC, premier besoin.",
     "k_calibrated": "aucun k ne sépare le vectoriel du peint (mesuré sur 17 crops) : signal pixel abandonné, check code + juges",
     "baseline": true,
-    "target_screens": "peints, deux tours pour p01 et p06, trois pour p12 ; choix de Guillaume attendu",
+    "target_screens": "choisis par Guillaume le 02/11 : A, A, A, dans targets/<état>/cible.png",
     "calibration": "env réussit, juge 1. Mara réussit au retest (notes dans calibration/notes-mara.md), juge 2 A/B.",
-    "cards": "S-night gelé (seuils mesurés). BC amendé, gel après la réponse 5 du checkpoint.",
-    "checkpoint": "écrit, 4 réponses attendues",
+    "cards": "S-night gelé. BC gelé le 02/11.",
+    "checkpoint": "répondu le 02/11 : 1 A A A, 2 oui, 3 oui, 4 P",
     "apk_arm64_mib": 71.1
   },
-  "waiting_on_guillaume": [
-    "checkpoint.md : écrans cibles, ligne BUDGET_FLUX_V1, routes peintes, sort de S-night"
-  ],
+  "waiting_on_guillaume": [],
   "loupes": {
     "s-night": {
-      "status": "parquée, non fusionnée, branche loupe-s-night",
+      "status": "parquée sur décision de Guillaume, non fusionnée, branche loupe-s-night",
       "round": 4,
       "best_round": 4,
       "resultat": "critère 1 FAIL sur p12 (0,9849 pour 0,987), le reste du contrat PASS. A/B : 0 gain sur 9 selon la règle, peu probant. Contexte 1 nul deux fois (canari manqué, relance 10 sur 10 pour la baseline). Contexte 2 valide : 5 pour le tour, 4 pour la baseline, 9 sur 10 à gauche. Env : forêt monochrome, blé gris, pavés qui brillent.",
-      "question": "Parquer, reprendre avec un contrat refait, ou fusionner ?"
+      "question": "Réponse de Guillaume : parquée. On y revient après BC, sur les nouveaux assets."
     },
     "bc": {
-      "status": "attend le checkpoint"
+      "status": "en cours, branche loupe-bc",
+      "round": 0,
+      "best_round": null,
+      "flux_spent": 0
     }
   },
   "locked_crops": [],
   "parked": ["s-night"],
-  "current": "pause au checkpoint, branche feat/village-iso"
+  "current": "BC, sondes du tour 1, branche loupe-bc"
 }

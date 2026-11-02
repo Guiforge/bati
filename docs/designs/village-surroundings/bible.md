@@ -37,7 +37,9 @@ Les trois verts ne viennent pas d'un bâtiment : aucun bâtiment n'a de vert. Il
 
 Quand le village grandit, tout ce qui est posé reste : bâtiments, chemins, champs, accessoires, rivière, pont. **Une seule exception, décidée par Guillaume le 01/11 : la lisière de la forêt recule** avec l'île, comme une terre qu'on défriche. C'est de la croissance, pas une perte. La clairière s'élargit de 28 dp (île d'une case) à 80 dp (île finie), comme `monde.ts` `clairiere`. La forêt n'avance jamais, et la bordure du monde ne bouge pas. Les champs n'existent que hors de l'île finie, pour qu'aucun ne disparaisse (règle à tenir en code à l'étape 5). Sous la forêt, le sol peint est nu ; les masses d'arbres arrivent à l'étape 3, en sprites séparés.
 
-**Sol peint = terrain seul (Guillaume, 01/11).** FLUX ne peint que le pré, le cœur usé du village, la rivière et ses berges, le sol nu du sous-bois et la bordure. Chemins et champs restent dessinés par le code ; la terre battue sous un bâtiment vient de son socle.
+**Sol peint = terrain seul (Guillaume, 01/11).** FLUX ne peint dans ces tuiles que le pré, le cœur usé du village, la rivière et ses berges, le sol nu du sous-bois et la bordure ; la terre battue sous un bâtiment vient de son socle.
+
+**Routes et champs peints (Guillaume, 02/11).** Cette décision remplace « chemins et champs restent dessinés par le code » du 01/11. Les routes et les vignettes de champ deviennent peintes, cuites dans le sol hors ligne avec un manifeste de tampons, par bandes de paliers qui ne font qu'ajouter. Le code ne dessine plus que la lumière, les ombres, les masques et l'interface.
 
 ## Lumière et ombre
 

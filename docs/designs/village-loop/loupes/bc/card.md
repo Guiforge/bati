@@ -4,7 +4,8 @@
 - **Défauts** : G01 (localement), G02, G03, G04, G05, G06, G07 (route à la porte).
 - **Piliers** : P1, P2, P4 si un champ ou un hameau montre la vocation.
 - **Fichiers** : `components/village/iso/Alentours.tsx`, `alentours.ts`, `constants/isoPoc.ts`, `champs.ts`, `RuesDessinees.tsx`, `monde.ts`, `assets/images/village/iso/{sol,foret,accessoires,champs}/`, nouveau `scripts/iso/cuire_sol.py` (le cuiseur, écrit le manifeste de tampons).
-- **Plafond FLUX** : 3 $ tant que Guillaume n'a pas écrit la ligne de budget (il reste de quoi faire les sondes). 12 à 18 $ pour finir une fois la ligne écrite.
+- **Plafond FLUX** : 12 $, chaque lot sous 10 $. La session s'arrête à 20 $ (déjà 2,03 $), R1 compris.
+- **Écran cible** : `targets/p06-jour/cible.png`, choix A de Guillaume. Il sert de référence, jamais d'asset et jamais d'image envoyée à FLUX comme texture.
 - **Tours max** : 5. Fin par le checkpoint de Guillaume, verrouillage à sa réponse.
 
 ## Crops dorés (tuiles, palier 6, jour)

@@ -1,0 +1,86 @@
+{
+  "docs/designs/village/life/scratch/m6/raw/dust.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "39bbbcecd60bb044.png",
+      "sha256": "39bbbcecd60bb04400c1fce77282ec715cba8c1dcf608501817b654f06a1fd5a"
+    },
+    "prompt": "Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Two separate small puffs of dust side by side with clear space between, a left one and a right one. Each is an irregular cluster of soft overlapping dry-brush strokes in matte neutral warm grey-beige, two close values only, no shading, the edge chipped and ragged, the two drawings with different shapes. No circle, no disc, no ring, no star, no sparkle points, no coin, no gem. Hand-painted matte gouache, visible dry-brush strokes, broken ragged edges, no outline, no gloss, no fine grain, no text.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-11-04"
+  },
+  "docs/designs/village/life/scratch/m6/raw/ember.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "65e3b5077e383d75.png",
+      "sha256": "65e3b5077e383d75196c5129f165665135b72f72616ca7796289b44788f76a6a"
+    },
+    "prompt": "Flat pure black background (#000000), nothing else in the frame. One small glowing coal fleck, painted as a few short dry-brush dabs of deep orange and dull red that overlap into a small irregular lopsided speck with a ragged edge, small in the middle of the frame. No circle, no disc, no ring, no star, no sparkle points, no coin, no gem. Hand-painted matte gouache, visible dry-brush strokes, broken ragged edges, no outline, no gloss, no fine grain, no text.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-11-04"
+  },
+  "docs/designs/village/life/scratch/m6/raw/mote.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "21921cf5715eee4a.png",
+      "sha256": "21921cf5715eee4a9d1a22ae2a4a4c0e1e7c55a03c96b6c9b4300de9be1f4b90"
+    },
+    "prompt": "Flat pure black background (#000000), nothing else in the frame. One soft mote of pale violet-blue magical light, painted as a few loose translucent dry-brush strokes gathered unevenly, brighter in the middle and fading to nothing, ragged and lopsided, small in the middle of the frame. No circle, no disc, no ring, no star, no sparkle points, no coin, no gem. Hand-painted matte gouache, visible dry-brush strokes, broken ragged edges, no outline, no gloss, no fine grain, no text.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-11-04"
+  },
+  "docs/designs/village/life/scratch/m6/raw/smoke.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "d88271edddc7e9a5.png",
+      "sha256": "d88271edddc7e9a5bf529eae7dc7cae99d58ed4923e7ec93281dffd34e06a599"
+    },
+    "prompt": "Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Two separate drawings side by side with clear space between, a left one and a right one, of a rising wisp of smoke. Each is a lopsided drift of a few wide dry-brush strokes in matte mid grey, two close values only, stretched upward and frayed at the ends, the two drawings with different shapes. No circle, no disc, no ring, no star, no sparkle points, no coin, no gem. Hand-painted matte gouache, visible dry-brush strokes, broken ragged edges, no outline, no gloss, no fine grain, no text.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-11-04"
+  },
+  "docs/designs/village/life/scratch/m6/raw/spark.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "cb5f77085c9c4094.png",
+      "sha256": "cb5f77085c9c4094384fb1eb51432403b38c8fb6ad3204de78b8ec3557e75318"
+    },
+    "prompt": "Flat pure black background (#000000), nothing else in the frame. One short glowing streak of warm orange-yellow light, painted as three or four thin dry-brush strokes that cross slightly, bright at one end and fading into the dark at the other, a little crooked, small in the middle of the frame. No circle, no disc, no ring, no star, no sparkle points, no coin, no gem. Hand-painted matte gouache, visible dry-brush strokes, broken ragged edges, no outline, no gloss, no fine grain, no text.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-11-04"
+  },
+  "docs/designs/village/life/scratch/m6/raw/steam.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "c032a58e5730cc23.png",
+      "sha256": "c032a58e5730cc236952c266c53066341d2e8859745e56c490f03c47935608ea"
+    },
+    "prompt": "Flat magenta background (#FF00FF), one even colour, nothing else in the frame. One thin curling wisp of vapour made of three or four long light dry-brush strokes in pale cool white, drifting upward in a slow lopsided curve, the strokes fading and frayed at both ends. No circle, no disc, no ring, no star, no sparkle points, no coin, no gem. Hand-painted matte gouache, visible dry-brush strokes, broken ragged edges, no outline, no gloss, no fine grain, no text.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-11-04"
+  }
+}

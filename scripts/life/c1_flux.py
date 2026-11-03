@@ -77,7 +77,7 @@ def run(jobs, label):
     from iso_loop import KLEIN, klein_price, reserve, settle
     from lib import flux
     flux.PROVENANCE = RAW / "provenance.json"  # concept scratch: never the shared ledger
-    batch = reserve(len(jobs), max(klein_price(j[3], j[3]) for j in jobs), label, None)  # V1 ceiling only: the Klein probe cap (7.5) is spent
+    batch = reserve(len(jobs), max(klein_price(j[3], j[3]) for j in jobs), label, "klein_prod_real")  # the Klein cap applies: it is Guillaume's to raise, never bypass it with None
     logs = {j[0].name: [] for j in jobs}
 
     def one(j):

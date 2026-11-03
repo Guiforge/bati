@@ -18,6 +18,15 @@
         "grand": "An enormous forearm of dark ancient smooth stone rising from the earth and bending at the elbow into a huge right angle, with a clear elbow. In the hollow of the bent arm sits a hall of cut warm ochre stone with stout columns, a pointed arch and two stiff banners stretched on wooden frames, no hanging cloth. Behind the arm, the top of a stone head emerges half buried in earth: forehead and brow ridges, eyes closed. Dark old rock against warm ochre new stone, two ages visible. A shallow timbered pit around it, no stone steps, no quarry. An old woman leans on her shovel in front, large and clear. Matte, no gloss, no gilding, no gray smoke, no painted cast shadows. Three-quarter view from above.",
         "mythic": "A stone colossus rising out of the ground to the waist: head, broad shoulders, chest, one arm bent at the elbow with the fist at the highest point of the picture. Dark smooth ancient rock, with earth and roots still clinging to the shoulders. No legs, nothing carried on it, human body, calm closed-eyed face without expression. In the hollow of the bent arm sits a small hall of cut warm ochre stone with a pointed arch. A tiny wooden roof on two posts rests at the foot of the thumb. On the shoulder a carved stone pigeon as big as a wheelbarrow, same old rock, with a real grey pigeon perched beside it. Small stone steps crack open in the grass around the body. An old woman stands at the foot, large and clear. Not a zombie hand, cheerful green grass, no mist, no vapor. Matte, no gloss, no gilding. Three-quarter view from above."
       }
+    },
+    {
+      "id": 4,
+      "name": "4 Du banquet au grand hall",
+      "prompts": {
+        "rough": "A small simple timber shelter with a shingled roof on posts, a long plank table with a few little stools under it, tankards and a roast on the table: the first feast of a small group of heroes, already a small real building. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "grand": "A real mead hall: a long timber building with a steep shingled roof, carved door posts, a wide porch with benches, smoke from a roof vent, warm light in the doorway. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "mythic": "A legendary great hall of heroes: a monumental building of dark stone and oak with a tremendously high steep roof, carved pillars, huge doors open on warm firelight, two stone hero statues flanking the steps, tall banners on rigid frames. Unmistakably a building, proud and awe-inspiring. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth."
+      }
     }
   ]
 }

@@ -18,6 +18,15 @@
         "grand": "A big plump straw-stuffed dummy with a bucket on its head stands at the foot of a tall oak mast, as large as a man and clearly visible at the base. A sliding rail runs up the mast, and a small bucket with a thick dark ink outline is the cursor halfway up it. A small matte bronze bell sits at the very top, a dented cow bell hangs at mid height. Plain straight posts only, a few matte iron bands, thick hemp rope. No platform, no scaffold pyramid, no clock figure, no glossy metal.",
         "mythic": "A huge cracked old iron bell, mossy and matte, about as wide as the fat straw dummy below, sits on a crown of thick timber beams at the top of a tall carved stone shaft. At the foot of the shaft a big plump straw dummy with a bucket on its head stands on a tilting plank, very visible and large. A small bucket with a dark outline slides on a rail up the shaft, nearly touching the bell clapper. A tiny worried wooden figure sits under the bell. Pale dust rings and a few straw wisps drift down the shaft. A small recruit beside the dummy covers its ears. Stone, matte cast iron, aged oak. No glossy metal, no gold, no treasure, no watchtower platform. The straw dummy is big and plain at the foot of the bell. Bare ground around the foot: no sign, no mark on the ground, no post at the side. No gantry, no lantern post, no bollards, no marker stones."
       }
+    },
+    {
+      "id": 4,
+      "name": "4 Du mannequin de bois à la salle d'entraînement",
+      "prompts": {
+        "rough": "A simple wooden combat training dummy: a thick post in the ground with a crossbar for arms, a straw-stuffed sack torso, an old bucket for a helmet, no face, scuffed earth around it, a wooden practice sword leaning on it. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "grand": "A real outdoor training yard: a tall sturdy pell and a heavy iron-bound combat dummy with crossed arms on a sand floor, a low timber fence, a rack of wooden weapons and shields, heavy lifting stones. A fighter trains. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "mythic": "An exceptional legendary training hall of dark oak and stone, open on the front: a great iron-bound combat dummy in the centre, racks full of practice weapons, a pull-up bar, climbing ropes taut on frames, heavy stones and weights. Rich, well equipped and impressive, still clearly a place for combat training. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth."
+      }
     }
   ]
 }

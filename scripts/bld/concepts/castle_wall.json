@@ -18,6 +18,15 @@
         "grand": "A gate piece of a crenellated warm stone wall that bulges upward into a rounded hump, the arched gate opening taller inside it, the open road passing through. Three blunt knobs of pale rock push up through the battlements. Heavy oak props brace the leaning masonry, timber hoardings in the overhang around the hump. A mason carries a block on his back with a strap across his forehead. Both ends of the piece drop to plain crenellated stone wall height. Matte stone, matte oak, no shine.",
         "mythic": "A gate piece of an old stone wall that has slid apart into two plain shoulders of masonry, one carrying a carved clan crest. Between them seven bare vertebrae of ancient pale striated rock arch up like a bowed spine, each a rounded knobby boulder as big as a house with a smooth rounded top, no ridges, no spikes, no crests, no scales, no head, no claws, no tail, not a dragon, not a bridge. They rise to the top of the picture in the middle and sink back to wall height at both ends. The road passes through the open arch beneath, empty. Dull dark iron hoops around two of the boulders. A barefoot old woman with a cloth bag stands on the top boulder, arms spread for balance, one clear figure. Matte rock, matte iron, no shine, no glow."
       }
+    },
+    {
+      "id": 4,
+      "name": "4 De la palissade à la grande porte",
+      "prompts": {
+        "rough": "A simple wooden palisade section of sharpened logs with a plain plank gate in the middle, a small walkway, a guard. The wall ends cleanly at both sides at the same low height. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "grand": "A solid stone wall section with crenellations and a real arched gate with heavy wooden doors, a wooden walkway, a guard. The wall ends cleanly at both sides at the same height. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "mythic": "A massive fortified gatehouse: two thick round stone towers with crenellations and timber hoarding on each side of a great arch with an iron portcullis, carved crest above the arch, wall ends cleanly at both sides. Exceptional, heavy, believable. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth."
+      }
     }
   ]
 }

@@ -18,6 +18,15 @@
         "grand": "A round campaign pavilion tent of plain dark-red and ochre wool cloth, with a conical roof and a small point on top, a canvas door flap. Behind it a straight fan of seven thick straight oak slats with iron-capped ends rises well above the pavilion, held by a visible mast and taut guy ropes. A rooster-shaped weathervane on the mast. Matte dark red and ochre, no gloss, no gilding, no painted sun. A man skips rope in front of the door.",
         "mythic": "A round pavilion tent of worn dark-red and ochre wool with a pointed top, in front of an immense half-disc fan of seven very thick straight black wooden slats, each taller than the tent, standing as a huge screen on a tall mast anchored to the ground with visible guy ropes and stakes. Between the slats are taut matte bands of cloth in dark red, ochre and pale cream, three flat bands, no gradient, no gilding, no painted sun. The pavilion glows softly through its cloth. A man hangs from a halyard rope, feet off the ground, hoisting."
       }
+    },
+    {
+      "id": 4,
+      "name": "4 De la tente des bois à la tente royale",
+      "prompts": {
+        "rough": "A very simple small tent of someone who lives in the woods: hides and patched canvas stretched over cut branches, a small bedroll, a pack and a small fire ring at the entrance. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "grand": "A large medieval campaign tent of sturdy canvas stretched on tall carved poles, guy ropes and stakes, a wooden floor at the entrance, a chest and a weapon rack, a dark red pennant at the top. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "mythic": "A majestic, exceptional royal pavilion: a huge tall tent with several high peaks in heavy dark red and ochre canvas stretched tight, carved dark oak poles, guy ropes, long banners on rigid frames, iron braziers at the entrance. Regal and imposing. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth."
+      }
     }
   ]
 }

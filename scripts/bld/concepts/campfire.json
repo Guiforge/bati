@@ -18,6 +18,15 @@
         "grand": "A ring of grey fieldstones around a big real fire on the ground in front, always fully visible. Behind it rises a fan of seven thick matte copper pipes of clearly unequal heights, tallest in the middle, each at least as wide as a man's arm, ringed with iron bands, on a dark oak frame, with three small flames at the pipe tops. A banner on a post. A minstrel in front walks in place on two wooden step boards. Dark wood and matte copper. No bellows, no keyboard, no keys, no church, no cross, no cabinet on a pole, no molten metal, no chimney.",
         "mythic": "A ring of grey fieldstones with a big real fire on the ground in front, fully visible. Behind it, a very tall central pipe surrounded by thick pipes of unequal heights that decrease unevenly, so that the outline of the whole group draws one huge flame; seven pipes at most, each thick. Pale embers drift up along the pipes and the air shimmers, no smoke. At the foot, dark oak frame and two matte bronze boar heads with open mouths and no teeth, fixed onto the body of the oak frame of the pipes, a donkey standing in profile with a hoof on a step board and a minstrel pumping a long bar beside it. No bellows, no keyboard, no keys, no church, no cross, no steam valves, no molten metal, no chimney. All pipes are opaque, matte black wrought iron, solid and dark, never glass, never transparent, never ghostly. No gantry, no lantern post, no bollards, no marker stones."
       }
+    },
+    {
+      "id": 4,
+      "name": "4 Du petit feu à la marmite géante",
+      "prompts": {
+        "rough": "A very small simple campfire: a ring of stones, a few crossed logs, a small flame, a little dented iron pot on a three-stick tripod, a log to sit on. A traveller stirs the pot. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "grand": "A big iron cauldron hanging from a heavy timber tripod over a large stone fire pit, wide log benches around it, a strong fire, firewood stacked beside it. The heart of a real village camp. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "mythic": "A colossal black iron cauldron on massive dark timbers over a huge stone hearth, and enormous tall flames with the wild curling force of dragon fire rising high above it, the tallest element of the image, sparks in the air. Stone benches around the hearth. Spectacular and dangerous. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth."
+      }
     }
   ]
 }

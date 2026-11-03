@@ -18,6 +18,15 @@
         "grand": "A huge long medieval stone-footed barn: fieldstone base, low stone buttresses along the side, a very steep, very long roof of rust clay tiles, a deep open cart porch. Larger than anything near it. Oak planks in the gable do not quite meet, with thin gaps between them. Asymmetric: the porch sits off-centre, one buttress is shorter. No bell tower, no steeple, no pointed church window, no cross. Matte stone and tile, no shine, no hanging cloth. One large clear farmer woman beside the porch with a square hay bale on her back. A small feathered patch of ground under it, no hard-edged slab, no painted cast shadows.",
         "mythic": "A huge long dark oak barn nave with black oak flying buttresses and a slate roof whose ridge has split open along its whole length into one clear narrow straight slit, the two roof halves parted by a hand's width, not a wide V, no steeple, no bell tower, no pointed church arch, not symmetric. Warm ochre matte glow only along the edges of the slit, no sun, no disc, no rays, no gold. Thin matte lines of warm light show between the oak planks of the walls. Stone base, deep cart porch off-centre. Matte, no shine, no hanging cloth. One large farmer woman dancing in front of the porch, legs lifted high. A small feathered patch of ground under it, no hard-edged slab, no painted cast shadows."
       }
+    },
+    {
+      "id": 4,
+      "name": "4 De la petite grange à la grange pleine",
+      "prompts": {
+        "rough": "A small simple plank barn with a low roof and a little door, a few sacks and a small heap of straw, a farm woman carrying a sack. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "grand": "A classic big timber barn with a tall steep roof on a stone base, large double doors open on stacked square bales and sacks, a hay cart in front. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "mythic": "A huge legendary barn: a very long tall building of dark oak and stone with a great steep roof, high loft doors, visibly full to the brim, wheat and grain sacks overflowing from the doors and stacked around, several loaded carts. Abundant, proud and believable. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth."
+      }
     }
   ]
 }

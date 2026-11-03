@@ -44,3 +44,10 @@ Session arrêtée le 03/11/2026 : tous les concepts sont peints, plus rien à fa
 
 ## Pour reprendre
 Lire `state.json`, puis relire les choix dans la collection `picks` de la page. Pour chaque bâtiment choisi, passer à l'étape E, dans l'ordre du prompt, si le budget le permet.
+
+## Repeinte du 03/11, après les retours
+
+Page mise à jour au même lien : direction 4 de 19 bâtiments, peinte d'après tes notes, sans audit ni sous-agent. Fontaine et puits inchangés. Notes : [`retours-concepts-1.md`](retours-concepts-1.md).
+
+- **FLUX :** 18,80 $ en tout cette session, registre à 72,95 $ sur 75 $, 0,71 $ restants. Alerte à 70 $ acquittée par moi.
+- **Production bloquée** tant que `BUDGET_FLUX_V1` n'est pas relevé.

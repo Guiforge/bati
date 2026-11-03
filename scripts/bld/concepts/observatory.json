@@ -18,6 +18,15 @@
         "grand": "Two stone pillars of unequal height on a low square stone base with straight sides. From each pillar a head and a pair of shoulders emerge, still half inside the rough block, closed stone eyes, chisel marks, no arms and no hands visible. They carry a tall copper dome that is wider than both pillars together, the slit of the dome wide open toward the sky. Matte green-patina copper ribs, rough stone. No rings, no glowing, no beam. A small old man sleeps leaning against one block. No gantry, no lantern post, no bollards, no marker stones. The two busts are clearly visible and nothing stands in front of them.",
         "mythic": "Two stone giants carry a big copper dome with an open slit on their shoulders. The right giant has stood up, tall, his back straight, both stone hands lifting the dome high over his shoulder; the left giant is still kneeling on one knee, half in the block. The dome is raised far above the low square base and leans to one side, its slit toward the sky. A round red-brown cushion is squashed on the right giant's shoulder under the dome. Between the copper ribs, panels of midnight blue with a few small painted stars and a band of green and blue dawn. The giants are rough, weathered, unfinished, moss on the stone, closed eyes, each with two arms and two hands only. A small old man sits on the stone foot eating a red apple."
       }
+    },
+    {
+      "id": 4,
+      "name": "4 L'homme dans l'arbre, puis le vrai observatoire",
+      "prompts": {
+        "rough": "An old bare oak tree with a rough plank platform and a tiny cabin high in its branches, a ladder nailed to the trunk. A man on the platform looks at the sky through a simple brass spyglass. Nothing else: the observatory is a man in a tree. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "grand": "A sturdy round stone building built around the same old oak, a wooden observation deck among the branches, and a large matte brass telescope on a heavy wooden tripod aimed at the sky. An old sage stands by it. A real astronomer's post. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "mythic": "A large imposing classic observatory of dark stone: a big round tower under a great dome with an open slit, an enormous iron and matte bronze telescope coming out of the slit and aimed at the sky, the ancient oak still growing against the wall. Grand, heavy, believable, and a faint aurora above the dome. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth."
+      }
     }
   ]
 }

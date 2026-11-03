@@ -18,6 +18,15 @@
         "grand": "Two narrow stone towers of unequal height standing on one shared base, each with its own pointed matte violet-grey slate cone roof, iron bands, dark stained-glass windows. Between them three thick horizontal oak bars at uneven heights, like a giant's ladder. An old trunk bench at the foot. One man in a plain tunic swings from one bar to the next by his hands. Warm stone, matte slate, no shine, no hanging cloth. A small feathered patch of ground under the towers, no hard-edged slab.",
         "mythic": "Two stone towers with pointed slate cone roofs. The left tower stands upright on the ground, tall and thick, with dark windows. The right tower, cone and windows included, is lifted off the ground and held perfectly HORIZONTAL, lying flat sideways in the air at the top of the left tower, pointing to the right, as thick as the standing tower and ending in its cone on the right. It is held by one single very thick black iron bar sticking out sideways from the top of the left tower. Nothing at all under the horizontal tower, plain empty background, no rope, no support, no gallows, no crane. Two large matte violet flames, one on each cone tip. Matte black iron, dark stone, slate, no shine, no gilding. A small round three-legged stool floats near the foot with an apprentice sitting on it. A small feathered patch of ground under the standing tower, no hard-edged slab."
       }
+    },
+    {
+      "id": 4,
+      "name": "4 De la petite tour au sommet qui vole",
+      "prompts": {
+        "rough": "A small simple round tower of rough stone, barely more than a tall hut, with a conical thatch roof and a small high door with no stairs, a knotted climbing rope against the wall. Two mages in worn robes around it, one doing pull-ups on a wooden bar. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "grand": "A tall mystical round stone tower with a steep matte violet slate roof, a second thinner spire joined to it by a thick wooden bar, lit windows, a mage gripping the bar with both hands, chin above it, doing a pull-up. Strange and ancient but believable. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "mythic": "A legendary wizard tower: the top of the tall stone tower has broken free and floats high above its rocky base, a clear gap of empty sky between them, a jagged rock point under the floating part, one thick mooring chain to the ground, a few heavy stones afloat in the air, matte violet old magic in the cracks. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth."
+      }
     }
   ]
 }

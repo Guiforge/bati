@@ -98,13 +98,13 @@
       "left": 20.717
     },
     "plafondSession": 20.717,
-    "depenseSession": 13.236,
+    "depenseSession": 18.804,
     "registreFin": {
-      "spent": 67.379,
+      "spent": 72.947,
       "reserved": 1.34,
-      "left": 6.281
+      "left": 0.713
     },
-    "alerteAcquittee": 60
+    "alerteAcquittee": 70
   },
   "subagentRuns": {
     "used": 80,

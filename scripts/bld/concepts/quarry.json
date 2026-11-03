@@ -18,6 +18,15 @@
         "grand": "A tall mass of wall, taller than wide, made of about twelve large unequal grey-brown stones with sharp angles, each stone biting into its neighbour with no gaps, no mortar. The crest is jagged and irregular, no battlements, no crenellation, no round low wall. An oak crane with an offset arm, pulleys and straps stands beside it. A woman mason lifts a stone off the ground by a strap, back flat and knees bent. A small low lodge window at the foot, a lantern on the crane. Matte stone, no shine, no hanging cloth, no letters, no beam, no gallows. A small feathered patch of ground under it, no hard-edged slab, no painted cast shadow.",
         "mythic": "A cliff-like wall of six or seven giant grey-brown stones, each larger than a house, with sharp angles that bite into each other without any gap or mortar, one stone in the middle with twelve sharp angles. The crest is irregular and jagged, no battlements, no crenellation, no round low wall, no timber beam, no gallows, no trebuchet. At the top is one clear five-sided notch, empty. Just above it, a house-sized stone of the same five-sided shape, held by thick ropes to a stout crane mast standing behind the wall, with one clear open gap of air between the stone and the notch. A thick rope runs down to a woman mason at the foot, feet planted on the ground, pulling with both hands. A thin trickle of stone grains falls from one joint. Matte stone, no shine, no hanging cloth, no letters, no mist. A small feathered patch of ground under it, no hard-edged slab, no painted cast shadow."
       }
+    },
+    {
+      "id": 4,
+      "name": "4 Une vraie carrière",
+      "prompts": {
+        "rough": "A small real quarry: a low rock face with fresh cut marks, one roughly squared block on a wooden sled with ropes, wedges and a sledgehammer on the ground, a worker hauling the sled with a rope over his shoulder. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "grand": "A real open quarry: a stepped pit of pale stone with clearly cut benches, a wooden crane, stacks of squared blocks, a sloping ramp, two workers hauling a block on rollers. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "mythic": "An immense legendary quarry, unmistakably a quarry: a huge pit of terraces cut deep into a cliff, a great treadwheel crane lifting a giant block, stacks of perfectly cut blocks, ramps and timber scaffolds, workers hauling. Monumental and believable. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth."
+      }
     }
   ]
 }

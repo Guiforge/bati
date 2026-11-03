@@ -18,6 +18,15 @@
         "grand": "A pollarded oak with a short enormous trunk and a round head bristling with five to seven thick straight branches, very recognizable in solid black silhouette. Three trunks braided together in an open twist so light passes between them, tied with matte iron ties, wide parasol crown above. It stands inside a ring of five mossy standing stones with ivy, plank benches, a small stone spring basin, iron lanterns. Dark warm oak bark, emerald moss on the stones, no green on green. Matte, dull, no shine, no hanging cloth. One woman in a plain tunic stands on one leg on the spring rim, large and sharp.",
         "mythic": "Seen from a three-quarter top view, the only giant oak, with a crown at least one and a half times wider than any tree near it, dark warm deep-furrowed bark, standing on one single enormously thick main root planted in the middle of a ring of mossy standing stones. A second root is lifted off the ground, folded up and resting against the trunk, so that only ONE thick root touches the ground, while the other root is raised in the air and bent back against the trunk like a lifted leg, leaving a clear empty triangle of open sky and grass beneath it, and this lifted root holds one standing stone in its fold. At the top two heavy main branches meet above the crown. A faint green dawn light behind the crown. No fog, no grey smoke. It is a plain tree, no face, no eyes, no arms, no hands, no human shape, no eye-shaped knot. Emerald moss on stones and bark, ivy. Matte, dull, no shine, no hanging cloth. One woman in a plain tunic stands on one leg at the foot of the tree with her hands raised, large and sharp, and a goat stands beside her."
       }
+    },
+    {
+      "id": 4,
+      "name": "4 Un vrai cercle de pierres",
+      "prompts": {
+        "rough": "A few rough standing stones in a small circle around a young oak, a simple herbalist's hut of branches and hides, drying herbs on a rack, a woman sitting cross-legged. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "grand": "A real sacred grove: a large old oak inside a circle of tall weathered menhirs, a stone dolmen, a small spring in stones, a woman holding a balanced standing pose on one leg. Calm and ancient. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "mythic": "An immense ancient oak of dark bark with a wide crown, inside a ring of towering carved menhirs and a great dolmen, roots spreading over the stones, thin pale green mist low on the ground and a faint aurora behind the crown. Old, sacred and a little dangerous. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth."
+      }
     }
   ]
 }

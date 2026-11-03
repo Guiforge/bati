@@ -19,6 +19,15 @@
         "grand": "A tower made of six stacked round millstones threaded on a central oak mast, ochre sandstone and grey granite, the largest at the bottom, with small timber floors and little windows between them and a railed gallery around the pile. A bread oven is cut into the lowest stone, its chimney puffing smoke. The small plank hut still sits on the top with a new roof. Six turning arms in a star, open wooden lattice. A miller carries a heavy sack.",
         "mythic": "A stepped tower of huge cut grey stone millstones with carved radial grooves, threaded one above the other on a thick wooden mast, a notched silhouette like a loaded barbell, with eight sky-blue turning arms of plain wooden planks with taut canvas. On top of the mast, above a small plank hut, stands one colossal millstone upright on its edge: a matte blue-grey stone ring with radial grooves, a chipped rim and a large round hole through which the sky shows. A donkey sits in the hole with ears up and a thistle in its mouth; a miller far below puts his hands on his hips and looks up. Real hand-cut stone and plain timber only: no rubber, no tyres, no rivets, no metal lattice girders, no vector line, brushwork and ink outline only."
       }
+    },
+    {
+      "id": 4,
+      "name": "4 Unmistakably a windmill at every stage",
+      "prompts": {
+        "rough": "A tiny, very simple village windmill, instantly recognisable as a windmill: a small squat timber post mill of rough weathered planks with a small pitched roof, four small lattice sails with patched canvas stretched on them, a short wooden stair. Handmade and modest. A miller carries a flour sack on each shoulder. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "grand": "A big classic stone tower windmill, instantly recognisable: a tall round tower of rough stone, a conical shingled cap, four large lattice sails with canvas stretched on them, a wooden gallery around the tower, a cart with flour sacks at the door. Prosperous and solid. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "mythic": "An enormous, very powerful legendary windmill, still instantly recognisable as a windmill: a massive tall round tower of dark stone with iron bands, a great carved cap, four gigantic lattice sails with canvas stretched taut, a wide gallery, warm lit windows, and a thin ribbon of pale old magic wind curling around the sails. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth."
+      }
     }
   ]
 }

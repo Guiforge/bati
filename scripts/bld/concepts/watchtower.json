@@ -18,6 +18,15 @@
         "grand": "A whole tree trunk bound with matte iron hoops, leaning slightly, with a thick arrow shape clearly visible: a notched flat end at the top with three broad feather blades. A neat tower gallery with slate roof and amber timber walls built level around its middle, a fieldstone collar at its base, so a straight building sits on a tilted shaft. Two or three of the first arrows lean as braces at the foot. One woman hauls a load by a pulley, arms stretched. Dull, no shine, no glow, no target, no hanging cloth. A small feathered patch of ground under it, no hard-edged slab.",
         "mythic": "One colossal arrow of dark knotless wood, almost like stone, planted point down in the ground, leaning only a few degrees, rising the whole height, with three broad grey feathers near its top as wide as a platform, three clean separate feathers, no cloth. A small timber and stone cabin with slate roof and a gallery wraps three quarters of the shaft in a clear three-quarter top-down isometric angle, a straight cabin on a tilted shaft, with a visible window. The smaller arrows of earlier stages bristle at its foot. The ground is cracked around the foot. A young apprentice stands with both feet on the shaft at the base, pulling with both hands, a band of pale fresh wood showing at the ground line. One woman small on the cabin balcony turns her head. Matte, no shine, no glow, no target, no smoke. A small feathered patch of ground under it, no hard-edged slab."
       }
+    },
+    {
+      "id": 4,
+      "name": "4 De la tour classique à la grande tour de château",
+      "prompts": {
+        "rough": "A simple classic wooden watchtower: four tall timber legs with cross braces, a ladder, a railed platform under a small plank roof, a lookout on the platform. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "grand": "A solid square stone watchtower with a timber hoarding at the top, a shingled roof, narrow windows, a signal horn on a bracket, a lookout at the rail. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
+        "mythic": "An exceptional great watchtower of a mighty fortress: a very tall thick stone tower with crenellations, stone machicolations, a huge iron beacon burning at the top, several guards looking out in different directions. Imposing and believable, the finest tower of a great castle. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth."
+      }
     }
   ]
 }

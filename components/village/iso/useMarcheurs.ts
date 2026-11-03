@@ -30,6 +30,7 @@ import {
   type Vague,
   viesSansMarche,
 } from "./marcheurs";
+import { mouvementDeVague } from "./mouvement";
 import type { Emprise } from "./profondeur";
 import { type Veille, veilleDeVague } from "./veilleuses";
 import { planifierRat, RatForceContext } from "./vivant";
@@ -186,6 +187,7 @@ export function useMarcheurs(
         lumieresRef.current.porte,
       ),
       effets: effetsDeVague(carteRef.current.montres, jour, numero),
+      mouvement: mouvementDeVague(carteRef.current.montres, jour, numero),
     };
     const marcheuses = planifierAnimaux(carteRef.current, vague, jour, numero, rangRef.current);
     const rat = planifierRat(jour, numero, marcheuses.length, rangRef.current, ratForceRef.current);

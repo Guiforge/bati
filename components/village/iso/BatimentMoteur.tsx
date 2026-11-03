@@ -34,7 +34,6 @@ import {
   type ReactNode,
   useContext,
   useEffect,
-  useId,
   useRef,
   useState,
 } from "react";
@@ -49,7 +48,6 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import Svg, { Circle, Defs, RadialGradient, Stop } from "react-native-svg";
 import { scheduleOnRN } from "react-native-worklets";
 import type { AddOn, BuildingData, LightAnchor, Point } from "@/constants/buildingData";
 import { buildingStageFor, type StageRule, type VisualStage } from "@/constants/buildingStages";
@@ -58,7 +56,11 @@ import { BATIMENT_MOTEUR, etatBatiment, type Marque } from "./batiment";
 import type { Rect } from "./carteDemo";
 import { ArretAilesContext } from "./etatBld";
 import { useMouvementReduit } from "./fige";
+import { LueurDouce } from "./LueurDouce";
 import { MagieCiel, MagieSol } from "./MagieBld";
+import { MouvementBld } from "./MouvementBld";
+import { MOUVEMENTS } from "./motion";
+import { RAYON_LUEUR } from "./mouvement";
 import { PEINTS } from "./peints";
 import {
   arretAiles,
@@ -98,15 +100,6 @@ const TAILLE_MARQUE: Record<Marque, readonly [w: number, h: number]> = {
   banniere: [6, 10],
   blasonSculpte: [7, 11],
   blasonLumineux: [7, 11],
-};
-
-/** A light's halo radius by kind, dp (a building's canvas is about 112 dp wide): a brazier, a lit window, a crystal. */
-const RAYON_LUEUR: Record<LightAnchor["kind"], number> = {
-  fire: 9,
-  crystal: 7,
-  beam: 8,
-  fenetre: 6,
-  glyphe: 8,
 };
 
 /** The painted sprites by data path; empty until a building's art lands. */
@@ -183,36 +176,8 @@ function MarqueClan({ marque, sprite, at }: { marque: Marque; sprite: string | n
 }
 
 function Lueur({ kind, at }: { kind: LightAnchor["kind"]; at: Point }) {
-  // Every light is a warm pool, soft to its edge and still: no rectangle, no disc (motion belongs to the LIFE track).
+  // The still light of a building with no motion file: a warm pool, soft to its edge (a building with one draws it in MouvementBld).
   return <LueurDouce kind={kind} at={at} rayon={RAYON_LUEUR[kind]} />;
-}
-
-/** A warm radial pool centred on a map point: isoLueur at 45 % in the heart, 0 % at the rim. */
-function LueurDouce({ kind, at, rayon }: { kind: LightAnchor["kind"]; at: Point; rayon: number }) {
-  const id = `lueur-${useId().replaceAll(":", "")}`;
-  return (
-    <Svg
-      pointerEvents="none"
-      testID={`batiment-lueur-${kind}`}
-      width={rayon * 2}
-      height={rayon * 2}
-      style={{
-        position: "absolute",
-        left: at[0] - rayon,
-        top: at[1] - rayon,
-        width: rayon * 2,
-        height: rayon * 2,
-      }}
-    >
-      <Defs>
-        <RadialGradient id={id}>
-          <Stop offset="0" stopColor={rawColors.isoLueur} stopOpacity={0.45} />
-          <Stop offset="1" stopColor={rawColors.isoLueur} stopOpacity={0} />
-        </RadialGradient>
-      </Defs>
-      <Circle cx={rayon} cy={rayon} r={rayon} fill={`url(#${id})`} />
-    </Svg>
-  );
 }
 
 export type PropsBatiment = {
@@ -693,6 +658,9 @@ function Avant({
   t,
   jeu,
   geo,
+  rang,
+  base,
+  mouvement,
 }: {
   etat: Etat;
   etatMarque: Etat;
@@ -702,8 +670,13 @@ function Avant({
   t: number;
   jeu: Jeu;
   geo: Geo;
+  rang: number;
+  base: number;
+  /** The building's motion file draws its lights (the painted building it was measured on). */
+  mouvement: boolean;
 }) {
   const { px } = geo;
+  const ctx = useContext(ElementsContext);
   return (
     <>
       <Ajouts layer="front" etat={etat} jeu={jeu} geo={geo} />
@@ -723,9 +696,21 @@ function Avant({
           at={px(etatMarque.marqueAt)}
         />
       ) : null}
-      {etat.lights.map((l) => (
-        <Lueur key={`${l.kind}-${l.at.join()}`} kind={l.kind} at={px(l.at)} />
-      ))}
+      {ctx && mouvement ? (
+        <MouvementBld
+          code={ctx.code}
+          stade={etat.stage}
+          rank={rang}
+          base={base}
+          nuit={ctx.nuit}
+          px={px}
+          k={ctx.k}
+        />
+      ) : (
+        etat.lights.map((l) => (
+          <Lueur key={`${l.kind}-${l.at.join()}`} kind={l.kind} at={px(l.at)} />
+        ))
+      )}
     </>
   );
 }
@@ -828,6 +813,9 @@ function Moteur({
             t={t}
             jeu={jeu}
             geo={geo}
+            rang={rangCorps}
+            base={baseCorps}
+            mouvement={!!MOUVEMENTS[data.code] && PEINTS[data.code]?.donnees === data}
           />
         </Animated.View>
       )}

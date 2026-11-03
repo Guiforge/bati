@@ -21,6 +21,8 @@ export type Veille = {
   portes: Readonly<Partial<Record<BuildingCode, readonly (readonly [number, number])[]>>>;
   /** The buildings that play an effect (effets.ts), set where the plan is made. */
   effets?: ReadonlySet<BuildingCode>;
+  /** The buildings whose motion file moves (mouvement.ts), set where the plan is made. */
+  mouvement?: ReadonlySet<BuildingCode>;
 };
 
 /** The wave's lights, set where the walkers' plan lives (IsoCarteDemo `Objets`). */

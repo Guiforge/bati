@@ -1,0 +1,17 @@
+{
+  "effets": [
+    { "kind": "lueur", "lueur": "fenetre", "at": [547, 611], "fromRank": 10 },
+    { "kind": "lueur", "lueur": "fenetre", "at": [529, 828], "fromRank": 10 },
+    { "kind": "lueur", "lueur": "fenetre", "at": [459, 829], "fromRank": 10 },
+    { "kind": "lueur", "lueur": "fenetre", "at": [147, 834], "fromRank": 10 },
+    { "kind": "lueur", "lueur": "fenetre", "at": [235, 848], "fromRank": 10 },
+    {
+      "kind": "particules",
+      "genre": "fumee",
+      "at": [239, 660],
+      "fromRank": 10,
+      "nb": 2,
+      "taille": 8
+    }
+  ]
+}

@@ -51,6 +51,8 @@ export type EtatBatiment = {
   /** The mark's sprite for this form; null while it is not painted, and then nothing is drawn. */
   marqueSprite: string | null;
   gardien: (GuardianSlot & { pose: Point }) | null;
+  /** The keeper's sprite at this stage (its own, else the single one). */
+  gardienSprite: string | null;
   /** The scaffold and build gag of this stage, when the data gives them (else the defaults). */
   chantier: ChantierStade | null;
 };
@@ -77,7 +79,13 @@ export function etatBatiment(
     addOns: data.addOns.filter(
       (a) => atteint(a, rank, baseRank) && (a.untilRank === undefined || rank < a.untilRank),
     ),
-    teaser: data.teasers?.find((t) => atteint(t, rank, baseRank) && rank < t.untilRank) ?? null,
+    teaser:
+      data.teasers?.find(
+        (t) =>
+          atteint(t, rank, baseRank) &&
+          rank < t.untilRank &&
+          (t.untilBase === undefined || baseRank < t.untilBase),
+      ) ?? null,
     gag: gagBeatAt(data, rank, baseRank),
     gagSlot: data.gag.slot,
     lights: data.lights.filter((l) => (nuit || l.parJour) && atteint(l, rank, baseRank)),
@@ -86,6 +94,7 @@ export function etatBatiment(
     marqueAt: marque ? data.clanMark : null,
     marqueSprite: (marque && data.clanMarkSprites?.[marque]) || null,
     gardien: gardien ? { ...gardien, pose: gardien.poses?.[stage] ?? gardien.at } : null,
+    gardienSprite: gardien ? (gardien.sprites?.[stage] ?? gardien.sprite) : null,
     chantier: data.chantier?.[stage] ?? null,
   };
 }

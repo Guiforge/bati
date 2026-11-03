@@ -8,19 +8,25 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { BatimentMoteur } from "@/components/village/iso/BatimentMoteur";
 import { etatBatiment } from "@/components/village/iso/batiment";
 import {
+  BOUFFEES,
+  balancement,
   basesA,
+  bouffee,
   chantierA,
   echelleCorps,
   echellePop,
   genreDe,
+  gesteGag,
+  monteEchafaudage,
   picPoussiere,
   planSpectacle,
   rangsA,
   rebond,
+  sautGardien,
   souffleLueur,
 } from "@/components/village/iso/spectacleBatiment";
 import { useSpectacleBatiment } from "@/components/village/iso/useSpectacleBatiment";
-import { type BuildingData, gagBeatAt } from "@/constants/buildingData";
+import { ailesAuRang, type BuildingData, gagBeatAt, rangsDeBase } from "@/constants/buildingData";
 import { batimentEssai as essai } from "@/constants/buildings/essai";
 
 jest.mock("react-native-worklets", () => ({
@@ -81,18 +87,99 @@ describe("rule B on the plan", () => {
 });
 
 describe("the scale jumps", () => {
-  it("the anticipation squashes from 1 and comes back to 1, the bounce leaves from 1", () => {
+  it("the anticipation squashes to 0.90 in Y and 1.04 in X, lets go to 1.03 and settles, the bounce leaves from 1", () => {
     const plan = planSpectacle("stade", 4, 5, false);
     const [ant, , , rev] = plan.etapes;
-    expect(echelleCorps(plan, ant?.debut ?? -1)).toBeCloseTo(1, 5);
-    expect(echelleCorps(plan, ((ant?.debut ?? 0) + (ant?.fin ?? 0)) / 2)).toBeCloseTo(0.96, 5);
-    expect(echelleCorps(plan, (ant?.fin ?? 0) - 0.001)).toBeCloseTo(1, 3);
+    const d = ant?.debut ?? 0;
+    expect(echelleCorps(plan, d)).toEqual([1, 1]);
+    const [sx, sy] = echelleCorps(plan, d + 350 - 0.001);
+    expect(sx).toBeCloseTo(1.04, 2);
+    expect(sy).toBeCloseTo(0.9, 2);
+    let hautY = 0;
+    for (let t = d + 350; t < (ant?.fin ?? 0); t += 5)
+      hautY = Math.max(hautY, echelleCorps(plan, t)[1]);
+    expect(hautY).toBeGreaterThan(1.02);
+    expect(hautY).toBeLessThanOrEqual(1.03 + 1e-9);
+    const [fx, fy] = echelleCorps(plan, (ant?.fin ?? 0) - 0.001);
+    expect(fx).toBeCloseTo(1, 2);
+    expect(fy).toBeCloseTo(1, 2);
     expect(rebond(0)).toBe(1);
-    expect(echelleCorps(plan, rev?.debut ?? -1)).toBe(1);
+    expect(echelleCorps(plan, rev?.debut ?? -1)).toEqual([1, 1]);
+  });
+
+  it("the bounce starts at the swap: 8 % up, 2 % under, then 1", () => {
+    const plan = planSpectacle("stade", 4, 5, false);
+    const rev = plan.etapes.find((e) => e.etape === "revelation");
+    expect(rev?.debut).toBe(picPoussiere(plan));
+    expect(rebond(0.3)).toBeCloseTo(1.08, 5);
+    expect(rebond(0.65)).toBeCloseTo(0.98, 5);
+    expect(rebond(1)).toBe(1);
     let max = 0;
-    for (let t = 0; t <= plan.total; t += 5) max = Math.max(max, echelleCorps(plan, t));
+    let min = 2;
+    for (let u = 0; u <= 1; u += 0.01) {
+      max = Math.max(max, rebond(u));
+      min = Math.min(min, rebond(u));
+    }
+    expect(max).toBeLessThanOrEqual(1.08 + 1e-9);
+    expect(min).toBeGreaterThanOrEqual(0.98 - 1e-9);
+  });
+
+  it("the keeper hops at 60 % of the reveal, 12 dp then 6 dp", () => {
+    const plan = planSpectacle("stade", 4, 5, false);
+    const rev = plan.etapes.find((e) => e.etape === "revelation");
+    const g = plan.etapes.find((e) => e.etape === "gardien");
+    expect(g?.debut).toBeCloseTo(
+      (rev?.debut ?? 0) + 0.6 * ((rev?.fin ?? 0) - (rev?.debut ?? 0)),
+      5,
+    );
+    let max1 = 0;
+    let max2 = 0;
+    const d = g?.debut ?? 0;
+    const l = (g?.fin ?? 0) - d;
+    for (let t = d; t < d + l; t += 2) {
+      const v = sautGardien(plan, t);
+      if (t - d < 0.6 * l) max1 = Math.max(max1, v);
+      else max2 = Math.max(max2, v);
+    }
+    expect(max1).toBeCloseTo(12, 0);
+    expect(max2).toBeCloseTo(6, 0);
+  });
+
+  it("the cloud covers the swap: 5 to 7 puffs, all up by the peak, none ever back at scale 0", () => {
+    const plan = planSpectacle("stade", 4, 5, false);
+    const pic = picPoussiere(plan) ?? -1;
+    const e = plan.etapes.find((x) => x.etape === "poussiere");
+    expect(BOUFFEES.length).toBeGreaterThanOrEqual(5);
+    expect(BOUFFEES.length).toBeLessThanOrEqual(7);
+    const debut = e?.debut ?? 0;
+    const fin = e?.fin ?? 0;
+    for (let i = 0; i < BOUFFEES.length; i++) {
+      expect(bouffee(plan, pic, i).opacite).toBeGreaterThan(0.8);
+      expect(bouffee(plan, pic, i).echelle).toBeGreaterThan(0.99);
+      // From the swap on it only grows; the whole way through it never drops under 0.4.
+      const apres = [];
+      const echelles = [];
+      for (let t = debut; t < fin; t += 5) {
+        echelles.push(bouffee(plan, t, i).echelle);
+        if (t >= pic) apres.push(bouffee(plan, t, i).echelle);
+      }
+      expect(Math.min(...echelles)).toBeGreaterThanOrEqual(0.4);
+      expect(apres).toEqual([...apres].sort((x, y) => x - y));
+      expect(bouffee(plan, fin - 1, i).opacite).toBeLessThan(0.05);
+    }
+  });
+
+  it("the scaffold rises in 150 ms with an overshoot, then sways", () => {
+    const plan = planSpectacle("stade", 4, 5, false);
+    const d = plan.etapes.find((x) => x.etape === "echafaudage")?.debut ?? 0;
+    expect(monteEchafaudage(plan, d)).toBe(0);
+    expect(monteEchafaudage(plan, d + 150)).toBe(1);
+    let max = 0;
+    for (let t = d; t < d + 150; t += 2) max = Math.max(max, monteEchafaudage(plan, t));
     expect(max).toBeGreaterThan(1.05);
-    expect(max).toBeLessThanOrEqual(1.1);
+    expect(balancement(plan, d + 50)).toBe(0);
+    expect(Math.abs(balancement(plan, d + 150 + 220))).toBeGreaterThan(0.1);
+    expect(Math.abs(gesteGag(plan, d + 100).rot)).toBeGreaterThan(0);
   });
 
   it("the new piece pops from nothing at the swap to 1, never far past it", () => {
@@ -270,7 +357,7 @@ function Parent({
           suivis?.push(`${stade}${suivant ? "-suivant" : ""}`);
           return <Image testID={suivant ? `sprite-suivant-${stade}` : "sprite"} />;
         }}
-        couches={<View testID="couches" />}
+        couches={() => <View testID="couches" />}
         reclame={<View testID="reclame" />}
       />
     </View>
@@ -293,7 +380,7 @@ describe("the tree", () => {
     expect(place("batiment-addon-4")).toBeLessThan(place("batiment-corps"));
     expect(place("batiment-corps")).toBeLessThan(place("sprite"));
     expect(place("sprite")).toBeLessThan(place("couches"));
-    // The sprite and the map's layers are inside the one bouncing view; the pieces are outside it.
+    // The sprite and the map's layers are inside the one bouncing view; the pieces are in a second one that bounces the same way.
     expect(place("couches")).toBeLessThan(place("batiment-addon-2"));
     for (const devant of [
       "batiment-addon-2",
@@ -359,11 +446,11 @@ describe("the tree", () => {
     await fireEvent.press(screen.getByTestId("tap"));
     expect(ids().filter((i) => i.startsWith("sprite-suivant"))).toEqual([]);
     expect(ids()).not.toContain("batiment-neuf");
-    // Past the swap the rank 4 piece (behind) stands in the one group.
+    // Past the swap the rank 4 piece (behind), the rank 4 teaser and the rank 4 beat each pop on their own.
     await act(() => {
       jest.advanceTimersByTime(200);
     });
-    expect(ids().filter((i) => i === "batiment-neuf")).toHaveLength(1);
+    expect(ids().filter((i) => i === "batiment-neuf")).toHaveLength(3);
     expect(ids()).toContain("batiment-addon-4");
     await act(() => {
       jest.advanceTimersByTime(5000);
@@ -405,6 +492,56 @@ describe("the sizes, on the real canvas", () => {
     for (const p of tous) {
       expect(p?.[0] ?? 0).toBeLessThanOrEqual(896);
       expect(p?.[1] ?? 0).toBeLessThanOrEqual(1344);
+    }
+  });
+});
+
+describe("the frozen cards' data, pure", () => {
+  const base = {
+    ...essai,
+    addOns: [],
+    teasers: [
+      { fromRank: 1, untilRank: 99, fromBase: 6, untilBase: 7, sprite: null, anchorOffset: [0, 0] },
+      {
+        fromRank: 1,
+        untilRank: 99,
+        fromBase: 9,
+        untilBase: 10,
+        sprite: null,
+        anchorOffset: [0, 0],
+      },
+    ],
+  } as const satisfies BuildingData;
+
+  it("a teaser leaves when the base reaches untilBase, and lists the base ranks that change it", () => {
+    expect(etatBatiment(base, 3, { baseRank: 5 }).teaser).toBeNull();
+    expect(etatBatiment(base, 3, { baseRank: 6 }).teaser).not.toBeNull();
+    expect(etatBatiment(base, 3, { baseRank: 7 }).teaser).toBeNull();
+    expect(etatBatiment(base, 3, { baseRank: 9 }).teaser).not.toBeNull();
+    expect(rangsDeBase(base)).toEqual([6, 7, 9, 10]);
+  });
+
+  it("the sails' sheet follows the rank, the keeper its stage, a beat can stand elsewhere", () => {
+    const d = {
+      ...essai,
+      ailes: [
+        { fromRank: 1, sheet: "a" },
+        { fromRank: 6, sheet: "b" },
+      ],
+      guardian: { fromRank: 1, at: [0, 0], sprite: "s", sprites: { grand: "g" } },
+    } as const satisfies BuildingData;
+    expect(ailesAuRang(d, 5, 0)).toBe("a");
+    expect(ailesAuRang(d, 6, 0)).toBe("b");
+    expect(ailesAuRang(essai, 6, 0)).toBeNull();
+    expect(etatBatiment(d, 5).gardienSprite).toBe("g");
+    expect(etatBatiment(d, 1).gardienSprite).toBe("s");
+  });
+
+  it("a light breathes 1, 2 or 3 times in 5 s and rests at the boundary", () => {
+    for (const n of [1, 2, 3]) {
+      expect(souffleLueur(0, n)).toBeCloseTo(0.85, 5);
+      expect(souffleLueur(5000, n)).toBeCloseTo(0.85, 5);
+      expect(souffleLueur(2500 / n, n)).toBeCloseTo(1.15, 5);
     }
   });
 });

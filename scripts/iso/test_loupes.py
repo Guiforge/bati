@@ -96,6 +96,23 @@ for empty in (0, 0.3, None):  # a film of one frame, or none readable: a message
 if shutil.which("ffmpeg"):
     K.contact_sheet_all(vid, tmp / "all.png", square=True)
     assert Image.open(tmp / "all.png").size == (64 * 6, 64 * 2)
+if shutil.which("ffmpeg") and shutil.which("ffprobe"):
+    # 2 s of black, then 4 s of picture: the app "starts" at 2 s, and a window counts from there.
+    mixed = tmp / "mixed.mp4"
+    subprocess.run(["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "color=black:size=64x64:rate=10:duration=2",
+                    "-f", "lavfi", "-i", "testsrc=size=64x64:rate=10:duration=4",
+                    "-filter_complex", "[0][1]concat=n=2:v=1[v]", "-map", "[v]", "-pix_fmt", "yuv420p", str(mixed)], check=True)
+    assert abs(K.first_lit(mixed) - 2.0) < 0.2
+    s0, d0 = K.sheet_window(mixed, 0.5, 3.0, from_lit=True)
+    assert abs(s0 - 2.5) < 0.2 and abs(d0 - 2.5) < 0.2
+    assert K.sheet_window(mixed) == (0.0, K.film_duration(mixed))
+    K.contact_sheet_all(mixed, tmp / "win.png", start=0.5, end=3.0, from_lit=True)
+    assert Image.open(tmp / "win.png").size == (64 * 6, 64 * 2)
+    try:
+        K.sheet_window(mixed, 0.0, 0.5)
+        raise AssertionError("a window under a second must be refused")
+    except ValueError as e:
+        assert "nothing moved" in str(e)
 print("loupe_crop ok")
 
 # ---- dump-check ----

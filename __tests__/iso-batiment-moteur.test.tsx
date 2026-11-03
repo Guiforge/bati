@@ -204,8 +204,10 @@ describe("the two moments, as plans", () => {
     for (const genre of ["stade", "rang"] as const) {
       const plan = planSpectacle(genre, 2, 3, false);
       for (let t = 0; t <= plan.total; t += 5) {
-        expect(echelleCorps(plan, t)).toBeGreaterThanOrEqual(0.94);
-        expect(echelleCorps(plan, t)).toBeLessThanOrEqual(1.1);
+        for (const v of echelleCorps(plan, t)) {
+          expect(v).toBeGreaterThanOrEqual(0.9);
+          expect(v).toBeLessThanOrEqual(1.1);
+        }
       }
       expect(rebond(1)).toBe(1);
       expect(sautGardien(plan, plan.total)).toBe(0);
@@ -217,7 +219,7 @@ describe("the two moments, as plans", () => {
     expect(plan.etapes).toEqual([]);
     expect(plan.total).toBe(0);
     expect(rangsA(plan, 0)).toEqual({ corps: 3, marque: 3 });
-    expect(echelleCorps(plan, 0)).toBe(1);
+    expect(echelleCorps(plan, 0)).toEqual([1, 1]);
   });
 });
 
@@ -257,14 +259,23 @@ function Parent({
         sprite={(stade, suivant) => (
           <View testID={suivant ? `sprite-${stade}-suivant` : "sprite"} />
         )}
-        couches={<View testID="couches" />}
+        couches={() => <View testID="couches" />}
         reclame={<View testID="reclame" />}
         masque={masque}
       />
     </View>
   );
 }
-const ms = (genre: "stade" | "rang", i: number) => ETAPES[genre][i]?.[1] ?? 0;
+/** Where step `i` of a moment starts, ms: the steps overlap, so the tests move to absolute times. */
+const debut = (genre: "stade" | "rang", i: number) => ETAPES[genre][i]?.[1] ?? 0;
+let horloge = 0;
+const jusqua = (t: number) => {
+  const d = t - horloge;
+  horloge = t;
+  return act(() => {
+    jest.advanceTimersByTime(d);
+  });
+};
 const ids = () => screen.queryAllByTestId(/^batiment-/).map((n) => n.props.testID as string);
 
 describe("the layers, mounted", () => {
@@ -290,11 +301,10 @@ describe("the layers, mounted", () => {
     await render(<Parent rank={4} />);
     expect(ids()).toContain("batiment-marque-fanion");
     await fireEvent.press(screen.getByTestId("tap"));
+    horloge = 0;
     expect(screen.getByTestId("batiment-poussiere")).toBeTruthy();
-    // Anticipation, then the scaffold takes the gag slot with the build gag.
-    await act(() => {
-      jest.advanceTimersByTime(ms("stade", 0) + 10);
-    });
+    // The scaffold takes the gag slot with the build gag, while the anticipation lets go.
+    await jusqua(debut("stade", 1) + 10);
     expect(ids()).toContain("batiment-echafaudage");
     expect(ids()).toContain("batiment-gag-chantier");
     expect(
@@ -302,17 +312,15 @@ describe("the layers, mounted", () => {
     ).toEqual([]);
     expect(screen.getByTestId("sprite")).toBeTruthy();
     // The reveal: the new rank's pieces, the old mark until the last step.
-    await act(() => {
-      jest.advanceTimersByTime(ms("stade", 1) + ms("stade", 2));
-    });
+    await jusqua(debut("stade", 3) - 10);
+    expect(ids()).toContain("batiment-echafaudage");
+    await jusqua(debut("stade", 3) + 10);
     expect(ids()).not.toContain("batiment-echafaudage");
     // Rank 5 opens grand: the rank 4 teaser is gone, painted in, the rank 4 beat still holds the slot.
     expect(ids()).not.toContain("batiment-teaser");
     expect(ids()).toContain("batiment-gag-4");
     expect(ids()).toContain("batiment-marque-fanion");
-    await act(() => {
-      jest.advanceTimersByTime(ms("stade", 3) + ms("stade", 4) + 20);
-    });
+    await jusqua(debut("stade", 5) + 20);
     expect(ids()).toContain("batiment-marque-banniere");
     await act(() => {
       jest.advanceTimersByTime(2000);
@@ -325,9 +333,8 @@ describe("the layers, mounted", () => {
     await render(<Parent rank={3} />);
     expect(ids()).not.toContain("batiment-addon-4");
     await fireEvent.press(screen.getByTestId("tap"));
-    await act(() => {
-      jest.advanceTimersByTime(ms("rang", 0) + 10);
-    });
+    horloge = 0;
+    await jusqua(debut("rang", 1) + 10);
     expect(ids()).toContain("batiment-addon-4");
     expect(ids()).not.toContain("batiment-echafaudage");
     await act(() => {
@@ -340,9 +347,8 @@ describe("the layers, mounted", () => {
     await render(<Parent rank={4} nuit />);
     expect(ids()).toContain("batiment-lueur-fire");
     await fireEvent.press(screen.getByTestId("tap"));
-    await act(() => {
-      jest.advanceTimersByTime(ms("stade", 0) + 10);
-    });
+    horloge = 0;
+    await jusqua(debut("stade", 1) + 10);
     expect(ids()).toContain("batiment-echafaudage");
     expect(ids()).toContain("batiment-lueur-fire");
     for (const n of screen.queryAllByTestId(/^batiment-/)) {

@@ -110,9 +110,8 @@ export function useHorloge(): {
   const finSv = useSharedValue(0);
 
   // Callable from a gesture worklet: extends the wave from where the clock stands, no jump.
-  const touche = (x?: number, y?: number) => {
+  const lance = (x?: number, y?: number) => {
     "worklet";
-    if (!actifSv.get()) return;
     const de = c.get();
     if (x !== undefined && y !== undefined) effroi.set({ n: effroi.get().n + 1, c0: de, x, y });
     const cible = cibleVie(de);
@@ -120,6 +119,10 @@ export function useHorloge(): {
     // Only from a rest pose (a multiple of the cycle) does a wave start; mid-wave it is extended.
     if (de % CYCLE_MS === 0) depart.set({ n: depart.get().n + 1, c0: de });
     c.set(withTiming(cible, { duration: cible - de, easing: Easing.linear }));
+  };
+  const touche = (x?: number, y?: number) => {
+    "worklet";
+    if (actifSv.get()) lance(x, y);
   };
 
   // A new planning window every VAGUE_MIN_MS of clock, so the walkers go on walking for 60 s.
@@ -137,7 +140,9 @@ export function useHorloge(): {
     // Until the reader state is known the clock neither starts nor is touched.
     if (!pret) return;
     actifSv.set(actif);
-    if (actif) touche();
+    // Not `touche()`: it reads `actifSv`, which on the JS thread may still hold the value from
+    // before the `set` just above, so the clock never started and the film had one frame.
+    if (actif) lance();
     else {
       // Leave the sails in a rest pose, not frozen mid-turn. `get()` on the JS thread may be a
       // frame stale; whatever it returns, its next cycle multiple is a rest pose. Up, never down:

@@ -35,7 +35,8 @@ export function MoteurBld({
   nuit: boolean;
   masque: boolean;
   sprite: (stade: VisualStage, suivant: boolean) => ReactNode;
-  couches: ReactNode;
+  /** The map's own layers at the stage the body wears (never the final one before the swap). */
+  couches: (stade: VisualStage) => ReactNode;
   reclame: ReactNode;
 }) {
   const { spectacle, jouer, fini } = useSpectacleBatiment();

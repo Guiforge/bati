@@ -8,10 +8,13 @@
 //
 // Everything is in map coordinates, like the sprite it draws over: `corps` is the sprite's
 // rectangle on the map, the data's points are canvas px (`taille`), `corps.w / taille[0]` dp a px.
-// Z-order, back to front: add-ons `behind`, the body (the sprite and the map's own `couches`, bounced
-// together by the one always-mounted view), then in front the add-ons, teaser, scaffold, gag, night
-// sprite, keeper, clan mark and lights, then the dust, then `reclame`. Pieces are sized in dp, not
-// in canvas px. With `masque` the building is hidden under a growth layer: nothing stands in front.
+// Z-order, back to front: add-ons `behind`, the body (the sprite, the add-ons `sousAiles` and the
+// map's own `couches`, which is called with the stage the body wears so its shadow, sails and
+// glows are never a stage ahead; bounced together by the one always-mounted view), then in front,
+// in a second view that bounces the same way (same origin, same scale), the add-ons, teaser,
+// scaffold, gag, night sprite, keeper, clan mark and lights, then the dust, then `reclame`. Pieces
+// are sized in dp, not in canvas px. With `masque` the building is hidden under a growth layer:
+// nothing stands in front.
 //
 // Nothing here is tappable: every layer is `pointerEvents="none"`, lights are not targets, and the
 // map's touch and "ready" lists (tapBatiment.ts, reclame.ts) do not know this file. A moment starts
@@ -42,11 +45,15 @@ import type { Rect } from "./carteDemo";
 import { useMouvementReduit } from "./fige";
 import { HorlogeContext } from "./horloge";
 import {
+  BOUFFEES,
+  balancement,
   basesA,
+  bouffee,
   chantierA,
   echelleCorps,
   echellePop,
-  gonflePoussiere,
+  gesteGag,
+  monteEchafaudage,
   type PlanSpectacle,
   picPoussiere,
   rangsA,
@@ -64,8 +71,10 @@ const TAILLE = {
   gardien: 14,
   nuit: 20,
   echafaudage: 40,
-  poussiere: 22,
 };
+
+/** The keeper's reaction pose, held with reduced motion: the top of its hop, tilted. */
+const POSE_REACTION = [{ translateY: -8 }, { rotate: "-6deg" }];
 
 /** The clan mark's slot by form, dp, until its sprite is painted. */
 const TAILLE_MARQUE: Record<Marque, readonly [w: number, h: number]> = {
@@ -87,6 +96,17 @@ const TAILLE_LUEUR: Record<LightAnchor["kind"], readonly [w: number, h: number]>
 /** The painted sprites by data path; empty until a building's art lands. */
 const IMAGES: Readonly<Record<string, number>> = {};
 
+/** The style of a flat square centred on a map point. */
+const forme = (at: Point, taille: number, couleur: string) =>
+  ({
+    position: "absolute",
+    left: at[0] - taille / 2,
+    top: at[1] - taille / 2,
+    width: taille,
+    height: taille,
+    backgroundColor: couleur,
+  }) as const;
+
 /** A flat piece centred on a map point. */
 function Piece({
   testID,
@@ -99,20 +119,7 @@ function Piece({
   taille: number;
   couleur: string;
 }) {
-  return (
-    <View
-      pointerEvents="none"
-      testID={testID}
-      style={{
-        position: "absolute",
-        left: at[0] - taille / 2,
-        top: at[1] - taille / 2,
-        width: taille,
-        height: taille,
-        backgroundColor: couleur,
-      }}
-    />
-  );
+  return <View pointerEvents="none" testID={testID} style={forme(at, taille, couleur)} />;
 }
 
 /**
@@ -135,7 +142,17 @@ function MarqueClan({ marque, sprite, at }: { marque: Marque; sprite: string | n
   );
 }
 
-function Lueur({ kind, at, reduit }: { kind: LightAnchor["kind"]; at: Point; reduit: boolean }) {
+function Lueur({
+  kind,
+  at,
+  reduit,
+  cycles,
+}: {
+  kind: LightAnchor["kind"];
+  at: Point;
+  reduit: boolean;
+  cycles: 1 | 2 | 3;
+}) {
   const horloge = useContext(HorlogeContext);
   const [w, h] = TAILLE_LUEUR[kind];
   const forme = {
@@ -151,20 +168,22 @@ function Lueur({ kind, at, reduit }: { kind: LightAnchor["kind"]; at: Point; red
   if (!horloge || reduit || kind === "fenetre") {
     return <View pointerEvents="none" testID={`batiment-lueur-${kind}`} style={forme} />;
   }
-  return <LueurVivante kind={kind} forme={forme} horloge={horloge} />;
+  return <LueurVivante kind={kind} forme={forme} horloge={horloge} cycles={cycles} />;
 }
 
 function LueurVivante({
   kind,
   forme,
   horloge,
+  cycles,
 }: {
   kind: LightAnchor["kind"];
   forme: object;
   horloge: SharedValue<number>;
+  cycles: 1 | 2 | 3;
 }) {
   const souffle = useAnimatedStyle(() => ({
-    transform: [{ scale: souffleLueur(horloge.get()) }],
+    transform: [{ scale: souffleLueur(horloge.get(), cycles) }],
   }));
   return (
     <Animated.View
@@ -196,8 +215,8 @@ export type PropsBatiment = {
   masque?: boolean;
   /** The building's image at a stage; `suivant` for the stage being revealed, mounted invisible. */
   sprite: (stade: VisualStage, suivant: boolean) => ReactNode;
-  /** The map's own layers over the sprite (sails, fires, effects): they bounce with it. */
-  couches?: ReactNode;
+  /** The map's own layers over the sprite (shadow, sails, fires, effects) at the stage the body wears: they bounce with it. */
+  couches?: (stade: VisualStage) => ReactNode;
   /** The ready-to-rise mark: the last thing drawn. */
   reclame?: ReactNode;
 };
@@ -208,7 +227,7 @@ export function BatimentMoteur({ actif = BATIMENT_MOTEUR, ...p }: PropsBatiment)
     return (
       <>
         {p.sprite(stade, false)}
-        {p.couches}
+        {p.couches?.(stade)}
         {p.reclame}
       </>
     );
@@ -218,18 +237,136 @@ export function BatimentMoteur({ actif = BATIMENT_MOTEUR, ...p }: PropsBatiment)
 
 type Etat = ReturnType<typeof etatBatiment>;
 type Geo = { px: (o: Point) => Point; ancre: Point };
+type Boite = { w: number; h: number };
+/** What a moment that plays gives the pieces: its plan (undefined at rest and with reduced motion), its clock, the map box. */
+type Jeu = {
+  plan: PlanSpectacle | undefined;
+  h: SharedValue<number>;
+  boite: Boite;
+  /** The keeper stays on its reaction pose: the moment is over before it starts (reduced motion). */
+  trace: boolean;
+};
+
+const enBoite = (b: Boite) =>
+  ({ position: "absolute", left: 0, top: 0, width: b.w, height: b.h }) as const;
+
+/**
+ * One piece a rise adds, as its own animated node: it pops out at the swap from its own centre, a
+ * little too big, then settles. Each piece has its own origin, so a far one never slides from the foot.
+ */
+function Pop({
+  plan,
+  h,
+  boite,
+  origine,
+  children,
+}: {
+  plan: PlanSpectacle;
+  h: SharedValue<number>;
+  boite: Boite;
+  origine: Point;
+  children: ReactNode;
+}) {
+  const style = useAnimatedStyle(() => ({ transform: [{ scale: echellePop(plan, h.get()) }] }));
+  return (
+    <Animated.View
+      pointerEvents="none"
+      testID="batiment-neuf"
+      style={[enBoite(boite), { transformOrigin: [origine[0], origine[1], 0] }, style]}
+    >
+      {children}
+    </Animated.View>
+  );
+}
+
+/** A piece that pops in when it is new to this rise, else just there. */
+function Neuf({
+  neuf,
+  jeu,
+  at,
+  children,
+}: {
+  neuf: boolean;
+  jeu: Jeu;
+  at: Point;
+  children: ReactNode;
+}) {
+  if (!neuf || !jeu.plan) return <>{children}</>;
+  return (
+    <Pop plan={jeu.plan} h={jeu.h} boite={jeu.boite} origine={at}>
+      {children}
+    </Pop>
+  );
+}
+
+/** Whatever it holds hops with the keeper's two jumps, or stays on the reaction pose. */
+function Saute({ jeu, children }: { jeu: Jeu; children: ReactNode }) {
+  const { plan, h, trace } = jeu;
+  const saut = useAnimatedStyle(() => ({
+    transform: [{ translateY: plan ? -sautGardien(plan, h.get()) : 0 }],
+  }));
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={[enBoite(jeu.boite), trace ? { transform: POSE_REACTION } : saut]}
+    >
+      {children}
+    </Animated.View>
+  );
+}
+
+/** The scaffold rises from its foot with an overshoot, then sways a little. */
+function Echafaudage({ jeu, at }: { jeu: Jeu; at: Point }) {
+  const { plan, h } = jeu;
+  const t = TAILLE.echafaudage;
+  const style = useAnimatedStyle(() => ({
+    transform: [
+      { scaleY: plan ? monteEchafaudage(plan, h.get()) : 1 },
+      { rotate: `${plan ? balancement(plan, h.get()) : 0}deg` },
+    ],
+  }));
+  return (
+    <Animated.View
+      pointerEvents="none"
+      testID="batiment-echafaudage"
+      style={[forme(at, t, rawColors.isoVocationBois), { transformOrigin: [t / 2, t, 0] }, style]}
+    />
+  );
+}
+
+/** The build gag fidgets in a loop while the scaffold stands. */
+function GagChantier({ jeu, at }: { jeu: Jeu; at: Point }) {
+  const { plan, h } = jeu;
+  const t = TAILLE.gag;
+  const style = useAnimatedStyle(() => {
+    const g = plan ? gesteGag(plan, h.get()) : { rot: 0, saut: 0 };
+    return { transform: [{ translateY: -g.saut }, { rotate: `${g.rot}deg` }] };
+  });
+  return (
+    <Animated.View
+      pointerEvents="none"
+      testID="batiment-gag-chantier"
+      style={[forme(at, t, rawColors.isoPierreChaudeMoyen), style]}
+    />
+  );
+}
 
 /** The flat pieces in front: add-ons, teaser, scaffold, the gag slot (one thing at a time) and the night sprite. */
 function Devant({
   etat,
+  depart,
   cible,
   chantier,
+  jeu,
   geo,
 }: {
   etat: Etat;
+  /** What stood before the rise: a teaser or a beat that is not it is new, and pops in. */
+  depart: Etat;
   /** What the stage being built has: its scaffold and its build gag. */
   cible: Etat;
   chantier: boolean;
+  jeu: Jeu;
   geo: Geo;
 }) {
   const { px, ancre } = geo;
@@ -237,39 +374,42 @@ function Devant({
   const { teaser, gag, gagSlot, nightSprite } = etat;
   const echaf = cible.chantier?.echafaudage;
   const gagChantier = cible.chantier?.gag?.at ?? gagSlot;
+  const ouGag = gag?.at ?? gagSlot;
+  const piece = ouGag && gag && (
+    <Neuf neuf={depart.gag !== gag} jeu={jeu} at={px(ouGag)}>
+      <Piece
+        testID={`batiment-gag-${gag.rank}`}
+        at={px(ouGag)}
+        taille={TAILLE.gag}
+        couleur={rawColors.isoPierreChaudeMoyen}
+      />
+    </Neuf>
+  );
   return (
     <>
       {teaser ? (
-        <Piece
-          testID="batiment-teaser"
-          at={decale(teaser.anchorOffset)}
-          taille={TAILLE.teaser}
-          couleur={rawColors.isoVocationBois}
-        />
+        <Neuf neuf={depart.teaser !== teaser} jeu={jeu} at={decale(teaser.anchorOffset)}>
+          <Piece
+            testID="batiment-teaser"
+            at={decale(teaser.anchorOffset)}
+            taille={TAILLE.teaser}
+            couleur={rawColors.isoVocationBois}
+          />
+        </Neuf>
       ) : null}
       {chantier ? (
-        <Piece
-          testID="batiment-echafaudage"
-          at={echaf ? decale(echaf.anchorOffset) : px(ancre)}
-          taille={TAILLE.echafaudage}
-          couleur={rawColors.isoVocationBois}
-        />
+        <Echafaudage jeu={jeu} at={echaf ? decale(echaf.anchorOffset) : px(ancre)} />
       ) : null}
       {/* The gag slot holds one thing: the build gag during the scaffold, else the rank's beat. */}
       {gagChantier && chantier ? (
-        <Piece
-          testID="batiment-gag-chantier"
-          at={px(gagChantier)}
-          taille={TAILLE.gag}
-          couleur={rawColors.isoPierreChaudeMoyen}
-        />
-      ) : gagSlot && gag ? (
-        <Piece
-          testID={`batiment-gag-${gag.rank}`}
-          at={px(gagSlot)}
-          taille={TAILLE.gag}
-          couleur={rawColors.isoPierreChaudeMoyen}
-        />
+        <GagChantier jeu={jeu} at={px(gagChantier)} />
+      ) : piece ? (
+        // Without a keeper the beat's figure is the one that reacts to the show.
+        etat.gardien ? (
+          piece
+        ) : (
+          <Saute jeu={jeu}>{piece}</Saute>
+        )
       ) : null}
       {nightSprite ? (
         <Piece
@@ -283,18 +423,8 @@ function Devant({
   );
 }
 
-function Gardien({
-  at,
-  plan,
-  h,
-  trace,
-}: {
-  at: Point;
-  plan: PlanSpectacle | undefined;
-  h: SharedValue<number>;
-  /** Reduced motion keeps the moment: the keeper stays on its reaction pose after the new rank lands. */
-  trace: boolean;
-}) {
+function Gardien({ at, jeu }: { at: Point; jeu: Jeu }) {
+  const { plan, h, trace } = jeu;
   const saut = useAnimatedStyle(() => ({
     transform: [{ translateY: plan ? -sautGardien(plan, h.get()) : 0 }],
   }));
@@ -303,91 +433,74 @@ function Gardien({
       pointerEvents="none"
       testID={trace ? "batiment-gardien-reagit" : "batiment-gardien"}
       style={[
-        {
-          position: "absolute",
-          left: at[0] - TAILLE.gardien / 2,
-          top: at[1] - TAILLE.gardien / 2,
-          width: TAILLE.gardien,
-          height: TAILLE.gardien,
-          backgroundColor: rawColors.isoFanion,
-        },
-        trace ? { transform: [{ translateY: -4 }] } : saut,
+        forme(at, TAILLE.gardien, rawColors.isoFanion),
+        trace ? { transform: POSE_REACTION } : saut,
       ]}
     />
   );
 }
 
+/** One puff of the cloud: it swells and fades out, and never goes back through scale 0. */
+function Bouffee({
+  plan,
+  h,
+  i,
+  centre,
+  d,
+  nuit,
+}: {
+  plan: PlanSpectacle;
+  h: SharedValue<number>;
+  i: number;
+  centre: Point;
+  d: number;
+  nuit: boolean;
+}) {
+  const style = useAnimatedStyle(() => {
+    const b = bouffee(plan, h.get(), i);
+    return { opacity: b.opacite, transform: [{ scale: b.echelle }] };
+  });
+  return (
+    <Animated.View
+      pointerEvents="none"
+      testID="batiment-bouffee"
+      style={[
+        forme(centre, d, nuit ? rawColors.isoPoussiere : rawColors.isoPoussiereJour),
+        { borderRadius: d },
+        style,
+      ]}
+    />
+  );
+}
+
+/** The cloud: puffs from the foot to the middle of the body that cover the whole of it. */
 function Poussiere({
   plan,
   h,
   nuit,
-  at,
+  corps,
+  boite,
 }: {
   plan: PlanSpectacle;
   h: SharedValue<number>;
   nuit: boolean;
-  at: Point;
+  corps: Rect;
+  boite: Boite;
 }) {
-  const gonfle = useAnimatedStyle(() => ({
-    transform: [{ scale: gonflePoussiere(plan, h.get()) }],
-  }));
-  const t = TAILLE.poussiere;
   return (
-    <Animated.View
-      pointerEvents="none"
-      testID="batiment-poussiere"
-      style={[
-        {
-          position: "absolute",
-          left: at[0] - t / 2,
-          top: at[1] - t / 2,
-          width: t,
-          height: t,
-          borderRadius: t,
-          backgroundColor: nuit ? rawColors.isoPoussiere : rawColors.isoPoussiereJour,
-        },
-        gonfle,
-      ]}
-    />
-  );
-}
-
-/**
- * The group of pieces a rise adds, as one animated node: it pops out of the building's foot at the
- * swap, a little too big, then settles.
- */
-function Pop({
-  plan,
-  h,
-  boite,
-  origine,
-  children,
-}: {
-  plan: PlanSpectacle;
-  h: SharedValue<number>;
-  boite: { w: number; h: number };
-  origine: Point;
-  children: ReactNode;
-}) {
-  const style = useAnimatedStyle(() => ({ transform: [{ scale: echellePop(plan, h.get()) }] }));
-  return (
-    <Animated.View
-      pointerEvents="none"
-      testID="batiment-neuf"
-      style={[
-        {
-          position: "absolute",
-          left: 0,
-          top: 0,
-          width: boite.w,
-          height: boite.h,
-          transformOrigin: [origine[0], origine[1], 0],
-        },
-        style,
-      ]}
-    >
-      {children}
-    </Animated.View>
+    <View pointerEvents="none" testID="batiment-poussiere" style={enBoite(boite)}>
+      {BOUFFEES.map(([bx, by, bd], i) => (
+        <Bouffee
+          key={`${bx}-${by}`}
+          plan={plan}
+          h={h}
+          i={i}
+          centre={[corps.x + bx * corps.w, corps.y + by * corps.h]}
+          d={bd * corps.w}
+          nuit={nuit}
+        />
+      ))}
+    </View>
   );
 }
 
@@ -417,6 +530,8 @@ function useMoment(
     };
     h.set(0);
     if (plan.reduit || reduitApp) {
+      // On the end: a piece's pop is on 1 and the cloud is gone, not stuck at the first frame.
+      h.set(plan.total);
       setMarche({ cle, t: plan.total });
       fini();
       return;
@@ -441,52 +556,44 @@ function useMoment(
   return { t: cle !== undefined && marche?.cle === cle ? marche.t : 0, h };
 }
 
-/** The add-ons of one layer: the ones that stand, flat, and the ones this rise brings, as one popping group. */
+/** The add-ons of one layer: the ones that stand, flat, and the ones this rise brings, each popping from its own centre. */
 function Ajouts({
   layer,
   etat,
-  plan,
-  h,
-  boite,
-  pied,
+  jeu,
   geo,
 }: {
   layer: AddOn["layer"];
   etat: Etat;
-  /** The plan of a moment that plays; undefined at rest and with reduced motion. */
-  plan: PlanSpectacle | undefined;
-  h: SharedValue<number>;
-  boite: { w: number; h: number };
-  pied: Point;
+  jeu: Jeu;
   geo: Geo;
 }) {
   const { px, ancre } = geo;
   const couleur =
     layer === "behind" ? rawColors.isoPierreChaudeSombre : rawColors.isoPierreChaudeClair;
-  const piece = (a: AddOn) => (
-    <Piece
-      key={a.rank}
-      testID={`batiment-addon-${a.rank}`}
-      at={px([ancre[0] + a.anchorOffset[0], ancre[1] + a.anchorOffset[1]])}
-      taille={TAILLE.addOn}
-      couleur={couleur}
-    />
-  );
-  const ceux = etat.addOns.filter((a) => a.layer === layer);
-  const neuf = (a: AddOn) => !!plan && a.rank > plan.deRang;
+  const deRang = jeu.plan?.deRang;
   return (
     <>
-      {ceux.filter((a) => !neuf(a)).map(piece)}
-      {plan && ceux.some(neuf) ? (
-        <Pop plan={plan} h={h} boite={boite} origine={pied}>
-          {ceux.filter(neuf).map(piece)}
-        </Pop>
-      ) : null}
+      {etat.addOns
+        .filter((a) => a.layer === layer)
+        .map((a) => {
+          const at = px([ancre[0] + a.anchorOffset[0], ancre[1] + a.anchorOffset[1]]);
+          return (
+            <Neuf key={a.rank} neuf={deRang !== undefined && a.rank > deRang} jeu={jeu} at={at}>
+              <Piece
+                testID={`batiment-addon-${a.rank}`}
+                at={at}
+                taille={TAILLE.addOn}
+                couleur={couleur}
+              />
+            </Neuf>
+          );
+        })}
     </>
   );
 }
 
-/** The three states a moment shows at `t`: the body's, the clan mark's, and the one the show raises to. */
+/** The states a moment shows at `t`: the body's, the clan mark's, the one before the rise and the one it raises to. */
 function etatsA(
   data: BuildingData,
   plan: PlanSpectacle | undefined,
@@ -507,7 +614,10 @@ function etatsA(
   const cible = plan
     ? etatBatiment(data, plan.versRang, { baseRank: plan.versBase, nuit, rule })
     : etat;
-  return { etat, etatMarque, cible };
+  const depart = plan
+    ? etatBatiment(data, plan.deRang, { baseRank: plan.deBase, nuit, rule })
+    : etat;
+  return { etat, etatMarque, cible, depart };
 }
 
 /** Everything that stands in front of the body, but the dust. */
@@ -515,47 +625,36 @@ function Avant({
   etat,
   etatMarque,
   cible,
+  depart,
   plan,
   t,
-  h,
-  reduitApp,
-  boite,
-  pied,
+  jeu,
   geo,
+  reduitApp,
 }: {
   etat: Etat;
   etatMarque: Etat;
   cible: Etat;
+  depart: Etat;
   plan: PlanSpectacle | undefined;
   t: number;
-  h: SharedValue<number>;
-  reduitApp: boolean;
-  boite: { w: number; h: number };
-  pied: Point;
+  jeu: Jeu;
   geo: Geo;
+  reduitApp: boolean;
 }) {
   const { px } = geo;
-  const joue = !!plan && !plan.reduit;
   return (
     <>
-      <Ajouts
-        layer="front"
+      <Ajouts layer="front" etat={etat} jeu={jeu} geo={geo} />
+      <Devant
         etat={etat}
-        plan={joue ? plan : undefined}
-        h={h}
-        boite={boite}
-        pied={pied}
+        depart={depart}
+        cible={cible}
+        chantier={!!plan && chantierA(plan, t)}
+        jeu={jeu}
         geo={geo}
       />
-      <Devant etat={etat} cible={cible} chantier={!!plan && chantierA(plan, t)} geo={geo} />
-      {etat.gardien ? (
-        <Gardien
-          at={px(etat.gardien.pose)}
-          plan={plan}
-          h={h}
-          trace={!!plan && (plan.reduit || reduitApp)}
-        />
-      ) : null}
+      {etat.gardien ? <Gardien at={px(etat.gardien.pose)} jeu={jeu} /> : null}
       {etatMarque.marque && etatMarque.marqueAt ? (
         <MarqueClan
           marque={etatMarque.marque}
@@ -564,7 +663,13 @@ function Avant({
         />
       ) : null}
       {etat.lights.map((l) => (
-        <Lueur key={`${l.kind}-${l.fromRank}`} kind={l.kind} at={px(l.at)} reduit={reduitApp} />
+        <Lueur
+          key={`${l.kind}-${l.fromRank}`}
+          kind={l.kind}
+          at={px(l.at)}
+          reduit={reduitApp}
+          cycles={l.cycles ?? 2}
+        />
       ))}
     </>
   );
@@ -589,63 +694,65 @@ function Moteur({
   const reduitApp = useMouvementReduit();
   const plan = spectacle?.plan;
   const { t, h } = useMoment(spectacle, reduitApp, onFini);
-  const { etat, etatMarque, cible } = etatsA(data, plan, t, { rank, baseRank, nuit, rule });
+  const { etat, etatMarque, cible, depart } = etatsA(data, plan, t, {
+    rank,
+    baseRank,
+    nuit,
+    rule,
+  });
   const stades = cible.stage === etat.stage ? [etat.stage] : [etat.stage, cible.stage];
   const k = corps.w / taille[0];
   const px = (o: Point): Point => [corps.x + o[0] * k, corps.y + o[1] * k];
   const geo: Geo = { px, ancre };
   const pied = px(ancre);
   const boite = { w: corps.x + corps.w, h: corps.y + corps.h };
-  const styleCorps = useAnimatedStyle(() => ({
-    transform: [{ scale: plan ? echelleCorps(plan, h.get()) : 1 }],
-  }));
+  const styleCorps = useAnimatedStyle(() => {
+    const [x, y] = plan ? echelleCorps(plan, h.get()) : [1, 1];
+    return { transform: [{ scaleX: x }, { scaleY: y }] };
+  });
   const joue = !!plan && !plan.reduit;
+  const jeu: Jeu = {
+    plan: joue ? plan : undefined,
+    h,
+    boite,
+    trace: !!plan && (plan.reduit || reduitApp),
+  };
   return (
     <>
-      <Ajouts
-        layer="behind"
-        etat={etat}
-        plan={joue ? plan : undefined}
-        h={h}
-        boite={boite}
-        pied={pied}
-        geo={geo}
-      />
+      <Ajouts layer="behind" etat={etat} jeu={jeu} geo={geo} />
       <Animated.View
         pointerEvents="none"
         testID="batiment-corps"
-        style={[
-          {
-            position: "absolute",
-            left: 0,
-            top: 0,
-            width: boite.w,
-            height: boite.h,
-            transformOrigin: [pied[0], pied[1], 0],
-          },
-          styleCorps,
-        ]}
+        style={[enBoite(boite), { transformOrigin: [pied[0], pied[1], 0] }, styleCorps]}
       >
         {stades.map((stade) => (
           <Fragment key={stade}>{sprite(stade, stade !== etat.stage)}</Fragment>
         ))}
-        {couches}
+        <Ajouts layer="sousAiles" etat={etat} jeu={jeu} geo={geo} />
+        {couches?.(etat.stage)}
       </Animated.View>
       {masque ? null : (
-        <Avant
-          etat={etat}
-          etatMarque={etatMarque}
-          cible={cible}
-          plan={plan}
-          t={t}
-          h={h}
-          reduitApp={reduitApp}
-          boite={boite}
-          pied={pied}
-          geo={geo}
-        />
+        <Animated.View
+          pointerEvents="none"
+          testID="batiment-avant"
+          style={[enBoite(boite), { transformOrigin: [pied[0], pied[1], 0] }, styleCorps]}
+        >
+          <Avant
+            etat={etat}
+            etatMarque={etatMarque}
+            cible={cible}
+            depart={depart}
+            plan={plan}
+            t={t}
+            jeu={jeu}
+            geo={geo}
+            reduitApp={reduitApp}
+          />
+        </Animated.View>
       )}
-      {joue && plan ? <Poussiere plan={plan} h={h} nuit={nuit} at={pied} /> : null}
+      {joue && plan ? (
+        <Poussiere plan={plan} h={h} nuit={nuit} corps={corps} boite={boite} />
+      ) : null}
       {reclame}
     </>
   );

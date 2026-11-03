@@ -11,8 +11,11 @@ export const batimentEssai: BuildingData = {
   code: "windmill",
   placeholder: true,
   addOns: [
+    // Proves the order: a piece behind the tower, and one between the tower and the sails.
+    { rank: 1, sprite: null, anchorOffset: [0, -420], layer: "behind", animation: null },
     { rank: 2, sprite: null, anchorOffset: [-320, 48], layer: "front", animation: null },
     { rank: 4, sprite: null, anchorOffset: [304, 32], layer: "behind", animation: null },
+    { rank: 5, sprite: null, anchorOffset: [0, -520], layer: "sousAiles", animation: null },
     { rank: 6, sprite: null, anchorOffset: [-416, 0], layer: "front", animation: null },
     { rank: 8, sprite: null, anchorOffset: [432, -32], layer: "front", animation: null },
   ],
@@ -28,9 +31,9 @@ export const batimentEssai: BuildingData = {
     ],
   },
   lights: [
-    { kind: "fire", at: [512, 944], fromRank: 3 },
-    { kind: "crystal", at: [448, 240], fromRank: 7 },
-    { kind: "beam", at: [448, 96], fromRank: 10 },
+    { kind: "fire", at: [512, 944], fromRank: 3, cycles: 3 },
+    { kind: "crystal", at: [448, 240], fromRank: 7, cycles: 2 },
+    { kind: "beam", at: [448, 96], fromRank: 10, cycles: 1 },
   ],
   clanMark: [592, 320],
   teasers: [
@@ -42,4 +45,23 @@ export const batimentEssai: BuildingData = {
   ],
   nightSprites: [{ fromRank: 7, sprite: null, anchorOffset: [-560, -720] }],
   guardian: { fromRank: 1, at: [160, 1200], sprite: null },
+  // The scaffold of the stage being built, and where its gag stands: the taller the stage, the higher.
+  chantier: {
+    solid: {
+      echafaudage: { anchorOffset: [0, -240], sprite: null },
+      gag: { at: [320, 1200], sprite: null },
+    },
+    grand: {
+      echafaudage: { anchorOffset: [0, -360], sprite: null },
+      gag: { at: [320, 1200], sprite: null },
+    },
+    legendary: {
+      echafaudage: { anchorOffset: [0, -480], sprite: null },
+      gag: { at: [320, 1200], sprite: null },
+    },
+    mythic: {
+      echafaudage: { anchorOffset: [0, -600], sprite: null },
+      gag: { at: [320, 1200], sprite: null },
+    },
+  },
 };

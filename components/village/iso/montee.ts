@@ -6,6 +6,7 @@
 // marker, from the base rank claimed beside it (`claimableBases`). All of it is behind
 // `MONTEE_PAR_RANG`, which rides with the engine flag: off in every published build.
 
+import { rangsDeBase } from "@/constants/buildingData";
 import { BATIMENT_MOTEUR } from "@/constants/isoPoc";
 import type { BuildingCode } from "@/db/schema";
 import {
@@ -16,6 +17,7 @@ import {
   drawnLevel,
   type VillageBuilding,
 } from "@/db/village";
+import { DONNEES_BLD } from "./donneesBld";
 
 export const MONTEE_PAR_RANG: boolean = BATIMENT_MOTEUR;
 
@@ -41,7 +43,10 @@ export function enAttente(
   if (!parRang) return claimable(buildings, claimed);
   const codes = new Set([
     ...claimableParRang(buildings, claimed),
-    ...claimableBases(buildings, claimed, bases),
+    ...claimableBases(buildings, claimed, bases, (c) => {
+      const d = DONNEES_BLD[c];
+      return d ? rangsDeBase(d) : [];
+    }),
   ]);
   return buildings.map((b) => b.code).filter((c) => codes.has(c));
 }

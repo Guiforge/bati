@@ -56,6 +56,23 @@ describe("an upgrade's own marker (rule B)", () => {
     expect(claimableBases(tour(3, 10), { watchtower: 2 }, {})).toEqual([]);
   });
 
+  it("a base rank that brings a teaser waits for a tap too, 6 and 9 included", () => {
+    const marques = () => [6, 9];
+    // Same stage at 6 as at 5 (grand): only the data says something changes.
+    const b = tour(3, 6);
+    expect(claimableBases(b, { watchtower: 3 }, { watchtower: 5 })).toEqual([]);
+    expect(claimableBases(b, { watchtower: 3 }, { watchtower: 5 }, marques)).toEqual([
+      "watchtower",
+    ]);
+    expect(claimableBases(b, { watchtower: 3 }, { watchtower: 6 }, marques)).toEqual([]);
+    // 8 to 9: legendary both times.
+    expect(claimableBases(tour(3, 9), { watchtower: 3 }, { watchtower: 8 }, marques)).toEqual([
+      "watchtower",
+    ]);
+    // Seen at 9: a later base with no marked rank in between changes nothing.
+    expect(claimableBases(tour(3, 9), { watchtower: 3 }, { watchtower: 9 }, marques)).toEqual([]);
+  });
+
   it("one writer, never down, kept beside the claimed stages", async () => {
     await claimBases([{ code: "watchtower", base: 7 }]);
     await claimBases([{ code: "watchtower", base: 5 }]);

@@ -3,7 +3,11 @@
 
     loupe_crop.py crop  <img> <dump.json> i0,j0,i1,j1 <out.png>   crop a tile rectangle (inclusive tiles)
     loupe_crop.py sheet <video> <out.png> [--start S]             12 frames at 10 fps, 6x2, ffmpeg -n
-    loupe_crop.py sheet-all <video> <out.png> [--square]          12 frames spread over the whole film, 6x2
+    loupe_crop.py sheet-all <video> <out.png> [--square] [--start S] [--end E] [--from-lit]
+                                                                  12 frames spread over the film, or over the
+                                                                  window S..E (seconds); --from-lit counts S and E
+                                                                  from the first frame that is not black (the app's
+                                                                  launch takes time, a show starts `delai` after it)
     loupe_crop.py diff  <a.png> <b.png> [--tol N]                 % of pixels differing; exit 1 at 2 % or more
 
 The camera is the one in the sprite dump (see loupe_checks.py header). Projection assumed:
@@ -83,14 +87,53 @@ def film_duration(video):
         raise ValueError(f"{video}: ffprobe reads no duration ({r.stderr.strip() or 'empty output'})") from None
 
 
-def contact_sheet_all(video, out, square=False):
-    """12 frames spread over the whole film (PROMPT.md 9.5), `square`: the centred square, where a lone building stands."""
+LIT_Y = 30.0  # mean luma (limited range: black reads 16) from which a frame is "not black"
+
+
+def first_lit(video, thresh=LIT_Y):
+    """Seconds of the first frame whose mean luma is at least `thresh`: where the app starts to show.
+
+    shortcut: any picture counts (a launcher before the app would too), the dev build opens on a dark
+    splash; look at the first sheet of a new device before trusting it.
+    """
+    r = subprocess.run(["ffprobe", "-v", "error", "-f", "lavfi", "-i",
+                        f"movie={str(video).replace(chr(92), '/').replace(':', chr(92) + ':')},signalstats",
+                        "-show_entries", "frame=pts_time:frame_tags=lavfi.signalstats.YAVG", "-of", "csv=p=0"],
+                       capture_output=True, text=True)
+    for line in r.stdout.splitlines():
+        t, _, y = line.partition(",")
+        try:
+            if float(y.strip(",")) >= thresh:
+                return float(t)
+        except ValueError:
+            continue
+    raise ValueError(f"{video}: no frame lighter than {thresh}, the app never showed")
+
+
+def sheet_window(video, start=None, end=None, from_lit=False):
+    """(start, duration) in seconds of what the sheet spreads its frames over; the whole film by default."""
+    film = film_duration(video)
+    s = 0.0 if start is None else start
+    e = film if end is None else end
+    if from_lit:
+        lit = first_lit(video)
+        s, e = s + lit, (film if end is None else e + lit)
+    e = min(e, film)
+    if e - s < MIN_FILM_S:
+        raise ValueError(f"window {s:.1f}..{e:.1f} s of a {film:.1f} s film, under {MIN_FILM_S} s: nothing moved in it")
+    return s, e - s
+
+
+def contact_sheet_all(video, out, square=False, start=None, end=None, from_lit=False):
+    """12 frames spread over the whole film (PROMPT.md 9.5), or over the window `start`..`end` (a show, not the launch
+    before it); `square`: the centred square, where a lone building stands."""
     out = pathlib.Path(out)
     if out.exists():
         raise FileExistsError(f"{out} exists, ffmpeg -n replaces nothing")
-    fps = sheet_fps(film_duration(video))
-    vf = f"fps={fps:.6f}," + ("crop=iw:min(iw\\,ih)," if square else "") + "tile=6x2"
-    subprocess.run(["ffmpeg", "-n", "-v", "error", "-i", str(video), "-vf", vf, "-frames:v", "1", str(out)], check=True)
+    s, dur = sheet_window(video, start, end, from_lit)
+    vf = f"fps={sheet_fps(dur):.6f}," + ("crop=iw:min(iw\\,ih)," if square else "") + "tile=6x2"
+    subprocess.run(["ffmpeg", "-n", "-v", "error", "-ss", f"{s:.3f}", "-t", f"{dur:.3f}", "-i", str(video),
+                    "-vf", vf, "-frames:v", "1", str(out)], check=True)
     return out
 
 
@@ -103,6 +146,8 @@ def main(argv=None):
     s.add_argument("video"); s.add_argument("out"); s.add_argument("--start", type=float, default=0.0)
     sa = sub.add_parser("sheet-all")
     sa.add_argument("video"); sa.add_argument("out"); sa.add_argument("--square", action="store_true")
+    sa.add_argument("--start", type=float); sa.add_argument("--end", type=float)
+    sa.add_argument("--from-lit", action="store_true")
     d = sub.add_parser("diff")
     d.add_argument("a"); d.add_argument("b"); d.add_argument("--tol", type=int, default=0)
     a = ap.parse_args(argv)
@@ -114,7 +159,7 @@ def main(argv=None):
         print(contact_sheet(a.video, a.out, a.start))
     elif a.cmd == "sheet-all":
         try:
-            print(contact_sheet_all(a.video, a.out, a.square))
+            print(contact_sheet_all(a.video, a.out, a.square, a.start, a.end, a.from_lit))
         except ValueError as e:
             print(f"loupe_crop.py sheet-all: {e}", file=sys.stderr)
             return 1

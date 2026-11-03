@@ -43,7 +43,11 @@ export interface AddOn extends DepuisBase {
   sprite: string | null;
   /** Offset from the building's anchor, px. */
   anchorOffset: Point;
-  layer: "behind" | "front";
+  /**
+   * `sousAiles` stands in front of the tower and behind the sails (the map's `couches`), the one
+   * layer between the two; `front` is in front of everything the map draws on the body.
+   */
+  layer: "behind" | "sousAiles" | "front";
   /** Name of a drawn animation, or null for a static piece. */
   animation: string | null;
 }
@@ -54,6 +58,8 @@ export interface GagBeat extends DepuisBase {
   /** One sentence, as the card words it. */
   beat: string;
   sprite: string | null;
+  /** Where this beat stands when it leaves the slot, canvas px. Left out: the slot. */
+  at?: Point;
 }
 
 export interface LightAnchor extends DepuisBase {
@@ -64,6 +70,8 @@ export interface LightAnchor extends DepuisBase {
   kind: "fire" | "crystal" | "beam" | "fenetre" | "glyphe";
   at: Point;
   fromRank: number;
+  /** Breaths in a 5 s cycle, 1 to 3 (left out: 2), so a lamp, a crystal and a beam do not pulse together. */
+  cycles?: 1 | 2 | 3;
   /** Also lit by day: the mythic stage's magic layer. Left out, the light is the night's. */
   parJour?: boolean;
 }
@@ -72,6 +80,8 @@ export interface LightAnchor extends DepuisBase {
 export interface Teaser extends DepuisBase {
   fromRank: number;
   untilRank: number;
+  /** Rule B: it also leaves when the base building reaches this rank (`untilRank` counts the own rank, capped at 3). */
+  untilBase?: number;
   sprite: string | null;
   /** Offset from the building's anchor, px. */
   anchorOffset: Point;
@@ -89,6 +99,8 @@ export interface GuardianSlot extends DepuisBase {
   fromRank: number;
   at: Point;
   sprite: string | null;
+  /** The sprite by stage, when the keeper changes with the building (otherwise `sprite`). */
+  sprites?: Partial<Record<VisualStage, string | null>>;
   /** Where it stands, by stage, when it moves house with the building (otherwise `at`). */
   poses?: Partial<Record<VisualStage, Point>>;
 }
@@ -124,6 +136,30 @@ export interface BuildingData {
   clanMarkSprites?: Partial<Record<Marque, string>>;
   /** By the stage being built (the one the tap raises the building to). */
   chantier?: Partial<Record<VisualStage, ChantierStade>>;
+  /** The sails' sheet by first rank (ascending): the last entry reached stands. Left out: the map's by stage. */
+  ailes?: readonly (DepuisBase & { fromRank: number; sheet: string })[];
+}
+
+/** The sails' sheet showing at `rank`, or null when the data has none (the map's own by-stage sheet then). */
+export function ailesAuRang(data: BuildingData, rank: number, base: number): string | null {
+  return data.ailes?.filter((a) => atteint(a, rank, base)).at(-1)?.sheet ?? null;
+}
+
+/** Base ranks (rule B) at which something of the building changes: each one is a tap of its own. */
+export function rangsDeBase(data: BuildingData): number[] {
+  const rangs = new Set<number>();
+  const items: readonly { fromBase?: number; untilBase?: number }[] = [
+    ...data.addOns,
+    ...data.gag.beats,
+    ...data.lights,
+    ...(data.teasers ?? []),
+    ...(data.nightSprites ?? []),
+    ...(data.guardian ? [data.guardian] : []),
+  ];
+  for (const x of items) {
+    for (const n of [x.fromBase, x.untilBase]) if (n !== undefined && n > 0) rangs.add(n);
+  }
+  return [...rangs].sort((a, b) => a - b);
 }
 
 /** The one beat showing at `rank`: the latest beat not past it, or null before the first. */

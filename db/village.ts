@@ -651,14 +651,18 @@ export function claimableBases(
   buildings: readonly Pick<VillageBuilding, "code" | "level">[],
   claimed: ClaimedStages,
   bases: ClaimedBases,
+  /** The base ranks where the upgrade's data changes something besides the stage (a teaser, a light). */
+  rangsMarques: (code: BuildingCode) => readonly number[] = () => [],
 ): BuildingCode[] {
   return buildings
     .filter((b) => {
       if (b.level <= 0 || baseOf(b.code) === null) return false;
       const own = drawnLevel(b, claimed);
+      const maintenant = baseRankOf(buildings, b.code);
+      const vu = bases[b.code] ?? 0;
       return (
-        buildingStageFor(b.code, own, baseRankOf(buildings, b.code), "B") !==
-        buildingStageFor(b.code, own, bases[b.code] ?? 0, "B")
+        buildingStageFor(b.code, own, maintenant, "B") !== buildingStageFor(b.code, own, vu, "B") ||
+        rangsMarques(b.code).some((r) => r > vu && r <= maintenant)
       );
     })
     .map((b) => b.code);

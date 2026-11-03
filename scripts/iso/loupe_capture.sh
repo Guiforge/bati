@@ -4,7 +4,7 @@
 #
 #   scripts/iso/loupe_capture.sh <out-dir> <spec.json>
 #
-# spec.json is a list of {name, query, video?}:
+# spec.json is a list of {name, query, video?, sheetStart?, sheetEnd?}:
 #   [{"name": "palier-12-jour", "query": "palier=12&ambiance=jour&fige=1"},
 #    {"name": "forge-pres",     "query": "foyer=forge&zoom=2&lumieres=0", "video": 5}]
 # `query` is the query string of bati://dev-iso (palier=, ambiance=, zoom=, foyer=, vocation=, fige=1,
@@ -15,6 +15,10 @@
 # over the whole film; a bld= link is cropped to the centred square, where the building stands); the
 # mp4 stays out of the repo in ~/.cache/bati-art-loop/iso/loupe/<out folder name>/. The script prints
 # each film's measured length and warns when it is under half of N (an empty film).
+# "sheetStart" / "sheetEnd" (seconds) narrow the 12 frames to a window of the film, counted from the
+# first frame that is not black (loupe_crop.py --from-lit): the app takes a few seconds to start, and
+# a show starts `delai` seconds after that, so a show with delai=6 and 4 s of gesture is
+# "sheetStart": 5.5, "sheetEnd": 9.5. Left out, the whole film.
 # A link with bld= and show= (the buildings track) is recorded from BEFORE it opens, so the show,
 # which starts `delai=` seconds after the app has mounted, is in the film: give N room for a cold
 # start (about 4 s) plus delai plus the show. A bld= link has no sprite dump: none is waited for.
@@ -38,7 +42,7 @@ root=$(cd "$(dirname "$0")/../.." && pwd) || exit 1
 cd "$root" || exit 1
 [ -f "$spec" ] || { echo "loupe_capture.sh: $spec not found." >&2; exit 1; }
 jq -e 'type == "array" and length > 0 and all(.[]; (.name | type == "string" and test("^[A-Za-z0-9_.-]+$")) and (.query | type == "string"))' "$spec" >/dev/null ||
-  { echo "loupe_capture.sh: $spec must be a list of {name (letters, digits, _ . -), query, video?}." >&2; exit 1; }
+  { echo "loupe_capture.sh: $spec must be a list of {name (letters, digits, _ . -), query, video?, sheetStart?, sheetEnd?}." >&2; exit 1; }
 dup=$(jq -r '[.[].name] | group_by(.) | map(select(length > 1) | .[0]) | .[]' "$spec")
 [ -z "$dup" ] || { echo "loupe_capture.sh: duplicate names in the spec: $dup" >&2; exit 1; }
 pkg=com.guiforge.bati.perf
@@ -92,6 +96,11 @@ while IFS= read -r entry <&3; do
   name=$(jq -r '.name' <<<"$entry")
   query=$(jq -r '.query' <<<"$entry")
   secs=$(jq -r '.video // 0' <<<"$entry")
+  win=()
+  if jq -e 'has("sheetStart") or has("sheetEnd")' <<<"$entry" >/dev/null; then
+    win=(--from-lit --start "$(jq -r '.sheetStart // 0' <<<"$entry")")
+    jq -e 'has("sheetEnd")' <<<"$entry" >/dev/null && win+=(--end "$(jq -r '.sheetEnd' <<<"$entry")")
+  fi
   for f in "$out/$name.png" "$out/$name.json" "$out/$name-planche.png"; do
     [ -e "$f" ] && { echo "loupe_capture.sh: $f exists, not replaced." >&2; fail=1; continue 2; }
   done
@@ -125,7 +134,7 @@ while IFS= read -r entry <&3; do
     echo "loupe_capture.sh: $name: film $vids/$name.mp4, ${got:-unreadable} s of $secs s"
     awk -v g="${got:-0}" -v s="$secs" 'BEGIN { exit !(g + 0 < s / 2) }' && { echo "loupe_capture.sh: $name: film under half of $secs s, empty film?" >&2; fail=1; }
     crop=(); [ "$bld" = 1 ] && crop=(--square)
-    scripts/iso/loupe_crop.py sheet-all "$vids/$name.mp4" "$out/$name-planche.png" "${crop[@]}" || fail=1
+    scripts/iso/loupe_crop.py sheet-all "$vids/$name.mp4" "$out/$name-planche.png" "${crop[@]}" "${win[@]}" || fail=1
   fi
 done 3< <(jq -c '.[]' "$spec")
 $adb shell am force-stop $pkg

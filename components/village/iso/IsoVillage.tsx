@@ -45,7 +45,7 @@ import { accrochesDe } from "./feux";
 import { legendaire } from "./fierte";
 import { FigeContext, useMouvementReduit } from "./fige";
 import { type PriseVillageois, villageoisAuPoint } from "./habitants";
-import { DepartContext, EffroiContext, HorlogeContext, useHorloge } from "./horloge";
+import { type Depart, DepartContext, EffroiContext, HorlogeContext, useHorloge } from "./horloge";
 import { IsoCarte } from "./IsoCarteDemo";
 import type { Ambiance, Biome, Stade } from "./isoSpec";
 import { Monde } from "./Monde";
@@ -251,6 +251,10 @@ const habitantsDe = (seul: BuildingCode | undefined, tier: VillageTier) =>
 /** The opening frame of a building alone: centred on it at the game's close zoom, whatever its rank. */
 const vueSeul = (seul: BuildingCode | undefined, w: number, h: number) =>
   seul === undefined ? undefined : vueFoyer(seul, 12, "jour", w, h, ZOOM_FOYER_SEUL);
+
+/** A lone building has no walkers to plan for: without a wave every family plays all the time (familles.ts). */
+const departDe = (seul: BuildingCode | undefined, depart: SharedValue<Depart>) =>
+  seul === undefined ? depart : null;
 
 export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
   tier,
@@ -599,7 +603,7 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
         <Animated.View style={{ width, height, alignItems: "center", justifyContent: "center" }}>
           <Animated.View testID="iso-camera" style={[camera.style, fondu]}>
             <HorlogeContext.Provider value={horloge.c}>
-              <DepartContext.Provider value={horloge.depart}>
+              <DepartContext.Provider value={departDe(seul, horloge.depart)}>
                 {/* T16: a growth takes the turning seat of the families (familles.ts). */}
                 <CroissanceContext.Provider value={bascule}>
                   <EffroiContext.Provider value={horloge.effroi}>

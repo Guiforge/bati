@@ -837,6 +837,39 @@ function AilesVivantes({
   );
 }
 
+/** Shadow, sails and glows of the stage `v` the body wears: they change with it, at the swap. */
+function couchesDe(
+  code: BuildingCode,
+  v: VisualStage,
+  vie: Ambiance,
+  masque: boolean,
+  biome: Biome,
+) {
+  const st = stadeReel(code, enStade(v));
+  const sp = spriteDe(code, st, vie);
+  const cp = sp ? pose(code, sp) : null;
+  const ailes = ailesDe(code, st, vie);
+  const rectAiles = cp && sp && ailes ? poseAiles(cp, sp, ailes) : null;
+  return (
+    <>
+      {masque ? null : (
+        <OmbreSocle code={code} socle={cp ? ombreSocleDe(code, st) : null} biome={biome} />
+      )}
+      {ailes && rectAiles ? (
+        <Ailes s={ailes} rect={rectAiles} testID={`iso-ailes-${code}`} />
+      ) : null}
+      {masque || !sp || !cp ? null : (
+        <>
+          <Feux code={code} stade={st} s={sp} corps={cp} biome={biome} ambiance={vie} />
+          <Veilles code={code} stade={st} s={sp} corps={cp} biome={biome} ambiance={vie} />
+          <Effets code={code} stade={st} s={sp} corps={cp} ambiance={vie} />
+          <Retouches code={code} stade={st} s={sp} corps={cp} />
+        </>
+      )}
+    </>
+  );
+}
+
 /** The engine's version of Maquette (see below): the map's own layers go inside the engine's body. */
 function MaquetteMoteur({
   code,
@@ -848,7 +881,6 @@ function MaquetteMoteur({
   s,
   corps,
   vie,
-  couches,
 }: {
   code: BuildingCode;
   stade: Stade;
@@ -859,8 +891,6 @@ function MaquetteMoteur({
   s: SpriteIso;
   corps: Rect;
   vie: Ambiance;
-  /** The shadow on the socle and the sails. */
-  couches: ReactNode;
 }) {
   const image = (v: VisualStage, suivant: boolean) => {
     const st = spriteDe(code, stadeReel(code, enStade(v)), vie);
@@ -873,6 +903,7 @@ function MaquetteMoteur({
       />
     );
   };
+  const couches = (v: VisualStage) => couchesDe(code, v, vie, masque, biome);
   return (
     <MoteurBld
       data={donnees}
@@ -882,19 +913,7 @@ function MaquetteMoteur({
       nuit={vie === "nuit"}
       masque={masque}
       sprite={image}
-      couches={
-        <>
-          {couches}
-          {masque ? null : (
-            <>
-              <Feux code={code} stade={stade} s={s} corps={corps} biome={biome} ambiance={vie} />
-              <Veilles code={code} stade={stade} s={s} corps={corps} biome={biome} ambiance={vie} />
-              <Effets code={code} stade={stade} s={s} corps={corps} ambiance={vie} />
-              <Retouches code={code} stade={stade} s={s} corps={corps} />
-            </>
-          )}
-        </>
-      }
+      couches={couches}
       reclame={masque ? null : <Reclame code={code} stade={stade} s={s} corps={corps} />}
     />
   );
@@ -951,17 +970,7 @@ export function Maquette({
   const voiles =
     ailes && rectAiles ? <Ailes s={ailes} rect={rectAiles} testID={`iso-ailes-${code}`} /> : null;
   if (donnees && bld && s && corps) {
-    return (
-      <MaquetteMoteur
-        {...{ code, stade, masque, biome, donnees, bld, s, corps, vie }}
-        couches={
-          <>
-            {ombre}
-            {voiles}
-          </>
-        }
-      />
-    );
+    return <MaquetteMoteur {...{ code, stade, masque, biome, donnees, bld, s, corps, vie }} />;
   }
   return (
     <>

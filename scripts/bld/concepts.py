@@ -23,16 +23,16 @@ from PIL import Image, ImageDraw, ImageFont
 STAGES = ("rough", "grand", "mythic")
 SIZE = (896, 1152)
 BG = (236, 232, 220)
-STYLE = [ROOT / f"assets/images/village/iso/{p}.webp" for p in ("castle_wall/solid.jour", "druid_grove/grand.jour", "high_road/solid.jour")]
+STYLE = [ROOT / f"assets/images/village/iso/{p}.webp" for p in ("castle_wall/solid.jour", "druid_grove/grand.jour")]
 DESIGNS = ROOT / "docs/designs/village-buildings"
 
 HEAD = ("A single image of one isometric game building, seen three-quarters from above at the village's isometric angle, one building "
         "alone on a plain light background, hand-painted with ink outlines, warm light from the upper left. ")
 TAIL = (" Tone: dark medieval fantasy, worn wood, rough stone, mist, iron, never cute and never plastic. Matte surfaces, two or three "
         "values per surface. No letters, no runes, no diamond-shaped ground, no painted cast shadow, no shiny gold, at most two figures.")
-STYLE_NOTE = "Images 1, 2 and 3 are style references only, for ink line, light and brushwork: copy none of their shapes or objects. "
+STYLE_NOTE = "Images 1 and 2 are style references only, for ink line, light and brushwork: copy none of their shapes or objects. "
 F3_NOTE = ("Image 1 is the concept of this building: repaint exactly this object, same silhouette, same parts, same framing, "
-           "with a cleaner and more even ink line and brushwork. Images 2, 3 and 4 are style references only: copy none of their shapes. ")
+           "with a cleaner and more even ink line and brushwork. Images 2 and 3 are style references only: copy none of their shapes. ")
 
 
 def prompt(spec_text, f3=False):

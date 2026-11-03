@@ -1,79 +1,86 @@
-# Aperçu, non bloquant : le moulin peint
+# Checkpoint 1 : le pilote et la vague 1, à toi de choisir
 
-Mis ici dès que les 5 stades existent, avant l'intégration, pour que tu puisses réorienter tôt. Je continue sans attendre.
+Écrit le 03/11. Pour chaque bâtiment : **une direction, ou un mélange** (« rough de 1, mythique de 2 »), avec 3 notes au plus. Écris sur la ligne `Choix :`. La production de chaque bâtiment démarre dès que son choix est écrit, sous réserve de la question 1. Les détails sont dans `<bâtiment>/ideas.md` et `<bâtiment>/audit.md`.
 
-Image : `docs/designs/village-buildings/windmill/r1/final/bande.png` (locale, ignorée par git). Les 5 stades dans l'ordre, ailes peintes au vrai pivot, rubans peints et pic retouché sur le mythique. Mara l'a validé avant les ailes peintes, pas encore sur cette bande.
+Lecture des planches : colonnes rough, grand, mythique ; première ligne, l'art d'aujourd'hui. Les grandes images sont repeintes sur FLUX 3, les petites sont les 4 variantes Klein, à coût réduit. Ce sont des concepts : les défauts listés se corrigent en production. Mara a relevé les erreurs d'image, personne n'a jugé tes idées à ta place.
 
-Ce que tu peux redire tout de suite : le bleu du pic (saturation 0,54), la pierre poivrée des hauts stades, le caleçon à une seule rayure.
+## 3 questions d'abord
+
+**1. Budget FLUX, bloquant pour la production complète.** Il reste 17,56 $ au registre (57,30 $ sur 75 $), plafond réel de la session. Estimation à la louche, d'après les 3,62 $ de peinture du moulin en session 1 : 3 à 4 $ par bâtiment, soit 15 à 20 $ pour ces 5, plus environ 8 $ pour les planches des 16 autres. Cela ne tient pas. Je n'écris pas `BUDGET_FLUX_V1`, cette ligne est la tienne.
+- a) Tu montes le plafond dans `VALIDATIONS.md` : je fais tout.
+- b) Plafond inchangé : les planches de toutes les vagues d'abord, puis 2 ou 3 bâtiments, dans l'ordre que tu donnes.
+- c) Plafond inchangé : production d'abord, ces 5 bâtiments, et j'arrête les planches après la vague 2.
+
+Sans réponse, je continue les textes et les planches comme le dit le prompt, et je ne lance pas de production au-delà de ce qui reste. Réponse : ___
+
+**2. `VillageScene.tsx:514` fait évoluer seul un bâtiment prêt, sans tap, ce qui contredit la promesse.** Question reportée de la session 1. Derrière le drapeau par rang, ce chemin ne réclame plus rien. Ce comportement devient-il le bon pour tout le monde ? Je recommande oui : un joueur verra plusieurs bâtiments à toucher un par un après une séance. Oui / non : ___
+
+**3. Doublons entre bâtiments, relevés par le vétéran.** Tes choix ci-dessous les règlent, mais à connaître avant de choisir :
+- Corps colossaux : jambes de la tente 1, géant d'osier du mannequin 1, Porteurs de l'observatoire 2, plus le Hall of Heroes à venir. Il en veut un seul, la tente.
+- Instruments : lyre du moulin 1 et orgue du feu 2. Il en veut un seul.
+- Cabane sur pattes : tente 1 au mythique, et le rough de la pile de meules du moulin 3 le rappelle.
 
 ---
 
-# Checkpoint de l'étape 0, session 1
+## Moulin
 
-Écrit la nuit du 02 au 03/11, sans attendre : tes réponses avant de te coucher sont appliquées. Rien ici ne bloque la nuit. Le matin, chaque point se relit en oui ou non, et tout peut encore changer avant les vagues.
+![Planche du moulin](windmill/concepts/board.phone.webp)
 
-Base propre : `bb2d9a82` pour le code, poussée sur `origin/feat/village-iso` (`ee63e477`). 526 suites vertes d'un seul coup. Le coin de beauté correspond au verrou à 0,000 %.
+- **1, Le Navire des Vents** : barque retournée en toit, puis coque debout, et une lyre de côtes sur le toit au mythique. Premier des 4 lecteurs.
+- **3, La Pile de Meules** : des meules enfilées sur un mât, comme une barre chargée, avec la cabane du premier jour perchée en haut. Deuxième des 4 lecteurs.
+- Ligne « v2 bande » : le moulin A classique de la session 1, pour comparer.
 
-## 1. La planche de cartes
+À savoir : le mythique de la 3 a été repeint une fois (pneus et poutrelles en treillis) et ses cerclages se lisent encore un peu en pneus, avec des toiles pendantes. Le mythique de la 1 a aussi été repeint pour que ses cordes se lisent, avec des dorures à éteindre.
 
-[`card-sheet.md`](card-sheet.md) : les 21 bâtiments, 4 lignes chacun, relue par theo et mara. Tout est gardé pour l'instant, à toi de rayer.
+Choix : ___
 
-Ce qui s'écarte du catalogue, à confirmer :
-- **Arène** : un petit Colisée à trois étages d'arcades, la couronne sur colonne se lisait comme un anneau sur un bâton.
-- **Feu de camp** : le Ménestrel remplace le cuistot. **Bosquet** : l'Herboriste remplace le druide. **Arène** : la Championne s'incline devant la poule.
-- **Carrière** : plus de géode (gemmes, lecture butin), des marques de tailleur tracées en code qui s'allument marche par marche.
-- **Forge** : plus d'épée dans l'enclume (doublon de la Fontaine).
-- **Grand Chemin** : une borne avec une tortue en relief.
+## Observatoire
 
-Les deux `[wink]` restent non approuvés, on prépare leur repli :
-- Flèche dans la genouillère : theo pour, mara contre (réplique connue, frôle la blessure). Repli : la cible criblée au mur.
-- Saut dans le foin : gardé par theo. Repli : le guetteur et la cigogne.
+![Planche de l'observatoire](observatory/concepts/board.phone.webp)
 
-### Les directions du mythique (E1)
+- **3, Le Pêcheur de lune** : une lunette en cerceaux si longue que le Sage a pêché la lune, et une seule figure la retient. Pas d'astrolabe ni d'atlantes. En tête des 4 lecteurs, sans unanimité.
+- **2, Les Porteurs** : deux géants sortent peu à peu de leurs piliers, l'un se lève avec la coupole à l'épaule, un coussin dessus. C'est la voie des atlantes que tu avais demandée. Elle était à égalité de points avec la direction 1, L'Escalier du ciel, écartée : c'est mon arbitrage.
 
-Silhouette et flou à 96 dp, deux mélanges avec témoins, étrangers à l'aveugle. Détail : [`explore/E1/verdict.md`](explore/E1/verdict.md).
+À savoir : la lecture trébuchet reste possible sur la 3 au grand. Sur la 2, un seul pilier fourchu au rough, et le géant de gauche est assis plutôt qu'à genoux. Rough et grand de la 2 repeints sans portique, mythique de la 3 aussi.
 
-| Direction | Verdict |
-|---|---|
-| Moulin A, pic de cristal | passe, à la relance |
-| Moulin B, rosette à 6 pales | passe |
-| Moulin C, lyre d'Éole | passe |
-| Observatoire A, atlantes | **échoue : « Well » 8 fois sur 8** |
-| Observatoire B, grand orrery | échoue |
-| Observatoire C, grand astrolabe | passe |
+Choix : ___
 
-![Moulin](explore/E1/planche_windmill.png)
-![Observatoire](explore/E1/planche_observatory.png)
+## Feu de camp
 
-**Les atlantes étaient ta demande.** Je tente une seule retouche de maquette à 0 $ (A2). Si elle échoue aussi, l'astrolabe C part seul cette nuit. Dis-moi le matin si tu veux insister. Ces images sont locales, non versionnées.
+![Planche du feu de camp](campfire/concepts/board.phone.webp)
 
-## 2. Règle des améliorations
-**B**, avec marqueur et tap propres : ta réponse. Cela demande une donnée nouvelle, le « rang de base vu » par amélioration, une clé de préférence, sans migration de schéma.
+- **1, La Soupe au Caillou** : un caillou bout dans un vieux casque, et à la fin un chaudron colossal nourrit le village. Préférée de mara et du débutant, c'est celle qui se lit « camp » dès le jour 1.
+- **2, L'Orgue de Feu** : de trois bûches creuses à un orgue de flammes haut comme un clocher, et l'âne finit soliste. Préférée de theo et du vétéran : le meilleur mythique, et le rough le plus faible.
 
-## 3. Les questions de la prep
-Mes réponses par défaut, appliquées : [`decisions.md`](decisions.md). Les deux que tu peux vouloir rayer :
-- Jour de la mise à jour : pas de show pour un bâtiment repeint dont le rang ne change pas.
-- Tente : le chien reste celui du gag, pas ton animal gardien.
+À savoir : sur la 1, le chaudron et la vapeur font trop butin, à éteindre. Sur la 2, le grand se lit distillerie et ses cuivres brillent, et les têtes de sanglier du mythique sont sur une barrière plutôt que sur l'orgue. Son mythique a été repeint.
 
-## 4. Battement de rang et éléments statiques
-Oui aux deux, tes réponses. **Une chose à trancher le matin :** tech a trouvé que `VillageScene.tsx:514` fait déjà évoluer seul un bâtiment prêt avant une séance, sans tap. C'est contraire à la promesse « rien sans tap », et ça existe aujourd'hui. Derrière le nouveau drapeau, ce chemin ne réclame plus rien ; drapeau éteint, rien ne change.
-- **Le nouveau comportement devient-il le bon pour tout le monde ?** Je recommande oui : un joueur verra plusieurs bâtiments en attente après une séance, à toucher un par un.
+Choix : ___
 
-## 5. Tailles d'image, pour information
-[`headroom.md`](headroom.md) : les 21 bâtiments tiennent dans la taille actuelle tant que l'aire peut grandir. Les plus serrés : moulin, tour du mage, forge. Toute hausse sera notée dans `decisions.md`.
+## Tente
 
-`iso-spec.test.ts` exige toujours 200 px libres, ce que les specs pilotes ne respectent pas. Il ne lit que les anciens stades, et un contrôle séparé mesure le vrai sommet dans le canevas. À revoir si le nouvel art remplace l'ancien.
+![Planche de la tente](tent/concepts/board.phone.webp)
 
-## 6. Calibration et estimations
+- **1, La Maison qui marche** : une hotte d'osier, puis une roulotte, puis une maison sur deux jambes qui fait des fentes. Première de 3 lecteurs sur 4.
+- **2, Le Pavillon de l'Aube** : un pavillon rouge et un immense éventail de lattes. Première pour mara, plus facile à peindre. Theo y voit le « sobre mais bien fait » que tu refuses.
 
-**Calibration : échec au retest, tu as dit de continuer.** Premier test 1 ÉCHEC sur 5 et 3 BON sur 3, retest 2 sur 3, pour mara comme pour theo. Tous deux ont dit BON à la place de nuit avec anneaux et bannières. Ils acceptent facilement un bâtiment « sobre mais bien fait », d'où les notes [`calibration/notes-mara.md`](calibration/notes-mara.md) et [`notes-theo.md`](calibration/notes-theo.md), passées à chaque jugement. **Ne prends pas leurs verdicts sur un défaut vectoriel de nuit pour acquis : regarde toi-même au checkpoint de verrouillage.**
+À savoir : le rough de la 2 se lit drap qui sèche, et son mythique mur de prison, pas éventail. Le grand de la 1 se lit maison plus que tente. La direction 3 écartée, la tour de matelas, avait pour le débutant le rough le plus attachant : tu peux le reprendre en note.
 
-**FLUX.** Plafond passé à 75 $ à ta demande, 30,16 $ disponibles. Estimations de tête, pas de mesures, à corriger au checkpoint de verrouillage :
-- Session 1 : environ 20 $.
-- Les 19 autres bâtiments : 75 à 115 $, soit bien au-delà du plafond actuel.
+Choix : ___
 
-**Sous-agents.** 44 sur 250 à ce stade. Pour tout le chantier, ordre de grandeur 400 à 500, donc plusieurs sessions.
+## Mannequin
 
-## Ce qui reste à savoir
-- `moteur` : pas prêt selon tech à l'écriture de cette page, corrections en cours, jugé ensuite par anim.
-- Rien n'est allumé dans un build publié.
+![Planche du mannequin](training_dummy/concepts/board.phone.webp)
+
+- **1, Le Mannequin qui s'est mis au sport** : un sac sur un bâton qui n'arrive pas à lever un caillou devient un géant d'osier qui lève deux rochers, avec un coeur-lanterne qui bat la nuit. Première de 3 lecteurs sur 4.
+- **3, Le Tape-Cloche** : on frappe le mannequin, un seau monte d'un cran par rang, et à la fin un enfant fait sonner la vieille cloche d'un doigt. Le curseur montre le progrès.
+
+À savoir : le mythique de la 1 est presque de face et son osier dense fait du bruit. Il faut éviter toute lecture sinistre de l'homme d'osier. Le mythique de la 3 a été repeint.
+
+Choix : ___
+
+---
+
+## Où on en est
+- FLUX : 3,16 $ cette session. Moulin 0,64 $, les autres environ 0,50 $, plus 0,50 $ de reprises, dues à une référence de style qui recopiait son portique (retirée).
+- Sous-agents : environ 30 sur 250.
+- Pendant que tu lis : je continue les textes et les planches des vagues 2 à 5 pour un second checkpoint.

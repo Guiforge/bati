@@ -112,3 +112,7 @@ Conséquences de la planche de cartes :
 - `.gitignore` : `observatory/` était ignoré entier, ce qui aurait perdu `ideas.md`. Remplacé par `*/concepts/*`, sauf `board.phone.*`.
 - Audit du texte, 2 directions gardées : moulin 1 et 3 ; observatoire 3 et 2 ; feu 1 et 2 ; tente 1 et 2 ; mannequin 1 et 3. Détail dans chaque `audit.md`.
 - Observatoire : égalité 1 et 2 tranchée pour les Porteurs, demande du catalogue et test à 0,5 $, pas de conviction de ma part : Guillaume voit le concept.
+- Mara, erreurs d'image sur 30 images : `high_road/solid.jour` recopie son portique, son poteau à lanterne et ses bornes dans 5 images. Référence retirée pour la suite, 6 stades repeints (0,50 $) : ces images bloquaient le choix. Pour un sujet qui est lui-même une référence, retirer sa propre image.
+- Concepts : choix des variantes Klein par le peintre, sur la forme et les erreurs d'image, pour ne pas lancer un juge par stade. Guillaume voit les 4 variantes sur la planche.
+- Budget : registre 17,56 $, production des 5 et planches des 16 autres ne tiennent pas ensemble. Question au checkpoint 1. Je continue les planches, comme le dit le prompt.
+- Audit W2, directions gardées : tour 2 et 1 ; bosquet 2 et 1 ; Grand Chemin 2 et 3.

@@ -98,13 +98,12 @@
       "left": 20.717
     },
     "plafondSession": 20.717,
-    "depenseSession": 18.804,
+    "depenseSession": 42.425,
     "registreFin": {
-      "spent": 72.947,
-      "reserved": 1.34,
-      "left": 0.713
+      "spent": 96.568,
+      "ceiling": 140.0
     },
-    "alerteAcquittee": 70
+    "alerteAcquittee": 90
   },
   "subagentRuns": {
     "used": 86,
@@ -128,123 +127,127 @@
   },
   "buildings": {
     "windmill": {
-      "step": "ideas refaites, directions 5 et 6, planche en attente du budget",
-      "ideas": "windmill/ideas-v2.md"
+      "step": "painting",
+      "ideas": "windmill/ideas-v2.md",
+      "direction": "5",
+      "spec": "scripts/bld/final/windmill.json"
     },
     "observatory": {
-      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "step": "painting fini, strip ok, intégration à faire",
       "direction": "4",
       "spec": "scripts/bld/final/observatory.json",
       "flag": "off"
     },
     "campfire": {
-      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "step": "painting fini, strip ok, intégration à faire",
       "direction": "4",
       "spec": "scripts/bld/final/campfire.json",
       "flag": "off"
     },
     "tent": {
-      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "step": "painting fini, strip ok, intégration à faire",
       "direction": "4",
       "spec": "scripts/bld/final/tent.json",
       "flag": "off"
     },
     "training_dummy": {
-      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "step": "painting fini, strip ok, intégration à faire",
       "direction": "4",
       "spec": "scripts/bld/final/training_dummy.json",
       "flag": "off"
     },
     "wizard_tower": {
-      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "step": "painting fini, strip ok, intégration à faire",
       "direction": "4",
       "spec": "scripts/bld/final/wizard_tower.json",
       "flag": "off"
     },
     "druid_grove": {
-      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "step": "painting fini, strip ok, intégration à faire",
       "direction": "4",
       "spec": "scripts/bld/final/druid_grove.json",
       "flag": "off"
     },
     "high_road": {
-      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "step": "painting fini, strip ok, intégration à faire",
       "direction": "4",
       "spec": "scripts/bld/final/high_road.json",
       "flag": "off"
     },
     "archery_range": {
-      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "step": "painting fini, strip ok, intégration à faire",
       "direction": "4",
       "spec": "scripts/bld/final/archery_range.json",
       "flag": "off"
     },
     "watchtower": {
-      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "step": "painting fini, strip ok, intégration à faire",
       "direction": "4",
       "spec": "scripts/bld/final/watchtower.json",
       "flag": "off"
     },
     "forge": {
-      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "step": "painting fini, strip ok, intégration à faire",
       "direction": "4",
       "spec": "scripts/bld/final/forge.json",
       "flag": "off"
     },
     "armory": {
-      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "step": "painting fini, strip ok, intégration à faire",
       "direction": "4",
       "spec": "scripts/bld/final/armory.json",
       "flag": "off"
     },
     "farm": {
-      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "step": "painting fini, strip ok, intégration à faire",
       "direction": "4",
       "spec": "scripts/bld/final/farm.json",
       "flag": "off"
     },
     "barn": {
-      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "step": "painting fini, strip ok, intégration à faire",
       "direction": "4",
       "spec": "scripts/bld/final/barn.json",
       "flag": "off"
     },
     "quarry": {
-      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "step": "painting fini, strip ok, intégration à faire",
       "direction": "4",
       "spec": "scripts/bld/final/quarry.json",
       "flag": "off"
     },
     "castle_wall": {
-      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "step": "painting fini, strip ok, intégration à faire",
       "direction": "4",
       "spec": "scripts/bld/final/castle_wall.json",
       "flag": "off"
     },
     "well": {
-      "step": "ideas refaites, directions 5 et 6, planche en attente du budget",
-      "ideas": "well/ideas-v2.md"
+      "step": "painting",
+      "ideas": "well/ideas-v2.md",
+      "direction": "5",
+      "spec": "scripts/bld/final/well.json"
     },
     "fountain": {
-      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "step": "painting fini, strip ok, intégration à faire",
       "direction": "3",
       "spec": "scripts/bld/final/fountain.json",
       "flag": "off"
     },
     "dragon_lair": {
-      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "step": "painting fini, strip ok, intégration à faire",
       "direction": "4",
       "spec": "scripts/bld/final/dragon_lair.json",
       "flag": "off"
     },
     "heroes_hall": {
-      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "step": "painting fini, strip ok, intégration à faire",
       "direction": "4",
       "spec": "scripts/bld/final/heroes_hall.json",
       "flag": "off"
     },
     "champion_arena": {
-      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "step": "painting fini, strip ok, intégration à faire",
       "direction": "4",
       "spec": "scripts/bld/final/champion_arena.json",
       "flag": "off"
@@ -297,6 +300,5 @@
     "personnes": "aucune peinte, statues et animaux au repos seulement",
     "mouvement": "ancres dans les données, passe ultérieure",
     "source": "retours-concepts-2.md"
-  },
-  "bloque": "BUDGET_FLUX_V1 à relever par Guillaume, 0,71 $ restants"
+  }
 }

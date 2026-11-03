@@ -133,3 +133,4 @@ Conséquences de la planche de cartes :
 - Le mannequin mythique part de `direct_d4_mythic_t1_v2`, qui a un toit, la cabane du rough du feu de camp est retirée : choix des rédacteurs, signalés au checkpoint.
 
 - Guillaume, vitesse, 03/11 : plus de `flock` autour de la génération, `reserve` et `settle` de `iso_loop.py` verrouillent déjà le registre. Cela remplace la « file FLUX » de la section 4 du prompt. Pas de build Android par bâtiment : build de dev et Metro, un seul build complet en fin de vague pour les contrôles finaux. Captures par lots : une installation, plusieurs bâtiments par série.
+- Guillaume, 03/11 : moulin direction 5, puits direction 5. Plafond FLUX porté par lui à 140 $, 1,34 $ de réservations mortes libérées par `klein-ack` après vérification : aucun job en cours, solde réel sous les coûts comptés. Fontaine : plus de tonneau, L'Eau qui fige. Consigne de mythique ajoutée à tous : plus grand et fastueux.

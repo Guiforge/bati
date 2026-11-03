@@ -1,0 +1,23 @@
+{
+  "building": "farm",
+  "directions": [
+    {
+      "id": 1,
+      "name": "1 Le Navet qui ne vient pas",
+      "prompts": {
+        "rough": "A low crooked patched cottage of weathered planks, a sagging thatched roof with holes and mud, beside a square of freshly turned dark earth. In the earth a tuft of stiff dark green leaves as tall as the cottage door. A thick hemp rope is tied around the base of the leaf tuft and runs taut to a stocky peasant in a plain tunic who squats deep like a weightlifter, heels planted in the mud, his hands gripping the rope in front of his belly. A small lantern on a stake. The rope is taut, no hanging cloth, matte and dull, no shine, no gold. A small feathered patch of ground under it, no hard-edged slab.",
+        "grand": "A timber-framed farmhouse with a high roof of rust-red clay tiles and oak beams, beside fenced squares of furrows. Straddling an enormous turnip as big as the house stands a tall A-shaped lifting frame of squared oak with iron fittings and wooden pulleys, taller than the roof, a thick rope over its pulley. The turnip is a pale ivory root with a clear dark purple band across its shoulders, sharp round shoulders, vertical striations, an upright fan of stiff dark green ribbed leaves on top. Its shape is a plain turnip with a crisp edge, no cleft, no crease, nothing suggestive. At its base an oak platform where one stocky man lies on his back and pushes it with both feet. No orange, no pumpkin. Matte, dull, no shine, no gold, no hanging cloth. A small feathered patch of ground under it, no hard-edged slab.",
+        "mythic": "A colossal turnip two and a half houses tall, half out of the ground and slightly tilted, ivory dirty root with fine vertical striations in the lower part and a clean dark purple band on the upper part, sharp crisp shoulders, a plain turnip silhouette, no cleft, no crease, no twin lobes, nothing suggestive. On top a tall tight upright fan of stiff dark green and black ribbed leaves. A bent oak lifting frame, a small farmhouse with shutters and a chimney, and a stone stair are fixed against its flank. Three openings cut in its skin: two uneven windows and one wide crooked door. A ring of dry stone around the base, a few small ivory turnips with purple tops in a row around it. No orange, no pumpkin, no ribbon, no hanging cloth. Matte, dull, no shine, no gold, no grey smoke, no painted cast shadows. A small feathered patch of ground under it, no hard-edged slab. One small farmer, large and sharp, at the stair."
+      }
+    },
+    {
+      "id": 2,
+      "name": "2 La Gerbe et les Échasses",
+      "prompts": {
+        "rough": "A low crooked thatched cottage of mud and branches with a sloping roof, beside a square of wheat whose stalks already stand taller than the door. One tuft of tall thick stalks tied to a wooden pole. Two forked branches, the first stilts, lean against the wall. A lantern on the pole. One farmer in a plain tunic in a wide lunge, a seed sack at his hip. Straw, mud, twine. Matte, dull, no shine, no gold, no hanging cloth. A small feathered patch of ground under it, no hard-edged slab.",
+        "grand": "A timber-framed farmhouse with a rust-red tile roof and a stone quay along the furrows. Beside it a large basket-shaped oak trellis holds wheat stalks as thick as young trees, with ears as big as barrels leaning over the roof. One boy walks on a pair of tall wooden stilts, exactly two legs and exactly two stilts, each stilt a single straight pole with a footrest, a wheat ear on his shoulder. Warm lit windows. Rope, squared oak, dressed stone. Matte, dull, no shine, no gold, no hanging cloth. A small feathered patch of ground under it, no hard-edged slab.",
+        "mythic": "A single colossal sheaf of wheat three houses tall, thick stalks planted in the ground, bound at the waist by one braided straw band as thick as a tree trunk, and above the band the stalks open into a heavy irregular fan of ears leaning to one side. The whole is a plain sheaf, wide at the base, narrow at the waist, wide at the top, not a broom, not a haystack. A small timber-framed farmhouse with a tile roof stands at its foot as beside a tree. Wheat in matte ochre and green. One small farmer on tall stilts with exactly two stilts, large and sharp. A few blue-green cold sparks between the stalks. No orange, no gold, no shine, no hanging cloth, no grey smoke, no painted cast shadows. A small feathered patch of ground under it, no hard-edged slab."
+      }
+    }
+  ]
+}

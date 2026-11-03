@@ -1,0 +1,23 @@
+{
+  "building": "dragon_lair",
+  "directions": [
+    {
+      "id": 1,
+      "name": "1 La Gueule",
+      "prompts": {
+        "rough": "A big low wide grey boulder with moss, its upper lip sagging over a dark hole barely wider than a door, a crooked oak log wedged under the lip as a prop, a rope tied to it. Deep claw scratches in the rock. A cracked wooden shield and a few big plain grey bones lie in front. Under the lip a stocky bare-armed woman with her hair tied up crouches with her back pushing up the rock beside the log, large and sharp. A small lantern on the log. Matte stone, no shine, no gold, no treasure, no blood, no fire, no hanging cloth. A small feathered patch of ground under it, no hard-edged slab.",
+        "grand": "A rock hill carved into the massive head of a stone dragon seen from three quarters above: heavy brow, two stubby horn stumps with matte iron rings, two clear nostrils, a big closed eyelid the size of a cart, a wide open dark mouth with plain stone teeth and a flat lower jaw. The head is stone with matte blue-black obsidian veins, dull and mat, no shine, no flesh, no skull look, no grin, no flames from the throat. A path of flat slabs between big grey bones leads to the mouth. A banner stretched on a rigid wooden frame. A stocky bare-armed woman with tied hair, large and sharp, pushes the jaws apart with her arms spread, feet on the lower jaw, hands on the upper. No gold, no treasure, no blood. A small feathered patch of ground under it, no hard-edged slab.",
+        "mythic": "A huge stone dragon head only, no neck, no legs, no wings, carved from a rock hill, seen from three quarters above, snout raised high toward the sky at 50 degrees, lower jaw flat in the rock, throat wide open and dark with a faint amber glow deep inside. Heavy brow, two stubby horn stumps, two clear flared nostrils, a half-lifted heavy stone eyelid over an amber eye. Matte grey stone with blue-black obsidian veins, dull, no shine, no skull look, no grin, no fire coming out, no flesh. Plain big grey bones at the foot. A tiny but sharp bare-armed stocky woman with tied hair does a pull-up hanging from the biggest upper tooth, seen against the orange throat, her hands clearly visible; a small apprentice with a broom beside. No gold, no treasure, no blood. A small feathered patch of ground under it, no hard-edged slab."
+      }
+    },
+    {
+      "id": 2,
+      "name": "2 Le Veau de Milon",
+      "prompts": {
+        "rough": "A medium grey rock with a low cave mouth closed by a barrier of planks and rope, a dented round shield leaning at the side, small plain grey bones in front, claw scratches on the rock at knee height. A stocky bare-armed woman with tied hair, large and sharp, carries across her shoulders a small thin wrinkled furious horned creature, like a plucked old bird with small horns, smoke curling from its nostrils, not cute, no big eyes. A small lantern. Matte stone, no shine, no gold, no treasure, no blood, no hanging cloth. A small feathered patch of ground under it, no hard-edged slab.",
+        "grand": "A dark stepped rock cut into terraces of matte black obsidian and charcoal oak beams, with a slab ramp climbing its flank to a timber terrace and a notch opening at the top, a banner stretched on a rigid frame. The cave mouth with plain grey bones stays clearly visible at the foot. A stocky bare-armed woman with tied hair, large and sharp, climbs the ramp with thighs showing, carrying across her back a sleeping scaly dragon the size of an ox, its tail trailing behind. Matte, no shine, no gold, no treasure, no blood, no braziers. A small feathered patch of ground under it, no hard-edged slab.",
+        "mythic": "A tall dark rock with its cave mouth and plain grey bones clearly visible at the foot. On top, a tiny but sharp stocky bare-armed woman with tied hair stands with both arms straight up, holding over her head an enormous sleeping coiled dragon far bigger than her: its head hangs down on one side, its tail runs down and wraps around her waist and to the rock, so what holds the mass reads at a glance. Folded wings, no open wing, no claw reaching out. Not a ball on a stick: the head and tail break the round shape. Matte scales, dull, a few small embers falling from its nose and going out. A thin old squire with a pole stands on tiptoe on her shoulders. No gold, no treasure, no blood. A small feathered patch of ground under it, no hard-edged slab."
+      }
+    }
+  ]
+}

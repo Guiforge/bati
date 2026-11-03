@@ -1,0 +1,23 @@
+{
+  "building": "castle_wall",
+  "directions": [
+    {
+      "id": 3,
+      "name": "3 Cochon de Dame Carcas",
+      "prompts": {
+        "rough": "A gate piece of a village wall: a palisade of bark-stripped stakes with a wooden barn-style gate, open passage in the middle. Over the gate a long crooked see-saw pole is tilted on a fulcrum like a well sweep, aimed at the sky, a woven basket at its high end, a bucket of stones as counterweight at the short end, lashed with rope. A sturdy woman in a leather apron pulls a short rope down with both hands, a happy little piglet tucked under her other arm. Both ends of the piece end cleanly at the same low palisade height. Matte dark wood, no hanging cloth, no shine.",
+        "grand": "A gate piece of a stone wall: a short, wide square gatehouse tower of squared warm stone with arrow slits, crenellated, with an open arched passage through its base. On its flat terrace stands a black iron-and-oak trebuchet, clearly recognizable: a long arm raised upright toward the sky, an A-frame of heavy timbers, a big counterweight box, the sling cradle at the arm tip at rest holding a round pink pig sitting happily with its ears up. Nothing hangs from the arm, no gallows, no dangling rope. A banner stretched on a rigid wooden frame. A sturdy woman in a leather apron leans back pulling a winch rope. Both ends of the piece drop to the plain crenellated stone wall height. Matte iron, matte wood, no shine, no gilding.",
+        "mythic": "A gate piece of a stone wall: a short, wide square gatehouse tower of warm stone with an open arched passage through its base, a carved clan crest on its face. Standing on it, a colossal trebuchet of blackened oak and matte iron, instantly recognizable in silhouette: two great A-frame legs, a huge counterweight box packed with quarry blocks, and a single immense iron-banded oak arm raised upright to the very top of the picture, in line with the wall. At the tip a sling cradle at rest holds one big content pink pig sitting upright with its ears up, a tiny contented smile. Nothing hangs: no rope with a weight, no gallows, no chain. A stout woman in a leather apron sits calmly beside the base with arms crossed, a large bale of hay at the foot. The tower stays short and wide, the machine does the height. Both ends of the piece drop to plain crenellated wall height. Matte iron, matte wood, no shine, no gilding, no glow."
+      }
+    },
+    {
+      "id": 1,
+      "name": "1 Rempart qui a mal au dos",
+      "prompts": {
+        "rough": "A gate piece of a village wall: a palisade of bark-stripped stakes with a barn-door gate and an open passage, the top line of the stakes rising in a small hump in the middle. At the foot of the hump a big smooth knob of pale rock pushes out of the earth, and the stakes lean apart around it. A guard plants his feet and pulls a rope to straighten one stake. A lantern on a gate post. Both ends of the piece end cleanly at the same low palisade height. Matte dark wood, pale grey-cream rock, no shine.",
+        "grand": "A gate piece of a crenellated warm stone wall that bulges upward into a rounded hump, the arched gate opening taller inside it, the open road passing through. Three blunt knobs of pale rock push up through the battlements. Heavy oak props brace the leaning masonry, timber hoardings in the overhang around the hump. A mason carries a block on his back with a strap across his forehead. Both ends of the piece drop to plain crenellated stone wall height. Matte stone, matte oak, no shine.",
+        "mythic": "A gate piece of an old stone wall that has slid apart into two plain shoulders of masonry, one carrying a carved clan crest. Between them seven bare vertebrae of ancient pale striated rock arch up like a bowed spine, each a rounded knobby boulder as big as a house with a smooth rounded top, no ridges, no spikes, no crests, no scales, no head, no claws, no tail, not a dragon, not a bridge. They rise to the top of the picture in the middle and sink back to wall height at both ends. The road passes through the open arch beneath, empty. Dull dark iron hoops around two of the boulders. A barefoot old woman with a cloth bag stands on the top boulder, arms spread for balance, one clear figure. Matte rock, matte iron, no shine, no glow."
+      }
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "building": "archery_range",
+  "directions": [
+    {
+      "id": 1,
+      "name": "1 Le Papegai",
+      "prompts": {
+        "rough": "A thick rough-barked pine pole, slightly leaning, as wide as a fence post at the base, held by three taut guy ropes with stakes. At its very top a bundle of ochre and red feathers is tied to a short stick. At its foot a big square hay bale on a wooden trestle, and a rope laid on the ground as a shooting line. A man in a plain tunic hauls a rope hand over hand, looking up. The hay is bright and clearly visible. Matte wood and straw, no shine, no hanging cloth, no banners. A small feathered patch of ground under it, no hard-edged slab, no painted cast shadows.",
+        "grand": "A squared oak pole set in a low dark stone base, with a plank shelter with a rust-red tile roof and a half-timbered guild house beside it. On top of the pole sits one carved wooden bird with folded wings, painted matte ochre and red, its body bristling with many short arrows with big stiff red feathers stuck in it, a heavy hairy mass of shafts, not a smooth parrot. A fallen old pine trunk lies on the ground as a bench. One archer with a bow raised high, back arched, looks up at the bird. Matte, dull, no shine, no gilding, no hanging cloth, no banners, no rigging. A small feathered patch of ground under it, no hard-edged slab, no painted cast shadows.",
+        "mythic": "A very tall bundle of blackened oak trunks bound with matte dark iron bands, braced by wooden struts, bare mast with no platform and no nest. At the top an enormous wooden bird with wings wide open, almost as wide as the whole building footprint, top-heavy on a thin mast. Its whole plumage is made of thousands of arrows stuck into it in thick bristling masses, with big stiff red feather fletching at the wing tips; wooden body, carved head turned to one side, matte amber eyes with no glow. A rough hairy mass of arrow shafts, not a smooth parrot, not an eagle, never flesh. At its foot a plank shelter with rust-red tiles and a wooden wing template on the ground. One archer looking up with the bow pointed at the sky, one instructor beside him, large and clear. Matte, dull, no shine, no gilding, no hanging cloth, no banners. A small feathered patch of ground under it, no hard-edged slab, no painted cast shadows."
+      }
+    },
+    {
+      "id": 2,
+      "name": "2 L'Arc que nul ne bande",
+      "prompts": {
+        "rough": "A young ash tree trunk bent into a half circle, taller than a man, both ends pushed into hay bales, with a single straight rope as its string. In front of it three rope hoops on stakes lead along a shooting lane to a straw target with matte ochre and red rings. A man in a plain tunic stands beside the bow and pulls the rope with both hands, leaning back, and the bow does not move. Green wood, rope and straw, matte, no shine, no hanging cloth. A small feathered patch of ground under it, no hard-edged slab, no painted cast shadows.",
+        "grand": "A huge yew bow standing upright in a timber frame, half curved, twice as tall as the covered plank gallery with rust-red tiles beside it, with thick ropes and sinew lashings. A two-armed wooden winch beside it, where one man pulls with both arms and the frame bends more than the bow. Five iron rings on stakes along the shooting lane, no one standing in the line of fire, ending in a target with matte ochre and red rings. Matte, dull, no shine, no gilding, no hanging cloth, no banners. A small feathered patch of ground under it, no hard-edged slab, no painted cast shadows.",
+        "mythic": "One giant black horn bow standing upright alone on a low dark stone base, a wide open crescent rising to the top of the picture: matte black horn and petrified yew, dark leather lashings, one single straight thick string like a slim tree trunk. No arrow, the bow aims at nothing. The two tips are never joined by anything, not a lyre, not a gate, not an arch, not a fishing rod, no ballista. Five large black swallows perch on the string. The crescent is solid, dull and non-reflective, no glow, no gold, no shine. Seven rings on stakes along the shooting lane to a target with matte ochre and red rings, no one in the line of fire. A plank shelter with rust-red tiles holds an old pierced target on its wall. A tall old beggar stands up beside a bench with a loaf of bread, a boastful man sits on the ground, large and clear, only two figures. No hanging cloth, no banners. A small feathered patch of ground under it, no hard-edged slab, no painted cast shadows."
+      }
+    }
+  ]
+}

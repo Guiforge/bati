@@ -1,0 +1,23 @@
+{
+  "building": "well",
+  "directions": [
+    {
+      "id": 1,
+      "name": "1 L'Etang dans le seau",
+      "prompts": {
+        "rough": "A round ring of rough dry-stone well curb at ground level, always visible. Two forked tree branches stand as posts holding a crooked little roof of scrap planks. From a thick rope hangs an oversized patched wooden bucket made of mismatched planks with rope bands; the rope is a bit too thick for the bucket. A stocky man sits on the ground with his boots braced against the stone curb and leans back pulling the rope with both hands. Raw stone, grey-brown wood, hemp rope, matte, no shine, no hanging cloth. A small feathered patch of ground under it, no hard-edged slab.",
+        "grand": "A round carved stone well curb at ground level, plainly visible, with two A-shaped oak trestles straddling it and a small plank roof on top, like a gantry frame, not a bell tower. Under the roof hangs a huge round brewer's vat bucket on thick ropes, with water and one water-lily pad seen from above inside it, and a clear empty gap between the vat and the curb. Pegged oak, thick rope, wooden pulley, matte iron hoops, no shine. One man sits on the top crossbar with his legs stretched out straight, hauling the rope. A small feathered patch of ground under it, no hard-edged slab.",
+        "mythic": "A round stone well curb at ground level, plainly visible, under a gantry of oak and stone with a thick crossbeam and a tiny roof that shelters nothing. High above, in the opening, hangs an enormous wide flared wooden bucket with thick staves, an arched handle and matte iron hoops, much wider than the well. Seen from above at three-quarter view, the bucket holds a whole pond: water-lily pads and reeds, in slate blue water. A thin stream of water falls straight from the middle stave down into the well. A clear empty gap under the bucket. Matte, no shine, no gilding, no hanging cloth, no bell tower, no cabin. One small man stands on the crossbar. A small feathered patch of ground under it, no hard-edged slab."
+      }
+    },
+    {
+      "id": 2,
+      "name": "2 Les Lavandieres de nuit",
+      "prompts": {
+        "rough": "A ring of rough stones forming a well curb at ground level, always visible. Two wooden stakes lashed together at the top by a doubled hemp rope twisted tight with a stick pushed through it, like a carpenter's tourniquet. The stakes already lean toward each other, under a small plank roof that has begun to turn on its stakes, one wooden shingle slipped off. A tall thin woman in a plain dress, torso turned, turns the stick with both hands. Grey-brown wood, matte, no cloth, no laundry, no washing trough. A small feathered patch of ground under it, no hard-edged slab.",
+        "grand": "A round stone well curb at ground level, plainly visible. Two black oak posts twist fully around each other once into a braid, a clear gap between the two strands, bound with matte iron rings at the knots. A wide four-sided slate roof on top, each course of slate turned slightly from the one below. Blackened oak, pegs, matte iron, cold slate. A tall thin woman holds a wooden pole across her shoulders, arms hooked over it, her whole torso twisted. No cloth, no laundry, no washing trough, no screw, no wizard tower. A small feathered patch of ground under it, no hard-edged slab.",
+        "mythic": "A wide stocky twisted column of two thick strands wound around each other, rising from the round stone well curb at ground level, plainly visible. The lower half is cut stone blocks with slanted joints, the upper half is black oak, two and a half turns with a visible gap between the two strands. Constant width, rounded like a rope, no pointed spire, not a horn. On top a big crooked four-sided slate roof, wider than the column, tilted like a badly placed hat. Two thin lines of water run in the spiral grooves. A small slate-blue lantern sits on one strand. Matte stone, matte iron, no shine, no cloth, no laundry, no trough, no ghosts, no screw. One small woman stands at the foot. A small feathered patch of ground under it, no hard-edged slab."
+      }
+    }
+  ]
+}

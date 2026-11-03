@@ -1,0 +1,23 @@
+{
+  "building": "watchtower",
+  "directions": [
+    {
+      "id": 3,
+      "name": "3 Cor de la Bete",
+      "prompts": {
+        "rough": "Three rough pine poles lashed together with hemp rope hold a small crooked plank platform with a low railing, a wooden lookout, slightly leaning. A cow horn far too big for it, as large as a person, is tied to the railing and points up and out, curved, matte grey-yellow bone with a dark open mouth. A small worn lantern hangs from one pole. A farmer sits on the ground at the foot of the central pole, back against it, a straw hat tipped over his eyes, hands on his belly, asleep, sitting upright, not lying down, clean without moss. Matte wood, rope and bone, no shine, no hanging cloth. A small feathered patch of ground under it, no hard-edged slab, no painted cast shadow.",
+        "grand": "A lookout tower on a rough fieldstone base, a timber upper storey with slate roof, braced oak beams in warm amber matte wood. Beside the roof stands one whole curved tusk-like horn of dull matte yellow bone, taller than the roof, held by two matte iron bands, plainly visible, with a dark mouth at its tip. A small plank balcony with a horizontal pull bar. A woman in a plain tunic hangs from the bar doing a pull-up with both arms. A farmer sits against the stone base, hat over his eyes, asleep, upright, with a little moss on his boots. Dull, no shine, no gold ring, no skull, no ribs, no hanging cloth. A small feathered patch of ground under it, no hard-edged slab.",
+        "mythic": "One colossal corkscrew horn of ancient grey and dull yellow bone fills the whole height: it makes two full turns like a spiral staircase, a thick raised ridge winding round and round its body, with deep fluted grooves following the twist, narrowing to a thick base and ending in a sharply flared bell widening at the top with a dark empty mouth turned to the sky. Matte, dull, no shine, no ivory white, no gold ring, nothing that looks like a skull or ribs, a clean horn only, readable as a solid black silhouette. A small timber and stone cabin with a slate roof clings to the horn at mid height like a nest, kept in a clear three-quarter top-down isometric angle, held by matte iron collars and a few scaffold planks. At the foot, on a small base of stones, a farmer sits upright against a pole, one hand cupped to his ear, looking up at the horn, with no moss on him. One tiny figure only in the cabin. A small feathered patch of ground under it, no hard-edged slab, no painted cast shadow, no smoke."
+      }
+    },
+    {
+      "id": 2,
+      "name": "2 Fleche Perdue",
+      "prompts": {
+        "rough": "Four enormous arrows planted crooked in the ground, points down, their worn grey feathers visible, serve as stakes under a plank platform lashed with rope. Arrow shafts of plain pale wood, feathers faded and torn. A woman sits on a stool on the platform and hauls a bucket on a rope with both arms stretched. A small lantern hangs from one arrow. No target, no bow. Matte wood, rope and feather, no shine, no hanging cloth. A small feathered patch of ground under it, no hard-edged slab, no painted cast shadow.",
+        "grand": "A whole tree trunk bound with matte iron hoops, leaning slightly, with a thick arrow shape clearly visible: a notched flat end at the top with three broad feather blades. A neat tower gallery with slate roof and amber timber walls built level around its middle, a fieldstone collar at its base, so a straight building sits on a tilted shaft. Two or three of the first arrows lean as braces at the foot. One woman hauls a load by a pulley, arms stretched. Dull, no shine, no glow, no target, no hanging cloth. A small feathered patch of ground under it, no hard-edged slab.",
+        "mythic": "One colossal arrow of dark knotless wood, almost like stone, planted point down in the ground, leaning only a few degrees, rising the whole height, with three broad grey feathers near its top as wide as a platform, three clean separate feathers, no cloth. A small timber and stone cabin with slate roof and a gallery wraps three quarters of the shaft in a clear three-quarter top-down isometric angle, a straight cabin on a tilted shaft, with a visible window. The smaller arrows of earlier stages bristle at its foot. The ground is cracked around the foot. A young apprentice stands with both feet on the shaft at the base, pulling with both hands, a band of pale fresh wood showing at the ground line. One woman small on the cabin balcony turns her head. Matte, no shine, no glow, no target, no smoke. A small feathered patch of ground under it, no hard-edged slab."
+      }
+    }
+  ]
+}

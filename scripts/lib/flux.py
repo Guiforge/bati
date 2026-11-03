@@ -37,8 +37,9 @@ import zlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 
-# `-preview` in the path is the vendor's, not ours; override with FLUX_ENDPOINT when it graduates.
-ENDPOINT = os.environ.get("FLUX_ENDPOINT", "https://api.bfl.ai/v1/flux-2-pro-preview")
+# Guillaume, 03/11/2026: new art uses FLUX 3 Image and FLUX 3 Image Klein only. FLUX_ENDPOINT still
+# names another model on purpose, for a one-off like the icon re-render in generate-icon.py.
+ENDPOINT = os.environ.get("FLUX_ENDPOINT", "https://api.bfl.ai/v1/flux-3-image")
 PROVENANCE = ROOT / "scripts" / "provenance.json"
 # The signed API originals (C2PA, see above). Private, beside the pose references, not in the repo.
 ORIGINALS = pathlib.Path(

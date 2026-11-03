@@ -38,7 +38,7 @@ def fake_generate(*, submitted_log, endpoint=None, extra=None, **_):
     poll may still fail; `fail_at` makes the call with that running number raise after billing."""
     klein, f3 = endpoint == I.KLEIN, endpoint == I.FLUX3
     assert klein or f3 or endpoint is None, endpoint
-    assert (extra is None) if klein else (extra == {"width": 16, "height": 16}) if f3 else (extra == {"disable_pup": True}), extra  # Klein's schema refuses it
+    assert (extra is None) if klein else (extra == {"width": 16, "height": 16}) if f3 else (set(extra) == {"width", "height"}), extra  # Klein's schema refuses it
     cost = klein_cost[0] if klein else 4.8 if f3 else 7.5
     with lock:
         submitted_log.append({"cost": cost, "input_mp": 1.15, "output_mp": 1.15})
@@ -380,7 +380,7 @@ with tempfile.TemporaryDirectory() as tmp:
     # T41 round 2: the FLUX 3 path goes through the same guard, reserve and settle. Klein and
     # strangers stay refused; 3 images book their real cost (4.8 credits each) and free the reserve.
     I.guard_endpoint(I.FLUX3)
-    I.guard_endpoint("https://api.bfl.ai/v1/flux-2-pro-preview")
+    assert "FLUX endpoint" in refused(lambda: I.guard_endpoint("https://api.bfl.ai/v1/flux-2-pro-preview"))
     assert "FLUX endpoint" in refused(lambda: I.guard_endpoint(I.KLEIN))
     assert "FLUX endpoint" in refused(lambda: I.guard_endpoint("https://api.bfl.ai/v1/flux-4"))
     SLUG, VARIANT = "champion_arena_grand", "f3"

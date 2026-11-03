@@ -583,9 +583,9 @@ def guard_endpoint(endpoint: str | None = None) -> None:
     """`endpoint` is a per-call model (the FLUX 3 variants); the default is FLUX_ENDPOINT. Klein is
     not accepted here: its own batches pass through their own variants and never name it."""
     endpoint = endpoint or flux.ENDPOINT
-    if not endpoint.endswith(("flux-2-pro-preview", "/flux-3-image")):
-        sys.exit(f"FLUX endpoint is {endpoint}; the V1 runs on flux-2-pro-preview and flux-3-image only, a model change is Guillaume's")
-    if flux.ENDPOINT != endpoint and not flux.ENDPOINT.endswith("flux-2-pro-preview"):
+    if not endpoint.endswith("/flux-3-image"):
+        sys.exit(f"FLUX endpoint is {endpoint}; the V1 runs on flux-3-image only (Klein by its own variants), a model change is Guillaume's")
+    if flux.ENDPOINT != endpoint:
         sys.exit(f"FLUX_ENDPOINT is {flux.ENDPOINT}; unset it, the variant names its own model")
     if "FLUX_SEED_SALT" in os.environ:
         sys.exit("FLUX_SEED_SALT is set; seeds here are spaced by attempt, unset it")
@@ -816,10 +816,9 @@ def candidates(slug: str, attempt: int, variant: str = "", n: int = CANDIDATES) 
 
     def paint(i: int, out: pathlib.Path) -> None:
         start = time.monotonic()
-        # Klein's schema refuses `disable_pup` (its upsampler has no switch); FLUX.2 pro keeps it.
         flux.generate(slug=slug, prompt=prompt, out=out, width=size[0], height=size[1], attempts=1,
                       seed=base_seed + 1000 * attempt + i, references=ref if f3 else (ref,),
-                      extra=None if klein else {"width": size[0], "height": size[1]} if f3 else {"disable_pup": True}, submitted_log=responses,
+                      extra=None if klein else {"width": size[0], "height": size[1]}, submitted_log=responses,
                       endpoint=KLEIN if klein else FLUX3 if f3 else None)
         seconds[out] = round(time.monotonic() - start, 1)  # submit to downloaded, polling included
 

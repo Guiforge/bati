@@ -79,7 +79,7 @@ Lu dans `scripts/iso/iso_loop.py` et `scripts/lib/flux.py`, puis comparé à la 
 
 | Besoin | Ce que fait le script aujourd'hui | Comment |
 | --- | --- | --- |
-| FLUX.2 pro | Oui, c'est le modèle par défaut | `flux.ENDPOINT` = `flux-2-pro-preview`. Seuls `flux-2-pro-preview` et `flux-3-image` passent `guard_endpoint`; `flux-2-pro` (sans `-preview`) serait refusé |
+| FLUX.2 pro | Plus depuis le 03/11 : Guillaume veut FLUX 3 et Klein seuls, `flux.ENDPOINT` vaut `flux-3-image` et `guard_endpoint` le refuse. Ce qui suit est historique. | `flux.ENDPOINT` = `flux-2-pro-preview`. Seuls `flux-2-pro-preview` et `flux-3-image` passent `guard_endpoint`; `flux-2-pro` (sans `-preview`) serait refusé |
 | FLUX 3 Image | Oui, variante `f3` | `candidates <slug> <n> f3`. Envoie `images` (liste), `aspect_ratio` `1:1` ou `auto`, `resolution` `1k`, `grounding: false`. Pas de graine. Coût réservé 0,10 $ par image |
 | FLUX 3 Image Klein | Oui, variantes `w5gk` (essai) et `w5gp` (prod) | Envoie `width`, `height`, `seed`, `images`. Aucun autre champ (schéma fermé). Prix par palier de pixels (`klein_price`), plafonds `PROBE_CAPS` |
 | Édition d'image | Pas de commande à part. Une édition est un appel avec références | `f3` repeint un sprite fini : image 1 = la maquette verte, image 2 = le sprite d'aujourd'hui. Aucune variante n'édite une capture du village (la cible « target screen » du 9.2 est à écrire) |

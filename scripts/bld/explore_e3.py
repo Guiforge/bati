@@ -31,7 +31,7 @@ STYLE = [ISO_WT / f"assets/images/village/iso/{p}.webp" for p in ("castle_wall/s
 TODAY = ISO_WT / "assets/images/village/iso/windmill/solid.jour.webp"
 SIZE = (896, 1344)  # the maquette's size
 MAGENTA = (255, 0, 255)
-FLUX2 = flux.ENDPOINT  # flux-2-pro-preview
+FLUX2 = "https://api.bfl.ai/v1/flux-2-pro-preview"  # E3 archive: the model test of session 1
 
 PROMPT = (
     "Image 1 is a flat-shaded maquette that fixes the exact shape of one building: a round stone windmill tower under a cone roof, "

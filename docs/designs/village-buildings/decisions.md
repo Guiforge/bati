@@ -89,5 +89,15 @@ Réponses prises, que Guillaume peut rayer au checkpoint :
 
 - Guillaume, kit de maquettes : formes réutilisables dans le format des specs (cylindres lissés, toits coniques et en tuiles, dôme, arche, échafaudage, grue à roue), pour le moulin et tous les suivants. Les bâtiments restent faits de ces formes, jamais de modèles téléchargés. Exception approuvée, sans s'arrêter : figures et créatures seulement (atlantes, statue du héros, dragon, figures de gags quand la pose compte), modèles CC0 de Quaternius et Kenney, licence vérifiée pack par pack, fichiers dans le dépôt avec une note LICENSES (pack, auteur, CC0). Ils ne servent qu'à la maquette : FLUX repeint tout, et aucun modèle téléchargé n'est livré dans l'application. Les atlantes peuvent donc être retentés avec une vraie figure posée.
 
+- G-ID du nouveau pic : réussi aux deux mélanges, silhouette et flou. Le témoin Champion Arena est lu « Observatory » 4 fois sur 4 : à traiter dans sa carte, les deux silhouettes se confondent.
+- Tour 3 (1,22 $), mara : presque, silhouette et montée validées, legendary nouveau préféré à l'ancien. Reste : deux diagonales droites sur le fût à partir du grand (ombre de la galerie, à vérifier), trois grains de pierre, pic trop vif et brillant, caleçon qui paraît collé.
+- Pic : mara le veut plus gris que le bleu à saturation 0,55 demandé par Guillaume. Je tiens le 0,55 de Guillaume et retire ce qui fait gemme (blancs, bord droit, bout carré). Une variante à 0,40 l'accompagne pour que Guillaume tranche sur l'image.
+- Tour 4 : grain du solid comme référence partout. Fût corrigé dans la maquette (lumière douce, sans ombre portée droite) puis repeint, pas retouché. Le tracé des rubans change, sans bloquer les tours.
+
+- Atlantes A3, vraies figures CC0 posées (0 $) : G-ID à l'aveugle, chaque variante seule, deux mélanges. a : « Observatory » 4 fois sur 4, silhouette et flou. b : aussi 4 sur 4, mais empreinte à 0,969, sous les 0,98. c : échoue (« Wizard Tower », « Well »), et un de ses rapports contredit sa clé, non rejoué puisque a suffit. Les atlantes redeviennent possibles, par la variante a. Une silhouette réussie ne les fait pas gagner : comparaison A3a contre astrolabe sur écran cible (S-C, theo, mara) au début de l'observatoire, décision au checkpoint.
+
+- Tour 4 (1,54 $), mara : oui pour la peinture complète, après deux guides sans peinture (rubans sans barres ni double trait, vraie forme de caleçon sur l'aile du rough). Pic à saturation 0,55 gardé : à 0,40 il devient de l'ardoise, ce qui faisait gemme était sa forme. Tours sondes4 gardées pour grand, legendary, mythic, sondes3 pour rough et solid, pas de repeinture entière. Restes locaux pour la suite : poivre de la pierre, couture du rough, caleçon, pic.
+- Budget : contrôle du registre à 50 $ acquitté par moi, dans les 75 $ autorisés par Guillaume.
+
 Conséquences de la planche de cartes :
 - La carte `campfire.md` de la prep est à réécrire : le Ménestrel remplace le cuistot.

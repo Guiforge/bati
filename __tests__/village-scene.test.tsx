@@ -389,16 +389,16 @@ describe("VillageScene", () => {
       expect((await findByTestId("village-evolved")).props.accessibilityLiveRegion).toBe("polite");
     });
 
-    it("a counted session evolves what was already ready, scene-less; the new gain waits", async () => {
-      // The forge was ready before the session (claimed 2, stood at 3); the farm rose to 4 in it.
+    it("a counted session evolves nothing by itself: the ready building waits for its tap", async () => {
+      // The forge was ready before the session (claimed 2, stood at 3); the farm rose to 4 in it, inside its stage.
       mockParams = { grown: "forge:3:4,farm:3:4" };
       mockScene([campfire, forgeUp, farmUp]);
       jest.spyOn(village, "getClaimedStages").mockResolvedValue({ forge: 2, farm: 3 });
       const write = jest.spyOn(village, "claimStage").mockResolvedValue({ forge: 3, farm: 3 });
       mockIsoProps.length = 0;
       await renderIsoDrawer();
-      await waitFor(() => expect(write).toHaveBeenCalledTimes(1));
-      expect(write).toHaveBeenCalledWith([{ code: "forge", level: 3 }]);
+      await waitFor(() => expect(last()?.reclamables).toEqual(["forge"]));
+      expect(write).not.toHaveBeenCalled();
       expect(mockIsoProps.every((p) => p.croissance === undefined)).toBe(true);
     });
 

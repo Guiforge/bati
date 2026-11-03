@@ -101,16 +101,15 @@ describe("the visit's automatic claim (VI-29)", () => {
   const avant = new Set(["watchtower" as const]);
   const prev = [{ code: "watchtower", level: 3 }] as const;
 
-  it("flag off: a building ready before the session evolves by itself", () => {
-    expect(amorce(prev, { watchtower: 2 }, { avant, session: true, parRang: false })).toEqual(prev);
+  it("a building ready before the session is not evolved without a tap", () => {
+    expect(amorce(prev, { watchtower: 2 }, { avant })).toEqual([]);
+    // the claimed key is untouched, so the building is still pending for the tap
+    expect(enAttente(prev, { watchtower: 2 }, false)).toEqual(["watchtower"]);
+    expect(enAttente(prev, { watchtower: 2 }, true)).toEqual(["watchtower"]);
   });
 
-  it("flag on: it claims nothing of the sort, a tap is the only way up", () => {
-    expect(amorce(prev, { watchtower: 2 }, { avant, session: true, parRang: true })).toEqual([]);
-  });
-
-  it("flag on: an unknown code is still primed at its pre-session level", () => {
-    expect(amorce(prev, { forge: 3 }, { avant, session: true, parRang: true })).toEqual(prev);
-    expect(amorce(prev, {}, { avant: new Set(), session: false, parRang: true })).toEqual(prev);
+  it("an unknown code is still primed at its pre-session level", () => {
+    expect(amorce(prev, { forge: 3 }, { avant })).toEqual(prev);
+    expect(amorce(prev, {}, { avant: new Set() })).toEqual(prev);
   });
 });

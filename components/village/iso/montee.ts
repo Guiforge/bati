@@ -52,26 +52,17 @@ export function enAttente(
 }
 
 /**
- * What the visit's automatic claim writes (VI-29). Flag off: a building that was ready before the
- * session evolves by itself, and a code the key does not know is written at its pre-session level.
- * Flag on: nothing evolves by itself ("nothing changes without a tap"); only the unknown codes are
- * primed, so switching the flag on changes nothing on screen.
- * shortcut: the flag-on behaviour is Guillaume's call to confirm.
+ * What the visit's automatic claim writes (VI-29), flag on or off: nothing evolves by itself
+ * ("nothing changes without a tap"). Only the codes the key does not know are primed, at their
+ * pre-session level, so what the session earned stays ready and a first run changes nothing.
  */
 export function amorce(
   previous: Niveaux,
   claimed: ClaimedStages,
-  {
-    avant,
-    session,
-    parRang = MONTEE_PAR_RANG,
-  }: { avant: ReadonlySet<BuildingCode>; session: boolean; parRang?: boolean },
+  { avant }: { avant: ReadonlySet<BuildingCode> },
 ) {
   const vide = Object.keys(claimed).length === 0;
-  const pret = new Set(session && !parRang ? claimable(previous, claimed) : []);
   return previous.filter(
-    (b) =>
-      pret.has(b.code) ||
-      (b.level > 0 && claimed[b.code] === undefined && (vide || avant.has(b.code))),
+    (b) => b.level > 0 && claimed[b.code] === undefined && (vide || avant.has(b.code)),
   );
 }

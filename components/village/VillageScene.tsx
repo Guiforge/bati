@@ -512,9 +512,8 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
       .finally(() => setPending(null));
   };
 
-  // Keeps the claimed stages true to what was on screen (VI-29), in one write. A building that was
-  // ready before the session that has just been counted evolves by itself, without a scene: it is
-  // brought up to where it stood before the session. A building the key does not know yet is
+  // Keeps the claimed stages true to what was on screen (VI-29), in one write. Nothing evolves by
+  // itself: a building that was ready stays ready until the player taps it. A building the key does not know yet is
   // written at the level it stood at before the session, so what the session earned becomes ready;
   // and the very first time (an empty key) every built building is written at its present level,
   // so switching the flag on changes nothing on screen. Once per `grown`, marked after the write.
@@ -531,10 +530,7 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
       code: b.code,
       level: before.get(b.code) ?? b.level,
     }));
-    const items = amorce(previous, claimed, {
-      avant: new Set(before.keys()),
-      session: growth.length > 0,
-    });
+    const items = amorce(previous, claimed, { avant: new Set(before.keys()) });
     if (items.length === 0) {
       autoFor.current = key;
       return;

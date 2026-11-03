@@ -1,0 +1,2 @@
+- L'APK tourne aussi sur les anciens téléphones 32 bits. Il pèse environ 10 Mo de plus.
+- Bibliothèques mises à jour.

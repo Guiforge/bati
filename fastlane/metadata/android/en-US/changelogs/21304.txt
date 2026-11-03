@@ -1,0 +1,2 @@
+- The APK now also runs on older 32-bit phones. It grows by about 10 MB.
+- Libraries brought up to date.

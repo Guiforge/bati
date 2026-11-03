@@ -1,0 +1,2 @@
+- El APK funciona también en móviles antiguos de 32 bits. Pesa unos 10 MB más.
+- Bibliotecas actualizadas.

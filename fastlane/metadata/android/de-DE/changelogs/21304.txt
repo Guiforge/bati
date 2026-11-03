@@ -1,0 +1,2 @@
+- Die APK läuft jetzt auch auf älteren 32-Bit-Handys. Sie ist dadurch etwa 10 MB größer.
+- Bibliotheken aktualisiert.

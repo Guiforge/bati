@@ -10,6 +10,7 @@
 // Idle loops need no parameter: a link without fige=1, recorded for 10 s (video in the capture spec).
 
 import { createContext } from "react";
+import type { BuildingData } from "@/constants/buildingData";
 import { buildingCeiling } from "@/constants/buildingLevels";
 import { type BuildingCode, buildingCodes, buildingDefinitions } from "@/db/schema";
 import type { VillageTier } from "@/db/village";
@@ -30,8 +31,11 @@ export type EtatBld = {
   /** Tier of the island: 12 for a lone building (the same frame for all), 1 to 3 for the first week. */
   palier: VillageTier;
   semaine: boolean;
-  /** `moteur=1`: the buildings engine (BatimentMoteur) is on for this link only. */
-  moteur?: boolean;
+  /**
+   * The engine's data for this building, put there by BatimentSeul (never by a link) while the engine
+   * flag is on: the map's Maquette sends exactly this building through the engine.
+   */
+  donnees?: BuildingData;
 };
 
 /**
@@ -41,7 +45,7 @@ export type EtatBld = {
 export const EtatBldContext = createContext<EtatBld | null>(null);
 
 type Params = Record<
-  "bld" | "rang" | "base" | "avant" | "avantbase" | "show" | "palier" | "semaine" | "moteur",
+  "bld" | "rang" | "base" | "avant" | "avantbase" | "show" | "palier" | "semaine",
   string | undefined
 >;
 
@@ -72,6 +76,5 @@ export function etatBldDe(p: Partial<Params>): EtatBld | null {
     show: p.show === "stade" || p.show === "rang" ? p.show : undefined,
     palier: palier as VillageTier,
     semaine,
-    moteur: p.moteur === "1" ? true : undefined,
   };
 }

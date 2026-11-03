@@ -218,3 +218,15 @@ Lecture :
 20. BC tour 4 : la route du sud passe de 36 à 49 cases (`ROUTES`, `POINTS_DEGAGES`, `ECHANTILLONS` s'allongent d'un tiers). Masses du sud à 1,1, 1,3 et 1,5 (plus grandes, donc moins nombreuses, jusqu'à 252 x 216 dp, recouvrement en bas d'écran). Sous-bois : une `Image` de plus (bande étroite d'un autre actif) sur chaque masse d'échelle 1,3 ou plus, et la bande principale pleine largeur. `isolesDistincts` appelle `etatCarte(6)` et `distCases` une fois au premier calcul de l'anneau. Ombres plus étroites, même `Svg` et mêmes ellipses (deux dégradés au lieu d'un). Aucune mesure sur appareil.
 21. BC tour 5 : un ellipse de plus dans le `Svg` du voile de jour (`AmbianceCarte.tsx`, clairière nord assombrie, dégradé radial partagé, statique) ; `ombreHorsRoute` parcourt environ 150 points d'axe de route par ombre de masse, une fois par rendu de `OmbresForet` (165 ombres, pas animé) ; `sansRepetitionNord` fait une petite recherche (9 masses, une fois au premier calcul de l'anneau) ; une masse de bouleaux et une clairière de plus au sud, deux bandes de sous-bois réduites de 15 % sur les groupes isolés. Sol : deux tuiles du terrain (20 et 21, bande t4-6) recuites, même taille, aucune image nouvelle. Aucune mesure sur appareil.
 22. BC tour 6 : une `Image` de plus par masse (l'ombre portée, teinte d'ardoise avec alpha, sans opacité, 202 images au palier 12 selon la mesure du test) et 3 `Image` de sous-bois par masse à sous-bois, isolées comprises. Deux ellipses de plus dans le voile du nord. Non mesuré sur appareil, le rendu d'abord (Guillaume, 02/11).
+
+## Chantier bâtiments, moteur partagé (`bld-engine2`)
+
+Tout est derrière `BATIMENT_MOTEUR` (local seulement) et rien de ceci n'est mesuré. Les points 9 et 14 de la revue de tech restent à faire.
+
+- **9, à faire** : fusionner le show du moteur avec celui d'IsoVillage (`croissance`, `IsoCroissance`). Aujourd'hui `BatimentSeul` laisse l'un ou l'autre jouer, jamais les deux.
+- **14, à faire** : budgets du moteur par bâtiment, à fixer une fois qu'une mesure existe.
+- Lueurs : un nœud animé par lueur, lu sur l'horloge de la carte (plus de `withRepeat`), immobile en mouvement réduit. Jamais mesuré.
+- Nœuds au repos : +2 par bâtiment (la vue du corps, toujours montée, et le groupe des ajouts), plafond de 68 à tenir. Jamais mesuré.
+- Environ 14 vues par bâtiment au rang 10 de nuit (ajouts devant et derrière, teaser, gag, sprite de nuit, gardien, marque, 3 lueurs, corps). Jamais mesuré.
+- Stade suivant monté invisible pendant tout le show (`cachePolicy="disk"` le décode une seconde fois) : une image de plus en mémoire GPU, 1 à 2 s par montée. Jamais mesuré.
+- Textures des ajouts : aucune à ce jour (aplats de dev), chaque ajout peint sera une image de plus ; le groupe `batiment-neuf` en porte plusieurs sous une seule transformation. Jamais mesuré.

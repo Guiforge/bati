@@ -26,7 +26,7 @@ export function useSpectacleBatiment() {
     n.current += 1;
     const next = {
       cle: `${genre}:${versRang}:${n.current}`,
-      plan: planSpectacle(genre, deRang, versRang, reduit),
+      plan: planSpectacle(genre, deRang, versRang, reduit, options),
     };
     setSpectacle(next);
     return next;

@@ -43,6 +43,7 @@ import { prendreFete } from "@/components/village/iso/habitants";
 import type { Croissance, IsoVillage } from "@/components/village/iso/IsoVillage";
 import { choisirLumiere } from "@/components/village/iso/lumiere";
 import { jourDe } from "@/components/village/iso/marcheurs";
+import { amorce, enAttente, MONTEE_PAR_RANG } from "@/components/village/iso/montee";
 import { revelation } from "@/components/village/iso/revelation";
 import type { MemoireCamera } from "@/components/village/iso/useCameraIso";
 import { groupFamilies, nameOf } from "@/components/village/rows";
@@ -77,10 +78,13 @@ import { getRecentFeeds } from "@/db/milestoneFeed";
 import type { BuildingCode } from "@/db/schema";
 import { formatCount } from "@/db/targets";
 import {
+  baseRankOf,
+  type ClaimedBases,
   type ClaimedStages,
-  claimable,
+  claimBases,
   claimStage,
   drawnLevel,
+  getClaimedBases,
   getClaimedStages,
   getTierProgress,
   getVillageScene,
@@ -265,6 +269,8 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
   // The stages claimed so far (iso map on), and the claim whose site is playing: its new levels
   // show on the map from the first frame, and are written only when the site is over.
   const [claimed, setClaimed] = useState<ClaimedStages>({});
+  // Rule B: the base rank each upgrade was last claimed at (engine flag only; empty otherwise).
+  const [bases, setBases] = useState<ClaimedBases>({});
   const [pending, setPending] = useState<ClaimedStages | null>(null);
   // Whether the stages were read this visit: the automatic evolution waits for them.
   const [claimedRead, setClaimedRead] = useState(false);
@@ -341,6 +347,13 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
           setClaimedRead(true);
         })
         .catch((error) => reportError("village.claimed", error));
+      if (MONTEE_PAR_RANG) {
+        getClaimedBases()
+          .then((seen) => {
+            if (mine === loadId.current) setBases(seen);
+          })
+          .catch((error) => reportError("village.claimedBases", error));
+      }
     }
     Promise.all([getVillageScene(), readCrest, readFeeds])
       .then(([data, crestData, feedsData]) => {
@@ -454,7 +467,8 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
   }, [iso, ready, grown, reducedMotion, zoom]);
 
   const shownStages = { ...claimed, ...pending };
-  const upgradable = iso && scene ? claimable(scene.buildings, shownStages) : [];
+  const upgradable =
+    iso && scene ? enAttente(scene.buildings, shownStages, MONTEE_PAR_RANG, bases) : [];
   const readySet = new Set(upgradable);
   // One site for the whole claim (the map plays the first two, the others show their new stage),
   // and one write when it is over. Unmounted before that, nothing is written and they stay ready.
@@ -485,6 +499,13 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
       setEvolved(line);
       AccessibilityInfo.announceForAccessibility(line);
     }
+    // Rule B: the tap also claims the base rank the upgrade's look follows.
+    if (MONTEE_PAR_RANG && scene) {
+      const rules = items.map((b) => ({ code: b.code, base: baseRankOf(scene.buildings, b.code) }));
+      claimBases(rules)
+        .then(setBases)
+        .catch((error) => reportError("village.claimBases", error));
+    }
     claimStage(items)
       .then(setClaimed)
       .catch((error) => reportError("village.claim", error))
@@ -510,13 +531,10 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
       code: b.code,
       level: before.get(b.code) ?? b.level,
     }));
-    const empty = Object.keys(claimed).length === 0;
-    const ready = new Set(growth.length > 0 ? claimable(previous, claimed) : []);
-    const items = previous.filter(
-      (b) =>
-        ready.has(b.code) ||
-        (b.level > 0 && claimed[b.code] === undefined && (empty || before.has(b.code))),
-    );
+    const items = amorce(previous, claimed, {
+      avant: new Set(before.keys()),
+      session: growth.length > 0,
+    });
     if (items.length === 0) {
       autoFor.current = key;
       return;

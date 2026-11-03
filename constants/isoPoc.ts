@@ -38,6 +38,11 @@ const BUILD_LOCAL: boolean = (__DEV__ && process.env.NODE_ENV !== "test") || est
 // gate decides how it ships, then this becomes `true`.
 export const INTEGRATION: boolean = BUILD_LOCAL;
 
+// The buildings engine (components/village/iso/batiment.ts): on in local builds, off in every
+// published one and under jest. It also carries the two things that ride with it, the upgrade rule B
+// (constants/buildingStages.ts) and the pending marker on every rank (montee.ts).
+export const BATIMENT_MOTEUR: boolean = BUILD_LOCAL;
+
 // How the iso map lives (PROMPT-EQUIPE-V1.md §6). `continu` (Guillaume, 01/11): the one clock runs
 // while the screen has the focus and stops 60 s after the last touch, with reduced motion, under a
 // screen reader and in the frozen/E2E mode: an exception to performance.md, written there.

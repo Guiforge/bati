@@ -5,23 +5,25 @@
 
 import {
   type AddOn,
+  atteint,
   type BuildingData,
+  type ChantierStade,
   type GagBeat,
   type GuardianSlot,
   gagBeatAt,
   type LightAnchor,
+  type Marque,
   type NightSprite,
   type Point,
   type Teaser,
 } from "@/constants/buildingData";
 import { buildingStageFor, type StageRule, type VisualStage } from "@/constants/buildingStages";
+import { BATIMENT_MOTEUR } from "@/constants/isoPoc";
 
-// Read in release too and off by default, like BUILDING_STAGES_RULE. Off, BatimentMoteur renders
-// its children and nothing else, so the map is the one of today.
-export const BATIMENT_MOTEUR = false;
-
-/** The clan mark's form by stage: pennant, banner, carved crest, glowing crest. Decor houses have none. */
-export type Marque = "fanion" | "banniere" | "blasonSculpte" | "blasonLumineux";
+export type { Marque };
+// Local builds only (constants/isoPoc.ts). Off, BatimentMoteur renders its layers and nothing else,
+// so the map is the one of today.
+export { BATIMENT_MOTEUR };
 
 const MARQUES: Partial<Record<VisualStage, Marque>> = {
   solid: "fanion",
@@ -34,19 +36,23 @@ export const marqueDe = (stage: VisualStage): Marque | null => MARQUES[stage] ??
 
 export type EtatBatiment = {
   stage: VisualStage;
-  /** Never fewer than at the rank before: nothing disappears. */
+  /** Never fewer than at the rank before: nothing disappears, bar a piece an `untilRank` hands over. */
   addOns: readonly AddOn[];
   /** At most one: the next stage's element, started on site. It leaves when the next stage paints it. */
   teaser: Teaser | null;
   /** The one beat the slot holds: each beat replaces the previous one. */
   gag: GagBeat | null;
   gagSlot: Point | null;
-  /** Night only: by day the map puts its lights out. Never tappable, never counted. */
+  /** Night only, bar the lights flagged `parJour`. Never tappable, never counted. */
   lights: readonly LightAnchor[];
   nightSprite: NightSprite | null;
   marque: Marque | null;
   marqueAt: Point | null;
-  gardien: GuardianSlot | null;
+  /** The mark's sprite for this form; null while it is not painted, and then nothing is drawn. */
+  marqueSprite: string | null;
+  gardien: (GuardianSlot & { pose: Point }) | null;
+  /** The scaffold and build gag of this stage, when the data gives them (else the defaults). */
+  chantier: ChantierStade | null;
 };
 
 export type OptionsEtat = {
@@ -64,17 +70,22 @@ export function etatBatiment(
 ): EtatBatiment {
   const stage = buildingStageFor(data.code, rank, baseRank, rule);
   const marque = marqueDe(stage);
-  const nightSprite = data.nightSprite;
+  const nightSprite = data.nightSprites?.filter((n) => atteint(n, rank, baseRank)).at(-1) ?? null;
+  const gardien = data.guardian && atteint(data.guardian, rank, baseRank) ? data.guardian : null;
   return {
     stage,
-    addOns: data.addOns.filter((a) => a.rank <= rank),
-    teaser: data.teasers?.find((t) => t.fromRank <= rank && rank < t.untilRank) ?? null,
-    gag: gagBeatAt(data, rank),
+    addOns: data.addOns.filter(
+      (a) => atteint(a, rank, baseRank) && (a.untilRank === undefined || rank < a.untilRank),
+    ),
+    teaser: data.teasers?.find((t) => atteint(t, rank, baseRank) && rank < t.untilRank) ?? null,
+    gag: gagBeatAt(data, rank, baseRank),
     gagSlot: data.gag.slot,
-    lights: nuit ? data.lights.filter((l) => l.fromRank <= rank) : [],
-    nightSprite: nuit && nightSprite && rank >= nightSprite.fromRank ? nightSprite : null,
+    lights: data.lights.filter((l) => (nuit || l.parJour) && atteint(l, rank, baseRank)),
+    nightSprite: nuit ? nightSprite : null,
     marque,
     marqueAt: marque ? data.clanMark : null,
-    gardien: data.guardian && rank >= data.guardian.fromRank ? data.guardian : null,
+    marqueSprite: (marque && data.clanMarkSprites?.[marque]) || null,
+    gardien: gardien ? { ...gardien, pose: gardien.poses?.[stage] ?? gardien.at } : null,
+    chantier: data.chantier?.[stage] ?? null,
   };
 }

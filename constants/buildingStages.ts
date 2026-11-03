@@ -8,6 +8,7 @@
  */
 import { type BuildingCode, buildingDefinitions } from "@/db/schema";
 import { type BuildingStage, buildingCeiling, buildingStage } from "./buildingLevels";
+import { BATIMENT_MOTEUR } from "./isoPoc";
 
 /** Internal ids only. "Mythic" is already a rank label in the locales: never show these. */
 export type VisualStage = BuildingStage | "legendary" | "mythic";
@@ -15,10 +16,9 @@ export type VisualStage = BuildingStage | "legendary" | "mythic";
 /** "old" is today's rank to rough/solid/grand; A and B are the two upgrade rules of §6. */
 export type StageRule = "old" | "A" | "B";
 
-// Read in release too and off by default, like INTEGRATION in constants/isoPoc.ts.
-// shortcut: a source constant, no setting; Guillaume picks A or B at the step 0 checkpoint, then
-// the winning value goes here and the loser's branch is deleted.
-export const BUILDING_STAGES_RULE: StageRule = "old";
+// Guillaume chose B (rank of the base building decides an upgrade's last stages). It rides with the
+// engine flag: off in every published build, so the old mapping is what ships until the engine does.
+export const BUILDING_STAGES_RULE: StageRule = BATIMENT_MOTEUR ? "B" : "old";
 
 /** Each stage with the first rank that shows it. Below the first entry: rough (rank 0 included). */
 type Ladder = readonly (readonly [VisualStage, number])[];

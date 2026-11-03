@@ -6,12 +6,39 @@
  * Coordinates are px in the building's own canvas (constants/isoSpec.json), origin top left.
  */
 import type { BuildingCode } from "@/db/schema";
+import type { VisualStage } from "./buildingStages";
 
 export type Point = readonly [x: number, y: number];
 
-export interface AddOn {
-  /** First rank that shows it. Add-ons add up within a stage and are never removed. */
+/** The clan mark's form by stage: pennant, banner, carved crest, glowing crest. Decor houses have none. */
+export type Marque = "fanion" | "banniere" | "blasonSculpte" | "blasonLumineux";
+
+/**
+ * Rule B (an upgrade's look follows its base): any element can wait for the base building's rank
+ * too. Left out, only the building's own rank counts.
+ */
+export interface DepuisBase {
+  fromBase?: number;
+}
+
+/** True when `item` shows at `rang` for a base of rank `base`: the one test every data element goes through. */
+export function atteint(
+  item: DepuisBase & ({ rank: number } | { fromRank: number }),
+  rang: number,
+  base: number,
+): boolean {
+  const depuis = "rank" in item ? item.rank : item.fromRank;
+  return rang >= depuis && base >= (item.fromBase ?? 0);
+}
+
+export interface AddOn extends DepuisBase {
+  /** First rank that shows it. Add-ons add up within a stage and are never removed, except by `untilRank`. */
   rank: number;
+  /**
+   * The rank where a bigger piece replaces it (excluded). The three-overlay rule: at most three
+   * overlays stand on a building, so an old piece leaves when the next one is painted over its place.
+   */
+  untilRank?: number;
   /** Sprite path under assets/images/village/iso/, or null while it is not painted. */
   sprite: string | null;
   /** Offset from the building's anchor, px. */
@@ -22,22 +49,27 @@ export interface AddOn {
 }
 
 /** One beat of the running gag. */
-export interface GagBeat {
+export interface GagBeat extends DepuisBase {
   rank: number;
   /** One sentence, as the card words it. */
   beat: string;
   sprite: string | null;
 }
 
-export interface LightAnchor {
-  /** Only lights that move (fire, crystal pulse, beam): static windows come from the emissive pass. */
-  kind: "fire" | "crystal" | "beam";
+export interface LightAnchor extends DepuisBase {
+  /**
+   * `fire`, `crystal`, `beam` and `glyphe` breathe on the map's clock; `fenetre` is a window the
+   * emissive pass cannot light (a fixed point, it never moves).
+   */
+  kind: "fire" | "crystal" | "beam" | "fenetre" | "glyphe";
   at: Point;
   fromRank: number;
+  /** Also lit by day: the mythic stage's magic layer. Left out, the light is the night's. */
+  parJour?: boolean;
 }
 
 /** A site teaser (PROMPT.md §6): the start of the next stage's element, on site from `fromRank` until `untilRank` (excluded), when the next painting paints it finished. */
-export interface Teaser {
+export interface Teaser extends DepuisBase {
   fromRank: number;
   untilRank: number;
   sprite: string | null;
@@ -46,17 +78,27 @@ export interface Teaser {
 }
 
 /** The one object that only exists at night (a low moon, an aurora), keyed. */
-export interface NightSprite {
+export interface NightSprite extends DepuisBase {
   fromRank: number;
   sprite: string | null;
   anchorOffset: Point;
 }
 
 /** Where the keeper stands. It reacts to a show; it has no name and no lines. */
-export interface GuardianSlot {
+export interface GuardianSlot extends DepuisBase {
   fromRank: number;
   at: Point;
   sprite: string | null;
+  /** Where it stands, by stage, when it moves house with the building (otherwise `at`). */
+  poses?: Partial<Record<VisualStage, Point>>;
+}
+
+/** The site's scaffold of a stage being built, and where the build gag stands, by stage. */
+export interface ChantierStade {
+  /** The scaffold's anchor, offset from the building's anchor, px. Left out: the anchor itself. */
+  echafaudage?: { anchorOffset: Point; sprite: string | null };
+  /** The build gag's own slot while the scaffold stands. Left out: the gag slot. */
+  gag?: { at: Point; sprite: string | null };
 }
 
 export interface BuildingData {
@@ -75,14 +117,23 @@ export interface BuildingData {
   clanMark: Point | null;
   /** The buildings engine's extra layers (components/village/iso/batiment.ts); absent means none. */
   teasers?: readonly Teaser[];
-  nightSprite?: NightSprite;
+  /** The night-only object, as a list: the last entry whose rank is reached stands. */
+  nightSprites?: readonly NightSprite[];
   guardian?: GuardianSlot;
+  /** The clan mark's sprite by form; a form with no entry draws nothing (never a vector stand-in). */
+  clanMarkSprites?: Partial<Record<Marque, string>>;
+  /** By the stage being built (the one the tap raises the building to). */
+  chantier?: Partial<Record<VisualStage, ChantierStade>>;
 }
 
 /** The one beat showing at `rank`: the latest beat not past it, or null before the first. */
-export function gagBeatAt(data: BuildingData, rank: number): GagBeat | null {
+export function gagBeatAt(
+  data: BuildingData,
+  rank: number,
+  base: number = Number.POSITIVE_INFINITY,
+): GagBeat | null {
   let shown: GagBeat | null = null;
-  for (const b of data.gag.beats) if (b.rank <= rank) shown = b;
+  for (const b of data.gag.beats) if (atteint(b, rank, base)) shown = b;
   return shown;
 }
 

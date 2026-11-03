@@ -135,5 +135,23 @@ def sails_rough():
     tmp.unlink()
 
 
+def ribbon_layers():
+    """The card cuts the ribbons in two layers at x + y > 2: the maquette's `behind` parts and `sousAiles` parts, each rendered
+    alone (no lines) into a mask, so the painted ribbons can be split the same way. 0 $."""
+    OUT.mkdir(parents=True, exist_ok=True)
+    spec, _ = M.painting_spec("pilote/windmill_rubans")
+    work = M.CACHE / "peinture"
+    for layer, name in (("behind", "behind"), ("sousAiles", "front")):
+        f = OUT / f"rubans.{name}.mask.png"
+        if f.exists():
+            continue
+        part = dict(spec, parts=[p for p in spec["parts"] if p.get("layer") == layer])
+        j = work / f"rubans_{name}.json"
+        j.write_text(json.dumps(part))
+        rgba = work / f"rubans_{name}.rgba.png"
+        M.L.blender(j, rgba, lines=False, socle_shadow=False)
+        Image.open(rgba).convert("RGBA").getchannel("A").point(lambda v: 255 if v >= 128 else 0).save(f)
+
+
 if __name__ == "__main__":
     globals()[sys.argv[1]]()

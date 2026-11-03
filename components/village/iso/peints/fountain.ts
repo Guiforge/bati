@@ -137,7 +137,7 @@ export const fountain: Omit<PeintBld, "donnees"> = {
     "elements/gag_2": {
       jour: require("@/assets/images/village/iso/peints/fountain/elements/gag_2.jour.webp"),
       nuit: require("@/assets/images/village/iso/peints/fountain/elements/gag_2.nuit.webp"),
-      size: [150, 140],
+      size: [150, 135],
     },
     "elements/gag_3": {
       jour: require("@/assets/images/village/iso/peints/fountain/elements/gag_3.jour.webp"),
@@ -147,7 +147,7 @@ export const fountain: Omit<PeintBld, "donnees"> = {
     "elements/gag_7": {
       jour: require("@/assets/images/village/iso/peints/fountain/elements/gag_7.jour.webp"),
       nuit: require("@/assets/images/village/iso/peints/fountain/elements/gag_7.nuit.webp"),
-      size: [129, 150],
+      size: [131, 150],
     },
     "elements/gag_8": {
       jour: require("@/assets/images/village/iso/peints/fountain/elements/gag_8.jour.webp"),
@@ -157,7 +157,7 @@ export const fountain: Omit<PeintBld, "donnees"> = {
     "elements/gag_9": {
       jour: require("@/assets/images/village/iso/peints/fountain/elements/gag_9.jour.webp"),
       nuit: require("@/assets/images/village/iso/peints/fountain/elements/gag_9.nuit.webp"),
-      size: [150, 84],
+      size: [150, 88],
     },
     "elements/gag_10": {
       jour: require("@/assets/images/village/iso/peints/fountain/elements/gag_10.jour.webp"),

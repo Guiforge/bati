@@ -127,7 +127,7 @@ export const armory: Omit<PeintBld, "donnees"> = {
     "elements/gag_2": {
       jour: require("@/assets/images/village/iso/peints/armory/elements/gag_2.jour.webp"),
       nuit: require("@/assets/images/village/iso/peints/armory/elements/gag_2.nuit.webp"),
-      size: [116, 150],
+      size: [150, 98],
     },
     "elements/gag_3": {
       jour: require("@/assets/images/village/iso/peints/armory/elements/gag_3.jour.webp"),

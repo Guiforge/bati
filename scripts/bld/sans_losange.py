@@ -202,13 +202,14 @@ PETIT = 700  # px: a detached bit smaller than this, low on the canvas, is a spe
 FONDU_3 = 14
 PROF_3 = 12
 _EMP: dict = {}
-STRONG = {("farm", "rough"), ("farm", "solid"), ("farm", "grand"), ("heroes_hall", "solid"), ("heroes_hall", "grand"), ("castle_wall", "grand")}  # the lower diagonals still read as a diamond: a deeper, longer ramp, and only dense outlines count as an object
+STRONG = {("farm", "rough"), ("farm", "solid"), ("farm", "grand"), ("heroes_hall", "solid"), ("heroes_hall", "grand"), ("castle_wall", "grand"), ("champion_arena", "mythic")}  # the lower diagonals still read as a diamond: a deeper, longer ramp, and only dense outlines count as an object
 PROF_S, FONDU_S, MARGE_S = 20, 16, 52
 SOMBRE = {"windmill"}  # dark key-contaminated patches on the ground edge (luma and chroma low), flooded from the outside
 SANS_PLAQUE = {("quarry", "rough")}  # a pale sandy patch of the painting itself reads as a plate: the mask bit a hole in the ground
 FLOTTANT = {("barn", "mythic"): (20, 4000, BAS)}  # (alpha floor, px, rows from the bottom): detached shadows are faint, so the speck pass looks lower and takes bigger bits
 OUVERTURE = {("barn", "mythic"): (770, 60, 878, 280, 21)}  # (x0, y0, x1, y1 in the lower BAS rows, window): thin spurs and detached dark bits there are opened away
 TROUS = {("quarry", "rough")}  # dithered, semi-transparent ground inside the body must not count as outside, or the ramp bites a hole there
+BANDE_ROSE = {("windmill", "rough"): 0, ("windmill", "solid"): 0, ("windmill", "grand"): 0, ("champion_arena", "mythic"): 680}  # the pale pink earth band on the ground edge: it fades out over 34 px, the night grade blues it into frost
 POINTE = {"training_dummy", ("castle_wall", "solid")}  # the lowest vertex of the diamond is a thin tail under the ground: cut it
 
 
@@ -452,6 +453,11 @@ def bord3(rgba: Image.Image, code: str, stade: str) -> tuple[Image.Image, np.nda
     a[..., 3] = np.where((d < cap) & pres & ~gardee, 0, a[..., 3])
     flou = np.asarray(Image.fromarray(a[..., 3].astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.6)), dtype=float)  # stairs, dither
     a[..., 3] = np.where(pres & (d < cap) & (a[..., 3] < 250), np.where(flou < 14, 0, flou), a[..., 3])
+    if (code, stade) in BANDE_ROSE:
+        luma = a[..., :3] @ np.array([0.299, 0.587, 0.114])
+        pal = (luma >= 140) & ((a[..., :3].max(-1) - a[..., :3].min(-1)) <= 80)
+        pal = pal & (np.arange(h)[:, None] >= h - BAS + 150) & (np.arange(w)[None, :] >= BANDE_ROSE[(code, stade)])  # champion_arena: the pink sandy fragment of the lower right
+        a[..., 3] = np.where(pal & (d <= 34), a[..., 3] * np.clip((d - 5) / 29.0, 0, 1), a[..., 3])
     pet = detache(a[..., 3], d, h, *FLOTTANT.get((code, stade), (128, PETIT, 420)))  # bits detached from the body, low on the canvas
     if (code, stade) in OUVERTURE:
         x0, y0, x1, y1, k = OUVERTURE[(code, stade)]
@@ -620,6 +626,76 @@ def cle_element(rgba: Image.Image) -> Image.Image:
     return Image.fromarray(np.clip(a, 0, 255).astype(np.uint8), "RGBA")
 
 
+ROSE = {"well/gag_1", "fountain/gag_2", "fountain/gag_7", "fountain/gag_9", "observatory/gag_9", "observatory/gag_3"}  # mauve fringe and shadow, pink stains too faint for the 28 test
+
+
+def rose_element(rgba: Image.Image) -> Image.Image:
+    """Take the mauve and the pink out of an element: where R and B both sit above G (a lilac grey, a shadow) the excess is cut to a quarter,
+    and where B is level with G while R is above it (a pink stain) R comes down to G + a fifth of its excess. Warm browns (B well under G) are untouched."""
+    a = np.asarray(rgba, dtype=float).copy()
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    mauve = np.minimum(r - g, b - g) > 4
+    k = np.where(mauve, 0.25, 1.0)
+    a[..., 0] = np.where(mauve, g + (r - g) * k, r)
+    a[..., 2] = np.where(mauve, g + (b - g) * k, b)
+    rose = (np.abs(b - g) <= 14) & (r - g > 12) & ~mauve
+    a[..., 0] = np.where(rose, g + (r - g) * 0.2, a[..., 0])
+    pale = (g > 175) & (r - g > 10) & (b - g < -8) & ~rose & ~mauve  # a peach stain on a pale surface: back toward grey
+    a[..., 0] = np.where(pale, g + (r - g) * 0.25, a[..., 0])
+    a[..., 2] = np.where(pale, g + (b - g) * 0.4, a[..., 2])
+    return Image.fromarray(np.clip(a, 0, 255).astype(np.uint8), "RGBA")
+
+
+BLANC = {"archery_range/gag_2", "archery_range/gag_8", "archery_range/teaser_r2_second_target", "farm/teaser_r6_collar_and_ladder", "armory/gag_10", "windmill/teaser_r4"}  # pale flat interiors the key left behind
+
+
+GRIS = {"windmill/teaser_r6", "farm/teaser_r6_collar_and_ladder"}
+TEINTE = {"forge/gag_4"}
+
+
+def teinte_element(rgba: Image.Image) -> Image.Image:
+    """Green-blue bits: where B is above R by 6, or G above both R and B by 4, the pixel goes neutral (its R on all three channels)."""
+    a = np.asarray(rgba, dtype=float).copy()
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    bad = (a[..., 3] > 0) & ((b > r + 6) | ((g > r + 4) & (g > b)))
+    for c in (1, 2):
+        a[..., c] = np.where(bad, r, a[..., c])
+    return Image.fromarray(np.clip(a, 0, 255).astype(np.uint8), "RGBA")
+
+
+BLANC_LACHE = {"archery_range/gag_2"}  # a second, looser pass: the white there is mottled
+
+
+def blanc_element(rgba: Image.Image, mini: int = 600, lum: int = 165, ecart: float = 3.5, chroma: int = 18) -> Image.Image:
+    """Flat near-white regions (luma 165+, chroma 18 at most, smooth) of `mini` px or more become transparent, with the 1 px pale rim
+    around them: the white of the page the element was painted on, enclosed by the object. Painted whites are textured, so they stay."""
+    a = np.asarray(rgba, dtype=float).copy()
+    rgb, al = a[..., :3], a[..., 3]
+    luma = rgb @ np.array([0.299, 0.587, 0.114])
+    cand = (al > 128) & (rgb.min(-1) >= min(lum, 200)) & (luma >= lum) & ((rgb.max(-1) - rgb.min(-1)) <= chroma) & (_local_std(luma, (al > 128).astype(float)) <= ecart)
+    h, w = cand.shape
+    vu = np.zeros_like(cand)
+    kill = np.zeros_like(cand)
+    for y, x in zip(*np.nonzero(cand)):
+        if vu[y, x]:
+            continue
+        pile, comp = [(y, x)], []
+        vu[y, x] = True
+        while pile:
+            cy, cx = pile.pop()
+            comp.append((cy, cx))
+            for ny, nx in ((cy - 1, cx), (cy + 1, cx), (cy, cx - 1), (cy, cx + 1)):
+                if 0 <= ny < h and 0 <= nx < w and cand[ny, nx] and not vu[ny, nx]:
+                    vu[ny, nx] = True
+                    pile.append((ny, nx))
+        if len(comp) >= mini:
+            for cy, cx in comp:
+                kill[cy, cx] = True
+    rim = _dilate(kill) & (luma >= 150) & ~kill
+    a[..., 3] = np.where(kill | rim, 0, al)
+    return Image.fromarray(np.clip(a, 0, 255).astype(np.uint8), "RGBA")
+
+
 def cle_apply(spec: str) -> None:
     code, name = spec.split("/")
     d = SRC / code / "final" / "elements"
@@ -628,6 +704,16 @@ def cle_apply(spec: str) -> None:
         shutil.copy2(d / f"{name}.png", b)
     im = Image.open(b).convert("RGBA")
     out = cle_element(im)
+    if spec in BLANC:
+        out = blanc_element(blanc_element(out, 300, 200, 4.5))  # near-white first, then the pale grey panels
+        if spec in BLANC_LACHE:
+            out = blanc_element(out, 250, 195, 99.0, 32)
+    if spec in GRIS:  # the flat grey plate under or inside the object
+        out = blanc_element(out, 250, 165, 6.0, 30)
+    if spec in TEINTE:
+        out = teinte_element(out)
+    if spec in ROSE:
+        out = rose_element(out)
     out.save(d / f"{name}.png")
     print(spec, f"{100 * part(im, out):.2f}% alpha removed")
 

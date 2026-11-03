@@ -63,7 +63,7 @@ export const armory: BuildingData = {
       },
       {
         rank: 2,
-        beat: "A plain suit of armour taken apart into separate pieces laid out on the ground side by side: a helmet, a breastplate, two arm guards, two leg guards and two gauntlets, a coil of rope lying beside them. Each piece stands alone and none is joined to another. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle..",
+        beat: "A plain suit of armour taken apart into separate pieces, all laid down on a low rough wooden trestle made of two thick planks on four short legs: a helmet, a breastplate, two gauntlets and two leg guards lying flat on the planks, each piece touching the wood, a coil of rope lying beside them on the planks. The pieces are packed close together, nothing stands upright or floats. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle, light from the upper left..",
         sprite: "elements/gag_2",
       },
       {

@@ -4512,25 +4512,25 @@
   "assets/images/village/iso/peints/armory/elements/gag_10.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/elements/gag_10.raw.png",
-    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90. The key magenta left in the cut-out was removed by mask (scripts/bld/sans_losange.py cle), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/elements/gag_10.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/elements/gag_10.raw.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The key magenta left in the cut-out was removed by mask (scripts/bld/sans_losange.py cle), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/elements/gag_2.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/elements/gag_2.raw.png",
-    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/elements/gag_2.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/elements/gag_2.raw.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/elements/gag_3.jour.webp": {
@@ -5544,13 +5544,13 @@
   "assets/images/village/iso/peints/farm/elements/teaser_r6_collar_and_ladder.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/farm/final/elements/teaser_r6_collar_and_ladder.raw.png",
-    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90. The key magenta left in the cut-out was removed by mask (scripts/bld/sans_losange.py cle), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/farm/elements/teaser_r6_collar_and_ladder.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/farm/final/elements/teaser_r6_collar_and_ladder.raw.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The key magenta left in the cut-out was removed by mask (scripts/bld/sans_losange.py cle), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/farm/elements/teaser_r8_giant_cob.jour.webp": {
@@ -5664,13 +5664,13 @@
   "assets/images/village/iso/peints/forge/elements/gag_4.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/forge/final/elements/gag_4.raw.png",
-    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90. The key magenta left in the cut-out was removed by mask (scripts/bld/sans_losange.py cle), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/forge/elements/gag_4.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/forge/final/elements/gag_4.raw.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The key magenta left in the cut-out was removed by mask (scripts/bld/sans_losange.py cle), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/forge/elements/gag_6.jour.webp": {
@@ -5844,13 +5844,13 @@
   "assets/images/village/iso/peints/fountain/elements/gag_2.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/fountain/final/elements/gag_2.raw.png",
-    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90. The key magenta left in the cut-out was removed by mask (scripts/bld/sans_losange.py cle), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/fountain/elements/gag_2.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/fountain/final/elements/gag_2.raw.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The key magenta left in the cut-out was removed by mask (scripts/bld/sans_losange.py cle), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/fountain/elements/gag_3.jour.webp": {
@@ -5868,13 +5868,13 @@
   "assets/images/village/iso/peints/fountain/elements/gag_7.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/fountain/final/elements/gag_7.raw.png",
-    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90. The key magenta left in the cut-out was removed by mask (scripts/bld/sans_losange.py cle), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/fountain/elements/gag_7.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/fountain/final/elements/gag_7.raw.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The key magenta left in the cut-out was removed by mask (scripts/bld/sans_losange.py cle), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/fountain/elements/gag_8.jour.webp": {
@@ -5892,13 +5892,13 @@
   "assets/images/village/iso/peints/fountain/elements/gag_9.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/fountain/final/elements/gag_9.raw.png",
-    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90. The key magenta left in the cut-out was removed by mask (scripts/bld/sans_losange.py cle), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/fountain/elements/gag_9.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/fountain/final/elements/gag_9.raw.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The key magenta left in the cut-out was removed by mask (scripts/bld/sans_losange.py cle), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/fountain/elements/teaser_b8_curved_former.jour.webp": {
@@ -7116,13 +7116,13 @@
   "assets/images/village/iso/peints/well/elements/gag_1.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/well/final/elements/gag_1.raw.png",
-    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90. The key magenta left in the cut-out was removed by mask (scripts/bld/sans_losange.py cle), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/well/elements/gag_1.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/well/final/elements/gag_1.raw.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The key magenta left in the cut-out was removed by mask (scripts/bld/sans_losange.py cle), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/well/elements/gag_10.jour.webp": {
@@ -7368,25 +7368,25 @@
   "assets/images/village/iso/peints/windmill/elements/teaser_r4.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/windmill/final/elements/teaser_r4.raw.png",
-    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90. The key magenta left in the cut-out was removed by mask (scripts/bld/sans_losange.py cle), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/windmill/elements/teaser_r4.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/windmill/final/elements/teaser_r4.raw.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The key magenta left in the cut-out was removed by mask (scripts/bld/sans_losange.py cle), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/windmill/elements/teaser_r6.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/windmill/final/elements/teaser_r6.raw.png",
-    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90. The key magenta left in the cut-out was removed by mask (scripts/bld/sans_losange.py cle), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/windmill/elements/teaser_r6.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/windmill/final/elements/teaser_r6.raw.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The key magenta left in the cut-out was removed by mask (scripts/bld/sans_losange.py cle), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/windmill/elements/teaser_r8.jour.webp": {

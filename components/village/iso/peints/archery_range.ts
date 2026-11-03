@@ -147,7 +147,7 @@ export const archery_range: Omit<PeintBld, "donnees"> = {
     "elements/gag_2": {
       jour: require("@/assets/images/village/iso/peints/archery_range/elements/gag_2.jour.webp"),
       nuit: require("@/assets/images/village/iso/peints/archery_range/elements/gag_2.nuit.webp"),
-      size: [150, 123],
+      size: [150, 116],
     },
     "elements/gag_4": {
       jour: require("@/assets/images/village/iso/peints/archery_range/elements/gag_4.jour.webp"),
@@ -162,7 +162,7 @@ export const archery_range: Omit<PeintBld, "donnees"> = {
     "elements/gag_8": {
       jour: require("@/assets/images/village/iso/peints/archery_range/elements/gag_8.jour.webp"),
       nuit: require("@/assets/images/village/iso/peints/archery_range/elements/gag_8.nuit.webp"),
-      size: [141, 150],
+      size: [150, 144],
     },
     "elements/gag_10": {
       jour: require("@/assets/images/village/iso/peints/archery_range/elements/gag_10.jour.webp"),

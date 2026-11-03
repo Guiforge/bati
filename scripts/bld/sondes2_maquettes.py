@@ -17,7 +17,8 @@ import render_cartes as RC  # noqa: E402
 import maquette_peinture as M  # noqa: E402
 from PIL import Image  # noqa: E402
 
-OUT = pathlib.Path("/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village-buildings/windmill/r1/sondes2/maquettes")
+R1 = pathlib.Path("/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village-buildings/windmill/r1")
+OUT = R1 / (sys.argv[1] if len(sys.argv) > 1 else "sondes2") / "maquettes"  # the round folder, e.g. sondes3
 STAGES = ["rough", "solid", "grand", "legendary", "mythic"]
 CARD_Z = {"rough": 1.7, "solid": 2.32, "grand": 2.88, "legendary": 3.17, "mythic": 4.34}  # cap top; mythic: top of the shard
 TOP_Y = {s: round(1087 - 235 * z) for s, z in CARD_Z.items()}  # (1,1,0) projects to y 1087; 235 px per unit of z
@@ -42,13 +43,12 @@ def main():
         rep[s] = {"bbox": list(bb), "top_y": bb[1], "card_top_y": TOP_Y[s], "delta_px": bb[1] - TOP_Y[s],
                   "footprint_bbox": list(Image.open(mk).getbbox()), "footprint_sha": masks[s]}
     rep["footprint_identical"] = len(set(masks.values())) == 1
-    # mythic: is the peak blue? mean hue and saturation of the non-magenta pixels above the roof (y < 330)
-    im = Image.open(OUT / "mythic.peinture.png").convert("RGB")
-    px = [p for p in im.crop((0, 0, im.width, 330)).getdata() if p != (255, 0, 255)]
-    hs = [colorsys.rgb_to_hsv(*(c / 255 for c in p)) for p in px]
-    rep["mythic_peak"] = {"pixels": len(px), "mean_hue_deg": round(360 * sum(h for h, _, _ in hs) / len(hs), 1),
-                          "mean_saturation": round(sum(s for _, s, _ in hs) / len(hs), 3),
-                          "mean_rgb": [round(sum(p[i] for p in px) / len(px)) for i in range(3)]}
+    import math
+    im = Image.open(OUT / "mythic.peinture.png").convert("RGB").crop((0, 0, im_w := 896, 330))
+    hs = [colorsys.rgb_to_hsv(*(c / 255 for c in p)) for p in im.getdata() if p != (255, 0, 255)]
+    hs = [h for h in hs if h[2] > 0.3]
+    rep["mythic_peak"] = {"pixels": len(hs), "mean_hue_deg": round(math.degrees(math.atan2(sum(math.sin(2 * math.pi * h) for h, _, _ in hs), sum(math.cos(2 * math.pi * h) for h, _, _ in hs))) % 360, 1),
+                          "mean_saturation": round(sum(s for _, s, _ in hs) / len(hs), 3)}
     # mythic silhouette with its sails at 45 degrees, and its 96 dp blur
     full = b.compose("mythic", RC.WM_SHEET["mythic"], [])
     RC.T.silhouette_of(RC.mask(full), str(OUT / "mythic"))

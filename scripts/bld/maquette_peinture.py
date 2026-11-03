@@ -101,6 +101,25 @@ def soften(rgba, classes, radius=70):
     pair = {}
     for lit_hex, _, shade_hex in DAY.values():
         pair[L.hex_rgb(lit_hex)] = pair[L.hex_rgb(shade_hex)] = (L.hex_rgb(lit_hex), L.hex_rgb(shade_hex))
+    # The antialiased pixels where a lit facet meets a shaded one match no flat colour, so they escaped the blend and drew a
+    # 2 px vertical seam down the shaft (round 3). A pixel with the same material on both sides, within 3 px on a row or a
+    # column, takes that material's lit or shade value by its own class and is then blended like the rest.
+    fixes = []
+    for y in range(h):
+        for x in range(w):
+            if px[x, y][3] == 255 and px[x, y][:3] not in pair:
+                for dx, dy in ((1, 0), (0, 1)):
+                    a = b = None
+                    for k in (1, 2, 3):
+                        if a is None and x - dx * k >= 0 and y - dy * k >= 0 and px[x - dx * k, y - dy * k][:3] in pair:
+                            a = pair[px[x - dx * k, y - dy * k][:3]]
+                        if b is None and x + dx * k < w and y + dy * k < h and px[x + dx * k, y + dy * k][:3] in pair:
+                            b = pair[px[x + dx * k, y + dy * k][:3]]
+                    if a and a == b:
+                        fixes.append((x, y, a[0] if cl[x, y][1] < 140 else a[1]))
+                        break
+    for x, y, c in fixes:
+        px[x, y] = (*c, 255)
     lit = Image.new("L", (w, h), 0)
     lp = lit.load()
     for y in range(h):

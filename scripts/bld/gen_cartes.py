@@ -19,6 +19,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import gen_pilot_specs as G  # noqa: E402
+import kit_maquette as K  # noqa: E402
 
 OUT = G.OUT / "pilote"
 D = G.DIAG
@@ -202,9 +203,9 @@ def windmill(stage):
         return r0 + (r1 - r0) * (z - 0.16) / fh
 
     P = [G.plate(),
-         G.cyl([1, 1, 0.04], 0.82, 0.12, "stone"),
-         G.cone([1, 1, 0.16], r0, r1, fh, "stone"),
-         G.cone([1, 1, zc], rc, 0.04, ztop - zc, cmat),
+         K.plinth([1, 1, 0.04], 0.82, 0.12),
+         K.tower([1, 1, 0.16], r0, r1, fh),
+         K.roof([1, 1, zc], rc, ztop - zc, cmat),
          G.box([0.82, 1.70, 0.16], [0.36, 0.06, 0.55], "darkwood", accroche="porte"),
          G.box([0.78, 1.72, 0.16], [0.44, 0.14, 0.05], "stone"),
          G.box([1 + rf(0.85) - 0.03, 0.9, 0.73], [0.06, 0.2, 0.24], "amber"),
@@ -233,8 +234,7 @@ def windmill(stage):
         P += [G.box([0.04, 1.28, 0.04], [0.38, 0.38, 0.36], "stone"),
               G.cyl([0.16, 1.5, 0.4], 0.12, 0.85, "stone", accroche="cheminee"),
               G.box([0.16, 1.64, 0.1], [0.14, 0.04, 0.14], "amber")]
-    if k >= 2:  # breeches: a coloured cloth hung over the gallery rail, on the front-left face
-        P.append(G.box([1.21, 1.79, 1.42], [0.24, 0.04, 0.22], "culotte"))
+    # no breeches in the maquette: the cloth is painted apart and placed by script on the rail (sondes3)
     if k >= 4:  # one broken raw shard in one piece (no collar, no ring, no rim): a tilted cone and a jagged shoulder, top near px y 67
         P.append(G.cone([1, 1, 3.07], 0.19, 0.03, 1.27, "crystal", axis=G.unit([0.10, -0.08, 1.0])))
         P.append(G.box([0.9, 0.92, 3.3], [0.2, 0.14, 0.5], "crystal", rotZ=30))

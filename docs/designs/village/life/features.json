@@ -1,0 +1,318 @@
+{
+  "track": "LIFE",
+  "piste": "La vie (animations)",
+  "piste_ordre": 4,
+  "owns": [
+    "docs/designs/village/life/",
+    "scripts/life/",
+    "motion/",
+    "components/village/iso/ (camera, moment d'evolution, mouvement, creatures ; jamais peints/ ni peints.ts)",
+    "components/village/VillageScene.tsx (fin de croissance seulement)",
+    "app/dev-iso.tsx",
+    "assets/images/village/iso/mouvement/",
+    "assets/images/village/iso/creatures/",
+    "constants/isoPoc.ts (drapeaux de LIFE ; BLD_PEINTS seulement apres le go de Guillaume)"
+  ],
+  "shared_read_only": [
+    "constants/buildings/ (a CLEAN, regeneres par integrate.py : ancres et lueurs lues, jamais ecrites)",
+    "constants/buildingData.ts",
+    "assets/images/village/iso/peints/",
+    "components/village/iso/peints/",
+    "components/village/iso/peints.ts",
+    "scripts/bld/",
+    "scripts/iso/iso_loop.py",
+    "docs/designs/village-buildings/",
+    "docs/designs/village-loop/loupes/",
+    "~/.cache/bati-loupes-lock/",
+    "docs/designs/village-iso-v1/VALIDATIONS.md",
+    ".claude/agents/"
+  ],
+  "note_autres_sessions": "origin/track-clean lue le 03/11 : CLEAN laisse components/village/iso/ (hors peints) et motion/ a LIFE, et possede constants/buildings/. A relire avant chaque fusion.",
+  "items": [
+    {
+      "id": "U1",
+      "group": "3. Moment d'evolution",
+      "name": "La camera revient a la vue d'avant",
+      "check": "video sur emulator-5556 : vue de depart, evolution, retour a la meme vue ; test du retour",
+      "estimate_h": [
+        0.5,
+        1
+      ],
+      "status": "done",
+      "note": "Vu sur émulateur : retour à la vue décalée. Tap et glissé pendant le moment : tests seuls",
+      "debut": "2026-11-03T21:45:00+01:00",
+      "fin": "2026-11-04T00:30:00+01:00"
+    },
+    {
+      "id": "U2",
+      "group": "3. Moment d'evolution",
+      "name": "Releve du moment actuel",
+      "check": "planche de contact du tip : carre brun et cercles plats identifies dans le code, jour et nuit",
+      "estimate_h": [
+        0.3,
+        0.7
+      ],
+      "status": "done",
+      "note": "Vue bâtiment relevée ; carte de jour vue, pièces non nommées une à une",
+      "debut": "2026-11-03T21:45:00+01:00",
+      "fin": "2026-11-04T00:30:00+01:00"
+    },
+    {
+      "id": "U3",
+      "group": "3. Moment d'evolution",
+      "name": "Idees et concepts du moment",
+      "check": "planches de contact de plusieurs directions sur la page de checkpoint",
+      "estimate_h": [
+        1,
+        3
+      ],
+      "status": "done",
+      "note": "Sur la page de choix",
+      "debut": "2026-11-03T21:45:00+01:00",
+      "fin": "2026-11-03T23:50:00+01:00"
+    },
+    {
+      "id": "U4",
+      "group": "3. Moment d'evolution",
+      "name": "Choix de Guillaume sur le moment",
+      "check": "Reponse de Guillaume dans checkpoint.md",
+      "estimate_h": [
+        0,
+        0
+      ],
+      "status": "blocked",
+      "note": "Page publiée, réponse dans checkpoint.md"
+    },
+    {
+      "id": "U5",
+      "group": "3. Moment d'evolution",
+      "name": "Moment de stade en production",
+      "check": "echafaudage, tap, eclat, poussiere, pop, lumieres : video jour et nuit sur 3 batiments ; figes en mouvement reduit",
+      "estimate_h": [
+        2,
+        5
+      ],
+      "status": "todo",
+      "note": "Dépend du choix de Guillaume"
+    },
+    {
+      "id": "U6",
+      "group": "3. Moment d'evolution",
+      "name": "Battement court d'un rang",
+      "check": "video d'un rang interne, jour et nuit",
+      "estimate_h": [
+        0.5,
+        1.5
+      ],
+      "status": "todo",
+      "note": "Dépend du choix de Guillaume"
+    },
+    {
+      "id": "U7",
+      "group": "3. Moment d'evolution",
+      "name": "Drapeaux des batiments",
+      "check": "Guillaume a vu le moment et ecrit son go dans checkpoint.md ; alors seulement BLD_PEINTS change",
+      "estimate_h": [
+        0.2,
+        0.5
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "M1",
+      "group": "1. Systeme de mouvement",
+      "name": "Balancement",
+      "check": "planche de contact drapeau, banniere, arbre, sur l'horloge partagee",
+      "estimate_h": [
+        1,
+        2
+      ],
+      "status": "doing",
+      "note": "Code fait, aucun bâtiment ne l'utilise encore",
+      "debut": "2026-11-03T21:45:00+01:00"
+    },
+    {
+      "id": "M2",
+      "group": "1. Systeme de mouvement",
+      "name": "Scintillement et fenetres au crepuscule",
+      "check": "planche nuit : feux qui vivent, fenetres allumees une a une ; jamais tapables",
+      "estimate_h": [
+        1,
+        2.5
+      ],
+      "status": "doing",
+      "note": "Code fait, pas vu sur émulateur",
+      "debut": "2026-11-03T21:45:00+01:00"
+    },
+    {
+      "id": "M3",
+      "group": "1. Systeme de mouvement",
+      "name": "Particules",
+      "check": "planche fumee, vapeur, etincelles, braises, poussiere, motes ; plafond de noeuds tenu",
+      "estimate_h": [
+        1.5,
+        3
+      ],
+      "status": "doing",
+      "note": "Code fait, sprite provisoire",
+      "debut": "2026-11-03T21:45:00+01:00"
+    },
+    {
+      "id": "M4",
+      "group": "1. Systeme de mouvement",
+      "name": "Rotation",
+      "check": "ailes et roues, boucle sans saut",
+      "estimate_h": [
+        0.5,
+        1
+      ],
+      "status": "doing",
+      "note": "Code fait, pas vu sur émulateur",
+      "debut": "2026-11-03T21:45:00+01:00"
+    },
+    {
+      "id": "M5",
+      "group": "1. Systeme de mouvement",
+      "name": "Miroitement de l'eau",
+      "check": "planche sur fontaine, puits, canal",
+      "estimate_h": [
+        0.5,
+        1.5
+      ],
+      "status": "doing",
+      "note": "Code fait, pas vu sur émulateur",
+      "debut": "2026-11-03T21:45:00+01:00"
+    },
+    {
+      "id": "M6",
+      "group": "1. Systeme de mouvement",
+      "name": "Sprites de particules peints",
+      "check": "petits sprites FLUX 3 Image dans assets/images/village/iso/mouvement/, modele au manifeste",
+      "estimate_h": [
+        0.5,
+        1
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "P1",
+      "group": "2. Par batiment",
+      "name": "Fichiers motion/<batiment>.json",
+      "check": "21 fichiers, ancres mesurees sur les peintures finales ; planche par batiment",
+      "estimate_h": [
+        3,
+        6
+      ],
+      "status": "todo",
+      "total": 21,
+      "avancement": 0
+    },
+    {
+      "id": "C1",
+      "group": "4. Creatures",
+      "name": "Test de concept des creatures",
+      "check": "planche FLUX contre Blender, 12 a 30 dp, stabilite d'une image a l'autre",
+      "estimate_h": [
+        1,
+        2
+      ],
+      "status": "done",
+      "note": "Sur la page de choix",
+      "debut": "2026-11-03T21:45:00+01:00",
+      "fin": "2026-11-03T23:50:00+01:00"
+    },
+    {
+      "id": "C2",
+      "group": "4. Creatures",
+      "name": "Choix de Guillaume sur le style",
+      "check": "Reponse de Guillaume dans checkpoint.md",
+      "estimate_h": [
+        0,
+        0
+      ],
+      "status": "blocked",
+      "note": "Page publiée, réponse dans checkpoint.md"
+    },
+    {
+      "id": "C3",
+      "group": "4. Creatures",
+      "name": "Souris",
+      "check": "planche pres de la grange et de la ferme, chemin et pauses, jour et nuit",
+      "estimate_h": [
+        1,
+        2
+      ],
+      "status": "todo",
+      "note": "Dépend du choix de Guillaume"
+    },
+    {
+      "id": "C4",
+      "group": "4. Creatures",
+      "name": "Chats",
+      "check": "planche sur murs et rebords, jour et nuit",
+      "estimate_h": [
+        1,
+        2
+      ],
+      "status": "todo",
+      "note": "Dépend du choix de Guillaume"
+    },
+    {
+      "id": "C5",
+      "group": "4. Creatures",
+      "name": "Oiseaux",
+      "check": "planche : traversee du ciel, atterrissage sur un toit, jour et nuit",
+      "estimate_h": [
+        1,
+        2.5
+      ],
+      "status": "todo",
+      "note": "Dépend du choix de Guillaume"
+    },
+    {
+      "id": "C6",
+      "group": "4. Creatures",
+      "name": "Dragon endormi",
+      "check": "planche de la respiration au stade mythique, jour et nuit",
+      "estimate_h": [
+        1,
+        2.5
+      ],
+      "status": "todo",
+      "note": "Dépend du choix de Guillaume"
+    },
+    {
+      "id": "C7",
+      "group": "4. Creatures",
+      "name": "Retrait des anciens oiseaux et rats",
+      "check": "plus aucun rendu ni asset orphelin, npm run deadcode propre",
+      "estimate_h": [
+        0.3,
+        1
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "K1",
+      "group": "5. Controles",
+      "name": "Controles anim et mara",
+      "check": "planches de chaque effet et creature jour et nuit, une passe anim et mara, verrou des loupes bon",
+      "estimate_h": [
+        0.5,
+        1.5
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "K2",
+      "group": "Fin",
+      "name": "Fin de piste",
+      "check": "suite complete, build complet, captures pour Guillaume, summary, scratch archive, emplacement libere",
+      "estimate_h": [
+        1,
+        2
+      ],
+      "status": "todo"
+    }
+  ]
+}

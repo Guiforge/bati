@@ -446,6 +446,8 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
     onCroissanceFinie?.();
   };
   const saute = useRef<string | undefined>(undefined);
+  // The view the player had before the growth's first camera move, put back when the scene ends.
+  const avant = useRef<Vue | undefined>(undefined);
   // The shake and slide timers of the growth: a touch that skips the scene drops them (H2-13).
   const mouvement = useRef<ReturnType<typeof setTimeout>[]>([]);
   const [legende, setLegende] = useState<{ cle: string; code: BuildingCode; stade: Stade } | null>(
@@ -458,11 +460,23 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
     annonce.current = cle;
     onRevelation?.();
   };
-  const passer = () => {
-    if (cle === undefined) return;
+  const rendu = useRef<string | undefined>(undefined);
+  const rendre = () => {
+    // The scene's slide must not land after the return, nor be armed after it (a render slow to
+    // commit step 2 arms it late: seen on a phone at 1 fps).
+    rendu.current = cle;
     for (const x of mouvement.current) clearTimeout(x);
     mouvement.current = [];
+    // The scene's slide must not land after the return (a parent slow to drop the growth leaves it armed).
+    if (avant.current) camera.vers(avant.current);
+    avant.current = undefined;
+  };
+  const passer = () => {
+    if (cle === undefined) return;
     saute.current = cle;
+    // A tap that skips the scene still gives the camera back, once (the bubble it opens is placed
+    // from the view held at the touch, the finger's own, so the return does not move it).
+    rendre();
     setLegende(null);
     setLance({ cle, etape: 2 });
     reveler();
@@ -498,6 +512,16 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
     };
   };
   const retard = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Unmounted mid-show: the view kept for a remount is the player's, not the zoomed one. Declared
+  // before the camera so this cleanup runs first and the camera's own reads the restored view.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: written once, on unmount
+  const poserVue = useRef<(v: Vue) => void>(() => undefined);
+  useLayoutEffect(
+    () => () => {
+      if (avant.current) poserVue.current(avant.current);
+    },
+    [],
+  );
   const camera = useCameraIso({
     visible,
     w: width,
@@ -507,6 +531,10 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
     bloque,
     margeBas,
     onToucher: horloge.touche,
+    // A drag or a pinch during the show: the hand wins, no return.
+    onMain: () => {
+      avant.current = undefined;
+    },
     memoire,
     vueDepart: vueSeul(seul, width, height),
     onTap: (x, y, vue) => {
@@ -544,12 +572,20 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
       } else if (b) onOpen?.(b);
     },
   });
+  // The camera is declared after the cleanup above, which reaches it through this ref.
+  useLayoutEffect(() => {
+    poserVue.current = camera.poser;
+  });
   // The buzz leaves once the new stage's layer is committed, not with the timer that asks for it.
   // biome-ignore lint/correctness/useExhaustiveDependencies: `reveler` is once per `cle`
   useEffect(() => {
     if (etape !== 2) return;
     // Not after a skip: the touch already dropped the scene's camera moves.
-    mouvement.current = planifierCamera(premier, !reduit && saute.current !== cle, camera);
+    mouvement.current = planifierCamera(
+      premier,
+      !reduit && saute.current !== cle && rendu.current !== cle,
+      camera,
+    );
     reveler();
     // FIN-MAG: a stage that changes (or a new building) tells its story in one line.
     setLegende(legendeDe(cle, premier, reduit || saute.current === cle, avecChantier, stade));
@@ -579,13 +615,20 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
   // biome-ignore lint/correctness/useExhaustiveDependencies: `cle` stands for the growth
   useEffect(() => {
     if (cle === undefined) return;
-    if (premier) camera.vers(vueSur(centreBatiment(premier), ZOOM_CAPTURE));
+    if (premier) {
+      avant.current = camera.vue();
+      camera.vers(vueSur(centreBatiment(premier), ZOOM_CAPTURE));
+    }
     const autres = planifierCroissance({
       cle,
       reduit,
       avecChantier: avecChantier.length > 0,
       reveler,
-      terminer,
+      terminer: () => {
+        // Once, at the very end of the growth (all its buildings), unless a touch dropped it.
+        rendre();
+        terminer();
+      },
       setPose,
       setLance,
     });

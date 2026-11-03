@@ -64,6 +64,7 @@ export function useCameraIso({
   margeBas = 0,
   onTap,
   onToucher,
+  onMain,
   memoire,
   vueDepart,
 }: {
@@ -84,6 +85,8 @@ export function useCameraIso({
    * on the map in dp when the touch is the pan's (a pinch has none).
    */
   onToucher?: (x?: number, y?: number) => void;
+  /** A drag or a pinch took hold (not a tap: a pan activates past SEUIL_PAN): the hand has the camera. */
+  onMain?: () => void;
   /** Kept by the owner across remounts: the view is restored from it, and written back on unmount. */
   memoire?: { current: MemoireCamera | undefined };
   /** The opening frame, instead of the island's own (a capture of one building alone). */
@@ -234,6 +237,10 @@ export function useCameraIso({
       cancelAnimation(x);
       cancelAnimation(y);
     },
+    onActivate: () => {
+      "worklet";
+      if (onMain) scheduleOnRN(onMain);
+    },
     onUpdate: (ev) => {
       "worklet";
       const v = ramener(
@@ -256,6 +263,7 @@ export function useCameraIso({
     onBegin: () => {
       "worklet";
       onToucher?.();
+      if (onMain) scheduleOnRN(onMain);
       pinceActif.set(true);
     },
     onUpdate: (ev) => {

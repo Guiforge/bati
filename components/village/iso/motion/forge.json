@@ -1,0 +1,15 @@
+{
+  "effets": [
+    { "kind": "lueur", "lueur": "fire", "at": [344, 812], "fromRank": 5 },
+    { "kind": "lueur", "lueur": "fire", "at": [459, 812], "fromRank": 7 },
+    { "kind": "lueur", "lueur": "fire", "at": [445, 188], "fromRank": 10 },
+    {
+      "kind": "particules",
+      "genre": "fumee",
+      "at": [545, 700],
+      "fromRank": 10,
+      "nb": 2,
+      "taille": 10
+    }
+  ]
+}

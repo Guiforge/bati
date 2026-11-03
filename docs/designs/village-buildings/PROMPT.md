@@ -165,6 +165,7 @@ Most of the time goes into waiting for one thing after another. Run in parallel 
 - **Prepare ahead**: during a wave, the planner drafts the cards and maquettes of the next wave's buildings (no FLUX).
 - **Session 1**: step 0 items 4 to 7, 10 and 11 run in parallel where their files do not overlap; E1's maquettes run while the engine is being built.
 - **Only three things stay one at a time**: the emulator (you, one capture series at a time), the FLUX script (one run at a time, so the registry stays right), and merges into ISO_BRANCH (one at a time, tests green before the next).
+- **Waiting rule**: never wait with a `pgrep -f` loop, it matches its own command line and never ends. Wait on the PID, on a done file the job writes at its end, or on its output file, always with a time limit. Any background job or subagent with no new output for 15 minutes gets checked: read its output, then restart or stop it. Never trust a "waiting on background work" notice longer than that. Pass this rule to every dispatch.
 
 ### 9.1 Card (no FLUX)
 The planner starts from the building's line in the card sheet Guillaume approved, its catalog entry and the recipe, and drafts cards/<building>.md with the template of appendix A. Fewer, bigger, readable ideas. theo (fun, story, a gift at every rank) and mara (style, feasibility, readability, the wink rules) review it in one dispatch each; you fix and freeze it. An idea Guillaume struck stays struck; a [wink] he did not approve is replaced by its fallback beat.

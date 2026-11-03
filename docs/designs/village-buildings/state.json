@@ -27,7 +27,10 @@
           "scripts/bld/test_bldtools.py"
         ],
         "flag": "BUILDING_STAGES_RULE = old, rien dans l'app ne lit encore la table",
-        "resteDeLEtape0Point4": ["etats de capture", "cartes de calibration"]
+        "resteDeLEtape0Point4": [
+          "etats de capture",
+          "cartes de calibration"
+        ]
       },
       "3_cartes": {
         "statut": "done",
@@ -59,7 +62,10 @@
           "r3": {
             "S-A": "10/12",
             "S-B": "10/12",
-            "echecs": ["observatory_mythic", "observatory_mythic.96"]
+            "echecs": [
+              "observatory_mythic",
+              "observatory_mythic.96"
+            ]
           }
         },
         "windmill": "passe au tour 3, flou compris",
@@ -91,19 +97,21 @@
     "sources": "~/Téléchargements (xdg de ~/Downloads sur cette machine)",
     "PUSH": "yes",
     "apkGuard": "aucune, retirée par Guillaume le 02/11",
-    "fluxRegistreRestant": 27.231
+    "fluxRegistreRestant": 20.857
   },
   "flux": {
     "registreAuDepart": {
       "spent": 44.843,
       "ceiling": 75.0
     },
-    "depenseSession": 2.926
+    "depenseSession": 9.3,
+    "reserveNonSoldee": 0.14
   },
   "subagentRuns": {
-    "used": 85,
+    "used": 103,
     "budget": 250,
-    "alerte80": 200
+    "alerte80": 200,
+    "note": "compte estimé à la main"
   },
   "step0": {
     "1": "done",
@@ -122,24 +130,32 @@
   "exploration": {
     "E1": {
       "moulin": "A, cristal",
-      "observatoire": "C, astrolabe",
+      "observatoire": "C, astrolabe, A3a atlantes passe G-ID, jamais comparé",
       "verdict": "explore/E1/verdict.md"
     },
-    "E2": "à faire sur le moulin peint",
+    "E2": "pas fait",
     "E3": "FLUX 3 Image",
     "E4": "peinture neuve, stade précédent en référence",
     "E5": "finition b"
   },
   "recipeLocked": false,
-  "waves": ["W1", "W2", "W3", "W4", "W5", "W6"],
+  "waves": [
+    "W1",
+    "W2",
+    "W3",
+    "W4",
+    "W5",
+    "W6"
+  ],
   "buildings": {
     "windmill": {
-      "etape": "sondes tour 3, peinture complète pas lancée",
-      "branche": "bld-flux"
+      "etape": "arrêté",
+      "nom": "windmill A, classique",
+      "usage": "comparaison seulement, non intégré",
+      "images": "windmill/r1/final/, ignoré par git, dans l archive"
     },
     "observatory": {
-      "etape": "maquettes r2, G-ID passe",
-      "branche": "bld-flux"
+      "etape": "maquettes r2 et A3, G-ID passe, pas de peinture"
     }
   },
   "parkedQuestions": [],
@@ -157,5 +173,14 @@
       "~/bati-archives/2026-11-02-loupes.tgz",
       "~/bati-archives/2026-11-02-iso-evidence.tgz"
     ]
+  },
+  "session1Fin": {
+    "date": "2026-11-03",
+    "raison": "arrêt demandé par Guillaume : la méthode change, nouveau prompt (direction artistique d abord)",
+    "tip": "8696ce2a, plus le commit du résumé",
+    "suiteComplete": "verte sur 02d73f33, pas relancée sur 8696ce2a",
+    "resume": "summary-1.md",
+    "archive": "~/bati-archives/2026-11-03-session1.tgz",
+    "checkpointVerrouillage": "pas écrit"
   }
 }

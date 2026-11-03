@@ -19,6 +19,9 @@ python3 scripts/bld/final.py strip <code>
 - **Personne :** toute figure humaine visible refuse la variante.
 - **Mythique :** même structure que le legendary, en plus grand, avec un vrai spectacle, dans le bâtiment autant que dans l'effet. Ni runes ni lettres peintes.
 - **Couleur :** aucune couleur proche du magenta dans le bâtiment, le fond magenta la mangerait au détourage. Si le prompt en demande, remplace-la par une teinte chaude ou froide franche, dans la spec, et note-le.
+- **Contact au sol :** `pick` recale la peinture sur l'emprise par script, ne repeins jamais pour ça, et n'en parle pas dans les prompts : demander le losange le fait peindre. `repick <code>` le refait sans FLUX.
+- **Taille :** `pick` et `repick` réduisent chaque stade à sa hauteur cible par script. Ne repeins jamais pour la taille. Peins plutôt le mythique avant de juger `strip`, ou lance `repick` à la fin.
+- **Ordre :** tes reprises vont d'abord au mythique, à la continuité et aux erreurs d'image.
 - **Reprises :** `strip` est le contrôle, il doit passer. Au plus 2 reprises par stade (`--try N`), en changeant une seule chose à la fois. Si ça ne passe toujours pas, garde la meilleure, dis-le, ne boucle pas.
 - **Plafond :** 2 $ pour le bâtiment. Compte sur les images (0,048 $ pièce), car le registre compte aussi les autres.
 - **Alerte de budget :** arrête-toi et dis-le. N'exécute jamais `budget ack`, `klein-ack`, et ne touche pas au plafond.

@@ -25,6 +25,25 @@ class KeyAndMeasure(unittest.TestCase):
         self.assertEqual(final.green_edge(rgba), 0)
         self.assertGreater(final.green_edge(Image.fromarray(__import__("numpy").dstack([__import__("numpy").full((9, 9, 3), (0, 200, 0)), __import__("numpy").full((9, 9), 100)]).astype("uint8"), "RGBA")), 0)
 
+    def test_seat_lands_on_emprise_and_grows_canvas(self):
+        im = Image.new("RGBA", (final.W, final.H))
+        ImageDraw.Draw(im).rectangle([300, 5, 500, 1100], fill=(60, 80, 40, 255))  # 12 px below the corner, top at the edge
+        out, pad = final.seat(im)
+        m = final.measure(out, final.BOTTOM + pad)
+        self.assertEqual((m["contact_dy"], m["contact_dx"], out.height, m["top_y"]), (0, 0, final.H + pad, 12))
+
+    def test_shrink_corrects_a_stage_taller_than_the_next(self):
+        def tall(h):
+            im = Image.new("RGBA", (final.W, final.H))
+            ImageDraw.Draw(im).rectangle([300, final.BOTTOM - h, 600, final.BOTTOM], fill=(60, 80, 40, 255))
+            return im
+        rough, solid = tall(1000), tall(800)  # as painted, the rough is taller than the solid
+        ms = {"mythic": {"height": 1000}}
+        r, fr = final.shrink(rough, final.target_h("x", "rough", ms))
+        s, fs = final.shrink(solid, final.target_h("x", "solid", ms))
+        self.assertLess(final.measure(r)["height"], final.measure(s)["height"])  # 380 against 520
+        self.assertEqual(final.shrink(tall(300), 500)[1], 1.0)  # never enlarged
+
 
 if __name__ == "__main__":
     unittest.main()

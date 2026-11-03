@@ -6,6 +6,7 @@
     final.py pick <code> <stage> N [--try N]             # keys the magenta, writes final/<stage>.png, measures into measures.json
     final.py rekey <code>                                # re-keys the elements from their .raw.png, no FLUX
     final.py elements <code>                             # teasers and gags, one subject per image, keyed
+    final.py repick <code>                               # seats again the picked stages on the emprise, no FLUX
     final.py strip <code>                                # final/strip.png, the five stages side by side
 
 Run paint and elements as `flock ~/.cache/bati-flux.lock timeout 590 python3 scripts/bld/final.py ...`. Never overwrites.
@@ -145,6 +146,51 @@ def measure(rgba, diamond_bottom=BOTTOM):
             "contact_dy": int(ys.max() - diamond_bottom), "contact_dx": int(low.mean() - W // 2)}
 
 
+FOUR = ("dragon_lair", "heroes_hall", "champion_arena")  # the deeds: four stages
+FRAC = {"rough": 0.38, "solid": 0.52, "grand": 0.68, "legendary": 0.84, "mythic": 1.0}
+FRAC4 = {"rough": 0.40, "solid": 0.58, "grand": 0.78, "mythic": 1.0}
+USEFUL = BOTTOM - 12  # the canvas's useful height while the mythic is not picked yet
+
+
+def target_h(code, stage, ms):
+    """FLUX fills the frame whatever the prompt says, so the height of a stage is set here: a share of the picked mythic's height."""
+    ref = ms["mythic"]["height"] if "mythic" in ms else USEFUL
+    return (FRAC4 if code in FOUR else FRAC)[stage] * ref
+
+
+def shrink(rgba, target):
+    """Scale the painting down (never up) to `target` px of silhouette height, in premultiplied alpha, with a light sharpening so
+    the ink line keeps its weight. Returns (image on a canvas of the same size, factor)."""
+    h = measure(rgba)["height"]
+    if target >= h:
+        return rgba, 1.0
+    f = target / h
+    box = rgba.getbbox()
+    part = rgba.crop(box)
+    nw, nh = max(1, round(part.width * f)), max(1, round(part.height * f))
+    small = part.convert("RGBa").resize((nw, nh), Image.LANCZOS).convert("RGBA")
+    rgb = small.convert("RGB").filter(ImageFilter.UnsharpMask(1.0, 70, 2))
+    rgb.putalpha(small.getchannel("A"))
+    out = Image.new("RGBA", rgba.size)
+    out.paste(rgb, ((box[0] + box[2] - nw) // 2, box[3] - nh))  # same centre, same lowest row: seat moves it afterwards
+    return out, f
+
+
+def seat(rgba, margin=12):
+    """Translate the painting, pixel for pixel, so its ground contact sits on the emprise's lowest corner (W/2, BOTTOM). If the top
+    of the silhouette then comes within `margin` px of the canvas top, the canvas grows upward by the missing rows (the anchor, the
+    distance to the canvas bottom, does not move). Returns (image, rows added on top)."""
+    m = measure(rgba)
+    dy, dx = BOTTOM - m["bottom_y"], W // 2 - m["contact_x"]
+    pad = max(0, margin - (m["top_y"] + dy))
+    if m["left"] + dx < 0 or m["right"] + dx >= W:
+        sys.exit(f"the painting does not fit the width once seated ({m['left']}+{dx}, {m['right']}+{dx})")
+    src, out = np.asarray(rgba), np.zeros((H + pad, W, 4), np.uint8)
+    y0, y1 = max(0, -(dy + pad)), min(H, H + pad - (dy + pad))  # source rows that land inside the new canvas
+    out[y0 + dy + pad:y1 + dy + pad, max(0, dx):W + min(0, dx)] = src[y0:y1, max(0, -dx):W - max(0, dx)]
+    return Image.fromarray(out, "RGBA"), pad
+
+
 def paint(code, stage, variants, attempt):
     from iso_loop import FLUX3
     s, d = spec(code), fdir(code)
@@ -182,12 +228,25 @@ def pick(code, stage, n, attempt):
     rgba = key(Image.open(src))
     if (n_bad := green_edge(rgba)) > 20:  # a few stray pixels are noise
         sys.exit(f"{stage}: {n_bad} green edge pixels, refused")
-    rgba.save(d / f"{stage}.png")
     mf = d / "measures.json"
     m = json.loads(mf.read_text()) if mf.exists() else {}
-    m[stage] = {**measure(rgba), "from": src.name}
+    factor = 1.0
+    if stage != "mythic":  # the mythic is never scaled: it sets the height of the others (repick after picking a new one)
+        rgba, factor = shrink(rgba, target_h(code, stage, m))
+    rgba, pad = seat(rgba)
+    rgba.save(d / f"{stage}.png")
+    m[stage] = {**measure(rgba, BOTTOM + pad), "from": src.name, "pad_top": pad, "scale": round(factor, 4)}
     mf.write_text(json.dumps(m, indent=1))
     print(stage, m[stage])
+
+
+def repick(code):
+    """Seats again every stage already picked, from its raw painting: no FLUX call."""
+    ms = json.loads((fdir(code) / "measures.json").read_text())
+    for st in ("mythic", *STAGES[:-1]):  # the mythic first: the others take their height from it
+        if st in ms:
+            stem = pathlib.Path(ms[st]["from"]).stem  # <stage>_t<N>_v<n>
+            pick(code, st, int(stem.split("_v")[1]), int(stem.split("_t")[1].split("_")[0]))
 
 
 def elements(code, rekey=False):
@@ -225,14 +284,24 @@ def strip(code):
     d = fdir(code)
     got = [st for st in STAGES if (d / f"{st}.png").exists()]
     k = 0.5
-    w, h = int(W * k), int(H * k)
+    ms = json.loads((d / "measures.json").read_text())
+    grow = max([ms[st].get("pad_top", 0) for st in got] + [0])  # the family canvas: every stage as tall as the tallest
+    w, h = int(W * k), int((H + grow) * k)
     band = Image.new("RGB", (w * len(got), h), (112, 140, 104))
     for i, st in enumerate(got):
-        t = Image.open(d / f"{st}.png").resize((w, h), Image.LANCZOS)
+        full = Image.new("RGBA", (W, H + grow))
+        full.paste(Image.open(d / f"{st}.png"), (0, grow - ms[st].get("pad_top", 0)))
+        ms[st]["canvas_h"] = H + grow
+        t = full.resize((w, h), Image.LANCZOS)
         band.paste(t.convert("RGB"), (i * w, 0), t.getchannel("A"))
         ImageDraw.Draw(band).text((i * w + 6, 6), st, fill=(255, 255, 255), font=ImageFont.load_default(20))
     band.save(d / "strip.png")
-    ms = json.loads((d / "measures.json").read_text())
+    if grow:
+        print(f"CANVAS ENLARGED: {grow} px on top, family canvas {W} x {H + grow}, anchor unchanged (emprise bottom {BOTTOM} px above the canvas bottom)")
+    (d / "measures.json").write_text(json.dumps(ms, indent=1))
+    ea, eb = json.loads((ROOT / "constants/isoSpec.json").read_text())["batiments"][code]["emprise"]
+    if "mythic" in ms and ms["mythic"]["right"] - ms["mythic"]["left"] > 2 * (ea + eb) * CELL:
+        print(f"WARNING: the mythic is {ms['mythic']['right'] - ms['mythic']['left']} px wide, more than twice the emprise ({(ea + eb) * CELL} px)")
     bad = []
     for st in got:
         if abs(ms[st]["contact_dy"]) > 20 or abs(ms[st]["contact_dx"]) > 20:
@@ -251,12 +320,12 @@ def strip(code):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["emprise", "paint", "pick", "elements", "rekey", "strip"])
+    ap.add_argument("cmd", choices=["emprise", "paint", "pick", "elements", "rekey", "repick", "strip"])
     ap.add_argument("code")
     ap.add_argument("rest", nargs="*")
     ap.add_argument("--variants", type=int, default=2)
     ap.add_argument("--try", dest="attempt", type=int, default=1)
     a = ap.parse_args()
     {"emprise": lambda: emprise(a.code), "paint": lambda: paint(a.code, a.rest[0], a.variants, a.attempt),
-     "pick": lambda: pick(a.code, a.rest[0], int(a.rest[1]), a.attempt), "elements": lambda: elements(a.code), "rekey": lambda: elements(a.code, True),
+     "pick": lambda: pick(a.code, a.rest[0], int(a.rest[1]), a.attempt), "elements": lambda: elements(a.code), "rekey": lambda: elements(a.code, True), "repick": lambda: repick(a.code),
      "strip": lambda: strip(a.code)}[a.cmd]()

@@ -139,6 +139,11 @@ export const windmill: Omit<PeintBld, "donnees"> = {
       nuit: require("@/assets/images/village/iso/peints/windmill/elements/teaser_r4.nuit.webp"),
       size: [170, 111],
     },
+    "elements/teaser_r6": {
+      jour: require("@/assets/images/village/iso/peints/windmill/elements/teaser_r6.jour.webp"),
+      nuit: require("@/assets/images/village/iso/peints/windmill/elements/teaser_r6.nuit.webp"),
+      size: [170, 154],
+    },
     "elements/teaser_r8": {
       jour: require("@/assets/images/village/iso/peints/windmill/elements/teaser_r8.jour.webp"),
       nuit: require("@/assets/images/village/iso/peints/windmill/elements/teaser_r8.nuit.webp"),

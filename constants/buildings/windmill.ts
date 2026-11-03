@@ -85,6 +85,7 @@ export const windmill: BuildingData = {
   teasers: [
     { fromRank: 2, untilRank: 3, sprite: "elements/teaser_r2", anchorOffset: main.teaserAt },
     { fromRank: 4, untilRank: 5, sprite: "elements/teaser_r4", anchorOffset: main.teaserAt },
+    { fromRank: 6, untilRank: 7, sprite: "elements/teaser_r6", anchorOffset: main.teaserAt },
     { fromRank: 8, untilRank: 9, sprite: "elements/teaser_r8", anchorOffset: main.teaserAt },
   ],
   ancres,

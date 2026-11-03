@@ -60,7 +60,7 @@ export const forge: BuildingData = {
       },
       {
         rank: 4,
-        beat: "A small leather bellows with a wooden nozzle tipped on its side, a burst seam showing, a small heap of soft grey ash and soot on the ground beside it, an iron needle and a length of pale linen thread beside it. All dark areas are neutral grey, with no red and no pink anywhere. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle.",
+        beat: "A small leather bellows with a wooden nozzle tipped on its side, a burst seam showing, a small heap of soft grey ash and soot on the ground beside it, an iron needle and a length of pale linen thread beside it. All dark areas are neutral grey, with no red and no pink anywhere. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle..",
         sprite: "elements/gag_4",
       },
       {

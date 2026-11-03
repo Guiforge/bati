@@ -52,13 +52,18 @@ export const well: BuildingData = {
     slot: main.gagSlot,
     beats: [
       {
+        rank: 1,
+        beat: "A wooden plank resting across two round stones, a short coil of rope lying flat beside it, the middle of the plank worn pale and smooth. Sober, matte, ink outlines, iso angle..",
+        sprite: "elements/gag_1",
+      },
+      {
         rank: 6,
         beat: "A plank fixed to a post by a leather strap, with a small spoked cart hub on a handle on it. Sober, matte, ink outlines, iso angle..",
         sprite: "elements/gag_6",
       },
       {
         rank: 10,
-        beat: "A slanted stone slab covered with white frost, with one clean plain rectangular strip across its middle where the frost has melted and the dark wet stone shows, straight edges, a wooden cart wheel resting beside it, also without frost. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle.",
+        beat: "A slanted stone slab covered with white frost, with one clean plain rectangular strip across its middle where the frost has melted and the dark wet stone shows, straight edges, a wooden cart wheel resting beside it, also without frost. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle..",
         sprite: "elements/gag_10",
       },
     ],

@@ -4440,61 +4440,61 @@
   "assets/images/village/iso/peints/archery_range/grand.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/archery_range/final/grand_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/archery_range/grand.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/archery_range/final/grand_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/archery_range/legendary.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/archery_range/final/legendary_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/archery_range/legendary.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/archery_range/final/legendary_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/archery_range/mythic.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/archery_range/final/mythic_t4_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/archery_range/mythic.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/archery_range/final/mythic_t4_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/archery_range/rough.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/archery_range/final/rough_t2_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/archery_range/rough.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/archery_range/final/rough_t2_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/archery_range/solid.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/archery_range/final/solid_t2_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/archery_range/solid.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/archery_range/final/solid_t2_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/elements/gag_1.jour.webp": {
@@ -4560,61 +4560,61 @@
   "assets/images/village/iso/peints/armory/grand.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/grand_t3_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask (scripts/bld/sans_losange.py), without FLUX.",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/grand.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/grand_t3_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask (scripts/bld/sans_losange.py), without FLUX.",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/legendary.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/legendary_t2_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask (scripts/bld/sans_losange.py), without FLUX.",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/legendary.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/legendary_t2_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask (scripts/bld/sans_losange.py), without FLUX.",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/mythic.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/mythic_t2_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask (scripts/bld/sans_losange.py), without FLUX.",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/mythic.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/mythic_t2_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask (scripts/bld/sans_losange.py), without FLUX.",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/rough.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/rough_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/rough.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/rough_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/solid.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/solid_t3_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask (scripts/bld/sans_losange.py), without FLUX.",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/solid.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/solid_t3_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask (scripts/bld/sans_losange.py), without FLUX.",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/barn/elements/gag_1.jour.webp": {
@@ -4680,61 +4680,61 @@
   "assets/images/village/iso/peints/barn/grand.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/barn/final/grand_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/barn/grand.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/barn/final/grand_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/barn/legendary.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/barn/final/legendary_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/barn/legendary.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/barn/final/legendary_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/barn/mythic.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/barn/final/mythic_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/barn/mythic.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/barn/final/mythic_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/barn/rough.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/barn/final/rough_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/barn/rough.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/barn/final/rough_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/barn/solid.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/barn/final/solid_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/barn/solid.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/barn/final/solid_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/campfire/elements/gag_10.jour.webp": {
@@ -4872,61 +4872,61 @@
   "assets/images/village/iso/peints/campfire/grand.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/campfire/final/grand_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/campfire/grand.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/campfire/final/grand_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/campfire/legendary.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/campfire/final/legendary_t2_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/campfire/legendary.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/campfire/final/legendary_t2_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/campfire/mythic.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/campfire/final/mythic_t4_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/campfire/mythic.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/campfire/final/mythic_t4_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/campfire/rough.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/campfire/final/rough_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/campfire/rough.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/campfire/final/rough_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/campfire/solid.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/campfire/final/solid_t3_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/campfire/solid.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/campfire/final/solid_t3_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/castle_wall/elements/gag_1.jour.webp": {
@@ -4992,61 +4992,61 @@
   "assets/images/village/iso/peints/castle_wall/grand.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/castle_wall/final/grand_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/castle_wall/grand.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/castle_wall/final/grand_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/castle_wall/legendary.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/castle_wall/final/legendary_t2_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/castle_wall/legendary.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/castle_wall/final/legendary_t2_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/castle_wall/mythic.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/castle_wall/final/mythic_t2_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/castle_wall/mythic.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/castle_wall/final/mythic_t2_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/castle_wall/rough.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/castle_wall/final/rough_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/castle_wall/rough.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/castle_wall/final/rough_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/castle_wall/solid.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/castle_wall/final/solid_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/castle_wall/solid.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/castle_wall/final/solid_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/champion_arena/elements/gag_2.jour.webp": {
@@ -5112,49 +5112,49 @@
   "assets/images/village/iso/peints/champion_arena/grand.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/champion_arena/final/grand_t4_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/champion_arena/grand.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/champion_arena/final/grand_t4_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/champion_arena/mythic.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/champion_arena/final/mythic_t5_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/champion_arena/mythic.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/champion_arena/final/mythic_t5_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/champion_arena/rough.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/champion_arena/final/rough_t4_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/champion_arena/rough.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/champion_arena/final/rough_t4_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/champion_arena/solid.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/champion_arena/final/solid_t4_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/champion_arena/solid.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/champion_arena/final/solid_t4_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/dragon_lair/elements/gag_2.jour.webp": {
@@ -5220,49 +5220,49 @@
   "assets/images/village/iso/peints/dragon_lair/grand.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/dragon_lair/final/grand_t2_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/dragon_lair/grand.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/dragon_lair/final/grand_t2_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/dragon_lair/mythic.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/dragon_lair/final/mythic_t2_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/dragon_lair/mythic.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/dragon_lair/final/mythic_t2_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/dragon_lair/rough.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/dragon_lair/final/rough_t2_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/dragon_lair/rough.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/dragon_lair/final/rough_t2_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/dragon_lair/solid.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/dragon_lair/final/solid_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/dragon_lair/solid.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/dragon_lair/final/solid_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/druid_grove/elements/gag_10.jour.webp": {
@@ -5580,61 +5580,61 @@
   "assets/images/village/iso/peints/farm/grand.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/farm/final/grand_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/farm/grand.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/farm/final/grand_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/farm/legendary.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/farm/final/legendary_t2_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/farm/legendary.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/farm/final/legendary_t2_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/farm/mythic.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/farm/final/mythic_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/farm/mythic.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/farm/final/mythic_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/farm/rough.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/farm/final/rough_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/farm/rough.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/farm/final/rough_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/farm/solid.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/farm/final/solid_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/farm/solid.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/farm/final/solid_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/forge/elements/gag_10.jour.webp": {
@@ -5760,61 +5760,61 @@
   "assets/images/village/iso/peints/forge/grand.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/forge/final/grand_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/forge/grand.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/forge/final/grand_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/forge/legendary.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/forge/final/legendary_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/forge/legendary.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/forge/final/legendary_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/forge/mythic.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/forge/final/mythic_t2_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/forge/mythic.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/forge/final/mythic_t2_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/forge/rough.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/forge/final/rough_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/forge/rough.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/forge/final/rough_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/forge/solid.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/forge/final/solid_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/forge/solid.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/forge/final/solid_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/fountain/elements/gag_1.jour.webp": {
@@ -5928,61 +5928,61 @@
   "assets/images/village/iso/peints/fountain/grand.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/fountain/final/grand_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/fountain/grand.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/fountain/final/grand_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/fountain/legendary.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/fountain/final/legendary_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/fountain/legendary.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/fountain/final/legendary_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/fountain/mythic.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/fountain/final/mythic_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/fountain/mythic.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/fountain/final/mythic_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/fountain/rough.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/fountain/final/rough_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/fountain/rough.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/fountain/final/rough_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/fountain/solid.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/fountain/final/solid_t2_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/fountain/solid.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/fountain/final/solid_t2_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/heroes_hall/elements/gag_2.jour.webp": {
@@ -6048,49 +6048,49 @@
   "assets/images/village/iso/peints/heroes_hall/grand.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/heroes_hall/final/grand_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/heroes_hall/grand.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/heroes_hall/final/grand_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/heroes_hall/mythic.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/heroes_hall/final/mythic_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/heroes_hall/mythic.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/heroes_hall/final/mythic_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/heroes_hall/rough.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/heroes_hall/final/rough_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/heroes_hall/rough.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/heroes_hall/final/rough_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/heroes_hall/solid.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/heroes_hall/final/solid_t2_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/heroes_hall/solid.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/heroes_hall/final/solid_t2_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/high_road/elements/gag_10.jour.webp": {
@@ -6228,61 +6228,61 @@
   "assets/images/village/iso/peints/high_road/grand.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/high_road/final/grand_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/high_road/grand.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/high_road/final/grand_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/high_road/legendary.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/high_road/final/legendary_t2_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/high_road/legendary.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/high_road/final/legendary_t2_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/high_road/mythic.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/high_road/final/mythic_t2_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/high_road/mythic.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/high_road/final/mythic_t2_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/high_road/rough.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/high_road/final/rough_t2_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/high_road/rough.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/high_road/final/rough_t2_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/high_road/solid.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/high_road/final/solid_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/high_road/solid.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/high_road/final/solid_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/observatory/elements/gag_10.jour.webp": {
@@ -6372,61 +6372,61 @@
   "assets/images/village/iso/peints/observatory/grand.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/observatory/final/grand_t3_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/observatory/grand.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/observatory/final/grand_t3_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/observatory/legendary.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/observatory/final/legendary_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/observatory/legendary.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/observatory/final/legendary_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/observatory/mythic.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/observatory/final/mythic_t2_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/observatory/mythic.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/observatory/final/mythic_t2_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/observatory/rough.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/observatory/final/rough_t3_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/observatory/rough.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/observatory/final/rough_t3_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/observatory/solid.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/observatory/final/solid_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/observatory/solid.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/observatory/final/solid_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/quarry/elements/gag_10.jour.webp": {
@@ -6552,61 +6552,61 @@
   "assets/images/village/iso/peints/quarry/grand.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/quarry/final/grand_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/quarry/grand.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/quarry/final/grand_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/quarry/legendary.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/quarry/final/legendary_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/quarry/legendary.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/quarry/final/legendary_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/quarry/mythic.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/quarry/final/mythic_t2_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/quarry/mythic.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/quarry/final/mythic_t2_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/quarry/rough.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/quarry/final/rough_t2_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/quarry/rough.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/quarry/final/rough_t2_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/quarry/solid.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/quarry/final/solid_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/quarry/solid.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/quarry/final/solid_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/tent/elements/gag_10.jour.webp": {
@@ -7056,60 +7056,72 @@
   "assets/images/village/iso/peints/watchtower/grand.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/watchtower/final/grand_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/watchtower/grand.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/watchtower/final/grand_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/watchtower/legendary.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/watchtower/final/legendary_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/watchtower/legendary.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/watchtower/final/legendary_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/watchtower/mythic.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/watchtower/final/mythic_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/watchtower/mythic.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/watchtower/final/mythic_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/watchtower/rough.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/watchtower/final/rough_t2_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/watchtower/rough.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/watchtower/final/rough_t2_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/watchtower/solid.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/watchtower/final/solid_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/watchtower/solid.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/watchtower/final/solid_t1_v1.png",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/well/elements/gag_1.jour.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/well/final/elements/gag_1.raw.png",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/well/elements/gag_1.nuit.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/well/final/elements/gag_1.raw.png",
     "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
@@ -7188,61 +7200,61 @@
   "assets/images/village/iso/peints/well/grand.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/well/final/grand_t2_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/well/grand.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/well/final/grand_t2_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/well/legendary.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/well/final/legendary_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/well/legendary.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/well/final/legendary_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/well/mythic.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/well/final/mythic_t2_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/well/mythic.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/well/final/mythic_t2_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/well/rough.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/well/final/rough_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/well/rough.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/well/final/rough_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/well/solid.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/well/final/solid_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/well/solid.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/well/final/solid_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/windmill/elements/gag_10.jour.webp": {
@@ -7365,6 +7377,18 @@
     "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
+  "assets/images/village/iso/peints/windmill/elements/teaser_r6.jour.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/windmill/final/elements/teaser_r6.raw.png",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/windmill/elements/teaser_r6.nuit.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/windmill/final/elements/teaser_r6.raw.png",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
   "assets/images/village/iso/peints/windmill/elements/teaser_r8.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/windmill/final/elements/teaser_r8.raw.png",
@@ -7380,61 +7404,61 @@
   "assets/images/village/iso/peints/windmill/grand.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/windmill/final/grand_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/windmill/grand.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/windmill/final/grand_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/windmill/legendary.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/windmill/final/legendary_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/windmill/legendary.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/windmill/final/legendary_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/windmill/mythic.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/windmill/final/mythic_t2_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/windmill/mythic.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/windmill/final/mythic_t2_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/windmill/rough.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/windmill/final/rough_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/windmill/rough.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/windmill/final/rough_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/windmill/solid.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/windmill/final/solid_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/windmill/solid.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/windmill/final/solid_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/wizard_tower/elements/gag_10.jour.webp": {
@@ -7572,61 +7596,61 @@
   "assets/images/village/iso/peints/wizard_tower/grand.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/wizard_tower/final/grand_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/wizard_tower/grand.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/wizard_tower/final/grand_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/wizard_tower/legendary.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/wizard_tower/final/legendary_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/wizard_tower/legendary.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/wizard_tower/final/legendary_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/wizard_tower/mythic.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/wizard_tower/final/mythic_t2_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/wizard_tower/mythic.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/wizard_tower/final/mythic_t2_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/wizard_tower/rough.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/wizard_tower/final/rough_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/wizard_tower/rough.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/wizard_tower/final/rough_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/wizard_tower/solid.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/wizard_tower/final/solid_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/wizard_tower/solid.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/wizard_tower/final/solid_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/pieces/animal_chat_repos.webp": {

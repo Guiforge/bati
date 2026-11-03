@@ -23,5 +23,5 @@ assert m[160:280, 30:140].all(), "the plate is gone"
 assert o[200, 60, 3] == 0
 assert not m[110:200, 160:340].any(), "the textured wall is kept"
 assert (o[110:200, 160:340, 3] == 255).all()
-assert S.part(im, m) > 0.2
+assert S.part(im, out) > 0.2
 print("ok")

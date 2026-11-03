@@ -195,7 +195,7 @@ def main() -> None:
         ecrire_webp(nuit(jour, None), dest / f"{s}.nuit.webp")
         reg_masques[s] = masque(jour.getchannel("A"))
         de = mesures[s]["from"]
-        plaque = " The grey footprint plate was removed by mask (scripts/bld/sans_losange.py), without FLUX." if (src / f"{s}.avant-losange.png").exists() else ""
+        plaque = " The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX." if (src / f"{s}.avant-losange.png").exists() else ""
         provenance(prov, loc, f"assets/images/village/iso/peints/{code}/{s}.jour.webp", f"{rel_src}/{de}",
                    "the final painting of the stage placed on the family canvas, re-encoded WebP q90." + plaque)
         provenance(prov, loc, f"assets/images/village/iso/peints/{code}/{s}.nuit.webp", f"{rel_src}/{de}",

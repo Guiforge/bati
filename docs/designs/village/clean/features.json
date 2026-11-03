@@ -1,0 +1,46 @@
+{
+  "track": "CLEAN",
+  "owns": [
+    "docs/designs/village/clean/",
+    "docs/designs/village/README.md",
+    "docs/designs/village/PIPELINE.md",
+    "docs/designs/village/archive-index.md",
+    "docs/designs/village-iso-poc/",
+    "docs/designs/village-iso-polish/",
+    "docs/designs/village-iso-v1/",
+    "docs/designs/village-buildings/",
+    "scripts/bld/",
+    "scripts/iso/ (scripts morts seulement, jamais iso_loop.py)",
+    "scripts/provenance.json",
+    "assets/images/village/iso/peints/",
+    "components/village/iso/peints/",
+    "components/village/iso/peints.ts",
+    "constants/buildings/ (regeneres par integrate.py : mesures et masques, bloc hand intact)",
+    "__tests__/ (tests morts, dette de tests)"
+  ],
+  "shared_read_only": [
+    "docs/designs/village-loop/loupes/",
+    "~/.cache/bati-loupes-lock/",
+    "scripts/iso/iso_loop.py",
+    "VALIDATIONS.md",
+    ".claude/agents/",
+    "constants/isoPoc.ts",
+    "components/village/iso/ (hors peints : camera, moment d'evolution, mouvement, a LIFE)",
+    "motion/"
+  ],
+  "note_autres_sessions": "origin/track-life n'existait pas au demarrage (03/11). A relire avant chaque fusion et avant de retirer un script ou un doc.",
+  "items": [
+    {"id": "R1", "group": "Restes des batiments", "name": "Losange gris retire", "check": "planche avant/apres de chaque stade sur la couleur du sol, en jeu sur fontaine, rempart, ferme, armurerie ; verrou des loupes 83 fichiers", "estimate_h": [1, 3], "status": "doing"},
+    {"id": "R2", "group": "Restes des batiments", "name": "Deux images manquantes", "check": "windmill teaser_r6 et well gag_1 peints en flux-3-image, decoupes, integres, visibles sur la planche d'elements", "estimate_h": [0.5, 1], "status": "doing"},
+    {"id": "R3", "group": "Restes des batiments", "name": "Controle des modeles", "check": "docs/designs/village/clean/modeles.md : chaque sprite et son modele, liste de tout ce qui n'est pas FLUX 3 Image ou Klein", "estimate_h": [0.2, 0.5], "status": "doing"},
+    {"id": "R4", "group": "Restes des batiments", "name": "Build .perf et captures", "check": "serie de captures du tip : 7 gags repeints en jeu, planches d'elements, losanges corriges, avec le commit note", "estimate_h": [1, 2], "status": "todo"},
+    {"id": "R5", "group": "Restes des batiments", "name": "Vieux worktrees", "check": "git worktree list : seuls restent les non fusionnes et les tenus, listes pour Guillaume", "estimate_h": [0.2, 0.5], "status": "todo"},
+    {"id": "C1", "group": "1. Inventaire", "name": "Inventaire", "check": "inventory.md : docs/designs, scripts/iso, tests, branches, worktrees ; utilise ou non, fusionne ou non, unique ou doublon", "estimate_h": [0.5, 1], "status": "todo"},
+    {"id": "C2", "group": "2-3. Tri et archive", "name": "Archiver puis retirer", "check": "~/bati-archives/<date>-clean.tgz relu, archive-index.md, depot sans vieilles experiences ; rien de la liste jamais touchee", "estimate_h": [1, 2], "status": "todo"},
+    {"id": "C3", "group": "4. Ancienne scene", "name": "Scene 2D gardee", "check": "le build publie affiche toujours la scene 2D, INTEGRATION intact", "estimate_h": [0.1, 0.3], "status": "todo"},
+    {"id": "C4", "group": "5. Structure", "name": "Structure et README", "check": "docs/designs/village/README.md dit ce qui est ou, dossiers verrouilles listes", "estimate_h": [0.3, 0.7], "status": "todo"},
+    {"id": "C5", "group": "6. Guide", "name": "PIPELINE.md", "check": "ajouter ou editer un batiment, creature, mouvement, nuit, drapeaux, outils et commandes ; commandes verifiees", "estimate_h": [0.5, 1], "status": "todo"},
+    {"id": "C6", "group": "7. Tests", "name": "Dette de tests et suite verte", "check": "suite complete verte sous Node 24, tests-debt.md soldee dont fdroid-scanignore", "estimate_h": [1, 3], "status": "todo"},
+    {"id": "C7", "group": "Fin", "name": "Fin de piste", "check": "summary, status final, scratch archive et vide, push, emplacement libere", "estimate_h": [0.3, 0.5], "status": "todo"}
+  ]
+}

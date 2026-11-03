@@ -101,7 +101,7 @@
     "depenseSession": 0.0
   },
   "subagentRuns": {
-    "used": 0,
+    "used": 10,
     "budget": 250,
     "alerte80": 200,
     "note": "compte estimé à la main, session 2"
@@ -111,7 +111,7 @@
     "2": "done : tip=origin=8389e741, main n'a pas bougé (a14aade1), verrou 83 fichiers OK ; builds émulateur anciens, à refaire à la première capture",
     "3": "done : registre 20,717 $ restants",
     "4": "done : recette E3/E4/E5 lue",
-    "5": "en cours"
+    "5": "done : bld-measured fusionnée, champ mesure lu en priorité, ancien art inchangé"
   },
   "waves": {
     "pilot+W1": ["windmill", "observatory", "campfire", "tent", "training_dummy"],
@@ -122,20 +122,25 @@
   },
   "buildings": {
     "windmill": {
-      "step": "ideas",
-      "v2": "windmill A classique, windmill/r1/final/, ligne de comparaison seulement"
+      "step": "concepts",
+      "v2": "windmill A classique, windmill/r1/final/, ligne de comparaison seulement",
+      "directionsGardees": "1, 3"
     },
     "observatory": {
-      "step": "ideas"
+      "step": "concepts",
+      "directionsGardees": "3, 2"
     },
     "campfire": {
-      "step": "ideas"
+      "step": "concepts",
+      "directionsGardees": "1, 2"
     },
     "tent": {
-      "step": "ideas"
+      "step": "concepts",
+      "directionsGardees": "1, 2"
     },
     "training_dummy": {
-      "step": "ideas"
+      "step": "concepts",
+      "directionsGardees": "1, 3"
     }
   },
   "parkedQuestions": [],

@@ -108,3 +108,7 @@ Conséquences de la planche de cartes :
 - `~/Downloads` n'existe toujours pas : prompt pris dans `~/Téléchargements`, première ligne vérifiée.
 - Plafond FLUX réel de la session : 20,717 $, le registre est plus petit que les 30 $. Je ne touche pas à `BUDGET_FLUX_V1`.
 - Builds de l'émulateur anciens (`56e95e0c`, `bb2d9a82`) : pas reconstruits maintenant, les étapes A à C n'utilisent pas l'émulateur. Reconstruits depuis le tip avant la première capture.
+- Lecteurs de maquettes (étape 5) : champ `mesure` optionnel lu en priorité par `zoneOmbre` et les tests ; zones de tap et ancres de lumière lisent déjà la peinture et les données, rien à ajouter. Ancien art inchangé.
+- `.gitignore` : `observatory/` était ignoré entier, ce qui aurait perdu `ideas.md`. Remplacé par `*/concepts/*`, sauf `board.phone.*`.
+- Audit du texte, 2 directions gardées : moulin 1 et 3 ; observatoire 3 et 2 ; feu 1 et 2 ; tente 1 et 2 ; mannequin 1 et 3. Détail dans chaque `audit.md`.
+- Observatoire : égalité 1 et 2 tranchée pour les Porteurs, demande du catalogue et test à 0,5 $, pas de conviction de ma part : Guillaume voit le concept.

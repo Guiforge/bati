@@ -93,5 +93,10 @@ Je ne l'ai pas ajoutée sans ton accord.
   le dire avant la restauration quand un joueur aura des compagnons.
 - **Android Backup peut copier le secret**, là où le transport chiffre côté client (règle déjà en place pour toute
   la base). Le secret n'est donc pas strictement « seulement dans la synchro chiffrée », comme tu l'avais écrit.
+- **Délier n'est immédiat que sur ce téléphone.** Un autre appareil du héros perd le secret à sa prochaine synchro,
+  et l'autre joueur n'apprend rien, puisque rien ne revient.
+- **Le drapeau `paused` de l'enveloppe dit au compagnon que le héros est en pause.** Il en a besoin pour geler la
+  semaine des deux, et la pause peut vouloir dire malade. Le texte du lot 1 (« Le boss attend », sans nom) reste à
+  écrire sans en dire plus.
 - **La page `/d` et l'App Link partent au prochain merge.** La page n'annonce aucun jeu. Sans le drapeau, un lien
   ouvre l'accueil.

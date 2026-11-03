@@ -362,8 +362,8 @@ the schema has the table.
 (`scrubPairs`, with `secure_delete`, since a deleted row otherwise stays readable in the file's pages), so
 restoring one means pairing again. Two copies do keep them, both already protected: the sealed backup and sync
 that carry them to the hero's other device, and Android's own backup, which copies the database only where
-the transport encrypts client-side (above). The local pre-migration copy and the pre-restore `.bak` stay in
-the app's private storage and keep them too.
+the transport encrypts client-side (above). The local pre-migration copy is scrubbed as well, so an unlinked
+pair's secret does not wait two updates there, and a restore by support means pairing again.
 
 ### The hero's bosses (0079)
 

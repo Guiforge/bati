@@ -180,6 +180,19 @@ describe("a plain backup never holds a secret", () => {
   });
 });
 
+describe("a copy from before the table existed", () => {
+  // The pre-migration copy is taken on the old schema: throwing here would lose the safety net on
+  // the very update that adds the table.
+  test("scrubbing it is a no-op, not a failure", async () => {
+    const file = path.join(dir, "old.db");
+    await backup().snapshotDatabaseTo(file);
+    const old = new Database(file);
+    old.exec("DROP TABLE pairs");
+    old.close();
+    await expect(backup().scrubPairs(file)).resolves.toBeUndefined();
+  });
+});
+
 describe("sync between the hero's own devices", () => {
   test("a pair the other device made arrives whole, secret and all, and reads as news", async () => {
     const file = await peerFile((peer) => row(peer, ID, "Sam", 1000));

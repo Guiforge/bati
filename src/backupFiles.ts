@@ -163,6 +163,7 @@ export async function writePreMigrationCopy(): Promise<void> {
   deleteIfPresent(PREMIGRATE_TMP);
   try {
     await snapshotDatabaseTo(pathIn(PREMIGRATE_TMP));
+    await scrubPairs(pathIn(PREMIGRATE_TMP));
     // Two generations. The newest alone would let the update after a damaging one replace the
     // only good copy with the damaged one.
     if (fileIn(PREMIGRATE_NAME).exists) {

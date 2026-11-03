@@ -104,13 +104,18 @@ export function snapshotDatabaseTo(destinationPath: string): Promise<void> {
 }
 
 /**
- * Takes the pairs out of a snapshot about to leave as plaintext: a pair's secret travels only sealed.
- * `secure_delete` overwrites the rows' pages, or the secret would still be readable in the file.
- * The hero restoring a plain backup pairs again, which is the price of never writing one in clear.
+ * Takes the pairs out of a plaintext snapshot: a pair's secret travels only sealed, and a local copy
+ * kept for a support session must not outlive an unlink. `secure_delete` overwrites the rows' pages,
+ * or the secret would still be readable in the file. The hero restoring such a copy pairs again,
+ * which is the price of never writing one in clear.
+ *
+ * The table may not be there: the copy taken before an update runs on the schema before 0082, and a
+ * failure here would cost the update its safety net.
  */
 export function scrubPairs(snapshotPath: string): Promise<void> {
   return withIsolatedConnection(async (conn) => {
     await conn.execAsync(`ATTACH DATABASE ${sqlString(snapshotPath)} AS ${CANDIDATE}`);
+    if (!(await hasTable(conn, CANDIDATE, "pairs"))) return;
     await conn.execAsync(`PRAGMA ${CANDIDATE}.secure_delete = ON`);
     await conn.execAsync(`DELETE FROM ${CANDIDATE}.pairs`);
   });

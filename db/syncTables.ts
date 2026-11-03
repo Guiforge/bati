@@ -5,6 +5,8 @@
  * - `merged`: copied to the other device by `mergePeer` and read by `compareWithPeer`. `adventures` and
  *   `adventure_steps` are merged for the hero's rows only (0076): the game's are mapped by `enTitle`.
  *   `hero_bosses` (0079) holds the hero's rows only and is merged by uuid like a quest.
+ * - `pairs` (0082) is merged by id, the later `updatedAt` wins, and only ever inside a sealed file:
+ *   a plain backup has its rows removed (`scrubPairs`).
  * - `local`: stays on this device. Campaigns and boss fights cannot be replayed from another device; seed content is
  *   the same on both.
  * - `unused`: in the schema and read by no code (the village economy was removed, roadmap 7).
@@ -27,6 +29,7 @@ export const TABLE_SYNC = {
   adventures: "merged",
   adventure_steps: "merged",
   hero_bosses: "merged",
+  pairs: "merged",
   adventure_runs: "local",
   adventure_run_steps: "local",
   boss_fights: "local",

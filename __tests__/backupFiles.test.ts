@@ -212,6 +212,10 @@ jest.mock("@/db/backup", () => ({
     fs.__disk.set(destination, "snapshot");
     return Promise.resolve();
   },
+  scrubPairs: (path: string) => {
+    (require("expo-file-system") as FakeFs).__ops.push(`scrub ${path.split("/").pop()}`);
+    return Promise.resolve();
+  },
 }));
 
 jest.mock("@/db/schemaVersion", () => ({ SCHEMA_VERSION: 3 }));
@@ -444,6 +448,20 @@ describe("exportBackup", () => {
     const written = [...fs.__disk.keys()].map((key) => key.split("/").pop());
     expect(written).toEqual([expect.stringMatching(/^bati-\d{4}-\d{2}-\d{2}-v3\.db$/)]);
     expect(fs.__ops).toContain("share");
+  });
+
+  // A companion's secret leaves this phone sealed or not at all (db-pairs.test.ts reads the bytes).
+  test("a plaintext copy has the pairs taken out before anyone can be handed it", async () => {
+    await exportBackup();
+    const scrub = fs.__ops.findIndex((op) => op.startsWith("scrub "));
+    expect(scrub).toBeGreaterThan(-1);
+    expect(scrub).toBeLessThan(fs.__ops.indexOf("share"));
+  });
+
+  test("a sealed copy keeps them: it is how they reach the hero's other device", async () => {
+    mockCipher.status = "on";
+    await exportBackup();
+    expect(fs.__ops.some((op) => op.startsWith("scrub "))).toBe(false);
   });
 
   /**

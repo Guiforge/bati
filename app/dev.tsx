@@ -371,6 +371,13 @@ export default function DevScreen() {
             straight to its recap. The only way to see the map without going outside — and no
             evidence whatsoever that the service records a trace, which only a walk can say.
           </Paragraph>
+          <AppButton
+            testID="dev-pairing"
+            variant="outline"
+            onPress={() => router.push("/pairing" as never)}
+          >
+            Companions (multiplayer lot 0)
+          </AppButton>
           <AppButton testID="dev-seed-expedition" onPress={runExpedition}>
             Seed an outing, open the recap
           </AppButton>

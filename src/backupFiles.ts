@@ -2,7 +2,7 @@ import { Directory, File } from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { defaultDatabaseDirectory } from "expo-sqlite";
 
-import { snapshotDatabaseTo } from "@/db/backup";
+import { scrubPairs, snapshotDatabaseTo } from "@/db/backup";
 import { closeDatabase, DB_NAME, SAFETY_NAME, serializeOnDatabase } from "@/db/client";
 import { dayKey } from "@/db/dates";
 import { SCHEMA_VERSION } from "@/db/schemaVersion";
@@ -246,6 +246,7 @@ async function writeSnapshotNow(stem?: string): Promise<File> {
   const file = name + extension(encrypted);
   if (!encrypted) {
     await snapshotDatabaseTo(pathIn(file));
+    await scrubPairs(pathIn(file));
     return fileIn(file);
   }
 

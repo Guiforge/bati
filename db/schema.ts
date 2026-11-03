@@ -1199,6 +1199,20 @@ export const deletedContent = sqliteTable("deleted_content", {
   deletedAt: int({ mode: "timestamp" }).notNull(),
 });
 
+/**
+ * Companions (0082): two phones that share a secret. `name` is what this hero calls the other and is
+ * never sent. `secret` leaves this database only inside a sealed backup or sync (`scrubPairs`).
+ */
+export const pairs = sqliteTable("pairs", {
+  id: text().primaryKey(),
+  secret: text().notNull(),
+  name: text().notNull(),
+  selfId: text().notNull(),
+  peerId: text(),
+  createdAt: int({ mode: "timestamp" }).notNull(),
+  updatedAt: int({ mode: "timestamp" }).notNull(),
+});
+
 /** A BLOB column, as the bytes the driver hands over (`Uint8Array`: expo-sqlite, and a Buffer in tests). */
 const bytes = customType<{ data: Uint8Array; driverData: Uint8Array }>({
   dataType: () => "blob",

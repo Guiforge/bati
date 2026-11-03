@@ -1,5 +1,41 @@
 # Résumé de la session 2, chantier bâtiments
 
+**Fin de vague, 03/11/2026.** Les 21 bâtiments sont peints et intégrés derrière leurs drapeaux, éteints en publié. Détail bâtiment par bâtiment : [`summary-vague.md`](summary-vague.md). Tu n'as rien à faire pour que LIFE continue.
+
+**Tip :** `feat/village-iso`, poussé sur origin. **Archive :** `~/bati-archives/2026-11-03-vague.tgz`.
+
+## Les 3 décisions pour toi
+1. **Le losange gris sous les bâtiments.** Une plaque claire aux bords droits reste peinte autour du sol, surtout sur la fontaine, le rempart, la ferme et l'armurerie. Elle se voit de près, moins à l'échelle du village. Voir `captures-vague/fin2/reprises/fountain-r1-jour.png`. Je l'ai laissée parce que tu as validé ces images et qu'une reprise en fin de vague aurait touché des dizaines de sprites sans revue. Je recommande de l'enlever, par un masque sans FLUX d'abord. Coût pas estimé.
+2. **La caméra reste zoomée après une évolution**, sur tous les bâtiments. Je recommande de revenir à la vue d'avant. C'est à trancher avec LIFE, qui reprend ce moment.
+3. **Quand allumer les drapeaux.** Je recommande d'attendre le moment d'évolution de LIFE : aujourd'hui, c'est un carré brun puis des cercles plats.
+
+## Questions garées
+- **Carrière et moulin :** dès p06, le bord haut de la carrière couvre le pied du moulin (escalier et porte, vers x715-790, y1045-1070). Les ailes et le corps restent lisibles.
+- **Dallage de la place, la nuit :** il reste jaune-olive (p12, x300-725, y1250-1400). Même couleur à la capture précédente, et ce n'est pas un sprite de bâtiment. Je n'ai pas cherché depuis quand.
+- **Pont du canal :** `eau/canal_pont`, rendu noir et bleu de maquette avec un bord cyan, le pêcheur posé dessus (x180-252, y1099-1149, p06 à p12). Ancienne pièce, hors de ce chantier.
+- **Bottes modernes :** semelles crantées sur fontaine gag_1 et gag_8, dragon_lair gag_4, heroes_hall gag_4. **Pain de mie :** campfire gag_2. Mara les trouve hors style, je n'ai rien repeint.
+- **Pont de `high_road` mythique :** droit, validé par toi. Une arche coûterait environ 0,10 $.
+- **Voiles roulées du mythique de la tente :** se lisent comme des bûches.
+- **Reconnaissance au G-ID :** faible sur les mythiques de l'armurerie, grange, feu de camp, grand chemin, carrière, tente, mannequin et moulin (0 sur 2). Moulin sans ailes dans ce test.
+- **Lueurs de la tour du mage au rang 7 :** les deux fenêtres hautes débordent un peu à gauche du fût.
+- **Lisibilité à l'échelle :** Theo trouve le village petit à p12 et ne lit pas bien coureur contre callisthénie au palier 4.
+- **Plafond Klein :** la sonde reste à 7,50 $, je n'y ai pas touché.
+
+## Ce que j'ai décidé à ta place
+- **Alerte FLUX des 100 $ acquittée**, dans les 140 $ que tu as autorisés, comme les précédentes.
+- **1,34 $ de réservations libérées** par `budget klein-ack` : ces lots étaient morts, aucun job en cours, vérifié avant. Ton accord portait sur ce cas. Le plafond de sonde n'a pas bougé.
+- **7 gags repeints sans te demander** (0,29 $) : ils montraient un corps ou se lisaient comme du sang, contre ta règle. Les 4 armures sont maintenant en pièces posées ou sur un support de bois, et le puits n'a plus de silhouette dans le givre.
+- **FLUX 3 Image est le défaut du dépôt**, à ta demande, et le garde refuse FLUX.2.
+
+## Mes erreurs de cette session
+- **Un agent sans worktree isolé** a changé la branche du checkout iso et coupé `npm ci`. Arrêté, branche remise, `npm ci` relancé, QA refaite.
+- **Une note du feu de camp codée en dur** dans `final.py` a contaminé 5 mythiques : corrigé, repeints.
+- **À 17h15, je t'ai dit que la peinture tournait** alors qu'elle était arrêtée depuis 16h27.
+
+---
+
+# Historique : arrêt avant tes choix
+
 Session arrêtée le 03/11/2026 : tous les concepts sont peints, plus rien à faire avant tes choix. Aucun bâtiment n'est en production, aucun drapeau n'a bougé, rien de neuf dans l'application en dehors du champ `mesure`.
 
 **Tip :** `feat/village-iso`, `dcca8a18`, plus le commit de cette ligne, poussé sur origin.

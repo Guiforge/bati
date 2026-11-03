@@ -1,3 +1,9 @@
+# Checkpoint : rien à choisir pour avancer
+
+La vague est finie, tes décisions sont dans [`summary-2.md`](summary-2.md). Ce qui suit est l'historique.
+
+---
+
 # Aperçu, non bloquant : le feu de camp dans le vrai onglet Village
 
 Capturé sur `emulator-5554`, build de dev, tip `9bb40f57`. Rien à décider ici, je continue. Le feu de camp est le seul bâtiment intégré : ses voisins sont encore l'ancien art.

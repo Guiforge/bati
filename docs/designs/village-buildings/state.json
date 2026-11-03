@@ -98,15 +98,15 @@
       "left": 20.717
     },
     "plafondSession": 20.717,
-    "depenseSession": 42.425,
+    "depenseSession": 45.891,
     "registreFin": {
-      "spent": 96.568,
+      "spent": 100.034,
       "ceiling": 140.0
     },
-    "alerteAcquittee": 90
+    "alerteAcquittee": 100
   },
   "subagentRuns": {
-    "used": 86,
+    "used": 155,
     "budget": 250,
     "alerte80": 200,
     "note": "compte estimé à la main, session 2"
@@ -253,7 +253,12 @@
       "flag": "off"
     }
   },
-  "parkedQuestions": [],
+  "parkedQuestions": [
+    "losange gris sous les bâtiments",
+    "caméra zoomée après évolution",
+    "quand allumer les drapeaux",
+    "voir summary-2.md"
+  ],
   "baseClean": {
     "codeTip": "bb2d9a82422b9a09a485a0b660803e435dbafe12",
     "date": "2026-11-02",
@@ -270,7 +275,7 @@
     ]
   },
   "prompt": "v3, direction artistique d'abord (03/11) ; PROMPT-v2.md garde l'ancien",
-  "tip": "e53d4d6e",
+  "tip": "4e9bb41f",
   "recipe": {
     "model": "FLUX 3 Image (E3)",
     "method": "peinture neuve, stade précédent en référence pour la forme (E4), sans Blender en v3",
@@ -300,5 +305,12 @@
     "personnes": "aucune peinte, statues et animaux au repos seulement",
     "mouvement": "ancres dans les données, passe ultérieure",
     "source": "retours-concepts-2.md"
+  },
+  "finVague": {
+    "date": "2026-11-03",
+    "resume": "summary-2.md, summary-vague.md",
+    "archive": "~/bati-archives/2026-11-03-vague.tgz",
+    "suite": "556 suites vertes, 1 ignorée, Node 24, tip 4e9bb41f",
+    "suite_du_chantier": "mouvement repris par la piste LIFE, cette piste est close"
   }
 }

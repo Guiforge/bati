@@ -8,7 +8,7 @@ import { type Alentours, BATIMENT_MOTEUR } from "@/constants/isoPoc";
 import spec from "@/constants/isoSpec.json";
 import { type BuildingCode, buildingCodes, buildingDefinitions } from "@/db/schema";
 import type { VillageTier } from "@/db/village";
-import { type Case, emplacements, ileVisible, sol, TAILLE, troncons } from "./isoLayout";
+import { type Case, emplacements, ileSeule, ileVisible, sol, TAILLE, troncons } from "./isoLayout";
 import {
   type Ambiance,
   batiments,
@@ -74,6 +74,8 @@ export const ZOOM_MAX = (spec.zoom.max * spec.cellDp) / COTE;
 export const ZOOM_MIN = 0.3;
 /** The game zoom of qa's close captures (checklist item 33), the demo's "0,6" button (`vueSur` takes game zooms: 1.6 here). */
 export const ZOOM_CAPTURE = 0.6;
+/** `ZOOM_CAPTURE` in demo units, what `vueFoyer` takes: the scale of a building alone (BatimentSeul). */
+export const ZOOM_FOYER_SEUL = (ZOOM_CAPTURE * spec.cellDp) / COTE;
 /** One press of + or -. */
 export const CRAN = 1.25;
 /** The share of the area the island fills at the opening frame: its tips (paths, rim) never touch the edges. */
@@ -315,6 +317,15 @@ export function etatAvec(palier: VillageTier, debout: Iterable<BuildingCode>) {
   const visible = ileVisible(palier, debout);
   const montres = buildingCodes.filter((code) =>
     emplacements[code].cases.every(([gx, gy]) => visible[gy]?.[gx]),
+  );
+  return { visible, montres };
+}
+
+/** The island of a building alone (`ileSeule`) and the buildings whose plot is on it. */
+export function etatSeul(code: BuildingCode) {
+  const visible = ileSeule(code);
+  const montres = buildingCodes.filter((c) =>
+    emplacements[c].cases.every(([gx, gy]) => visible[gy]?.[gx]),
   );
   return { visible, montres };
 }

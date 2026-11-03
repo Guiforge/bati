@@ -6,6 +6,7 @@
 //   bld=<code>&rang=<1..ceiling>            the building alone at that rank
 //   &base=<rank>[&avantbase=<rank>]         an upgrade's base building rank (rule B), (rang, base)
 //   &show=stade|rang&avant=<rank>           the show of the tap, from rank `avant` (default rang - 1)
+//   &delai=<seconds>                        when the show starts after the link opens (default 1.5)
 //   &semaine=1&palier=<1..3>                the village of that tier, every building at rank `rang`
 // Idle loops need no parameter: a link without fige=1, recorded for 10 s (video in the capture spec).
 
@@ -28,6 +29,8 @@ export type EtatBld = {
   /** With `base`: the base rank the show rises from (an upgrade's look follows its base, rule B). */
   avantBase?: number;
   show?: ShowBld;
+  /** Seconds between the link opening and the show starting: the film is recording by then. */
+  delai: number;
   /** Tier of the island: 12 for a lone building (the same frame for all), 1 to 3 for the first week. */
   palier: VillageTier;
   semaine: boolean;
@@ -45,12 +48,19 @@ export type EtatBld = {
 export const EtatBldContext = createContext<EtatBld | null>(null);
 
 type Params = Record<
-  "bld" | "rang" | "base" | "avant" | "avantbase" | "show" | "palier" | "semaine",
+  "bld" | "rang" | "base" | "avant" | "avantbase" | "show" | "palier" | "semaine" | "delai",
   string | undefined
 >;
 
 const entier = (v: string | undefined) =>
   v !== undefined && /^\d+$/.test(v) ? Number(v) : undefined;
+
+/** Show delay in seconds: a number from 0 to 60, else the default. */
+export const DELAI_SHOW_S = 1.5;
+const delaiDe = (v: string | undefined) => {
+  const n = v !== undefined && /^\d+(\.\d+)?$/.test(v) ? Number(v) : Number.NaN;
+  return n >= 0 && n <= 60 ? n : DELAI_SHOW_S;
+};
 
 /** The state a link names, or null when it has no valid `bld` or `rang` (the screen then opens as before). */
 export function etatBldDe(p: Partial<Params>): EtatBld | null {
@@ -74,6 +84,7 @@ export function etatBldDe(p: Partial<Params>): EtatBld | null {
       Math.max(0, entier(p.avant) ?? rang - 1),
     ),
     show: p.show === "stade" || p.show === "rang" ? p.show : undefined,
+    delai: delaiDe(p.delai),
     palier: palier as VillageTier,
     semaine,
   };

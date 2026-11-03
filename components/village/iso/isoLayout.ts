@@ -220,6 +220,18 @@ export function ileVisible(palier: VillageTier, debout: Iterable<BuildingCode>):
   return sansTrou(visible);
 }
 
+/** Only the building's plot and `marge` cells round it: the ground of a capture that shows it alone. */
+export function ileSeule(code: BuildingCode, marge = 2): boolean[][] {
+  const visible = paliers.map((ligne) => ligne.map(() => false));
+  for (const [gx, gy] of emplacements[code].cases)
+    for (let x = gx - marge; x <= gx + marge; x++)
+      for (let y = gy - marge; y <= gy + marge; y++) {
+        const ligne = visible[y];
+        if (ligne && paliers[y]?.[x] != null) ligne[x] = true;
+      }
+  return visible;
+}
+
 /** Every hidden cell the outside of the grid cannot reach through hidden cells joins the island. */
 function sansTrou(visible: boolean[][]): boolean[][] {
   const dehors = visible.map((ligne) => ligne.map(() => false));

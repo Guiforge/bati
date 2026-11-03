@@ -23,7 +23,14 @@ jest.mock("@/hooks/useReducedMotion", () => ({ useReducedMotion: () => false }))
 
 configure({ defaultIncludeHiddenElements: true });
 
-const etat: EtatBld = { code: "windmill", rang: 10, avant: 9, palier: 12, semaine: false };
+const etat: EtatBld = {
+  code: "windmill",
+  rang: 10,
+  avant: 9,
+  delai: 1.5,
+  palier: 12,
+  semaine: false,
+};
 const maquette = (
   <Maquette code="windmill" stade="grand" masque={false} ambiance="nuit" biome="defaut" />
 );

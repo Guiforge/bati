@@ -2,7 +2,7 @@
 // data and a capture state (etatBld.ts, served by BatimentSeul only): the building's sprite becomes
 // the engine's body, at the same place in the tree, and the engine's layers go around it in
 // Maquette's z-order. Any other building never mounts this, so the map is the one of today. The
-// show of `show=stade|rang` plays 1.5 s in, from the plan of its own kind.
+// show of `show=stade|rang` plays `delai` seconds in, from the plan of its own kind.
 // shortcut: the rank comes from the capture state, because Maquette knows a stage and not a rank;
 // the app's own path needs the building's rank passed down before BATIMENT_MOTEUR can drive it.
 
@@ -14,8 +14,6 @@ import type { Rect } from "./carteDemo";
 import type { EtatBld } from "./etatBld";
 import type { SpriteIso } from "./isoSpec";
 import { useSpectacleBatiment } from "./useSpectacleBatiment";
-
-const DELAI_SHOW_MS = 1500;
 
 export function MoteurBld({
   data,
@@ -41,7 +39,7 @@ export function MoteurBld({
   reclame: ReactNode;
 }) {
   const { spectacle, jouer, fini } = useSpectacleBatiment();
-  const { show, avant, rang, base, avantBase } = etat;
+  const { show, avant, rang, base, avantBase, delai } = etat;
   // Before the tap-less capture timer fires, the building stands at the rank it rises from.
   const [lance, setLance] = useState(false);
   const baseAvant = avantBase ?? base;
@@ -51,9 +49,9 @@ export function MoteurBld({
     const t = setTimeout(() => {
       setLance(true);
       jouer(data.code, avant, rang, { genre: show, deBase: baseAvant, versBase: base, rule: "B" });
-    }, DELAI_SHOW_MS);
+    }, delai * 1000);
     return () => clearTimeout(t);
-  }, [show, avant, rang, base, baseAvant, data.code]);
+  }, [show, avant, rang, base, baseAvant, data.code, delai]);
   const avantLeShow = !!show && !lance;
   return (
     <BatimentMoteur

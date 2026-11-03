@@ -64,5 +64,11 @@ Réponses prises, que Guillaume peut rayer au checkpoint :
 - Sol : peint une seule fois par emplacement, en contexte, jamais avec le bâtiment. Le prompt ne gagne pas contre le losange de la maquette.
 - Atlantes A2 : échoue aussi (« Champion Arena »). Mythique de l'observatoire : astrolabe C, seul survivant. Les atlantes restent la demande du catalogue : checkpoint.
 
+- E1 après écrans cibles (0,38 $). S-C, canari réussi aux deux : moulin A bat B deux fois, bat C une fois et fait égalité une fois, A et l'astrolabe C battent aujourd'hui deux fois. Theo : moulin A (v1), observatoire C « le moins pire, toujours sans magie ». Mara : moulin C (lyre), observatoire C ; aucune des 8 ne s'envoie à un ami.
+- Décision moulin : A, le cristal. Prompt, S-C et theo vont dans ce sens. Correction prise chez mara : un seul cristal, mat, sans facettes brillantes, ni bijou ni butin. La lyre revient en question au checkpoint de verrouillage : c'est l'idée préférée de mara.
+- Décision observatoire : C, l'astrolabe, avec un disque de ciel nocturne mat visible en plein jour, une lunette qui sort d'une fente du dôme et pointe dessus, des anneaux croisés sur trois axes. Les atlantes restent écartés tant qu'ils n'ont pas passé G-ID.
+
+- Coin après fusion du moteur, le 03/11 : `bc-keep-feu` à 2,04 %, frames à 0,40 %. Les dumps montrent 12 villageois déplacés et rien d'autre : c'est le changement de date, pas le moteur. G-CORNER doit retirer les rectangles des villageois du calcul, sinon il sonne chaque nuit à minuit.
+
 Conséquences de la planche de cartes :
 - La carte `campfire.md` de la prep est à réécrire : le Ménestrel remplace le cuistot.

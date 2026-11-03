@@ -76,6 +76,16 @@ export interface LightAnchor extends DepuisBase {
   parJour?: boolean;
 }
 
+/**
+ * What will move in a later pass (smoke, lit windows, flags, wings, water, magic): the point is
+ * posed now on the painting, nothing reads it yet. Canvas px, like the lights.
+ */
+export interface Ancre extends DepuisBase {
+  kind: "smoke" | "fenetre" | "drapeau" | "aile" | "eau" | "magic";
+  at: Point;
+  fromRank: number;
+}
+
 /** A site teaser (PROMPT.md §6): the start of the next stage's element, on site from `fromRank` until `untilRank` (excluded), when the next painting paints it finished. */
 export interface Teaser extends DepuisBase {
   fromRank: number;
@@ -173,6 +183,8 @@ export interface BuildingData {
   ailes?: readonly (DepuisBase & { fromRank: number; sheet: string })[];
   /** The magic layer of the top rank(s). */
   magie?: Magie;
+  /** Where what moves later stands (static for now). */
+  ancres?: readonly Ancre[];
 }
 
 /** The sails' sheet showing at `rank`, or null when the data has none (the map's own by-stage sheet then). */

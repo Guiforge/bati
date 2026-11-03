@@ -83,6 +83,7 @@ const HORS_INDEX = new Set([
   "animaux",
   "rempart",
   "champs",
+  "peints",
 ]);
 
 function fichiers(): Map<string, string> {

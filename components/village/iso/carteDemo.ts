@@ -23,6 +23,7 @@ import { rolesPresents } from "./marcheurs";
 import { opaque } from "./masque";
 import type { Ile } from "./navigation";
 import { enveloppe, LUNE, ombreAiles, type Point } from "./ombres";
+import { peintDe } from "./peints";
 import {
   casesSousOmbre,
   clePiece,
@@ -404,7 +405,9 @@ export const spriteDe = (
   stade: Stade,
   ambiance: Ambiance = "nuit",
 ): SpriteIso | undefined =>
-  MAQUETTES[nomImage(code, stade, ambiance)] ?? MAQUETTES[nomImage(code, stade, "nuit")];
+  peintDe(code, stade, ambiance) ??
+  MAQUETTES[nomImage(code, stade, ambiance)] ??
+  MAQUETTES[nomImage(code, stade, "nuit")];
 /**
  * The sails' sheet beside a windmill's stages: `windmill_sails.webp` is the night's. A stage that
  * has its own sheet (`windmill_sails_grand.webp`, the engine's bigger sails) wears it; every stage

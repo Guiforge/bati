@@ -1,0 +1,117 @@
+{
+ "rough": {
+  "top_y": 677,
+  "bottom_y": 1088,
+  "height": 411,
+  "area": 76695,
+  "left": 217,
+  "right": 588,
+  "contact_x": 448,
+  "contact_dy": 0,
+  "contact_dx": 0,
+  "from": "rough_t1_v1.png",
+  "pad_top": 0,
+  "scale": 0.4991,
+  "fit_width": 1.0,
+  "canvas_h": 1157,
+  "hub": {
+   "x": 405,
+   "y": 730,
+   "canvas_h": 1157,
+   "sails": "elements/teaser_sails_rough.png",
+   "sails_width_px": 369
+  }
+ },
+ "grand": {
+  "top_y": 354,
+  "bottom_y": 1088,
+  "height": 734,
+  "area": 214343,
+  "left": 159,
+  "right": 768,
+  "contact_x": 448,
+  "contact_dy": 0,
+  "contact_dx": 0,
+  "from": "grand_t1_v1.png",
+  "pad_top": 0,
+  "scale": 0.757,
+  "fit_width": 1.0,
+  "canvas_h": 1157,
+  "hub": {
+   "x": 376,
+   "y": 594,
+   "canvas_h": 1157,
+   "sails": "elements/teaser_sails_grand.png",
+   "sails_width_px": 688
+  }
+ },
+ "solid": {
+  "top_y": 527,
+  "bottom_y": 1088,
+  "height": 561,
+  "area": 141289,
+  "left": 143,
+  "right": 644,
+  "contact_x": 448,
+  "contact_dy": 0,
+  "contact_dx": 0,
+  "from": "solid_t1_v1.png",
+  "pad_top": 0,
+  "scale": 0.7555,
+  "fit_width": 1.0,
+  "canvas_h": 1157,
+  "hub": {
+   "x": 390,
+   "y": 600,
+   "canvas_h": 1157,
+   "sails": "elements/teaser_sails_solid.png",
+   "sails_width_px": 504
+  }
+ },
+ "legendary": {
+  "top_y": 180,
+  "bottom_y": 1088,
+  "height": 908,
+  "area": 320301,
+  "left": 114,
+  "right": 847,
+  "contact_x": 448,
+  "contact_dy": 0,
+  "contact_dx": 0,
+  "from": "legendary_t1_v2.png",
+  "pad_top": 0,
+  "scale": 0.9806,
+  "fit_width": 1.0,
+  "canvas_h": 1157,
+  "hub": {
+   "x": 414,
+   "y": 466,
+   "canvas_h": 1157,
+   "sails": "elements/teaser_sails_legendary.png",
+   "sails_width_px": 885
+  }
+ },
+ "mythic": {
+  "top_y": 12,
+  "bottom_y": 1093,
+  "height": 1081,
+  "area": 377864,
+  "left": 44,
+  "right": 848,
+  "contact_x": 448,
+  "contact_dy": 0,
+  "contact_dx": 0,
+  "from": "mythic_t2_v1.png",
+  "pad_top": 5,
+  "scale": 1.0,
+  "fit_width": 1.0,
+  "canvas_h": 1157,
+  "hub": {
+   "x": 408,
+   "y": 358,
+   "canvas_h": 1157,
+   "sails": "elements/teaser_sails_mythic.png",
+   "sails_width_px": 1135
+  }
+ }
+}

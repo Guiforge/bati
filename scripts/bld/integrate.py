@@ -22,6 +22,7 @@ import argparse
 import json
 import pathlib
 import re
+import subprocess
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "iso"))
@@ -46,16 +47,66 @@ def masque(alpha: Image.Image, pas: int = 8) -> dict:
     return {"pas": pas, "w": w, "h": h, "bits": bits}
 
 
-def contact(largeur_sol: float) -> list[list[float]]:
-    """The ground contact in grid units from the footprint's back corner: the cell's diamond, shrunk to the patch."""
-    k = min(1.0, largeur_sol / CELLULE)
-    a, b = 0.5 - k / 2, 0.5 + k / 2
-    return [[round(a, 3), round(a, 3)], [round(b, 3), round(a, 3)], [round(b, 3), round(b, 3)], [round(a, 3), round(b, 3)]]
+def hull(pts: list[tuple[float, float]]) -> list[tuple[float, float]]:
+    """Convex hull, counter-clockwise (monotone chain)."""
+    pts = sorted(set(pts))
+    if len(pts) < 3:
+        return pts
+    cross = lambda o, a, b: (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])  # noqa: E731
+    bas, haut = [], []
+    for p in pts:
+        while len(bas) >= 2 and cross(bas[-2], bas[-1], p) <= 0:
+            bas.pop()
+        bas.append(p)
+    for p in reversed(pts):
+        while len(haut) >= 2 and cross(haut[-2], haut[-1], p) <= 0:
+            haut.pop()
+        haut.append(p)
+    return bas[:-1] + haut[:-1]
 
 
-def teasers(spec: dict) -> list[tuple[str, int, int]]:
-    """(element, fromRank, untilRank): a teaser stands from its rank until the next one (the next painting finishes it)."""
-    return [(f"teaser_{t['id']}", int(t["id"][1:]), int(t["id"][1:]) + 1) for t in spec.get("teasers", [])]
+def contact(alpha: Image.Image, anchor: tuple[int, int], emprise: tuple[int, int], pas: float = 0.05) -> list[list[float]]:
+    """The real ground contact: the footprint's grid points whose screen pixel is opaque on the painting (a stage
+    that is only its ground patch, the rough), as a convex hull in grid units from the back corner."""
+    w, d = emprise
+    px = alpha.load()
+    pris = []
+    for i in range(int(w / pas) + 1):
+        for j in range(int(d / pas) + 1):
+            gx, gy = i * pas, j * pas
+            x = anchor[0] + (gx - gy - (w - d)) * CELLULE / 2
+            y = anchor[1] - (w + d) * CELLULE / 4 + (gx + gy) * CELLULE / 4
+            if 0 <= x < alpha.width and 0 <= y < alpha.height and px[int(x), int(y)] > 128:
+                pris.append((round(gx, 3), round(gy, 3)))
+    h = hull(pris)
+    return [list(p) for p in h] if len(h) >= 3 else [[0, 0], [w, 0], [w, d], [0, d]]
+
+
+def teaser_ranks(tid: str) -> dict:
+    """The rank fields of a teaser id: `r4...` is the building's own rank 4 (to 5); `b8...` an upgrade's base rank 8
+    (the upgrade's own rank is then 3), the data's `fromBase` and `untilBase`."""
+    m = re.match(r"([rb])(\d+)", tid)
+    assert m, f"teaser id {tid}"
+    n = int(m.group(2))
+    if m.group(1) == "r":
+        return {"fromRank": n, "untilRank": n + 1}
+    return {"fromRank": 3, "untilRank": 4, "fromBase": n, "untilBase": n + 1}
+
+
+def teasers(spec: dict) -> list[tuple[str, dict]]:
+    """(element, rank fields): a teaser stands until the next one (the next painting finishes it)."""
+    return [(f"teaser_{t['id']}", teaser_ranks(t["id"])) for t in spec.get("teasers", [])]
+
+
+def genre(spec: dict) -> str:
+    """`ten` (ranks 1 to 10), `deed` (1 to 5), `upgrade` (own rank 1 to 3, then the base's): read off the gag ranks."""
+    ranks = [g["rank"] for g in spec.get("gag", [])]
+    return "upgrade" if 1 in ranks else "deed" if ranks and max(ranks) <= 5 else "ten"
+
+
+def beat_ranks(genre_: str, rank: int) -> dict:
+    """An upgrade's beats past its own rank 3 wait for the base building's rank (rule B)."""
+    return {"rank": rank} if genre_ != "upgrade" or rank <= 3 else {"rank": 3, "fromBase": rank}
 
 
 def temoin_feu(grand: Image.Image) -> list[int] | None:
@@ -78,13 +129,13 @@ def ecrire_webp(im: Image.Image, dest: pathlib.Path) -> None:
     im.save(dest, "WEBP", quality=90, method=6)
 
 
-def main_block(code: str, src_txt: str | None, defaut: str) -> str:
-    """The hand block of the data file as it stands, else the defaults."""
+def main_block(src_txt: str | None) -> str:
+    """The hand block of the data file as it stands, else an empty one the caller fills with defaults."""
     if src_txt:
         m = re.search(r"// hand:begin.*?\n(.*?)// hand:end", src_txt, re.S)
         if m:
             return m.group(1)
-    return defaut
+    return "const main = {\n  // Picked on the painting, canvas px (an offset where the name says so).\n} as const;\n"
 
 
 def main() -> None:
@@ -171,26 +222,40 @@ def main() -> None:
     # the data file
     grand = Image.open(src / f"{'grand' if 'grand' in stades else stades[-1]}.png").convert("RGBA")
     feu = temoin_feu(grand) or [ancre[0], ancre[1] - 100]
-    sol = mesures["rough"]["right"] - mesures["rough"]["left"] if "rough" in mesures else CELLULE
+    rough = Image.open(src / "rough.png").convert("RGBA").getchannel("A")
+    emprise = tuple(json.loads((ROOT / "constants/isoSpec.json").read_text())["batiments"][code]["emprise"])
     sommet = min(mesures[s]["top_y"] for s in stades)
-    defaut = (f"const main = {{\n  // Picked on the painting, canvas px (the building's anchor is {ancre}).\n"
-              f"  gagSlot: [{mesures['rough']['left'] - 30}, {ancre[1] - 40}],\n"
-              f"  teaserAt: [{mesures['rough']['right'] + 30 - ancre[0]}, -40],\n"
-              f"  fire: [{feu[0]}, {feu[1]}],\n  smoke: [{feu[0]}, {feu[1] - 130}],\n"
-              f"  magic: [{(mesures[haut]['left'] + mesures[haut]['right']) // 2}, {mesures[haut]['top_y'] + 170}],\n"
-              "  magicFrom: 10, // the rank that opens the mythic stage (5 for a deed)\n"
-              "} as const;\n")
-    fichier = ROOT / f"constants/buildings/{code}.ts"
-    bloc = main_block(code, fichier.read_text() if fichier.exists() else None, defaut)
+    cx = (mesures[haut]["left"] + mesures[haut]["right"]) // 2
+    g_top = mesures["grand"]["top_y"] if "grand" in mesures else mesures[haut]["top_y"]
     ancres = spec.get("anchors", [])
-    lignes_ancres = [f'    {{ kind: "{x}", at: main.{x}, fromRank: {"main.magicFrom" if x == "magic" else 1} }},' for x in ancres if x in ("smoke", "magic")]
+    kinds = {"smoke": "smoke", "magic": "magic", "windows": "fenetre", "flag": "drapeau", "wings": "aile", "water": "eau"}
+    pos = {  # first guesses, canvas px: a capture decides, then the hand block below
+        "gagSlot": [mesures["rough"]["left"] - 30, ancre[1] - 40],
+        "teaserAt": [mesures["rough"]["right"] + 30 - ancre[0], -40],  # offset from the anchor, the rest is absolute
+        "fire": feu, "smoke": [feu[0], feu[1] - 130], "magic": [cx, mesures[haut]["top_y"] + 170],
+        "fenetre": [ancre[0], (g_top + ancre[1]) // 2], "drapeau": [cx, g_top], "aile": [cx, g_top + 40],
+        "eau": [ancre[0], ancre[1] - 96],
+    }
+    voulues = ["gagSlot", "teaserAt"] + (["fire"] if "fire" in ancres or "smoke" in ancres else []) \
+        + [k for a_, k in kinds.items() if a_ in ancres]
+    fichier = ROOT / f"constants/buildings/{code}.ts"
+    bloc = main_block(fichier.read_text() if fichier.exists() else None)
+    for k in voulues:  # a key the block lacks (an older run, a new anchor) gets its default
+        if not re.search(rf"^\s*{k}:", bloc, re.M):
+            bloc = bloc.replace("} as const;", f"  {k}: [{pos[k][0]}, {pos[k][1]}],\n}} as const;")
+    g = genre(spec)
+    depuis = {"ten": "fromRank: 10", "deed": "fromRank: 5", "upgrade": "fromRank: 3, fromBase: 10"}[g]
+    lignes_ancres = [f'    {{ kind: "{kinds[x]}", at: main.{kinds[x]}, {depuis if x == "magic" else "fromRank: 1"} }},'
+                     for x in ancres if x in kinds]
     gags = []
-    for g in spec.get("gag", []):
-        txt = g["prompt"].split(" Objects alone")[0].strip()
-        gags.append(f"      {{ rank: {g['rank']}, beat: {json.dumps(txt[0].upper() + txt[1:] + '.')}, "
-                    f"sprite: \"elements/gag_{g['rank']}\" }},")
-    ts = [f"    {{ fromRank: {a_}, untilRank: {b_}, sprite: \"elements/{n}\", anchorOffset: main.teaserAt }},"
-          for n, a_, b_ in teasers(spec)]
+    for gg in spec.get("gag", []):
+        txt = gg["prompt"].split(" Objects alone")[0].strip()
+        champs = ", ".join(f"{k}: {v}" for k, v in beat_ranks(g, gg["rank"]).items())
+        gags.append(f"      {{ {champs}, beat: {json.dumps(txt[0].upper() + txt[1:] + '.')}, "
+                    f"sprite: \"elements/gag_{gg['rank']}\" }},")
+    ts = [f"    {{ {', '.join(f'{k}: {v}' for k, v in r.items())}, sprite: \"elements/{n}\", anchorOffset: main.teaserAt }},"
+          for n, r in teasers(spec)]
+    lumiere = '  lights: [{ kind: "fire", at: main.fire, fromRank: 1 }],' if "fire" in ancres else "  lights: [],"
     out = f"""// Generated by scripts/bld/integrate.py {code}. The measures and lists below are rewritten at each run;
 // the block between the markers is kept: edit the positions there (canvas px, origin top left).
 import type {{ BuildingData }} from "../buildingData";
@@ -200,8 +265,9 @@ import type {{ BuildingData }} from "../buildingData";
 
 export const {code}: BuildingData = {{
   code: "{code}",
-  // Measured on the paintings: the highest silhouette, and the patch's contact in grid units.
-  mesure: {{ sommet: {sommet}, contact: {json.dumps(contact(sol))} }},
+  // Measured on the paintings: the highest silhouette, and the ground patch's contact in grid units
+  // (the opaque ground points of the rough painting, as a hull).
+  mesure: {{ sommet: {sommet}, contact: {json.dumps(contact(rough, tuple(ancre), emprise))} }},
   placeholder: false,
   addOns: [],
   gag: {{
@@ -210,14 +276,14 @@ export const {code}: BuildingData = {{
 {chr(10).join(gags)}
     ],
   }},
-  // The fire breathes at night on the hearth. No painted keeper: no `guardian`.
-  lights: [{{ kind: "fire", at: main.fire, fromRank: 1 }}],
-  // The solid stage paints its own pennant: no code mark.
+  // A fire is a soft warm pool at night, still. No painted keeper: no `guardian`.
+{lumiere}
+  // A painted clan mark (a pennant, a banner) is in the paintings: no code mark.
   clanMark: null,
   teasers: [
 {chr(10).join(ts)}
   ],
-  // What will move later (smoke, magic): anchors only, no animation yet.
+  // What will move later: posed, drawn by nothing yet.
   ancres: [
 {chr(10).join(lignes_ancres)}
   ],
@@ -225,7 +291,7 @@ export const {code}: BuildingData = {{
 """
     fichier.write_text(out)
 
-    # the registry line
+    # the registry, the flag and the test: nothing left to wire by hand
     reg = ROOT / "components/village/iso/peints.ts"
     t = reg.read_text()
     if f"./peints/{code}\"" not in t:
@@ -233,7 +299,77 @@ export const {code}: BuildingData = {{
                       f"import {{ {code} as {code}Sprites }} from \"./peints/{code}\";\n// integrate:imports")
         t = t.replace("  // integrate:entries", f"  {code}: {{ ...{code}Sprites, donnees: {code}Data }},\n  // integrate:entries")
         reg.write_text(t)
-    print(f"{code}: {len(stades)} stages, {len(elements)} elements, canvas {w}x{h}, anchor {ancre}, fire {feu}")
+    poc = ROOT / "constants/isoPoc.ts"
+    t = poc.read_text()
+    if not re.search(rf"^  {code}: BUILD_LOCAL,", t, re.M):
+        poc.write_text(re.sub(r"(BLD_PEINTS: [^\n]*= \{\n)", rf"\1  {code}: BUILD_LOCAL,\n", t, count=1))
+    test = ROOT / f"__tests__/iso-bld-{code}.test.ts"
+    if not test.exists():
+        test.write_text(TEST.replace("@CODE@", code))
+    # the images' fingerprint (the village's image cache and a jest test read it)
+    subprocess.run(["node", "scripts/iso/empreinte-sprites.js"], cwd=ROOT, check=True)
+    print(f"{code}: {len(stades)} stages, {len(elements)} elements, canvas {w}x{h}, anchor {ancre}, fire {feu}, "
+          f"genre {g}. Next: npx biome check --write on the generated files, npx jest iso-bld-{code}")
+
+
+TEST = """// Generated by scripts/bld/integrate.py @CODE@ (kept if it exists): the painted building's data and registry,
+// and the proof that with its flag off the map is the one of today.
+import { etatBatiment } from "@/components/village/iso/batiment";
+import { DONNEES_BLD } from "@/components/village/iso/donneesBld";
+import { opaque } from "@/components/village/iso/masque";
+import { PEINTS } from "@/components/village/iso/peints";
+import { @CODE@ as sprites } from "@/components/village/iso/peints/@CODE@";
+import { buildingCeiling } from "@/constants/buildingLevels";
+import { @CODE@ as data } from "@/constants/buildings/@CODE@";
+import { BLD_PEINTS } from "@/constants/isoPoc";
+import { buildingDefinitions } from "@/db/schema";
+
+const plafond = buildingCeiling({ tier: buildingDefinitions.@CODE@.tier, code: "@CODE@" });
+const rangs = Array.from({ length: plafond }, (_, i) => i + 1);
+const etat = (r: number, nuit = false) =>
+  etatBatiment(data, r, { nuit, rule: "B", baseRank: r === plafond ? 10 : 0 });
+const vide = { pas: 8, w: 0, h: 0, bits: "" };
+
+describe("@CODE@: flag off by default", () => {
+  test("no painted entry, no engine data", () => {
+    expect(BLD_PEINTS.@CODE@).toBe(false);
+    expect(PEINTS.@CODE@).toBeUndefined();
+    expect(DONNEES_BLD.@CODE@).toBeUndefined();
+  });
+});
+
+describe("@CODE@: data and registry", () => {
+  test("every stage the ranks reach is painted, on one canvas, day and night", () => {
+    for (const r of rangs) expect(sprites.stades[etat(r).stage]).toBeDefined();
+    const tailles = Object.values(sprites.stades).flatMap((s) => [s.jour.size, s.nuit.size]);
+    expect(new Set(tailles.map((t) => t.join("x"))).size).toBe(1);
+  });
+
+  test("every sprite the data names is in the registry; nobody is painted", () => {
+    const noms = [...(data.teasers ?? []).map((t) => t.sprite), ...data.gag.beats.map((b) => b.sprite)];
+    for (const n of noms) expect(sprites.elements[n ?? ""]).toBeDefined();
+    expect(data.guardian).toBeUndefined();
+  });
+
+  test("the measure fits the canvas and the contact is a polygon", () => {
+    const [, hauteur] = Object.values(sprites.stades)[0]?.jour.size ?? [0, 0];
+    expect(data.mesure?.sommet).toBeGreaterThanOrEqual(0);
+    expect(data.mesure?.sommet).toBeLessThan(hauteur);
+    expect((data.mesure?.contact ?? []).length).toBeGreaterThanOrEqual(3);
+  });
+
+  test("the tap reads the painting's mask: above the anchor is opaque, the canvas corner is not", () => {
+    const s = Object.values(sprites.stades)[0]?.jour;
+    expect(s && opaque(s.masque ?? vide, s.anchor[0], s.anchor[1] - 40)).toBe(true);
+    expect(s && opaque(s.masque ?? vide, 2, 2)).toBe(false);
+  });
+
+  test("the night's lights stay out of the day, and nothing else draws them", () => {
+    expect(etat(1).lights).toEqual([]);
+    expect(etat(plafond, true).lights.length).toBe(data.lights.length);
+  });
+});
+"""
 
 
 if __name__ == "__main__":

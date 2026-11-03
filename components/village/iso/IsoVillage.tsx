@@ -624,6 +624,7 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
                           <IsoCarte
                             visible={visible}
                             montres={construits}
+                            seul={seul !== undefined}
                             stade={stade}
                             masques={masques}
                             chantiers={sites}

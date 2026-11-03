@@ -35,7 +35,7 @@ Mesurés sur l'APK de release, build `.perf` sans modification de la recette F-D
 | Aucune classe Play Services, ML Kit ou visée par F-Droid | 0, `scripts/apk-no-google.py` avec `fdroid/suss-code-signatures.txt` |
 | Aucune classe `com.google.*` | **pas à la lettre**, voir ci-dessous |
 | `LOAD` arm64 à `0x4000` | oui, `libzxingcpp_android`, `libimage_processing_util_jni`, `libsurface_util_jni` et tous les autres |
-| Lit un QR sur la caméra virtuelle | voir [STATE.md](STATE.md) |
+| Lit un QR sur la caméra virtuelle | oui, sur APK de release x86_64, à 2 m d'un code affiché par un autre émulateur |
 | Permission demandée à l'ouverture du scanner | `PermissionsAndroid.request` dans le seul bouton « Scan », aucun appel au lancement |
 
 **`com.google.*`.** `main` en contient déjà 451 sans scanner, toutes libres : Material, Guava, Gson. Le
@@ -51,7 +51,11 @@ Maven, comme le reste de nos AAR, et aucune signature ne les vise aujourd'hui.
 
 ## Notes de mise en œuvre
 
-- `CAMERA` n'est plus dans `withAndroidTrimPermissions`, qui la retirait de toute release.
+- `CAMERA` reste retirée de ce qui part (`withAndroidTrimPermissions`) tant que le multijoueur est derrière
+  son drapeau : aucune permission sur l'écran d'installation pour un écran que personne n'atteint. Le lot qui
+  ouvre le scanner la rend, avec `fdroid/expected-permissions.txt`, le test des permissions et `privacy.md`.
+  Pour tester : `EXPO_PUBLIC_MULTIPLAYER=1 npx expo prebuild -p android --no-install`, le même drapeau au build, et
+  un `prebuild` sans lui avant de commiter.
 - Les deux `uses-feature` en `required="false"` gardent installable un téléphone sans caméra.
 - Le code de la caméra n'existe qu'à l'écran : liaison à l'attachement de la vue, déliaison au détachement.
 - L'écran Crédits ne liste que l'arbre npm : zxing-cpp et CameraX n'y sont pas, comme tous les AAR Gradle.

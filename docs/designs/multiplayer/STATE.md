@@ -1,38 +1,40 @@
 # Multijoueur, lot 0 : état
 
 Branche `feat/multiplayer-lot0`, partie de `main` (`4150b9b4`). Commencé le 03/11 à 22:17.
-Plan : section « Décisions du 03/11 » de l'audit. Spec du format : [envelope.md](envelope.md). Scanner :
-[qr-scanner.md](qr-scanner.md).
+Plan : section « Décisions du 03/11 » de l'audit. Format : [envelope.md](envelope.md). Scanner :
+[qr-scanner.md](qr-scanner.md). Rapport : [reviews/LOT0.md](reviews/LOT0.md).
 
-| Étape | Statut | Temps passé | Reste estimé |
-| --- | --- | --- | --- |
-| T1 Scanner QR, GO ou NO-GO | doing | 0 h 30 | 0 h 30 |
-| T2 Affichage QR | doing | 0 h 05 | 0 h 10 |
-| T3 Règles partagées | doing, écart ci-dessous | 0 h 10 | 0 h 05 |
-| T4 Enveloppe v1 | doing | 0 h 10 | 0 h 05 |
-| T5 Lien scellé | doing | 0 h 10 | 0 h 20 |
-| T6 Appairage | doing | 0 h 15 | 0 h 30 |
-| Porte du lot | todo | | 1 h 30 |
+| Étape | Statut | Temps passé |
+| --- | --- | --- |
+| T1 Scanner QR, GO ou NO-GO | done, **GO** | 0 h 40 |
+| T2 Affichage QR | done | 0 h 05 |
+| T3 Règles partagées | done, avec les écarts ci-dessous | 0 h 15 |
+| T4 Enveloppe v1 | done | 0 h 15 |
+| T5 Lien scellé | done, sauf la clé Play et le vrai `autoVerify` | 0 h 15 |
+| T6 Appairage | done | 0 h 20 |
+| Porte du lot | voir [LOT0.md](reviews/LOT0.md) | 0 h 40 |
+
+Reste : ce qui dépend de toi, listé dans le rapport.
 
 ## Écarts à trancher
 
 ### T3 : ce que le journal ne sait pas dire
 
 **Atteint son objectif proposé : lisible, sauf en semaine légère.** `completed_exercises` a
-`prescribedValue` (0070), `targetValue`, `resultValue` et `ladderNeutral`. Une séance atteint son objectif
-quand chaque série est au niveau proposé et qu'aucune n'est `ladderNeutral`. La limite : ce drapeau
-mélange « mouvement abandonné » et « quête allégée d'une semaine légère ». En semaine légère on l'ignore,
-donc un mouvement sauté y passe inaperçu. C'est volontairement indulgent.
+`prescribedValue` (0070), `targetValue`, `resultValue`, `ladderNeutral` et `sides`. Une séance atteint son
+objectif quand chaque série est au niveau proposé, sur ses deux côtés si le mouvement en a deux, et qu'aucune
+n'est `ladderNeutral`. La limite : ce drapeau mélange « mouvement abandonné » et « quête allégée d'une semaine
+légère ». En semaine légère on l'ignore, donc un mouvement sauté y passe inaperçu. C'est volontairement indulgent.
 
-**Arrêt sur la règle de douleur : illisible.** Aucune colonne ne dit pourquoi une séance s'est arrêtée, et
-l'app ne le demande pas : la règle n'est qu'un texte (`pain_rule`). Une telle séance tombe aujourd'hui sous
-la règle d'objectif et ne compte pas.
+**Arrêt sur la règle de douleur : illisible.** Aucune colonne ne dit pourquoi une séance s'est arrêtée, et l'app
+ne le demande pas : la règle n'est qu'un texte (`pain_rule`). Une telle séance tombe sous la règle d'objectif et
+ne compte pas.
 
 **Sortie importée : n'existe pas.** Bati n'importe aucune sortie (`src/gps/gpx.ts` ne fait qu'exporter) et
-aucune colonne n'en marque une. Aucune ne peut donc arriver jusqu'à `countsForPlay`.
+aucune colonne n'en marque une. Aucune ne peut arriver jusqu'à `countsForPlay`.
 
-Ces deux dernières règles restent en `TODO(r1-pain-stop)` et `TODO(r1-imported-outing)` dans
-`db/completed.ts`, avec un `test.todo` chacune. Aucune migration n'a été ajoutée pour cela.
+Ces deux règles restent en `TODO(r1-pain-stop)` et `TODO(r1-imported-outing)` dans `db/completed.ts`, avec un
+`test.todo` chacune. Aucune migration n'a été ajoutée pour cela.
 
 **Proposition de migration, à valider :**
 
@@ -45,19 +47,51 @@ ALTER TABLE `completed_sessions` ADD `importedFrom` text;    -- 'health_connect'
 ALTER TABLE `completed_exercises` ADD `lightWeekNeutral` integer NOT NULL DEFAULT 0;
 ```
 
-Il faudrait aussi une façon de dire « j'arrête, j'ai mal » dans la séance, ce qui est une décision de
-produit : ce bouton n'existe pas et je ne l'ai pas inventé.
+Il faudrait aussi une façon de dire « j'arrête, j'ai mal » dans la séance. C'est une décision de produit : ce
+bouton n'existe pas et je ne l'ai pas inventé.
+
+**À régler avant le lot 1, pas après (audit, ligne rouge santé).** Tant que l'arrêt pour douleur n'existe pas,
+brancher R1 sur un boss partagé paie le fait de finir malgré la douleur : un coéquipier attend ta frappe, le genou
+tire à la série 2, et seule la séance finie compte. Sans danger aujourd'hui, puisque rien ne lit `countsForPlay`.
+
+### Remplacer un mouvement en cours de séance ne compte pas
+
+Le mouvement quitté est marqué abandonné, donc la séance tombe. Passer à la variante plus facile quand le genou
+tire est pourtant le bon geste. Le journal ne sait pas dire « plus facile », et la règle dit « son objectif
+proposé » : je l'ai laissé ainsi, épinglé par un test. **À toi de trancher.**
+
+### Limites assumées de R1
+
+- **R1 n'est pas un anti-triche.** Les reps se saisissent au stepper : taper + jusqu'au niveau proposé suffit,
+  avec les 120 s d'horloge. Seul le plafond de dégâts du combat borne cela.
+- **Un remplacement qui change d'unité** (reps vers maintien) n'a pas de `prescribed` : la règle retombe sur la
+  cible, que le héros peut abaisser. Rare, et il faut déjà un remplacement.
+- **Une marche sans GPS** n'a pas de distance et ne compte jamais : à dire au héros le jour où cela se voit.
+- **La distance d'une sortie** repose sur le service GPS, qui refuse déjà les vitesses au-dessus du plafond de
+  chaque mode. Une voiture ne fait donc pas un kilomètre à pied.
 
 ### T1 : « aucune classe com.google.* » ne peut pas tenir à la lettre
 
 Le `main` d'aujourd'hui, sans aucun scanner, contient déjà **451 classes `com.google.*`**, toutes libres :
-Material (163), Guava (201), Gson (87). Aucune Play Services ni ML Kit. Le critère appliqué est donc :
-zéro classe interdite (les signatures de code du scanner F-Droid, Play Services, ML Kit), et **zéro nouvelle
-classe `com.google.*` par rapport au `main`**. Mesuré par `scripts/apk-no-google.py`, qui lit le mapping R8,
-car R8 renomme les classes et un simple listing du dex ne verrait rien.
+Material (163), Guava (201), Gson (87). Aucune Play Services ni ML Kit. Critère appliqué : zéro classe interdite
+(signatures de code du scanner F-Droid, Play Services, ML Kit), et rien de nouveau venu du scanner. Mesuré par
+`scripts/apk-no-google.py`, qui lit le mapping R8, puisque R8 renomme les classes.
+
+### T5 : le bouton « Open in Bati » de la page de secours
+
+Tu as demandé une page qui ne lit rien : elle n'a aucun script. Son bouton ouvre donc Bati sans le contenu du
+lien, et le joueur doit rouvrir le lien depuis ses messages. Une ligne de script locale (`location.hash` recopié
+dans le lien `bati://`, sans rien envoyer) le rendrait vraiment utile, surtout si l'App Link n'est pas vérifié.
+Je ne l'ai pas ajoutée sans ton accord.
 
 ## À savoir
 
-- `CAMERA` était retirée de toute release par `withAndroidTrimPermissions`. Je l'en ai sortie, comme le
-  commentaire du plugin le demande. La permission apparaîtra donc sur l'écran d'installation et dans Exodus
-  **dès que ce lot sera fusionné**, même sans écran visible pour le joueur.
+- **Une invitation n'est pas scellée, elle ne peut pas l'être.** Qui la lit peut lire les messages de cette paire,
+  y compris ta messagerie si elle n'est pas chiffrée. Elle expire après 7 jours, et A n'apprend jamais qui l'a
+  utilisée, puisque rien ne revient.
+- **Restaurer une sauvegarde en clair efface les paires.** Le prix du secret qui ne sort jamais en clair. Il faudra
+  le dire avant la restauration quand un joueur aura des compagnons.
+- **Android Backup peut copier le secret**, là où le transport chiffre côté client (règle déjà en place pour toute
+  la base). Le secret n'est donc pas strictement « seulement dans la synchro chiffrée », comme tu l'avais écrit.
+- **La page `/d` et l'App Link partent au prochain merge.** La page n'annonce aucun jeu. Sans le drapeau, un lien
+  ouvre l'accueil.

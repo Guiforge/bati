@@ -49,6 +49,18 @@ npm run maestro                          # claims by itself; bare: maestro test 
 short), `release` to keep it running for someone else, `list` to see who holds what. Maestro ignores `ANDROID_SERIAL` and picks any device; it once ran 24 `clearState`
 launches on the phone and wiped its dev app. Check its `Selected device` log line.
 
+## A camera that sees something
+
+For the QR scanner: the AVD's virtual camera scene, whose poster can hold any image.
+`EMU_EXTRA_ARGS="-camera-back virtualscene -virtualscene-poster wall=<qr.png>" scripts/emu.sh start`, then
+`adb -s "$S" emu virtualscene-image wall <qr.png>` swaps it live. The poster stands 5 m from the start, in
+another room: the camera has to walk there, by the emulator's gRPC (`adb emu grpc <port>`, token in
+`/run/user/1000/avd/running/pid_*.ini`, `setPhysicalModel` from `emulator/lib/emulator_controller.proto`):
+ROTATION `0 210 0`, POSITION `-1.81 0.32 3.58`, which is 2 m in front of it
+(`emulator/resources/Toren1BD.posters` has its place). Maestro's `launchApp` grants every permission: `pm revoke`
+before checking when one is asked. `CAMERA` is stripped from a build unless `EXPO_PUBLIC_MULTIPLAYER=1` was set at
+prebuild, and at build for the screen (docs/designs/multiplayer/qr-scanner.md).
+
 ## Metro and the dev client
 
 - Metro on port P: `npx expo start --dev-client --port P`, then `adb reverse tcp:P tcp:P`

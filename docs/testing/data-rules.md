@@ -1030,6 +1030,12 @@ constructors read them from `adventures`, so changing the monster between two pl
 next hit the new monster's. The `boss_fights` columns are written at creation and read by nothing.
 Invariant: the fight's stats equal its adventure's at the next hit. `__tests__/db-hero-adventures.test.ts`.
 
+**R128. Companions.** `pairs` (0082) is merged by id, later `updatedAt` first, and a pair with a tombstone at or
+after its stamp stays dead (`__tests__/db-pairs.test.ts`). Its `secret` is never in a plaintext backup:
+`writeSnapshotNow` runs `scrubPairs`, and that test reads the file's bytes. An envelope is never written to the
+database in lot 0. `countsForPlay` (R1 of the village spec, `db/completed.ts`) is not `countsAsSession`: it asks
+whether the proposed goal was reached, and it reads no byHand row.
+
 **R126. The hero's boss.** Migration 0079 moved the voice of 0077 into a table of its own, `hero_bosses`
 (hero rows, `uuid` UNIQUE; name, painted `monster`, `weaknessMuscle`, `resistanceMuscle`, `linesJson`,
 `artJson`), and gave `adventures` a nullable `heroBossUuid`. The two 0077 columns below are emptied by the

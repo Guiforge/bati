@@ -12,14 +12,16 @@ Défauts déjà vus sur les 5 premières planches, à interdire dans chaque desc
 - Petites figures en bouillie : au plus 1 ou 2 figures, grandes et nettes.
 - Vue de face : garder le trois quarts du dessus.
 
-Commandes, toujours **au premier plan**, sous `flock ~/.cache/bati-flux.lock` :
-- `python3 scripts/bld/concepts.py klein <bâtiment> --dirs a,b` (les 2 directions gardées)
-- `python3 scripts/bld/concepts.py f3 <bâtiment> --pick da.rough=N ...` (numéro de variante, un par stade et direction)
+Depuis la vague 2, Klein est à son plafond de sonde : on peint directement sur FLUX 3, 2 variantes par stade. Ne touche pas à ce plafond et n'utilise pas `klein`.
+
+Commandes, toujours **au premier plan** :
+- `flock ~/.cache/bati-flux.lock python3 scripts/bld/concepts.py direct <bâtiment> --dirs a,b` (les 2 directions gardées, 12 images)
+- `python3 scripts/bld/concepts.py pick <bâtiment> da.rough=N da.grand=N ...` (numéro de variante, un par stade et direction, sans appel FLUX)
 - `python3 scripts/bld/concepts.py board <bâtiment>`
 
-Choisis la meilleure variante de chaque stade d'après les planches `concepts/sheet_*` : celle dont la forme suit le mieux le texte, sans erreur d'image (bruit, brillance, fausses lettres, angle faux, foule, membres en trop). Ne juge pas l'idée. Si le signe central d'une direction manque sur toutes les variantes d'un stade, renforce le texte et refais ce stade une fois, avec `--stages <stade> --try 2`.
+Choisis la meilleure variante de chaque stade d'après les planches `concepts/sheet_*` : celle dont la forme suit le mieux le texte, sans erreur d'image (bruit, brillance, fausses lettres, angle faux, foule, membres en trop). Ne juge pas l'idée. Si le signe central d'une direction manque sur toutes les variantes d'un stade, renforce le texte et refais ce stade une fois, avec `direct <bâtiment> --dirs a --stages <stade> --try 2` puis `pick ... --try 2`.
 
-Vérifie `python3 scripts/iso/iso_loop.py budget` avant chaque lot. Plafond pour cette tâche : 0,80 $. Pour compter ton coût, additionne les images (Klein 0,009 $, FLUX 3 0,048 $) : le registre compte aussi les autres peintres. N'édite `scripts/bld/concepts.py` que s'il bloque, au plus court : d'autres peintres l'utilisent.
+Vérifie `python3 scripts/iso/iso_loop.py budget` avant chaque lot. Plafond pour cette tâche : 0,80 $. Pour compter ton coût, additionne les images (FLUX 3 0,048 $) : le registre compte aussi les autres peintres. N'édite `scripts/bld/concepts.py` que s'il bloque, au plus court : d'autres peintres l'utilisent.
 
 Ne rends la main qu'après `board`. Une commande qui attend le verrou peut être longue : garde-la au premier plan avec un `timeout` de 590 s et relance-la au besoin, sans boucle sur `pgrep -f`. Si `ls` rend vide, utilise `find`.
 

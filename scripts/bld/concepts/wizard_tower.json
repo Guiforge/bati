@@ -1,0 +1,23 @@
+{
+  "building": "wizard_tower",
+  "directions": [
+    {
+      "id": 1,
+      "name": "1 La Tour sans escalier",
+      "prompts": {
+        "rough": "A squat lump of grey rock with a crooked little hut of mismatched salvage planks perched on top, under a pointed conical roof of loosely tied straw thatch. A thick knotted rope hangs from the hut's single small window down the rock face. There is no door at the bottom, no stairs. A branch is stuck horizontally through the plank wall. A thin old man in a plain tunic and leggings climbs the rope, halfway up, legs pressed together. Matte weathered wood, dull straw, rough rock. A small feathered patch of ground under the rock, no hard-edged slab.",
+        "grand": "A tall thin needle of pale rock topped by a round stone tower of cut stone blocks with a pointed matte violet-grey slate cone roof, iron fittings, dark windows. Beside it a second slate-capped spire rises, and between the two spires a thick straight oak bar spans the gap high above the void. A wooden gallery juts out under the spires, wider at the top than at the bottom. A lifting beam with a hemp rope. One man in a plain tunic hangs from the bar by his arms, feet dangling. Matte stone and slate, no shine, no hanging cloth. A small feathered patch of ground under the needle, no hard-edged slab.",
+        "mythic": "A tall thin needle of rock whose upper part has torn away and floats high in the air above the stump, with a clear empty gap of at least a quarter of the total height, plain empty background in the gap. The floating top keeps two slate-capped stone spires joined by a thick oak bar, a wooden gallery, and its underside ends in a single point of rough rock. One single very thick taut rope, as thick as a man's arm, runs diagonally from the floating top down to an oak capstan at the foot of the stump. The stump stays on the ground, broken flat on top. Matte violet veins in the rock on both sides of the break. Three or four big matte rocks hang frozen in mid-air in the gap. One small apprentice in a plain tunic climbs the thick rope near the bottom. Matte grey stone, slate, oak, no shine, no glow, no cloth. A small feathered patch of ground under the stump, no hard-edged slab."
+      }
+    },
+    {
+      "id": 2,
+      "name": "2 Le Drapeau",
+      "prompts": {
+        "rough": "A dead forked tree trunk in a Y shape, taller than wide, with a crooked horizontal branch lashed between the two forks with rope. A small plank hut sits at the fork, topped by an upturned straw beehive as a pointed roof. A lantern hangs from the fork. A thin old man in a plain tunic and leggings hangs from the crooked branch by both hands, knees bent because the bar is too low. Matte weathered wood and straw. A small feathered patch of ground under the trunk, no hard-edged slab.",
+        "grand": "Two narrow stone towers of unequal height standing on one shared base, each with its own pointed matte violet-grey slate cone roof, iron bands, dark stained-glass windows. Between them three thick horizontal oak bars at uneven heights, like a giant's ladder. An old trunk bench at the foot. One man in a plain tunic swings from one bar to the next by his hands. Warm stone, matte slate, no shine, no hanging cloth. A small feathered patch of ground under the towers, no hard-edged slab.",
+        "mythic": "Two stone towers with pointed slate cone roofs. The left tower stands upright on the ground, tall and thick, with dark windows. The right tower, cone and windows included, is lifted off the ground and held perfectly HORIZONTAL, lying flat sideways in the air at the top of the left tower, pointing to the right, as thick as the standing tower and ending in its cone on the right. It is held by one single very thick black iron bar sticking out sideways from the top of the left tower. Nothing at all under the horizontal tower, plain empty background, no rope, no support, no gallows, no crane. Two large matte violet flames, one on each cone tip. Matte black iron, dark stone, slate, no shine, no gilding. A small round three-legged stool floats near the foot with an apprentice sitting on it. A small feathered patch of ground under the standing tower, no hard-edged slab."
+      }
+    }
+  ]
+}

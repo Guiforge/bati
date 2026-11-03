@@ -1,0 +1,23 @@
+{
+  "building": "druid_grove",
+  "directions": [
+    {
+      "id": 1,
+      "name": "1 Pierre qui plie",
+      "prompts": {
+        "rough": "A single tall rough sandstone standing stone leaning at about 15 degrees, held up by a forked willow pole and a hemp rope, with two short stones and a mossy log beside it, forming a small partial arc of stones on grass. A woven reed mat lies at its foot. A small clay oil lamp sits by the stone. One woman in a plain tunic sits upright on the mat, facing the stone, large and sharp. Matte stone, dull, no shine, no carved letters, no runes, no hanging cloth.",
+        "grand": "In the middle of a ring of mossy standing stones, a huge dolmen: a thick slab of blue-grey slate set in a steep slope on two uneven pillars, a tall one and a short one, so you see clearly through the gap under it, like a stone bent head-down. Layered rock strata plainly visible, emerald moss, ivy on the ring stones, a small stone basin spring, two low pollard oaks behind. Iron lanterns, matte and dull, no shine. No hanging cloth. Five to seven stones only, of clearly different sizes, no carved letters, no runes. One woman in a plain tunic on all fours under the slab, large and sharp.",
+        "mythic": "A single colossal arch of folded layered rock, one thick uneven block that rises from the ground on one wide heavy foot, bends over at the top and lands on a clearly narrower foot on the far side, like a stone in a bridge pose. Strongly visible light and dark strata bands following the fold, emerald moss running along the bend. The inside of the arch is empty open grass and sky, no portal, no door, no glow, no gate inside, no crystal. The arch is thick, rough and irregular, not a clean symmetrical doorway, not a spiral. A ring of five to seven mossy standing stones of different sizes around its feet, ivy on them, no carved letters, no runes. Cold grey stone, matte, dull, no shine, no gilding. A small knee-high standing stone folded into a low arch on a reed mat beside one foot, with one woman in a plain tunic sitting still under the big arch, large and sharp."
+      }
+    },
+    {
+      "id": 2,
+      "name": "2 Chene qui fait l'arbre",
+      "prompts": {
+        "rough": "A wide low stump of an old oak, topped off flat, with three young green shoots rising from it, pulled upward and held straight by ropes tied to wooden stakes driven in the ground. Two short standing stones beside it, a small ring of stones starting on the grass. Scrap wood stakes, hemp rope, dead bark. A small lantern on a stake. One woman in a plain tunic sits cross-legged against the stump, large and sharp. Matte, dull, no shine, no hanging cloth.",
+        "grand": "A pollarded oak with a short enormous trunk and a round head bristling with five to seven thick straight branches, very recognizable in solid black silhouette. Three trunks braided together in an open twist so light passes between them, tied with matte iron ties, wide parasol crown above. It stands inside a ring of five mossy standing stones with ivy, plank benches, a small stone spring basin, iron lanterns. Dark warm oak bark, emerald moss on the stones, no green on green. Matte, dull, no shine, no hanging cloth. One woman in a plain tunic stands on one leg on the spring rim, large and sharp.",
+        "mythic": "The only giant oak, with a crown at least one and a half times wider than any tree near it, dark warm deep-furrowed bark, standing on one single enormously thick main root planted in the middle of a ring of mossy standing stones. A second root is lifted off the ground, folded up and resting against the trunk, so that an empty triangle of open sky shows clearly between the two roots and the ground, and this lifted root holds one standing stone in its fold. At the top two heavy main branches meet above the crown. A faint green dawn light behind the crown. It is a plain tree, no face, no eyes, no arms, no hands, no human shape, no eye-shaped knot. Emerald moss on stones and bark, ivy. Matte, dull, no shine, no hanging cloth. One woman in a plain tunic stands on one leg at the foot of the tree with her hands raised, large and sharp, and a goat stands beside her."
+      }
+    }
+  ]
+}

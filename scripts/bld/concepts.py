@@ -3,6 +3,8 @@
 
     concepts.py klein <building> [--dirs 1,3] [--try N]                      # 4 Klein variants per stage and direction
     concepts.py f3 <building> --pick d1.rough=2 d1.grand=4 ... [--try N]     # chosen variant repainted on FLUX 3
+    concepts.py direct <building> [--dirs 1,3] [--stages s] [--try N]       # 2 FLUX 3 variants per stage and direction, no Klein probe
+    concepts.py pick <building> d1.rough=2 d1.grand=1 ... [--try N]         # copy the chosen direct/klein variant to f3_*.png, no FLUX call
     concepts.py board <building>                                             # concepts/board.png + board.phone.webp
 
 Output: docs/designs/village-buildings/<building>/concepts/ (git-ignored except board.phone.webp). Never overwrites: a
@@ -126,6 +128,46 @@ def klein(building, dirs, attempt, stages=STAGES):
             sheet([d / f"klein_d{dr['id']}_{st}_t{attempt}_v{v}.png" for v in range(1, 5)], d / f"sheet_d{dr['id']}_{st}_t{attempt}.png")
 
 
+def direct(building, dirs, attempt, stages=STAGES):
+    from iso_loop import FLUX3
+    spec, d = load(building), out_dir(building)
+    jobs = []
+    for dr in spec["directions"]:
+        if dirs and dr["id"] not in dirs:
+            continue
+        for si, st in enumerate(STAGES):
+            if st in stages:
+                for v in (1, 2):
+                    seed = 43000 + 1000 * dr["id"] + 100 * si + 10 * attempt + v
+                    jobs.append((d / f"direct_d{dr['id']}_{st}_t{attempt}_v{v}.png", prompt(dr["prompts"][st]), seed))
+    free([j[0] for j in jobs])
+    r = refs(d, building)
+    run(jobs, 0.10, f"concepts {building} direct t{attempt}", FLUX3, None, True, lambda o: r)
+    for dr in spec["directions"]:
+        for st in STAGES:
+            sheet([d / f"direct_d{dr['id']}_{st}_t{attempt}_v{v}.png" for v in (1, 2)], d / f"sheet_d{dr['id']}_{st}_t{attempt}.png")
+
+
+def pick(building, picks, attempt):
+    """No FLUX call: copy the chosen variant to the f3 name the board reads."""
+    import shutil
+    d = out_dir(building)
+    log = d / "picks.json"
+    old = json.loads(log.read_text()) if log.exists() else {}
+    for pk in picks:
+        key, v = pk.split("=")
+        di, st = key.lstrip("d").split(".")
+        src = next((f for k in ("direct", "klein") if (f := d / f"{k}_d{di}_{st}_t{attempt}_v{v}.png").exists()), None)
+        if not src:
+            sys.exit(f"no variant d{di} {st} t{attempt} v{v}")
+        dst = d / f"f3_d{di}_{st}_t{attempt}.png"
+        if dst.exists():
+            sys.exit(f"exists, pass --try: {dst.name}")
+        shutil.copy(src, dst)
+        old.setdefault(f"t{attempt}", {})[key] = src.name
+    log.write_text(json.dumps(old, indent=2))
+
+
 def sheet(files, dst):
     """Variants side by side, numbered from 1, for the human eye."""
     files = [f for f in files if f.exists()]
@@ -210,7 +252,7 @@ def board(building):
             bigs = sorted(d.glob(f"f3_d{dr['id']}_{st}_t*.png"))
             if bigs:
                 canvas.paste(fit(Image.open(bigs[-1]), big), (x, y + pad))
-            for k, f in enumerate(sorted(d.glob(f"klein_d{dr['id']}_{st}_t*_v*.png"))[-4:]):
+            for k, f in enumerate(sorted([*d.glob(f"klein_d{dr['id']}_{st}_t*_v*.png"), *d.glob(f"direct_d{dr['id']}_{st}_t*_v*.png")])[-4:]):
                 canvas.paste(fit(Image.open(f), small), (x + k * (small[0] + 4), y + big[1] + 2 * pad))
         y += big[1] + small[1] + 3 * pad
         row_end(top, dr["name"])
@@ -228,8 +270,9 @@ def board(building):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["klein", "f3", "board"])
+    ap.add_argument("cmd", choices=["klein", "direct", "pick", "f3", "board"])
     ap.add_argument("building")
+    ap.add_argument("picks", nargs="*")
     ap.add_argument("--dirs", default="")
     ap.add_argument("--pick", nargs="*", default=[])
     ap.add_argument("--stages", default="rough,grand,mythic")
@@ -237,6 +280,10 @@ if __name__ == "__main__":
     a = ap.parse_args()
     if a.cmd == "klein":
         klein(a.building, {int(x) for x in a.dirs.split(",") if x}, a.attempt, a.stages.split(","))
+    elif a.cmd == "direct":
+        direct(a.building, {int(x) for x in a.dirs.split(",") if x}, a.attempt, a.stages.split(","))
+    elif a.cmd == "pick":
+        pick(a.building, a.picks + a.pick, a.attempt)
     elif a.cmd == "f3":
         f3(a.building, a.pick, a.attempt)
     else:

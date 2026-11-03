@@ -1,0 +1,23 @@
+{
+  "building": "high_road",
+  "directions": [
+    {
+      "id": 2,
+      "name": "2 La Route qui monte",
+      "prompts": {
+        "rough": "A crude training ramp made of an old wooden door and a ladder laid on trestles and a wheelbarrow, rising about the height of a man and ending abruptly in mid-air. At its end a stick and a small lantern stand on the last plank as if it were a destination. Salvaged bare wood, rope lashings, a bed of straw under it. A sturdy woman in a plain tunic runs up the slope, the planks bend under her. The ramp is solid wood, clearly an uphill slope, no rails, no hanging cloth. A small feathered patch of ground under it, no hard-edged slab.",
+        "grand": "A steep stone road rising on three tall Roman arches, paved with large polygonal dark basalt slabs with cart ruts, a low stone parapet on the sides, a stone trough under the first arch. The road climbs steeply, clearly a slope going up, and ends abruptly with one slab sticking out. Thick massive pale stone, matte, no shine. One athlete drinks at the trough, seen large and sharp. Three-quarter view from above. A small feathered patch of ground under it, no hard-edged slab, no hanging cloth.",
+        "mythic": "A thick, wide stone road ribbon, very thick pale matte stone slabs, rising from two storeys of stone arcades at its base, climbing steeply and curling over into a single fern-frond crozier spiral, the top edge arching back over its own foot, seen from the side at the isometric angle. Every slab touches the next, the ribbon is at least as wide as an arch, solid massive masonry, clearly a stone road and not a bridge, no rails, no tracks, no wagons, no roller coaster, no loop closing on itself. A small pale blue footprint glows on a slab. One large sharp seated bearded man rests on a rock on the landing at the first third. Matte, no shine, no gilding. A small feathered patch of ground under the arcades, no hard-edged slab."
+      }
+    },
+    {
+      "id": 3,
+      "name": "3 L'Arbre aux Chemins",
+      "prompts": {
+        "rough": "A pilgrim's walking stick planted in a heap of dry stones, with three sharpened stumps of branch tied to it with rope and twine, bare dry wood, leather. One pair of worn leather sandals lies flat on top of the stone heap, nothing hangs in the air. A small lantern sits among the stones. An old thin woman with a staff holds one arm stretched out like another branch, large and sharp. No rope hanging, no cloth, no gallows shape. A small feathered patch of ground under it, no hard-edged slab.",
+        "grand": "A thick oak trunk stripped of bark and banded with iron hoops, with seven heavy oak sign arms of very unequal lengths, each arm a thick flat plank with a pointed end, at least a hand thick, with a simple painted pictogram on it (a mountain, a fish, a wave), no letters, no numbers, no writing. A low round bench around the foot, a small dry-stone terrace with three steps, a stone trough. Three pairs of sandals lie flat on the stones and the bench, nothing hangs. A runner messenger in a plain tunic stands large and sharp. A lantern on an iron hook. Matte wood, no hanging cloth, no rope hanging. A small feathered patch of ground, no hard-edged slab.",
+        "mythic": "A timeless tree with silver-grey bark and a very tall twisted trunk, no crown of leaves, no round canopy, only five enormous thick straight branches, each at least as thick as a person, each ending in a flat-cut plank point carrying a painted pictogram (a mountain, a fish, a wave), no letters, no numbers, no writing, each pointing in a different direction. A few pale blue leaves at one tip. Its roots have lifted the paving slabs of a road around it, a heap of dry stones at its foot, a few pairs of worn sandals lying flat on the stones and roots, nothing hangs in the air, no rope, no gallows. One barefoot traveler sits large and sharp on a root. Matte, no shine. A small feathered patch of ground, no hard-edged slab."
+      }
+    }
+  ]
+}

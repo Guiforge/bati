@@ -132,6 +132,10 @@ const ALLOWED: Record<string, string> = {
     "is tracking them would be silently absent, which is the opposite of what that notification " +
     "is for. And modules/bati-reminders, whose whole output is a notification the hero asked " +
     "for: asked when the reminder switch is turned on, never at launch (docs/designs/rappels.md).",
+  "android.permission.CAMERA":
+    "modules/bati-scanner - reading a companion's QR code. Asked when the scanner opens, never at " +
+    "launch; frames go to the decoder and are dropped, none is stored or sent. The two uses-feature " +
+    "lines beside it keep a phone with no camera able to install the app.",
   "android.permission.RECEIVE_BOOT_COMPLETED":
     "modules/bati-reminders — a reboot clears every alarm, and its receiver arms the next " +
     "reminder again. Nothing else runs at boot: the receiver reads its own SharedPreferences and " +

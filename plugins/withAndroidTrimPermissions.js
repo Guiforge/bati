@@ -21,8 +21,6 @@ const { withAndroidManifest } = require("expo/config-plugins");
  *
  * Every entry below is justified by what the app actually calls:
  *
- * - **CAMERA** — `app/settings.tsx` calls `launchImageLibraryAsync`, never `launchCameraAsync`.
- *   Picking an existing photo does not need a camera.
  * - **RECORD_AUDIO** — `expo-audio` is back since the session countdown beeps, but only as a
  *   player: its config plugin is called with `recordAudioAndroid: false` in `app.json`, so it no
  *   longer asks. This marker is the belt to that suspenders — audio came back once already, and
@@ -42,7 +40,6 @@ const { withAndroidManifest } = require("expo/config-plugins");
  * runtime, which is a miserable thing to debug from the symptom.
  */
 const REMOVE = [
-  "android.permission.CAMERA",
   "android.permission.RECORD_AUDIO",
   "android.permission.MODIFY_AUDIO_SETTINGS",
   "android.permission.SYSTEM_ALERT_WINDOW",

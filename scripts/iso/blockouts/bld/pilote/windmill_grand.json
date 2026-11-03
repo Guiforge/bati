@@ -1,4 +1,4 @@
-{"canvas": "building2x2", "pivot": [1.54, 1.54, 2.59], "sailsScale": 1.05,
+{"canvas": "building2x2", "pivot": [1.54, 1.54, 2.59], "sailsScale": 1.05, "materials": {"culotte": {"tones": ["#5F7A96", "#5F7A96", "#3F5068"]}},
  "parts": [
   {"type": "box", "mat": "stone", "at": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 0.04], "_plate": true},
   {"type": "cyl", "mat": "stone", "center": [1.0, 1.0, 0.04], "r": 0.82, "h": 0.12},
@@ -50,6 +50,7 @@
   {"type": "box", "mat": "stone", "at": [0.04, 1.28, 0.04], "size": [0.38, 0.38, 0.36]},
   {"type": "cyl", "mat": "stone", "center": [0.16, 1.5, 0.4], "r": 0.12, "h": 0.85, "accroche": "cheminee"},
   {"type": "box", "mat": "amber", "at": [0.16, 1.64, 0.1], "size": [0.14, 0.04, 0.14]},
+  {"type": "box", "mat": "culotte", "at": [1.21, 1.79, 1.42], "size": [0.24, 0.04, 0.22]},
   {"type": "cyl", "mat": "banner", "center": [0.66, 1.78, 0.04], "r": 0.08, "h": 0.33, "_marker": "gardien"},
   {"type": "cyl", "mat": "banner", "center": [1.72, 1.72, 0.04], "r": 0.28, "h": 0.01, "_marker": "gag"}
  ]

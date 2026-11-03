@@ -189,7 +189,7 @@ def key(im):
     return im
 
 
-def boards():
+def boards(prefix="sondes moulin r1"):
     ctls = {s: json.loads((OUT / s / "controle.json").read_text()) for s in STAGES if (OUT / s / "controle.json").exists()}
     font_h = 22
     # planche: every cut, per stage a row
@@ -237,7 +237,7 @@ def boards():
         (OUT / "juge_cle.json").write_text(json.dumps(cle, indent=2))
     # provenance
     batches = json.loads((pathlib.Path.home() / ".cache/bati-art-loop/iso/budget.json").read_text())["v1"]["batches"]
-    mine = [b for b in batches if b["label"].startswith("sondes moulin r1")]
+    mine = [b for b in batches if b["label"].startswith(prefix)]
     if not (OUT / "provenance.json").exists():
         (OUT / "provenance.json").write_text(json.dumps({
             "date": time.strftime("%Y-%m-%d"), "model": "FLUX 3 Image", "endpoint": FLUX3, "finish": "b",

@@ -30,10 +30,12 @@ SPECS = ROOT / "scripts" / "iso" / "blockouts" / "bld"
 MAGENTA = (255, 0, 255)
 # [top, lit, shade]: top and lit are one value, so a material has two
 DAY = {
-    "stone": ["#BDB29C", "#BDB29C", "#8A8890"],
+    "stone": ["#BDB29C", "#BDB29C", "#94866E"],
     "wood": ["#7A5A3C", "#7A5A3C", "#4E3C34"],
     "darkwood": ["#5E4430", "#5E4430", "#3A2E2C"],
-    "tile": ["#8C8884", "#8C8884", "#5C5C66"],
+    "tile": ["#8A5F4A", "#8A5F4A", "#5A4038"],
+    "thatch": ["#B8965C", "#B8965C", "#7A6240"],
+    "culotte": ["#5F7A96", "#5F7A96", "#3F5068"],
     "iron": ["#5A5E62", "#5A5E62", "#3A3E48"],
     "canvas": ["#CDBF9C", "#CDBF9C", "#8E8478"],
     "banner": ["#A8432F", "#A8432F", "#6A3040"],
@@ -76,8 +78,6 @@ def painting_spec(name):
     for p in spec["parts"]:
         if p.get("_plate") or p.get("_marker"):
             continue
-        if p["mat"] == "thatch":
-            p = dict(p, mat="tile")
         if p["type"] == "cone" and p["mat"] == "canvas" and p["r"] <= 0.2:
             xy = (round(p["center"][0], 1), round(p["center"][1], 1))
             if xy not in seen:
@@ -93,7 +93,7 @@ def painting_spec(name):
     return spec, [q for q in json.loads((SPECS / f"{name}.json").read_text())["parts"] if q.get("_plate")]
 
 
-def soften(rgba, classes, radius=22):
+def soften(rgba, classes, radius=70):
     """Per material, two values (lit, shade) mixed by a blurred lit field: no polygon of light. The material comes from the
     pixel's exact flat colour (the render's material codes are too coarse to tell them apart)."""
     px, cl = rgba.load(), classes.load()

@@ -29,6 +29,7 @@ PX_Z, PX_U = 235.0, 271.5  # screen px per unit, up and along the screen's horiz
 
 MATS = {
     "crystal": {"tones": ["#5A88AC", "#5A88AC", "#3A5F86"]},
+    "culotte": {"tones": ["#5F7A96", "#5F7A96", "#3F5068"]},
     "ruban": {"tones": ["#BCD6E4", "#BCD6E4", "#7FA3BC"]},
     "ciel": {"tones": ["#A8C2D2", "#A8C2D2", "#7C98A8"]},
     "laiton": {"tones": ["#9A7B45", "#9A7B45", "#5E4C34"]},
@@ -232,13 +233,11 @@ def windmill(stage):
         P += [G.box([0.04, 1.28, 0.04], [0.38, 0.38, 0.36], "stone"),
               G.cyl([0.16, 1.5, 0.4], 0.12, 0.85, "stone", accroche="cheminee"),
               G.box([0.16, 1.64, 0.1], [0.14, 0.04, 0.14], "amber")]
-    if k >= 4:  # the one crystal spike: collar and three offset sections, then the donkey and the horse
-        def c(d):
-            return [1 + D * d, 1 - D * d]
-        P.append(G.cone([1, 1, 3.05], 0.11, 0.29, 0.17, "iron"))
-        for z, d, ra, rb, h in ((3.22, 0.03, 0.27, 0.20, 0.30), (3.52, -0.04, 0.20, 0.11, 0.40), (3.92, 0.05, 0.11, 0.0, 0.40)):
-            P.append(G.cone([*c(d), z], ra, rb, h, "crystal"))
-        P += ane_parts()
+    if k >= 2:  # breeches: a coloured cloth hung over the gallery rail, on the front-left face
+        P.append(G.box([1.21, 1.79, 1.42], [0.24, 0.04, 0.22], "culotte"))
+    if k >= 4:  # one broken raw shard in one piece (no collar, no ring, no rim): a tilted cone and a jagged shoulder, top near px y 67
+        P.append(G.cone([1, 1, 3.07], 0.19, 0.03, 1.27, "crystal", axis=G.unit([0.10, -0.08, 1.0])))
+        P.append(G.box([0.9, 0.92, 3.3], [0.2, 0.14, 0.5], "crystal", rotZ=30))
     P.append(G.cyl([0.66, 1.78, 0.04], 0.08, 0.33, "banner", _marker="gardien"))
     P.append(G.cyl([1.72, 1.72, 0.04], 0.28, 0.01, "banner", _marker="gag"))
     put(f"windmill_{stage}", P, pivot=G.vec(s["pivot"]), sailsScale=s["scale"])

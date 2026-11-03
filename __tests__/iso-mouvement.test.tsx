@@ -40,8 +40,8 @@ describe("the motion files", () => {
     }
   });
 
-  test("the pilot buildings are all there, and one wave of them fits the node budget", () => {
-    expect(Object.keys(MOUVEMENTS).sort()).toEqual(["forge", "fountain", "windmill"]);
+  test("19 buildings have a file (archery_range and dragon_lair none), and one wave of them fits the node budget", () => {
+    expect(Object.keys(MOUVEMENTS)).toHaveLength(19);
     for (const m of Object.values(MOUVEMENTS)) {
       expect(m.effets.reduce((s, e) => s + noeudsDe(e), 0)).toBeLessThanOrEqual(
         MOUVEMENT_NOEUDS_MAX,

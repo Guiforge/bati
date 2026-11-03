@@ -12,7 +12,7 @@ import type { DepuisBase, LightAnchor, Point } from "@/constants/buildingData";
 /** The kinds of effect, one drawing and one clock rule each (MouvementBld.tsx). */
 export const KINDS = ["lueur", "particules", "vent", "miroitement"] as const;
 
-/** What a particle is: all of them wear the one placeholder sprite until the M6 paintings land. */
+/** What a particle is: each genre wears its painted sprite (assets/images/village/iso/mouvement, MouvementBld.tsx GRAINS). */
 export const GENRES = ["fumee", "vapeur", "etincelle", "braise", "poussiere", "magie"] as const;
 export type Genre = (typeof GENRES)[number];
 

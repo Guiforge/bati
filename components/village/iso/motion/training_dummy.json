@@ -1,0 +1,22 @@
+{
+  "effets": [
+    {
+      "kind": "lueur",
+      "lueur": "fire",
+      "at": [500, 230],
+      "fromRank": 10
+    },
+    {
+      "kind": "lueur",
+      "lueur": "fire",
+      "at": [520, 745],
+      "fromRank": 10
+    },
+    {
+      "kind": "lueur",
+      "lueur": "glyphe",
+      "at": [515, 830],
+      "fromRank": 10
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "effets": [
+    {
+      "kind": "lueur",
+      "lueur": "beam",
+      "at": [446, 790],
+      "fromRank": 5
+    },
+    {
+      "kind": "lueur",
+      "lueur": "fenetre",
+      "at": [175, 556],
+      "fromRank": 5
+    },
+    {
+      "kind": "lueur",
+      "lueur": "fenetre",
+      "at": [330, 660],
+      "fromRank": 5
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "effets": [
+    {
+      "kind": "lueur",
+      "lueur": "fenetre",
+      "at": [425, 300],
+      "fromRank": 3,
+      "fromBase": 10
+    },
+    {
+      "kind": "lueur",
+      "lueur": "fenetre",
+      "at": [425, 410],
+      "fromRank": 3,
+      "fromBase": 10
+    }
+  ]
+}

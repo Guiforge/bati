@@ -1,0 +1,23 @@
+{
+  "effets": [
+    {
+      "kind": "lueur",
+      "lueur": "fire",
+      "at": [245, 870],
+      "fromRank": 7
+    },
+    {
+      "kind": "lueur",
+      "lueur": "fire",
+      "at": [430, 940],
+      "fromRank": 7
+    },
+    {
+      "kind": "vent",
+      "at": [488, 60],
+      "fromRank": 10,
+      "zone": [488, 30, 150, 175],
+      "pivot": [488, 60]
+    }
+  ]
+}

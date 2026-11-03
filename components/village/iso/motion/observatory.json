@@ -1,0 +1,11 @@
+{
+  "effets": [
+    {
+      "kind": "lueur",
+      "lueur": "fenetre",
+      "at": [473, 773],
+      "fromRank": 3,
+      "fromBase": 10
+    }
+  ]
+}

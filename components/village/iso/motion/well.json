@@ -1,0 +1,22 @@
+{
+  "effets": [
+    {
+      "kind": "lueur",
+      "lueur": "crystal",
+      "at": [283, 322],
+      "fromRank": 10
+    },
+    {
+      "kind": "lueur",
+      "lueur": "fenetre",
+      "at": [370, 603],
+      "fromRank": 10
+    },
+    {
+      "kind": "lueur",
+      "lueur": "fenetre",
+      "at": [770, 493],
+      "fromRank": 10
+    }
+  ]
+}

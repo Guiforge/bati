@@ -15,19 +15,19 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import Svg, { Ellipse, Path } from "react-native-svg";
+import Svg, { Ellipse } from "react-native-svg";
 import type { Point } from "@/constants/buildingData";
 import type { VisualStage } from "@/constants/buildingStages";
 import { rawColors } from "@/constants/rawColors";
 import type { BuildingCode } from "@/db/schema";
-import { FUMEE_LARGEUR, flamme, fumee, MOUVEMENT_FUMEE, SORTES_FUMEE, VOLUTE } from "./feux";
+import { FUMEE_LARGEUR, flamme, fumee, MOUVEMENT_FUMEE, SORTES_FUMEE } from "./feux";
 import { inclinaisonBanniere } from "./fierte";
 import { useMouvementReduit } from "./fige";
 import { HorlogeContext, reflet } from "./horloge";
 import { LueurDouce } from "./LueurDouce";
 import { jourDe } from "./marcheurs";
 import { MOUVEMENTS } from "./motion";
-import type { Effet, Lueur, Miroitement, Particules, Vent } from "./motion/types";
+import type { Effet, Genre, Lueur, Miroitement, Particules, Vent } from "./motion/types";
 import {
   allumage,
   dureeAllumage,
@@ -44,12 +44,21 @@ const ABSOLU = { position: "absolute" } as const;
 /** The dusk clock's value for "every window already lit": a map opened at night, a day gone. */
 const TOUT_ALLUME = 1e9;
 
-/**
- * M6 placeholder: the one drawing every particle wears until the small painted sprites land (no
- * painted smoke, spark or mote exists in assets/ today). It is the ink-outlined cloud smoke has
- * had since feux.ts; swap this constant (and the `Grain` below) for a painted image per genre.
- */
-const GRAIN_PLACEHOLDER = { d: VOLUTE, w: 100, h: 64 } as const;
+/** M6: the painted sprite(s) of each kind of particle (96 px squares, assets/images/village/iso/mouvement). */
+const GRAINS: Record<Genre, readonly number[]> = {
+  fumee: [
+    require("@/assets/images/village/iso/mouvement/smoke_1.webp"),
+    require("@/assets/images/village/iso/mouvement/smoke_2.webp"),
+  ],
+  vapeur: [require("@/assets/images/village/iso/mouvement/steam.webp")],
+  etincelle: [require("@/assets/images/village/iso/mouvement/spark.webp")],
+  braise: [require("@/assets/images/village/iso/mouvement/ember.webp")],
+  poussiere: [
+    require("@/assets/images/village/iso/mouvement/dust_1.webp"),
+    require("@/assets/images/village/iso/mouvement/dust_2.webp"),
+  ],
+  magie: [require("@/assets/images/village/iso/mouvement/mote.webp")],
+};
 
 type Props = {
   code: BuildingCode;
@@ -204,7 +213,7 @@ function LueurVive({
   );
 }
 
-/** `nb` puffs of the placeholder sprite, climbing in turn: the plume of feux.ts, smaller. */
+/** `nb` puffs of the genre's painted sprite, climbing in turn: the plume of feux.ts, smaller. */
 function Bouffees({
   e,
   at,
@@ -225,6 +234,7 @@ function Bouffees({
           key={i}
           at={at}
           taille={e.taille}
+          genre={e.genre}
           horloge={horloge}
           sorte={SORTES_FUMEE[i % SORTES_FUMEE.length] ?? "ronde"}
           i={i}
@@ -240,6 +250,7 @@ function Bouffees({
 function Bouffee({
   at,
   taille,
+  genre,
   horloge,
   sorte,
   i,
@@ -249,6 +260,7 @@ function Bouffee({
 }: {
   at: Point;
   taille: number;
+  genre: Genre;
   horloge: SharedValue<number>;
   sorte: (typeof SORTES_FUMEE)[number];
   i: number;
@@ -269,26 +281,19 @@ function Bouffee({
       ],
     };
   });
-  const h = (taille * GRAIN_PLACEHOLDER.h) / GRAIN_PLACEHOLDER.w;
+  const grains = GRAINS[genre];
+  const source = grains[i % grains.length];
   return (
     <Animated.View
       pointerEvents="none"
       testID={testID}
       style={[
         ABSOLU,
-        { left: at[0] - taille / 2, top: at[1] - h, width: taille, height: h },
+        { left: at[0] - taille / 2, top: at[1] - taille, width: taille, height: taille },
         style,
       ]}
     >
-      <Svg width={taille} height={h} viewBox={`0 0 ${GRAIN_PLACEHOLDER.w} ${GRAIN_PLACEHOLDER.h}`}>
-        <Path
-          d={GRAIN_PLACEHOLDER.d}
-          fill={rawColors.isoFumee}
-          stroke={rawColors.isoInk}
-          strokeWidth={4.5}
-          strokeLinejoin="round"
-        />
-      </Svg>
+      <Image source={source} contentFit="contain" style={{ width: taille, height: taille }} />
     </Animated.View>
   );
 }
@@ -325,8 +330,8 @@ function Miroite({
   );
 }
 
-const ECLAT_L = 9;
-const ECLAT_H = 3;
+const ECLAT_L = 18;
+const ECLAT_H = 5;
 
 function Eclat({
   at,
@@ -346,7 +351,7 @@ function Eclat({
   const style = useAnimatedStyle(() => {
     const r = reflet(horloge.get(), delai);
     return {
-      opacity: 0.7 * r.opacite,
+      opacity: r.opacite,
       transform: [{ translateX: sens * (r.avance - 0.5) * portee }],
     };
   });

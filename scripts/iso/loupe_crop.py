@@ -3,6 +3,7 @@
 
     loupe_crop.py crop  <img> <dump.json> i0,j0,i1,j1 <out.png>   crop a tile rectangle (inclusive tiles)
     loupe_crop.py sheet <video> <out.png> [--start S]             12 frames at 10 fps, 6x2, ffmpeg -n
+    loupe_crop.py sheet-all <video> <out.png> [--square]          12 frames spread over the whole film, 6x2
     loupe_crop.py diff  <a.png> <b.png> [--tol N]                 % of pixels differing; exit 1 at 2 % or more
 
 The camera is the one in the sprite dump (see loupe_checks.py header). Projection assumed:
@@ -62,6 +63,37 @@ def contact_sheet(video, out, start=0.0):
     return out
 
 
+SHEET_FRAMES = 12
+MIN_FILM_S = 1.0  # under this a film is one frame (screenrecord writes nothing while the screen is still)
+
+
+def sheet_fps(duration, frames=SHEET_FRAMES):
+    """The fps that spreads `frames` over a film of `duration` seconds."""
+    if not duration or duration < MIN_FILM_S:
+        raise ValueError(f"film of {duration} s, under {MIN_FILM_S} s: nothing moved while it recorded")
+    return frames / duration
+
+
+def film_duration(video):
+    r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(video)],
+                       capture_output=True, text=True)
+    try:
+        return float(r.stdout.strip())
+    except ValueError:
+        raise ValueError(f"{video}: ffprobe reads no duration ({r.stderr.strip() or 'empty output'})") from None
+
+
+def contact_sheet_all(video, out, square=False):
+    """12 frames spread over the whole film (PROMPT.md 9.5), `square`: the centred square, where a lone building stands."""
+    out = pathlib.Path(out)
+    if out.exists():
+        raise FileExistsError(f"{out} exists, ffmpeg -n replaces nothing")
+    fps = sheet_fps(film_duration(video))
+    vf = f"fps={fps:.6f}," + ("crop=iw:min(iw\\,ih)," if square else "") + "tile=6x2"
+    subprocess.run(["ffmpeg", "-n", "-v", "error", "-i", str(video), "-vf", vf, "-frames:v", "1", str(out)], check=True)
+    return out
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -69,6 +101,8 @@ def main(argv=None):
     c.add_argument("img"); c.add_argument("dump"); c.add_argument("tiles"); c.add_argument("out")
     s = sub.add_parser("sheet")
     s.add_argument("video"); s.add_argument("out"); s.add_argument("--start", type=float, default=0.0)
+    sa = sub.add_parser("sheet-all")
+    sa.add_argument("video"); sa.add_argument("out"); sa.add_argument("--square", action="store_true")
     d = sub.add_parser("diff")
     d.add_argument("a"); d.add_argument("b"); d.add_argument("--tol", type=int, default=0)
     a = ap.parse_args(argv)
@@ -78,6 +112,12 @@ def main(argv=None):
         print(a.out)
     elif a.cmd == "sheet":
         print(contact_sheet(a.video, a.out, a.start))
+    elif a.cmd == "sheet-all":
+        try:
+            print(contact_sheet_all(a.video, a.out, a.square))
+        except ValueError as e:
+            print(f"loupe_crop.py sheet-all: {e}", file=sys.stderr)
+            return 1
     else:
         p = diff_percent(Image.open(a.a), Image.open(a.b), a.tol)
         print(f"{p:.3f} % differ ({'KEEP passes' if p < KEEP_MAX else 'goes through A/B'})")

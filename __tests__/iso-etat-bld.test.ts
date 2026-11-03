@@ -1,3 +1,4 @@
+import { etatSeul } from "@/components/village/iso/carteDemo";
 import { etatBldDe } from "@/components/village/iso/etatBld";
 
 describe("etatBldDe (?bld= capture states of the buildings track)", () => {
@@ -9,6 +10,7 @@ describe("etatBldDe (?bld= capture states of the buildings track)", () => {
       avant: 4,
       avantBase: undefined,
       show: undefined,
+      delai: 1.5,
       palier: 12,
       semaine: false,
     });
@@ -34,6 +36,19 @@ describe("etatBldDe (?bld= capture states of the buildings track)", () => {
   test("the first week takes the tier from 1 to 3 and never more", () => {
     expect(etatBldDe({ bld: "tent", rang: "2", semaine: "1", palier: "9" })?.palier).toBe(3);
     expect(etatBldDe({ bld: "tent", rang: "2", semaine: "1" })?.palier).toBe(1);
+  });
+
+  test("delai= is the show's start in seconds, 1.5 when absent or not a number from 0 to 60", () => {
+    expect(etatBldDe({ bld: "forge", rang: "5", delai: "8" })?.delai).toBe(8);
+    expect(etatBldDe({ bld: "forge", rang: "5", delai: "0.5" })?.delai).toBe(0.5);
+    for (const v of [undefined, "", "x", "-2", "61"])
+      expect(etatBldDe({ bld: "forge", rang: "5", delai: v })?.delai).toBe(1.5);
+  });
+
+  test("a building alone has its plot and two cells round it, the same for every rank", () => {
+    const { visible, montres } = etatSeul("windmill");
+    expect(montres).toContain("windmill");
+    expect(visible.flat().filter(Boolean).length).toBeLessThan(80);
   });
 
   test("an unknown building, a missing rank or a rank above the ceiling opens nothing", () => {

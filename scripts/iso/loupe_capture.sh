@@ -11,8 +11,13 @@
 # lumieres=0, ...). nu=1 is added unless the query has its own `nu=` (the bare map fills the
 # screen); dump=<name> is added by this script. Per entry it writes <out>/<name>.png and
 # <out>/<name>.json (the dump, loupe_checks.py's format). With "video": N (seconds), the map is then
-# recorded for N seconds, and loupe_crop.py sheet makes <out>/<name>-planche.png; the mp4 stays out of
-# the repo in ~/.cache/bati-art-loop/iso/loupe/<out folder name>/.
+# recorded for N seconds, and loupe_crop.py sheet-all makes <out>/<name>-planche.png (12 frames spread
+# over the whole film; a bld= link is cropped to the centred square, where the building stands); the
+# mp4 stays out of the repo in ~/.cache/bati-art-loop/iso/loupe/<out folder name>/. The script prints
+# each film's measured length and warns when it is under half of N (an empty film).
+# A link with bld= and show= (the buildings track) is recorded from BEFORE it opens, so the show,
+# which starts `delai=` seconds after the app has mounted, is in the film: give N room for a cold
+# start (about 4 s) plus delai plus the show. A bld= link has no sprite dump: none is waited for.
 #
 # The dump comes from logcat (ReactNativeJS, level E), because a release build is not debuggable and
 # run-as is not available: scripts/iso/loupe_dump_pull.py rebuilds it. By hand:
@@ -77,6 +82,10 @@ attend_dump() { # name
   return 1
 }
 
+# Reduced motion off the system (transition_animation_scale 0) stops the map's clock: still films.
+case $($adb shell settings get global transition_animation_scale | tr -d '\r') in
+  0 | 0.0) echo "loupe_capture.sh: transition_animation_scale is 0, the app reads reduced motion: films will not move." >&2 ;;
+esac
 fail=0
 # On fd 3: adb and maestro read stdin and would swallow the rest of the list.
 while IFS= read -r entry <&3; do
@@ -89,20 +98,34 @@ while IFS= read -r entry <&3; do
   case "&$query&" in *"&nu="*) ;; *) query="nu=1${query:+&$query}" ;; esac
   case "&$query&" in *"&dump="*) ;; *) query="$query&dump=$name" ;; esac
   printf '%s\t%s\t%s\n' "$name" "$buildsha" "bati://dev-iso?$query" >>"$out/manifest.tsv"
+  film=0; [ "$secs" -gt 0 ] 2>/dev/null && film=1
+  bld=0; case "&$query&" in *"&bld="*) bld=1 ;; esac
+  f=/sdcard/loupe_$name.mp4
+  rec() { $adb shell screenrecord --bit-rate 8000000 --time-limit "$secs" $f </dev/null; }
+  early=0
+  if [ "$film" = 1 ] && [ "$bld" = 1 ]; then case "&$query&" in *"&show="*) early=1 ;; esac; fi
+  if [ "$early" = 1 ]; then rec & recpid=$!; sleep 1; fi # the show must be in the film
   open_link "$query"
-  if ! attend_dump "$name"; then echo "loupe_capture.sh: $name: no dump in the log after 25 s (map mode only; a ready demo writes none)." >&2; fail=1; fi
+  if [ "$bld" = 1 ]; then sleep 6 # no sprite dump in this mode
+  elif ! attend_dump "$name"; then echo "loupe_capture.sh: $name: no dump in the log after 25 s (map mode only; a ready demo writes none)." >&2; fail=1; fi
+  if [ "$early" = 1 ]; then wait "$recpid"; fi
   sleep 1
   $adb exec-out screencap -p >"$out/$name.png"
-  if $adb logcat -d -s ReactNativeJS:E | tr -d '\r' | scripts/iso/loupe_dump_pull.py "$name" >"$out/$name.json"; then
+  if [ "$bld" = 1 ]; then
+    echo "loupe_capture.sh: $name: $out/$name.png"
+  elif $adb logcat -d -s ReactNativeJS:E | tr -d '\r' | scripts/iso/loupe_dump_pull.py "$name" >"$out/$name.json"; then
     echo "loupe_capture.sh: $name: $out/$name.png, $out/$name.json"
   else
     rm -f "$out/$name.json"; fail=1
   fi
-  if [ "$secs" -gt 0 ] 2>/dev/null; then
-    f=/sdcard/loupe_$name.mp4
-    $adb shell screenrecord --bit-rate 8000000 --time-limit "$secs" $f
+  if [ "$film" = 1 ]; then
+    [ "$early" = 1 ] || rec
     $adb pull $f "$vids/$name.mp4" >/dev/null && $adb shell rm $f
-    scripts/iso/loupe_crop.py sheet "$vids/$name.mp4" "$out/$name-planche.png" || fail=1
+    got=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$vids/$name.mp4" 2>/dev/null)
+    echo "loupe_capture.sh: $name: film $vids/$name.mp4, ${got:-unreadable} s of $secs s"
+    awk -v g="${got:-0}" -v s="$secs" 'BEGIN { exit !(g + 0 < s / 2) }' && { echo "loupe_capture.sh: $name: film under half of $secs s, empty film?" >&2; fail=1; }
+    crop=(); [ "$bld" = 1 ] && crop=(--square)
+    scripts/iso/loupe_crop.py sheet-all "$vids/$name.mp4" "$out/$name-planche.png" "${crop[@]}" || fail=1
   fi
 done 3< <(jq -c '.[]' "$spec")
 $adb shell am force-stop $pkg

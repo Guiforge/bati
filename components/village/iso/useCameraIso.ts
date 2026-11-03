@@ -65,6 +65,7 @@ export function useCameraIso({
   onTap,
   onToucher,
   memoire,
+  vueDepart,
 }: {
   visible: readonly (readonly boolean[])[];
   w: number;
@@ -85,10 +86,12 @@ export function useCameraIso({
   onToucher?: (x?: number, y?: number) => void;
   /** Kept by the owner across remounts: the view is restored from it, and written back on unmount. */
   memoire?: { current: MemoireCamera | undefined };
+  /** The opening frame, instead of the island's own (a capture of one building alone). */
+  vueDepart?: Vue;
 }) {
   const serre = cadreSerre(useContext(AlentoursContext));
   const libre = cadrage(visible, w, h - margeBas, serre);
-  const cadre = { ...libre, y: libre.y - margeBas / 2 };
+  const cadre = vueDepart ?? { ...libre, y: libre.y - margeBas / 2 };
   // The floor stays the whole-island fit, whatever the opening frame.
   const ajuste = cadrageComplet(visible, w, h - margeBas);
   // A remount (the map changes side on a rotation) is restored from `memoire` in a layout effect

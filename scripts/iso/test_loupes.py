@@ -86,6 +86,16 @@ if shutil.which("ffmpeg"):
         raise AssertionError("must not replace")
     except FileExistsError:
         pass
+assert K.sheet_fps(12.0) == 1.0 and K.sheet_fps(6.0) == 2.0  # 12 frames over the whole film
+for empty in (0, 0.3, None):  # a film of one frame, or none readable: a message, not a hole
+    try:
+        K.sheet_fps(empty)
+        raise AssertionError("an empty film must be refused")
+    except ValueError as e:
+        assert "nothing moved" in str(e)
+if shutil.which("ffmpeg"):
+    K.contact_sheet_all(vid, tmp / "all.png", square=True)
+    assert Image.open(tmp / "all.png").size == (64 * 6, 64 * 2)
 print("loupe_crop ok")
 
 # ---- dump-check ----

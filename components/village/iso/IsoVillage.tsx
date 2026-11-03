@@ -27,12 +27,15 @@ import {
   centreBatiment,
   ecranXY,
   etatAvec,
+  etatSeul,
   HAUTEUR,
   LARGEUR,
   stadeDuNiveau,
   type Vue,
+  vueFoyer,
   vueSur,
   ZOOM_CAPTURE,
+  ZOOM_FOYER_SEUL,
   ZOOM_MAX,
 } from "./carteDemo";
 import { CHANTIER_MS, ECHAFAUDAGE_APRES_MS } from "./chantier";
@@ -237,6 +240,18 @@ function planRevelation(
   };
 }
 
+/** The island: a building alone (BatimentSeul) has its plot only, else the tier's. */
+const etatDe = (seul: BuildingCode | undefined, tier: VillageTier, debout: BuildingCode[]) =>
+  seul === undefined ? etatAvec(tier, debout) : etatSeul(seul);
+
+/** The tier that sets the inhabitants: none for a building alone. */
+const habitantsDe = (seul: BuildingCode | undefined, tier: VillageTier) =>
+  seul === undefined ? tier : undefined;
+
+/** The opening frame of a building alone: centred on it at the game's close zoom, whatever its rank. */
+const vueSeul = (seul: BuildingCode | undefined, w: number, h: number) =>
+  seul === undefined ? undefined : vueFoyer(seul, 12, "jour", w, h, ZOOM_FOYER_SEUL);
+
 export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
   tier,
   buildings,
@@ -259,6 +274,7 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
   blason,
   fete,
   sonActif = false,
+  seul,
 }: {
   tier: VillageTier;
   buildings: readonly B[];
@@ -299,6 +315,11 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
   biome?: Biome;
   /** Held by the owner: a remount (the map changes side on a rotation) keeps the camera's view. */
   memoire?: { current: MemoireCamera | undefined };
+  /**
+   * Capture of one building alone (BatimentSeul): the island is its plot and two cells round it, no
+   * inhabitants, and the camera opens on it at the game's close zoom, the same for every rank.
+   */
+  seul?: BuildingCode;
   /** The hero's crest on the square (T24); a tap on it calls `onPress`, the header's own handler. */
   blason?: { crest: BlasonCrest | null; onPress: () => void };
   /** The session's key (the route's `grown`): the first wave after a new one is a party (T26), once per key. */
@@ -310,7 +331,8 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
   const niveaux = new Map<BuildingCode, number>(
     buildings.map((b) => [b.code, Math.min(b.level, niveauxReclames?.[b.code] ?? b.level)]),
   );
-  const { visible, montres } = etatAvec(
+  const { visible, montres } = etatDe(
+    seul,
     tier,
     buildings.filter((b) => b.level > 0).map((b) => b.code),
   );
@@ -467,6 +489,7 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
     margeBas,
     onToucher: horloge.touche,
     memoire,
+    vueDepart: vueSeul(seul, width, height),
     onTap: (x, y, vue) => {
       const p = carteDepuisEcran(
         [x, y],
@@ -602,7 +625,7 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
                             lumiere={lumiere}
                             biome={biome}
                             blason={blason}
-                            palier={tier}
+                            palier={habitantsDe(seul, tier)}
                             fete={fete}
                             prise={prise}
                           />

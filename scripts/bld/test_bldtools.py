@@ -164,6 +164,14 @@ ImageDraw.Draw(far).rectangle((60, 60, 79, 79), fill=(250, 0, 0))  # 400 px of ~
 far.save(tmp / "c2.png")
 part, ok = G.corner(tmp / "c0.png", tmp / "c2.png", tmp / "om.png", tmp / "nm.png")
 assert not ok and 0.03 < part < 0.06, part
+# a villager walked: the same 4 % beside the building passes once the dumps name its box, fails without
+dump = {"sprites": [{"id": "marcheur_1", "layer": "villager", "x": 62, "y": 62, "w": 16, "h": 16},
+                    {"id": "tree", "layer": "forest", "x": 0, "y": 0, "w": 90, "h": 90}]}
+json.dump(dump, open(tmp / "d0.json", "w")); json.dump({"sprites": []}, open(tmp / "d1.json", "w"))
+boxes = G.villager_rects(tmp / "d0.json", tmp / "d1.json")
+assert boxes == [(56, 56, 84, 84)], boxes  # the villager only, grown by 6 px
+part, ok = G.corner(tmp / "c0.png", tmp / "c2.png", tmp / "om.png", tmp / "nm.png", exclude=boxes)
+assert ok and part == 0.0, (part, ok)  # the walker was the only change
 try:
     G.corner(tmp / "c0.png", tmp / "c2.png", tmp / "om.png", tmp / "nm.png", out=G.LOCKED[0] / "d.png")
     raise AssertionError("a diff written inside the lock must be refused")

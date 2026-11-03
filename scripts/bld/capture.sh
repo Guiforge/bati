@@ -9,6 +9,8 @@
 # Each query is a bati://dev-iso link (components/village/iso/etatBld.ts):
 #   bld=<code>&rang=N[&base=B]       the building alone at rank N (an upgrade: own rank, base rank)
 #   show=stade|rang&avant=M          the tap show from rank M (stage change), or the short rank beat
+#   &delai=S                         seconds from the app mounting to the show (loupe_capture.sh records
+#                                    from before the link opens, so the film holds the cold start + S + the show)
 #   &avantbase=B                     with base: the base rank the show rises from (rule B upgrades)
 #   semaine=1&palier=T               the first week: village at tier T, buildings at rank T
 # Stills are frozen (fige=1); shows and idle loops are not, and carry "video" (seconds) for the
@@ -43,16 +45,16 @@ esac
   done
   for r in $opens; do # the full show at each stage change, day and night (rank 1 rises from nothing)
     for amb in jour nuit; do
-      jq -n --arg n "$code-r$r-show-$amb" --arg q "bld=$code&rang=$r&avant=$((r - 1))&show=stade&ambiance=$amb" '{name: $n, query: $q, video: 12}'
+      jq -n --arg n "$code-r$r-show-$amb" --arg q "bld=$code&rang=$r&avant=$((r - 1))&show=stade&delai=6&ambiance=$amb" '{name: $n, query: $q, video: 15}'
     done
   done
   for b in $bases; do # an upgrade's look changes when its base building rises (rule B), own rank 3
     for amb in jour nuit; do
-      jq -n --arg n "$code-r$max-base$b-show-$amb" --arg q "bld=$code&rang=$max&avant=$max&base=$b&avantbase=$((b - 1))&show=stade&ambiance=$amb" '{name: $n, query: $q, video: 12}'
+      jq -n --arg n "$code-r$max-base$b-show-$amb" --arg q "bld=$code&rang=$max&avant=$max&base=$b&avantbase=$((b - 1))&show=stade&delai=6&ambiance=$amb" '{name: $n, query: $q, video: 15}'
     done
   done
   for r in $between; do # the beat of the first rank inside a stage
-    jq -n --arg n "$code-r$r-beat" --arg q "bld=$code&rang=$r&avant=$((r - 1))&show=rang&ambiance=jour" '{name: $n, query: $q, video: 6}'
+    jq -n --arg n "$code-r$r-beat" --arg q "bld=$code&rang=$r&avant=$((r - 1))&show=rang&delai=5&ambiance=jour" '{name: $n, query: $q, video: 12}'
     break
   done
   for t in 1 2 3; do # first week: tier t, rank t

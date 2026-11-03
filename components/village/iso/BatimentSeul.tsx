@@ -2,8 +2,10 @@
 // app/dev-iso.tsx). The real IsoVillage with the props the tab gives it, so rank -> stage is the
 // app's own mapping; the camera is IsoVillage's own, the same for every building at one tier.
 // A 96 dp bar at the foot of the screen is the scale of the picture.
-// shortcut: the ground is the island's, not a flat neutral; a later `neutre=1` can blank it. The
-// show is PretDemo's claim, played untouched after 1.5 s through the croissance prop, unless the
+// A lone building (not `semaine=1`) stands on its own plot and two cells round it, no inhabitants,
+// the camera opened on it at the game's close zoom (IsoVillage `seul`). The clock of the map's life
+// is IsoVillage's own (useHorloge), so wings and glows run unless the frame is frozen or the device
+// asks for reduced motion. The show is PretDemo's claim, played untouched after 1.5 s through the croissance prop, unless the
 // building has engine data (donneesBld.ts, the engine flag on): then the map's Maquette plays the
 // engine's own show, from EtatBldContext, and the claim stays out of the way.
 
@@ -16,19 +18,21 @@ import { IsoVillage } from "@/components/village/iso/IsoVillage";
 import type { Ambiance } from "@/components/village/iso/isoSpec";
 import { rawColors } from "@/constants/rawColors";
 
-const DELAI_SHOW_MS = 1500;
 const BARRE_DP = 96;
+
+/** The first week keeps the island; every other state shows its building alone. */
+const seulDe = (e: EtatBld) => (e.semaine ? undefined : e.code);
 
 export function BatimentSeul({ etat, lumiere }: { etat: EtatBld; lumiere: Ambiance }) {
   const [aire, setAire] = useState({ w: 0, h: 0 });
   const [jouee, setJouee] = useState(false);
   const [fini, setFini] = useState(false);
-  const { show, code, rang, avant } = etat;
+  const { show, code, rang, avant, delai } = etat;
   useEffect(() => {
     if (!show) return;
-    const t = setTimeout(() => setJouee(true), DELAI_SHOW_MS);
+    const t = setTimeout(() => setJouee(true), delai * 1000);
     return () => clearTimeout(t);
-  }, [show]);
+  }, [show, delai]);
   // The engine plays its own show (MoteurBld); IsoVillage's claim would play over it.
   const donnees = donneesSeul(code);
   const attend = show !== undefined && !fini && !donnees;
@@ -47,6 +51,7 @@ export function BatimentSeul({ etat, lumiere }: { etat: EtatBld; lumiere: Ambian
         {aire.w > 0 ? (
           <IsoVillage
             tier={etat.palier}
+            seul={seulDe(etat)}
             buildings={batiments}
             width={aire.w}
             height={aire.h}

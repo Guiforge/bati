@@ -5,6 +5,7 @@
                                          [--sails sails.png --pivot x,y --scale 1.15]
     python3 scripts/bld/gates.py grow    stage:<img> rank:<img> ... [--margin 1]       (G-GROW)
     python3 scripts/bld/gates.py corner  <before> <after> <old-building-mask> <new-building-mask> [--out diff.png]
+                                         [--dumps before.json after.json]   (villagers' boxes are excluded)
     python3 scripts/bld/gates.py blind   <building> <img>... [--decoys img...]
     python3 scripts/bld/gates.py canary  <building> --grand g.png --rough r.png --ladder img... [--locked c.png --locked-base b.png]
 
@@ -22,7 +23,7 @@ import secrets
 import sys
 import tempfile
 
-from PIL import Image, ImageChops
+from PIL import Image, ImageChops, ImageDraw
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import bldtools as T  # noqa: E402
@@ -174,14 +175,31 @@ def grow(steps, min_area=0.15, min_height=0.10, min_xor=0.015, margin=1):
 
 # ---- 6. G-CORNER --------------------------------------------------------------------------------------
 
-def corner(before, after, old_mask, new_mask, dilate_px=6, limit=0.02, thr=8, out=None):
+def villager_rects(*dumps, dilate_px=6):
+    """Pixel boxes (x0, y0, x1, y1) of the `villager` layer in loupe dumps (loupe_checks.py format), each
+    grown by `dilate_px`. Villagers walk by the date (marcheurs.ts `jourDe`), so two captures taken on
+    different days differ where they stand, with no change of code."""
+    boxes = []
+    for d in dumps:
+        data = json.load(open(d)) if isinstance(d, (str, pathlib.Path)) else d
+        for s in data["sprites"]:
+            if s.get("layer") == "villager":
+                boxes.append((math.floor(s["x"]) - dilate_px, math.floor(s["y"]) - dilate_px,
+                              math.ceil(s["x"] + s["w"]) + dilate_px, math.ceil(s["y"] + s["h"]) + dilate_px))
+    return boxes
+
+
+def corner(before, after, old_mask, new_mask, dilate_px=6, limit=0.02, thr=8, out=None, exclude=()):
     """Part of the pixels outside the mask that changed by more than `thr`, the mask being the old and
     the new building masks together, dilated by `dilate_px`. Returns (part, ok); ok under `limit`.
-    The part is over the pixels outside the mask."""
+    The part is over the pixels outside the mask. `exclude`: pixel boxes (villager_rects) left out of
+    both the changed pixels and the area they are a part of."""
     x, y = Image.open(before).convert("RGB"), Image.open(after).convert("RGB")
     if x.size != y.size:
         raise SystemExit(f"size {x.size} != {y.size}")
     m = A.dilate(ImageChops.lighter(mask_of(old_mask), mask_of(new_mask)), dilate_px)
+    for box in exclude:
+        ImageDraw.Draw(m).rectangle(box, fill=255)
     r, g, b = ImageChops.difference(x, y).split()
     changed = ImageChops.lighter(ImageChops.lighter(r, g), b).point(lambda v: 255 if v > thr else 0)
     outside = ImageChops.subtract(changed, m)
@@ -285,7 +303,7 @@ def main(argv=None):
     s.add_argument("steps", nargs="+", help="stage:<img> or rank:<img>"); s.add_argument("--margin", type=int, default=1)
     s = sub.add_parser("corner")
     s.add_argument("before"); s.add_argument("after"); s.add_argument("old_mask"); s.add_argument("new_mask")
-    s.add_argument("--out")
+    s.add_argument("--out"); s.add_argument("--dumps", nargs=2, metavar=("BEFORE_JSON", "AFTER_JSON"))
     s = sub.add_parser("blind")
     s.add_argument("building"); s.add_argument("images", nargs="+"); s.add_argument("--decoys", nargs="*", default=[])
     s.add_argument("--seed", type=int)
@@ -304,7 +322,8 @@ def main(argv=None):
         print("\n".join(bad) or "every step grows")
         return 1 if bad else 0
     elif a.cmd == "corner":
-        part, ok = corner(a.before, a.after, a.old_mask, a.new_mask, out=a.out)
+        part, ok = corner(a.before, a.after, a.old_mask, a.new_mask, out=a.out,
+                          exclude=villager_rects(*a.dumps) if a.dumps else ())
         print(f"{part:.3%} changed outside the mask ({'pass' if ok else 'S-G needed'})")
         return 0 if ok else 1
     elif a.cmd == "blind":

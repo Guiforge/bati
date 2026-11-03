@@ -30,7 +30,7 @@ builds.
 | Enveloppe sur vraie build | semaine ouverte, octet altéré refusé, version plus récente nommée, aucune écriture |
 | Sans le drapeau | `bati://pairing`, un lien et `/d` mènent à l'accueil. `CAMERA` absente de l'APK |
 | Sauvegarde en clair | aucune ligne `pairs`, aucun octet du secret dans le fichier réel du téléphone |
-| `npm test`, Node 24, hors `.claude/worktrees` | 6212 passés, **1 rouge qui n'est pas de ce lot** : voir plus bas |
+| `npm test`, Node 24, hors `.claude/worktrees` | **vert en UTC, comme la CI** : 6213 passés, seuils de couverture tenus. À Paris à 23:38 : 1 rouge qui n'est pas de ce lot, voir plus bas |
 | `tsc`, biome | verts |
 | `npm run deadcode`, `licenses:check` | verts, 900 paquets, aucun bloqué |
 | Android lint (`lintRelease`), test Kotlin des vecteurs | verts, aucun nouveau problème |
@@ -38,8 +38,8 @@ builds.
 **Le test rouge.** `db-restSuggestions`, « four heavy weeks in a row earn an easier one », échoue aussi sur `main`
 intact, `4150b9b4`, à la même heure (23:38, Paris). Il passe en `TZ=UTC`, sur `main` comme sur la branche, et il
 passait à 22:50. Il dépend de l'heure et traverse le changement d'heure du 25/10. Je n'y ai pas touché. La CI tourne
-en UTC et ne le verra pas ; ton pre-push, si, certains soirs. J'ai poussé avec `TZ=UTC` pour cette raison, le hook a
-donc bien passé toute la suite, dans les conditions de la CI.
+en UTC et ne le verra pas ; ton pre-push, si, certains soirs. J'ai poussé avec `TZ=UTC` pour cette raison, et lancé
+toute la suite moi-même en UTC sur le commit poussé.
 
 ## Ce qui a raté, et ce que ça a appris
 

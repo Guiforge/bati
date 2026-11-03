@@ -143,3 +143,6 @@ docs/designs/village-buildings/baseline-wrong/
 docs/designs/village-buildings/verif-coin/
 docs/designs/village-buildings/calibration/**/*.png
 .claude/settings.local.json.v1-bak
+docs/designs/village-buildings/*/final/*
+!docs/designs/village-buildings/*/final/strip.png
+!docs/designs/village-buildings/*/final/measures.json

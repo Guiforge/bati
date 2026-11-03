@@ -1,0 +1,62 @@
+{
+ "rough": {
+  "top_y": 860,
+  "bottom_y": 1093,
+  "height": 233,
+  "area": 51634,
+  "left": 260,
+  "right": 653,
+  "contact_x": 450,
+  "contact_dy": 5,
+  "contact_dx": 2,
+  "from": "rough_t1_v1.png"
+ },
+ "grand": {
+  "top_y": 476,
+  "bottom_y": 1096,
+  "height": 620,
+  "area": 115583,
+  "left": 240,
+  "right": 675,
+  "contact_x": 452,
+  "contact_dy": 8,
+  "contact_dx": 4,
+  "from": "grand_t1_v2.png"
+ },
+ "mythic": {
+  "top_y": 55,
+  "bottom_y": 1097,
+  "height": 1042,
+  "area": 229945,
+  "left": 234,
+  "right": 704,
+  "contact_x": 451,
+  "contact_dy": 9,
+  "contact_dx": 3,
+  "from": "mythic_t4_v2.png"
+ },
+ "solid": {
+  "top_y": 757,
+  "bottom_y": 1093,
+  "height": 336,
+  "area": 71912,
+  "left": 232,
+  "right": 680,
+  "contact_x": 452,
+  "contact_dy": 5,
+  "contact_dx": 4,
+  "from": "solid_t3_v1.png"
+ },
+ "legendary": {
+  "top_y": 228,
+  "bottom_y": 1092,
+  "height": 864,
+  "area": 166771,
+  "left": 238,
+  "right": 675,
+  "contact_x": 450,
+  "contact_dy": 4,
+  "contact_dx": 2,
+  "from": "legendary_t2_v2.png"
+ }
+}

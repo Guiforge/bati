@@ -39,7 +39,7 @@ DESIGNS = ROOT / "docs/designs/village-buildings"
 HEAD = ("A single image of one isometric game building, seen three-quarters from above at the village's isometric angle, one building "
         "alone on a plain light background, hand-painted with ink outlines, warm light from the upper left. ")
 TAIL = (" Tone: dark medieval fantasy, worn wood, rough stone, mist, iron, never cute and never plastic. Matte surfaces, two or three "
-        "values per surface. No letters, no runes, no diamond-shaped ground, no painted cast shadow, no shiny gold, at most two figures.")
+        "values per surface. No letters, no runes, no diamond-shaped ground, no painted cast shadow, no shiny gold, no people at all; statues and resting animals only.")
 STYLE_NOTE = "Images 1 and 2 are style references only, for ink line, light and brushwork: copy none of their shapes or objects. "
 F3_NOTE = ("Image 1 is the concept of this building: repaint exactly this object, same silhouette, same parts, same framing, "
            "with a cleaner and more even ink line and brushwork. Images 2 and 3 are style references only: copy none of their shapes. ")

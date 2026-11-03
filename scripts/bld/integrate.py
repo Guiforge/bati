@@ -195,10 +195,11 @@ def main() -> None:
         ecrire_webp(nuit(jour, None), dest / f"{s}.nuit.webp")
         reg_masques[s] = masque(jour.getchannel("A"))
         de = mesures[s]["from"]
+        plaque = " The grey footprint plate was removed by mask (scripts/bld/sans_losange.py), without FLUX." if (src / f"{s}.avant-losange.png").exists() else ""
         provenance(prov, loc, f"assets/images/village/iso/peints/{code}/{s}.jour.webp", f"{rel_src}/{de}",
-                   "the final painting of the stage placed on the family canvas, re-encoded WebP q90")
+                   "the final painting of the stage placed on the family canvas, re-encoded WebP q90." + plaque)
         provenance(prov, loc, f"assets/images/village/iso/peints/{code}/{s}.nuit.webp", f"{rel_src}/{de}",
-                   "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)")
+                   "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)." + plaque)
     assert len(tailles) == 1, f"one canvas per family, got {tailles}"
     (w, h), = tailles
     ancre = [w // 2, h - MARGE]

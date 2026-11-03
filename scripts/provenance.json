@@ -4560,61 +4560,61 @@
   "assets/images/village/iso/peints/armory/grand.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/grand_t3_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/grand.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/grand_t3_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/legendary.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/legendary_t2_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/legendary.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/legendary_t2_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/mythic.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/mythic_t2_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/mythic.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/mythic_t2_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/rough.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/rough_t1_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/rough.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/rough_t1_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/solid.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/solid_t3_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The grey footprint plate was removed by mask (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/armory/solid.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/armory/final/solid_t3_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The grey footprint plate was removed by mask (scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/barn/elements/gag_1.jour.webp": {

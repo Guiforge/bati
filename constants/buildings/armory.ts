@@ -62,24 +62,24 @@ export const armory: BuildingData = {
       },
       {
         rank: 2,
-        beat: "A plain suit of armour taken apart into separate pieces laid out on the ground side by side: a helmet, a breastplate, two arm guards, two leg guards and two gauntlets, a coil of rope lying beside them. Each piece stands alone and none is joined to another. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle.",
+        beat: "A plain suit of armour taken apart into separate pieces laid out on the ground side by side: a helmet, a breastplate, two arm guards, two leg guards and two gauntlets, a coil of rope lying beside them. Each piece stands alone and none is joined to another. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle..",
         sprite: "elements/gag_2",
       },
       {
         rank: 3,
-        beat: "A breastplate and a backplate laid apart on the ground side by side, a helmet and two gauntlets next to them, and a long iron crowbar resting on the ground beside the plates. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle.",
+        beat: "A breastplate and a backplate laid apart on the ground side by side, a helmet and two gauntlets next to them, and a long iron crowbar resting on the ground beside the plates. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle..",
         sprite: "elements/gag_3",
       },
       {
         rank: 3,
         fromBase: 7,
-        beat: "A bare wooden armour stand made of a square base, a post, a crossbar and a round wooden head-block, wearing a breastplate, two shoulder plates and a helmet; beside it a second wooden armour stand tipped over on its side on the ground. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle.",
+        beat: "A bare wooden armour stand made of a square base, a post, a crossbar and a round wooden head-block, wearing a breastplate, two shoulder plates and a helmet; beside it a second wooden armour stand tipped over on its side on the ground. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle..",
         sprite: "elements/gag_7",
       },
       {
         rank: 3,
         fromBase: 10,
-        beat: "A wooden armour stand made of a wide round base and a post, carrying a helmet, a breastplate and one gauntlet held up on a thin wooden rod, a second empty wooden armour stand standing beside it. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle.",
+        beat: "A wooden armour stand made of a wide round base and a post, carrying a helmet, a breastplate and one gauntlet held up on a thin wooden rod, a second empty wooden armour stand standing beside it. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle..",
         sprite: "elements/gag_10",
       },
     ],

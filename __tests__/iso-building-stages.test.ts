@@ -141,11 +141,11 @@ describe("per-building data", () => {
     gag: { slot: [0, 0], beats: ranks.map((rank) => ({ rank, beat: `b${rank}`, sprite: null })) },
   });
 
-  test("the windmill example is an explicit placeholder with a valid gag shape", () => {
+  test("the windmill is painted now: not a placeholder, a valid gag shape, no beat before rank 2", () => {
     expect(windmill.code).toBe("windmill");
-    expect(windmill.placeholder).toBe(true);
+    expect(windmill.placeholder).toBe(false);
     expect(gagIsOneAtATime(windmill)).toBe(true);
-    expect(gagBeatAt(windmill, 5)).toBeNull();
+    expect(gagBeatAt(windmill, 1)).toBeNull();
   });
 
   test("the gag slot shows one beat at a time, each replacing the last", () => {

@@ -31,6 +31,7 @@ import {
   HAUTEUR,
   LARGEUR,
   stadeDuNiveau,
+  stadeVisuel,
   type Vue,
   vueFoyer,
   vueSur,
@@ -398,17 +399,20 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
     return () => clearTimeout(t);
   }, [cle, etape]);
   const anciens = new Map(enCours ? avecChantier.map((i) => [i.code, i.oldLevel] as const) : []);
-  const stade = (code: BuildingCode) => {
+  const niveauAffiche = (code: BuildingCode) => {
     const ancien = anciens.get(code);
-    return stadeNiveau(code, ancien !== undefined && ancien > 0 ? ancien : vise(code));
+    return ancien !== undefined && ancien > 0 ? ancien : vise(code);
   };
+  const stade = (code: BuildingCode) => stadeNiveau(code, niveauAffiche(code));
   // T41: from the new stage on, the village is quiet (no night lights, trade effects, glows or
   // glints) and the burst and the golden wave play on their own timing, once, over ONDE_MS.
   const { t: tOnde, revele } = useTempsOnde(jouerRevelation(premier, reduit, etape), cle);
   const plan = planRevelation(revele, premier, tOnde, construits, monte, stade, lumiere === "jour");
   // H4-08: the hammers the map draws are the only ones a tap can hit (none over a site in play).
   const prets = sansChantier(reclamables, monte, cle !== undefined && !reduit);
-  const touchables = cibles(construits, stade, visible, prets);
+  const touchables = cibles(construits, stade, visible, prets, (code) =>
+    stadeVisuel(code, niveauAffiche(code)),
+  );
   const legendaires = new Set(
     construits.filter((code) => legendaire(code, niveaux.get(code) ?? 0)),
   );

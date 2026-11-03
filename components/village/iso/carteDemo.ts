@@ -375,6 +375,10 @@ export const stadeDuNiveau = (code: BuildingCode, niveau: number): Stade =>
     BATIMENT_MOTEUR ? enStade(buildingStageFor(code, niveau)) : buildingStage(niveau),
   );
 
+/** The stage a level draws as the engine names it (legendary, mythic kept): the painted sprite's, so its tap mask. */
+export const stadeVisuel = (code: BuildingCode, niveau: number): VisualStage =>
+  buildingStageFor(code, niveau);
+
 /**
  * The demo's stage rule: rough at the tier its plot joins the island, then one stage more per
  * tier, up to its last (solid for tier 3). A building shown ahead of its plot ("Tous debout") is
@@ -759,7 +763,8 @@ export function ombresDe(code: BuildingCode, stade: Stade, ambiance: Ambiance = 
   const ailes = ailesDe(code, stade);
   const locales = [
     ...s.ombre.map(paires),
-    ...(s.ailes && ailes?.volumes
+    // A painted windmill's sails carry no volumes (and its pivot no grid point): no swept shadow.
+    ...(s.ailes && ailes?.volumes && !peintDe(code, stade, ambiance)
       ? ombreAiles(ailes.volumes, s.ailes.pivotGrille, s.ailes.echelle, 0, LUNE)
       : []),
   ];

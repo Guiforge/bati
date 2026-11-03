@@ -11,8 +11,8 @@ const main = {
 
 // What the painting lights at night (kind, canvas px, first rank): a window, a lantern, a brazier, a fire, a beam.
 const lights: BuildingData["lights"] = [
-  { kind: "fire", at: [435, 710], fromRank: 3, fromBase: 10 },
-  { kind: "fire", at: [615, 595], fromRank: 3, fromBase: 10 },
+  { kind: "fire", at: [433, 697], fromRank: 3, fromBase: 10 },
+  { kind: "fire", at: [615, 583], fromRank: 3, fromBase: 10 },
 ];
 
 // What will move later, on its painted object (canvas px): posed, drawn by nothing yet.

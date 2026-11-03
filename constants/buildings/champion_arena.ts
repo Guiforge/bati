@@ -11,11 +11,11 @@ const main = {
 
 // What the painting lights at night (kind, canvas px, first rank): a window, a lantern, a brazier, a fire, a beam.
 const lights: BuildingData["lights"] = [
-  { kind: "beam", at: [452, 660], fromRank: 5 },
-  { kind: "fenetre", at: [170, 565], fromRank: 5 },
-  { kind: "fenetre", at: [185, 660], fromRank: 5 },
-  { kind: "fenetre", at: [125, 705], fromRank: 5 },
-  { kind: "fenetre", at: [335, 660], fromRank: 5 },
+  { kind: "beam", at: [446, 790], fromRank: 5 },
+  { kind: "fenetre", at: [175, 556], fromRank: 5 },
+  { kind: "fenetre", at: [179, 649], fromRank: 5 },
+  { kind: "fenetre", at: [124, 708], fromRank: 5 },
+  { kind: "fenetre", at: [330, 660], fromRank: 5 },
 ];
 
 // What will move later, on its painted object (canvas px): posed, drawn by nothing yet.

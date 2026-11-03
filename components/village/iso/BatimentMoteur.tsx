@@ -58,7 +58,6 @@ import { BATIMENT_MOTEUR, etatBatiment, type Marque } from "./batiment";
 import type { Rect } from "./carteDemo";
 import { ArretAilesContext } from "./etatBld";
 import { useMouvementReduit } from "./fige";
-import { HorlogeContext } from "./horloge";
 import { MagieCiel, MagieSol } from "./MagieBld";
 import { PEINTS } from "./peints";
 import {
@@ -76,7 +75,6 @@ import {
   picPoussiere,
   rangsA,
   sautGardien,
-  souffleLueur,
 } from "./spectacleBatiment";
 
 export type SpectacleEnCours = { cle: string; plan: PlanSpectacle };
@@ -102,13 +100,13 @@ const TAILLE_MARQUE: Record<Marque, readonly [w: number, h: number]> = {
   blasonLumineux: [7, 11],
 };
 
-/** A light's size by kind, dp. */
-const TAILLE_LUEUR: Record<LightAnchor["kind"], readonly [w: number, h: number]> = {
-  fire: [10, 10],
-  crystal: [8, 8],
-  beam: [3, 16],
-  fenetre: [4, 6],
-  glyphe: [12, 12],
+/** A light's halo radius by kind, dp (a building's canvas is about 112 dp wide): a brazier, a lit window, a crystal. */
+const RAYON_LUEUR: Record<LightAnchor["kind"], number> = {
+  fire: 9,
+  crystal: 7,
+  beam: 8,
+  fenetre: 6,
+  glyphe: 8,
 };
 
 /** The painted sprites by data path; empty until a building's art lands. */
@@ -184,50 +182,27 @@ function MarqueClan({ marque, sprite, at }: { marque: Marque; sprite: string | n
   );
 }
 
-function Lueur({
-  kind,
-  at,
-  reduit,
-  cycles,
-}: {
-  kind: LightAnchor["kind"];
-  at: Point;
-  reduit: boolean;
-  cycles: 1 | 2 | 3;
-}) {
-  const horloge = useContext(HorlogeContext);
-  const [w, h] = TAILLE_LUEUR[kind];
-  // A fire is a warm pool of light, soft to its edge and still: no disc (the night's own pool is in AmbianceCarte).
-  if (kind === "fire") return <LueurDouce at={at} rayon={GLOW_FEU_DP} />;
-  const forme = {
-    position: "absolute" as const,
-    left: at[0] - w / 2,
-    top: at[1] - h / 2,
-    width: w,
-    height: h,
-    borderRadius: kind === "beam" || kind === "fenetre" ? 0 : w / 2,
-    backgroundColor: rawColors.isoLueur,
-  };
-  // A window is a fixed point; the others breathe on the map's one clock, which stops by itself.
-  if (!horloge || reduit || kind === "fenetre") {
-    return <View pointerEvents="none" testID={`batiment-lueur-${kind}`} style={forme} />;
-  }
-  return <LueurVivante kind={kind} forme={forme} horloge={horloge} cycles={cycles} />;
+function Lueur({ kind, at }: { kind: LightAnchor["kind"]; at: Point }) {
+  // Every light is a warm pool, soft to its edge and still: no rectangle, no disc (motion belongs to the LIFE track).
+  return <LueurDouce kind={kind} at={at} rayon={RAYON_LUEUR[kind]} />;
 }
 
-/** Radius of a fire's soft glow, dp: a brazier or a torch of the painting (a building's canvas is about 112 dp wide), not a pool on the ground. */
-const GLOW_FEU_DP = 9;
-
 /** A warm radial pool centred on a map point: isoLueur at 45 % in the heart, 0 % at the rim. */
-function LueurDouce({ at, rayon }: { at: Point; rayon: number }) {
+function LueurDouce({ kind, at, rayon }: { kind: LightAnchor["kind"]; at: Point; rayon: number }) {
   const id = `lueur-${useId().replaceAll(":", "")}`;
   return (
     <Svg
       pointerEvents="none"
-      testID="batiment-lueur-fire"
+      testID={`batiment-lueur-${kind}`}
       width={rayon * 2}
       height={rayon * 2}
-      style={{ position: "absolute", left: at[0] - rayon, top: at[1] - rayon }}
+      style={{
+        position: "absolute",
+        left: at[0] - rayon,
+        top: at[1] - rayon,
+        width: rayon * 2,
+        height: rayon * 2,
+      }}
     >
       <Defs>
         <RadialGradient id={id}>
@@ -237,29 +212,6 @@ function LueurDouce({ at, rayon }: { at: Point; rayon: number }) {
       </Defs>
       <Circle cx={rayon} cy={rayon} r={rayon} fill={`url(#${id})`} />
     </Svg>
-  );
-}
-
-function LueurVivante({
-  kind,
-  forme,
-  horloge,
-  cycles,
-}: {
-  kind: LightAnchor["kind"];
-  forme: object;
-  horloge: SharedValue<number>;
-  cycles: 1 | 2 | 3;
-}) {
-  const souffle = useAnimatedStyle(() => ({
-    transform: [{ scale: souffleLueur(horloge.get(), cycles) }],
-  }));
-  return (
-    <Animated.View
-      pointerEvents="none"
-      testID={`batiment-lueur-${kind}`}
-      style={[forme, souffle]}
-    />
   );
 }
 
@@ -741,7 +693,6 @@ function Avant({
   t,
   jeu,
   geo,
-  reduitApp,
 }: {
   etat: Etat;
   etatMarque: Etat;
@@ -751,7 +702,6 @@ function Avant({
   t: number;
   jeu: Jeu;
   geo: Geo;
-  reduitApp: boolean;
 }) {
   const { px } = geo;
   return (
@@ -774,13 +724,7 @@ function Avant({
         />
       ) : null}
       {etat.lights.map((l) => (
-        <Lueur
-          key={`${l.kind}-${l.fromRank}`}
-          kind={l.kind}
-          at={px(l.at)}
-          reduit={reduitApp}
-          cycles={l.cycles ?? 2}
-        />
+        <Lueur key={`${l.kind}-${l.at.join()}`} kind={l.kind} at={px(l.at)} />
       ))}
     </>
   );
@@ -884,7 +828,6 @@ function Moteur({
             t={t}
             jeu={jeu}
             geo={geo}
-            reduitApp={reduitApp}
           />
         </Animated.View>
       )}

@@ -11,14 +11,18 @@ const main = {
 
 // What the painting lights at night (kind, canvas px, first rank): a window, a lantern, a brazier, a fire, a beam.
 const lights: BuildingData["lights"] = [
-  { kind: "fenetre", at: [378, 376], fromRank: 10 },
+  { kind: "fenetre", at: [377, 373], fromRank: 10 },
   { kind: "fenetre", at: [458, 372], fromRank: 10 },
-  { kind: "fenetre", at: [380, 460], fromRank: 10 },
-  { kind: "fenetre", at: [457, 458], fromRank: 10 },
-  { kind: "fenetre", at: [418, 542], fromRank: 10 },
-  { kind: "fenetre", at: [380, 637], fromRank: 10 },
+  { kind: "fenetre", at: [380, 463], fromRank: 10 },
+  { kind: "fenetre", at: [453, 462], fromRank: 10 },
+  { kind: "fenetre", at: [377, 540], fromRank: 7 },
+  { kind: "fenetre", at: [418, 545], fromRank: 7 },
+  { kind: "fenetre", at: [459, 538], fromRank: 7 },
+  { kind: "fenetre", at: [378, 639], fromRank: 7 },
+  { kind: "fenetre", at: [418, 645], fromRank: 7 },
+  { kind: "fenetre", at: [458, 639], fromRank: 7 },
   { kind: "fenetre", at: [418, 805], fromRank: 10 },
-  { kind: "fenetre", at: [557, 670], fromRank: 10 },
+  { kind: "fenetre", at: [557, 675], fromRank: 7 },
 ];
 
 // What will move later, on its painted object (canvas px): posed, drawn by nothing yet.

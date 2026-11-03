@@ -288,7 +288,8 @@ def elements(code, rekey=False):
     bad = []
     for o, _, _ in jobs:
         if o.exists():
-            rgba = key(Image.open(o))
+            # the sails' pale wooden frame sits near the off-white paper: the default thresholds ate it into a dotted dark fringe
+            rgba = key(Image.open(o), 25, 70) if "sails" in o.name else key(Image.open(o))
             rgba.crop(rgba.getbbox()).save(o.with_name(o.name.replace(".raw", "")))
             if (n := green_edge(rgba)) > 20:
                 bad.append(f"{o.name.split('.')[0]}: {n} green edge pixels")

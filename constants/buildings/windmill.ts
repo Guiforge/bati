@@ -16,12 +16,12 @@ const main = {
 
 // What the painting lights at night (kind, canvas px, first rank): a window, a lantern, a brazier, a fire, a beam.
 const lights: BuildingData["lights"] = [
-  { kind: "fenetre", at: [403, 439], fromRank: 10 },
-  { kind: "fenetre", at: [528, 437], fromRank: 10 },
+  // The two windows under the sails (403,439) and (528,437) are left unlit: the turning sails cover them.
   { kind: "fenetre", at: [548, 612], fromRank: 10 },
-  { kind: "fenetre", at: [524, 822], fromRank: 10 },
-  { kind: "fenetre", at: [144, 833], fromRank: 10 },
-  { kind: "fenetre", at: [236, 850], fromRank: 10 },
+  { kind: "fenetre", at: [532, 825], fromRank: 10 },
+  { kind: "fenetre", at: [457, 825], fromRank: 10 },
+  { kind: "fenetre", at: [142, 835], fromRank: 10 },
+  { kind: "fenetre", at: [237, 847], fromRank: 10 },
 ];
 
 // What will move later, on its painted object (canvas px): posed, drawn by nothing yet.

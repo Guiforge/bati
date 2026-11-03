@@ -11,13 +11,13 @@ const main = {
 
 // What the painting lights at night (kind, canvas px, first rank): a window, a lantern, a brazier, a fire, a beam.
 const lights: BuildingData["lights"] = [
-  { kind: "fenetre", at: [420, 331], fromRank: 10 },
-  { kind: "fenetre", at: [426, 556], fromRank: 10 },
-  { kind: "fenetre", at: [770, 486], fromRank: 10 },
-  { kind: "fenetre", at: [694, 680], fromRank: 10 },
-  { kind: "fenetre", at: [369, 600], fromRank: 10 },
+  { kind: "fenetre", at: [418, 332], fromRank: 10 },
+  { kind: "fenetre", at: [422, 560], fromRank: 10 },
+  { kind: "fenetre", at: [770, 493], fromRank: 10 },
+  { kind: "fenetre", at: [692, 683], fromRank: 10 },
+  { kind: "fenetre", at: [370, 603], fromRank: 10 },
   { kind: "fenetre", at: [133, 722], fromRank: 10 },
-  { kind: "fenetre", at: [444, 911], fromRank: 10 },
+  { kind: "fenetre", at: [443, 908], fromRank: 10 },
   { kind: "crystal", at: [283, 322], fromRank: 10 },
 ];
 

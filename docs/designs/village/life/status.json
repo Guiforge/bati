@@ -6,7 +6,7 @@
   "etape": "La camera revient a la vue d'avant",
   "ordre": 1,
   "statut": "en cours",
-  "debut": null,
+  "debut": "2026-11-03T21:45:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 0.5,
@@ -14,7 +14,7 @@
   "reste": "0.5 à 1 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Code et tests faits, pas encore vu sur émulateur"
  },
  {
   "id": "U2",
@@ -23,7 +23,7 @@
   "etape": "Releve du moment actuel",
   "ordre": 2,
   "statut": "en cours",
-  "debut": null,
+  "debut": "2026-11-03T21:45:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 0.3,
@@ -31,7 +31,7 @@
   "reste": "0.3 à 0.7 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Vue bâtiment relevée, carte à refaire"
  },
  {
   "id": "U3",
@@ -39,8 +39,8 @@
   "piste_ordre": 4,
   "etape": "Idees et concepts du moment",
   "ordre": 3,
-  "statut": "à faire",
-  "debut": null,
+  "statut": "en cours",
+  "debut": "2026-11-03T21:45:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 1,
@@ -48,7 +48,7 @@
   "reste": "1 à 3 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Directions gardées : La Case, Contre-jour ; films en reprise"
  },
  {
   "id": "U4",
@@ -124,8 +124,8 @@
   "piste_ordre": 4,
   "etape": "Balancement",
   "ordre": 8,
-  "statut": "à faire",
-  "debut": null,
+  "statut": "en cours",
+  "debut": "2026-11-03T21:45:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 1,
@@ -133,7 +133,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Code fait, aucun bâtiment ne l'utilise encore"
  },
  {
   "id": "M2",
@@ -141,8 +141,8 @@
   "piste_ordre": 4,
   "etape": "Scintillement et fenetres au crepuscule",
   "ordre": 9,
-  "statut": "à faire",
-  "debut": null,
+  "statut": "en cours",
+  "debut": "2026-11-03T21:45:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 1,
@@ -150,7 +150,7 @@
   "reste": "1 à 2.5 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Code fait, pas vu sur émulateur"
  },
  {
   "id": "M3",
@@ -158,8 +158,8 @@
   "piste_ordre": 4,
   "etape": "Particules",
   "ordre": 10,
-  "statut": "à faire",
-  "debut": null,
+  "statut": "en cours",
+  "debut": "2026-11-03T21:45:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 1.5,
@@ -167,7 +167,7 @@
   "reste": "1.5 à 3 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Code fait, sprite provisoire"
  },
  {
   "id": "M4",
@@ -175,8 +175,8 @@
   "piste_ordre": 4,
   "etape": "Rotation",
   "ordre": 11,
-  "statut": "à faire",
-  "debut": null,
+  "statut": "en cours",
+  "debut": "2026-11-03T21:45:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 0.5,
@@ -184,7 +184,7 @@
   "reste": "0.5 à 1 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Code fait, pas vu sur émulateur"
  },
  {
   "id": "M5",
@@ -192,8 +192,8 @@
   "piste_ordre": 4,
   "etape": "Miroitement de l'eau",
   "ordre": 12,
-  "statut": "à faire",
-  "debut": null,
+  "statut": "en cours",
+  "debut": "2026-11-03T21:45:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 0.5,
@@ -201,7 +201,7 @@
   "reste": "0.5 à 1.5 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Code fait, pas vu sur émulateur"
  },
  {
   "id": "M6",
@@ -244,7 +244,7 @@
   "etape": "Test de concept des creatures",
   "ordre": 15,
   "statut": "en cours",
-  "debut": null,
+  "debut": "2026-11-03T21:45:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 1,
@@ -252,7 +252,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Planche prête, page de choix à publier"
  },
  {
   "id": "C2",

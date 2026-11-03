@@ -196,6 +196,8 @@ def main() -> None:
         reg_masques[s] = masque(jour.getchannel("A"))
         de = mesures[s]["from"]
         plaque = " The edge of the ground was cleaned by mask (grey footprint plate, straight diamond edge, key magenta fringe; scripts/bld/sans_losange.py), without FLUX." if (src / f"{s}.avant-losange.png").exists() else ""
+        if (src / f"{s}.edit.png").exists():  # the ground edge was repainted by a local flux-3-image edit (prompts under edge/ in provenance.json), then masked
+            plaque = " The ground edge was repainted by a local flux-3-image edit (prompt in final/provenance.json under edge/), then cleaned by mask (fringe, soft dissolve; scripts/bld/sans_losange.py)."
         provenance(prov, loc, f"assets/images/village/iso/peints/{code}/{s}.jour.webp", f"{rel_src}/{de}",
                    "the final painting of the stage placed on the family canvas, re-encoded WebP q90." + plaque)
         provenance(prov, loc, f"assets/images/village/iso/peints/{code}/{s}.nuit.webp", f"{rel_src}/{de}",

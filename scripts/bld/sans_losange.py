@@ -209,7 +209,7 @@ SANS_PLAQUE = {("quarry", "rough")}  # a pale sandy patch of the painting itself
 FLOTTANT = {("barn", "mythic"): (20, 4000, BAS)}  # (alpha floor, px, rows from the bottom): detached shadows are faint, so the speck pass looks lower and takes bigger bits
 OUVERTURE = {("barn", "mythic"): (770, 60, 878, 280, 21)}  # (x0, y0, x1, y1 in the lower BAS rows, window): thin spurs and detached dark bits there are opened away
 TROUS = {("quarry", "rough")}  # dithered, semi-transparent ground inside the body must not count as outside, or the ramp bites a hole there
-POINTE = {"training_dummy"}  # the lowest vertex of the diamond is a thin tail under the ground: cut it
+POINTE = {"training_dummy", ("castle_wall", "solid")}  # the lowest vertex of the diamond is a thin tail under the ground: cut it
 
 
 def emprise_pts(code: str, h: int) -> list[tuple[float, float]]:
@@ -460,7 +460,7 @@ def bord3(rgba: Image.Image, code: str, stade: str) -> tuple[Image.Image, np.nda
         box = np.zeros(sp.shape, bool)
         box[h - BAS + y0:h - BAS + y1, x0:x1] = True
         a[..., 3] = np.where(sp & box, 0, a[..., 3])
-    if code in POINTE:
+    if code in POINTE or (code, stade) in POINTE:
         a[..., 3] = a[..., 3] * (1 - pointe(a[..., 3], h))[:, None]
     a[..., 3] = np.where(pet, 0, a[..., 3])
     info["specks"] = int(pet.sum())

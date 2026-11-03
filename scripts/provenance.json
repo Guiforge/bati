@@ -5004,25 +5004,25 @@
   "assets/images/village/iso/peints/castle_wall/legendary.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/castle_wall/final/legendary_t2_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The edge of the ground was cleaned by mask (grey footprint plate, straight diamond edge, key magenta fringe; scripts/bld/sans_losange.py), without FLUX.",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The ground edge was repainted by a local flux-3-image edit (prompt in final/provenance.json under edge/), then cleaned by mask (fringe, soft dissolve; scripts/bld/sans_losange.py).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/castle_wall/legendary.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/castle_wall/final/legendary_t2_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The edge of the ground was cleaned by mask (grey footprint plate, straight diamond edge, key magenta fringe; scripts/bld/sans_losange.py), without FLUX.",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The ground edge was repainted by a local flux-3-image edit (prompt in final/provenance.json under edge/), then cleaned by mask (fringe, soft dissolve; scripts/bld/sans_losange.py).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/castle_wall/mythic.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/castle_wall/final/mythic_t2_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The edge of the ground was cleaned by mask (grey footprint plate, straight diamond edge, key magenta fringe; scripts/bld/sans_losange.py), without FLUX.",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The ground edge was repainted by a local flux-3-image edit (prompt in final/provenance.json under edge/), then cleaned by mask (fringe, soft dissolve; scripts/bld/sans_losange.py).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/castle_wall/mythic.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/castle_wall/final/mythic_t2_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The edge of the ground was cleaned by mask (grey footprint plate, straight diamond edge, key magenta fringe; scripts/bld/sans_losange.py), without FLUX.",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The ground edge was repainted by a local flux-3-image edit (prompt in final/provenance.json under edge/), then cleaned by mask (fringe, soft dissolve; scripts/bld/sans_losange.py).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/castle_wall/rough.jour.webp": {
@@ -6228,37 +6228,37 @@
   "assets/images/village/iso/peints/high_road/grand.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/high_road/final/grand_t1_v1.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The edge of the ground was cleaned by mask (grey footprint plate, straight diamond edge, key magenta fringe; scripts/bld/sans_losange.py), without FLUX.",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The ground edge was repainted by a local flux-3-image edit (prompt in final/provenance.json under edge/), then cleaned by mask (fringe, soft dissolve; scripts/bld/sans_losange.py).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/high_road/grand.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/high_road/final/grand_t1_v1.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The edge of the ground was cleaned by mask (grey footprint plate, straight diamond edge, key magenta fringe; scripts/bld/sans_losange.py), without FLUX.",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The ground edge was repainted by a local flux-3-image edit (prompt in final/provenance.json under edge/), then cleaned by mask (fringe, soft dissolve; scripts/bld/sans_losange.py).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/high_road/legendary.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/high_road/final/legendary_t2_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The edge of the ground was cleaned by mask (grey footprint plate, straight diamond edge, key magenta fringe; scripts/bld/sans_losange.py), without FLUX.",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The ground edge was repainted by a local flux-3-image edit (prompt in final/provenance.json under edge/), then cleaned by mask (fringe, soft dissolve; scripts/bld/sans_losange.py).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/high_road/legendary.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/high_road/final/legendary_t2_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The edge of the ground was cleaned by mask (grey footprint plate, straight diamond edge, key magenta fringe; scripts/bld/sans_losange.py), without FLUX.",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The ground edge was repainted by a local flux-3-image edit (prompt in final/provenance.json under edge/), then cleaned by mask (fringe, soft dissolve; scripts/bld/sans_losange.py).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/high_road/mythic.jour.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/high_road/final/mythic_t2_v2.png",
-    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The edge of the ground was cleaned by mask (grey footprint plate, straight diamond edge, key magenta fringe; scripts/bld/sans_losange.py), without FLUX.",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90. The ground edge was repainted by a local flux-3-image edit (prompt in final/provenance.json under edge/), then cleaned by mask (fringe, soft dissolve; scripts/bld/sans_losange.py).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/high_road/mythic.nuit.webp": {
     "model": "flux-3-image (Black Forest Labs (direct API))",
     "derived_from": "docs/designs/village-buildings/high_road/final/mythic_t2_v2.png",
-    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The edge of the ground was cleaned by mask (grey footprint plate, straight diamond edge, key magenta fringe; scripts/bld/sans_losange.py), without FLUX.",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The ground edge was repainted by a local flux-3-image edit (prompt in final/provenance.json under edge/), then cleaned by mask (fringe, soft dissolve; scripts/bld/sans_losange.py).",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
   "assets/images/village/iso/peints/high_road/rough.jour.webp": {

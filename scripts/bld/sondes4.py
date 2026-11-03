@@ -38,7 +38,7 @@ S.OUT = OUT
 X.MQ = MQ
 PASS_IOU = {"rough": 0.97, "solid": 0.97, "grand": 0.95, "legendary": 0.97, "mythic": 0.95}  # legendary must not be bitten
 GREEN = (112, 140, 104)
-BUDGET_ROUND = 1.5
+BUDGET_ROUND = 1.6  # raised from 1.5 by the coordinator for the second breeches batches
 PAINT_STAGES = ["grand", "legendary", "mythic"]
 BANDS = Q.BANDS
 
@@ -299,16 +299,17 @@ def shifts():
 
 # ---------------------------------------------------------------- breeches
 
-BREECHES_BOX = (286, 770, 454, 940)  # x0, y0, x1, y1 px: the rail's front left, where the cloth hangs
+BREECHES_BOX = (312, 795, 408, 915)  # x0, y0, x1, y1 px: 96 x 120, the cloth (76 px wide) hangs inside it, left of the rail's middle
 BREECHES_TXT = ("Image 1 is a finished painting of a windmill on a flat magenta background. Image 2 is a small painting of the pair "
-                "of breeches to hang. Edit image 1 inside the box only, on the front left of the timber gallery rail: remove the "
-                "blue-grey cloth that is there, no blue-grey remains; hang there one pair of old flour-white breeches, two legs "
-                "hanging down, a gathered waist, over the rail's top bar, with TWO broad ochre stripes across the legs, each as thick "
-                "as a fifth of the cloth's height, so they read from far away. Under it, a small soft contact shadow of the cloth "
-                "on the rail and on the stone behind. The ink line of the breeches is the same weight and the same near-black "
-                "#0F1518 as the tower's ink outline, even, no thinner. Matte painted brushwork, daylight from the upper left. "
-                "Everything else stays exactly as it is, same position to the pixel, same ink, materials, light and flat magenta "
-                "background; no object is added; no text, no letters. Edits: ")
+                "of breeches to hang, at the exact size they must have. Edit image 1 inside the box only, on the front left of the "
+                "timber gallery rail: hang there one pair of old flour-white breeches, about 76 pixels wide and 100 pixels tall, no "
+                "bigger, so that they fit inside the box and leave the rail on their left untouched: two legs hanging down, a "
+                "gathered waist, hung from two small wooden pegs on the rail's top bar. TWO wide ochre stripes cross the legs, each "
+                "at least 18 pixels thick, so they read from far away. Under it, a small soft contact shadow of the cloth on the "
+                "rail and on the stone behind. The ink outline of the breeches is as heavy and dark (near-black #0F1518) as the "
+                "ink outline of the tower in the same image, even, not thinner. No blue anywhere on the cloth. Matte painted "
+                "brushwork, daylight from the upper left. Everything else stays exactly as it is, same position to the pixel, same "
+                "ink, materials, light and flat magenta background; no object is added; no text, no letters. Edits: ")
 
 
 def _norm_box(b):
@@ -318,30 +319,40 @@ def _norm_box(b):
 
 
 def cloth_stats(im, box=BREECHES_BOX):
-    """What the rail box holds: blue-grey leftover px, ochre stripe px and its height at 448 px wide, ink run."""
+    """The cloth in the rail box: its width, its ochre stripes (thickness of each run of rows, px at 896), the ink weight of its
+    outline and of the tower's contour in the same image (mean ink run in px, rows of the cloth / rows 900-1100), blue px left."""
     a = np.asarray(im.convert("RGB"), float)[box[1]:box[3], box[0]:box[2]] / 255
     hue, sat, val = _hsv(a)
-    mn = a.min(-1)
+    white = (a.min(-1) > 0.55) & (sat < 0.32)
     bluegrey = (hue > 190) & (hue < 250) & (sat > 0.08) & (sat < 0.6) & (val > 0.3) & (val < 0.85)
-    ochre = (hue > 28) & (hue < 48) & (sat > 0.45) & (sat < 0.9) & (val > 0.5)
-    white = (mn > 0.72) & (sat < 0.22)
-    ys, _ = np.nonzero(ochre)
-    runs = []
-    for row in val < 0.2:
-        n = 0
-        for v in row:
-            if v:
-                n += 1
-            elif n:
-                runs.append(n)
-                n = 0
-    return {"bluegrey_px": int(bluegrey.sum()), "ochre_px": int(ochre.sum()), "white_px": int(white.sum()),
-            "ochre_rows_at_448": round((ys.max() - ys.min() + 1) / 2, 1) if len(ys) else 0,
-            "ink_run_mean_px": round(float(np.mean(runs)), 2) if runs else 0}
+    cols = np.where(white.sum(0) > 15)[0]
+    rows = np.where(white.sum(1) > 8)[0]
+    if not len(cols):
+        return {"cloth": None, "bluegrey_px": int(bluegrey.sum())}
+    cx0, cx1, cy0, cy1 = int(cols.min()), int(cols.max()), int(rows.min()), int(rows.max())
+    core = slice(cx0 + (cx1 - cx0) // 4, cx1 - (cx1 - cx0) // 4 + 1)
+    ochre = (hue > 25) & (hue < 52) & (sat > 0.35) & (val > 0.45)
+    hit = ochre[:, core].mean(1) > 0.3
+    runs, n = [], 0
+    for v in list(hit) + [False]:
+        if v:
+            n += 1
+        elif n:
+            runs.append(n)
+            n = 0
+    ink = val < 0.2
+    edge = []
+    for y in range(cy0, cy1 + 1):
+        xs = np.where(white[y])[0]
+        if len(xs) > 3:
+            edge += [int(ink[y, max(0, xs[0] - 8):xs[0]].sum()), int(ink[y, xs[-1] + 1:xs[-1] + 9].sum())]
+    return {"cloth_w_px": cx1 - cx0 + 1, "cloth_h_px": cy1 - cy0 + 1, "stripe_thickness_px": runs,
+            "cloth_ink_px": round(float(np.mean(edge)), 2) if edge else 0, "tower_ink_px": tower_ink_run(im),
+            "bluegrey_px": int(bluegrey.sum())}
 
 
 def tower_ink_run(im):
-    """Mean ink run (px, within 11 px) at the tower's left and right contour, rows 900-1100: the line weight to match."""
+    """Mean ink run (px, within 8 px of the silhouette edge) at the tower's left and right contour, rows 900-1100."""
     a = np.asarray(im.convert("RGB"), float) / 255
     ink = a.max(-1) < 0.2
     mag = (a[..., 0] > 0.78) & (a[..., 2] > 0.78) & (a[..., 1] < 0.35)
@@ -350,7 +361,7 @@ def tower_ink_run(im):
         xs = np.nonzero(~mag[y])[0]
         if len(xs) < 50:
             continue
-        runs += [int(ink[y, xs[0]:xs[0] + 11].sum()), int(ink[y, xs[-1] - 10:xs[-1] + 1].sum())]
+        runs += [int(ink[y, xs[0]:xs[0] + 8].sum()), int(ink[y, xs[-1] - 7:xs[-1] + 1].sum())]
     return round(float(np.mean(runs)), 2)
 
 
@@ -358,8 +369,8 @@ def breeches():
     guard_endpoint(FLUX3)
     piece = Image.open(S3 / "culotte/coupe" / (S3 / "culotte/choix.txt").read_text().strip()).convert("RGBA")
     ref = Image.new("RGB", (512, 512), (255, 0, 255))
-    k = 460 / max(piece.size)
-    p = piece.resize((round(piece.width * k), round(piece.height * k)), Image.LANCZOS)
+    k = 76 / piece.width  # the size it must have in image 1
+    p = piece.resize((76, round(piece.height * k)), Image.LANCZOS)
     ref.paste(p, ((512 - p.width) // 2, (512 - p.height) // 2), p)
     d = OUT / "culotte"
     (d / "brut").mkdir(parents=True, exist_ok=True)
@@ -377,8 +388,8 @@ def breeches():
         outs = [d / "brut" / f"{stage}_v{i}.png" for i in range(2)]
         if any(o.exists() for o in outs):
             continue
-        pr = BREECHES_TXT + json.dumps([{"id": "breeches", "desc": "old flour-white breeches over the rail, two broad ochre stripes, a "
-                                        "small contact shadow, no blue-grey cloth", "from": None, "src_bbox": None, "tgt_bbox": box}])
+        pr = BREECHES_TXT + json.dumps([{"id": "breeches", "desc": "76 px wide flour-white breeches on two pegs, two ochre stripes of 18 px or more, "
+                                        "small contact shadow, heavy ink outline", "from": None, "src_bbox": None, "tgt_bbox": box}])
         entry = batch(f"sondes4 breeches {stage}", 2, f"sondes4_culotte_{stage}", pr, outs, (base, ref_path),
                       69000 + 100 * PAINT_STAGES.index(stage))
         row = {"base": str(base.relative_to(OUT)), "cost": entry["cost"], "before": cloth_stats(body), "images": {}}
@@ -389,10 +400,12 @@ def breeches():
             comp = Image.composite(gen, body, soft)
             comp.save(d / f"{stage}_edit_{o.stem.split('_')[-1]}.png")
             row["images"][o.name] = cloth_stats(comp)
-        row["choice"] = min(row["images"], key=lambda k: (row["images"][k]["bluegrey_px"], -row["images"][k]["ochre_px"]))
+        if not row["images"]:
+            sys.exit("no image for " + stage)
+        row["choice"] = max(row["images"], key=lambda k: (sum(1 for v in row["images"][k].get("stripe_thickness_px", []) if v >= 18),
+                                                          -(row["images"][k].get("cloth_w_px") or 999) // 10))
         info["stages"][stage] = row
         cj.write_text(json.dumps(info, indent=2))
-    info["tower_ink_run_px"] = tower_ink_run(Image.open(best_brut("grand")).convert("RGB").resize(S.SIZE))
     cj.write_text(json.dumps(info, indent=2))
     print(json.dumps({k: v for k, v in info.items() if k != "prompt"}, indent=1))
 

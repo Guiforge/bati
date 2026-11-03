@@ -41,6 +41,7 @@ import {
 import { CHANTIER_MS, ECHAFAUDAGE_APRES_MS } from "./chantier";
 import { PalierContext } from "./detail";
 import { donneesSeul } from "./donneesBld";
+import { RangsBldContext } from "./etatBld";
 import { CroissanceContext, useBascule } from "./familles";
 import { accrochesDe } from "./feux";
 import { legendaire } from "./fierte";
@@ -261,6 +262,8 @@ const attendBatiment = (seul: BuildingCode | undefined) =>
 const departDe = (seul: BuildingCode | undefined, depart: SharedValue<Depart>) =>
   seul === undefined ? depart : null;
 
+const AUCUNE_BASE = {};
+
 export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
   tier,
   buildings,
@@ -276,6 +279,7 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
   onRevelation,
   reclamables,
   niveauxReclames,
+  basesReclamees = AUCUNE_BASE,
   ambiance = "nuit",
   lumiere = "nuit",
   biome = "defaut",
@@ -316,6 +320,8 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
   reclamables?: readonly BuildingCode[];
   /** The level each building was claimed at; the map draws the lower of it and the building's own. */
   niveauxReclames?: Readonly<Partial<Record<BuildingCode, number>>>;
+  /** The base ranks claimed by tap, for the upgrades (rule B), read by the painted buildings. */
+  basesReclamees?: Readonly<Partial<Record<BuildingCode, number>>>;
   /** The light of the pieces' sprites (decor, water, villagers): only `nuit` has some; the buildings follow `lumiere`. */
   ambiance?: Ambiance;
   /** The light of the map (lumiere.ts `choisirLumiere`): `jour` washes the ground and puts the night's lights out. */
@@ -621,23 +627,27 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
                         }
                       >
                         <RevelationContext.Provider value={plan}>
-                          <IsoCarte
-                            visible={visible}
-                            montres={construits}
-                            stade={stade}
-                            masques={masques}
-                            chantiers={sites}
-                            echafaudages={echafaudages}
-                            legendaires={legendaires}
-                            croissances={croissances}
-                            ambiance={ambiance}
-                            lumiere={lumiere}
-                            biome={biome}
-                            blason={blason}
-                            palier={habitantsDe(seul, tier)}
-                            fete={fete}
-                            prise={prise}
-                          />
+                          <RangsBldContext.Provider
+                            value={{ rangs: niveaux, bases: basesReclamees }}
+                          >
+                            <IsoCarte
+                              visible={visible}
+                              montres={construits}
+                              stade={stade}
+                              masques={masques}
+                              chantiers={sites}
+                              echafaudages={echafaudages}
+                              legendaires={legendaires}
+                              croissances={croissances}
+                              ambiance={ambiance}
+                              lumiere={lumiere}
+                              biome={biome}
+                              blason={blason}
+                              palier={habitantsDe(seul, tier)}
+                              fete={fete}
+                              prise={prise}
+                            />
+                          </RangsBldContext.Provider>
                         </RevelationContext.Provider>
                       </ReclamablesContext.Provider>
                       <Lucioles

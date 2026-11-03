@@ -797,6 +797,7 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
       }
       reclamables={upgradable}
       niveauxReclames={shownStages}
+      basesReclamees={bases}
       memoire={cameraMemory}
       lumiere={lumiere}
       blason={crest === undefined ? undefined : { crest, onPress: openCrestWhy }}

@@ -117,3 +117,21 @@ export function etatBldDe(p: Partial<Params>): EtatBld | null {
     semaine,
   };
 }
+
+/**
+ * The ranks the village tab draws (IsoVillage): each building's claimed rank and, for an upgrade,
+ * the base rank the hero has claimed (rule B). Null outside the tab. A painted building reads its
+ * rank here, so nothing rises without a tap: both numbers are the claimed ones, never the live ones.
+ */
+export const RangsBldContext = createContext<{
+  rangs: ReadonlyMap<BuildingCode, number>;
+  bases: Readonly<Partial<Record<BuildingCode, number>>>;
+} | null>(null);
+
+/** The engine state of a building standing at a rank, no show: what the tab gives a painted building. */
+export const etatDeRang = (
+  code: BuildingCode,
+  rang: number,
+  base: number,
+  donnees: BuildingData,
+): EtatBld => ({ code, rang, base, avant: rang, delai: 0, palier: 12, semaine: false, donnees });

@@ -1,0 +1,23 @@
+{
+  "building": "tent",
+  "directions": [
+    {
+      "id": 1,
+      "name": "1 Maison qui marche",
+      "prompts": {
+        "rough": "A huge peddler's wicker backpack basket, taller than a man, propped upright on two wooden crutches. From its top a patched canvas tarp, stitched from mismatched pieces, is stretched out as a lean-to roof on two poles, a clear tent cloth shape. Rope straps, scrap wood, sewn patches. A small lantern hangs from the basket. A stocky porter in a plain tunic tightens a strap at its side. The cloth is stretched on poles, no hanging laundry.",
+        "grand": "A two-storey wooden caravan wagon on four iron-rimmed wheels, dark tarred oak and painted planks, wooden shingles. A large pitched canvas tent roof with two peaks rises over it, plainly visible, patched and taut. A carved porch at the front with a row of worn boots from the most worn to the newest, a small stovepipe with a thin line of smoke, two warm lit windows. A stocky man leans his back against the wagon body and pushes to wedge it.",
+        "mythic": "A caravan house with a big worn canvas tent roof of two peaks, porch, stovepipe and warm lit windows, perched high on two colossal thick human-like wooden and iron legs in a deep lunge: front foot flat on the ground in a huge leather boot, front knee bent, back leg straight and stretched out behind with its foot on a rock. Blackened oak, aged iron, matte bronze knee plates. A thin white-blue vapor curls from the knees. The legs are solid, thick and clean, no bird legs, no monster head, no scrap-metal clutter, no glowing embers. A small porter standing on the boot ties a lace as thick as a mooring rope. Both feet stay within the same ground footprint."
+      }
+    },
+    {
+      "id": 2,
+      "name": "2 Pavillon de l'Aube",
+      "prompts": {
+        "rough": "A salvaged boat sail, full of patched holes, stretched tight on a wooden frame of three tall reed and driftwood poles in a half-fan shape, lashed with rope: the cloth is stretched on a wooden frame, no hanging laundry, no clothesline. A rooster stands on the tallest pole. A small ember glows at the foot of the poles. A man in a plain tunic stretches with both arms up to the sky beside it.",
+        "grand": "A round campaign pavilion tent of plain dark-red and ochre wool cloth, with a conical roof and a small point on top, a canvas door flap. Behind it a straight fan of seven thick straight oak slats with iron-capped ends rises well above the pavilion, held by a visible mast and taut guy ropes. A rooster-shaped weathervane on the mast. Matte dark red and ochre, no gloss, no gilding, no painted sun. A man skips rope in front of the door.",
+        "mythic": "A round pavilion tent of worn dark-red and ochre wool with a pointed top, in front of an immense half-disc fan of seven very thick straight black wooden slats, each taller than the tent, standing as a huge screen on a tall mast anchored to the ground with visible guy ropes and stakes. Between the slats are taut matte bands of cloth in dark red, ochre and pale cream, three flat bands, no gradient, no gilding, no painted sun. The pavilion glows softly through its cloth. A man hangs from a halyard rope, feet off the ground, hoisting."
+      }
+    }
+  ]
+}

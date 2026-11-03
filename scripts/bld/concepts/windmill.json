@@ -1,0 +1,24 @@
+{
+  "building": "windmill",
+  "comparison_strip": "docs/designs/village-buildings/windmill/r1/final/bande.png",
+  "directions": [
+    {
+      "id": 1,
+      "name": "1 Navire des Vents",
+      "prompts": {
+        "rough": "A low, wide building: a weathered upturned wooden boat hull serves as its roof, resting on stacked barrels and crates and held down by hemp ropes. Four oars of unequal length stand out as turning arms, with patched sacking stretched between them. A small lantern hangs in the bung hole of a barrel. A miller with two small patched flour sacks on his shoulders ducks out from under the keel. Bleached driftwood, tar patches, hemp.",
+        "grand": "A rough slate-stone base carries a round tower of tarred overlapping clinker planks, shaped like a ship hull stood on end, with a deck-like railed gallery around it. A mast rises from the tower cap with a round lookout basket at its tip. A small stove with a stovepipe puffs a thin line of smoke. A boom lifts a flour sack to the gallery. Four large turning arms with rust-red canvas laced on visible slats. One miller climbs a gangplank under a heavy sack.",
+        "mythic": "A tall tower shaped like the stern castle of a galleon, wider at the top than at the base: rows of small windows, a balcony carved with waves, a red band, dark oak and matte brass. From the cap rise two immense curved ivory rib bones leaning toward each other, one taller, one chipped, with exactly five thick, clearly visible straight strings stretched between the two ribs like a giant lyre, each string wide and well spaced, and the mast as their post; a small sailor's hat hangs from the tip of the taller rib. Four enormous sky-blue canvas sails pulled flat and taut on lattice slats, never drooping, never hanging. One small figure in the lookout basket plucks a string with an oar tip; a miller below listens with eyes closed."
+      }
+    },
+    {
+      "id": 3,
+      "name": "3 Pile de Meules",
+      "prompts": {
+        "rough": "A lopsided hut of crooked nailed planks sits on a single split millstone, which rests on a tree stump, all held with ropes. Only three turning arms, each a flat wooden baker's peel with a stretched sack, because one is missing. Warm light leaks through a missing plank. A miller with two small flour sacks steadies the hut with his foot.",
+        "grand": "A tower made of six stacked round millstones threaded on a central oak mast, ochre sandstone and grey granite, the largest at the bottom, with small timber floors and little windows between them and a railed gallery around the pile. A bread oven is cut into the lowest stone, its chimney puffing smoke. The small plank hut still sits on the top with a new roof. Six turning arms in a star, open wooden lattice. A miller carries a heavy sack.",
+        "mythic": "A stepped tower of huge black iron-banded millstones with carved radial grooves, stacked on a central mast, a notched silhouette like a loaded barbell, with eight open-lattice sky-blue turning arms. On top of the mast, above a small plank hut, stands one colossal millstone upright on its edge: a matte blue-grey stone ring with radial grooves, a chipped rim and a large round hole through which the sky shows. A donkey sits in the hole with ears up and a thistle in its mouth; a miller far below puts his hands on his hips and looks up."
+      }
+    }
+  ]
+}

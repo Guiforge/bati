@@ -1,0 +1,23 @@
+{
+  "building": "campfire",
+  "directions": [
+    {
+      "id": 1,
+      "name": "1 Soupe au Caillou",
+      "prompts": {
+        "rough": "A small camp fire on bare ground: a ring of grey fieldstones around a real burning fire with orange flames and a few split logs, open to the front. Over it stand three crooked bare branches tied at the top with hemp rope, and from the rope hangs a dented, battered iron helmet turned upside down, its rim lifted by a big round grey pebble sticking out of it. A minstrel in a green tunic sits on a log beside the fire and stirs the helmet with a flute, looking confident. Scrap wood, rope, rusty iron. No tent, no cloth, no bucket.",
+        "grand": "A round masonry base of stacked stone with a low vaulted mouth in front where a real fire burns with orange flames, a ring of grey stones around its foot. Three whole bare oak trunks rise from the base and meet at the top, with an iron chain hanging from the join. From the chain hangs a huge riveted copper cauldron, as wide as the base, with a dark amber stew steaming at the brim. A small banner on one trunk. A minstrel stands next to it and stirs the stew with a giant wooden oar. Matte copper, grey stone, bare wood. No green liquid, no druid, no ladder, no bucket, no roof.",
+        "mythic": "A ring of grey fieldstones with a big real fire at ground level in front, its flames reaching up in one long tongue. Three enormous petrified black trunks, hard as stone, rise from the ring and cross very high above, taller than everything around, forming a bare tripod, not a tent. At the crossing hangs a colossal matte dark bronze cauldron with a round dark belly, amber broth spilling over the brim without running down, and a straight column of golden vapour rising from it. In front of the fire, a minstrel and one villager carry a round grey stone on a plain red cushion with great solemnity. No green liquid, no druid, no gold trim, no ladder, no roof."
+      }
+    },
+    {
+      "id": 2,
+      "name": "2 Orgue de Feu",
+      "prompts": {
+        "rough": "A ring of grey fieldstones around a real burning camp fire with orange flames, open to the front, the flames leaning sideways under a gust. Behind the fire stand three hollow wooden logs of unequal heights, planted crooked and bound with hemp rope, one flame-spout bursting from the tallest. A minstrel with one knee raised stamps on a patched goatskin bag and blows into a bagpipe aimed at the fire, cheeks puffed. Hollow wood, patched hide, rope. No bellows, no keyboard, no chimney, no anvil.",
+        "grand": "A ring of grey fieldstones around a big real fire on the ground in front, always fully visible. Behind it rises a fan of seven thick matte copper pipes of clearly unequal heights, tallest in the middle, each at least as wide as a man's arm, ringed with iron bands, on a dark oak frame, with three small flames at the pipe tops. A banner on a post. A minstrel in front walks in place on two wooden step boards. Dark wood and matte copper. No bellows, no keyboard, no keys, no church, no cross, no cabinet on a pole, no molten metal, no chimney.",
+        "mythic": "A ring of grey fieldstones with a big real fire on the ground in front, fully visible. Behind it, a very tall central pipe of black iron surrounded by thick pipes of unequal heights that decrease unevenly, so that the outline of the whole group draws one huge flame; seven pipes at most, each thick. Pale embers drift up along the pipes and the air shimmers, no smoke. At the foot, dark oak frame and two bronze boar-head horns with open mouths and no teeth, a donkey standing in profile with a hoof on a step board and a minstrel pumping a long bar beside it. No bellows, no keyboard, no keys, no church, no cross, no steam valves, no molten metal, no chimney."
+      }
+    }
+  ]
+}

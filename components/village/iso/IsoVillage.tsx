@@ -515,9 +515,10 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
   // Unmounted mid-show: the view kept for a remount is the player's, not the zoomed one. Declared
   // before the camera so this cleanup runs first and the camera's own reads the restored view.
   // biome-ignore lint/correctness/useExhaustiveDependencies: written once, on unmount
+  const poserVue = useRef<(v: Vue) => void>(() => undefined);
   useLayoutEffect(
     () => () => {
-      if (avant.current) camera.poser(avant.current);
+      if (avant.current) poserVue.current(avant.current);
     },
     [],
   );
@@ -570,6 +571,10 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
         });
       } else if (b) onOpen?.(b);
     },
+  });
+  // The camera is declared after the cleanup above, which reaches it through this ref.
+  useLayoutEffect(() => {
+    poserVue.current = camera.poser;
   });
   // The buzz leaves once the new stage's layer is committed, not with the timer that asks for it.
   // biome-ignore lint/correctness/useExhaustiveDependencies: `reveler` is once per `cle`

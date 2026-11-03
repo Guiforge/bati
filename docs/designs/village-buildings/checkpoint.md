@@ -13,19 +13,24 @@ Capturé sur `emulator-5554`, build de dev, tip `9bb40f57`. Rien à décider ici
 ## Après
 ![Après évolution](campfire/preview/village-jour-apres-evolution.webp)
 
-## De nuit
-Pas encore capturé : l'onglet suit l'heure, nuit à partir de 20 h, et l'émulateur n'est pas root. Je fais ajouter un réglage de dev pour la forcer, puis je capture.
+## De nuit, tip `e53d4d6e`
+Nuit forcée par le nouveau réglage de dev. La lueur orange tombe sur le feu.
+![Le village de nuit](campfire/preview/village-nuit.webp)
+
+## Une évolution après correction, la tente
+Plus de cube gris ni de cage noire : caméra sur la tente, nuage doré, la tente grandit.
+![12 images de l'évolution de la tente](campfire/preview/planche-tap-2.webp)
 
 ## Ce qui marche
 - Le nouvel art s'affiche dans le vrai onglet, drapeau allumé.
 - Le tap ouvre la bulle, « Evolve » joue l'évolution, le marqueur disparaît du feu et reste sur la tente et le mannequin.
 - Le passage du rang 1 au rang 3 en un seul tap est celui que décrit le prompt.
 
-## Ce qui ne va pas, corrections en cours dans le code partagé
-- **Cube gris foncé** posé devant le feu, à tous les rangs : un résidu, à supprimer.
-- **Échafaudage noir de l'évolution :** il se lit vectoriel à côté de la peinture.
+## Ce qui ne va pas
+- **Cube gris foncé :** le socle vide de la statue du totem. Corrigé, disparu sur la capture de nuit.
+- **Échafaudage noir de l'évolution :** l'ancien sprite Blender. Corrigé.
 - **Environ 7 s** entre le tap et la bulle en build de dev : cause à chercher.
-- **La caméra reste zoomée** après l'évolution : à vérifier.
+- **La caméra reste zoomée** après l'évolution : c'est le cas de tous les bâtiments, question ouverte pour toi.
 
 ## Pas vérifié
 La relance de l'app après évolution, un rang de 5 ou plus, l'échelle mesurée. La base de dev est restée au niveau 6, avec du faux XP.

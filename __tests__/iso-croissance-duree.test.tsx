@@ -15,6 +15,24 @@ jest.mock("react-native-worklets", () => ({
   ...jest.requireActual("react-native-worklets"),
   getUIRuntimeHolder: () => ({}),
 }));
+// The real camera, its `vers` only watched: the return is asserted on what it is asked for.
+const mockVers = jest.fn();
+jest.mock("@/components/village/iso/useCameraIso", () => {
+  const actual = jest.requireActual("@/components/village/iso/useCameraIso");
+  return {
+    ...actual,
+    useCameraIso: (...a: unknown[]) => {
+      const c = actual.useCameraIso(...a);
+      return {
+        ...c,
+        vers: (v: unknown) => {
+          mockVers(v, c.vue());
+          c.vers(v);
+        },
+      };
+    },
+  };
+});
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("expo-router", () => ({ useIsFocused: () => true }));
 jest.mock("@/hooks/useReducedMotion", () => ({ useReducedMotion: () => false }));
@@ -54,6 +72,37 @@ describe("the growth scene's length", () => {
       expect(fin).not.toHaveBeenCalled();
       await act(() => jest.advanceTimersByTime(60));
       expect(fin).toHaveBeenCalledTimes(1);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it("then the camera goes back to the view the player had before the scene", async () => {
+    const [code, ancien] = (croissanceDemo(buildings, 0) ?? "").split(":");
+    mockVers.mockClear();
+    jest.useFakeTimers();
+    try {
+      const r = await render(
+        <GestureHandlerRootView>
+          <IsoVillage
+            tier={12}
+            buildings={buildings}
+            width={390}
+            height={390}
+            croissance={{
+              cle: `${code}:${ancien}`,
+              items: [{ code: code as (typeof buildingCodes)[number], oldLevel: Number(ancien) }],
+            }}
+          />
+        </GestureHandlerRootView>,
+      );
+      expect(r).toBeTruthy();
+      await act(() => jest.advanceTimersByTime(4000));
+      const [aller, retour] = mockVers.mock.calls;
+      expect(mockVers).toHaveBeenCalledTimes(2);
+      // The way back asks for the view the camera had when the way there was asked.
+      expect(retour?.[0]).toEqual(aller?.[1]);
+      expect(retour?.[0]).not.toEqual(aller?.[0]);
     } finally {
       jest.useRealTimers();
     }

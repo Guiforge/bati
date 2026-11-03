@@ -446,6 +446,8 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
     onCroissanceFinie?.();
   };
   const saute = useRef<string | undefined>(undefined);
+  // The view the player had before the growth's first camera move, put back when the scene ends.
+  const avant = useRef<Vue | undefined>(undefined);
   // The shake and slide timers of the growth: a touch that skips the scene drops them (H2-13).
   const mouvement = useRef<ReturnType<typeof setTimeout>[]>([]);
   const [legende, setLegende] = useState<{ cle: string; code: BuildingCode; stade: Stade } | null>(
@@ -462,6 +464,8 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
     if (cle === undefined) return;
     for (const x of mouvement.current) clearTimeout(x);
     mouvement.current = [];
+    // A touch is the player taking the camera back: it stays where their hand left it.
+    avant.current = undefined;
     saute.current = cle;
     setLegende(null);
     setLance({ cle, etape: 2 });
@@ -579,13 +583,21 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
   // biome-ignore lint/correctness/useExhaustiveDependencies: `cle` stands for the growth
   useEffect(() => {
     if (cle === undefined) return;
-    if (premier) camera.vers(vueSur(centreBatiment(premier), ZOOM_CAPTURE));
+    if (premier) {
+      avant.current = camera.vue();
+      camera.vers(vueSur(centreBatiment(premier), ZOOM_CAPTURE));
+    }
     const autres = planifierCroissance({
       cle,
       reduit,
       avecChantier: avecChantier.length > 0,
       reveler,
-      terminer,
+      terminer: () => {
+        // Once, at the very end of the growth (all its buildings), unless a touch dropped it.
+        if (avant.current) camera.vers(avant.current);
+        avant.current = undefined;
+        terminer();
+      },
       setPose,
       setLance,
     });

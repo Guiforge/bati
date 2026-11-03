@@ -127,6 +127,8 @@ describe("statue", () => {
       <Statue boite={boiteStatue(piedStatue(), null)} etat={null} onPress={jest.fn()} />,
     );
     expect(screen.queryByTestId("iso-statue-image")).toBeNull();
+    // No vector block stands in for a missing painting: the cell is only a touch target.
+    expect(screen.getByTestId("iso-statue").children).toHaveLength(0);
     expect(screen.getByTestId("iso-statue").props.accessibilityLabel).toContain(
       "village.iso.statue_nu",
     );

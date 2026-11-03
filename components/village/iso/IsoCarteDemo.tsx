@@ -124,7 +124,7 @@ import {
   voileDe,
 } from "./carteDemo";
 import { type Champs, champsDe, tuilesChamps } from "./champs";
-import { COUP_MS, COUPS, RETOUR_COUP_MS } from "./chantier";
+import { COUP_MS, COUPS, echafaudageDessine, RETOUR_COUP_MS } from "./chantier";
 import { CODES_A_CORBEAU } from "./corbeaux";
 import { DONNEES_BLD } from "./donneesBld";
 import { Effets } from "./Effets";
@@ -2289,7 +2289,12 @@ export function IsoCarte({
         />
         {CODES_A_CORBEAU.has(code) ? <CorbeauToit {...commun} /> : null}
         {/* Masked during a site only when there is no old stage: then a heap of stones stands in. */}
-        {echafaudages?.has(code) || chantiers?.has(code) ? (
+        {/* A painted building keeps its own image through the site: the old art's black vector scaffold is not drawn over it (dust and the new stage's fade carry the change). */}
+        {echafaudageDessine(
+          code,
+          commun.masque,
+          echafaudages?.has(code) || chantiers?.has(code),
+        ) ? (
           <Echafaudage code={code} neuf={commun.masque} />
         ) : null}
         {chantiers?.has(code) ? <Poussiere code={code} /> : null}

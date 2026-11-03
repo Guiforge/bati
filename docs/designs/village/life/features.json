@@ -38,9 +38,10 @@
         0.5,
         1
       ],
-      "status": "doing",
-      "note": "Code et tests faits, pas encore vu sur émulateur",
-      "debut": "2026-11-03T21:45:00+01:00"
+      "status": "done",
+      "note": "Vu sur émulateur : retour à la vue décalée. Tap et glissé pendant le moment : tests seuls",
+      "debut": "2026-11-03T21:45:00+01:00",
+      "fin": "2026-11-04T00:30:00+01:00"
     },
     {
       "id": "U2",
@@ -51,9 +52,10 @@
         0.3,
         0.7
       ],
-      "status": "doing",
-      "note": "Vue bâtiment relevée, carte à refaire",
-      "debut": "2026-11-03T21:45:00+01:00"
+      "status": "done",
+      "note": "Vue bâtiment relevée ; carte de jour vue, pièces non nommées une à une",
+      "debut": "2026-11-03T21:45:00+01:00",
+      "fin": "2026-11-04T00:30:00+01:00"
     },
     {
       "id": "U3",

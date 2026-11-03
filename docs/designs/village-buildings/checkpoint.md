@@ -1,3 +1,13 @@
+# Aperçu, non bloquant : le moulin peint
+
+Mis ici dès que les 5 stades existent, avant l'intégration, pour que tu puisses réorienter tôt. Je continue sans attendre.
+
+Image : `docs/designs/village-buildings/windmill/r1/final/bande.png` (locale, ignorée par git). Les 5 stades dans l'ordre, ailes peintes au vrai pivot, rubans peints et pic retouché sur le mythique. Mara l'a validé avant les ailes peintes, pas encore sur cette bande.
+
+Ce que tu peux redire tout de suite : le bleu du pic (saturation 0,54), la pierre poivrée des hauts stades, le caleçon à une seule rayure.
+
+---
+
 # Checkpoint de l'étape 0, session 1
 
 Écrit la nuit du 02 au 03/11, sans attendre : tes réponses avant de te coucher sont appliquées. Rien ici ne bloque la nuit. Le matin, chaque point se relit en oui ou non, et tout peut encore changer avant les vagues.

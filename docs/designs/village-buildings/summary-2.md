@@ -2,6 +2,8 @@
 
 Session arrêtée le 03/11/2026 : tous les concepts sont peints, plus rien à faire avant tes choix. Aucun bâtiment n'est en production, aucun drapeau n'a bougé, rien de neuf dans l'application en dehors du champ `mesure`.
 
+**Tip :** `feat/village-iso`, `dcca8a18`, plus le commit de cette ligne, poussé sur origin.
+
 **Pour choisir :** [la page des concepts](https://claude.ai/artifact/HBBzj1ZZ3AC4bGhwk8YgMk). Tes choix s'enregistrent tout seuls, je les relis au démarrage de la suite.
 
 ## Les 3 décisions pour toi

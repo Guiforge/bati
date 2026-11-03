@@ -230,7 +230,7 @@
     ]
   },
   "prompt": "v3, direction artistique d'abord (03/11) ; PROMPT-v2.md garde l'ancien",
-  "tip": "8389e741",
+  "tip": "dcca8a18",
   "recipe": {
     "model": "FLUX 3 Image (E3)",
     "method": "peinture neuve, stade précédent en référence pour la forme (E4), sans Blender en v3",

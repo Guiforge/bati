@@ -15,7 +15,7 @@ import sys
 import zlib
 
 import numpy as np
-from PIL import Image, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter
 
 SRC = pathlib.Path("/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village-buildings")
 OUT = pathlib.Path(__file__).resolve().parents[2] / "docs/designs/village/clean/scratch/losange"
@@ -202,6 +202,14 @@ PETIT = 700  # px: a detached bit smaller than this, low on the canvas, is a spe
 FONDU_3 = 14
 PROF_3 = 12
 _EMP: dict = {}
+STRONG = {("farm", "rough"), ("farm", "solid"), ("farm", "grand"), ("heroes_hall", "solid"), ("heroes_hall", "grand"), ("castle_wall", "grand")}  # the lower diagonals still read as a diamond: a deeper, longer ramp, and only dense outlines count as an object
+PROF_S, FONDU_S, MARGE_S = 20, 16, 52
+SOMBRE = {"windmill"}  # dark key-contaminated patches on the ground edge (luma and chroma low), flooded from the outside
+SANS_PLAQUE = {("quarry", "rough")}  # a pale sandy patch of the painting itself reads as a plate: the mask bit a hole in the ground
+FLOTTANT = {("barn", "mythic"): (20, 4000, BAS)}  # (alpha floor, px, rows from the bottom): detached shadows are faint, so the speck pass looks lower and takes bigger bits
+OUVERTURE = {("barn", "mythic"): (770, 60, 878, 280, 21)}  # (x0, y0, x1, y1 in the lower BAS rows, window): thin spurs and detached dark bits there are opened away
+TROUS = {("quarry", "rough")}  # dithered, semi-transparent ground inside the body must not count as outside, or the ramp bites a hole there
+POINTE = {"training_dummy"}  # the lowest vertex of the diamond is a thin tail under the ground: cut it
 
 
 def emprise_pts(code: str, h: int) -> list[tuple[float, float]]:
@@ -228,12 +236,12 @@ def pres_du_losange(code: str, shape: tuple[int, int], marge: float = MARGE_POLY
     return best <= marge
 
 
-def decontamine(a: np.ndarray, d: np.ndarray) -> np.ndarray:
+def decontamine(a: np.ndarray, d: np.ndarray, bande: int = BANDE) -> np.ndarray:
     """Pull the magenta of the key out of the silhouette's last BANDE px: where R and B both exceed G, take their common excess
     away, fading with depth; a pixel close to the pure key loses alpha. RGB and alpha in the band only; warm reds (B below G) are
     untouched because the common excess min(R-G, B-G) is zero there."""
     out = a.copy()
-    w = np.clip(1.0 - (d - 1) / BANDE, 0, 1)
+    w = np.clip(1.0 - (d - 1) / bande, 0, 1)
     w[d == 0] = 0
     g = a[..., 1]
     ex = np.maximum(np.minimum(a[..., 0] - g, a[..., 2] - g), 0) * w
@@ -259,10 +267,10 @@ def couches(d: np.ndarray, graines_sol: np.ndarray, graines_obj: np.ndarray, pro
     return sol, obj
 
 
-def detache(al: np.ndarray, d: np.ndarray, h: int) -> np.ndarray:
+def detache(al: np.ndarray, d: np.ndarray, h: int, seuil: int = 128, petit: int = PETIT, haut: int = 420) -> np.ndarray:
     """Specks: opaque bits not reached from the body (half resolution flood from the deep interior), small, low on the canvas."""
     hh, ww = al.shape[0] // 2 * 2, al.shape[1] // 2 * 2
-    pl = (al[:hh, :ww] > 128).reshape(hh // 2, 2, ww // 2, 2).max(axis=(1, 3))
+    pl = (al[:hh, :ww] > seuil).reshape(hh // 2, 2, ww // 2, 2).max(axis=(1, 3))
     reach = (d[:hh, :ww] >= 27).reshape(hh // 2, 2, ww // 2, 2).max(axis=(1, 3)) & pl
     for _ in range(600):
         nxt = (reach | _dilate8(reach) | _dilate8(_dilate8(reach))) & pl  # bridges a 2 px gap at half resolution
@@ -285,7 +293,7 @@ def detache(al: np.ndarray, d: np.ndarray, h: int) -> np.ndarray:
                     if gone[ny, nx] and not seen[ny, nx]:
                         seen[ny, nx] = True
                         pile.append((ny, nx))
-        if len(comp) * 4 < PETIT and min(c[0] for c in comp) * 2 > h - 420:
+        if len(comp) * 4 < petit and min(c[0] for c in comp) * 2 > h - haut:
             for cy, cx in comp:
                 kill[cy, cx] = True
     full = np.zeros(al.shape, bool)
@@ -303,17 +311,60 @@ def bruit_doux(code: str, shape: tuple[int, int]) -> np.ndarray:
     return np.clip((n - n.min()) / max(1e-6, n.max() - n.min()), 0, 1)
 
 
+def sombres(a: np.ndarray, d: np.ndarray) -> np.ndarray:
+    """Dark, grey patches (luma under 108, chroma under 45) within 36 px of the outside, reached from it, 150 px or more: key contamination, not ground."""
+    h = a.shape[0]
+    luma = a[..., :3] @ np.array([0.299, 0.587, 0.114])
+    cand = (a[..., 3] > SEUIL) & (luma < 108) & ((a[..., :3].max(-1) - a[..., :3].min(-1)) < 45) & (d <= 36)
+    cand[: h - BAS] = False
+    reach = np.zeros_like(cand)
+    hh, ww = cand.shape
+    for y, x in zip(*np.nonzero(cand & (d == 1))):
+        if reach[y, x]:
+            continue
+        comp, pile = [], [(y, x)]
+        reach[y, x] = True
+        while pile:
+            cy, cx = pile.pop()
+            comp.append((cy, cx))
+            for ny, nx in ((cy - 1, cx), (cy + 1, cx), (cy, cx - 1), (cy, cx + 1)):
+                if 0 <= ny < hh and 0 <= nx < ww and cand[ny, nx] and not reach[ny, nx]:
+                    reach[ny, nx] = True
+                    pile.append((ny, nx))
+        if len(comp) < 150:
+            for cy, cx in comp:
+                reach[cy, cx] = False
+                cand[cy, cx] = False
+    return reach | (_dilate(reach) & cand)
+
+
+def pointe(al: np.ndarray, h: int) -> np.ndarray:
+    """Pixels of the thin tail under the ground: below the lowest row 80 px wide, fading over 10 rows above it."""
+    n = (al > 128).sum(1)
+    larges = np.nonzero(n >= 80)[0]
+    cut = np.zeros(al.shape[0])
+    if len(larges):
+        y0 = larges.max()
+        cut[y0 + 1:] = 1
+        cut[y0 - 9:y0 + 1] = np.linspace(0.9, 0.0, 10)
+    return cut
+
+
 def bord3(rgba: Image.Image, code: str, stade: str) -> tuple[Image.Image, np.ndarray, dict]:
     """Decontaminate the fringe, then dissolve every ground edge of the footprint (all four sides, and where painted ground meets
     the canvas edge) into an organic one, and drop detached specks. Nothing above the ground zone moves."""
     a = np.asarray(rgba, dtype=float).copy()
     h, w = a.shape[:2]
     al0 = a[..., 3].copy()
-    a = decontamine(a, profondeur(al0))
+    a = decontamine(a, profondeur(al0), 28 if code in SOMBRE else BANDE)  # windmill: the pink of the key reaches deeper into its ground
+    if code in SOMBRE:
+        a[..., 3] = np.where(sombres(a, profondeur(a[..., 3])) & pres_du_losange(code, (h, w), MARGE_S) & (np.arange(h)[:, None] >= sorted(p[1] for p in emprise_pts(code, h))[1] + 30), 0, a[..., 3])
     al = a[..., 3]
+    fort = (code, stade) in STRONG
+    prof3, fondu3 = (PROF_S, FONDU_S) if fort else (PROF_3, FONDU_3)
     luma = a[..., :3] @ np.array([0.299, 0.587, 0.114])
     ink = (luma < 62) & (al > 200)
-    P = pres_du_losange(code, (h, w))
+    P = pres_du_losange(code, (h, w), MARGE_S if (code, stade) in STRONG else MARGE_POLY)
     info: dict = {}
     # a painted contour along the ground edge (training_dummy, quarry rough): drop its outer band, the ground then fades like any other
     if (code, None) in CONTOUR or (code, stade) in CONTOUR:
@@ -324,12 +375,19 @@ def bord3(rgba: Image.Image, code: str, stade: str) -> tuple[Image.Image, np.nda
         diam = (np.abs(gy) / nm >= 0.74) & (np.abs(gx / nm) >= 0.25) & (np.abs(gx / nm) <= 0.62) & (nm > 0.7)  # a diamond-direction edge
         s_d, o_d = couches(d0, (d0 == 1) & (al > SEUIL) & diam, (d0 == 1) & (al > SEUIL) & ~diam, 10)
         outer = ink & (d0 <= 10) & P & s_d & ~o_d
+        outer = outer | (ink & (d0 <= 7) & (stade != "rough") & (np.arange(h)[:, None] >= h - BAS + 60))  # the contour on every side, not only along the diamond directions (the painting is wider than its footprint, so no P)
         al = np.where(outer, 0, al)
         a[..., 3] = al
         luma = a[..., :3] @ np.array([0.299, 0.587, 0.114])
         ink = (luma < 62) & (al > 200)
         info["contour"] = int(outer.sum())
-    d = profondeur(np.pad(al, 1))[1:-1, 1:-1]  # the canvas border counts as outside
+    cap, sc = (64, 3) if fort else (40, 6)  # depth cap and its 8-bit scale (the strong ramp is deeper than 40)
+    al_d = al
+    if (code, stade) in TROUS:  # only the transparency connected to the canvas border is outside
+        mk = Image.fromarray(((al <= SEUIL) * 255).astype(np.uint8))
+        ImageDraw.floodfill(mk, (0, 0), 128)
+        al_d = np.where((np.asarray(mk) == 255) & (al > 0), 255, al)  # an enclosed hole is body
+    d = profondeur(np.pad(al_d, 1), cap)[1:-1, 1:-1]  # the canvas border counts as outside
     bord_toile = np.zeros((h, w), bool)
     bord_toile[:, 0] = bord_toile[:, -1] = bord_toile[0, :] = bord_toile[-1, :] = True
     bord_toile &= al > SEUIL
@@ -346,13 +404,17 @@ def bord3(rgba: Image.Image, code: str, stade: str) -> tuple[Image.Image, np.nda
     seed_alpha = seed & ~(bord_toile | vertical)
     bas = np.zeros((h, w), bool)
     bas[h - BAS:] = True
-    sol, obj = couches(d, seed_alpha & ~ink_near, seed_alpha & ink_near, PROF_3 + FONDU_3)
+    if fort:  # a dark soil rim is not an object: only dense outlines (fence posts, barrels) are
+        pd = np.pad((luma < 40).astype(np.float32) * (al > 200), 8)
+        ink_near = ink_near & (sum(pd[dy:dy + h, dx:dx + w] for dy in range(17) for dx in range(17)) > 110)
+        ink = ink & ink_near
+    sol, obj = couches(d, seed_alpha & ~ink_near, seed_alpha & ink_near, prof3 + fondu3)
     zone = sol & P & ~obj
     ink40 = (luma < 40) & (al > 200)
     pad40 = np.pad(ink40.astype(np.float32), 8)
     dense = sum(pad40[dy:dy + h, dx:dx + w] for dy in range(17) for dx in range(17))
     ink40_near = dense > 45  # an object's outline is dense; a pebble or a tuft on the ground is not
-    sol_t, obj_t = couches(d, seed_toile & ~ink40_near & bas, seed_toile & (ink40_near | ~bas), PROF_3 + FONDU_3)
+    sol_t, obj_t = couches(d, seed_toile & ~ink40_near & bas, seed_toile & (ink40_near | ~bas), prof3 + fondu3)
     zt = sol_t & ~obj_t & bas
     zone_all = zone | zt
     prot = ink.copy()
@@ -362,31 +424,44 @@ def bord3(rgba: Image.Image, code: str, stade: str) -> tuple[Image.Image, np.nda
     if (code, stade) in BAS_SEUL:  # a stone face stands on the upper sides: only the two lower sides of the diamond dissolve
         ys = [p[1] for p in emprise_pts(code, h)]
         zone_all &= np.arange(h)[:, None] >= sorted(ys)[1] - 10
+    if fort:  # the lower diagonals only: from the side vertices down
+        zone_all &= np.arange(h)[:, None] >= sorted(p[1] for p in emprise_pts(code, h))[1] + 25
     # smoothed depth, a softer ramp: no torn paper
-    ds = np.asarray(Image.fromarray((np.minimum(d, 40) * 6).astype(np.uint8)).filter(ImageFilter.GaussianBlur(2.2)), dtype=float) / 6.0
-    seuil = 2 + (PROF_3 - 2) * bruit_doux(code, (h, w))
-    t = np.clip((ds - seuil) / FONDU_3, 0, 1)
+    ds = np.asarray(Image.fromarray((np.minimum(d, cap) * sc).astype(np.uint8)).filter(ImageFilter.GaussianBlur(2.2)), dtype=float) / sc
+    seuil = 2 + (prof3 - 2) * bruit_doux(code, (h, w))
+    t = np.clip((ds - seuil) / fondu3, 0, 1)
     f = np.where(zone_all, t * t * (3 - 2 * t), 1.0)
     a[..., 3] = al * f
     # what the ramp cut off from the body would float: reach inward from the deep interior, drop the rest near the zone
     plein = a[..., 3] > 140
-    reach = plein & (d >= PROF_3 + FONDU_3 + 1)
-    for _ in range(PROF_3 + FONDU_3 + 14):
+    reach = plein & (d >= prof3 + fondu3 + 1)
+    for _ in range(prof3 + fondu3 + 14):
         nxt = reach | (_dilate8(reach) & plein)
         if (nxt == reach).all():
             break
         reach = nxt
     gardee = reach.copy()
     pale = (a[..., 3] > 0) & ~plein
-    for _ in range(FONDU_3 + 4):
+    for _ in range(fondu3 + 4):
         gardee = gardee | (_dilate8(gardee) & pale)
     pres = zone_all.copy()
     for _ in range(14):
         pres = pres | _dilate8(pres)
-    a[..., 3] = np.where((d < 40) & pres & ~gardee, 0, a[..., 3])
+    if (code, stade) in TROUS:
+        pres[:] = False  # no cleanup of floating bits here: the dithered ground is made of them
+    a[..., 3] = np.where((d < cap) & pres & ~gardee, 0, a[..., 3])
     flou = np.asarray(Image.fromarray(a[..., 3].astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.6)), dtype=float)  # stairs, dither
-    a[..., 3] = np.where(pres & (d < 40) & (a[..., 3] < 250), np.where(flou < 14, 0, flou), a[..., 3])
-    pet = detache(a[..., 3], d, h)  # bits detached from the body, low on the canvas
+    a[..., 3] = np.where(pres & (d < cap) & (a[..., 3] < 250), np.where(flou < 14, 0, flou), a[..., 3])
+    pet = detache(a[..., 3], d, h, *FLOTTANT.get((code, stade), (128, PETIT, 420)))  # bits detached from the body, low on the canvas
+    if (code, stade) in OUVERTURE:
+        x0, y0, x1, y1, k = OUVERTURE[(code, stade)]
+        m8 = Image.fromarray(((a[..., 3] > 20) * 255).astype(np.uint8)).filter(ImageFilter.MinFilter(k)).filter(ImageFilter.MaxFilter(k))
+        sp = (np.asarray(m8) == 0) & (a[..., 3] > 0)
+        box = np.zeros(sp.shape, bool)
+        box[h - BAS + y0:h - BAS + y1, x0:x1] = True
+        a[..., 3] = np.where(sp & box, 0, a[..., 3])
+    if code in POINTE:
+        a[..., 3] = a[..., 3] * (1 - pointe(a[..., 3], h))[:, None]
     a[..., 3] = np.where(pet, 0, a[..., 3])
     info["specks"] = int(pet.sum())
     info["zone"] = int(zone_all.sum())
@@ -396,7 +471,7 @@ def bord3(rgba: Image.Image, code: str, stade: str) -> tuple[Image.Image, np.nda
 
 def traite(rgba: Image.Image, code: str, stade: str = "") -> tuple[Image.Image, np.ndarray, dict]:
     """The whole job for one stage: plate by mask, then the third pass (or the second one, plus the fringe, for the codes the judge passed)."""
-    sp, m = retire(rgba)
+    sp, m = (rgba, np.zeros(rgba.size[::-1], bool)) if (code, stade) in SANS_PLAQUE else retire(rgba)
     if code in V2:
         sb, mb, run = bord_v2(sp, code)
         a = np.asarray(sb, dtype=float).copy()
@@ -436,10 +511,12 @@ def stades(code: str) -> list[str]:
 
 
 def origine(code: str, s: str) -> pathlib.Path:
-    """The backup if there is one (never overwritten), else the source."""
+    """A `<stage>.edit.png` (a FLUX edit written beside the source) wins, then the backup (never overwritten), else the source."""
     d = SRC / code / "final"
-    b = d / f"{s}.avant-losange.png"
-    return b if b.exists() else d / f"{s}.png"
+    for n in (f"{s}.edit.png", f"{s}.avant-losange.png"):
+        if (d / n).exists():
+            return d / n
+    return d / f"{s}.png"
 
 
 def survol(code: str, apres: list[Image.Image]) -> None:
@@ -490,7 +567,7 @@ def apply(code: str, sts: list[str]) -> None:
     for s in sts or stades(code):
         d = SRC / code / "final"
         b = d / f"{s}.avant-losange.png"
-        im = Image.open(b if b.exists() else d / f"{s}.png").convert("RGBA")
+        im = Image.open(origine(code, s)).convert("RGBA")
         apres, m, info = traite(im, code, s)
         if np.array_equal(np.asarray(im), np.asarray(apres)):
             print(f"{code} {s} untouched")

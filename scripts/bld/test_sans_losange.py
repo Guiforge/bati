@@ -24,4 +24,14 @@ assert o[200, 60, 3] == 0
 assert not m[110:200, 160:340].any(), "the textured wall is kept"
 assert (o[110:200, 160:340, 3] == 255).all()
 assert S.part(im, out) > 0.2
+import tempfile  # a `<stage>.edit.png` beside the source wins over the backup, which wins over the source
+with tempfile.TemporaryDirectory() as t:
+    S.SRC = pathlib.Path(t)
+    f = S.SRC / "x" / "final"
+    f.mkdir(parents=True)
+    for n in ("rough.png", "rough.avant-losange.png"):
+        im.save(f / n)
+    assert S.origine("x", "rough").name == "rough.avant-losange.png"
+    im.save(f / "rough.edit.png")
+    assert S.origine("x", "rough").name == "rough.edit.png"
 print("ok")

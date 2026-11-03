@@ -28,7 +28,15 @@
 // vector). Lights breathe on the map's clock and stand still without it or with reduced motion.
 
 import { Image } from "expo-image";
-import { Fragment, type ReactNode, useContext, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  Fragment,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { View } from "react-native";
 import Animated, {
   cancelAnimation,
@@ -50,6 +58,7 @@ import { ArretAilesContext } from "./etatBld";
 import { useMouvementReduit } from "./fige";
 import { HorlogeContext } from "./horloge";
 import { MagieCiel, MagieSol } from "./MagieBld";
+import { PEINTS } from "./peints";
 import {
   arretAiles,
   BOUFFEES,
@@ -103,6 +112,13 @@ const TAILLE_LUEUR: Record<LightAnchor["kind"], readonly [w: number, h: number]>
 /** The painted sprites by data path; empty until a building's art lands. */
 const IMAGES: Readonly<Record<string, number>> = {};
 
+/** What a piece needs to draw a painted element: the building, its light, dp per canvas px. */
+const ElementsContext = createContext<{
+  code: BuildingData["code"];
+  nuit: boolean;
+  k: number;
+} | null>(null);
+
 /** The style of a flat square centred on a map point. */
 const forme = (at: Point, taille: number, couleur: string) =>
   ({
@@ -120,12 +136,29 @@ function Piece({
   at,
   taille,
   couleur,
+  sprite,
 }: {
   testID: string;
   at: Point;
   taille: number;
   couleur: string;
+  /** The data's sprite path: drawn when it is painted, else the flat placeholder. */
+  sprite?: string | null;
 }) {
+  const ctx = useContext(ElementsContext);
+  const e = sprite && ctx ? PEINTS[ctx.code]?.elements[sprite] : undefined;
+  if (e && ctx) {
+    const [w, h] = [e.size[0] * ctx.k, e.size[1] * ctx.k];
+    return (
+      <Image
+        pointerEvents="none"
+        testID={testID}
+        source={ctx.nuit ? e.nuit : e.jour}
+        style={{ position: "absolute", left: at[0] - w / 2, top: at[1] - h, width: w, height: h }}
+        contentFit="contain"
+      />
+    );
+  }
   return <View pointerEvents="none" testID={testID} style={forme(at, taille, couleur)} />;
 }
 
@@ -395,6 +428,7 @@ function Devant({
         at={px(ouGag)}
         taille={TAILLE.gag}
         couleur={rawColors.isoPierreChaudeMoyen}
+        sprite={gag.sprite}
       />
     </Neuf>
   );
@@ -407,6 +441,7 @@ function Devant({
             at={decale(teaser.anchorOffset)}
             taille={TAILLE.teaser}
             couleur={rawColors.isoVocationBois}
+            sprite={teaser.sprite}
           />
         </Neuf>
       ) : null}
@@ -631,6 +666,7 @@ function Ajouts({
                 at={at}
                 taille={TAILLE.addOn}
                 couleur={couleur}
+                sprite={a.sprite}
               />
             </Neuf>
           );
@@ -787,7 +823,7 @@ function Moteur({
     trace: !!plan && (plan.reduit || reduitApp),
   };
   return (
-    <>
+    <ElementsContext.Provider value={{ code: data.code, nuit, k }}>
       {masque || !etat.magie ? null : <MagieSol magie={etat.magie} px={px} />}
       <Ajouts layer="behind" etat={etat} jeu={jeu} geo={geo} />
       <Animated.View
@@ -835,6 +871,6 @@ function Moteur({
         />
       ) : null}
       {reclame}
-    </>
+    </ElementsContext.Provider>
   );
 }

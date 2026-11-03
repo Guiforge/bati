@@ -4122,7 +4122,11 @@
     "accepted_by": "chef d'équipe (DECISIONS 30/10, T22 textures : encre écartée par Guillaume, raccord retenu)",
     "review": {
       "verdict": "fail",
-      "failed_items": ["3", "24", "30"],
+      "failed_items": [
+        "3",
+        "24",
+        "30"
+      ],
       "file": "docs/designs/village-iso-v1/reviews/T22.md"
     }
   },
@@ -4179,7 +4183,11 @@
     "accepted_by": "chef d'équipe (DECISIONS 30/10, T22 textures : encre écartée par Guillaume, raccord retenu)",
     "review": {
       "verdict": "fail",
-      "failed_items": ["3", "24", "30"],
+      "failed_items": [
+        "3",
+        "24",
+        "30"
+      ],
       "file": "docs/designs/village-iso-v1/reviews/T22.md"
     }
   },
@@ -4236,7 +4244,11 @@
     "accepted_by": "chef d'équipe (DECISIONS 30/10, T22 textures : encre écartée par Guillaume, raccord retenu)",
     "review": {
       "verdict": "fail",
-      "failed_items": ["3", "24", "30"],
+      "failed_items": [
+        "3",
+        "24",
+        "30"
+      ],
       "file": "docs/designs/village-iso-v1/reviews/T22.md"
     }
   },
@@ -4273,7 +4285,11 @@
     "accepted_by": "chef d'équipe (DECISIONS 30/10, T22 textures : encre écartée par Guillaume, raccord retenu)",
     "review": {
       "verdict": "fail",
-      "failed_items": ["3", "24", "30"],
+      "failed_items": [
+        "3",
+        "24",
+        "30"
+      ],
       "file": "docs/designs/village-iso-v1/reviews/T22.md"
     }
   },
@@ -4301,6 +4317,198 @@
     "how": "its night, graded and relit offline by scripts/iso/famille_jour.py (no FLUX)",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
+  "assets/images/village/iso/peints/campfire/elements/gag_10.jour.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/elements/gag_10.raw.png",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/elements/gag_10.nuit.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/elements/gag_10.raw.png",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/elements/gag_2.jour.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/elements/gag_2.raw.png",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/elements/gag_2.nuit.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/elements/gag_2.raw.png",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/elements/gag_4.jour.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/elements/gag_4.raw.png",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/elements/gag_4.nuit.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/elements/gag_4.raw.png",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/elements/gag_6.jour.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/elements/gag_6.raw.png",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/elements/gag_6.nuit.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/elements/gag_6.raw.png",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/elements/gag_8.jour.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/elements/gag_8.raw.png",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/elements/gag_8.nuit.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/elements/gag_8.raw.png",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/elements/gag_9.jour.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/elements/gag_9.raw.png",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/elements/gag_9.nuit.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/elements/gag_9.raw.png",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/elements/teaser_r2.jour.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/elements/teaser_r2.raw.png",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/elements/teaser_r2.nuit.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/elements/teaser_r2.raw.png",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/elements/teaser_r4.jour.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/elements/teaser_r4.raw.png",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/elements/teaser_r4.nuit.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/elements/teaser_r4.raw.png",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/elements/teaser_r6.jour.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/elements/teaser_r6.raw.png",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/elements/teaser_r6.nuit.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/elements/teaser_r6.raw.png",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/elements/teaser_r8.jour.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/elements/teaser_r8.raw.png",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/elements/teaser_r8.nuit.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/elements/teaser_r8.raw.png",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/elements/teaser_r9.jour.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/elements/teaser_r9.raw.png",
+    "how": "the element keyed from magenta, shrunk to its map size, WebP q90",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/elements/teaser_r9.nuit.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/elements/teaser_r9.raw.png",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/grand.jour.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/grand_t1_v2.png",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/grand.nuit.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/grand_t1_v2.png",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/legendary.jour.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/legendary_t2_v2.png",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/legendary.nuit.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/legendary_t2_v2.png",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/mythic.jour.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/mythic_t4_v2.png",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/mythic.nuit.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/mythic_t4_v2.png",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/rough.jour.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/rough_t1_v1.png",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/rough.nuit.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/rough_t1_v1.png",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/solid.jour.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/solid_t3_v1.png",
+    "how": "the final painting of the stage placed on the family canvas, re-encoded WebP q90",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
+  "assets/images/village/iso/peints/campfire/solid.nuit.webp": {
+    "model": "flux-3-image (Black Forest Labs (direct API))",
+    "derived_from": "docs/designs/village-buildings/campfire/final/solid_t3_v1.png",
+    "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
   "assets/images/village/iso/pieces/animal_chat_repos.webp": {
     "model": "flux-3-image",
     "provider": "Black Forest Labs (direct API)",
@@ -4324,7 +4532,10 @@
         "sha256": "4297a894742787a593174ae91cf686264fcb053ebd31a7d38be24e22a0334fcd"
       }
     ],
-    "original_size": [768, 768],
+    "original_size": [
+      768,
+      768
+    ],
     "cutout": "adaptive key measured on the signed original (iso_loop recut), alpha of the candidate kept, no blockout mask",
     "reencoded": "WebP q90 with alpha (PIL, method 6)",
     "edited": false,
@@ -4416,7 +4627,9 @@
     "human_override": {
       "reason": "footprint check only (5389 px, base wider than the cell): glass the only warm colour, accepted by the chef after the fresh look, 2026-10-31",
       "date": "2026-10-31",
-      "audit_failed": ["footprint"]
+      "audit_failed": [
+        "footprint"
+      ]
     }
   },
   "assets/images/village/iso/pieces/decor_rochers_a.webp": {
@@ -4438,7 +4651,10 @@
         "sha256": "3c81bf285688129bc68079989223e5fedeb8187cfc3d14b62678fddffd3a8eed"
       }
     ],
-    "original_size": [512, 768],
+    "original_size": [
+      512,
+      768
+    ],
     "seconds": 6.1,
     "cutout": "global ΔE76 key on the backdrop #08EF0A measured on the signed original, below 30, soft ring to 60, despilled, clipped to the blockout silhouette grown by 16 px",
     "registration": {
@@ -4479,7 +4695,10 @@
         "sha256": "e2001c19a8b0a2bb600c48d324273a6739d337531ba1a0d18234eb33996fc89b"
       }
     ],
-    "original_size": [512, 768],
+    "original_size": [
+      512,
+      768
+    ],
     "seconds": 7.9,
     "cutout": "global ΔE76 key on the backdrop #0CF40A measured on the signed original, below 30, soft ring to 60, despilled, clipped to the blockout silhouette grown by 16 px",
     "registration": {
@@ -4495,7 +4714,9 @@
     "human_override": {
       "reason": "tri du 30/10, LOG : on suit la reco, retouche après",
       "date": "2026-10-30",
-      "audit_failed": ["light"]
+      "audit_failed": [
+        "light"
+      ]
     },
     "residue_cleaned": {
       "px": 0,
@@ -4521,7 +4742,10 @@
         "sha256": "25c4a556ed2336c338c00c7b6b1db8ac07817f94e0d80bb35ab8f0006ff03904"
       }
     ],
-    "original_size": [512, 768],
+    "original_size": [
+      512,
+      768
+    ],
     "seconds": 12.2,
     "cutout": "global ΔE76 key on the backdrop #09F10D measured on the signed original, below 30, soft ring to 60, despilled, clipped to the blockout silhouette grown by 16 px",
     "registration": {
@@ -4537,7 +4761,9 @@
     "human_override": {
       "reason": "tri du 30/10, LOG : on suit la reco, retouche après",
       "date": "2026-10-30",
-      "audit_failed": ["light"]
+      "audit_failed": [
+        "light"
+      ]
     },
     "residue_cleaned": {
       "px": 0,
@@ -4563,7 +4789,10 @@
         "sha256": "b44103f668c8511b303957c3d252fc7182d3f95fdd2d645ad9f4edad72fe2a95"
       }
     ],
-    "original_size": [512, 768],
+    "original_size": [
+      512,
+      768
+    ],
     "seconds": 6.0,
     "cutout": "global ΔE76 key on the backdrop #08F309 measured on the signed original, below 30, soft ring to 60, despilled, clipped to the blockout silhouette grown by 16 px",
     "registration": {
@@ -4579,7 +4808,11 @@
     "human_override": {
       "reason": "tri du 30/10, LOG : on suit la reco, retouche après",
       "date": "2026-10-30",
-      "audit_failed": ["detail", "light", "palette"]
+      "audit_failed": [
+        "detail",
+        "light",
+        "palette"
+      ]
     },
     "residue_cleaned": {
       "px": 0,
@@ -4605,7 +4838,10 @@
         "sha256": "13fd6795f3435c242637e294a0b692d849199783aba645ab9b15da3f3ca77bd6"
       }
     ],
-    "original_size": [512, 768],
+    "original_size": [
+      512,
+      768
+    ],
     "seconds": 11.8,
     "cutout": "global ΔE76 key on the backdrop #06F30E measured on the signed original, below 30, soft ring to 60, despilled, clipped to the blockout silhouette grown by 16 px",
     "registration": {
@@ -4621,7 +4857,10 @@
     "human_override": {
       "reason": "tri du 30/10, LOG : on suit la reco, retouche après",
       "date": "2026-10-30",
-      "audit_failed": ["detail", "light"]
+      "audit_failed": [
+        "detail",
+        "light"
+      ]
     },
     "residue_cleaned": {
       "px": 0,
@@ -4647,7 +4886,10 @@
         "sha256": "f70982deea5b662bb9c610654e5489d73c4b0da54be00e1f529c15cf4fa86f00"
       }
     ],
-    "original_size": [512, 768],
+    "original_size": [
+      512,
+      768
+    ],
     "seconds": 128.0,
     "cutout": "global ΔE76 key on the backdrop #0CF40C measured on the signed original, below 30, soft ring to 60, despilled, clipped to the blockout silhouette grown by 16 px",
     "registration": {
@@ -4663,7 +4905,9 @@
     "human_override": {
       "reason": "tri du 30/10, LOG : on suit la reco, retouche après",
       "date": "2026-10-30",
-      "audit_failed": ["light"]
+      "audit_failed": [
+        "light"
+      ]
     },
     "residue_cleaned": {
       "px": 0,
@@ -4689,7 +4933,10 @@
         "sha256": "07919fa291813e6a4e27f2737084a87eb9e3c4a2f3385587585473dd35282e6f"
       }
     ],
-    "original_size": [768, 768],
+    "original_size": [
+      768,
+      768
+    ],
     "seconds": 9.8,
     "cutout": "global ΔE76 key on the backdrop #10DE22 measured on the signed original, below 30, soft ring to 60, despilled, clipped to the blockout silhouette grown by 16 px",
     "registration": {
@@ -4705,7 +4952,10 @@
     "human_override": {
       "reason": "tri du 30/10, LOG : on suit la reco, retouche après",
       "date": "2026-10-30",
-      "audit_failed": ["light", "palette"]
+      "audit_failed": [
+        "light",
+        "palette"
+      ]
     },
     "residue_cleaned": {
       "px": 0,
@@ -4731,7 +4981,10 @@
         "sha256": "4639f5d9b016afb2a0e704bd239484e47173ebe464254a24f588351ea1ff9734"
       }
     ],
-    "original_size": [512, 768],
+    "original_size": [
+      512,
+      768
+    ],
     "seconds": 7.8,
     "cutout": "global ΔE76 key on the backdrop #0AF913 measured on the signed original, below 30, soft ring to 60, despilled, clipped to the blockout silhouette grown by 16 px",
     "registration": {
@@ -4747,7 +5000,10 @@
     "human_override": {
       "reason": "tri du 30/10, LOG : on suit la reco, retouche après",
       "date": "2026-10-30",
-      "audit_failed": ["detail", "light"]
+      "audit_failed": [
+        "detail",
+        "light"
+      ]
     },
     "residue_cleaned": {
       "px": 0,
@@ -4773,7 +5029,10 @@
         "sha256": "9038f9ad787a096a605426b9f66c7905c9ce67d2905663f28f7509e428ada5cf"
       }
     ],
-    "original_size": [896, 1344],
+    "original_size": [
+      896,
+      1344
+    ],
     "seconds": 12.3,
     "cutout": "global ΔE76 key on the backdrop #0FF80E measured on the signed original, below 30, soft ring to 60, despilled, clipped to the blockout silhouette grown by 16 px",
     "registration": {
@@ -4789,7 +5048,10 @@
     "human_override": {
       "reason": "tri du 30/10, LOG : on suit la reco, retouche après",
       "date": "2026-10-30",
-      "audit_failed": ["light", "palette"]
+      "audit_failed": [
+        "light",
+        "palette"
+      ]
     },
     "residue_cleaned": {
       "px": 0,
@@ -4815,7 +5077,10 @@
         "sha256": "fcc1427aa572c1fad1c424d7ef0760d933398edb3bbfb4cfc12fb725ec5c48c6"
       }
     ],
-    "original_size": [512, 1280],
+    "original_size": [
+      512,
+      1280
+    ],
     "seconds": 7.9,
     "cutout": "global ΔE76 key on the backdrop #0BF00D measured on the signed original, below 30, soft ring to 60, despilled, clipped to the blockout silhouette grown by 16 px",
     "registration": {
@@ -4857,7 +5122,10 @@
         "sha256": "5bbc0d73c1d50ba5a154fa70fde57a3491cf6a61310f5eaf3b90da04a2f948b4"
       }
     ],
-    "original_size": [512, 1280],
+    "original_size": [
+      512,
+      1280
+    ],
     "seconds": 8.2,
     "cutout": "global ΔE76 key on the backdrop #05EC0A measured on the signed original, below 30, soft ring to 60, despilled, clipped to the blockout silhouette grown by 16 px",
     "registration": {
@@ -4899,7 +5167,10 @@
         "sha256": "aaab798a6fcada40a1f39072244c3991c9e80b5b79b68096a2a3965c1f3f8391"
       }
     ],
-    "original_size": [512, 1280],
+    "original_size": [
+      512,
+      1280
+    ],
     "seconds": 7.1,
     "cutout": "global ΔE76 key on the backdrop #08F10B measured on the signed original, below 30, soft ring to 60, despilled, clipped to the blockout silhouette grown by 16 px",
     "registration": {
@@ -4941,7 +5212,10 @@
         "sha256": "5dcff66a12dddcea93ebd66cf5d37699cf751a990fdf7cfe51d9929b5b40a25c"
       }
     ],
-    "original_size": [512, 1280],
+    "original_size": [
+      512,
+      1280
+    ],
     "seconds": 9.5,
     "cutout": "global ΔE76 key on the backdrop #09EE0A measured on the signed original, below 30, soft ring to 60, despilled, clipped to the blockout silhouette grown by 16 px",
     "registration": {
@@ -4983,7 +5257,10 @@
         "sha256": "3980b9e654a75f55e89a5cbe8b971efc9548e5822784f78cd4fa462dd7232855"
       }
     ],
-    "original_size": [512, 1280],
+    "original_size": [
+      512,
+      1280
+    ],
     "seconds": 8.1,
     "cutout": "global ΔE76 key on the backdrop #05E90D measured on the signed original, below 30, soft ring to 60, despilled, clipped to the blockout silhouette grown by 16 px",
     "registration": {
@@ -5002,7 +5279,9 @@
     },
     "review": {
       "verdict": "fail",
-      "failed_items": ["lumiere"],
+      "failed_items": [
+        "lumiere"
+      ],
       "file": "revue-neuve-a3"
     }
   },
@@ -5025,7 +5304,10 @@
         "sha256": "90c408f32939b02024bd189d4e3f0551956b0056e8f456983ce2a498f8c81f25"
       }
     ],
-    "original_size": [512, 1280],
+    "original_size": [
+      512,
+      1280
+    ],
     "seconds": 8.2,
     "cutout": "global ΔE76 key on the backdrop #05F00C measured on the signed original, below 30, soft ring to 60, despilled, clipped to the blockout silhouette grown by 16 px",
     "registration": {
@@ -5044,7 +5326,9 @@
     },
     "review": {
       "verdict": "fail",
-      "failed_items": ["lumiere"],
+      "failed_items": [
+        "lumiere"
+      ],
       "file": "revue-neuve-a3"
     }
   },
@@ -5071,7 +5355,10 @@
         "sha256": "04e6445855059832ed94acaafc4d4c4fec72923f3c34da1de4ab595f1837ab15"
       }
     ],
-    "original_size": [768, 768],
+    "original_size": [
+      768,
+      768
+    ],
     "cutout": "adaptive key measured on the signed original (iso_loop recut), alpha of the candidate kept, no blockout mask",
     "reencoded": "WebP q90 with alpha (PIL, method 6)",
     "edited": false,
@@ -5106,7 +5393,10 @@
         "sha256": "0234206e2d48a07404fa679c81ade1f3d38ab92a9aeae8d12d18f77c4d03504f"
       }
     ],
-    "original_size": [768, 768],
+    "original_size": [
+      768,
+      768
+    ],
     "cutout": "adaptive key measured on the signed original (iso_loop recut), alpha of the candidate kept, no blockout mask",
     "reencoded": "WebP q90 with alpha (PIL, method 6)",
     "edited": false,
@@ -5141,7 +5431,10 @@
         "sha256": "9e9911c16950b7593d9d4f520e37e6a46d7c349e8b496deb4bff583cf9b3534b"
       }
     ],
-    "original_size": [768, 768],
+    "original_size": [
+      768,
+      768
+    ],
     "cutout": "adaptive key measured on the signed original (iso_loop recut), alpha of the candidate kept, no blockout mask",
     "reencoded": "WebP q90 with alpha (PIL, method 6)",
     "edited": false,
@@ -5176,7 +5469,10 @@
         "sha256": "dac97ab8311bee3d742eac8fddc817bc1318b0a436673beb3ac64f3a98e28e27"
       }
     ],
-    "original_size": [768, 768],
+    "original_size": [
+      768,
+      768
+    ],
     "cutout": "adaptive key measured on the signed original (iso_loop recut), alpha of the candidate kept, no blockout mask",
     "reencoded": "WebP q90 with alpha (PIL, method 6)",
     "edited": false,
@@ -5211,7 +5507,10 @@
         "sha256": "5c9b289dfc47fc7c9fa87afa4d62a641bc5f9043dec5c7a91c67f3d89bf84bff"
       }
     ],
-    "original_size": [768, 768],
+    "original_size": [
+      768,
+      768
+    ],
     "cutout": "adaptive key measured on the signed original (iso_loop recut), alpha of the candidate kept, no blockout mask",
     "reencoded": "WebP q90 with alpha (PIL, method 6)",
     "edited": false,
@@ -5246,7 +5545,10 @@
         "sha256": "f028157d66a2c21ad3f7fdfd0ba76473814fa3736fb3da93108bc38b96d152f2"
       }
     ],
-    "original_size": [768, 768],
+    "original_size": [
+      768,
+      768
+    ],
     "cutout": "adaptive key measured on the signed original (iso_loop recut), alpha of the candidate kept, no blockout mask",
     "reencoded": "WebP q90 with alpha (PIL, method 6)",
     "edited": false,
@@ -5281,7 +5583,10 @@
         "sha256": "d7ccecae8390beeca7faad51fd02fe0c58e70d8ce677ab58cb9bf811b26a144d"
       }
     ],
-    "original_size": [768, 768],
+    "original_size": [
+      768,
+      768
+    ],
     "cutout": "adaptive key measured on the signed original (iso_loop recut), alpha of the candidate kept, no blockout mask",
     "reencoded": "WebP q90 with alpha (PIL, method 6)",
     "edited": false,
@@ -5496,7 +5801,10 @@
         "sha256": "e0eb727be0cd4916989e9c4a4e65afa7410abac276605536d12e927c4b2ea5c5"
       }
     ],
-    "original_size": [768, 768],
+    "original_size": [
+      768,
+      768
+    ],
     "cutout": "adaptive key measured on the signed original (iso_loop recut), alpha of the candidate kept, no blockout mask",
     "reencoded": "WebP q90 with alpha (PIL, method 6)",
     "edited": false,
@@ -5530,7 +5838,10 @@
         "sha256": "e0eb727be0cd4916989e9c4a4e65afa7410abac276605536d12e927c4b2ea5c5"
       }
     ],
-    "original_size": [768, 768],
+    "original_size": [
+      768,
+      768
+    ],
     "cutout": "adaptive key measured on the signed original (iso_loop recut), alpha of the candidate kept, no blockout mask",
     "reencoded": "WebP q90 with alpha (PIL, method 6)",
     "edited": false,
@@ -5564,7 +5875,10 @@
         "sha256": "4625113c969d0209ef05a94451c457697f0323e103c841df423fe780def50c10"
       }
     ],
-    "original_size": [768, 768],
+    "original_size": [
+      768,
+      768
+    ],
     "cutout": "adaptive key measured on the signed original (iso_loop recut), alpha of the candidate kept, no blockout mask",
     "reencoded": "WebP q90 with alpha (PIL, method 6)",
     "edited": false,
@@ -5598,7 +5912,10 @@
         "sha256": "6ee3c7e0b31877c4a2bacc8d2106b08f694bc20487d56dbdb4479813fee0c291"
       }
     ],
-    "original_size": [768, 768],
+    "original_size": [
+      768,
+      768
+    ],
     "cutout": "adaptive key measured on the signed original (iso_loop recut), alpha of the candidate kept, no blockout mask",
     "reencoded": "WebP q90 with alpha (PIL, method 6)",
     "edited": false,
@@ -5632,7 +5949,10 @@
         "sha256": "e0eb727be0cd4916989e9c4a4e65afa7410abac276605536d12e927c4b2ea5c5"
       }
     ],
-    "original_size": [768, 768],
+    "original_size": [
+      768,
+      768
+    ],
     "cutout": "adaptive key measured on the signed original (iso_loop recut), alpha of the candidate kept, no blockout mask",
     "reencoded": "WebP q90 with alpha (PIL, method 6)",
     "edited": false,
@@ -5666,7 +5986,10 @@
         "sha256": "53582c0985ada8544be77b7ebd468a3afecf23d61a08628adffd44171c416bb0"
       }
     ],
-    "original_size": [768, 768],
+    "original_size": [
+      768,
+      768
+    ],
     "cutout": "adaptive key measured on the signed original (iso_loop recut), alpha of the candidate kept, no blockout mask",
     "reencoded": "WebP q90 with alpha (PIL, method 6)",
     "edited": false,
@@ -5700,7 +6023,10 @@
         "sha256": "7aec230fb80b0079ae1a1b0a13374f64ed2c201f697f2cb38ab0eb60023e7a5f"
       }
     ],
-    "original_size": [768, 768],
+    "original_size": [
+      768,
+      768
+    ],
     "cutout": "adaptive key measured on the signed original (iso_loop recut), alpha of the candidate kept, no blockout mask",
     "reencoded": "WebP q90 with alpha (PIL, method 6)",
     "edited": false,
@@ -5734,7 +6060,10 @@
         "sha256": "6ee3c7e0b31877c4a2bacc8d2106b08f694bc20487d56dbdb4479813fee0c291"
       }
     ],
-    "original_size": [768, 768],
+    "original_size": [
+      768,
+      768
+    ],
     "cutout": "adaptive key measured on the signed original (iso_loop recut), alpha of the candidate kept, no blockout mask",
     "reencoded": "WebP q90 with alpha (PIL, method 6)",
     "edited": false,
@@ -5768,7 +6097,10 @@
         "sha256": "e0eb727be0cd4916989e9c4a4e65afa7410abac276605536d12e927c4b2ea5c5"
       }
     ],
-    "original_size": [768, 768],
+    "original_size": [
+      768,
+      768
+    ],
     "cutout": "adaptive key measured on the signed original (iso_loop recut), alpha of the candidate kept, no blockout mask",
     "reencoded": "WebP q90 with alpha (PIL, method 6)",
     "edited": false,
@@ -5802,7 +6134,10 @@
         "sha256": "f8b5be4424c3707f88b576c438d05b484c8c5aab8155eff4568d9ff533670733"
       }
     ],
-    "original_size": [768, 768],
+    "original_size": [
+      768,
+      768
+    ],
     "cutout": "adaptive key measured on the signed original (iso_loop recut), alpha of the candidate kept, no blockout mask",
     "reencoded": "WebP q90 with alpha (PIL, method 6)",
     "edited": false,

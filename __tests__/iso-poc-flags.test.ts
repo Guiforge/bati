@@ -27,6 +27,7 @@ describe("the iso flags by build", () => {
     const m = flags({ dev: false, uri: PUBLIE, env: "production" });
     expect(m?.INTEGRATION).toBe(false);
     expect(m?.BATIMENT_MOTEUR).toBe(false);
+    expect(m?.BLD_PEINTS).toEqual({ campfire: false });
     expect(m && tout(m)).toEqual([false, false, false, false]);
   });
 
@@ -38,6 +39,7 @@ describe("the iso flags by build", () => {
     });
     expect(m?.INTEGRATION).toBe(true);
     expect(m?.BATIMENT_MOTEUR).toBe(true);
+    expect(m?.BLD_PEINTS).toEqual({ campfire: true });
     expect(m && tout(m)).toEqual([true, true, true, true]);
   });
 

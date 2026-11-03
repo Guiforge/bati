@@ -185,6 +185,7 @@ import { ecartGrille, ombreMarcheur } from "./ombreMarcheur";
 import type { Point } from "./ombres";
 import { batimentCharge } from "./ouverture";
 import { OmbreSocle, Planche } from "./PlancheCarte";
+import { peintDe } from "./peints";
 import { Lucioles, Rongeur } from "./petitsDetails";
 import { clePiece, eauTracee } from "./pieces";
 import type { Emprise } from "./profondeur";
@@ -906,7 +907,7 @@ function MaquetteMoteur({
   vie: Ambiance;
 }) {
   const image = (v: VisualStage, suivant: boolean) => {
-    const st = spriteDe(code, stadeReel(code, enStade(v)), vie);
+    const st = peintDe(code, v, vie) ?? spriteDe(code, stadeReel(code, enStade(v)), vie);
     return (
       <Planche
         s={st}

@@ -70,3 +70,12 @@ export const ALENTOURS: Alentours = {
   decor: BUILD_LOCAL,
   animaux: BUILD_LOCAL,
 };
+
+// The painted buildings of the buildings track (docs/designs/village-buildings), each behind its
+// own flag: its paintings, its stages, teasers, gag and anchors go through the engine. Local builds
+// only, like INTEGRATION; off in every published build and under jest, so Bati looks as before.
+// shortcut: source rule, one line per building the integration script (scripts/bld/integrate.py)
+// has wired; a building is flipped to `true` here when Guillaume has judged it.
+export const BLD_PEINTS: Readonly<Record<string, boolean>> = {
+  campfire: BUILD_LOCAL,
+};

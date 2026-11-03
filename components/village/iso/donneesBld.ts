@@ -2,12 +2,15 @@ import type { BuildingData } from "@/constants/buildingData";
 import { batimentEssai } from "@/constants/buildings/essai";
 import { BATIMENT_MOTEUR } from "@/constants/isoPoc";
 import type { BuildingCode } from "@/db/schema";
+import { PEINTS } from "./peints";
 
 /**
  * The buildings that go through the engine, one data file each. Empty until a building's art lands:
  * a building not listed here is drawn exactly as before, with or without the flag.
  */
-export const DONNEES_BLD: Partial<Record<BuildingCode, BuildingData>> = {};
+export const DONNEES_BLD: Partial<Record<BuildingCode, BuildingData>> = Object.fromEntries(
+  Object.entries(PEINTS).map(([code, p]) => [code, p.donnees]),
+);
 
 /**
  * What BatimentSeul (the capture screen, never the village) serves for `code`: the listed data,

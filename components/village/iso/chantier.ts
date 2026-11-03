@@ -114,5 +114,5 @@ export function pop(t: number): { opacite: number; echelle: number; y: number } 
 }
 
 /** The scaffold is drawn for a building with no painting, or for one not there yet (its heap of stones). */
-export const echafaudageDessine = (code: BuildingCode, masque: boolean, enSite = true) =>
+export const echafaudageDessine = (code: BuildingCode, masque: boolean, enSite: boolean) =>
   enSite && (!PEINTS[code] || masque);

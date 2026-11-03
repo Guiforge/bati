@@ -2294,7 +2294,7 @@ export function IsoCarte({
         {echafaudageDessine(
           code,
           commun.masque,
-          echafaudages?.has(code) || chantiers?.has(code),
+          Boolean(echafaudages?.has(code) || chantiers?.has(code)),
         ) ? (
           <Echafaudage code={code} neuf={commun.masque} />
         ) : null}

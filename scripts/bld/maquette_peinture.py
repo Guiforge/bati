@@ -93,6 +93,45 @@ def painting_spec(name):
     return spec, [q for q in json.loads((SPECS / f"{name}.json").read_text())["parts"] if q.get("_plate")]
 
 
+LOCAL_LIGHT = False  # round 4 (windmill): the lit field is blurred inside each material, see local_field()
+
+
+class _Field:
+    """A (h, w) uint8 array read like a PixelAccess: field[x, y]."""
+
+    def __init__(self, arr):
+        self.arr = arr
+
+    def __getitem__(self, xy):
+        return int(self.arr[xy[1], xy[0]])
+
+
+def local_field(rgba, classes, pair, radius):
+    """Per material: blur(lit pixels) / blur(member pixels). A neighbour of another material (a dark roof, the gallery deck,
+    an ink line) no longer darkens the stone: the global blur leaked the dark roof and deck into each short band of shaft and
+    tilted its iso-lines into diagonals (round 3). Where a material is too thin to divide by, an 8 px blur stands in."""
+    import numpy as np
+    a = np.asarray(rgba)
+    rgb, opaque = a[..., :3], a[..., 3] == 255
+    lit_class = np.asarray(classes)[..., 1] < 140
+    out = np.zeros(rgb.shape[:2], np.uint8)
+
+    def blur(m, r):
+        return np.asarray(Image.fromarray((m * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(r)), float)
+
+    for lit_c in sorted({v[0] for v in pair.values()}):
+        shade_c = next(v[1] for v in pair.values() if v[0] == lit_c)
+        member = opaque & ((rgb == lit_c).all(-1) | (rgb == shade_c).all(-1))
+        if not member.any():
+            continue
+        lit = member & lit_class
+        b, l = blur(member, radius), blur(lit, radius)
+        b8, l8 = blur(member, 8), blur(lit, 8)
+        t = np.where(b >= 40, l / np.maximum(b, 1), l8 / np.maximum(b8, 1))
+        out[member] = np.clip(np.round(t[member] * 255), 0, 255).astype(np.uint8)
+    return out
+
+
 def soften(rgba, classes, radius=70):
     """Per material, two values (lit, shade) mixed by a blurred lit field: no polygon of light. The material comes from the
     pixel's exact flat colour (the render's material codes are too coarse to tell them apart)."""
@@ -126,7 +165,7 @@ def soften(rgba, classes, radius=70):
         for x in range(w):
             if px[x, y][:3] in pair and cl[x, y][1] < 140:
                 lp[x, y] = 255
-    soft = lit.filter(ImageFilter.GaussianBlur(radius)).load()
+    soft = _Field(local_field(rgba, classes, pair, radius)) if LOCAL_LIGHT else lit.filter(ImageFilter.GaussianBlur(radius)).load()
     out = rgba.copy()
     op = out.load()
     for y in range(h):
@@ -146,7 +185,7 @@ def render_rgba(name, redo=False):
     work.mkdir(parents=True, exist_ok=True)
     spec, _ = painting_spec(name)
     stem = name.replace("/", "_")
-    key = hashlib.sha1((json.dumps(spec, sort_keys=True) + pathlib.Path(__file__).read_text()).encode()).hexdigest()[:10]
+    key = hashlib.sha1((json.dumps(spec, sort_keys=True) + pathlib.Path(__file__).read_text() + str(LOCAL_LIGHT)).encode()).hexdigest()[:10]
     done = work / f"{stem}.{key}.png"
     if done.exists() and not redo:
         return Image.open(done).convert("RGBA")

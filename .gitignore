@@ -114,6 +114,7 @@ docs/designs/village-loop/iter-*/*-planche.png
 # village-buildings: maquette PNGs, explorations, baselines and per-round captures stay local (F-Droid clones the history); texts, report.json and the two r3 strips stay tracked.
 docs/designs/village-buildings/explore/
 docs/designs/village-buildings/baseline/
+docs/designs/village-buildings/observatory/
 docs/designs/village-buildings/calibration/*.png
 docs/designs/village-buildings/*/r[0-9]*/*
 !docs/designs/village-buildings/maquettes/r*/g-id.md

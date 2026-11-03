@@ -131,3 +131,5 @@ Conséquences de la planche de cartes :
 - 19 specs finales écrites avant le budget, sans FLUX. Elles n'ont jamais été peintes : la tenue dans le canevas reste à voir.
 - `final.py` pas écrit : sans budget, il ne se teste pas. Premier travail quand le plafond monte.
 - Le mannequin mythique part de `direct_d4_mythic_t1_v2`, qui a un toit, la cabane du rough du feu de camp est retirée : choix des rédacteurs, signalés au checkpoint.
+
+- Guillaume, vitesse, 03/11 : plus de `flock` autour de la génération, `reserve` et `settle` de `iso_loop.py` verrouillent déjà le registre. Cela remplace la « file FLUX » de la section 4 du prompt. Pas de build Android par bâtiment : build de dev et Metro, un seul build complet en fin de vague pour les contrôles finaux. Captures par lots : une installation, plusieurs bâtiments par série.

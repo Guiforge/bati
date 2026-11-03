@@ -2,7 +2,7 @@
 
 Pour un peintre. Travaille sur place dans `/home/guiforge/Documents/code/bati/.claude/worktrees/iso`, sans commit. Lis `docs/designs/village-buildings/retours-concepts-2.md` et la spec `scripts/bld/final/<code>.json`. Ne lis rien d'autre sans besoin.
 
-Commandes, dans cet ordre, au premier plan, FLUX sous `flock ~/.cache/bati-flux.lock timeout 590` :
+Commandes, dans cet ordre, au premier plan, FLUX avec `timeout 590` et **sans `flock`** : le registre verrouille déjà lui-même la réservation et le coût, et les peintres peignent vraiment en même temps (Guillaume, 03/11) :
 
 ```
 python3 scripts/bld/final.py emprise <code>
@@ -22,6 +22,9 @@ python3 scripts/bld/final.py strip <code>
 - **Contact au sol :** `pick` recale la peinture sur l'emprise par script, ne repeins jamais pour ça, et n'en parle pas dans les prompts : demander le losange le fait peindre. `repick <code>` le refait sans FLUX.
 - **Taille :** `pick` et `repick` réduisent chaque stade à sa hauteur cible par script. Ne repeins jamais pour la taille. Peins plutôt le mythique avant de juger `strip`, ou lance `repick` à la fin.
 - **Ordre :** tes reprises vont d'abord au mythique, à la continuité et aux erreurs d'image.
+- **Mythique modeste :** si tu le décrirais comme « modéré », « discret » ou « sobre », c'est un échec : utilise tes 2 reprises, en poussant l'élément vertigineux et la lumière, avant de me rendre la main. Guillaume a écrit que les mythiques manquent de spectacle.
+- **Consigne de Guillaume pour le mythique :** « plus grand et fastueux, comme si on avait mis plus d'argent et plus de personnes ». Le même bâtiment que le legendary avec un effet posé dessus est un échec : il faut des étages, des ailes, de la belle pierre, puis la magie. Sans personne peinte.
+- **Signes peints :** spirales gravées, marques ou glyphes sur la pierre refusent la variante.
 - **Reprises :** `strip` est le contrôle, il doit passer. Au plus 2 reprises par stade (`--try N`), en changeant une seule chose à la fois. Si ça ne passe toujours pas, garde la meilleure, dis-le, ne boucle pas.
 - **Plafond :** 2 $ pour le bâtiment. Compte sur les images (0,048 $ pièce), car le registre compte aussi les autres.
 - **Alerte de budget :** arrête-toi et dis-le. N'exécute jamais `budget ack`, `klein-ack`, et ne touche pas au plafond.

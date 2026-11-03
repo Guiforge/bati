@@ -24,3 +24,6 @@ Il écrit « where no direction was picked, take the direction ranked first in t
 - **Tour du mage :** le mythique a l'air en ruine, jamais en ruine. Une tour imposante et intacte, dans l'esprit d'une grande école de magie : haute, tourelles, beaucoup de fenêtres allumées, un laboratoire à l'intérieur où la magie se transforme, visible par de grandes fenêtres. Une ambiance seulement : aucun château de film copié, et jamais nommé dans un prompt FLUX.
 - **Champion Arena :** très bien, le mythique demande plus de spectacle.
 - **Tous les autres :** approuvés tels quels.
+
+## Moulin et puits, retour sur les planches (03/11)
+Le petit et le grand marchent dans les deux cas, pas le mythique : « fais juste en sorte qu'il soit plus grand et fastueux, comme si on avait mis plus d'argent et plus de personnes ». Mythiques repeints en ce sens, sans personnage peint : l'effort se lit dans la taille et la qualité des travaux. La direction 5 ou 6 de chacun reste à choisir.

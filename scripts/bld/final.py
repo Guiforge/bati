@@ -40,10 +40,12 @@ NOTE = {
     "legendary": ("Image 1 is the stage below of this building and image 2 the concept of its final stage: paint the stage between "
                   "them, the same building growing, keeping the frame of image 1 and the size of its ground patch. "),
     "mythic": ("Image 1 is the previous stage of this building, image 2 the concept of its final spectacle and image 3 a smaller "
-               "stage. Keep exactly the structure of image 1: same A-frame, same beams, chain and cauldron, only bigger, heavier and "
-               "taller. From image 2 take the spectacle of fire, sparks and air. Image 3 gives the size of the ground patch, which "
-               "stays on the diamond. The spectacle comes from the building as much as from the fire: timbers blackened and "
-               "banded with iron, embers lying on the ground, firelight on the wood, one towering element. "),
+               "stage. Keep the structure of image 1: the same main parts of this building, only bigger, heavier and taller. From "
+               "image 2 take the spectacle. Image 3 gives the size of the ground patch. This stage must look far bigger and far more "
+               "sumptuous than image 1, as if a whole prosperous land had spent much more money and labour on it: added storeys and "
+               "wings, fine cut stone, carving, ironwork, one towering element, and a strong light on its surfaces. An effect added "
+               "to the same building is a failure. "
+               "Add no object that the description below does not name. "),
 }
 COMMON = ("The last image is a flat grey diamond on magenta: it marks the building's footprint on the ground. Keep the building and "
           "its natural ground patch inside about that size, centred on it, the lowest point of the ground touching the diamond's "
@@ -191,6 +193,19 @@ def seat(rgba, margin=12):
     return Image.fromarray(out, "RGBA"), pad
 
 
+def fit_width(rgba):
+    """If seating would push the painting out of the canvas in width, scale it down (2 % steps, never up) until it fits.
+    Returns (image, factor); factor 1.0 when it already fits."""
+    f, cur = 1.0, rgba
+    while True:
+        m = measure(cur)
+        dx = W // 2 - m["contact_x"]
+        if m["left"] + dx >= 0 and m["right"] + dx < W:
+            return cur, round(f, 4)
+        f *= 0.98
+        cur, _ = shrink(rgba, measure(rgba)["height"] * f)
+
+
 def paint(code, stage, variants, attempt):
     from iso_loop import FLUX3
     s, d = spec(code), fdir(code)
@@ -198,7 +213,7 @@ def paint(code, stage, variants, attempt):
     if not emp.exists():
         sys.exit("no emprise.png: run emprise first")
     srcs = []
-    for name in SRC[stage]:
+    for name in ("grand", "concept:mythic", "solid") if stage == "mythic" and code in FOUR else SRC[stage]:  # four stages: no legendary below
         if name.startswith("concept:"):
             srcs.append(Image.open(ROOT / s["concept"][name[8:]]).convert("RGB"))
         elif (d / f"{name}.png").exists():
@@ -213,29 +228,30 @@ def paint(code, stage, variants, attempt):
         im.save(f)
         refs.append(f)
     refs.append(emp)
-    text = NOTE[stage] + COMMON + s["stages"][stage]
+    text = s.get("notes", {}).get(stage, NOTE[stage]) + COMMON + s["stages"][stage]  # spec "notes": per-building override of a stage note + s["stages"][stage]
     si = STAGES.index(stage)
     jobs = [(d / f"{stage}_t{attempt}_v{v}.png", text, 61000 + 100 * si + 10 * attempt + v) for v in range(1, variants + 1)]
     C.free([j[0] for j in jobs])
     C.run(jobs, 0.10, f"final {code} {stage} t{attempt}", FLUX3, None, True, lambda o: refs)
 
 
-def pick(code, stage, n, attempt):
+def pick(code, stage, n, attempt, allow_green=False):
     d = fdir(code)
     src = d / f"{stage}_t{attempt}_v{n}.png"
     if not src.exists():
         sys.exit(f"no {src.name}")
     rgba = key(Image.open(src))
-    if (n_bad := green_edge(rgba)) > 20:  # a few stray pixels are noise
+    if not allow_green and (n_bad := green_edge(rgba)) > 20:  # --allow-green: the green is magic, checked by eye; a few stray pixels are noise
         sys.exit(f"{stage}: {n_bad} green edge pixels, refused")
     mf = d / "measures.json"
     m = json.loads(mf.read_text()) if mf.exists() else {}
     factor = 1.0
     if stage != "mythic":  # the mythic is never scaled: it sets the height of the others (repick after picking a new one)
         rgba, factor = shrink(rgba, target_h(code, stage, m))
+    rgba, fit = fit_width(rgba)
     rgba, pad = seat(rgba)
     rgba.save(d / f"{stage}.png")
-    m[stage] = {**measure(rgba, BOTTOM + pad), "from": src.name, "pad_top": pad, "scale": round(factor, 4)}
+    m[stage] = {**measure(rgba, BOTTOM + pad), "from": src.name, "pad_top": pad, "scale": round(factor, 4), "fit_width": fit, **({"allow_green": True} if allow_green else {})}
     mf.write_text(json.dumps(m, indent=1))
     print(stage, m[stage])
 
@@ -246,7 +262,7 @@ def repick(code):
     for st in ("mythic", *STAGES[:-1]):  # the mythic first: the others take their height from it
         if st in ms:
             stem = pathlib.Path(ms[st]["from"]).stem  # <stage>_t<N>_v<n>
-            pick(code, st, int(stem.split("_v")[1]), int(stem.split("_t")[1].split("_")[0]))
+            pick(code, st, int(stem.split("_v")[1]), int(stem.split("_t")[1].split("_")[0]), ms[st].get("allow_green", False))
 
 
 def elements(code, rekey=False):
@@ -325,7 +341,8 @@ if __name__ == "__main__":
     ap.add_argument("rest", nargs="*")
     ap.add_argument("--variants", type=int, default=2)
     ap.add_argument("--try", dest="attempt", type=int, default=1)
+    ap.add_argument("--allow-green", action="store_true")
     a = ap.parse_args()
     {"emprise": lambda: emprise(a.code), "paint": lambda: paint(a.code, a.rest[0], a.variants, a.attempt),
-     "pick": lambda: pick(a.code, a.rest[0], int(a.rest[1]), a.attempt), "elements": lambda: elements(a.code), "rekey": lambda: elements(a.code, True), "repick": lambda: repick(a.code),
+     "pick": lambda: pick(a.code, a.rest[0], int(a.rest[1]), a.attempt, a.allow_green), "elements": lambda: elements(a.code), "rekey": lambda: elements(a.code, True), "repick": lambda: repick(a.code),
      "strip": lambda: strip(a.code)}[a.cmd]()

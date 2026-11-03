@@ -1,74 +1,74 @@
 {
-  "building": "training_dummy",
-  "concept": {
-    "rough": "docs/designs/village-buildings/training_dummy/concepts/f3_d4_rough_t1.png",
-    "grand": "docs/designs/village-buildings/training_dummy/concepts/f3_d4_grand_t1.png",
-    "mythic": "docs/designs/village-buildings/training_dummy/concepts/direct_d4_mythic_t1_v2.png"
+ "building": "training_dummy",
+ "concept": {
+  "rough": "docs/designs/village-buildings/training_dummy/concepts/f3_d4_rough_t1.png",
+  "grand": "docs/designs/village-buildings/training_dummy/concepts/f3_d4_grand_t1.png",
+  "mythic": "docs/designs/village-buildings/training_dummy/concepts/direct_d4_mythic_t1_v2.png"
+ },
+ "stages": {
+  "rough": "Edit this concept. Keep the small half-timbered store, the post with crossbar arms, the sack torso and the bucket helmet, the scuffed earth. Replace the steel sword by a plain wooden practice sword leaning on the post, no shine. The hut is a real store of training gear: nothing funny about it. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
+  "solid": "Same hut and same dummy, with the sack now restuffed and patched, the post on proper cross-feet. Added: the hut's roof extends into an open timber lean-to on two posts, sand poured on the scuffed ground, a short fence begun, a rack with two wooden swords, one lifting stone. Clan pennant on the roof's end. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
+  "grand": "Edit this concept. Keep the timber shed open on the yard, the tall pell, the sand floor, low fence, the rack of wooden weapons, shield and lifting stones. Remove the fighter and the dummy shapes in the shadow. Add the old bucket-helmed dummy upright beside the pell, iron-bound now with crossed arms, so it does not vanish. A wooden practice sword lies in the sand as if just set down. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
+  "legendary": "The yard is now enclosed: two storeys of dark oak frame on a stone base, the fence replaced by a real wall open to the front, a timber gallery above, a new very tall steep roof framed with its central bay left open, the whole hall rising far higher than the old yard. Ground of bare packed earth with a few stones, no tall grass at the edge. In the centre the dummy has grown to reach the gallery, built up of oak beams and iron bands, still wearing a big iron bucket. Ropes taut on frames, pull-up bars, stones in a row, a low ember glow in the seams of its iron bands, the first hint of magic. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
+  "mythic": "Edit this concept, the variant with a real roof. Keep the dark oak and stone hall, open on the front, the racks of practice weapons, stones and weights. Remove all figures. Make it a true great training hall, spectacular: three storeys of dark oak frame and stone, with galleries and tall windows lit warm, rows of pull-up bars, climbing ropes taut from floor to rafters, rings on rigid frames, lifting stones in rising sizes. Go much further: in its centre stands a titanic iron-bound combat dummy, no face, arms crossed, so huge it rises through an opening in the high roof ridge, its shoulders and giant iron bucket helmet its torso bursting through the roof, its shoulders, arms and giant iron bucket helmet standing outside in the open sky, fully as tall again as the whole hall below. Rivers of ember light run in the iron seams of its chest, and a furnace glow in its chest shines into the hall, strong by day and night. Clearly a place where one trains, nothing looks like treasure. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding. The dummy is a full two times taller than the hall: from the chest up it stands clear above the roof ridge in the open sky, a true colossus beside a small hall."
+ },
+ "teasers": [
+  {
+   "id": "r2",
+   "stage_after": "rough",
+   "prompt": "a bundle of sand sacks and a stack of fence rails Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
   },
-  "stages": {
-    "rough": "Edit this concept. Keep the small half-timbered store, the post with crossbar arms, the sack torso and the bucket helmet, the scuffed earth. Replace the steel sword by a plain wooden practice sword leaning on the post, no shine. The hut is a real store of training gear: nothing funny about it. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
-    "solid": "Same hut and same dummy, with the sack now restuffed and patched, the post on proper cross-feet. Added: the hut's roof extends into an open timber lean-to on two posts, sand poured on the scuffed ground, a short fence begun, a rack with two wooden swords, one lifting stone. Clan pennant on the roof's end. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
-    "grand": "Edit this concept. Keep the timber shed open on the yard, the tall pell, the sand floor, low fence, the rack of wooden weapons, shield and lifting stones. Remove the fighter and the dummy shapes in the shadow. Add the old bucket-helmed dummy upright beside the pell, iron-bound now with crossed arms, so it does not vanish. A wooden practice sword lies in the sand as if just set down. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
-    "legendary": "The yard is now enclosed: two storeys of dark oak frame on a stone base, the fence replaced by a real wall open to the front, a timber gallery above, a new very tall steep roof framed with its central bay left open, the whole hall rising far higher than the old yard. Ground of bare packed earth with a few stones, no tall grass at the edge. In the centre the dummy has grown to reach the gallery, built up of oak beams and iron bands, still wearing a big iron bucket. Ropes taut on frames, pull-up bars, stones in a row, a low ember glow in the seams of its iron bands, the first hint of magic. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
-    "mythic": "Edit this concept, the variant with a real roof. Keep the dark oak and stone hall, open on the front, the racks of practice weapons, stones and weights. Remove all figures. Make it a true great training hall, spectacular: three storeys of dark oak frame and stone, with galleries and tall windows lit warm, rows of pull-up bars, climbing ropes taut from floor to rafters, rings on rigid frames, lifting stones in rising sizes. Go much further: in its centre stands a titanic iron-bound combat dummy, no face, arms crossed, so huge it rises through an opening in the high roof ridge, its shoulders and giant iron bucket helmet its torso bursting through the roof, its shoulders, arms and giant iron bucket helmet standing outside in the open sky, fully as tall again as the whole hall below. Rivers of ember light run in the iron seams of its chest, and a furnace glow in its chest shines into the hall, strong by day and night. Clearly a place where one trains, nothing looks like treasure. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding."
+  {
+   "id": "r4",
+   "stage_after": "solid",
+   "prompt": "a tall squared pell post on trestles beside iron bands Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
   },
-  "teasers": [
-    {
-      "id": "r2",
-      "stage_after": "rough",
-      "prompt": "a bundle of sand sacks and a stack of fence rails Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
-    },
-    {
-      "id": "r4",
-      "stage_after": "solid",
-      "prompt": "a tall squared pell post on trestles beside iron bands Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
-    },
-    {
-      "id": "r6",
-      "stage_after": "grand",
-      "prompt": "a pile of oak frame beams with pegs, a stack of stone base blocks Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
-    },
-    {
-      "id": "r8",
-      "stage_after": "legendary",
-      "prompt": "a huge iron-bound arm beam on a timber sledge, a coil of climbing rope Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
-    },
-    {
-      "id": "r9",
-      "stage_after": "legendary",
-      "prompt": "a giant iron bucket helmet on rollers beside a tall roof truss on a scaffold Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
-    }
-  ],
-  "gag": [
-    {
-      "rank": 2,
-      "prompt": "a dented spare bucket upside down on a fence post Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
-    },
-    {
-      "rank": 4,
-      "prompt": "a wooden practice sword stuck firmly in a short pell Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
-    },
-    {
-      "rank": 6,
-      "prompt": "a low quintain with a sandbag on its swing arm, at rest Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
-    },
-    {
-      "rank": 8,
-      "prompt": "a practice helmet lying on the sand under the same quintain Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
-    },
-    {
-      "rank": 9,
-      "prompt": "the quintain arm bound with fresh rope, a mallet beside it Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
-    },
-    {
-      "rank": 10,
-      "prompt": "a small wooden sword and a small flag on a stick, planted in the sand Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
-    }
-  ],
-  "anchors": [
-    "windows",
-    "flag",
-    "fire",
-    "magic"
-  ]
+  {
+   "id": "r6",
+   "stage_after": "grand",
+   "prompt": "a pile of oak frame beams with pegs, a stack of stone base blocks Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+  },
+  {
+   "id": "r8",
+   "stage_after": "legendary",
+   "prompt": "a huge iron-bound arm beam on a timber sledge, a coil of climbing rope Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+  },
+  {
+   "id": "r9",
+   "stage_after": "legendary",
+   "prompt": "a giant iron bucket helmet on rollers beside a tall roof truss on a scaffold Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+  }
+ ],
+ "gag": [
+  {
+   "rank": 2,
+   "prompt": "a dented spare bucket upside down on a fence post Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+  },
+  {
+   "rank": 4,
+   "prompt": "a wooden practice sword stuck firmly in a short pell Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+  },
+  {
+   "rank": 6,
+   "prompt": "a low quintain with a sandbag on its swing arm, at rest Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+  },
+  {
+   "rank": 8,
+   "prompt": "a practice helmet lying on the sand under the same quintain Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+  },
+  {
+   "rank": 9,
+   "prompt": "the quintain arm bound with fresh rope, a mallet beside it Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+  },
+  {
+   "rank": 10,
+   "prompt": "a small wooden sword and a small flag on a stick, planted in the sand Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+  }
+ ],
+ "anchors": [
+  "windows",
+  "flag",
+  "fire",
+  "magic"
+ ]
 }

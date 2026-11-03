@@ -1,73 +1,73 @@
 {
-  "building": "wizard_tower",
-  "concept": {
-    "rough": "docs/designs/village-buildings/wizard_tower/concepts/f3_d4_rough_t1.png",
-    "grand": "docs/designs/village-buildings/wizard_tower/concepts/f3_d4_grand_t1.png",
-    "mythic": "docs/designs/village-buildings/wizard_tower/concepts/f3_d4_grand_t1.png"
+ "building": "wizard_tower",
+ "concept": {
+  "rough": "docs/designs/village-buildings/wizard_tower/concepts/f3_d4_rough_t1.png",
+  "grand": "docs/designs/village-buildings/wizard_tower/concepts/f3_d4_grand_t1.png",
+  "mythic": "docs/designs/village-buildings/wizard_tower/concepts/f3_d4_grand_t1.png"
+ },
+ "stages": {
+  "rough": "Edit this concept. Keep the small round tower of rough stone, thatch cone, high small door without stairs, knotted climbing rope and the wooden pull-up bar on two posts. Remove both mages. A pair of worn hand wraps tied tight on the bar. Replace the diamond ground with a feathered one. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
+  "solid": "Same round tower one storey taller in fitted stone, the thatch replaced by a steep cone of grey wooden shingle, a small narrow window lit, an iron-bound door now reached by the rope and a stone step. The pull-up bar is thicker and fixed into the wall, and a thin stone spire stump, shoulder high, starts beside the tower. Small clan pennant on the cone. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
+  "grand": "Edit this concept. Keep the tall stone tower with iron bands and steep matte violet slate cone, the second thinner spire and the thick wooden bar joining them, lit windows. Remove the mage from the bar; worn hand wraps tied on the bar and a knotted rope show who uses it. Strange, ancient, whole and well kept. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
+  "legendary": "Same tower taller by one storey and well kept: a first ring of corbelled turrets with small violet cones, more lit windows, finer dressed stone. On its middle storey, one first great tall arched window showing a violet glow from a glass vessel within. The second spire has been rebuilt on a neat round stone plinth with a tapered, finished underside, and it hovers a hand's breadth above the plinth, whole and level, the thick bar still linking it to the main tower. Nothing broken anywhere. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
+  "mythic": "Paint this mythic new; the reference gives only its stone, its deep blue-violet (indigo) slate and its tower-plus-spire idea. Never a ruin: not one crack, break, jagged edge, rubble or debris; every stone is whole and perfectly kept. An imposing grand tower of a great academy of magic: very tall and strong, finely dressed pale stone with iron bands, several tiers of corbelled turrets with steep deep blue-violet (indigo) slate cones clustered around it at different heights, a soaring central spire reaching the top of the image, dozens of warm lit windows on every floor. In the middle, a great laboratory storey with very tall arched windows, showing plainly inside a huge glass alembic and copper coils where deep blue-violet (indigo) light is visibly transforming into pale blue and orange fire, its glow pouring out through the windows by day and night. Beside it, the second slender spire, complete with its own cone and finished tapered underside, floats high and level in clear air, joined to the main tower only by the thick pull-up bar, a smooth column of deep blue-violet (indigo) light rising from its round plinth on the ground up to it. A knotted rope and parallel bars on a small terrace. Grand and whole: unforgettable silhouette, narrow footprint. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding. The laboratory storey is wide and the three arched windows are huge, each two floors tall, with the glass alembic and copper coils filling them and the blue-violet glow pouring out."
+ },
+ "teasers": [
+  {
+   "id": "r2",
+   "stage_after": "rough",
+   "prompt": "a neat stack of cut stone blocks and a coil of knotted rope Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
   },
-  "stages": {
-    "rough": "Edit this concept. Keep the small round tower of rough stone, thatch cone, high small door without stairs, knotted climbing rope and the wooden pull-up bar on two posts. Remove both mages. A pair of worn hand wraps tied tight on the bar. Replace the diamond ground with a feathered one. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
-    "solid": "Same round tower one storey taller in fitted stone, the thatch replaced by a steep cone of grey wooden shingle, a small narrow window lit, an iron-bound door now reached by the rope and a stone step. The pull-up bar is thicker and fixed into the wall, and a thin stone spire stump, shoulder high, starts beside the tower. Small clan pennant on the cone. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
-    "grand": "Edit this concept. Keep the tall stone tower with iron bands and steep matte violet slate cone, the second thinner spire and the thick wooden bar joining them, lit windows. Remove the mage from the bar; worn hand wraps tied on the bar and a knotted rope show who uses it. Strange, ancient, whole and well kept. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
-    "legendary": "Same tower taller by one storey and well kept: a first ring of corbelled turrets with small violet cones, more lit windows, finer dressed stone. On its middle storey, one first great tall arched window showing a violet glow from a glass vessel within. The second spire has been rebuilt on a neat round stone plinth with a tapered, finished underside, and it hovers a hand's breadth above the plinth, whole and level, the thick bar still linking it to the main tower. Nothing broken anywhere. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
-    "mythic": "Paint this mythic new; the reference gives only its stone, its violet slate and its tower-plus-spire idea. Never a ruin: not one crack, break, jagged edge, rubble or debris; every stone is whole and perfectly kept. An imposing grand tower of a great academy of magic: very tall and strong, finely dressed pale stone with iron bands, several tiers of corbelled turrets with steep violet slate cones clustered around it at different heights, a soaring central spire reaching the top of the image, dozens of warm lit windows on every floor. In the middle, a great laboratory storey with very tall arched windows, showing plainly inside a huge glass alembic and copper coils where violet light is visibly transforming into pale blue and orange fire, its glow pouring out through the windows by day and night. Beside it, the second slender spire, complete with its own cone and finished tapered underside, floats high and level in clear air, joined to the main tower only by the thick pull-up bar, a smooth column of violet light rising from its round plinth on the ground up to it. A knotted rope and parallel bars on a small terrace. Grand and whole: unforgettable silhouette, narrow footprint. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding."
+  {
+   "id": "r4",
+   "stage_after": "solid",
+   "prompt": "a bundle of matte violet roof slates and a short iron band Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
   },
-  "teasers": [
-    {
-      "id": "r2",
-      "stage_after": "rough",
-      "prompt": "a neat stack of cut stone blocks and a coil of knotted rope Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
-    },
-    {
-      "id": "r4",
-      "stage_after": "solid",
-      "prompt": "a bundle of matte violet roof slates and a short iron band Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
-    },
-    {
-      "id": "r6",
-      "stage_after": "grand",
-      "prompt": "a small turret cone of violet slate on a trestle, finished Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
-    },
-    {
-      "id": "r8",
-      "stage_after": "legendary",
-      "prompt": "a tall arched window frame of iron on a sledge, with sheets of clear glass in a crate Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
-    },
-    {
-      "id": "r9",
-      "stage_after": "legendary",
-      "prompt": "a huge clear glass alembic in a padded timber crate, open, with a copper coil lashed beside it Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
-    }
-  ],
-  "gag": [
-    {
-      "rank": 2,
-      "prompt": "a plain worn broom leaning on a low bar Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
-    },
-    {
-      "rank": 4,
-      "prompt": "two brooms beside two wooden buckets, one tipped over with a small puddle Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
-    },
-    {
-      "rank": 6,
-      "prompt": "a barrel standing in a wide shallow puddle, two brooms beside it Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
-    },
-    {
-      "rank": 8,
-      "prompt": "two brooms laid across a pull-up bar Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
-    },
-    {
-      "rank": 9,
-      "prompt": "two brooms and a coiled rope leaning on a wooden post Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
-    },
-    {
-      "rank": 10,
-      "prompt": "two brooms standing either side of a short iron flagpole set level on a wall bracket Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
-    }
-  ],
-  "anchors": [
-    "windows",
-    "flag",
-    "magic"
-  ]
+  {
+   "id": "r6",
+   "stage_after": "grand",
+   "prompt": "a small turret cone of violet slate on a trestle, finished Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+  },
+  {
+   "id": "r8",
+   "stage_after": "legendary",
+   "prompt": "a tall arched window frame of iron on a sledge, with sheets of clear glass in a crate Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+  },
+  {
+   "id": "r9",
+   "stage_after": "legendary",
+   "prompt": "a huge clear glass alembic in a padded timber crate, open, with a copper coil lashed beside it Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+  }
+ ],
+ "gag": [
+  {
+   "rank": 2,
+   "prompt": "a plain worn broom leaning on a low bar Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+  },
+  {
+   "rank": 4,
+   "prompt": "two brooms beside two wooden buckets, one tipped over with a small puddle Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+  },
+  {
+   "rank": 6,
+   "prompt": "a barrel standing in a wide shallow puddle, two brooms beside it Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+  },
+  {
+   "rank": 8,
+   "prompt": "two brooms laid across a pull-up bar Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+  },
+  {
+   "rank": 9,
+   "prompt": "two brooms and a coiled rope leaning on a wooden post Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+  },
+  {
+   "rank": 10,
+   "prompt": "two brooms standing either side of a short iron flagpole set level on a wall bracket Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+  }
+ ],
+ "anchors": [
+  "windows",
+  "flag",
+  "magic"
+ ]
 }

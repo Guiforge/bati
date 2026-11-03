@@ -132,8 +132,22 @@ export interface Magie extends DepuisBase {
   constellations?: readonly { points: readonly Point[]; blason?: boolean }[];
 }
 
+/**
+ * What was measured on the painting of a building (new art only; old art keeps its Blender specs
+ * in heights.json). Read first when present: ombres.ts `zoneOmbre` and the headroom test.
+ * Tap zones already come from the sprite's mask and the light anchors are `lights`.
+ */
+export interface MesurePeinture {
+  /** Top of the silhouette, px from the top of the canvas (0 or more: it must fit). */
+  sommet: number;
+  /** Where the building touches the ground, a convex polygon in grid units from the footprint's back corner. */
+  contact: readonly Point[];
+}
+
 export interface BuildingData {
   code: BuildingCode;
+  /** Measured on the painting; absent for old art, which reads heights.json. */
+  mesure?: MesurePeinture;
   /** True while the entries are empty or invented for the shape: no art exists yet. */
   placeholder: boolean;
   addOns: readonly AddOn[];

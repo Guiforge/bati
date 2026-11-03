@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readdirSync } from "node:fs";
 import path from "node:path";
+import { DONNEES_BLD } from "@/components/village/iso/donneesBld";
 import {
   type Case,
   emplacements,
@@ -108,7 +109,7 @@ const boiteAuSol = (d: Point, [x0, y0]: Point, [x1, y1]: Point, z: number): Poin
   ]);
 
 function zoneBatiment(code: BuildingCode, l: Lumiere): Point[] {
-  if (dansLesExports(l)) return zoneOmbre(code);
+  if (dansLesExports(l) || DONNEES_BLD[code]?.mesure) return zoneOmbre(code);
   const h = heightsRaw.batiments[code];
   const d = decalage(l);
   const [w = 0, p = 0] = h.emprise;

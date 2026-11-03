@@ -1,3 +1,4 @@
+import { DONNEES_BLD } from "@/components/village/iso/donneesBld";
 import {
   ambiances,
   batiments,
@@ -50,6 +51,12 @@ describe("isoSpec.json, data for the future (§7) and the reperes", () => {
     const hauteurs: Record<string, { stades: Record<string, { hauteurMax: number }> }> =
       heightsRaw.batiments;
     for (const code of buildingCodes) {
+      // Blockout headroom only means something for old art; measured art checks its own top (sommet).
+      const mesure = DONNEES_BLD[code]?.mesure;
+      if (mesure) {
+        expect({ code, sommet: mesure.sommet >= 0 }).toEqual({ code, sommet: true });
+        continue;
+      }
       const cle = batiments[code].emprise?.join("x") ?? "null";
       const hauteurMax = Math.max(
         ...Object.values(hauteurs[code]?.stades ?? {}).map((s) => s.hauteurMax),

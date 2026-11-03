@@ -11,6 +11,7 @@
 import spec from "@/constants/isoSpec.json";
 import type { BuildingCode } from "@/db/schema";
 import heightsRaw from "@/scripts/iso/exports/heights.json";
+import { DONNEES_BLD } from "./donneesBld";
 import { emplacements } from "./isoLayout";
 import type { PointGrille, Volume } from "./isoSpec";
 
@@ -51,7 +52,12 @@ export function enveloppe(points: readonly Point[]): Point[] {
   return [...chaine(pts), ...chaine([...pts].reverse())];
 }
 
-export function zoneOmbre(code: BuildingCode): Point[] {
+export function zoneOmbre(code: BuildingCode, data = DONNEES_BLD[code]): Point[] {
+  // New art: the contact measured on the painting wins; old art falls through to heights.json.
+  if (data?.mesure) {
+    const [gx, gy] = emplacements[code].coin;
+    return enveloppe(data.mesure.contact.map(([x, y]): Point => [gx + x, gy + y]));
+  }
   const h = hauteurs[code];
   if (!h) throw new Error(`heights.json: no ${code}`);
   const pts: Point[] = [];

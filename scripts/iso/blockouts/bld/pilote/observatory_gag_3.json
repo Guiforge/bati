@@ -1,0 +1,14 @@
+{"canvas": "building2x2", "materials": {"laiton": {"tones": ["#9A7B45", "#9A7B45", "#5E4C34"]}, "patine": {"tones": ["#6F8F80", "#6F8F80", "#46594F"]}, "nuit": {"tones": ["#1B2340", "#1B2340", "#141A30"]}},
+ "parts": [
+  {"_tag": "sage", "type": "cyl", "mat": "wood", "center": [0.2877, 1.8502, 0.04], "r": 0.07, "h": 0.17},
+  {"_tag": "sage", "type": "cone", "mat": "nuit", "center": [0.2877, 1.8502, 0.21], "r": 0.1, "r2": 0.05, "h": 0.3, "axis": [0.0, 0.0, 1.0]},
+  {"_tag": "sage", "type": "cyl", "mat": "nuit", "center": [0.3019, 1.8361, 0.24], "r": 0.025, "h": 0.1942, "axis": [0.4006, -0.4006, -0.824]},
+  {"_tag": "sage", "type": "sphere", "mat": "plaster", "center": [0.316, 1.822, 0.59], "r": 0.06},
+  {"_tag": "sage", "type": "cone", "mat": "patine", "center": [0.316, 1.822, 0.62], "r": 0.075, "r2": 0.0, "h": 0.1628, "axis": [-0.1303, 0.1303, 0.9829]},
+  {"_tag": "sage", "type": "cone", "mat": "plaster", "center": [0.3372, 1.8008, 0.55], "r": 0.04, "r2": 0.0, "h": 0.1105, "axis": [-0.064, 0.064, -0.9959]},
+  {"_tag": "sage", "type": "cyl", "mat": "laiton", "center": [0.2877, 1.8502, 0.34], "r": 0.02, "h": 0.3059, "axis": [0.6934, -0.6934, 0.1961]},
+  {"_tag": "hibou", "type": "cone", "mat": "wood", "center": [0.4433, 1.6947, 0.41], "r": 0.065, "r2": 0.05, "h": 0.17, "axis": [0.0, 0.0, 1.0]},
+  {"_tag": "hibou", "type": "sphere", "mat": "wood", "center": [0.4433, 1.6947, 0.62], "r": 0.055},
+  {"_tag": "hibou", "type": "cone", "mat": "darkwood", "center": [0.4433, 1.6947, 0.66], "r": 0.02, "r2": 0.0, "h": 0.0574, "axis": [0.3482, -0.3482, 0.8704]}
+ ]
+}

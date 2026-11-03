@@ -1,0 +1,19 @@
+{"canvas": "building2x2", "materials": {"ciel": {"tones": ["#A8C2D2", "#A8C2D2", "#7C98A8"]}, "patine": {"tones": ["#6F8F80", "#6F8F80", "#46594F"]}, "nuit": {"tones": ["#1B2340", "#1B2340", "#141A30"]}},
+ "parts": [
+  {"_tag": "sage", "type": "cyl", "mat": "wood", "center": [0.3585, 1.7795, 0.04], "r": 0.07, "h": 0.17, "axis": [-0.9, 0.0, 0.45]},
+  {"_tag": "sage", "type": "cone", "mat": "nuit", "center": [0.1605, 1.9775, 0.11], "r": 0.09, "r2": 0.05, "h": 0.2816, "axis": [0.7031, -0.7031, 0.1065]},
+  {"_tag": "sage", "type": "cyl", "mat": "nuit", "center": [0.3585, 1.7795, 0.16], "r": 0.025, "h": 0.3448, "axis": [0.2051, -0.2051, 0.957]},
+  {"_tag": "sage", "type": "cyl", "mat": "nuit", "center": [0.4009, 1.7937, 0.16], "r": 0.025, "h": 0.3087, "axis": [0.2978, -0.2978, 0.907]},
+  {"_tag": "sage", "type": "sphere", "mat": "plaster", "center": [0.118, 2.02, 0.14], "r": 0.06},
+  {"_tag": "sage", "type": "cone", "mat": "patine", "center": [0.0898, 2.0482, 0.16], "r": 0.07, "r2": 0.0, "h": 0.1456, "axis": [-0.6799, 0.6799, 0.2747]},
+  {"_tag": "sage", "type": "sphere", "mat": "plaster", "center": [0.1977, 1.9403, 0.325], "r": 0.022},
+  {"_tag": "sage", "type": "sphere", "mat": "plaster", "center": [0.0384, 2.0996, 0.325], "r": 0.022},
+  {"_tag": "sage", "type": "sphere", "mat": "plaster", "center": [0.118, 2.02, 0.13], "r": 0.022},
+  {"_tag": "sage", "type": "cone", "mat": "patine", "center": [0.6767, 1.4613, 0.82], "r": 0.035, "r2": 0.0, "h": 0.5314, "axis": [-0.6653, 0.6653, -0.3387]},
+  {"_tag": "sage", "type": "sphere", "mat": "ciel", "center": [0.6908, 1.4472, 0.83], "r": 0.035},
+  {"_tag": "hibou", "type": "cone", "mat": "wood", "center": [0.5282, 1.6098, 0.82], "r": 0.052, "r2": 0.04, "h": 0.136, "axis": [0.0, 0.0, 1.0]},
+  {"_tag": "hibou", "type": "sphere", "mat": "wood", "center": [0.5282, 1.6098, 0.988], "r": 0.044},
+  {"_tag": "hibou", "type": "cone", "mat": "darkwood", "center": [0.5282, 1.6098, 1.02], "r": 0.016, "r2": 0.0, "h": 0.049, "axis": [0.4082, -0.4082, 0.8165]},
+  {"_tag": "hibou", "type": "box", "mat": "wood", "at": [0.4482, 1.6098, 0.916], "size": [0.16, 0.02, 0.024], "rotZ": 0}
+ ]
+}

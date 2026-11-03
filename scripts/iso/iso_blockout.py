@@ -246,20 +246,30 @@ def sphere(p):
 
 
 def sails(p):
-    """`count` (4 by default) bare, symmetric blades in the plane facing the camera, so a 2D rotation is exact."""
+    """`count` (4 by default) bare, symmetric blades in the plane facing the camera, so a 2D rotation is exact.
+    With `rects` ([[blade, d0, d1, u0, u1], ...]: along and across a blade, from the hub) it draws only
+    those flat rectangles instead: a patch, a figure hung on a blade."""
     length, width = p["length"], p["width"]
     mesh = bpy.data.meshes.new("sails")
     bm = bmesh.new()
     count = p.get("count", 4)
-    for i in range(count):
+
+    def frame(i):
         angle = math.radians(45 + 360 / count * i)
         d = Vector((math.cos(angle), math.sin(angle), 0))
-        n = Vector((-d.y, d.x, 0))
+        return d, Vector((-d.y, d.x, 0))
+
+    for blade, d0, d1, u0, u1 in p.get("rects", []):
+        d, n = frame(blade)
+        bm.faces.new([bm.verts.new(d * da + n * ua + Vector((0, 0, 0.02))) for da, ua in ((d0, u0), (d1, u0), (d1, u1), (d0, u1))])  # 0.02 toward the camera: no z-fight with the blade
+    for i in range(0 if "rects" not in p else count, count):
+        d, n = frame(i)
         start = d * p.get("hub", 0.08)
         corners = [start - n * width / 2, start + d * length - n * width / 2,
                    start + d * length + n * width / 2, start + n * width / 2]
         bm.faces.new([bm.verts.new(c) for c in corners])
-    bmesh.ops.create_circle(bm, cap_ends=True, segments=32, radius=p.get("hub", 0.08) * 1.4)
+    if "rects" not in p:
+        bmesh.ops.create_circle(bm, cap_ends=True, segments=32, radius=p.get("hub", 0.08) * 1.4)
     bm.to_mesh(mesh)
     bm.free()
     obj = bpy.data.objects.new("sails", mesh)

@@ -2,18 +2,20 @@
 """The maquette made for the painter (E5/E4, mara's corrections of E3): what FLUX is shown as image 1.
 
     python3 scripts/bld/maquette_peinture.py windmill_solid OUT.png [--mask OUT.mask.png]
+    python3 scripts/bld/maquette_peinture.py pilote/windmill_solid OUT.png      (a spec of a subfolder of bld/)
 
 From a stage's blockout spec: no cast shadows, no facets (two soft values per material, the lit/shade border blurred), a roof
 in matte grey slate, a flag of rippled cloth instead of a box, knotted-neck sacks instead of cones, the stage's markers and
-slab removed, and under it a ragged olive-and-earth ground patch dissolving into flat magenta. The ground patch only marks
-the footprint; the painter is told it has no edge to keep. Dev only: Blender goes through isolib, like render_pilot.py.
+slab removed, on flat magenta. **No ground at all** (cards: no ground in the maquette nor in the painting; the ground is its own
+sprite): the building and its accessories only. `--mask` still writes the slab's footprint, which is never sent to FLUX.
+Dev only: Blender goes through isolib, like render_pilot.py.
 """
 import argparse
 import json
+import hashlib
 import math
 import os
 import pathlib
-import random
 import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -26,7 +28,6 @@ from PIL import Image, ImageChops, ImageFilter  # noqa: E402
 
 SPECS = ROOT / "scripts" / "iso" / "blockouts" / "bld"
 MAGENTA = (255, 0, 255)
-OLIVE, EARTH = (0x6A, 0x74, 0x42), (0x7A, 0x5A, 0x38)
 # [top, lit, shade]: top and lit are one value, so a material has two
 DAY = {
     "stone": ["#BDB29C", "#BDB29C", "#8A8890"],
@@ -36,6 +37,15 @@ DAY = {
     "iron": ["#5A5E62", "#5A5E62", "#3A3E48"],
     "canvas": ["#CDBF9C", "#CDBF9C", "#8E8478"],
     "banner": ["#A8432F", "#A8432F", "#6A3040"],
+    "plaster": ["#D6CEBE", "#D6CEBE", "#A09A94"],
+    # cards windmill / observatory
+    "crystal": ["#5A88AC", "#5A88AC", "#3A5F86"],
+    "ruban": ["#BCD6E4", "#BCD6E4", "#7FA3BC"],
+    "ciel": ["#A8C2D2", "#A8C2D2", "#7C98A8"],
+    "laiton": ["#9A7B45", "#9A7B45", "#5E4C34"],
+    "patine": ["#6F8F80", "#6F8F80", "#46594F"],
+    "nuit": ["#1B2340", "#1B2340", "#141A30"],
+    "fente": ["#15192A", "#15192A", "#15192A"],
 }
 
 
@@ -110,51 +120,38 @@ def soften(rgba, classes, radius=22):
     return out
 
 
-def ground(mask, seed=7):
-    """Olive and earth mixed, edge frayed and dissolving: no slab edge, no diamond."""
-    rnd = random.Random(seed)
-    w, h = mask.size
-    def noise(r):
-        n = Image.effect_noise((w, h), 70)
-        return n.filter(ImageFilter.GaussianBlur(r))
-    mix = noise(40).point(lambda v: max(0, min(255, (v - 128) * 5 + 128)))
-    tex = Image.composite(Image.new("RGB", (w, h), EARTH), Image.new("RGB", (w, h), OLIVE), mix)
-    speck = Image.effect_noise((w, h), 60).filter(ImageFilter.GaussianBlur(1.5)).point(lambda v: 255 if v > 150 else 0)
-    tex = Image.composite(Image.new("RGB", (w, h), (0x5A, 0x62, 0x38)), tex, speck.point(lambda v: v // 3))
-    soft = mask.filter(ImageFilter.GaussianBlur(26))
-    ragged = ImageChops.add(soft, noise(6).point(lambda v: v - 128), 1, 0)
-    alpha = ragged.point(lambda v: max(0, min(255, (v - 100) * 4)))
-    # fade the rim toward the key a little more, from the edge inward
-    return tex, alpha.filter(ImageFilter.GaussianBlur(1.2))
-
-
-def render(name, out, mask_out=None):
+def render_rgba(name, redo=False):
+    """The softened maquette, transparent around it (cached by spec and tones, in the cache folder)."""
     L.ISO["tones"]["occludedRatio"] = 0  # no cast shadow anywhere
     work = CACHE / "peinture"
     work.mkdir(parents=True, exist_ok=True)
-    spec, plate = painting_spec(name)
-    bare = work / f"{name}.json"
+    spec, _ = painting_spec(name)
+    stem = name.replace("/", "_")
+    key = hashlib.sha1((json.dumps(spec, sort_keys=True) + pathlib.Path(__file__).read_text()).encode()).hexdigest()[:10]
+    done = work / f"{stem}.{key}.png"
+    if done.exists() and not redo:
+        return Image.open(done).convert("RGBA")
+    bare = work / f"{stem}.json"
     bare.write_text(json.dumps(spec))
-    rgba_path = work / f"{name}.rgba.png"
+    rgba_path = work / f"{stem}.rgba.png"
     L.blender(bare, rgba_path, socle_shadow=False)
-    rgba = Image.open(rgba_path).convert("RGBA")
-    classes = Image.open(rgba_path.with_suffix(".classes.png")).convert("RGB")
-    rgba = soften(rgba, classes)
-    # the slab's footprint: the same spec with the slab, minus the building
-    full = dict(spec, parts=plate + spec["parts"])
-    (work / f"{name}.slab.json").write_text(json.dumps(full))
-    slab_path = work / f"{name}.slab.rgba.png"
-    L.blender(work / f"{name}.slab.json", slab_path, socle_shadow=False)
-    slab = Image.open(slab_path).convert("RGBA").getchannel("A").point(lambda v: 255 if v >= 128 else 0)
-    bld = rgba.getchannel("A").point(lambda v: 255 if v >= 128 else 0)
-    foot = ImageChops.subtract(slab, bld.filter(ImageFilter.MaxFilter(3)))
-    tex, alpha = ground(ImageChops.lighter(foot, bld))
+    rgba = soften(Image.open(rgba_path).convert("RGBA"), Image.open(rgba_path.with_suffix(".classes.png")).convert("RGB"))
+    rgba.save(done)
+    return rgba
+
+
+def render(name, out, mask_out=None):
+    rgba = render_rgba(name)
     canvas = Image.new("RGB", rgba.size, MAGENTA)
-    canvas.paste(tex, (0, 0), alpha)
     canvas.paste(rgba.convert("RGB"), (0, 0), rgba.getchannel("A"))
     canvas.save(out)
-    if mask_out:
-        slab.save(mask_out)
+    if mask_out:  # the slab's footprint, from the same spec with its slab and no building
+        spec, plate = painting_spec(name)
+        work = CACHE / "peinture"
+        (work / f"{name.replace('/', '_')}.slab.json").write_text(json.dumps(dict(spec, parts=plate)))
+        slab = work / f"{name.replace('/', '_')}.slab.rgba.png"
+        L.blender(work / f"{name.replace('/', '_')}.slab.json", slab, socle_shadow=False)
+        Image.open(slab).convert("RGBA").getchannel("A").point(lambda v: 255 if v >= 128 else 0).save(mask_out)
     return canvas
 
 

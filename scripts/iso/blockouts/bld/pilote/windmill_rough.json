@@ -1,0 +1,17 @@
+{"canvas": "building2x2", "pivot": [1.4, 1.4, 1.5], "sailsScale": 0.85,
+ "parts": [
+  {"type": "box", "mat": "stone", "at": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 0.04], "_plate": true},
+  {"type": "cyl", "mat": "stone", "center": [1.0, 1.0, 0.04], "r": 0.82, "h": 0.12},
+  {"type": "cone", "mat": "stone", "center": [1.0, 1.0, 0.16], "r": 0.74, "r2": 0.64, "h": 1.04},
+  {"type": "cone", "mat": "thatch", "center": [1.0, 1.0, 1.2], "r": 0.78, "r2": 0.04, "h": 0.5},
+  {"type": "box", "mat": "darkwood", "at": [0.82, 1.7, 0.16], "size": [0.36, 0.06, 0.55], "accroche": "porte"},
+  {"type": "box", "mat": "stone", "at": [0.78, 1.72, 0.16], "size": [0.44, 0.14, 0.05]},
+  {"type": "box", "mat": "amber", "at": [1.6437, 0.9, 0.73], "size": [0.06, 0.2, 0.24]},
+  {"type": "cyl", "mat": "wood", "center": [1.1185, 1.1185, 1.27], "r": 0.08, "h": 0.46, "axis": [0.612, 0.612, 0.5]},
+  {"type": "cyl", "mat": "wood", "center": [1.88, 0.12, 0.04], "r": 0.08, "h": 1.2485, "axis": [-0.2883, 0.2883, 0.9131]},
+  {"type": "cyl", "mat": "wood", "center": [1.3342, 0.4211, 0.8], "r": 0.04, "h": 0.396, "axis": [0.1408, -0.2439, 0.9595]},
+  {"type": "cyl", "mat": "wood", "center": [1.5789, 0.6658, 0.8], "r": 0.04, "h": 0.396, "axis": [0.2439, -0.1408, 0.9595]},
+  {"type": "cyl", "mat": "banner", "center": [0.66, 1.78, 0.04], "r": 0.08, "h": 0.33, "_marker": "gardien"},
+  {"type": "cyl", "mat": "banner", "center": [1.72, 1.72, 0.04], "r": 0.28, "h": 0.01, "_marker": "gag"}
+ ]
+}

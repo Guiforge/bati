@@ -1,0 +1,1 @@
+{"canvas": "sails", "materials": {"ciel": {"tones": ["#A8C2D2", "#A8C2D2", "#7C98A8"]}}, "parts": [{"type": "sails", "length": 1.25, "width": 0.44, "hub": 0.09, "mat": "ciel"}]}

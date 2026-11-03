@@ -12,15 +12,15 @@ const main = {
 // What the painting lights at night (kind, canvas px, first rank): a window, a lantern, a brazier, a fire, a beam.
 const lights: BuildingData["lights"] = [
   { kind: "fenetre", at: [487, 318], fromRank: 3, fromBase: 10 },
-  { kind: "fenetre", at: [583, 325], fromRank: 3, fromBase: 10 },
-  { kind: "fenetre", at: [290, 565], fromRank: 3, fromBase: 10 },
-  { kind: "fenetre", at: [680, 560], fromRank: 3, fromBase: 10 },
-  { kind: "fenetre", at: [315, 770], fromRank: 3, fromBase: 10 },
+  { kind: "fenetre", at: [583, 321], fromRank: 3, fromBase: 10 },
+  { kind: "fenetre", at: [284, 568], fromRank: 3, fromBase: 10 },
+  { kind: "fenetre", at: [682, 565], fromRank: 3, fromBase: 10 },
+  { kind: "fenetre", at: [316, 766], fromRank: 3, fromBase: 10 },
 ];
 
 // What will move later, on its painted object (canvas px): posed, drawn by nothing yet.
 const ancres: BuildingData["ancres"] = [
-  { kind: "fenetre", at: [680, 560], fromRank: 3, fromBase: 10 },
+  { kind: "fenetre", at: [682, 565], fromRank: 3, fromBase: 10 },
   { kind: "magic", at: [550, 250], fromRank: 3, fromBase: 10 },
 ];
 // hand:end

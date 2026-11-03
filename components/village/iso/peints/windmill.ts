@@ -178,13 +178,13 @@ export const windmill: Omit<PeintBld, "donnees"> = {
     solid: {
       jour: {
         image: require("@/assets/images/village/iso/peints/windmill/elements/sails_solid.jour.webp"),
-        anchor: [253, 259],
+        anchor: [252, 260],
         size: [504, 515],
         ombre: [],
       },
       nuit: {
         image: require("@/assets/images/village/iso/peints/windmill/elements/sails_solid.nuit.webp"),
-        anchor: [253, 259],
+        anchor: [252, 260],
         size: [504, 515],
         ombre: [],
       },
@@ -193,40 +193,40 @@ export const windmill: Omit<PeintBld, "donnees"> = {
       jour: {
         image: require("@/assets/images/village/iso/peints/windmill/elements/sails_grand.jour.webp"),
         anchor: [345, 355],
-        size: [688, 704],
+        size: [688, 705],
         ombre: [],
       },
       nuit: {
         image: require("@/assets/images/village/iso/peints/windmill/elements/sails_grand.nuit.webp"),
         anchor: [345, 355],
-        size: [688, 704],
+        size: [688, 705],
         ombre: [],
       },
     },
     legendary: {
       jour: {
         image: require("@/assets/images/village/iso/peints/windmill/elements/sails_legendary.jour.webp"),
-        anchor: [442, 450],
-        size: [885, 893],
+        anchor: [439, 425],
+        size: [885, 842],
         ombre: [],
       },
       nuit: {
         image: require("@/assets/images/village/iso/peints/windmill/elements/sails_legendary.nuit.webp"),
-        anchor: [442, 450],
-        size: [885, 893],
+        anchor: [439, 425],
+        size: [885, 842],
         ombre: [],
       },
     },
     mythic: {
       jour: {
         image: require("@/assets/images/village/iso/peints/windmill/elements/sails_mythic.jour.webp"),
-        anchor: [569, 550],
+        anchor: [568, 551],
         size: [1135, 1101],
         ombre: [],
       },
       nuit: {
         image: require("@/assets/images/village/iso/peints/windmill/elements/sails_mythic.nuit.webp"),
-        anchor: [569, 550],
+        anchor: [568, 551],
         size: [1135, 1101],
         ombre: [],
       },

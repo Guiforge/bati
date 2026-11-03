@@ -34,6 +34,7 @@ import {
   type ReactNode,
   useContext,
   useEffect,
+  useId,
   useRef,
   useState,
 } from "react";
@@ -48,6 +49,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import Svg, { Circle, Defs, RadialGradient, Stop } from "react-native-svg";
 import { scheduleOnRN } from "react-native-worklets";
 import type { AddOn, BuildingData, LightAnchor, Point } from "@/constants/buildingData";
 import { buildingStageFor, type StageRule, type VisualStage } from "@/constants/buildingStages";
@@ -195,6 +197,8 @@ function Lueur({
 }) {
   const horloge = useContext(HorlogeContext);
   const [w, h] = TAILLE_LUEUR[kind];
+  // A fire is a warm pool of light, soft to its edge and still: no disc (the night's own pool is in AmbianceCarte).
+  if (kind === "fire") return <LueurDouce at={at} rayon={GLOW_FEU_DP} />;
   const forme = {
     position: "absolute" as const,
     left: at[0] - w / 2,
@@ -209,6 +213,31 @@ function Lueur({
     return <View pointerEvents="none" testID={`batiment-lueur-${kind}`} style={forme} />;
   }
   return <LueurVivante kind={kind} forme={forme} horloge={horloge} cycles={cycles} />;
+}
+
+/** Radius of a fire's soft glow, dp. */
+const GLOW_FEU_DP = 22;
+
+/** A warm radial pool centred on a map point: isoLueur at 45 % in the heart, 0 % at the rim. */
+function LueurDouce({ at, rayon }: { at: Point; rayon: number }) {
+  const id = `lueur-${useId().replaceAll(":", "")}`;
+  return (
+    <Svg
+      pointerEvents="none"
+      testID="batiment-lueur-fire"
+      width={rayon * 2}
+      height={rayon * 2}
+      style={{ position: "absolute", left: at[0] - rayon, top: at[1] - rayon }}
+    >
+      <Defs>
+        <RadialGradient id={id}>
+          <Stop offset="0" stopColor={rawColors.isoLueur} stopOpacity={0.45} />
+          <Stop offset="1" stopColor={rawColors.isoLueur} stopOpacity={0} />
+        </RadialGradient>
+      </Defs>
+      <Circle cx={rayon} cy={rayon} r={rayon} fill={`url(#${id})`} />
+    </Svg>
+  );
 }
 
 function LueurVivante({

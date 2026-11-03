@@ -4,26 +4,30 @@ import type { BuildingData } from "../buildingData";
 
 // hand:begin
 const main = {
-  // Picked on the painting, canvas px (the building's anchor is [448, 1088]).
+  // Picked on the painting, canvas px (an offset where the name says so).
   gagSlot: [228, 1048],
   teaserAt: [233, -40],
   fire: [466, 952],
   smoke: [466, 822],
   magic: [466, 216],
-  magicFrom: 10, // the rank that opens the mythic stage (5 for a deed)
 } as const;
 // hand:end
 
 export const campfire: BuildingData = {
   code: "campfire",
-  // Measured on the paintings: the highest silhouette, and the patch's contact in grid units.
+  // Measured on the paintings: the highest silhouette, and the ground patch's contact in grid units
+  // (the opaque ground points of the rough painting, as a hull).
   mesure: {
     sommet: 46,
     contact: [
-      [0.0, 0.0],
-      [1.0, 0.0],
-      [1.0, 1.0],
-      [0.0, 1.0],
+      [0.0, 0.1],
+      [0.05, 0.0],
+      [0.95, 0.0],
+      [1.0, 0.05],
+      [1.0, 0.95],
+      [0.95, 1.0],
+      [0.1, 1.0],
+      [0.0, 0.95],
     ],
   },
   placeholder: false,
@@ -63,9 +67,9 @@ export const campfire: BuildingData = {
       },
     ],
   },
-  // The fire breathes at night on the hearth. No painted keeper: no `guardian`.
+  // A fire is a soft warm pool at night, still. No painted keeper: no `guardian`.
   lights: [{ kind: "fire", at: main.fire, fromRank: 1 }],
-  // The solid stage paints its own pennant: no code mark.
+  // A painted clan mark (a pennant, a banner) is in the paintings: no code mark.
   clanMark: null,
   teasers: [
     { fromRank: 2, untilRank: 3, sprite: "elements/teaser_r2", anchorOffset: main.teaserAt },
@@ -74,9 +78,9 @@ export const campfire: BuildingData = {
     { fromRank: 8, untilRank: 9, sprite: "elements/teaser_r8", anchorOffset: main.teaserAt },
     { fromRank: 9, untilRank: 10, sprite: "elements/teaser_r9", anchorOffset: main.teaserAt },
   ],
-  // What will move later (smoke, magic): anchors only, no animation yet.
+  // What will move later: posed, drawn by nothing yet.
   ancres: [
     { kind: "smoke", at: main.smoke, fromRank: 1 },
-    { kind: "magic", at: main.magic, fromRank: main.magicFrom },
+    { kind: "magic", at: main.magic, fromRank: 10 },
   ],
 };

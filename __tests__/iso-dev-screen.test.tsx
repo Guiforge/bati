@@ -754,7 +754,7 @@ describe("the demo camera (L0-T14)", () => {
 describe("app/dev-iso.tsx when the guard is off", () => {
   test("renders a redirect home, nothing else", async () => {
     jest.resetModules();
-    jest.doMock("@/constants/isoPoc", () => ({ ISO_POC: false }));
+    jest.doMock("@/constants/isoPoc", () => ({ ISO_POC: false, BLD_PEINTS: {} }));
     const { default: Route } = require("@/app/dev-iso") as typeof import("@/app/dev-iso");
     await render(<Route />);
     expect(mockRedirect).toHaveBeenCalledWith({ href: "/" });

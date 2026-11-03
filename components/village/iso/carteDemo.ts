@@ -325,9 +325,8 @@ export function etatAvec(palier: VillageTier, debout: Iterable<BuildingCode>) {
 /** The island of a building alone (`ileSeule`) and the buildings whose plot is on it. */
 export function etatSeul(code: BuildingCode) {
   const visible = ileSeule(code);
-  const montres = buildingCodes.filter((c) =>
-    emplacements[c].cases.every(([gx, gy]) => visible[gy]?.[gx]),
-  );
+  // Only this building: a neighbour whose plot falls on the margin would cast its own big shadow.
+  const montres = [code];
   return { visible, montres };
 }
 
@@ -891,6 +890,8 @@ export function elementsMontes(
   stade: (code: BuildingCode) => Stade,
   ambiance: Ambiance = "nuit",
   peint: Pick<Alentours, "foret" | "decor"> = { foret: false, decor: false },
+  /** A building alone: no piece, villager or animal, whatever lies on its small island. */
+  seul = false,
 ) {
   const affiches = new Set<string>(montres);
   // The vector stand-ins the painted layers replace: the blue-grey cones of the trees and groves
@@ -913,13 +914,13 @@ export function elementsMontes(
       l.opacite,
     ]),
   );
-  const pieces = montree("piece");
+  const pieces = seul ? new Set<PieceCarte>() : montree("piece");
   // A standing figurine gives way to its role's villager once the role's building stands.
   const roles = rolesPresents(montres);
   const figurines = new Set(
-    [...montree("figurine")].filter((f) => !roles.some((r) => f.cle.includes(`${r}_`))),
+    seul ? [] : [...montree("figurine")].filter((f) => !roles.some((r) => f.cle.includes(`${r}_`))),
   );
-  const animaux = new Set(ANIMAUX.filter((a) => animalMontre(a, visible, montres)));
+  const animaux = new Set(seul ? [] : ANIMAUX.filter((a) => animalMontre(a, visible, montres)));
   const montre = (e: ElementCarte) => {
     if (e.type === "batiment") return affiches.has(e.code);
     // A wall stretch shows with castle_wall, once one of its cells is on the island (FIN-DIS).

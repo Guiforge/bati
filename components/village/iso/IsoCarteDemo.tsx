@@ -192,7 +192,7 @@ import { ecartGrille, ombreMarcheur } from "./ombreMarcheur";
 import type { Point } from "./ombres";
 import { batimentCharge } from "./ouverture";
 import { OmbreSocle, Planche } from "./PlancheCarte";
-import { peintDe } from "./peints";
+import { PEINTS, peintDe } from "./peints";
 import { Lucioles, Rongeur } from "./petitsDetails";
 import { clePiece, eauTracee } from "./pieces";
 import type { Emprise } from "./profondeur";
@@ -879,7 +879,7 @@ function couchesDe(
       {ailes && rectAiles ? (
         <Ailes s={ailes} rect={rectAiles} testID={`iso-ailes-${code}`} />
       ) : null}
-      {masque || !sp || !cp ? null : (
+      {masque || !sp || !cp || PEINTS[code] ? null : (
         <>
           <Feux code={code} stade={st} s={sp} corps={cp} biome={biome} ambiance={vie} />
           <Veilles code={code} stade={st} s={sp} corps={cp} biome={biome} ambiance={vie} />
@@ -1013,22 +1013,27 @@ export function Maquette({
       {voiles}
       {s && corps && !masque ? (
         <>
-          <Fierte
-            code={code}
-            stade={stade}
-            s={s}
-            corps={corps}
-            biome={biome}
-            ambiance={vie}
-            legendaire={legendaire}
-            anime={eclatAnime}
-            banniere={banniere}
-            tissu={tissu}
-          />
-          <Feux code={code} stade={stade} s={s} corps={corps} biome={biome} ambiance={vie} />
-          <Veilles code={code} stade={stade} s={s} corps={corps} biome={biome} ambiance={vie} />
-          <Effets code={code} stade={stade} s={s} corps={corps} ambiance={vie} />
-          <Retouches code={code} stade={stade} s={s} corps={corps} />
+          {/* A painted building draws none of the old art's overlays: their points sit on the old canvas. */}
+          {PEINTS[code] ? null : (
+            <>
+              <Fierte
+                code={code}
+                stade={stade}
+                s={s}
+                corps={corps}
+                biome={biome}
+                ambiance={vie}
+                legendaire={legendaire}
+                anime={eclatAnime}
+                banniere={banniere}
+                tissu={tissu}
+              />
+              <Feux code={code} stade={stade} s={s} corps={corps} biome={biome} ambiance={vie} />
+              <Veilles code={code} stade={stade} s={s} corps={corps} biome={biome} ambiance={vie} />
+              <Effets code={code} stade={stade} s={s} corps={corps} ambiance={vie} />
+              <Retouches code={code} stade={stade} s={s} corps={corps} />
+            </>
+          )}
           <Reclame code={code} stade={stade} s={s} corps={corps} />
         </>
       ) : null}
@@ -2092,6 +2097,7 @@ export function IsoCarte({
   echafaudages,
   legendaires,
   croissances,
+  seul = false,
   ambiance = "nuit",
   lumiere = "nuit",
   biome = "defaut",
@@ -2111,6 +2117,8 @@ export function IsoCarte({
   prise?: { current: PriseVillageois | undefined };
   /** Buildings whose sprite is hidden while a growth layer plays over them. */
   masques?: ReadonlySet<BuildingCode>;
+  /** A building alone (BatimentSeul): no villager, no decor, no camp props, nothing but the building and its ground. */
+  seul?: boolean;
   /** Buildings with a site on now (L6-T02): scaffold and dust right after the sprite, and villagers striking beside it. */
   chantiers?: ReadonlySet<BuildingCode>;
   /** Buildings whose scaffold already stands, before its villagers come (T03: the camera's move, so a new plot is never bare). */
@@ -2134,7 +2142,7 @@ export function IsoCarte({
   const horloge = useContext(HorlogeContext);
   // The painted surroundings on (alentours.ts): the props in the depth order, the forest over the ground.
   const peint = useContext(AlentoursContext);
-  const decor = decorDe(peint, visible, montres, palier);
+  const decor = seul ? [] : decorDe(peint, visible, montres, palier);
   const cases: Case[] = [];
   for (let gy = 0; gy < TAILLE; gy++)
     for (let gx = 0; gx < TAILLE; gx++) if (visible[gy]?.[gx]) cases.push([gx, gy]);
@@ -2146,6 +2154,7 @@ export function IsoCarte({
     stade,
     ambiance,
     peint,
+    seul,
   );
   const bords = bordsDe(visible);
   const vu = (gx: number, gy: number) => visible[gy]?.[gx] === true;
@@ -2346,7 +2355,7 @@ export function IsoCarte({
           ruisseau={ruisseau}
           lumiere={lumiere}
           quartiers={quartiers}
-          peint={peint}
+          peint={seul ? { ...peint, decor: true } : peint}
         />
       ))}
       {/* G3: the vocation's grounds over the tiles and their shadows, under the night's veil and every sprite. */}

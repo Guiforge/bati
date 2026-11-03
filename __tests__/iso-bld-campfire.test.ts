@@ -4,6 +4,7 @@ import { etatBatiment } from "@/components/village/iso/batiment";
 import { spriteDe } from "@/components/village/iso/carteDemo";
 import { DONNEES_BLD } from "@/components/village/iso/donneesBld";
 import { MAQUETTES } from "@/components/village/iso/maquettes";
+import { opaque } from "@/components/village/iso/masque";
 import { PEINTS } from "@/components/village/iso/peints";
 import { campfire as sprites } from "@/components/village/iso/peints/campfire";
 import { gagIsOneAtATime } from "@/constants/buildingData";
@@ -80,5 +81,15 @@ describe("the campfire's data", () => {
     expect(campfire.mesure?.sommet).toBeLessThan(hauteur);
     for (const [x = 9, y = 9] of campfire.mesure?.contact ?? [])
       expect([x, y].every((v) => v >= 0 && v <= 1)).toBe(true);
+  });
+
+  test("the tap reads the painting's mask: the hearth is opaque, the canvas corner is not", () => {
+    const m = sprites.stades.rough?.jour.masque;
+    expect(m && opaque(m, 448, 1000)).toBe(true);
+    expect(m && opaque(m, 2, 2)).toBe(false);
+  });
+
+  test("the spec's anchors are posed and drawn by nothing yet", () => {
+    expect((campfire.ancres ?? []).map((a) => a.kind)).toEqual(["smoke", "magic"]);
   });
 });

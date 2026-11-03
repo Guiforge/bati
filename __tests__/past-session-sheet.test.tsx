@@ -308,6 +308,8 @@ describe("PastSessionSheet, a session written down", () => {
   });
 
   it("another day unfolds the seven days, each read in full to a screen reader", async () => {
+    // Pinned: the month names in the labels below depend on the day the suite runs.
+    jest.useFakeTimers({ now: new Date(2026, 9, 20, 12, 0), advanceTimers: true });
     await mount();
     await screen.findByText("Add a past session");
     await fireEvent.press(screen.getByRole("button", { name: "Another day" }));

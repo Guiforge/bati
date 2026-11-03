@@ -460,13 +460,18 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
     annonce.current = cle;
     onRevelation?.();
   };
+  const rendre = () => {
+    if (avant.current) camera.vers(avant.current);
+    avant.current = undefined;
+  };
   const passer = () => {
     if (cle === undefined) return;
     for (const x of mouvement.current) clearTimeout(x);
     mouvement.current = [];
-    // A touch is the player taking the camera back: it stays where their hand left it.
-    avant.current = undefined;
     saute.current = cle;
+    // A tap that skips the scene still gives the camera back, once (the bubble it opens is placed
+    // from the view held at the touch, the finger's own, so the return does not move it).
+    rendre();
     setLegende(null);
     setLance({ cle, etape: 2 });
     reveler();
@@ -502,6 +507,15 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
     };
   };
   const retard = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Unmounted mid-show: the view kept for a remount is the player's, not the zoomed one. Declared
+  // before the camera so this cleanup runs first and the camera's own reads the restored view.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: written once, on unmount
+  useLayoutEffect(
+    () => () => {
+      if (avant.current) camera.poser(avant.current);
+    },
+    [],
+  );
   const camera = useCameraIso({
     visible,
     w: width,
@@ -511,6 +525,10 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
     bloque,
     margeBas,
     onToucher: horloge.touche,
+    // A drag or a pinch during the show: the hand wins, no return.
+    onMain: () => {
+      avant.current = undefined;
+    },
     memoire,
     vueDepart: vueSeul(seul, width, height),
     onTap: (x, y, vue) => {
@@ -594,8 +612,7 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
       reveler,
       terminer: () => {
         // Once, at the very end of the growth (all its buildings), unless a touch dropped it.
-        if (avant.current) camera.vers(avant.current);
-        avant.current = undefined;
+        rendre();
         terminer();
       },
       setPose,

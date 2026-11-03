@@ -5,6 +5,10 @@ import "react-native-gesture-handler/jestSetup";
 import "@/i18n";
 import { act, configure, render } from "@testing-library/react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import {
+  createGestureController,
+  getByGestureTestId,
+} from "react-native-gesture-handler/jest-utils";
 import { CROISSANCE_CAMERA_MS, CROISSANCE_MS } from "@/components/village/iso/carteDemo";
 import { CHANTIER_MS } from "@/components/village/iso/chantier";
 import { croissanceDemo } from "@/components/village/iso/croissanceDemo";
@@ -77,32 +81,71 @@ describe("the growth scene's length", () => {
     }
   });
 
-  it("then the camera goes back to the view the player had before the scene", async () => {
+  const montrer = async () => {
     const [code, ancien] = (croissanceDemo(buildings, 0) ?? "").split(":");
     mockVers.mockClear();
     jest.useFakeTimers();
+    await render(
+      <GestureHandlerRootView>
+        <IsoVillage
+          tier={12}
+          buildings={buildings}
+          width={390}
+          height={390}
+          croissance={{
+            cle: `${code}:${ancien}`,
+            items: [{ code: code as (typeof buildingCodes)[number], oldLevel: Number(ancien) }],
+          }}
+        />
+      </GestureHandlerRootView>,
+    );
+    await act(() => jest.advanceTimersByTime(600));
+  };
+  // The way back asks for the view the camera had when the way there was asked.
+  const retourne = () => {
+    const [aller, retour] = mockVers.mock.calls;
+    expect(mockVers).toHaveBeenCalledTimes(2);
+    expect(retour?.[0]).toEqual(aller?.[1]);
+    expect(retour?.[0]).not.toEqual(aller?.[0]);
+  };
+
+  it("then the camera goes back to the view the player had before the scene", async () => {
     try {
-      const r = await render(
-        <GestureHandlerRootView>
-          <IsoVillage
-            tier={12}
-            buildings={buildings}
-            width={390}
-            height={390}
-            croissance={{
-              cle: `${code}:${ancien}`,
-              items: [{ code: code as (typeof buildingCodes)[number], oldLevel: Number(ancien) }],
-            }}
-          />
-        </GestureHandlerRootView>,
-      );
-      expect(r).toBeTruthy();
+      await montrer();
       await act(() => jest.advanceTimersByTime(4000));
-      const [aller, retour] = mockVers.mock.calls;
-      expect(mockVers).toHaveBeenCalledTimes(2);
-      // The way back asks for the view the camera had when the way there was asked.
-      expect(retour?.[0]).toEqual(aller?.[1]);
-      expect(retour?.[0]).not.toEqual(aller?.[0]);
+      retourne();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it("a tap that skips the scene gives the view back, once", async () => {
+    try {
+      await montrer();
+      const tap = createGestureController(getByGestureTestId("iso-geste-tap"));
+      await act(() => {
+        tap.begin();
+        tap.activate();
+        tap.end();
+      });
+      await act(() => jest.advanceTimersByTime(4000));
+      retourne();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it("a drag during the scene keeps the camera in the hand: no return", async () => {
+    try {
+      await montrer();
+      const pan = createGestureController(getByGestureTestId("iso-geste-pan"));
+      await act(() => {
+        pan.begin();
+        pan.activate();
+        pan.update({ translationX: 20, translationY: 0 });
+      });
+      await act(() => jest.advanceTimersByTime(4000));
+      expect(mockVers).toHaveBeenCalledTimes(1);
     } finally {
       jest.useRealTimers();
     }

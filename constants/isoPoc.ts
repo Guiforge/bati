@@ -77,5 +77,25 @@ export const ALENTOURS: Alentours = {
 // shortcut: source rule, one line per building the integration script (scripts/bld/integrate.py)
 // has wired; a building is flipped to `true` here when Guillaume has judged it.
 export const BLD_PEINTS: Readonly<Record<string, boolean>> = {
+  fountain: BUILD_LOCAL,
+  well: BUILD_LOCAL,
+  farm: BUILD_LOCAL,
+  druid_grove: BUILD_LOCAL,
+  tent: BUILD_LOCAL,
+  windmill: BUILD_LOCAL,
+  champion_arena: BUILD_LOCAL,
+  heroes_hall: BUILD_LOCAL,
+  dragon_lair: BUILD_LOCAL,
+  castle_wall: BUILD_LOCAL,
+  quarry: BUILD_LOCAL,
+  barn: BUILD_LOCAL,
+  armory: BUILD_LOCAL,
+  forge: BUILD_LOCAL,
+  watchtower: BUILD_LOCAL,
+  archery_range: BUILD_LOCAL,
+  high_road: BUILD_LOCAL,
+  wizard_tower: BUILD_LOCAL,
+  training_dummy: BUILD_LOCAL,
+  observatory: BUILD_LOCAL,
   campfire: BUILD_LOCAL,
 };

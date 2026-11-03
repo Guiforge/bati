@@ -192,7 +192,7 @@ import { ecartGrille, ombreMarcheur } from "./ombreMarcheur";
 import type { Point } from "./ombres";
 import { batimentCharge } from "./ouverture";
 import { OmbreSocle, Planche } from "./PlancheCarte";
-import { PEINTS, peintDe } from "./peints";
+import { ailesPeintes, PEINTS, peintDe } from "./peints";
 import { Lucioles, Rongeur } from "./petitsDetails";
 import { clePiece, eauTracee } from "./pieces";
 import type { Emprise } from "./profondeur";
@@ -867,9 +867,10 @@ function couchesDe(
   base: number,
 ) {
   const st = stadeReel(code, enStade(v));
-  const sp = spriteDe(code, st, vie);
+  const sp = peintDe(code, v, vie) ?? spriteDe(code, st, vie);
   const cp = sp ? pose(code, sp) : null;
-  const ailes = ailesDe(code, st, vie, ailesAuRang(donnees, rang, base));
+  const ailes =
+    ailesPeintes(code, v, vie) ?? ailesDe(code, st, vie, ailesAuRang(donnees, rang, base));
   const rectAiles = cp && sp && ailes ? poseAiles(cp, sp, ailes) : null;
   return (
     <>
@@ -982,7 +983,7 @@ export function Maquette({
   // watch lights are the night's: the day lights none of them.
   const vie = lumiere === "jour" ? lumiere : ambiance;
   const s = spriteDe(code, stade, vie);
-  const ailes = ailesDe(code, stade, vie);
+  const ailes = ailesPeintes(code, stade, vie) ?? ailesDe(code, stade, vie);
   const corps = s ? pose(code, s) : null;
   const rectAiles = corps && s && ailes ? poseAiles(corps, s, ailes) : null;
   const socle = corps ? ombreSocleDe(code, stade) : null;

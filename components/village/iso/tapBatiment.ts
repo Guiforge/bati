@@ -1,12 +1,14 @@
 // Which building a tap lands on: the sprite's tap mask (the sidecar's `mask`, kept in the image
 // index as hex rows) read at the tapped pixel, the frontmost building first.
 
+import type { VisualStage } from "@/constants/buildingStages";
 import type { BuildingCode } from "@/db/schema";
 import { ORDRE_CARTE, pose, type Rect, spriteDe } from "./carteDemo";
 import { boiteMarteau } from "./fierte";
 import type { Case } from "./isoLayout";
 import type { Stade } from "./isoSpec";
 import { type Masque, opaque } from "./masque";
+import { peintDe } from "./peints";
 import { dessinPans, masquePan, montresDuTroncon, PANS_VECTORIELS, piecesPeintes } from "./rempart";
 
 export { type Masque, opaque };
@@ -59,6 +61,8 @@ export function cibles(
   stade: (code: BuildingCode) => Stade,
   visible?: readonly (readonly boolean[])[],
   reclamables: readonly BuildingCode[] = [],
+  /** The stage as painted (legendary, mythic): a painted building's mask is its own, taller one. */
+  visuel?: (code: BuildingCode) => VisualStage,
 ): Cible[] {
   const affiches = new Set<BuildingCode>(montres);
   const liste = ORDRE_CARTE.flatMap((e): Cible[] => {
@@ -69,7 +73,9 @@ export function cibles(
       );
     if (e.type !== "batiment") return [];
     const { code } = e;
-    const s = affiches.has(code) ? spriteDe(code, stade(code)) : undefined;
+    const s = !affiches.has(code)
+      ? undefined
+      : ((visuel && peintDe(code, visuel(code), "nuit")) ?? spriteDe(code, stade(code)));
     return s?.masque ? [{ code, rect: pose(code, s), taille: s.size, masque: s.masque }] : [];
   });
   // Last in the list, so tried first: the hammer sits over the sprites behind it.

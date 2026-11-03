@@ -39,16 +39,16 @@
   "piste_ordre": 4,
   "etape": "Idees et concepts du moment",
   "ordre": 3,
-  "statut": "en cours",
+  "statut": "fait",
   "debut": "2026-11-03T21:45:00+01:00",
-  "fin": null,
+  "fin": "2026-11-03T23:50:00+01:00",
   "heures": null,
-  "restant_min": 1,
-  "restant_max": 3,
-  "reste": "1 à 3 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": "Directions gardées : La Case, Contre-jour ; films en reprise"
+  "note": "Sur la page de choix"
  },
  {
   "id": "U4",
@@ -56,7 +56,7 @@
   "piste_ordre": 4,
   "etape": "Choix de Guillaume sur le moment",
   "ordre": 4,
-  "statut": "à faire",
+  "statut": "attend Guillaume",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -65,7 +65,7 @@
   "reste": "0 à 0 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Page publiée, réponse dans checkpoint.md"
  },
  {
   "id": "U5",
@@ -82,7 +82,7 @@
   "reste": "2 à 5 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Dépend du choix de Guillaume"
  },
  {
   "id": "U6",
@@ -99,7 +99,7 @@
   "reste": "0.5 à 1.5 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Dépend du choix de Guillaume"
  },
  {
   "id": "U7",
@@ -243,16 +243,16 @@
   "piste_ordre": 4,
   "etape": "Test de concept des creatures",
   "ordre": 15,
-  "statut": "en cours",
+  "statut": "fait",
   "debut": "2026-11-03T21:45:00+01:00",
-  "fin": null,
+  "fin": "2026-11-03T23:50:00+01:00",
   "heures": null,
-  "restant_min": 1,
-  "restant_max": 2,
-  "reste": "1 à 2 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": "Planche prête, page de choix à publier"
+  "note": "Sur la page de choix"
  },
  {
   "id": "C2",
@@ -260,7 +260,7 @@
   "piste_ordre": 4,
   "etape": "Choix de Guillaume sur le style",
   "ordre": 16,
-  "statut": "à faire",
+  "statut": "attend Guillaume",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -269,7 +269,7 @@
   "reste": "0 à 0 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Page publiée, réponse dans checkpoint.md"
  },
  {
   "id": "C3",
@@ -286,7 +286,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Dépend du choix de Guillaume"
  },
  {
   "id": "C4",
@@ -303,7 +303,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Dépend du choix de Guillaume"
  },
  {
   "id": "C5",
@@ -320,7 +320,7 @@
   "reste": "1 à 2.5 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Dépend du choix de Guillaume"
  },
  {
   "id": "C6",
@@ -337,7 +337,7 @@
   "reste": "1 à 2.5 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Dépend du choix de Guillaume"
  },
  {
   "id": "C7",

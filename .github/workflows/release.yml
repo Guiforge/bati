@@ -225,7 +225,7 @@ jobs:
       # The generated default builds four architectures; the two x86 ones exist for emulators (no
       # phone ships them). The foss APK keeps armeabi-v7a because phones running a 32-bit
       # Android cannot install anything else (#227), at 10.8 MiB more for everyone: one APK and one
-      # versionCode, where per-ABI APKs would change the versionCode scheme. Play stays arm64: the
+      # versionCode, like Joplin and Miroji on f-droid.org. Play stays arm64: the
       # issue is about F-Droid, and 32-bit there would be an untested answer from Play after the tag.
       # R8 minify + resource shrinking cut the dex from
       # ~18 MB to a fraction. All passed here rather than written into gradle.properties so a

@@ -87,5 +87,7 @@ Réponses prises, que Guillaume peut rayer au checkpoint :
 
 - Guillaume, le 03/11 au matin : règle d'attente ajoutée en 9.0 de `PROMPT.md` ; sauvegarde de `bld-flux` sur origin, fusion dès la suite verte. Fût : regarder d'abord le rendu de la maquette, corriger la maquette (lissage, segments, lumière douce) et repeindre plutôt que retoucher. Pic : décalage de teinte sous masque permis, mais anneau de pierre et couture en retouche FLUX 3 par zone, jamais de clone ni de flou ; taille d'au moins un quart de la tour et saturation vers 0,55. Bande des 5 stades en aperçu non bloquant dans `checkpoint.md` dès qu'ils sont peints, puis l'observatoire.
 
+- Guillaume, kit de maquettes : formes réutilisables dans le format des specs (cylindres lissés, toits coniques et en tuiles, dôme, arche, échafaudage, grue à roue), pour le moulin et tous les suivants. Les bâtiments restent faits de ces formes, jamais de modèles téléchargés. Exception approuvée, sans s'arrêter : figures et créatures seulement (atlantes, statue du héros, dragon, figures de gags quand la pose compte), modèles CC0 de Quaternius et Kenney, licence vérifiée pack par pack, fichiers dans le dépôt avec une note LICENSES (pack, auteur, CC0). Ils ne servent qu'à la maquette : FLUX repeint tout, et aucun modèle téléchargé n'est livré dans l'application. Les atlantes peuvent donc être retentés avec une vraie figure posée.
+
 Conséquences de la planche de cartes :
 - La carte `campfire.md` de la prep est à réécrire : le Ménestrel remplace le cuistot.

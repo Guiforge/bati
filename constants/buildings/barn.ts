@@ -5,11 +5,21 @@ import type { BuildingData } from "../buildingData";
 // hand:begin
 const main = {
   // Picked on the painting, canvas px (an offset where the name says so).
-  gagSlot: [224, 1048],
+  gagSlot: [100, 1018],
   teaserAt: [257, -40],
-  magic: [476, 196],
-  fenetre: [448, 722],
 } as const;
+
+// What the painting lights at night (kind, canvas px, first rank): a window, a lantern, a brazier, a fire, a beam.
+const lights: BuildingData["lights"] = [
+  { kind: "fenetre", at: [425, 300], fromRank: 3, fromBase: 10 },
+  { kind: "fenetre", at: [425, 410], fromRank: 3, fromBase: 10 },
+];
+
+// What will move later, on its painted object (canvas px): posed, drawn by nothing yet.
+const ancres: BuildingData["ancres"] = [
+  { kind: "fenetre", at: [425, 360], fromRank: 3, fromBase: 10 },
+  { kind: "magic", at: [470, 400], fromRank: 3, fromBase: 10 },
+];
 // hand:end
 
 export const barn: BuildingData = {
@@ -68,14 +78,10 @@ export const barn: BuildingData = {
       },
     ],
   },
-  // A fire is a soft warm pool at night, still. No painted keeper: no `guardian`.
-  lights: [],
+  // Night lights: the hand block's, only what the painting lights. No painted keeper: no `guardian`.
+  lights,
   // A painted clan mark (a pennant, a banner) is in the paintings: no code mark.
   clanMark: null,
   teasers: [],
-  // What will move later: posed, drawn by nothing yet.
-  ancres: [
-    { kind: "fenetre", at: main.fenetre, fromRank: 1 },
-    { kind: "magic", at: main.magic, fromRank: 3, fromBase: 10 },
-  ],
+  ancres,
 };

@@ -44,7 +44,7 @@ export const windmill: Omit<PeintBld, "donnees"> = {
         size: taille,
         ombre: [],
         masque: masque_rough,
-        ailes: { pivot: [405, 735], pivotGrille: [0, 0, 0], echelle: 1 },
+        ailes: { pivot: [407, 739], pivotGrille: [0, 0, 0], echelle: 1 },
       },
       nuit: {
         image: require("@/assets/images/village/iso/peints/windmill/rough.nuit.webp"),
@@ -52,7 +52,7 @@ export const windmill: Omit<PeintBld, "donnees"> = {
         size: taille,
         ombre: [],
         masque: masque_rough,
-        ailes: { pivot: [405, 735], pivotGrille: [0, 0, 0], echelle: 1 },
+        ailes: { pivot: [407, 739], pivotGrille: [0, 0, 0], echelle: 1 },
       },
     },
     solid: {
@@ -62,7 +62,7 @@ export const windmill: Omit<PeintBld, "donnees"> = {
         size: taille,
         ombre: [],
         masque: masque_solid,
-        ailes: { pivot: [390, 605], pivotGrille: [0, 0, 0], echelle: 1 },
+        ailes: { pivot: [399, 606], pivotGrille: [0, 0, 0], echelle: 1 },
       },
       nuit: {
         image: require("@/assets/images/village/iso/peints/windmill/solid.nuit.webp"),
@@ -70,7 +70,7 @@ export const windmill: Omit<PeintBld, "donnees"> = {
         size: taille,
         ombre: [],
         masque: masque_solid,
-        ailes: { pivot: [390, 605], pivotGrille: [0, 0, 0], echelle: 1 },
+        ailes: { pivot: [399, 606], pivotGrille: [0, 0, 0], echelle: 1 },
       },
     },
     grand: {
@@ -80,7 +80,7 @@ export const windmill: Omit<PeintBld, "donnees"> = {
         size: taille,
         ombre: [],
         masque: masque_grand,
-        ailes: { pivot: [376, 599], pivotGrille: [0, 0, 0], echelle: 1 },
+        ailes: { pivot: [367, 600], pivotGrille: [0, 0, 0], echelle: 1 },
       },
       nuit: {
         image: require("@/assets/images/village/iso/peints/windmill/grand.nuit.webp"),
@@ -88,7 +88,7 @@ export const windmill: Omit<PeintBld, "donnees"> = {
         size: taille,
         ombre: [],
         masque: masque_grand,
-        ailes: { pivot: [376, 599], pivotGrille: [0, 0, 0], echelle: 1 },
+        ailes: { pivot: [367, 600], pivotGrille: [0, 0, 0], echelle: 1 },
       },
     },
     legendary: {
@@ -98,7 +98,7 @@ export const windmill: Omit<PeintBld, "donnees"> = {
         size: taille,
         ombre: [],
         masque: masque_legendary,
-        ailes: { pivot: [414, 471], pivotGrille: [0, 0, 0], echelle: 1 },
+        ailes: { pivot: [361, 481], pivotGrille: [0, 0, 0], echelle: 1 },
       },
       nuit: {
         image: require("@/assets/images/village/iso/peints/windmill/legendary.nuit.webp"),
@@ -106,7 +106,7 @@ export const windmill: Omit<PeintBld, "donnees"> = {
         size: taille,
         ombre: [],
         masque: masque_legendary,
-        ailes: { pivot: [414, 471], pivotGrille: [0, 0, 0], echelle: 1 },
+        ailes: { pivot: [361, 481], pivotGrille: [0, 0, 0], echelle: 1 },
       },
     },
     mythic: {
@@ -116,7 +116,7 @@ export const windmill: Omit<PeintBld, "donnees"> = {
         size: taille,
         ombre: [],
         masque: masque_mythic,
-        ailes: { pivot: [408, 358], pivotGrille: [0, 0, 0], echelle: 1 },
+        ailes: { pivot: [351, 392], pivotGrille: [0, 0, 0], echelle: 1 },
       },
       nuit: {
         image: require("@/assets/images/village/iso/peints/windmill/mythic.nuit.webp"),
@@ -124,7 +124,7 @@ export const windmill: Omit<PeintBld, "donnees"> = {
         size: taille,
         ombre: [],
         masque: masque_mythic,
-        ailes: { pivot: [408, 358], pivotGrille: [0, 0, 0], echelle: 1 },
+        ailes: { pivot: [351, 392], pivotGrille: [0, 0, 0], echelle: 1 },
       },
     },
   },
@@ -164,13 +164,13 @@ export const windmill: Omit<PeintBld, "donnees"> = {
     rough: {
       jour: {
         image: require("@/assets/images/village/iso/peints/windmill/elements/sails_rough.jour.webp"),
-        anchor: [184, 190],
+        anchor: [187, 190],
         size: [369, 379],
         ombre: [],
       },
       nuit: {
         image: require("@/assets/images/village/iso/peints/windmill/elements/sails_rough.nuit.webp"),
-        anchor: [184, 190],
+        anchor: [187, 190],
         size: [369, 379],
         ombre: [],
       },
@@ -178,13 +178,13 @@ export const windmill: Omit<PeintBld, "donnees"> = {
     solid: {
       jour: {
         image: require("@/assets/images/village/iso/peints/windmill/elements/sails_solid.jour.webp"),
-        anchor: [252, 258],
+        anchor: [253, 259],
         size: [504, 515],
         ombre: [],
       },
       nuit: {
         image: require("@/assets/images/village/iso/peints/windmill/elements/sails_solid.nuit.webp"),
-        anchor: [252, 258],
+        anchor: [253, 259],
         size: [504, 515],
         ombre: [],
       },
@@ -192,13 +192,13 @@ export const windmill: Omit<PeintBld, "donnees"> = {
     grand: {
       jour: {
         image: require("@/assets/images/village/iso/peints/windmill/elements/sails_grand.jour.webp"),
-        anchor: [344, 352],
+        anchor: [345, 355],
         size: [688, 704],
         ombre: [],
       },
       nuit: {
         image: require("@/assets/images/village/iso/peints/windmill/elements/sails_grand.nuit.webp"),
-        anchor: [344, 352],
+        anchor: [345, 355],
         size: [688, 704],
         ombre: [],
       },
@@ -206,13 +206,13 @@ export const windmill: Omit<PeintBld, "donnees"> = {
     legendary: {
       jour: {
         image: require("@/assets/images/village/iso/peints/windmill/elements/sails_legendary.jour.webp"),
-        anchor: [442, 446],
+        anchor: [442, 450],
         size: [885, 893],
         ombre: [],
       },
       nuit: {
         image: require("@/assets/images/village/iso/peints/windmill/elements/sails_legendary.nuit.webp"),
-        anchor: [442, 446],
+        anchor: [442, 450],
         size: [885, 893],
         ombre: [],
       },
@@ -220,13 +220,13 @@ export const windmill: Omit<PeintBld, "donnees"> = {
     mythic: {
       jour: {
         image: require("@/assets/images/village/iso/peints/windmill/elements/sails_mythic.jour.webp"),
-        anchor: [568, 550],
+        anchor: [569, 550],
         size: [1135, 1101],
         ombre: [],
       },
       nuit: {
         image: require("@/assets/images/village/iso/peints/windmill/elements/sails_mythic.nuit.webp"),
-        anchor: [568, 550],
+        anchor: [569, 550],
         size: [1135, 1101],
         ombre: [],
       },

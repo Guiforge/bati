@@ -9,6 +9,7 @@ import { COTE, ecranXY } from "./carteDemo";
 import { accrochesDe } from "./feux";
 import { emplacements } from "./isoLayout";
 import type { Stade } from "./isoSpec";
+import { PEINTS } from "./peints";
 import { porteSol } from "./rues";
 import { hasard } from "./solVarie";
 
@@ -51,6 +52,9 @@ function calculer(
   stade: (code: BuildingCode) => Stade,
 ): Flaque[] {
   return montres.flatMap((code): Flaque[] => {
+    // A painted building lights its own night (constants/buildings/<code>.ts `lights`, on what the painting lights): the old
+    // door-side pool belonged to the old art and gave a painted house a halo with no source.
+    if (PEINTS[code]) return [];
     if (code === "campfire") {
       const { coin, emprise } = emplacements.campfire;
       const [x, y] = ecranXY(

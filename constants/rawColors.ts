@@ -93,6 +93,9 @@ export const rawColors = {
   bgLight: "#15171C",
   pastelBlue: "#18202A",
   pastelPink: "#2A1719", // an error tint since the magenta left
+  // A QR code, and nothing else: scanners read dark on light whatever the theme says.
+  qrInk: "#000000",
+  qrPaper: "#FFFFFF",
   pastelGreen: "#16261B",
   pastelYellow: "#2A2413",
   pastelOrange: "#2B1B12",

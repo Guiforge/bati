@@ -8,3 +8,7 @@
 2f9c4680f1ac9f8df4bc883b18c62b8812dfe957:_bmad/_config/files-manifest.csv:generic-api-key:45
 16d9dc0036754b05ee5406dd9fabc51d6a50b055:src/icons/gameIcons.all.ts:generic-api-key:2066
 16d9dc0036754b05ee5406dd9fabc51d6a50b055:src/icons/gameIcons.all.ts:generic-api-key:2148
+
+# The frozen multiplayer envelope vectors: the key is the bytes 00 to 1f, a public test value.
+__tests__/fixtures/multiplayer/envelope-v1.json:generic-api-key:3
+__tests__/fixtures/multiplayer/envelope-v1.json:generic-api-key:21

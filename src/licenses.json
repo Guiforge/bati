@@ -7919,6 +7919,20 @@
       ]
     },
     {
+      "name": "uqr",
+      "version": "0.1.3",
+      "license": "MIT",
+      "notices": [
+        {
+          "copyright": [
+            "Copyright (c) Project Nayuki",
+            "Copyright (c) 2023 Anthony Fu <https://github.com/antfu>"
+          ],
+          "text": 4
+        }
+      ]
+    },
+    {
       "name": "use-latest-callback",
       "version": "0.2.6",
       "license": "MIT",

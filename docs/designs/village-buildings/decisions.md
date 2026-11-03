@@ -116,3 +116,8 @@ Conséquences de la planche de cartes :
 - Concepts : choix des variantes Klein par le peintre, sur la forme et les erreurs d'image, pour ne pas lancer un juge par stade. Guillaume voit les 4 variantes sur la planche.
 - Budget : registre 17,56 $, production des 5 et planches des 16 autres ne tiennent pas ensemble. Question au checkpoint 1. Je continue les planches, comme le dit le prompt.
 - Audit W2, directions gardées : tour 2 et 1 ; bosquet 2 et 1 ; Grand Chemin 2 et 3.
+- Plafond de sonde Klein atteint (7,50 $) : non modifié, c'est un garde-fou. Planches des vagues 2 à 5 peintes directement sur FLUX 3, 2 variantes par stade. Écart au prompt, signalé dans `summary-2.md`.
+- Alerte du registre à 60 $ acquittée par moi, dans les 75 $ autorisés par Guillaume.
+- Refus de modération : « homme pendu à la corde » et corde « à la taille » reformulés une fois, en décrivant ce qu'on veut vraiment voir.
+- Audits W3 à W5 : directions dans chaque `audit.md`. Carrière à égalité parfaite : la 1 écartée par le test du prompt, « le même bloc, plus gros ».
+- Guillaume, 03/11 : plus d'itérations, c'est lui qui juge les concepts. Reprises arrêtées, page de choix : https://claude.ai/artifact/HBBzj1ZZ3AC4bGhwk8YgMk. La mi-relecture de mara reste notée sur la page en « à savoir ». Le prompt prévoyait deux checkpoints en markdown, la page les remplace.

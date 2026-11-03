@@ -1,3 +1,15 @@
+# Checkpoint : choisis sur la page
+
+**[Ouvrir la page des concepts](https://claude.ai/artifact/HBBzj1ZZ3AC4bGhwk8YgMk)** : les 21 bâtiments, image par image, avec les 3 questions.
+
+Tes choix s'y enregistrent tout seuls. Tu n'as rien à écrire ici. Si la page n'enregistre pas, « Copier mes choix » te donne le texte à coller dans ce fichier.
+
+Détail de la session : [`summary-2.md`](summary-2.md).
+
+---
+
+Ci-dessous, l'ancienne version du checkpoint, remplacée par la page. Ses chiffres de budget sont dépassés.
+
 # Checkpoint 1 : le pilote et la vague 1, à toi de choisir
 
 Écrit le 03/11. Pour chaque bâtiment : **une direction, ou un mélange** (« rough de 1, mythique de 2 »), avec 3 notes au plus. Écris sur la ligne `Choix :`. La production de chaque bâtiment démarre dès que son choix est écrit, sous réserve de la question 1. Les détails sont dans `<bâtiment>/ideas.md` et `<bâtiment>/audit.md`.

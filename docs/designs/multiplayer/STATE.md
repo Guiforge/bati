@@ -4,17 +4,18 @@ Branche `feat/multiplayer-lot0`, partie de `main` (`4150b9b4`). Commencé le 03/
 Plan : section « Décisions du 03/11 » de l'audit. Format : [envelope.md](envelope.md). Scanner :
 [qr-scanner.md](qr-scanner.md). Rapport : [reviews/LOT0.md](reviews/LOT0.md).
 
-| Étape | Statut | Temps passé |
+| Étape | Statut | Temps (environ) |
 | --- | --- | --- |
-| T1 Scanner QR, GO ou NO-GO | done, **GO** | 0 h 40 |
+| T1 Scanner QR, GO ou NO-GO | done, **GO** | 0 h 25 |
 | T2 Affichage QR | done | 0 h 05 |
-| T3 Règles partagées | done, avec les écarts ci-dessous | 0 h 15 |
-| T4 Enveloppe v1 | done | 0 h 15 |
-| T5 Lien scellé | done, sauf la clé Play et le vrai `autoVerify` | 0 h 15 |
-| T6 Appairage | done | 0 h 20 |
-| Porte du lot | voir [LOT0.md](reviews/LOT0.md) | 0 h 40 |
+| T3 Règles partagées | done, avec les écarts ci-dessous | 0 h 10 |
+| T4 Enveloppe v1 | done | 0 h 10 |
+| T5 Lien scellé | done, sauf la clé Play et le vrai `autoVerify` | 0 h 10 |
+| T6 Appairage | done | 0 h 10 |
+| Porte du lot | done, voir [LOT0.md](reviews/LOT0.md) | 0 h 20 |
 
-Reste : ce qui dépend de toi, listé dans le rapport.
+Total réel : 1 h 30, les étapes se sont chevauchées pendant les builds. Reste : ce qui dépend de toi, listé dans
+le rapport.
 
 ## Écarts à trancher
 

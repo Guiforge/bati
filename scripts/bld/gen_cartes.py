@@ -265,7 +265,8 @@ def knight_on_blade(length):
 
 
 def sails_all():
-    calecon = ("banner", [[2, 0.50, 0.74, -0.15, 0.17], [2, 0.74, 0.90, -0.15, -0.02], [2, 0.74, 0.90, 0.04, 0.17]])
+    # round 4: the old breeches patch moved from blade 2 (lower left, over the door) to blade 1 (upper left, in the open sky), 0.12 further out
+    calecon = ("banner", [[1, 0.62, 0.86, -0.15, 0.17], [1, 0.86, 1.02, -0.15, -0.02], [1, 0.86, 1.02, 0.04, 0.17]])
     sail_sheet("rough", 0.30, [calecon])
     sail_sheet("solid", 0.30)
     sail_sheet("grand", 0.30)
@@ -274,11 +275,13 @@ def sails_all():
     sail_sheet("legendary", 0.44, mat="ciel")
 
 def ribbons():
-    """Two wind ribbons, never joined (card: Les rubans de vent): 60 cone steps each."""
-    r1 = dict(ph=200, z0=1.10, z1=2.30, tours=0.8,  # shortened from the bottom (card: if the overlays pass 25 %)
-               rho=[(0.80, 0.86), (1.35, 0.96), (1.72, 0.96), (2.30, 0.82)])
-    r2 = dict(ph=20, z0=0.75, z1=3.90, tours=1.75,
-              rho=[(0.75, 0.82), (1.35, 0.96), (1.72, 0.96), (2.20, 0.82), (2.45, 1.0), (3.05, 0.41), (3.22, 0.39), (3.52, 0.32), (3.90, 0.24)])
+    """Two thin wind ribbons, never joined (round 4: thinner, varying width, free of the tower except one pass at gallery height):
+    60 cone steps each. Ribbon 1 swings round in the air and touches the tower at the gallery height (z 1.35 to 1.72) once;
+    ribbon 2 starts above the gallery and climbs round the roof to the peak, ending at the peak radius + 0.12 as the card says."""
+    r1 = dict(ph=200, z0=0.95, z1=2.30, tours=0.8, wob=0.0,
+              rho=[(0.95, 1.30), (1.25, 1.22), (1.40, 0.98), (1.72, 0.98), (1.90, 1.22), (2.30, 1.30)])
+    r2 = dict(ph=20, z0=1.95, z1=3.90, tours=1.5, wob=1.3,
+              rho=[(1.95, 1.30), (2.45, 1.12), (3.05, 0.41), (3.22, 0.39), (3.52, 0.32), (3.90, 0.24)])
     out = []
 
     def rho_at(rho, z):
@@ -293,8 +296,8 @@ def ribbons():
         rho = rho_at(spec["rho"], z)
         return [1 + rho * (math.cos(a) * D - math.sin(a) * D), 1 + rho * (math.cos(a) * D + math.sin(a) * D), z]
 
-    def rad(t):
-        return 0.095 * math.sin(math.pi * t) ** 1.5 + 0.005
+    def rad(t, wob):  # r 0.05 at the widest (27 px, 5.4 dp), varying along the ribbon, pointed at both ends
+        return 0.05 * math.sin(math.pi * t) ** 1.2 * (1 + 0.45 * math.sin(7 * t + wob)) + 0.004
 
     n = 60
     for spec in (r1, r2):
@@ -302,7 +305,7 @@ def ribbons():
             a, b = at(spec, i / n), at(spec, (i + 1) / n)
             mid = [(u + v) / 2 for u, v in zip(a, b)]
             layer = "sousAiles" if mid[0] + mid[1] > 2 else "behind"
-            out.append(tseg(a, b, rad(i / n), rad((i + 1) / n), "ruban", layer=layer))
+            out.append(tseg(a, b, rad(i / n, spec["wob"]), rad((i + 1) / n, spec["wob"]), "ruban", layer=layer))
     put("windmill_rubans", out)
 
 

@@ -23,7 +23,15 @@ from PIL import Image, ImageDraw, ImageFont
 STAGES = ("rough", "grand", "mythic")
 SIZE = (896, 1152)
 BG = (236, 232, 220)
-STYLE = [ROOT / f"assets/images/village/iso/{p}.webp" for p in ("castle_wall/solid.jour", "druid_grove/grand.jour")]
+STYLE = ("castle_wall/solid.jour", "druid_grove/grand.jour")
+SPARE = "archery_range/solid.jour"  # stands in for a building that is itself a style reference
+
+
+def style_refs(building):
+    """Always 2 references (the prompt says "Images 1 and 2"); never the building's own image, or its shape leaks in."""
+    names = [p for p in STYLE if p.split("/")[0] != building] or list(STYLE)
+    names = (names + [SPARE])[:2] if len(names) < 2 else names
+    return [ROOT / f"assets/images/village/iso/{p}.webp" for p in names]
 DESIGNS = ROOT / "docs/designs/village-buildings"
 
 HEAD = ("A single image of one isometric game building, seen three-quarters from above at the village's isometric angle, one building "
@@ -57,11 +65,11 @@ def out_dir(building):
     return d
 
 
-def refs(d):
+def refs(d, building):
     r = d / "refs"
     r.mkdir(exist_ok=True)
     out = []
-    for p in STYLE:
+    for p in style_refs(building):
         f = r / (p.parent.name + "_" + p.stem + ".png")
         if not f.exists():
             im = Image.open(p).convert("RGBA")
@@ -78,6 +86,7 @@ def run(jobs, each, label, endpoint, probe, check, refs_of):
     from lib import flux
     if check:
         guard_endpoint(endpoint)
+    flux.PROVENANCE = jobs[0][0].parent / "provenance.json"  # concepts are throwaway: never the shared ledger
     batch = reserve(len(jobs), each, label, probe)
     responses, ok = [], {}
 
@@ -110,7 +119,7 @@ def klein(building, dirs, attempt, stages=STAGES):
                 seed = 41000 + 1000 * dr["id"] + 100 * si + 10 * attempt + v
                 jobs.append((d / f"klein_d{dr['id']}_{st}_t{attempt}_v{v}.png", prompt(dr["prompts"][st]), seed))
     free([j[0] for j in jobs])
-    r = refs(d)
+    r = refs(d, building)
     run(jobs, klein_price(*SIZE), f"concepts {building} klein t{attempt}", KLEIN, "klein_prod_real", False, lambda o: r)
     for dr in spec["directions"]:
         for st in STAGES:
@@ -146,7 +155,7 @@ def f3(building, picks, attempt):
         src[out] = kfile
         jobs.append((out, prompt(byid[di]["prompts"][st], f3=True), 52000 + 100 * int(di) + attempt))
     free([j[0] for j in jobs])
-    r = refs(d)
+    r = refs(d, building)
     run(jobs, 0.10, f"concepts {building} f3 t{attempt}", FLUX3, None, True, lambda o: (src[o], *r))
     log = d / "picks.json"
     old = json.loads(log.read_text()) if log.exists() else {}

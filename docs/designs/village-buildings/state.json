@@ -127,127 +127,127 @@
   },
   "buildings": {
     "windmill": {
-      "step": "painting",
+      "step": "integrated, drapeau off en publié, positions à vérifier",
       "ideas": "windmill/ideas-v2.md",
       "direction": "5",
       "spec": "scripts/bld/final/windmill.json"
     },
     "observatory": {
-      "step": "painting fini, strip ok, intégration à faire",
+      "step": "integrated, drapeau off en publié, positions à vérifier",
       "direction": "4",
       "spec": "scripts/bld/final/observatory.json",
       "flag": "off"
     },
     "campfire": {
-      "step": "painting fini, strip ok, intégration à faire",
+      "step": "integrated, drapeau off en publié, positions à vérifier",
       "direction": "4",
       "spec": "scripts/bld/final/campfire.json",
       "flag": "off"
     },
     "tent": {
-      "step": "painting fini, strip ok, intégration à faire",
+      "step": "integrated, drapeau off en publié, positions à vérifier",
       "direction": "4",
       "spec": "scripts/bld/final/tent.json",
       "flag": "off"
     },
     "training_dummy": {
-      "step": "painting fini, strip ok, intégration à faire",
+      "step": "integrated, drapeau off en publié, positions à vérifier",
       "direction": "4",
       "spec": "scripts/bld/final/training_dummy.json",
       "flag": "off"
     },
     "wizard_tower": {
-      "step": "painting fini, strip ok, intégration à faire",
+      "step": "integrated, drapeau off en publié, positions à vérifier",
       "direction": "4",
       "spec": "scripts/bld/final/wizard_tower.json",
       "flag": "off"
     },
     "druid_grove": {
-      "step": "painting fini, strip ok, intégration à faire",
+      "step": "integrated, drapeau off en publié, positions à vérifier",
       "direction": "4",
       "spec": "scripts/bld/final/druid_grove.json",
       "flag": "off"
     },
     "high_road": {
-      "step": "painting fini, strip ok, intégration à faire",
+      "step": "integrated, drapeau off en publié, positions à vérifier",
       "direction": "4",
       "spec": "scripts/bld/final/high_road.json",
       "flag": "off"
     },
     "archery_range": {
-      "step": "painting fini, strip ok, intégration à faire",
+      "step": "integrated, drapeau off en publié, positions à vérifier",
       "direction": "4",
       "spec": "scripts/bld/final/archery_range.json",
       "flag": "off"
     },
     "watchtower": {
-      "step": "painting fini, strip ok, intégration à faire",
+      "step": "integrated, drapeau off en publié, positions à vérifier",
       "direction": "4",
       "spec": "scripts/bld/final/watchtower.json",
       "flag": "off"
     },
     "forge": {
-      "step": "painting fini, strip ok, intégration à faire",
+      "step": "integrated, drapeau off en publié, positions à vérifier",
       "direction": "4",
       "spec": "scripts/bld/final/forge.json",
       "flag": "off"
     },
     "armory": {
-      "step": "painting fini, strip ok, intégration à faire",
+      "step": "integrated, drapeau off en publié, positions à vérifier",
       "direction": "4",
       "spec": "scripts/bld/final/armory.json",
       "flag": "off"
     },
     "farm": {
-      "step": "painting fini, strip ok, intégration à faire",
+      "step": "integrated, drapeau off en publié, positions à vérifier",
       "direction": "4",
       "spec": "scripts/bld/final/farm.json",
       "flag": "off"
     },
     "barn": {
-      "step": "painting fini, strip ok, intégration à faire",
+      "step": "integrated, drapeau off en publié, positions à vérifier",
       "direction": "4",
       "spec": "scripts/bld/final/barn.json",
       "flag": "off"
     },
     "quarry": {
-      "step": "painting fini, strip ok, intégration à faire",
+      "step": "integrated, drapeau off en publié, positions à vérifier",
       "direction": "4",
       "spec": "scripts/bld/final/quarry.json",
       "flag": "off"
     },
     "castle_wall": {
-      "step": "painting fini, strip ok, intégration à faire",
+      "step": "integrated, drapeau off en publié, positions à vérifier",
       "direction": "4",
       "spec": "scripts/bld/final/castle_wall.json",
       "flag": "off"
     },
     "well": {
-      "step": "painting",
+      "step": "integrated, drapeau off en publié, positions à vérifier",
       "ideas": "well/ideas-v2.md",
       "direction": "5",
       "spec": "scripts/bld/final/well.json"
     },
     "fountain": {
-      "step": "painting fini, strip ok, intégration à faire",
+      "step": "integrated, drapeau off en publié, positions à vérifier",
       "direction": "3",
       "spec": "scripts/bld/final/fountain.json",
       "flag": "off"
     },
     "dragon_lair": {
-      "step": "painting fini, strip ok, intégration à faire",
+      "step": "integrated, drapeau off en publié, positions à vérifier",
       "direction": "4",
       "spec": "scripts/bld/final/dragon_lair.json",
       "flag": "off"
     },
     "heroes_hall": {
-      "step": "painting fini, strip ok, intégration à faire",
+      "step": "integrated, drapeau off en publié, positions à vérifier",
       "direction": "4",
       "spec": "scripts/bld/final/heroes_hall.json",
       "flag": "off"
     },
     "champion_arena": {
-      "step": "painting fini, strip ok, intégration à faire",
+      "step": "integrated, drapeau off en publié, positions à vérifier",
       "direction": "4",
       "spec": "scripts/bld/final/champion_arena.json",
       "flag": "off"
@@ -270,7 +270,7 @@
     ]
   },
   "prompt": "v3, direction artistique d'abord (03/11) ; PROMPT-v2.md garde l'ancien",
-  "tip": "dcca8a18",
+  "tip": "e53d4d6e",
   "recipe": {
     "model": "FLUX 3 Image (E3)",
     "method": "peinture neuve, stade précédent en référence pour la forme (E4), sans Blender en v3",

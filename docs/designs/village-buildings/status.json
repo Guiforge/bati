@@ -146,11 +146,11 @@
     "fin": null,
     "heures": 0,
     "restant_min": 1,
-    "restant_max": 2.5,
-    "reste": "20 bâtiments par l'outil, puis positions à la main sur captures",
-    "avancement": 1,
+    "restant_max": 2,
+    "reste": "captures des 21 en un lot, puis positions à la main",
+    "avancement": 21,
     "total": 21,
-    "note": "Feu de camp intégré. Onglet Village branché, tap seul."
+    "note": "21 intégrés derrière leurs drapeaux, éteints en publié. Positions pas encore vues."
   },
   {
     "id": "bat-controles",

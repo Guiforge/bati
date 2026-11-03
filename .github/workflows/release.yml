@@ -222,12 +222,15 @@ jobs:
             echo "MYAPP_UPLOAD_KEY_PASSWORD=${KEY_PASSWORD:-$STORE_PASSWORD}"
           } >> android/gradle.properties
 
-      # arm64 only. The generated default builds four architectures: the two x86 ones exist for
-      # emulators (no phone ships them) and armeabi-v7a covers 32-bit phones from ~2015 — dropping
-      # it saves 17 MB of duplicated native libs. R8 minify + resource shrinking cut the dex from
+      # The generated default builds four architectures; the two x86 ones exist for emulators (no
+      # phone ships them). The foss APK keeps armeabi-v7a because phones running a 32-bit
+      # Android cannot install anything else (#227), at 10.8 MiB more for everyone: one APK and one
+      # versionCode, like Joplin and Miroji on f-droid.org. Play stays arm64: the
+      # issue is about F-Droid, and 32-bit there would be an untested answer from Play after the tag.
+      # R8 minify + resource shrinking cut the dex from
       # ~18 MB to a fraction. All passed here rather than written into gradle.properties so a
       # local `expo run:android` keeps building fat and fast, and android/ stays drift-free;
-      # only the published artefact narrows. fdroid/fdroiddata-recipe.yml runs the same command —
+      # only the published artefact narrows. fdroid/fdroiddata-recipe.yml runs the same command,
       # keep the two in sync.
       # GitHub Releases and our F-Droid repository want the APK, Play only takes the AAB. The
       # play build still assembles an APK beside its AAB: it is never published, it is what the
@@ -236,9 +239,10 @@ jobs:
       - name: Build
         run: |
           tasks=(assembleRelease)
-          if [ "$VARIANT" = play ]; then tasks+=(bundleRelease); fi
+          abis=armeabi-v7a,arm64-v8a
+          if [ "$VARIANT" = play ]; then tasks+=(bundleRelease); abis=arm64-v8a; fi
           ./gradlew "${tasks[@]}" --no-daemon \
-            -PreactNativeArchitectures=arm64-v8a \
+            -PreactNativeArchitectures="$abis" \
             -Pandroid.enableMinifyInReleaseBuilds=true \
             -Pandroid.enableShrinkResourcesInReleaseBuilds=true
         working-directory: android
@@ -339,6 +343,8 @@ jobs:
       # The ELF segments are the whole check: `expo.useLegacyPackaging=true` stores the libraries
       # compressed, so the zip-alignment half of the rule (`zipalign -c -P 16`) has nothing to see.
       # The AAB is what Play receives; the APK is what F-Droid users run.
+      # arm64 only: 16 KB pages exist on 64-bit devices, and the NDK links armeabi-v7a at 4 KB
+      # (22 of its 28 libraries were 0x1000 when measured for #227).
       - name: 16 KB page size
         env:
           APK_PATH: ${{ steps.artefacts.outputs.apk_path }}
@@ -351,7 +357,7 @@ jobs:
           count=0
           # nullglob: the foss build has no so/aab to match.
           shopt -s nullglob
-          for f in so/apk/lib/*/*.so so/aab/base/lib/*/*.so; do
+          for f in so/apk/lib/arm64-v8a/*.so so/aab/base/lib/arm64-v8a/*.so; do
             # Outside a command substitution, so a readelf failure fails the step under `bash -e`.
             aligns=$(readelf -lW "$f" | awk '/LOAD/ { print $NF }')
             [[ -n "$aligns" ]] || { echo "::error::no LOAD segment read from $f"; exit 1; }

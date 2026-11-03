@@ -17,7 +17,7 @@ npm run release -- minor   # 1.0.0 -> 1.1.0
 It refuses a dirty tree, refuses a branch other than main, refuses to run when main and origin
 disagree, bumps `package.json` **and** `app.json` together, tags, and pushes. The tag is what
 [`.github/workflows/release.yml`](.github/workflows/release.yml) watches: it re-runs every gate
-once, then builds twice from that commit (arm64-only, R8-minified — the R8 switches default to on in
+once, then builds twice from that commit (foss: armeabi-v7a + arm64, play: arm64 only, R8-minified — the R8 switches default to on in
 `plugins/withAndroidReleaseFlags.js`, so the `-P` flags the workflow and
 `fdroid/fdroiddata-recipe.yml` still pass are belt-and-braces rather than the source).
 

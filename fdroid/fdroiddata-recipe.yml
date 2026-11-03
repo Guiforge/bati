@@ -61,7 +61,7 @@ Builds:
     scandelete:
       - node_modules
     gradleprops:
-      - reactNativeArchitectures=arm64-v8a
+      - reactNativeArchitectures=armeabi-v7a,arm64-v8a
       - android.enableMinifyInReleaseBuilds=true
       - android.enableShrinkResourcesInReleaseBuilds=true
 

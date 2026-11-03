@@ -17,3 +17,4 @@ Une ligne par décision, datée. Exemples :
 
 2026-11-02 BUDGET_FLUX_V1: 60
 2026-11-02 BUDGET_FLUX_V1: 75
+2026-11-03 BUDGET_FLUX_V1: 140

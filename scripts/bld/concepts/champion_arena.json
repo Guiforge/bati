@@ -27,6 +27,24 @@
         "grand": "A wooden arena with rising timber stands around an open sand floor, open toward the viewer so the centre is visible, and in the centre two champions in solid armour arm wrestling on a big barrel. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth.",
         "mythic": "An exceptional colosseum of tall stone arcades in several tiers, curving around a sand floor, open toward the viewer so the centre is clearly visible, and in the centre two huge imposing champions in extraordinary dark armour arm wrestling on a great iron-bound barrel on a stone plinth. A believable real medieval building, weathered and lived in, no joke, no cartoon proportions. A small feathered patch of natural ground under it, no hard-edged slab, no smoke haze. Figures large and clear, no hanging cloth."
       }
+    },
+    {
+      "id": 7,
+      "name": "7 La vraie arene",
+      "prompts": {
+        "rough": "A realistic rough fighting ring on packed beaten sand: a circle of uneven rough wooden stakes joined by two taut ropes, a single plain wooden barrel in the exact centre of the ring. Nothing cute, plain weathered wood. Nobody in the picture, no people, no animals. No letters, no runes, no hanging cloth. Matte dull materials, no shine, no gilding, no gold. No hard-edged slab: a small feathered patch of ground under it. Seen from above at three quarters.",
+        "grand": "A realistic wooden arena: a horseshoe of raked plank grandstands in weathered oak, three tiers of benches on a timber frame, open at the front so the beaten sand floor in the middle is clearly visible, plain wooden posts and rails, iron torch stands. Nobody in the picture, no people, no animals. No letters, no runes, no hanging cloth. Matte dull materials, no shine, no gilding, no gold. No hard-edged slab: a small feathered patch of ground under it. Seen from above at three quarters.",
+        "mythic": "An exceptional colosseum of carved dark-grey stone, several storeys of arcades with carved columns and sculpted friezes, immense and lavish, as if a whole kingdom paid for it, wide open at the front so the sand centre is clearly visible. One single vertiginous feature: a huge soaring stone tower-arch rising far above the rim at the back. Strong warm sunlight, torches and braziers lighting the arcades. Nobody in the picture, no people, no animals. No letters, no runes, no hanging cloth. Matte dull materials, no shine, no gilding, no gold. No hard-edged slab: a small feathered patch of ground under it. Seen from above at three quarters."
+      }
+    },
+    {
+      "id": 8,
+      "name": "8 Le bras de fer de pierre",
+      "prompts": {
+        "rough": "A ring of rough wooden stakes joined by two taut ropes on packed sand. In the centre, a wooden barrel, and on it two crude statues of roughly hewn timber, facing each other, elbows on the barrel, hands locked in an arm-wrestle. The statues are carved wood, never living people. Nobody in the picture, no people, no animals. No letters, no runes, no hanging cloth. Matte dull materials, no shine, no gilding, no gold. No hard-edged slab: a small feathered patch of ground under it. Seen from above at three quarters.",
+        "grand": "A wooden arena of raked plank grandstands, open at the front. In the centre of the sand, a big barrel with two larger carved grey-stone statues facing each other, elbows on the barrel, hands locked in an arm-wrestle. Statues of stone, never living people. Nobody in the picture, no people, no animals. No letters, no runes, no hanging cloth. Matte dull materials, no shine, no gilding, no gold. No hard-edged slab: a small feathered patch of ground under it. Seen from above at three quarters.",
+        "mythic": "A grand colosseum of dark stone arcades, wide open at the front. In its centre, two colossal statues of dark stone in plate armour, taller than the top of the grandstands, facing each other, hands locked in an arm-wrestle on a huge iron-hooped barrel as big as a house. The whole monument is lit by braziers and warm light, the statues are stone, never living people. Nobody in the picture, no people, no animals. No letters, no runes, no hanging cloth. Matte dull materials, no shine, no gilding, no gold. No hard-edged slab: a small feathered patch of ground under it. Seen from above at three quarters."
+      }
     }
   ]
 }

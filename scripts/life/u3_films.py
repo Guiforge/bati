@@ -196,9 +196,11 @@ class Ctx:
             im = graded(im)
         over(self.cv, im, cx - d / 2, cy - d / 2)
 
-    def piece(self, name, cx, cy, w, flip=False, alpha=1.0, dark=0.0, mode="over", strength=1.0):
+    def piece(self, name, cx, cy, w, flip=False, alpha=1.0, dark=0.0, mode="over", strength=1.0, desat=0.0):
         if alpha <= 0 or w < 2:
             return
+        if name.startswith("puffs") and self.night:
+            name = name.replace("puffs_", "puffsn_")
         p = load(PIECES / name)
         s = w / p.width
         im = p.resize((max(1, round(p.width * s)), max(1, round(p.height * s))), Image.LANCZOS)
@@ -207,8 +209,10 @@ class Ctx:
         if dark:
             im = Image.blend(im.convert("RGBA"), Image.new("RGBA", im.size, INK + (255,)), dark)
             im.putalpha(p.resize(im.size, Image.LANCZOS).getchannel("A"))
-        if self.night and name.startswith("puffs"):
-            im = graded(im)
+        if desat:
+            grey = im.convert("L").convert("RGBA")
+            grey.putalpha(im.getchannel("A"))
+            im = Image.blend(im, grey, desat)
         im = with_alpha(im, alpha)
         (screen if mode == "screen" else over)(self.cv, im, cx - im.width / 2, cy - im.height / 2, *([strength] if mode == "screen" else []))
 
@@ -217,14 +221,19 @@ class Ctx:
         screen(self.cv, p, cx - w / 2, cy - h / 2, alpha)
 
     def lights(self, b, rank_old, rank_new, new_alpha):
-        """Fire glows: the ones of the old stage stay on, the ones of the new stage come on with `new_alpha` (night only)."""
+        """The app's own Lueur (LueurDouce.tsx): isoLueur at 45 % in the heart, 0 at the rim, radius 9 dp for a fire (RAYON_LUEUR),
+        a dp being 3 canvas px. The old stage's lights stay on, the new stage's come on with `new_alpha`. Night only."""
         if not self.night:
             return
         ax, ay = BUILD[b]["anchor"]
+        rad = round(9 * 3 * self.k)
+        yy, xx = np.mgrid[-rad:rad + 1, -rad:rad + 1]
+        fall = np.clip(1 - np.hypot(xx, yy) / rad, 0, 1)
         for (lx, ly), fr in BUILD[b]["lights"]:
             a = 1.0 if fr <= rank_old else new_alpha if fr <= rank_new else 0.0
             if a > 0:
-                self.piece("glow_0.png", self.A[0] + (lx - ax) * self.k, self.A[1] + (ly - ay) * self.k, 150 * self.k, mode="screen", strength=0.8 * a)
+                lum = np.dstack([np.full(fall.shape, 240), np.full(fall.shape, 168), np.full(fall.shape, 72), fall * 255 * 0.45 * a]).astype(np.uint8)
+                over(self.cv, Image.fromarray(lum), self.A[0] + (lx - ax) * self.k - rad, self.A[1] + (ly - ay) * self.k - rad)
 
     def tap(self, b, ms):
         if ms < 0 or ms > 200:
@@ -276,7 +285,7 @@ def case_stade(c, b, old, new, t):
         if 70 <= t < 190:
             c.piece("burst_0_0.png", cx, cy, 1.3 * bs)
         elif 190 <= t < 270:
-            c.piece("burst_0_1.png", cx, cy, 1.3 * bs, flip=True)
+            c.piece("burst_0_1.png", cx, cy, 1.3 * bs * 0.85)
 
 
 def case_rang(c, b, stage, t):
@@ -292,8 +301,10 @@ def case_rang(c, b, stage, t):
         im = sprite(p, c.k, sc, sc)
         over(c.cv, im, x0 + im0.width * c.k / 2 - im.width / 2, y0 + im0.height * c.k - im.height)
     px, py = x0 + im0.width * c.k / 2, y0 + im0.height * c.k / 2
+    bb = c.body_box(b, stage)
+    ux, uy = c.A[0] + (bb[0] + bb[2]) / 2, c.A[1] + bb[1] + 0.3 * (bb[3] - bb[1])  # the piece's own spot is off to the right
     if 0 <= t < 70:
-        c.piece("burst_0_0.png", px, py, 0.9 * im0.width * c.k + 40)
+        c.piece("burst_0_0.png", ux, uy, 0.5 * (bb[2] - bb[0]))
     if 70 <= t < 150:
         c.piece("puffs_0_1.png", px + 10, y0 + im0.height * c.k, 90 * c.k)
 
@@ -311,7 +322,7 @@ def jour_stade(c, b, old, new, t):
             c.squash_glow(c.A[0], c.A[1] - 8 * c.k, 1.3 * 384 * c.k * 1.4, 0.45 * 384 * c.k, 0.6 * g)
             c.piece("glow_0.png", cx, cy, gl, mode="screen", strength=g)
         else:
-            c.piece("glow_0.png", cx, cy, gl, alpha=0.9 * g)
+            c.piece("glow_0.png", cx, cy, gl, alpha=0.6 * g, desat=0.6)
     if t < 200:
         c.body(b, old, ink=ink)
         c.scaffold(b, ink=ink)
@@ -336,7 +347,9 @@ def jour_rang(c, b, stage, t):
     px, py = x0 + im0.width * c.k / 2, y0 + im0.height * c.k / 2
     gl = ramp(t, 0, 100) * (1 - ramp(t, 300, 450))
     if gl > 0:
-        c.piece("glow_0.png", px, py, 1.4 * im0.width * c.k + 40, mode="screen" if c.night else "over", alpha=0.9 * gl, strength=gl)
+        bb = c.body_box(b, stage)
+        ux, uy = c.A[0] + (bb[0] + bb[2]) / 2, c.A[1] + bb[1] + 0.3 * (bb[3] - bb[1])
+        c.piece("glow_0.png", ux, uy, 0.7 * (bb[2] - bb[0]), mode="screen" if c.night else "over", alpha=0.6 * gl, strength=gl, desat=0 if c.night else 0.6)
     sc = 0.0 if t < 100 else (1.10 * ramp(t, 100, 200) if t < 200 else 1.10 - 0.10 * ramp(t, 200, 300))
     ink = 1.0 if t < 300 else 1 - ramp(t, 300, 450)
     if t >= 0 and sc > 0:

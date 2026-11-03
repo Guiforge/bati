@@ -21,31 +21,34 @@ from PIL import Image, ImageDraw, ImageFilter  # noqa: E402
 OUT = ROOT / "docs/designs/village/life/scratch/u3/pieces"
 RAW = OUT / "raw"
 BUDGET = pathlib.Path.home() / ".cache/bati-art-loop/iso/budget.json"
-JOB_MAX = 1.50
 EACH = 0.07  # reserved per image; the settled cost is the real one
 CANDIDATES = 2
 MAG = "Flat magenta background (#FF00FF), one even colour, nothing else in the frame. "
 TAIL = "Hand-painted matte gouache with visible brush strokes, no gloss, no fine grain. No text, no letters, no figure."
+DUST = ("Three separate small puffs of dust side by side in a row with clear space between them, left one medium, middle one "
+        "large, right one small. Each is an irregular cluster of soft overlapping dry-brush strokes in {col}, flat matte, two "
+        "close values only, no highlights, no sphere shading, no shine, no outline, no ring, the edge broken and ragged into "
+        "small chips. No trail, no ground, no shadow. ")
 PROMPTS = {
-    "puffs": ("Three separate small round puffs of dust side by side in a row with clear space between them, left one medium, "
-              "middle one large, right one small. Each puff is a rounded cluster of five or six overlapping lobes in matte "
-              "warm sand-beige, a paler cream on the upper left and a darker taupe on the lower right, the outer edge broken "
-              "and ragged like dry brush strokes, torn into small chips. No outline, no trail, no ground, no shadow. " + MAG + TAIL),
-    "burst": ("Two separate drawings side by side, a left one and a right one, each a ragged splash of pale cream paint with "
-              "eight to eleven pointed rays of unequal length around a rough round middle, drawn with a heavy dark ink brush "
-              "outline (#0F1518): the line is uneven, thick then thin, with small gaps and chipped edges, the points slightly "
-              "bent. The fill is matte flat cream (#F2E2B4) with a second darker cream tone on the lower right. The right "
-              "drawing has a different number of rays, different lengths and angles from the left one. " + MAG + TAIL),
-    "glow": ("One round disc of warm light painted with broad dry brush strokes, centre pale cream (#F2E2B4), then warm amber "
-             "(#F0A848), then a broken outer edge made of loose separate brush strokes, matte, flat, no ring, no rays. Flat "
-             "pure black background (#000000), one even colour, nothing else in the frame. " + TAIL),
+    "puffs": DUST.format(col="matte warm sandy tan, the colour of dry earth") + MAG + TAIL,
+    "puffsn": DUST.format(col="matte cool slate blue-grey") + MAG + TAIL,
+    "burst": ("Two separate drawings side by side, a left one and a right one. Each is an irregular splash of pale cream paint "
+              "made of a few wide sweeping dry-brush strokes that cross each other, a rough lopsided shape with no regular "
+              "points and no symmetry, the cream stroke ends frayed. Part of its outline carries a broken dark ink brush edge "
+              "(#0F1518), thick in places, thin in others, with gaps, not a closed line. Matte flat cream (#F2E2B4) with a "
+              "second darker cream tone in a few strokes. The two drawings have different shapes. " + MAG + TAIL),
+    "glow": ("A large soft halo of warm light, many wide overlapping dry brush strokes of pale cream (#F2E2B4) and warm amber "
+             "(#F0A848) loosely gathered round a bright middle, fading smoothly to pure black at every side, a loose irregular "
+             "cloud shape, no outline, no ring, no disc, no sharp boundary anywhere. Flat pure black background (#000000). " + TAIL),
 }
-PIECES = {"puffs": 3, "burst": 2, "glow": 1}
+CANDS = {"puffs": 1, "puffsn": 1, "burst": 2, "glow": 1}
+PIECES = {"puffs": 3, "puffsn": 3, "burst": 2, "glow": 1}
+LABEL, JOB_MAX = "u3 retake", 0.40
 
 
 def spent_job():
     b = json.loads(BUDGET.read_text())["v1"]["batches"]
-    return round(sum(x["cost"] for x in b if x["label"].startswith("u3 ")), 4)
+    return round(sum(x["cost"] for x in b if x["label"].startswith(LABEL)), 4)
 
 
 def gen():
@@ -55,12 +58,12 @@ def gen():
     from lib import flux
     guard_endpoint(FLUX3)
     RAW.mkdir(parents=True, exist_ok=True)
-    jobs = [(RAW / f"{k}_{i}.png", p) for k, p in PROMPTS.items() for i in range(CANDIDATES) if not (RAW / f"{k}_{i}.png").exists()]
+    jobs = [(RAW / f"{k}_{i}.png", p) for k, p in PROMPTS.items() for i in range(CANDS[k]) if not (RAW / f"{k}_{i}.png").exists()]
     if not jobs:
         return
     if spent_job() + len(jobs) * EACH > JOB_MAX:
         sys.exit(f"job cap {JOB_MAX}: {spent_job()} spent + {len(jobs) * EACH:.2f}")
-    batch = reserve(len(jobs), EACH, "u3 pieces", None)
+    batch = reserve(len(jobs), EACH, LABEL, None)
     logs: list = []
 
     def one(j):
@@ -92,6 +95,7 @@ def key_cut(im, lo=30.0, hi=80.0, grow=10):
     filled = np.asarray(out) != 128
     core = np.asarray(Image.fromarray((filled * 255).astype(np.uint8)).filter(ImageFilter.MinFilter(3))) > 0
     a = np.where(core & (d > 55), 1.0, soft)
+    a = np.where((rgb[..., 0] > rgb[..., 1] + 35) & (rgb[..., 2] > rgb[..., 1] + 15) & (d < 150), 0.0, a)  # key-hue pixels are never paint
     have = np.asarray(Image.fromarray(((a > 0.97) * 255).astype(np.uint8)).filter(ImageFilter.MinFilter(5))) > 0
     col = rgb.copy()
     for _ in range(grow):  # grow the solid colour outward, 1 px per pass
@@ -110,6 +114,9 @@ def glow_cut(im):
     """On black the alpha is the brightest channel; the colour is divided by it."""
     rgb = np.asarray(im.convert("RGB"), float)
     a = np.clip(rgb.max(-1) / 255 * 1.15, 0, 1)
+    h, w = a.shape  # the halo must reach zero before the picture edge: radial fade over the outer 45 %
+    r = np.hypot(*np.meshgrid(np.arange(w) - w / 2, np.arange(h) - h / 2)[::-1][::-1]) / (min(h, w) / 2)
+    a = a * np.clip((1 - r) / 0.45, 0, 1) ** 1.2
     return np.clip(rgb / np.maximum(a[..., None], 0.05), 0, 255), a, np.zeros(3)
 
 

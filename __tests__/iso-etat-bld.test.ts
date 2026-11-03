@@ -11,6 +11,7 @@ describe("etatBldDe (?bld= capture states of the buildings track)", () => {
       avantBase: undefined,
       show: undefined,
       delai: 1.5,
+      ralenti: 1,
       palier: 12,
       semaine: false,
     });

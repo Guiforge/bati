@@ -31,20 +31,27 @@ import { Image } from "expo-image";
 import { Fragment, type ReactNode, useContext, useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import Animated, {
+  cancelAnimation,
   Easing,
   type SharedValue,
+  useAnimatedReaction,
   useAnimatedStyle,
+  useDerivedValue,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 import type { AddOn, BuildingData, LightAnchor, Point } from "@/constants/buildingData";
 import { buildingStageFor, type StageRule, type VisualStage } from "@/constants/buildingStages";
 import { rawColors } from "@/constants/rawColors";
 import { BATIMENT_MOTEUR, etatBatiment, type Marque } from "./batiment";
 import type { Rect } from "./carteDemo";
+import { ArretAilesContext } from "./etatBld";
 import { useMouvementReduit } from "./fige";
 import { HorlogeContext } from "./horloge";
+import { MagieCiel, MagieSol } from "./MagieBld";
 import {
+  arretAiles,
   BOUFFEES,
   balancement,
   basesA,
@@ -216,9 +223,11 @@ export type PropsBatiment = {
   /** The building's image at a stage; `suivant` for the stage being revealed, mounted invisible. */
   sprite: (stade: VisualStage, suivant: boolean) => ReactNode;
   /** The map's own layers over the sprite (shadow, sails, fires, effects) at the stage the body wears: they bounce with it. */
-  couches?: (stade: VisualStage) => ReactNode;
+  couches?: (stade: VisualStage, rang: number, base: number) => ReactNode;
   /** The ready-to-rise mark: the last thing drawn. */
   reclame?: ReactNode;
+  /** Capture only: the clock of a moment runs this many times slower (a film at 7 fps misses 2.5 s). */
+  ralenti?: number;
 };
 
 export function BatimentMoteur({ actif = BATIMENT_MOTEUR, ...p }: PropsBatiment) {
@@ -227,7 +236,7 @@ export function BatimentMoteur({ actif = BATIMENT_MOTEUR, ...p }: PropsBatiment)
     return (
       <>
         {p.sprite(stade, false)}
-        {p.couches?.(stade)}
+        {p.couches?.(stade, p.rank, p.baseRank ?? 0)}
         {p.reclame}
       </>
     );
@@ -299,17 +308,21 @@ function Neuf({
   );
 }
 
+/**
+ * The keeper's hop, or its reaction pose with reduced motion. Both come out of the one animated
+ * style: a fixed style next to an animated one is the one the animated style hides.
+ */
+function useSautGardien({ plan, h, trace }: Jeu) {
+  return useAnimatedStyle(() => ({
+    transform: trace ? POSE_REACTION : [{ translateY: plan ? -sautGardien(plan, h.get()) : 0 }],
+  }));
+}
+
 /** Whatever it holds hops with the keeper's two jumps, or stays on the reaction pose. */
 function Saute({ jeu, children }: { jeu: Jeu; children: ReactNode }) {
-  const { plan, h, trace } = jeu;
-  const saut = useAnimatedStyle(() => ({
-    transform: [{ translateY: plan ? -sautGardien(plan, h.get()) : 0 }],
-  }));
+  const saut = useSautGardien(jeu);
   return (
-    <Animated.View
-      pointerEvents="none"
-      style={[enBoite(jeu.boite), trace ? { transform: POSE_REACTION } : saut]}
-    >
+    <Animated.View pointerEvents="none" style={[enBoite(jeu.boite), saut]}>
       {children}
     </Animated.View>
   );
@@ -424,18 +437,12 @@ function Devant({
 }
 
 function Gardien({ at, jeu }: { at: Point; jeu: Jeu }) {
-  const { plan, h, trace } = jeu;
-  const saut = useAnimatedStyle(() => ({
-    transform: [{ translateY: plan ? -sautGardien(plan, h.get()) : 0 }],
-  }));
+  const saut = useSautGardien(jeu);
   return (
     <Animated.View
       pointerEvents="none"
-      testID={trace ? "batiment-gardien-reagit" : "batiment-gardien"}
-      style={[
-        forme(at, TAILLE.gardien, rawColors.isoFanion),
-        trace ? { transform: POSE_REACTION } : saut,
-      ]}
+      testID={jeu.trace ? "batiment-gardien-reagit" : "batiment-gardien"}
+      style={[forme(at, TAILLE.gardien, rawColors.isoFanion), saut]}
     />
   );
 }
@@ -448,16 +455,18 @@ function Bouffee({
   centre,
   d,
   nuit,
+  n,
 }: {
   plan: PlanSpectacle;
   h: SharedValue<number>;
+  n: number;
   i: number;
   centre: Point;
   d: number;
   nuit: boolean;
 }) {
   const style = useAnimatedStyle(() => {
-    const b = bouffee(plan, h.get(), i);
+    const b = bouffee(plan, h.get(), i, n);
     return { opacity: b.opacite, transform: [{ scale: b.echelle }] };
   });
   return (
@@ -473,30 +482,55 @@ function Bouffee({
   );
 }
 
-/** The cloud: puffs from the foot to the middle of the body that cover the whole of it. */
+/** The little puffs round a new piece, dp from its centre, and their diameter. */
+const AUTOUR: readonly (readonly [dx: number, dy: number])[] = [
+  [-9, 7],
+  [9, 5],
+  [0, -9],
+];
+const D_AUTOUR = 30;
+
+/**
+ * The cloud. A stage change: 7 puffs from the foot to the middle of the body that cover all of it.
+ * A rank inside a stage: 3 puffs round the new piece (`neuve`), the body stays clear.
+ */
 function Poussiere({
   plan,
   h,
   nuit,
   corps,
   boite,
+  neuve,
+  pied,
 }: {
   plan: PlanSpectacle;
   h: SharedValue<number>;
   nuit: boolean;
   corps: Rect;
   boite: Boite;
+  /** Where the rank's new piece stands, when it has one. */
+  neuve: Point | null;
+  pied: Point;
 }) {
+  const centre = neuve ?? pied;
+  const puffs: readonly { c: Point; d: number }[] =
+    plan.genre === "stade"
+      ? BOUFFEES.map(([bx, by, bd]) => ({
+          c: [corps.x + bx * corps.w, corps.y + by * corps.h],
+          d: bd * corps.w,
+        }))
+      : AUTOUR.map(([dx, dy]) => ({ c: [centre[0] + dx, centre[1] + dy], d: D_AUTOUR }));
   return (
     <View pointerEvents="none" testID="batiment-poussiere" style={enBoite(boite)}>
-      {BOUFFEES.map(([bx, by, bd], i) => (
+      {puffs.map(({ c, d }, i) => (
         <Bouffee
-          key={`${bx}-${by}`}
+          key={`${c[0]}-${c[1]}`}
           plan={plan}
           h={h}
           i={i}
-          centre={[corps.x + bx * corps.w, corps.y + by * corps.h]}
-          d={bd * corps.w}
+          n={puffs.length}
+          centre={c}
+          d={d}
           nuit={nuit}
         />
       ))}
@@ -514,20 +548,45 @@ function useMoment(
   spectacle: SpectacleEnCours | undefined,
   reduitApp: boolean,
   onFini: ((cle: string) => void) | undefined,
+  ralenti: number,
 ) {
   const plan = spectacle?.plan;
   const cle = spectacle?.cle;
   const [marche, setMarche] = useState<{ cle: string; t: number } | undefined>(undefined);
   const h = useSharedValue(0);
   const dit = useRef<string | undefined>(undefined);
+  const fini = () => {
+    if (cle === undefined || dit.current === cle) return;
+    dit.current = cle;
+    onFini?.(cle);
+  };
+  // Every instant comes from `h`, the clock the cloud and the bounce read on the UI thread: the JS
+  // side that swaps the image can only be late on the cloud, never early (a JS timer raced it).
+  const instants = plan
+    ? [...plan.etapes.map((e) => e.debut), picPoussiere(plan) ?? 0].sort((a, b) => a - b)
+    : [];
+  const total = plan?.total ?? 0;
+  const avance = (n: number) => {
+    if (cle === undefined) return;
+    if (n > instants.length) {
+      setMarche({ cle, t: total });
+      fini();
+    } else setMarche({ cle, t: instants[n - 1] ?? 0 });
+  };
+  useAnimatedReaction(
+    () => {
+      const v = h.get();
+      if (total > 0 && v >= total) return instants.length + 1;
+      return instants.filter((i) => v >= i).length;
+    },
+    (n, avant) => {
+      if (n > 0 && n !== avant) scheduleOnRN(avance, n);
+    },
+    [plan, cle],
+  );
   // biome-ignore lint/correctness/useExhaustiveDependencies: see above
   useEffect(() => {
     if (!plan || cle === undefined) return;
-    const fini = () => {
-      if (dit.current === cle) return;
-      dit.current = cle;
-      onFini?.(cle);
-    };
     h.set(0);
     if (plan.reduit || reduitApp) {
       // On the end: a piece's pop is on 1 and the cloud is gone, not stuck at the first frame.
@@ -536,22 +595,9 @@ function useMoment(
       fini();
       return;
     }
-    h.set(withTiming(plan.total, { duration: plan.total, easing: Easing.linear }));
-    const instants = plan.etapes.map((e) => e.debut);
-    // The swap is at the dust's peak, in the middle of a step.
-    const pic = picPoussiere(plan);
-    if (pic !== undefined) instants.push(pic);
-    const ids = instants.map((t) => setTimeout(() => setMarche({ cle, t }), t));
-    ids.push(
-      setTimeout(() => {
-        setMarche({ cle, t: plan.total });
-        fini();
-      }, plan.total),
-    );
-    return () => {
-      for (const id of ids) clearTimeout(id);
-    };
-  }, [plan, cle, reduitApp, h]);
+    h.set(withTiming(plan.total, { duration: plan.total * ralenti, easing: Easing.linear }));
+    return () => cancelAnimation(h);
+  }, [plan, cle, reduitApp, h, ralenti]);
   // Read only for its own key, so a new moment starts at 0.
   return { t: cle !== undefined && marche?.cle === cle ? marche.t : 0, h };
 }
@@ -617,7 +663,7 @@ function etatsA(
   const depart = plan
     ? etatBatiment(data, plan.deRang, { baseRank: plan.deBase, nuit, rule })
     : etat;
-  return { etat, etatMarque, cible, depart };
+  return { etat, etatMarque, cible, depart, rang: rangs.corps, base: bases.corps };
 }
 
 /** Everything that stands in front of the body, but the dust. */
@@ -675,6 +721,18 @@ function Avant({
   );
 }
 
+/** Where the rank's new piece stands (an add-on, then the teaser, then the beat), else null. */
+function pieceNeuve(cible: Etat, depart: Etat, { px, ancre }: Geo): Point | null {
+  const ajout = cible.addOns.find((a) => !depart.addOns.includes(a));
+  if (ajout) return px([ancre[0] + ajout.anchorOffset[0], ancre[1] + ajout.anchorOffset[1]]);
+  const { teaser, gag, gagSlot } = cible;
+  if (teaser && teaser !== depart.teaser) {
+    return px([ancre[0] + teaser.anchorOffset[0], ancre[1] + teaser.anchorOffset[1]]);
+  }
+  const ou = gag?.at ?? gagSlot;
+  return gag && gag !== depart.gag && ou ? px(ou) : null;
+}
+
 function Moteur({
   data,
   rank,
@@ -690,11 +748,19 @@ function Moteur({
   sprite,
   couches,
   reclame,
+  ralenti = 1,
 }: Omit<PropsBatiment, "actif">) {
   const reduitApp = useMouvementReduit();
   const plan = spectacle?.plan;
-  const { t, h } = useMoment(spectacle, reduitApp, onFini);
-  const { etat, etatMarque, cible, depart } = etatsA(data, plan, t, {
+  const { t, h } = useMoment(spectacle, reduitApp, onFini, ralenti);
+  const {
+    etat,
+    etatMarque,
+    cible,
+    depart,
+    rang: rangCorps,
+    base: baseCorps,
+  } = etatsA(data, plan, t, {
     rank,
     baseRank,
     nuit,
@@ -711,6 +777,9 @@ function Moteur({
     return { transform: [{ scaleX: x }, { scaleY: y }] };
   });
   const joue = !!plan && !plan.reduit;
+  const arret = useDerivedValue(() =>
+    plan && joue ? arretAiles(plan, h.get()) : { angle: 0, poids: 0 },
+  );
   const jeu: Jeu = {
     plan: joue ? plan : undefined,
     h,
@@ -719,6 +788,7 @@ function Moteur({
   };
   return (
     <>
+      {masque || !etat.magie ? null : <MagieSol magie={etat.magie} px={px} />}
       <Ajouts layer="behind" etat={etat} jeu={jeu} geo={geo} />
       <Animated.View
         pointerEvents="none"
@@ -729,7 +799,9 @@ function Moteur({
           <Fragment key={stade}>{sprite(stade, stade !== etat.stage)}</Fragment>
         ))}
         <Ajouts layer="sousAiles" etat={etat} jeu={jeu} geo={geo} />
-        {couches?.(etat.stage)}
+        <ArretAilesContext.Provider value={arret}>
+          {couches?.(etat.stage, rangCorps, baseCorps)}
+        </ArretAilesContext.Provider>
       </Animated.View>
       {masque ? null : (
         <Animated.View
@@ -737,6 +809,7 @@ function Moteur({
           testID="batiment-avant"
           style={[enBoite(boite), { transformOrigin: [pied[0], pied[1], 0] }, styleCorps]}
         >
+          {etat.magie ? <MagieCiel magie={etat.magie} px={px} nuit={nuit} boite={boite} /> : null}
           <Avant
             etat={etat}
             etatMarque={etatMarque}
@@ -751,7 +824,15 @@ function Moteur({
         </Animated.View>
       )}
       {joue && plan ? (
-        <Poussiere plan={plan} h={h} nuit={nuit} corps={corps} boite={boite} />
+        <Poussiere
+          plan={plan}
+          h={h}
+          nuit={nuit}
+          corps={corps}
+          boite={boite}
+          pied={pied}
+          neuve={pieceNeuve(cible, depart, geo)}
+        />
       ) : null}
       {reclame}
     </>

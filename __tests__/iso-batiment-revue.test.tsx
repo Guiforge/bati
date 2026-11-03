@@ -7,7 +7,18 @@ import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { BatimentMoteur } from "@/components/village/iso/BatimentMoteur";
 import { etatBatiment } from "@/components/village/iso/batiment";
+import { FORMES_GRAIN } from "@/components/village/iso/effets";
+import { etatBldDe } from "@/components/village/iso/etatBld";
 import {
+  angleAnneau,
+  MARQUES_GLYPHE,
+  PERIODE_EXTERIEUR_MS,
+  PERIODE_INTERIEUR_MS,
+  souffleZone,
+} from "@/components/village/iso/magie";
+import {
+  ARRET_REVELATION_MS,
+  arretAiles,
   BOUFFEES,
   balancement,
   basesA,
@@ -448,7 +459,7 @@ describe("the tree", () => {
     expect(ids()).not.toContain("batiment-neuf");
     // Past the swap the rank 4 piece (behind), the rank 4 teaser and the rank 4 beat each pop on their own.
     await act(() => {
-      jest.advanceTimersByTime(200);
+      jest.advanceTimersByTime(300);
     });
     expect(ids().filter((i) => i === "batiment-neuf")).toHaveLength(3);
     expect(ids()).toContain("batiment-addon-4");
@@ -532,7 +543,8 @@ describe("the frozen cards' data, pure", () => {
     } as const satisfies BuildingData;
     expect(ailesAuRang(d, 5, 0)).toBe("a");
     expect(ailesAuRang(d, 6, 0)).toBe("b");
-    expect(ailesAuRang(essai, 6, 0)).toBeNull();
+    expect(ailesAuRang(essai, 4, 0)).toBeNull();
+    expect(ailesAuRang(essai, 6, 0)).toBe("grand");
     expect(etatBatiment(d, 5).gardienSprite).toBe("g");
     expect(etatBatiment(d, 1).gardienSprite).toBe("s");
   });
@@ -543,5 +555,98 @@ describe("the frozen cards' data, pure", () => {
       expect(souffleLueur(5000, n)).toBeCloseTo(0.85, 5);
       expect(souffleLueur(2500 / n, n)).toBeCloseTo(1.15, 5);
     }
+  });
+});
+
+describe("the cloud and the capture clock", () => {
+  it("holds full opacity 150 ms past the swap, then fades out", () => {
+    const plan = planSpectacle("stade", 4, 5, false);
+    const pic = picPoussiere(plan) ?? -1;
+    for (let i = 0; i < BOUFFEES.length; i++) {
+      expect(bouffee(plan, pic + 150, i).opacite).toBeCloseTo(0.85, 5);
+      expect(bouffee(plan, pic + 250, i).opacite).toBeLessThan(0.85);
+    }
+  });
+
+  it("a stage change makes 7 puffs, a rank 3 round the new piece", async () => {
+    jest.useFakeTimers();
+    const compte = () => screen.queryAllByTestId("batiment-bouffee").length;
+    await render(<Parent de={4} vers={5} />);
+    await fireEvent.press(screen.getByTestId("tap"));
+    expect(compte()).toBe(7);
+    await screen.unmount();
+    await render(<Parent de={3} vers={4} />);
+    await fireEvent.press(screen.getByTestId("tap"));
+    expect(compte()).toBe(3);
+    jest.useRealTimers();
+  });
+
+  it("a link's ralenti is a number from 1 to 10, else 1", () => {
+    expect(etatBldDe({ bld: "windmill", rang: "3", ralenti: "4" })?.ralenti).toBe(4);
+    expect(etatBldDe({ bld: "windmill", rang: "3", ralenti: "40" })?.ralenti).toBe(1);
+    expect(etatBldDe({ bld: "windmill", rang: "3" })?.ralenti).toBe(1);
+  });
+});
+
+describe("the sails' hold and the magic layer", () => {
+  it("the sails stand still from the tap, ease to 45 degrees at the reveal for 3 s, then let go", () => {
+    const plan = planSpectacle("stade", 4, 5, false, { ailes: true });
+    const rev = plan.etapes.find((e) => e.etape === "revelation");
+    const ailes = plan.etapes.find((e) => e.etape === "ailes");
+    expect(ailes?.fin).toBe((rev?.debut ?? 0) + ARRET_REVELATION_MS);
+    expect(plan.total).toBe(ailes?.fin);
+    expect(arretAiles(plan, 400)).toEqual({ angle: 0, poids: 1 });
+    const milieu = arretAiles(plan, (rev?.debut ?? 0) + 1000);
+    expect(milieu.angle).toBeCloseTo(Math.PI / 4, 5);
+    expect(milieu.poids).toBe(1);
+    expect(arretAiles(plan, (ailes?.fin ?? 0) - 1).poids).toBeLessThan(0.01);
+    expect(arretAiles(plan, plan.total).poids).toBe(0);
+    // No sails: no hold and the moment keeps its own length.
+    const nue = planSpectacle("stade", 4, 5, false);
+    expect(arretAiles(nue, 400).poids).toBe(0);
+    expect(nue.total).toBeLessThan(plan.total);
+  });
+
+  it("the rings: opposite ways, 8 s and 12 s a turn, 4 marks that are no letters, none the rune", () => {
+    expect(angleAnneau(2000, PERIODE_EXTERIEUR_MS, 1)).toBeCloseTo(90, 5);
+    expect(angleAnneau(3000, PERIODE_INTERIEUR_MS, -1)).toBeCloseTo(-90, 5);
+    expect(MARQUES_GLYPHE.length).toBeGreaterThanOrEqual(3);
+    expect(new Set(MARQUES_GLYPHE).size).toBe(MARQUES_GLYPHE.length);
+    expect(MARQUES_GLYPHE).not.toContain(FORMES_GRAIN.runes);
+    for (const d of MARQUES_GLYPHE) expect(d).toMatch(/^[MHVLZ0-9. ]+$/);
+    expect(souffleZone(0)).toBeCloseTo(1, 5);
+    expect(souffleZone(2500)).toBeCloseTo(1.15, 5);
+    expect(souffleZone(5000)).toBeCloseTo(1, 5);
+  });
+
+  it("the top rank wears its magic, drawn in code, none of it tappable, still with reduced motion", async () => {
+    expect(etatBatiment(essai, 9).magie).toBeNull();
+    expect(etatBatiment(essai, 10).magie).not.toBeNull();
+    await render(<Parent de={10} vers={10} nuit />);
+    const o = ids();
+    for (const id of [
+      "batiment-glyphe",
+      "batiment-faisceau",
+      "batiment-souffle",
+      "batiment-constellation",
+    ]) {
+      expect(o).toContain(id);
+    }
+    expect(o.filter((i) => i === "batiment-luciole")).toHaveLength(5);
+    for (const n of screen.queryAllByTestId(
+      /^batiment-(glyphe|faisceau|souffle|luciole|constellation)/,
+    )) {
+      expect(n.props.pointerEvents).toBe("none");
+      expect(n.props.onPress).toBeUndefined();
+    }
+    await screen.unmount();
+    // By day: the rings and the breath, not the night's beam, fireflies and stars.
+    await render(<Parent de={10} vers={10} />);
+    const jour = ids();
+    expect(jour).toContain("batiment-glyphe");
+    expect(jour).toContain("batiment-souffle");
+    expect(jour).not.toContain("batiment-faisceau");
+    expect(jour).not.toContain("batiment-luciole");
+    expect(jour).not.toContain("batiment-constellation");
   });
 });

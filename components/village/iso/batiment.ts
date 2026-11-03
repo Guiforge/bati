@@ -12,6 +12,7 @@ import {
   type GuardianSlot,
   gagBeatAt,
   type LightAnchor,
+  type Magie,
   type Marque,
   type NightSprite,
   type Point,
@@ -53,6 +54,8 @@ export type EtatBatiment = {
   gardien: (GuardianSlot & { pose: Point }) | null;
   /** The keeper's sprite at this stage (its own, else the single one). */
   gardienSprite: string | null;
+  /** The magic layer, once its rank is reached. */
+  magie: Magie | null;
   /** The scaffold and build gag of this stage, when the data gives them (else the defaults). */
   chantier: ChantierStade | null;
 };
@@ -96,5 +99,6 @@ export function etatBatiment(
     gardien: gardien ? { ...gardien, pose: gardien.poses?.[stage] ?? gardien.at } : null,
     gardienSprite: gardien ? (gardien.sprites?.[stage] ?? gardien.sprite) : null,
     chantier: data.chantier?.[stage] ?? null,
+    magie: data.magie && atteint(data.magie, rank, baseRank) ? data.magie : null,
   };
 }

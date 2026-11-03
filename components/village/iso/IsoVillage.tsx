@@ -40,6 +40,7 @@ import {
 } from "./carteDemo";
 import { CHANTIER_MS, ECHAFAUDAGE_APRES_MS } from "./chantier";
 import { PalierContext } from "./detail";
+import { donneesSeul } from "./donneesBld";
 import { CroissanceContext, useBascule } from "./familles";
 import { accrochesDe } from "./feux";
 import { legendaire } from "./fierte";
@@ -252,6 +253,10 @@ const habitantsDe = (seul: BuildingCode | undefined, tier: VillageTier) =>
 const vueSeul = (seul: BuildingCode | undefined, w: number, h: number) =>
   seul === undefined ? undefined : vueFoyer(seul, 12, "jour", w, h, ZOOM_FOYER_SEUL);
 
+/** A lone building that goes through the engine opens once its own image has decoded. */
+const attendBatiment = (seul: BuildingCode | undefined) =>
+  seul !== undefined && donneesSeul(seul) !== undefined;
+
 /** A lone building has no walkers to plan for: without a wave every family plays all the time (familles.ts). */
 const departDe = (seul: BuildingCode | undefined, depart: SharedValue<Depart>) =>
   seul === undefined ? depart : null;
@@ -343,7 +348,7 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
   const construits = montres.filter((code) => (niveaux.get(code) ?? 0) > 0);
   const stadeNiveau = (code: BuildingCode, niveau: number) => stadeDuNiveau(code, niveau);
   const horloge = useHorloge();
-  const fondu = useFonduOuverture();
+  const fondu = useFonduOuverture(attendBatiment(seul));
   // The map's top left in the window, read at each tap: the bubble lies over the whole screen.
   const racine = useRef<ViewInstance>(null);
   const origine = useRef<readonly [number, number]>([0, 0]);

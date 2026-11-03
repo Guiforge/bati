@@ -44,6 +44,44 @@ export const batimentEssai: BuildingData = {
     { fromRank: 9, untilRank: 10, sprite: null, anchorOffset: [480, -720] },
   ],
   nightSprites: [{ fromRank: 7, sprite: null, anchorOffset: [-560, -720] }],
+  // The sails' sheet by rank: the grand one from rank 5 (`windmill_sails_grand.webp`).
+  ailes: [{ fromRank: 5, sheet: "grand" }],
+  // The top rank's magic, drawn in code: rings round the foot, a breath on a zone, and by night the
+  // beam, five fireflies and two constellations (the second is a crest).
+  magie: {
+    fromRank: 10,
+    glyphes: [{ at: [448, 1290], rayon: 46, sens: 1 }],
+    faisceau: { at: [448, 120], haut: 44 },
+    souffle: { zone: [352, 520, 192, 200], at: [448, 620] },
+    lucioles: [
+      [200, 1000],
+      [300, 900],
+      [660, 1050],
+      [720, 920],
+      [560, 1200],
+    ],
+    constellations: [
+      {
+        points: [
+          [150, 200],
+          [230, 140],
+          [300, 210],
+          [380, 120],
+          [330, 60],
+        ],
+      },
+      {
+        blason: true,
+        points: [
+          [640, 80],
+          [760, 80],
+          [760, 170],
+          [700, 240],
+          [640, 170],
+        ],
+      },
+    ],
+  },
   guardian: { fromRank: 1, at: [160, 1200], sprite: null },
   // The scaffold of the stage being built, and where its gag stands: the taller the stage, the higher.
   chantier: {

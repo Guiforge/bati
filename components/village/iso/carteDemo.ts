@@ -414,10 +414,13 @@ export const ailesDe = (
   code: BuildingCode,
   stade?: Stade,
   ambiance: Ambiance = "nuit",
+  /** The data's sheet for the rank (`ailesAuRang`), before the stage's: `windmill_sails_<feuille>.webp`. */
+  feuille?: string | null,
 ): SpriteIso | undefined => {
-  const propre = stade
-    ? ((ambiance === "nuit" ? undefined : MAQUETTES[`${code}_sails_${stade}.${ambiance}.webp`]) ??
-      MAQUETTES[`${code}_sails_${stade}.webp`])
+  const clef = feuille ?? stade;
+  const propre = clef
+    ? ((ambiance === "nuit" ? undefined : MAQUETTES[`${code}_sails_${clef}.${ambiance}.webp`]) ??
+      MAQUETTES[`${code}_sails_${clef}.webp`])
     : undefined;
   return (
     propre ??

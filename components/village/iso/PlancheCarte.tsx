@@ -35,6 +35,7 @@ export function Planche({
   reduit = 1,
   ancre,
   teinte,
+  onCharge,
   testID,
 }: {
   s: SpriteIso | undefined;
@@ -54,6 +55,8 @@ export function Planche({
   ancre?: Rect;
   /** A flat colour in the image's own silhouette (tintColor), used under an opacity to darken it. */
   teinte?: string;
+  /** Called once the image has decoded (the lone building's opening waits for it). */
+  onCharge?: () => void;
   testID: string;
 }) {
   const detail = useContext(PalierContext);
@@ -108,15 +111,17 @@ export function Planche({
       cachePolicy="disk"
       testID={testID}
       onLoad={
-        sonde
-          ? (e) =>
-              sonde(
+        sonde || onCharge
+          ? (e) => {
+              onCharge?.();
+              sonde?.(
                 testID,
                 e.source.width,
                 e.source.height,
                 typeof source === "object" && "uri" in source ? source.uri : String(source),
                 e.source.url,
-              )
+              );
+            }
           : undefined
       }
     />

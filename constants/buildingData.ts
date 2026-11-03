@@ -113,6 +113,25 @@ export interface ChantierStade {
   gag?: { at: Point; sprite: string | null };
 }
 
+/**
+ * The magic layer of a high rank, drawn in code on the map's one clock (nothing tappable, nothing
+ * counted, still with reduced motion). Rings and the breath show by day too; the beam, the
+ * fireflies and the constellations are the night's.
+ */
+export interface Magie extends DepuisBase {
+  fromRank: number;
+  /** Rings round a ground point, `rayon` dp: the outer one turns `sens` once in 8 s, the inner one the other way once in 12 s. */
+  glyphes?: readonly { at: Point; rayon: number; sens: 1 | -1 }[];
+  /** A soft two-colour beam standing on `at`, `haut` dp tall. */
+  faisceau?: { at: Point; haut: number };
+  /** A 15 % breath of a disc at `at`, hidden outside `zone` (x, y, w, h, canvas px). */
+  souffle?: { zone: readonly [x: number, y: number, w: number, h: number]; at: Point };
+  /** Fireflies of 3 dp, each on its own small drift round its point. */
+  lucioles?: readonly Point[];
+  /** Stars joined by thin lines; `blason`: the group is a crest (closed outline). */
+  constellations?: readonly { points: readonly Point[]; blason?: boolean }[];
+}
+
 export interface BuildingData {
   code: BuildingCode;
   /** True while the entries are empty or invented for the shape: no art exists yet. */
@@ -138,6 +157,8 @@ export interface BuildingData {
   chantier?: Partial<Record<VisualStage, ChantierStade>>;
   /** The sails' sheet by first rank (ascending): the last entry reached stands. Left out: the map's by stage. */
   ailes?: readonly (DepuisBase & { fromRank: number; sheet: string })[];
+  /** The magic layer of the top rank(s). */
+  magie?: Magie;
 }
 
 /** The sails' sheet showing at `rank`, or null when the data has none (the map's own by-stage sheet then). */

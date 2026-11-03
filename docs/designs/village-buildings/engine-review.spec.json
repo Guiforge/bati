@@ -1,24 +1,39 @@
 [
   {
     "name": "show-stade-jour",
-    "query": "bld=windmill&rang=5&avant=4&show=stade&delai=6&ambiance=jour",
-    "video": 15,
-    "sheetStart": 5.5,
-    "sheetEnd": 9.5
+    "query": "bld=windmill&rang=5&avant=4&show=stade&delai=2&ralenti=4&ambiance=jour",
+    "video": 22,
+    "sheetStart": 2,
+    "sheetEnd": 20.5
   },
   {
     "name": "show-stade-nuit",
-    "query": "bld=windmill&rang=5&avant=4&show=stade&delai=6&ambiance=nuit",
-    "video": 15,
-    "sheetStart": 5.5,
-    "sheetEnd": 9.5
+    "query": "bld=windmill&rang=5&avant=4&show=stade&delai=2&ralenti=4&ambiance=nuit",
+    "video": 22,
+    "sheetStart": 2,
+    "sheetEnd": 20.5
   },
   {
     "name": "beat-rang-jour",
-    "query": "bld=windmill&rang=4&avant=3&show=rang&delai=5&ambiance=jour",
-    "video": 12,
-    "sheetStart": 4.5,
-    "sheetEnd": 7
+    "query": "bld=windmill&rang=4&avant=3&show=rang&delai=2&ralenti=4&ambiance=jour",
+    "video": 22,
+    "sheetStart": 2,
+    "sheetEnd": 15.5
+  },
+  {
+    "name": "show-a",
+    "query": "bld=windmill&rang=5&avant=4&show=stade&delai=2&ambiance=jour",
+    "video": 22
+  },
+  {
+    "name": "show-b",
+    "query": "bld=windmill&rang=5&avant=4&show=stade&delai=2&ambiance=jour",
+    "video": 22
+  },
+  {
+    "name": "show-c",
+    "query": "bld=windmill&rang=5&avant=4&show=stade&delai=2&ambiance=jour",
+    "video": 22
   },
   {
     "name": "repos-jour",
@@ -28,6 +43,11 @@
   {
     "name": "repos-nuit",
     "query": "bld=windmill&rang=10&ambiance=nuit",
+    "video": 20
+  },
+  {
+    "name": "repos-jour-10",
+    "query": "bld=windmill&rang=10&ambiance=jour",
     "video": 20
   },
   {

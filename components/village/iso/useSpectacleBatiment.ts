@@ -18,7 +18,13 @@ export function useSpectacleBatiment() {
     code: BuildingData["code"],
     deRang: number,
     versRang: number,
-    options?: { deBase?: number; versBase?: number; rule?: StageRule; genre?: Genre },
+    options?: {
+      deBase?: number;
+      versBase?: number;
+      rule?: StageRule;
+      genre?: Genre;
+      ailes?: boolean;
+    },
   ) => {
     if (spectacle && !spectacle.plan.reduit) return null;
     const genre = options?.genre ?? genreDe(code, deRang, versRang, options);

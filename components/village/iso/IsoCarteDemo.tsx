@@ -59,7 +59,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import Svg, { ClipPath, Defs, G, Path, Polygon, Text } from "react-native-svg";
-import type { BuildingData } from "@/constants/buildingData";
+import { ailesAuRang, type BuildingData } from "@/constants/buildingData";
 import type { VisualStage } from "@/constants/buildingStages";
 import { BATIMENT_MOTEUR } from "@/constants/isoPoc";
 import { rawColors } from "@/constants/rawColors";
@@ -128,7 +128,7 @@ import { COUP_MS, COUPS, RETOUR_COUP_MS } from "./chantier";
 import { CODES_A_CORBEAU } from "./corbeaux";
 import { Effets } from "./Effets";
 import { BannieresVocation, ChoseDeVocation, SolVocation } from "./EnsembleVocation";
-import { type EtatBld, EtatBldContext } from "./etatBld";
+import { ArretAilesContext, type EtatBld, EtatBldContext } from "./etatBld";
 import { Feux } from "./FeuxDessines";
 import { Fierte } from "./Fierte";
 import { useTour } from "./familles";
@@ -183,6 +183,7 @@ import {
 import { OmbreContact } from "./OmbreContact";
 import { ecartGrille, ombreMarcheur } from "./ombreMarcheur";
 import type { Point } from "./ombres";
+import { batimentCharge } from "./ouverture";
 import { OmbreSocle, Planche } from "./PlancheCarte";
 import { Lucioles, Rongeur } from "./petitsDetails";
 import { clePiece, eauTracee } from "./pieces";
@@ -823,9 +824,14 @@ function AilesVivantes({
   horloge: SharedValue<number>;
 }) {
   const tour = useTour("moulin");
-  const style = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${angleAiles(tour(horloge.get()))}rad` }],
-  }));
+  const arret = useContext(ArretAilesContext);
+  const style = useAnimatedStyle(() => {
+    const libre = angleAiles(tour(horloge.get()));
+    const a = arret ? arret.get() : null;
+    // A show holds the sails (still at the tap, 45 degrees at the reveal) and lets them go again.
+    const angle = a && a.poids > 0 ? libre + (a.angle - libre) * a.poids : libre;
+    return { transform: [{ rotate: `${angle}rad` }] };
+  });
   const k = rect.w / s.size[0];
   return (
     <Animated.View
@@ -837,18 +843,25 @@ function AilesVivantes({
   );
 }
 
-/** Shadow, sails and glows of the stage `v` the body wears: they change with it, at the swap. */
+type CouchesMoteur = {
+  code: BuildingCode;
+  donnees: BuildingData;
+  vie: Ambiance;
+  masque: boolean;
+  biome: Biome;
+};
+
+/** Shadow, sails and glows of the stage `v` the body wears (and its rank): they change with it, at the swap. */
 function couchesDe(
-  code: BuildingCode,
+  { code, donnees, vie, masque, biome }: CouchesMoteur,
   v: VisualStage,
-  vie: Ambiance,
-  masque: boolean,
-  biome: Biome,
+  rang: number,
+  base: number,
 ) {
   const st = stadeReel(code, enStade(v));
   const sp = spriteDe(code, st, vie);
   const cp = sp ? pose(code, sp) : null;
-  const ailes = ailesDe(code, st, vie);
+  const ailes = ailesDe(code, st, vie, ailesAuRang(donnees, rang, base));
   const rectAiles = cp && sp && ailes ? poseAiles(cp, sp, ailes) : null;
   return (
     <>
@@ -899,11 +912,13 @@ function MaquetteMoteur({
         s={st}
         rect={st ? pose(code, st) : null}
         invisible={masque || suivant}
+        onCharge={suivant ? undefined : batimentCharge}
         testID={suivant ? `iso-maquette-${code}-suivant` : `iso-maquette-${code}`}
       />
     );
   };
-  const couches = (v: VisualStage) => couchesDe(code, v, vie, masque, biome);
+  const couches = (v: VisualStage, rang: number, base: number) =>
+    couchesDe({ code, donnees, vie, masque, biome }, v, rang, base);
   return (
     <MoteurBld
       data={donnees}

@@ -18,6 +18,7 @@ export type Etape =
   | "echafaudage"
   | "poussiere"
   | "revelation"
+  | "ailes"
   | "gardien"
   | "marque";
 
@@ -31,17 +32,23 @@ export const ETAPES: Record<Genre, readonly (readonly [Etape, debut: number, ms:
   stade: [
     ["anticipation", 0, 800],
     ["echafaudage", 350, 900],
-    ["poussiere", 1150, 500],
-    ["revelation", 1400, 600],
-    ["gardien", 1760, 700],
-    ["marque", 1900, 500],
+    ["poussiere", 1150, 650],
+    ["revelation", 1475, 600],
+    ["gardien", 1835, 700],
+    ["marque", 1975, 500],
   ],
   rang: [
-    ["poussiere", 0, 350],
-    ["revelation", 175, 500],
-    ["gardien", 475, 700],
+    ["poussiere", 0, 500],
+    ["revelation", 250, 500],
+    ["gardien", 550, 700],
   ],
 };
+
+/** The cloud stays at full opacity this long after the swap: the JS side that swaps the image is late, never early. */
+export const TENUE_NUAGE_MS = 150;
+
+/** How long the sails stand at 45 degrees from the reveal, ms. */
+export const ARRET_REVELATION_MS = 3000;
 
 /** The squash of the anticipation lasts this long; the rest of its step is the release. */
 const SQUASH_MS = 350;
@@ -54,6 +61,8 @@ export type PlanSpectacle = {
   deBase: number;
   versBase: number;
   etapes: readonly { etape: Etape; debut: number; fin: number }[];
+  /** The building has sails: they stop at the tap and stand at 45 degrees through the reveal. */
+  ailes: boolean;
   total: number;
   reduit: boolean;
 };
@@ -79,13 +88,21 @@ export function planSpectacle(
   deRang: number,
   versRang: number,
   reduit: boolean,
-  { deBase = 0, versBase = 0 }: { deBase?: number; versBase?: number } = {},
+  {
+    deBase = 0,
+    versBase = 0,
+    ailes = false,
+  }: { deBase?: number; versBase?: number; ailes?: boolean } = {},
 ): PlanSpectacle {
   const etapes = reduit
     ? []
     : ETAPES[genre].map(([etape, debut, ms]) => ({ etape, debut, fin: debut + ms }));
+  // The sails hold 45 degrees for 3 s from the reveal: the moment lasts that long.
+  const rev = etapes.find((e) => e.etape === "revelation");
+  if (ailes && rev)
+    etapes.push({ etape: "ailes", debut: rev.debut, fin: rev.debut + ARRET_REVELATION_MS });
   const total = Math.max(0, ...etapes.map((e) => e.fin));
-  return { genre, deRang, versRang, deBase, versBase, etapes, total, reduit };
+  return { genre, deRang, versRang, deBase, versBase, etapes, total, reduit, ailes };
 }
 
 const debutDe = (plan: PlanSpectacle, etape: Etape) =>
@@ -237,24 +254,26 @@ export const BOUFFEES: readonly (readonly [x: number, y: number, d: number])[] =
 /**
  * One dust puff at `t` (`i` of `BOUFFEES`): it starts a little after the one before, swells to
  * full size and to a nearly opaque cloud by the swap (every puff is up by then), then keeps
- * swelling while it fades out in opacity. It never shrinks back, so it never goes through scale 0.
+ * swelling while it fades out in opacity, after TENUE_NUAGE_MS at full. It never shrinks back, so it never goes through scale 0.
  */
 export function bouffee(
   plan: PlanSpectacle,
   t: number,
   i: number,
+  n: number = BOUFFEES.length,
 ): { echelle: number; opacite: number } {
   "worklet";
   const e = plan.etapes.find((x) => x.etape === "poussiere");
   if (!e || t < e.debut || t >= e.fin) return { echelle: 0.4, opacite: 0 };
   const pic = (e.debut + e.fin) / 2;
-  const depart = e.debut + (i / BOUFFEES.length) * 0.4 * (pic - e.debut);
+  const depart = e.debut + (i / n) * 0.4 * (pic - e.debut);
   if (t < pic) {
     const k = Math.min(1, Math.max(0, (t - depart) / (pic - depart)));
     return { echelle: 0.4 + 0.6 * (1 - (1 - k) ** 2), opacite: 0.85 * Math.min(1, k * 2) };
   }
-  const k = (t - pic) / (e.fin - pic);
-  return { echelle: 1 + 0.2 * k, opacite: 0.85 * (1 - k) ** 2 };
+  // Held at full opacity past the swap, then it fades out.
+  const k = Math.max(0, (t - pic - TENUE_NUAGE_MS) / (e.fin - pic - TENUE_NUAGE_MS));
+  return { echelle: 1 + 0.2 * ((t - pic) / (e.fin - pic)), opacite: 0.85 * (1 - k) ** 2 };
 }
 
 /** The scaffold's rise from the foot, 150 ms with an overshoot: its scaleY at `t` (1 once up). */
@@ -292,4 +311,18 @@ export function souffleLueur(c: number, cycles = 2): number {
   const long = 5000 / cycles;
   const u = (c % long) / long;
   return 0.85 + 0.3 * (0.5 - 0.5 * Math.cos(2 * Math.PI * u));
+}
+
+/**
+ * The sails' hold at `t`: `angle` they are drawn at (radians) and `poids` (0 to 1) of that angle
+ * against the clock's own. From the tap they stand still at 0, at the reveal they ease to 45
+ * degrees and keep it ARRET_REVELATION_MS, then let go over 400 ms. Without sails: weight 0.
+ */
+export function arretAiles(plan: PlanSpectacle, t: number): { angle: number; poids: number } {
+  "worklet";
+  const e = plan.etapes.find((x) => x.etape === "ailes");
+  if (!plan.ailes || !e || t < 0 || t >= e.fin) return { angle: 0, poids: 0 };
+  const k = Math.min(1, Math.max(0, (t - e.debut) / 300));
+  const poids = Math.min(1, t / 200) * Math.min(1, (e.fin - t) / 400);
+  return { angle: (Math.PI / 4) * k * k * (3 - 2 * k), poids };
 }

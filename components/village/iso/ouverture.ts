@@ -18,6 +18,9 @@ export const ATTENTE_SOL_MS = 1500;
 /** The terrain tiles that must have loaded. */
 export const TUILES_SOL = TUILES_TERRAIN.colonnes * TUILES_TERRAIN.rangees;
 
+/** The longest a lone building's opening waits for its own image, ms. */
+export const ATTENTE_BATIMENT_MS = 3000;
+
 /** The fade's length: none with reduced motion. */
 export function dureeFondu(reduit: boolean): number {
   return reduit ? 0 : FONDU_OUVERTURE_MS;
@@ -26,12 +29,26 @@ export function dureeFondu(reduit: boolean): number {
 // shortcut: one module-level state, so one map at a time; the fade hook clears it when its map unmounts.
 let chargees = 0;
 let pret = false;
+// A lone building (engine capture): its sprite must have decoded before the map shows, else the
+// shadow and the pieces stand alone for a moment.
+let batiment = false;
 const abonnes = new Set<() => void>();
 
 function declarerPret() {
   if (pret) return;
   pret = true;
   for (const a of abonnes) a();
+}
+
+function declarerBatiment() {
+  if (batiment) return;
+  batiment = true;
+  for (const a of abonnes) a();
+}
+
+/** The lone building's image has decoded. */
+export function batimentCharge() {
+  declarerBatiment();
 }
 
 /** One terrain tile has loaded: the ground is ready at the twelfth. */
@@ -52,11 +69,17 @@ export function useSolPret(): boolean {
   return useSyncExternalStore(abonner, () => pret);
 }
 
+/** Whether the lone building's image is ready (decoded, or the wait is over). */
+function useBatimentPret(): boolean {
+  return useSyncExternalStore(abonner, () => batiment);
+}
+
 /** An animated style that takes the node from clear to opaque once, when its ground is ready. */
-export function useFonduOuverture() {
+export function useFonduOuverture(attendBatiment = false) {
   const reduit = useMouvementReduit();
   const attend = useContext(AlentoursContext).sol;
   const sol = useSolPret();
+  const bat = useBatimentPret();
   const opacite = useSharedValue(reduit && !attend ? 1 : 0);
   useEffect(() => {
     if (!attend) return;
@@ -67,12 +90,20 @@ export function useFonduOuverture() {
       pret = false;
     };
   }, [attend]);
+  useEffect(() => {
+    if (!attendBatiment) return;
+    const t = setTimeout(declarerBatiment, ATTENTE_BATIMENT_MS);
+    return () => {
+      clearTimeout(t);
+      batiment = false;
+    };
+  }, [attendBatiment]);
   // biome-ignore lint/correctness/useExhaustiveDependencies: once, when the ground is ready
   useEffect(() => {
-    if (attend && !sol) return;
+    if ((attend && !sol) || (attendBatiment && !bat)) return;
     opacite.set(
       reduit ? 1 : withTiming(1, { duration: dureeFondu(false), easing: Easing.out(Easing.quad) }),
     );
-  }, [attend, sol]);
+  }, [attend, sol, bat]);
   return useAnimatedStyle(() => ({ opacity: opacite.get() }));
 }

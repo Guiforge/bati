@@ -36,7 +36,7 @@ export function MoteurBld({
   masque: boolean;
   sprite: (stade: VisualStage, suivant: boolean) => ReactNode;
   /** The map's own layers at the stage the body wears (never the final one before the swap). */
-  couches: (stade: VisualStage) => ReactNode;
+  couches: (stade: VisualStage, rang: number, base: number) => ReactNode;
   reclame: ReactNode;
 }) {
   const { spectacle, jouer, fini } = useSpectacleBatiment();
@@ -49,7 +49,13 @@ export function MoteurBld({
     if (!show) return;
     const t = setTimeout(() => {
       setLance(true);
-      jouer(data.code, avant, rang, { genre: show, deBase: baseAvant, versBase: base, rule: "B" });
+      jouer(data.code, avant, rang, {
+        genre: show,
+        deBase: baseAvant,
+        versBase: base,
+        rule: "B",
+        ailes: !!data.ailes,
+      });
     }, delai * 1000);
     return () => clearTimeout(t);
   }, [show, avant, rang, base, baseAvant, data.code, delai]);
@@ -71,6 +77,7 @@ export function MoteurBld({
       sprite={sprite}
       couches={couches}
       reclame={reclame}
+      ralenti={etat.ralenti}
     />
   );
 }

@@ -11,6 +11,7 @@
 // Idle loops need no parameter: a link without fige=1, recorded for 10 s (video in the capture spec).
 
 import { createContext } from "react";
+import type { SharedValue } from "react-native-reanimated";
 import type { BuildingData } from "@/constants/buildingData";
 import { buildingCeiling } from "@/constants/buildingLevels";
 import { type BuildingCode, buildingCodes, buildingDefinitions } from "@/db/schema";
@@ -29,6 +30,8 @@ export type EtatBld = {
   /** With `base`: the base rank the show rises from (an upgrade's look follows its base, rule B). */
   avantBase?: number;
   show?: ShowBld;
+  /** Capture only: the show's clock runs this many times slower (`ralenti=4`), 1 when left out. */
+  ralenti?: number;
   /** Seconds between the link opening and the show starting: the film is recording by then. */
   delai: number;
   /** Tier of the island: 12 for a lone building (the same frame for all), 1 to 3 for the first week. */
@@ -48,7 +51,16 @@ export type EtatBld = {
 export const EtatBldContext = createContext<EtatBld | null>(null);
 
 type Params = Record<
-  "bld" | "rang" | "base" | "avant" | "avantbase" | "show" | "palier" | "semaine" | "delai",
+  | "bld"
+  | "rang"
+  | "base"
+  | "avant"
+  | "avantbase"
+  | "show"
+  | "palier"
+  | "semaine"
+  | "delai"
+  | "ralenti",
   string | undefined
 >;
 
@@ -61,6 +73,21 @@ const delaiDe = (v: string | undefined) => {
   const n = v !== undefined && /^\d+(\.\d+)?$/.test(v) ? Number(v) : Number.NaN;
   return n >= 0 && n <= 60 ? n : DELAI_SHOW_S;
 };
+
+/** Slow motion for captures: a number from 1 to 10, else 1. */
+const ralentiDe = (v: string | undefined) => {
+  const n = v !== undefined && /^\d+(\.\d+)?$/.test(v) ? Number(v) : 1;
+  return n >= 1 && n <= 10 ? n : 1;
+};
+
+/**
+ * The sails' hold while a show plays (spectacleBatiment `arretAiles`), read by the sails; null
+ * outside the engine, where they turn on the clock alone.
+ */
+export const ArretAilesContext = createContext<SharedValue<{
+  angle: number;
+  poids: number;
+}> | null>(null);
 
 /** The state a link names, or null when it has no valid `bld` or `rang` (the screen then opens as before). */
 export function etatBldDe(p: Partial<Params>): EtatBld | null {
@@ -85,6 +112,7 @@ export function etatBldDe(p: Partial<Params>): EtatBld | null {
     ),
     show: p.show === "stade" || p.show === "rang" ? p.show : undefined,
     delai: delaiDe(p.delai),
+    ralenti: ralentiDe(p.ralenti),
     palier: palier as VillageTier,
     semaine,
   };

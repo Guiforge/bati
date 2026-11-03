@@ -113,6 +113,7 @@ export default function DevIsoRoute() {
     show,
     semaine,
     delai,
+    ralenti,
   } = useLocalSearchParams<{
     /** `?bld=<code>&rang=N` (+ `base`, `show=stade|rang`, `avant`, `semaine=1`): the buildings track's capture states (etatBld.ts). */
     bld?: string;
@@ -124,6 +125,8 @@ export default function DevIsoRoute() {
     semaine?: string;
     /** `?delai=<seconds>` with `show`: when the show starts, 1.5 by default (the capture records first). */
     delai?: string;
+    /** `?ralenti=<n>` with `show`, capture only: the show runs n times slower. */
+    ralenti?: string;
     /** `?dump=<name>`: once the map has settled, its sprites are written to logcat for scripts/iso/loupe_dump_pull.py (dumpSprites.ts). */
     dump?: string;
     /** `?lumieres=0`: every light layer is hidden, for the pixel checks on raw sprites. */
@@ -154,7 +157,18 @@ export default function DevIsoRoute() {
     stade?: string;
   }>();
   if (!ISO_POC) return <Redirect href="/" />;
-  const etat = etatBldDe({ bld, rang, base, avant, avantbase, show, semaine, palier, delai });
+  const etat = etatBldDe({
+    bld,
+    rang,
+    base,
+    avant,
+    avantbase,
+    show,
+    semaine,
+    palier,
+    delai,
+    ralenti,
+  });
   return (
     <FigeContext.Provider value={fige === "1"}>
       {/* Perf A/B (reports/perf-regression-audit3.md): `?ech=0.5&flaques=0&bornes=0`, the default when absent. */}

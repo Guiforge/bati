@@ -46,7 +46,7 @@ Détail : `iter-05/audit-*.json`.
 ## Documents utiles
 
 - Style : [../village-style-bible.md](../village-style-bible.md). Disposition : [disposition-plan.md](disposition-plan.md). Animations : [animations-inventaire.md](animations-inventaire.md). Grille de notes : [rubric.md](rubric.md).
-- Décisions et savoir de la V1 : `../village-iso-v1/DECISIONS.md`, `KNOWLEDGE.md`, `plan/`, `research/`.
+- Décisions et savoir de la V1 : `../village-iso-v1/DECISIONS.md`, `KNOWLEDGE.md`. `plan/` et la plupart de `research/` sont archivés (voir `../village/archive-index.md`).
 - Alentours : `../village-surroundings/bible.md`, `flux-spend.md`, `licence.md`.
 
 ## Ce qui n'est plus dans le dépôt

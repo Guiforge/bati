@@ -282,6 +282,87 @@ def sails(p):
     return obj
 
 
+def figure(p):
+    """A CC0 character (an FBX under scripts/iso/blockouts/cc0/), posed and baked to one flat mesh. Maquettes only:
+    the app never loads a model. `file` (from the repo root), `at` (feet, grid), `height` (standing, grid units),
+    `rotZ` (0 faces gy), and `pose`:
+      drop   pelvis lowered, in the figure's own rest units (knees bend to keep the feet down)
+      aim    {bone: [x, y, z]} bone turned toward that direction, figure axes (x its left, -y forward, z up)
+      feet   {"L"|"R": [dx, dy]} ankle offsets from rest; the legs follow by two-bone IK, knees toward `knee` (left side, mirrored for the right)
+      hands  {"L"|"R": [gx, gy, gz]} wrist targets in grid units; the arms follow by IK, elbows toward `elbow` (figure axes)
+    shortcut: untrusted FBX is imported as data only (no scripts, no .blend); a rig other than the Quaternius
+    62-bone humanoid needs its bone names changed here."""
+    before = set(bpy.data.objects)
+    bpy.ops.import_scene.fbx(filepath=str(ROOT / p["file"]))
+    new = [o for o in bpy.data.objects if o not in before]
+    arm = next(o for o in new if o.type == "ARMATURE")
+    meshes = [o for o in new if o.type == "MESH"]
+    zs = [(o.matrix_world @ v.co).z for o in meshes for v in o.data.vertices]
+    scale = p["height"] / (max(zs) - min(zs))
+    turn = Matrix.Rotation(math.radians(-p.get("rotZ", 0.0)), 3, "Z")
+    origin = blender(p["at"])
+    pose, pb = p.get("pose", {}), arm.pose.bones
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.object.mode_set(mode="POSE")
+
+    def aim(name, direction):
+        bpy.context.view_layer.update()
+        bone = pb[name]
+        m = (((bone.tail - bone.head).normalized().rotation_difference(Vector(direction).normalized())).to_matrix()
+             @ bone.matrix.to_3x3()).to_4x4()
+        m.translation = bone.matrix.translation
+        bone.matrix = m
+
+    def mirrored(v, side):  # `knee` and `elbow` are given for the left side
+        return (v[0] if side == "L" else -v[0], v[1], v[2])
+
+    def reach(upper, lower, end, target, pole, end_dir=None):
+        bpy.context.view_layer.update()
+        s, a, b = pb[upper].head.copy(), pb[upper].length, pb[lower].length
+        t = Vector(target) - s
+        if t.length > a + b:
+            print(f"FIGURE out of reach: {upper} wants {t.length:.3f}, arm is {a + b:.3f}")
+        d = min(max(t.length, abs(a - b) + 1e-4), a + b - 1e-4)
+        u = t.normalized()
+        v = Vector(pole)
+        v = (v - u * v.dot(u)).normalized()
+        c = (a * a + d * d - b * b) / (2 * a * d)
+        elbow = s + (u * c + v * math.sqrt(1 - c * c)) * a
+        aim(upper, elbow - s)
+        aim(lower, s + u * d - elbow)
+        aim(end, end_dir or (s + u * d - elbow))
+
+    if "drop" in pose:
+        m = pb["Root"].matrix.copy()
+        m.translation.z -= pose["drop"]
+        pb["Root"].matrix = m
+    for name, direction in pose.get("aim", {}).items():
+        aim(name, direction)
+    ank = {"L": Vector((0.121, -0.062, 0.023)), "R": Vector((-0.121, -0.062, 0.023))}
+    for side, (dx, dy) in pose.get("feet", {}).items():
+        reach(f"UpperLeg.{side}", f"LowerLeg.{side}", f"Foot.{side}", ank[side] + Vector((dx, dy, 0)),
+              mirrored(pose.get("knee", (0, -1, 0)), side), end_dir=(0, -1, 0))
+    for side, target in pose.get("hands", {}).items():
+        local = turn.inverted() @ (blender(target) - origin) / scale
+        reach(f"UpperArm.{side}", f"LowerArm.{side}", f"Hand.{side}", local, mirrored(pose.get("elbow", (0, 0, -1)), side))
+    bpy.ops.object.mode_set(mode="OBJECT")
+    bpy.context.view_layer.update()
+    graph = bpy.context.evaluated_depsgraph_get()
+    verts, faces = [], []
+    for o in meshes:
+        me = bpy.data.meshes.new_from_object(o.evaluated_get(graph))
+        faces += [tuple(len(verts) + i for i in poly.vertices) for poly in me.polygons]
+        verts += [origin + turn @ ((o.matrix_world @ v.co) * scale) for v in me.vertices]
+    mesh = bpy.data.meshes.new("figure")
+    mesh.from_pydata([tuple(v) for v in verts], [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new("figure", mesh)
+    scene.collection.objects.link(obj)
+    for o in new:
+        bpy.data.objects.remove(o, do_unlink=True)
+    return obj
+
+
 CAM_ROT = Euler(tuple(math.radians(a) for a in ISO["cameraRotationDeg"]), "XYZ").to_matrix()
 right, up, back = CAM_ROT @ Vector((1, 0, 0)), CAM_ROT @ Vector((0, 1, 0)), CAM_ROT @ Vector((0, 0, 1))
 
@@ -289,7 +370,7 @@ built = []  # (spec part, object), in spec order: the volumes and anchor points 
 for part in spec.get("parts", []):
     kind = part["type"]
     builder = {"box": box, "roof": roof, "cyl": cylinder, "cone": lambda p: cylinder(p, cone=True), "sails": sails,
-               "sphere": sphere}[kind]
+               "sphere": sphere, "figure": figure}[kind]
     obj = builder(part)
     # The socle: the one box at the origin covering the whole footprint (as the L1-T18 audit finds it).
     is_socle = (kind == "box" and part["at"] == [0, 0, 0] and part["size"][:2] == list(canvas["footprint"])

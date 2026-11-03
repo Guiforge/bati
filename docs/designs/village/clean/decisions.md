@@ -7,6 +7,8 @@
 - 03/11 : `final.py elements` refuse dès qu'un `.raw.png` existe : les deux images manquantes ont été peintes par un script à part, même requête, même modèle.
 - 03/11 : le prompt du gag 1 du puits change : « rope loop for the feet » était bloqué par la modération (auto-mutilation). Le refus est facturé, 0,041 $ perdus.
 - 03/11 : le losange n'est pas qu'une plaque grise neutre : c'est aussi un bord pâle rose-lavande coupé droit. Le masque traite les deux.
+- 03/11 : réglage du masque arrêté après trois passes et une ronde ciblée : les planches sur aplat ne montrent pas le vrai sol, les captures en jeu tranchent.
+- 03/11 : 47 éléments sur 171 ne font pas la taille que donnerait leur source d'aujourd'hui (17 de plus de 2 px). Je garde les webp livrés, sans toucher à ces éléments : les captures montrent ce que voit le joueur. Le prochain `integrate.py` les régénérera depuis les sources ; il faudra alors relire ces 47.
 
 ## Worktrees laissés, pour Guillaume
 

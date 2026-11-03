@@ -40,8 +40,8 @@ HEAD_SAILS = ("Image 1 is a flat maquette on a flat magenta background: the four
               "these four blades as a finished daytime illustration: each blade is a long timber lattice frame, a heavy spar "
               "along one edge and cross slats, covered with cloth. {cloth}The hub at the centre is a small round matte iron cap, "
               "as in the maquette. Never paint a tower, a wall, a roof, a building or a cast shadow of any kind. ")
-KNIGHT_ON_BLADE = ("The maquette shows a small dark figure hanging by his belt from the outer third of the upper right blade, head "
-                   "toward the hub and feet toward the tip, arms flung out: paint him as a lean old knight in a dented helmet and "
+KNIGHT_ON_BLADE = ("The maquette shows a small dark figure clipped by his belt strap to the outer third of the upper right blade, head "
+                   "toward the hub and feet toward the tip, clinging to the blade with his arms spread: paint him as a lean old knight in a dented helmet and "
                    "worn steel armour with a faded red cloth and a brown leather belt, in full colour, never a black silhouette, "
                    "the same place and size as the maquette. ")
 CLOTH = {
@@ -111,10 +111,10 @@ small_element("addon_ane", "a", "a donkey and a horse standing side by side", (
     "a grey donkey with a small travel pack and a brown horse standing side by side in profile, tied together by a short rope, "
     "both lean, " + FIGURE), th=0.75, ground=True)
 small_element("gag_r2", "g", "a knight on a horse", (
-    "a lean old knight in a dented helmet and worn armour on a lean horse, holding a long lance upright, both staring ahead, "
+    "a lean old knight in a dented helmet and worn armour on a lean horse, holding a long wooden pole upright, both staring ahead, "
     + FIGURE), th=0.75, ground=True)
 small_element("gag_r4", "g", "a knight charging on a horse with dust puffs", (
-    "a lean old knight in a dented helmet charging on a lean galloping horse, almost in profile, the lance level, small cream "
+    "a lean old knight in a dented helmet riding fast on a lean galloping horse, almost in profile, a long wooden pole held level, small cream "
     "dust puffs behind the hooves, " + FIGURE), th=0.72, ground=True)
 small_element("gag_r6", "g", "a horse", (
     "a lean brown horse standing with a worn saddle cloth and loose reins, its head raised, looking up, no rider, " + FIGURE),
@@ -124,8 +124,26 @@ small_element("gag_r8", "g", "a knight seated beside his helmet", (
     "loaf of bread in his extended hand, a friendly bare head, " + FIGURE), th=0.72, ground=True)
 small_element("gag_r10", "g", "a knight and his squire sitting side by side on a rail", (
     "a lean old knight in worn armour and his round squire sitting side by side on a timber rail, legs hanging, a cloth spread "
-    "under them with bread and a jug, a lance planted behind them as a mast carrying a small pale ribbon, " + FIGURE),
+    "under them with bread and a jug, a long pole planted behind them as a mast carrying a small pale ribbon, " + FIGURE),
     th=0.72)
+
+
+MILLER = ("a stocky friendly miller with a grey beard, a soft cap and a flour-white apron, dusted with flour, seen from the front "
+          "and a little from the side, standing, in full colour (cream, flour white, warm brown), ")
+small_element("keeper_1", "k", "a miller with a sack", MILLER + "one heavy canvas sack with a knotted neck on his left shoulder.",
+              maq=MQ / "keeper_1.peinture.png", th=0.70, ground=True, pad=0.5)
+small_element("keeper_2", "k", "a miller with two sacks", MILLER + "one heavy canvas sack with a knotted neck on each shoulder.",
+              maq=MQ / "keeper_2.peinture.png", th=0.70, ground=True, pad=0.5)
+small_element("keeper_3", "k", "a small miller under two huge sacks", MILLER + "two huge canvas sacks with knotted necks, each bigger "
+              "than he is, one at each side of him, he is small between them.", maq=MQ / "keeper_3.peinture.png", th=0.70,
+              ground=True, pad=0.5)
+small_element("clan_fanion", "c", "a small pennant on a short pole", "a short timber pole with a streaming triangular cloth "
+              "pennant in muted brick red, a thin pale border", maq=MQ / "clan_fanion.peinture.png", th=0.70, pad=0.5)
+small_element("clan_banniere", "c", "a hanging banner on a crossbar", "a small hanging banner of muted brick red cloth with a "
+              "pointed lower end, hung from a thin timber crossbar, a thin pale border", maq=MQ / "clan_banniere.peinture.png",
+              th=0.70, pad=0.5)
+small_element("clan_blason", "c", "a round carved emblem", "a round carved stone shield emblem with a raised rim and a round iron boss "
+              "at its centre, warm sandy stone, matte, no glow", maq=MQ / "clan_blason.peinture.png", th=0.70, pad=0.5)
 
 
 def mask_of(im):
@@ -246,6 +264,8 @@ def paint(name):
             results[o.name] = c
         if any(c["passes"] for c in results.values()):
             break
+        if not results:
+            break  # both refused by moderation: do not pay a second pair for the same words
     if not results:
         print(name, "no image")
         return

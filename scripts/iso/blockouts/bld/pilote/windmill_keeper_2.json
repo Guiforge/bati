@@ -1,0 +1,12 @@
+{"canvas": "building2x2",
+ "parts": [
+  {"type": "cone", "mat": "plaster", "center": [0.6591, 1.7789, 0.04], "r": 0.06, "r2": 0.045, "h": 0.23, "axis": [0.0, 0.0, 1.0]},
+  {"type": "cone", "mat": "canvas", "center": [0.6591, 1.7789, 0.27], "r": 0.045, "r2": 0.04, "h": 0.05, "axis": [0.0, 0.0, 1.0]},
+  {"type": "sphere", "mat": "plaster", "center": [0.6591, 1.7789, 0.36], "r": 0.045},
+  {"type": "cone", "mat": "canvas", "center": [0.6591, 1.7789, 0.38], "r": 0.05, "r2": 0.0, "h": 0.06, "axis": [0.0, 0.0, 1.0]},
+  {"type": "cyl", "mat": "darkwood", "center": [0.6379, 1.7577, 0.04], "r": 0.02, "h": 0.02, "axis": [0.7071, -0.7071, 0.0]},
+  {"type": "cyl", "mat": "darkwood", "center": [0.6803, 1.8001, 0.04], "r": 0.02, "h": 0.02, "axis": [0.7071, -0.7071, 0.0]},
+  {"type": "sphere", "mat": "canvas", "center": [0.546, 1.8213, 0.31], "r": 0.065},
+  {"type": "sphere", "mat": "canvas", "center": [0.7015, 1.6658, 0.31], "r": 0.065}
+ ]
+}

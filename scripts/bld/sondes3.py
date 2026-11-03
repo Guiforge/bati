@@ -149,14 +149,44 @@ def breeches():
         sys.exit("exists")
     entry = run_batch("sondes3 breeches t1", 2, "sondes3_culotte", BREECHES, outs, (), 57100, size=(1024, 1024))
     info = {"prompt": BREECHES, "cost": entry["cost"], "images": {}}
-    for o in outs:
-        if o.exists():
-            im = X.S.key(Image.open(o).convert("RGB"))
-            a = im.getchannel("A").filter(ImageFilter.MinFilter(3))
-            im.putalpha(a)
-            im = im.crop(im.getchannel("A").getbbox())
-            im.save(d / "coupe" / o.name)
-            info["images"][o.name] = {"size": list(im.size), "hue_sat": X.hue_sat(im.convert("RGB"), im.getchannel("A"))}
+    (d / "culotte.json").write_text(json.dumps(info, indent=2))
+    cutculotte()
+
+
+def cutculotte():
+    """Cut the breeches from their painted backdrop (FLUX 3 gives a flat pink, not #FF00FF, when it has no reference):
+    the backdrop colour is the median of the four corners, flooded from the border within a tolerance, then eroded 2 px."""
+    d = OUT / "culotte"
+    info = json.loads((d / "culotte.json").read_text())
+    for o in sorted((d / "brut").glob("t1_v*.png")):
+        rgb = Image.open(o).convert("RGB")
+        w, h = rgb.size
+        corners = [rgb.getpixel(c) for c in ((4, 4), (w - 5, 4), (4, h - 5), (w - 5, h - 5))]
+        bg = tuple(sorted(c[i] for c in corners)[1] for i in range(3))
+        near = Image.new("L", rgb.size, 0)
+        npx, px = near.load(), rgb.load()
+        for y in range(h):
+            for x in range(w):
+                if sum(abs(px[x, y][i] - bg[i]) for i in range(3)) < 90:
+                    npx[x, y] = 255
+        flood = near.copy()
+        ImageDraw.floodfill(flood, (4, 4), 128, thresh=0) if near.getpixel((4, 4)) == 255 else None
+        bgmask = flood.point(lambda v: 255 if v == 128 else 0)
+        for c in ((w - 5, 4), (4, h - 5), (w - 5, h - 5)):
+            if flood.getpixel(c) == 255:
+                ImageDraw.floodfill(flood, c, 128, thresh=0)
+        bgmask = flood.point(lambda v: 255 if v == 128 else 0)
+        alpha = ImageChops.invert(bgmask).filter(ImageFilter.MinFilter(5)).filter(ImageFilter.GaussianBlur(0.8))
+        im = rgb.convert("RGBA")
+        im.putalpha(alpha)
+        im = im.crop(alpha.point(lambda v: 255 if v > 128 else 0).getbbox())
+        im.save(d / "coupe" / o.name)
+        pk = [q[:3] for q in im.getdata() if q[3] > 128]
+        info["images"] = info.get("images", {})
+        info["images"][o.name] = {"size": list(im.size), "backdrop": list(bg), "backdrop_like_pixels_left": sum(1 for p in pk if sum(abs(p[i] - bg[i]) for i in range(3)) < 90)}
+    best = min(info["images"], key=lambda k: info["images"][k]["backdrop_like_pixels_left"])
+    info["choice"] = best
+    (d / "choix.txt").write_text(best)
     (d / "culotte.json").write_text(json.dumps(info, indent=2))
     print(json.dumps({k: v for k, v in info.items() if k != "prompt"}, indent=1))
 
@@ -215,6 +245,39 @@ def peak():
         res["images"][o.name] = {"before": before, "after": after, "top_y": top}
     (d / "peak.json").write_text(json.dumps(res, indent=2))
     print(json.dumps({k: v for k, v in res.items() if k != "prompt"}, indent=1))
+
+
+def blue_mask():
+    """The whole shard of the maquette (the blue pixels), the roof and the ink excluded, grown 1 px: the mask above y 330
+    left a 15 px untinted band at the foot of the shard in the first tint."""
+    im = Image.open(MQ / "mythic.peinture.png").convert("RGB")
+    m = Image.new("L", im.size, 0)
+    mp, px = m.load(), im.load()
+    for y in range(im.height):
+        for x in range(im.width):
+            hh, ss, vv = colorsys.rgb_to_hsv(*(c / 255 for c in px[x, y]))
+            if 0.52 < hh < 0.68 and ss > 0.35 and vv > 0.3:
+                mp[x, y] = 255
+    return m.filter(ImageFilter.MaxFilter(3))
+
+
+def retint():
+    """Tint again under the whole shard, from the two FLUX edits (0 $); writes tint2_*.png, peak2.json, choix.txt."""
+    d = OUT / "peak"
+    m = blue_mask().filter(ImageFilter.MinFilter(3))
+    res = {"mask_pixels": sum(1 for v in m.getdata() if v), "images": {}}
+    for e in sorted(d.glob("edit_t1_v*.png")):
+        comp = Image.open(e).convert("RGB")
+        before = X.hue_sat(comp, m)
+        out = tint(comp, m, 212, 0.55)
+        f = d / e.name.replace("edit_", "tint2_")
+        out.save(f)
+        res["images"][f.name] = {"before": before, "after": X.hue_sat(out, m)}
+    first = sorted(res["images"])[0]
+    res["choice"] = first
+    (d / "choix.txt").write_text(first)
+    (d / "peak2.json").write_text(json.dumps(res, indent=2))
+    print(json.dumps(res, indent=1))
 
 
 def _above(y, size=S.SIZE):
@@ -293,6 +356,13 @@ def boards():
         if not f.exists():
             mont[s].convert("RGB").resize((448, 672), Image.LANCZOS).save(f)
         key[letter] = {"stage": s, "kind": "montage sails 45deg" + (" + ribbons" if s == "mythic" else "")}
+    # a stage that failed all its tries keeps mara's round 2 pick next to it as K, flagged (its maquette had the seam)
+    alt = R1 / "sondes2/legendary/coupe/t1_v0.png"
+    if ctls["legendary"]["failed"] and alt.exists() and not (OUT / "juge/K.png").exists():
+        t = Image.new("RGBA", S.SIZE, GREEN + (255,))
+        t.alpha_composite(Image.open(alt).convert("RGBA"))
+        t.convert("RGB").resize((448, 672), Image.LANCZOS).save(OUT / "juge/K.png")
+        key["K"] = {"stage": "legendary", "kind": "sondes2 t1_v0 (kept by mara in round 2, old maquette with the seam, no breeches)"}
     # strip of the five stages, tower with its sails at game scale (2 px per dp)
     k = 2 / 5
     bw, bh = round(S.SIZE[0] * k), round(S.SIZE[1] * k)
@@ -316,5 +386,5 @@ def boards():
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["paint", "breeches", "peak", "boards"])
+    ap.add_argument("cmd", choices=["paint", "breeches", "cutculotte", "peak", "retint", "boards"])
     globals()[ap.parse_args().cmd]()

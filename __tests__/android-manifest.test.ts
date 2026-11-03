@@ -73,6 +73,24 @@ test("MainActivity opens JSON files, with no scheme narrowing the filter", () =>
 });
 
 /**
+ * The sealed link. Verified against getbati.app/.well-known/assetlinks.json (docs/legal), and on one
+ * path: a wider filter would pull the site's other pages into the app. A `pathPrefix` would too.
+ */
+test("MainActivity claims the sealed link's path, verified, and nothing else of the site", () => {
+  const filters = [
+    ...main("AndroidManifest.xml").matchAll(/<intent-filter([^>]*)>([\s\S]*?)<\/intent-filter>/g),
+  ];
+  const link = filters.filter((m) => m[2]?.includes('android:host="getbati.app"'));
+  expect(link).toHaveLength(1);
+  expect(link[0]?.[1]).toContain('android:autoVerify="true"');
+  expect(link[0]?.[2]).toContain('android:scheme="https"');
+  expect(link[0]?.[2]).toContain('android:path="/d"');
+  // autoVerify is refused on a filter with any scheme but http and https.
+  expect(link[0]?.[2]).not.toContain("exp+bati");
+  expect(link[0]?.[2]).toContain('android:name="android.intent.category.BROWSABLE"');
+});
+
+/**
  * A task started by a tapped quest file keeps that VIEW intent as its root. Reopened from recents
  * after the process died, it showed the import preview again, "Update my quest" one tap from
  * overwriting the hero's own edits (seen on the emulator). `plugins/withAndroidStaleFileIntent.js`
@@ -84,7 +102,10 @@ test("MainActivity forgets a quest file when its task is restored, before RN rea
   expect(drop).toBeGreaterThan(-1);
   expect(activity).toContain("savedInstanceState != null || fromHistory");
   // The reminder's link opens a form, and a restored task must not open it again.
-  expect(activity).toContain('data.scheme == "bati" && data.getQueryParameter("add") != null');
+  expect(activity).toContain('data.getQueryParameter("add") != null');
+  // A sealed link holds an invite's secret: restored, it must not ask again.
+  expect(activity).toContain('data.scheme == "https"');
+  expect(activity).toContain('data.host == "d"');
   expect(activity).toContain("Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY");
   expect(drop).toBeLessThan(activity.indexOf("super.onCreate(null)"));
 });

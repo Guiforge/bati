@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.guiforge.bati",
+      "sha256_cert_fingerprints": [
+        "F5:D8:67:6E:AE:57:66:1A:9A:47:D3:2C:30:FC:72:A4:8B:4B:6E:6F:A2:94:7C:26:F5:47:3E:10:FC:F7:99:82",
+        "52:13:65:29:24:77:CC:E3:7A:EC:64:40:D4:C0:20:A5:B4:34:79:88:57:45:E6:1C:C1:A1:27:F8:00:A3:14:C2"
+      ]
+    }
+  }
+]

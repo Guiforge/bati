@@ -47,7 +47,7 @@ module.exports = function withAndroidStaleFileIntent(config) {
         `    // ${MARKER}: see plugins/withAndroidStaleFileIntent.js.
     val fromHistory = (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0
     val data = intent.data
-    val stale = data != null && (data.scheme == "content" || (data.scheme == "bati" && data.getQueryParameter("add") != null))
+    val stale = data != null && (data.scheme == "content" || data.scheme == "https" || (data.scheme == "bati" && (data.host == "d" || data.getQueryParameter("add") != null)))
     if ((savedInstanceState != null || fromHistory) && stale) {
       intent = Intent(intent).setData(null)
     }

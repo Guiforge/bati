@@ -70,7 +70,7 @@ jobs:
       # the whole release pipeline up to the merged resources, which with
       # `expo.autolinking.buildFromSource` means CMake compiles expo-modules-core, sqlite,
       # reanimated and worklets, once per ABI. One ABI is enough: nothing lint reads is
-      # architecture-specific, and release.yml ships arm64-v8a anyway.
+      # architecture-specific, and both release builds include arm64-v8a.
       #
       # A failure here is either a real new warning or a baseline that has drifted. Neither is
       # fixed by widening `android-lint-baseline.xml`: regenerate it the way AGENTS.md § Checks

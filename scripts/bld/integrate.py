@@ -137,6 +137,17 @@ def ecrire_webp(im: Image.Image, dest: pathlib.Path) -> None:
     im.save(dest, "WEBP", quality=90, method=6)
 
 
+def centre_moyeu(im: Image.Image, approx: tuple[int, int]) -> list[int]:
+    """The hub disc of a sail sheet: the centroid of its dark iron pixels near the box's middle (the blades' spars
+    cross there; the box's middle is a few px off when a blade is longer than its opposite)."""
+    w, h = im.size
+    r = max(20, min(w, h) // 22)
+    px = im.convert("RGBA").load()
+    pts = [(x, y) for y in range(max(0, approx[1] - r), min(h, approx[1] + r)) for x in range(max(0, approx[0] - r), min(w, approx[0] + r))
+           if px[x, y][3] > 200 and sum(px[x, y][:3]) / 3 < 75 and (x - approx[0]) ** 2 + (y - approx[1]) ** 2 < r * r]
+    return [round(sum(p[0] for p in pts) / len(pts)), round(sum(p[1] for p in pts) / len(pts))] if pts else list(approx)
+
+
 def main_block(src_txt: str | None) -> str:
     """The hand block of the data file as it stands, else an empty one the caller fills with defaults."""
     if src_txt:
@@ -212,7 +223,10 @@ def main() -> None:
             prov[f"assets/images/village/iso/peints/{code}/elements/{nom}.{amb}.webp"] = {
                 "model": f"{base.get('model', 'flux-3-image')} ({base.get('provider', 'Black Forest Labs direct API')})",
                 "derived_from": raw, "how": how, "licence": base.get("licence", LICENCE)}
-    # a windmill's sails: a sheet per stage, turning about the hub measured by eye (measures.json `hub`)
+    # a windmill's sails: a sheet per stage, turning about the hub measured on the painting. The hand block's
+    # `moyeu_<stage>` (the axle tip on the painting, canvas px) wins over measures.json `hub`, so a re-run keeps it.
+    fichier = ROOT / f"constants/buildings/{code}.ts"
+    bloc = main_block(fichier.read_text() if fichier.exists() else None)
     ailes, hubs = {}, {}
     for s in stades:
         hub = mesures[s].get("hub")
@@ -223,11 +237,12 @@ def main() -> None:
         k = hub["sails_width_px"] / im.width  # the placed width, canvas px
         im = im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
         bb = im.getchannel("A").point(lambda v: 255 if v > 16 else 0).getbbox() or (0, 0, *im.size)
-        centre = [round((bb[0] + bb[2]) / 2), round((bb[1] + bb[3]) / 2)]  # the cross's hub: its box's centre
+        centre = centre_moyeu(im, ((bb[0] + bb[2]) // 2, (bb[1] + bb[3]) // 2))  # the cross's hub disc, not its box's middle
         ecrire_webp(im, dest / "elements" / f"sails_{s}.jour.webp")
         ecrire_webp(nuit(im, None), dest / "elements" / f"sails_{s}.nuit.webp")
         ailes[s] = (list(im.size), centre)
-        hubs[s] = [hub["x"], hub["y"] + pad[s]]
+        main_hub = re.search(rf"^\s*moyeu_{s}:\s*\[(\d+),\s*(\d+)\]", bloc, re.M)
+        hubs[s] = [int(main_hub.group(1)), int(main_hub.group(2))] if main_hub else [hub["x"], hub["y"] + pad[s]]
         raw = f"{rel_src}/elements/teaser_sails_{s}.raw.png"
         base = loc_el.get(raw, {})
         for amb, how in (("jour", "the sail sheet keyed from magenta, scaled to its placed width, WebP q90"),
@@ -273,7 +288,7 @@ def main() -> None:
 
     # the data file
     grand = Image.open(src / f"{'grand' if 'grand' in stades else stades[-1]}.png").convert("RGBA")
-    feu = temoin_feu(grand) or [ancre[0], ancre[1] - 100]
+    feu = temoin_feu(grand)  # a first guess for the smoke only: no painted fire, no fallback, and no light from here
     rough = Image.open(src / "rough.png").convert("RGBA").getchannel("A")
     emprise = tuple(json.loads((ROOT / "constants/isoSpec.json").read_text())["batiments"][code]["emprise"])
     sommet = min(mesures[s]["top_y"] + pad[s] for s in stades)
@@ -284,21 +299,25 @@ def main() -> None:
     pos = {  # first guesses, canvas px: a capture decides, then the hand block below
         "gagSlot": [mesures["rough"]["left"] - 30, ancre[1] - 40],
         "teaserAt": [mesures["rough"]["right"] + 30 - ancre[0], -40],  # offset from the anchor, the rest is absolute
-        "fire": feu, "smoke": [feu[0], feu[1] - 130], "magic": [cx, mesures[haut]["top_y"] + pad[haut] + 170],
+        "smoke": [feu[0], feu[1] - 130] if feu else [ancre[0], ancre[1] - 230], "magic": [cx, mesures[haut]["top_y"] + pad[haut] + 170],
         "fenetre": [ancre[0], (g_top + ancre[1]) // 2], "drapeau": [cx, g_top], "aile": hubs.get("grand") or [cx, g_top + 40],
         "eau": [ancre[0], ancre[1] - 96],
     }
-    voulues = ["gagSlot", "teaserAt"] + (["fire"] if "fire" in ancres or "smoke" in ancres else []) \
-        + [k for a_, k in kinds.items() if a_ in ancres]
-    fichier = ROOT / f"constants/buildings/{code}.ts"
-    bloc = main_block(fichier.read_text() if fichier.exists() else None)
+    graine = "const ancres" not in bloc  # the anchors are the hand block's too once seeded: a re-run keeps them as they stand
+    voulues = ["gagSlot", "teaserAt"] + ([k for a_, k in kinds.items() if a_ in ancres] if graine else [])
     for k in voulues:  # a key the block lacks (an older run, a new anchor) gets its default
         if not re.search(rf"^\s*{k}:", bloc, re.M):
             bloc = bloc.replace("} as const;", f"  {k}: [{pos[k][0]}, {pos[k][1]}],\n}} as const;")
+    if "const lights" not in bloc:  # the lights live in the hand block, on what the painting lights; none by default
+        bloc = bloc.replace("} as const;\n", "} as const;\n\n// What the painting lights at night: a window, a lantern, a brazier, a fire, a beam (kind, canvas px, first rank).\n"
+                            "const lights: BuildingData[\"lights\"] = [];\n", 1)
     g = genre(spec)
     depuis = {"ten": "fromRank: 10", "deed": "fromRank: 5", "upgrade": "fromRank: 3, fromBase: 10"}[g]
     lignes_ancres = [f'    {{ kind: "{kinds[x]}", at: main.{kinds[x]}, {depuis if x == "magic" else "fromRank: 1"} }},'
                      for x in ancres if x in kinds]
+    if graine:
+        bloc = bloc.replace("} as const;\n", "} as const;\n\n// What will move later, on its painted object (canvas px): posed, drawn by nothing yet.\n"
+                            "const ancres: BuildingData[\"ancres\"] = [\n" + "\n".join(lignes_ancres).replace("    {", "  {") + "\n];\n", 1)
     gags = []
     for gg in [g_ for g_ in spec.get("gag", []) if f"elements/gag_{g_['rank']}" in elements]:  # a beat with no cut file is left out
         txt = gg["prompt"].split(" Objects alone")[0].strip()
@@ -307,7 +326,7 @@ def main() -> None:
                     f"sprite: \"elements/gag_{gg['rank']}\" }},")
     ts = [f"    {{ {', '.join(f'{k}: {v}' for k, v in r.items())}, sprite: \"elements/{n}\", anchorOffset: main.teaserAt }},"
           for n, r in teasers(spec) if f"elements/{n}" in elements]
-    lumiere = '  lights: [{ kind: "fire", at: main.fire, fromRank: 1 }],' if "fire" in ancres else "  lights: [],"
+    lumiere = "  lights,"
     out = f"""// Generated by scripts/bld/integrate.py {code}. The measures and lists below are rewritten at each run;
 // the block between the markers is kept: edit the positions there (canvas px, origin top left).
 import type {{ BuildingData }} from "../buildingData";
@@ -328,17 +347,14 @@ export const {code}: BuildingData = {{
 {chr(10).join(gags)}
     ],
   }},
-  // A fire is a soft warm pool at night, still. No painted keeper: no `guardian`.
+  // Night lights: the hand block's, only what the painting lights. No painted keeper: no `guardian`.
 {lumiere}
   // A painted clan mark (a pennant, a banner) is in the paintings: no code mark.
   clanMark: null,
   teasers: [
 {chr(10).join(ts)}
   ],
-  // What will move later: posed, drawn by nothing yet.
-  ancres: [
-{chr(10).join(lignes_ancres)}
-  ],
+  ancres,
 }};
 """
     fichier.write_text(out)

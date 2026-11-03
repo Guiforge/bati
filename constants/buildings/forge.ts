@@ -5,12 +5,22 @@ import type { BuildingData } from "../buildingData";
 // hand:begin
 const main = {
   // Picked on the painting, canvas px (an offset where the name says so).
-  gagSlot: [181, 1048],
-  teaserAt: [243, -40],
-  fire: [415, 1012],
-  smoke: [415, 882],
-  magic: [450, 214],
+  gagSlot: [540, 1088],
+  teaserAt: [272, -90],
 } as const;
+
+// What the painting lights at night (kind, canvas px, first rank): a window, a lantern, a brazier, a fire, a beam.
+const lights: BuildingData["lights"] = [
+  { kind: "fire", at: [350, 818], fromRank: 5 },
+  { kind: "fire", at: [463, 820], fromRank: 7 },
+  { kind: "fire", at: [443, 175], fromRank: 10 },
+];
+
+// What will move later, on its painted object (canvas px): posed, drawn by nothing yet.
+const ancres: BuildingData["ancres"] = [
+  { kind: "smoke", at: [545, 700], fromRank: 10 },
+  { kind: "magic", at: [440, 360], fromRank: 10 },
+];
 // hand:end
 
 export const forge: BuildingData = {
@@ -70,8 +80,8 @@ export const forge: BuildingData = {
       },
     ],
   },
-  // A fire is a soft warm pool at night, still. No painted keeper: no `guardian`.
-  lights: [{ kind: "fire", at: main.fire, fromRank: 1 }],
+  // Night lights: the hand block's, only what the painting lights. No painted keeper: no `guardian`.
+  lights,
   // A painted clan mark (a pennant, a banner) is in the paintings: no code mark.
   clanMark: null,
   teasers: [
@@ -106,9 +116,5 @@ export const forge: BuildingData = {
       anchorOffset: main.teaserAt,
     },
   ],
-  // What will move later: posed, drawn by nothing yet.
-  ancres: [
-    { kind: "smoke", at: main.smoke, fromRank: 1 },
-    { kind: "magic", at: main.magic, fromRank: 10 },
-  ],
+  ancres,
 };

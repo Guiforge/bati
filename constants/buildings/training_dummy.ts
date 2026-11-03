@@ -5,13 +5,19 @@ import type { BuildingData } from "../buildingData";
 // hand:begin
 const main = {
   // Picked on the painting, canvas px (an offset where the name says so).
-  gagSlot: [307, 1048],
-  teaserAt: [141, -40],
-  fire: [448, 988],
-  magic: [459, 193],
-  fenetre: [448, 726],
-  drapeau: [459, 364],
+  gagSlot: [250, 948],
+  teaserAt: [282, -130],
 } as const;
+
+// What the painting lights at night (kind, canvas px, first rank): a window, a lantern, a brazier, a fire, a beam.
+const lights: BuildingData["lights"] = [
+  { kind: "fire", at: [500, 230], fromRank: 10 },
+  { kind: "fire", at: [520, 745], fromRank: 10 },
+  { kind: "glyphe", at: [515, 830], fromRank: 10 },
+];
+
+// What will move later, on its painted object (canvas px): posed, drawn by nothing yet.
+const ancres: BuildingData["ancres"] = [{ kind: "magic", at: [500, 235], fromRank: 10 }];
 // hand:end
 
 export const training_dummy: BuildingData = {
@@ -70,8 +76,8 @@ export const training_dummy: BuildingData = {
       },
     ],
   },
-  // A fire is a soft warm pool at night, still. No painted keeper: no `guardian`.
-  lights: [{ kind: "fire", at: main.fire, fromRank: 1 }],
+  // Night lights: the hand block's, only what the painting lights. No painted keeper: no `guardian`.
+  lights,
   // A painted clan mark (a pennant, a banner) is in the paintings: no code mark.
   clanMark: null,
   teasers: [
@@ -81,10 +87,5 @@ export const training_dummy: BuildingData = {
     { fromRank: 8, untilRank: 9, sprite: "elements/teaser_r8", anchorOffset: main.teaserAt },
     { fromRank: 9, untilRank: 10, sprite: "elements/teaser_r9", anchorOffset: main.teaserAt },
   ],
-  // What will move later: posed, drawn by nothing yet.
-  ancres: [
-    { kind: "fenetre", at: main.fenetre, fromRank: 1 },
-    { kind: "drapeau", at: main.drapeau, fromRank: 1 },
-    { kind: "magic", at: main.magic, fromRank: 10 },
-  ],
+  ancres,
 };

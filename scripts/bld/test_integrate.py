@@ -35,4 +35,11 @@ assert I.genre({"building": "dragon_lair"}) == "deed"
 assert I.genre({"building": "well"}) == "ten"
 assert I.teasers({"building": "observatory", "teasers": [{"id": "r8"}]})[0][1]["fromBase"] == 8
 assert I.beat_ranks("upgrade", 7) == {"rank": 3, "fromBase": 7}
+# the hub disc is the dark blob, not the middle of the box: a 200 px sheet whose disc sits at (110, 96)
+sheet = Image.new("RGBA", (200, 200), (200, 200, 200, 255))
+for x in range(100, 121):
+    for y in range(86, 107):
+        sheet.putpixel((x, y), (20, 20, 20, 255))
+assert all(abs(a - b) <= 2 for a, b in zip(I.centre_moyeu(sheet, (100, 100)), [110, 96])), I.centre_moyeu(sheet, (100, 100))
+assert I.centre_moyeu(Image.new("RGBA", (200, 200), (200, 200, 200, 255)), (100, 100)) == [100, 100]  # no disc: the box's middle
 print("ok")

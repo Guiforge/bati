@@ -215,8 +215,8 @@ function Lueur({
   return <LueurVivante kind={kind} forme={forme} horloge={horloge} cycles={cycles} />;
 }
 
-/** Radius of a fire's soft glow, dp. */
-const GLOW_FEU_DP = 22;
+/** Radius of a fire's soft glow, dp: a brazier or a torch of the painting (a building's canvas is about 112 dp wide), not a pool on the ground. */
+const GLOW_FEU_DP = 9;
 
 /** A warm radial pool centred on a map point: isoLueur at 45 % in the heart, 0 % at the rim. */
 function LueurDouce({ at, rayon }: { at: Point; rayon: number }) {

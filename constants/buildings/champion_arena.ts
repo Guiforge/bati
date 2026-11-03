@@ -5,12 +5,21 @@ import type { BuildingData } from "../buildingData";
 // hand:begin
 const main = {
   // Picked on the painting, canvas px (an offset where the name says so).
-  gagSlot: [126, 1048],
-  teaserAt: [300, -40],
-  fire: [569, 1010],
-  magic: [403, 296],
-  drapeau: [403, 561],
+  gagSlot: [140, 998],
+  teaserAt: [302, -90],
 } as const;
+
+// What the painting lights at night (kind, canvas px, first rank): a window, a lantern, a brazier, a fire, a beam.
+const lights: BuildingData["lights"] = [
+  { kind: "beam", at: [452, 660], fromRank: 5 },
+  { kind: "fenetre", at: [170, 565], fromRank: 5 },
+  { kind: "fenetre", at: [185, 660], fromRank: 5 },
+  { kind: "fenetre", at: [125, 705], fromRank: 5 },
+  { kind: "fenetre", at: [335, 660], fromRank: 5 },
+];
+
+// What will move later, on its painted object (canvas px): posed, drawn by nothing yet.
+const ancres: BuildingData["ancres"] = [{ kind: "magic", at: [452, 520], fromRank: 5 }];
 // hand:end
 
 export const champion_arena: BuildingData = {
@@ -65,8 +74,8 @@ export const champion_arena: BuildingData = {
       },
     ],
   },
-  // A fire is a soft warm pool at night, still. No painted keeper: no `guardian`.
-  lights: [{ kind: "fire", at: main.fire, fromRank: 1 }],
+  // Night lights: the hand block's, only what the painting lights. No painted keeper: no `guardian`.
+  lights,
   // A painted clan mark (a pennant, a banner) is in the paintings: no code mark.
   clanMark: null,
   teasers: [
@@ -77,9 +86,5 @@ export const champion_arena: BuildingData = {
       anchorOffset: main.teaserAt,
     },
   ],
-  // What will move later: posed, drawn by nothing yet.
-  ancres: [
-    { kind: "drapeau", at: main.drapeau, fromRank: 1 },
-    { kind: "magic", at: main.magic, fromRank: 5 },
-  ],
+  ancres,
 };

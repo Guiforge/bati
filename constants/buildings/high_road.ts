@@ -5,13 +5,24 @@ import type { BuildingData } from "../buildingData";
 // hand:begin
 const main = {
   // Picked on the painting, canvas px (an offset where the name says so).
-  gagSlot: [228, 1048],
-  teaserAt: [414, -40],
-  magic: [456, 334],
-  fenetre: [448, 862],
-  drapeau: [456, 637],
-  eau: [448, 992],
+  gagSlot: [170, 998],
+  teaserAt: [-98, 0],
 } as const;
+
+// What the painting lights at night (kind, canvas px, first rank): a window, a lantern, a brazier, a fire, a beam.
+const lights: BuildingData["lights"] = [
+  { kind: "fenetre", at: [575, 355], fromRank: 10 },
+  { kind: "fenetre", at: [645, 450], fromRank: 10 },
+  { kind: "fenetre", at: [335, 515], fromRank: 10 },
+  { kind: "fenetre", at: [385, 645], fromRank: 10 },
+];
+
+// What will move later, on its painted object (canvas px): posed, drawn by nothing yet.
+const ancres: BuildingData["ancres"] = [
+  { kind: "eau", at: [580, 650], fromRank: 10 },
+  { kind: "fenetre", at: [705, 300], fromRank: 10 },
+  { kind: "magic", at: [500, 520], fromRank: 10 },
+];
 // hand:end
 
 export const high_road: BuildingData = {
@@ -49,8 +60,8 @@ export const high_road: BuildingData = {
       },
     ],
   },
-  // A fire is a soft warm pool at night, still. No painted keeper: no `guardian`.
-  lights: [],
+  // Night lights: the hand block's, only what the painting lights. No painted keeper: no `guardian`.
+  lights,
   // A painted clan mark (a pennant, a banner) is in the paintings: no code mark.
   clanMark: null,
   teasers: [
@@ -60,11 +71,5 @@ export const high_road: BuildingData = {
     { fromRank: 8, untilRank: 9, sprite: "elements/teaser_r8", anchorOffset: main.teaserAt },
     { fromRank: 9, untilRank: 10, sprite: "elements/teaser_r9", anchorOffset: main.teaserAt },
   ],
-  // What will move later: posed, drawn by nothing yet.
-  ancres: [
-    { kind: "eau", at: main.eau, fromRank: 1 },
-    { kind: "fenetre", at: main.fenetre, fromRank: 1 },
-    { kind: "drapeau", at: main.drapeau, fromRank: 1 },
-    { kind: "magic", at: main.magic, fromRank: 10 },
-  ],
+  ancres,
 };

@@ -5,13 +5,15 @@ import type { BuildingData } from "../buildingData";
 // hand:begin
 const main = {
   // Picked on the painting, canvas px (an offset where the name says so).
-  gagSlot: [50, 1048],
-  teaserAt: [255, -40],
-  fire: [448, 988],
-  smoke: [448, 858],
-  magic: [440, 253],
-  drapeau: [440, 354],
+  gagSlot: [540, 1088],
+  teaserAt: [272, -40],
 } as const;
+
+// What the painting lights at night (kind, canvas px, first rank): a window, a lantern, a brazier, a fire, a beam.
+const lights: BuildingData["lights"] = [{ kind: "fire", at: [415, 925], fromRank: 5 }];
+
+// What will move later, on its painted object (canvas px): posed, drawn by nothing yet.
+const ancres: BuildingData["ancres"] = [{ kind: "magic", at: [610, 470], fromRank: 5 }];
 // hand:end
 
 export const dragon_lair: BuildingData = {
@@ -61,8 +63,8 @@ export const dragon_lair: BuildingData = {
       },
     ],
   },
-  // A fire is a soft warm pool at night, still. No painted keeper: no `guardian`.
-  lights: [{ kind: "fire", at: main.fire, fromRank: 1 }],
+  // Night lights: the hand block's, only what the painting lights. No painted keeper: no `guardian`.
+  lights,
   // A painted clan mark (a pennant, a banner) is in the paintings: no code mark.
   clanMark: null,
   teasers: [
@@ -73,10 +75,5 @@ export const dragon_lair: BuildingData = {
       anchorOffset: main.teaserAt,
     },
   ],
-  // What will move later: posed, drawn by nothing yet.
-  ancres: [
-    { kind: "smoke", at: main.smoke, fromRank: 1 },
-    { kind: "magic", at: main.magic, fromRank: 5 },
-    { kind: "drapeau", at: main.drapeau, fromRank: 1 },
-  ],
+  ancres,
 };

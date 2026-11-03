@@ -5,12 +5,27 @@ import type { BuildingData } from "../buildingData";
 // hand:begin
 const main = {
   // Picked on the painting, canvas px (an offset where the name says so).
-  gagSlot: [333, 1048],
-  teaserAt: [120, -40],
-  magic: [449, 198],
-  fenetre: [448, 728],
-  drapeau: [449, 368],
+  gagSlot: [520, 1070],
+  teaserAt: [232, -30],
 } as const;
+
+// What the painting lights at night (kind, canvas px, first rank): a window, a lantern, a brazier, a fire, a beam.
+const lights: BuildingData["lights"] = [
+  { kind: "fenetre", at: [378, 376], fromRank: 10 },
+  { kind: "fenetre", at: [458, 372], fromRank: 10 },
+  { kind: "fenetre", at: [380, 460], fromRank: 10 },
+  { kind: "fenetre", at: [457, 458], fromRank: 10 },
+  { kind: "fenetre", at: [418, 542], fromRank: 10 },
+  { kind: "fenetre", at: [380, 637], fromRank: 10 },
+  { kind: "fenetre", at: [418, 805], fromRank: 10 },
+  { kind: "fenetre", at: [557, 670], fromRank: 10 },
+];
+
+// What will move later, on its painted object (canvas px): posed, drawn by nothing yet.
+const ancres: BuildingData["ancres"] = [
+  { kind: "fenetre", at: [418, 805], fromRank: 10 },
+  { kind: "magic", at: [418, 790], fromRank: 10 },
+];
 // hand:end
 
 export const wizard_tower: BuildingData = {
@@ -59,8 +74,8 @@ export const wizard_tower: BuildingData = {
       },
     ],
   },
-  // A fire is a soft warm pool at night, still. No painted keeper: no `guardian`.
-  lights: [],
+  // Night lights: the hand block's, only what the painting lights. No painted keeper: no `guardian`.
+  lights,
   // A painted clan mark (a pennant, a banner) is in the paintings: no code mark.
   clanMark: null,
   teasers: [
@@ -70,10 +85,5 @@ export const wizard_tower: BuildingData = {
     { fromRank: 8, untilRank: 9, sprite: "elements/teaser_r8", anchorOffset: main.teaserAt },
     { fromRank: 9, untilRank: 10, sprite: "elements/teaser_r9", anchorOffset: main.teaserAt },
   ],
-  // What will move later: posed, drawn by nothing yet.
-  ancres: [
-    { kind: "fenetre", at: main.fenetre, fromRank: 1 },
-    { kind: "drapeau", at: main.drapeau, fromRank: 1 },
-    { kind: "magic", at: main.magic, fromRank: 10 },
-  ],
+  ancres,
 };

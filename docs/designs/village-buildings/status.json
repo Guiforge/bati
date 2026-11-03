@@ -175,15 +175,15 @@
     "piste_ordre": 2,
     "etape": "Passe de mouvement",
     "ordre": 11,
-    "statut": "à faire",
+    "statut": "abandonné",
     "debut": null,
     "fin": null,
     "heures": 0,
-    "restant_min": 1,
-    "restant_max": 3,
-    "reste": "après toute la peinture, sauf ce qui existe déjà",
+    "restant_min": 0,
+    "restant_max": 0,
+    "reste": "rien ici",
     "avancement": null,
     "total": null,
-    "note": "Passe ultérieure, ta décision. Estimation très grossière."
+    "note": "Repris par la piste LIFE, qui lit les ancres des données de bâtiments."
   }
 ]

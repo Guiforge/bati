@@ -460,14 +460,19 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
     annonce.current = cle;
     onRevelation?.();
   };
+  const rendu = useRef<string | undefined>(undefined);
   const rendre = () => {
+    // The scene's slide must not land after the return, nor be armed after it (a render slow to
+    // commit step 2 arms it late: seen on a phone at 1 fps).
+    rendu.current = cle;
+    for (const x of mouvement.current) clearTimeout(x);
+    mouvement.current = [];
+    // The scene's slide must not land after the return (a parent slow to drop the growth leaves it armed).
     if (avant.current) camera.vers(avant.current);
     avant.current = undefined;
   };
   const passer = () => {
     if (cle === undefined) return;
-    for (const x of mouvement.current) clearTimeout(x);
-    mouvement.current = [];
     saute.current = cle;
     // A tap that skips the scene still gives the camera back, once (the bubble it opens is placed
     // from the view held at the touch, the finger's own, so the return does not move it).
@@ -571,7 +576,11 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
   useEffect(() => {
     if (etape !== 2) return;
     // Not after a skip: the touch already dropped the scene's camera moves.
-    mouvement.current = planifierCamera(premier, !reduit && saute.current !== cle, camera);
+    mouvement.current = planifierCamera(
+      premier,
+      !reduit && saute.current !== cle && rendu.current !== cle,
+      camera,
+    );
     reveler();
     // FIN-MAG: a stage that changes (or a new building) tells its story in one line.
     setLegende(legendeDe(cle, premier, reduit || saute.current === cle, avecChantier, stade));

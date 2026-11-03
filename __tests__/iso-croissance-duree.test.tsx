@@ -21,6 +21,7 @@ jest.mock("react-native-worklets", () => ({
 }));
 // The real camera, its `vers` only watched: the return is asserted on what it is asked for.
 const mockVers = jest.fn();
+const mockOrdre: string[] = [];
 jest.mock("@/components/village/iso/useCameraIso", () => {
   const actual = jest.requireActual("@/components/village/iso/useCameraIso");
   return {
@@ -30,8 +31,13 @@ jest.mock("@/components/village/iso/useCameraIso", () => {
       return {
         ...c,
         vers: (v: unknown) => {
+          mockOrdre.push("vers");
           mockVers(v, c.vue());
           c.vers(v);
+        },
+        glisser: (v: unknown) => {
+          mockOrdre.push("glisser");
+          c.glisser(v);
         },
       };
     },
@@ -84,6 +90,7 @@ describe("the growth scene's length", () => {
   const montrer = async () => {
     const [code, ancien] = (croissanceDemo(buildings, 0) ?? "").split(":");
     mockVers.mockClear();
+    mockOrdre.length = 0;
     jest.useFakeTimers();
     await render(
       <GestureHandlerRootView>
@@ -114,6 +121,20 @@ describe("the growth scene's length", () => {
       await montrer();
       await act(() => jest.advanceTimersByTime(4000));
       retourne();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it("the slide toward the building never lands after the return, even if the owner is slow to drop the growth", async () => {
+    try {
+      // `montrer` never drops the growth: the slide's timer is still armed when the scene ends.
+      await montrer();
+      // One act: the commit of step 2 (which arms the slide) lands after the scene's end, as on a
+      // phone whose render is slow.
+      await act(() => jest.advanceTimersByTime(3000));
+      await act(() => jest.advanceTimersByTime(3000));
+      expect(mockOrdre.at(-1)).toBe("vers");
     } finally {
       jest.useRealTimers();
     }

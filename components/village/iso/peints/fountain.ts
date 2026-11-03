@@ -122,7 +122,7 @@ export const fountain: Omit<PeintBld, "donnees"> = {
     "elements/teaser_b8_curved_former": {
       jour: require("@/assets/images/village/iso/peints/fountain/elements/teaser_b8_curved_former.jour.webp"),
       nuit: require("@/assets/images/village/iso/peints/fountain/elements/teaser_b8_curved_former.nuit.webp"),
-      size: [128, 170],
+      size: [142, 170],
     },
     "elements/teaser_b9_mythic_site": {
       jour: require("@/assets/images/village/iso/peints/fountain/elements/teaser_b9_mythic_site.jour.webp"),

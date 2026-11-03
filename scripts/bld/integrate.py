@@ -195,7 +195,7 @@ def main() -> None:
         ecrire_webp(nuit(jour, None), dest / f"{s}.nuit.webp")
         reg_masques[s] = masque(jour.getchannel("A"))
         de = mesures[s]["from"]
-        plaque = " The grey footprint plate was removed by mask and the straight diamond edge of the ground dissolved (scripts/bld/sans_losange.py), without FLUX." if (src / f"{s}.avant-losange.png").exists() else ""
+        plaque = " The edge of the ground was cleaned by mask (grey footprint plate, straight diamond edge, key magenta fringe; scripts/bld/sans_losange.py), without FLUX." if (src / f"{s}.avant-losange.png").exists() else ""
         provenance(prov, loc, f"assets/images/village/iso/peints/{code}/{s}.jour.webp", f"{rel_src}/{de}",
                    "the final painting of the stage placed on the family canvas, re-encoded WebP q90." + plaque)
         provenance(prov, loc, f"assets/images/village/iso/peints/{code}/{s}.nuit.webp", f"{rel_src}/{de}",
@@ -219,8 +219,9 @@ def main() -> None:
         elements[f"elements/{nom}"] = list(im.size)
         raw = f"{rel_src}/elements/{nom}.raw.png"
         base = loc_el.get(raw, {})
-        for amb, how in (("jour", "the element keyed from magenta, shrunk to its map size, WebP q90"),
-                         ("nuit", "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)")):
+        cle = " The key magenta left in the cut-out was removed by mask (scripts/bld/sans_losange.py cle), without FLUX." if (src / "elements" / f"{nom}.avant-cle.png").exists() else ""
+        for amb, how in (("jour", "the element keyed from magenta, shrunk to its map size, WebP q90." + cle),
+                         ("nuit", "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)." + cle)):
             prov[f"assets/images/village/iso/peints/{code}/elements/{nom}.{amb}.webp"] = {
                 "model": f"{base.get('model', 'flux-3-image')} ({base.get('provider', 'Black Forest Labs direct API')})",
                 "derived_from": raw, "how": how, "licence": base.get("licence", LICENCE)}

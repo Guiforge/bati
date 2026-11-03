@@ -107,7 +107,7 @@
     "alerteAcquittee": 70
   },
   "subagentRuns": {
-    "used": 80,
+    "used": 86,
     "budget": 250,
     "alerte80": 200,
     "note": "compte estimé à la main, session 2"
@@ -128,89 +128,126 @@
   },
   "buildings": {
     "windmill": {
-      "step": "concepts faits, choix attendu",
-      "directionsGardees": "1, 3",
-      "v2": "windmill A classique, windmill/r1/final/, ligne de comparaison seulement"
+      "step": "ideas refaites, directions 5 et 6, planche en attente du budget",
+      "ideas": "windmill/ideas-v2.md"
     },
     "observatory": {
-      "step": "concepts faits, choix attendu",
-      "directionsGardees": "3, 2"
+      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "direction": "4",
+      "spec": "scripts/bld/final/observatory.json",
+      "flag": "off"
     },
     "campfire": {
-      "step": "concepts faits, choix attendu",
-      "directionsGardees": "1, 2"
+      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "direction": "4",
+      "spec": "scripts/bld/final/campfire.json",
+      "flag": "off"
     },
     "tent": {
-      "step": "concepts faits, choix attendu",
-      "directionsGardees": "1, 2"
+      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "direction": "4",
+      "spec": "scripts/bld/final/tent.json",
+      "flag": "off"
     },
     "training_dummy": {
-      "step": "concepts faits, choix attendu",
-      "directionsGardees": "1, 3"
+      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "direction": "4",
+      "spec": "scripts/bld/final/training_dummy.json",
+      "flag": "off"
     },
     "wizard_tower": {
-      "step": "concepts faits, choix attendu",
-      "directionsGardees": "2, 1"
+      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "direction": "4",
+      "spec": "scripts/bld/final/wizard_tower.json",
+      "flag": "off"
     },
     "druid_grove": {
-      "step": "concepts faits, choix attendu",
-      "directionsGardees": "2, 1"
+      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "direction": "4",
+      "spec": "scripts/bld/final/druid_grove.json",
+      "flag": "off"
     },
     "high_road": {
-      "step": "concepts faits, choix attendu",
-      "directionsGardees": "2, 3"
+      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "direction": "4",
+      "spec": "scripts/bld/final/high_road.json",
+      "flag": "off"
     },
     "archery_range": {
-      "step": "concepts faits, choix attendu",
-      "directionsGardees": "1, 2"
+      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "direction": "4",
+      "spec": "scripts/bld/final/archery_range.json",
+      "flag": "off"
     },
     "watchtower": {
-      "step": "concepts faits, choix attendu",
-      "directionsGardees": "3, 2"
+      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "direction": "4",
+      "spec": "scripts/bld/final/watchtower.json",
+      "flag": "off"
     },
     "forge": {
-      "step": "concepts faits, choix attendu",
-      "directionsGardees": "1, 3"
+      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "direction": "4",
+      "spec": "scripts/bld/final/forge.json",
+      "flag": "off"
     },
     "armory": {
-      "step": "concepts faits, choix attendu",
-      "directionsGardees": "2, 1"
+      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "direction": "4",
+      "spec": "scripts/bld/final/armory.json",
+      "flag": "off"
     },
     "farm": {
-      "step": "concepts faits, choix attendu",
-      "directionsGardees": "1, 2"
+      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "direction": "4",
+      "spec": "scripts/bld/final/farm.json",
+      "flag": "off"
     },
     "barn": {
-      "step": "concepts faits, choix attendu",
-      "directionsGardees": "1, 3"
+      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "direction": "4",
+      "spec": "scripts/bld/final/barn.json",
+      "flag": "off"
     },
     "quarry": {
-      "step": "concepts faits, choix attendu",
-      "directionsGardees": "2, 3"
+      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "direction": "4",
+      "spec": "scripts/bld/final/quarry.json",
+      "flag": "off"
     },
     "castle_wall": {
-      "step": "concepts faits, choix attendu",
-      "directionsGardees": "3, 1"
+      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "direction": "4",
+      "spec": "scripts/bld/final/castle_wall.json",
+      "flag": "off"
     },
     "well": {
-      "step": "concepts faits, choix attendu",
-      "directionsGardees": "1, 2"
+      "step": "ideas refaites, directions 5 et 6, planche en attente du budget",
+      "ideas": "well/ideas-v2.md"
     },
     "fountain": {
-      "step": "concepts faits, choix attendu",
-      "directionsGardees": "3, 2"
+      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "direction": "3",
+      "spec": "scripts/bld/final/fountain.json",
+      "flag": "off"
     },
     "dragon_lair": {
-      "step": "concepts faits, choix attendu",
-      "directionsGardees": "1, 2"
+      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "direction": "4",
+      "spec": "scripts/bld/final/dragon_lair.json",
+      "flag": "off"
     },
     "heroes_hall": {
-      "step": "concepts faits, choix attendu",
-      "directionsGardees": "2, 3"
+      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "direction": "4",
+      "spec": "scripts/bld/final/heroes_hall.json",
+      "flag": "off"
     },
     "champion_arena": {
-      "step": "concepts faits, choix attendu",
-      "directionsGardees": "1, 2"
+      "step": "picked, specs finales écrites, peinture en attente du budget",
+      "direction": "4",
+      "spec": "scripts/bld/final/champion_arena.json",
+      "flag": "off"
     }
   },
   "parkedQuestions": [],
@@ -255,5 +292,11 @@
     "resume": "summary-2.md",
     "archive": "~/bati-archives/2026-11-03-session2.tgz",
     "suite": "529 vertes, 1 rouge, fdroid-scanignore, tests-debt.md"
-  }
+  },
+  "rules": {
+    "personnes": "aucune peinte, statues et animaux au repos seulement",
+    "mouvement": "ancres dans les données, passe ultérieure",
+    "source": "retours-concepts-2.md"
+  },
+  "bloque": "BUDGET_FLUX_V1 à relever par Guillaume, 0,71 $ restants"
 }

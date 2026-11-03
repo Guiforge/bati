@@ -1,0 +1,73 @@
+{
+  "building": "druid_grove",
+  "concept": {
+    "rough": "docs/designs/village-buildings/druid_grove/concepts/f3_d4_rough_t1.png",
+    "grand": "docs/designs/village-buildings/druid_grove/concepts/f3_d4_grand_t1.png",
+    "mythic": "docs/designs/village-buildings/druid_grove/concepts/f3_d4_mythic_t1.png"
+  },
+  "stages": {
+    "rough": "Edit this concept. Keep the branch and hide hut, the young oak, the low ring of rough stones and the drying rack of herb bundles. Remove the woman and the pink rag; stretch the hides tight on the frame, no flapping pieces. A rolled rush mat and a small pile of balanced flat stones where she sat. Modest and real. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
+    "solid": "Same young oak now a real tree, same hut re-roofed with split wood. The rough stones become a true circle of chest-high menhirs, plain and undecorated. A small clear spring begun in a ring of pebbles, a rush mat laid flat, a taller stack of balanced stones. A small clan pennant on the hut's ridge. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
+    "grand": "Edit this concept. Keep the large old oak, the circle of tall weathered menhirs, the dolmen, the stone spring and the fence. Remove the woman. Bring back the hut, rebuilt as a small timber shelter against the oak's foot, so it does not vanish. By the spring, a rush mat and a tall balanced stack of flat stones. Remove the mist and the spiral in the water; plain still water. No carving on any stone. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
+    "legendary": "Same oak grown huge, its roots spreading over the stones and gripping two menhirs at their base. The shelter now sits on stairs among the roots. A second dolmen. Small pale green lights begin in the moss on the stones and along the roots, the first hint of magic. The balanced stack of stones now stands as tall as a door. Dark bark, older stone. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
+    "mythic": "Edit this concept. Keep the oak, the shelter with its stairs in the trunk, the dolmens and the ring of menhirs. Remove all figures, all carved spirals and the rainbow haze. Go much further: the oak becomes colossal, a dark tower of a trunk with a wide crown filling the top of the image, and its huge roots have lifted three tall menhirs high off the ground, cradled in thick roots and branches up in the crown, like a second stone circle in the sky, firmly gripped, never floating. Thick veins of pale green light climb the bark from the spring, which glows the same colour, and run along the roots up to the raised stones, strong by day and night; pale green motes rest in the leaves. The crown of oak and raised stones is the silhouette. The balanced stack of stones stands by the stairs. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding."
+  },
+  "teasers": [
+    {
+      "id": "r2",
+      "stage_after": "rough",
+      "prompt": "a menhir block on wooden rollers with a long lever pole Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+    },
+    {
+      "id": "r4",
+      "stage_after": "solid",
+      "prompt": "a pile of big flat stones and a coil of rope beside a shovel Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+    },
+    {
+      "id": "r6",
+      "stage_after": "grand",
+      "prompt": "a thick cut root section laid across two stones, new timber stairs stacked beside it Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+    },
+    {
+      "id": "r8",
+      "stage_after": "legendary",
+      "prompt": "an enormous menhir block on rollers with heavy ropes tied round it Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+    },
+    {
+      "id": "r9",
+      "stage_after": "legendary",
+      "prompt": "a huge block and tackle on a timber tripod holding a tall stone upright, rope taut Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+    }
+  ],
+  "gag": [
+    {
+      "rank": 2,
+      "prompt": "a rolled rush mat with one flat stone balanced on it Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+    },
+    {
+      "rank": 4,
+      "prompt": "a flat stone stack with a small bird at rest on top Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+    },
+    {
+      "rank": 6,
+      "prompt": "a rush mat with a goat lying at rest on it Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+    },
+    {
+      "rank": 8,
+      "prompt": "two rush mats side by side, a goat at rest on one Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+    },
+    {
+      "rank": 9,
+      "prompt": "a goat at rest beside a stack of stones Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+    },
+    {
+      "rank": 10,
+      "prompt": "a tall stack of stones with a small nest on top Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+    }
+  ],
+  "anchors": [
+    "water",
+    "magic",
+    "windows"
+  ]
+}

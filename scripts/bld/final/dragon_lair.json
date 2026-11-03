@@ -1,0 +1,45 @@
+{
+  "building": "dragon_lair",
+  "concept": {
+    "rough": "docs/designs/village-buildings/dragon_lair/concepts/f3_d4_rough_t1.png",
+    "grand": "docs/designs/village-buildings/dragon_lair/concepts/f3_d4_grand_t1.png",
+    "mythic": "docs/designs/village-buildings/dragon_lair/concepts/direct_d4_mythic_t1_v2.png"
+  },
+  "stages": {
+    "rough": "Edit of the concept. Keep the small rocky mound shored with rough timber frames, the very small dark cave mouth, the spined tail tip coming out of the dark, the rough wooden barrier and the torch on its stake. Remove both guards entirely. Add one great grey bone lying in front of the mouth, and two big round lifting stones worn smooth on top beside the barrier. A real, modest, slightly worrying place, no joke. Keep the same three-quarter isometric angle, ink outlines and warm light from the top left. No people anywhere. No letters, no runes, no loose cloth, no hard-edged ground slab, a feathered patch of natural ground on the same footprint, no painted cast shadows, no grey smoke or fog. Matte paint, no gloss.",
+    "solid": "The same lair one step on, painted between rough and grand. The mound rises into a real outcrop of bare rock. The timber props give way to a door frame of squared, roughly dressed stone with iron straps, the barrier becomes a heavy iron-bound gate standing half open. The tail is thicker, and a spined back shows in the dark. Three big half-buried ribs in the ground, the lifting stones now a graded row of three, two torches, a stiff wooden pennant on a pole. Keep the same three-quarter isometric angle, ink outlines and warm light from the top left. No people anywhere. No letters, no runes, no loose cloth, no hard-edged ground slab, a feathered patch of natural ground on the same footprint, no painted cast shadows, no grey smoke or fog. Matte paint, no gloss.",
+    "grand": "Edit of the concept. Keep the cliff with its mossy overhang, the two great tapered stone pillars with iron bands, the beam across them, the wooden gate, the path and both half-buried dragon skeletons. Remove both guards. Remove all the fog. Remove the small red tabs on the beam. Only one dragon head in the shadow, eyes closed, at rest. One long curved rib lashed between two oak posts as a pull-up bar, its middle worn pale, the graded lifting stones beside it, and a clan banner stretched on a rigid wooden frame on one pillar. Keep the same three-quarter isometric angle, ink outlines and warm light from the top left. No people anywhere. No letters, no runes, no loose cloth, no hard-edged ground slab, a feathered patch of natural ground on the same footprint, no painted cast shadows, no grey smoke or fog. Matte paint, no gloss.",
+    "mythic": "Edit of the concept, going much further. Remove the fog. Keep the monumental carved portal with its dragon reliefs, the great dragon resting asleep with closed eyes on its heap, and the heap of old coins overflowing out of the cave and down the path: painted matte, dull ochre and brass discs in big simple masses, no glint, no sparkle. The mountain behind becomes one vertiginous needle of rock rising almost to the top of the canvas, complete, not cropped on any side, around which one immense stone dragon is carved in deep relief, body coiling up the peak, its closed-eyed head forming the summit. New magic: fissures of molten ember orange run through the carved coils and the reliefs from the cave up to the summit, as if the sleeper's breath moves through the mountain, strong enough to read by day. A plain carved shield with ember light in its surface, no symbol, above the portal. The rib bar, the lifting stones and the half-buried bones stay at the foot. No blood, no skull grin. Keep the same three-quarter isometric angle, ink outlines and warm light from the top left. No people anywhere. No letters, no runes, no loose cloth, no hard-edged ground slab, a feathered patch of natural ground on the same footprint, no painted cast shadows, no grey smoke or fog. Matte paint, no gloss."
+  },
+  "teasers": [
+    {
+      "id": "r2_stone_frame",
+      "stage_after": "rough",
+      "prompt": "A squared stone door jamb half cut, lying on a log sled, with a chisel and a mason's mallet resting on it and a small pile of rubble. Big simple shapes readable at phone size. Objects only, no people, no letters, one subject alone on flat magenta, matte, ink outlines, same isometric angle."
+    }
+  ],
+  "gag": [
+    {
+      "rank": 2,
+      "prompt": "A round wooden shield with a large scorched notch, leaning on a bucket of sand. Big simple shapes readable at phone size. Objects only, no people, no letters, one subject alone on flat magenta, matte, ink outlines, same isometric angle."
+    },
+    {
+      "rank": 3,
+      "prompt": "A long-handled broom with a singed head beside a wooden bucket. Big simple shapes readable at phone size. Objects only, no people, no letters, one subject alone on flat magenta, matte, ink outlines, same isometric angle."
+    },
+    {
+      "rank": 4,
+      "prompt": "Two heavy iron-toed boots set neatly side by side on a flat stone, a singed glove on top. Big simple shapes readable at phone size. Objects only, no people, no letters, one subject alone on flat magenta, matte, ink outlines, same isometric angle."
+    },
+    {
+      "rank": 5,
+      "prompt": "A small plain wooden bowl of water on a flat stone and a wooden rake with worn teeth. Big simple shapes readable at phone size. Objects only, no people, no letters, one subject alone on flat magenta, matte, ink outlines, same isometric angle."
+    }
+  ],
+  "anchors": [
+    "fire",
+    "smoke",
+    "magic",
+    "flag"
+  ]
+}

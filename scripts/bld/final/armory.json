@@ -1,0 +1,42 @@
+{
+  "building": "armory",
+  "concept": {
+    "rough": "docs/designs/village-buildings/armory/concepts/f3_d4_rough_t1.png",
+    "grand": "docs/designs/village-buildings/armory/concepts/f3_d4_grand_t1.png",
+    "mythic": "docs/designs/village-buildings/armory/concepts/f3_d4_mythic_t1.png"
+  },
+  "stages": {
+    "rough": "Edit the concept. Keep the plank shack open on the front, the rack of plain swords and spears, the round wooden shields. Remove the smith completely. What he did passes through objects: a plain blade rests on a bench beside a whetstone and a small oil flask. Remove the hide and cloth patches on the roof, replace them with mismatched wooden shingles. Sport sign: a heavy round shield with worn handles sits on a low trestle next to a small stone, for training the chest. Nobody in the image, no people at all. Footprint unchanged, exactly 2 by 2 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "solid": "Paint the same armory one step further, between the rough and the grand. Everything from rough stays: rack, round shields, bench, whetstone, heavy shield. Added: a stone footing, thicker squared timber, a proper door with iron hinges, a small window, a lean-to rack along one wall, a wider roof with a real ridge. Plain and well made, a first pride. Nobody in the image, no people at all. Footprint unchanged, exactly 2 by 2 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "grand": "Edit the concept. Keep the half-timbered stone armory, the wide open door, the shields, the helmets on pegs, the swords, the window, the plain suit of mail on its wooden stand. Remove both people completely and remove the cloth and hide on the roof, replace them with sound shingles. A second suit of plain mail stands empty on a wooden stand, a pole clearly visible through the neck. Sport: a thick wooden beam across the door lintel, its middle worn pale, for pull-ups, and the heavy training shield stays by the door. Nobody in the image, no people at all. Footprint unchanged, exactly 2 by 2 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "legendary": "Paint the same armory one step further, between the grand and the mythic. Everything from grand stays. It becomes a tall stone hall with a huge front opening, two tiers of armour stands inside, one suit of matte dark steel scale on a central stand, walls of great shields and tall weapons in rows, a rolling ladder. The back corner starts rising into a square stone tower with a flat top. No glow on armour or weapons. A hint of old magic: two iron cressets at the door burn with small pale blue cold flames. Nobody in the image, no people at all. Footprint unchanged, exactly 2 by 2 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "mythic": "Edit the concept and go much further. Keep the great stone hall with its huge front open like a cutaway, its walls of tall weapons and shields. Walls whole and sound, never ruined. Remove every person completely. Reduce the armour to twelve large suits of engraved dark steel and matte bronze in three clean rows, each clearly empty on a wooden stand with its pole visible through the neck, helmets with closed visors, so it reads as objects and never as a crowd. A rolling ladder, a polishing stool and a folded rag stay in the middle, and the worn pull-up beam and heavy shield stay at the opening. The towering element: from the back corner a square stone tower rises to three times the height of the hall, crowned by a colossal plain great helm of matte dark steel, wider than the tower, serving as its roof, no plume, closed, no light inside it. Strong magic layer, clear by day and by night: at the four corners of the tower and along the top of the walls, tall iron cressets burn with very tall pale blue cold flames, sending long curling trails of pale blue light in a slow spiral around the tower under the helm. No glow on armour or weapons, no shine. Warm lit windows in the tower. Nobody in the image, no people at all. Footprint unchanged, exactly 2 by 2 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left."
+  },
+  "teasers": [],
+  "gag": [
+    {
+      "rank": 1,
+      "prompt": "A very small stool with a far too large plain helmet set on it. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 2,
+      "prompt": "A plain suit of armour lying on its back on the ground with a rope tied around its ankles. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 3,
+      "prompt": "The same suit of armour on its back, its breastplate pried open by a long iron crowbar left in place. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 7,
+      "prompt": "An empty wooden armour stand tipped over, with the plain suit of armour standing one step away from it on its own, hollow, visor open and empty. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 10,
+      "prompt": "A hollow plain suit of armour standing at rest on the ground, one gauntlet raised to its helmet in a salute, its empty stand beside it. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    }
+  ],
+  "anchors": [
+    "windows",
+    "magic"
+  ]
+}

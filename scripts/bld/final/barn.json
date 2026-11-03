@@ -1,0 +1,42 @@
+{
+  "building": "barn",
+  "concept": {
+    "rough": "docs/designs/village-buildings/barn/concepts/f3_d4_rough_t1.png",
+    "grand": "docs/designs/village-buildings/barn/concepts/f3_d4_grand_t1.png",
+    "mythic": "docs/designs/village-buildings/barn/concepts/f3_d4_mythic_t1.png"
+  },
+  "stages": {
+    "rough": "Edit the concept. Keep the small plank barn with its low roof and little door, the few sacks and the small heap of straw. Remove the farm woman completely. What she did passes through objects: one sack stands alone before the door, a shoulder pad of folded leather on top of it. Rope patches on the roof, salvaged planks, charming and modest. Sport sign: a row of three sacks in growing sizes along the wall, for lifting with the legs. Nobody in the image, no people at all. Footprint unchanged, exactly 2 by 3 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "solid": "Paint the same barn one step further, between the rough and the grand. Everything from rough stays: sacks, straw heap, shoulder pad. Added: a stone footing, a taller roof with a real ridge, wide double doors, square hay bales stacked at the side, a wooden barrow with a sack in it. Clearly larger, the first real barn. Nobody in the image, no people at all. Footprint unchanged, exactly 2 by 3 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "grand": "Edit the concept. Keep the big timber barn with its steep roof on a stone base, the open double doors, the stacked bales and sacks, the hay cart. Remove all three people completely and remove the mist patches. The cart stands alone, its shafts resting on the ground, a pitchfork stuck upright in its load, the sacks in growing sizes along the wall, a hen at rest. Add a hayloft door under the gable with a hoist beam and pulley. Nobody in the image, no people at all. Footprint unchanged, exactly 2 by 3 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "legendary": "Paint the same barn one step further, between the grand and the mythic. Everything from grand stays. It becomes very long and tall, dark oak and stone with iron bands, with high loft doors overflowing with wheat, two loaded carts, a first timber cupola rising from the ridge with its own little loft door and hoist. A hint of old magic: warm amber light through the cracks of the planks and a few pale chaff motes around the cupola. Nobody in the image, no people at all. Footprint unchanged, exactly 2 by 3 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "mythic": "Edit the concept and go much further. Keep the huge dark oak and stone barn with its great steep roof, loft doors overflowing with wheat, loaded carts and sacks. Remove both people completely and remove any mist. A pitchfork in the hay, two yokes against the sacks, stacked sacks forming a broad stair of steps up to the first loft, for the legs. The towering element: from the middle of the ridge rises a soaring tower of oak lofts, five storeys high, far above the roof, each storey overhanging the one below and each with an open door spilling wheat, like a tall stack of barns, topped by a long hoist beam with a heavy sack on its rope. Strong magic layer, clear by day and by night: warm amber harvest light pours from every loft door and through the planks, and a wide slow spiral of pale gold wheat chaff turns around the whole tower, reaching beyond the roof. Plain matte straw colours, not gold metal. It reads as one single barn, never a house. Nobody in the image, no people at all. Footprint unchanged, exactly 2 by 3 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left."
+  },
+  "teasers": [],
+  "gag": [
+    {
+      "rank": 1,
+      "prompt": "A cat asleep on a single square hay bale. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 2,
+      "prompt": "A cat asleep on top of a stack of three square hay bales. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 3,
+      "prompt": "A cat asleep on top of a tall stack of hay bales, a short ladder leaning against it. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 7,
+      "prompt": "A cat and one kitten asleep on top of a tall stack of hay bales, a short ladder leaning against it. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 10,
+      "prompt": "A cat and a grown kitten asleep at the very top of a much taller stack of hay bales, a long ladder that does not quite reach them. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    }
+  ],
+  "anchors": [
+    "windows",
+    "magic"
+  ]
+}

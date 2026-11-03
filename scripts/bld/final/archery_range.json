@@ -1,0 +1,68 @@
+{
+  "building": "archery_range",
+  "concept": {
+    "rough": "docs/designs/village-buildings/archery_range/concepts/f3_d4_rough_t1.png",
+    "grand": "docs/designs/village-buildings/archery_range/concepts/f3_d4_grand_t1.png",
+    "mythic": "docs/designs/village-buildings/archery_range/concepts/f3_d4_mythic_t1.png"
+  },
+  "stages": {
+    "rough": "Edit the concept. Keep the small open timber shed, the round straw bale on its trestle with arrows in it, the quiver on its stake. Remove the archer completely. What he did passes through objects: a plain wooden bow rests across a forked stake at a shooting mark scratched in the earth, three arrows stand stuck in the ground beside it. Make it poorer: rope lashings and salvaged planks in place of most iron straps and plates, one mismatched plank on the roof. Sport sign: a rope over the shed beam tied to a heavy stone, a worn wooden pull handle at its end, for training the arms. Nobody in the image, no people at all. Footprint unchanged, exactly 2 by 3 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "solid": "Paint the same range one step further, between the rough and the grand. Everything from rough stays: bale, stake, bow on its rest, rope and stone. Added: a straight shingled roof on the shed, squared timber, a real plank shooting line, a low rail fence starting along one side of the lane, a second target with painted rings on a proper stand, a small rack of arrows. The silhouette gains a long low fence line and a second target. Nobody in the image, no people at all. Footprint unchanged, exactly 2 by 3 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "grand": "Edit the concept. Keep the fenced lane, the three round straw targets on stands, the shingled shelter, the arrow rack, the bows on pegs, the barrel. Remove the archer completely and remove the grey mist behind the fence. On the plank shooting line, a good bow rests on a wooden stand and a sheaf of arrows stands in a barrel, one arrow in each target. Keep the rope and stone arm trainer, now on a proper timber frame beside the shelter. Nobody in the image, no people at all. Footprint unchanged, exactly 2 by 3 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "legendary": "Paint the same range one step further, between the grand and the mythic. Everything from grand stays. The shelter rises into a two-storey gallery of dark oak on a dressed stone base with a stair, racks of great bows and sheaves of arrows behind its rail, iron braziers at the corners. Targets become larger, of woven straw and dark oak with iron bands, and one travels on a rail with a pulley and counterweight. A first hint of old magic: a thin ring of pale blue-white cold flame just lit around the rim of the largest target. Nobody in the image, no people at all. Footprint unchanged, exactly 2 by 3 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "mythic": "Edit the concept and go much further. Keep the tall timber and stone gallery with its stair, its racks of great bows and sheaves of arrows, the barrel. Remove the archer completely, remove the mist, and replace both red cloth banners with rigid oak boards painted plain red on iron frames, without any sign. At the far left end of the lane rises the towering element: a colossal timber frame, four houses high, far above the gallery, stacking three giant round targets of woven straw and dark oak one above the other, largest at the bottom, all facing the viewer three-quarter like the concept targets. One arrow as long as a ship's mast sits in the dead centre of the top target, plain matte wood and iron. Strong magic layer, clear by day and by night: every giant target is ringed by a tall crown of pale blue-white cold flame, and long curling streaks of pale wind light run down the whole lane toward them. No glow on any bow or arrow. On the shooting line, a great bow rests alone on its stand, and the rope and stone trainer now lifts a block as big as a barrel. Nobody in the image, no people at all. Footprint unchanged, exactly 2 by 3 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left."
+  },
+  "teasers": [
+    {
+      "id": "r2_second_target",
+      "stage_after": "rough",
+      "prompt": "An unfinished target stand of fresh wood with a round straw disc leaning against it and a small pot of red paint. Objects only, nobody, one bold simple shape readable very small, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "id": "r4_roof_and_fence",
+      "stage_after": "solid",
+      "prompt": "A neat stack of wooden shingles beside a bundle of sharpened fence posts tied with rope. Objects only, nobody, one bold simple shape readable very small, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "id": "r6_gallery_corner",
+      "stage_after": "grand",
+      "prompt": "The first corner of a dark oak gallery: two tall posts and a cross beam on a few dressed stones, propped by a raking strut. Objects only, nobody, one bold simple shape readable very small, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "id": "r8_giant_ring",
+      "stage_after": "legendary",
+      "prompt": "One giant ring of woven straw, half wound, lying flat on low trestles with a coil of straw rope beside it. Objects only, nobody, one bold simple shape readable very small, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "id": "r9_great_frame",
+      "stage_after": "legendary",
+      "prompt": "A tall lashed timber scaffold with one giant round straw target half raised inside it on ropes, and a small iron lantern on a post at its foot, the lantern stays afterwards. Objects only, nobody, one bold simple shape readable very small, no letters, matte, ink outlines, iso angle."
+    }
+  ],
+  "gag": [
+    {
+      "rank": 2,
+      "prompt": "A short length of old fence with three arrows stuck in it at odd heights, none near each other. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 4,
+      "prompt": "A single hay bale bristling with a great many arrows, all over its surface. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 6,
+      "prompt": "A small round target on a stand with a single arrow in its outermost ring. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 8,
+      "prompt": "A small round target on a stand with a single arrow in its exact centre. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 10,
+      "prompt": "A small round target on a stand with one arrow in its exact centre, split lengthwise by a second arrow. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    }
+  ],
+  "anchors": [
+    "fire",
+    "magic"
+  ]
+}

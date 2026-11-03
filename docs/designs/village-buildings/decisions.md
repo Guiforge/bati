@@ -121,3 +121,13 @@ Conséquences de la planche de cartes :
 - Refus de modération : « homme pendu à la corde » et corde « à la taille » reformulés une fois, en décrivant ce qu'on veut vraiment voir.
 - Audits W3 à W5 : directions dans chaque `audit.md`. Carrière à égalité parfaite : la 1 écartée par le test du prompt, « le même bloc, plus gros ».
 - Guillaume, 03/11 : plus d'itérations, c'est lui qui juge les concepts. Reprises arrêtées, page de choix : https://claude.ai/artifact/HBBzj1ZZ3AC4bGhwk8YgMk. La mi-relecture de mara reste notée sur la page en « à savoir ». Le prompt prévoyait deux checkpoints en markdown, la page les remplace.
+
+## Session 2, après les choix de Guillaume (03/11)
+
+- Direction approuvée : la 4 (fontaine : la 3), pas le premier de l'audit. Pourquoi dans `retours-concepts-2.md`.
+- Tap fusionné : `amorce()` n'évolue plus jamais un bâtiment prêt, drapeau allumé ou éteint.
+- Moulin et puits : étape A refaite, 2 directions chacun, directions 5 et 6. Étape B sautée : rien à départager, et Guillaume a demandé moins d'audits. Il juge sur planche.
+- Puits 6 : sablier retiré, il évoque un minuteur.
+- 19 specs finales écrites avant le budget, sans FLUX. Elles n'ont jamais été peintes : la tenue dans le canevas reste à voir.
+- `final.py` pas écrit : sans budget, il ne se teste pas. Premier travail quand le plafond monte.
+- Le mannequin mythique part de `direct_d4_mythic_t1_v2`, qui a un toit, la cabane du rough du feu de camp est retirée : choix des rédacteurs, signalés au checkpoint.

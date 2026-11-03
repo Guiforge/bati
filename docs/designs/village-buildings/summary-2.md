@@ -51,3 +51,6 @@ Page mise à jour au même lien : direction 4 de 19 bâtiments, peinte d'après 
 
 - **FLUX :** 18,80 $ en tout cette session, registre à 72,95 $ sur 75 $, 0,71 $ restants. Alerte à 70 $ acquittée par moi.
 - **Production bloquée** tant que `BUDGET_FLUX_V1` n'est pas relevé.
+
+## Après les choix de Guillaume (03/11)
+Rien n'est peint : le plafond est encore à 75 $. Ce qui est fait sans FLUX : ses décisions dans `retours-concepts-2.md`, le tap fusionné, le moulin et le puits réécrits, 19 specs finales. Prochaine étape : `checkpoint.md`, une ligne à ajouter. Puis écrire `final.py`, peindre le moulin et le puits, et lancer la production par vagues.

@@ -1,0 +1,69 @@
+{
+  "building": "farm",
+  "concept": {
+    "rough": "docs/designs/village-buildings/farm/concepts/f3_d4_rough_t1.png",
+    "grand": "docs/designs/village-buildings/farm/concepts/f3_d4_grand_t1.png",
+    "mythic": "docs/designs/village-buildings/farm/concepts/f3_d4_mythic_t1.png"
+  },
+  "stages": {
+    "rough": "Edit the concept. Keep the low thatched cottage, the fenced vegetable patch, the rows of young corn. Remove the farmer completely. What he did passes through objects: a full sack stands tied in the yard beside a padded wooden shoulder yoke with two full buckets. Make the idea readable: one corn plant, already clearly a head taller than all the others, with one small cob, tied to a little stake. Believable and modest, no joke yet. Nobody in the image, no people at all. Footprint unchanged, exactly 2 by 3 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "solid": "Paint the same farm one step further, between the rough and the grand. Everything from rough stays: patch, young corn, sack, yoke and buckets. Added: a longer cottage with a half-timbered wing, a real gate and more fence, two hens at rest. The tall corn plant now reaches the eaves of the roof, tied to a stout pole with two cobs, its leaves larger than the others. Believable, the first odd thing in the yard. Nobody in the image, no people at all. Footprint unchanged, exactly 2 by 3 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "grand": "Edit the concept. Keep the half-timbered farmhouse, the thatched roof, the fence, the field of tall corn. Remove the farmer completely. His load stays in the yard as objects: a loaded pack frame stands on the path, leaning on a low stone, with a stack of three sacks beside it for lifting. The hens rest by the fence. The one corn stalk grows clearly above the ridge of the roof, thicker than a fence post, with big pale yellow cobs, tied by rope to the house. Nobody in the image, no people at all. Footprint unchanged, exactly 2 by 3 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "legendary": "Paint the same farm one step further, between the grand and the mythic. Everything from grand stays. The house gains a stone storey, a chimney and a dovecote gable, the yard stone walls. The corn stalk is now three times the height of the house, thick as a young tree, braced by a timber collar and ropes, with cobs as big as barrels and a first long ladder. A hint of old magic: a few pale gold motes drift from the tassel, and the highest cob has a faint warm light in its kernels. Nobody in the image, no people at all. Footprint unchanged, exactly 2 by 3 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "mythic": "Edit the concept and go much further: the giant corn stalk is the whole idea, keep it the star. Keep the farmhouse, its yard, the fenced plots and the two long ladders. Remove both farmers completely. Their work stays as objects: a rake leaning on a ladder, a basket half filled with kernels, the shoulder yoke and sacks in the yard, a heavy sack set on a low step, for squats. The towering element: the single corn stalk is half again taller than in the concept and thick as a castle tower at its base, roots gripping the yard, soaring far above everything to the top of the canvas with a huge spread tassel, leaves wide as boat hulls arching out, cobs each bigger than the house, plain pale yellow, matte. Long lashed ladders climb it to a small timber landing high up with a hoist and a rope down to the yard. Strong magic layer, clear by day and by night: the kernels of every cob shine with warm amber lantern light from inside, and a slow waterfall of pale gold pollen motes falls from the tassel down around the whole stalk. Chimney with a thin thread of smoke, windows warm. Nobody in the image, no people at all. Footprint unchanged, exactly 2 by 3 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left."
+  },
+  "teasers": [
+    {
+      "id": "r2_stake_and_posts",
+      "stage_after": "rough",
+      "prompt": "A stout tall pole and a bundle of fence posts with a coil of rope, lying beside a fresh gate on the ground. Objects only, nobody, one bold simple shape readable very small, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "id": "r4_frame_and_thatch",
+      "stage_after": "solid",
+      "prompt": "A small half-timbered wall frame propped upright, with a thick bundle of thatch beside it. Objects only, nobody, one bold simple shape readable very small, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "id": "r6_collar_and_ladder",
+      "stage_after": "grand",
+      "prompt": "A big timber collar in two halves on the ground with a long ladder and a pile of field stones. Objects only, nobody, one bold simple shape readable very small, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "id": "r8_giant_cob",
+      "stage_after": "legendary",
+      "prompt": "One enormous pale yellow corn cob, as long as a cart, lying on a low wooden sled tied with rope. Objects only, nobody, one bold simple shape readable very small, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "id": "r9_tall_ladders",
+      "stage_after": "legendary",
+      "prompt": "A very tall tower of lashed poles and long ladders, with a small landing and a hoist at the top, and a small iron lantern on a post at its foot, the lantern stays afterwards. Objects only, nobody, one bold simple shape readable very small, no letters, matte, ink outlines, iso angle."
+    }
+  ],
+  "gag": [
+    {
+      "rank": 2,
+      "prompt": "A newborn calf lying at rest on a little straw, a padded wooden shoulder yoke beside it. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 4,
+      "prompt": "A bigger calf lying at rest on straw, the same padded yoke beside it. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 6,
+      "prompt": "A young bull lying at rest on straw, the same padded yoke beside it. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 8,
+      "prompt": "A full-grown bull lying at rest on straw, the same padded yoke beside it. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 10,
+      "prompt": "A full-grown bull lying at rest on straw, calm, the padded yoke resting across its own back. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    }
+  ],
+  "anchors": [
+    "smoke",
+    "windows",
+    "magic"
+  ]
+}

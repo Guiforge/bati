@@ -1,0 +1,62 @@
+{
+  "building": "fountain",
+  "concept": {
+    "rough": "docs/designs/village-buildings/fountain/concepts/f3_d3_rough_t1.png",
+    "grand": "docs/designs/village-buildings/fountain/concepts/f3_d3_grand_t1.png",
+    "mythic": "docs/designs/village-buildings/fountain/concepts/f3_d3_mythic_t1.png"
+  },
+  "stages": {
+    "rough": "Edit of the concept. Keep the low round vat of dark slate water, the patched upright barrel of mismatched grey staves, the rope, the rag patches, the wooden funnel and the short ladder. Remove the woman entirely; her bucket stays, resting on a ladder rung. Move the three holes from the stone pedestal up into the barrel's staves, and make the pedestal one low flat stone: three thick opaque short arcs of water, each leaving a visible round hole and ending on a pale foam ring. A fourth hole is stopped with a rough wooden peg. Beside the vat a plank slanted on a log with a rope loop at its low end, a homemade sit-up board. Ochre and slate colours, no turquoise. Keep the same three-quarter isometric angle, ink outlines and warm light from the top left. No people anywhere. No letters, no runes, no loose cloth, no hard-edged ground slab, a feathered patch of natural ground on the same footprint, no painted cast shadows, no grey smoke or fog. Matte paint, no gloss.",
+    "solid": "The same fountain one step on, painted between rough and grand. The vat becomes a round basin of cut stone. The barrel, now new oak with real iron hoops, is twice as tall and properly bellied, with a small plank platform around its neck and the funnel on top. The holes have become four thick wooden spouts at one height, four equal opaque arcs, each ending on a foam ring. The ladder stays, the bucket stays. The sit-up board is now squared oak with an iron foot bar. A stiff wooden pennant on a short pole, no fabric. Pride of a thing that works. Keep the same three-quarter isometric angle, ink outlines and warm light from the top left. No people anywhere. No letters, no runes, no loose cloth, no hard-edged ground slab, a feathered patch of natural ground on the same footprint, no painted cast shadows, no grey smoke or fog. Matte paint, no gloss.",
+    "grand": "Edit of the concept. Keep the huge barrel as tall as a house, widest at mid-height, dark oak staves, matt iron hoops, the plank platform and funnel, the stone basin and the six thick arcs at two heights, each from a visible ringed hole to its own foam ring. Remove both people. Remove the diamond ground edge. Make the arcs opaque solid ribbons. Add a low stone fish-pond rim, the oak sit-up board now set on a stone bench at the basin, the old ladder against the barrel, and a clan banner stretched on a rigid wooden frame on the platform. Ochre and slate, no turquoise, no chain of buckets. Keep the same three-quarter isometric angle, ink outlines and warm light from the top left. No people anywhere. No letters, no runes, no loose cloth, no hard-edged ground slab, a feathered patch of natural ground on the same footprint, no painted cast shadows, no grey smoke or fog. Matte paint, no gloss.",
+    "legendary": "The same fountain as a marvel, painted between grand and mythic. The barrel turns to black oak and grows taller than any house, ship-hull ribs curving over its belly, thick matt iron hoops. Eight thick opaque arcs leave matt bronze throats and land on foam rings. The funnel is dry and black: nothing is poured any more and the water still comes. A first thin line of cold blue light shows between two staves. A plain carved shield on the centre stave with no symbol on it. Platform, ladder, bench and banner frame all stay. Keep the same three-quarter isometric angle, ink outlines and warm light from the top left. No people anywhere. No letters, no runes, no loose cloth, no hard-edged ground slab, a feathered patch of natural ground on the same footprint, no painted cast shadows, no grey smoke or fog. Matte paint, no gloss.",
+    "mythic": "Edit of the concept, going much further. Remove the grey fog at the sides. Stretch the black-oak barrel into a vertiginous giant, belly enormous, narrowed at both ends, rising almost to the top of the canvas, with ship-hull ribs and thick matt iron hoops, the basin keeping exactly the same footprint. Eight thick opaque ribbon arcs in three crowns, the highest falling farthest to form a bell of water, each from a visible hole to its own foam ring. New and impossible: one huge thick ribbon of water climbs out of the basin against gravity, spirals once around the belly and pours upward into the tall black funnel, so the pierced barrel finally fills itself. Cold blue light in vertical lines between all the staves and inside the climbing ribbon, strong enough to read by day. A plain carved shield with a pale cold light in its surface, no symbol. Ladder, bench and frame stay, tiny at its foot. Not an octopus, not a tree, no rainbow, no windows. Keep the same three-quarter isometric angle, ink outlines and warm light from the top left. No people anywhere. No letters, no runes, no loose cloth, no hard-edged ground slab, a feathered patch of natural ground on the same footprint, no painted cast shadows, no grey smoke or fog. Matte paint, no gloss."
+  },
+  "teasers": [
+    {
+      "id": "b8_giant_hoop",
+      "stage_after": "legendary",
+      "prompt": "A giant iron barrel hoop, taller than a cart, standing on edge and propped with two timber struts, a coil of rope at its foot. Big simple shapes readable at phone size. Objects only, no people, no letters, one subject alone on flat magenta, matte, ink outlines, same isometric angle."
+    },
+    {
+      "id": "b9_mythic_site",
+      "stage_after": "legendary",
+      "prompt": "A building site: a few enormous curved black-oak staves stacked on trestles beside a tall timber scaffold, a cooper's mallet and a wedge left on the top stave. Big simple shapes readable at phone size. Objects only, no people, no letters, one subject alone on flat magenta, matte, ink outlines, same isometric angle."
+    }
+  ],
+  "gag": [
+    {
+      "rank": 1,
+      "prompt": "A cooper's wooden mallet and three spare wooden pegs on a flat stone. Big simple shapes readable at phone size. Objects only, no people, no letters, one subject alone on flat magenta, matte, ink outlines, same isometric angle."
+    },
+    {
+      "rank": 2,
+      "prompt": "A row of pegs in a wooden crate, one bucket set under a small leak. Big simple shapes readable at phone size. Objects only, no people, no letters, one subject alone on flat magenta, matte, ink outlines, same isometric angle."
+    },
+    {
+      "rank": 3,
+      "prompt": "A low three-legged stool beside a crate of worn pegs and a wooden ladle in a bowl. Big simple shapes readable at phone size. Objects only, no people, no letters, one subject alone on flat magenta, matte, ink outlines, same isometric angle."
+    },
+    {
+      "rank": 7,
+      "prompt": "A stool with a bowl of soup and a spoon resting on it, a tin mug beside it. Big simple shapes readable at phone size. Objects only, no people, no letters, one subject alone on flat magenta, matte, ink outlines, same isometric angle."
+    },
+    {
+      "rank": 8,
+      "prompt": "One empty clay jug standing on the stool, waiting. Big simple shapes readable at phone size. Objects only, no people, no letters, one subject alone on flat magenta, matte, ink outlines, same isometric angle."
+    },
+    {
+      "rank": 9,
+      "prompt": "The stool and jug set on a stack of black-oak offcuts, a broom leaning against them. Big simple shapes readable at phone size. Objects only, no people, no letters, one subject alone on flat magenta, matte, ink outlines, same isometric angle."
+    },
+    {
+      "rank": 10,
+      "prompt": "Three full clay jugs lined up in a neat row on a plank, the old peg lying on top of the first. Big simple shapes readable at phone size. Objects only, no people, no letters, one subject alone on flat magenta, matte, ink outlines, same isometric angle."
+    }
+  ],
+  "anchors": [
+    "water",
+    "magic",
+    "flag"
+  ]
+}

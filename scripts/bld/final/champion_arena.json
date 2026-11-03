@@ -1,0 +1,44 @@
+{
+  "building": "champion_arena",
+  "concept": {
+    "rough": "docs/designs/village-buildings/champion_arena/concepts/f3_d4_rough_t1.png",
+    "grand": "docs/designs/village-buildings/champion_arena/concepts/f3_d4_grand_t1.png",
+    "mythic": "docs/designs/village-buildings/champion_arena/concepts/f3_d4_mythic_t1.png"
+  },
+  "stages": {
+    "rough": "Edit of the concept. Keep the patched half-timbered shed, the bench, the stake-and-rope ring on packed sand and the barrel clearly in the centre. Remove both men entirely, and the red cloth on the bench. What they were doing stays, told by objects: on the barrel head, two big old leather gauntlets stuffed with straw are set elbow down and locked palm to palm in an arm-wrestling grip, large enough to read at phone size, and a low stool waits on each side of the barrel. A real village pastime, no joke. Keep the same three-quarter isometric angle, ink outlines and warm light from the top left. No people anywhere. No letters, no runes, no loose cloth, no hard-edged ground slab, a feathered patch of natural ground on the same footprint, no painted cast shadows, no grey smoke or fog. Matte paint, no gloss.",
+    "solid": "The same arena one step on, painted between rough and grand. The ring is now squared posts and taut rope with one low plank bench on two sides, the shed still behind. On either side of a bigger iron-hooped barrel stand two empty suits of mismatched armour on wooden stands, boiled leather and iron plates, one forearm each laid on the barrel with the gauntlets locked. The helmets are open and dark, with nothing inside. The old straw gauntlets rest on the bench. A stiff wooden pennant on a pole. Keep the same three-quarter isometric angle, ink outlines and warm light from the top left. No people anywhere. No letters, no runes, no loose cloth, no hard-edged ground slab, a feathered patch of natural ground on the same footprint, no painted cast shadows, no grey smoke or fog. Matte paint, no gloss.",
+    "grand": "Edit of the concept. Keep the wooden arena with rising timber stands on three sides, the front gate, the steps and the open sand floor, open toward the viewer. Remove both armoured men, and all the rags on the rails. In the centre, on a big iron-bound barrel, two empty full plate armours stand on hidden timber stands, facing each other with forearms locked, visors raised on darkness, no faces, no swords. They are clearly hollow and finely made, matte dark iron, no shine. The old shed stands in the gap behind the stands, the straw gauntlets on the lowest bench. Soft ground edge instead of the diamond. A clan banner stretched on a rigid wooden frame. Iron torch stands at the corners. Keep the same three-quarter isometric angle, ink outlines and warm light from the top left. No people anywhere. No letters, no runes, no loose cloth, no hard-edged ground slab, a feathered patch of natural ground on the same footprint, no painted cast shadows, no grey smoke or fog. Matte paint, no gloss.",
+    "mythic": "Edit of the concept, going much further. Keep the tiers of stone arcades curving around the sand, low at the front, higher at the back with its broken top edge, open toward the viewer. Remove the steam and both men. In the centre stand two colossal empty suits of ancient armour, far taller than the highest wall of the arena, their helmets and shoulders rising above the back tier almost to the top of the canvas, feet planted on the sand inside the same footprint. Heavy dark matte plate with deep carved ridges, horned crests, visors open on pure darkness, no faces, no cloth, no swords, no gilding, no shine. Between them on a stone plinth, a great iron-bound barrel as big as a house, dry and solid, no holes, no water, not a fountain. Their forearms rest on it and their gauntlets lock at the highest centre of the picture, so the pair draws one enormous arch over the arena. New magic: hard amber-white light leaks from every seam between the barrel's staves and rises as one straight column up past the locked gauntlets into the sky, and iron cressets on the top tier burn with the same fire, readable by day. The armour itself does not glow. Set low in a stone arch, the old shed; on a tiny plinth at the sand's edge, the first small barrel with the straw gauntlets on it. A plain carved shield with amber light in its surface on the back tier, no symbol. Keep the same three-quarter isometric angle, ink outlines and warm light from the top left. No people anywhere. No letters, no runes, no loose cloth, no hard-edged ground slab, a feathered patch of natural ground on the same footprint, no painted cast shadows, no grey smoke or fog. Matte paint, no gloss."
+  },
+  "teasers": [
+    {
+      "id": "r2_post_stack",
+      "stage_after": "rough",
+      "prompt": "A stack of squared posts and a coil of new rope beside a half-sunk post, with a wooden mallet lying on top. Big simple shapes readable at phone size. Objects only, no people, no letters, one subject alone on flat magenta, matte, ink outlines, same isometric angle."
+    }
+  ],
+  "gag": [
+    {
+      "rank": 2,
+      "prompt": "A bucket of white chalk with a wooden scoop and a small folded plank stool. Big simple shapes readable at phone size. Objects only, no people, no letters, one subject alone on flat magenta, matte, ink outlines, same isometric angle."
+    },
+    {
+      "rank": 3,
+      "prompt": "A wooden crate of worn leather gauntlets, one lying on the lid. Big simple shapes readable at phone size. Objects only, no people, no letters, one subject alone on flat magenta, matte, ink outlines, same isometric angle."
+    },
+    {
+      "rank": 4,
+      "prompt": "A low rack of bent and dented iron gauntlets, a smith's hammer leaning against it. Big simple shapes readable at phone size. Objects only, no people, no letters, one subject alone on flat magenta, matte, ink outlines, same isometric angle."
+    },
+    {
+      "rank": 5,
+      "prompt": "One huge bent iron gauntlet resting on a small handcart, a stone wedge under the wheel. Big simple shapes readable at phone size. Objects only, no people, no letters, one subject alone on flat magenta, matte, ink outlines, same isometric angle."
+    }
+  ],
+  "anchors": [
+    "fire",
+    "flag",
+    "magic"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "building": "castle_wall",
+  "concept": {
+    "rough": "docs/designs/village-buildings/castle_wall/concepts/f3_d4_rough_t1.png",
+    "grand": "docs/designs/village-buildings/castle_wall/concepts/f3_d4_grand_t1.png",
+    "mythic": "docs/designs/village-buildings/castle_wall/concepts/f3_d4_mythic_t1.png"
+  },
+  "stages": {
+    "rough": "Edit the concept. Keep the palisade of sharpened logs, the plain plank gate and its frame, the plank floor. Remove the guard completely. What he did passes through objects: a spear leans against the gate post, a plain steel helmet sits on top of a log stump, a stool beside it. Rope lashings instead of most iron bands. All logs the same height. The piece runs straight along its long axis and each end stops in a clean vertical cut at full wall height, both ends the same height and the same section, no return, no corner, no ruin, no slope, nothing past the cut, so a wall section can join it. Nobody in the image, no people at all. Footprint unchanged, exactly 1 by 3 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "solid": "Paint the same gate piece one step further, between the rough and the grand. Everything from rough stays: spear, helmet, stool, the plank gate now strengthened. Added: a rubble stone wall footing to half height with logs above it, a timber walkway behind a rail, a heavy timber lintel over the gate, taller than the wall by one log. Sport sign: a wooden pull-up beam between two posts beside the gate. The piece runs straight along its long axis and each end stops in a clean vertical cut at full wall height, both ends the same height and the same section, no return, no corner, no ruin, no slope, nothing past the cut, so a wall section can join it. Nobody in the image, no people at all. Footprint unchanged, exactly 1 by 3 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "grand": "Edit the concept. Keep the crenellated stone wall, the arched gate with heavy wooden doors, the wooden walkway. Remove the guard completely and remove the mist patches. Spear and steel helmet rest on the walkway, the pull-up beam and a small stack of squared stones stand beside the gate. Remove the bastion look at the left end: the wall runs straight. The piece runs straight along its long axis and each end stops in a clean vertical cut at full wall height, both ends the same height and the same section, no return, no corner, no ruin, no slope, nothing past the cut, so a wall section can join it. Nobody in the image, no people at all. Footprint unchanged, exactly 1 by 3 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "legendary": "Paint the same gate piece one step further, between the grand and the mythic. Everything from grand stays. Two short square towers now flank the arch, rising one storey above the wall, an iron portcullis half raised, timber hoarding on the towers, a blank carved crest over the arch. Torches in iron brackets. A hint of old magic: a faint pale violet light at the back of the arch. The piece runs straight along its long axis and each end stops in a clean vertical cut at full wall height, both ends the same height and the same section, no return, no corner, no ruin, no slope, nothing past the cut, so a wall section can join it. Nobody in the image, no people at all. Footprint unchanged, exactly 1 by 3 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "mythic": "Edit the concept and go much further. Keep the two thick round stone towers with crenellations and timber hoarding, the great arch, the iron portcullis, the blank carved crest over the arch without any letter or sign, and remove the letter-like marks on the wall. Remove both guards completely and remove the smoke patches. Spears lean in a rack by the gate, helmets rest on the merlons, the pull-up beam and a stack of squared stones stay. The towering element: the two towers are twice as tall as in the concept, far above the wall, each crowned by a tall stone drum, so they stand like two giants at the gate. Strong magic layer, clear by day and by night: a great bridge of pale violet-white light arcs from one tower top to the other high above the gate, and a curtain of the same light fills the arch behind the portcullis. Windows lit warm, torches on the towers. The wall on each side stays at its plain height, much lower than the towers. The piece runs straight along its long axis and each end stops in a clean vertical cut at full wall height, both ends the same height and the same section, no return, no corner, no ruin, no slope, nothing past the cut, so a wall section can join it. Nobody in the image, no people at all. Footprint unchanged, exactly 1 by 3 tiles, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left."
+  },
+  "teasers": [],
+  "gag": [
+    {
+      "rank": 1,
+      "prompt": "A wooden stake with a short length of rope, its end chewed through, a bit of straw. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 2,
+      "prompt": "A stouter stake with a thicker rope, its end chewed through too, and a bucket of oats. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 3,
+      "prompt": "A goat lying at rest on a low crate, a chewed rope on the ground. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 7,
+      "prompt": "A goat lying at rest on top of a stack of three crates, a chewed rope on the ground. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 10,
+      "prompt": "A goat lying at rest on top of a tall stack of crates, a small plain ribbon tied to one horn. Sober and quiet, nobody, no letters, matte, ink outlines, iso angle."
+    }
+  ],
+  "anchors": [
+    "fire",
+    "windows",
+    "magic"
+  ]
+}

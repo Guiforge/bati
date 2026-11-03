@@ -1,0 +1,73 @@
+{
+  "building": "campfire",
+  "concept": {
+    "rough": "docs/designs/village-buildings/campfire/concepts/f3_d4_rough_t1.png",
+    "grand": "docs/designs/village-buildings/campfire/concepts/f3_d4_grand_t1.png",
+    "mythic": "docs/designs/village-buildings/campfire/concepts/f3_d4_mythic_t1.png"
+  },
+  "stages": {
+    "rough": "Edit this concept. Keep the small stone ring, the crossed logs and small real flame, the dented little pot on its three-stick tripod and the sitting log. Remove the traveller and remove the shed: the campfire alone is the subject, centred in its patch, with a short chopping block and a small hatchet beside a few split logs. Very modest, believable, the first evening of a village. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
+    "solid": "Same ring rebuilt wider with fitted fieldstones, same pot now larger on a stout timber tripod, two split-log benches, a neat woodpile with the chopping block. Stronger fire. A wooden carrying frame for logs leans against the pile, with a small dark red pennant on a stake. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
+    "grand": "Edit this concept. Keep the heavy timber tripod frame, the big iron cauldron on its chain, the stone fire pit, the four log benches and the woodpile. Remove both men. A ladle rests across the cauldron rim, the log carrying frame is loaded and set down by a bench, a stack of wooden bowls on one bench. Replace the grey steam with a small crisp wisp only. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
+    "legendary": "Same frame rebuilt in massive squared dark timbers braced with iron, the cauldron now twice the size and black iron, the pit a raised round hearth of dressed stone with heavy stone benches beside the old log ones. Flames rise above the cauldron rim to the height of the frame, and in their heart a thin core of pale blue-white appears, the first hint of magic. A large iron-bound log on a hand sledge waits by the hearth. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding.",
+    "mythic": "Edit this concept. Keep the massive dark timber frame, the colossal black iron cauldron on its chain, the round stone hearth and the benches. Remove all figures. Go much further: the flame becomes a true fire whirl, a tight twisting tower of fire two and a half times the height of the frame, coiling upward in one great spiral to the top of the image, orange at the edge, a pale blue-white core running through it, big sparks spinning around it in a ring. The cauldron boils over with bright embers. Frame tops blackened by the heat, iron bands glowing dull red, strong by day and night. No creature shape or head in the flames: only fire. A giant wooden ladle as long as a bench, a loaded log sledge at the side. Keep the iso angle, ink outlines and top-left warm light; same footprint, growth goes upward only; ground patch feathered into natural ground, no diamond edge. No people, no figures of any kind. No letters, runes or glyphs. No loose drooping cloth, no hard-edged slab, no painted cast shadow, no grey smoke sheet. Matte paint, no gloss, no gilding."
+  },
+  "teasers": [
+    {
+      "id": "r2",
+      "stage_after": "rough",
+      "prompt": "a small stack of fitted fieldstones and a thick cut tripod pole on the ground Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+    },
+    {
+      "id": "r4",
+      "stage_after": "solid",
+      "prompt": "three heavy squared timbers lashed on a low cart, with a coil of chain Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+    },
+    {
+      "id": "r6",
+      "stage_after": "grand",
+      "prompt": "a pile of dressed curved hearth stones beside a big iron band Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+    },
+    {
+      "id": "r8",
+      "stage_after": "legendary",
+      "prompt": "a huge black iron cauldron on rollers under a rope lashing, not yet lifted Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+    },
+    {
+      "id": "r9",
+      "stage_after": "legendary",
+      "prompt": "a tall timber frame section with iron bands laid on a stone cradle, a heap of giant split logs Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+    }
+  ],
+  "gag": [
+    {
+      "rank": 2,
+      "prompt": "a long stick with a slice of bread on its tip, planted in the ground Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+    },
+    {
+      "rank": 4,
+      "prompt": "a stick with a sausage on it, planted beside a wooden bowl Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+    },
+    {
+      "rank": 6,
+      "prompt": "a low roasting spit with a dark roasted joint, a dog's bowl beside it Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+    },
+    {
+      "rank": 8,
+      "prompt": "an empty stick and a dog's bowl with a sausage end in it Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+    },
+    {
+      "rank": 9,
+      "prompt": "a dog asleep curled on a folded sack, round belly Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+    },
+    {
+      "rank": 10,
+      "prompt": "a low wooden table with two full bowls, a dog asleep under it Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint."
+    }
+  ],
+  "anchors": [
+    "fire",
+    "smoke",
+    "magic"
+  ]
+}

@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from "expo-router";
+import { Redirect, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 // biome-ignore lint/correctness/useReactNativePlatformComponents: the scanner module is Android only (expo-module.config.json), and so is the one screen that opens it.
 import { PermissionsAndroid, ScrollView, Share } from "react-native";
@@ -84,7 +84,8 @@ export default function PairingScreen() {
     if (link !== null) receive(link);
   }, [n]);
 
-  if (!MULTIPLAYER_ENABLED) return null;
+  // A build where this is off still answers bati://pairing: home, not a blank screen with no way out.
+  if (!MULTIPLAYER_ENABLED) return <Redirect href="/" />;
 
   const invite = async () => {
     const made = await createPair(name);

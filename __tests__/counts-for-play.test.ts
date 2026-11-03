@@ -1,6 +1,6 @@
 import { TRIVIAL_SESSION_SECONDS } from "../constants/sessionFloor";
 import { DEFAULT_WEEKLY_QUOTA, weeklyGoal } from "../constants/weeklyTargets";
-import { countsForPlay, type PlaySession, type PlaySet } from "../db/completed";
+import { countsForPlay, ladderNeutralSets, type PlaySession, type PlaySet } from "../db/completed";
 
 jest.mock("../db/client", () => ({ db: {}, schema: {} }));
 jest.mock("../db/preferences", () => ({}));
@@ -10,6 +10,8 @@ const set = (over: Partial<PlaySet> = {}): PlaySet => ({
   targetValue: 10,
   prescribedValue: 10,
   ladderNeutral: false,
+  sides: 1,
+  perSide: false,
   ...over,
 });
 
@@ -73,8 +75,46 @@ describe("countsForPlay, a bodyweight session", () => {
     expect(countsForPlay(short, true)).toBe(false);
   });
 
+  test("a per-side hold stopped before its second side is half the set", () => {
+    expect(countsForPlay(workout({ sets: [set({ perSide: true, sides: 1 })] }))).toBe(false);
+    expect(countsForPlay(workout({ sets: [set({ perSide: true, sides: 2 })] }))).toBe(true);
+  });
+
   test("a session with no sets reached nothing", () => {
     expect(countsForPlay(workout({ sets: [] }))).toBe(false);
+  });
+});
+
+/** The rows as `createCompletedSession` flags them, so the flag here is the real rule's. */
+describe("countsForPlay, through the real ladderNeutralSets", () => {
+  const row = (roundIndex: number, exerciseId: number, sortOrder = 0, swappedIn?: number) => ({
+    exerciseId,
+    roundIndex,
+    sortOrder,
+    swappedIn,
+    result: { type: "reps" as const, value: 10 },
+    target: { type: "reps" as const, value: 10 },
+    prescribed: 10,
+  });
+  const session = (rows: ReturnType<typeof row>[], rounds: number) => {
+    return workout({
+      sets: ladderNeutralSets(rows, rounds).map((ladderNeutral) => set({ ladderNeutral })),
+    });
+  };
+
+  test("every round done counts", () => {
+    expect(countsForPlay(session([row(0, 1), row(1, 1), row(2, 1)], 3))).toBe(true);
+  });
+
+  test("a round skipped does not, the last one included, which leaves no row", () => {
+    expect(countsForPlay(session([row(0, 1), row(2, 1)], 3))).toBe(false);
+    expect(countsForPlay(session([row(0, 1), row(1, 1)], 3))).toBe(false);
+  });
+
+  // Pinned, not endorsed: a hero who swaps to an easier movement mid-session does not count today.
+  // Guillaume's to settle (docs/designs/multiplayer/STATE.md), and the rows do not say "easier".
+  test("a movement swapped mid-session does not count, the one it left being left", () => {
+    expect(countsForPlay(session([row(0, 1), row(1, 2, 0, 1), row(2, 2, 0, 1)], 3))).toBe(false);
   });
 });
 

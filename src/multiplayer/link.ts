@@ -25,7 +25,9 @@ export function bytesOfLink(link: string): Uint8Array | null {
 
 /** Whether a URL Android opened Bati with is one of these, the app's own schemes included. */
 export function isSealedLink(url: string): boolean {
-  return url.startsWith(WEB_PREFIX) || url.startsWith(APP_PREFIX);
+  return (
+    url.startsWith(WEB_PREFIX) || url.startsWith(APP_PREFIX) || url === WEB_PREFIX.slice(0, -1)
+  );
 }
 
 /**

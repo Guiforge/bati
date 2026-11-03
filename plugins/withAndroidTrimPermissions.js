@@ -21,6 +21,10 @@ const { withAndroidManifest } = require("expo/config-plugins");
  *
  * Every entry below is justified by what the app actually calls:
  *
+ * - **CAMERA** — only `modules/bati-scanner` uses it, and its one screen is behind the multiplayer
+ *   flag (`src/multiplayer/flag.ts`). The lot that opens that screen to players deletes this entry,
+ *   adds the permission to `fdroid/expected-permissions.txt`, to the test's ALLOWED and to the
+ *   privacy policy. A local build testing the scanner sets EXPO_PUBLIC_MULTIPLAYER=1 at prebuild.
  * - **RECORD_AUDIO** — `expo-audio` is back since the session countdown beeps, but only as a
  *   player: its config plugin is called with `recordAudioAndroid: false` in `app.json`, so it no
  *   longer asks. This marker is the belt to that suspenders — audio came back once already, and
@@ -40,6 +44,9 @@ const { withAndroidManifest } = require("expo/config-plugins");
  * runtime, which is a miserable thing to debug from the symptom.
  */
 const REMOVE = [
+  // Until multiplayer ships. modules/bati-scanner declares it, and a permission on the install screen
+  // for a screen nobody can reach is half a feature. See above, and the opt-in below.
+  "android.permission.CAMERA",
   "android.permission.RECORD_AUDIO",
   "android.permission.MODIFY_AUDIO_SETTINGS",
   "android.permission.SYSTEM_ALERT_WINDOW",
@@ -48,6 +55,10 @@ const REMOVE = [
 module.exports = function withAndroidTrimPermissions(config) {
   return withAndroidManifest(config, (cfg) => {
     const manifest = cfg.modResults.manifest;
+    const remove =
+      process.env.EXPO_PUBLIC_MULTIPLAYER === "1"
+        ? REMOVE.filter((name) => name !== "android.permission.CAMERA")
+        : REMOVE;
 
     // The merger only understands tools:node once the namespace is declared on the root element.
     manifest.$ = manifest.$ || {};
@@ -58,8 +69,8 @@ module.exports = function withAndroidTrimPermissions(config) {
     // A marker for a permission no library declares is harmless, so the list needs no maintenance
     // when a dependency stops asking for something.
     manifest["uses-permission"] = [
-      ...existing.filter((p) => !REMOVE.includes(p.$?.["android:name"])),
-      ...REMOVE.map((name) => ({
+      ...existing.filter((p) => !remove.includes(p.$?.["android:name"])),
+      ...remove.map((name) => ({
         $: { "android:name": name, "tools:node": "remove" },
       })),
     ];

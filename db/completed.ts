@@ -842,6 +842,9 @@ export type PlaySet = {
   targetValue: number | null;
   prescribedValue: number | null;
   ladderNeutral: boolean;
+  /** Sides this result was done on (`0069`), and whether the movement has two (`exercises.perSide`). */
+  sides: number;
+  perSide: boolean;
 };
 
 /** What R1 reads of a session: `completed_sessions` columns and its sets. */
@@ -873,7 +876,10 @@ function reachedProposedGoal(sets: readonly PlaySet[], duringLightWeek: boolean)
     sets.every((set) => {
       const proposed = set.prescribedValue ?? set.targetValue;
       return (
-        proposed !== null && set.resultValue >= proposed && (duringLightWeek || !set.ladderNeutral)
+        proposed !== null &&
+        set.resultValue >= proposed &&
+        (!set.perSide || set.sides === 2) &&
+        (duringLightWeek || !set.ladderNeutral)
       );
     })
   );

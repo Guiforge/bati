@@ -73,6 +73,16 @@ test("MainActivity opens JSON files, with no scheme narrowing the filter", () =>
 });
 
 /**
+ * The scanner's permission stays out of what ships until a lot opens the scanner to players: the
+ * install screen and Exodus would list a camera for a screen nobody can reach.
+ */
+test("the committed manifest strips CAMERA while multiplayer is behind its flag", () => {
+  expect(main("AndroidManifest.xml")).toContain(
+    '<uses-permission android:name="android.permission.CAMERA" tools:node="remove"/>',
+  );
+});
+
+/**
  * The sealed link. Verified against getbati.app/.well-known/assetlinks.json (docs/legal), and on one
  * path: a wider filter would pull the site's other pages into the app. A `pathPrefix` would too.
  */

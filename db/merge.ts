@@ -14,6 +14,7 @@ import { db, type IsolatedConnection, schema, withWritableConnection } from "./c
 import { deleteSession, parseRecords } from "./completed";
 import { getExerciseUsage, invalidateExercisesCache, removeExercise } from "./exercises";
 import { adventuresUsingBoss } from "./heroBosses";
+import { withSecureDelete } from "./pairs";
 import { type MovedMovement, redecideAfterChange, redecideSessions } from "./personalRecords";
 import { adventuresUsingQuest, invalidateQuestTemplates, removeQuest } from "./quests";
 import { sqlString } from "./sql";
@@ -897,9 +898,10 @@ export async function honourTombstones(): Promise<number> {
     removed++;
   }
   // A pair unlinked on the other device: its secret goes here too (nothing else names a pair).
-  await db.run(sql`PRAGMA secure_delete = ON`);
-  await db.run(sql`DELETE FROM pairs WHERE EXISTS
-    (SELECT 1 FROM deleted_content d WHERE d.uuid = pairs.id AND d.deletedAt >= pairs.updatedAt)`);
+  await withSecureDelete(async () => {
+    await db.run(sql`DELETE FROM pairs WHERE EXISTS
+      (SELECT 1 FROM deleted_content d WHERE d.uuid = pairs.id AND d.deletedAt >= pairs.updatedAt)`);
+  });
   for (const { id } of await db.all<{ id: number }>(dead("exercises", "creator"))) {
     const usage = await getExerciseUsage(id);
     if (Object.values(usage).some((n) => n > 0)) continue;

@@ -23,8 +23,26 @@ export function listPairs(): Promise<Pair[]> {
   return db.select().from(pairs).orderBy(pairs.createdAt);
 }
 
-async function isFull(): Promise<boolean> {
-  return (await listPairs()).length >= MAX_PAIRS;
+/**
+ * A failed query's message holds its params, and here the params hold the secret: through
+ * `reportError` it would reach the feedback mail. Only SQLite's own sentence survives, which names
+ * a column and no value.
+ */
+function withoutParams<T>(write: () => Promise<T>): Promise<T> {
+  return write().catch((error: unknown) => {
+    const cause = (error as { cause?: { message?: unknown } }).cause?.message;
+    throw new Error(`Writing a pair failed: ${typeof cause === "string" ? cause : "unknown"}`);
+  });
+}
+
+/** Overwrites what it deletes, for a table holding a secret. Off again after: it slows every delete. */
+export async function withSecureDelete<T>(work: () => Promise<T>): Promise<T> {
+  await db.run(sql`PRAGMA secure_delete = ON`);
+  try {
+    return await work();
+  } finally {
+    await db.run(sql`PRAGMA secure_delete = OFF`);
+  }
 }
 
 /**
@@ -33,7 +51,6 @@ async function isFull(): Promise<boolean> {
  * nobody took is unlinked like any pair.
  */
 export async function createPair(name: string): Promise<Invite | PairingRefusal> {
-  if (await isFull()) return "full";
   const now = nowDate();
   const invite: Invite = {
     pairId: await randomHex(16),
@@ -41,16 +58,21 @@ export async function createPair(name: string): Promise<Invite | PairingRefusal>
     madeAt: seconds(now),
     secret: await batiCrypto().randomBytes(SECRET_BYTES),
   };
-  await db.insert(pairs).values({
-    id: invite.pairId,
-    secret: invite.secret,
-    name: name.trim(),
-    selfId: invite.senderId,
-    peerId: null,
-    createdAt: now,
-    updatedAt: now,
-  });
-  return invite;
+  return withoutParams(() =>
+    transactionOrFallback(async (tx) => {
+      if ((await tx.select({ id: pairs.id }).from(pairs)).length >= MAX_PAIRS) return "full";
+      await tx.insert(pairs).values({
+        id: invite.pairId,
+        secret: invite.secret,
+        name: name.trim(),
+        selfId: invite.senderId,
+        peerId: null,
+        createdAt: now,
+        updatedAt: now,
+      });
+      return invite;
+    }),
+  );
 }
 
 /**
@@ -61,41 +83,44 @@ export async function acceptInvite(
   invite: Invite,
   name: string,
 ): Promise<"paired" | PairingRefusal> {
-  const [existing] = await db
-    .select({ id: pairs.id })
-    .from(pairs)
-    .where(eq(pairs.id, invite.pairId));
-  if (existing) return "known";
-  if (await isFull()) return "full";
   const now = nowDate();
-  await db.insert(pairs).values({
-    id: invite.pairId,
-    secret: invite.secret,
-    name: name.trim(),
-    selfId: await randomHex(8),
-    peerId: invite.senderId,
-    createdAt: now,
-    updatedAt: now,
-  });
-  return "paired";
+  const selfId = await randomHex(8);
+  return withoutParams(() =>
+    transactionOrFallback(async (tx) => {
+      const held = await tx.select({ id: pairs.id }).from(pairs);
+      if (held.some((pair) => pair.id === invite.pairId)) return "known";
+      if (held.length >= MAX_PAIRS) return "full";
+      await tx.insert(pairs).values({
+        id: invite.pairId,
+        secret: invite.secret,
+        name: name.trim(),
+        selfId,
+        peerId: invite.senderId,
+        createdAt: now,
+        updatedAt: now,
+      });
+      return "paired";
+    }),
+  );
 }
 
 /**
- * One tap, and the secret is gone from this database: `secure_delete` so the page does not keep it,
- * and a tombstone so the hero's other device drops its copy at the next sync rather than bring the
- * pair back (the same one hero content uses, 0074).
+ * One tap, and the secret is gone from this database, its page overwritten, with a tombstone so the
+ * hero's other device drops its copy at the next sync rather than bring the pair back (the same one
+ * hero content uses, 0074).
  *
  * shortcut: the bytes can outlive this in the WAL until the next checkpoint, and in a backup taken
  * earlier. Fine against a forward-looking unlink; a checkpoint here is the upgrade if that changes.
  */
 export async function unlinkPair(id: string): Promise<void> {
-  await db.run(sql`PRAGMA secure_delete = ON`);
   const deletedAt = nowDate();
-  await transactionOrFallback(async (tx) => {
-    await tx.delete(pairs).where(eq(pairs.id, id));
-    await tx
-      .insert(deletedContent)
-      .values({ uuid: id, deletedAt })
-      .onConflictDoUpdate({ target: deletedContent.uuid, set: { deletedAt } });
-  });
+  await withSecureDelete(() =>
+    transactionOrFallback(async (tx) => {
+      await tx.delete(pairs).where(eq(pairs.id, id));
+      await tx
+        .insert(deletedContent)
+        .values({ uuid: id, deletedAt })
+        .onConflictDoUpdate({ target: deletedContent.uuid, set: { deletedAt } });
+    }),
+  );
 }

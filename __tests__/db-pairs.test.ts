@@ -121,12 +121,39 @@ describe("creating and accepting", () => {
   });
 });
 
+describe("a failed write", () => {
+  test("says what failed and carries no secret, since its message can reach a feedback mail", async () => {
+    await pairs().acceptInvite(invite(), "Sam");
+    // Nothing the public functions let through: a table changed under them.
+    t.sqlite.exec("DROP TABLE pairs");
+    t.sqlite.exec(
+      "CREATE TABLE pairs (id text, secret text, name text, selfId text, peerId text, createdAt int, updatedAt int, CHECK (id = 'never'))",
+    );
+    const failure = await pairs()
+      .acceptInvite(invite({ pairId: "ff".repeat(16) }), "Lou")
+      .then(
+        () => null,
+        (error: Error) => error,
+      );
+    assert(failure instanceof Error);
+    expect(failure.message).toContain("Writing a pair failed");
+    expect(failure.message).not.toContain(SECRET);
+    expect(failure.stack).not.toContain(SECRET);
+  });
+});
+
 describe("unlinking", () => {
   test("removes the secret and leaves a tombstone, in one tap", async () => {
     await pairs().acceptInvite(invite(), "Sam");
     await pairs().unlinkPair(ID);
     expect(await pairs().listPairs()).toEqual([]);
     expect(t.sqlite.prepare("SELECT uuid FROM deleted_content").all()).toEqual([{ uuid: ID }]);
+  });
+
+  test("leaves the connection as it found it: overwriting every delete would slow the whole app", async () => {
+    await pairs().acceptInvite(invite(), "Sam");
+    await pairs().unlinkPair(ID);
+    expect(t.sqlite.pragma("secure_delete", { simple: true })).toBe(0);
   });
 
   test("the same invite can be taken again after", async () => {

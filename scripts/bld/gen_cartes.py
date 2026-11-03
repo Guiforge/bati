@@ -266,8 +266,9 @@ def knight_on_blade(length):
 
 def sails_all():
     # round 4: the old breeches patch moved from blade 2 (lower left, over the door) to blade 1 (upper left, in the open sky), 0.12 further out
-    calecon = ("banner", [[1, 0.62, 0.86, -0.15, 0.17], [1, 0.86, 1.02, -0.15, -0.02], [1, 0.86, 1.02, 0.04, 0.17]])
-    sail_sheet("rough", 0.30, [calecon])
+    # final round: rects drew a ladder (one ink outline per rect), so the rough sheet is bare and final_guides.py draws the
+    # breeches as one polygon with one outline (blade 1, waist toward the tip, legs toward the hub)
+    sail_sheet("rough", 0.30)
     sail_sheet("solid", 0.30)
     sail_sheet("grand", 0.30)
     sail_sheet("grand_chevalier", 0.30, [knight_on_blade(76 / PX_U)])

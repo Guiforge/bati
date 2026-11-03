@@ -1,1 +1,1 @@
-{"canvas": "sails", "parts": [{"type": "sails", "length": 1.25, "width": 0.3, "hub": 0.09, "mat": "canvas"}, {"type": "sails", "length": 1.25, "width": 0.3, "hub": 0.09, "mat": "banner", "rects": [[1, 0.62, 0.86, -0.15, 0.17], [1, 0.86, 1.02, -0.15, -0.02], [1, 0.86, 1.02, 0.04, 0.17]]}]}
+{"canvas": "sails", "parts": [{"type": "sails", "length": 1.25, "width": 0.3, "hub": 0.09, "mat": "canvas"}]}

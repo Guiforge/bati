@@ -1,6 +1,7 @@
 import { differenceInCalendarDays } from "date-fns";
 import { and, asc, count, countDistinct, desc, eq, gt, gte, lt, ne, sql, sum } from "drizzle-orm";
 import type { SQLiteColumn } from "drizzle-orm/sqlite-core";
+import { TRIVIAL_SESSION_SECONDS } from "@/constants/sessionFloor";
 import { reportError } from "@/src/reportError";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import type { Exercise } from "./exercises";
@@ -830,6 +831,78 @@ export const OUTING_COUNTS_AFTER_SECONDS = 10 * 60;
 export const countsAsSession = () =>
   sql`(${completedQuest.outing} IS NULL
     OR COALESCE(${completedQuest.movingSeconds}, ${completedQuest.durationSeconds}) >= ${OUTING_COUNTS_AFTER_SECONDS})`;
+
+/** R1's outing: strictly more than two minutes, and at least a kilometre. */
+const PLAY_OUTING_OVER_SECONDS = 2 * 60;
+const PLAY_OUTING_MIN_METRES = 1000;
+
+/** One saved set, as `completed_exercises` holds it. */
+export type PlaySet = {
+  resultValue: number;
+  targetValue: number | null;
+  prescribedValue: number | null;
+  ladderNeutral: boolean;
+};
+
+/** What R1 reads of a session: `completed_sessions` columns and its sets. */
+export type PlaySession = {
+  outing: Locomotion | null;
+  byHand: "session" | "distance" | null;
+  durationSeconds: number | null;
+  movingSeconds: number | null;
+  leaguesM: number | null;
+  sets: readonly PlaySet[];
+};
+
+/**
+ * Whether every set reached what the app proposed, and no movement was left on the way.
+ *
+ * `prescribedValue` is the proposal (`0070`), `targetValue` what a row older than it has. A skip
+ * writes no row, and `ladderNeutral` is how the rows say so: it marks a movement left mid-session
+ * as well as a target lowered and missed. A light week marks every set of a lightened quest the
+ * same way, so the flag says nothing there and `duringLightWeek` sets it aside: the lightened quest
+ * is what was proposed, and the session stays a counted one.
+ *
+ * shortcut: inside a light week a movement skipped outright is invisible, because the column merges
+ * the two meanings. Lenient on purpose; splitting them is part of the migration in
+ * docs/designs/multiplayer/STATE.md.
+ */
+function reachedProposedGoal(sets: readonly PlaySet[], duringLightWeek: boolean): boolean {
+  return (
+    sets.length > 0 &&
+    sets.every((set) => {
+      const proposed = set.prescribedValue ?? set.targetValue;
+      return (
+        proposed !== null && set.resultValue >= proposed && (duringLightWeek || !set.ladderNeutral)
+      );
+    })
+  );
+}
+
+/**
+ * R1, the counted session: what hits a shared boss, and later what raises the village. Stricter than
+ * `countsAsSession`, which asks only whether the hero showed up. Nothing the hero typed counts: a
+ * shared result has to rest on what Bati measured.
+ *
+ * `duringLightWeek` is `isLightWeekRunning(performedAt)`: the row alone cannot say.
+ *
+ * TODO(r1-pain-stop): "a session stopped by the pain rule counts at most once per rolling week". The
+ * journal does not record why a session ended, so such a session falls under the goal rule and does
+ * not count. Needs the `stopReason` column proposed in docs/designs/multiplayer/STATE.md.
+ * TODO(r1-imported-outing): "an imported outing, only with a trace, after dedup". Bati imports no
+ * outing yet and no column marks one, so none can reach this function. Same proposal.
+ */
+export function countsForPlay(session: PlaySession, duringLightWeek = false): boolean {
+  if (session.byHand !== null) return false;
+  if (session.outing !== null) {
+    const seconds = session.movingSeconds ?? session.durationSeconds ?? 0;
+    return seconds > PLAY_OUTING_OVER_SECONDS && (session.leaguesM ?? 0) >= PLAY_OUTING_MIN_METRES;
+  }
+  return (
+    (session.durationSeconds ?? 0) >= TRIVIAL_SESSION_SECONDS &&
+    reachedProposedGoal(session.sets, duringLightWeek)
+  );
+}
 
 /**
  * The start of today where the hero is standing.

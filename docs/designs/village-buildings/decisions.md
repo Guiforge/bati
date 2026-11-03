@@ -75,5 +75,15 @@ Réponses prises, que Guillaume peut rayer au checkpoint :
 - G-ID sur maquettes : moulin r1 et observatoire r2 réussis aux deux mélanges. Le grand de l'observatoire r1 avait échoué (« Forge ») : dôme ouvert et long télescope.
 - La lunette raccourcit entre le grand (2,2) et le legendary (1,4) de l'observatoire : à faire juger par mara pour G-KEEP.
 
+### Moulin, sondes r1 (nuit du 03/11)
+- Verdict de mara sur 10 sondes à l'aveugle (0,70 $) : non, pas de peinture complète. Pic en pierre grise, coupure verticale sur le fût, pierre qui change au grand, pas de chaume, caleçon absent. Bases G et H saines.
+- Corrections prises, avec écart à la carte gelée du moulin (à relire au checkpoint) : le pic devient une seule masse brisée au lieu de 3 tronçons, sans rebord d'ellipse (repasser G-ID) ; caleçon en forme de tissu dans la maquette, FLUX l'oublie sinon ; âne et cheval en sprite au mythique, pas peints dans la tour.
+- Chapeau : chaume rétabli (la maquette le convertissait en tuile à tort), tuile en terre cuite éteinte au lieu de l'ardoise grise. Cela revient sur la correction de mara à E3 : le pic doit être le seul élément froid.
+- Recette : le meilleur solid sert de référence de matière à tous les stades, le stade précédent ne sert qu'à la forme. Pic testé seul d'abord (0,14 $), repli teinte par script sous masque. Contrôle ajouté : hauteur du haut de tour à chaque essai.
+
+- Tour 2 (0,84 $), mara : non, mais chaume gagné, grand J (`grand/t1_v0`) et legendary F (`legendary/t1_v0`) gardés. Son « anomalie » 3 grand / 1 legendary s'explique par la clé : A est le legendary v1 au toit mordu, déjà rejeté par le contrôle de hauteur. Rien à changer au contrôle.
+- Tour 3, sans repeindre ce qui est gardé : supprimer la cassure à deux tons du fût à sa source, repeindre rough et solid avec la pierre de J en référence (la référence solid n'a pas tenu), pic forme de C et bleu de B par teinte sous masque avec collier sombre, caleçon peint une fois en blanc de farine et posé par script, montage avec ailes et rubans pour refaire le test de l'ami.
+- Panne de la nuit : le peintre attendait avec `while pgrep -f <script>`, qui se trouve lui-même et ne finit jamais. Son rapport est resté bloqué de 4 h 36 à 8 h 31, sans travail fait pendant ce temps. Consigne ajoutée à chaque envoi ; vérifier les dossiers de sortie au lieu de croire « attend sa tâche de fond ».
+
 Conséquences de la planche de cartes :
 - La carte `campfire.md` de la prep est à réécrire : le Ménestrel remplace le cuistot.

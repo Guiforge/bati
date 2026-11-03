@@ -1,0 +1,56 @@
+{
+  "building": "well",
+  "concept": {
+    "rough": "docs/designs/village-buildings/well/concepts/f3_d5_rough_t1.png",
+    "grand": "docs/designs/village-buildings/well/concepts/f3_d5_grand_t1.png",
+    "mythic": "docs/designs/village-buildings/well/concepts/f3_d5_mythic_t2.png"
+  },
+  "stages": {
+    "rough": "Edit the concept. Keep the round dry-stone well wall, the forked tree trunk with its long pole resting in the fork, the rope falling straight into the hole, the stone in a rope net as counterweight, the patched bucket on the rim and the plank on two stones with a rope loop for the feet. Keep it small and real. Nobody in the image, no people at all. Footprint unchanged, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "solid": "Paint the same well one step further, between the rough and the grand. Everything from rough stays in spirit: a round cut-stone rim, a thick forked oak post with an iron axle, a squared beam arm, a small rust-tile roof on top of the post, a counterweight box of oak full of stones, a stone trough beside the rim, a rigid small pennant on the post, the plank now raised on a log with a leather strap, a lantern under the roof. The rope falls straight into the hole with a bucket of normal size. Nobody in the image, no people at all. Footprint unchanged, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "grand": "Edit the concept. Keep the round cut-stone well on a base of two steps, the two stone piers with the iron-banded beam arm between them, the rope falling straight into the hole with the bucket, the cut stone block hanging in an iron cage on chains, the two lanterns, the oak chest, the plank with the little spoked wheel. The beam is bare between the piers: nothing at all hangs from it except the rope and the chained block, no flag and no cloth on it. A small rigid carved wooden pennant board stands on a post at the side. Nobody in the image, no people at all. Footprint unchanged, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "legendary": "Paint the same well one step further, between the grand and the mythic. Everything from grand stays. The piers become a high stone gate with a timber hoarding at the pivot, the arm rises well above any house roof, the counterweight is a rough dark rock held by four chains, a carved crest on the arch, a slanted stone slab with a footbar and the wheel beside it. A hint of old magic: one side of the rim is white with frost and a block of ice sits in the bucket. Lanterns on the hoarding. Nobody in the image, no people at all. Footprint unchanged, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "mythic": "Edit the concept and go much further: much bigger, taller and far more sumptuous, as if a whole rich land had spent much more money and labour on it. Keep the same well: round stepped stone rim, the great beam arm between two stone piers, the straight rope with a bucket, the iron-caged block, the lanterns, the oak chest, the plank with the wheel. Build it up: a broad terrace of fine cut stone with a carved balustrade on two sides and wide stairs, four tall carved stone piers (two carrying the beam), a mast beam almost twice as long that rises steeply to the top of the picture, with the rope falling straight from its tip into the well, an enormous cage holding a broken grey-blue opaque block of glacier ice with a dark rock inside, held by heavy iron chains, many lanterns on the balustrade posts, a stone trough with a gutter to the rim. Strong cold magic, clear by day and by night: thick white frost over the top of the beam, the piers and the terrace, white frosted grass on the ground patch, drops falling from the ice into the gutter, a cold blue-white glow in the ice and at the bottom of the hole. There is no flag pole and no cloth anywhere: no banner, no hanging fabric. The only sign is a small stiff carved wooden pennant board fixed on a short post at the corner of the terrace. Nobody in the image, no people at all. Footprint unchanged, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left."
+  },
+  "teasers": [
+    {
+      "id": "r2",
+      "stage_after": "rough",
+      "prompt": "A thick forked oak post lying in the grass. Objects only, matte, ink outlines, iso angle."
+    },
+    {
+      "id": "r4",
+      "stage_after": "solid",
+      "prompt": "A heap of squared stones and one iron axle. Objects only, matte, ink outlines, iso angle."
+    },
+    {
+      "id": "r6",
+      "stage_after": "grand",
+      "prompt": "Two big iron chain links beside a rough dark rock. Objects only, matte, ink outlines, iso angle."
+    },
+    {
+      "id": "r8",
+      "stage_after": "legendary",
+      "prompt": "A small block of ice on a wooden sledge. Objects only, matte, ink outlines, iso angle."
+    }
+  ],
+  "gag": [
+    {
+      "rank": 1,
+      "prompt": "A plank on two stones with a rope loop for the feet, worn in the middle. Sober, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 6,
+      "prompt": "A plank fixed to a post by a leather strap, with a small spoked cart hub on a handle on it. Sober, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 10,
+      "prompt": "A slanted stone slab covered with white frost except one clean back-sized strip, a wheel beside it also without frost. Sober, matte, ink outlines, iso angle."
+    }
+  ],
+  "anchors": [
+    "water",
+    "magic",
+    "flag"
+  ]
+}

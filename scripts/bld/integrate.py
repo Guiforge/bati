@@ -93,15 +93,23 @@ def teaser_ranks(tid: str) -> dict:
     return {"fromRank": 3, "untilRank": 4, "fromBase": n, "untilBase": n + 1}
 
 
-def teasers(spec: dict) -> list[tuple[str, dict]]:
-    """(element, rank fields): a teaser stands until the next one (the next painting finishes it)."""
-    return [(f"teaser_{t['id']}", teaser_ranks(t["id"])) for t in spec.get("teasers", [])]
+UPGRADES = {"observatory", "watchtower", "armory", "barn", "castle_wall", "fountain"}  # tier 3: rule B
+DEEDS = {"dragon_lair", "heroes_hall", "champion_arena"}  # four stages, ranks 1 to 5
 
 
 def genre(spec: dict) -> str:
-    """`ten` (ranks 1 to 10), `deed` (1 to 5), `upgrade` (own rank 1 to 3, then the base's): read off the gag ranks."""
-    ranks = [g["rank"] for g in spec.get("gag", [])]
-    return "upgrade" if 1 in ranks else "deed" if ranks and max(ranks) <= 5 else "ten"
+    """`ten` (ranks 1 to 10), `deed` (1 to 5), `upgrade` (own rank 1 to 3, then the base's): by building, as the
+    ceilings of constants/buildingLevels.ts say."""
+    return "upgrade" if spec.get("building") in UPGRADES else "deed" if spec.get("building") in DEEDS else "ten"
+
+
+def teasers(spec: dict) -> list[tuple[str, dict]]:
+    """(element, rank fields): a teaser stands until the next one (the next painting finishes it). An upgrade's
+    `r8` is read as the base's rank 8: its own ranks stop at 3."""
+    up = genre(spec) == "upgrade"
+    return [(f"teaser_{t['id']}", teaser_ranks(("b" + t["id"][1:]) if up and t["id"][0] == "r" else t["id"]))
+            for t in spec.get("teasers", [])
+            if not t["id"].startswith("sails_")]  # the windmill's sail sheets are sprites of their own
 
 
 def beat_ranks(genre_: str, rank: int) -> dict:
@@ -157,15 +165,24 @@ def main() -> None:
     prov = json.loads(prov_path.read_text())
     stades = [s for s in STADES if (src / f"{s}.png").exists()]
     assert stades, f"no painting in {src}"
+    brutes = {s: Image.open(src / f"{s}.png").convert("RGBA") for s in stades}
+    assert len({im.width for im in brutes.values()}) == 1, "one canvas width per family"
+    # One canvas per family: the stages are bottom-aligned (the ground anchor stands MARGE above the bottom),
+    # so the shorter ones get empty rows on top, up to the tallest stage (the mythic's, in practice).
+    H = max(im.height for im in brutes.values())
+    pad = {s: H - im.height for s, im in brutes.items()}
     tailles = set()
-    reg_stades, reg_masques = {}, {}
+    reg_masques = {}
     for s in stades:
-        jour = Image.open(src / f"{s}.png").convert("RGBA")
+        jour = brutes[s]
+        if pad[s]:
+            haut = Image.new("RGBA", (jour.width, H), (0, 0, 0, 0))
+            haut.paste(jour, (0, pad[s]))
+            jour = haut
         tailles.add(jour.size)
         ecrire_webp(jour, dest / f"{s}.jour.webp")
         ecrire_webp(nuit(jour, None), dest / f"{s}.nuit.webp")
         reg_masques[s] = masque(jour.getchannel("A"))
-        reg_stades[s] = jour.size
         de = mesures[s]["from"]
         provenance(prov, loc, f"assets/images/village/iso/peints/{code}/{s}.jour.webp", f"{rel_src}/{de}",
                    "the final painting of the stage placed on the family canvas, re-encoded WebP q90")
@@ -195,6 +212,29 @@ def main() -> None:
             prov[f"assets/images/village/iso/peints/{code}/elements/{nom}.{amb}.webp"] = {
                 "model": f"{base.get('model', 'flux-3-image')} ({base.get('provider', 'Black Forest Labs direct API')})",
                 "derived_from": raw, "how": how, "licence": base.get("licence", LICENCE)}
+    # a windmill's sails: a sheet per stage, turning about the hub measured by eye (measures.json `hub`)
+    ailes, hubs = {}, {}
+    for s in stades:
+        hub = mesures[s].get("hub")
+        f = src / "elements" / f"teaser_sails_{s}.png"
+        if "sails" not in spec.get("anchors", []) or not hub or not f.exists():
+            continue
+        im = Image.open(f).convert("RGBA")
+        k = hub["sails_width_px"] / im.width  # the placed width, canvas px
+        im = im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
+        bb = im.getchannel("A").point(lambda v: 255 if v > 16 else 0).getbbox() or (0, 0, *im.size)
+        centre = [round((bb[0] + bb[2]) / 2), round((bb[1] + bb[3]) / 2)]  # the cross's hub: its box's centre
+        ecrire_webp(im, dest / "elements" / f"sails_{s}.jour.webp")
+        ecrire_webp(nuit(im, None), dest / "elements" / f"sails_{s}.nuit.webp")
+        ailes[s] = (list(im.size), centre)
+        hubs[s] = [hub["x"], hub["y"] + pad[s]]
+        raw = f"{rel_src}/elements/teaser_sails_{s}.raw.png"
+        base = loc_el.get(raw, {})
+        for amb, how in (("jour", "the sail sheet keyed from magenta, scaled to its placed width, WebP q90"),
+                         ("nuit", "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX)")):
+            prov[f"assets/images/village/iso/peints/{code}/elements/sails_{s}.{amb}.webp"] = {
+                "model": f"{base.get('model', 'flux-3-image')} ({base.get('provider', 'Black Forest Labs direct API')})",
+                "derived_from": raw, "how": how, "licence": base.get("licence", LICENCE)}
     prov_path.write_text(json.dumps(dict(sorted(prov.items())), indent=2, ensure_ascii=False) + "\n")
 
     # the sprites' registry
@@ -209,13 +249,25 @@ def main() -> None:
         L.append(f"    {s}: {{")
         for amb in ("jour", "nuit"):
             L.append(f"      {amb}: {{ image: require(\"@/assets/images/village/iso/peints/{code}/{s}.{amb}.webp\"),"
-                     f" anchor: ancre, size: taille, ombre: [], masque: masque_{s} }},")
+                     f" anchor: ancre, size: taille, ombre: [], masque: masque_{s}"
+                     + (f", ailes: {{ pivot: {json.dumps(hubs[s])}, pivotGrille: [0, 0, 0], echelle: 1 }}" if s in hubs else "")
+                     + " },")
         L.append("    },")
     L += ["  },", "  elements: {"]
     for k, (ew, eh) in elements.items():
         L.append(f"    \"{k}\": {{ jour: require(\"@/assets/images/village/iso/peints/{code}/{k}.jour.webp\"),"
                  f" nuit: require(\"@/assets/images/village/iso/peints/{code}/{k}.nuit.webp\"), size: [{ew}, {eh}] }},")
-    L += ["  },", "};", ""]
+    L += ["  },"]
+    if ailes:
+        L.append("  ailes: {")
+        for s, (sz, c) in ailes.items():
+            L.append(f"    {s}: {{")
+            for amb in ("jour", "nuit"):
+                L.append(f"      {amb}: {{ image: require(\"@/assets/images/village/iso/peints/{code}/elements/sails_{s}.{amb}.webp\"),"
+                         f" anchor: {json.dumps(c)}, size: {json.dumps(sz)}, ombre: [] }},")
+            L.append("    },")
+        L.append("  },")
+    L += ["};", ""]
     (ROOT / f"components/village/iso/peints/{code}.ts").parent.mkdir(parents=True, exist_ok=True)
     (ROOT / f"components/village/iso/peints/{code}.ts").write_text("\n".join(L))
 
@@ -224,16 +276,16 @@ def main() -> None:
     feu = temoin_feu(grand) or [ancre[0], ancre[1] - 100]
     rough = Image.open(src / "rough.png").convert("RGBA").getchannel("A")
     emprise = tuple(json.loads((ROOT / "constants/isoSpec.json").read_text())["batiments"][code]["emprise"])
-    sommet = min(mesures[s]["top_y"] for s in stades)
+    sommet = min(mesures[s]["top_y"] + pad[s] for s in stades)
     cx = (mesures[haut]["left"] + mesures[haut]["right"]) // 2
-    g_top = mesures["grand"]["top_y"] if "grand" in mesures else mesures[haut]["top_y"]
+    g_top = (mesures["grand"]["top_y"] + pad["grand"]) if "grand" in mesures else mesures[haut]["top_y"] + pad[haut]
     ancres = spec.get("anchors", [])
     kinds = {"smoke": "smoke", "magic": "magic", "windows": "fenetre", "flag": "drapeau", "wings": "aile", "water": "eau"}
     pos = {  # first guesses, canvas px: a capture decides, then the hand block below
         "gagSlot": [mesures["rough"]["left"] - 30, ancre[1] - 40],
         "teaserAt": [mesures["rough"]["right"] + 30 - ancre[0], -40],  # offset from the anchor, the rest is absolute
-        "fire": feu, "smoke": [feu[0], feu[1] - 130], "magic": [cx, mesures[haut]["top_y"] + 170],
-        "fenetre": [ancre[0], (g_top + ancre[1]) // 2], "drapeau": [cx, g_top], "aile": [cx, g_top + 40],
+        "fire": feu, "smoke": [feu[0], feu[1] - 130], "magic": [cx, mesures[haut]["top_y"] + pad[haut] + 170],
+        "fenetre": [ancre[0], (g_top + ancre[1]) // 2], "drapeau": [cx, g_top], "aile": hubs.get("grand") or [cx, g_top + 40],
         "eau": [ancre[0], ancre[1] - 96],
     }
     voulues = ["gagSlot", "teaserAt"] + (["fire"] if "fire" in ancres or "smoke" in ancres else []) \
@@ -248,13 +300,13 @@ def main() -> None:
     lignes_ancres = [f'    {{ kind: "{kinds[x]}", at: main.{kinds[x]}, {depuis if x == "magic" else "fromRank: 1"} }},'
                      for x in ancres if x in kinds]
     gags = []
-    for gg in spec.get("gag", []):
+    for gg in [g_ for g_ in spec.get("gag", []) if f"elements/gag_{g_['rank']}" in elements]:  # a beat with no cut file is left out
         txt = gg["prompt"].split(" Objects alone")[0].strip()
         champs = ", ".join(f"{k}: {v}" for k, v in beat_ranks(g, gg["rank"]).items())
         gags.append(f"      {{ {champs}, beat: {json.dumps(txt[0].upper() + txt[1:] + '.')}, "
                     f"sprite: \"elements/gag_{gg['rank']}\" }},")
     ts = [f"    {{ {', '.join(f'{k}: {v}' for k, v in r.items())}, sprite: \"elements/{n}\", anchorOffset: main.teaserAt }},"
-          for n, r in teasers(spec)]
+          for n, r in teasers(spec) if f"elements/{n}" in elements]
     lumiere = '  lights: [{ kind: "fire", at: main.fire, fromRank: 1 }],' if "fire" in ancres else "  lights: [],"
     out = f"""// Generated by scripts/bld/integrate.py {code}. The measures and lists below are rewritten at each run;
 // the block between the markers is kept: edit the positions there (canvas px, origin top left).

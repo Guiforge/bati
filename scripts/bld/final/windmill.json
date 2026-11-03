@@ -1,0 +1,83 @@
+{
+  "building": "windmill",
+  "concept": {
+    "rough": "docs/designs/village-buildings/windmill/concepts/f3_d5_rough_t1.png",
+    "grand": "docs/designs/village-buildings/windmill/concepts/f3_d5_grand_t1.png",
+    "mythic": "docs/designs/village-buildings/windmill/concepts/f3_d5_mythic_t2.png"
+  },
+  "stages": {
+    "rough": "Edit the concept. Keep the tiny plank mill box on its pivot and log trestle, the boat turned over as its roof, the tail pole, the little lit window, the steps, the two small patched sacks on a carrying pole. No sails, no blades and no sail frames anywhere: only the iron hub on the cap, a bare iron plate with a short axle stub, nothing attached to it. Remove the four sails completely, only the hub stays visible on the cap. Still clearly a windmill by its shape: a tall narrow tower box, a low door, a tail pole, a hub. Nobody in the image, no people at all. Footprint unchanged, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "solid": "Paint the same windmill one step further, between the rough and the grand. The trestle is gone: an eight-sided tapering tower of tarred clinker planks on a low stone footing, a real boat-shaped cap (the old boat, repaired, now a canopy over the door), a long tail pole with a capstan on the ground, a rigid small pennant on the pole, a carrying pole with two full flour sacks, a lantern at the door. No sails, no blades and no sail frames anywhere: only the iron hub on the cap, a bare iron plate with a short axle stub, nothing attached to it. The hub is clearly visible on the front of the cap. Clearly larger, the first real classic windmill. Nobody in the image, no people at all. Footprint unchanged, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "grand": "Edit the concept. Keep the big windmill: two storeys of rough slate-grey stone under the tarred timber tower, the wide balustraded gallery like a ship's deck, the small lookout mast at the back of the cap with its round crow's nest, the brick bakehouse with its chimney, the sack cart, the rigid banner frame. No sails, no blades and no sail frames anywhere: only the iron hub on the cap, a bare iron plate with a short axle stub, nothing attached to it. Remove the four sails completely; the iron hub stays on the front of the cap, big and plain. Replace the cloth on the banner frame by two stiff painted boards. Remove all hanging ropes. Sacks lined along the gallery. Nobody in the image, no people at all. Footprint unchanged, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "legendary": "Paint the same windmill one step further, between the grand and the mythic. Everything from grand stays. The base becomes dark cut stone, the top of the tower juts out on corbels like the stern castle of a galleon, with rows of small lit windows and a carved balcony in black oak and matt brass, two taut stays from the cap to iron bollards, a carved crest under the balcony, two big sacks taller than the door on an iron-bound oak carrying pole. A hint of old magic: a cool pale blue glow in the window rows. No sails, no blades and no sail frames anywhere: only the iron hub on the cap, a bare iron plate with a short axle stub, nothing attached to it. The hub stays clearly visible on the cap, big and plain. Nobody in the image, no people at all. Footprint unchanged, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left.",
+    "mythic": "Edit the concept and go much further: much bigger, taller and far more sumptuous, as if a whole rich land had spent much more money and labour on it. Keep the same windmill: the dark slate stone base, the balustraded gallery, the tarred timber tower with its slate cap, the lookout mast with its crow's nest, the brick bakehouse and the open cart shed. Make it a great mill: a wider tower of black oak and fine cut stone with three galleries one above the other, many arched lit windows, carved stone stairs with iron rails, a second bakehouse wing and a long stone granary, iron bands, more loaded carts and stacked sacks. The towering element: from the back of the cap, behind the lookout mast and well away from the front hub, rise two curved matt ivory-coloured ribs, one taller and one chipped, standing upright side by side like the arms of a lyre, joined by five taut thick cords like a great harp, reaching far above the cap. The ribs never cross the hub and are not blades: nothing radiates from the hub, which stands alone on the front of the cap. A bright blue-white flame burns at the tip of each rib and a few pale sparks run along the cords, clear by day and by night; every window glows warm. No sails, no blades and no sail frames anywhere: only the iron hub on the cap, a bare iron plate with a short axle stub, nothing attached to it. The hub stays clearly visible on the cap, plain and big. Remove all people completely and the cloth on the shed. Nobody in the image, no people at all. Footprint unchanged, growth goes up and stays inside the canvas. No letters or runes, no hanging cloth, no hard-edged slab, no painted cast shadow, no fog patches, no sheet of grey smoke. Matte, no gloss, no gilding. Feathered natural ground patch, same iso angle, same ink outlines, warm light from the top left."
+  },
+  "teasers": [
+    {
+      "id": "r2",
+      "stage_after": "rough",
+      "prompt": "A heap of bent planks and a small barrel of tar on wooden wedges. Objects only, matte, ink outlines, iso angle."
+    },
+    {
+      "id": "r4",
+      "stage_after": "solid",
+      "prompt": "A heap of rough slate pieces and a thick mast lying on two wooden trestles. Objects only, matte, ink outlines, iso angle."
+    },
+    {
+      "id": "r6",
+      "stage_after": "grand",
+      "prompt": "A roll of blue waxed canvas and a small wooden balcony standing in a crate. Objects only, matte, ink outlines, iso angle."
+    },
+    {
+      "id": "r8",
+      "stage_after": "legendary",
+      "prompt": "One giant curved ivory-coloured rib lying on a wooden cart. Objects only, matte, ink outlines, iso angle."
+    },
+    {
+      "id": "sails_rough",
+      "stage_after": "rough",
+      "prompt": "The front view of one windmill sail wheel alone, flat and square-on, no perspective: a crisp upright cross of four equal arms meeting at a central iron hub, each arm a long lath frame with patched stretched sacking and rope lacing, ragged. Each arm is about 1.2 times as long as a house wall is tall. Nothing hangs below, no rope, no cloth falling. Nothing else in the image."
+    },
+    {
+      "id": "sails_solid",
+      "stage_after": "solid",
+      "prompt": "The front view of one windmill sail wheel alone, flat and square-on, no perspective: a crisp upright cross of four equal arms meeting at a central iron hub, each arm a long lath frame with stretched unbleached canvas laced on real yards. Each arm is about 1.2 times as long as a house wall is tall. Nothing hangs below, no rope, no cloth falling. Nothing else in the image."
+    },
+    {
+      "id": "sails_grand",
+      "stage_after": "grand",
+      "prompt": "The front view of one windmill sail wheel alone, flat and square-on, no perspective: a crisp upright cross of four equal arms meeting at a central iron hub, each arm a long lath frame with stretched rust-red canvas, slats visible. Each arm is about 1.25 times as long as a house wall is tall. Nothing hangs below, no rope, no cloth falling. Nothing else in the image."
+    },
+    {
+      "id": "sails_legendary",
+      "stage_after": "legendary",
+      "prompt": "The front view of one windmill sail wheel alone, flat and square-on, no perspective: a crisp upright cross of four equal arms meeting at a central iron hub, each arm a long lath frame with stretched sky-blue waxed canvas on dark slats. Each arm is about 1.3 times as long as a house wall is tall. Nothing hangs below, no rope, no cloth falling. Nothing else in the image."
+    },
+    {
+      "id": "sails_mythic",
+      "stage_after": "mythic",
+      "prompt": "The front view of one windmill sail wheel alone, flat and square-on, no perspective: a crisp upright cross of four equal arms meeting at a central iron hub, each arm a long lath frame with stretched dark rust-red canvas on black slats, open lattice. Each arm is about 1.4 times as long as a house wall is tall. Nothing hangs below, no rope, no cloth falling. Nothing else in the image."
+    }
+  ],
+  "gag": [
+    {
+      "rank": 2,
+      "prompt": "A swollen tight sack tied by a rope to a wooden stake, a plain hat resting on the stake. Sober and quiet, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 6,
+      "prompt": "A mended sack weighted down with two stones, a plain hat caught on a short wooden rail. Sober and quiet, matte, ink outlines, iso angle."
+    },
+    {
+      "rank": 10,
+      "prompt": "A mended sack weighted with an iron anchor, beside a tall pole whose top carries a plain hat. Sober and quiet, matte, ink outlines, iso angle."
+    }
+  ],
+  "anchors": [
+    "sails",
+    "smoke",
+    "windows",
+    "flag",
+    "magic"
+  ]
+}

@@ -30,8 +30,9 @@ for x in range(448, 896):
 assert min(p[0] - p[1] for p in I.contact(half, (448, 1088), (1, 1))) >= -0.06  # only the +gx side of the cell
 assert I.teaser_ranks("r2_second_target") == {"fromRank": 2, "untilRank": 3}
 assert I.teaser_ranks("b8_x") == {"fromRank": 3, "untilRank": 4, "fromBase": 8, "untilBase": 9}
-assert I.genre({"gag": [{"rank": 1}, {"rank": 7}]}) == "upgrade"
-assert I.genre({"gag": [{"rank": 2}, {"rank": 5}]}) == "deed"
-assert I.genre({"gag": [{"rank": 2}, {"rank": 10}]}) == "ten"
+assert I.genre({"building": "observatory"}) == "upgrade"
+assert I.genre({"building": "dragon_lair"}) == "deed"
+assert I.genre({"building": "well"}) == "ten"
+assert I.teasers({"building": "observatory", "teasers": [{"id": "r8"}]})[0][1]["fromBase"] == 8
 assert I.beat_ranks("upgrade", 7) == {"rank": 3, "fromBase": 7}
 print("ok")

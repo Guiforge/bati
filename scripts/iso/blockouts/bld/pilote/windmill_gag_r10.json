@@ -1,0 +1,15 @@
+{"canvas": "building2x2", "materials": {"ruban": {"tones": ["#BCD6E4", "#BCD6E4", "#7FA3BC"]}},
+ "parts": [
+  {"_tag": "chevalier", "type": "box", "mat": "canvas", "at": [1.3748, 1.799, 1.65], "size": [0.5, 0.3, 0.02], "rotZ": -45},
+  {"_tag": "chevalier", "type": "cone", "mat": "iron", "center": [1.502, 1.6717, 1.65], "r": 0.055, "r2": 0.045, "h": 0.33, "axis": [0.0, 0.0, 1.0]},
+  {"_tag": "chevalier", "type": "sphere", "mat": "plaster", "center": [1.502, 1.6717, 2.05], "r": 0.05},
+  {"_tag": "chevalier", "type": "cyl", "mat": "iron", "center": [1.502, 1.6717, 1.67], "r": 0.03, "h": 0.14, "axis": [0.7071, 0.7071, 0.0]},
+  {"_tag": "chevalier", "type": "cyl", "mat": "iron", "center": [1.601, 1.7707, 1.67], "r": 0.03, "h": 0.3206, "axis": [0.0441, 0.0441, -0.9981]},
+  {"_tag": "chevalier", "type": "cone", "mat": "wood", "center": [1.6788, 1.495, 1.65], "r": 0.055, "r2": 0.045, "h": 0.33, "axis": [0.0, 0.0, 1.0]},
+  {"_tag": "chevalier", "type": "sphere", "mat": "plaster", "center": [1.6788, 1.495, 2.05], "r": 0.05},
+  {"_tag": "chevalier", "type": "cyl", "mat": "wood", "center": [1.6788, 1.495, 1.67], "r": 0.03, "h": 0.14, "axis": [0.7071, 0.7071, 0.0]},
+  {"_tag": "chevalier", "type": "cyl", "mat": "wood", "center": [1.7778, 1.594, 1.67], "r": 0.03, "h": 0.3206, "axis": [0.0441, 0.0441, -0.9981]},
+  {"_tag": "chevalier", "type": "cyl", "mat": "wood", "center": [1.5, 1.5, 1.45], "r": 0.02, "h": 1.05, "axis": [0.0, 0.0, 1.0]},
+  {"_tag": "chevalier", "type": "box", "mat": "ruban", "at": [1.5, 1.49, 2.3], "size": [0.2, 0.01, 0.07]}
+ ]
+}

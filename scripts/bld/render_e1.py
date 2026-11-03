@@ -119,12 +119,16 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("out")
     ap.add_argument("--temoins", action="store_true")
+    ap.add_argument("--only", help="one direction, e.g. observatory_A2: no sheet")
     a = ap.parse_args(argv)
     out = pathlib.Path(a.out)
     if a.temoins:
         if (out / "temoins").exists():
             raise SystemExit("temoins/ exists: never overwritten")
         temoins(out)
+        return 0
+    if a.only:
+        print(json.dumps(render(a.only, out)))
         return 0
     for building in ("windmill", "observatory"):
         if any((out / f"{building}_{x}").exists() for x in "ABC"):

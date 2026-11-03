@@ -91,6 +91,33 @@ def windmill_c():
 
 # ---------------------------------------------------------------- observatory
 
+def observatory_a2():
+    """A2: after S-A, A read as a Well 8 times of 8 (low globe on two posts and a low drum). Two stiff telamons
+    stand on the slab beside the drum (legs, hips, shoulders, head above the shoulder bar, arms folded up behind
+    the head to the globe), under a globe bigger than the drum and raised, long telescope out of its slit at the
+    upper left, two orrery ring arcs. Never a single figure holding a ball, never a famous statue pose."""
+    P = observatory_base()
+    P.append(G.cyl([1, 1, 1.0], 0.50, 0.18, "stone"))  # stump, no neck and no dome
+    C = [1, 1, 3.25]
+    D, K = 0.85, dict(roof=False)
+    for s in (1, -1):
+        for dd in (-0.14, 0.14):  # two legs, the gap between them reads against the sky map
+            P.append(G.cyl(pt(D + dd, 0.04, s), 0.085, 1.11, "stone", **K))
+        P.append(G.cone(pt(D, 1.15, s), 0.24, 0.20, 0.50, "stone", **K))  # hips and waist
+        P.append(G.cone(pt(D, 1.65, s), 0.20, 0.27, 0.38, "stone", **K))  # chest
+        P.append(G.seg(pt(D - 0.30, 2.0, s), pt(D + 0.30, 2.0, s), 0.115, "stone", **K))  # shoulders
+        P.append(G.cyl(pt(D, 1.98, s), 0.085, 0.16, "stone", **K))  # neck
+        P.extend(G.ball(pt(D, 2.35, s), 0.17, 6, "stone", **K))  # head, air on both sides of it
+        # elbows out wide, forearms folded up behind the head to the globe
+        for dsh, delb, zel, dh, zh in ((D - 0.30, D - 0.43, 2.35, D - 0.40, 2.68), (D + 0.30, D + 0.40, 2.40, D - 0.03, 2.95)):
+            P.append(G.seg(pt(dsh, 2.0, s), pt(delb, zel, s), 0.095, "stone", **K))
+            P.append(G.seg(pt(delb, zel, s), pt(dh, zh, s), 0.085, "stone", **K))
+    P.append(sphere(C, 0.85, "iron"))  # a full globe, slit and band are paint
+    P += G.telescope(C[2], 4.25, 0.075, "plaster", sleeve=True, foot_xy=(1, 1), tip_xy=(0.2, 1.8))
+    P += G.ring(C, 1.0, [0.55, 0.55, 0.62], 24, 0.045, "iron")
+    return P
+
+
 def observatory_base():
     """observatory("mythic") without dome, titan, plinth and globe: slab, door, drum, windows, sky map,
     terrace pennant, drum banner, crest, gag slot."""
@@ -183,6 +210,7 @@ def main():
     (OUT / "windmill_rosette.json").write_text(json.dumps(rosette) + "\n", encoding="utf-8")
     for letter, fn in (("A", observatory_a), ("B", observatory_b), ("C", observatory_c)):
         G.write(f"observatory_mythic_{letter}", fn())
+    G.write("observatory_mythic_A2", observatory_a2())
     print(f"{len(list(OUT.glob('*.json')))} specs in {OUT}")
 
 

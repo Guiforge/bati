@@ -1,0 +1,11 @@
+{"canvas": "building2x2",
+ "parts": [
+  {"_tag": "chevalier", "type": "cone", "mat": "iron", "center": [1.0069, 1.7517, 0.08], "r": 0.06, "r2": 0.045, "h": 0.26, "axis": [0.0, 0.0, 1.0]},
+  {"_tag": "chevalier", "type": "cyl", "mat": "iron", "center": [1.0069, 1.7517, 0.1], "r": 0.03, "h": 0.1414, "axis": [0.7, -0.7, -0.1414]},
+  {"_tag": "chevalier", "type": "cyl", "mat": "iron", "center": [1.1059, 1.6527, 0.08], "r": 0.025, "h": 0.0447, "axis": [0.3162, -0.3162, -0.8944]},
+  {"_tag": "chevalier", "type": "sphere", "mat": "iron", "center": [1.0069, 1.7517, 0.4], "r": 0.055},
+  {"_tag": "chevalier", "type": "cyl", "mat": "iron", "center": [1.0211, 1.7376, 0.3], "r": 0.02, "h": 0.1612, "axis": [0.7016, -0.7016, 0.124]},
+  {"_tag": "chevalier", "type": "cyl", "mat": "canvas", "center": [1.1413, 1.6174, 0.31], "r": 0.03, "h": 0.04},
+  {"_tag": "chevalier", "type": "cone", "mat": "iron", "center": [0.9221, 1.8366, 0.04], "r": 0.05, "r2": 0.03, "h": 0.08, "axis": [0.0, 0.0, 1.0]}
+ ]
+}

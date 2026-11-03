@@ -1,0 +1,21 @@
+{"canvas": "building2x2",
+ "parts": [
+  {"_tag": "cheval", "type": "cyl", "mat": "darkwood", "center": [1.5974, 1.9452, 0.31], "r": 0.075, "h": 0.26, "axis": [0.4472, -0.8944, 0.0]},
+  {"_tag": "cheval", "type": "cyl", "mat": "darkwood", "center": [1.7047, 1.7306, 0.34], "r": 0.045, "h": 0.1836, "axis": [0.2193, -0.4385, 0.8716]},
+  {"_tag": "cheval", "type": "cyl", "mat": "darkwood", "center": [1.745, 1.6501, 0.5], "r": 0.035, "h": 0.1253, "axis": [0.3926, -0.7852, -0.4789]},
+  {"_tag": "cheval", "type": "cyl", "mat": "darkwood", "center": [1.5974, 1.9452, 0.34], "r": 0.016, "h": 0.1526, "axis": [-0.2344, 0.4688, -0.8517]},
+  {"_tag": "cheval", "type": "cyl", "mat": "darkwood", "center": [1.584, 1.905, 0.29], "r": 0.02, "h": 0.2571, "axis": [0.1044, -0.2087, -0.9724]},
+  {"_tag": "cheval", "type": "cyl", "mat": "darkwood", "center": [1.6376, 1.9318, 0.29], "r": 0.02, "h": 0.2571, "axis": [0.1044, -0.2087, -0.9724]},
+  {"_tag": "cheval", "type": "cyl", "mat": "darkwood", "center": [1.6734, 1.7261, 0.29], "r": 0.02, "h": 0.2571, "axis": [-0.1044, 0.2087, -0.9724]},
+  {"_tag": "cheval", "type": "cyl", "mat": "darkwood", "center": [1.7271, 1.7529, 0.29], "r": 0.02, "h": 0.2571, "axis": [-0.1044, 0.2087, -0.9724]},
+  {"_tag": "chevalier", "type": "cyl", "mat": "iron", "center": [1.66, 1.82, 0.36], "r": 0.045, "h": 0.2, "axis": [0.0, 0.0, 1.0]},
+  {"_tag": "chevalier", "type": "cyl", "mat": "iron", "center": [1.66, 1.82, 0.36], "r": 0.025, "h": 0.13, "axis": [0.172, -0.344, -0.9231]},
+  {"_tag": "chevalier", "type": "cyl", "mat": "iron", "center": [1.66, 1.82, 0.53], "r": 0.02, "h": 0.1221, "axis": [0.3664, -0.7327, -0.5735]},
+  {"_tag": "chevalier", "type": "sphere", "mat": "iron", "center": [1.66, 1.82, 0.63], "r": 0.055},
+  {"_tag": "chevalier", "type": "cone", "mat": "iron", "center": [1.66, 1.82, 0.66], "r": 0.045, "r2": 0.0, "h": 0.1005, "axis": [-0.0445, 0.089, 0.995]},
+  {"_tag": "chevalier", "type": "cyl", "mat": "wood", "center": [1.6153, 1.9094, 0.48], "r": 0.012, "h": 0.7206, "axis": [0.4468, -0.8937, 0.0416]},
+  {"type": "cone", "mat": "plaster", "center": [1.86, 1.7, 0.05], "r": 0.05, "r2": 0.02, "h": 0.1237, "axis": [0.8893, 0.3234, 0.3234]},
+  {"type": "cone", "mat": "plaster", "center": [1.86, 1.7, 0.09], "r": 0.05, "r2": 0.02, "h": 0.1273, "axis": [0.8642, 0.3143, 0.3928]},
+  {"type": "cone", "mat": "plaster", "center": [1.86, 1.7, 0.13], "r": 0.05, "r2": 0.02, "h": 0.1315, "axis": [0.8363, 0.3041, 0.4562]}
+ ]
+}

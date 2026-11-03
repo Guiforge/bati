@@ -1,0 +1,12 @@
+{"canvas": "building2x2", "materials": {"patine": {"tones": ["#6F8F80", "#6F8F80", "#46594F"]}, "nuit": {"tones": ["#1B2340", "#1B2340", "#141A30"]}},
+ "parts": [
+  {"_tag": "sage", "type": "cone", "mat": "nuit", "center": [0.2877, 1.8502, 0.04], "r": 0.1, "r2": 0.05, "h": 0.4, "axis": [0.0, 0.0, 1.0]},
+  {"_tag": "sage", "type": "sphere", "mat": "plaster", "center": [0.2877, 1.8502, 0.54], "r": 0.06},
+  {"_tag": "sage", "type": "cone", "mat": "patine", "center": [0.2877, 1.8502, 0.57], "r": 0.075, "r2": 0.0, "h": 0.1712, "axis": [-0.0826, 0.0826, 0.9932]},
+  {"_tag": "sage", "type": "cyl", "mat": "nuit", "center": [0.309, 1.829, 0.4], "r": 0.022, "h": 0.2907, "axis": [0.3162, -0.3162, 0.8944]},
+  {"_tag": "sage", "type": "sphere", "mat": "plaster", "center": [0.408, 1.73, 0.69], "r": 0.03},
+  {"_tag": "hibou", "type": "cone", "mat": "wood", "center": [0.2736, 1.8644, 0.74], "r": 0.052, "r2": 0.04, "h": 0.136, "axis": [0.0, 0.0, 1.0]},
+  {"_tag": "hibou", "type": "sphere", "mat": "wood", "center": [0.2736, 1.8644, 0.908], "r": 0.044},
+  {"_tag": "hibou", "type": "cone", "mat": "darkwood", "center": [0.2736, 1.8644, 0.94], "r": 0.016, "r2": 0.0, "h": 0.049, "axis": [0.4082, -0.4082, 0.8165]}
+ ]
+}

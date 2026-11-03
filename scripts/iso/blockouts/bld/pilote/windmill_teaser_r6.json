@@ -1,0 +1,7 @@
+{"canvas": "building2x2", "materials": {"ciel": {"tones": ["#A8C2D2", "#A8C2D2", "#7C98A8"]}},
+ "parts": [
+  {"type": "cyl", "mat": "wood", "center": [1.0, 1.0, 2.88], "r": 0.03, "h": 0.62},
+  {"type": "cyl", "mat": "ciel", "center": [1.0, 1.0, 3.08], "r": 0.085, "h": 0.26},
+  {"type": "cyl", "mat": "wood", "center": [1.0, 1.0, 3.46], "r": 0.012, "h": 0.2341, "axis": [0.6645, -0.6645, -0.3417]}
+ ]
+}

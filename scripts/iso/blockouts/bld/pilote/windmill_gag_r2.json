@@ -1,0 +1,18 @@
+{"canvas": "building2x2",
+ "parts": [
+  {"_tag": "cheval", "type": "cyl", "mat": "darkwood", "center": [1.834, 1.646, 0.2965], "r": 0.0712, "h": 0.247, "axis": [-0.7071, 0.7071, 0.0]},
+  {"_tag": "cheval", "type": "cyl", "mat": "darkwood", "center": [1.6728, 1.8072, 0.325], "r": 0.0427, "h": 0.2258, "axis": [-0.2677, 0.2677, 0.9255]},
+  {"_tag": "cheval", "type": "cyl", "mat": "darkwood", "center": [1.6124, 1.8676, 0.534], "r": 0.0333, "h": 0.119, "axis": [-0.6208, 0.6208, -0.4789]},
+  {"_tag": "cheval", "type": "cyl", "mat": "darkwood", "center": [1.834, 1.646, 0.325], "r": 0.0152, "h": 0.145, "axis": [0.3706, -0.3706, -0.8517]},
+  {"_tag": "cheval", "type": "cyl", "mat": "darkwood", "center": [1.834, 1.6863, 0.2775], "r": 0.019, "h": 0.2375, "axis": [0.0, 0.0, -1.0]},
+  {"_tag": "cheval", "type": "cyl", "mat": "darkwood", "center": [1.7937, 1.646, 0.2775], "r": 0.019, "h": 0.2375, "axis": [0.0, 0.0, -1.0]},
+  {"_tag": "cheval", "type": "cyl", "mat": "darkwood", "center": [1.6997, 1.8206, 0.2775], "r": 0.019, "h": 0.2375, "axis": [0.0, 0.0, -1.0]},
+  {"_tag": "cheval", "type": "cyl", "mat": "darkwood", "center": [1.6594, 1.7803, 0.2775], "r": 0.019, "h": 0.2375, "axis": [0.0, 0.0, -1.0]},
+  {"_tag": "chevalier", "type": "cyl", "mat": "iron", "center": [1.74, 1.74, 0.344], "r": 0.0427, "h": 0.19, "axis": [0.0, 0.0, 1.0]},
+  {"_tag": "chevalier", "type": "cyl", "mat": "iron", "center": [1.74, 1.74, 0.344], "r": 0.0238, "h": 0.1235, "axis": [-0.272, 0.272, -0.9231]},
+  {"_tag": "chevalier", "type": "cyl", "mat": "iron", "center": [1.74, 1.74, 0.5055], "r": 0.019, "h": 0.116, "axis": [-0.5793, 0.5793, -0.5735]},
+  {"_tag": "chevalier", "type": "sphere", "mat": "iron", "center": [1.74, 1.74, 0.6005], "r": 0.0522},
+  {"_tag": "chevalier", "type": "cone", "mat": "iron", "center": [1.74, 1.74, 0.629], "r": 0.0427, "r2": 0.0, "h": 0.0955, "axis": [0.0704, -0.0704, 0.995]},
+  {"_tag": "chevalier", "type": "cyl", "mat": "wood", "center": [1.6728, 1.8072, 0.439], "r": 0.0114, "h": 0.4944, "axis": [-0.0272, 0.0272, 0.9993]}
+ ]
+}

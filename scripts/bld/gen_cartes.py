@@ -388,6 +388,58 @@ def at_dir(p, dirv, d):
     return G.add(p, G.mul(G.unit(dirv), d))
 
 
+def sx_sy(p):
+    return 192 * (p[0] - p[1]), 96.67 * (p[0] + p[1]) - PX_Z * p[2]
+
+
+PIVOT = [1.2, 0.95, 1.75]
+TUBE_L = 2.2  # twice the old tube (1.1), straight
+TUBE_DIR = G.unit([-0.11, 1.19, 1.85])
+TUBE_TIP = G.add(PIVOT, G.mul(TUBE_DIR, TUBE_L))
+DOME_C, DOME_Z, DOME_R, DOME_H = [1.2, 0.95], 1.45, 0.66, 1.05  # rounder and taller cap than solid (apex 2.05)
+
+
+def open_dome(pivot, tip, slot):
+    """Dome as latitude rings of segments: a through-cut channel (screen space) around the tube is left empty,
+    so the void shows in black. The base is plain cones."""
+    c = DOME_C
+    p0, p1 = sx_sy(pivot), sx_sy(tip)
+    dx, dy = p1[0] - p0[0], p1[1] - p0[1]
+    dn = math.hypot(dx, dy)
+    dx, dy = dx / dn, dy / dn
+
+    def in_slot(q):
+        u, v = q[0] - p0[0], q[1] - p0[1]
+        return u * dx + v * dy > -8 and abs(u * dy - v * dx) < slot * 0.7 + 0.36 * (u * dx + v * dy)
+
+    out = []
+    for la, lb in ((0, 14),):
+        ra, rb = DOME_R * math.cos(math.radians(la)), DOME_R * math.cos(math.radians(lb))
+        za, zb = DOME_Z + DOME_H * math.sin(math.radians(la)), DOME_Z + DOME_H * math.sin(math.radians(lb))
+        out.append(G.cone([*c, za], ra, rb, zb - za, "iron", roof=True))
+    n = 28
+    for lat in (18, 27, 36, 45, 54, 63, 72, 80, 86):
+        rr = (DOME_R - 0.03) * math.cos(math.radians(lat))
+        z = DOME_Z + DOME_H * math.sin(math.radians(lat))
+        pts = [[c[0] + rr * math.cos(2 * math.pi * i / n), c[1] + rr * math.sin(2 * math.pi * i / n), z] for i in range(n + 1)]
+        for a, b in zip(pts, pts[1:]):
+            m = G.mul(G.add(a, b), 0.5)
+            if not in_slot(sx_sy(m)):
+                out.append(G.seg(a, b, 0.07, "iron", roof=True))
+    return out
+
+
+def armillary(c, R=0.32):
+    """Two crossed rings and a tilted axis, on a foot, clear of the dome: reads as a sphere, not a coil."""
+    ax = G.unit([0.12, -0.12, 0.985])
+    P = G.ring(c, R, HOOP, 28, 0.03, "laiton") + G.ring(c, R, G.unit(G.add(G.mul(S, 0.8), [0, 0, 0.6])), 28, 0.03, "patine")
+    low = G.sub(c, G.mul(ax, R + 0.20))
+    P.append(G.seg(low, G.add(c, G.mul(ax, R + 0.12)), 0.022, "laiton"))
+    P += [G.cyl([low[0], low[1], 0.04], 0.17, 0.08, "laiton"), G.cone([low[0], low[1], 0.12], 0.13, 0.065, 0.40, "laiton"),
+          G.cyl([low[0], low[1], 0.52], 0.065, low[2] - 0.52, "laiton")]
+    return P
+
+
 def observatory(stage):
     k = OB_ORDER.index(stage)
     P = [G.plate(), G.box([0.84, 1.82, 0.04], [0.32, 0.06, 0.38 if k == 0 else 0.55], "darkwood", accroche="porte")]
@@ -402,29 +454,29 @@ def observatory(stage):
               G.box([1.82, 0.82, 0.45], [0.06, 0.2, 0.28], "amber"), G.box([1.22, 1.76, 0.45], [0.16, 0.06, 0.28], "amber")]
         P += G.sky_map(1.0, (1.62, 0.62))
         P.append(G.cyl([1.25, 0.95, 1.0], 0.60, 0.45, "stone"))
-        for z, ra, rb, h in ((1.45, 0.60, 0.52, 0.30), (1.75, 0.52, 0.30, 0.22), (1.97, 0.30, 0.0, 0.08)):
-            P.append(G.cone([1.25, 0.95, z], ra, rb, h, "iron", roof=True))
         if k == 1:
+            for z, ra, rb, h in ((1.45, 0.60, 0.52, 0.30), (1.75, 0.52, 0.30, 0.22), (1.97, 0.30, 0.0, 0.08)):
+                P.append(G.cone([1.25, 0.95, z], ra, rb, h, "iron", roof=True))
             P += G.telescope(1.70, 2.39, 0.09, "darkwood", foot_xy=(1.25, 0.82), tip_xy=(1.095, 1.05))
+            for a in ([1.44, 1.60, 1.0], [1.52, 1.62, 1.0], [1.58, 1.56, 1.0]):  # the folded tripod
+                P.append(G.seg(a, [1.50, 1.52, 1.64], 0.04, "wood"))
         else:
-            tip = {2: ((1.026, 1.153), 2.73), 3: ((0.966, 1.242), 2.96)}.get(k)
+            tip = {3: ((0.966, 1.242), 2.96)}.get(k)
             if k == 4:  # the spyglass aims at the middle of the disc, its tip just inside the sphere
                 foot = [1.25, 0.82, 1.70]
                 t = at_dir(C, G.sub(foot, C), 0.60)
                 tip = ((t[0], t[1]), t[2])
-            P += G.telescope(1.70, tip[1], 0.09, "laiton", sleeve=True, foot_xy=(1.25, 0.82), tip_xy=tip[0])
-        for a in ([1.44, 1.60, 1.0], [1.52, 1.62, 1.0], [1.58, 1.56, 1.0]):  # the folded tripod
-            P.append(G.seg(a, [1.50, 1.52, 1.64], 0.04, "wood"))
-    if k >= 2:
-        az = G.unit([-0.56, 0.83, 0])
-        pts = [(0.59, 1.50), (0.52, 1.75), (0.30, 1.97), (0.0, 2.05)]
-        for (ra, za), (rb, zb) in zip(pts, pts[1:]):
-            P.append(G.seg([1.25 + az[0] * ra, 0.95 + az[1] * ra, za], [1.25 + az[0] * rb, 0.95 + az[1] * rb, zb], 0.10, "fente"))
-        P.append(tseg([1.42, 0.86, 1.80], [1.56, 0.72, 2.36], 0.10, 0.08, "iron"))
-        P.append(tseg([1.56, 0.72, 2.36], [1.44, 0.84, 2.62], 0.08, 0.05, "iron"))
-        c = [1.62, 0.46, 1.82]
-        P += [G.cyl([1.62, 0.46, 1.0], 0.14, 0.08, "laiton"), G.cyl([1.62, 0.46, 1.08], 0.05, 0.40, "laiton")]
-        P += G.ring(c, 0.34, [0, 0, 1], 16, 0.04, "laiton") + G.ring(c, 0.34, HOOP, 16, 0.04, "laiton")
+            if k == 2:
+                P += open_dome(PIVOT, TUBE_TIP, 70)
+                P.append(G.seg([*DOME_C, DOME_Z], PIVOT, 0.08, "wood"))  # the tripod, now under the open dome
+                # one straight tube out of the slot, a thin cap at the end: nothing that reads as a claw
+                P.append(tseg(G.sub(PIVOT, G.mul(TUBE_DIR, 0.15)), G.sub(TUBE_TIP, G.mul(TUBE_DIR, 0.12)), 0.045, 0.06, "laiton"))
+                P.append(G.seg(G.sub(TUBE_TIP, G.mul(TUBE_DIR, 0.14)), TUBE_TIP, 0.075, "laiton"))
+            else:  # legendary and mythic keep their tube (the column's V): the dome opens along it
+                foot = [1.25, 0.82, 1.70]
+                P += open_dome(foot, [tip[0][0], tip[0][1], tip[1]], 52)
+                P += G.telescope(1.70, tip[1], 0.09, "laiton", sleeve=True, foot_xy=(1.25, 0.82), tip_xy=tip[0])
+            P += armillary([1.76, 0.26, 2.0])
     if k >= 3:
         P.append(G.cone([0.82, 1.46, 1.0], 0.29, 0.13, 1.95, "stone"))
         P.append(G.seg([0.82, 1.46, 2.35], [0.46, 1.82, 3.19], 0.07, "iron"))

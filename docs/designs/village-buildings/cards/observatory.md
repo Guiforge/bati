@@ -40,11 +40,11 @@ Corrigée après les relectures de theo et mara. Direction C, le grand astrolabe
 |---|---|---:|---:|---:|---|
 | rough | Plateau de bois, lunette de bois sur trépied, carte du ciel | 553 | 643 | 171 k | |
 | solid | Tambour, dôme de cuivre fente fermée, bout de lunette qui pointe, trépied plié, fanion | 507 | 689 | 239 k | +40 % aire |
-| grand | **Le dôme s'ouvre** : fente sombre, volet levé, longue lunette de laiton, petite sphère armillaire sur la terrasse | 433 | 763 | 274 k | +10,7 % H |
+| grand | **Le dôme s'ouvre** : calotte plus haute et plus ronde, fente franche (un vrai vide dans le noir), lunette droite deux fois plus longue qui en sort, sphère armillaire à deux anneaux sur un pied, à part | 339 | 859 | 312 k | +29 % aire, +24 % H |
 | legendary | Colonne en cône et contrefiche, berceau en demi-anneau de laiton | 254 | 942 | 334 k | +23 % H |
 | mythic | **La sphère complète : trois anneaux, le disque de ciel nocturne, la petite lune** | 73 | 1123 | 407 k | +19 % H, +22 % aire |
 
-**Le grand ne ressemble pas au solid** : le volet, la lunette trois fois plus longue et la sphère de droite changent le noir. Grand et solid ne partagent que le tambour.
+**Le grand ne ressemble pas au solid** : la fente ouverte, la lunette deux fois plus longue et la sphère sur son pied changent le noir. Grand et solid ne partagent que le tambour.
 
 **Pièces**. `G` = `gen_pilot_specs.py`. Constantes : `C = (0,82 ; 1,46 ; 3,61)`, `R = 0,66`, `HOOP = (0,7071 ; 0,7071 ; 0)`, `EQ = (0,12 ; -0,12 ; 0,985)`, `MER = (0,95 ; -0,31 ; 0)`, pied de lunette `(1,25 ; 0,82)`.
 
@@ -57,13 +57,12 @@ Corrigée après les relectures de theo et mara. Direction C, le grand astrolabe
   - **Dôme décalé à droite**, axe (1,25 ; 0,95) : col `cyl` z 1,0, r 0,60, h 0,45, puis `cone` (z 1,45, 0,60 à 0,52, h 0,30), (z 1,75, 0,52 à 0,30, h 0,22), (z 1,97, 0,30 à 0, h 0,08), `iron`, `roof: true`. Prompt : cuivre mat.
   - `G.telescope(1.70, 2.39, 0.09, "darkwood", foot_xy=(1.25, 0.82), tip_xy=(1.095, 1.05))`. Le bout dépasse à peine.
   - **Trépied plié contre le col du dôme**, 30 dp : 3 `seg` r 0,04, `wood`, de (1,44 ; 1,60 ; 1,0), (1,52 ; 1,62 ; 1,0), (1,58 ; 1,56 ; 1,0) à (1,50 ; 1,52 ; 1,64).
-- **grand** (s'ajoute, la lunette change) :
-  - `G.telescope(1.70, 2.69, 0.09, "laiton", sleeve=True, foot_xy=(1.25, 0.82), tip_xy=(1.026, 1.153))`.
-  - **Fente sombre** : 3 `seg` r 0,10, `fente`, sur le dôme, azimut de la lunette `(-0,56 ; 0,83)` : de rayon 0,59 à z 1,50, à 0,52 à z 1,75, à 0,30 à z 1,97, puis à 0 à z 2,05. Elle se voit sur le profil gauche, et la lunette en sort. Peint dedans : un fil vert et bleu.
-  - **Volet levé** : `seg` (1,42 ; 0,86 ; 1,80) à (1,56 ; 0,72 ; 2,36), r 0,10 à 0,08 ; `seg` de là à (1,44 ; 0,84 ; 2,62), r 0,08 à 0,05, `iron`.
-  - **Petite sphère de terrasse**, centre c = (1,62 ; 0,46 ; 1,82), à px (671, 667), 37 dp : socle `cyl` (1,62 ; 0,46 ; 1,0), r 0,14, h 0,08 ; tige r 0,05, h 0,40 ; **2 anneaux** `G.ring(c, 0.34, n, 16, 0.04, "laiton")`, n = (0 ; 0 ; 1) et `HOOP`. Pas de boule.
+- **grand** (s'ajoute, rondeur et lunette changent ; v2, silhouette relue par des étrangers, `observatory/r2`) :
+  - **Dôme ouvert** : `gen_cartes.open_dome`, centre (1,2 ; 0,95), r 0,66, h 1,05 depuis z 1,45 (sommet z 2,5), en anneaux de latitude de `seg` r 0,07. **Les segments dont le milieu se projette dans le couloir de la lunette sont omis** : le vide traverse tout le dôme, donc il se voit en noir. Couloir : demi-largeur 49 px au pivot, plus 0,36 px par px.
+  - **Lunette** : pivot (1,2 ; 0,95 ; 1,75), direction (-0,11 ; 1,19 ; 1,85), **longueur 2,2** (le double), un `cone` r 0,045 à 0,06 et un manchon de bout r 0,075. **Droite, sans bague, sans contrepoids, sans trépied visible** (trépied et pince lisaient « Forge »). Bout (1,09 ; 2,14 ; 3,60), en l'air hors de la dalle.
+  - **Sphère armillaire à part**, centre c = (1,76 ; 0,26 ; 2,0), R 0,32 : **2 anneaux croisés** r 0,03 (`HOOP` et la normale `0,8 S + 0,6 z`), un axe incliné qui dépasse, **pied posé au sol** (base r 0,17, cône, fût r 0,065). Rien ne touche le dôme.
 - **legendary** (s'ajoute, la lunette s'allonge) :
-  - `G.telescope(1.70, 2.96, 0.09, "laiton", sleeve=True, foot_xy=(1.25, 0.82), tip_xy=(0.966, 1.242))`. Bout à px (395, 411).
+  - `G.telescope(1.70, 2.96, 0.09, "laiton", sleeve=True, foot_xy=(1.25, 0.82), tip_xy=(0.966, 1.242))`. Bout à px (395, 411). **Elle garde sa lunette (la colonne et elle forment le V)**, mais le dôme ouvert et la sphère sur pied du grand sont repris ici ; le couloir suit sa lunette.
   - **Colonne, sans socle** : `cone` (0,82 ; 1,46 ; 1,0), r 0,29 à 0,13, h 1,95, `stone`. Soit r 0,28 à z 1,14 et r 0,13 à z 2,95.
   - **Contrefiche** : `seg` de (0,82 ; 1,46 ; 2,35) à (0,46 ; 1,82 ; 3,19), r 0,07, `iron`. Elle casse la lecture « sucette ».
   - **Berceau, moitié basse de l'anneau** : 24 `G.seg`, r 0,05, `laiton`, points `C + 0,66 (cos t * (0,7071 ; -0,7071 ; 0) - sin t * (0 ; 0 ; 1))`, t de 0 à 180°. `G.ring` ne fait que des cercles entiers : calculer ces points.

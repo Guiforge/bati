@@ -152,7 +152,7 @@ export const wizard_tower: Omit<PeintBld, "donnees"> = {
     "elements/gag_4": {
       jour: require("@/assets/images/village/iso/peints/wizard_tower/elements/gag_4.jour.webp"),
       nuit: require("@/assets/images/village/iso/peints/wizard_tower/elements/gag_4.nuit.webp"),
-      size: [112, 150],
+      size: [150, 135],
     },
     "elements/gag_6": {
       jour: require("@/assets/images/village/iso/peints/wizard_tower/elements/gag_6.jour.webp"),

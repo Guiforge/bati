@@ -82,7 +82,7 @@ def on_magenta(path):
     return bg.convert("RGB")
 
 
-def key(im, lo=70, hi=150):
+def key(im, lo=30, hi=80):
     """RGBA from a flat-magenta painting. The background is the median of the border ring; alpha ramps with the distance to it, loses
     its specks (keep) and is smoothed and feathered. The colour of every partial pixel is borrowed from the solid pixels next to it,
     never unmixed from the magenta (unmixing is what greened the edge), then magenta is subtracted from what is left."""
@@ -104,6 +104,40 @@ def key(im, lo=70, hi=150):
     rgb = np.where(have[..., None] > 0, rgb, a)
     rgb -= np.clip(np.minimum(rgb[..., 0], rgb[..., 2]) - rgb[..., 1], 0, None)[..., None] * np.array([1, 0, 1])  # magenta left over
     return Image.fromarray(np.dstack([np.clip(rgb, 0, 255), al * 255]).astype(np.uint8), "RGBA")
+
+
+def solid_interior(raw, soft, thresh=40, hole=12000, band=4):
+    """Ghost-grey fix for an element whose colours sit near the ground (pale stone on cream): the pixels more than `band` px from the
+    border-connected background (or a big enclosed hole) are forced opaque with their own raw colour; the edge keeps the soft key."""
+    a = np.asarray(raw.convert("RGB"), dtype=float)
+    ring = np.concatenate([a[:16].reshape(-1, 3), a[-16:].reshape(-1, 3), a[:, :16].reshape(-1, 3), a[:, -16:].reshape(-1, 3)])
+    near = np.sqrt(((a - np.median(ring, axis=0)) ** 2).sum(-1)) < thresh
+    h, w = near.shape
+    m = Image.fromarray((near * 255).astype(np.uint8)).copy()  # .copy(): floodfill does nothing on a frombuffer image
+    for x, y in [(i, 0) for i in range(0, w, 64)] + [(i, h - 1) for i in range(0, w, 64)] + [(0, j) for j in range(0, h, 64)] + [(w - 1, j) for j in range(0, h, 64)]:
+        if m.getpixel((x, y)) == 255:
+            ImageDraw.floodfill(m, (x, y), 128)
+    bg, rest = np.asarray(m) == 128, np.asarray(m) == 255
+    for _ in range(40):  # big enclosed holes (a handle, a ring) stay background
+        ys, xs = np.nonzero(rest)
+        if not len(ys):
+            break
+        mm = Image.fromarray(np.where(rest, 255, 0).astype(np.uint8)).copy()
+        ImageDraw.floodfill(mm, (int(xs[0]), int(ys[0])), 77)
+        comp = np.asarray(mm) == 77
+        bg |= comp if comp.sum() >= hole else False
+        rest &= ~comp
+    inside = np.asarray(Image.fromarray((~bg * 255).astype(np.uint8)).filter(ImageFilter.MinFilter(2 * band + 1))) > 0
+    out = np.asarray(soft.convert("RGBA")).copy()
+    out[inside, :3], out[inside, 3] = np.asarray(raw.convert("RGB"))[inside], 255
+    return Image.fromarray(out, "RGBA")
+
+
+def ghost(rgba):
+    """Share of the visible pixels that are semi-transparent and more than 4 px inside the silhouette."""
+    al = np.asarray(rgba)[..., 3]
+    core = np.asarray(Image.fromarray(((al > 16) * 255).astype(np.uint8)).filter(ImageFilter.MinFilter(9))) > 0
+    return float(((al > 16) & (al < 240) & core).sum() / max(1, (al > 16).sum()))
 
 
 def green_edge(rgba, reach=6):
@@ -290,6 +324,8 @@ def elements(code, rekey=False):
         if o.exists():
             # the sails' pale wooden frame sits near the off-white paper: the default thresholds ate it into a dotted dark fringe
             rgba = key(Image.open(o), 25, 70) if "sails" in o.name else key(Image.open(o))
+            if ghost(rgba) > 0.02:  # object colours close to the ground: grey ghost inside, force the interior opaque
+                rgba = solid_interior(Image.open(o), rgba)
             rgba.crop(rgba.getbbox()).save(o.with_name(o.name.replace(".raw", "")))
             if (n := green_edge(rgba)) > 20:
                 bad.append(f"{o.name.split('.')[0]}: {n} green edge pixels")

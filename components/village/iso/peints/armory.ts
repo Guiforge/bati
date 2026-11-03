@@ -127,22 +127,22 @@ export const armory: Omit<PeintBld, "donnees"> = {
     "elements/gag_2": {
       jour: require("@/assets/images/village/iso/peints/armory/elements/gag_2.jour.webp"),
       nuit: require("@/assets/images/village/iso/peints/armory/elements/gag_2.nuit.webp"),
-      size: [150, 132],
+      size: [116, 150],
     },
     "elements/gag_3": {
       jour: require("@/assets/images/village/iso/peints/armory/elements/gag_3.jour.webp"),
       nuit: require("@/assets/images/village/iso/peints/armory/elements/gag_3.nuit.webp"),
-      size: [150, 135],
+      size: [150, 95],
     },
     "elements/gag_7": {
       jour: require("@/assets/images/village/iso/peints/armory/elements/gag_7.jour.webp"),
       nuit: require("@/assets/images/village/iso/peints/armory/elements/gag_7.nuit.webp"),
-      size: [115, 150],
+      size: [109, 150],
     },
     "elements/gag_10": {
       jour: require("@/assets/images/village/iso/peints/armory/elements/gag_10.jour.webp"),
       nuit: require("@/assets/images/village/iso/peints/armory/elements/gag_10.nuit.webp"),
-      size: [89, 150],
+      size: [131, 150],
     },
   },
 };

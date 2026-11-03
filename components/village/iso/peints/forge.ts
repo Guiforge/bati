@@ -152,7 +152,7 @@ export const forge: Omit<PeintBld, "donnees"> = {
     "elements/gag_4": {
       jour: require("@/assets/images/village/iso/peints/forge/elements/gag_4.jour.webp"),
       nuit: require("@/assets/images/village/iso/peints/forge/elements/gag_4.nuit.webp"),
-      size: [150, 120],
+      size: [150, 96],
     },
     "elements/gag_6": {
       jour: require("@/assets/images/village/iso/peints/forge/elements/gag_6.jour.webp"),

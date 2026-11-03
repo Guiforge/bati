@@ -147,7 +147,7 @@ export const well: Omit<PeintBld, "donnees"> = {
     "elements/gag_10": {
       jour: require("@/assets/images/village/iso/peints/well/elements/gag_10.jour.webp"),
       nuit: require("@/assets/images/village/iso/peints/well/elements/gag_10.nuit.webp"),
-      size: [150, 100],
+      size: [150, 98],
     },
   },
 };

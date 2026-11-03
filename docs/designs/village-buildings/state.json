@@ -1,5 +1,5 @@
 {
-  "_doc": "Etat du chantier batiments v2. La session froide lit PROMPT.md puis ce fichier, et saute ce qui est done.",
+  "_doc": "Etat du chantier batiments v3. La session froide lit PROMPT.md puis ce fichier, et saute ce qui est done.",
   "ISO_BRANCH": "feat/village-iso",
   "UPGRADE_RULE": "B",
   "prep": {
@@ -27,10 +27,7 @@
           "scripts/bld/test_bldtools.py"
         ],
         "flag": "BUILDING_STAGES_RULE = old, rien dans l'app ne lit encore la table",
-        "resteDeLEtape0Point4": [
-          "etats de capture",
-          "cartes de calibration"
-        ]
+        "resteDeLEtape0Point4": ["etats de capture", "cartes de calibration"]
       },
       "3_cartes": {
         "statut": "done",
@@ -62,10 +59,7 @@
           "r3": {
             "S-A": "10/12",
             "S-B": "10/12",
-            "echecs": [
-              "observatory_mythic",
-              "observatory_mythic.96"
-            ]
+            "echecs": ["observatory_mythic", "observatory_mythic.96"]
           }
         },
         "windmill": "passe au tour 3, flou compris",
@@ -87,75 +81,61 @@
       "Le controle d'empreinte ne compare qu'une bande de 12 px au coin avant : a remplacer par un vrai masque de contact au sol"
     ]
   },
-  "session": 1,
+  "session": 2,
   "settings": {
     "fluxSessionUsd": 30,
     "subagentRunsBudget": 250,
-    "maxRoundsPilot": 6,
-    "maxRoundsLater": 4,
     "device": "emulator-5554",
     "sources": "~/Téléchargements (xdg de ~/Downloads sur cette machine)",
     "PUSH": "yes",
-    "apkGuard": "aucune, retirée par Guillaume le 02/11",
-    "fluxRegistreRestant": 20.857
+    "apkGuard": "aucune, retirée par Guillaume le 02/11"
   },
   "flux": {
     "registreAuDepart": {
-      "spent": 44.843,
-      "ceiling": 75.0
+      "spent": 54.143,
+      "reserved": 0.14,
+      "ceiling": 75.0,
+      "left": 20.717
     },
-    "depenseSession": 9.3,
-    "reserveNonSoldee": 0.14
+    "plafondSession": 20.717,
+    "depenseSession": 0.0
   },
   "subagentRuns": {
-    "used": 103,
+    "used": 0,
     "budget": 250,
     "alerte80": 200,
-    "note": "compte estimé à la main"
+    "note": "compte estimé à la main, session 2"
   },
   "step0": {
-    "1": "done",
-    "2": "done : registre 15,157 $ restants, copie du verrou 83 fichiers",
-    "3": "done : bld-prep fusionnée, suites lourdes à 120 s",
-    "4": "done : outils, états de capture, commit de build sur chaque capture",
-    "5": "done : G-UPGRADE passe, G-MOTION échoue encore, magie à repeindre en images fixes",
-    "6": "done : headroom.md",
-    "7": "done : base propre, 81 captures sur bb2d9a82",
-    "8": "done : retest raté, Guillaume a répondu continuer, juges notés",
-    "9": "done : decisions.md",
-    "10": "done : card-sheet.md",
-    "11": "done : E1 verdict, références de style de mara",
-    "12": "done : checkpoint.md, Guillaume a répondu avant la nuit"
+    "1": "done : PROMPT.md v3",
+    "2": "done : tip=origin=8389e741, main n'a pas bougé (a14aade1), verrou 83 fichiers OK ; builds émulateur anciens, à refaire à la première capture",
+    "3": "done : registre 20,717 $ restants",
+    "4": "done : recette E3/E4/E5 lue",
+    "5": "en cours"
   },
-  "exploration": {
-    "E1": {
-      "moulin": "A, cristal",
-      "observatoire": "C, astrolabe, A3a atlantes passe G-ID, jamais comparé",
-      "verdict": "explore/E1/verdict.md"
-    },
-    "E2": "pas fait",
-    "E3": "FLUX 3 Image",
-    "E4": "peinture neuve, stade précédent en référence",
-    "E5": "finition b"
+  "waves": {
+    "pilot+W1": ["windmill", "observatory", "campfire", "tent", "training_dummy"],
+    "W2": ["wizard_tower", "druid_grove", "high_road"],
+    "W3": ["archery_range", "watchtower", "forge", "armory"],
+    "W4": ["farm", "barn", "quarry", "castle_wall"],
+    "W5": ["well", "fountain", "dragon_lair", "heroes_hall", "champion_arena"]
   },
-  "recipeLocked": false,
-  "waves": [
-    "W1",
-    "W2",
-    "W3",
-    "W4",
-    "W5",
-    "W6"
-  ],
   "buildings": {
     "windmill": {
-      "etape": "arrêté",
-      "nom": "windmill A, classique",
-      "usage": "comparaison seulement, non intégré",
-      "images": "windmill/r1/final/, ignoré par git, dans l archive"
+      "step": "ideas",
+      "v2": "windmill A classique, windmill/r1/final/, ligne de comparaison seulement"
     },
     "observatory": {
-      "etape": "maquettes r2 et A3, G-ID passe, pas de peinture"
+      "step": "ideas"
+    },
+    "campfire": {
+      "step": "ideas"
+    },
+    "tent": {
+      "step": "ideas"
+    },
+    "training_dummy": {
+      "step": "ideas"
     }
   },
   "parkedQuestions": [],
@@ -174,13 +154,21 @@
       "~/bati-archives/2026-11-02-iso-evidence.tgz"
     ]
   },
-  "session1Fin": {
-    "date": "2026-11-03",
-    "raison": "arrêt demandé par Guillaume : la méthode change, nouveau prompt (direction artistique d abord)",
-    "tip": "8696ce2a, plus le commit du résumé",
-    "suiteComplete": "verte sur 02d73f33, pas relancée sur 8696ce2a",
-    "resume": "summary-1.md",
-    "archive": "~/bati-archives/2026-11-03-session1.tgz",
-    "checkpointVerrouillage": "pas écrit"
+  "prompt": "v3, direction artistique d'abord (03/11) ; PROMPT-v2.md garde l'ancien",
+  "tip": "8389e741",
+  "recipe": {
+    "model": "FLUX 3 Image (E3)",
+    "method": "peinture neuve, stade précédent en référence pour la forme (E4), sans Blender en v3",
+    "finish": "b, contour plus épais et intérieur fin (E5)",
+    "styleRefs": [
+      "castle_wall/solid.jour.webp",
+      "druid_grove/grand.jour.webp",
+      "high_road/solid.jour.webp"
+    ]
+  },
+  "session1": {
+    "flux": 9.3,
+    "runs": 103,
+    "resume": "summary-1.md"
   }
 }

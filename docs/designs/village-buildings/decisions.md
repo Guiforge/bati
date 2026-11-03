@@ -101,3 +101,10 @@ Réponses prises, que Guillaume peut rayer au checkpoint :
 
 Conséquences de la planche de cartes :
 - La carte `campfire.md` de la prep est à réécrire : le Ménestrel remplace le cuistot.
+
+## Session 2, prompt v3 (03/11)
+
+- Prompt v3 installé, `PROMPT-v2.md` garde l'ancien. Réglages donnés par Guillaume : 30 $, 250 passages, push oui.
+- `~/Downloads` n'existe toujours pas : prompt pris dans `~/Téléchargements`, première ligne vérifiée.
+- Plafond FLUX réel de la session : 20,717 $, le registre est plus petit que les 30 $. Je ne touche pas à `BUDGET_FLUX_V1`.
+- Builds de l'émulateur anciens (`56e95e0c`, `bb2d9a82`) : pas reconstruits maintenant, les étapes A à C n'utilisent pas l'émulateur. Reconstruits depuis le tip avant la première capture.

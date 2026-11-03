@@ -9,6 +9,7 @@ import { Card } from "@/components/common/Card";
 import { Paragraph } from "@/components/common/Paragraph";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { Crest, type CrestShape } from "@/components/village/Crest";
+import { useAmbianceDev } from "@/components/village/iso/ambianceDev";
 import {
   calculateUserLevelFromXp,
   db,
@@ -49,6 +50,40 @@ async function setDevLevel(level: number): Promise<void> {
       notes: DEV_XP_NOTE,
     });
   }
+}
+
+// Forces the Village tab's light (iso map, flag on): the emulator's clock cannot be set.
+function LightBoard() {
+  const force = useAmbianceDev((s) => s.force);
+  const set = useAmbianceDev((s) => s.set);
+  return (
+    <Card p="4" gap="3">
+      <Text fontSize="4" fontWeight="700" color="text">
+        Village light · {force ?? "auto"}
+      </Text>
+      <XStack gap="3">
+        <AppButton
+          testID="dev-light-auto"
+          fullWidth={false}
+          variant="outline"
+          onPress={() => set(undefined)}
+        >
+          Auto
+        </AppButton>
+        <AppButton
+          testID="dev-light-jour"
+          fullWidth={false}
+          variant="outline"
+          onPress={() => set("jour")}
+        >
+          Day
+        </AppButton>
+        <AppButton testID="dev-light-nuit" fullWidth={false} onPress={() => set("nuit")}>
+          Night
+        </AppButton>
+      </XStack>
+    </Card>
+  );
 }
 
 const crestOf = (c: Partial<CrestShape> & Pick<CrestShape, "animal">): CrestShape => ({
@@ -351,6 +386,8 @@ export default function DevScreen() {
         </Card>
 
         <CrestBoard />
+
+        <LightBoard />
 
         <Card p="4" gap="3">
           <Text fontSize="4" fontWeight="700" color="text">

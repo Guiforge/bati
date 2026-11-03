@@ -7,6 +7,7 @@
 import type { BuildingCode } from "@/db/schema";
 import { type Case, emplacements } from "./isoLayout";
 import { type Carte, casesDuLieu, hasard, type Role, rolesPresents } from "./marcheurs";
+import { PEINTS } from "./peints";
 
 /**
  * How long the site stands, ms, counted from the tap (the camera moves meanwhile): the new stage
@@ -111,3 +112,7 @@ export function pop(t: number): { opacite: number; echelle: number; y: number } 
   const e = 1 - (1 - t) * (1 - t);
   return { opacite: 0.95 * (1 - t), echelle: 0.6 + 0.9 * e, y: -14 * (1 - e) };
 }
+
+/** The scaffold is drawn for a building with no painting, or for one not there yet (its heap of stones). */
+export const echafaudageDessine = (code: BuildingCode, masque: boolean, enSite = true) =>
+  enSite && (!PEINTS[code] || masque);

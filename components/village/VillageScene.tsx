@@ -36,6 +36,7 @@ import { Crest } from "@/components/village/Crest";
 import { CrestSheet, type CrestView } from "@/components/village/CrestSheet";
 import { crestFootprint } from "@/components/village/crestGeometry";
 import { revealedToday, useCrestLine } from "@/components/village/crestLine";
+import { forceEnDev, useAmbianceDev } from "@/components/village/iso/ambianceDev";
 import { Bulle, ContenuBatiment, ContenuVillageois } from "@/components/village/iso/Bulle";
 import { apresTap, HAUTEUR_BARRE, type Ouverture } from "@/components/village/iso/bulle";
 import { aireDepuisFenetre, dispositionIso } from "@/components/village/iso/disposition";
@@ -289,6 +290,7 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
   // Stones and banners, replayed from the journal: read after the scene (its XP keys the memo)
   // and never failing it, like the crest. Unread, the Seasons and the stones are simply absent.
   const [yearsView, setYearsView] = useState<VillageYearsView | null>(null);
+  const forceDev = useAmbianceDev((s) => s.force);
 
   // Stable: the sheet subscribes to hardware back on it, and a fresh identity every render
   // would resubscribe every render.
@@ -775,7 +777,12 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
   // render, so a map kept open across 7:00 or 20:00 changes at its next render.
   // shortcut: `plus` is false, Bati+ does not exist yet; wire its entitlement here when it does.
   const lumiere = INTEGRATION
-    ? choisirLumiere({ jourSeul: JOUR_SEUL, plus: false, heure: new Date().getHours() })
+    ? choisirLumiere({
+        jourSeul: JOUR_SEUL,
+        plus: false,
+        heure: new Date().getHours(),
+        force: forceEnDev(__DEV__, forceDev),
+      })
     : "nuit";
   const isoMap = (mapWidth: number, mapHeight: number, marge: number) => (
     <IsoVillageLazy

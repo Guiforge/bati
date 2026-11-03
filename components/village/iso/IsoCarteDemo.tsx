@@ -126,9 +126,16 @@ import {
 import { type Champs, champsDe, tuilesChamps } from "./champs";
 import { COUP_MS, COUPS, RETOUR_COUP_MS } from "./chantier";
 import { CODES_A_CORBEAU } from "./corbeaux";
+import { DONNEES_BLD } from "./donneesBld";
 import { Effets } from "./Effets";
 import { BannieresVocation, ChoseDeVocation, SolVocation } from "./EnsembleVocation";
-import { ArretAilesContext, type EtatBld, EtatBldContext } from "./etatBld";
+import {
+  ArretAilesContext,
+  type EtatBld,
+  EtatBldContext,
+  etatDeRang,
+  RangsBldContext,
+} from "./etatBld";
 import { Feux } from "./FeuxDessines";
 import { Fierte } from "./Fierte";
 import { useTour } from "./familles";
@@ -980,8 +987,18 @@ export function Maquette({
   const rectAiles = corps && s && ailes ? poseAiles(corps, s, ailes) : null;
   const socle = corps ? ombreSocleDe(code, stade) : null;
   // The buildings engine: only a capture state naming this building, with its data, and the flag.
-  const bld = useContext(EtatBldContext);
-  const donnees = BATIMENT_MOTEUR && bld?.code === code ? bld.donnees : undefined;
+  const capture = useContext(EtatBldContext);
+  const appli = useContext(RangsBldContext);
+  // The village tab: a painted building at its claimed rank (and claimed base), no show.
+  const donneesAppli = BATIMENT_MOTEUR ? DONNEES_BLD[code] : undefined;
+  const rangAppli = appli?.rangs.get(code);
+  const bld =
+    capture?.code === code
+      ? capture
+      : donneesAppli && rangAppli
+        ? etatDeRang(code, rangAppli, appli?.bases[code] ?? 0, donneesAppli)
+        : null;
+  const donnees = BATIMENT_MOTEUR ? bld?.donnees : undefined;
   const ombre = masque ? null : <OmbreSocle code={code} socle={socle} biome={biome} />;
   const voiles =
     ailes && rectAiles ? <Ailes s={ailes} rect={rectAiles} testID={`iso-ailes-${code}`} /> : null;

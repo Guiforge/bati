@@ -70,5 +70,10 @@ Réponses prises, que Guillaume peut rayer au checkpoint :
 
 - Coin après fusion du moteur, le 03/11 : `bc-keep-feu` à 2,04 %, frames à 0,40 %. Les dumps montrent 12 villageois déplacés et rien d'autre : c'est le changement de date, pas le moteur. G-CORNER doit retirer les rectangles des villageois du calcul, sinon il sonne chaque nuit à minuit.
 
+### Moteur (nuit du 03/11)
+- Verdict d'anim sur `56e95e0c` : G-UPGRADE passe, G-MOTION échoue encore. Magie en code : vectoriel à côté de la peinture. Décision : anneau, glyphes, halo et faisceau deviennent des images fixes peintes à bords doux, le code ne garde que leur mouvement (règle 9.3 ; ton retour « vectoriel, moche à côté de la peinture »). Restes à corriger avec l'art : pointes noires au moyeu, nuage de nuit trop clair, feu devant l'échafaudage. Ailes figées au ralenti : à vérifier, sans doute la capture.
+- G-ID sur maquettes : moulin r1 et observatoire r2 réussis aux deux mélanges. Le grand de l'observatoire r1 avait échoué (« Forge ») : dôme ouvert et long télescope.
+- La lunette raccourcit entre le grand (2,2) et le legendary (1,4) de l'observatoire : à faire juger par mara pour G-KEEP.
+
 Conséquences de la planche de cartes :
 - La carte `campfire.md` de la prep est à réécrire : le Ménestrel remplace le cuistot.

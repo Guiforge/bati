@@ -83,7 +83,9 @@ const TOUS: readonly (readonly [string, BuildingData, Sprites])[] = [
 describe.each(TOUS)("%s: positions", (code, data, sprites) => {
   const rough = sprites.stades.rough?.jour;
   const [W, H] = rough?.size ?? [0, 0];
-  const [ax, ay] = rough?.anchor ?? [0, 0];
+  // The nominal ground line (canvas bottom minus 64): the stage anchors sit on each painting's own foot.
+  const ax = rough?.anchor[0] ?? 0;
+  const ay = H - 64;
   const dedans = (x: number, y: number) => x >= 0 && x <= W && y >= 0 && y <= H;
 
   test("the gag stands in the canvas, at or above the ground line, at 10 dp at least", () => {

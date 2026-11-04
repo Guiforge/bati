@@ -95,7 +95,9 @@
         0.5,
         1.5
       ],
-      "status": "doing"
+      "status": "done",
+      "heures": 0.3,
+      "note": "défaut : occlusion 37, ancres 105, crochets 90 ; plus haut : 40, 105, 98 ; pire : moulin 67,8 %"
     },
     {
       "id": "L5",
@@ -106,7 +108,9 @@
         1,
         3
       ],
-      "status": "todo"
+      "status": "done",
+      "heures": 0.3,
+      "note": "peintures hors de cause ; chat corrigé ; porte props neuve ; 6 accessoires cachés et les bottes de foin passent à L13 ; ancres des bâtiments à L19"
     },
     {
       "id": "L6",
@@ -117,7 +121,9 @@
         3,
         6
       ],
-      "status": "todo"
+      "status": "done",
+      "heures": 0.25,
+      "note": "branche de proposition, cases négatives ; carrière seule sous 85 % (83,2 %)"
     },
     {
       "id": "L7",
@@ -128,7 +134,7 @@
         2,
         4
       ],
-      "status": "todo"
+      "status": "doing"
     },
     {
       "id": "L8",
@@ -139,7 +145,7 @@
         1,
         3
       ],
-      "status": "todo"
+      "status": "doing"
     },
     {
       "id": "L9",
@@ -150,7 +156,7 @@
         1,
         2
       ],
-      "status": "todo"
+      "status": "doing"
     },
     {
       "id": "L10",
@@ -161,7 +167,7 @@
         0.5,
         1
       ],
-      "status": "todo"
+      "status": "doing"
     },
     {
       "id": "L11",
@@ -184,7 +190,7 @@
         6
       ],
       "status": "waiting",
-      "note": "attend le choix"
+      "note": "attend le choix ; porte props : 6 accessoires à replacer"
     },
     {
       "id": "L13",
@@ -257,6 +263,19 @@
       ],
       "status": "waiting",
       "note": "attend le choix"
+    },
+    {
+      "id": "L19",
+      "group": "3 ancres",
+      "name": "Ancres des bâtiments",
+      "check": "check : plus aucun bâtiment à plus de 2 px de son pied, sans toucher les peintures",
+      "estimate_h": [
+        0.5,
+        1.5
+      ],
+      "status": "done",
+      "heures": 0.2,
+      "note": "une ancre par stade, durable dans integrate.py ; occlusion à 12 contre 10 : fontaine et salle plus couvertes une fois descendues"
     }
   ]
 }

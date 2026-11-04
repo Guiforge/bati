@@ -8,3 +8,7 @@
 - `iso-marcheurs-*`, `iso-focal-b1`, `iso-veilleuses`: cadrage et chemins comptés sur l'ancienne carte et les anciens coins.
 - `iso-effets`, `iso-tap`, `iso-mouvement`: bâtiments à 1,25 fois leur rectangle, positions en dp attendues à l'ancienne échelle.
 - `iso-profondeur-ordre`: vert, `isoOrdre.json` régénéré (UPDATE_ORDRE=1, 135 éléments).
+
+## Design track L4/L5 (04/11)
+
+No test was run. Known to touch tests: none found by reading; `IsoCarteDemo` gains an optional `haut` prop and `Accessoire` an optional `decalage` (the cat). `check.js` gate `props` is new: any caller that parses the "GATE FAILED" line sees a new key.

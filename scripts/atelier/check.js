@@ -304,6 +304,83 @@ function mesurerPage({ dump, ancres, piedProp, dpr, crochets }) {
     });
   }
 
+  // --- Elements (teasers, gags, add-ons): drawn bottom-centre on their anchor (BatimentMoteur `Piece`), so
+  // the foot is the box's bottom edge; the painting's lowest opaque row says where the thing really ends.
+  for (const e of imgs) {
+    if (!/^batiment-(teaser|gag|addon)/.test(e.tid) || e.cache || e.op < 0.5) continue;
+    const [nw, nh] = [e.img.naturalWidth, e.img.naturalHeight];
+    cv.width = nw;
+    cv.height = nh;
+    cx.clearRect(0, 0, nw, nh);
+    cx.drawImage(e.img, 0, 0);
+    const d = cx.getImageData(0, 0, nw, nh).data;
+    let bas = -1;
+    for (let row = nh - 1; row >= 0 && bas < 0; row--)
+      for (let col = 0; col < nw; col++) if (d[(row * nw + col) * 4 + 3] >= 128) bas = row;
+    if (bas < 0) continue;
+    ancrages.push({
+      id: `${e.tid} ${e.img.currentSrc.split("/").pop().split(".")[0]}`,
+      layer: "element",
+      tid: e.tid,
+      boite: [e.r.x * dpr, e.r.y * dpr, e.r.width * dpr, e.r.height * dpr],
+      pied: e.r.bottom * dpr,
+      basEcran: (e.r.y + ((bas + 1) * e.r.height) / nh) * dpr,
+      ecartTout: 0,
+      ecart: Math.round(((bas + 1) / nh - 1) * e.r.height * dpr * 10) / 10,
+    });
+  }
+
+  // --- Props: the share of each prop's opaque pixels that later images (buildings, walls, villagers) do not cover.
+  const accessoires = imgs
+    .filter((e) => e.tid.startsWith("iso-accessoire-") && !e.cache && e.op >= 0.5)
+    .map((p) => {
+      const [ox, oy] = [Math.floor(p.r.x), Math.floor(p.r.y)];
+      const [W, H] = [Math.ceil((p.r.right - ox) * k), Math.ceil((p.r.bottom - oy) * k)];
+      dim(cv, cx, W, H);
+      dessiner(cx, p, ox, oy);
+      const base = cx.getImageData(0, 0, W, H).data;
+      const couvert = new Uint8Array(W * H);
+      const par = {};
+      for (const l of imgs) {
+        if (l.idx <= p.idx || l.rot || l.op < 0.5 || l.cache || PAS_OCCLUSION.test(l.tid)) continue;
+        const x0 = Math.max(0, Math.floor((l.r.left - ox) * k));
+        const y0 = Math.max(0, Math.floor((l.r.top - oy) * k));
+        const x1 = Math.min(W, Math.ceil((l.r.right - ox) * k));
+        const y1 = Math.min(H, Math.ceil((l.r.bottom - oy) * k));
+        if (x1 <= x0 || y1 <= y0) continue;
+        dim(cv2, cx2, W, H);
+        dessiner(cx2, l, ox, oy);
+        const d = cx2.getImageData(x0, y0, x1 - x0, y1 - y0).data;
+        for (let y = y0; y < y1; y++)
+          for (let x = x0; x < x1; x++) {
+            const kk = y * W + x;
+            if (base[kk * 4 + 3] < 128 || d[((y - y0) * (x1 - x0) + (x - x0)) * 4 + 3] < 128)
+              continue;
+            if (!couvert[kk]) {
+              couvert[kk] = 1;
+              const nom = l.tid.replace(/-[\d-]+$/, "");
+              par[nom] = (par[nom] ?? 0) + 1;
+            }
+          }
+      }
+      let opaque = 0;
+      let cache = 0;
+      for (let kk = 0; kk < W * H; kk++)
+        if (base[kk * 4 + 3] >= 128) {
+          opaque++;
+          cache += couvert[kk];
+        }
+      const pire = Object.entries(par)
+        .sort((a, c) => c[1] - a[1])
+        .slice(0, 2);
+      return {
+        nom: p.tid.replace("iso-accessoire-", ""),
+        opaque,
+        visible: opaque ? 1 - cache / opaque : 1,
+        pire,
+      };
+    });
+
   // --- Image sizes against the screen.
   const parSrc = new Map();
   const tailles = [];
@@ -326,6 +403,7 @@ function mesurerPage({ dump, ancres, piedProp, dpr, crochets }) {
   return {
     occlusion,
     ancrages,
+    accessoires,
     rangs,
     invisibles,
     parCouche,
@@ -411,6 +489,8 @@ async function mouvementPage(page, ms) {
 const BUDGET_NOEUDS = 68;
 const SEUIL_VISIBLE = 0.85;
 const SEUIL_PIED_PX = 2;
+/** A prop under this share visible is hidden behind what is drawn after it: it stands on nothing the hero sees. */
+const SEUIL_PROP = 0.5;
 /** A hook box counts as hidden when later images cover more than this share of its opaque pixels. */
 const SEUIL_CROCHET = 0.01;
 /** Unreached by a tap below this many opaque device px (about 7 dp square): a sliver is not a target. */
@@ -489,7 +569,7 @@ function profondeur(r, A) {
     [
       ...fs
         .readFileSync(path.join(A.ROOT, "components/village/iso/alentours.ts"), "utf8")
-        .matchAll(/nom: "(\w+)",[^}\n]*sur: "(\w+)"/g),
+        .matchAll(/nom: "(\w+)",[^}]*sur: "(\w+)"/g),
     ].map((m) => [m[1], m[2]]),
   );
   const choses = r.rangs.flatMap((c) => {
@@ -532,7 +612,7 @@ async function check(o, sortie, v, A) {
       ? `hooks.json: present (${crochetsFichier})`
       : "hooks.json: absent (docs/designs/village/layout/hooks.json): no hook boxes checked, no failure",
   );
-  const portes = { occlusion: 0, anchors: 0, depth: 0, hooks: 0, tap: 0, motion: 0 };
+  const portes = { occlusion: 0, anchors: 0, props: 0, depth: 0, hooks: 0, tap: 0, motion: 0 };
   for (const r of resultats) {
     const occ = [...r.occlusion].sort((a, b) => a.visible - b.visible);
     const bas = occ.filter((b) => b.visible < SEUIL_VISIBLE);
@@ -549,7 +629,9 @@ async function check(o, sortie, v, A) {
     );
     const injoignables = occ.filter((b) => b.tapLibre < MIN_TAP_PX);
     portes.occlusion += bas.length;
+    const cachesProps = r.accessoires.filter((a) => a.visible < SEUIL_PROP);
     portes.anchors += pieds.length;
+    portes.props += cachesProps.length;
     portes.depth += prof.fautes.length;
     portes.hooks += crochetsKO.length;
     portes.tap += injoignables.length;
@@ -571,6 +653,11 @@ async function check(o, sortie, v, A) {
           (a) =>
             `  ${a.id.padEnd(28)} ${a.layer.padEnd(9)} ${String(a.ecart).padStart(7)}  ${a.tid}`,
         ),
+      `GATE props: ${cachesProps.length} of ${r.accessoires.length} props under ${pct(SEUIL_PROP)} visible${cachesProps.length ? ":" : ""}`,
+      ...cachesProps.map(
+        (a) =>
+          `  ${a.nom.padEnd(20)} ${pct(a.visible).padStart(7)}  ${a.pire.map(([n, c]) => `${n} ${c}px`).join(", ")}`,
+      ),
       `GATE depth: ${prof.fautes.length} violated pairs among ${prof.n} standing things (a is behind b by footprint, but drawn after it)${prof.fautes.length ? ":" : ""}`,
       ...prof.fautes
         .slice(0, 20)
@@ -611,7 +698,7 @@ async function check(o, sortie, v, A) {
       ? `GATE FAILED: ${Object.entries(portes)
           .map(([g, n]) => `${g} ${n}`)
           .join(", ")}`
-      : "GATES OK: occlusion 0, anchors 0, depth 0, hooks 0, tap 0, motion 0",
+      : "GATES OK: occlusion 0, anchors 0, props 0, depth 0, hooks 0, tap 0, motion 0",
   );
   if (echecs) process.exitCode = 1;
   return lignes.join("\n");

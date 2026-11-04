@@ -47,6 +47,15 @@ def masque(alpha: Image.Image, pas: int = 8) -> dict:
     return {"pas": pas, "w": w, "h": h, "bits": bits}
 
 
+def pied(alpha: Image.Image, x: int, y0: int) -> int:
+    """The anchor row of a painting: one below its lowest opaque row (alpha 128 or more) within 15 % of the width of the
+    anchor's column, the footprint's front corner (a pebble or a flag at the side is not the corner). `y0` is returned
+    for a blank strip. The same reading as scripts/atelier/check.js's anchors gate, so the gate is 0 by construction."""
+    c0, c1 = max(0, int(x - 0.15 * alpha.width)), min(alpha.width, int(x + 0.15 * alpha.width) + 1)
+    haut = alpha.crop((c0, 0, c1, alpha.height)).point(lambda v: 255 if v >= 128 else 0).getbbox()
+    return haut[3] if haut else y0
+
+
 def hull(pts: list[tuple[float, float]]) -> list[tuple[float, float]]:
     """Convex hull, counter-clockwise (monotone chain)."""
     pts = sorted(set(pts))
@@ -184,6 +193,7 @@ def main() -> None:
     pad = {s: H - im.height for s, im in brutes.items()}
     tailles = set()
     reg_masques = {}
+    pieds = {}
     for s in stades:
         jour = brutes[s]
         if pad[s]:
@@ -194,6 +204,7 @@ def main() -> None:
         ecrire_webp(jour, dest / f"{s}.jour.webp")
         ecrire_webp(nuit(jour, None), dest / f"{s}.nuit.webp")
         reg_masques[s] = masque(jour.getchannel("A"))
+        pieds[s] = pied(jour.getchannel("A"), jour.width // 2, H - MARGE)
         de = mesures[s]["from"]
         plaque = " The edge of the ground was cleaned by mask (grey footprint plate, straight diamond edge, key magenta fringe; scripts/bld/sans_losange.py), without FLUX." if (src / f"{s}.avant-losange.png").exists() else ""
         if (src / f"{s}.edit.png").exists():  # the ground edge was repainted by a local flux-3-image edit (prompts under edge/ in provenance.json), then masked
@@ -262,13 +273,16 @@ def main() -> None:
     for s in stades:
         m = reg_masques[s]
         L.append(f"const masque_{s} = {{ pas: {m['pas']}, w: {m['w']}, h: {m['h']}, bits: \"{m['bits']}\" }};")
-    L += ["", f"const ancre = [{ancre[0]}, {ancre[1]}] as const;", f"const taille = [{w}, {h}] as const;", "",
+    L += ["",
+          "// The ground anchor of each stage: one below its painting's lowest opaque row at the footprint's front corner.",
+          "const ancres = {", *[f"  {s}: [{ancre[0]}, {pieds[s]}] as const," for s in stades], "};",
+          f"const taille = [{w}, {h}] as const;", "",
           f"export const {code}: Omit<PeintBld, \"donnees\"> = {{", "  stades: {"]
     for s in stades:
         L.append(f"    {s}: {{")
         for amb in ("jour", "nuit"):
             L.append(f"      {amb}: {{ image: require(\"@/assets/images/village/iso/peints/{code}/{s}.{amb}.webp\"),"
-                     f" anchor: ancre, size: taille, ombre: [], masque: masque_{s}"
+                     f" anchor: ancres.{s}, size: taille, ombre: [], masque: masque_{s}"
                      + (f", ailes: {{ pivot: {json.dumps(hubs[s])}, pivotGrille: [0, 0, 0], echelle: 1 }}" if s in hubs else "")
                      + " },")
         L.append("    },")

@@ -16,6 +16,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import { MOMENT_CONTRE_JOUR } from "@/constants/isoPoc";
 import spec from "@/constants/isoSpec.json";
 import type { BuildingCode } from "@/db/schema";
 import type { VillageBuilding, VillageTier } from "@/db/village";
@@ -357,7 +358,9 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
   // The map's top left in the window, read at each tap: the bubble lies over the whole screen.
   const racine = useRef<ViewInstance>(null);
   const origine = useRef<readonly [number, number]>([0, 0]);
-  const reduit = useMouvementReduit();
+  const mouvementReduit = useMouvementReduit();
+  // With the moment's flag off, an upgrade takes the reduced-motion path: a clean swap.
+  const reduit = mouvementReduit || !MOMENT_CONTRE_JOUR;
   const fige = useContext(FigeContext);
   const cle = croissance?.cle;
   // Two nodes per growth, so at most two are played (the node budget, L5-AUD I1): the others show
@@ -574,7 +577,7 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
           const o = ouvertureEn(x, y, vue);
           if (!o) return;
           // A villager turns towards the finger first, then its bubble opens (reduced motion: no turn).
-          if (o.tourner && !reduit) {
+          if (o.tourner && !mouvementReduit) {
             prise.current?.tourner(o.tourner.id, o.tourner.sens);
             retard.current = setTimeout(() => onBulle(o), TOURNE_MS);
           } else onBulle(o);
@@ -625,7 +628,7 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
   // biome-ignore lint/correctness/useExhaustiveDependencies: `cle` stands for the growth
   useEffect(() => {
     if (cle === undefined) return;
-    if (premier) {
+    if (premier && MOMENT_CONTRE_JOUR) {
       avant.current = camera.vue();
       camera.vers(vueSur(centreBatiment(premier), ZOOM_CAPTURE));
     }
@@ -678,7 +681,9 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
                   <PalierContext.Provider value={camera.detail}>
                     <ReclamablesContext.Provider
                       value={
-                        reclamables ? repartirReclamables(prets, sansSignal(reduit, revele)) : null
+                        reclamables
+                          ? repartirReclamables(prets, sansSignal(mouvementReduit, revele))
+                          : null
                       }
                     >
                       <RevelationContext.Provider value={plan}>

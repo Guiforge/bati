@@ -24,3 +24,8 @@
 - 04/11, restes acceptés pour montrer à Guillaume après 4 passes : voisin pâli environ 0,25 s sur route et mur, poussière peu lisible sur le 3x3.
 - 04/11, pour POLISH : flamme rouge du feu de camp, pièces d'or du repaire (à lire comme de la monnaie), échafaudage peint de nuit seulement, villageoise à la fourche.
 - 04/11, demandes de theo non faites (hors piste) : bouton « ne plus voir », son, indice pour trouver les créatures, plus de variété, version courte pour les petits rangs.
+
+## 04/11, arrêt de la piste par Guillaume
+- Le Contre-jour passe derrière `MOMENT_CONTRE_JOUR`, éteint hors jest. Éteint, une évolution est un échange net, comme en mouvement réduit. L'ancien moment (carré brun, cercles plats) n'est pas remis : son code est retiré et Guillaume voulait le remplacer.
+- Mouvement et créatures restent actifs dans les builds locaux : pas de bug connu, et ils restent éteints en publié avec `INTEGRATION`.
+- Les trois bugs connus passent à la piste GAME.

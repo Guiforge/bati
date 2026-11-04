@@ -93,10 +93,9 @@
         2,
         5
       ],
-      "status": "done",
+      "status": "paused",
       "debut": "2026-11-04T09:00:00+01:00",
-      "note": "Vu sur émulateur en bundle de dev. Voisin pâli environ 0,25 s sur route et mur",
-      "fin": "2026-11-04T18:00:00+01:00"
+      "note": "Codé, derrière MOMENT_CONTRE_JOUR éteint. Bugs de saut et de palissade passés à GAME"
     },
     {
       "id": "U6",
@@ -107,10 +106,9 @@
         0.5,
         1.5
       ],
-      "status": "done",
+      "status": "paused",
       "debut": "2026-11-04T09:00:00+01:00",
-      "note": "Lueur et échange vus ; pièce à l'encre non vérifiée, le lien vise le plafond",
-      "fin": "2026-11-04T18:00:00+01:00"
+      "note": "Codé, derrière MOMENT_CONTRE_JOUR éteint. Pièce à l'encre jamais vérifiée"
     },
     {
       "id": "U7",
@@ -121,8 +119,8 @@
         0.2,
         0.5
       ],
-      "status": "blocked",
-      "note": "Attend que Guillaume voie le moment et écrive son go"
+      "status": "paused",
+      "note": "Drapeaux inchangés : Guillaume n'a pas vu le moment fini"
     },
     {
       "id": "M1",
@@ -343,7 +341,8 @@
         1,
         2
       ],
-      "status": "todo"
+      "status": "paused",
+      "note": "Non faite : piste arrêtée par Guillaume, ni suite complète, ni archivage de scratch"
     },
     {
       "id": "U8",

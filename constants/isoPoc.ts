@@ -43,6 +43,12 @@ export const INTEGRATION: boolean = BUILD_LOCAL;
 // (constants/buildingStages.ts) and the pending marker on every rank (montee.ts).
 export const BATIMENT_MOTEUR: boolean = BUILD_LOCAL;
 
+// The Contre-jour upgrade moment (components/village/iso/moment.ts, IsoCroissance.tsx): off in every
+// build, because of its known bugs (docs/designs/village/life/summary-1.md). Off, an upgrade is the
+// clean swap that reduced motion plays. Jest keeps it on, so its suites still pin the moment.
+// shortcut: a source rule; the GAME track flips it to `true` once it has fixed those bugs on the emulator.
+export const MOMENT_CONTRE_JOUR: boolean = process.env.NODE_ENV === "test";
+
 // How the iso map lives (PROMPT-EQUIPE-V1.md §6). `continu` (Guillaume, 01/11): the one clock runs
 // while the screen has the focus and stops 60 s after the last touch, with reduced motion, under a
 // screen reader and in the frozen/E2E mode: an exception to performance.md, written there.

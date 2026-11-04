@@ -8,3 +8,4 @@
 - 04/11 : réponses de Guillaume reçues, U4 et C2 faits, U5, U6 et C3 à C6 débloqués.
 - 04/11 : Contre-jour codé (05fe8d1d), mouvement corrigé (a1815ab4, 53e9b340), particules et créatures peintes (0f124dc4). Reste à voir sur émulateur.
 - 04/11 : mouvement, moment Contre-jour et créatures finis et vus sur émulateur, 167 suites iso et village vertes, fusion dans feat/village-iso.
+- 04/11 : piste arrêtée par Guillaume. Moment derrière un drapeau éteint, fusion finale, voir summary-1.md.

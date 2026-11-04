@@ -73,16 +73,16 @@
   "piste_ordre": 4,
   "etape": "Moment de stade en production",
   "ordre": 5,
-  "statut": "fait",
+  "statut": "en pause",
   "debut": "2026-11-04T09:00:00+01:00",
-  "fin": "2026-11-04T18:00:00+01:00",
+  "fin": null,
   "heures": null,
-  "restant_min": 0,
-  "restant_max": 0,
-  "reste": "fini",
+  "restant_min": 2,
+  "restant_max": 5,
+  "reste": "2 à 5 h",
   "avancement": null,
   "total": null,
-  "note": "Vu sur émulateur en bundle de dev. Voisin pâli environ 0,25 s sur route et mur"
+  "note": "Codé, derrière MOMENT_CONTRE_JOUR éteint. Bugs de saut et de palissade passés à GAME"
  },
  {
   "id": "U6",
@@ -90,16 +90,16 @@
   "piste_ordre": 4,
   "etape": "Battement court d'un rang",
   "ordre": 6,
-  "statut": "fait",
+  "statut": "en pause",
   "debut": "2026-11-04T09:00:00+01:00",
-  "fin": "2026-11-04T18:00:00+01:00",
+  "fin": null,
   "heures": null,
-  "restant_min": 0,
-  "restant_max": 0,
-  "reste": "fini",
+  "restant_min": 0.5,
+  "restant_max": 1.5,
+  "reste": "0.5 à 1.5 h",
   "avancement": null,
   "total": null,
-  "note": "Lueur et échange vus ; pièce à l'encre non vérifiée, le lien vise le plafond"
+  "note": "Codé, derrière MOMENT_CONTRE_JOUR éteint. Pièce à l'encre jamais vérifiée"
  },
  {
   "id": "U7",
@@ -107,7 +107,7 @@
   "piste_ordre": 4,
   "etape": "Drapeaux des batiments",
   "ordre": 7,
-  "statut": "attend Guillaume",
+  "statut": "en pause",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -116,7 +116,7 @@
   "reste": "0.2 à 0.5 h",
   "avancement": null,
   "total": null,
-  "note": "Attend que Guillaume voie le moment et écrive son go"
+  "note": "Drapeaux inchangés : Guillaume n'a pas vu le moment fini"
  },
  {
   "id": "M1",
@@ -379,7 +379,7 @@
   "piste_ordre": 4,
   "etape": "Fin de piste",
   "ordre": 23,
-  "statut": "à faire",
+  "statut": "en pause",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -388,7 +388,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Non faite : piste arrêtée par Guillaume, ni suite complète, ni archivage de scratch"
  },
  {
   "id": "U8",

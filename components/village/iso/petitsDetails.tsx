@@ -3,13 +3,13 @@
 //  - Oiseaux: a flock of crows crossing once a wave (mounted after the camera layer, so it flies
 //    over the map without panning); small dark ink birds, each with its own wing beat (a vertical
 //    squash with its own rate and phase), not a drawing per wing.
-//  - Lucioles: ten cold points near the canal and the trees (in the camera layer); the group
-//    breathes in opacity and drifts a little. shortcut: they glow together, a node each would
-//    break the ceiling of animated nodes; split in two groups if the budget allows.
+//  - Lucioles: ten warm points (amber and cream) near the canal and the trees, clear of every
+//    building (in the camera layer), in two groups, a node each, that beat out of step and drift
+//    a little. shortcut: two groups, not a node each, for the ceiling of animated nodes.
 //  - Rongeur: a rat running along the path in some waves (mounted in the depth order by IsoCarte).
 // At rest, unfocused or with reduced motion the clock rests on a cycle boundary: all are hidden.
 
-import { useContext } from "react";
+import { Fragment, useContext } from "react";
 import Animated, {
   type SharedValue,
   useAnimatedProps,
@@ -156,29 +156,55 @@ const ZONE = (() => {
 
 export function Lucioles({
   visible,
-  biome = "defaut",
   ambiance = "nuit",
 }: {
   ambiance?: Ambiance;
   /** The island's cells: a firefly hovers only over a cell the island shows. */
   visible: readonly (readonly boolean[])[];
+  /** Still passed by the maps; the fireflies' tones are no longer the biome's. */
   biome?: Biome;
 }) {
-  const horloge = useContext(HorlogeContext);
   const lumieres = useContext(LumieresContext);
-  const b = biomes[biome].vivant;
-  const tour = useTour("lucioles");
-  const style = useAnimatedStyle(() => {
-    if (!horloge) return { opacity: 0, transform: [{ translateX: 0 }, { translateY: 0 }] };
-    const l = lueurLucioles(tour(horloge.get()));
-    return { opacity: l.opacite, transform: [{ translateX: l.dx }, { translateY: l.dy }] };
-  });
   if (!lumieres || !vieDe(ambiance).lucioles) return null;
   const points = lucioles(visible);
   return (
+    <>
+      {TEINTES_LUCIOLES.map((teinte, groupe) => (
+        <GroupeLucioles
+          key={teinte}
+          groupe={groupe}
+          points={points.filter((p) => p.groupe === groupe)}
+          couleur={rawColors[teinte]}
+        />
+      ))}
+    </>
+  );
+}
+
+/** One warm tone a group: amber, then cream. Fireflies are a warm light in the dark like the windows, not a cold one (biome `luciole` no longer read). */
+const TEINTES_LUCIOLES = ["isoLueur", "isoEclat"] as const;
+
+/** A group of fireflies: one node, its own beat (vivant.ts `lueurLucioles`), a soft halo round each point. */
+function GroupeLucioles({
+  groupe,
+  points,
+  couleur,
+}: {
+  groupe: number;
+  points: ReturnType<typeof lucioles>;
+  couleur: string;
+}) {
+  const horloge = useContext(HorlogeContext);
+  const tour = useTour("lucioles");
+  const style = useAnimatedStyle(() => {
+    if (!horloge) return { opacity: 0, transform: [{ translateX: 0 }, { translateY: 0 }] };
+    const l = lueurLucioles(tour(horloge.get()), groupe);
+    return { opacity: l.opacite, transform: [{ translateX: l.dx }, { translateY: l.dy }] };
+  });
+  return (
     <Animated.View
       pointerEvents="none"
-      testID="iso-lucioles"
+      testID={groupe === 0 ? "iso-lucioles" : `iso-lucioles-${groupe}`}
       style={[
         { position: "absolute", left: ZONE.x, top: ZONE.y, width: ZONE.w, height: ZONE.h },
         style,
@@ -188,15 +214,24 @@ export function Lucioles({
         {points.map((p) => {
           const [x, y] = ecranXY([p.gx, p.gy]);
           return (
-            <Grain
-              key={`${p.gx}-${p.gy}`}
-              d={FORMES_GRAIN.lucioles}
-              x={x - ZONE.x}
-              y={y - ZONE.y}
-              r={p.r}
-              couleur={rawColors[b.luciole]}
-              trait={0.6}
-            />
+            <Fragment key={`${p.gx}-${p.gy}`}>
+              <Ellipse
+                cx={x - ZONE.x}
+                cy={y - ZONE.y}
+                rx={p.r * 2.6}
+                ry={p.r * 2.6}
+                fill={couleur}
+                fillOpacity={0.22}
+              />
+              <Grain
+                d={FORMES_GRAIN.lucioles}
+                x={x - ZONE.x}
+                y={y - ZONE.y}
+                r={p.r}
+                couleur={couleur}
+                trait={0.6}
+              />
+            </Fragment>
           );
         })}
       </Svg>

@@ -25,13 +25,13 @@ setup() {
   echo "bundled: $(grep -c 'Android Bundled' ~/.cache/bati-life-metro.log)"
 }
 
-still() { link "bati://dev-iso?bld=$1&rang=$(rank $1)&ambiance=jour"; sleep 12; $A exec-out screencap -p > "$RAW/still-$1.png"; }
+still() { link "bati://dev-iso?bld=$1&rang=$(rank $1)&base=10&ambiance=jour"; sleep 12; $A exec-out screencap -p > "$RAW/still-$1.png"; }
 
 run() {
-  echo "building,ambiance,mean_diff,frames" > "$OUT/mouvement.csv"
+  echo "building,ambiance,mean_diff,frames,p99_std,p99_9_std" > "$OUT/mouvement.csv"
   for c in $ALL; do for a in jour nuit; do
     f="$OUT/$c-$a.mp4"; rm -f "$f"
-    link "bati://dev-iso?bld=$c&rang=$(rank $c)&ambiance=$a"; sleep 12; $A shell input tap 540 1650; sleep 2
+    link "bati://dev-iso?bld=$c&rang=$(rank $c)&base=10&ambiance=$a"; sleep 12; $A shell input tap 540 1650; sleep 2
     $A shell screencap -p /sdcard/s.png; $A pull /sdcard/s.png "$RAW/$c-$a-proof.png" >/dev/null
     $A shell screenrecord --time-limit 8 /sdcard/m.mp4; $A pull /sdcard/m.mp4 "$f" >/dev/null
     d="$RAW/$c-$a"; rm -rf "$d"; mkdir -p "$d"
@@ -45,7 +45,21 @@ fs=sorted(glob.glob(d+"/f*.png")); v=[]
 for x,y in zip(fs,fs[1:]):
     df=ImageChops.difference(Image.open(x).convert("L"),Image.open(y).convert("L"))
     v.append(ImageStat.Stat(df).mean[0])
-print(f"{c},{a},{sum(v)/len(v) if v else 0:.3f},{len(fs)}")
+# p99_std: 99th percentile over pixels of the std dev in time. The whole-frame mean above drowns a
+# 12 dp halo in the 1080 px frame; the top 1 % of pixels is where a halo, a flame or a glint moves.
+# Frames are shrunk 3x (box filter keeps a small glow's change) so pure Python stays fast.
+p99=0.0
+if len(fs)>1:
+    ims=[Image.open(f).convert("L").reduce(3).tobytes() for f in fs]
+    n=len(ims); sd=[]
+    for px in zip(*ims):
+        m=sum(px)/n
+        sd.append((sum((q-m)**2 for q in px)/n)**0.5)
+    sd.sort(); p99=sd[min(len(sd)-1,int(len(sd)*0.99))]
+    # A 30 px halo is 0.06 % of the 1080 px frame, under the top 1 %: p99_9 is the one that sees it.
+    p999=sd[min(len(sd)-1,int(len(sd)*0.999))]
+else: p999=0.0
+print(f"{c},{a},{sum(v)/len(v) if v else 0:.3f},{len(fs)},{p99:.3f},{p999:.3f}")
 PY
   done; done
   for p in windmill-nuit forge-nuit fountain-jour; do mkdir -p "$OUT/$p-4fps"; ffmpeg -loglevel error -i "$OUT/$p.mp4" -vf fps=4 "$OUT/$p-4fps/f%03d.png"; done

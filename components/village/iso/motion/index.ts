@@ -1,6 +1,8 @@
 // Every building's motion file, imported statically (Metro bundles the JSON, nothing is read by
 // name at run time). A building with no entry here moves as it did: its `lights` drawn still.
-// archery_range and dragon_lair have none on purpose: nothing on their paintings calls for a motion.
+// archery_range and dragon_lair have none on purpose. The archery range's pale wind streaks (mythic
+// stage, behind the targets) run across the shed and the tower, so a zone copy of them would drag
+// the timber along; a `vent` there waits for the streaks to be painted on their own layer.
 
 import type { BuildingCode } from "@/db/schema";
 import armory from "./armory.json";

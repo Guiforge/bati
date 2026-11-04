@@ -6,7 +6,7 @@
 
 import { createContext } from "react";
 import { CYCLE_MS, type Depart } from "./horloge";
-import { type Case, lieux } from "./isoLayout";
+import { type Case, emplacements, lieux } from "./isoLayout";
 import {
   BETES_PAR_VAGUE,
   type Bete,
@@ -173,37 +173,57 @@ export const DERIVE_LUCIOLES = 2;
 /** The patch of ground they hover over, in cells: the canal (column 2) and the trees beside it. */
 export const ZONE_LUCIOLES = lieux.lucioles;
 
+/** Groups of fireflies, one animated node and one glow rhythm each (petitsDetails.tsx). */
+export const GROUPES_LUCIOLES = 2;
+
+/** The cells a firefly keeps off: every building's footprint and a ring of one cell round it, where a sail or a roof stands over the ground. */
+const CASES_BATIES: ReadonlySet<string> = new Set(
+  Object.values(emplacements).flatMap(({ cases }) =>
+    cases.flatMap(([gx, gy]) =>
+      [-1, 0, 1].flatMap((dx) => [-1, 0, 1].map((dy) => `${gx + dx},${gy + dy}`)),
+    ),
+  ),
+);
+
+/** Whether a grid point lies on a building's footprint or its ring: no firefly there. */
+export const sousBatiment = (gx: number, gy: number): boolean =>
+  CASES_BATIES.has(`${Math.floor(gx)},${Math.floor(gy)}`);
+
 /**
- * Where the fireflies hover, in grid units; fixed. Each sits on a cell the island shows (a few
- * seeded tries per firefly, none placed if all miss), so none floats over the void.
+ * Where the fireflies hover, in grid units; fixed. Each sits on a cell the island shows and no
+ * building covers (a few seeded tries per firefly, none placed if all miss), so none floats over
+ * the void or in front of a sail. They are dealt in turn to the groups.
  */
 export function lucioles(
   visible: readonly (readonly boolean[])[],
-): { gx: number; gy: number; r: number }[] {
+): { gx: number; gy: number; r: number; groupe: number }[] {
   const [x0, x1] = ZONE_LUCIOLES.gx;
   const [y0, y1] = ZONE_LUCIOLES.gy;
   return Array.from({ length: NOMBRE_LUCIOLES }, (_, i) => {
-    for (let t = 0; t < 8; t++) {
+    for (let t = 0; t < 12; t++) {
       const gx = x0 + (x1 - x0) * hasard(100 + i, 3 * t);
       const gy = y0 + (y1 - y0) * hasard(100 + i, 3 * t + 1);
-      if (visible[Math.floor(gy)]?.[Math.floor(gx)])
-        return [{ gx, gy, r: 1.6 + 0.8 * hasard(100 + i, 3 * t + 2) }];
+      if (visible[Math.floor(gy)]?.[Math.floor(gx)] && !sousBatiment(gx, gy))
+        return [
+          { gx, gy, r: 1.6 + 0.8 * hasard(100 + i, 3 * t + 2), groupe: i % GROUPES_LUCIOLES },
+        ];
     }
     return [];
   }).flat();
 }
 
 /**
- * The group's glow at clock `c`: two soft beats a cycle, and a drift of a few dp. Zero opacity
- * and no offset on every cycle boundary (the rest pose: out).
+ * A group's glow at clock `c`: group 0 beats twice a cycle, group 1 three times (sin^2 of a whole
+ * number of half turns: out on every boundary, and the two peak apart), with a drift of a few dp,
+ * opposite for the second. Zero opacity and no offset on every cycle boundary (the rest pose).
  */
-export function lueurLucioles(c: number): { opacite: number; dx: number; dy: number } {
+export function lueurLucioles(c: number, groupe = 0): { opacite: number; dx: number; dy: number } {
   "worklet";
   const u = (c % CYCLE_MS) / CYCLE_MS;
-  const s = Math.sin(2 * Math.PI * u);
+  const b = Math.sin(Math.PI * (2 + groupe) * u);
   return {
-    opacite: 0.9 * s * s,
-    dx: DERIVE_LUCIOLES * Math.sin(2 * Math.PI * u),
+    opacite: 0.9 * b * b,
+    dx: (groupe % 2 ? -1 : 1) * DERIVE_LUCIOLES * Math.sin(2 * Math.PI * u),
     dy: (DERIVE_LUCIOLES / 2) * Math.sin(4 * Math.PI * u),
   };
 }

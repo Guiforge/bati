@@ -23,6 +23,14 @@
       "lueur": "fenetre",
       "at": [418, 805],
       "fromRank": 10
+    },
+    {
+      "kind": "particules",
+      "genre": "magie",
+      "at": [415, 75],
+      "fromRank": 10,
+      "nb": 1,
+      "taille": 14
     }
   ]
 }

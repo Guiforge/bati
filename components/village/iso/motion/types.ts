@@ -8,9 +8,10 @@
 // rejects one (it checks every file against KINDS and GENRES).
 
 import type { DepuisBase, LightAnchor, Point } from "@/constants/buildingData";
+import type { VisualStage } from "@/constants/buildingStages";
 
 /** The kinds of effect, one drawing and one clock rule each (MouvementBld.tsx). */
-export const KINDS = ["lueur", "particules", "vent", "miroitement"] as const;
+export const KINDS = ["lueur", "particules", "vent", "miroitement", "flamme"] as const;
 
 /** What a particle is: each genre wears its painted sprite (assets/images/village/iso/mouvement, MouvementBld.tsx GRAINS). */
 export const GENRES = ["fumee", "vapeur", "etincelle", "braise", "poussiere", "magie"] as const;
@@ -48,6 +49,21 @@ export type Vent = Pose & {
 /** `nb` pale glints sliding on the water round `at` (a basin's middle), `rayon` canvas px wide. */
 export type Miroitement = Pose & { kind: "miroitement"; nb: 1 | 2 | 3; rayon: number };
 
-export type Effet = Lueur | Particules | Vent | Miroitement;
+/**
+ * A painted flame that breathes: a copy of `zone` (canvas px, [x, y, w, h]) of the sprite, clipped
+ * to it, grown about `pivot` (the zone's bottom edge, where the flame leaves the rest of the
+ * painting) on the fire's slow breath. It only ever grows (scale 1 or more), so it always covers
+ * the flame under it: no rim of the still one is left. `stade` is the stage whose painting the
+ * zone is read on (a flame stands elsewhere on each); give the zone only where nothing but flame
+ * is in it, else the copy drags the beams along. Day and night paintings share the zone.
+ */
+export type Flamme = Pose & {
+  kind: "flamme";
+  stade: VisualStage;
+  zone: readonly [x: number, y: number, w: number, h: number];
+  pivot: Point;
+};
+
+export type Effet = Lueur | Particules | Vent | Miroitement | Flamme;
 
 export type MouvementBld = { effets: readonly Effet[] };

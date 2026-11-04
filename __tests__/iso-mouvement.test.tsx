@@ -1,18 +1,20 @@
 import { render, screen } from "@testing-library/react-native";
 import { makeMutable } from "react-native-reanimated";
-import { HorlogeContext } from "@/components/village/iso/horloge";
+import { CYCLE_MS, HorlogeContext } from "@/components/village/iso/horloge";
 import { MouvementBld } from "@/components/village/iso/MouvementBld";
 import { MOUVEMENTS } from "@/components/village/iso/motion";
 import { GENRES, KINDS } from "@/components/village/iso/motion/types";
 import {
   allumage,
+  dephasage,
   dureeAllumage,
   effetsAuRang,
   MOUVEMENT_NOEUDS_MAX,
   mouvementDeVague,
-  noeudsDe,
-  ordreAllumage,
+  noeudsBld,
   phaseBouffee,
+  respirationFlamme,
+  souffleLueur,
 } from "@/components/village/iso/mouvement";
 import { type Veille, VeilleContext } from "@/components/village/iso/veilleuses";
 import { buildingCodes } from "@/db/schema";
@@ -43,9 +45,7 @@ describe("the motion files", () => {
   test("19 buildings have a file (archery_range and dragon_lair none), and one wave of them fits the node budget", () => {
     expect(Object.keys(MOUVEMENTS)).toHaveLength(19);
     for (const m of Object.values(MOUVEMENTS)) {
-      expect(m.effets.reduce((s, e) => s + noeudsDe(e), 0)).toBeLessThanOrEqual(
-        MOUVEMENT_NOEUDS_MAX,
-      );
+      expect(noeudsBld(m.effets)).toBeLessThanOrEqual(MOUVEMENT_NOEUDS_MAX);
     }
   });
 });
@@ -69,15 +69,6 @@ describe("what a rank shows", () => {
 });
 
 describe("windows at dusk", () => {
-  test("every window has its own turn, the same all day, a different order another day", () => {
-    const a = ordreAllumage(5, "windmill:100");
-    expect([...a].sort()).toEqual([0, 1, 2, 3, 4]);
-    expect(ordreAllumage(5, "windmill:100")).toEqual(a);
-    expect(
-      [101, 102, 103, 104].some((j) => ordreAllumage(5, `windmill:${j}`).join() !== a.join()),
-    ).toBe(true);
-  });
-
   test("a window is dark before its turn, lit after it, and they come one by one", () => {
     expect(allumage(0, 0)).toBe(0);
     expect(allumage(0, 2)).toBe(0);
@@ -97,20 +88,15 @@ describe("the wave's pick", () => {
     for (let n = 0; n < 40; n++) {
       const s = mouvementDeVague(tous, 20000, n);
       expect([...s].every((c) => MOUVEMENTS[c])).toBe(true);
-      const noeuds = [...s].reduce(
-        (sum, c) => sum + (MOUVEMENTS[c]?.effets.reduce((x, e) => x + noeudsDe(e), 0) ?? 0),
-        0,
-      );
+      const noeuds = [...s].reduce((sum, c) => sum + noeudsBld(MOUVEMENTS[c]?.effets ?? []), 0);
       expect(noeuds).toBeLessThanOrEqual(MOUVEMENT_NOEUDS_MAX);
       expect(mouvementDeVague(tous, 20000, n)).toEqual(s);
     }
   });
 
-  test("the windmill (7 nodes of 8) never shares a wave with the forge (5)", () => {
-    for (let n = 0; n < 40; n++) {
-      const s = mouvementDeVague(tous, 20000, n);
-      expect(s.has("windmill") && s.has("forge")).toBe(false);
-    }
+  test("a building's windows are one node: the windmill costs 3 (windows, two puffs), the campfire 2", () => {
+    expect(noeudsBld(windmill)).toBe(3);
+    expect(noeudsBld(MOUVEMENTS.campfire?.effets ?? [])).toBe(2);
   });
 
   test("puffs of a plume start apart, inside the cycle", () => {
@@ -182,5 +168,76 @@ describe("MouvementBld", () => {
     await monte("forge", 4, true);
     expect(noeuds()).toHaveLength(0);
     expect(screen.queryAllByTestId("batiment-lueur-fire")).toHaveLength(0);
+  });
+
+  test("at night the windmill's five windows are one node, with its two puffs", async () => {
+    await monte("windmill", 10, true);
+    expect(noeuds()).toHaveLength(3);
+    expect(screen.queryAllByTestId("iso-fenetres-windmill")).toHaveLength(1);
+    expect(screen.queryAllByTestId("batiment-lueur-fenetre")).toHaveLength(5);
+  });
+});
+
+describe("the painted flame (campfire)", () => {
+  // MouvementBld draws only the entry of the stage it wears: one zone per stage, never two on one.
+  const flammes = (MOUVEMENTS.campfire?.effets ?? []).flatMap((e) =>
+    e.kind === "flamme" ? [e] : [],
+  );
+
+  test("one entry per stage, the pivot on the zone's bottom edge", () => {
+    expect(flammes.map((e) => e.stade)).toEqual(["legendary", "mythic"]);
+    for (const {
+      zone: [x, y, w, h],
+      pivot,
+    } of flammes) {
+      expect(pivot[1]).toBe(y + h);
+      expect(pivot[0]).toBeGreaterThanOrEqual(x);
+      expect(pivot[0]).toBeLessThanOrEqual(x + w);
+    }
+  });
+});
+
+describe("one rhythm no more", () => {
+  test("a building's phase is stable, in [0, 1), and the village's buildings do not share one", () => {
+    expect(dephasage("forge")).toBe(dephasage("forge"));
+    const phases = Object.keys(MOUVEMENTS).map(dephasage);
+    for (const p of phases) {
+      expect(p).toBeGreaterThanOrEqual(0);
+      expect(p).toBeLessThan(1);
+    }
+    expect(new Set(phases.map((p) => p.toFixed(2))).size).toBeGreaterThan(12);
+  });
+
+  test("a light is the still light (1) on every boundary whatever its phase, and dips to half", () => {
+    for (const phase of [0, 0.3, 0.77]) {
+      for (const k of [0, 1, 4]) expect(souffleLueur(k * CYCLE_MS, phase, 1)).toBeCloseTo(1, 9);
+      for (const k of [0, 1, 4]) expect(souffleLueur(k * CYCLE_MS, phase, 2)).toBeCloseTo(1, 9);
+      const bas = Math.min(
+        ...Array.from({ length: 200 }, (_, i) => souffleLueur((i * CYCLE_MS) / 200, phase, 2)),
+      );
+      expect(bas).toBeLessThan(0.6);
+      expect(bas).toBeGreaterThanOrEqual(0.5 - 1e-9);
+    }
+  });
+
+  test("two buildings' lights are out of step mid-cycle", () => {
+    const [a, b] = [0, 0.5];
+    const ecart = Array.from({ length: 50 }, (_, i) => {
+      const c = ((i + 0.5) * CYCLE_MS) / 50;
+      return Math.abs(souffleLueur(c, a, 1) - souffleLueur(c, b, 1));
+    });
+    expect(Math.max(...ecart)).toBeGreaterThan(0.15);
+  });
+
+  test("the painted flame only grows, and is its still self on every boundary", () => {
+    for (const phase of [0, 0.4]) {
+      for (let i = 0; i <= 100; i++) {
+        const r = respirationFlamme((i * CYCLE_MS) / 100, phase);
+        expect(r.y).toBeGreaterThanOrEqual(1);
+        expect(r.x).toBeGreaterThanOrEqual(1);
+      }
+      expect(respirationFlamme(0, phase)).toEqual({ y: 1, x: 1 });
+      expect(respirationFlamme(CYCLE_MS, phase).y).toBeCloseTo(1, 9);
+    }
   });
 });

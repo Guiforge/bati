@@ -15,6 +15,7 @@ import {
   courseRat,
   DERIVE_LUCIOLES,
   EMPRISE_RAT,
+  GROUPES_LUCIOLES,
   hasard,
   lucioles,
   lueurLucioles,
@@ -23,6 +24,7 @@ import {
   RAT,
   ratMontre,
   remousCorbeau,
+  sousBatiment,
   VOL_H,
   VOL_L,
   volCorbeaux,
@@ -132,11 +134,36 @@ describe("fireflies", () => {
     expect(lucioles(ileVisible(12, buildingCodes))).toHaveLength(NOMBRE_LUCIOLES);
   });
 
+  test("none stands over a building's footprint or the cell round it (the windmill's sails)", () => {
+    for (const tier of [3, 6, 12] as const) {
+      const visible = ileVisible(tier, tier === 12 ? buildingCodes : []);
+      for (const p of lucioles(visible)) expect(sousBatiment(p.gx, p.gy)).toBe(false);
+    }
+    for (const { cases } of Object.values(emplacements))
+      for (const [gx, gy] of cases) expect(sousBatiment(gx + 0.5, gy + 0.5)).toBe(true);
+    // the zone does reach the windmill's plot: the rule is not vacuous
+    const { cases } = emplacements.windmill;
+    expect(cases.some(([gx, gy]) => gx >= ZONE_LUCIOLES.gx[0] && gy < ZONE_LUCIOLES.gy[1])).toBe(
+      true,
+    );
+  });
+
+  test("the points are dealt to every group, which beat out of step and both rest out", () => {
+    const groupes = new Set(lucioles(ileVisible(12, buildingCodes)).map((p) => p.groupe));
+    expect(groupes.size).toBe(GROUPES_LUCIOLES);
+    for (let g = 0; g < GROUPES_LUCIOLES; g++)
+      for (const k of [0, 1, 7]) expect(lueurLucioles(k * CYCLE_MS, g).opacite).toBeCloseTo(0, 9);
+    expect(lueurLucioles(CYCLE_MS / 2, 1).opacite).toBeGreaterThan(0.8);
+    expect(lueurLucioles(CYCLE_MS / 2, 0).opacite).toBeCloseTo(0, 9);
+  });
+
   test("the drift stays within DERIVE_LUCIOLES", () => {
     for (let c = 0; c < CYCLE_MS; c += 50) {
-      const r = lueurLucioles(c);
-      expect(Math.abs(r.dx)).toBeLessThanOrEqual(DERIVE_LUCIOLES);
-      expect(Math.abs(r.dy)).toBeLessThanOrEqual(DERIVE_LUCIOLES);
+      for (let g = 0; g < GROUPES_LUCIOLES; g++) {
+        const r = lueurLucioles(c, g);
+        expect(Math.abs(r.dx)).toBeLessThanOrEqual(DERIVE_LUCIOLES);
+        expect(Math.abs(r.dy)).toBeLessThanOrEqual(DERIVE_LUCIOLES);
+      }
     }
   });
 

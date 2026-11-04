@@ -57,8 +57,8 @@ const NOEUDS_FEU_MASQUE = 6;
  * never mounted again when a wave starts (7 roles at tier 12). A wave adds none.
  */
 const NOEUDS_VILLAGEOIS = 7;
-/** The small lives (L5-T05, T08): the fireflies and a rat, one node each, hidden at rest; the gulls fly by day only (T43 round 1), so none at night. */
-const NOEUDS_PETITS_DETAILS = 2;
+/** The small lives (L5-T05, T08): the fireflies (two groups, out of step) and a rat, one node each, hidden at rest; the gulls fly by day only (T43 round 1), so none at night. */
+const NOEUDS_PETITS_DETAILS = 3;
 /** The moon's glitter on the sea (L6-T10): one node, at rest invisible; the world around the island is still drawings. */
 const NOEUDS_MONDE = 1;
 /** Glints left of the 17 water cells once the ones a later sprite covers are dropped (L5-T09b): 12 on the FIN-DIS plan, its farm, barn and mill a cell off the river. */

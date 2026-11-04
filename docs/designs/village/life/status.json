@@ -73,8 +73,8 @@
   "piste_ordre": 4,
   "etape": "Moment de stade en production",
   "ordre": 5,
-  "statut": "à faire",
-  "debut": null,
+  "statut": "en cours",
+  "debut": "2026-11-04T09:00:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 2,
@@ -82,7 +82,7 @@
   "reste": "2 à 5 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Codé (05fe8d1d), pièces finales posées, pas encore vu sur émulateur"
  },
  {
   "id": "U6",
@@ -90,8 +90,8 @@
   "piste_ordre": 4,
   "etape": "Battement court d'un rang",
   "ordre": 6,
-  "statut": "à faire",
-  "debut": null,
+  "statut": "en cours",
+  "debut": "2026-11-04T09:00:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 0.5,
@@ -99,7 +99,7 @@
   "reste": "0.5 à 1.5 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Codé (05fe8d1d), pas encore vu sur émulateur"
  },
  {
   "id": "U7",
@@ -218,7 +218,7 @@
   "reste": "0.5 à 1 h",
   "avancement": null,
   "total": null,
-  "note": "Peints (025d36f9). Bords durs, à relire"
+  "note": "Repeints en FLUX 3 Image (0f124dc4), pas encore vus en jeu"
  },
  {
   "id": "P1",
@@ -235,7 +235,7 @@
   "reste": "3 à 6 h",
   "avancement": 21,
   "total": 21,
-  "note": "21 fichiers (fc5cbfae), nuit presque immobile à vérifier"
+  "note": "Corrigés après la revue anim (a1815ab4, 53e9b340), à recapturer"
  },
  {
   "id": "C1",
@@ -277,8 +277,8 @@
   "piste_ordre": 4,
   "etape": "Souris",
   "ordre": 17,
-  "statut": "à faire",
-  "debut": null,
+  "statut": "en cours",
+  "debut": "2026-11-04T10:00:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 1,
@@ -294,8 +294,8 @@
   "piste_ordre": 4,
   "etape": "Chats",
   "ordre": 18,
-  "statut": "à faire",
-  "debut": null,
+  "statut": "en cours",
+  "debut": "2026-11-04T10:00:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 1,
@@ -311,8 +311,8 @@
   "piste_ordre": 4,
   "etape": "Oiseaux",
   "ordre": 19,
-  "statut": "à faire",
-  "debut": null,
+  "statut": "en cours",
+  "debut": "2026-11-04T10:00:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 1,
@@ -328,8 +328,8 @@
   "piste_ordre": 4,
   "etape": "Dragon endormi",
   "ordre": 20,
-  "statut": "à faire",
-  "debut": null,
+  "statut": "en cours",
+  "debut": "2026-11-04T10:00:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 1,
@@ -345,8 +345,8 @@
   "piste_ordre": 4,
   "etape": "Retrait des anciens oiseaux et rats",
   "ordre": 21,
-  "statut": "à faire",
-  "debut": null,
+  "statut": "en cours",
+  "debut": "2026-11-04T10:00:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 0.3,
@@ -389,5 +389,22 @@
   "avancement": null,
   "total": null,
   "note": ""
+ },
+ {
+  "id": "U8",
+  "piste": "La vie (animations)",
+  "piste_ordre": 4,
+  "etape": "Retirer show= des scripts de capture",
+  "ordre": 24,
+  "statut": "à faire",
+  "debut": null,
+  "fin": null,
+  "heures": null,
+  "restant_min": 0.2,
+  "restant_max": 0.5,
+  "reste": "0.2 à 0.5 h",
+  "avancement": null,
+  "total": null,
+  "note": "Le lien show= n'existe plus : ces films ne montrent plus rien de joué"
  }
 ]

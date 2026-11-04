@@ -93,7 +93,9 @@
         2,
         5
       ],
-      "status": "todo"
+      "status": "doing",
+      "debut": "2026-11-04T09:00:00+01:00",
+      "note": "Codé (05fe8d1d), pièces finales posées, pas encore vu sur émulateur"
     },
     {
       "id": "U6",
@@ -104,7 +106,9 @@
         0.5,
         1.5
       ],
-      "status": "todo"
+      "status": "doing",
+      "debut": "2026-11-04T09:00:00+01:00",
+      "note": "Codé (05fe8d1d), pas encore vu sur émulateur"
     },
     {
       "id": "U7",
@@ -193,7 +197,7 @@
       ],
       "status": "doing",
       "debut": "2026-11-03T22:30:00+01:00",
-      "note": "Peints (025d36f9). Bords durs, à relire"
+      "note": "Repeints en FLUX 3 Image (0f124dc4), pas encore vus en jeu"
     },
     {
       "id": "P1",
@@ -208,7 +212,7 @@
       "total": 21,
       "avancement": 21,
       "debut": "2026-11-03T22:30:00+01:00",
-      "note": "21 fichiers (fc5cbfae), nuit presque immobile à vérifier"
+      "note": "Corrigés après la revue anim (a1815ab4, 53e9b340), à recapturer"
     },
     {
       "id": "C1",
@@ -246,7 +250,8 @@
         1,
         2
       ],
-      "status": "todo"
+      "status": "doing",
+      "debut": "2026-11-04T10:00:00+01:00"
     },
     {
       "id": "C4",
@@ -257,7 +262,8 @@
         1,
         2
       ],
-      "status": "todo"
+      "status": "doing",
+      "debut": "2026-11-04T10:00:00+01:00"
     },
     {
       "id": "C5",
@@ -268,7 +274,8 @@
         1,
         2.5
       ],
-      "status": "todo"
+      "status": "doing",
+      "debut": "2026-11-04T10:00:00+01:00"
     },
     {
       "id": "C6",
@@ -279,7 +286,8 @@
         1,
         2.5
       ],
-      "status": "todo"
+      "status": "doing",
+      "debut": "2026-11-04T10:00:00+01:00"
     },
     {
       "id": "C7",
@@ -290,7 +298,8 @@
         0.3,
         1
       ],
-      "status": "todo"
+      "status": "doing",
+      "debut": "2026-11-04T10:00:00+01:00"
     },
     {
       "id": "K1",
@@ -313,6 +322,18 @@
         2
       ],
       "status": "todo"
+    },
+    {
+      "id": "U8",
+      "group": "3. Moment d'evolution",
+      "name": "Retirer show= des scripts de capture",
+      "check": "scripts/bld/capture.sh et scripts/iso/loupe_capture.sh sans liens show=, guide PIPELINE a jour",
+      "estimate_h": [
+        0.2,
+        0.5
+      ],
+      "status": "todo",
+      "note": "Le lien show= n'existe plus : ces films ne montrent plus rien de joué"
     }
   ]
 }

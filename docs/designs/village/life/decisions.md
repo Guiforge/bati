@@ -12,3 +12,8 @@
 - Moment d'évolution : Contre-jour. Les villageois ne frappent plus pendant le moment, ils reprennent leur marche après.
 - Créatures : FLUX en plusieurs images.
 - Plafond Klein non relevé : tout nouveau FLUX passe par FLUX 3 Image.
+- 04/11, variantes des créatures : les b, choisies par Mara (souris rousse, chat noir et blanc, oiseau bleu-gris, dragon rouille), parce qu'elles se détachent mieux du sol. Guillaume peut les changer.
+- 04/11, FLUX 3 Image même là où Mara proposait Klein, suite au refus de relever le plafond.
+- 04/11, échafaudage 3x3 abandonné après 3 essais : les bâtiments 3x3 utilisent le 2x2 agrandi, à revoir si ça se voit.
+- 04/11, `NOEUDS_CROISSANCE_MAX` passe de 6 à 12 dans `iso-ciel` : 6 nœuds par croissance, 2 croissances au plus. Le test mesure, pas de gate de performance avant la piste PERF.
+- 04/11, `scripts/bld/capture.sh` et `scripts/iso/loupe_capture.sh` gardent des liens `show=` devenus muets, retirés dans l'item U8.

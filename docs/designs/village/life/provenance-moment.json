@@ -1,0 +1,130 @@
+{
+ "assets/images/village/iso/moment/lueur_jour.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "ab34467c34b8d4e3.png",
+   "sha256": "ab34467c34b8d4e3f0ef71c089ceb63a9ab82b792c204a3bfd2becd21feafbd6"
+  },
+  "prompt": "Flat pure black background (#000000), nothing else in the frame. A large soft round halo of warm light filling the frame, painted as broad translucent washes: a soft cream centre blending outward into gold, then eight wide faint wedge-shaped beams that fade as they go out, every transition blended and gradual, the whole thing dissolving into the dark well before the edge of the picture. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/moment/lueur_jour.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/lueur_jour__a2c0.png"
+ },
+ "assets/images/village/iso/moment/lueur_nuit.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "7d64708600df9795.png",
+   "sha256": "7d64708600df9795da5f45f55352fee9125f4d66a6da41886e7402099162dfbc"
+  },
+  "prompt": "Flat pure black background (#000000), nothing else in the frame. A large soft round halo of warm light filling the frame, painted as broad translucent washes: a small bright centre with a little cream in it, blending outward into deep amber, then eight wide faint wedge-shaped beams that fade as they go out, every transition blended and gradual, the whole thing dissolving into the dark well before the edge of the picture. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/moment/lueur_nuit.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/lueur_nuit__a2c0.png"
+ },
+ "assets/images/village/iso/moment/bouffee_1_jour.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "7e6457ff0ef81136.png",
+   "sha256": "7e6457ff0ef8113618f411fd35362a95119408dd17d2efb353f318b9393769d9"
+  },
+  "prompt": "Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Three separate small puffs of warm dust in a row with clear space between, different sizes and shapes. Each is made of three or four merged round soft masses in light ochre and rosy beige, lighter than sand, lit from the upper left, the edges frayed into thin transparent wisps, soft brush. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/moment/bouffee_1_jour.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/bouffee_jour__a1c0.png"
+ },
+ "assets/images/village/iso/moment/bouffee_2_jour.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "7e6457ff0ef81136.png",
+   "sha256": "7e6457ff0ef8113618f411fd35362a95119408dd17d2efb353f318b9393769d9"
+  },
+  "prompt": "Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Three separate small puffs of warm dust in a row with clear space between, different sizes and shapes. Each is made of three or four merged round soft masses in light ochre and rosy beige, lighter than sand, lit from the upper left, the edges frayed into thin transparent wisps, soft brush. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/moment/bouffee_2_jour.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/bouffee_jour__a1c0.png"
+ },
+ "assets/images/village/iso/moment/bouffee_3_jour.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "7e6457ff0ef81136.png",
+   "sha256": "7e6457ff0ef8113618f411fd35362a95119408dd17d2efb353f318b9393769d9"
+  },
+  "prompt": "Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Three separate small puffs of warm dust in a row with clear space between, different sizes and shapes. Each is made of three or four merged round soft masses in light ochre and rosy beige, lighter than sand, lit from the upper left, the edges frayed into thin transparent wisps, soft brush. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/moment/bouffee_3_jour.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/bouffee_jour__a1c0.png"
+ },
+ "assets/images/village/iso/moment/bouffee_1_nuit.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "c0f383e1d7f8a345.png",
+   "sha256": "c0f383e1d7f8a3452d8c3d67aebc8703fd438d64152d7c93d9584938a9400e14"
+  },
+  "prompt": "Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Three separate small puffs of dust in a row with clear space between, different sizes and shapes. Each is made of three or four merged round soft masses in light blue-grey, with a touch of warm amber on the underside, the edges frayed into thin transparent wisps, soft brush. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/moment/bouffee_1_nuit.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/bouffee_nuit__a1c0.png"
+ },
+ "assets/images/village/iso/moment/bouffee_2_nuit.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "c0f383e1d7f8a345.png",
+   "sha256": "c0f383e1d7f8a3452d8c3d67aebc8703fd438d64152d7c93d9584938a9400e14"
+  },
+  "prompt": "Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Three separate small puffs of dust in a row with clear space between, different sizes and shapes. Each is made of three or four merged round soft masses in light blue-grey, with a touch of warm amber on the underside, the edges frayed into thin transparent wisps, soft brush. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/moment/bouffee_2_nuit.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/bouffee_nuit__a1c0.png"
+ },
+ "assets/images/village/iso/moment/bouffee_3_nuit.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "c0f383e1d7f8a345.png",
+   "sha256": "c0f383e1d7f8a3452d8c3d67aebc8703fd438d64152d7c93d9584938a9400e14"
+  },
+  "prompt": "Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Three separate small puffs of dust in a row with clear space between, different sizes and shapes. Each is made of three or four merged round soft masses in light blue-grey, with a touch of warm amber on the underside, the edges frayed into thin transparent wisps, soft brush. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/moment/bouffee_3_nuit.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/bouffee_nuit__a1c0.png"
+ }
+}

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react-native";
+import { act, render, screen } from "@testing-library/react-native";
 import { makeMutable } from "react-native-reanimated";
 import { CYCLE_MS, HorlogeContext } from "@/components/village/iso/horloge";
 import { MouvementBld } from "@/components/village/iso/MouvementBld";
@@ -9,15 +9,17 @@ import {
   dephasage,
   dureeAllumage,
   effetsAuRang,
+  fenetresSeules,
   MOUVEMENT_NOEUDS_MAX,
   mouvementDeVague,
   noeudsBld,
+  ordreAllumage,
   phaseBouffee,
   respirationFlamme,
   souffleLueur,
 } from "@/components/village/iso/mouvement";
 import { type Veille, VeilleContext } from "@/components/village/iso/veilleuses";
-import { buildingCodes } from "@/db/schema";
+import { type BuildingCode, buildingCodes } from "@/db/schema";
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 let mockReduit = false;
@@ -69,6 +71,40 @@ describe("what a rank shows", () => {
 });
 
 describe("windows at dusk", () => {
+  test("every window has its own turn, the same all day, a different order another day", () => {
+    const a = ordreAllumage(5, "windmill:100");
+    expect([...a].sort()).toEqual([0, 1, 2, 3, 4]);
+    expect(ordreAllumage(5, "windmill:100")).toEqual(a);
+    expect(
+      [101, 102, 103, 104].some((j) => ordreAllumage(5, `windmill:${j}`).join() !== a.join()),
+    ).toBe(true);
+  });
+
+  test("the dusk's own nodes come out of the wave's spare ones, never past the budget", () => {
+    const steady = (codes: readonly BuildingCode[]) =>
+      codes.reduce((s, c) => s + noeudsBld(MOUVEMENTS[c]?.effets ?? []), 0);
+    // alone: room for every window; with the forge: none spare, so the group alone
+    expect(fenetresSeules("windmill", new Set(["windmill"]), 5)).toBe(5);
+    expect(fenetresSeules("windmill", new Set(["windmill", "forge"]), 5)).toBe(0);
+    for (const vague of [
+      ["windmill", "wizard_tower", "heroes_hall"],
+      ["windmill", "watchtower", "well", "heroes_hall"],
+      ["windmill", "farm"],
+    ] as const) {
+      const set = new Set<BuildingCode>(vague);
+      let extra = 0;
+      for (const c of vague) {
+        const w = (MOUVEMENTS[c]?.effets ?? []).filter(
+          (e) => e.kind === "lueur" && e.lueur === "fenetre",
+        ).length;
+        const k = fenetresSeules(c, set, w);
+        // k windows alone plus one group for the rest, against the one group of the steady count
+        if (w > 0) extra += k + (k < w ? 1 : 0) - 1;
+      }
+      expect(steady(vague) + extra).toBeLessThanOrEqual(MOUVEMENT_NOEUDS_MAX);
+    }
+  });
+
   test("a window is dark before its turn, lit after it, and they come one by one", () => {
     expect(allumage(0, 0)).toBe(0);
     expect(allumage(0, 2)).toBe(0);
@@ -116,22 +152,28 @@ describe("MouvementBld", () => {
     portes: {},
     mouvement,
   });
+  const arbre = (
+    code: "forge" | "windmill",
+    rank: number,
+    vague: ReadonlySet<BuildingCode>,
+    nuit: boolean,
+  ) => (
+    <HorlogeContext.Provider value={horloge}>
+      <VeilleContext.Provider value={veille(vague)}>
+        <MouvementBld
+          code={code}
+          stade="mythic"
+          rank={rank}
+          base={0}
+          nuit={nuit}
+          px={(p) => [p[0] / 8, p[1] / 8]}
+          k={1 / 8}
+        />
+      </VeilleContext.Provider>
+    </HorlogeContext.Provider>
+  );
   const monte = async (code: "forge" | "windmill", rank: number, enVague: boolean, nuit = true) => {
-    await render(
-      <HorlogeContext.Provider value={horloge}>
-        <VeilleContext.Provider value={veille(enVague ? new Set([code]) : new Set())}>
-          <MouvementBld
-            code={code}
-            stade="mythic"
-            rank={rank}
-            base={0}
-            nuit={nuit}
-            px={(p) => [p[0] / 8, p[1] / 8]}
-            k={1 / 8}
-          />
-        </VeilleContext.Provider>
-      </HorlogeContext.Provider>,
-    );
+    await render(arbre(code, rank, enVague ? new Set([code]) : new Set(), nuit));
   };
   const noeuds = () => screen.queryAllByTestId(/^iso-(flamme|fenetres|fumee|reflets|banniere)-/);
 
@@ -168,6 +210,40 @@ describe("MouvementBld", () => {
     await monte("forge", 4, true);
     expect(noeuds()).toHaveLength(0);
     expect(screen.queryAllByTestId("batiment-lueur-fire")).toHaveLength(0);
+  });
+
+  test("dusk lights the windmill's windows a node each, then one group takes over", async () => {
+    jest.useFakeTimers();
+    try {
+      const vague = new Set<BuildingCode>(["windmill"]);
+      const { rerender } = await render(arbre("windmill", 10, vague, false));
+      expect(screen.queryAllByTestId(/^iso-fenetres-/)).toHaveLength(0);
+      await rerender(arbre("windmill", 10, vague, true));
+      // the night falls with the map open: five windows, one node each, and the two puffs
+      expect(screen.queryAllByTestId(/^iso-fenetres-windmill-/)).toHaveLength(5);
+      expect(noeuds()).toHaveLength(7);
+      await act(() => jest.advanceTimersByTime(dureeAllumage(5) + 100));
+      expect(screen.queryAllByTestId(/^iso-fenetres-windmill-/)).toHaveLength(0);
+      expect(screen.queryAllByTestId("iso-fenetres-windmill")).toHaveLength(1);
+      expect(noeuds()).toHaveLength(3);
+      expect(screen.queryAllByTestId("batiment-lueur-fenetre")).toHaveLength(5);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  test("a wave with no node to spare lights the windows as one group at dusk", async () => {
+    jest.useFakeTimers();
+    try {
+      // windmill (3) and forge (5) fill the 8 nodes at their steady count
+      const vague = new Set<BuildingCode>(["windmill", "forge"]);
+      const { rerender } = await render(arbre("windmill", 10, vague, false));
+      await rerender(arbre("windmill", 10, vague, true));
+      expect(screen.queryAllByTestId(/^iso-fenetres-windmill-/)).toHaveLength(0);
+      expect(screen.queryAllByTestId("iso-fenetres-windmill")).toHaveLength(1);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   test("at night the windmill's five windows are one node, with its two puffs", async () => {

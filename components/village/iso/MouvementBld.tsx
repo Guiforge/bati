@@ -7,7 +7,7 @@
 // animated node, which is also what keeps the layer inside MOUVEMENT_NOEUDS_MAX.
 
 import { Image } from "expo-image";
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import Animated, {
   Easing,
@@ -26,6 +26,7 @@ import { inclinaisonBanniere } from "./fierte";
 import { useMouvementReduit } from "./fige";
 import { HorlogeContext, reflet } from "./horloge";
 import { LueurDouce } from "./LueurDouce";
+import { jourDe } from "./marcheurs";
 import { MOUVEMENTS } from "./motion";
 import type { Effet, Flamme, Genre, Lueur, Miroitement, Particules, Vent } from "./motion/types";
 import {
@@ -33,7 +34,8 @@ import {
   dephasage,
   dureeAllumage,
   effetsAuRang,
-  FONDU_FENETRE_MS,
+  fenetresSeules,
+  ordreAllumage,
   phaseBouffee,
   RAYON_LUEUR,
   respirationFlamme,
@@ -91,19 +93,29 @@ export function MouvementBld({ code, stade, rank, base, nuit, px, k }: Props) {
   // Dusk: how many ms the lighting of the windows has run. Every window is lit unless a night
   // starts while the map is open and in the wave (a clock that has stopped would leave it half way).
   const t = useSharedValue(TOUT_ALLUME);
+  // Whether the dusk is still lighting them: the windows are a node each then, one group after.
+  const [crepuscule, setCrepuscule] = useState(false);
   const etaitNuit = useRef(nuit);
   useEffect(() => {
+    let fin: ReturnType<typeof setTimeout> | undefined;
     if (nuit && !etaitNuit.current && joue) {
+      const duree = dureeAllumage(fenetres.length);
       t.set(0);
-      t.set(
-        withTiming(dureeAllumage(fenetres.length), {
-          duration: dureeAllumage(fenetres.length),
-          easing: Easing.linear,
-        }),
-      );
-    } else if (!nuit) t.set(TOUT_ALLUME);
+      t.set(withTiming(duree, { duration: duree, easing: Easing.linear }));
+      setCrepuscule(true);
+      // one end-of-dusk switch on the JS thread, not a clock: the group then takes over at 1
+      fin = setTimeout(() => setCrepuscule(false), duree + 50);
+    } else {
+      if (!nuit) t.set(TOUT_ALLUME);
+      setCrepuscule(false);
+    }
     etaitNuit.current = nuit;
+    return () => clearTimeout(fin);
   }, [nuit, joue, fenetres.length, t]);
+  const ordre = ordreAllumage(
+    fenetres.length,
+    `${code}:${jourDe(Date.now(), new Date().getTimezoneOffset())}`,
+  );
 
   const image = PEINTS[code]?.stades[stade]?.[nuit ? "nuit" : "jour"];
   return (
@@ -124,6 +136,9 @@ export function MouvementBld({ code, stade, rank, base, nuit, px, k }: Props) {
       {fenetres.length > 0 && (
         <Fenetres
           fenetres={fenetres}
+          ordre={ordre}
+          seules={fenetresSeules(code, veille?.mouvement ?? new Set(), fenetres.length)}
+          crepuscule={crepuscule}
           code={code}
           px={px}
           horloge={joue ? horloge : null}
@@ -136,12 +151,16 @@ export function MouvementBld({ code, stade, rank, base, nuit, px, k }: Props) {
 }
 
 /**
- * A building's windows as one animated node: they breathe together and come up together at dusk
- * (the one-by-one lighting went with the nodes it needed). A box round them all, so the node's
- * opacity layer is never a zero-sized view; without the clock each is its own still light.
+ * A building's windows: one animated node when they are all lit (they breathe as one). While the
+ * dusk lights them (`crepuscule`) the first `seules` in their turn order are a node each, coming up
+ * one by one; the rest wait in a group that comes up after them (the wave's node budget, see
+ * mouvement.ts `fenetresSeules`). Without the clock each is its own still light.
  */
 function Fenetres({
   fenetres,
+  ordre,
+  seules,
+  crepuscule,
   code,
   px,
   horloge,
@@ -149,6 +168,52 @@ function Fenetres({
   phase,
 }: {
   fenetres: readonly Lueur[];
+  ordre: readonly number[];
+  seules: number;
+  crepuscule: boolean;
+  code: BuildingCode;
+  px: (p: Point) => Point;
+  horloge: SharedValue<number> | null;
+  t: SharedValue<number>;
+  phase: number;
+}) {
+  const commun = { code, px, horloge, t, phase };
+  if (!horloge || !crepuscule)
+    return <GroupeFenetres {...commun} fenetres={fenetres} tour={0} nom="" />;
+  const tour = (i: number) => ordre[i] ?? 0;
+  const reste = fenetres.filter((_, i) => tour(i) >= seules);
+  return (
+    <>
+      {fenetres.map((e, i) =>
+        tour(i) < seules ? (
+          <GroupeFenetres
+            key={e.at.join()}
+            {...commun}
+            fenetres={[e]}
+            tour={tour(i)}
+            nom={`-${tour(i)}`}
+          />
+        ) : null,
+      )}
+      {reste.length > 0 && <GroupeFenetres {...commun} fenetres={reste} tour={seules} nom="" />}
+    </>
+  );
+}
+
+/** One animated node round `fenetres` (a box round them all, never a zero-sized view), lit from its `tour` of the dusk. */
+function GroupeFenetres({
+  fenetres,
+  tour,
+  nom,
+  code,
+  px,
+  horloge,
+  t,
+  phase,
+}: {
+  fenetres: readonly Lueur[];
+  tour: number;
+  nom: string;
   code: BuildingCode;
   px: (p: Point) => Point;
   horloge: SharedValue<number> | null;
@@ -161,15 +226,11 @@ function Fenetres({
   const y0 = Math.min(...pts.map((p) => p[1])) - r;
   const x1 = Math.max(...pts.map((p) => p[0])) + r;
   const y1 = Math.max(...pts.map((p) => p[1])) + r;
-  const duree = dureeAllumage(fenetres.length);
   const battements = 1 + (graine(code) % 2);
+  // Opacity only: the same breath on a window alone and on the group, so the switch is not seen.
   const style = useAnimatedStyle(() => {
     if (!horloge) return { opacity: 1 };
-    const s = souffleLueur(horloge.get(), phase, battements);
-    return {
-      opacity: allumage((t.get() * FONDU_FENETRE_MS) / duree, 0) * s,
-      transform: [{ scale: 0.9 + 0.1 * s }],
-    };
+    return { opacity: allumage(t.get(), tour) * souffleLueur(horloge.get(), phase, battements) };
   });
   const halos = pts.map((p, i) => (
     <LueurDouce
@@ -189,7 +250,7 @@ function Fenetres({
   return (
     <Animated.View
       pointerEvents="none"
-      testID={`iso-fenetres-${code}`}
+      testID={`iso-fenetres-${code}${nom}`}
       style={[ABSOLU, boite(x0, y0, x1, y1), style]}
     >
       {halos}

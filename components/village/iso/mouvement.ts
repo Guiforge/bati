@@ -56,6 +56,39 @@ export function noeudsBld(effets: readonly Effet[]): number {
   return seuls.reduce((s, e) => s + noeudsDe(e), groupes);
 }
 
+/** Every window's turn at dusk, 0 to n - 1: the order is the day's own, so it is not the list's. */
+export function ordreAllumage(n: number, cle: string): readonly number[] {
+  // `graine` is too linear in its last characters to shuffle five indices; one multiplicative mix does.
+  const g = graine(cle);
+  const clef = (i: number) => Math.imul(g + i * 40503 + 1, 2654435761) >>> 0;
+  const trie = Array.from({ length: n }, (_, i) => i).sort((a, b) => clef(a) - clef(b) || a - b);
+  return Array.from({ length: n }, (_, i) => trie.indexOf(i));
+}
+
+/**
+ * How many of `nFenetres` windows of `code` get a node of their own while the dusk lights them one
+ * by one (the others wait in the group's fade, after those). The nodes come out of what the wave's
+ * buildings leave of MOUVEMENT_NOEUDS_MAX at their steady count (a window group is one node), shared
+ * out in code order: a wave that is full lights the windows as one group, as it always could.
+ */
+export function fenetresSeules(
+  code: BuildingCode,
+  vague: ReadonlySet<BuildingCode>,
+  nFenetres: number,
+): number {
+  const dans = [...vague].sort();
+  let reste =
+    MOUVEMENT_NOEUDS_MAX - dans.reduce((s, c) => s + noeudsBld(MOUVEMENTS[c]?.effets ?? []), 0);
+  let part = 0;
+  for (const c of dans) {
+    const w = (MOUVEMENTS[c]?.effets ?? []).filter(estFenetre).length;
+    const donne = Math.max(0, Math.min(w - 1, reste));
+    reste -= donne;
+    if (c === code) part = donne;
+  }
+  return part >= nFenetres - 1 ? nFenetres : part;
+}
+
 /** A stable share of a cycle (0 to 1) per building: its light, its glints and its flame do not breathe in step with the next one's. */
 export const dephasage = (code: string): number => (graine(`${code}:phase`) % 1000) / 1000;
 

@@ -112,7 +112,7 @@
         4
       ],
       "status": "waiting",
-      "note": "attend le choix de Guillaume (checkpoint.md) et le budget de PROBE"
+      "note": "F choisie ; attend G14 et le budget de PROBE"
     },
     {
       "id": "G9",
@@ -173,6 +173,18 @@
       ],
       "status": "waiting",
       "note": "attend G12"
+    },
+    {
+      "id": "G14",
+      "group": "2 concepts",
+      "name": "Refaire la bande F sur le plan de LAYOUT",
+      "check": "bande des paliers 1 à 12 sur les rendus de LAYOUT, route et bourg replacés, bosquet avec sa forêt derrière lui",
+      "estimate_h": [
+        0.3,
+        1
+      ],
+      "status": "waiting",
+      "note": "attend les renders de LAYOUT (L6, L7)"
     }
   ]
 }

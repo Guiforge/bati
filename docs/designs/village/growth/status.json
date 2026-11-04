@@ -133,7 +133,7 @@
   "reste": "2 à 4 h",
   "avancement": null,
   "total": null,
-  "note": "attend le choix de Guillaume (checkpoint.md) et le budget de PROBE"
+  "note": "F choisie ; attend G14 et le budget de PROBE"
  },
  {
   "id": "G9",
@@ -219,5 +219,22 @@
   "avancement": null,
   "total": null,
   "note": "attend G12"
+ },
+ {
+  "id": "G14",
+  "piste": "Alentours qui grandissent",
+  "piste_ordre": 8,
+  "etape": "Refaire la bande F sur le plan de LAYOUT",
+  "ordre": 14,
+  "statut": "attend Guillaume",
+  "debut": null,
+  "fin": null,
+  "heures": null,
+  "restant_min": 0.3,
+  "restant_max": 1,
+  "reste": "0.3 à 1 h",
+  "avancement": null,
+  "total": null,
+  "note": "attend les renders de LAYOUT (L6, L7)"
  }
 ]

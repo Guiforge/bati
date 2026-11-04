@@ -8,3 +8,5 @@
 - 04/11 **Le texte des trois propositions a été corrigé** d'après theo, mara et env. Pas de seconde revue sur images : au stade concept, Guillaume juge lui-même.
 - 04/11 **Les points de la liste de Guillaume reçue en cours de session (`check`, hook de push, `hooks.json`, sprites flottants) restent chez LAYOUT.** Ils sont dans son `features.json` (L0 à L5) et une session LAYOUT y travaille en ce moment : deux sessions ne doivent pas éditer les mêmes fichiers. De cette liste, GROWTH a fait ce qui est à lui : la croissance de 1 à 12 pour chaque proposition, et tout sur une page.
 - 04/11 **Pas de FLUX 3 Image.** Klein seul, sonde `growth_klein` : ni peinture finale ni pose ce soir.
+- 04/11 **Guillaume choisit F, la forêt recule.** Mon mélange R + F est écarté.
+- 04/11 **Le recul de F reste à gauche du bosquet** : son plan met le bosquet au pied de la forêt du fond (règle 23). Bourg et route de F à replacer sur les rendus de LAYOUT (G14), avant la peinture.

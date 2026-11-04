@@ -9,4 +9,6 @@
 
 Ce que la piste ajoute au palier 12 si le choix suit le plan : 0 image montée, 0 chose qui bouge, environ 7 Mo de fichiers (estimation), à confronter à PROBE.
 
-**La suite** : lire `picks/guillaume` sur la page (`ArtifactData`, collection `picks`) et `checkpoint.md`. G8 attend ce choix et le budget de PROBE. G9 attend le choix sur LAYOUT, G11 sa fusion.
+- 04/11 Choix de Guillaume : F. Plan du palier 12 reporté sur F : `img/plan-sur-F.jpg`.
+
+**La suite** : lire `picks/guillaume` sur la page (`ArtifactData`, collection `picks`) et `checkpoint.md`. F est choisie. G14 attend le plan de LAYOUT (L6, L7), G8 attend G14 et le budget de PROBE. G9 attend le choix sur LAYOUT, G11 sa fusion.

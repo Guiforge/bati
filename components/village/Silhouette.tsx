@@ -6,12 +6,21 @@ import type { VillageBuilding } from "@/db/village";
 import { peintDe } from "./iso/peints";
 import { stadeSuivant } from "./stadeSuivant";
 
-const TAILLE = 64;
+const TAILLE = 72;
 
 /** The next stage of a building as an ink silhouette: nothing at the last stage or when unpainted. */
-export function Silhouette({ building, name }: { building: VillageBuilding; name: string }) {
+export function Silhouette({
+  building,
+  baseRank = 0,
+  name,
+}: {
+  building: VillageBuilding;
+  /** The rank of the building an upgrade extends (rule B), 0 for any other. */
+  baseRank?: number;
+  name: string;
+}) {
   const { t } = useTranslation();
-  const stade = stadeSuivant(building.code, building.level);
+  const stade = stadeSuivant(building.code, building.level, baseRank);
   const sprite = stade ? peintDe(building.code, stade, "jour") : undefined;
   if (!sprite) return null;
   return (

@@ -1751,6 +1751,8 @@
     "detail_recent_units": "{{volume}} reps",
     "detail_exercises_title": "Mouvements que tu as faits pour lui",
     "silhouette_a11y": "Le prochain stade de ton bâtiment {{name}}",
+    "open_session_a11y": "Ouvrir dans le Journal : {{what}}",
+    "open_exercise_a11y": "Ouvrir le mouvement : {{name}}",
     "detail_prereq_driver": "Monte avec le bâtiment {{building}}, rang {{level}}",
     "detail_prereq_locked": "Apparaît quand le bâtiment {{building}} atteint le rang {{target}}. Il est au rang {{level}}",
     "detail_bosses_driver_one": "{{count}} boss vaincu",

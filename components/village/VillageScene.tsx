@@ -1155,6 +1155,7 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
                 language={language}
                 feeds={feeds}
                 years={yearsView}
+                baseRank={baseRankOf(scene.buildings, building.code)}
                 onClose={fermerBulle}
                 onClaim={(b) => claim([b.code])}
               />

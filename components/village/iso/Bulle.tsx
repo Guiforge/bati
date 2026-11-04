@@ -356,6 +356,7 @@ export function ContenuBatiment({
   language,
   feeds,
   years,
+  baseRank = 0,
   onClose,
   onClaim,
 }: {
@@ -366,6 +367,8 @@ export function ContenuBatiment({
   language: AppLanguage;
   feeds: RecentFeeds | null;
   years: VillageYearsView | null;
+  /** The rank of the building an upgrade extends, for the silhouette (rule B). */
+  baseRank?: number;
   onClose: () => void;
   onClaim: (building: VillageBuilding) => void;
 }) {
@@ -424,7 +427,7 @@ export function ContenuBatiment({
       <Theme name="parchment">
         <YStack testID="iso-bulle-chiffres" gap="4">
           <XStack justify="flex-end" items="center" gap="3">
-            <Silhouette building={building} name={nomTexte} />
+            <Silhouette building={building} baseRank={baseRank} name={nomTexte} />
             <BuildingLevel building={building} />
           </XStack>
           <BuildingFacts

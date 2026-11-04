@@ -1,7 +1,7 @@
 // The next stage of a building, for the silhouette on the iso card (G5): pure, no clock. The
 // stage is the engine's own (`buildingStageFor`); the sprite is the painted one (`peintDe`).
 
-import { buildingStageFor, type VisualStage } from "@/constants/buildingStages";
+import { buildingStageFor, type StageRule, type VisualStage } from "@/constants/buildingStages";
 import type { BuildingCode } from "@/db/schema";
 import { PEINTS } from "./iso/peints";
 
@@ -18,8 +18,9 @@ export function stadeSuivant(
   level: number,
   baseRank = 0,
   peints: Readonly<Partial<Record<VisualStage, unknown>>> | undefined = PEINTS[code]?.stades,
+  rule?: StageRule,
 ): VisualStage | null {
   if (level <= 0 || !peints) return null;
-  const actuel = ORDRE.indexOf(buildingStageFor(code, level, baseRank));
+  const actuel = ORDRE.indexOf(buildingStageFor(code, level, baseRank, rule));
   return ORDRE.slice(actuel + 1).find((s) => peints[s] !== undefined) ?? null;
 }

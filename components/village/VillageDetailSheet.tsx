@@ -10,6 +10,7 @@ import { ImageViewer } from "@/components/common/ImageViewer";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { SectionLabel } from "@/components/common/SectionLabel";
 import { tamaguiRef } from "@/components/common/tamaguiRef";
+import { ChevronRight } from "@/components/icons";
 import { DATE_OPTIONS, type Extra, loadExtra } from "@/components/village/detailExtra";
 import { LevelPips } from "@/components/village/LevelPips";
 import { buildingMilestoneLine } from "@/components/village/milestoneLine";
@@ -467,20 +468,24 @@ export function BuildingFacts({
                 gap="2"
                 {...(surCarte
                   ? {
-                      minH: 44,
+                      minH: 48,
                       items: "center" as const,
                       opacity: "press:0.7" as const,
-                      onPress: () => open(`/journal/${session.sessionId}`),
+                      onPress: () => open(`/journal/${session.sessionId}?from=village`),
                       accessibilityRole: "link" as const,
+                      accessibilityLabel: t("village.open_session_a11y", {
+                        what: title ?? when,
+                      }),
                     }
                   : {})}
               >
-                <Text fontSize={12} color="textSecondary" flex={1}>
+                <Text fontSize={12} color={surCarte ? "primaryText" : "textSecondary"} flex={1}>
                   {`${title ? `${title} · ` : ""}${when}`}
                 </Text>
                 <Text fontSize={12} color="textSecondary">
                   {t("village.detail_recent_units", { volume: session.volume })}
                 </Text>
+                {surCarte ? <ChevronRight size={16} color="primaryText" /> : null}
               </XStack>
             );
           })}
@@ -495,18 +500,22 @@ export function BuildingFacts({
               key={exercise.exerciseId}
               justify="space-between"
               gap="2"
-              minH={44}
+              minH={48}
               items="center"
               opacity="press:0.7"
               onPress={() => open(`/exercises/${exercise.exerciseId}`)}
               accessibilityRole="link"
+              accessibilityLabel={t("village.open_exercise_a11y", {
+                name: localizedName(exercise, language),
+              })}
             >
-              <Text fontSize={12} color="textSecondary" flex={1}>
+              <Text fontSize={12} color="primaryText" flex={1}>
                 {localizedName(exercise, language)}
               </Text>
               <Text fontSize={12} color="textSecondary">
                 {t("village.detail_recent_units", { volume: exercise.volume })}
               </Text>
+              <ChevronRight size={16} color="primaryText" />
             </XStack>
           ))}
         </YStack>

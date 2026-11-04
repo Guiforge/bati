@@ -42,6 +42,52 @@ Demandé par Guillaume le 04/11. Les bâtiments du joueur ne sont pas repeints :
 16. **Nuit** : vraies lumières chez le joueur, petites fenêtres ailleurs.
 17. **Contrôle** : sur la vignette floutée au 1/8, les bâtiments du joueur ressortent, pas seulement le coeur.
 
+## Le plan du palier 12, point de départ de LAYOUT
+
+Choisi par Guillaume le 04/11, placement par placement, sur le vrai jeu : `img/plan-t12-essai.jpg`. C'est un essai dans l'atelier, non conservé. Le sol, les chemins, les ombres et les zones de tap ne sont pas refaits.
+
+21. **Bâtiments du joueur à +25 % environ**, sans toucher au mur ni au coin verrouillé. Zoom par défaut inchangé.
+22. **Autre rive** : moulin au bord de l'eau, ferme, grange et observatoire espacés, l'observatoire le plus loin à gauche. **Un pont lisible** et un chemin vers chacun.
+23. **Le bosquet au pied de la forêt du fond**, la carrière au bord de la rivière, l'antre à sa droite, la tour du sorcier tout à droite.
+24. **La carte grandit vers le haut et vers la gauche**, là où ces bâtiments dépassent de la grille. Une prairie et une forêt peintes semblent déjà y être, à confirmer.
+25. **Le rempart nord-est disparaît**, comme le prévoit la direction A.
+
+| Bâtiment | Coin de l'essai [gx, gy] | Aujourd'hui |
+|---|---|---|
+| Bosquet (`druid_grove`) | [-3, -5] | [12, 3] |
+| Grange (`barn`) | [-3, -2] | [4, 3] |
+| Observatoire (`observatory`) | [-6, 3] | [3, 12] |
+| Moulin (`windmill`) | [0, 5] | [7, 0] |
+| Ferme (`farm`) | [-1, 9] | [4, 7] |
+| Carrière (`quarry`) | [3, 0] | [9, 3] |
+| Antre (`dragon_lair`) | [10, 0] | [15, 0] |
+| Tour du sorcier (`wizard_tower`) | [16, 1] | [11, 1] |
+| Forge (`forge`) | [12, 7] | [13, 6] |
+| Mannequin (`training_dummy`) | [7, 1] | [13, 9] |
+| Tente (`tent`) | [5, 8] | [8, 11] |
+
+Retirés de `rempart` : [17, 4], [17, 5], [17, 7], [17, 8]. Le reste ne bouge pas.
+
+**Mesure de `check`, palier 12, jour, tous les bâtiments à leur plus haut stade :**
+
+| | Aujourd'hui | Ce plan, à +25 % |
+|---|---|---|
+| Sous 85 % visibles | 5 sur 21 | 2 sur 21 |
+| Le pire | Moulin, 66,9 % | Forge, 81,8 % |
+
+**Reste à régler :**
+- La forge (81,8 %) : tas de bois, armurerie et lanterne.
+- La carrière (83,0 %) : le mannequin, large, la couvre. Il a gêné à chaque place essayée : forge, tour de guet, antre, carrière. Agrandir ou aérer le coeur lui fera une vraie place.
+- La ferme et la tour du sorcier touchent presque les bords de l'écran au zoom par défaut. L'occlusion ne le compte pas.
+- Le coeur reste serré.
+- La direction A : le plan garde la porte et le pont, mais les bâtiments ne bordent pas encore une rue en S. LAYOUT tranche, avec Guillaume, si ce plan la remplace.
+- Non testé : la nuit, les autres paliers, le zoom minimum, la vraie grille agrandie, les crops verrouillés (`lisiere` et `pieds` peuvent reculer une fois).
+
+**Trois pièges pour refaire l'essai :**
+- `check` ne compte pas un bâtiment hors de la grille : `etatAvec` ne le montre pas. Il faut vraiment agrandir la grille. L'essai a levé ce filtre, c'était temporaire.
+- `stadeDemo` baisse le stade d'un bâtiment selon le palier de sa case. Déplacé, un moulin devient blanc et une mesure paraît meilleure. L'essai a forcé le plus haut stade partout, ce qui ne change pas la mesure d'aujourd'hui.
+- `pose` dans `carteDemo.ts` place le sprite. Un facteur autour de l'ancre suffit pour le +25 %. Il ne reste pas dans le code.
+
 ## Ce que le jeu doit aussi montrer
 
 Tiré du doc « ce que les jeux nous apprennent ».
@@ -66,8 +112,8 @@ Vu par mara et sur les images. Trois passes de reprise sont faites sur le palier
 ## Ce que chaque piste en prend
 
 **LAYOUT**
-- Le tracé de la rue, le plan de `directions.md` et les règles 1, 2, 5, 6, 7 et 14.
-- La carte grandit vers le haut, d'environ 100 tuiles. Ce chiffre est une estimation à mesurer.
+- **Le plan du palier 12 ci-dessus, les règles 21 à 25,** le tracé de la rue et les règles 1, 2, 5, 6, 7 et 14.
+- La carte grandit vers le haut et vers la gauche. Les 100 tuiles de `directions.md` sont une estimation à mesurer.
 - `lisiere` et `pieds` peuvent reculer **une fois**, et ils sont reverrouillés sur un rendu que Guillaume valide (sa réponse du 04/11). Le coin de la porte sud ne bouge pas.
 - À surveiller : une rue droite en colonne, où chaque bâtiment cache celui du dessus.
 

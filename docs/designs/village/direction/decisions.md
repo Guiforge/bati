@@ -6,3 +6,4 @@
 - 04/11 **Prompts renforcés entre Klein et FLUX 3** : A et B ne montraient ni leur rue ni leur méandre. C'est un changement d'approche avant de payer le passage final, pas une reprise au goût.
 - 04/11 **Pas de boucle de reprises par des juges** sur ces images : Guillaume juge les concepts sur une page. Les défauts vus sont écrits à côté de l'image.
 - 04/11 **Reprise de A après le choix, à la demande de Guillaume** : deux passes au plus (règle 5 du prompt). Images choisies par le chef, sur sa délégation (« on suit ta reco »), relecture unique de mara. Les défauts restants passent dans `target.md`, sans troisième passe.
+- 04/11 **Plan du palier 12 décidé sur le vrai jeu avec Guillaume**, pas sur une peinture : FLUX invente les positions. Essais temporaires dans le code et le plan, jamais commités, remis à l'identique à chaque fois.

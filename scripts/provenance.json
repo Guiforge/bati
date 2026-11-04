@@ -10363,6 +10363,104 @@
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 85, from splash-bg3.jpg"
   },
+  "docs/designs/village/life/scratch/u3/pieces/raw/burst_0.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "7c823478c6890282.png",
+      "sha256": "7c823478c6890282196b6e1190093809008d558df159bc22a5a27b5d5d6651c3"
+    },
+    "prompt": "Two separate drawings side by side, a left one and a right one. Each is an irregular splash of pale cream paint made of a few wide sweeping dry-brush strokes that cross each other, a rough lopsided shape with no regular points and no symmetry, the cream stroke ends frayed. Part of its outline carries a broken dark ink brush edge (#0F1518), thick in places, thin in others, with gaps, not a closed line. Matte flat cream (#F2E2B4) with a second darker cream tone in a few strokes. The two drawings have different shapes. Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Hand-painted matte gouache with visible brush strokes, no gloss, no fine grain. No text, no letters, no figure.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-11-03"
+  },
+  "docs/designs/village/life/scratch/u3/pieces/raw/burst_1.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "eec2ea31f8b0bd65.png",
+      "sha256": "eec2ea31f8b0bd656a6b855763483ec53e4d8b0d25883854817246578d2cfdc2"
+    },
+    "prompt": "Two separate drawings side by side, a left one and a right one. Each is an irregular splash of pale cream paint made of a few wide sweeping dry-brush strokes that cross each other, a rough lopsided shape with no regular points and no symmetry, the cream stroke ends frayed. Part of its outline carries a broken dark ink brush edge (#0F1518), thick in places, thin in others, with gaps, not a closed line. Matte flat cream (#F2E2B4) with a second darker cream tone in a few strokes. The two drawings have different shapes. Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Hand-painted matte gouache with visible brush strokes, no gloss, no fine grain. No text, no letters, no figure.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-11-03"
+  },
+  "docs/designs/village/life/scratch/u3/pieces/raw/glow_0.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "0e43a6f405dca05b.png",
+      "sha256": "0e43a6f405dca05b16b3c7ed20ed058fdf54f5623fdc2ab3687ebcdebe6d409c"
+    },
+    "prompt": "A large soft halo of warm light, many wide overlapping dry brush strokes of pale cream (#F2E2B4) and warm amber (#F0A848) loosely gathered round a bright middle, fading smoothly to pure black at every side, a loose irregular cloud shape, no outline, no ring, no disc, no sharp boundary anywhere. Flat pure black background (#000000). Hand-painted matte gouache with visible brush strokes, no gloss, no fine grain. No text, no letters, no figure.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-11-03"
+  },
+  "docs/designs/village/life/scratch/u3/pieces/raw/glow_1.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "91c1347c6e0f9fa9.png",
+      "sha256": "91c1347c6e0f9fa9f8b60f4cc2c2e00c784981cea983f0170f63cc123d9f25c2"
+    },
+    "prompt": "One round disc of warm light painted with broad dry brush strokes, centre pale cream (#F2E2B4), then warm amber (#F0A848), then a broken outer edge made of loose separate brush strokes, matte, flat, no ring, no rays. Flat pure black background (#000000), one even colour, nothing else in the frame. Hand-painted matte gouache with visible brush strokes, no gloss, no fine grain. No text, no letters, no figure.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-11-03"
+  },
+  "docs/designs/village/life/scratch/u3/pieces/raw/puffs_0.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "0126e26d06361fce.png",
+      "sha256": "0126e26d06361fce6b5b0c5f80ed96eb7adeb3a8e0179972562020ecbae5e2ee"
+    },
+    "prompt": "Three separate small puffs of dust side by side in a row with clear space between them, left one medium, middle one large, right one small. Each is an irregular cluster of soft overlapping dry-brush strokes in matte warm sandy tan, the colour of dry earth, flat matte, two close values only, no highlights, no sphere shading, no shine, no outline, no ring, the edge broken and ragged into small chips. No trail, no ground, no shadow. Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Hand-painted matte gouache with visible brush strokes, no gloss, no fine grain. No text, no letters, no figure.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-11-03"
+  },
+  "docs/designs/village/life/scratch/u3/pieces/raw/puffs_1.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "081aafb8462a46f1.png",
+      "sha256": "081aafb8462a46f15aad63802acfa15b30b083d003817688c2eeb393c7538347"
+    },
+    "prompt": "Three separate small round puffs of dust side by side in a row with clear space between them, left one medium, middle one large, right one small. Each puff is a rounded cluster of five or six overlapping lobes in matte warm sand-beige, a paler cream on the upper left and a darker taupe on the lower right, the outer edge broken and ragged like dry brush strokes, torn into small chips. No outline, no trail, no ground, no shadow. Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Hand-painted matte gouache with visible brush strokes, no gloss, no fine grain. No text, no letters, no figure.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-11-03"
+  },
+  "docs/designs/village/life/scratch/u3/pieces/raw/puffsn_0.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "0653c54878a6a731.png",
+      "sha256": "0653c54878a6a7317fbe5a547358a7f6f11c4ef829e5662d8a3468e68f55e6ae"
+    },
+    "prompt": "Three separate small puffs of dust side by side in a row with clear space between them, left one medium, middle one large, right one small. Each is an irregular cluster of soft overlapping dry-brush strokes in matte cool slate blue-grey, flat matte, two close values only, no highlights, no sphere shading, no shine, no outline, no ring, the edge broken and ragged into small chips. No trail, no ground, no shadow. Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Hand-painted matte gouache with visible brush strokes, no gloss, no fine grain. No text, no letters, no figure.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-11-03"
+  },
   "fastlane/featureGraphic-bg.jpg": {
     "model": "flux-2-pro-preview",
     "provider": "Black Forest Labs (direct API)",

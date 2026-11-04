@@ -12,3 +12,7 @@ Guillaume, écris tes réponses sous « Réponse de Guillaume ». La page de cho
 - **Les drapeaux des bâtiments :** ils restent éteints jusqu'à ce que tu aies vu le moment fini (U7).
 
 ## Réponse de Guillaume
+- Moment : Contre-jour
+- Villageois : Les retirer du moment
+- Créatures : FLUX, plusieurs images
+- Plafond Klein : Ne pas le relever, FLUX 3 Image

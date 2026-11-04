@@ -80,8 +80,9 @@
         0,
         0
       ],
-      "status": "blocked",
-      "note": "Page publiée, réponse dans checkpoint.md"
+      "status": "done",
+      "note": "Contre-jour, sans villageois sur le chantier",
+      "fin": "2026-11-04T09:00:00+01:00"
     },
     {
       "id": "U5",
@@ -92,8 +93,7 @@
         2,
         5
       ],
-      "status": "todo",
-      "note": "Dépend du choix de Guillaume"
+      "status": "todo"
     },
     {
       "id": "U6",
@@ -104,8 +104,7 @@
         0.5,
         1.5
       ],
-      "status": "todo",
-      "note": "Dépend du choix de Guillaume"
+      "status": "todo"
     },
     {
       "id": "U7",
@@ -192,7 +191,9 @@
         0.5,
         1
       ],
-      "status": "todo"
+      "status": "doing",
+      "debut": "2026-11-03T22:30:00+01:00",
+      "note": "Peints (025d36f9). Bords durs, à relire"
     },
     {
       "id": "P1",
@@ -203,9 +204,11 @@
         3,
         6
       ],
-      "status": "todo",
+      "status": "doing",
       "total": 21,
-      "avancement": 0
+      "avancement": 21,
+      "debut": "2026-11-03T22:30:00+01:00",
+      "note": "21 fichiers (fc5cbfae), nuit presque immobile à vérifier"
     },
     {
       "id": "C1",
@@ -230,8 +233,9 @@
         0,
         0
       ],
-      "status": "blocked",
-      "note": "Page publiée, réponse dans checkpoint.md"
+      "status": "done",
+      "note": "FLUX en plusieurs images, FLUX 3 Image seulement",
+      "fin": "2026-11-04T09:00:00+01:00"
     },
     {
       "id": "C3",
@@ -242,8 +246,7 @@
         1,
         2
       ],
-      "status": "todo",
-      "note": "Dépend du choix de Guillaume"
+      "status": "todo"
     },
     {
       "id": "C4",
@@ -254,8 +257,7 @@
         1,
         2
       ],
-      "status": "todo",
-      "note": "Dépend du choix de Guillaume"
+      "status": "todo"
     },
     {
       "id": "C5",
@@ -266,8 +268,7 @@
         1,
         2.5
       ],
-      "status": "todo",
-      "note": "Dépend du choix de Guillaume"
+      "status": "todo"
     },
     {
       "id": "C6",
@@ -278,8 +279,7 @@
         1,
         2.5
       ],
-      "status": "todo",
-      "note": "Dépend du choix de Guillaume"
+      "status": "todo"
     },
     {
       "id": "C7",

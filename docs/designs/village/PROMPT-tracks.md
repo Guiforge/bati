@@ -250,3 +250,64 @@ Goal: a smooth village on a mid-range Android phone, and a clean branch to ship.
 3. Then the real phone with Guillaume: only the side package com.guiforge.bati.perf, never the main app.
 4. Tests: the full suite green, tests-debt.md emptied or each line justified, CI green on feat/village-iso.
 5. Report: numbers before and after, what changed, what is left in perf-debt.md.
+
+## Amendment of 04/11, evening (tracks v4.2): lessons from games, an early probe, the traces
+This section adds to the sections above and, where it says so, replaces parts of them. It comes from a review of the plan against what fantasy iso games do (Kingdom Rush, Clash of Clans, Townscaper, Thronefall, Hades) and from two picks by Guillaume on 04/11: measure early on his phone, and add a TRACES track before GAME.
+
+### A. Order and dashboard numbers (replaces section 9's list and section 4's piste_ordre)
+1. ATELIER: done. 2. DIRECTION: done.
+3. **LAYOUT**, and beside it **PROBE** (short, measure only, Guillaume present).
+4. **GROWTH** steps 1 to 3, beside LAYOUT once PROBE is done, within PROBE's image budget. Quarters only after Guillaume's pick of LAYOUT's proposal.
+5. **GROWTH** step 4 and after, once LAYOUT is merged.
+6. **AUDIT**. 7. **POLISH**. 8. **LIFE**, then **VILLAGERS**. 9. **TRACES**. 10. **GAME**. 11. **PERF**, last.
+Two sessions at once at most, as before.
+piste_ordre: L'atelier 4, L'image cible 5, Mesure tôt 6, Disposition du village 7, Alentours qui grandissent 8, Audit du village 9, Retouche de la peinture 10, La vie (animations) 11, Villageois 12, Traces du journal 13, Le jeu (page Village) 14, Performance 15.
+
+### B. Scene rules, added to section 6
+- **Depth for buildings of different sizes**: the depth of the foot is not enough. Each building knows what stands behind it, and a topological sort decides the drawing order (the painter's algorithm with dependencies); a moving thing is re-sorted when it changes tile. LAYOUT checks the order at every tier.
+- **One light**: every standing thing (buildings, quarters, GROWTH pieces, decor, traces) casts its shadow in the same direction, from the top-left light, on the shadow layer, never painted into the sprite.
+- **Juice on moments only**: flashes, bounces and particles underline a moment (an upgrade, a new trace), never decorate the screen all the time.
+- **Count what you add**: every track that adds images or moving things stays within PROBE's budgets (probe.md) and says in progress.md what it adds at tier 12.
+
+### C. Devices (section 7)
+A physical phone is allowed in PERF **and in PROBE**, always with Guillaume present and his go, and only the side package com.guiforge.bati.perf.
+
+### D. Appendix PROBE: measure early (short, measure only, Guillaume present)
+Goal: know what today's village costs on Guillaume's real phone before GROWTH, LIFE, VILLAGERS and TRACES add to it. The study of 30/10 noted only 3 to 4 MB of margin under 80 MB at tier 12 (measured at lot 5, before the five-stage buildings), and on 04/11 the scene mounted 772 images and 204 SVGs at tier 12. PROBE fixes nothing. Target: 1 to 2 h. It is not a design track: like PERF, it uses the emulator and the phone (rule 1 does not apply to it). It runs beside LAYOUT, which never uses them.
+1. One perf build of the ISO_BRANCH tip, side package only, through the dev states (section 7), with the tools AGENTS.md allows for perf numbers.
+2. On the emulator first, as a sanity check; then on Guillaume's phone, with his go: open the Village tab at tiers 1, 6 and 12, by day and by night; 20 s of pan and pinch each; record total and graphics memory, UI- and JS-thread frame times, and the time to open the tab. If a dev state can double the moving things at tier 12, measure that too, to see the headroom.
+3. Write docs/designs/village/probe/probe.md: the numbers, the memory margin against the app's limit, and three budgets for the next tracks: images added per tier band (GROWTH, TRACES), things moving at once (LIFE, VILLAGERS), particles on screen. Replace the motion budget of PIPELINE.md with the measured one.
+4. If the margin is already too thin, say so plainly and propose what PERF should fix first (flatten what never moves into fewer images per tier band, do not mount what is off screen) and whether it must happen before GROWTH paints: Guillaume decides in checkpoint.md.
+5. Stop the emulator and Metro, remove the slot folder, uninstall nothing from the phone without Guillaume, push.
+
+### E. LAYOUT, added to its appendix
+- **Guillaume's tier 12 plan in target.md comes first for placement.** Grow it backwards: decide what exists at each tier from 1 to 11, so the village grows outward from a small but full start (a hamlet with its square, its fire and a few houses at tier 1, the camera stepping back at each tier), and show tiers 1, 3, 6, 9 and 12 in the proposal.
+- **One checkpoint page** for the layout proposal and the three questions DIRECTION left for Guillaume: how the street links the squares of his plan; the locked crops `lisiere` and `pieds` after their retreat, before they are locked again; the look of the tiers other than 12.
+- **Check the check first**: nobody has reviewed ATELIER's `check` (456 lines), and only the motion budget can make it fail. Before relying on it, verify 3 cases by eye against renders (the windmill at 67 % visible at tier 12, hidden by the quarry; 2 of the 9 floating sprites at tier 6), fix it if wrong, then make occlusion, anchors and the depth order able to fail (exit code): they are your pass gates.
+- **The pre-push hook fails on 7 atelier files** (DIRECTION's handoff): fix them, 30 minutes at most (atelier code, section 6).
+
+### F. LIFE, added to its appendix
+- **Anticipation**: a building with a pending upgrade shows it in the scene, calmly (its scaffold waits, a soft pulse or a few motes), readable at phone size, never a timer, never counted. The tap stays GAME's.
+- **The reveal**: scaffold and dust (about 0.5 s), then the new stage pops with squash and stretch and an eased bounce, a flash and a few sparks, then its lights. Short. A skip jumps to the end.
+- **Birds**: simple agents tied to a nearby roof, circling and landing now and then. No complex behaviour.
+
+### G. AUDIT, added to its appendix
+- **Silhouette test**: from each building's sheet at a quarter of phone size, the haiku stranger tells each stage from the next; every miss goes to POLISH.
+- **Light test**: every standing thing's shadow falls in the same direction.
+
+### H. Appendix TRACES: the village remembers your training
+Goal: small painted details born from the player's own journal, which stay forever, so the village looks like this player's training (P4) and keeps small discoveries (P2). As in Townscaper, the big shapes stay predictable and the small details vary and reward curiosity. A design track: the six rules apply, the atelier is its eye. Target: 6 to 10 h, about 3 $.
+1. **Ideas in text** (opus): 10 to 15 traces. Each says what it looks like, where it stands (beside the building it relates to, or along the road), the journal fact that earns it, how it grows (for example a cairn that gains a stone every 10 km run, a lantern on the main street for each week the flame was kept, a pull-up bar worn shiny after many pull-ups), and whether it is plain or hidden (a rule the player can guess and repeat). Quick audit: theo (fun, discovery), mara (readable at phone size), and a check against Bati's promises.
+2. **Rules**: derived from the journal only, by one pure function (journal to traces), the same on two phones; once earned, a trace never leaves and never shrinks (nothing goes backwards); no currency, no number shown, no timer, never a reward to claim, never looks like loot; it never hides a player building and stays a step calmer in value than the buildings; no painted people; no fake letters or numbers.
+3. **Guillaume picks** the list on one checkpoint page, with Klein concepts of the 5 favourites. His pick is his go for this derivation: it reads game data and changes none.
+4. **Paint** the picked traces with FLUX 3 Image, small, one painting per growth step; place them on slots near their building or the road, within PROBE's image budget.
+5. **Code**: the derivation in the village code, and dev states that can show any trace, so the atelier renders them.
+6. **Checks**: an atelier render at tier 6 of three made-up journals (a runner, a pull-up lover, a casual player): the three villages must look different at a glance. theo and mara once.
+
+### I. GAME, added to its appendix
+- **The reveal** gets a short haptic and a short sound generated by scripts/generate-sounds.py (a formula, no licence), silent when the player's sound is off.
+- **Before wiring the time of day**, ask Guillaume whether free players get the real time of day: in September, the "village vivant selon l'heure" was planned as a paid extra.
+- **Traces**: ask Guillaume whether a tap on a trace tells its story in the panel.
+
+### J. Not scheduled
+Ambient sound layers per building (Guillaume's wish of 29/10) become an optional SOUND track after GAME, if he wants it then.

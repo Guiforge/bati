@@ -1,0 +1,963 @@
+{
+ "_doc": "Boîtes d'accroche (fractions 0 à 1 de l'image du stade, origine en haut à gauche): ce qui fait reconnaître le bâtiment, par stade peint.",
+ "campfire": {
+  "rough": {
+   "box": [
+    0.381,
+    0.742,
+    0.616,
+    0.925
+   ],
+   "what": "feu dans un cercle de pierres, trépied"
+  },
+  "solid": {
+   "box": [
+    0.367,
+    0.652,
+    0.626,
+    0.904
+   ],
+   "what": "feu, trépied et marmite"
+  },
+  "grand": {
+   "box": [
+    0.398,
+    0.649,
+    0.658,
+    0.92
+   ],
+   "what": "marmite sur le feu"
+  },
+  "legendary": {
+   "box": [
+    0.397,
+    0.268,
+    0.636,
+    0.909
+   ],
+   "what": "colonne de flammes et marmite"
+  },
+  "mythic": {
+   "box": [
+    0.4,
+    0.311,
+    0.682,
+    0.928
+   ],
+   "what": "tourbillon de feu sur le foyer"
+  }
+ },
+ "tent": {
+  "rough": {
+   "box": [
+    0.213,
+    0.588,
+    0.603,
+    0.875
+   ],
+   "what": "toile déchirée sur perches"
+  },
+  "solid": {
+   "box": [
+    0.202,
+    0.458,
+    0.751,
+    0.839
+   ],
+   "what": "tente de toile et fanion"
+  },
+  "grand": {
+   "box": [
+    0.155,
+    0.308,
+    0.828,
+    0.806
+   ],
+   "what": "grande tente à fanion"
+  },
+  "legendary": {
+   "box": [
+    0.053,
+    0.29,
+    0.934,
+    0.809
+   ],
+   "what": "tente rouge et or aux lances"
+  },
+  "mythic": {
+   "box": [
+    0.229,
+    0.01,
+    0.818,
+    0.759
+   ],
+   "what": "tente à voiles empilées"
+  }
+ },
+ "training_dummy": {
+  "rough": {
+   "box": [
+    0.45,
+    0.593,
+    0.59,
+    0.785
+   ],
+   "what": "poteau paillé à casque"
+  },
+  "solid": {
+   "box": [
+    0.393,
+    0.644,
+    0.597,
+    0.846
+   ],
+   "what": "poteau d'entraînement paillé"
+  },
+  "grand": {
+   "box": [
+    0.53,
+    0.552,
+    0.751,
+    0.776
+   ],
+   "what": "mannequin au centre de l'enclos"
+  },
+  "legendary": {
+   "box": [
+    0.367,
+    0.389,
+    0.679,
+    0.868
+   ],
+   "what": "mannequins dans la halle"
+  },
+  "mythic": {
+   "box": [
+    0.422,
+    0.019,
+    0.696,
+    0.818
+   ],
+   "what": "grand poteau à casque"
+  }
+ },
+ "well": {
+  "rough": {
+   "box": [
+    0.302,
+    0.607,
+    0.648,
+    0.909
+   ],
+   "what": "margelle de pierre et potence"
+  },
+  "solid": {
+   "box": [
+    0.264,
+    0.458,
+    0.692,
+    0.894
+   ],
+   "what": "puits, petit toit et seau"
+  },
+  "grand": {
+   "box": [
+    0.311,
+    0.431,
+    0.853,
+    0.852
+   ],
+   "what": "puits à piliers et poulie"
+  },
+  "legendary": {
+   "box": [
+    0.362,
+    0.159,
+    0.859,
+    0.892
+   ],
+   "what": "puits à hauts piliers et treuil"
+  },
+  "mythic": {
+   "box": [
+    0.139,
+    0.009,
+    0.865,
+    0.88
+   ],
+   "what": "puits d'eau argentée, seau de verre"
+  }
+ },
+ "quarry": {
+  "rough": {
+   "box": [
+    0.305,
+    0.589,
+    0.706,
+    0.875
+   ],
+   "what": "front de roche sous un hangar de bois"
+  },
+  "solid": {
+   "box": [
+    0.328,
+    0.458,
+    0.703,
+    0.873
+   ],
+   "what": "gradins de pierre et palan"
+  },
+  "grand": {
+   "box": [
+    0.213,
+    0.355,
+    0.883,
+    0.854
+   ],
+   "what": "gradins de blocs et palan"
+  },
+  "legendary": {
+   "box": [
+    0.214,
+    0.161,
+    0.882,
+    0.869
+   ],
+   "what": "falaise taillée en gradins, roue"
+  },
+  "mythic": {
+   "box": [
+    0.296,
+    0.044,
+    0.803,
+    0.857
+   ],
+   "what": "tour de pierre et grande roue"
+  }
+ },
+ "windmill": {
+  "rough": {
+   "box": [
+    0.292,
+    0.589,
+    0.569,
+    0.905
+   ],
+   "what": "tour de bois et sacs de farine"
+  },
+  "solid": {
+   "box": [
+    0.218,
+    0.459,
+    0.635,
+    0.89
+   ],
+   "what": "tour de bois, escalier, sacs"
+  },
+  "grand": {
+   "box": [
+    0.321,
+    0.341,
+    0.773,
+    0.879
+   ],
+   "what": "tour, galerie et sacs de farine"
+  },
+  "legendary": {
+   "box": [
+    0.22,
+    0.198,
+    0.861,
+    0.908
+   ],
+   "what": "tour, galerie et sacs de farine"
+  },
+  "mythic": {
+   "box": [
+    0.239,
+    0.102,
+    0.768,
+    0.896
+   ],
+   "what": "tour à galeries et sacs"
+  }
+ },
+ "wizard_tower": {
+  "rough": {
+   "box": [
+    0.404,
+    0.595,
+    0.604,
+    0.752
+   ],
+   "what": "coiffe de chaume de la tour étroite"
+  },
+  "solid": {
+   "box": [
+    0.438,
+    0.466,
+    0.565,
+    0.655
+   ],
+   "what": "flèche d'ardoise de la tour"
+  },
+  "grand": {
+   "box": [
+    0.416,
+    0.319,
+    0.602,
+    0.566
+   ],
+   "what": "flèche d'ardoise et tourelle"
+  },
+  "legendary": {
+   "box": [
+    0.371,
+    0.206,
+    0.654,
+    0.46
+   ],
+   "what": "flèche d'ardoise et tourelle"
+  },
+  "mythic": {
+   "box": [
+    0.393,
+    0.023,
+    0.611,
+    0.296
+   ],
+   "what": "flèche fine de la tour"
+  }
+ },
+ "heroes_hall": {
+  "rough": {
+   "box": [
+    0.3,
+    0.579,
+    0.693,
+    0.828
+   ],
+   "what": "charpente ouverte et table"
+  },
+  "solid": {
+   "box": [
+    0.316,
+    0.46,
+    0.883,
+    0.756
+   ],
+   "what": "halle de bois et bannière rouge"
+  },
+  "grand": {
+   "box": [
+    0.28,
+    0.381,
+    0.92,
+    0.764
+   ],
+   "what": "halle à toit de bardeaux, bannière"
+  },
+  "mythic": {
+   "box": [
+    0.108,
+    0.028,
+    0.896,
+    0.754
+   ],
+   "what": "halle de pierre à toit de drakkar"
+  }
+ },
+ "farm": {
+  "rough": {
+   "box": [
+    0.231,
+    0.625,
+    0.78,
+    0.849
+   ],
+   "what": "ferme au toit de chaume et potager"
+  },
+  "solid": {
+   "box": [
+    0.28,
+    0.473,
+    0.822,
+    0.837
+   ],
+   "what": "ferme de chaume et maïs haut"
+  },
+  "grand": {
+   "box": [
+    0.187,
+    0.329,
+    0.923,
+    0.808
+   ],
+   "what": "ferme de chaume et maïs haut"
+  },
+  "legendary": {
+   "box": [
+    0.25,
+    0.221,
+    0.707,
+    0.871
+   ],
+   "what": "maïs géant et ferme"
+  },
+  "mythic": {
+   "box": [
+    0.214,
+    0.009,
+    0.755,
+    0.852
+   ],
+   "what": "maïs géant et ferme"
+  }
+ },
+ "forge": {
+  "rough": {
+   "box": [
+    0.296,
+    0.601,
+    0.69,
+    0.888
+   ],
+   "what": "hangar ouvert, foyer et enclume"
+  },
+  "solid": {
+   "box": [
+    0.221,
+    0.473,
+    0.725,
+    0.876
+   ],
+   "what": "hangar, foyer, enclume, cheminée"
+  },
+  "grand": {
+   "box": [
+    0.216,
+    0.327,
+    0.85,
+    0.847
+   ],
+   "what": "cheminée de pierre, foyer, enclume"
+  },
+  "legendary": {
+   "box": [
+    0.288,
+    0.183,
+    0.729,
+    0.868
+   ],
+   "what": "haute cheminée et foyers"
+  },
+  "mythic": {
+   "box": [
+    0.249,
+    0.037,
+    0.801,
+    0.865
+   ],
+   "what": "cheminée à flamme, foyers"
+  }
+ },
+ "archery_range": {
+  "rough": {
+   "box": [
+    0.327,
+    0.637,
+    0.662,
+    0.869
+   ],
+   "what": "cible de paille sous un auvent"
+  },
+  "solid": {
+   "box": [
+    0.434,
+    0.628,
+    0.721,
+    0.828
+   ],
+   "what": "rangée de cibles"
+  },
+  "grand": {
+   "box": [
+    0.428,
+    0.556,
+    0.755,
+    0.83
+   ],
+   "what": "rangée de cibles et carquois"
+  },
+  "legendary": {
+   "box": [
+    0.508,
+    0.434,
+    0.895,
+    0.844
+   ],
+   "what": "cibles et carquois"
+  },
+  "mythic": {
+   "box": [
+    0.032,
+    0.134,
+    0.757,
+    0.906
+   ],
+   "what": "cibles géantes et traits de vent"
+  }
+ },
+ "druid_grove": {
+  "rough": {
+   "box": [
+    0.326,
+    0.59,
+    0.748,
+    0.874
+   ],
+   "what": "cabane de toile et herbes séchées"
+  },
+  "solid": {
+   "box": [
+    0.309,
+    0.459,
+    0.723,
+    0.848
+   ],
+   "what": "chêne et cercle de menhirs"
+  },
+  "grand": {
+   "box": [
+    0.229,
+    0.309,
+    0.848,
+    0.844
+   ],
+   "what": "chêne sacré, menhirs, dolmen"
+  },
+  "legendary": {
+   "box": [
+    0.198,
+    0.316,
+    0.904,
+    0.908
+   ],
+   "what": "tronc géant et cercle de menhirs"
+  },
+  "mythic": {
+   "box": [
+    0.28,
+    0.009,
+    0.836,
+    0.845
+   ],
+   "what": "chêne géant aux pierres levées"
+  }
+ },
+ "fountain": {
+  "rough": {
+   "box": [
+    0.291,
+    0.593,
+    0.717,
+    0.828
+   ],
+   "what": "bassin de pierre et jet d'eau"
+  },
+  "solid": {
+   "box": [
+    0.308,
+    0.487,
+    0.87,
+    0.812
+   ],
+   "what": "bassins et jets d'eau"
+  },
+  "grand": {
+   "box": [
+    0.177,
+    0.338,
+    0.872,
+    0.81
+   ],
+   "what": "bassins étagés et colonne d'eau"
+  },
+  "legendary": {
+   "box": [
+    0.177,
+    0.257,
+    0.697,
+    0.828
+   ],
+   "what": "arc d'eau et bassins"
+  },
+  "mythic": {
+   "box": [
+    0.174,
+    0.009,
+    0.744,
+    0.835
+   ],
+   "what": "vague d'eau sur les bassins"
+  }
+ },
+ "armory": {
+  "rough": {
+   "box": [
+    0.391,
+    0.728,
+    0.712,
+    0.898
+   ],
+   "what": "râteliers d'armes et boucliers"
+  },
+  "solid": {
+   "box": [
+    0.389,
+    0.651,
+    0.783,
+    0.885
+   ],
+   "what": "râteliers d'armes et boucliers"
+  },
+  "grand": {
+   "box": [
+    0.437,
+    0.616,
+    0.867,
+    0.875
+   ],
+   "what": "armures, boucliers, râteliers"
+  },
+  "legendary": {
+   "box": [
+    0.215,
+    0.421,
+    0.845,
+    0.897
+   ],
+   "what": "râteliers et armures sous charpente"
+  },
+  "mythic": {
+   "box": [
+    0.214,
+    0.02,
+    0.809,
+    0.887
+   ],
+   "what": "heaume au sommet, râteliers"
+  }
+ },
+ "barn": {
+  "rough": {
+   "box": [
+    0.306,
+    0.589,
+    0.709,
+    0.866
+   ],
+   "what": "grande grange de planches"
+  },
+  "solid": {
+   "box": [
+    0.242,
+    0.458,
+    0.817,
+    0.841
+   ],
+   "what": "grande grange et bottes de foin"
+  },
+  "grand": {
+   "box": [
+    0.204,
+    0.309,
+    0.914,
+    0.842
+   ],
+   "what": "grange, charrette, foin"
+  },
+  "legendary": {
+   "box": [
+    0.239,
+    0.198,
+    0.914,
+    0.897
+   ],
+   "what": "grange à lucarne et meules"
+  },
+  "mythic": {
+   "box": [
+    0.096,
+    0.022,
+    1.0,
+    0.891
+   ],
+   "what": "grange à tour de grain et foin"
+  }
+ },
+ "castle_wall": {
+  "rough": {
+   "box": [
+    0.425,
+    0.635,
+    0.679,
+    0.888
+   ],
+   "what": "palissade et porte à barre"
+  },
+  "solid": {
+   "box": [
+    0.408,
+    0.584,
+    0.708,
+    0.862
+   ],
+   "what": "porte de rondins sur socle de pierre"
+  },
+  "grand": {
+   "box": [
+    0.468,
+    0.49,
+    0.858,
+    0.9
+   ],
+   "what": "porte voûtée entre créneaux"
+  },
+  "legendary": {
+   "box": [
+    0.356,
+    0.346,
+    0.877,
+    0.844
+   ],
+   "what": "porte à herse entre deux tours"
+  },
+  "mythic": {
+   "box": [
+    0.303,
+    0.129,
+    0.855,
+    0.877
+   ],
+   "what": "porte à herse entre deux tours"
+  }
+ },
+ "watchtower": {
+  "rough": {
+   "box": [
+    0.371,
+    0.594,
+    0.631,
+    0.752
+   ],
+   "what": "plateforme couverte sur pilotis"
+  },
+  "solid": {
+   "box": [
+    0.32,
+    0.464,
+    0.729,
+    0.681
+   ],
+   "what": "plateforme couverte et cor"
+  },
+  "grand": {
+   "box": [
+    0.28,
+    0.349,
+    0.779,
+    0.599
+   ],
+   "what": "plateforme couverte et cor"
+  },
+  "legendary": {
+   "box": [
+    0.292,
+    0.168,
+    0.733,
+    0.402
+   ],
+   "what": "créneaux et brasier au sommet"
+  },
+  "mythic": {
+   "box": [
+    0.25,
+    0.015,
+    0.814,
+    0.294
+   ],
+   "what": "brasier au sommet de la tour"
+  }
+ },
+ "observatory": {
+  "rough": {
+   "box": [
+    0.358,
+    0.605,
+    0.626,
+    0.775
+   ],
+   "what": "cabane et lunette sur plateforme"
+  },
+  "solid": {
+   "box": [
+    0.309,
+    0.479,
+    0.68,
+    0.71
+   ],
+   "what": "cabane et lunette sur plateforme"
+  },
+  "grand": {
+   "box": [
+    0.295,
+    0.336,
+    0.764,
+    0.696
+   ],
+   "what": "cabane et lunette sur la tour"
+  },
+  "legendary": {
+   "box": [
+    0.204,
+    0.192,
+    0.896,
+    0.569
+   ],
+   "what": "dôme fendu et lunette"
+  },
+  "mythic": {
+   "box": [
+    0.153,
+    0.041,
+    0.983,
+    0.487
+   ],
+   "what": "dôme fendu et lunette"
+  }
+ },
+ "high_road": {
+  "rough": {
+   "box": [
+    0.631,
+    0.682,
+    0.818,
+    0.809
+   ],
+   "what": "cairn au bout du pont"
+  },
+  "solid": {
+   "box": [
+    0.637,
+    0.626,
+    0.922,
+    0.78
+   ],
+   "what": "cairn, lanterne et fanion"
+  },
+  "grand": {
+   "box": [
+    0.665,
+    0.552,
+    0.979,
+    0.741
+   ],
+   "what": "cairn et lanternes du pont"
+  },
+  "legendary": {
+   "box": [
+    0.708,
+    0.477,
+    0.958,
+    0.705
+   ],
+   "what": "tour de garde du pont"
+  },
+  "mythic": {
+   "box": [
+    0.658,
+    0.141,
+    0.951,
+    0.469
+   ],
+   "what": "tour de garde du pont"
+  }
+ },
+ "dragon_lair": {
+  "rough": {
+   "box": [
+    0.287,
+    0.607,
+    0.654,
+    0.863
+   ],
+   "what": "entrée de caverne, os et torche"
+  },
+  "solid": {
+   "box": [
+    0.318,
+    0.455,
+    0.82,
+    0.802
+   ],
+   "what": "gueule de caverne, os et torches"
+  },
+  "grand": {
+   "box": [
+    0.269,
+    0.306,
+    0.952,
+    0.844
+   ],
+   "what": "caverne en mâchoire, squelette"
+  },
+  "mythic": {
+   "box": [
+    0.237,
+    0.071,
+    0.819,
+    0.9
+   ],
+   "what": "dragon enroulé sur la porte de pierre"
+  }
+ },
+ "champion_arena": {
+  "rough": {
+   "box": [
+    0.209,
+    0.643,
+    0.763,
+    0.92
+   ],
+   "what": "cercle de pieux et tonneau"
+  },
+  "solid": {
+   "box": [
+    0.192,
+    0.607,
+    0.812,
+    0.914
+   ],
+   "what": "cercle de pieux, bancs, torches"
+  },
+  "grand": {
+   "box": [
+    0.3,
+    0.486,
+    0.955,
+    0.917
+   ],
+   "what": "arène de bois à gradins"
+  },
+  "mythic": {
+   "box": [
+    0.012,
+    0.109,
+    0.9,
+    0.922
+   ],
+   "what": "colisée de pierre aux torches"
+  }
+ }
+}

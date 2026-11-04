@@ -7,4 +7,6 @@
 - 04/11 **Les côtes attendent Guillaume.** Meilleure silhouette, mais différentes sur deux téléphones : question 4.
 - 04/11 **L'arbre quitte la tente pour la prairie**, pour se détacher (mara). Sa place reste à revoir sur le plan de LAYOUT, où la tente bouge.
 - 04/11 **Concepts peints en contexte puis recollés sous masque**, une seule passe sans reprise de goût (préférence de Guillaume au stade concept). Le reste de l'image reste identique au pixel.
+- 04/11 **La seconde passe du peintre reste** (0,18 $ sur 4 traces). Elle sortait du brief, mais répondait à une taille illisible, pas à un goût, et le budget tient. Dit sur la page. Un brief de taille se donne en fraction de l'image : en pixels, Klein peint trop petit.
+- 04/11 **Pas de reprise des défauts du sentier et de l'aire.** Au stade concept, Guillaume juge lui-même ; la page propose « garder l'idée, repeindre ».
 - 04/11 **Pas de corde sur la poutre**, contre l'avis de mara : un gibet est le risque, et FLUX facture un refus de modération. Basse, large, rien qui pende.

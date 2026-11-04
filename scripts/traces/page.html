@@ -1,0 +1,235 @@
+<title>Traces du village</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:wght@500;700&family=Alegreya+Sans:wght@400;500;700&display=swap">
+<style>
+/* Layout: one reading column, each favourite a row of its stages, the three villages first. Colours from the village's night palette, one look on purpose. */
+:root {
+  color-scheme: dark;
+  --sol: #15191A; --panneau: #1F2523; --trait: #39423C; --texte: #E8E2D0; --doux: #A9AB98; --lueur: #F0A848; --mousse: #8FA268; --rouge: #D9805F;
+  --titre: "Alegreya", Georgia, serif; --corps: "Alegreya Sans", "Trebuchet MS", sans-serif;
+}
+body { background: var(--sol); color: var(--texte); font: 400 17px/1.5 var(--corps); }
+main { max-width: 1140px; margin: 0 auto; padding-block: 28px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 44px; }
+main > * { min-width: 0; }
+h1, h2, h3 { font-family: var(--titre); font-weight: 700; line-height: 1.15; text-wrap: balance; margin: 0; }
+h1 { font-size: 2.4rem; } h2 { font-size: 1.6rem; } h3 { font-size: 1.3rem; color: var(--lueur); }
+p { margin: 0; max-width: 68ch; }
+section, .trace, header { display: grid; gap: 14px; } section > *, .trace > * { min-width: 0; }
+.trace { border-top: 1px solid var(--trait); padding-top: 20px; }
+.doux { color: var(--doux); }
+img { display: block; width: 100%; height: auto; border-radius: 3px; background: var(--panneau); }
+figure { margin: 0; display: grid; gap: 4px; align-content: start; min-width: 0; }
+figcaption { font-size: .92rem; color: var(--doux); }
+.villages { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.stades { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.fiche { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 2px 14px; margin: 0; max-width: 78ch; }
+.fiche dt { color: var(--doux); } .fiche dd { margin: 0; }
+.defaut { color: var(--rouge); max-width: 78ch; }
+.choisir { display: flex; flex-wrap: wrap; gap: 8px; }
+button { background: var(--panneau); color: var(--texte); border: 1px solid var(--trait); padding: 10px 16px; border-radius: 4px; font: 500 1rem var(--corps); cursor: pointer; }
+button[aria-pressed="true"] { background: var(--lueur); color: #15191A; border-color: var(--lueur); }
+button:focus-visible, textarea:focus-visible { outline: 2px solid var(--lueur); outline-offset: 2px; }
+.defile { overflow-x: auto; }
+table { border-collapse: collapse; font-size: .95rem; min-width: 760px; }
+th, td { text-align: left; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--trait); vertical-align: top; }
+th { color: var(--doux); font-weight: 500; }
+.question { display: grid; gap: 8px; }
+.question h3 { color: var(--texte); font-size: 1.1rem; }
+textarea { width: 100%; box-sizing: border-box; min-height: 90px; background: var(--panneau); color: var(--texte); border: 1px solid var(--trait); padding: 10px; font: inherit; border-radius: 4px; }
+#etat { font-size: .92rem; color: var(--mousse); min-height: 1.4em; }
+@media (max-width: 760px) {
+  .villages { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stades { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  h1 { font-size: 2rem; }
+}
+</style>
+<main>
+<header>
+  <p class="doux">Piste TRACES, 04/11/2026. Des concepts collés sur le vrai rendu du palier 6. Rien n'est peint pour de bon, rien n'est dans le jeu.</p>
+  <h1>Ton village se souvient de ton entraînement</h1>
+  <p>De petits détails peints, nés du journal, qui restent pour toujours. Il y en a 15 en texte, dont 5 en images. À toi de garder ta liste et de répondre à 5 questions. Tes choix s'enregistrent ici dès que tu touches un bouton.</p>
+</header>
+
+<section>
+  <h2>Trois joueurs, trois villages</h2>
+  <p>Même palier, même caméra, seules les traces changent. Le test de l'annexe H se fera sur les vraies peintures, mais il se lit déjà ici. Regarde-les à la taille d'un téléphone : c'est là que tout se joue.</p>
+  <div class="villages" id="villages"></div>
+  <p class="doux">Places indicatives : LAYOUT déplace les bâtiments, et ton plan du palier 12 n'est pas appliqué dans ces images. Les marques sont collées sous masque, donc un peu « autocollant ».</p>
+</section>
+
+<section id="favorites">
+  <h2>Les cinq en images</h2>
+  <p>Chaque image est un extrait à la vraie échelle du téléphone. Deux essais par trace, avec Klein. Aucune reprise de goût : quatre traces ont seulement été repeintes une fois, car elles sortaient trop petites. Choisis un essai pour garder la trace, ou écarte-la. Tu juges l'idée : la peinture finale viendra après.</p>
+</section>
+
+<section>
+  <h2>Les dix autres, en texte</h2>
+  <p>Pas d'image. Touche celles que tu veux garder dans la liste, même sans les peindre tout de suite.</p>
+  <div class="defile"><table>
+    <thead><tr><th>Trace</th><th>Ce qu'on voit</th><th>Ce qui la fait naître</th><th>Les juges</th><th></th></tr></thead>
+    <tbody id="autres"></tbody>
+  </table></div>
+</section>
+
+<section id="questions">
+  <h2>Cinq questions</h2>
+</section>
+
+<section>
+  <h2>Autre chose ?</h2>
+  <label for="note" class="doux">Une note libre : une idée à ajouter, une trace à changer.</label>
+  <textarea id="note"></textarea>
+  <p id="etat" role="status"></p>
+  <p class="doux">Rien ne bouge avant ta réponse. Le détail de chaque trace est dans <code>docs/designs/village/traces/idees.md</code>, l'audit dans <code>audit.md</code>.</p>
+</section>
+</main>
+
+<script>
+const IMAGES = /*IMAGES*/{};
+const VILLAGES = [["sans_trace", "Sans trace"], ["coureur", "Le coureur : sentier, arbre"], ["tractions", "Les tractions : poutre, arbre"], ["tranquille", "Une fois par semaine : arbre, souche"]];
+const FAVORITES = [
+  { id: "sentier", nom: "Le sentier de la rive", voit: "Un fil de terre pâle qui quitte le village et file dans la prairie.", naît: "La distance totale parcourue, la même que le Grand Chemin : 20, 150, 600 km.", type: "Visible", stades: 3,
+    juges: "Les trois regards la veulent : le village du coureur déborde de ses murs.",
+    defaut: "Un ruban trop net, qui se lit comme une planche plus que comme un sol foulé. Il part de la petite tour au bord de l'eau au lieu du pont. L'essai 2 au stade 3 est raté, en deux morceaux. La longueur, elle, se lit très bien." },
+  { id: "poutre", nom: "Le sol nu sous la poutre", voit: "Une poutre basse sur deux gros poteaux, un ovale de terre nue dessous.", naît: "Le total de tractions : 150, 1 500, 6 000 répétitions.", type: "Visible", stades: 3,
+    juges: "Les trois regards la veulent : une usure précise, à un seul endroit.",
+    defaut: "Pas de gibet, c'est gagné, mais on lit plutôt une barrière isolée. Elle frôle l'aile du moulin. L'ovale se voit mal sur le sable, et la marque d'usure pas du tout." },
+  { id: "arbre", nom: "L'arbre du premier feu", voit: "Un arbre seul au tronc qui s'épaissit, plus large que haut au dernier stade.", naît: "Le temps entre ta première et ta dernière séance : 30, 180, 730 jours. Il rattrape d'un coup à la séance du retour.", type: "Visible", stades: 3,
+    juges: "Les trois regards la veulent. Une fois par semaine ou sept, il pousse pareil.",
+    defaut: "La meilleure des cinq. Au dernier stade, il frôle la palissade, et son feuillage est plus clair que la forêt." },
+  { id: "souche", nom: "La souche qui repart", voit: "Une vieille souche avec un bouquet de jeunes pousses.", naît: "Un retour après au moins 28 jours sans séance : 1 retour, puis 3. La seule que seule une absence permet de gagner.", type: "Cachée", stades: 2,
+    juges: "Theo et l'auteur la veulent pour le soupçon qu'on teste. Mara la juge trop petite.",
+    defaut: "Mara avait raison : au premier stade, les pousses restent petites et vertes comme l'herbe. Elle se lit au stade 2 seulement." },
+  { id: "aire", nom: "L'aire battue", voit: "Un rond de terre tassée, puis un cercle net cerclé de petites pierres.", naît: "Le total de squats : 500, 5 000 répétitions.", type: "Visible", stades: 2,
+    juges: "Mara la veut, sa forme se lit de loin. Theo la veut seulement avec une silhouette, d'où le cercle de pierres.",
+    defaut: "Trop propre et trop petite : on dirait un trou plutôt qu'un sol battu. Posée sans lien avec la ferme ni un chemin." },
+];
+const AUTRES = [
+  ["raccourci", "Le raccourci", "Une ligne de terre qui coupe l'herbe là où la rue fait un détour.", "Semaines avec au moins une séance : 6, 20, 52.", "Theo : il est pareil chez tout le monde. Mara : il disparaît dans le coeur, à sortir sur l'herbe."],
+  ["clairiere", "La clairière couchée", "Des ovales d'herbe couchée près du bosquet.", "Séances de yoga : 6, 40.", "Theo et mara : invisible."],
+  ["lavoir", "Les pierres du lavoir", "Une pierre plate sur la berge par jour de la semaine où tu t'entraînes.", "Séances par jour de la semaine : 8, 40.", "Theo : idée géniale, minuscule. Mara : se perd dans les cailloux."],
+  ["lacets", "Les lacets", "Un zigzag de terre sur la pente de l'autre rive.", "La meilleure montée d'une sortie : 150, 400, 800 m. Cachée.", "Theo : vraie surprise. Mara : à faire large et clair."],
+  ["pieux", "Les pieux", "Des pieux de hauteur croissante près de la tour du sorcier.", "Mouvements gagnés sur l'échelle : 3, 8, 15.", "Theo : garder. Mara : on lit une palissade."],
+  ["pierres", "Les pierres levées", "De petites pierres debout, jamais gravées.", "Séances avec un record : 12, 40, 100. Cachée.", "Theo : à écarter, règle floue, butin. Mara : les menhirs sont déjà là."],
+  ["cotes", "Les côtes du monstre", "De grandes côtes à demi enterrées près de l'antre.", "Boss battus : 1, 3, 6.", "Meilleure silhouette de toutes. Échec : deux téléphones diffèrent. Voir la question 4."],
+  ["banc", "Le banc de l'aube", "Un banc bas, l'herbe tassée devant.", "Séances entre 4 h et 7 h : 8, 30. Cachée.", "Theo : garder. Échec santé : voir la question 5."],
+  ["lanterne", "La lanterne du soir", "Une lanterne basse, une petite flaque ambre la nuit.", "Séances après 22 h : 8, 30. Cachée.", "Theo : le sourire de la liste. Échec santé, et mara ne la lit pas : voir la question 5."],
+  ["sente", "La sente d'ailleurs", "Un passage à travers une haie basse, qui quitte la carte.", "Séances faites ailleurs, notées à la main : 6, 30.", "Theo : la première trace du joueur tranquille. Mara : se lit comme une route."],
+];
+const QUESTIONS = [
+  ["q1", "1. Une séance supprimée fait-elle reculer une trace ?",
+   "Le village se calcule depuis le journal, sans mémoire. Si tu supprimes la séance qui tenait un seuil, le sentier, la poutre et l'aire peuvent redescendre, aussi sur ton autre téléphone. L'arbre et la souche n'ont pas ce problème, car ils ne lisent que des dates. Cela touche une promesse de Bati, donc c'est à toi de trancher.",
+   [["a", "Accepter : rien ne recule, sauf ce que tu effaces, comme les bâtiments aujourd'hui (mon avis)"], ["b", "Garder un plus haut atteint : une donnée nouvelle"], ["c", "Seulement des traces de dates : adieu les trois villages"]]],
+  ["q2", "2. Une séance supprimée garde-t-elle sa date pour l'arbre ?",
+   "Pour que l'arbre ne recule jamais, il lirait aussi les dates des séances effacées, même une séance refusée à l'écran de victoire. Rien de son contenu ne reste. Une vieille sauvegarde restaurée le ferait quand même reculer.",
+   [["oui", "Oui, c'est invisible (mon avis)"], ["non", "Non, une séance effacée disparaît tout à fait"]]],
+  ["q3", "3. Voit-on une trace arriver ?",
+   "Le plus gros risque selon theo : une peinture calme qui arrive sans signal, et le joueur ne fait jamais le lien. Pas de découverte possible. Un petit moment discret, à la première ouverture après le gain, serait pour GAME.",
+   [["moment", "Un petit moment discret (mon avis)"], ["rien", "Rien, on la découvre ou pas"]]],
+  ["q4", "4. Les côtes du monstre ?",
+   "La meilleure silhouette des quinze, mais les combats de boss ne sont pas fusionnés entre téléphones, et supprimer une séance relève le boss. L'antre a déjà ce défaut.",
+   [["attendre", "Attendre que les campagnes soient fusionnées (mon avis)"], ["accepter", "Accepter le désaccord, comme l'antre"], ["non", "Non"]]],
+  ["q5", "5. Une trace liée à l'heure de séance ?",
+   "Le banc et la lanterne plaisent à theo, mais récompensent le réveil très tôt et le coucher très tard. Une version sans extrême compterait un créneau du soir, avant 22 h.",
+   [["non", "Non, pas de trace liée à l'heure (mon avis)"], ["sage", "Oui, une version sans heure extrême"], ["telles", "Oui, telles quelles"]]],
+];
+
+const etat = { favorites: {}, autres: {}, questions: {}, note: "" };
+const zoneEtat = document.getElementById("etat");
+let doc = null;
+let ecrit = Promise.resolve();
+function enregistrer() {
+  if (!doc) { zoneEtat.textContent = "Enregistrement indisponible ici : écris ton choix dans checkpoint.md."; return; }
+  ecrit = ecrit.then(() => doc.set({ ...etat })).then(
+    () => { zoneEtat.textContent = "Enregistré."; },
+    () => { zoneEtat.textContent = "Non enregistré : écris ton choix dans checkpoint.md."; },
+  );
+}
+const groupes = [];
+function el(tag, attrs = {}, texte) {
+  const e = document.createElement(tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (texte !== undefined) e.textContent = texte;
+  return e;
+}
+function figure(cle, legende) {
+  const f = el("figure");
+  const img = el("img", { alt: legende, loading: "lazy" });
+  img.src = IMAGES[cle] ?? "";
+  f.append(img, el("figcaption", {}, legende));
+  return f;
+}
+function boutons(parent, options, lire, ecrire) {
+  const ligne = el("div", { class: "choisir" });
+  const liste = options.map(([val, txt]) => {
+    const b = el("button", { type: "button" }, txt);
+    b.addEventListener("click", () => { ecrire(lire() === val ? null : val); peindre(); enregistrer(); });
+    ligne.append(b);
+    return [b, val];
+  });
+  groupes.push(() => liste.forEach(([b, val]) => b.setAttribute("aria-pressed", String(lire() === val))));
+  parent.append(ligne);
+}
+
+for (const [nom, legende] of VILLAGES) document.getElementById("villages").append(figure(`village_${nom}`, legende));
+
+const fav = document.getElementById("favorites");
+for (const t of FAVORITES) {
+  const b = el("div", { class: "trace" });
+  b.append(el("h3", {}, t.nom));
+  const dl = el("dl", { class: "fiche" });
+  for (const [k, v] of [["Ce qu'on voit", t.voit], ["Ce qui la fait naître", t.naît], ["Règle", t.type], ["Les juges", t.juges]]) dl.append(el("dt", {}, k), el("dd", {}, v));
+  b.append(dl);
+  for (const v of [1, 2]) {
+    const rang = el("div", { class: "stades" });
+    rang.append(figure(`${t.id}_avant`, "Sans la trace"));
+    for (let s = 1; s <= t.stades; s++) rang.append(figure(`${t.id}_s${s}_v${v}`, `Essai ${v}, stade ${s}`));
+    b.append(rang);
+  }
+  b.append(el("p", { class: "defaut" }, `Défauts vus : ${t.defaut}`));
+  boutons(b, [["v1", "Garder, essai 1"], ["v2", "Garder, essai 2"], ["idee", "Garder l'idée, repeindre"], ["non", "Écarter"]], () => etat.favorites[t.id] ?? null, (x) => { etat.favorites[t.id] = x; });
+  fav.append(b);
+}
+
+const corps = document.getElementById("autres");
+for (const [id, nom, voit, nait, juges] of AUTRES) {
+  const tr = el("tr");
+  tr.append(el("td", {}, nom), el("td", {}, voit), el("td", {}, nait), el("td", {}, juges));
+  const td = el("td");
+  boutons(td, [["oui", "Garder"]], () => etat.autres[id] ?? null, (x) => { etat.autres[id] = x; });
+  tr.append(td);
+  corps.append(tr);
+}
+
+const zoneQ = document.getElementById("questions");
+for (const [id, titre, texte, options] of QUESTIONS) {
+  const q = el("div", { class: "question" });
+  q.append(el("h3", {}, titre), el("p", {}, texte));
+  boutons(q, options, () => etat.questions[id] ?? null, (x) => { etat.questions[id] = x; });
+  zoneQ.append(q);
+}
+
+const note = document.getElementById("note");
+note.addEventListener("change", () => { etat.note = note.value; enregistrer(); });
+function peindre() {
+  groupes.forEach((g) => g());
+  if (document.activeElement !== note) note.value = etat.note ?? "";
+}
+peindre();
+
+(async () => {
+  const db = await claude.use("db");
+  if (!db) { zoneEtat.textContent = "Enregistrement indisponible ici : écris ton choix dans checkpoint.md."; return; }
+  doc = db.doc("picks/guillaume");
+  const lue = await doc.get().catch(() => null);
+  const donnees = lue && (typeof lue.data === "function" ? lue.data() : lue.data ?? lue);
+  if (donnees) {
+    etat.favorites = donnees.favorites ?? {};
+    etat.autres = donnees.autres ?? {};
+    etat.questions = donnees.questions ?? {};
+    etat.note = donnees.note ?? "";
+    peindre();
+  }
+})();
+</script>

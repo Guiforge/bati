@@ -21,20 +21,22 @@ le rapport.
 
 Décidé le 04/11, commencé à 09:37. Même branche, fusionné avec le lot 0 une fois la clé Play reçue.
 
-**Numéros de migration :** le lot 0 a pris `0082`, ce lot `0083` et suivants, `feat/village-iso` est à `0081`. La
+**Numéros de migration :** le lot 0 a pris `0082`, ce lot `0083` et `0084`, `feat/village-iso` est à `0081`. La
 branche qui fusionne en second renumérote ses migrations.
 
 | Étape | Statut | Temps | Reste (estimé) |
 | --- | --- | --- | --- |
-| B1 Migration | done, `0083` | 0 h 03 | |
-| B2 « J'arrête, j'ai mal » | code et tests done, reste l'émulateur | 0 h 10 | 0 h 10 |
-| B3 Variante plus facile | done | 0 h 02 | |
-| B4 Semaine légère | done | 0 h 01 | |
-| B5 Page `/d` | à faire | | 0 h 10 |
-| B6 Invitation X25519 | à faire | | 0 h 30 |
-| B7 Scanner en CI | à faire | | 0 h 15 |
-| B8 Test du soir à Paris | done | 0 h 02 | |
-| Porte | à faire | | 0 h 45 |
+| B1 Migration | done, `0083` | 0 h 03 | 0 |
+| B2 « J'arrête, j'ai mal » | done, prouvé sur émulateur | 0 h 05 | 0 |
+| B3 Variante plus facile | done | 0 h 01 | 0 |
+| B4 Semaine légère | done | 0 h 01 | 0 |
+| B5 Page `/d` | done, vérifiée dans un vrai navigateur | 0 h 02 | 0 |
+| B6 Invitation X25519 | done, `0084`, prouvé sur deux émulateurs | 0 h 07 | 0 |
+| B7 Scanner en CI | done, l'étape n'a pas encore tourné dans une vraie CI | 0 h 01 | 0 |
+| B8 Test du soir à Paris | done | 0 h 09 | 0 |
+| Porte | done, voir [LOT0B.md](reviews/LOT0B.md) | 1 h 08 | 0 |
+
+Total réel : 1 h 40, de 09:37 à 11:15. Reste : ce qui dépend de toi, listé dans le rapport.
 
 ### B2 : comment une séance s'arrête aujourd'hui, avant ce lot
 
@@ -61,6 +63,14 @@ branche qui fusionne en second renumérote ses migrations.
 - **Une étape d'aventure avance sur un arrêt**, comme aujourd'hui sur une séance où tout le reste est passé. Le brief
   dit « inchangé » : je n'y ai pas touché.
 - **Les sorties n'ont pas le geste** : leur « Terminer » garde déjà la trace.
+
+### B6 : invitation par lien
+
+- **A :** « Send a link » crée une clé dans `pair_invites` et aucune paire. **B :** accepte, écrit la paire et obtient une
+  réponse à renvoyer. **A :** ouvre la réponse, la nomme, et la clé disparaît. Le format est dans [envelope.md](envelope.md).
+- **Le QR garde le kind 2** et n'est plus jamais envoyé à une feuille de partage. Le lien refuse le kind 2.
+- **Les clés périmées** sont balayées à l'ouverture de l'accueil (`sweepExpiredInvites`), sans dépendre de l'écran
+  d'appairage.
 
 ### B3 et B4 : ce que les lignes disent
 
@@ -114,18 +124,11 @@ Material (163), Guava (201), Gson (87). Aucune Play Services ni ML Kit. Critère
 (signatures de code du scanner F-Droid, Play Services, ML Kit), et rien de nouveau venu du scanner. Mesuré par
 `scripts/apk-no-google.py`, qui lit le mapping R8, puisque R8 renomme les classes.
 
-### T5 : le bouton « Open in Bati » de la page de secours
-
-Tu as demandé une page qui ne lit rien : elle n'a aucun script. Son bouton ouvre donc Bati sans le contenu du
-lien, et le joueur doit rouvrir le lien depuis ses messages. Une ligne de script locale (`location.hash` recopié
-dans le lien `bati://`, sans rien envoyer) le rendrait vraiment utile, surtout si l'App Link n'est pas vérifié.
-Je ne l'ai pas ajoutée sans ton accord.
-
 ## À savoir
 
-- **Une invitation n'est pas scellée, elle ne peut pas l'être.** Qui la lit peut lire les messages de cette paire,
-  y compris ta messagerie si elle n'est pas chiffrée. Elle expire après 7 jours, et A n'apprend jamais qui l'a
-  utilisée, puisque rien ne revient.
+- **L'invitation par QR n'est pas scellée, elle ne peut pas l'être.** Qui lit le code peut lire les messages de cette
+  paire. D'où la caméra seulement, et 7 jours. Rien ne revient, donc A n'apprend pas qui l'a utilisée. Le lien, lui, n'a
+  plus ce défaut.
 - **Restaurer une sauvegarde en clair efface les paires.** Le prix du secret qui ne sort jamais en clair. Il faudra
   le dire avant la restauration quand un joueur aura des compagnons.
 - **Android Backup peut copier le secret**, là où le transport chiffre côté client (règle déjà en place pour toute

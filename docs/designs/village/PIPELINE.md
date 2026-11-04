@@ -127,6 +127,41 @@ C'est le travail de LIFE, **en cours** : ce qui suit décrit l'existant, pas un 
 | Commit d'équipe | `scripts/iso/team/commit.sh` | non lu ici |
 | Vie (LIFE) | `scripts/life/*.py` | docstrings lues, non lancées (sauf `status.py`, aucun effet vu) |
 
+## 6. L'atelier : voir le village sans émulateur
+
+Le village en images, dessiné par les composants de l'appli eux-mêmes dans un navigateur sans écran : la route `app/dev-iso.tsx`, avec ses liens. Sans émulateur, sans serveur Metro. Pourquoi pas Node et Skia comme le dit le prompt : Skia n'est pas dans l'appli (`atelier/checkpoint.md`, Q1).
+
+```bash
+node scripts/atelier/atelier.js render --tier 6 --light nuit       # un état, à la taille du téléphone
+node scripts/atelier/atelier.js strip --light jour                 # les 12 paliers côte à côte
+node scripts/atelier/atelier.js sheet forge --light jour           # un bâtiment à chaque stade
+node scripts/atelier/atelier.js render --tier 12 --query 'peint=sol,foret'    # tout paramètre de dev-iso
+```
+
+- **Sorties** : `docs/designs/village/<piste>/scratch/atelier/` (piste lue dans le nom de la branche, `--out` pour une autre), nom avec le sha, plus `-dirty` si l'arbre a des changements. Une décision de look se prend sur un rendu propre.
+- **Construction** : refaite seule quand l'arbre a bougé (`ATELIER_WEB=1 npx expo export --platform web --dev`, dans `node_modules/.cache/atelier-web`), de quelques secondes à 1 min. `--no-build` réutilise la dernière.
+- **Vitesse mesurée** : `render` 3 s, `strip` 44 s.
+- **Fixé par l'atelier** : la date (`useJour`, numéro de vague), donc le même état donne la même image. `fige=1` tient le mouvement au repos. `lumieres=0`, `foyer=<code>&zoom=1.6`, `dump=<nom>` passent par `--query`.
+- **Besoin** : `playwright-core` et Chromium de l'installation gstack (`ATELIER_PLAYWRIGHT` pour un autre chemin).
+
+### Taille du téléphone et calibrage (04/11/2026)
+
+Téléphone de référence : émulateur 1080x2400 à 420 dpi (`bati-bench`, 411,43 x 914,29 dp, échelle 2,625), police à 1,0. Écart moyen appli contre atelier, barres coupées, meilleur décalage de 1 px (`atelier/img/calibration-*.jpg`, appli à gauche) :
+
+| État | Écart | Réduit à 1/8 |
+|---|---|---|
+| Palier 6, nuit | 1,47 % | 0,44 % |
+| Palier 1, jour | 2,67 % | 1,92 % |
+| Palier 12, jour | 3,36 % | 1,39 % |
+
+**L'écart qui reste, et sa cause.** Le détail fin : Android décode chaque image à une taille réduite (`tailleDecode`), le navigateur à la taille source et réduit à l'affichage, donc les bords diffèrent. Et de jour une bande douce du voile des alentours (`VoileAlentours`) : l'atelier est un peu plus sombre au-dessus du village et un peu plus clair en dessous, de 7 niveaux sur 255 au plus. Cause non trouvée, temps écoulé (règle 5). **Donc** : ne pas régler à l'atelier la valeur du sol à quelques niveaux près, surtout loin du village.
+
+**Ce qui diffère dans le navigateur, et que l'atelier corrige** (`scripts/atelier/web/`, derrière `ATELIER_WEB`) : un id SVG vaut pour tout le document et non pour sa `Svg` (`scopeSvgIds.ts` : sans lui, la place perdait son pavage) ; `rx`/`ry` d'un dégradé radial (`svg-stub.tsx`) ; l'alpha d'une teinte `expo-image` (`expo-image-tint.js`) ; base de données, widget et pilote d'animation Tamagui en bouchons ; `Image.resolveAssetSource`. **Un écart neuf et net entre l'atelier et l'appli vient d'abord de là** : l'écrire dans `handoff.md` pour GAME avec le rendu, l'état et la commande.
+
+**Une moyenne de pixels ne voit pas tout** : la place sans pavage ne changeait l'écart que de 0,01 point, c'est mara qui l'a vue. Regarder les images.
+
+**Budget de mouvement, première version** : le plafond déjà tenu par `__tests__/iso-ciel.test.tsx` (68 noeuds animés, 8 familles à la fois). Pas de mesure de temps d'image : pas de chiffre de perf en dev (`AGENTS.md`). PERF l'affine.
+
 ## Ce que je n'ai pas pu vérifier
 
 - Aucune commande FLUX n'a été lancée (budget oblige) : `iso_loop.py budget`, `concepts.py`, `final.py paint|elements` sont lus, pas essayés.

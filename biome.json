@@ -159,6 +159,16 @@
   },
   "overrides": [
     {
+      "includes": ["scripts/atelier/**"],
+      "linter": {
+        "rules": {
+          "correctness": { "noUndeclaredDependencies": "off" },
+          "style": { "noDefaultExport": "off" },
+          "suspicious": { "noConsole": "off" }
+        }
+      }
+    },
+    {
       "includes": [
         "components/home/**",
         "components/session/**",

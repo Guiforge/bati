@@ -87,5 +87,16 @@ module.exports = ({ config } = {}) => {
     ...base,
     android: { ...base.android, versionCode },
     extra: { ...base.extra, changelog: changelogFor(versionCode) },
+    // The atelier (scripts/atelier): the village map alone, as a browser page. Set by its CLI only.
+    ...(process.env.ATELIER_WEB
+      ? {
+          web: { ...base.web, output: "single" },
+          extra: {
+            ...base.extra,
+            changelog: changelogFor(versionCode),
+            router: { root: "scripts/atelier/web" },
+          },
+        }
+      : {}),
   };
 };

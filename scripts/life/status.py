@@ -4,14 +4,17 @@
 Item fields read besides the required ones: debut, fin, heures, avancement, total, note.
 """
 import json
+import sys
 from pathlib import Path
 
-LIFE = Path(__file__).resolve().parents[2] / "docs/designs/village/life"
+# Any track with the same features.json: `status.py atelier`.
+LIFE = Path(__file__).resolve().parents[2] / "docs/designs/village" / (sys.argv[1] if len(sys.argv) > 1 else "life")
 STATUTS = {
     "todo": "à faire",
     "doing": "en cours",
     "done": "fait",
     "blocked": "attend Guillaume",
+    "waiting": "attend Guillaume",
     "dropped": "abandonné",
     "paused": "en pause",
 }

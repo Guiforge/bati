@@ -1,0 +1,5 @@
+# Atelier : à passer aux autres pistes
+
+- **GAME** : de jour, le voile des alentours (`VoileAlentours`, `AmbianceCarte.tsx`) ne tombe pas au même endroit dans l'appli et dans l'atelier : l'appli est plus claire au-dessus du village et plus sombre en dessous, de 7 niveaux sur 255 au plus. À voir sur émulateur : le dégradé part-il bien du centre du village ? `bati://dev-iso?palier=12&ambiance=jour&nu=1&fige=1` contre `node scripts/atelier/atelier.js render --tier 12 --light jour`, comparaison dans `atelier/img/calibration-t12-jour-*.jpg`.
+- **PERF** : 772 images et 204 SVG montés au palier 12 (compte du navigateur, à confirmer sur Android). `MAQUETTES` n'est pas en cause ici, ce sont les images montées. Premier point à mesurer si la carte rame.
+- **LAYOUT ou AUDIT** (vu en passant) : sur la `sheet` d'un bâtiment seul, les chemins bruns finissent à plat sur la terre nue avec des pierres isolées autour, et un trait blanc reste en bas à gauche de l'écran. `node scripts/atelier/atelier.js sheet forge`.

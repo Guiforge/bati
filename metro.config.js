@@ -18,4 +18,23 @@ config.resolver.assetExts.push("wasm");
 // leave out of assetExts (mp3 and wav only): jest never sees it, the release bundle fails.
 config.resolver.assetExts.push("ogg");
 
+// The atelier's web map (scripts/atelier/web): no database in the browser.
+if (process.env.ATELIER_WEB) {
+  const stubs = `${__dirname}/scripts/atelier/web`;
+  config.resolver.resolveRequest = (ctx, name, platform) => {
+    if (/\/db\/[^/]*$/.test(ctx.originModulePath) && name === "./client")
+      return { type: "sourceFile", filePath: `${stubs}/db-client-stub.ts` };
+    if (name === "@/db/client") return { type: "sourceFile", filePath: `${stubs}/db-client-stub.ts` };
+    if (name === "react-native-android-widget" || name === "./src/widget")
+      return { type: "sourceFile", filePath: `${stubs}/widget-stub.ts` };
+    if (name === "./ColorTintFilter" && ctx.originModulePath.includes("expo-image"))
+      return { type: "sourceFile", filePath: `${stubs}/expo-image-tint.js` };
+    if (name === "react-native-svg" && !ctx.originModulePath.endsWith("svg-stub.tsx"))
+      return { type: "sourceFile", filePath: `${stubs}/svg-stub.tsx` };
+    if (name === "@tamagui/animations-react-native")
+      return { type: "sourceFile", filePath: `${stubs}/tamagui-animations-stub.ts` };
+    return ctx.resolveRequest(ctx, name, platform);
+  };
+}
+
 module.exports = config;

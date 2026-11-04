@@ -1,0 +1,146 @@
+{
+ "track": "atelier",
+ "piste": "L'atelier",
+ "piste_ordre": 4,
+ "owns": [
+  "scripts/atelier/",
+  "docs/designs/village/atelier/",
+  "docs/designs/village/PIPELINE.md (section 6)"
+ ],
+ "shared_read_only": [
+  "components/village/iso/",
+  "app/dev-iso.tsx",
+  "constants/",
+  "assets/"
+ ],
+ "small_shared_edits": [
+  "metro.config.js et app.config.js (derrière ATELIER_WEB)",
+  "biome.json (une exception pour scripts/atelier)",
+  "scripts/life/status.py (argument de piste)"
+ ],
+ "items": [
+  {
+   "id": "A1",
+   "group": "1. Carte de la scène",
+   "name": "Carte de la scène",
+   "check": "docs/designs/village/atelier/map.md, une page",
+   "estimate_h": [
+    0.5,
+    0.5
+   ],
+   "status": "done",
+   "note": "map.md écrit, rien lancé",
+   "debut": "2026-11-04T17:50:00+01:00",
+   "fin": "2026-11-04T18:00:00+01:00",
+   "heures": 0.2
+  },
+  {
+   "id": "A2",
+   "group": "2. États de dev et capture avant",
+   "name": "États de dev et capture avant",
+   "check": "3 états du lien dev-iso capturés sur emulator-5554 (palier 1 jour, 6 nuit, 12 jour)",
+   "estimate_h": [
+    0.5,
+    1
+   ],
+   "status": "done",
+   "note": "bati://dev-iso suffit, aucun lien neuf ; horloge figée côté atelier seulement",
+   "debut": "2026-11-04T17:50:00+01:00",
+   "fin": "2026-11-04T18:00:00+01:00",
+   "heures": 0.2
+  },
+  {
+   "id": "A3",
+   "group": "3. Découper la scène",
+   "name": "Découper la scène (buildDrawList, motionAt, paint)",
+   "check": "l'appli dessine depuis la liste, sans changement visible",
+   "estimate_h": [
+    0,
+    0
+   ],
+   "status": "waiting",
+   "note": "Skia n'est pas dans l'appli : attend la réponse de Guillaume (checkpoint.md), Q1"
+  },
+  {
+   "id": "A4",
+   "group": "4. Le rendu hors appli",
+   "name": "Rendu navigateur des vrais composants",
+   "check": "scripts/atelier/atelier.js render : image du village sans émulateur ni Metro",
+   "estimate_h": [
+    1,
+    2
+   ],
+   "status": "done",
+   "note": "À la place du rendu Node et Skia, voir decisions.md : 3 s par état, 0 dépendance",
+   "debut": "2026-11-04T17:55:00+01:00",
+   "fin": "2026-11-04T18:00:00+01:00",
+   "heures": 0.2
+  },
+  {
+   "id": "A5",
+   "group": "5. Premières commandes",
+   "name": "render, strip, sheet",
+   "check": "planche des 12 paliers en moins d'une minute ; planche de la forge",
+   "estimate_h": [
+    0.5,
+    1
+   ],
+   "status": "done",
+   "note": "strip 44 s, render 3 s",
+   "debut": "2026-11-04T17:55:00+01:00",
+   "fin": "2026-11-04T18:00:00+01:00",
+   "heures": 0.1
+  },
+  {
+   "id": "A6",
+   "group": "6. Calibrage",
+   "name": "Calibrage atelier contre appli",
+   "check": "écart moyen sous 2 % sur 3 états, mara côte à côte ; chiffres dans PIPELINE.md",
+   "estimate_h": [
+    0.5,
+    1
+   ],
+   "status": "done",
+   "note": "Nuit 1,47 %, jour 2,67 et 3,36 % (cible 2 %) ; mara PASS sur les 3 ; écart du jour écrit dans PIPELINE.md",
+   "debut": "2026-11-04T17:55:00+01:00",
+   "fin": "2026-11-04T18:45:00+01:00",
+   "heures": 0.8
+  },
+  {
+   "id": "A7",
+   "group": "7. Autres commandes",
+   "name": "clip",
+   "check": "un marcheur ou les ailes du moulin : images, planche, mp4",
+   "estimate_h": [
+    1,
+    2
+   ],
+   "status": "todo",
+   "note": ""
+  },
+  {
+   "id": "A8",
+   "group": "7. Autres commandes",
+   "name": "check",
+   "check": "occlusion, ancres, vignette 1/8, tailles d'images, budget de mouvement, à 3 paliers",
+   "estimate_h": [
+    2,
+    3
+   ],
+   "status": "todo",
+   "note": ""
+  },
+  {
+   "id": "A9",
+   "group": "7. Autres commandes",
+   "name": "Garde de code de la liste de dessin",
+   "check": "check échoue si la liste importe react ou fs",
+   "estimate_h": [
+    0,
+    0
+   ],
+   "status": "waiting",
+   "note": "N'existe que si la liste existe : suit la réponse à Q1"
+  }
+ ]
+}

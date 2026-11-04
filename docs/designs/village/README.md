@@ -9,6 +9,7 @@ Tout ce qui est neuf vit ici, dans `docs/designs/village/`. Les vieux dossiers r
 | `README.md` | Cette page. |
 | `PIPELINE.md` | Les commandes pour ajouter ou changer un bâtiment, une créature, un effet. |
 | `PROMPT-tracks.md` | Le prompt des pistes (CLEAN, LIFE, VILLAGERS, GAME, POLISH, PERF) et les règles communes. |
+| `atelier/` | Piste ATELIER : le village en images sans émulateur (commandes dans `PIPELINE.md`, section 6), `map.md` (de l'état de jeu aux pixels), calibrage dans `img/`. |
 | `archive-index.md` | Ce qui a été retiré du dépôt le 04/11 et comment le récupérer. |
 | `clean/` | Piste CLEAN : `features.json`, `status.json`, `decisions.md`, `progress.md`, `inventory.md`, `modeles.md`. `scratch/` est ignoré par git. |
 | `life/` | Piste LIFE : `features.json`, `status.json`, `decisions.md`, `progress.md`, `checkpoint.md`, `tests-debt.md`. Travail en cours. |

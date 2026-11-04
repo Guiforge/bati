@@ -59,10 +59,10 @@ describe("ambient clock maths", () => {
     }
   });
 
-  it("turns the sails by gusts: still, one turn (T27), still, never backwards", () => {
+  it("turns the sails by gusts: still, half a turn (four blades), still, never backwards", () => {
     expect(angleAiles(0)).toBe(0);
     expect(angleAiles(CYCLE_MS * 0.1)).toBe(0);
-    expect(angleAiles(CYCLE_MS - 1)).toBeCloseTo(2 * Math.PI, 2);
+    expect(angleAiles(CYCLE_MS - 1)).toBeCloseTo(Math.PI, 2);
     let avant = 0;
     for (let t = 0; t < CYCLE_MS; t += 50) {
       const a = angleAiles(t);

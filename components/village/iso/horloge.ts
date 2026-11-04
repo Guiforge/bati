@@ -28,8 +28,8 @@ export const CYCLE_MS = 5000;
 export const VAGUE_MIN_MS = 15000;
 /** How long the clock keeps running after the last touch (or the focus): at least this. */
 export const VIE_MS = DUREE_VIE_MS;
-/** T27: one turn a gust (it was two, a peak near 250 degrees a second). */
-const TOURS_PAR_RAFALE = 1;
+/** T27: one turn a gust (it was two, a peak near 250 degrees a second). Final review: half a turn, about 40 % slower, still a rest pose (four blades: half a turn looks like none). */
+const TOURS_PAR_RAFALE = 0.5;
 /** Share of a gust the sails stand still before it picks up. */
 const REPOS = 0.15;
 
@@ -50,7 +50,8 @@ export function angleAiles(c: number): number {
   "worklet";
   const u = (c % CYCLE_MS) / CYCLE_MS;
   const v = Math.min(1, Math.max(0, (u - REPOS) / (1 - REPOS)));
-  const lisse = v * v * (3 - 2 * v);
+  // Smoother than a smoothstep: a soft acceleration, no visible start.
+  const lisse = v * v * v * (v * (6 * v - 15) + 10);
   return 2 * Math.PI * TOURS_PAR_RAFALE * lisse;
 }
 

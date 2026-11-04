@@ -67,6 +67,7 @@ export function useCameraIso({
   onMain,
   memoire,
   vueDepart,
+  sansDouble = false,
 }: {
   visible: readonly (readonly boolean[])[];
   w: number;
@@ -91,6 +92,8 @@ export function useCameraIso({
   memoire?: { current: MemoireCamera | undefined };
   /** The opening frame, instead of the island's own (a capture of one building alone). */
   vueDepart?: Vue;
+  /** No double tap (a growth scene plays): the single tap is read at the touch-up, not 500 ms late. */
+  sansDouble?: boolean;
 }) {
   const serre = cadreSerre(useContext(AlentoursContext));
   const libre = cadrage(visible, w, h - margeBas, serre);
@@ -308,6 +311,7 @@ export function useCameraIso({
   const vueActuelle = (): Vue => ({ zoom: zoom.get(), x: x.get(), y: y.get() });
   const doubleTap = useTapGesture({
     testID: "iso-geste-double",
+    enabled: !sansDouble,
     maxDistance: SEUIL_PAN,
     numberOfTaps: 2,
     onDeactivate: () => {

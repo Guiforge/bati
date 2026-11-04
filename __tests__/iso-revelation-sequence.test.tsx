@@ -165,6 +165,33 @@ describe("the reveal, rendered", () => {
     expect(style("iso-croissance-ancien-tent").scale).toBe(1);
   });
 
+  // A touch skips the scene: whatever the moment, the next poses read are the final ones (the new
+  // body at scale 1, no old stage, scaffold or ink), and the scene's single tap is not held back by
+  // the double tap's 500 ms wait (measured on a device: the cage stayed 0.5 s after the touch).
+  it.each([
+    ["in the glide", 300],
+    ["in the moment", CROISSANCE_CAMERA_MS + 300],
+    ["in the hold", CROISSANCE_CAMERA_MS + STADE_MS + 300],
+  ])("a touch %s shows the final building at once", async (_n, quand) => {
+    await jouer(false);
+    await avance(quand);
+    const double = getByGestureTestId("iso-geste-double") as unknown as {
+      config: { enabled?: boolean };
+    };
+    expect(double.config.enabled).toBe(false);
+    const tap = createGestureController(getByGestureTestId("iso-geste-tap"));
+    await act(() => {
+      tap.begin();
+      tap.activate();
+      tap.end();
+    });
+    await avance(30);
+    expect(screen.queryByTestId("iso-croissance-ancien-tent")).toBeNull();
+    expect(screen.queryAllByTestId("iso-croissance-echafaudage-tent")).toHaveLength(0);
+    expect(screen.queryAllByTestId(/^iso-croissance-encre-/)).toHaveLength(0);
+    expect(style("iso-croissance-nouveau-tent").scale).toBeCloseTo(1, 2);
+  });
+
   it("dust at three corners of the footprint", async () => {
     await jouer(false);
     await avance(20);

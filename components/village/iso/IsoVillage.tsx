@@ -537,6 +537,8 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
     bloque,
     margeBas,
     onToucher: horloge.touche,
+    // The scene waits for a touch to skip it: the double tap's 500 ms wait would show the cage that long.
+    sansDouble: cle !== undefined && !reduit,
     // A drag or a pinch during the show: the hand wins, no return.
     onMain: () => {
       avant.current = undefined;

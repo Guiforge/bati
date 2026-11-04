@@ -9,4 +9,4 @@
 - 04/11 plan, paliers, rues, emplacements, crops, sur `track-layout-proposition` : a84829a96
 - 04/11 page de choix : https://claude.ai/artifact/5L9wKWn3QuUJRyeWA8na28
 
-**Ensuite** : la réponse de Guillaume dans `checkpoint.md`, puis L12 sur la branche de proposition.
+**Ensuite** : la réponse de Guillaume dans `checkpoint.md`, puis L12 sur la branche de proposition, à fusionner avec `track-layout` d'abord. Son worktree est gardé : `.claude/worktrees/agent-a0a0fcb4b5cff6b61`, `npm ci` déjà fait.

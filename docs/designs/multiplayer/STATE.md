@@ -10,7 +10,7 @@ Plan : section « Décisions du 03/11 » de l'audit. Format : [envelope.md](enve
 | T2 Affichage QR | done | 0 h 05 |
 | T3 Règles partagées | done, avec les écarts ci-dessous | 0 h 10 |
 | T4 Enveloppe v1 | done | 0 h 10 |
-| T5 Lien scellé | done, sauf la clé Play et le vrai `autoVerify` | 0 h 10 |
+| T5 Lien scellé | done, sauf le vrai `autoVerify` (la clé Play est `F5:D8…`, déjà listée) | 0 h 10 |
 | T6 Appairage | done | 0 h 10 |
 | Porte du lot | done, voir [LOT0.md](reviews/LOT0.md) | 0 h 20 |
 

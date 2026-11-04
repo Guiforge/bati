@@ -2,7 +2,7 @@
 
 **Les trous du lot 0 sont fermés, et la porte est verte : l'arrêt pour douleur marche sur téléphone sans rien ajouter à
 une séance normale, une variante plus facile compte, et un lien d'invitation ne porte plus aucun secret.** Le lot 1 peut
-partir. Il reste la clé Play ; tes trois décisions du 04/11 sont appliquées, plus bas. Une limite aussi, à connaître : une clé supprimée reste
+partir. Tes trois décisions du 04/11 sont appliquées, plus bas. Une limite aussi, à connaître : une clé supprimée reste
 lisible dans le WAL pour qui lit les fichiers privés de l'app.
 
 ## Ce qui a été construit
@@ -91,8 +91,8 @@ la dernière ligne de la bulle serrée à 200 %, qui vient du composant ; TalkBa
 
 ## Ce dont j'ai besoin de toi
 
-**Avant de fusionner**, inchangé depuis le lot 0 : l'empreinte SHA-256 de la clé de signature d'app Play, puis
-`adb shell pm get-app-links com.guiforge.bati` une fois `assetlinks.json` publié.
+**La clé Play est réglée, sans rien changer :** l'empreinte relevée le 04/11 dans la Play Console est `F5:D8…`, déjà dans
+`assetlinks.json`. Il reste `adb shell pm get-app-links com.guiforge.bati` une fois `assetlinks.json` publié.
 
 **Décisions, prises le 04/11 :**
 

@@ -1,0 +1,266 @@
+<title>Alentours du village</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:wght@500;700&family=Alegreya+Sans:wght@400;500;700&display=swap">
+<style>
+/* Layout: one column of reading, with a wide comparison band driven by one tier slider. Colours from the village's own night palette. */
+:root {
+  color-scheme: dark;
+  --sol: #15191A; --panneau: #1F2523; --trait: #39423C; --texte: #E8E2D0; --doux: #A9AB98; --lueur: #F0A848; --mousse: #8FA268;
+  --titre: "Alegreya", Georgia, serif; --corps: "Alegreya Sans", "Trebuchet MS", sans-serif;
+}
+body { background: var(--sol); color: var(--texte); font: 400 17px/1.5 var(--corps); }
+main { max-width: 1240px; margin: 0 auto; padding-block: 28px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 44px; }
+main > * { min-width: 0; }
+h1, h2, h3 { font-family: var(--titre); font-weight: 700; line-height: 1.15; text-wrap: balance; margin: 0; }
+h1 { font-size: 2.4rem; } h2 { font-size: 1.6rem; } h3 { font-size: 1.15rem; color: var(--lueur); }
+p { margin: 0; max-width: 68ch; }
+section { display: grid; gap: 14px; } section > * { min-width: 0; }
+.doux { color: var(--doux); }
+img { display: block; width: 100%; height: auto; border-radius: 3px; background: var(--panneau); }
+table { border-collapse: collapse; font-size: .95rem; font-variant-numeric: tabular-nums; min-width: 620px; }
+th, td { text-align: left; padding: 6px 12px 6px 0; border-bottom: 1px solid var(--trait); vertical-align: top; }
+th { color: var(--doux); font-weight: 500; }
+.defile { overflow-x: auto; }
+.reglette { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--sol); padding-block: 10px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--sol); }
+.reglette output { font: 700 1.4rem var(--titre); color: var(--lueur); min-width: 6.5ch; }
+.reglette input { flex: 1 1 220px; min-width: 0; accent-color: var(--lueur); height: 28px; }
+.quatre { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.quatre figure { margin: 0; display: grid; gap: 4px; align-content: start; }
+figcaption { font-size: .92rem; color: var(--doux); }
+figcaption b { color: var(--texte); }
+.props { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.prop { display: grid; gap: 8px; align-content: start; min-width: 0; }
+.barreaux { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.barreau { display: grid; gap: 6px; align-content: start; }
+.choix { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.choix button { appearance: none; background: none; border: 2px solid transparent; padding: 0; cursor: pointer; border-radius: 4px; color: inherit; font: inherit; }
+.choix button[aria-pressed="true"] { border-color: var(--lueur); }
+.choix button:focus-visible, .choisir button:focus-visible, textarea:focus-visible { outline: 2px solid var(--lueur); outline-offset: 2px; }
+.choisir { display: flex; flex-wrap: wrap; gap: 8px; }
+.choisir button { background: var(--panneau); color: var(--texte); border: 1px solid var(--trait); padding: 10px 16px; border-radius: 4px; font: 500 1rem var(--corps); cursor: pointer; }
+.choisir button[aria-pressed="true"] { background: var(--lueur); color: #15191A; border-color: var(--lueur); }
+textarea { width: 100%; box-sizing: border-box; min-height: 90px; background: var(--panneau); color: var(--texte); border: 1px solid var(--trait); padding: 10px; font: inherit; border-radius: 4px; }
+#etat { font-size: .92rem; color: var(--mousse); min-height: 1.4em; }
+ul { margin: 0; padding-left: 1.2em; max-width: 68ch; display: grid; gap: 4px; }
+@media (max-width: 860px) {
+  .quatre { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
+  .quatre figure { flex: 0 0 76%; scroll-snap-align: start; }
+  .props { grid-template-columns: 1fr; }
+  h1 { font-size: 2rem; }
+}
+</style>
+<main>
+<header style="display:grid;gap:10px">
+  <p class="doux">Piste GROWTH, 04/11/2026, à choisir au réveil. Rien n'est peint pour de bon, rien n'est posé dans le jeu.</p>
+  <h1>Comment les alentours racontent la prospérité</h1>
+  <p>Trois idées, palier par palier. <b>Mon avis : un mélange, la route de R et la forêt qui recule de F au nord-ouest.</b> R est celle qui tient le mieux à l'image. Les trois juges préfèrent F sur le texte, mais son montage est le moins réussi. Le mélange n'est pas dessiné.</p>
+</header>
+
+<section>
+  <h2>Ce qui se passe aujourd'hui</h2>
+  <p>Tu avais raison : du palier 4 au palier 12, c'est le même dessin. Hors de l'île, un seul vrai saut, au sud du palier 3 au palier 4, quand le coin tombe d'un coup (11,2 niveaux sur 255 d'écart moyen, tous les autres passages du sud sous 1,1). La nuit, aucune fenêtre ne s'allume hors de l'île, à aucun palier. Détail dans <code>growth/audit.md</code>.</p>
+  <img data-img="avant-strip-jour" alt="Les 12 paliers de jour aujourd'hui : les alentours ne bougent plus après le palier 4">
+</section>
+
+<section>
+  <h2>Les 12 paliers, proposition par proposition</h2>
+  <p>Même caméra pour tous, ce sont les vrais rendus de l'atelier avec les concepts collés à la main dessus. Les pièces sont donc un peu des autocollants et leurs places sont indicatives : la carte agrandie de LAYOUT n'existe pas encore et tes bâtiments n'ont pas encore passé la rivière. Regarde ce qui apparaît et quand.</p>
+  <div class="reglette">
+    <output id="palier-lu" for="palier">Palier 12</output>
+    <input id="palier" type="range" min="1" max="12" step="1" value="12" aria-label="Palier du village">
+  </div>
+  <div class="quatre" id="quatre"></div>
+</section>
+
+<section>
+  <h2>Les trois idées</h2>
+  <div class="props">
+    <div class="prop"><h3>R. La route fait le pays</h3>
+      <p>Tout ce qui naît touche une route. On suit la route des yeux, jusqu'au bourg après le pont.</p>
+      <ul><li><b>4 à 6</b> : le coin, 3 huttes au premier virage</li><li><b>7 à 9</b> : grange et verger, pont, gravier, hameau</li><li><b>10 à 12</b> : deux fermes, bourg, pavés mats</li></ul>
+      <p class="doux">Risque : un chapelet sage. 9 peintures. Il faut créer la route et son passage de la rivière.</p></div>
+    <div class="prop"><h3>T. Les trois terroirs</h3>
+      <p>Grain au sud, vergers à l'est, pâtures au nord. Chacun se reconnaît à la forme de ses champs.</p>
+      <ul><li><b>4 à 6</b> : le coin, huttes de bergers, premiers arbres</li><li><b>7 à 9</b> : verger et hameau</li><li><b>10 à 12</b> : pâtures, bandes de champs, bourg</li></ul>
+      <p class="doux">Risque : un patchwork. 11 peintures, et le sol de chaque terroir à repeindre.</p></div>
+    <div class="prop"><h3>F. La forêt recule</h3>
+      <p>La prospérité se gagne sur la forêt : souches, essarts, puis champs et bosquets sombres.</p>
+      <ul><li><b>4 à 6</b> : le coin, premier essart, cabanes</li><li><b>7 à 9</b> : ferme d'essart, hameau de clairière</li><li><b>10 à 12</b> : champs et bosquets, bourg</li></ul>
+      <p class="doux">Risque : la forêt ne peut reculer que là où rien n'est verrouillé. 10 peintures. Chaque recul retire des images montées. Sur le montage, la clairière est une tache grise : c'est le collage, pas l'idée.</p></div>
+  </div>
+  <p>Palier 1 presque nu dans les trois, le coin verrouillé reste l'échelon 2, rien ne recule. Tout serait cuit dans le sol : <b>aucune image montée en plus, rien qui bouge</b>. Le prix serait de 7 Mo de fichiers au plus (estimation), à confronter au budget de PROBE, qui n'existe pas encore.</p>
+  <p class="doux">Valeur mesurée au palier 12 sur ces montages : coeur 110, pièce la plus claire 97 (R), 99 (T), 101 (F). Le coeur reste au-dessus, sur une mesure grossière et avant peinture.</p>
+</section>
+
+<section>
+  <h2>La nuit</h2>
+  <p>Klein repeint le jour de chaque montage, paliers 3, 6, 9 et 12. Ces images <b>ne sont pas cohérentes entre elles</b> : teinte qui varie, palier 9 de T presque en plein jour, palier 12 de F en filtre bleu, chaîne de R trop voyante, feux inventés. Regarde seulement quelles lumières s'ajoutent. La première colonne est la nuit d'aujourd'hui.</p>
+  <div class="defile"><div id="nuits" style="display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:6px;min-width:700px"></div></div>
+</section>
+
+<section>
+  <h2>Les pièces, échelon par échelon</h2>
+  <p>Deux essais Klein par échelon. Touche celui que tu gardes. Défaut commun : Klein pose chaque pièce sur une plaque en losange, contre le prompt. La peinture finale devra la retirer. Les routes ne changent que hors du coin verrouillé : dans le coin, la route reste de la terre.</p>
+  <div class="barreaux" id="barreaux"></div>
+</section>
+
+<section>
+  <h2>Ton choix</h2>
+  <p>Enregistré ici, la prochaine session le lit. Tu peux aussi l'écrire sous « Réponse de Guillaume » dans <code>growth/checkpoint.md</code>.</p>
+  <div class="choisir" id="propositions" role="group" aria-label="Proposition choisie"></div>
+  <label for="note">Mélange, reprise, question de la lisière, ou ce qui ne va pas :</label>
+  <textarea id="note" placeholder="Par exemple : la route de R, le recul de F au nord-ouest, pas de pavés."></textarea>
+  <p id="etat" role="status"></p>
+  <p class="doux">Une question précise pour toi : la forêt peut-elle reculer dans la zone du crop <code>lisiere</code> ? LAYOUT le fait reculer une fois et te le fera revalider. F en dépend.</p>
+</section>
+
+<section>
+  <h2>La suite</h2>
+  <ul>
+    <li>Après ton choix et le budget de PROBE : peinture FLUX 3 Image, environ 1 à 2 $.</li>
+    <li>Après ton choix sur la proposition de LAYOUT : les quartiers, qui ne sont pas dans cette page.</li>
+    <li>Après la fusion de LAYOUT : poser et cuire.</li>
+  </ul>
+  <p class="doux">Dépensé ce soir : 0,6 $ sur 3 $, tout en Klein. Un essai a été jeté : enchaîner Klein de palier en palier faisait revenir la palissade et disparaître le moulin, d'où les montages.</p>
+</section>
+</main>
+<script>
+const IMG = /*IMAGES*/{};
+const VUES = [["today", "Aujourd'hui"], ["R", "R. La route"], ["T", "T. Les terroirs"], ["F", "F. La forêt"]];
+const pad = (n) => String(n).padStart(2, "0");
+const src = (n) => IMG[n] ?? "";
+document.querySelectorAll("[data-img]").forEach((el) => { el.src = src(el.dataset.img); });
+
+const quatre = document.getElementById("quatre");
+const figures = VUES.map(([id, nom]) => {
+  const f = document.createElement("figure");
+  const im = document.createElement("img");
+  const c = document.createElement("figcaption");
+  const b = document.createElement("b");
+  b.textContent = nom;
+  c.append(b);
+  f.append(c, im);
+  quatre.append(f);
+  return [id, nom, im];
+});
+const reglette = document.getElementById("palier");
+const lu = document.getElementById("palier-lu");
+function montrer() {
+  const t = Number(reglette.value);
+  lu.textContent = `Palier ${t}`;
+  for (const [id, nom, im] of figures) {
+    im.src = src(`${id}_${pad(t)}`);
+    im.alt = `${nom}, palier ${t}`;
+  }
+}
+reglette.addEventListener("input", montrer);
+montrer();
+
+const nuits = document.getElementById("nuits");
+for (const t of [3, 6, 9, 12]) {
+  for (const [id, nom] of VUES) {
+    const f = document.createElement("figure");
+    f.style.margin = 0;
+    const im = document.createElement("img");
+    im.src = src(`${id}_n${pad(t)}`);
+    im.alt = `${nom}, nuit, palier ${t}`;
+    const c = document.createElement("figcaption");
+    c.textContent = `${nom}, palier ${t}`;
+    f.append(im, c);
+    nuits.append(f);
+  }
+}
+nuits.style.gridTemplateColumns = "repeat(4,minmax(130px,1fr))";
+
+const ECHELONS = [
+  ["ferme1_x", "Ferme, paliers 1 à 3, commun"],
+  ["ferme3_R", "Ferme 7 à 9, R"], ["ferme3_T", "Ferme 7 à 9, T"], ["ferme3_F", "Ferme 7 à 9, F"],
+  ["ferme4_R", "Ferme 10 à 12, R"], ["ferme4_T", "Ferme 10 à 12, T"], ["ferme4_F", "Ferme 10 à 12, F"],
+  ["hameau1_R", "Huttes 4 à 6, R"], ["hameau1_T", "Huttes 4 à 6, T"], ["hameau1_F", "Cabanes 4 à 6, F"],
+  ["hameau2_R", "Hameau 7 à 9, R"], ["hameau2_T", "Hameau 7 à 9, T"], ["hameau2_F", "Hameau 7 à 9, F"],
+  ["bourg_R", "Bourg 10 à 12, R"], ["bourg_T", "Bourg 10 à 12, T"], ["bourg_F", "Bourg 10 à 12, F"],
+  ["route1_x", "Route : terre"], ["route2_x", "Route : gravier"], ["route3_x", "Route : pavés vers terre"],
+];
+
+const etat = { proposition: null, pieces: {}, note: "" };
+const zoneEtat = document.getElementById("etat");
+let doc = null;
+let ecrit = Promise.resolve();
+function enregistrer() {
+  if (!doc) { zoneEtat.textContent = "Enregistrement indisponible ici : écris ton choix dans checkpoint.md."; return; }
+  ecrit = ecrit.then(() => doc.set({ ...etat })).then(
+    () => { zoneEtat.textContent = "Enregistré."; },
+    () => { zoneEtat.textContent = "Non enregistré : écris ton choix dans checkpoint.md."; },
+  );
+}
+
+const barreaux = document.getElementById("barreaux");
+const boutons = {};
+for (const [id, nom] of ECHELONS) {
+  const d = document.createElement("div");
+  d.className = "barreau";
+  const c = document.createElement("div");
+  c.className = "choix";
+  boutons[id] = {};
+  for (const v of ["v1", "v2"]) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.setAttribute("aria-pressed", "false");
+    b.setAttribute("aria-label", `${nom}, essai ${v}`);
+    const im = document.createElement("img");
+    im.src = src(`${id}_${v}`);
+    im.alt = "";
+    b.append(im);
+    b.addEventListener("click", () => {
+      etat.pieces[id] = etat.pieces[id] === v ? null : v;
+      peindre();
+      enregistrer();
+    });
+    boutons[id][v] = b;
+    c.append(b);
+  }
+  const l = document.createElement("span");
+  l.className = "doux";
+  l.textContent = nom;
+  d.append(c, l);
+  barreaux.append(d);
+}
+const props = document.getElementById("propositions");
+const boutonsProp = {};
+for (const [id, nom] of [["R", "R, la route"], ["T", "T, les terroirs"], ["F", "F, la forêt"], ["melange", "Un mélange, voir ma note"]]) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.textContent = nom;
+  b.setAttribute("aria-pressed", "false");
+  b.addEventListener("click", () => {
+    etat.proposition = etat.proposition === id ? null : id;
+    peindre();
+    enregistrer();
+  });
+  boutonsProp[id] = b;
+  props.append(b);
+}
+const note = document.getElementById("note");
+note.addEventListener("change", () => { etat.note = note.value; enregistrer(); });
+function peindre() {
+  for (const id in boutons) for (const v in boutons[id]) boutons[id][v].setAttribute("aria-pressed", String(etat.pieces[id] === v));
+  for (const id in boutonsProp) boutonsProp[id].setAttribute("aria-pressed", String(etat.proposition === id));
+  if (document.activeElement !== note) note.value = etat.note ?? "";
+}
+
+(async () => {
+  const db = await claude.use("db");
+  if (!db) { zoneEtat.textContent = "Enregistrement indisponible ici : écris ton choix dans checkpoint.md."; return; }
+  doc = db.doc("picks/guillaume");
+  const lue = await doc.get().catch(() => null);
+  const donnees = lue && (typeof lue.data === "function" ? lue.data() : lue.data ?? lue);
+  if (donnees) {
+    etat.proposition = donnees.proposition ?? null;
+    etat.pieces = donnees.pieces ?? {};
+    etat.note = donnees.note ?? "";
+    peindre();
+  }
+})();
+</script>

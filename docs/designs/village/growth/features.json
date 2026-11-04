@@ -1,0 +1,190 @@
+{
+  "piste": "Alentours qui grandissent",
+  "piste_ordre": 8,
+  "owns": [
+    "docs/designs/village/growth/",
+    "scripts/growth/"
+  ],
+  "shared_read_only": [
+    "docs/designs/village/PROMPT-tracks.md",
+    "docs/designs/village/PIPELINE.md",
+    "docs/designs/village/direction/",
+    "docs/designs/village-style-bible.md",
+    "docs/designs/village-loop/loupes/state.json",
+    "scripts/atelier/",
+    "scripts/iso/iso_loop.py",
+    "scripts/iso/cuire_sol.py",
+    "scripts/bld/concepts.py",
+    "scripts/lib/",
+    "components/village/iso/",
+    "constants/isoLayout.json",
+    "assets/images/village/iso/"
+  ],
+  "items": [
+    {
+      "id": "G1",
+      "group": "1 audit",
+      "name": "Audit des alentours",
+      "check": "audit.md : chaque pièce et ses paliers, ce qui ne change jamais ; bandes de paliers jour et nuit dans img/",
+      "estimate_h": [
+        0.5,
+        1
+      ],
+      "status": "done"
+    },
+    {
+      "id": "G2",
+      "group": "2 idées",
+      "name": "L'échelle de prospérité en texte",
+      "check": "echelle.md : plusieurs propositions pour fermes, hameaux, routes, lumières de nuit, palier par palier, images comptées",
+      "estimate_h": [
+        0.5,
+        1
+      ],
+      "status": "done"
+    },
+    {
+      "id": "G3",
+      "group": "2 idées",
+      "name": "Audit rapide des propositions",
+      "check": "verdicts de theo, mara et env notés dans echelle.md, propositions corrigées",
+      "estimate_h": [
+        0.2,
+        0.5
+      ],
+      "status": "done"
+    },
+    {
+      "id": "G4",
+      "group": "2 concepts",
+      "name": "Concepts Klein des pièces",
+      "check": "fermes, hameaux, routes : chaque échelon de chaque proposition, planches dans img/",
+      "estimate_h": [
+        0.5,
+        1.5
+      ],
+      "status": "done",
+      "note": "38 images, 0,30 $"
+    },
+    {
+      "id": "G5",
+      "group": "2 concepts",
+      "name": "La croissance des paliers 1 à 12, proposition par proposition",
+      "check": "une bande de 12 images par proposition, même caméra, dans img/",
+      "estimate_h": [
+        0.5,
+        1.5
+      ],
+      "status": "done",
+      "note": "Montages sur les vrais rendus ; bande Klein enchaînée abandonnée"
+    },
+    {
+      "id": "G6",
+      "group": "2 concepts",
+      "name": "Les lumières de nuit",
+      "check": "paliers 3, 6, 9, 12 de nuit par proposition, dans img/",
+      "estimate_h": [
+        0.2,
+        0.5
+      ],
+      "status": "done",
+      "note": "Klein sur les montages, 12 images, pas cohérentes entre elles"
+    },
+    {
+      "id": "G7",
+      "group": "2 choix",
+      "name": "Page de choix pour Guillaume",
+      "check": "une page, lien dans checkpoint.md ; le résumé de session écrit, poussé",
+      "estimate_h": [
+        0.5,
+        1
+      ],
+      "status": "done",
+      "note": "https://claude.ai/artifact/CdyBba3Bdn9UxRqWf63wYH"
+    },
+    {
+      "id": "G8",
+      "group": "3 peinture",
+      "name": "Peindre les fermes, hameaux et routes choisis",
+      "check": "FLUX 3 Image, une peinture par échelon, dans le budget d'images de PROBE",
+      "estimate_h": [
+        2,
+        4
+      ],
+      "status": "waiting",
+      "note": "F choisie ; attend G14 et le budget de PROBE"
+    },
+    {
+      "id": "G9",
+      "group": "2 concepts",
+      "name": "Concepts des quartiers",
+      "check": "échelle des quartiers sur les tailles d'emplacements de LAYOUT, planche Klein",
+      "estimate_h": [
+        1,
+        2
+      ],
+      "status": "waiting",
+      "note": "attend le choix de la proposition de LAYOUT"
+    },
+    {
+      "id": "G10",
+      "group": "3 peinture",
+      "name": "Peindre les quartiers",
+      "check": "FLUX 3 Image, une peinture par échelon",
+      "estimate_h": [
+        2,
+        4
+      ],
+      "status": "waiting",
+      "note": "attend G9 et le budget de PROBE"
+    },
+    {
+      "id": "G11",
+      "group": "4 poser",
+      "name": "Poser et cuire",
+      "check": "pièces sur les emplacements, cuites par bande avec le manifeste ; pas deux pièces identiques proches",
+      "estimate_h": [
+        3,
+        6
+      ],
+      "status": "waiting",
+      "note": "attend la fusion de LAYOUT"
+    },
+    {
+      "id": "G12",
+      "group": "5 contrôles",
+      "name": "Contrôles de fin",
+      "check": "strip lit la croissance d'un coup d'oeil, vignette 1/8 coeur le plus clair, coin verrouillé pas pire, env mara theo une fois",
+      "estimate_h": [
+        1,
+        2
+      ],
+      "status": "waiting",
+      "note": "attend G11"
+    },
+    {
+      "id": "G13",
+      "group": "fin",
+      "name": "Clôture de la piste",
+      "check": "summary, strips avant et après dans img/, status final, scratch archivé, poussé",
+      "estimate_h": [
+        0.3,
+        1
+      ],
+      "status": "waiting",
+      "note": "attend G12"
+    },
+    {
+      "id": "G14",
+      "group": "2 concepts",
+      "name": "Refaire la bande F sur le plan de LAYOUT",
+      "check": "bande des paliers 1 à 12 sur les rendus de LAYOUT, route et bourg replacés, bosquet avec sa forêt derrière lui",
+      "estimate_h": [
+        0.3,
+        1
+      ],
+      "status": "waiting",
+      "note": "attend les renders de LAYOUT (L6, L7)"
+    }
+  ]
+}

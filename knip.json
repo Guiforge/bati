@@ -8,7 +8,7 @@
     "__mocks__/**/*.{ts,tsx}",
     "plugins/*.js"
   ],
-  "project": ["**/*.{ts,tsx}", "!.design-sync/**"],
+  "project": ["**/*.{ts,tsx}", "!.design-sync/**", "!scripts/atelier/web/**"],
   "ignoreDependencies": [
     "expo-dev-client",
     "expo-updates",

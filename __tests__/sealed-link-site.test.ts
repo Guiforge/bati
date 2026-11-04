@@ -1,5 +1,7 @@
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import vm from "node:vm";
 
 import { encode } from "uqr";
 
@@ -8,7 +10,7 @@ import vectors from "./fixtures/multiplayer/envelope-v1.json";
 
 /**
  * The sealed link's half on getbati.app. Jekyll drops a dot folder it was not told about, with no
- * error, and App Links then quietly never verify. And the page's whole promise is that it can read
+ * error, and App Links then quietly never verify. And the page's whole promise is that it sends
  * nothing, so that is what is checked, on the file that ships.
  */
 const LEGAL = path.join(__dirname, "..", "docs", "legal");
@@ -24,12 +26,41 @@ test("assetlinks.json is published and names every signing key in Android's own 
   }
 });
 
-test("the fallback page has no script, loads nothing, and answers on /d", () => {
+describe("the fallback page", () => {
   const page = read("d.html");
-  expect(page).toContain("permalink: /d");
-  expect(page).not.toMatch(/<script|onclick=|onload=|location\.|<img|<link|src=/i);
-  expect(page).toContain("default-src 'none'");
-  expect(page).toContain('name="referrer" content="no-referrer"');
+  const script = /<script>(.*)<\/script>/.exec(page)?.[1] ?? "";
+
+  /** The button's address once the script has run on a page opened at `hash`. */
+  const openHref = (hash: string) => {
+    const open = { href: "bati://" };
+    vm.runInNewContext(script, {
+      location: { hash },
+      document: { getElementById: (id: string) => (id === "open" ? open : null) },
+    });
+    return open.href;
+  };
+
+  test("answers on /d, and loads nothing", () => {
+    expect(page).toContain("permalink: /d");
+    expect(page).not.toMatch(/onclick=|onload=|<img|<link|src=/i);
+    expect(page).toContain("default-src 'none'");
+    expect(page).toContain('name="referrer" content="no-referrer"');
+  });
+
+  test("one script, the one the policy names, and it reaches for nothing but the button", () => {
+    expect(page.match(/<script/g)).toHaveLength(1);
+    const hash = createHash("sha256").update(script).digest("base64");
+    expect(page).toContain(`script-src 'sha256-${hash}'`);
+    expect(script).not.toMatch(
+      /fetch|XMLHttp|sendBeacon|WebSocket|Storage|cookie|import|src|navigator/i,
+    );
+  });
+
+  test("the button carries the link; with no script or no fragment it opens Bati empty", () => {
+    expect(openHref("#AQIDBA")).toBe("bati://d#AQIDBA");
+    expect(openHref("")).toBe("bati://");
+    expect(page).toContain('<a id="open" href="bati://">');
+  });
 });
 
 test("a link's code stays a comfortable size, and the path draws each dark module once", () => {

@@ -178,6 +178,25 @@ export function PausedOverlay() {
                 </AppButton>
               )}
 
+              {/* One tap and no dialog, like PainStopLink: the sets stay, so there is nothing to confirm.
+                  Pausing is the only way out of a set under way that a hero in pain will think of. An
+                  outing has its Finish, which already keeps the trace. */}
+              {allOuting ? null : (
+                <AppButton
+                  testID="session-pause-pain-stop"
+                  onPress={() => {
+                    mediumImpact();
+                    stopForPain();
+                  }}
+                  variant="outline"
+                  backgroundColor="surface2"
+                  accessibilityLabel={t("session.pain_stop")}
+                  accessibilityRole="button"
+                >
+                  {t("session.pain_stop")}
+                </AppButton>
+              )}
+
               {canRestartRound ? (
                 <AppButton
                   testID="session-restart-round"

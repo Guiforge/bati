@@ -24,6 +24,7 @@ import { getTokens, Sheet, Text, Theme, XStack, YStack } from "tamagui";
 import { Skeleton } from "@/components/common/Skeleton";
 import { DATE_OPTIONS, type Extra, loadExtra } from "@/components/village/detailExtra";
 import { feedsLine, levelText, nameOf } from "@/components/village/rows";
+import { Silhouette } from "@/components/village/Silhouette";
 import { BuildingFacts, BuildingLevel } from "@/components/village/VillageDetailSheet";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
@@ -355,6 +356,7 @@ export function ContenuBatiment({
   language,
   feeds,
   years,
+  baseRank = 0,
   onClose,
   onClaim,
 }: {
@@ -365,6 +367,8 @@ export function ContenuBatiment({
   language: AppLanguage;
   feeds: RecentFeeds | null;
   years: VillageYearsView | null;
+  /** The rank of the building an upgrade extends, for the silhouette (rule B). */
+  baseRank?: number;
   onClose: () => void;
   onClaim: (building: VillageBuilding) => void;
 }) {
@@ -374,7 +378,7 @@ export function ContenuBatiment({
   useEffect(() => {
     let annule = false;
     setExtra(undefined);
-    loadExtra({ kind: "building", building })
+    loadExtra({ kind: "building", building }, { exercises: true })
       .then((v) => {
         if (!annule) setExtra(v);
       })
@@ -413,13 +417,17 @@ export function ContenuBatiment({
           {t("village.claim_ready")}
         </Text>
       ) : null}
-      <Text fontSize={14} color="bgDark">
-        {feedsLine(building, t, language)}
-      </Text>
+      {/* A built follower says it once, in the driver line below (which carries the rank). */}
+      {building.driver === "prereq" && building.level > 0 ? null : (
+        <Text fontSize={14} color="bgDark">
+          {feedsLine(building, t, language)}
+        </Text>
+      )}
       {/* The figures are the sheet's own writer, read in ink on the parchment (`parchment` theme). */}
       <Theme name="parchment">
         <YStack testID="iso-bulle-chiffres" gap="4">
-          <XStack justify="flex-end">
+          <XStack justify="flex-end" items="center" gap="3">
+            <Silhouette building={building} baseRank={baseRank} name={nomTexte} />
             <BuildingLevel building={building} />
           </XStack>
           <BuildingFacts
@@ -430,6 +438,7 @@ export function ContenuBatiment({
             years={years}
             formatDate={(d) => getDateTimeFormat(language, DATE_OPTIONS).format(d)}
             onClose={onClose}
+            surCarte
             onClaim={
               pret
                 ? () => {

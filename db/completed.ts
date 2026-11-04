@@ -1224,6 +1224,56 @@ export async function getRecentContributingSessions(
   }));
 }
 
+export type ContributingExercise = {
+  exerciseId: number;
+  volume: number;
+  enName: string;
+  frName: string;
+  deName: string;
+  esName: string;
+  ruName: string;
+  zhName: string;
+};
+
+/**
+ * The movements this hero really did for a muscle or a style, biggest volume first: the "what
+ * feeds this building" list of the iso card. Same joins, filter and work unit as
+ * `getRecentContributingSessions`, grouped by exercise instead of by session.
+ */
+export async function getContributingExercises(
+  filter: { muscle: MuscleCode } | { style: ExerciseStyle },
+  limit = 5,
+): Promise<ContributingExercise[]> {
+  const volume = sql<number>`coalesce(sum(${repEquivalentSql(completedExercises.resultValue, completedExercises.resultType, exercises.style, completedExercises.sides)}), 0)`;
+
+  const base = db
+    .select({
+      exerciseId: exercises.id,
+      volume,
+      enName: exercises.enName,
+      frName: exercises.frName,
+      deName: exercises.deName,
+      esName: exercises.esName,
+      ruName: exercises.ruName,
+      zhName: exercises.zhName,
+    })
+    .from(completedQuest)
+    .innerJoin(completedExercises, eq(completedExercises.sessionId, completedQuest.id))
+    .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId));
+
+  const rows = await ("muscle" in filter
+    ? base
+        .innerJoin(exerciseMuscles, eq(exerciseMuscles.exerciseId, exercises.id))
+        .where(eq(exerciseMuscles.muscle, filter.muscle))
+    : base.where(eq(exercises.style, filter.style))
+  )
+    .groupBy(exercises.id)
+    .orderBy(desc(volume), exercises.id)
+    .limit(limit);
+
+  return rows.map((r) => ({ ...r, volume: Number(r.volume) }));
+}
+
 /** How many sessions count, the figure a village tier's feast says ("after 118 sessions"). */
 export async function countSessions(): Promise<number> {
   const [row] = await db.select({ n: count() }).from(completedQuest).where(countsAsSession());

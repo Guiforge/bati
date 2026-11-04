@@ -30,3 +30,7 @@ Pour récupérer un fichier : `tar xzf /home/guiforge/bati-archives/2026-11-04-c
 - `scripts/iso/ab_pairs.py` (procédure des loupes), `layout_preview.py` (cité par `constants/isoLayout.json`), `simule_voile_coeur.py` (cité par `alentours.ts`, fichier de LIFE), `vue_ensemble.sh` et `loop_capture.sh` (REPRISE et summary de la boucle).
 - Grappe des cartes et de la finale dans `scripts/bld/` : `gen_cartes`, `render_cartes`, `kit_maquette`, `maquette_peinture`, `render_pilot`, `gen_pilot_specs`, `final_*`, `gen_final_specs`, `sondes2` à `sondes4`, `sondes_moulin`. Elles s'importent entre elles, et `scripts/life/u3_pieces.py` cite `final_elements.py`. Décision de Guillaume.
 - `scripts/iso/blockouts/gen_animaux.py`, `gen_decor.py`, `render_animaux.py` : décrits dans `VERSIONS.md`, `heights.py` cite `gen_decor`.
+
+## Branches et worktrees locaux, 04/11
+
+91 branches et 10 worktrees supprimés en local : `~/bati-archives/2026-11-04-branches.bundle`, `2026-11-04-branches.txt`, `2026-11-04-worktrees-gardes.tgz`. Détail : [`clean/decisions.md`](clean/decisions.md).

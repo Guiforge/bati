@@ -13,6 +13,7 @@ import config from "@/tamagui.config";
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("expo-router", () => ({
   useRouter: () => ({ back: jest.fn(), push: jest.fn() }),
+  useFocusEffect: () => undefined,
   useLocalSearchParams: () => ({ id: "5" }),
 }));
 jest.mock("@/components/journal/QuestLog", () => ({ QuestLog: () => null }));

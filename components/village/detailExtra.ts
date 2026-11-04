@@ -2,7 +2,12 @@
 // the deeds behind a number, fetched only when opened, and the date of a deed.
 
 import { type FinishedAdventureSummary, listFinishedRunSummaries } from "@/db/adventures";
-import { type ContributingSession, getRecentContributingSessions } from "@/db/completed";
+import {
+  type ContributingExercise,
+  type ContributingSession,
+  getContributingExercises,
+  getRecentContributingSessions,
+} from "@/db/completed";
 import { buildingDefinitions } from "@/db/schema";
 import type { VillageSelection } from "./VillageDetailSheet";
 
@@ -14,11 +19,19 @@ export const DATE_OPTIONS: Intl.DateTimeFormatOptions = {
 
 /** The detail sheet's second half: the deeds behind the number, fetched only when opened. */
 export type Extra =
-  | { kind: "sessions"; sessions: ContributingSession[] }
+  | {
+      kind: "sessions";
+      sessions: ContributingSession[];
+      /** Only read for the iso card (`loadExtra` with `exercises`): absent for the old sheet. */
+      exercises?: ContributingExercise[];
+    }
   | { kind: "adventures"; adventures: FinishedAdventureSummary[] }
   | null;
 
-export async function loadExtra(selected: VillageSelection): Promise<Extra> {
+export async function loadExtra(
+  selected: VillageSelection,
+  options: { exercises?: boolean } = {},
+): Promise<Extra> {
   if (selected.kind === "boss") {
     return { kind: "adventures", adventures: await listFinishedRunSummaries() };
   }
@@ -39,18 +52,25 @@ export async function loadExtra(selected: VillageSelection): Promise<Extra> {
   }
 
   if (building.driver === "muscle" && building.relatedMuscle) {
-    return {
-      kind: "sessions",
-      sessions: await getRecentContributingSessions({ muscle: building.relatedMuscle }),
-    };
+    return await sessionsExtra({ muscle: building.relatedMuscle }, options.exercises);
   }
 
   if (building.driver === "style") {
     const style = buildingDefinitions[building.code].relatedStyle;
     if (style) {
-      return { kind: "sessions", sessions: await getRecentContributingSessions({ style }) };
+      return await sessionsExtra({ style }, options.exercises);
     }
   }
 
   return null;
+}
+
+async function sessionsExtra(
+  filter: Parameters<typeof getRecentContributingSessions>[0],
+  withExercises = false,
+): Promise<Extra> {
+  const sessions = await getRecentContributingSessions(filter);
+  return withExercises
+    ? { kind: "sessions", sessions, exercises: await getContributingExercises(filter) }
+    : { kind: "sessions", sessions };
 }

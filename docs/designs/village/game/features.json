@@ -1,0 +1,193 @@
+{
+ "track": "GAME",
+ "piste": "Le jeu (page Village)",
+ "piste_ordre": 6,
+ "owns": [
+  "docs/designs/village/game/",
+  "scripts/game/",
+  "app/(tabs)/village.tsx",
+  "components/village/VillageDetailSheet.tsx",
+  "components/village/iso/Bulle.tsx",
+  "components/village/iso/bulle.ts",
+  "components/village/VillageDrawer.tsx",
+  "components/village/rows.ts",
+  "components/village/detailExtra.ts",
+  "components/session/destinations.ts",
+  "locales/ (cles village.* neuves seulement)",
+  ".maestro/village-*.yaml",
+  "__tests__/village-*.test.tsx (les suites de ces fichiers)",
+  "constants/isoPoc.ts (la seule ligne INTEGRATION, a l'item G12, apres le go de Guillaume)",
+  "db/completed.ts (lecture getContributingExercises)",
+  "app/(tabs)/journal/[id].tsx (retour from=village)"
+ ],
+ "shared_read_only": [
+  "components/village/iso/ (sauf Bulle.tsx et bulle.ts : a LIFE, camera, moment, mouvement, creatures)",
+  "components/village/VillageScene.tsx (LIFE y a la fin de croissance ; GAME y passe seulement des props a la bulle, en petits changements, relus a chaque fusion)",
+  "app/dev-iso.tsx",
+  "constants/buildings/",
+  "assets/images/village/iso/",
+  "scripts/bld/",
+  "scripts/iso/iso_loop.py",
+  "docs/designs/village-loop/loupes/",
+  "~/.cache/bati-loupes-lock/",
+  "docs/designs/village-iso-v1/VALIDATIONS.md",
+  ".claude/agents/"
+ ],
+ "note_autres_sessions": "track-life lue le 04/11 (tip local 5ac8074a) : elle change IsoVillage, Chantier, Revelation, creatures, mouvement, rien dans Bulle, VillageDetailSheet, VillageDrawer, rows, detailExtra, VillageScene, locales. Relire avant chaque fusion.",
+ "items": [
+  {
+   "id": "G1",
+   "group": "1. Idees et ecrans",
+   "name": "Etat des lieux : ce que la page fait deja",
+   "check": "captures sur emulator-5554 (carte, bulle, bulle prete, tiroir) et liste existe/manque dans game/etat-des-lieux.md",
+   "estimate_h": [
+    0.5,
+    1
+   ],
+   "status": "done",
+   "debut": "2026-11-04T11:00:00+01:00",
+   "fin": "2026-11-04T11:20:00+01:00",
+   "note": "Bulle, marteaux, tiroir existent ; manquent exercices, silhouette, liens journal"
+  },
+  {
+   "id": "G2",
+   "group": "1. Idees et ecrans",
+   "name": "Idees en texte, auditees par theo et mara",
+   "check": "game/idees.md : quelques directions, verdicts theo et mara ecrits dedans",
+   "estimate_h": [
+    0.5,
+    1
+   ],
+   "status": "done",
+   "debut": "2026-11-04T11:20:00+01:00",
+   "fin": "2026-11-04T11:40:00+01:00",
+   "note": "3 directions ; theo et mara : C, puis A, puis B"
+  },
+  {
+   "id": "G3",
+   "group": "1. Idees et ecrans",
+   "name": "Page de choix : maquettes rapides ou prompt Claude Design",
+   "check": "checkpoint.md et une page ; prompt francais pret a coller ; reponse de Guillaume ecrite",
+   "estimate_h": [
+    0.5,
+    1.5
+   ],
+   "status": "blocked",
+   "debut": "2026-11-04T11:40:00+01:00",
+   "note": "Page de choix publiee, attend la reponse dans checkpoint.md"
+  },
+  {
+   "id": "G4",
+   "group": "2. Construire",
+   "name": "Les exercices qui nourrissent le batiment",
+   "check": "bulle de la forge et d'un batiment de muscle : noms d'exercices reels du journal, capture ; test de la requete",
+   "estimate_h": [
+    1,
+    2
+   ],
+   "status": "done",
+   "debut": "2026-11-04T11:40:00+01:00",
+   "note": "Vu sur emulateur : exercices reels, liens vers la fiche et le journal, retour au village",
+   "fin": "2026-11-04T11:35:00+01:00"
+  },
+  {
+   "id": "G5",
+   "group": "2. Construire",
+   "name": "Le prochain stade en silhouette",
+   "check": "bulle d'un batiment a chaque stade : silhouette du stade suivant, rien au dernier, jamais de minuteur ; capture",
+   "estimate_h": [
+    1,
+    2
+   ],
+   "status": "done",
+   "debut": "2026-11-04T11:40:00+01:00",
+   "note": "72 dp, regle B branchee, 21 batiments balayes par scripts/game/silhouettes.py",
+   "fin": "2026-11-04T11:35:00+01:00"
+  },
+  {
+   "id": "G6",
+   "group": "2. Construire",
+   "name": "Le tap d'evolution en attente",
+   "check": "marteau visible depuis la vue de depart, bulle prete, tap, moment de LIFE, retour a la vue ; video et etat en base",
+   "estimate_h": [
+    1,
+    2
+   ],
+   "status": "blocked",
+   "note": "Depend de la direction choisie dans checkpoint.md"
+  },
+  {
+   "id": "G7",
+   "group": "2. Construire",
+   "name": "Du batiment vers les exercices et le journal",
+   "check": "depuis la bulle : la fiche d'exercice et le journal s'ouvrent, retour au village a la meme vue ; capture",
+   "estimate_h": [
+    1,
+    2
+   ],
+   "status": "blocked",
+   "debut": "2026-11-04T11:35:00+01:00",
+   "note": "Liens de la carte faits et joues ; le tiroir vers la carte depend de la direction"
+  },
+  {
+   "id": "G8",
+   "group": "2. Construire",
+   "name": "De la fin de seance vers le village",
+   "check": "fin de seance reelle, bouton vers le village, cadrage sur ce qui a grandi ; flux Maestro",
+   "estimate_h": [
+    1,
+    2
+   ],
+   "status": "blocked",
+   "note": "Depend de la direction choisie dans checkpoint.md"
+  },
+  {
+   "id": "G9",
+   "group": "3. Finitions",
+   "name": "Langues, accessibilite, mouvement reduit",
+   "check": "cles dans toutes les langues, TalkBack lit la bulle dans l'ordre, tests reduced-motion et village-copy verts, 130 % de texte vu",
+   "estimate_h": [
+    1,
+    2
+   ],
+   "status": "blocked",
+   "note": "Depend de la direction choisie dans checkpoint.md"
+  },
+  {
+   "id": "G10",
+   "group": "3. Finitions",
+   "name": "Flux Maestro des chemins principaux",
+   "check": "flux village-* verts sur emulator-5554, qui lisent l'etat et pas seulement l'ecran",
+   "estimate_h": [
+    1,
+    2
+   ],
+   "status": "blocked",
+   "note": "Depend de la direction choisie dans checkpoint.md"
+  },
+  {
+   "id": "G11",
+   "group": "4. Controles",
+   "name": "Theo sur le parcours, mara sur les ecrans, suite complete",
+   "check": "verdicts dans decisions.md, suite complete une fois, dettes dans tests-debt.md, build de fin, summary",
+   "estimate_h": [
+    1,
+    2
+   ],
+   "status": "blocked",
+   "note": "Depend de la direction choisie dans checkpoint.md"
+  },
+  {
+   "id": "G12",
+   "group": "Fin",
+   "name": "activer INTEGRATION",
+   "check": "une courte session apres le go de Guillaume dans checkpoint.md : la ligne INTEGRATION du build publie, les tests du drapeau",
+   "estimate_h": [
+    0.5,
+    1
+   ],
+   "status": "blocked",
+   "note": "Attend le go de Guillaume, apres la fin de la piste"
+  }
+ ]
+}

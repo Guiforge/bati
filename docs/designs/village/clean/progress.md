@@ -8,3 +8,4 @@
 - 04/11 : dernière ronde sur ce qui se voit, armurerie gag_2 repeint, `b44d8f13`.
 - 04/11 : 137 fichiers archivés et retirés, `7557038d`. Guides, `75025716`. Suite complète verte, `e4aba02b`.
 - 04/11 : build `.perf` final de `e4aba02b`, relu par mara, fin de piste.
+- 04/11 : réponse de Guillaume, point 3 : 10 worktrees et 91 branches archivés puis supprimés en local. Points 1, 4 et 5 écrits dans `../polish/backlog.md`.

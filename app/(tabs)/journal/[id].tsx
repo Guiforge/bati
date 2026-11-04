@@ -1,7 +1,7 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
+import { BackHandler, KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
@@ -53,12 +53,31 @@ function targetOf(session: CompletedSession): PastSessionTarget {
 export default function SessionDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<{ id?: string | string[]; view?: string }>();
+  const params = useLocalSearchParams<{ id?: string | string[]; view?: string; from?: string }>();
   const { t } = useTranslation();
   const { confirmForget, confirmDropDistance, dialog } = useConfirmForget();
   const [sheet, setSheet] = useState<"entry" | "distance" | null>(null);
   const language = useSettingsStore((s) => s.language);
   const sessionId = parseId(params.id);
+  // The village card opens a session with `from=village`: this stack has nothing under it then,
+  // so back (the arrow and the system one) is sent to the village by hand, like the adventure page
+  // does for its origin. Without the param, back is the stack's own.
+  const fromVillage = params.from === "village";
+  const goBack = useCallback(() => {
+    if (!fromVillage) return router.back();
+    router.dismissTo("/journal");
+    router.navigate("/(tabs)/village" as never);
+  }, [router, fromVillage]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!fromVillage) return;
+      const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+        goBack();
+        return true;
+      });
+      return () => sub.remove();
+    }, [fromVillage, goBack]),
+  );
   // The hero's own back button scrolls away with the page; once it has, a fixed one takes over.
   const [pastHero, setPastHero] = useState(false);
   const [loaded, setLoaded] = useState<LoadedSession>({ status: "loading" });
@@ -86,15 +105,15 @@ export default function SessionDetailScreen() {
   }, [sessionId, load]);
 
   useEffect(() => {
-    if (forgotten) router.back();
-  }, [forgotten, router]);
+    if (forgotten) goBack();
+  }, [forgotten, goBack]);
 
   if (!sessionId || loaded.status === "error") {
     return (
       <YStack flex={1} bg="bgDark" pt={insets.top} px={11}>
         <NPageHeader
           title={t("journal.session_not_found")}
-          onBack={() => router.back()}
+          onBack={goBack}
           backLabel={t("common.go_back")}
         />
         {loaded.status === "error" && (
@@ -173,7 +192,7 @@ export default function SessionDetailScreen() {
         <View style={{ position: "absolute", top: insets.top + 11, left: 11 }}>
           <NBackButton
             testID="journal-fixed-back"
-            onPress={() => router.back()}
+            onPress={goBack}
             label={t("common.go_back")}
             veiled
           />

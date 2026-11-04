@@ -10,6 +10,7 @@ import { ImageViewer } from "@/components/common/ImageViewer";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { SectionLabel } from "@/components/common/SectionLabel";
 import { tamaguiRef } from "@/components/common/tamaguiRef";
+import { ChevronRight } from "@/components/icons";
 import { DATE_OPTIONS, type Extra, loadExtra } from "@/components/village/detailExtra";
 import { LevelPips } from "@/components/village/LevelPips";
 import { buildingMilestoneLine } from "@/components/village/milestoneLine";
@@ -43,7 +44,7 @@ import {
 import type { VillageYearsView } from "@/db/villageYears";
 import { SECONDS_PER_REP_EQUIVALENT } from "@/db/workUnits";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { inSentence, localizedTitle } from "@/src/i18n/localized";
+import { inSentence, localizedName, localizedTitle } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import type { AppLanguage } from "@/stores/settings";
 
@@ -235,6 +236,8 @@ type FactsProps = DetailProps & {
   onClose: () => void;
   /** Set when the building is ready to improve. */
   onClaim?: () => void;
+  /** The iso card only: linked rows, the exercises, no repeated sentence. The old sheet leaves it out. */
+  surCarte?: boolean;
 };
 
 function BuildingDetail(props: FactsProps) {
@@ -298,6 +301,7 @@ export function BuildingFacts({
   formatDate,
   onClose,
   onClaim,
+  surCarte = false,
 }: FactsProps) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -379,6 +383,15 @@ export function BuildingFacts({
     }
   })();
 
+  // On the card, a building that waits for its tap does not also say it is at its ceiling, and a
+  // built follower says its sentence once (the driver line, which carries the rank).
+  const pretAuPlafond = surCarte && !!onClaim && building.nextTarget === null;
+  const suiveuse = surCarte && building.driver === "prereq" && built;
+  const open = (href: string) => {
+    onClose();
+    router.push(href as never);
+  };
+
   const link = building.relatedMuscle || building.tier === 4 ? questLink(building) : null;
   // The arena counts rematches, not finishes: a boss beaten three times is two rematches.
   const listed =
@@ -413,11 +426,13 @@ export function BuildingFacts({
         ) : building.nextTarget === null ||
           building.driver === "tier" ||
           (building.driver === "prereq" && !unbuiltPrereq) ? (
-          <Text fontSize={12} color="textSecondary">
-            {building.code === "castle_wall"
-              ? withStones(nextLine(building, t, language), years?.years.stones.length ?? 0, t)
-              : nextLine(building, t, language)}
-          </Text>
+          pretAuPlafond || suiveuse ? null : (
+            <Text fontSize={12} color="textSecondary">
+              {building.code === "castle_wall"
+                ? withStones(nextLine(building, t, language), years?.years.stones.length ?? 0, t)
+                : nextLine(building, t, language)}
+            </Text>
+          )
         ) : null}
         {milestone ? (
           <Text fontSize={12.5} lineHeight="18px" color="text">
@@ -468,16 +483,62 @@ export function BuildingFacts({
               session.performedAt,
             );
             return (
-              <XStack key={session.sessionId} justify="space-between" gap="2">
-                <Text fontSize={12} color="textSecondary" flex={1}>
+              <XStack
+                key={session.sessionId}
+                justify="space-between"
+                gap="2"
+                {...(surCarte
+                  ? {
+                      minH: 48,
+                      items: "center" as const,
+                      opacity: "press:0.7" as const,
+                      onPress: () => open(`/journal/${session.sessionId}?from=village`),
+                      accessibilityRole: "link" as const,
+                      accessibilityLabel: t("village.open_session_a11y", {
+                        what: title ?? when,
+                      }),
+                    }
+                  : {})}
+              >
+                <Text fontSize={12} color={surCarte ? "primaryText" : "textSecondary"} flex={1}>
                   {`${title ? `${title} · ` : ""}${when}`}
                 </Text>
                 <Text fontSize={12} color="textSecondary">
                   {t("village.detail_recent_units", { volume: session.volume })}
                 </Text>
+                {surCarte ? <ChevronRight size={16} color="primaryText" /> : null}
               </XStack>
             );
           })}
+        </YStack>
+      )}
+
+      {surCarte && extra?.kind === "sessions" && (extra.exercises?.length ?? 0) > 0 && (
+        <YStack gap="2" testID="iso-bulle-exercices">
+          <SectionLabel>{t("village.detail_exercises_title")}</SectionLabel>
+          {extra.exercises?.map((exercise) => (
+            <XStack
+              key={exercise.exerciseId}
+              justify="space-between"
+              gap="2"
+              minH={48}
+              items="center"
+              opacity="press:0.7"
+              onPress={() => open(`/exercises/${exercise.exerciseId}`)}
+              accessibilityRole="link"
+              accessibilityLabel={t("village.open_exercise_a11y", {
+                name: localizedName(exercise, language),
+              })}
+            >
+              <Text fontSize={12} color="primaryText" flex={1}>
+                {localizedName(exercise, language)}
+              </Text>
+              <Text fontSize={12} color="textSecondary">
+                {t("village.detail_recent_units", { volume: exercise.volume })}
+              </Text>
+              <ChevronRight size={16} color="primaryText" />
+            </XStack>
+          ))}
         </YStack>
       )}
 

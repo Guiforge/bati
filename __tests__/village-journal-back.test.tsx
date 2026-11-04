@@ -189,6 +189,16 @@ describe("back from a session", () => {
     expect(flat.indexOf("Bench press")).toBeLessThan(flat.indexOf("Push day"));
   });
 
+  test("the rep-unit note is a footnote on the card and stays in the driver line on the sheet", async () => {
+    await mountFacts(true, jest.fn());
+    expect(screen.getByTestId("iso-bulle-note")).toBeTruthy();
+    expect(screen.queryByText(/training\. A hold counts/)).toBeNull();
+    await screen.unmount();
+    await mountFacts(false, jest.fn());
+    expect(screen.queryByTestId("iso-bulle-note")).toBeNull();
+    expect(screen.getByText(/training\. A hold counts/)).toBeTruthy();
+  });
+
   test("from the village, the back arrow unwinds the tab and lands on the village", async () => {
     mockParams = { id: "5", from: "village" };
     await mountScreen();

@@ -373,9 +373,15 @@ function CouchePanneau({
 }
 
 const DECALAGE_PANNEAU = 10;
-/** The halo's reach, dp, and how far under the anchor (the sprite's top) its heart lies. */
-const RAYON_HALO = 76;
-const CENTRE_HALO = 44;
+/**
+ * The halo's reach, dp (was 76: a veil wider than a building, touching its neighbours; a building's
+ * canvas is about 112 dp wide, so 56 is its own size), and how far under the anchor (the sprite's
+ * top) its heart lies (was 44).
+ */
+const RAYON_HALO = 56;
+const CENTRE_HALO = 40;
+/** A second, tighter pool on the first (LueurDouce peaks at 45 %): the heart reaches about 70 %. */
+const RAYON_COEUR_HALO = 32;
 const RESPIRATION_MS = 1500;
 
 /**
@@ -497,6 +503,7 @@ function Halo({ ancre }: { ancre: readonly [number, number] }) {
       style={[StyleSheet.absoluteFill, style]}
     >
       <LueurDouce kind="fenetre" at={[ancre[0], ancre[1] + CENTRE_HALO]} rayon={RAYON_HALO} />
+      <LueurDouce kind="fenetre" at={[ancre[0], ancre[1] + CENTRE_HALO]} rayon={RAYON_COEUR_HALO} />
     </Animated.View>
   );
 }
@@ -694,7 +701,7 @@ export function ContenuBatiment({
         ) : null}
       </XStack>
       {/* The figures are the sheet's own writer, read in ink on the parchment (`parchment` theme). */}
-      <YStack testID="iso-bulle-chiffres" gap="4">
+      <YStack testID="iso-bulle-chiffres" gap="3">
         <BuildingFacts
           building={building}
           extra={extra ?? null}

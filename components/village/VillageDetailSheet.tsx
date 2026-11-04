@@ -383,14 +383,14 @@ export function BuildingFacts({
           : `${t("village.detail_muscle_driver", {
               volume: formatCount(language, building.metricValue),
               muscle: muscleLabel,
-            })}. ${repUnitNote}`;
+            })}${surCarte ? "" : `. ${repUnitNote}`}`;
       case "style":
         return building.level === 0
           ? t("village.detail_unlock_style", { style: styleLabel })
           : `${t("village.detail_style_driver", {
               volume: formatCount(language, building.metricValue),
               style: styleLabel,
-            })}. ${repUnitNote}`;
+            })}${surCarte ? "" : `. ${repUnitNote}`}`;
       case "prereq":
         return building.level === 0
           ? t("village.detail_prereq_locked", {
@@ -594,6 +594,13 @@ export function BuildingFacts({
 
       {/* Before the long lists (a wall's stones, the deeds): the one action must not sit below a scroll of 24 stones. */}
       {reclameEnBas}
+
+      {/* On the card the unit note is a footnote at the end, out of the middle of the figures. */}
+      {surCarte && built && (building.driver === "muscle" || building.driver === "style") ? (
+        <Text testID="iso-bulle-note" fontSize={11} lineHeight="16px" color="textSecondary">
+          {repUnitNote}
+        </Text>
+      ) : null}
 
       {exercices}
       {recentes}

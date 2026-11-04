@@ -199,8 +199,8 @@ export function coteDuPanneau(
   return sousLeBas <= sousLeHaut ? "bas" : "haut";
 }
 
-/** The party's longest wave: 15 s of planning rounded up to the 5 s cycle (horloge.ts). The panel waits this long. */
-export const DELAI_FETE_MS = 20_000;
+/** How long the party gets before the panel opens by itself: 10 s (was 20, the longest planning wave, judged too long; the panel does not hide the map). */
+export const DELAI_FETE_MS = 10_000;
 
 // The last session key whose end-of-session panel was decided. Module state survives a remount of
 // the screen (a ref does not), like `prendreFete`.

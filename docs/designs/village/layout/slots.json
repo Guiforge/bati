@@ -113,9 +113,9 @@
    "id": "H1",
    "kind": "dehors",
    "box": [
-    -14,
+    -16,
     -2,
-    -8,
+    -10,
     3
    ],
    "taille": [
@@ -131,9 +131,9 @@
    "id": "H2",
    "kind": "dehors",
    "box": [
-    -14,
+    -16,
     4,
-    -8,
+    -10,
     9
    ],
    "taille": [
@@ -149,9 +149,9 @@
    "id": "H3",
    "kind": "dehors",
    "box": [
-    -18,
+    -21,
     -4,
-    -14,
+    -17,
     3
    ],
    "taille": [
@@ -161,7 +161,7 @@
    "tier": 10,
    "dehors": true,
    "contient": "petit bourg marchand (deplace a l'ouest de la clairiere)",
-   "libre": "le bosquet et sa foret arriere, jamais plus a l'est que gx -8"
+   "libre": "le bosquet et sa foret arriere, jamais plus a l est que gx -10"
   },
   {
    "id": "P-tent",

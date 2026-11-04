@@ -32,9 +32,9 @@ QUARTIERS = [
 ]
 # Outside the grid (painted world), west of the grove: the retreat of the forest (direction F). The grove keeps the back forest.
 DEHORS = [
-    ("H1", [-14, -2, -8, 3], "clairiere ouest, au dessus de l'observatoire : hameau", "l'arriere du bosquet reste en foret"),
-    ("H2", [-14, 4, -8, 9], "deux fermes de la clairiere", "la lisiere sud de la clairiere"),
-    ("H3", [-18, -4, -14, 3], "petit bourg marchand (deplace a l'ouest de la clairiere)", "le bosquet et sa foret arriere, jamais plus a l'est que gx -8"),
+    ("H1", [-16, -2, -10, 3], "clairiere ouest, au dessus de l'observatoire : hameau", "l'arriere du bosquet reste en foret"),
+    ("H2", [-16, 4, -10, 9], "deux fermes de la clairiere", "la lisiere sud de la clairiere"),
+    ("H3", [-21, -4, -17, 3], "petit bourg marchand (deplace a l'ouest de la clairiere)", "le bosquet et sa foret arriere, jamais plus a l est que gx -10"),
 ]
 
 

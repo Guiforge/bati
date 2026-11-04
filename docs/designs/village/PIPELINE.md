@@ -129,7 +129,7 @@ C'est le travail de LIFE, **en cours** : ce qui suit décrit l'existant, pas un 
 
 ## 6. L'atelier : voir le village sans émulateur
 
-Le village en images, dessiné par les composants de l'appli eux-mêmes dans un navigateur sans écran : la route `app/dev-iso.tsx`, avec ses liens. Sans émulateur, sans serveur Metro. Pourquoi pas Node et Skia comme le dit le prompt : Skia n'est pas dans l'appli (`atelier/checkpoint.md`, Q1).
+Le village en images, dessiné par les composants de l'appli eux-mêmes dans un navigateur sans écran : la route `app/dev-iso.tsx`, avec ses liens. Sans émulateur, sans serveur Metro. Pas de Node ni de Skia : Skia n'est pas dans l'appli, et Guillaume a choisi de l'y laisser hors (`atelier/checkpoint.md`, choix A du 04/11).
 
 ```bash
 node scripts/atelier/atelier.js render --tier 6 --light nuit       # un état, à la taille du téléphone
@@ -142,6 +142,10 @@ node scripts/atelier/atelier.js render --tier 12 --query 'peint=sol,foret'    # 
 - **Construction** : refaite seule quand l'arbre a bougé (`ATELIER_WEB=1 npx expo export --platform web --dev`, dans `node_modules/.cache/atelier-web`), de quelques secondes à 1 min. `--no-build` réutilise la dernière.
 - **Vitesse mesurée** : `render` 3 s, `strip` 44 s.
 - **Fixé par l'atelier** : la date (`useJour`, numéro de vague), donc le même état donne la même image. `fige=1` tient le mouvement au repos. `lumieres=0`, `foyer=<code>&zoom=1.6`, `dump=<nom>` passent par `--query`.
+- **`clip`** : quelques secondes de vrai mouvement, sans `fige=1`. La page tourne sur l'horloge factice de Playwright (`page.clock.install`, en pause), qui n'avance que par `runFor` : les images dépendent de l'horloge, pas de la machine. L'horloge d'animation de l'appli démarre seule au focus ; le seul blocage était `react-native-web`, qui dit « lecteur d'écran actif » (corrigé dans `scripts/atelier/web/index.tsx`). Sortie : un dossier d'images PNG, une planche de 8 images, un mp4 (ffmpeg, 540 px de large). Deux passes donnent des images identiques à l'octet près pour la plupart (27 sur 31 mesurées), les autres à moins de 8 niveaux. ~55 s pour 6 s à 10 images/s.
+  `node scripts/atelier/atelier.js clip --tier 6 --light jour --seconds 6 --fps 10`
+- **`check`** : mesures d'un état, tableau à l'écran et `check-<sha>.json`. Paliers 1, 6, 12 par défaut (`--tier 1,6,12`). Code de sortie 1 seulement si le budget de mouvement (68 noeuds animés) est dépassé. Rapportés sans faire échouer : occlusion par bâtiment (cible 85 % visible, pire d'abord, lit `layout/hooks.json` quand il existe), ancrages au sol (pied du dump contre la dernière ligne opaque, seuil 2 px écran), miniature 1/8 floutée et luminance cœur contre périphérie, tailles des images contre l'écran (tailles sources : le web ne réduit pas au décodage comme Android), mouvement. La mise en page actuelle échoue connue sur l'occlusion et les ancrages. ~70 s pour 3 paliers. Limites : l'ordre de peinture est l'ordre du DOM, un sprite tourné (ailes) n'occlut pas, les villageois n'ont pas de test de pied (ancre au centre de la case).
+  `node scripts/atelier/atelier.js check --tier 6 --light nuit`
 - **Besoin** : `playwright-core` et Chromium de l'installation gstack (`ATELIER_PLAYWRIGHT` pour un autre chemin).
 
 ### Taille du téléphone et calibrage (04/11/2026)

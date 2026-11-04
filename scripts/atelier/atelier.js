@@ -5,6 +5,8 @@
 //   node scripts/atelier/atelier.js render --tier 6 --light nuit
 //   node scripts/atelier/atelier.js strip --light jour
 //   node scripts/atelier/atelier.js sheet forge --light jour
+//   node scripts/atelier/atelier.js clip --tier 6 --seconds 6 --fps 10
+//   node scripts/atelier/atelier.js check --tier 1,6,12
 //
 // Common options: --out DIR, --no-build (reuse the last build), --query 'a=1&b=2' (any dev-iso param).
 
@@ -91,15 +93,25 @@ function serveur() {
   return new Promise((ok) => srv.listen(0, "127.0.0.1", () => ok(srv)));
 }
 
-/** Runs `corps(ouvrir, page)` with a phone-sized page; `ouvrir(query)` opens one dev-iso state and waits for it. */
-async function avecPage(corps) {
+const imagesPretes = () =>
+  [...document.images].every((i) => i.complete) && document.images.length > 0;
+
+/**
+ * Runs `corps(ouvrir, page)` with a phone-sized page; `ouvrir(query)` opens one dev-iso state and waits for it.
+ * `faux`: the page runs on Playwright's fake clock, paused, and only moves when `page.clock.runFor`
+ * says so (the `clip` and `check` commands). Time then depends on the calls, not on the machine.
+ */
+async function avecPage(corps, { faux = false } = {}) {
   const { chromium } = require(PLAYWRIGHT);
   const srv = await serveur();
   const nav = await chromium.launch();
   try {
     const ctx = await nav.newContext({ viewport: VIEW, deviceScaleFactor: DPR });
     const page = await ctx.newPage();
-    await page.clock.setFixedTime(new Date(JOUR_FIXE));
+    if (faux) {
+      await page.clock.install({ time: new Date(JOUR_FIXE) });
+      await page.clock.pauseAt(new Date(Date.parse(JOUR_FIXE) + 1000));
+    } else await page.clock.setFixedTime(new Date(JOUR_FIXE));
     const erreurs = [];
     page.on("pageerror", (e) => erreurs.push(String(e.stack ?? e).slice(0, 600)));
     const ouvrir = async (query) => {
@@ -107,12 +119,17 @@ async function avecPage(corps) {
       await page.goto(`http://127.0.0.1:${srv.address().port}/?${query}`);
       await page.waitForLoadState("networkidle", { timeout: 60000 });
       // Sprites decoded, the opening fade over (ouverture.ts, FONDU_OUVERTURE_MS).
-      await page.waitForFunction(
-        () => [...document.images].every((i) => i.complete) && document.images.length > 0,
-        null,
-        { timeout: 30000 },
-      );
-      await page.waitForTimeout(800);
+      if (faux) {
+        // Real time first: the fake clock must not advance by a number of steps that depends on the machine.
+        for (let i = 0; i < 400 && !(await page.evaluate(imagesPretes)); i++) {
+          if (i < 100) await page.waitForTimeout(50);
+          else await page.clock.runFor(100);
+        }
+        await page.clock.runFor(3000);
+      } else {
+        await page.waitForFunction(imagesPretes, null, { timeout: 30000 });
+        await page.waitForTimeout(800);
+      }
       if (erreurs.length) throw new Error(`atelier: the page failed on ${query}\n${erreurs[0]}`);
     };
     return await corps(ouvrir, page);
@@ -226,6 +243,11 @@ const COMMANDES = {
     return f;
   },
 };
+
+// clip and check live in check.js; they take the helpers they share with the commands above.
+const AIDES = { avecPage, capture, planche, lienCarte, git, ROOT, DPR, VIEW };
+COMMANDES.clip = (o, sortie, v) => require("./check").clip(o, sortie, v, AIDES);
+COMMANDES.check = (o, sortie, v) => require("./check").check(o, sortie, v, AIDES);
 
 async function main() {
   const [commande, ...reste] = process.argv.slice(2);

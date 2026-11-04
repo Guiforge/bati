@@ -1,0 +1,234 @@
+{
+ "assets/images/village/iso/creatures/mouse_run_a.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "39468a8952c85759.png",
+   "sha256": "39468a8952c857597c8e9ac3d682dcc50edb6196eb258f6da9fa2cc4b7d327ae"
+  },
+  "prompt": "Image 1 is a drawing of a small russet harvest mouse with a cream belly. Repaint it as a clean hand-painted sprite. Very thick dark ink outline (#0F1518), about three times thicker than in image 1, even and bold around the whole shape and around every paw or claw. Only three to six big flat colour shapes, each with two soft values: fur, feathers and scales are plain colour masses, with no individual hairs, no feather lines, no hatching, no scale pattern. Simple gentle face. Warm light from the upper left, cool slate shade on the right side of the body. Matte, no gloss, no ground, no cast shadow. Flat pure green background (#00B140), one even colour filling the frame to every edge, nothing else. Same camera angle, same position and same size in the frame as image 1. Thick rounded paws and a thick tail, at most three whiskers on each side, large round ears.",
+  "seed": null,
+  "width": 768,
+  "height": 768,
+  "generated": "2026-11-04",
+  "references": [
+   {
+    "path": "docs/designs/village/life/scratch/c1/flux/raw/mouse_b_run_a.png",
+    "sha256": "0d34a5dc8d0b10b89a65f79150d2907e082fea6830d3b1a786a6badd7380fc57"
+   }
+  ],
+  "used_for": "assets/images/village/iso/creatures/mouse_run_a.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/mouse_run_a__a1c1.png"
+ },
+ "assets/images/village/iso/creatures/mouse_run_b.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "c09cfb6cecc00190.png",
+   "sha256": "c09cfb6cecc001902a39b5673d3fb43b7fb2152222b9b7ed67506b86f3f186bf"
+  },
+  "prompt": "Image 1 is the mouse. Paint the very same mouse: same colours, same markings, same size, same position in the frame, same camera angle, same thick ink line, same flat green background. Change only this: only the four legs go to the opposite phase of the stride. The ears, head, body and tail do not move at all. Keep every other part exactly the same. Repaint it as a clean hand-painted sprite. Very thick dark ink outline (#0F1518), about three times thicker than in image 1, even and bold around the whole shape and around every paw or claw. Only three to six big flat colour shapes, each with two soft values: fur, feathers and scales are plain colour masses, with no individual hairs, no feather lines, no hatching, no scale pattern. Simple gentle face. Warm light from the upper left, cool slate shade on the right side of the body. Matte, no gloss, no ground, no cast shadow. Flat pure green background (#00B140), one even colour filling the frame to every edge, nothing else. ",
+  "seed": null,
+  "width": 768,
+  "height": 768,
+  "generated": "2026-11-04",
+  "references": [
+   {
+    "path": "docs/designs/village/life/scratch/final/raw/mouse_run_a__a1c1.png",
+    "sha256": "48f62e25983db0c4fd08c0155e769802a878c5adfbc81377a46a138faf156410"
+   }
+  ],
+  "used_for": "assets/images/village/iso/creatures/mouse_run_b.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/mouse_run_b__a2c1.png"
+ },
+ "assets/images/village/iso/creatures/mouse_sit.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "abb2732e38d250e8.png",
+   "sha256": "abb2732e38d250e8ee0f47c2b204e77f6b1d7ad19b9e7618bad0603dece385bc"
+  },
+  "prompt": "Image 1 is a drawing of a small russet harvest mouse with a cream belly: keep its pose, its markings and its position. Image 2 is the finished sprite of the same animal, copy its ink line, flat colours and look. Repaint it as a clean hand-painted sprite. Very thick dark ink outline (#0F1518), about three times thicker than in image 1, even and bold around the whole shape and around every paw or claw. Only three to six big flat colour shapes, each with two soft values: fur, feathers and scales are plain colour masses, with no individual hairs, no feather lines, no hatching, no scale pattern. Simple gentle face. Warm light from the upper left, cool slate shade on the right side of the body. Matte, no gloss, no ground, no cast shadow. Flat pure green background (#00B140), one even colour filling the frame to every edge, nothing else. Same camera angle, same position and same size in the frame as image 1. Thick rounded paws and a thick tail, at most three whiskers on each side, large round ears.",
+  "seed": null,
+  "width": 768,
+  "height": 768,
+  "generated": "2026-11-04",
+  "references": [
+   {
+    "path": "docs/designs/village/life/scratch/c1/flux/raw/mouse_b_sit.png",
+    "sha256": "62a3f0a11be4f020cd4d36ac116fa98276c9d74957fcec44907643372cdcd1e4"
+   },
+   {
+    "path": "docs/designs/village/life/scratch/final/raw/mouse_run_a__a1c1.png",
+    "sha256": "48f62e25983db0c4fd08c0155e769802a878c5adfbc81377a46a138faf156410"
+   }
+  ],
+  "used_for": "assets/images/village/iso/creatures/mouse_sit.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/mouse_sit__a2c1.png"
+ },
+ "assets/images/village/iso/creatures/cat_walk_a.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "905910e4c8067dfb.png",
+   "sha256": "905910e4c8067dfbd530cae890955b045ecb8efea485d1fb0ab3e9dc70eacabe"
+  },
+  "prompt": "Image 1 is a drawing of a stocky black and white cat. Repaint it as a clean hand-painted sprite. Very thick dark ink outline (#0F1518), about three times thicker than in image 1, even and bold around the whole shape and around every paw or claw. Only three to six big flat colour shapes, each with two soft values: fur, feathers and scales are plain colour masses, with no individual hairs, no feather lines, no hatching, no scale pattern. Simple gentle face. Warm light from the upper left, cool slate shade on the right side of the body. Matte, no gloss, no ground, no cast shadow. Flat pure green background (#00B140), one even colour filling the frame to every edge, nothing else. Same camera angle, same position and same size in the frame as image 1. Soft face with big round eyes, a small pink nose, no heavy brows. All four legs complete and fully visible, including the far hind leg.",
+  "seed": null,
+  "width": 768,
+  "height": 768,
+  "generated": "2026-11-04",
+  "references": [
+   {
+    "path": "docs/designs/village/life/scratch/c1/flux/raw/cat_b_walk_a.png",
+    "sha256": "cc1ad5c1c5b3ec56169b9669a42ecb8e0c4eafcbd0ed60754e8c815516891733"
+   }
+  ],
+  "used_for": "assets/images/village/iso/creatures/cat_walk_a.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/cat_walk_a__a1c1.png"
+ },
+ "assets/images/village/iso/creatures/cat_walk_b.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "a06b52d9c8383001.png",
+   "sha256": "a06b52d9c8383001062c5723edd97a24a2945ded05d0a5dcf185721d2515c3a0"
+  },
+  "prompt": "Image 1 is the cat. Paint the very same cat: same colours, same markings, same size, same position in the frame, same camera angle, same thick ink line, same flat green background. Change only this: only the legs go to the opposite phase of the stride, all four legs complete including the far hind leg. The head, ears, face, body and tail stay exactly where they are. Keep every other part exactly the same. Repaint it as a clean hand-painted sprite. Very thick dark ink outline (#0F1518), about three times thicker than in image 1, even and bold around the whole shape and around every paw or claw. Only three to six big flat colour shapes, each with two soft values: fur, feathers and scales are plain colour masses, with no individual hairs, no feather lines, no hatching, no scale pattern. Simple gentle face. Warm light from the upper left, cool slate shade on the right side of the body. Matte, no gloss, no ground, no cast shadow. Flat pure green background (#00B140), one even colour filling the frame to every edge, nothing else. ",
+  "seed": null,
+  "width": 768,
+  "height": 768,
+  "generated": "2026-11-04",
+  "references": [
+   {
+    "path": "docs/designs/village/life/scratch/final/raw/cat_walk_a__a1c1.png",
+    "sha256": "a3ef84db0090479330459b6b57a6d1a3bb4127bc662253fd6a5dec25fa38be62"
+   }
+  ],
+  "used_for": "assets/images/village/iso/creatures/cat_walk_b.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/cat_walk_b__a2c0.png"
+ },
+ "assets/images/village/iso/creatures/cat_sit.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "9bc72fb5b2ece160.png",
+   "sha256": "9bc72fb5b2ece1606170b88a085f29780e7945d58862ef1884bb264c4a408786"
+  },
+  "prompt": "Image 1 is a drawing of a stocky black and white cat: keep its pose, its markings and its position. Image 2 is the finished sprite of the same animal, copy its ink line, flat colours and look. Repaint it as a clean hand-painted sprite. Very thick dark ink outline (#0F1518), about three times thicker than in image 1, even and bold around the whole shape and around every paw or claw. Only three to six big flat colour shapes, each with two soft values: fur, feathers and scales are plain colour masses, with no individual hairs, no feather lines, no hatching, no scale pattern. Simple gentle face. Warm light from the upper left, cool slate shade on the right side of the body. Matte, no gloss, no ground, no cast shadow. Flat pure green background (#00B140), one even colour filling the frame to every edge, nothing else. Same camera angle, same position and same size in the frame as image 1. Soft face with big round eyes, a small pink nose, no heavy brows.",
+  "seed": null,
+  "width": 768,
+  "height": 768,
+  "generated": "2026-11-04",
+  "references": [
+   {
+    "path": "docs/designs/village/life/scratch/c1/flux/raw/cat_b_sit.png",
+    "sha256": "00fc22be677a034d2da0af2f92201505b00e9f59616cb8df725a33974ad74102"
+   },
+   {
+    "path": "docs/designs/village/life/scratch/final/raw/cat_walk_a__a1c1.png",
+    "sha256": "a3ef84db0090479330459b6b57a6d1a3bb4127bc662253fd6a5dec25fa38be62"
+   }
+  ],
+  "used_for": "assets/images/village/iso/creatures/cat_sit.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/cat_sit__a2c1.png"
+ },
+ "assets/images/village/iso/creatures/bird_wings_up.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "0ac5c3ca097fd096.png",
+   "sha256": "0ac5c3ca097fd09647fee8df5d2e69320bffefbd41969fe656f24d2387ee28f4"
+  },
+  "prompt": "Image 1 is a drawing of a plump little blue-grey songbird with a cream belly and a dark cap. Repaint it as a clean hand-painted sprite. Very thick dark ink outline (#0F1518), about three times thicker than in image 1, even and bold around the whole shape and around every paw or claw. Only three to six big flat colour shapes, each with two soft values: fur, feathers and scales are plain colour masses, with no individual hairs, no feather lines, no hatching, no scale pattern. Simple gentle face. Warm light from the upper left, cool slate shade on the right side of the body. Matte, no gloss, no ground, no cast shadow. Flat pure green background (#00B140), one even colour filling the frame to every edge, nothing else. Same camera angle, same position and same size in the frame as image 1. One clear pair of wings, raised high. Legs tucked into the belly feathers, no legs visible.",
+  "seed": null,
+  "width": 768,
+  "height": 768,
+  "generated": "2026-11-04",
+  "references": [
+   {
+    "path": "docs/designs/village/life/scratch/c1/flux/raw/bird_b_wings_up.png",
+    "sha256": "856e98698eefe97d44a7dd63969425a8f784de898b33353616fc38f91fc10c93"
+   }
+  ],
+  "used_for": "assets/images/village/iso/creatures/bird_wings_up.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/bird_wings_up__a1c0.png"
+ },
+ "assets/images/village/iso/creatures/bird_wings_down.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "23d4556f7465410f.png",
+   "sha256": "23d4556f7465410fadc2f29adb54633781b02676169d6b874cf8cd75b619a629"
+  },
+  "prompt": "Image 1 is the bird. Paint the very same bird: same colours, same markings, same size, same position in the frame, same camera angle, same thick ink line, same flat green background. Change only this: only the wings swing down below the body, one clear pair of wings. Body, head, tail, size and position stay exactly as in image 1, the bird is not bigger. Legs tucked, no legs visible. Keep every other part exactly the same. Repaint it as a clean hand-painted sprite. Very thick dark ink outline (#0F1518), about three times thicker than in image 1, even and bold around the whole shape and around every paw or claw. Only three to six big flat colour shapes, each with two soft values: fur, feathers and scales are plain colour masses, with no individual hairs, no feather lines, no hatching, no scale pattern. Simple gentle face. Warm light from the upper left, cool slate shade on the right side of the body. Matte, no gloss, no ground, no cast shadow. Flat pure green background (#00B140), one even colour filling the frame to every edge, nothing else. ",
+  "seed": null,
+  "width": 768,
+  "height": 768,
+  "generated": "2026-11-04",
+  "references": [
+   {
+    "path": "docs/designs/village/life/scratch/final/raw/bird_wings_up__a1c0.png",
+    "sha256": "21dcb30bf1cca7405902f182b7fdf294c7e0dce012a61b97f937b795a6769fac"
+   }
+  ],
+  "used_for": "assets/images/village/iso/creatures/bird_wings_down.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/bird_wings_down__a2c0.png"
+ },
+ "assets/images/village/iso/creatures/bird_perched.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "c1f6f5033e5ed69a.png",
+   "sha256": "c1f6f5033e5ed69aa65862f6c7fd1472fc13b66564cbef65eb07ce130bed20de"
+  },
+  "prompt": "Image 1 is a drawing of a plump little blue-grey songbird with a cream belly and a dark cap: keep its pose, its markings and its position. Image 2 is the finished sprite of the same animal, copy its ink line, flat colours and look. Repaint it as a clean hand-painted sprite. Very thick dark ink outline (#0F1518), about three times thicker than in image 1, even and bold around the whole shape and around every paw or claw. Only three to six big flat colour shapes, each with two soft values: fur, feathers and scales are plain colour masses, with no individual hairs, no feather lines, no hatching, no scale pattern. Simple gentle face. Warm light from the upper left, cool slate shade on the right side of the body. Matte, no gloss, no ground, no cast shadow. Flat pure green background (#00B140), one even colour filling the frame to every edge, nothing else. Same camera angle, same position and same size in the frame as image 1. One pair of wings folded against the body. Two short thick legs on the ground. Same size as the bird in image 2.",
+  "seed": null,
+  "width": 768,
+  "height": 768,
+  "generated": "2026-11-04",
+  "references": [
+   {
+    "path": "docs/designs/village/life/scratch/c1/flux/raw/bird_b_perched.png",
+    "sha256": "8c09d61492a53a1ab39b959edb57680b61d35e7bad0c53323ec1922c4cb1eb23"
+   },
+   {
+    "path": "docs/designs/village/life/scratch/final/raw/bird_wings_up__a1c0.png",
+    "sha256": "21dcb30bf1cca7405902f182b7fdf294c7e0dce012a61b97f937b795a6769fac"
+   }
+  ],
+  "used_for": "assets/images/village/iso/creatures/bird_perched.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/bird_perched__a2c0.png"
+ },
+ "assets/images/village/iso/creatures/dragon_sleep.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "8a01b6676889d32b.png",
+   "sha256": "8a01b6676889d32b3b5e2d8a5438c6d13ee9e3c6ab988b4f148ab0cfa36e9d80"
+  },
+  "prompt": "Image 1 is a drawing of a big dragon curled asleep in a ring. Repaint it as a clean hand-painted sprite. Very thick dark ink outline (#0F1518), about three times thicker than in image 1, even and bold around the whole shape and around every paw or claw. Only three to six big flat colour shapes, each with two soft values: fur, feathers and scales are plain colour masses, with no individual hairs, no feather lines, no hatching, no scale pattern. Simple gentle face. Warm light from the upper left, cool slate shade on the right side of the body. Matte, no gloss, no ground, no cast shadow. Flat pure green background (#00B140), one even colour filling the frame to every edge, nothing else. Same camera angle, same position and same size in the frame as image 1. The scales are only three flat bands of value: light on the back, a mid tone, a dark one underneath, no scale drawing. The back spikes are large, bold and clearly readable. The tail is tucked inside the curled shape. Head down, eyes closed, rust-red body with an ochre belly.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "references": [
+   {
+    "path": "docs/designs/village/life/scratch/c1/flux/raw/dragon_b_breathe_in.png",
+    "sha256": "5d824f74e57183ffe6f6e1ec9ea01e89f0e4c8ac7ce294dacd15c1df6566933a"
+   }
+  ],
+  "used_for": "assets/images/village/iso/creatures/dragon_sleep.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/dragon_sleep__a1c1.png"
+ }
+}

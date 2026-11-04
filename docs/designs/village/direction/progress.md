@@ -7,3 +7,4 @@
 - 04/11 D6 page de choix publiée, `checkpoint.md`. **Suite** : dès la réponse de Guillaume, D7 (`target.md`, images choisies dans `img/`, depuis `scratch/paint/` ou `~/bati-archives/2026-11-04-direction.tgz`), puis D8.
 - 04/11 D7 choix de Guillaume : A, à reprendre. 18 images en deux passes, 1,33 $, piste à 3,27 $. `target.md` et `img/cible-*.jpg`. Relecture unique de mara, défauts écrits dans `target.md`.
 - 04/11 D8 piste fermée, `scratch/` archivé dans `~/bati-archives/2026-11-04-direction-fin.tgz`.
+- 04/11 À la demande de Guillaume : règles 11 à 20 ajoutées à `target.md`, palier 12 de jour repeint avec un remplissage calme (`r3_t12_1`, 0,07 $), piste à 3,34 $. Archive refaite.

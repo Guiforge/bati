@@ -50,6 +50,11 @@ T12B = ("Image 1 is the town: keep its camera, every building, the walls, the ga
 for i in (1, 2):
     DAY[f"r2_t6_{i}"] = (T6B, (OUT / "r_t6_1.png",), 71600 + i)
     DAY[f"r2_t12_{i}"] = (T12B, (OUT / "r_t12_3.png",), 71700 + i)
+T12C = ("Image 1 is the town: keep its camera and composition. Keep exactly as they are: everything inside the walls, the walls, the gate, the windmill, the towers, the arena, the street, the bridge, the river, the two red-roofed cottages and the fenced plots at the bottom. "
+        "Change only the added neighbourhood houses outside the walls and above the river: repaint them as quiet background houses with slate grey or dark thatch roofs and dull muted brown walls, no red tiles, no white walls, no signs, no flags, little inner detail, low and simple. "
+        "They read a clear step darker and calmer than the buildings inside the walls. No house stands in front of the windmill, the towers or the arena. "
+        "Warm the daylight on the old town inside the walls and on its fire square, so it is clearly the brightest and most colourful area; the street above the bridge is calmer than the square.")
+DAY["r3_t12_1"] = (T12C, (OUT / "r2_t12_2.png",), 71801)
 
 
 def go(items, label):

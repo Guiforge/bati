@@ -5,7 +5,7 @@ import pathlib
 from PIL import Image
 
 D = pathlib.Path(__file__).resolve().parent.parent.parent / "docs/designs/village/direction"
-PICKS = {"t1-jour": "r_t1_3", "t6-jour": "r2_t6_1", "t12-jour": "r2_t12_2", "t12-nuit": "r_t12n_1"}
+PICKS = {"t1-jour": "r_t1_3", "t6-jour": "r2_t6_1", "t12-jour": "r3_t12_1", "t12-nuit": "r_t12n_1"}
 ims = []
 for name, src in PICKS.items():
     im = Image.open(D / f"scratch/paint/{src}.png").convert("RGB")

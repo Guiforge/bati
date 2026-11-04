@@ -17,3 +17,5 @@
 - 04/11, échafaudage 3x3 abandonné après 3 essais : les bâtiments 3x3 utilisent le 2x2 agrandi, à revoir si ça se voit.
 - 04/11, `NOEUDS_CROISSANCE_MAX` passe de 6 à 12 dans `iso-ciel` : 6 nœuds par croissance, 2 croissances au plus. Le test mesure, pas de gate de performance avant la piste PERF.
 - 04/11, `scripts/bld/capture.sh` et `scripts/iso/loupe_capture.sh` gardent des liens `show=` devenus muets, retirés dans l'item U8.
+- 04/11, le moment part à l'arrivée de la caméra, pas au tap : l'émulateur montre que le début était vu de loin, sur un bâtiment de 25 px. Le tap garde la vibration et le marteau.
+- 04/11, anciens chats retirés d'`ANIMAUX` : un diaporama de 3 poses à côté du nouveau chat.

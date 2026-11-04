@@ -4,12 +4,12 @@ set -uo pipefail
 cd "$(dirname "$0")/../.."
 S=emulator-5556
 A="adb -s $S"
-OUT=docs/designs/village/life/scratch/m-planches
+OUT=${OUT:-docs/designs/village/life/scratch/m-planches}
 RAW=$HOME/.cache/bati-life-mouv; mkdir -p "$OUT" "$RAW"
 CROP=${CROP:-1080:1080:0:340}   # w:h:x:y of the building on the screen
 link() { $A shell am start -W -a android.intent.action.VIEW -d "'$1'" com.guiforge.bati.dev >/dev/null; }
 rank() { case $1 in dragon_lair|heroes_hall|champion_arena) echo 5;; armory|fountain|observatory|watchtower|barn|castle_wall) echo 3;; *) echo 10;; esac; }
-ALL="archery_range armory barn campfire castle_wall champion_arena dragon_lair druid_grove farm forge fountain heroes_hall high_road observatory quarry tent training_dummy watchtower well windmill wizard_tower"
+ALL=${ALL:-"archery_range armory barn campfire castle_wall champion_arena dragon_lair druid_grove farm forge fountain heroes_hall high_road observatory quarry tent training_dummy watchtower well windmill wizard_tower"}
 
 setup() {
   [ "$(scripts/emu.sh claim)" = $S ] || { echo "claim != $S"; exit 1; }

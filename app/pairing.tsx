@@ -8,12 +8,23 @@ import { AppButton } from "@/components/common/AppButton";
 import { Input } from "@/components/common/Input";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { QrCode } from "@/components/multiplayer/QrCode";
-import { acceptInvite, createPair, listPairs, MAX_PAIRS, type Pair, unlinkPair } from "@/db/pairs";
+import {
+  acceptInvite,
+  acceptLinkInvite,
+  completeLinkInvite,
+  createLinkInvite,
+  createPair,
+  listPairs,
+  MAX_PAIRS,
+  type Pair,
+  unlinkPair,
+} from "@/db/pairs";
 import { ScannerView } from "@/modules/bati-scanner";
-import { openEnvelope } from "@/src/multiplayer/envelope";
 import { MULTIPLAYER_ENABLED } from "@/src/multiplayer/flag";
-import { decodeInvite, encodeInvite, type Invite } from "@/src/multiplayer/invite";
+import { encodeInvite, type Invite, KIND_INVITE } from "@/src/multiplayer/invite";
 import { bytesOfLink, linkFor, takeIncomingLink } from "@/src/multiplayer/link";
+import { encodeLinkInvite, type LinkInvite } from "@/src/multiplayer/linkInvite";
+import { type Received, readCode } from "@/src/multiplayer/received";
 import { reportError } from "@/src/reportError";
 
 /**
@@ -21,36 +32,18 @@ import { reportError } from "@/src/reportError";
  * screen proves the plumbing, the lots that ship give it its real words and its real place.
  *
  * Nothing it receives changes anything until the hero says so: a code or a link is shown for what it
- * is, and only "Accept" writes.
+ * is, and only "Accept" writes. Two ways to pair: a code on the screen, with the secret in it, for two
+ * people in one room; a link, with no secret in it, and an answer that has to come back.
  */
 const NAME_MAX = 40;
 
-type Received =
-  | { kind: "invite"; invite: Invite }
-  | { kind: "week"; from: string; summary: string }
-  | { kind: "unreadable"; why: string };
-
-async function readCode(text: string, pairs: readonly Pair[]): Promise<Received> {
-  const bytes = bytesOfLink(text);
-  if (bytes === null) return { kind: "unreadable", why: "This is not a Bati code." };
-
-  const invite = decodeInvite(bytes, Math.floor(Date.now() / 1000));
-  if (invite) return { kind: "invite", invite };
-
-  // A week from a companion: read and shown, and nothing keeps it until lot 1 has a challenge.
-  for (const pair of pairs) {
-    const opened = await openEnvelope(pair.secret, bytes, pair.selfId);
-    if (opened.kind === "ok") {
-      const hits = opened.state.days.reduce((sum, n) => sum + n, 0);
-      return { kind: "week", from: pair.name, summary: `${hits} of ${opened.state.goal} sessions` };
-    }
-    if (opened.kind === "newerVersion") {
-      return { kind: "unreadable", why: "Made by a newer Bati. Update to read it." };
-    }
-  }
-  return { kind: "unreadable", why: "An expired invite, or for a companion not on this phone." };
+/** A code shown in the room holds the pair's secret: that one never reaches a share sheet. */
+function shareable(link: string): boolean {
+  const bytes = bytesOfLink(link);
+  return bytes !== null && bytes[1] !== KIND_INVITE;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: a dev screen proving the plumbing, rewritten by the lot that ships it.
 export default function PairingScreen() {
   const insets = useSafeAreaInsets();
   const { n } = useLocalSearchParams<{ n?: string }>();
@@ -67,13 +60,10 @@ export default function PairingScreen() {
     setNote("That did not work.");
   };
 
-  const receive = (text: string) => {
+  const receive = (text: string, via: "link" | "scan") => {
     setScanning(false);
     setNote(null);
-    listPairs()
-      .then((current) => readCode(text, current))
-      .then(setReceived)
-      .catch(fail("pairing.read"));
+    readCode(text, via).then(setReceived).catch(fail("pairing.read"));
   };
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `n` is what says a new link is held.
@@ -81,7 +71,7 @@ export default function PairingScreen() {
     if (!MULTIPLAYER_ENABLED) return;
     refresh().catch(fail("pairing.list"));
     const link = takeIncomingLink();
-    if (link !== null) receive(link);
+    if (link !== null) receive(link, "link");
   }, [n]);
 
   // A build where this is off still answers bati://pairing: home, not a blank screen with no way out.
@@ -95,6 +85,16 @@ export default function PairingScreen() {
     setName("");
     setNote(null);
     await refresh();
+  };
+
+  const sendLink = async () => {
+    const started = Date.now();
+    const made = await createLinkInvite();
+    if (made === "full") return setNote(`At most ${MAX_PAIRS} invitations waiting.`);
+    const link = linkFor(encodeLinkInvite(made));
+    setShown(link);
+    setNote(`Waiting for an answer. Key made in ${Date.now() - started} ms.`);
+    await Share.share({ message: link });
   };
 
   const scan = async () => {
@@ -118,6 +118,57 @@ export default function PairingScreen() {
     await refresh();
   };
 
+  const acceptLink = async (from: LinkInvite) => {
+    const started = Date.now();
+    const outcome = await acceptLinkInvite(from, name);
+    if (outcome instanceof Uint8Array) {
+      setShown(linkFor(outcome));
+      setNote(`Paired. Send this answer back. Key agreed in ${Date.now() - started} ms.`);
+    } else {
+      setNote(
+        outcome === "full"
+          ? `At most ${MAX_PAIRS} companions.`
+          : "This invite is yours, already a companion, or damaged.",
+      );
+    }
+    setReceived(null);
+    setName("");
+    await refresh();
+  };
+
+  const completeLink = async (bytes: Uint8Array) => {
+    const outcome = await completeLinkInvite(bytes, name);
+    setNote(
+      outcome === "paired"
+        ? "Paired."
+        : outcome === "full"
+          ? `At most ${MAX_PAIRS} companions.`
+          : "This answer no longer matches an invitation here.",
+    );
+    setReceived(null);
+    setName("");
+    await refresh();
+  };
+
+  // What the three kinds that ask for a name have in common: a sentence and what Accept does.
+  const asking =
+    received?.kind === "invite"
+      ? {
+          line: "An invitation to pair with this phone. What do you call them?",
+          accept: () => accept(received.invite),
+        }
+      : received?.kind === "linkInvite"
+        ? {
+            line: "An invitation to pair with this phone. What do you call them?",
+            accept: () => acceptLink(received.invite),
+          }
+        : received?.kind === "reply"
+          ? {
+              line: "Someone answered your invitation. What do you call them?",
+              accept: () => completeLink(received.bytes),
+            }
+          : null;
+
   return (
     <YStack flex={1} bg="background" pt={insets.top} pb={insets.bottom}>
       <XStack px="4" py="3" items="center" gap="3">
@@ -130,9 +181,9 @@ export default function PairingScreen() {
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ padding: 16, gap: 12 }}
       >
-        {received?.kind === "invite" ? (
+        {asking !== null ? (
           <YStack gap="2" testID="pairing-received-invite">
-            <Text color="text">An invitation to pair with this phone. What do you call them?</Text>
+            <Text color="text">{asking.line}</Text>
             <Input
               testID="pairing-receive-name"
               value={name}
@@ -143,7 +194,7 @@ export default function PairingScreen() {
             <AppButton
               testID="pairing-accept"
               disabled={name.trim() === ""}
-              onPress={() => accept(received.invite).catch(fail("pairing.accept"))}
+              onPress={() => asking.accept().catch(fail("pairing.accept"))}
             >
               Accept
             </AppButton>
@@ -172,7 +223,7 @@ export default function PairingScreen() {
             <ScannerView
               testID="pairing-scanner"
               style={{ flex: 1 }}
-              onScan={(event) => receive(event.nativeEvent.text)}
+              onScan={(event) => receive(event.nativeEvent.text, "scan")}
               onCameraError={(event) => {
                 reportError("pairing.camera", new Error(event.nativeEvent.message));
                 setScanning(false);
@@ -180,7 +231,7 @@ export default function PairingScreen() {
               }}
             />
           </YStack>
-        ) : received?.kind !== "invite" ? (
+        ) : asking === null ? (
           <AppButton
             testID="pairing-scan"
             variant="outline"
@@ -193,19 +244,34 @@ export default function PairingScreen() {
         {shown !== null ? (
           <YStack gap="2" items="center">
             <QrCode value={shown} size={320} />
-            <AppButton
-              testID="pairing-send-link"
-              variant="outline"
-              onPress={() => Share.share({ message: shown }).catch(fail("pairing.share"))}
-            >
-              Send a link
-            </AppButton>
+            {/* Only what carries no secret goes to a share sheet. Dev-only text, read by the test bench. */}
+            {shareable(shown) ? (
+              <>
+                <Text color="textSecondary" fontSize={10} testID="pairing-link-text">
+                  {shown}
+                </Text>
+                <AppButton
+                  testID="pairing-share-again"
+                  variant="outline"
+                  onPress={() => Share.share({ message: shown }).catch(fail("pairing.share"))}
+                >
+                  Send it
+                </AppButton>
+              </>
+            ) : null}
             <AppButton testID="pairing-hide-code" variant="outline" onPress={() => setShown(null)}>
               Done
             </AppButton>
           </YStack>
-        ) : received?.kind !== "invite" ? (
+        ) : asking === null ? (
           <YStack gap="2">
+            <AppButton
+              testID="pairing-send-link"
+              variant="outline"
+              onPress={() => sendLink().catch(fail("pairing.sendLink"))}
+            >
+              Send a link
+            </AppButton>
             <Input
               testID="pairing-invite-name"
               value={name}
@@ -218,7 +284,7 @@ export default function PairingScreen() {
               disabled={name.trim() === ""}
               onPress={() => invite().catch(fail("pairing.invite"))}
             >
-              Invite a companion
+              Show a code, face to face
             </AppButton>
           </YStack>
         ) : null}

@@ -1222,6 +1222,17 @@ export const pairs = sqliteTable("pairs", {
   updatedAt: int({ mode: "timestamp" }).notNull(),
 });
 
+/**
+ * A link invitation waiting for its answer (0084). `privateKey` stays on this device and goes when the
+ * answer comes or after seven days (`sweepExpiredInvites`).
+ */
+export const pairInvites = sqliteTable("pair_invites", {
+  id: text().primaryKey(),
+  privateKey: text().notNull(),
+  selfId: text().notNull(),
+  madeAt: int({ mode: "timestamp" }).notNull(),
+});
+
 /** A BLOB column, as the bytes the driver hands over (`Uint8Array`: expo-sqlite, and a Buffer in tests). */
 const bytes = customType<{ data: Uint8Array; driverData: Uint8Array }>({
   dataType: () => "blob",

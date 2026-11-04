@@ -6,6 +6,8 @@
     "@expo/metro-runtime": "~58.0.15",
     "@legendapp/list": "^3.7.1",
     "@maplibre/maplibre-react-native": "^11.5.1",
+    "@noble/curves": "2.4.0",
+    "@noble/hashes": "2.4.0",
     "@scure/bip39": "^2.4.0",
     "@tamagui/animations-react-native": "3.1.10",
     "@tamagui/config": "3.1.10",

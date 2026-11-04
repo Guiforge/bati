@@ -8,11 +8,12 @@ import {
 } from "./envelope";
 
 /**
- * What phone A hands phone B to pair: the pair's id, A's id in it, when it was made and the secret.
+ * What phone A shows phone B to pair face to face: the pair's id, A's id in it, when it was made and
+ * the secret.
  *
  * Not sealed, and it cannot be: it is what creates the key. Whoever reads an invite can read that
- * pair's messages, so it is shown on a screen or sent by the hero's own messaging, and it stops
- * being accepted after `INVITE_DAYS`, because a chat keeps it for ever.
+ * pair's messages, so it is only accepted from a camera (`readCode`), and it stops being accepted
+ * after `INVITE_DAYS`. The link's invitation carries no secret: `linkInvite.ts`.
  *
  * version 1 | kind 2 | pair id 16 | sender id 8 | year 2 | week 1 are the envelope's header, so one
  * reader finds both; then made-at u32 | secret 32. See docs/designs/multiplayer/envelope.md.

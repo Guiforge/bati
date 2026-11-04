@@ -12,3 +12,10 @@
 # The frozen multiplayer envelope vectors: the key is the bytes 00 to 1f, a public test value.
 __tests__/fixtures/multiplayer/envelope-v1.json:generic-api-key:3
 __tests__/fixtures/multiplayer/envelope-v1.json:generic-api-key:21
+
+# The frozen link invitation vectors: the two private keys are the published test keys of RFC 7748, the
+# pair key is derived from them.
+__tests__/fixtures/multiplayer/envelope-v1-link.json:generic-api-key:8
+__tests__/fixtures/multiplayer/envelope-v1-link.json:generic-api-key:10
+__tests__/fixtures/multiplayer/envelope-v1-link.json:generic-api-key:12
+__tests__/fixtures/multiplayer/envelope-v1-link.json:generic-api-key:14

@@ -31,9 +31,9 @@ export function isSealedLink(url: string): boolean {
 }
 
 /**
- * The link Android opened Bati with, held here and never in a route: an invite holds the pair's
- * secret, and a route's params are logged, decoded twice and kept in the navigation state
- * (see `src/incomingFile.ts`). Taken, not kept: one reading, then it is gone from memory.
+ * The link Android opened Bati with, held here and never in a route: an old-style invite still holds
+ * a pair's secret until it is refused, and a route's params are logged, decoded twice and kept in the
+ * navigation state (see `src/incomingFile.ts`). Taken, not kept: one reading, then it is gone.
  */
 let held: string | null = null;
 let arrivals = 0;

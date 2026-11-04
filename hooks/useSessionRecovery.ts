@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { isOutingSession } from "@/db/expeditions";
 import { deletePoints, pointsOf, sweepOrphanedPoints } from "@/db/gps";
+import { sweepExpiredInvites } from "@/db/pairs";
 import { preferences } from "@/db/preferences";
 import type { Quest } from "@/db/quests";
 import { addListener } from "@/modules/bati-location";
@@ -414,6 +415,7 @@ export function useSessionRecovery() {
     if (isChecking) return;
     const keep = useSessionStore.getState().sessionUuid ?? recoverableSession?.sessionUuid ?? null;
     sweepOrphanedPoints(keep).catch((e) => reportError("session.sweepOrphanedPoints", e));
+    sweepExpiredInvites().catch((e) => reportError("pairing.sweepInvites", e));
   }, [isChecking, recoverableSession]);
 
   // Check for saved session on mount

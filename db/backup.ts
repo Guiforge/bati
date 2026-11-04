@@ -1,5 +1,4 @@
 import { sql } from "drizzle-orm";
-
 import migrations from "../drizzle/migrations";
 import { reportError } from "../src/reportError";
 import {
@@ -14,6 +13,7 @@ import {
 import { hasPendingMigrations, migrateClient } from "./migrationRunner";
 import { SCHEMA_VERSION } from "./schemaVersion";
 import { errorTrail, sqlString } from "./sql";
+import { NEVER_IN_PLAINTEXT } from "./syncTables";
 
 /**
  * Backup and restore, the SQL half.
@@ -109,15 +109,20 @@ export function snapshotDatabaseTo(destinationPath: string): Promise<void> {
  * or the secret would still be readable in the file. The hero restoring such a copy pairs again,
  * which is the price of never writing one in clear.
  *
- * The table may not be there: the copy taken before an update runs on the schema before 0082, and a
+ * Invitations waiting for an answer go too: each holds a private key (0084).
+ *
+ * The tables may not be there: the copy taken before an update runs on the schema before them, and a
  * failure here would cost the update its safety net.
  */
 export function scrubPairs(snapshotPath: string): Promise<void> {
   return withIsolatedConnection(async (conn) => {
     await conn.execAsync(`ATTACH DATABASE ${sqlString(snapshotPath)} AS ${CANDIDATE}`);
-    if (!(await hasTable(conn, CANDIDATE, "pairs"))) return;
     await conn.execAsync(`PRAGMA ${CANDIDATE}.secure_delete = ON`);
-    await conn.execAsync(`DELETE FROM ${CANDIDATE}.pairs`);
+    for (const table of NEVER_IN_PLAINTEXT) {
+      if (await hasTable(conn, CANDIDATE, table)) {
+        await conn.execAsync(`DELETE FROM ${CANDIDATE}.${table}`);
+      }
+    }
   });
 }
 

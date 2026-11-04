@@ -121,6 +121,215 @@ describe("creating and accepting", () => {
   });
 });
 
+describe("pairing by link", () => {
+  /** Phone B's database, for the length of `work`: the same code, a second file of rows. */
+  async function asPhoneB<T>(work: () => Promise<T>): Promise<T> {
+    const phoneA = t;
+    t = createTestDb();
+    jest.resetModules();
+    jest.doMock("../db/client", () => clientMock(t));
+    try {
+      return await work();
+    } finally {
+      t.close();
+      t = phoneA;
+      jest.resetModules();
+      jest.doMock("../db/client", () => clientMock(t));
+    }
+  }
+
+  const waiting = () => t.sqlite.prepare("SELECT * FROM pair_invites").all() as { id: string }[];
+  const madeInvite = async () => {
+    const made = await pairs().createLinkInvite();
+    assert(typeof made === "object");
+    return made;
+  };
+  /** B accepts on its own database and hands back the answer, and the pair B wrote. */
+  const answered = (invite: Awaited<ReturnType<typeof madeInvite>>) =>
+    asPhoneB(async () => {
+      const answer = await pairs().acceptLinkInvite(invite, "Inviter");
+      assert(answer instanceof Uint8Array);
+      const [pair] = await pairs().listPairs();
+      assert(pair);
+      return { answer, pair };
+    });
+
+  test("A writes no pair and no secret until an answer comes, only a key that waits", async () => {
+    const invite = await madeInvite();
+    expect(await pairs().listPairs()).toEqual([]);
+    expect(waiting()).toHaveLength(1);
+    expect(JSON.stringify(invite)).not.toContain("privateKey");
+  });
+
+  test("both phones end with the same key, each knowing the other's id, and the key is gone", async () => {
+    const invite = await madeInvite();
+    const { answer, pair: onB } = await answered(invite);
+
+    await expect(pairs().replyStanding(answer)).resolves.toBe("ok");
+    // Reading an answer changes nothing.
+    expect(await pairs().listPairs()).toEqual([]);
+    expect(waiting()).toHaveLength(1);
+
+    await expect(pairs().completeLinkInvite(answer, "  Lou  ")).resolves.toBe("paired");
+
+    const [onA] = await pairs().listPairs();
+    expect(onA).toMatchObject({
+      id: invite.pairId,
+      name: "Lou",
+      selfId: invite.senderId,
+      peerId: onB.selfId,
+      secret: onB.secret,
+    });
+    expect(onB.peerId).toBe(invite.senderId);
+    expect(waiting()).toEqual([]);
+  });
+
+  test("a second answer to the same invitation finds nothing to open with", async () => {
+    const invite = await madeInvite();
+    const first = await answered(invite);
+    const second = await answered(invite);
+    await pairs().completeLinkInvite(first.answer, "Lou");
+    const held = (await pairs().listPairs())[0]?.secret;
+
+    await expect(pairs().completeLinkInvite(second.answer, "Eve")).resolves.toBe("known");
+
+    expect(await pairs().listPairs()).toHaveLength(1);
+    expect((await pairs().listPairs())[0]).toMatchObject({ name: "Lou", secret: held });
+  });
+
+  test("an altered answer writes nothing and keeps the key waiting", async () => {
+    const invite = await madeInvite();
+    const { answer } = await answered(invite);
+    const altered = answer.slice();
+    altered[40] = (altered[40] ?? 0) ^ 1;
+
+    await expect(pairs().replyStanding(altered)).resolves.toBe("refused");
+    await expect(pairs().completeLinkInvite(altered, "Eve")).resolves.toBe("refused");
+
+    expect(await pairs().listPairs()).toEqual([]);
+    expect(waiting()).toHaveLength(1);
+  });
+
+  test("an answer to an invitation this phone never made is refused", async () => {
+    const elsewhere = await asPhoneB(madeInvite);
+    const { answer } = await answered(elsewhere);
+    await expect(pairs().completeLinkInvite(answer, "Eve")).resolves.toBe("refused");
+  });
+
+  test("a hero opening their own invitation changes nothing", async () => {
+    const invite = await madeInvite();
+    await expect(pairs().acceptLinkInvite(invite, "Me")).resolves.toBe("known");
+    expect(await pairs().listPairs()).toEqual([]);
+  });
+
+  test("a forged public key yields no pair on B", async () => {
+    const invite = await madeInvite();
+    const forged = { ...invite, publicKey: Buffer.alloc(32).toString("base64") };
+    await asPhoneB(async () => {
+      await expect(pairs().acceptLinkInvite(forged, "Eve")).resolves.toBe("refused");
+      expect(await pairs().listPairs()).toEqual([]);
+    });
+  });
+
+  test("seven days on, the key is deleted whatever happens, and a late answer is refused", async () => {
+    const invite = await madeInvite();
+    const { answer } = await answered(invite);
+    const eightDays = new Date(Date.now() + 8 * 86_400_000);
+
+    await pairs().sweepExpiredInvites(new Date(Date.now() + 6 * 86_400_000));
+    expect(waiting()).toHaveLength(1);
+
+    const now = jest.spyOn(Date, "now").mockReturnValue(eightDays.getTime());
+    const clock = jest.useFakeTimers({ doNotFake: ["nextTick", "setImmediate", "queueMicrotask"] });
+    clock.setSystemTime(eightDays);
+    await expect(pairs().completeLinkInvite(answer, "Late")).resolves.toBe("refused");
+    jest.useRealTimers();
+    now.mockRestore();
+
+    await pairs().sweepExpiredInvites(eightDays);
+    expect(waiting()).toEqual([]);
+    expect(await pairs().listPairs()).toEqual([]);
+  });
+
+  test("at most five waiting, and a full phone refuses an answer without losing its key", async () => {
+    for (const i of [1, 2, 3, 4, 5]) await pairs().createPair(`p${i}`);
+    const invite = await madeInvite();
+    const { answer } = await answered(invite);
+    await expect(pairs().completeLinkInvite(answer, "six")).resolves.toBe("full");
+    expect(waiting()).toHaveLength(1);
+
+    for (const _ of [1, 2, 3, 4]) await madeInvite();
+    await expect(pairs().createLinkInvite()).resolves.toBe("full");
+  });
+
+  test("a failed write carries neither the private key nor the pair's secret", async () => {
+    t.sqlite.exec("DROP TABLE pair_invites");
+    t.sqlite.exec(
+      "CREATE TABLE pair_invites (id text, privateKey text, selfId text, madeAt int, CHECK (id = 'never'))",
+    );
+    const failure = await pairs()
+      .createLinkInvite()
+      .then(
+        () => null,
+        (error: Error) => error,
+      );
+    assert(failure instanceof Error);
+    expect(failure.message).toContain("Writing a pair failed");
+    expect(failure.message).not.toMatch(/[A-Za-z0-9+/]{43}=/);
+  });
+
+  test("a waiting key never reaches a plain backup, and sync does not carry it", async () => {
+    await madeInvite();
+    const file = path.join(dir, "plain.db");
+    await backup().snapshotDatabaseTo(file);
+    await backup().scrubPairs(file);
+    const copy = new Database(file);
+    expect(copy.prepare("SELECT count(*) AS n FROM pair_invites").get()).toEqual({ n: 0 });
+    copy.close();
+    const key = (
+      t.sqlite.prepare("SELECT privateKey FROM pair_invites").get() as { privateKey: string }
+    ).privateKey;
+    expect(fs.readFileSync(file).includes(key)).toBe(false);
+
+    const peer = await peerFile((sqlite) => {
+      sqlite
+        .prepare(
+          "INSERT INTO pair_invites (id, privateKey, selfId, madeAt) VALUES ('other', 'k', 's', 1)",
+        )
+        .run();
+    });
+    await merge().mergePeer(peer);
+    expect(waiting().map((row) => row.id)).not.toContain("other");
+  });
+});
+
+describe("the door a code came through", () => {
+  const read = () =>
+    require("../src/multiplayer/received") as typeof import("../src/multiplayer/received");
+  const { linkFor } =
+    require("../src/multiplayer/link") as typeof import("../src/multiplayer/link");
+
+  test("an invite holding a secret opens from the camera and is refused from a link", async () => {
+    const { encodeInvite } =
+      require("../src/multiplayer/invite") as typeof import("../src/multiplayer/invite");
+    const code = linkFor(encodeInvite(invite({ madeAt: Math.floor(Date.now() / 1000) })));
+    await expect(read().readCode(code, "scan")).resolves.toMatchObject({ kind: "invite" });
+    const refused = await read().readCode(code, "link");
+    expect(refused.kind).toBe("unreadable");
+    expect(JSON.stringify(refused)).not.toContain(SECRET);
+  });
+
+  test("an invitation with no secret opens from both", async () => {
+    const { encodeLinkInvite } =
+      require("../src/multiplayer/linkInvite") as typeof import("../src/multiplayer/linkInvite");
+    const made = await pairs().createLinkInvite();
+    assert(typeof made === "object");
+    const code = linkFor(encodeLinkInvite(made));
+    await expect(read().readCode(code, "link")).resolves.toMatchObject({ kind: "linkInvite" });
+    await expect(read().readCode(code, "scan")).resolves.toMatchObject({ kind: "linkInvite" });
+  });
+});
+
 describe("a failed write", () => {
   test("says what failed and carries no secret, since its message can reach a feedback mail", async () => {
     await pairs().acceptInvite(invite(), "Sam");

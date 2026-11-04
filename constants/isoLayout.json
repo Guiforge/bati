@@ -111,10 +111,10 @@
     }
   },
   "toits": {
-    "_doc": "Where a bird lands on a roof (L5-T10, LIFE C5), by painted stage `<code>_<stade>`: a point of the ridge's top edge, in sprite px (origin top left), read by eye on the painted sprite. A stage with no entry has no bird. A repainted sprite needs its point read again: __tests__/iso-creatures.test.tsx checks that each point sits on the sprite's own mask.",
-    "farm_solid": [810, 591],
-    "farm_grand": [820, 560],
-    "forge_solid": [330, 732],
-    "forge_grand": [300, 596]
+    "_doc": "Where a bird lands on a roof (L5-T10, LIFE C5), by painted stage `<code>_<stade>`: a point of the ridge's top edge, in sprite px (origin top left), read by eye on the painted sprite (farm 896x1186 and forge 896x1152 since CLEAN; the farm's points had stayed on the old canvas, off its roof). A stage with no entry has no bird. A repainted sprite needs its point read again: __tests__/iso-creatures.test.tsx checks that each point sits on the sprite's own mask.",
+    "farm_solid": [470, 682],
+    "farm_grand": [480, 549],
+    "forge_solid": [380, 652],
+    "forge_grand": [380, 522]
   }
 }

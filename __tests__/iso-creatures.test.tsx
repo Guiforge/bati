@@ -4,15 +4,19 @@ import "@/i18n";
 import assert from "node:assert/strict";
 import { act, configure, render, screen } from "@testing-library/react-native";
 import * as Reanimated from "react-native-reanimated";
-import { COTE, etatCarte, LARGEUR, spriteDe, stadeDemo } from "@/components/village/iso/carteDemo";
+import { COTE, etatCarte, LARGEUR, stadeDemo } from "@/components/village/iso/carteDemo";
 import {
   CASE_DRAGON,
   CODES_A_PERCHOIR,
   CYCLES_VISITE,
+  HAUTEUR_VILLAGEOIS,
   marche,
+  PART_CHAT,
+  PART_SOURIS,
   perchoirDe,
   souffle,
   stations,
+  TAILLES,
   tronconDuChat,
   visite,
 } from "@/components/village/iso/creatures";
@@ -20,6 +24,8 @@ import { RangsBldContext } from "@/components/village/iso/etatBld";
 import { CYCLE_MS, HorlogeContext } from "@/components/village/iso/horloge";
 import { IsoCarte } from "@/components/village/iso/IsoCarteDemo";
 import { emplacements, ileVisible, toits } from "@/components/village/iso/isoLayout";
+import { farm } from "@/components/village/iso/peints/farm";
+import { forge } from "@/components/village/iso/peints/forge";
 import { RevelationContext } from "@/components/village/iso/revelation";
 import { opaque } from "@/components/village/iso/tapBatiment";
 import { type BuildingCode, buildingCodes } from "@/db/schema";
@@ -61,15 +67,28 @@ describe("the roof points", () => {
     }
   });
 
-  test("each point sits on its sprite's own mask, on the roof's top edge (nothing opaque just above)", () => {
+  // The painted sprites themselves (BLD_PEINTS is off under jest, so `spriteDe` would give the
+  // mock-up's mask): the points were read on them, and a repaint moves the roof.
+  test("each point sits on its painted sprite's mask, on the roof's top edge (nothing opaque just above)", () => {
+    const peints = { farm: farm.stades, forge: forge.stades } as const;
     for (const [cle, p] of toits) {
-      const [code, stade] = cle.split(/_(?=[^_]+$)/) as [BuildingCode, "solid" | "grand"];
-      const s = spriteDe(code, stade);
+      const [code, stade] = cle.split(/_(?=[^_]+$)/) as ["farm" | "forge", "solid" | "grand"];
+      const s = peints[code][stade]?.jour;
       assert(s?.masque, cle);
       expect([cle, opaque(s.masque, p[0], p[1])]).toEqual([cle, true]);
       const dessus = [1, 2, 3].map((k) => opaque(s.masque as never, p[0], p[1] - 8 * k));
       expect([cle, dessus.includes(false)]).toEqual([cle, true]);
     }
+  });
+});
+
+describe("their size, by ratio to a villager", () => {
+  // The share of a frame's height the animal fills, read off the strips (alpha above 40).
+  test("a mouse stands about 37 % of a villager, the cat 60 %", () => {
+    expect((TAILLES.souris.h * (88 / 109)) / HAUTEUR_VILLAGEOIS).toBeCloseTo(PART_SOURIS, 1);
+    expect((TAILLES.chat.h * (117 / 128)) / HAUTEUR_VILLAGEOIS).toBeCloseTo(PART_CHAT, 1);
+    expect(PART_SOURIS).toBeGreaterThanOrEqual(0.35);
+    expect(PART_SOURIS).toBeLessThanOrEqual(0.4);
   });
 });
 

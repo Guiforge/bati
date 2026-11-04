@@ -21,10 +21,29 @@ export type Espece = "souris" | "chat" | "oiseau" | "dragon";
 /** One image of the walking sheets lasts this long: 8 a second. */
 const MS_IMAGE = 125;
 
-/** Drawing box of one frame on the map, dp (the frames' px ratio kept), and the sheet's frame count. */
+/**
+ * What a villager's figure stands, dp: about 250 of the 768 px of its sprite, which is drawn in a
+ * COTE (48 dp) box. The creatures are sized from it, never by eye in dp: a mouse is about 37 % of
+ * a villager, the wall cat 60 % (measured 2026-11-04: a mouse was 82 % and the cat 1.7 times).
+ */
+export const HAUTEUR_VILLAGEOIS = 16;
+export const PART_SOURIS = 0.375;
+export const PART_CHAT = 0.6;
+
+/**
+ * The drawing box of a walking sheet's frame so that its animal stands `part` of a villager: the
+ * animal fills `rempli` of its frame's height (read off the strip, alpha above 40), the frame's
+ * px ratio kept (`ratio`, width over height).
+ */
+const boite = (part: number, rempli: number, ratio: number) => {
+  const h = (part * HAUTEUR_VILLAGEOIS) / rempli;
+  return { l: Math.round(h * ratio * 10) / 10, h: Math.round(h * 10) / 10 };
+};
+
+/** Drawing box of one frame on the map, dp (the frames' px ratio kept). */
 export const TAILLES: Record<Espece, { l: number; h: number }> = {
-  souris: { l: 20, h: 14 },
-  chat: { l: 27, h: 22 },
+  souris: boite(PART_SOURIS, 88 / 109, 155 / 109),
+  chat: boite(PART_CHAT, 117 / 128, 157 / 128),
   oiseau: { l: 20, h: 15 },
   dragon: { l: 72, h: 64 },
 };

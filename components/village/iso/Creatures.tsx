@@ -59,7 +59,7 @@ const DOSSIER = {
 /** Frames of a sheet: the dragon is one image. */
 const IMAGES: Record<Espece, number> = { souris: 3, chat: 3, oiseau: 3, dragon: 1 };
 /** Width of the contact oval under its feet, dp (none for a bird: it flies). */
-const OMBRE: Record<Espece, number> = { souris: 11, chat: 14, oiseau: 0, dragon: 44 };
+const OMBRE: Record<Espece, number> = { souris: 6, chat: 7, oiseau: 0, dragon: 44 };
 
 const source = (espece: Espece, lumiere: Ambiance) =>
   DOSSIER[espece][lumiere === "nuit" ? "nuit" : "jour"];

@@ -31,7 +31,10 @@ run() {
   echo "building,ambiance,mean_diff,frames,p99_std,p99_9_std" > "$OUT/mouvement.csv"
   for c in $ALL; do for a in jour nuit; do
     f="$OUT/$c-$a.mp4"; rm -f "$f"
-    link "bati://dev-iso?bld=$c&rang=$(rank $c)&base=10&ambiance=$a"; sleep 12; $A shell input tap 540 1650; sleep 2
+    u="bati://dev-iso?bld=$c&rang=$(rank $c)&base=10&ambiance=$a"; link "$u"; sleep 12
+    # RELINK=1: send the link again so the life wave restarts, touch 1 s later, and the 8 s film starts 3 s after the link (qa2: "the wave 3 to 5 s after the link")
+    [ -n "${RELINK:-}" ] && { link "$u"; sleep 1; }
+    $A shell input tap 540 1650; sleep 2
     $A shell screencap -p /sdcard/s.png; $A pull /sdcard/s.png "$RAW/$c-$a-proof.png" >/dev/null
     $A shell screenrecord --time-limit 8 /sdcard/m.mp4; $A pull /sdcard/m.mp4 "$f" >/dev/null
     d="$RAW/$c-$a"; rm -rf "$d"; mkdir -p "$d"

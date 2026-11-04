@@ -93,9 +93,10 @@
         2,
         5
       ],
-      "status": "doing",
+      "status": "done",
       "debut": "2026-11-04T09:00:00+01:00",
-      "note": "Codé (05fe8d1d), pièces finales posées, pas encore vu sur émulateur"
+      "note": "Vu sur émulateur en bundle de dev. Voisin pâli environ 0,25 s sur route et mur",
+      "fin": "2026-11-04T18:00:00+01:00"
     },
     {
       "id": "U6",
@@ -106,9 +107,10 @@
         0.5,
         1.5
       ],
-      "status": "doing",
+      "status": "done",
       "debut": "2026-11-04T09:00:00+01:00",
-      "note": "Codé (05fe8d1d), pas encore vu sur émulateur"
+      "note": "Lueur et échange vus ; pièce à l'encre non vérifiée, le lien vise le plafond",
+      "fin": "2026-11-04T18:00:00+01:00"
     },
     {
       "id": "U7",
@@ -119,7 +121,8 @@
         0.2,
         0.5
       ],
-      "status": "todo"
+      "status": "blocked",
+      "note": "Attend que Guillaume voie le moment et écrive son go"
     },
     {
       "id": "M1",
@@ -130,9 +133,10 @@
         1,
         2
       ],
-      "status": "doing",
-      "note": "Code fait, aucun bâtiment ne l'utilise encore",
-      "debut": "2026-11-03T21:45:00+01:00"
+      "status": "done",
+      "note": "Vu sur planches",
+      "debut": "2026-11-03T21:45:00+01:00",
+      "fin": "2026-11-04T18:00:00+01:00"
     },
     {
       "id": "M2",
@@ -143,9 +147,10 @@
         1,
         2.5
       ],
-      "status": "doing",
-      "note": "Code fait, pas vu sur émulateur",
-      "debut": "2026-11-03T21:45:00+01:00"
+      "status": "done",
+      "note": "Halos et allumage un à un au crépuscule ; le crépuscule lui-même non vu",
+      "debut": "2026-11-03T21:45:00+01:00",
+      "fin": "2026-11-04T18:00:00+01:00"
     },
     {
       "id": "M3",
@@ -156,9 +161,10 @@
         1.5,
         3
       ],
-      "status": "doing",
-      "note": "Code fait, sprite provisoire",
-      "debut": "2026-11-03T21:45:00+01:00"
+      "status": "done",
+      "note": "Sprites repeints, plafond de nœuds testé",
+      "debut": "2026-11-03T21:45:00+01:00",
+      "fin": "2026-11-04T18:00:00+01:00"
     },
     {
       "id": "M4",
@@ -169,9 +175,10 @@
         0.5,
         1
       ],
-      "status": "doing",
-      "note": "Code fait, pas vu sur émulateur",
-      "debut": "2026-11-03T21:45:00+01:00"
+      "status": "done",
+      "note": "Ailes du moulin ralenties",
+      "debut": "2026-11-03T21:45:00+01:00",
+      "fin": "2026-11-04T18:00:00+01:00"
     },
     {
       "id": "M5",
@@ -182,9 +189,10 @@
         0.5,
         1.5
       ],
-      "status": "doing",
-      "note": "Code fait, pas vu sur émulateur",
-      "debut": "2026-11-03T21:45:00+01:00"
+      "status": "done",
+      "note": "Reflet bleu ardoise, plus d'ellipse blanche",
+      "debut": "2026-11-03T21:45:00+01:00",
+      "fin": "2026-11-04T18:00:00+01:00"
     },
     {
       "id": "M6",
@@ -195,9 +203,10 @@
         0.5,
         1
       ],
-      "status": "doing",
+      "status": "done",
       "debut": "2026-11-03T22:30:00+01:00",
-      "note": "Repeints en FLUX 3 Image (0f124dc4), pas encore vus en jeu"
+      "note": "Repeints en FLUX 3 Image",
+      "fin": "2026-11-04T18:00:00+01:00"
     },
     {
       "id": "P1",
@@ -208,11 +217,12 @@
         3,
         6
       ],
-      "status": "doing",
+      "status": "done",
       "total": 21,
       "avancement": 21,
       "debut": "2026-11-03T22:30:00+01:00",
-      "note": "Corrigés après la revue anim (a1815ab4, 53e9b340), à recapturer"
+      "note": "21 fichiers ou exceptions documentées, nuit mesurée",
+      "fin": "2026-11-04T18:00:00+01:00"
     },
     {
       "id": "C1",
@@ -250,8 +260,10 @@
         1,
         2
       ],
-      "status": "doing",
-      "debut": "2026-11-04T10:00:00+01:00"
+      "status": "done",
+      "debut": "2026-11-04T10:00:00+01:00",
+      "fin": "2026-11-04T18:00:00+01:00",
+      "note": "Près de la grange et de la ferme ; sens de marche non vu"
     },
     {
       "id": "C4",
@@ -262,8 +274,10 @@
         1,
         2
       ],
-      "status": "doing",
-      "debut": "2026-11-04T10:00:00+01:00"
+      "status": "done",
+      "debut": "2026-11-04T10:00:00+01:00",
+      "fin": "2026-11-04T18:00:00+01:00",
+      "note": "Sur les murs seulement : les rebords demandent d'autres points d'accroche"
     },
     {
       "id": "C5",
@@ -274,8 +288,10 @@
         1,
         2.5
       ],
-      "status": "doing",
-      "debut": "2026-11-04T10:00:00+01:00"
+      "status": "done",
+      "debut": "2026-11-04T10:00:00+01:00",
+      "fin": "2026-11-04T18:00:00+01:00",
+      "note": "Sur les toits de la ferme et de la forge, pas la nuit (règle existante)"
     },
     {
       "id": "C6",
@@ -286,8 +302,10 @@
         1,
         2.5
       ],
-      "status": "doing",
-      "debut": "2026-11-04T10:00:00+01:00"
+      "status": "done",
+      "debut": "2026-11-04T10:00:00+01:00",
+      "fin": "2026-11-04T18:00:00+01:00",
+      "note": "Le dragon peint de la grotte respire, pas de sprite séparé. Guillaume peut demander l'inverse"
     },
     {
       "id": "C7",
@@ -298,8 +316,10 @@
         0.3,
         1
       ],
-      "status": "doing",
-      "debut": "2026-11-04T10:00:00+01:00"
+      "status": "done",
+      "debut": "2026-11-04T10:00:00+01:00",
+      "fin": "2026-11-04T18:00:00+01:00",
+      "note": "Anciens oiseaux, rats, corbeau et chat retirés, deadcode propre"
     },
     {
       "id": "K1",
@@ -310,7 +330,9 @@
         0.5,
         1.5
       ],
-      "status": "todo"
+      "status": "done",
+      "fin": "2026-11-04T18:00:00+01:00",
+      "note": "anim, mara et theo passés, verrou inchangé (diff vide)"
     },
     {
       "id": "K2",
@@ -332,8 +354,9 @@
         0.2,
         0.5
       ],
-      "status": "todo",
-      "note": "Le lien show= n'existe plus : ces films ne montrent plus rien de joué"
+      "status": "done",
+      "note": "Liens show= retirés (5ac8074a)",
+      "fin": "2026-11-04T18:00:00+01:00"
     }
   ]
 }

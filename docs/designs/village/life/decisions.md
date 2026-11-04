@@ -19,3 +19,8 @@
 - 04/11, `scripts/bld/capture.sh` et `scripts/iso/loupe_capture.sh` gardent des liens `show=` devenus muets, retirés dans l'item U8.
 - 04/11, le moment part à l'arrivée de la caméra, pas au tap : l'émulateur montre que le début était vu de loin, sur un bâtiment de 25 px. Le tap garde la vibration et le marteau.
 - 04/11, anciens chats retirés d'`ANIMAUX` : un diaporama de 3 poses à côté du nouveau chat.
+- 04/11, dragon : le dragon peint de la grotte respire (zone copiée) au lieu d'un sprite séparé, qui faisait doublon et se posait loin du repaire.
+- 04/11, lumière du moment repeinte sans rayons nets : le film choisi avait une étoile, elle se lisait comme une caisse de butin (mara, anim).
+- 04/11, restes acceptés pour montrer à Guillaume après 4 passes : voisin pâli environ 0,25 s sur route et mur, poussière peu lisible sur le 3x3.
+- 04/11, pour POLISH : flamme rouge du feu de camp, pièces d'or du repaire (à lire comme de la monnaie), échafaudage peint de nuit seulement, villageoise à la fourche.
+- 04/11, demandes de theo non faites (hors piste) : bouton « ne plus voir », son, indice pour trouver les créatures, plus de variété, version courte pour les petits rangs.

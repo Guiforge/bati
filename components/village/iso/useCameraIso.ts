@@ -106,6 +106,9 @@ export function useCameraIso({
   const pinceActif = useSharedValue(false);
   // The impact's shake, vertical px, added to the translation of the land and the island alike.
   const secousse = useSharedValue(0);
+  // A `vers` is in flight: a bare touch-down must not cancel it (the scene's return, started between
+  // the finger's down and up, stayed where it was); only a drag or a pinch takes the camera.
+  const enVol = useSharedValue(false);
 
   // The sprites' level of detail (detail.ts): the UI thread compares numbers, React hears of a
   // change once the camera has stood still for DETAIL_REPOS_MS (a pan's inertia, `vers`, the growth
@@ -187,9 +190,23 @@ export function useCameraIso({
       duration: reducedMotion ? 0 : CROISSANCE_CAMERA_MS,
       easing: Easing.inOut(Easing.cubic),
     };
+    enVol.set(true);
     zoom.set(withTiming(c.zoom, cfg));
     x.set(withTiming(c.x, cfg));
-    y.set(withTiming(c.y, cfg));
+    // A cancelled animation says `false`: the hand that cancelled it clears the flag itself.
+    y.set(
+      withTiming(c.y, cfg, (fini) => {
+        "worklet";
+        if (fini) enVol.set(false);
+      }),
+    );
+  };
+  const prendre = () => {
+    "worklet";
+    enVol.set(false);
+    cancelAnimation(zoom);
+    cancelAnimation(x);
+    cancelAnimation(y);
   };
 
   // The impact of a stage rising (bible §10.7): 3 px over 120 ms, then a slide toward the building
@@ -233,12 +250,14 @@ export function useCameraIso({
           : null;
       onToucher?.(p?.[0], p?.[1]);
       // The zoom too: a re-framing left zooming once its shift stopped slides the view off the finger.
+      if (enVol.get()) return;
       cancelAnimation(zoom);
       cancelAnimation(x);
       cancelAnimation(y);
     },
     onActivate: () => {
       "worklet";
+      prendre();
       if (onMain) scheduleOnRN(onMain);
     },
     onUpdate: (ev) => {
@@ -263,6 +282,7 @@ export function useCameraIso({
     onBegin: () => {
       "worklet";
       onToucher?.();
+      prendre();
       if (onMain) scheduleOnRN(onMain);
       pinceActif.set(true);
     },

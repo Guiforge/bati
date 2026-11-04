@@ -23,12 +23,14 @@ jest.mock("react-native-worklets", () => ({
 // The real camera, its `vers` only watched: the return is asserted on what it is asked for.
 const mockVers = jest.fn();
 const mockOrdre: string[] = [];
+let mockVue: (() => { zoom: number; x: number; y: number }) | undefined;
 jest.mock("@/components/village/iso/useCameraIso", () => {
   const actual = jest.requireActual("@/components/village/iso/useCameraIso");
   return {
     ...actual,
     useCameraIso: (...a: unknown[]) => {
       const c = actual.useCameraIso(...a);
+      mockVue = c.vue;
       return {
         ...c,
         vers: (v: unknown) => {
@@ -188,6 +190,47 @@ describe("the growth scene's length", () => {
       });
       await act(() => jest.advanceTimersByTime(4000));
       expect(mockVers).toHaveBeenCalledTimes(1);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  // The camera ends on the player's view whatever the timing of a tap (measured: a tap between the
+  // hold's start and the natural return left it on the forge). Each case is a touch-down, a touch-up,
+  // and where the natural return (2700 ms from the tap) falls between them.
+  const touche = async (dehors: number, dedans: number) => {
+    await montrer();
+    const avantVue = mockVers.mock.calls[0]?.[1];
+    await act(() => jest.advanceTimersByTime(dehors - 600));
+    const pan = createGestureController(getByGestureTestId("iso-geste-pan"));
+    const tap = createGestureController(getByGestureTestId("iso-geste-tap"));
+    await act(() => {
+      pan.begin();
+      tap.begin();
+    });
+    await act(() => jest.advanceTimersByTime(dedans));
+    await act(() => {
+      tap.activate();
+      tap.end();
+      pan.end();
+    });
+    await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + 500));
+    const fin = mockVue?.();
+    expect(fin?.x).toBeCloseTo(avantVue.x, 1);
+    expect(fin?.y).toBeCloseTo(avantVue.y, 1);
+    expect(fin?.zoom).toBeCloseTo(avantVue.zoom, 2);
+  };
+  const FIN = CROISSANCE_CAMERA_MS + STADE_MS + TENUE_MS;
+  it.each([
+    ["down in the hold, up after the natural return", FIN - 300, 400],
+    ["down just before the natural return, up long after", FIN - 20, 900],
+    ["down in the moment, up in the hold", FIN - 1500, 600],
+    ["down in the glide to the building, up in the moment", 800, 600],
+    ["down and up in the hold", FIN - 500, 50],
+    ["down just after the natural return", FIN + 20, 50],
+  ])("%s: the camera ends on the player's view", async (_n, dehors, dedans) => {
+    try {
+      await touche(dehors, dedans);
     } finally {
       jest.useRealTimers();
     }

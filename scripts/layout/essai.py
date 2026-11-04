@@ -39,6 +39,7 @@ try:
     rendre(12, f"prop-{nom}-t12.jpg", True)
     rendre(1, f"prop-{nom}-t1.jpg", False)
     r = subprocess.run(["node", "scripts/atelier/atelier.js", "check", "--tier", "12", "--light", "jour", "--query", "haut=1", "--no-build"], cwd=ROOT, capture_output=True, text=True).stdout
+    pathlib.Path(ROOT / f"docs/designs/village/layout-proposition/scratch/essai-{nom}.txt").write_text(r)
     print(nom, re.findall(r"^GATE (?:occlusion|FAILED)[^\n]*", r, re.M))
     print(re.findall(r"^  [a-z_]+ +[\d.]+ %", r.split("GATE anchors")[0], re.M)[:6])
 finally:

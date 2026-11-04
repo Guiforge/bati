@@ -107,9 +107,37 @@ GATE tap: 0 buildings no tap reaches (under 400 opaque device px free of a later
 GATE FAILED: occlusion 0, anchors 3, props 27, depth 0, hooks 31, tap 0, motion 0
 ```
 
-Avec la fusion et ses ancres, plus aucun bâtiment n'est sous 85 % à aucun palier, même au plus haut stade : le pire est la salle des héros à 85,6 % au palier 12, puis la fontaine 86,5 %, la carrière 86,7 %. Les 83,2 % de la carrière d'avant la fusion ne tiennent plus. Au palier 12 les ancres `anchors 3` et les accessoires `props 24` restent à regarder (`check.js`), je n'y ai pas touché.
+**La dernière ligne `GATE FAILED ...` de `check` est la somme des paliers lancés, pas celle du dernier.** Palier 12 seul, `haut=1` : `GATE FAILED: occlusion 0, anchors 0, props 8, depth 0, hooks 8, tap 0, motion 0`. Aucun bâtiment sous 85 % à aucun palier après la fusion ; au 12 le pire est la salle des héros à 85,6 %, la fontaine 86,5 %, la **carrière 86,7 %** (cachée par le mannequin, 2465 px). Les 83,2 % d'avant la fusion ne tiennent plus.
 
-Décalage d'une case du mannequin en [7, 0] (non appliqué), `img/prop-mannequin-7-0.jpg`, palier 12 `haut=1` : `GATE occlusion: 0 of 21` et `GATE FAILED: occlusion 0, anchors 0, props 8, depth 0, hooks 9, tap 0, motion 0` ; la carrière n'est plus dans les six plus bas (tous au-dessus de 95,2 % hors salle 85,6, fontaine 86,5, tir 87,2, feu 88,0, rempart 88,4), soit plus de 95 % contre 86,7 % ; les ancres tombent de 3 à 0 et les accessoires de 24 à 8.
+Palier 12, `haut=1`, les 8 accessoires sous 50 % visibles et ce qui les cache :
+
+| Accessoire | Visible | Caché par |
+|---|---|---|
+| renard_1 | 0,0 % | moulin (313 px) |
+| menhir_2 | 0,0 % | antre (1014 px) |
+| menhir_1 | 38,3 % | tour de guet (640 px), menhir_3 (204 px) |
+| sacs_de_grain_2 | 37,8 % | puits (357 px) |
+| menhir_3 | 13,3 % | tour de guet (1127 px) |
+| lanterne_1 | 0,0 % | forge (572 px) |
+| tas_de_bois_2 | 0,7 % | forge (1351 px) |
+| tas_de_bois_1 | 36,5 % | armurerie (995 px) |
+
+Palier 12, `haut=1`, les 8 boîtes de crochet couvertes (plus de 1 % de leurs pixels) :
+
+| Bâtiment, stade | Couvert | Par |
+|---|---|---|
+| heroes_hall grand | 8,1 % | feu 1729 px, forge 299 px, villageois h10 30 px |
+| fountain solid | 9,0 % | étal 1086 px, pan de mur 628 px |
+| quarry grand | 13,2 % | mannequin 2465 px |
+| archery_range grand | 1,5 % | pan de mur 566 px, râtelier 482 px |
+| campfire grand | 16,9 % | tir à l'arc 738 px |
+| castle_wall solid | 6,6 % | pan de mur 359 px, route haute 5 px |
+| forge grand | 1,3 % | armurerie 462 px, tonneaux 222 px, forgeron 121 px |
+| champion_arena grand | 3,2 % | clôture 270 px, villageois h2 142 px |
+
+Les ancres du palier 1 : 2 sur 12 hors de 2 px, deux figurines de la place, `villageois/farmer_face` (iso-figurine-11-12, 3,5 px) et `villageois/herbalist_face` (iso-figurine-10-11, 2,8 px), aucune ne flotte. Au palier 12 : 0 sur 59.
+
+**Mannequin en [7, 0]** (non appliqué, `essai.py`, `img/prop-mannequin-7-0.jpg`), palier 12 seul, `haut=1` : `GATE FAILED: occlusion 0, anchors 0, props 8, depth 0, hooks 9, tap 0, motion 0`. Le seul gain est la **carrière : 96,1 %** (mannequin 717 px) contre 86,7 %. Les 8 accessoires cachés sont les mêmes, les crochets passent de 8 à 9 : la carrière tombe de 13,2 % à 2,5 % mais le bosquet (druid_grove grand) prend 1,1 % (villageois h1, 191 px).
 
 Plans vus de dessus par bande : `img/prop-plan-t1-3.jpg`, `-t4-6`, `-t7-9`, `-t10-12`.
 
@@ -142,8 +170,12 @@ Les deux ponts ([2, 10] et [2, 2]) sont des cases `=` de `isoLayout.json` ; `pie
 
 ## La rue (L8)
 
-Deux options, `scripts/layout/rue.py` : **nord** (défaut de la branche) : deuxième pont en [2, 2], la rue monte par gx 0 puis gx -1 vers la forêt, elle évite l'observatoire et le moulin, plan `img/prop-rue-nord-plan.jpg`, rendu `img/prop-rue-nord-t12.jpg` ; **ouest** : un seul pont en [2, 10], la rue longe le moulin et l'observatoire par gx -4, `img/prop-rue-ouest-*.jpg`. Les deux donnent 1 bâtiment sur 21 sous 85 % (carrière 83,2 %). Je recommande **nord** : un pont de plus mais une rue qui monte droit vers la forêt sans passer contre le moulin ni l'observatoire, et GROWTH y trouve sa route vers le nord. L'ouest, plus court, colle la rue aux façades de deux bâtiments du joueur. Rangs : ceux de `rues.ts` (par distance au feu), jamais plus clairs que la place. Le risque d'une colonne droite est coupé par un décalage en [-1, -3].
+Deux options, `scripts/layout/rue.py` : **nord** (défaut de la branche) : deuxième pont en [2, 2], la rue monte par gx 0 puis gx -1 vers la forêt, elle évite l'observatoire et le moulin, plan `img/prop-rue-nord-plan.jpg`, rendu `img/prop-rue-nord-t12.jpg` ; **ouest** : un seul pont en [2, 10], la rue longe le moulin et l'observatoire par gx -4, `img/prop-rue-ouest-*.jpg`. Mesure après la fusion, palier 12 seul : voir le bas de cette section. Je recommande **nord** : un pont de plus mais une rue qui monte droit vers la forêt sans passer contre le moulin ni l'observatoire, et GROWTH y trouve sa route vers le nord. L'ouest, plus court, colle la rue aux façades de deux bâtiments du joueur. Rangs : ceux de `rues.ts` (par distance au feu), jamais plus clairs que la place. Le risque d'une colonne droite est coupé par un décalage en [-1, -3].
 
 ## Les cadrages verrouillés (L10)
 
 `img/prop-crops.jpg` : `porte`, `lisiere`, `pieds` (tuiles de `loupes/bc/card.md`, palier 6, jour) avant (`origin/track-layout`) et après (`scripts/layout/crops.sh origin/track-layout DOSSIER`, puis `montage_crops.py`). `lock_check.py` : LOCK_OK (aucun fichier du verrou touché). L'art du coin de la porte sud n'a pas bougé ; son cadrage de palier 6 a bougé un peu parce que l'ouverture suit la largeur du bâti. `lisiere` et `pieds` changent presque entièrement : leurs tuiles sont la terre nouvelle, désormais pleine de bâtiments, et les trois masses de forêt vectorielles qui s'y trouvaient ont déjà reculé (la clairière suit l'île). Il n'y a pas eu besoin de repeindre ni de régénérer `isoLisiere.json`.
+
+### Mesure des deux rues (palier 12 seul, `haut=1`, après la fusion)
+
+Rue nord : `occlusion 0, anchors 0, props 8, depth 0, hooks 8, tap 0, motion 0`, carrière 86,7 %, salle des héros 85,6 %. Rue ouest : `occlusion 0, anchors 0, props 8, depth 0, hooks 8, tap 0, motion 0`, carrière 86,7 %, salle des héros 85,7 %. Les deux rues sont identiques à la porte près (la rue ne change que des cases de chemin).

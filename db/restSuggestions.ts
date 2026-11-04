@@ -1,4 +1,4 @@
-import { startOfDay, subDays } from "date-fns";
+import { differenceInDays, startOfDay, subDays } from "date-fns";
 import { and, gte } from "drizzle-orm";
 import { db, schema } from "./client";
 import { isWorkout } from "./completed";
@@ -33,10 +33,11 @@ export const REST_LOOKBACK_DAYS = (HEAVY_WEEKS_BEFORE_DELOAD + 1) * 7;
  * 7-day buckets and stop at the first week that was not heavy.
  */
 function countHeavyWeeks(performedAt: readonly Date[], now: Date): number {
-  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
   const perWeek = new Map<number, number>();
   for (const at of performedAt) {
-    const weeksAgo = Math.floor((now.getTime() - at.getTime()) / msPerWeek);
+    // Whole days on the local clock, never milliseconds: a week that holds the October clock change
+    // lasts an hour longer, which after 23:00 pushed a session into the week before it.
+    const weeksAgo = Math.floor(differenceInDays(now, at) / 7);
     perWeek.set(weeksAgo, (perWeek.get(weeksAgo) ?? 0) + 1);
   }
 

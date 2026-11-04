@@ -365,6 +365,11 @@ that carry them to the hero's other device, and Android's own backup, which copi
 the transport encrypts client-side (above). The local pre-migration copy is scrubbed as well, so an unlinked
 pair's secret does not wait two updates there, and a restore by support means pairing again.
 
+**A link invitation waiting (0084).** Table `pair_invites`, classed `local`: the private half of an X25519 pair
+until the answer comes or seven days pass. Sync never carries it, so an answer opened on the hero's other phone
+is refused and the link is sent again. `scrubPairs` removes these rows too; a sealed backup keeps them, like
+the rest of the file.
+
 ### The hero's bosses (0079)
 
 A boss is a creation of its own: table `hero_bosses` (hero rows only, `uuid` UNIQUE), classed `merged` in

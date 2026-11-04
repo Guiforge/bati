@@ -45,11 +45,17 @@ function withoutParams<T>(write: () => Promise<T>): Promise<T> {
   });
 }
 
-/** Overwrites what it deletes, for a table holding a secret. Off again after: it slows every delete. */
+/**
+ * Overwrites what it deletes, for a table holding a secret. Off again after: it slows every delete.
+ * The checkpoint is half of it: the database is in WAL mode, so the old bytes stay in the main file and
+ * in the log until one runs. A busy database skips it without failing, and the next one finishes the job.
+ */
 export async function withSecureDelete<T>(work: () => Promise<T>): Promise<T> {
   await db.run(sql`PRAGMA secure_delete = ON`);
   try {
-    return await work();
+    const result = await work();
+    await db.run(sql`PRAGMA wal_checkpoint(TRUNCATE)`);
+    return result;
   } finally {
     await db.run(sql`PRAGMA secure_delete = OFF`);
   }
@@ -269,8 +275,8 @@ export async function sweepExpiredInvites(now = nowDate()): Promise<void> {
  * hero's other device drops its copy at the next sync rather than bring the pair back (the same one
  * hero content uses, 0074).
  *
- * shortcut: the bytes can outlive this in the WAL until the next checkpoint, and in a backup taken
- * earlier. Fine against a forward-looking unlink; a checkpoint here is the upgrade if that changes.
+ * shortcut: the bytes can outlive this in a backup taken earlier. Fine against a forward-looking
+ * unlink; nothing here can reach a file already handed to someone.
  */
 export async function unlinkPair(id: string): Promise<void> {
   const deletedAt = nowDate();

@@ -675,6 +675,7 @@
     "pain_rule_last": "Stechender Schmerz? Hör hier auf.",
     "pain_stop": "Ich höre auf, es tut weh",
     "pain_stop_line": "Gut, dass du auf dich gehört hast, nichts ist verloren",
+    "pain_stop_quit_body": "Abbrechen löscht diese Einheit. Wenn es weh tut, höre lieber auf: Deine Sätze bleiben.",
     "overtime": "BONUSZEIT",
     "pause_accessibility": "Einheit pausieren",
     "paused_subtitle": "Durchatmen. Weiter geht's, wann du willst.",

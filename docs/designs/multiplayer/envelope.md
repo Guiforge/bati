@@ -5,7 +5,9 @@ Code : [`src/multiplayer/envelope.ts`](../../../src/multiplayer/envelope.ts). Ve
 [`__tests__/fixtures/multiplayer/envelope-v1.json`](../../../__tests__/fixtures/multiplayer/envelope-v1.json),
 écrits par un encodeur indépendant et relus aussi par le vrai `javax.crypto`
 (`EnvelopeVectorTest.kt`). On ne les régénère jamais : un changement de format est une nouvelle
-version, jamais un nouveau sens pour celle-ci.
+version, jamais un nouveau sens pour celle-ci. Un nouveau kind a ses propres vecteurs :
+[`envelope-v1-link.json`](../../../__tests__/fixtures/multiplayer/envelope-v1-link.json), écrits par le
+`crypto` de Node (OpenSSL) à partir des clés de test publiées de la RFC 7748.
 
 ## Octets
 
@@ -20,7 +22,7 @@ C'est la donnée associée de l'AEAD : changer un octet fait refuser l'enveloppe
 | Décalage | Taille | Champ | Note |
 | --- | --- | --- | --- |
 | 0 | 1 | version | 1 |
-| 1 | 1 | kind | 1 = semaine, 2 = invitation |
+| 1 | 1 | kind | 1 = semaine, 2 = invitation en face à face, 3 = invitation par lien, 4 = réponse d'appairage |
 | 2 | 16 | pair id | aléatoire, jamais un uuid v7, qui dirait la date de l'appairage |
 | 18 | 8 | sender key id | l'identifiant de l'expéditeur dans cette paire |
 | 26 | 2 | année ISO | |
@@ -46,19 +48,58 @@ donnée associée. Le clair :
 stamp le plus grand ; à égalité, les octets les plus grands, pour que deux téléphones concluent pareil
 quel que soit l'ordre d'arrivée. Un doublon ou un vieux message rejoué ne change rien.
 
-### Kind 2, l'invitation
+### Kind 2, l'invitation en face à face
 
 `en-tête ‖ made-at u32 ‖ secret 32`, soit **65 octets**. Année et semaine à zéro.
 
 **Non scellée, et elle ne peut pas l'être** : c'est elle qui crée la clé. Qui la lit peut lire les
-messages de cette paire. D'où l'écran proche ou la messagerie du joueur, et une validité de 7 jours,
-parce qu'une conversation la garde pour toujours.
+messages de cette paire. Elle n'est donc acceptée que par la caméra, sur un écran dans la même pièce
+(`readCode`), jamais par un lien, et elle est valable 7 jours.
+
+### Kind 3, l'invitation par lien
+
+`en-tête ‖ made-at u32 ‖ clé publique de A 32`, soit **65 octets**. Année et semaine à zéro. Aucun
+secret : A garde la moitié privée dans `pair_invites` (`0084`), sur ce téléphone seulement, jusqu'à la
+réponse ou 7 jours, puis l'écrase. Valable 7 jours.
+
+### Kind 4, la réponse d'appairage
+
+`en-tête ‖ clé publique de B 32 ‖ nonce 12 ‖ chiffré 4 ‖ tag 16`, soit **93 octets**. Le sender id de
+l'en-tête est celui de B. Le clair est le moment de la réponse (u32, secondes). Ce qu'il dit compte moins
+que le fait qu'il s'ouvre : c'est la preuve que B détient la clé.
+
+AES-256-GCM par `bati-crypto`, avec `en-tête ‖ clé publique de B` en donnée associée. La clé de la paire :
+
+```
+partagé = X25519(ma clé privée, sa clé publique)
+clé     = HKDF-SHA256(partagé, sel vide, "bati pair v1" ‖ pair id 16 ‖ publique de A 32 ‖ publique de B 32, 32 octets)
+```
+
+Le pair id et les deux clés publiques entrent dans la dérivation : changer l'une d'elles donne une
+autre clé, et la réponse ne s'ouvre pas. Une clé publique d'ordre faible, qui ne donne aucun secret partagé,
+est refusée. La première réponse valide consomme la clé privée de A : une seconde ne trouve plus rien.
+
+Bibliothèque : `@noble/curves` (MIT, JS pur), parce que la plateforme n'a X25519 qu'à partir de l'API 31,
+et `@noble/hashes` déjà livré par `@scure/bip39`. L'aléa vient de `bati-crypto`, pas de `crypto.getRandomValues`.
+
+### Ce que lit quelqu'un qui a toute la conversation
+
+Les deux clés publiques, le pair id, les deux sender ids, le moment de l'invitation et le fait qu'une
+réponse est partie. Il ne peut dériver ni la clé ni lire la réponse : il lui manque les deux moitiés
+privées, qui n'ont jamais voyagé. Une enveloppe de semaine reste scellée pour lui.
+
+**La limite, à dire franchement.** Cela protège de quelqu'un qui lit, pas de quelqu'un qui réécrit. Sans
+rien à comparer de vive voix, personne ne distingue la clé de A de celle d'un attaquant capable de
+remplacer les messages dans la messagerie. Il pourrait aussi répondre avant B avec le lien, s'il l'a lu :
+A se retrouve appairé avec lui, et lit « déjà un compagnon » quand la vraie réponse arrive ; B se croit appairé
+et personne ne l'écoute. L'enjeu reste petit, une enveloppe ne portant que des séances comptées par jour, et le
+QR en face à face n'a pas ce trou.
 
 ## Budget
 
 Plafond du lecteur : 600 octets (`MAX_ENVELOPE_BYTES`), refusés avant tout déchiffrement. Une semaine
-en fait 70. Le lien complet tient en moins de 120 caractères et son QR reste à 45 modules au plus. Il
-reste de la place pour les kinds des lots suivants.
+en fait 70, une réponse d'appairage 93. Le lien d'une semaine tient en moins de 120 caractères et son QR
+reste à 45 modules au plus ; celui d'une réponse en fait 146. Il reste de la place pour les kinds des lots suivants.
 
 ## Refus
 
@@ -68,7 +109,7 @@ reste de la place pour les kinds des lots suivants.
 | --- | --- |
 | `oldVersion` | version antérieure à toutes celles qu'on lit |
 | `newerVersion` | version plus récente : mettre Bati à jour la lira |
-| `notThis` | pas une enveloppe, tronquée, trop longue, kind inconnu |
+| `notThis` | pas une enveloppe, tronquée, trop longue, kind inconnu. `openEnvelope` ne lit que le kind 1 |
 | `refused` | mauvaise clé ou un octet changé ; AES-GCM ne dit pas lequel |
 | `own` | son propre message qui revient, que la clé partagée authentifierait comme celui de l'autre |
 

@@ -675,6 +675,7 @@
     "pain_rule_last": "Sharp pain? Stop there.",
     "pain_stop": "I'm stopping, it hurts",
     "pain_stop_line": "Good call listening to your body, nothing is lost",
+    "pain_stop_quit_body": "Quitting erases this session. If it hurts, stop instead: your sets stay.",
     "overtime": "BONUS TIME",
     "pause_accessibility": "Pause session",
     "paused_subtitle": "Catch your breath. Ready to jump back in?",

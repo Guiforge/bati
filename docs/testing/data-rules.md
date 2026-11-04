@@ -1036,6 +1036,11 @@ after its stamp stays dead (`__tests__/db-pairs.test.ts`). Its `secret` is never
 database in lot 0. `countsForPlay` (R1 of the village spec, `db/completed.ts`) is not `countsAsSession`: it asks
 whether the proposed goal was reached, and it reads no byHand row.
 
+**R130. A link invitation waiting.** `pair_invites` (0084) holds the private half of an X25519 pair, is `local` to
+this device, and goes when the answer comes (`completeLinkInvite`) or after seven days (`sweepExpiredInvites`), with
+`secure_delete`. A plain backup has its rows removed (`NEVER_IN_PLAINTEXT`, `scrubPairs`). A link never accepts a
+kind 2 invite, which holds a secret: `readCode` refuses it by the door it came through (`__tests__/db-pairs.test.ts`).
+
 **R129. The pain stop.** `completed_sessions.stopReason` (0083) is NULL on a normal end and on every older row,
 `'pain'` when the hero said so; `stopForPain` is its one writer, through `saveSession`, and a stop before any set
 writes no row. Only `countsForPlay` reads it: a pain stop counts at most once per seven local days, decided over the

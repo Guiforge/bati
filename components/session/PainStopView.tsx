@@ -1,5 +1,5 @@
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BackHandler, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -47,14 +47,17 @@ export function PainStopView() {
   };
 
   // Back from here is the session that just ended. Until the save lands, there is nowhere to go.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `leave` reads only stable store and router calls.
-  useEffect(() => {
-    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
-      if (saved) leave();
-      return true;
-    });
-    return () => subscription.remove();
-  }, [saved]);
+  // On focus only: the Safety page opens over this screen, and back there must return here.
+  useFocusEffect(
+    // biome-ignore lint/correctness/useExhaustiveDependencies: `leave` reads only stable store and router calls.
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+        if (saved) leave();
+        return true;
+      });
+      return () => subscription.remove();
+    }, [saved]),
+  );
 
   return (
     <YStack

@@ -1,4 +1,5 @@
 import { act, fireEvent, render } from "@testing-library/react-native";
+import { BackHandler } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 
@@ -28,9 +29,16 @@ jest.mock("react-i18next", () => ({
 }));
 const mockPush = jest.fn();
 const mockDismissTo = jest.fn();
-jest.mock("expo-router", () => ({
-  useRouter: () => ({ push: mockPush, dismissTo: mockDismissTo }),
-}));
+// The effect runs only while this says the screen is focused, as the Safety page over it would not be.
+let mockFocused = true;
+jest.mock("expo-router", () => {
+  const { useEffect } = require("react") as typeof import("react");
+  return {
+    useRouter: () => ({ push: mockPush, dismissTo: mockDismissTo }),
+    useFocusEffect: (effect: () => () => void) =>
+      useEffect(() => (mockFocused ? effect() : undefined), [effect]),
+  };
+});
 
 const SET = { exerciseId: 1, sortOrder: 0, result: { type: "reps" as const, value: 10 } };
 const saveSession = jest.fn();
@@ -58,6 +66,7 @@ async function mount(results: (typeof SET)[]) {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockFocused = true;
   saveSession.mockResolvedValue({ sessionId: 1 });
 });
 
@@ -99,4 +108,32 @@ test("nothing says 'nothing is lost' until it is true: a failed save offers Retr
 
   expect(saveSession).toHaveBeenCalledTimes(2);
   expect(view.getByTestId("villager-line-block")).toBeTruthy();
+});
+
+describe("the system back", () => {
+  const pressBack = () => {
+    const spy = jest.mocked(BackHandler.addEventListener);
+    const handler = spy.mock.calls.at(-1)?.[1];
+    return act(() => {
+      handler?.(undefined as never);
+      return Promise.resolve();
+    });
+  };
+
+  beforeEach(() => {
+    jest.spyOn(BackHandler, "addEventListener");
+  });
+
+  test("goes home from this screen, once the save has landed", async () => {
+    await mount([SET]);
+    await pressBack();
+    expect(quitSession).toHaveBeenCalledTimes(1);
+    expect(mockDismissTo).toHaveBeenCalledWith("/");
+  });
+
+  test("is not this screen's while the Safety page is over it", async () => {
+    mockFocused = false;
+    await mount([SET]);
+    expect(BackHandler.addEventListener).not.toHaveBeenCalled();
+  });
 });

@@ -27,7 +27,7 @@ export async function readCode(text: string, via: "link" | "scan"): Promise<Rece
       ? { kind: "invite", invite }
       : {
           kind: "unreadable",
-          why: "This kind of invitation only works face to face, by its code.",
+          why: "This code works face to face only. Its secret has been in a message: do not use it, make a new one.",
         };
   }
 

@@ -19,6 +19,12 @@ import { useExpeditionStore } from "@/stores/expedition";
 import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 
+/** Quit's words where the pain stop sits beside it: "will be lost" is not true of that button. */
+function confirmBodyKey(confirming: "restart" | "quit" | null, allOuting: boolean) {
+  if (confirming !== "quit") return "session.restart_confirm_body";
+  return allOuting ? "session.quit_confirm_body" : "session.pain_stop_quit_body";
+}
+
 export function PausedOverlay() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -217,9 +223,7 @@ export function PausedOverlay() {
             ? t("session.quit_confirm_title")
             : t("session.restart_confirm_title")
         }
-        body={
-          confirming === "quit" ? t("session.quit_confirm_body") : t("session.restart_confirm_body")
-        }
+        body={t(confirmBodyKey(confirming, allOuting))}
         confirmLabel={t(
           confirming === "quit" ? "session.quit_button" : "session.restart_round_button",
         )}

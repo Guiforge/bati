@@ -651,6 +651,7 @@
     "pain_rule_last": "尖锐的疼痛？停下来。",
     "pain_stop": "我要停下，很疼",
     "pain_stop_line": "听从身体的感觉，做得好，什么都没有丢",
+    "pain_stop_quit_body": "放弃会清除这次训练。如果疼，请改为停下：已完成的组都会保留。",
     "overtime": "加练时间",
     "pause_accessibility": "暂停训练",
     "paused_subtitle": "喘口气，准备好继续了吗？",

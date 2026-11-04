@@ -11,7 +11,7 @@
 /** Pose images per second of the animals' drawn sheets (performance.md); horloge.ts reads it from here. */
 export const IMAGES_PAR_SECONDE = 8;
 
-export type AnimalVie = "chat" | "poule";
+export type AnimalVie = "poule";
 /** The images of an animal's sheet: 0 rest, 1 pose a, 2 pose b (carteDemo.ts `POSES_ANIMAL`). */
 export type Pose = 0 | 1 | 2;
 
@@ -43,80 +43,7 @@ export const FIN_MARGE_MS = 500;
 /** Each animal starts at its own offset in 0 to this, ms. */
 export const DECALAGE_MAX_MS = 3000;
 
-// The wave lasts 15 to 20 s, so a nap is 6 to 11 s here (the card said 10 to 30): the rest pose
-// of the cat is asleep, so it dozes on between waves.
 export const VIES: Record<AnimalVie, readonly Comportement[]> = {
-  chat: [
-    {
-      id: "dort",
-      poids: 60,
-      duree: [6000, 11000],
-      poses: [0],
-      suit: ["baille", "reveil"],
-      depart: true,
-      aPeindre: "chat roulé en boule, flancs qui montent",
-    },
-    {
-      id: "baille",
-      poids: 10,
-      duree: [1500, 2500],
-      poses: [0, 1, 1, 0],
-      suit: ["dort", "reveil"],
-      aPeindre: "chat qui bâille, 3 images",
-    },
-    {
-      id: "reveil",
-      poids: 10,
-      duree: [1200, 2000],
-      poses: [1],
-      suit: ["etire", "assis"],
-      aPeindre: "chat qui lève la tête",
-    },
-    {
-      id: "etire",
-      poids: 10,
-      duree: [2000, 3000],
-      poses: [1, 2, 2, 1],
-      suit: ["marche", "assis", "leche"],
-      aPeindre: "chat qui s'étire, dos creusé",
-    },
-    {
-      id: "marche",
-      poids: 12,
-      duree: [4500, 6500],
-      poses: [1, 2],
-      suit: ["assis", "leche", "dort"],
-      marche: true,
-      aPeindre: "marche du chat, 4 images",
-    },
-    {
-      id: "assis",
-      poids: 25,
-      duree: [2500, 4500],
-      poses: [1],
-      suit: ["leche", "dort", "marche", "chasse"],
-      depart: true,
-      aPeindre: "chat assis, queue enroulée",
-    },
-    {
-      id: "leche",
-      poids: 15,
-      duree: [2000, 4000],
-      poses: [2, 1, 2, 1],
-      suit: ["assis", "dort", "marche"],
-      depart: true,
-      aPeindre: "chat qui se lèche la patte",
-    },
-    {
-      id: "chasse",
-      poids: 20,
-      duree: [2500, 3500],
-      poses: [2, 1, 2, 1, 2],
-      suit: ["assis", "marche"],
-      rare: true,
-      aPeindre: "chat qui bondit sur un papillon",
-    },
-  ],
   poule: [
     {
       id: "picore",
@@ -167,7 +94,6 @@ export const VIES: Record<AnimalVie, readonly Comportement[]> = {
 
 /** The poses an animal can be left in between waves (drawn once a day), and the clips to paint for the others. */
 export const REPOS: Record<AnimalVie, { poses: readonly Pose[]; aPeindre: string }> = {
-  chat: { poses: [0], aPeindre: "chat assis, chat roulé en boule" },
   poule: { poses: [0], aPeindre: "poule accroupie sur ses pattes" },
 };
 

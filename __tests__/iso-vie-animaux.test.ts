@@ -67,23 +67,11 @@ describe("the behaviour tables", () => {
     }
     expect(atteignables(table)).toEqual([...ids].sort());
   });
-
-  test("a cat that sleeps wakes and stretches before it walks", () => {
-    const dort = VIES.chat.find((c) => c.id === "dort");
-    expect(dort?.suit).not.toContain("marche");
-    expect(dort?.suit).not.toContain("etire");
-    const plans = Array.from({ length: 3000 }, (_, n) => plan("chat", n, false, false));
-    const apresDort = plans.flatMap((etapes) =>
-      etapes.filter((_, i) => etapes[i - 1]?.id === "dort").map((e) => e.id),
-    );
-    expect(apresDort.length).toBeGreaterThan(0);
-    expect(apresDort.filter((id) => id !== "baille" && id !== "reveil")).toEqual([]);
-  });
 });
 
 describe("the machine", () => {
   test("10 000 draws follow the weights, to 3 points", () => {
-    const candidats = VIES.chat.filter((c) => ["leche", "dort", "marche", "chasse"].includes(c.id));
+    const candidats = VIES.poule.filter((c) => ["picore", "gratte", "marche"].includes(c.id));
     const somme = candidats.reduce((s, c) => s + c.poids, 0);
     const h = hasard("frequences");
     const n = new Map<string, number>();
@@ -124,27 +112,27 @@ describe("the machine", () => {
   );
 
   test("the same day, wave and animal play the same life; another wave or day another", () => {
-    expect(plan("chat", 7, true)).toEqual(plan("chat", 7, true));
+    expect(plan("poule", 7, true)).toEqual(plan("poule", 7, true));
     const vies = Array.from({ length: 40 }, (_, n) => JSON.stringify(plan("poule", n, false)));
     expect(new Set(vies).size).toBeGreaterThan(30);
-    expect(plan("chat", 7, true, true, JOUR + 1)).not.toEqual(plan("chat", 7, true));
+    expect(plan("poule", 7, true, true, JOUR + 1)).not.toEqual(plan("poule", 7, true));
   });
 
   test("animals start at different offsets", () => {
     const debuts = NOMS.flatMap((nom) =>
-      Array.from({ length: 30 }, (_, n) => plan(nom, n, false)[0]?.t0),
+      Array.from({ length: 60 }, (_, n) => plan(nom, n, false)[0]?.t0),
     );
     expect(new Set(debuts).size).toBeGreaterThan(30);
   });
 
   test("the rare day falls about one day in ten, and a rare behaviour only on one", () => {
-    const jours = Array.from({ length: 10000 }, (_, d) => hasard(graineJour(d, "chat", "rare"))());
+    const jours = Array.from({ length: 10000 }, (_, d) => hasard(graineJour(d, "poule", "rare"))());
     const part = jours.filter(rareDuJour).length / 10000;
     expect(Math.abs(part - RARE_CHANCE)).toBeLessThan(0.03);
     const rares = (rare: boolean) =>
       NOMS.flatMap((nom) =>
         Array.from({ length: 400 }, (_, n) => plan(nom, n, false, rare)).flat(),
-      ).filter((e) => VIES.chat.concat(VIES.poule).find((c) => c.id === e.id)?.rare);
+      ).filter((e) => VIES.poule.find((c) => c.id === e.id)?.rare);
     expect(rares(false)).toEqual([]);
     expect(rares(true).length).toBeGreaterThan(0);
   });
@@ -171,18 +159,11 @@ describe("the machine", () => {
         expect(rareLe(jour, nom, 5)).toBe(false);
       }
   });
-
-  test("the cat spends most of its time asleep", () => {
-    const etapes = Array.from({ length: 400 }, (_, n) => plan("chat", n, false, false)).flat();
-    const total = etapes.reduce((s, e) => s + e.duree, 0);
-    const dort = etapes.filter((e) => e.id === "dort").reduce((s, e) => s + e.duree, 0);
-    expect(dort / total).toBeGreaterThan(0.5);
-  });
 });
 
 describe("the poses", () => {
   test("outside every step the animal holds its rest pose, inside it plays the step's images", () => {
-    const etapes = plan("chat", 3, true);
+    const etapes = plan("poule", 3, true);
     const e = etapes.find((x) => x.marche);
     assert(e);
     expect(poseVie(etapes, -1, 0)).toBe(0);

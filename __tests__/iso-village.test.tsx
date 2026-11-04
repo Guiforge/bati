@@ -271,10 +271,10 @@ describe("growth on return from a session", () => {
     await act(() => jest.advanceTimersByTime(ECHAFAUDAGE_APRES_MS + 10));
     expect(StyleSheet.flatten(lire("forge")?.props.style).opacity).toBe(0);
     expect(fini).not.toHaveBeenCalled();
-    await act(() => jest.advanceTimersByTime(STADE_MS));
+    await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + STADE_MS));
     expect(fini).not.toHaveBeenCalled();
     await act(() => jest.advanceTimersByTime(TENUE_MS));
-    // Called once, after the moment and the hold (L6-T13 writes the claimed stage here).
+    // Called once, after the glide, the moment and the hold (L6-T13 writes the claimed stage here).
     expect(fini).toHaveBeenCalledTimes(1);
     // The owner drops the growth: nothing is left mounted, hence nothing animating.
     await screen.rerender(arbre(12, { campfire: 1, forge: 4 }));
@@ -633,9 +633,8 @@ describe("each view shows its own image (L4-AUD)", () => {
       }
       const forge = screen.getByTestId("iso-maquette-forge").props.source;
       expect(JSON.stringify(forge)).toContain("/forge/");
-      // The cat stands by the well and the hen by the farm, both on the island from tier 1.
-      for (const nom of ["chat", "poule"])
-        expect(screen.queryAllByTestId(new RegExp(`^iso-animal-${nom}`)).length).toBeGreaterThan(0);
+      // The hen by the farm stands on the island from tier 1 (the old cat by the well is gone).
+      expect(screen.queryAllByTestId(/^iso-animal-poule/).length).toBeGreaterThan(0);
     },
   );
 });

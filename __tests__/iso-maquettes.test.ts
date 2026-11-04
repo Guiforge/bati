@@ -316,7 +316,6 @@ describe("the image index, components/village/iso/maquettes.ts", () => {
         "eau/cascade_chute",
         "echafaudage/1x1",
         "echafaudage/2x2",
-        "animal/chat_repos",
         ...["champion", "farmer", "herbalist", "minstrel", "sage", "smith", "watcher"].map(
           (m) => `villageois/${m}_face`,
         ),
@@ -377,9 +376,9 @@ describe("the image index, components/village/iso/maquettes.ts", () => {
       batiments[c].stades.filter((s) => !spriteDe(c, s)).map((s) => `${c}/${s}`),
     );
     expect(manquants).toEqual([]);
-    // 57 stages, the sails, blender's 29 pieces (L1-T06) and 6 animal poses (L4-T08c, the crow left with LIFE) and 6 totem statues (T25) and the 10 rest poses (T40).
+    // 57 stages, the sails, blender's 29 pieces (L1-T06) and 3 animal poses (L4-T08c: the hen, the crow and the old cat left with LIFE) and 6 totem statues (T25) and the 10 rest poses (T40).
     // + the lantern (T36 lot F, T39), + the 57 day stages and the day sails (F2).
-    expect(surDisque.size).toBe(110 + 57 + 1);
+    expect(surDisque.size).toBe(107 + 57 + 1);
     expect(ORDRE_SPRITES.toSorted()).toEqual([...buildingCodes].toSorted());
   });
 

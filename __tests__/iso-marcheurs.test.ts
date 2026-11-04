@@ -522,7 +522,7 @@ describe("depth order", () => {
   test("the walker's rank is after every footprint behind it and before every one it is behind, at every segment", () => {
     const fautes = CARTES.flatMap(([nom, carte]) => {
       const vues = montres(carte);
-      return [24000, 24001, 24002].flatMap((jour) =>
+      return Array.from({ length: 12 }, (_, i) => 24000 + i).flatMap((jour) =>
         chaine({ ...carte, vues }, jour, 25).flatMap((v) =>
           v.marcheurs.flatMap((m) =>
             m.segments.flatMap((s) => fautesRang(`${nom} ${m.role}`, vues, s)),
@@ -557,17 +557,9 @@ describe("depth order", () => {
     expect(a).toBeGreaterThanOrEqual(b);
   });
 
-  test("a step with no rank is cut at the edge of its two cells, so each half has one", () => {
-    // The sage's step (5,5) to (6,5) sits behind the hen (5,6) and in front of the grove, which
-    // the order puts the other way: cut in two, each half stands in one cell.
-    const coupes = CARTES.flatMap(([, carte]) => {
-      const vues = montres(carte);
-      return [24000, 24001, 24002].flatMap((jour) =>
-        chaine({ ...carte, vues }, jour, 40)
-          .flatMap((v) => v.marcheurs)
-          .flatMap((m) => m.segments.filter((s) => longueur(s) === 0.5)),
-      );
-    });
-    expect(coupes.length).toBeGreaterThan(0);
-  });
+  // The step cut at the edge of its two cells (marcheurs.ts `decouper`) needed a conflict in the
+  // depth order that the old cat's cell took part in: on the map as it is now no step lacks a rank
+  // (none cut over 12 days of 40 waves, 80 days tried), so the case has no real scenario left.
+  // ponytail: `decouper` is untested until a layout brings back a conflicting pair of elements;
+  // then rebuild this from that pair.
 });

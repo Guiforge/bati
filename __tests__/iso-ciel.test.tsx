@@ -19,7 +19,7 @@ import { BANNIERES_MAX, ECLATS_ANIMES } from "@/components/village/iso/fierte";
 import { FigeContext } from "@/components/village/iso/fige";
 import { type Croissance, IsoVillage } from "@/components/village/iso/IsoVillage";
 import { MARCHEURS_PAR_VAGUE } from "@/components/village/iso/marcheurs";
-import { STADE_MS } from "@/components/village/iso/moment";
+import { LUMIERES_MS, STADE_MS } from "@/components/village/iso/moment";
 import { NOEUDS_RECLAMABLES } from "@/components/village/iso/reclame";
 import { ONDE_MS } from "@/components/village/iso/revelation";
 import { buildingStage } from "@/constants/buildingLevels";
@@ -43,7 +43,7 @@ const getAnimatedStyle = Reanimated.getAnimatedStyle as unknown as (component: {
 // Raised 64 to 68 in the "sublime" loop (E1, Guillaume): the three banners sway at rest.
 const PLAFOND_NOEUDS = 68;
 /** Exact counts at tier 12, every building at level 5 (L5-T02, then L5-T09: the 18 water glints in 5 nodes, -13; L5-T03: +5 flames, +10 smoke puffs; a growing building hides its fire, so growth adds 3 + 6; T23: the sky and its 5 nodes, 3 stars and 2 mist bands, are gone): to raise on purpose, never to chase. */
-const NOEUDS_SANS_VILLAGEOIS = 29;
+const NOEUDS_SANS_VILLAGEOIS = 26; // 29 before the old cat (3 pose nodes) left the animals
 /** Two growths played at most, 6 nodes each. A growing campfire or forge hides its fire: -2 flames, -4 puffs. */
 const NOEUDS_CROISSANCE_MAX = 12; // the moment (moment.ts): per growth 6 (light and its ground pool, old stage and its ink, new stage and its ink, dust)
 const NOEUDS_FEU_MASQUE = 6;
@@ -92,8 +92,8 @@ const NOEUDS_ECLATS = ECLATS_ANIMES;
 const NOEUDS_OMBRES_MARCHEURS = MARCHEURS_PAR_VAGUE;
 /** T27: with no ready glow the two glints leave two places of the signal seat to the effects. */
 const NOEUDS_EFFETS_MAX = NOEUDS_RECLAMABLES - ECLATS_ANIMES;
-const NOEUDS_PIRE_SANS_PRETS = 60 + NOEUDS_BANNIERES + NOEUDS_OMBRES_MARCHEURS + NOEUDS_EFFETS_MAX;
-const NOEUDS_PIRE_ABSOLU_ATTENDU = 62 + NOEUDS_BANNIERES + NOEUDS_OMBRES_MARCHEURS;
+const NOEUDS_PIRE_SANS_PRETS = 57 + NOEUDS_BANNIERES + NOEUDS_OMBRES_MARCHEURS + NOEUDS_EFFETS_MAX;
+const NOEUDS_PIRE_ABSOLU_ATTENDU = 59 + NOEUDS_BANNIERES + NOEUDS_OMBRES_MARCHEURS;
 /**
  * T27 point 4: the building effects of a wave, one node each, in the signal seat (familles.ts),
  * which holds NOEUDS_RECLAMABLES nodes: glows + glints + effects never pass it, so the worst cases
@@ -330,14 +330,14 @@ describe("the whole map's animated nodes", () => {
       }));
       await render(village({ cle: "b", items }));
       // The moment is over (a finger on a roof skips it anyway): the new bodies stay, one node each.
-      await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + STADE_MS));
+      await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + STADE_MS + 50));
       expect(screen.queryAllByTestId(/^iso-croissance-nouveau-(?!image)/).length).toBe(2);
       // Tent and well: no fire hidden, nothing else masked: the whole rest map, plus 2 nodes for each of the 2 growths played.
       expect(screen.getAllByTestId(/^iso-flamme-/)).toHaveLength(5);
       const n = compte(screen.toJSON());
       // The base: the rest map and the 2 new bodies; the village is quiet, no wave light.
       expect(n).toBeGreaterThanOrEqual(NOEUDS_REPOS + NOEUDS_APRES_MOMENT);
-      expect(NOEUDS_REPOS).toBe(45 + NOEUDS_BANNIERES);
+      expect(NOEUDS_REPOS).toBe(42 + NOEUDS_BANNIERES);
       // A finger on the farm's roof, then on the forge's: a wave starts, over the wave's night lights
       // (2 to 4) and glints (up to 2).
       await toucherToit("farm");
@@ -507,8 +507,9 @@ describe("the building site (L6-T02)", () => {
     jest.useFakeTimers();
     try {
       await render(village({ cle: "s", items }));
-      await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS));
-      // From the tap: the moment's layers of the first two growths, each with its scaffold.
+      // The camera arrives, then the moment's lights come on (Fierte mounts with them).
+      await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + LUMIERES_MS + 50));
+      // The moment's layers of the first two growths, each with its scaffold, there from the tap.
       expect(screen.queryAllByTestId(/^iso-croissance-echafaudage-/)).toHaveLength(2);
       expect(screen.queryAllByTestId(/^iso-croissance-nouveau-(?!image)/)).toHaveLength(2);
       const n = compte(screen.toJSON());

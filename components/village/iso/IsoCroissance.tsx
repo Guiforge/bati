@@ -253,11 +253,13 @@ export function IsoCroissance({
     const attend = reduit ? 0 : delai;
     attendu.current = [
       // The site stands (the old stage and its scaffold) while the camera glides; the clock starts on arrival.
-      setTimeout(
-        () => h.set(withTiming(duree, { duration: duree, easing: Easing.linear })),
-        attend,
-      ),
-      setTimeout(() => setAllume(true), attend + (genre === "stade" ? LUMIERES_MS : 0)),
+      // A rank's lights are on at once, with the start: no second timer of the same delay (Android
+      // fires equal ones in either order).
+      setTimeout(() => {
+        h.set(withTiming(duree, { duration: duree, easing: Easing.linear }));
+        if (genre !== "stade") setAllume(true);
+      }, attend),
+      ...(genre === "stade" ? [setTimeout(() => setAllume(true), attend + LUMIERES_MS)] : []),
       setTimeout(() => setTermine(true), attend + duree + 20),
     ];
     return () => {

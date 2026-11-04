@@ -208,7 +208,7 @@ import { cibles } from "./tapBatiment";
 import { AnimauxContext, type MarcheurVu, useJour, useMarcheurs, type Vie } from "./useMarcheurs";
 import { Veilles } from "./VeillesDessinees";
 import { VariantesContext } from "./variantes";
-import { VeilleContext } from "./veilleuses";
+import { type Veille, VeilleContext } from "./veilleuses";
 import { type Etape, type Pose, poseVie } from "./vieAnimaux";
 import { CASES_VOCATION, chosesDe, EMPRISES_VOCATION, vocationDeBlason } from "./vocation";
 
@@ -1726,7 +1726,10 @@ function Objets({
   horloge,
   vie,
   prise,
+  veilleSeule,
 }: {
+  /** A lone building has no wave to plan: it is in a standing one, so its lights and motion play. */
+  veilleSeule?: Veille;
   objets: readonly ReactElement[];
   emprises: readonly Emprise[];
   carte: Carte;
@@ -1829,7 +1832,7 @@ function Objets({
     .sort((a, b) => a.rang - b.rang || loin(a.e.emprise) - loin(b.e.emprise));
   return (
     <AnimauxContext.Provider value={animaux}>
-      <VeilleContext.Provider value={veille}>
+      <VeilleContext.Provider value={veilleSeule ?? veille}>
         {objets.flatMap((o, i) => [...marches.filter((w) => w.rang === i).map((w) => w.e.vue), o])}
         {marches.filter((w) => w.rang >= objets.length).map((w) => w.e.vue)}
       </VeilleContext.Provider>
@@ -2341,6 +2344,17 @@ export function IsoCarte({
         voileAlentours={voileVillage(visible)}
       />
       <Objets
+        veilleSeule={
+          seul
+            ? {
+                c0: 0,
+                fenetres: new Set(montres),
+                portes: {},
+                effets: new Set(montres),
+                mouvement: new Set(montres),
+              }
+            : undefined
+        }
         objets={avecBestioles(noeudsVues())}
         emprises={emprisesF}
         stade={stade}

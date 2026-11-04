@@ -1185,16 +1185,3 @@ export function piedAccessoire(a: Accessoire): readonly [number, number] {
   const h = mulberry32(a.case[0] * 131 + a.case[1] * 977);
   return ecranXY([a.case[0] + 0.5 + (h() - 0.5) * 0.24, a.case[1] + 0.5 + (h() - 0.5) * 0.24]);
 }
-
-// --- Animals ----------------------------------------------------------------------
-
-/** One running or flying frame, dp; a strip holds four side by side (64 x 56 px, 4 px a dp). */
-export const IMAGE_ANIMAL = { w: 16, h: 14 } as const;
-/** The mice of a run, one painted each: offset from the run's point along the run (behind is negative) and across, dp, and the frame's phase. */
-export const SOURIS = [
-  { nom: "souris_grise", dx: 0, dy: 0, phase: 0 },
-  { nom: "souris_brune", dx: -11, dy: 3, phase: 1.6 },
-  { nom: "souris_noire", dx: -21, dy: -2, phase: 2.9 },
-] as const;
-/** A mouse's frame changes this often while it runs, ms: a scurry, faster than the eye follows. */
-export const FRAME_SOURIS_MS = 65;

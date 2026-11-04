@@ -6,13 +6,12 @@
 // for the one behaviour that moves (`marche`), when the walk of marcheurs.ts `planifierAnimaux`
 // starts. At rest, with reduced motion or frozen, no plan exists: the animal holds its rest pose.
 // shortcut: only the poses repos, a and b exist, so each `poses` below is a best use of them and
-// `aPeindre` names the clip to paint when T31 point 3 is done; the rat has one drawing, so its
-// plan (vivant.ts `planifierRat`) drives its run and its stops, not a pose.
+// `aPeindre` names the clip to paint when T31 point 3 is done.
 
 /** Pose images per second of the animals' drawn sheets (performance.md); horloge.ts reads it from here. */
 export const IMAGES_PAR_SECONDE = 8;
 
-export type AnimalVie = "chat" | "poule" | "corbeau" | "rat";
+export type AnimalVie = "chat" | "poule" | "corbeau";
 /** The images of an animal's sheet: 0 rest, 1 pose a, 2 pose b (carteDemo.ts `POSES_ANIMAL`). */
 export type Pose = 0 | 1 | 2;
 
@@ -210,44 +209,6 @@ export const VIES: Record<AnimalVie, readonly Comportement[]> = {
       aPeindre: "corbeau bec ouvert qui croasse",
     },
   ],
-  rat: [
-    {
-      id: "cache",
-      poids: 50,
-      duree: [3000, 6000],
-      poses: [0],
-      suit: ["renifle", "file"],
-      depart: true,
-      aPeindre: "rat tapi, museau qui frémit",
-    },
-    {
-      id: "renifle",
-      poids: 30,
-      duree: [1500, 3000],
-      poses: [1, 0, 1],
-      suit: ["cache", "file", "dresse"],
-      depart: true,
-      aPeindre: "rat qui renifle le sol",
-    },
-    {
-      id: "file",
-      poids: 20,
-      duree: [4500, 6500],
-      poses: [1, 2],
-      suit: ["cache", "renifle"],
-      marche: true,
-      aPeindre: "course du rat, 4 images",
-    },
-    {
-      id: "dresse",
-      poids: 20,
-      duree: [1500, 2500],
-      poses: [2],
-      suit: ["cache", "file"],
-      rare: true,
-      aPeindre: "rat dressé sur ses pattes arrière",
-    },
-  ],
 };
 
 /** The poses an animal can be left in between waves (drawn once a day), and the clips to paint for the others. */
@@ -255,7 +216,6 @@ export const REPOS: Record<AnimalVie, { poses: readonly Pose[]; aPeindre: string
   chat: { poses: [0], aPeindre: "chat assis, chat roulé en boule" },
   poule: { poses: [0], aPeindre: "poule accroupie sur ses pattes" },
   corbeau: { poses: [0], aPeindre: "corbeau tête rentrée" },
-  rat: { poses: [0], aPeindre: "rat pelotonné" },
 };
 
 /** The seeds of an animal's plan for a wave, of its rare day and of its rest pose. */

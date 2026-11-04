@@ -4,7 +4,6 @@ import "react-native-gesture-handler/jestSetup";
 import "@/i18n";
 import { configure, render, screen } from "@testing-library/react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { OiseauxPeints } from "@/components/village/iso/Alentours";
 import { AmbianceCarte } from "@/components/village/iso/AmbianceCarte";
 import {
   ACCESSOIRES,
@@ -166,8 +165,6 @@ describe("the map with every painted layer", () => {
     expect(Math.max(...boites.map((b) => b.top + b.height))).toBeCloseTo(TERRAIN.h + 1);
     expect(screen.getAllByTestId("iso-foret-peinte").length).toBeGreaterThan(20);
     expect(screen.getAllByTestId(/^iso-accessoire-/)).toHaveLength(ACCESSOIRES.length);
-    expect(screen.getAllByTestId("iso-souris")).toHaveLength(1);
-    expect(screen.queryAllByTestId("iso-rongeur")).toHaveLength(0);
     expect(screen.queryAllByTestId(/^iso-lisiere-/)).toHaveLength(0);
     expect(screen.queryAllByTestId("iso-premier-plan")).toHaveLength(0);
     for (const v of [
@@ -175,7 +172,6 @@ describe("the map with every painted layer", () => {
       ...screen.getAllByTestId("iso-terrain-tuile"),
       ...screen.getAllByTestId("iso-foret-peinte"),
       ...screen.getAllByTestId(/^iso-accessoire-/),
-      ...screen.getAllByTestId("iso-souris"),
     ])
       expect(v.props.pointerEvents).toBe("none");
   });
@@ -188,20 +184,8 @@ describe("the map with every painted layer", () => {
       </GestureHandlerRootView>,
     );
     expect(
-      screen.queryAllByTestId(/^iso-(terrain-peint|foret-peinte|accessoire-|souris)/),
+      screen.queryAllByTestId(/^iso-(terrain-peint|foret-peinte|accessoire-)/),
     ).toHaveLength(0);
-    expect(screen.getAllByTestId("iso-rongeur")).toHaveLength(1);
-  });
-});
-
-describe("the painted flock", () => {
-  test("at rest (no clock), no bird rises or falls", async () => {
-    await render(<OiseauxPeints width={400} height={600} horloge={null} depart={null} />);
-    for (const i of [0, 1, 2, 3]) {
-      const style = [screen.getByTestId(`iso-oiseau-${i}`).props.style].flat(2);
-      const t = style.flatMap((x) => (x as { transform?: object[] } | null)?.transform ?? []);
-      expect(t).toContainEqual({ translateY: 0 });
-    }
   });
 });
 

@@ -103,20 +103,14 @@
   ],
   "champs": [[3, 14, 3, 1], [0, 16, 2, 3], [3, 17, 2, 3]],
   "lieux": {
-    "_doc": "Named places of the small lives (L5-AUD I6): the fireflies' patch of ground, the cells [from, to) in gx and gy, and the rat's run along one row, from gx0 to gx1 in the row gy, drawn `decalage` cells below the row's middle. The rat's cells are the whole cells of the run.",
+    "_doc": "Named places of the small lives (L5-AUD I6): the fireflies' patch of ground, the cells [from, to) in gx and gy.",
     "lucioles": {
       "gx": [3, 7],
       "gy": [0, 3]
-    },
-    "rat": {
-      "gy": 10,
-      "gx0": 3.5,
-      "gx1": 6.5,
-      "decalage": 0.3
     }
   },
   "toits": {
-    "_doc": "Where a crow perches on a roof (L5-T10), by painted stage `<code>_<stade>`: a point of the ridge's top edge, in sprite px (origin top left), read by eye on the painted sprite. A stage with no entry has no crow. A repainted sprite needs its point read again: __tests__/iso-corbeaux.test.tsx checks that each point sits on the sprite's own mask.",
+    "_doc": "Where a bird lands on a roof (L5-T10, LIFE C5), by painted stage `<code>_<stade>`: a point of the ridge's top edge, in sprite px (origin top left), read by eye on the painted sprite. A stage with no entry has no bird. A repainted sprite needs its point read again: __tests__/iso-creatures.test.tsx checks that each point sits on the sprite's own mask.",
     "farm_solid": [810, 591],
     "farm_grand": [820, 560],
     "forge_solid": [330, 732],

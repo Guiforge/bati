@@ -54,13 +54,11 @@ import { IsoVillage } from "@/components/village/iso/IsoVillage";
 import type { Ambiance } from "@/components/village/iso/isoSpec";
 import { ambianceForcee } from "@/components/village/iso/lumiere";
 import { Monde } from "@/components/village/iso/Monde";
-import { Oiseaux } from "@/components/village/iso/petitsDetails";
 import { QuartiersContext } from "@/components/village/iso/quartiers";
 import { revelation } from "@/components/village/iso/revelation";
 import { type BlasonCrest, blasonFactice, NOM_STATUE } from "@/components/village/iso/statue";
 import { useCameraIso } from "@/components/village/iso/useCameraIso";
 import { estDefaut, VariantesContext, variantesDe } from "@/components/village/iso/variantes";
-import { RatForceContext } from "@/components/village/iso/vivant";
 import { animalDeVocation } from "@/components/village/iso/vocation";
 import { ISO_POC } from "@/constants/isoPoc";
 import { type BuildingCode, buildingCodes } from "@/db/schema";
@@ -450,7 +448,6 @@ function DevIso({
   const [mode, setMode] = useState<"carte" | "village" | "pret">(depart.mode);
   const router = useRouter();
   const [rejeux, setRejeux] = useState(0);
-  const [ratForce, setRatForce] = useState(false);
   const [effetForce, setEffetForce] = useState<BuildingCode | null>(null);
   const variantes = useContext(VariantesContext);
   // T26: each press is a new "session": the next wave of the map is the party (once per press).
@@ -700,16 +697,6 @@ function DevIso({
               0,6
             </AppButton>
             <AppButton
-              testID="iso-rat-force"
-              fullWidth={false}
-              size="2"
-              variant={ratForce ? "primary" : "outline"}
-              // Dev only: the rat runs in every wave, 1.5 to 3 s after the touch that starts it.
-              onPress={() => setRatForce(!ratForce)}
-            >
-              {ratForce ? "Rat : forcé" : "Rat : auto"}
-            </AppButton>
-            <AppButton
               testID="iso-effet-force"
               fullWidth={false}
               size="2"
@@ -783,32 +770,22 @@ function DevIso({
             <Animated.View style={[{ flex: 1, alignItems: "center", justifyContent: "center" }]}>
               <Animated.View testID="iso-camera" style={transformation}>
                 <PalierContext.Provider value={detail}>
-                  <RatForceContext.Provider value={ratForce}>
-                    <QuartiersContext.Provider value={blocs}>
-                      <EffetForceContext.Provider value={effetForce}>
-                        <IsoCarteDemo
-                          palier={palier}
-                          tousDebout={tousDebout}
-                          horloge={horloge}
-                          lumiere={lumiere}
-                          blason={crest ? { crest, onPress: () => undefined } : undefined}
-                          fete={fete > 0 ? `dev-${fete}` : undefined}
-                        />
-                      </EffetForceContext.Provider>
-                    </QuartiersContext.Provider>
-                  </RatForceContext.Provider>
+                  <QuartiersContext.Provider value={blocs}>
+                    <EffetForceContext.Provider value={effetForce}>
+                      <IsoCarteDemo
+                        palier={palier}
+                        tousDebout={tousDebout}
+                        horloge={horloge}
+                        lumiere={lumiere}
+                        blason={crest ? { crest, onPress: () => undefined } : undefined}
+                        fete={fete > 0 ? `dev-${fete}` : undefined}
+                      />
+                    </EffetForceContext.Provider>
+                  </QuartiersContext.Provider>
                 </PalierContext.Provider>
               </Animated.View>
             </Animated.View>
           </GestureDetector>
-          {/* The crows fly over the forest, above the map as in the tab (H2-05). */}
-          <Oiseaux
-            ambiance={lumiere}
-            width={aire.w}
-            height={aire.h}
-            horloge={horloge.c}
-            depart={horloge.depart}
-          />
         </Sonde>
       </View>
     </YStack>

@@ -15,7 +15,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
 import DevIsoRoute from "@/app/dev-iso";
 import { HAUTEUR, LARGEUR, stadeReel } from "@/components/village/iso/carteDemo";
-import { perchoirDe } from "@/components/village/iso/corbeaux";
+import { perchoirDe } from "@/components/village/iso/creatures";
 import { IsoVillage } from "@/components/village/iso/IsoVillage";
 import { buildingStage } from "@/constants/buildingLevels";
 import { buildingCodes } from "@/db/schema";
@@ -132,7 +132,7 @@ describe('worklets: nothing called from the UI thread lacks "worklet"', () => {
         </GestureHandlerRootView>,
       );
       await act(() => jest.advanceTimersByTime(200));
-      // A finger on the farm roof: the pan callbacks of the camera and the crow's flight (`Envol`) run through the guard too.
+      // A finger on the farm roof: the pan callbacks of the camera run through the guard too.
       const t = (
         Reanimated.getAnimatedStyle as unknown as (c: never) => {
           transform?: Record<string, number>[];
@@ -143,12 +143,11 @@ describe('worklets: nothing called from the UI thread lacks "worklet"', () => {
       if (!p) throw new Error("no perch on the farm");
       await act(() => {
         createGestureController(getByGestureTestId("iso-geste-pan")).begin({
-          x: (p.x - LARGEUR / 2) * (v.scale ?? 1) + 195 + (v.translateX ?? 0) + 4,
-          y: (p.y - HAUTEUR / 2) * (v.scale ?? 1) + 195 + (v.translateY ?? 0),
+          x: (p[0] - LARGEUR / 2) * (v.scale ?? 1) + 195 + (v.translateX ?? 0) + 4,
+          y: (p[1] - HAUTEUR / 2) * (v.scale ?? 1) + 195 + (v.translateY ?? 0),
         });
         jest.advanceTimersByTime(50);
       });
-      expect(screen.queryAllByTestId("iso-corbeau-envol-farm")).toHaveLength(1);
       expect(defauts()).toEqual([]);
     } finally {
       jest.useRealTimers();

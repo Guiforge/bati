@@ -32,7 +32,6 @@ import {
 import { mouvementDeVague } from "./mouvement";
 import type { Emprise } from "./profondeur";
 import { type Veille, veilleDeVague } from "./veilleuses";
-import { planifierRat, RatForceContext } from "./vivant";
 
 type Etat = {
   c0: number;
@@ -108,8 +107,6 @@ export function useMarcheurs(
   const depart = useContext(DepartContext);
   const focus = useIsFocused();
   const reduit = useMouvementReduit();
-  const ratForce = useContext(RatForceContext);
-  const ratForceRef = useRef(ratForce);
   // Waves planned since this map was mounted: the rare acts fall in the first few.
   const rangRef = useRef(0);
   const actif = focus && !reduit;
@@ -135,7 +132,6 @@ export function useMarcheurs(
     lumieresRef.current = lumieres;
     vieRef.current = vie;
     reduitRef.current = reduit;
-    ratForceRef.current = ratForce;
   });
   useEffect(() => {
     if (!reduit || !feteDue(vie.fete, celebree.current)) return;
@@ -183,11 +179,9 @@ export function useMarcheurs(
       mouvement: mouvementDeVague(carteRef.current.montres, jour, numero),
     };
     const marcheuses = planifierAnimaux(carteRef.current, vague, jour, numero, rangRef.current);
-    const rat = planifierRat(jour, numero, marcheuses.length, rangRef.current, ratForceRef.current);
     const betes = [
       ...marcheuses,
       ...viesSansMarche(carteRef.current, marcheuses, jour, numero, rangRef.current),
-      ...(rat ? [rat] : []),
     ];
     rangRef.current++;
     const suivant: Etat = { c0, vague, indices: [], veille, betes };

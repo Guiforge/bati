@@ -16,7 +16,7 @@ import {
   spriteDe,
   stadeReel,
 } from "@/components/village/iso/carteDemo";
-import { perchoirDe } from "@/components/village/iso/corbeaux";
+import { perchoirDe } from "@/components/village/iso/creatures";
 import { Effets } from "@/components/village/iso/Effets";
 import {
   boiteEffet,
@@ -230,8 +230,8 @@ async function toucherToit(code: "farm" | "forge") {
   if (!p) throw new Error(`no perch on ${code}`);
   await act(() => {
     createGestureController(getByGestureTestId("iso-geste-pan")).begin({
-      x: (p.x - LARGEUR / 2) * (v.scale ?? 1) + 195 + (v.translateX ?? 0) + 4,
-      y: (p.y - HAUTEUR / 2) * (v.scale ?? 1) + 195 + (v.translateY ?? 0),
+      x: (p[0] - LARGEUR / 2) * (v.scale ?? 1) + 195 + (v.translateX ?? 0) + 4,
+      y: (p[1] - HAUTEUR / 2) * (v.scale ?? 1) + 195 + (v.translateY ?? 0),
     });
     jest.advanceTimersByTime(50);
   });

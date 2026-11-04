@@ -154,19 +154,17 @@
     "max": 1.0
   },
   "vieParAmbiance": {
-    "_doc": "What the app draws by ambiance, beyond the painted images: the fireflies, the hearths' flames and their warm glow. Only `nuit` has any of it but two: `animaux` (the small animals walk a little in a wave) and `corbeaux` (crows perch on some roofs and fly off at a touch, L5-T10) live by day and by night. `oiseaux` is the gull flock crossing the frame: day only (audit T43 round 1, no bird at night). `jour` is allowed and draws only those two until a day exists (§7 of the V1 prompt). Read by Lucioles, Feux, the walkers' plan and the roof crows through isoSpec.ts `vieDe`.",
+    "_doc": "What the app draws by ambiance, beyond the painted images: the fireflies, the hearths' flames and their warm glow. Only `nuit` has any of it but two: `animaux` (the small animals walk a little in a wave) lives by day and by night. `oiseaux` is the birds that land on a roof: day only (audit T43 round 1, no bird at night). `jour` is allowed and draws only those two until a day exists (§7 of the V1 prompt). Read by Lucioles, Feux, the walkers' plan and the roof birds through isoSpec.ts `vieDe`.",
     "nuit": {
       "lucioles": true,
       "lueurFeux": true,
       "animaux": true,
-      "corbeaux": true,
       "oiseaux": false
     },
     "jour": {
       "lucioles": false,
       "lueurFeux": false,
       "animaux": true,
-      "corbeaux": true,
       "oiseaux": true
     }
   },
@@ -201,11 +199,7 @@
         "encre": "isoInk"
       },
       "vivant": {
-        "corbeau": "isoCorbeau",
-        "corbeauBord": "isoCorbeauBord",
-        "luciole": "isoLuciole",
-        "rat": "isoRat",
-        "ratBord": "isoInk"
+        "luciole": "isoLuciole"
       },
       "sol": {
         "herbe": "isoPre",

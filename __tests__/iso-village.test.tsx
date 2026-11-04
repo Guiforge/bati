@@ -144,18 +144,27 @@ describe("IsoVillage", () => {
     expect(camera()).toEqual(cadrage(visible, 390, 390));
   });
 
-  // Audit T43 round 1: white gulls flew at night (isoSpec.json vieParAmbiance `oiseaux`).
-  it("flies no flock at night, and one by day", async () => {
+  // Audit T43 round 1: birds flew at night (isoSpec.json vieParAmbiance `oiseaux`).
+  it("has no roof bird at night, and the farm's and the forge's by day", async () => {
     expect([vieDe("nuit").oiseaux, vieDe("jour").oiseaux]).toEqual([false, true]);
-    await afficher(12, { campfire: 1 });
-    expect(screen.queryByTestId("iso-oiseaux")).toBeNull();
+    await afficher(12, { campfire: 1, farm: 5, forge: 5 });
+    expect(screen.queryAllByTestId(/^iso-creature-oiseau-/)).toHaveLength(0);
     await screen.unmount();
     await render(
       <GestureHandlerRootView>
-        <IsoVillage tier={12} buildings={[]} width={390} height={390} lumiere="jour" />
+        <IsoVillage
+          tier={12}
+          buildings={[
+            { code: "farm", level: 5 },
+            { code: "forge", level: 5 },
+          ]}
+          width={390}
+          height={390}
+          lumiere="jour"
+        />
       </GestureHandlerRootView>,
     );
-    expect(screen.queryByTestId("iso-oiseaux")).not.toBeNull();
+    expect(screen.queryAllByTestId(/^iso-creature-oiseau-[a-z]+$/)).toHaveLength(2);
   });
 
   it("shows a built building at the stage of its level, and not an unbuilt one", async () => {

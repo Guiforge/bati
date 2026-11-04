@@ -73,6 +73,7 @@ import {
   voileVillage,
 } from "./alentours";
 import { bordDe, PORTEE_BORD } from "./bord";
+import { ChatRempart, DragonEndormi, OiseauToit, Souris } from "./Creatures";
 import {
   ANIMAUX,
   type AnimalCarte,
@@ -114,7 +115,6 @@ import {
   voileDe,
 } from "./carteDemo";
 import { type Champs, champsDe, tuilesChamps } from "./champs";
-import { ChatRempart, DragonEndormi, OiseauToit, Souris } from "./Creatures";
 import { CODES_A_PERCHOIR, stations } from "./creatures";
 import { DONNEES_BLD } from "./donneesBld";
 import { Effets } from "./Effets";
@@ -2153,9 +2153,7 @@ export function IsoCarte({
   const montes = sansLisiere(indices, peint);
   const vues = montes.flatMap((i) => ORDRE_CARTE[i] ?? []);
   const empriseVues = montes.flatMap((i) => EMPRISES_ORDRE[i] ?? []);
-  // The rat runs along one row: its rank is that of its one footprint, right after everything
-  // behind it, so it passes in front of the farm's wall and behind the buildings in front.
-  // The totem statue (T25) takes its rank among the mounted footprints the same way, before the rat's.
+  // The totem statue (T25) takes its rank among the mounted footprints the same way.
   const statue = statueDe(blason, visible);
   const rangStatue = rangSi(statue, empriseVues, EMPRISE_STATUE);
   // The painted props (alentours.ts) take their ranks the same way, one after the other.
@@ -2219,7 +2217,14 @@ export function IsoCarte({
           b.espece === "dragon" ? (
             <DragonEndormi key="dragon" pied={b.pts[0] ?? [0, 0]} lumiere={lumiere} />
           ) : (
-            <Souris key={`s${b.id}`} id={b.id} sel={b.sel} pts={b.pts} lumiere={lumiere} />
+            <Souris
+              key={`s${b.id}`}
+              id={b.id}
+              sel={b.sel}
+              pts={b.pts}
+              present={b.present}
+              lumiere={lumiere}
+            />
           ),
           rangsBestioles[k] ?? null,
         ),

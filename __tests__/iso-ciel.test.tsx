@@ -14,7 +14,7 @@ import {
   LARGEUR,
   stadeReel,
 } from "@/components/village/iso/carteDemo";
-import { perchoirDe } from "@/components/village/iso/corbeaux";
+import { perchoirDe } from "@/components/village/iso/creatures";
 import { BANNIERES_MAX, ECLATS_ANIMES } from "@/components/village/iso/fierte";
 import { FigeContext } from "@/components/village/iso/fige";
 import { type Croissance, IsoVillage } from "@/components/village/iso/IsoVillage";
@@ -54,8 +54,10 @@ const NOEUDS_APRES_MOMENT = 2;
  * never mounted again when a wave starts (7 roles at tier 12). A wave adds none.
  */
 const NOEUDS_VILLAGEOIS = 7;
-/** The small lives (L5-T05, T08): the fireflies (two groups, out of step) and a rat, one node each, hidden at rest; the gulls fly by day only (T43 round 1), so none at night. */
-const NOEUDS_PETITS_DETAILS = 3;
+/** The small lives (L5-T05, T08, LIFE C3 to C7): the fireflies (two groups, out of step), the two mice stations and the wall's cat (a node moves each, one slides its frames), mounted whatever the day and hidden when it has them out; the roof birds fly by day only, so none at night (NOEUDS_OISEAUX_JOUR). */
+const NOEUDS_PETITS_DETAILS = 2 + 2 * 2 + 2;
+/** By day the two roof birds (farm and forge) are mounted too: 2 nodes each, hidden between their visits. */
+const NOEUDS_OISEAUX_JOUR = 4;
 /** The moon's glitter on the sea (L6-T10): one node, at rest invisible; the world around the island is still drawings. */
 const NOEUDS_MONDE = 1;
 /** Glints left of the 17 water cells once the ones a later sprite covers are dropped (L5-T09b): 12 on the FIN-DIS plan, its farm, barn and mill a cell off the river. */
@@ -76,28 +78,22 @@ const NOEUDS_FENETRES_VAGUE = 2;
 const NOEUDS_PORTES_MAX = 2;
 const NOEUDS_VEILLES_MAX = NOEUDS_FENETRES_VAGUE + NOEUDS_PORTES_MAX;
 /**
- * The roof crows (L5-T10): perched they are still drawings, no node; a startled one costs one node for its flight only
- * (2.6 s), and there are two roofs. The animals that walk add none (their three pose nodes carry the walk). Locked: the
- * worst case of the map is the rest map in its worst growth, plus the 4 night lights, plus the 2 flights.
- */
-const NOEUDS_CORBEAUX_MAX = 2;
-/**
  * T03: the glints of the legendary banners twinkle in a wave, one node each on ECLATS_ANIMES
  * buildings (fewer when a growing one hides its banner); still drawings at rest.
  */
 const NOEUDS_ECLATS = ECLATS_ANIMES;
 /**
- * The worst case without ready glows: rest map 43, 2 growths 4, night lights 4, glints 2, crows 2 = 55.
+ * The worst case without ready glows: rest map 48, 2 growths 4, night lights 4, glints 2 = 58.
  * With the ready glows (VillageScene passes a growth and the ready list together) the glints give
- * way: 43 + 4 + 4 + 4 glows + 2 crows = 57 at most, measured 56 (a growing building hides its glow).
+ * way: 48 + 4 + 4 + 4 glows = 60 at most (a growing building hides its glow).
  * Before T23 (the sky's 5 nodes): rest 48, worst 61.
  */
 /** AUDIT-DA lot 1: each of the 3 walkers of a wave takes a shadow node of its own (the shadow stays on the ground), so +3 in a wave: 58 and 60. */
 const NOEUDS_OMBRES_MARCHEURS = MARCHEURS_PAR_VAGUE;
 /** T27: with no ready glow the two glints leave two places of the signal seat to the effects. */
 const NOEUDS_EFFETS_MAX = NOEUDS_RECLAMABLES - ECLATS_ANIMES;
-const NOEUDS_PIRE_SANS_PRETS = 57 + NOEUDS_BANNIERES + NOEUDS_OMBRES_MARCHEURS + NOEUDS_EFFETS_MAX;
-const NOEUDS_PIRE_ABSOLU_ATTENDU = 59 + NOEUDS_BANNIERES + NOEUDS_OMBRES_MARCHEURS;
+const NOEUDS_PIRE_SANS_PRETS = 60 + NOEUDS_BANNIERES + NOEUDS_OMBRES_MARCHEURS + NOEUDS_EFFETS_MAX;
+const NOEUDS_PIRE_ABSOLU_ATTENDU = 62 + NOEUDS_BANNIERES + NOEUDS_OMBRES_MARCHEURS;
 /**
  * T27 point 4: the building effects of a wave, one node each, in the signal seat (familles.ts),
  * which holds NOEUDS_RECLAMABLES nodes: glows + glints + effects never pass it, so the worst cases
@@ -139,8 +135,8 @@ async function toucherToit(code: "farm" | "forge") {
   if (!p) throw new Error(`no perch on ${code}`);
   await act(() => {
     createGestureController(getByGestureTestId("iso-geste-pan")).begin({
-      x: (p.x - LARGEUR / 2) * (v.scale ?? 1) + 195 + (v.translateX ?? 0) + 4,
-      y: (p.y - HAUTEUR / 2) * (v.scale ?? 1) + 195 + (v.translateY ?? 0),
+      x: (p[0] - LARGEUR / 2) * (v.scale ?? 1) + 195 + (v.translateX ?? 0) + 4,
+      y: (p[1] - HAUTEUR / 2) * (v.scale ?? 1) + 195 + (v.translateY ?? 0),
     });
     jest.advanceTimersByTime(50);
   });
@@ -182,14 +178,13 @@ describe("the whole map's animated nodes", () => {
     await render(village());
     // Animated components under jest carry `jestAnimatedStyle` / `animatedProps` on the host node.
     expect(screen.queryAllByTestId(/^iso-ciel-|^iso-monde-montagnes/)).toHaveLength(0);
-    expect(screen.queryAllByTestId("iso-oiseaux")).toHaveLength(0);
     expect(screen.getAllByTestId("iso-lucioles")).toHaveLength(1);
-    expect(screen.getAllByTestId("iso-rongeur")).toHaveLength(1);
+    // LIFE: the two mice stations and the wall's cat are mounted (a node moves each, one slides its frames); no bird at night.
+    expect(screen.getAllByTestId(/^iso-creature-souris-(?!.*-bande$)/)).toHaveLength(2);
+    expect(screen.getAllByTestId("iso-creature-chat-rempart")).toHaveLength(1);
+    expect(screen.queryAllByTestId(/^iso-creature-oiseau-/)).toHaveLength(0);
     // T26: twelve inhabitants stand at tier 12 and add no animated node (the count below is the same).
     expect(screen.getAllByTestId(/^iso-habitant-h\d+(-paire)?$/)).toHaveLength(12);
-    // L5-T10: the two roof crows perch as still drawings, no flight node at rest.
-    expect(screen.getAllByTestId(/^iso-corbeau-pose-/)).toHaveLength(2);
-    expect(screen.queryAllByTestId(/^iso-corbeau-envol-/)).toHaveLength(0);
     expect(screen.queryAllByTestId(/^iso-animal-/).length).toBeGreaterThan(0);
     // The drawn fire (L5-T03): a node per hearth, two puffs per plume (four chimneys and the camp).
     expect(screen.getAllByTestId(/^iso-flamme-/)).toHaveLength(5);
@@ -293,7 +288,7 @@ describe("the whole map's animated nodes", () => {
     }
   });
 
-  test("worst case by day: both crows fly over the growths and the total stays under the cap of 64", async () => {
+  test("worst case by day: both roof birds are mounted over the growths and the total stays under the cap", async () => {
     jest.useFakeTimers();
     try {
       const items = (["tent", "well", "quarry", "watchtower"] as const).map((code) => ({
@@ -303,20 +298,23 @@ describe("the whole map's animated nodes", () => {
       await render(village({ cle: "j", items }, undefined, "jour"));
       // The moment is over (a finger on a roof skips it anyway): the new bodies stay, one node each.
       await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + STADE_MS));
+      // The village is quiet while the reveal plays: once the owner drops it, the birds are mounted.
+      await screen.rerender(village(undefined, undefined, "jour"));
+      expect(screen.getAllByTestId(/^iso-creature-oiseau-[a-z]+$/)).toHaveLength(2);
       const n = compte(screen.toJSON());
+      // The birds sit in the rest count by day: nothing is added by a touch, and the clock is still.
       await toucherToit("farm");
       await toucherToit("forge");
       await act(() => jest.advanceTimersByTime(300));
-      expect(screen.queryAllByTestId(/^iso-corbeau-envol-/)).toHaveLength(NOEUDS_CORBEAUX_MAX);
       const pire = compte(screen.toJSON());
-      expect(pire).toBe(n + NOEUDS_CORBEAUX_MAX);
+      expect(pire - NOEUDS_OISEAUX_JOUR).toBeLessThanOrEqual(n);
       expect(pire).toBeLessThan(PLAFOND_NOEUDS);
     } finally {
       jest.useRealTimers();
     }
   });
 
-  test("worst case, four buildings without fire grow: two play, 47 with the rest map, up to 55 with the wave's lights, glints and both crows", async () => {
+  test("worst case, four buildings without fire grow: two play, 47 with the rest map, up to 58 with the wave's lights and glints", async () => {
     jest.useFakeTimers();
     try {
       const items = (["tent", "well", "quarry", "watchtower"] as const).map((code) => ({
@@ -332,14 +330,14 @@ describe("the whole map's animated nodes", () => {
       const n = compte(screen.toJSON());
       // The base: the rest map and the 2 new bodies; the village is quiet, no wave light.
       expect(n).toBeGreaterThanOrEqual(NOEUDS_REPOS + NOEUDS_APRES_MOMENT);
-      expect(NOEUDS_REPOS).toBe(43 + NOEUDS_BANNIERES);
-      // A finger on the farm's roof, then on the forge's (L5-T10): both crows fly, one node each, over
-      // the wave's night lights (2 to 4) and glints (up to 2): 47 + 4 + 2 + 2 = 55 at most, 9 under the cap.
+      expect(NOEUDS_REPOS).toBe(48 + NOEUDS_BANNIERES);
+      // A finger on the farm's roof, then on the forge's: a wave starts, over the wave's night lights
+      // (2 to 4) and glints (up to 2).
       await toucherToit("farm");
       await toucherToit("forge");
       await act(() => jest.advanceTimersByTime(300));
-      // qa-audit3: the map is lit by night here, and a night crow stays on its roof (no bird in flight).
-      expect(screen.queryAllByTestId(/^iso-corbeau-envol-/)).toHaveLength(0);
+      // qa-audit3: the map is lit by night here: no roof bird.
+      expect(screen.queryAllByTestId(/^iso-creature-oiseau-/)).toHaveLength(0);
       const pire = compte(screen.toJSON());
       expect(pire).toBe(n);
       expect(pire).toBeLessThanOrEqual(NOEUDS_PIRE_SANS_PRETS);
@@ -352,7 +350,7 @@ describe("the whole map's animated nodes", () => {
       jest.useRealTimers();
     }
   });
-  test("at the reveal, two growths and every ready glow (VillageScene passes both), a wave, both crows: the glows keep quiet", async () => {
+  test("at the reveal, two growths and every ready glow (VillageScene passes both), a wave: the glows keep quiet", async () => {
     jest.useFakeTimers();
     try {
       const items = (["tent", "well", "quarry", "watchtower"] as const).map((code) => ({
@@ -373,15 +371,9 @@ describe("the whole map's animated nodes", () => {
       expect(screen.queryAllByTestId(/^iso-eclat-anime-/)).toHaveLength(0);
       const pire = compte(screen.toJSON());
       // Measured 56 on 30/10 (61 before T23); the doors lit follow the day's plan, so a bound, not an exact count.
-      expect(pire).toBeGreaterThanOrEqual(
-        NOEUDS_REPOS + NOEUDS_APRES_MOMENT + lueurs + NOEUDS_CORBEAUX_MAX,
-      );
+      expect(pire).toBeGreaterThanOrEqual(NOEUDS_REPOS + NOEUDS_APRES_MOMENT + lueurs);
       expect(pire).toBeLessThanOrEqual(
-        NOEUDS_CROISSANCE_PIRE +
-          NOEUDS_VEILLES_MAX +
-          NOEUDS_RECLAMABLES +
-          NOEUDS_CORBEAUX_MAX +
-          NOEUDS_OMBRES_MARCHEURS,
+        NOEUDS_CROISSANCE_PIRE + NOEUDS_VEILLES_MAX + NOEUDS_RECLAMABLES + NOEUDS_OMBRES_MARCHEURS,
       );
       expect(pire).toBeLessThanOrEqual(NOEUDS_PIRE_ABSOLU_ATTENDU);
       // T27: 4 ready glows fill the signal seat, so no effect plays; the worst case is the old one.

@@ -10,7 +10,6 @@ import {
   stadeDemo,
 } from "@/components/village/iso/carteDemo";
 import {
-  BETES_PAR_VAGUE,
   type Carte,
   hasard,
   planifierAnimaux,
@@ -36,28 +35,6 @@ import {
   tirer,
   VIES,
 } from "@/components/village/iso/vieAnimaux";
-import { planifierRat } from "@/components/village/iso/vivant";
-
-test("with the rat in, never more than two beasts move in a wave", () => {
-  const { visible, montres } = etatCarte(12, true);
-  const m = elementsMontes(visible, montres, (code) => stadeDemo(code, 12));
-  const carte: Carte = {
-    visible,
-    montres,
-    obstacles: ANIMAUX.map((a) => a.piece.case),
-    occupees: [...m.figurines].map((f) => f.case),
-    vues: m.indices.flatMap((i) => EMPRISES_ORDRE[i] ?? []),
-    animaux: [...m.animaux].map((a) => ({ nom: a.nom, cellule: a.piece.case })),
-  };
-  let rats = 0;
-  for (let n = 0; n < 400; n++) {
-    const marche = planifierAnimaux(carte, planifierVague(carte, {}, JOUR, n), JOUR, n);
-    const rat = planifierRat(JOUR, n, marche.length);
-    rats += rat ? 1 : 0;
-    expect(marche.length + (rat ? 1 : 0)).toBeLessThanOrEqual(BETES_PAR_VAGUE);
-  }
-  expect(rats).toBeGreaterThan(20);
-});
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 
@@ -167,10 +144,7 @@ describe("the machine", () => {
     const rares = (rare: boolean) =>
       NOMS.flatMap((nom) =>
         Array.from({ length: 400 }, (_, n) => plan(nom, n, false, rare)).flat(),
-      ).filter(
-        (e) =>
-          VIES.chat.concat(VIES.poule, VIES.corbeau, VIES.rat).find((c) => c.id === e.id)?.rare,
-      );
+      ).filter((e) => VIES.chat.concat(VIES.poule, VIES.corbeau).find((c) => c.id === e.id)?.rare);
     expect(rares(false)).toEqual([]);
     expect(rares(true).length).toBeGreaterThan(0);
   });

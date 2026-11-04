@@ -172,13 +172,8 @@ export const rawColors = {
   isoRempartBoisNuitCoupe: "#6A5238",
   isoRempartBoisNuitClair: "#4A3322",
   isoRempartBoisNuitSombre: "#281B12",
-  /** The crows flying over the forest (petitsDetails.tsx): ink black, and a cold rim that lifts the silhouette off the forest. */
-  isoCorbeau: "#2C3440",
-  isoCorbeauBord: "#A9C0DA",
   /** The fireflies: a clear cold cyan-blue, no warm light (the windows and the fire are the only warm ones). */
   isoLuciole: "#6EC9E8",
-  /** The rat on the path: a mid cold grey, lighter than the grass so it reads, with the ground ink as its outline. */
-  isoRat: "#74848F",
   /** T27 point 4, the building effects of a wave (effets.ts): the wizard's runes, a cold violet; the druids' motes, a green no fire mixes into. */
   isoRune: "#A58CE0",
   isoLucioleVerte: "#DDE6A4",

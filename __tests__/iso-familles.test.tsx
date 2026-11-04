@@ -16,7 +16,7 @@ import {
   LARGEUR,
   stadeReel,
 } from "@/components/village/iso/carteDemo";
-import { perchoirDe } from "@/components/village/iso/corbeaux";
+import { perchoirDe } from "@/components/village/iso/creatures";
 import {
   basculer,
   croitA,
@@ -121,8 +121,8 @@ async function toucherToit(code: "farm" | "forge") {
   if (!p) throw new Error(`no perch on ${code}`);
   await act(() => {
     createGestureController(getByGestureTestId("iso-geste-pan")).begin({
-      x: (p.x - LARGEUR / 2) * (v.scale ?? 1) + 195 + (v.translateX ?? 0) + 4,
-      y: (p.y - HAUTEUR / 2) * (v.scale ?? 1) + 195 + (v.translateY ?? 0),
+      x: (p[0] - LARGEUR / 2) * (v.scale ?? 1) + 195 + (v.translateX ?? 0) + 4,
+      y: (p[1] - HAUTEUR / 2) * (v.scale ?? 1) + 195 + (v.translateY ?? 0),
     });
     jest.advanceTimersByTime(50);
   });
@@ -154,7 +154,7 @@ const village = (fige: boolean, c?: Croissance, prets = false, lumiere?: "jour" 
 
 /**
  * The worst case end to end: a growth with every building ready (its camera, its site, its fade),
- * dropped by the owner once played as the tab does, a whole wave with both roof crows startled,
+ * dropped by the owner once played as the tab does, a whole wave with a finger on both roofs,
  * then the next wave, whose first cycle is the ready glows' (the growth held the first one).
  */
 async function pireCas(fige = false, lumiere?: "jour" | "nuit") {
@@ -204,21 +204,22 @@ describe("animation families (T16)", () => {
   test("the worst case: 8 families at most move together, and none is cut", async () => {
     const { pire, vus } = await pireCas();
     expect(pire.size).toBeLessThanOrEqual(PLAFOND_FAMILLES);
-    // qa-audit3: no bird in flight at night, so the startled crows no longer bring the birds' family.
+    // qa-audit3: no bird at night, so the birds' family never plays.
     expect([...vus].sort()).toEqual(FAMILLES.filter((f) => f !== "oiseaux").sort());
   });
 
-  test("the worst case by day: the crows bring the birds' family, 8 families at most", async () => {
-    const { pire, vus } = await pireCas(false, "jour");
+  test("the worst case by day: the roof birds' family joins, 8 families at most", async () => {
+    // A bird's visit is drawn by the day's seed, so whether one is in the sky is not asserted here: only the cap.
+    const { pire, montes } = await pireCas(false, "jour");
     expect(pire.size).toBeLessThanOrEqual(PLAFOND_FAMILLES);
-    expect(vus.has("oiseaux")).toBe(true);
+    expect([...montes].some((id) => familleDe(id) === "oiseaux")).toBe(true);
   });
 
   test("a plain wave: 8 at most, every family but the growth takes its turn", async () => {
     await render(village(false));
     const { pire, vus } = await balayer(25_000);
     expect(pire.size).toBeLessThanOrEqual(PLAFOND_FAMILLES);
-    // The gulls fly by day only (T43 round 1): the night wave has no flock (the crows of the roofs are another family only when startled).
+    // The birds come by day only (T43 round 1): the night wave has none.
     expect([...vus].sort()).toEqual(
       FAMILLES.filter((f) => f !== "croissance" && f !== "oiseaux").sort(),
     );
@@ -240,9 +241,7 @@ describe("animation families (T16)", () => {
     const { bouges } = await pireCas(fige);
     // The camera snaps to the growth frame at once: a gesture of the hero's, not a family.
     expect([...bouges].filter((id) => familleDe(id) !== null)).toEqual([]);
-    expect(screen.queryAllByTestId(/^iso-(poussiere|corbeau-envol|fenetres|porte)-/)).toHaveLength(
-      0,
-    );
+    expect(screen.queryAllByTestId(/^iso-(poussiere|fenetres|porte)-/)).toHaveLength(0);
   });
 });
 

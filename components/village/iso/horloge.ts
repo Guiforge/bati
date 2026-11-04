@@ -80,7 +80,7 @@ export const DepartContext = createContext<SharedValue<Depart> | null>(null);
 
 /**
  * A touch of the map with a place: `n` counts them, `c0` is the clock value it landed at, `x` and
- * `y` where, in the map's dp. What a touch near startles (the roof crows, corbeaux.ts) reads it.
+ * `y` where, in the map's dp. Nothing reads it since the roof crows left (LIFE C7).
  */
 export type Effroi = { n: number; c0: number; x: number; y: number };
 export const EffroiContext = createContext<SharedValue<Effroi> | null>(null);

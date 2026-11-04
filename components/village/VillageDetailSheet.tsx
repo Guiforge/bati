@@ -426,6 +426,27 @@ export function BuildingFacts({
         ) : null}
       </YStack>
 
+      {/* Before the long lists (a wall's stones, the deeds): the one action must not sit below a scroll of 24 stones. */}
+      {onClaim ? (
+        <YStack gap="2">
+          <Text fontSize={13} color="textSecondary">
+            {t("village.claim_ready_body", { name: nameOf(building, language) })}
+          </Text>
+          <AppButton
+            testID="village-claim"
+            // The bubble's one action (village-bulle.md): 48 dp, over AppButton's 44.
+            minH={48}
+            onPress={onClaim}
+            accessibilityRole="button"
+            accessibilityLabel={t("village.claim_action_a11y", {
+              name: nameOf(building, language),
+            })}
+          >
+            {t("village.claim_action")}
+          </AppButton>
+        </YStack>
+      ) : null}
+
       {extra?.kind === "sessions" && extra.sessions.length > 0 && (
         <YStack gap="2">
           <SectionLabel>{t("village.detail_recent_title")}</SectionLabel>
@@ -506,26 +527,6 @@ export function BuildingFacts({
           names={years.names}
           language={language}
         />
-      ) : null}
-
-      {onClaim ? (
-        <YStack gap="2">
-          <Text fontSize={13} color="textSecondary">
-            {t("village.claim_ready_body", { name: nameOf(building, language) })}
-          </Text>
-          <AppButton
-            testID="village-claim"
-            // The bubble's one action (village-bulle.md): 48 dp, over AppButton's 44.
-            minH={48}
-            onPress={onClaim}
-            accessibilityRole="button"
-            accessibilityLabel={t("village.claim_action_a11y", {
-              name: nameOf(building, language),
-            })}
-          >
-            {t("village.claim_action")}
-          </AppButton>
-        </YStack>
       ) : null}
 
       {link ? (

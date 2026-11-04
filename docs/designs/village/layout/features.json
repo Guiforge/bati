@@ -1,27 +1,262 @@
 {
   "piste": "Disposition du village",
   "piste_ordre": 7,
-  "owns": ["docs/designs/village/layout/", "scripts/layout/", "constants/isoLayout.json", "constants/isoOrdre.json", "constants/isoLisiere.json", "components/village/iso/isoLayout.ts", "components/village/iso/carteDemo.ts", "components/village/iso/profondeur.ts", "components/village/iso/navigation.ts", "components/village/iso/quartiers.ts", "components/village/iso/champs.ts", "components/village/iso/lisiere.ts", "components/village/iso/lisiereChoix.ts", "components/village/iso/alentours.ts", "components/village/iso/solBandes.ts", "components/village/iso/rempart.ts", "components/village/iso/maquettes*.ts (ancres seulement)", "scripts/atelier/check.js"],
-  "shared_read_only": ["docs/designs/village/PROMPT-tracks.md", "docs/designs/village/PIPELINE.md", "docs/designs/village/direction/", "docs/designs/village-buildings/catalog.md", "docs/designs/village-loop/loupes/state.json", "components/village/iso/useCameraIso.ts", "components/village/iso/peints/", "constants/buildings/", "assets/images/village/iso/peints/", "scripts/iso/iso_loop.py"],
+  "owns": [
+    "docs/designs/village/layout/",
+    "scripts/layout/",
+    "constants/isoLayout.json",
+    "constants/isoOrdre.json",
+    "constants/isoLisiere.json",
+    "components/village/iso/isoLayout.ts",
+    "components/village/iso/carteDemo.ts",
+    "components/village/iso/profondeur.ts",
+    "components/village/iso/navigation.ts",
+    "components/village/iso/quartiers.ts",
+    "components/village/iso/champs.ts",
+    "components/village/iso/lisiere.ts",
+    "components/village/iso/lisiereChoix.ts",
+    "components/village/iso/alentours.ts",
+    "components/village/iso/solBandes.ts",
+    "components/village/iso/rempart.ts",
+    "components/village/iso/maquettes*.ts (ancres seulement)",
+    "scripts/atelier/check.js"
+  ],
+  "shared_read_only": [
+    "docs/designs/village/PROMPT-tracks.md",
+    "docs/designs/village/PIPELINE.md",
+    "docs/designs/village/direction/",
+    "docs/designs/village-buildings/catalog.md",
+    "docs/designs/village-loop/loupes/state.json",
+    "components/village/iso/useCameraIso.ts",
+    "components/village/iso/peints/",
+    "constants/buildings/",
+    "assets/images/village/iso/peints/",
+    "scripts/iso/iso_loop.py"
+  ],
   "items": [
-    {"id": "L0", "group": "0 outils", "name": "Hook pre-push : 7 fichiers de l'atelier", "check": "npm run deadcode passe", "estimate_h": [0.1, 0.5], "status": "done", "heures": 0.1, "note": "scripts/atelier/web/ hors du projet knip : l'atelier y entre par metro, pas par les imports"},
-    {"id": "L1", "group": "0 outils", "name": "Vérifier check à l'oeil", "check": "3 cas contre des rendus : moulin à 67 % au palier 12, caché par la carrière ; 2 des 9 flottants du palier 6 ; crops dans img/", "estimate_h": [1, 2], "status": "todo"},
-    {"id": "L2", "group": "0 outils", "name": "check peut échouer", "check": "occlusion, ancres et ordre de profondeur donnent un code de sortie 1, prouvé sur un cas cassé exprès", "estimate_h": [1, 2], "status": "todo"},
-    {"id": "L3", "group": "1 mesure", "name": "hooks.json", "check": "une boîte de hook par bâtiment et par stade, tirée du catalogue, lue par check ; planche de contrôle", "estimate_h": [1, 2.5], "status": "todo"},
-    {"id": "L4", "group": "1 mesure", "name": "Mesure aux 12 paliers", "check": "measure.md : stade le plus haut et stade typique, paliers 1 à 12, échecs du pire au moins pire", "estimate_h": [0.5, 1.5], "status": "todo"},
-    {"id": "L5", "group": "3 ancres", "name": "Objets qui flottent", "check": "check : ancres à 2 px au plus à chaque palier ; crops avant et après", "estimate_h": [1, 3], "status": "todo"},
-    {"id": "L6", "group": "2 proposition", "name": "Plan du palier 12 sur la vraie grille agrandie", "check": "render palier 12 de jour, 21 bâtiments comptés, tuiles gagnées, sur la branche de proposition", "estimate_h": [3, 6], "status": "todo"},
-    {"id": "L7", "group": "2 proposition", "name": "Faire grandir le plan à l'envers", "check": "ce qui existe à chaque palier de 1 à 11, recul de caméra par palier ; renders 1, 3, 6, 9, 12 plus un plan vu de dessus", "estimate_h": [2, 4], "status": "todo"},
-    {"id": "L8", "group": "2 proposition", "name": "Comment la rue relie les places", "check": "2 tracés au plus, renders palier 12 et plan", "estimate_h": [1, 3], "status": "todo"},
-    {"id": "L9", "group": "2 proposition", "name": "Emplacements des quartiers", "check": "slots.md et plan : emplacements et tailles pour GROWTH", "estimate_h": [1, 2], "status": "todo"},
-    {"id": "L10", "group": "2 proposition", "name": "Crops lisière et pieds après recul", "check": "rendu avant et après des deux crops, pour le choix de Guillaume", "estimate_h": [0.5, 1], "status": "todo"},
-    {"id": "L11", "group": "2 proposition", "name": "Page de choix pour Guillaume", "check": "une page, lien dans checkpoint.md : proposition et les 3 questions de DIRECTION", "estimate_h": [1, 2], "status": "todo"},
-    {"id": "L12", "group": "3 appliquer", "name": "Appliquer le plan choisi", "check": "données de disposition, chemins, ordre de profondeur, paliers ; strip jour et nuit", "estimate_h": [3, 6], "status": "waiting", "note": "attend le choix"},
-    {"id": "L13", "group": "3 appliquer", "name": "Recalculer le sol et le décor", "check": "sol cuit et manifeste, décor, champs, pas de trou dans le sol à tous les paliers", "estimate_h": [4, 8], "status": "waiting", "note": "attend le choix"},
-    {"id": "L14", "group": "3 appliquer", "name": "Villageois, tap, cadrage", "check": "chemins des villageois, zones de tap, zoom et bornes par palier, tout tient au recul maximal", "estimate_h": [2, 4], "status": "waiting", "note": "attend le choix"},
-    {"id": "L15", "group": "4 coin", "name": "Coin verrouillé et crops", "check": "lock_check OK ; lisière et pieds reverrouillés sur un rendu validé", "estimate_h": [0.5, 1], "status": "waiting", "note": "attend le choix"},
-    {"id": "L16", "group": "5 restes", "name": "Recouvrements restants pour GAME", "check": "liste dans handoff.md", "estimate_h": [0.2, 0.5], "status": "waiting", "note": "attend le choix"},
-    {"id": "L17", "group": "6 contrôles", "name": "Contrôles de fin", "check": "check passe à chaque palier ; strip jour et nuit à côté de la cible ; env, mara, theo une fois", "estimate_h": [1, 2], "status": "waiting", "note": "attend le choix"},
-    {"id": "L18", "group": "fin", "name": "Clôture de la piste", "check": "summary, strips avant et après dans img/, status final, scratch archivé, poussé", "estimate_h": [0.3, 1], "status": "waiting", "note": "attend le choix"}
+    {
+      "id": "L0",
+      "group": "0 outils",
+      "name": "Hook pre-push : 7 fichiers de l'atelier",
+      "check": "npm run deadcode passe",
+      "estimate_h": [
+        0.1,
+        0.5
+      ],
+      "status": "done",
+      "heures": 0.1,
+      "note": "scripts/atelier/web/ hors du projet knip : l'atelier y entre par metro, pas par les imports"
+    },
+    {
+      "id": "L1",
+      "group": "0 outils",
+      "name": "Vérifier check à l'oeil",
+      "check": "3 cas contre des rendus : moulin à 67 % au palier 12, caché par la carrière ; 2 des 9 flottants du palier 6 ; crops dans img/",
+      "estimate_h": [
+        1,
+        2
+      ],
+      "status": "done",
+      "heures": 0.5,
+      "note": "moulin juste ; bâtiments -8 px sans flottement visible ; cascade fausse alerte ; accessoires : test aveugle"
+    },
+    {
+      "id": "L2",
+      "group": "0 outils",
+      "name": "check peut échouer",
+      "check": "occlusion, ancres et ordre de profondeur donnent un code de sortie 1, prouvé sur un cas cassé exprès",
+      "estimate_h": [
+        1,
+        2
+      ],
+      "status": "done",
+      "heures": 0.5,
+      "note": "occlusion, ancres, profondeur, crochets, tap : code 1, profondeur et tap prouvés sur un cas cassé"
+    },
+    {
+      "id": "L3",
+      "group": "1 mesure",
+      "name": "hooks.json",
+      "check": "une boîte de hook par bâtiment et par stade, tirée du catalogue, lue par check ; planche de contrôle",
+      "estimate_h": [
+        1,
+        2.5
+      ],
+      "status": "done",
+      "heures": 0.2,
+      "note": "102 boîtes ; 9 familles presque pleines signalées"
+    },
+    {
+      "id": "L4",
+      "group": "1 mesure",
+      "name": "Mesure aux 12 paliers",
+      "check": "measure.md : stade le plus haut et stade typique, paliers 1 à 12, échecs du pire au moins pire",
+      "estimate_h": [
+        0.5,
+        1.5
+      ],
+      "status": "doing"
+    },
+    {
+      "id": "L5",
+      "group": "3 ancres",
+      "name": "Objets qui flottent",
+      "check": "check : ancres à 2 px au plus à chaque palier ; crops avant et après",
+      "estimate_h": [
+        1,
+        3
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "L6",
+      "group": "2 proposition",
+      "name": "Plan du palier 12 sur la vraie grille agrandie",
+      "check": "render palier 12 de jour, 21 bâtiments comptés, tuiles gagnées, sur la branche de proposition",
+      "estimate_h": [
+        3,
+        6
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "L7",
+      "group": "2 proposition",
+      "name": "Faire grandir le plan à l'envers",
+      "check": "ce qui existe à chaque palier de 1 à 11, recul de caméra par palier ; renders 1, 3, 6, 9, 12 plus un plan vu de dessus",
+      "estimate_h": [
+        2,
+        4
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "L8",
+      "group": "2 proposition",
+      "name": "Comment la rue relie les places",
+      "check": "2 tracés au plus, renders palier 12 et plan",
+      "estimate_h": [
+        1,
+        3
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "L9",
+      "group": "2 proposition",
+      "name": "Emplacements des quartiers",
+      "check": "slots.md et plan : emplacements et tailles pour GROWTH",
+      "estimate_h": [
+        1,
+        2
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "L10",
+      "group": "2 proposition",
+      "name": "Crops lisière et pieds après recul",
+      "check": "rendu avant et après des deux crops, pour le choix de Guillaume",
+      "estimate_h": [
+        0.5,
+        1
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "L11",
+      "group": "2 proposition",
+      "name": "Page de choix pour Guillaume",
+      "check": "une page, lien dans checkpoint.md : proposition et les 3 questions de DIRECTION",
+      "estimate_h": [
+        1,
+        2
+      ],
+      "status": "todo"
+    },
+    {
+      "id": "L12",
+      "group": "3 appliquer",
+      "name": "Appliquer le plan choisi",
+      "check": "données de disposition, chemins, ordre de profondeur, paliers ; strip jour et nuit",
+      "estimate_h": [
+        3,
+        6
+      ],
+      "status": "waiting",
+      "note": "attend le choix"
+    },
+    {
+      "id": "L13",
+      "group": "3 appliquer",
+      "name": "Recalculer le sol et le décor",
+      "check": "sol cuit et manifeste, décor, champs, pas de trou dans le sol à tous les paliers",
+      "estimate_h": [
+        4,
+        8
+      ],
+      "status": "waiting",
+      "note": "attend le choix"
+    },
+    {
+      "id": "L14",
+      "group": "3 appliquer",
+      "name": "Villageois, tap, cadrage",
+      "check": "chemins des villageois, zones de tap, zoom et bornes par palier, tout tient au recul maximal",
+      "estimate_h": [
+        2,
+        4
+      ],
+      "status": "waiting",
+      "note": "attend le choix"
+    },
+    {
+      "id": "L15",
+      "group": "4 coin",
+      "name": "Coin verrouillé et crops",
+      "check": "lock_check OK ; lisière et pieds reverrouillés sur un rendu validé",
+      "estimate_h": [
+        0.5,
+        1
+      ],
+      "status": "waiting",
+      "note": "attend le choix"
+    },
+    {
+      "id": "L16",
+      "group": "5 restes",
+      "name": "Recouvrements restants pour GAME",
+      "check": "liste dans handoff.md",
+      "estimate_h": [
+        0.2,
+        0.5
+      ],
+      "status": "waiting",
+      "note": "attend le choix"
+    },
+    {
+      "id": "L17",
+      "group": "6 contrôles",
+      "name": "Contrôles de fin",
+      "check": "check passe à chaque palier ; strip jour et nuit à côté de la cible ; env, mara, theo une fois",
+      "estimate_h": [
+        1,
+        2
+      ],
+      "status": "waiting",
+      "note": "attend le choix"
+    },
+    {
+      "id": "L18",
+      "group": "fin",
+      "name": "Clôture de la piste",
+      "check": "summary, strips avant et après dans img/, status final, scratch archivé, poussé",
+      "estimate_h": [
+        0.3,
+        1
+      ],
+      "status": "waiting",
+      "note": "attend le choix"
+    }
   ]
 }

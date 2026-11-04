@@ -32,13 +32,15 @@ PLOT = {
     "farm": 3, "armory": 3, "quarry": 3,
     "windmill": 4, "wizard_tower": 4,
     "barn": 5, "druid_grove": 5,
-    "castle_wall": 6, "watchtower": 6,
+    "castle_wall": 4, "watchtower": 4,
     "observatory": 7,
     "high_road": 8, "dragon_lair": 8,
     "champion_arena": 9,
 }
-REMPART = 6
-CHAMPS = 7
+# The wall's stages keep starting at tier 6 (palisade through tier 6, the locked corner's look); its plot only joins earlier.
+ETAPES_A_PART = {"castle_wall": 6, "watchtower": 6}
+REMPART = 4  # the south corner (gate, L of wall, road, field) arrives at tier 4, where the painted `.t1-3` ground bands give way
+CHAMPS = 4
 MARGE_PLOT = 2
 MARGE_CHEMIN = 1
 
@@ -117,6 +119,29 @@ def main():
     for gx, gy, w, h in L["champs"]:
         poser([(gx + i, gy + j) for i in range(w) for j in range(h)], CHAMPS, 1)
 
+    # Rule 6: the quarter slots inside the village (docs/designs/village/layout/slots.json, written by slots.py) open
+    # from tier 6 and up: the box with 1 cell round it, and the shortest way over land to what is already there.
+    slots = ROOT / "docs/designs/village/layout/slots.json"
+    if slots.exists():
+        for sl in sorted((x for x in json.loads(slots.read_text())["slots"] if x["kind"] == "quartier"), key=lambda x: x["tier"]):
+            x0, y0, x1, y1 = sl["box"]
+            boite = [(x, y) for x in range(x0, x1 + 1) for y in range(y0, y1 + 1)]
+            dedans = {v for c in boite for v in disque(c, 1)}
+            prev, q, fin = {c: None for c in boite}, list(boite), None
+            while q and fin is None:
+                c = q.pop(0)
+                for v in voisins(c):
+                    if v in terre and v not in prev:
+                        prev[v] = c
+                        if brut.get(v, 99) <= sl["tier"] and v not in dedans:
+                            fin = v
+                            break
+                        q.append(v)
+            poser(boite, sl["tier"], 1)
+            while fin is not None:
+                if brut.get(fin, 99) > sl["tier"]:
+                    brut[fin] = sl["tier"]
+                fin = prev[fin]
     # The rest: the nearest hull cell's tier plus the distance (Chebyshev), cap 12.
     pts = list(brut.items())
     t0 = {}
@@ -148,7 +173,7 @@ def main():
             print(f"tier {t}: {sum(1 for v in tier.values() if v <= t)} cells")
         return
     L["paliers"] = rows
-    L["etapes"] = dict(PLOT)
+    L["etapes"] = {**PLOT, **ETAPES_A_PART}
     PATH.write_text(json.dumps(L, indent=2, ensure_ascii=False) + "\n")
     print("paliers and etapes written;", {t: sum(1 for v in tier.values() if v <= t) for t in (1, 3, 6, 9, 12)})
 

@@ -114,8 +114,20 @@ export function emprise(visible: readonly (readonly boolean[])[]): Ile | null {
 }
 
 /** The view that fits the whole island, with a margin: the camera's zoom floor (it can always be seen whole). */
-export const cadrageComplet = (visible: readonly (readonly boolean[])[], w: number, h: number) =>
-  cadrageDe(visible, w, h);
+export function cadrageComplet(
+  visible: readonly (readonly boolean[])[],
+  w: number,
+  h: number,
+): Vue {
+  const v = cadrageDe(visible, w, h);
+  // The grown island (tier 12 plan) would let the camera back out past the painted terrain's edge, onto flat ground:
+  // the floor stays where the view still fits the terrain (the island is then panned, not seen whole).
+  const m = FONDU_TERRAIN + 2;
+  const sol = Math.max(w / (TERRAIN.w - 2 * m), h / (TERRAIN.h - 2 * m));
+  if (v.zoom >= sol) return v;
+  const [cx, cy] = [LARGEUR / 2 - v.x / v.zoom, HAUTEUR / 2 - v.y / v.zoom];
+  return { zoom: sol, x: sol * (LARGEUR / 2 - cx), y: sol * (HAUTEUR / 2 - cy) };
+}
 
 /**
  * The opening frame, in an area of `w` x `h` dp: the built village (the footprints of the shown
@@ -688,16 +700,12 @@ const grandi = (code: BuildingCode, poly: readonly Point[]): Point[] => {
 export const ECHELLE_ROCHER_POSE = 0.5;
 /** Audit T43 round 1: the tier-1 lamp post stood taller than the tent; drawn at this share of its size it stays under it. */
 export const ECHELLE_LANTERNE_POSE = 0.6;
-/** Rule 22 (bridge readable): the bridge's mock-up is small and dark beside buildings drawn 25 % bigger, so it is drawn bigger too, about its anchor. */
-export const ECHELLE_PONT_POSE = 1.35;
 export const reduitPiece = (cle: string) =>
   cle.startsWith("decor/rochers")
     ? ECHELLE_ROCHER_POSE
     : cle.startsWith("decor/lanterne")
       ? ECHELLE_LANTERNE_POSE
-      : cle.startsWith("eau/canal_pont")
-        ? ECHELLE_PONT_POSE
-        : 1;
+      : 1;
 
 /** A piece's anchor on its cell's bottom corner; the cascade's falling sheet (canvas `sails`) is centred on the cell's back corner. */
 export const posePiece = ([gx, gy]: Case, s: SpriteIso): Rect => poseEn([gx + 1, gy + 1], s);

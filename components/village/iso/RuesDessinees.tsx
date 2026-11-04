@@ -9,7 +9,7 @@ import { useContext } from "react";
 import { ClipPath, Defs, G, Path } from "react-native-svg";
 import { rawColors } from "@/constants/rawColors";
 import { AlentoursContext } from "./alentours";
-import { COTES, cle, DEBUT, emplacements } from "./isoLayout";
+import { COTES, cle, DEBUT, emplacements, TAILLE } from "./isoLayout";
 import { type Biome, biomes } from "./isoSpec";
 import { MotifsSol } from "./MotifsSol";
 import { type Motif, remplissage, VOILE_OMBRE } from "./motifs";
@@ -71,8 +71,10 @@ export function Rues({
       liste: [
         ...SENTIERS.filter((s) => classeDe(s.fin) < 2 && ici(s.fin, emplacements[s.code].coin)),
         // FIN-CAR: the long street goes on past the island's edge, once its last cell shows. H3-13: not over
-        // the painted ground, which carries its own roads.
-        ...(peint ? [] : SORTIES).filter((s) => dedans.size > 0 && visibles.has(cle(s.fin))),
+        // the painted ground, which carries its own roads (the south one); the east one has none painted, the high road stopped dead at the island's edge.
+        ...(peint ? SORTIES.filter((x) => x.fin[0] === TAILLE - 1) : SORTIES).filter(
+          (s) => dedans.size > 0 && visibles.has(cle(s.fin)),
+        ),
       ],
     },
     ...([0, 1, 2] as const).map((k) => ({

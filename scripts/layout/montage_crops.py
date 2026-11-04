@@ -8,14 +8,14 @@ from PIL import Image, ImageChops, ImageDraw, ImageStat
 d = pathlib.Path(sys.argv[1])
 rows = []
 for n in ("porte", "lisiere", "pieds"):
-    a, b = Image.open(d / f"avant-{n}.png").convert("RGB"), Image.open(d / f"apres-{n}.png").convert("RGB")
+    a, b = Image.open(d / f"monde-{n}-avant.png").convert("RGB"), Image.open(d / f"monde-{n}-apres.png").convert("RGB")
     diff = 100 * sum(ImageStat.Stat(ImageChops.difference(a, b).convert("L").point(lambda v: 255 if v > 8 else 0)).mean) / 255 if a.size == b.size else -1
     h = 420
     a, b = (im.resize((int(im.width * h / im.height), h)) for im in (a, b))
     row = Image.new("RGB", (a.width + b.width + 8, h + 18), "white")
     row.paste(a, (0, 18))
     row.paste(b, (a.width + 8, 18))
-    ImageDraw.Draw(row).text((4, 2), f"{n}: avant (origin/track-layout) | apres (plan) | pixels changes: {diff:.1f} %", fill="black")
+    ImageDraw.Draw(row).text((4, 2), f"{n}: avant (origin/track-layout) | apres (plan) | meme position monde", fill="black")
     rows.append(row)
     print(n, f"{diff:.2f} % of pixels differ (tolerance 8 levels)")
 W = max(r.width for r in rows)

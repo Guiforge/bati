@@ -14,7 +14,7 @@
     6,
     6
    ],
-   "tier": 12,
+   "tier": 6,
    "dehors": false,
    "contient": "quartier du nord, rive est, derriere la carriere et le mannequin",
    "libre": "la rue du nord (gx 0 et gx -1) a l'ouest, le chemin gy 2 au sud"
@@ -32,7 +32,7 @@
     6,
     6
    ],
-   "tier": 12,
+   "tier": 10,
    "dehors": false,
    "contient": "quartier du sud-ouest, sous la ferme",
    "libre": "la ferme et son parvis au nord, la rue gx -4 a l'est"
@@ -50,7 +50,7 @@
     4,
     6
    ],
-   "tier": 11,
+   "tier": 8,
    "dehors": false,
    "contient": "quartier de la clairiere ouest, au dessus de l'observatoire",
    "libre": "l'observatoire et son parvis au sud, la rue gx -4 a l'est"
@@ -68,7 +68,7 @@
     5,
     4
    ],
-   "tier": 11,
+   "tier": 9,
    "dehors": false,
    "contient": "quartier du nord-ouest, ou la foret recule, a gauche du bosquet",
    "libre": "le bosquet (gx -3) garde sa foret derriere lui, jamais de maison a l'est de gx -4"
@@ -86,7 +86,7 @@
     4,
     3
    ],
-   "tier": 11,
+   "tier": 7,
    "dehors": false,
    "contient": "quartier de l'ouest, le long de la rue gy 7",
    "libre": "la rue gy 7 au nord-est"
@@ -104,7 +104,7 @@
     3,
     3
    ],
-   "tier": 10,
+   "tier": 7,
    "dehors": false,
    "contient": "quartier du sud-est, hors du rempart",
    "libre": "le rempart au nord, la route du sud a l'ouest"

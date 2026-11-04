@@ -21,14 +21,14 @@ S.pop("_doc", None)
 D = L["debut"]
 LETTRES = "123456789abc"
 
-# id, box, what it holds, what stays clear
+# id, wanted tier (6 to 12, rule 6), box, what it holds, what stays clear
 QUARTIERS = [
-    ("Q1", [3, -6, 8, -1], "quartier du nord, rive est, derriere la carriere et le mannequin", "la rue du nord (gx 0 et gx -1) a l'ouest, le chemin gy 2 au sud"),
-    ("Q2", [-7, 11, -2, 16], "quartier du sud-ouest, sous la ferme", "la ferme et son parvis au nord, la rue gx -4 a l'est"),
-    ("Q3", [-8, -3, -5, 2], "quartier de la clairiere ouest, au dessus de l'observatoire", "l'observatoire et son parvis au sud, la rue gx -4 a l'est"),
-    ("Q4", [-8, -8, -4, -5], "quartier du nord-ouest, ou la foret recule, a gauche du bosquet", "le bosquet (gx -3) garde sa foret derriere lui, jamais de maison a l'est de gx -4"),
-    ("Q5", [-8, 7, -5, 9], "quartier de l'ouest, le long de la rue gy 7", "la rue gy 7 au nord-est"),
-    ("Q6", [15, 17, 17, 19], "quartier du sud-est, hors du rempart", "le rempart au nord, la route du sud a l'ouest"),
+    ("Q1", 6, [3, -6, 8, -1], "quartier du nord, rive est, derriere la carriere et le mannequin", "la rue du nord (gx 0 et gx -1) a l'ouest, le chemin gy 2 au sud"),
+    ("Q2", 10, [-7, 11, -2, 16], "quartier du sud-ouest, sous la ferme", "la ferme et son parvis au nord, la rue gx -4 a l'est"),
+    ("Q3", 8, [-8, -3, -5, 2], "quartier de la clairiere ouest, au dessus de l'observatoire", "l'observatoire et son parvis au sud, la rue gx -4 a l'est"),
+    ("Q4", 9, [-8, -8, -4, -5], "quartier du nord-ouest, ou la foret recule, a gauche du bosquet", "le bosquet (gx -3) garde sa foret derriere lui, jamais de maison a l'est de gx -4"),
+    ("Q5", 7, [-8, 7, -5, 9], "quartier de l'ouest, le long de la rue gy 7", "la rue gy 7 au nord-est"),
+    ("Q6", 7, [15, 17, 17, 19], "quartier du sud-est, hors du rempart", "le rempart au nord, la route du sud a l'ouest"),
 ]
 # Outside the grid (painted world), west of the grove: the retreat of the forest (direction F). The grove keeps the back forest.
 DEHORS = [
@@ -65,7 +65,7 @@ def main():
     rue = {tuple(c) for c in L.get("rue", {}).get("cases", [])}
     parvis = {code: avant(*v) for code, v in P.items() if code not in ("castle_wall", "campfire")}
     slots, bad = [], []
-    for sid, box, quoi, libre in QUARTIERS:
+    for sid, voulu, box, quoi, libre in QUARTIERS:
         t = 6
         for x in range(box[0], box[2] + 1):
             for y in range(box[1], box[3] + 1):
@@ -86,7 +86,9 @@ def main():
                     if dans((x, y), b):
                         bad.append(f"{sid} ({x},{y}) is in front of {code}")
         slots.append({"id": sid, "kind": "quartier", "box": box, "taille": [box[2] - box[0] + 1, box[3] - box[1] + 1],
-                      "tier": t, "dehors": False, "contient": quoi, "libre": libre})
+                      "tier": voulu, "dehors": False, "contient": quoi, "libre": libre})
+        if t > voulu:
+            bad.append(f"{sid} opens at tier {t}, wanted {voulu}: add or fix its hull (paliers.py reads slots.json)")
     for sid, box, quoi, libre in DEHORS:
         slots.append({"id": sid, "kind": "dehors", "box": box, "taille": [box[2] - box[0] + 1, box[3] - box[1] + 1],
                       "tier": 10, "dehors": True, "contient": quoi, "libre": libre})

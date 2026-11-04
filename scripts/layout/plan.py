@@ -84,16 +84,26 @@ def bandes(prefixe):
 
 def fente(sortie):
     data = json.loads((ROOT / "docs/designs/village/layout/slots.json").read_text())
-    im = Image.new("RGB", (N * K, N * K))
-    dr = ImageDraw.Draw(im)
+    X0 = min([D] + [s["box"][0] for s in data["slots"]]) - 1
+    Y0 = min([D] + [s["box"][1] for s in data["slots"]]) - 1
+    X1 = max([D + N] + [s["box"][2] + 1 for s in data["slots"]]) + 1
+    Y1 = max([D + N] + [s["box"][3] + 1 for s in data["slots"]]) + 1
+    im = Image.new("RGB", ((X1 - X0) * K, (Y1 - Y0) * K), (45, 70, 45))
+    ile = Image.new("RGB", (N * K, N * K))
+    dr = ImageDraw.Draw(ile)
     base(dr, 12)
     grille(dr)
-    for s in data["slots"]:
-        x0, y0, x1, y1 = s["box"]
-        col = (255, 90, 160) if s["kind"] == "quartier" else (80, 200, 255)
-        dr.rectangle([(x0 - D) * K, (y0 - D) * K, (x1 + 1 - D) * K - 1, (y1 + 1 - D) * K - 1], outline=col, width=2)
-        dr.text(((x0 - D) * K + 3, (y0 - D) * K + 3), s["id"], fill=col)
     batiments(dr, 12)
+    im.paste(ile, ((D - X0) * K, (D - Y0) * K))
+    dr = ImageDraw.Draw(im)
+    for s in data["slots"]:
+        if s["kind"] == "parvis":
+            continue
+        x0, y0, x1, y1 = s["box"]
+        col = (255, 90, 160) if s["kind"] == "quartier" else (255, 230, 80)
+        dr.rectangle([(x0 - X0) * K, (y0 - Y0) * K, (x1 + 1 - X0) * K - 1, (y1 + 1 - Y0) * K - 1], outline=col, width=3)
+        dr.text(((x0 - X0) * K + 3, (y0 - Y0) * K + 3), f"{s['id']} p{s['tier']}", fill=col)
+    dr.text((6, 6), "rose: quartier dans l'ile (palier d'ouverture), jaune: hors ile (monde peint)", fill=(255, 255, 255))
     im.save(sortie, quality=85)
 
 

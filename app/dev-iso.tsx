@@ -91,6 +91,7 @@ export default function DevIsoRoute() {
     ambiance,
     animal,
     stade,
+    haut,
     ech,
     flaques,
     bornes,
@@ -145,6 +146,8 @@ export default function DevIsoRoute() {
     ambiance?: string;
     animal?: string;
     stade?: string;
+    /** `?haut=1`: every building at its tallest stage (check's second state). */
+    haut?: string;
   }>();
   if (!ISO_POC) return <Redirect href="/" />;
   const etat = etatBldDe({
@@ -177,6 +180,7 @@ export default function DevIsoRoute() {
                   zoomFoyer={Number(zoom) > 0 ? Number(zoom) : 1.6}
                   crest={blasonFactice(vocationAnimal(vocation) ?? animal, stade)}
                   dump={nomDump(dump)}
+                  haut={haut === "1"}
                 />
               </PorteDump>
             )}
@@ -476,7 +480,10 @@ function DevIso({
   foyer,
   zoomFoyer,
   dump,
+  haut,
 }: {
+  /** `?haut=1`: every building at its tallest stage. */
+  haut: boolean;
   /** The sprite dump's name (`?dump=`); only the map mode writes one. */
   dump?: string;
   foyer?: BuildingCode;
@@ -825,6 +832,7 @@ function DevIso({
                       <IsoCarteDemo
                         palier={palier}
                         tousDebout={tousDebout}
+                        haut={haut}
                         horloge={horloge}
                         lumiere={lumiere}
                         blason={crest ? { crest, onPress: () => undefined } : undefined}

@@ -142,6 +142,7 @@ import { type Case, emplacements, rempart, type Sol, sol, TAILLE } from "./isoLa
 import {
   type Ambiance,
   type Biome,
+  batiments,
   biomes,
   GENRES_DECAL,
   type SpriteIso,
@@ -1678,8 +1679,11 @@ export function IsoCarteDemo({
   lumiere,
   blason,
   fete,
+  haut,
 }: {
   palier: VillageTier;
+  /** dev-iso `?haut=1`: every building at its tallest stage, rank and flag, whatever the tier (measures only). */
+  haut?: boolean;
   /** A session's key (dev-iso `Fête`): the next wave is the party, once per key (T26). */
   fete?: string;
   tousDebout: boolean;
@@ -1697,13 +1701,15 @@ export function IsoCarteDemo({
         <IsoCarte
           visible={visible}
           montres={montres}
-          stade={(code) => stadeDemo(code, palier)}
+          stade={(code) =>
+            haut ? (batiments[code].stades.at(-1) ?? "rough") : stadeDemo(code, palier)
+          }
           lumiere={lumiere}
           blason={blason}
           palier={palier}
           fete={fete}
           // The demo has no levels: at the last tier every building stands at its last stage and rank.
-          legendaires={palier === 12 ? new Set(montres) : undefined}
+          legendaires={palier === 12 || haut ? new Set(montres) : undefined}
         />
         <Lucioles visible={visible} ambiance={lumiere} />
       </DepartContext.Provider>

@@ -25,7 +25,11 @@ import { Skeleton } from "@/components/common/Skeleton";
 import { DATE_OPTIONS, type Extra, loadExtra } from "@/components/village/detailExtra";
 import { feedsLine, levelText, nameOf } from "@/components/village/rows";
 import { Silhouette } from "@/components/village/Silhouette";
-import { BuildingFacts, BuildingLevel } from "@/components/village/VillageDetailSheet";
+import {
+  ActionReclamer,
+  BuildingFacts,
+  BuildingLevel,
+} from "@/components/village/VillageDetailSheet";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import type { RecentFeeds } from "@/db/milestone";
@@ -392,6 +396,10 @@ export function ContenuBatiment({
     };
   }, [building]);
   const nomTexte = nameOf(building, language);
+  const reclamer = () => {
+    onClose();
+    onClaim(building);
+  };
   return (
     <>
       <XStack gap="2" items="center">
@@ -417,6 +425,9 @@ export function ContenuBatiment({
           {t("village.claim_ready")}
         </Text>
       ) : null}
+      {/* Right under the words, above the figures: the bubble's fold is 45 % of the screen and the
+          figures of a fountain (silhouette, rank) pushed the button past it. */}
+      {pret ? <ActionReclamer building={building} language={language} onClaim={reclamer} /> : null}
       {/* A built follower says it once, in the driver line below (which carries the rank). */}
       {building.driver === "prereq" && building.level > 0 ? null : (
         <Text fontSize={14} color="bgDark">
@@ -439,14 +450,7 @@ export function ContenuBatiment({
             formatDate={(d) => getDateTimeFormat(language, DATE_OPTIONS).format(d)}
             onClose={onClose}
             surCarte
-            onClaim={
-              pret
-                ? () => {
-                    onClose();
-                    onClaim(building);
-                  }
-                : undefined
-            }
+            onClaim={pret ? reclamer : undefined}
           />
           {extra === undefined ? (
             <YStack testID="iso-bulle-chargement" gap="2">

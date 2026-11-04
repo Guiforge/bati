@@ -287,6 +287,42 @@ export function BuildingLevel({ building }: { building: VillageBuilding }) {
   );
 }
 
+/** The one action of a ready building: the 48 dp Evolve button, with the sheet's sentence above it. */
+export function ActionReclamer({
+  building,
+  language,
+  onClaim,
+  avecTexte = false,
+}: {
+  building: VillageBuilding;
+  language: AppLanguage;
+  onClaim: () => void;
+  avecTexte?: boolean;
+}) {
+  const { t } = useTranslation();
+  return (
+    <YStack gap="2">
+      {avecTexte ? (
+        <Text fontSize={13} color="textSecondary">
+          {t("village.claim_ready_body", { name: nameOf(building, language) })}
+        </Text>
+      ) : null}
+      <AppButton
+        testID="village-claim"
+        // The bubble's one action (village-bulle.md): 48 dp, over AppButton's 44.
+        minH={48}
+        onPress={onClaim}
+        accessibilityRole="button"
+        accessibilityLabel={t("village.claim_action_a11y", {
+          name: nameOf(building, language),
+        })}
+      >
+        {t("village.claim_action")}
+      </AppButton>
+    </YStack>
+  );
+}
+
 /**
  * What a building's figures say, under its name: the driver, the bar, the milestone, the deeds,
  * the claim and the links. One writer for the sheet (list, Journal, flag off) and the iso bubble.
@@ -442,24 +478,10 @@ export function BuildingFacts({
       </YStack>
 
       {/* Before the long lists (a wall's stones, the deeds): the one action must not sit below a scroll of 24 stones. */}
-      {onClaim ? (
-        <YStack gap="2">
-          <Text fontSize={13} color="textSecondary">
-            {t("village.claim_ready_body", { name: nameOf(building, language) })}
-          </Text>
-          <AppButton
-            testID="village-claim"
-            // The bubble's one action (village-bulle.md): 48 dp, over AppButton's 44.
-            minH={48}
-            onPress={onClaim}
-            accessibilityRole="button"
-            accessibilityLabel={t("village.claim_action_a11y", {
-              name: nameOf(building, language),
-            })}
-          >
-            {t("village.claim_action")}
-          </AppButton>
-        </YStack>
+      {/* On the map's bubble the caller draws it above the figures (`ActionReclamer`): below them
+          the fountain's was past the bubble's fold, "Ready to evolve" with no button in sight. */}
+      {onClaim && !surCarte ? (
+        <ActionReclamer building={building} language={language} onClaim={onClaim} avecTexte />
       ) : null}
 
       {extra?.kind === "sessions" && extra.sessions.length > 0 && (

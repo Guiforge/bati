@@ -83,9 +83,10 @@
     1,
     2
    ],
-   "status": "doing",
+   "status": "done",
    "debut": "2026-11-04T11:40:00+01:00",
-   "note": "Contenu commun aux 3 directions, invisible en publie"
+   "note": "Vu sur emulateur : exercices reels, liens vers la fiche et le journal, retour au village",
+   "fin": "2026-11-04T11:35:00+01:00"
   },
   {
    "id": "G5",
@@ -96,9 +97,10 @@
     1,
     2
    ],
-   "status": "doing",
+   "status": "done",
    "debut": "2026-11-04T11:40:00+01:00",
-   "note": "Contenu commun aux 3 directions, invisible en publie"
+   "note": "72 dp, regle B branchee, 21 batiments balayes par scripts/game/silhouettes.py",
+   "fin": "2026-11-04T11:35:00+01:00"
   },
   {
    "id": "G6",
@@ -120,7 +122,9 @@
     1,
     2
    ],
-   "status": "todo"
+   "status": "doing",
+   "debut": "2026-11-04T11:35:00+01:00",
+   "note": "Liens de la carte faits et joues ; le tiroir vers la carte attend le choix de la direction"
   },
   {
    "id": "G8",

@@ -56,16 +56,16 @@
   "piste_ordre": 6,
   "etape": "Les exercices qui nourrissent le batiment",
   "ordre": 4,
-  "statut": "en cours",
+  "statut": "fait",
   "debut": "2026-11-04T11:40:00+01:00",
-  "fin": null,
+  "fin": "2026-11-04T11:35:00+01:00",
   "heures": null,
-  "restant_min": 1,
-  "restant_max": 2,
-  "reste": "1 à 2 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": "Contenu commun aux 3 directions, invisible en publie"
+  "note": "Vu sur emulateur : exercices reels, liens vers la fiche et le journal, retour au village"
  },
  {
   "id": "G5",
@@ -73,16 +73,16 @@
   "piste_ordre": 6,
   "etape": "Le prochain stade en silhouette",
   "ordre": 5,
-  "statut": "en cours",
+  "statut": "fait",
   "debut": "2026-11-04T11:40:00+01:00",
-  "fin": null,
+  "fin": "2026-11-04T11:35:00+01:00",
   "heures": null,
-  "restant_min": 1,
-  "restant_max": 2,
-  "reste": "1 à 2 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": "Contenu commun aux 3 directions, invisible en publie"
+  "note": "72 dp, regle B branchee, 21 batiments balayes par scripts/game/silhouettes.py"
  },
  {
   "id": "G6",
@@ -107,8 +107,8 @@
   "piste_ordre": 6,
   "etape": "Du batiment vers les exercices et le journal",
   "ordre": 7,
-  "statut": "à faire",
-  "debut": null,
+  "statut": "en cours",
+  "debut": "2026-11-04T11:35:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 1,
@@ -116,7 +116,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Liens de la carte faits et joues ; le tiroir vers la carte attend le choix de la direction"
  },
  {
   "id": "G8",

@@ -33,7 +33,41 @@ const SOLS: readonly Sol[] = [
 ];
 const PALIERS = "123456789abc";
 
-export const TAILLE = raw.sol.length;
+/**
+ * The grid runs from `DEBUT` (a negative index: the map grew up and left, 04/11 plan) to `TAILLE`
+ * - 1 on both axes. `TAILLE` is still the old map's size, so its right and lower edges, and every
+ * table written against them, stay where they were; only the cells before 0 are new.
+ */
+export const DEBUT = raw.debut;
+export const TAILLE = raw.sol.length + DEBUT;
+/** Cells along one side of the storage: the stride of `cle`. */
+export const COTES = TAILLE - DEBUT;
+
+/** A cell's number, unique over the whole grid (`gy * TAILLE + gx` collides with a cell of the row above once gx can be negative). */
+export const cle = ([gx, gy]: readonly [number, number]) => (gy - DEBUT) * COTES + (gx - DEBUT);
+export const dansLaGrille = ([gx, gy]: readonly [number, number]) =>
+  gx >= DEBUT && gy >= DEBUT && gx < TAILLE && gy < TAILLE;
+
+/** Every cell of the grid, row by row. */
+export const CASES: readonly Case[] = Array.from(
+  { length: COTES * COTES },
+  (_, i): Case => [(i % COTES) + DEBUT, Math.floor(i / COTES) + DEBUT],
+);
+
+/**
+ * A grid read as `g[gy][gx]` from `DEBUT`: indices 0 to TAILLE - 1 are the array's own, the new
+ * land's negative ones are plain properties, so every `g[gy]?.[gx]` reads a cell of either. `map`,
+ * `forEach` and `flatMap` see the old map only: loops over the whole grid use `CASES`.
+ */
+export function grilleDe<T>(lire: (gx: number, gy: number) => T): T[][] {
+  const lignes: T[][] = [];
+  for (let gy = DEBUT; gy < TAILLE; gy++) {
+    const ligne: T[] = [];
+    for (let gx = DEBUT; gx < TAILLE; gx++) ligne[gx] = lire(gx, gy);
+    lignes[gy] = ligne;
+  }
+  return lignes;
+}
 
 const legende = new Map<string, Sol>(
   Object.entries(raw.legende).map(([ch, nom]) => {
@@ -45,18 +79,20 @@ const legende = new Map<string, Sol>(
 );
 
 function grille<T>(lignes: readonly string[], ou: string, lire: (ch: string) => T): T[][] {
-  if (lignes.length !== TAILLE || lignes.some((l) => l.length !== TAILLE))
-    throw new Error(`isoLayout.json ${ou}: ${TAILLE} rows of ${TAILLE} cells expected`);
-  return lignes.map((l, gy) =>
-    [...l].map((ch, gx) => {
-      try {
-        return lire(ch);
-      } catch {
-        throw new Error(`isoLayout.json ${ou}[${gy}][${gx}]: "${ch}"`);
-      }
-    }),
-  );
+  if (lignes.length !== COTES || lignes.some((l) => l.length !== COTES))
+    throw new Error(`isoLayout.json ${ou}: ${COTES} rows of ${COTES} cells expected`);
+  return grilleDe((gx, gy) => {
+    const ch = lignes[gy - DEBUT]?.[gx - DEBUT] ?? "";
+    try {
+      return lire(ch);
+    } catch {
+      throw new Error(`isoLayout.json ${ou}[${gy}][${gx}]: "${ch}"`);
+    }
+  });
 }
+
+/** The tier each building's stages start at in the demo (carteDemo.ts `stadeDemo`): fixed data, not read from `paliers`. */
+export const etapes = raw.etapes as Readonly<Partial<Record<BuildingCode, VillageTier>>>;
 
 /** `sol[gy][gx]` */
 export const sol: readonly (readonly Sol[])[] = grille(raw.sol, "sol", (ch) => {
@@ -77,7 +113,6 @@ export const paliers: readonly (readonly (VillageTier | null)[])[] = grille(
   },
 );
 
-const dansLaGrille = ([gx, gy]: Case) => gx >= 0 && gy >= 0 && gx < TAILLE && gy < TAILLE;
 const estChemin = ([gx, gy]: Case) => {
   const s = sol[gy]?.[gx];
   return s === "chemin" || s === "pont";
@@ -90,7 +125,6 @@ const VOISINS: readonly Case[] = [
 ];
 const voisins = ([gx, gy]: Case): Case[] =>
   VOISINS.map(([dx, dy]): Case => [gx + dx, gy + dy]).filter(dansLaGrille);
-const cle = ([gx, gy]: Case) => gy * TAILLE + gx;
 
 function casesDe([gx, gy]: Case, [w, d]: readonly [number, number]): Case[] {
   const cases: Case[] = [];
@@ -204,12 +238,15 @@ const MARGE_EN_AVANCE = 2;
  * closes around is filled: the island never has a hole.
  */
 export function ileVisible(palier: VillageTier, debout: Iterable<BuildingCode>): boolean[][] {
-  const visible = paliers.map((ligne) => ligne.map((p) => p !== null && p <= palier));
+  const visible = grilleDe((gx, gy) => {
+    const p = paliers[gy]?.[gx];
+    return p != null && p <= palier;
+  });
   const montrer = ([gx, gy]: Case, marge: number) => {
     for (let x = gx - marge; x <= gx + marge; x++)
       for (let y = gy - marge; y <= gy + marge; y++) {
         const ligne = visible[y];
-        if (ligne && x >= 0 && x < TAILLE && paliers[y]?.[x] !== null) ligne[x] = true;
+        if (ligne && dansLaGrille([x, y]) && paliers[y]?.[x] !== null) ligne[x] = true;
       }
   };
   for (const code of debout) {
@@ -222,7 +259,7 @@ export function ileVisible(palier: VillageTier, debout: Iterable<BuildingCode>):
 
 /** Only the building's plot and `marge` cells round it: the ground of a capture that shows it alone. */
 export function ileSeule(code: BuildingCode, marge = 2): boolean[][] {
-  const visible = paliers.map((ligne) => ligne.map(() => false));
+  const visible = grilleDe(() => false);
   for (const [gx, gy] of emplacements[code].cases)
     for (let x = gx - marge; x <= gx + marge; x++)
       for (let y = gy - marge; y <= gy + marge; y++) {
@@ -234,24 +271,25 @@ export function ileSeule(code: BuildingCode, marge = 2): boolean[][] {
 
 /** Every hidden cell the outside of the grid cannot reach through hidden cells joins the island. */
 function sansTrou(visible: boolean[][]): boolean[][] {
-  const dehors = visible.map((ligne) => ligne.map(() => false));
+  const dehors = grilleDe(() => false);
   const file: Case[] = [];
   const entrer = ([gx, gy]: Case) => {
     const ligne = dehors[gy];
-    if (ligne && gx >= 0 && gx < TAILLE && !ligne[gx] && visible[gy]?.[gx] === false) {
+    if (ligne && dansLaGrille([gx, gy]) && !ligne[gx] && visible[gy]?.[gx] === false) {
       ligne[gx] = true;
       file.push([gx, gy]);
     }
   };
-  for (let i = 0; i < TAILLE; i++) {
-    entrer([i, 0]);
+  for (let i = DEBUT; i < TAILLE; i++) {
+    entrer([i, DEBUT]);
     entrer([i, TAILLE - 1]);
-    entrer([0, i]);
+    entrer([DEBUT, i]);
     entrer([TAILLE - 1, i]);
   }
   for (let c = file.pop(); c; c = file.pop()) for (const n of voisins(c)) entrer(n);
-  return visible.map((ligne, gy) =>
-    ligne.map((v, gx) => v || (dehors[gy]?.[gx] === false && paliers[gy]?.[gx] !== null)),
+  return grilleDe(
+    (gx, gy) =>
+      visible[gy]?.[gx] === true || (dehors[gy]?.[gx] === false && paliers[gy]?.[gx] !== null),
   );
 }
 

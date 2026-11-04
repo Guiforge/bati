@@ -8,7 +8,18 @@ import { type Alentours, BATIMENT_MOTEUR } from "@/constants/isoPoc";
 import spec from "@/constants/isoSpec.json";
 import { type BuildingCode, buildingCodes, buildingDefinitions } from "@/db/schema";
 import type { VillageTier } from "@/db/village";
-import { type Case, emplacements, ileSeule, ileVisible, sol, TAILLE, troncons } from "./isoLayout";
+import {
+  CASES,
+  type Case,
+  emplacements,
+  etapes,
+  ileSeule,
+  ileVisible,
+  paliers,
+  sol,
+  TAILLE,
+  troncons,
+} from "./isoLayout";
 import {
   type Ambiance,
   batiments,
@@ -89,18 +100,16 @@ export type Vue = { zoom: number; x: number; y: number };
 /** The island's bounding box on the demo map, in dp at zoom 1; null when no cell shows. */
 export function emprise(visible: readonly (readonly boolean[])[]): Ile | null {
   let [x0, x1, y0, y1] = [Infinity, -Infinity, Infinity, -Infinity];
-  visible.forEach((ligne, gy) => {
-    ligne.forEach((v, gx) => {
-      if (!v) return;
-      const [x, y] = ecranXY([gx, gy]);
-      [x0, x1, y0, y1] = [
-        Math.min(x0, x - COTE / 2),
-        Math.max(x1, x + COTE / 2),
-        Math.min(y0, y),
-        Math.max(y1, y + COTE / 2),
-      ];
-    });
-  });
+  for (const [gx, gy] of CASES) {
+    if (!visible[gy]?.[gx]) continue;
+    const [x, y] = ecranXY([gx, gy]);
+    [x0, x1, y0, y1] = [
+      Math.min(x0, x - COTE / 2),
+      Math.max(x1, x + COTE / 2),
+      Math.min(y0, y),
+      Math.max(y1, y + COTE / 2),
+    ];
+  }
   return x0 > x1 ? null : { x0, x1, y0, y1 };
 }
 
@@ -295,8 +304,8 @@ const DEBORD = 36;
 export function tuiles(ratio: number): Rect[] {
   const pas = Math.floor(1024 / ratio) - 1;
   const rects: Rect[] = [];
-  for (let y = 0; y < HAUTEUR - 1; y += pas)
-    for (let x = 0; x < LARGEUR - 1; x += pas)
+  for (let y = TUILES_X0[1]; y < HAUTEUR - 1; y += pas)
+    for (let x = TUILES_X0[0]; x < LARGEUR - 1; x += pas)
       rects.push({
         x,
         y,
@@ -305,6 +314,22 @@ export function tuiles(ratio: number): Rect[] {
       });
   return rects;
 }
+
+/**
+ * The top left of the first tile: the map grew up and left, so the ground tiles start where the
+ * land does (the cells with a tier, to the next 8 dp), not at the old map's corner. The grid's
+ * unused corners are not tiled: the same 6 Svg at 2.625 as before.
+ */
+const TUILES_X0: readonly [x: number, y: number] = (() => {
+  let [x0, y0] = [0, 0];
+  for (const c of CASES) {
+    if (paliers[c[1]]?.[c[0]] == null) continue;
+    const [x, y] = ecranXY(c);
+    x0 = Math.min(x0, x - COTE / 2);
+    y0 = Math.min(y0, y);
+  }
+  return [Math.floor(x0 / 8) * 8, Math.floor(y0 / 8) * 8];
+})();
 
 const DEPART = buildingCodes.filter((code) => buildingDefinitions[code].tier === 1);
 
@@ -329,20 +354,12 @@ export function etatSeul(code: BuildingCode) {
 export const etatCarte = (palier: VillageTier, tousDebout: boolean) =>
   etatAvec(palier, tousDebout ? buildingCodes : DEPART);
 
-const PALIERS: readonly VillageTier[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-
-let terrains: Partial<Record<BuildingCode, VillageTier>> | undefined;
-/** The first tier whose island holds the building's whole plot, starters standing only. */
-function palierDuTerrain(code: BuildingCode): VillageTier {
-  if (!terrains) {
-    // 12 islands once, on first use, rather than at module load.
-    const parPalier = PALIERS.map((p) => [p, etatCarte(p, false).montres] as const);
-    terrains = Object.fromEntries(
-      buildingCodes.map((c) => [c, parPalier.find(([, m]) => m.includes(c))?.[0] ?? 12]),
-    );
-  }
-  return terrains[code] ?? 12;
-}
+/**
+ * The tier a building's stages start at (isoLayout.json `etapes`): what the first tier whose
+ * island held its whole plot was before the 04/11 plan moved the buildings. Not read from the
+ * grid, so a far plot at tier 12 never turns a moved windmill back to its first stage.
+ */
+const palierDuTerrain = (code: BuildingCode): VillageTier => etapes[code] ?? 12;
 
 const ORDRE_STADES: readonly Stade[] = ["rough", "solid", "grand"];
 
@@ -438,17 +455,16 @@ const paires = (plat: readonly number[]): Point[] =>
   plat.flatMap((x, i) => (i % 2 === 0 ? [[x, plat[i + 1] ?? 0] as const] : []));
 
 /** Every decor and water cell whose piece has an image, fixed for a build. */
-export const PIECES: readonly PieceCarte[] = sol.flatMap((ligne, gy) =>
-  ligne.flatMap((kind, gx): PieceCarte[] => {
-    const c: Case = [gx, gy];
-    if (DECORS.includes(kind)) {
-      const cle = varianteDecor(kind, c, CLES);
-      return cle ? [{ cle, miroir: false, case: c, decor: true }] : [];
-    }
-    const eau = pieceEau(sol, c);
-    return eau && MAQUETTES[eau.cle] ? [{ ...eau, case: c, decor: false }] : [];
-  }),
-);
+export const PIECES: readonly PieceCarte[] = CASES.flatMap((c): PieceCarte[] => {
+  const kind = sol[c[1]]?.[c[0]];
+  if (kind === undefined) return [];
+  if (DECORS.includes(kind)) {
+    const cle = varianteDecor(kind, c, CLES);
+    return cle ? [{ cle, miroir: false, case: c, decor: true }] : [];
+  }
+  const eau = pieceEau(sol, c);
+  return eau && MAQUETTES[eau.cle] ? [{ ...eau, case: c, decor: false }] : [];
+});
 
 /** The kinds of decor drawn as images: their cells' ground is grass under the image. */
 export const DECORS_EN_IMAGE: ReadonlySet<string> = new Set(
@@ -493,7 +509,7 @@ export const FIGURINES: readonly PieceCarte[] = (
 ).map(([nom, c]) => ({ cle: clePiece("villageois", nom), miroir: false, case: c, decor: true }));
 
 /** T39 (DA exit audit, finding 1): a lantern stands by the path at tier 1 (one cell, one more costs the decode budget), so the foreground is not empty. A fixed prop like a figurine. FIN-DIS: at the west road's corner by the hall, a grass cell no walker crosses (iso-marcheurs-profondeur), and clear of the cat's steps. */
-export const LANTERNES: readonly PieceCarte[] = ([[7, 9]] as const).map((c) => ({
+export const LANTERNES: readonly PieceCarte[] = ([[7, 6]] as const).map((c) => ({
   cle: clePiece("decor", "lanterne"),
   miroir: false,
   case: c,
@@ -533,7 +549,7 @@ export type AnimalCarte = { nom: Animal; avec?: BuildingCode; piece: PieceCarte 
  * the hen between the farm and the street (the old cat by the well and the roof crows left with
  * the life track: the wall's cat is painted, creatures.ts). `piece.cle` is the rest pose, whose shadow stands for both.
  */
-export const ANIMAUX: readonly AnimalCarte[] = ([["poule", "farm", [5, 6]]] as const).map(
+export const ANIMAUX: readonly AnimalCarte[] = ([["poule", "farm", [1, 12]]] as const).map(
   ([nom, avec, c]) => ({
     nom,
     ...(avec ? { avec } : {}),
@@ -632,17 +648,35 @@ export const ORDRE_SPRITES = ORDRE_CARTE.flatMap((e) => (e.type === "batiment" ?
 const K = COTE / spec.S;
 
 /** Where a sprite's anchor lands on a grid point, in dp; a canvas drawn at `pxScale` shrinks by it. */
-const poseEn = (p: Point, s: SpriteIso): Rect => {
+const poseEn = (p: Point, s: SpriteIso, f = 1): Rect => {
   const [ax, ay] = ecranXY(p);
-  const k = K / (s.pxScale ?? 1);
+  const k = (f * K) / (s.pxScale ?? 1);
   return { x: ax - s.anchor[0] * k, y: ay - s.anchor[1] * k, w: s.size[0] * k, h: s.size[1] * k };
 };
+
+/**
+ * Rule 21 of the tier 12 plan (direction/target.md): the player's buildings stand about a quarter
+ * bigger, about their anchor (the footprint's bottom corner), so their base stays on its plot. The
+ * wall, one with the locked corner, keeps its size. Everything that follows a building's picture
+ * goes through `pose` or `echelleDe`: the tap mask, the contact shadow, the cast shadows, the sails.
+ */
+export const ECHELLE_BATIMENT = 1.25;
+export const echelleDe = (code: BuildingCode): number =>
+  code === "castle_wall" ? 1 : ECHELLE_BATIMENT;
 
 /** Where a sprite lies on the map, in dp: its anchor on the footprint's bottom corner. */
 export function pose(code: BuildingCode, s: SpriteIso): Rect {
   const { coin, emprise } = emplacements[code];
-  return poseEn([coin[0] + emprise[0], coin[1] + emprise[1]], s);
+  return poseEn([coin[0] + emprise[0], coin[1] + emprise[1]], s, echelleDe(code));
 }
+
+/** A shadow polygon of a building, in grid coordinates, grown about the anchor like its picture. */
+const grandi = (code: BuildingCode, poly: readonly Point[]): Point[] => {
+  const { coin, emprise } = emplacements[code];
+  const [ax, ay] = [coin[0] + emprise[0], coin[1] + emprise[1]];
+  const f = echelleDe(code);
+  return poly.map(([x, y]): Point => [ax + (x - ax) * f, ay + (y - ay) * f]);
+};
 
 /**
  * T39 (item 14): a rock's canvas is a villager canvas at half its resolution, so drawn like the
@@ -670,9 +704,11 @@ export const poseCentre = ([gx, gy]: Case, s: SpriteIso): Rect => poseEn([gx + 0
 /** Where the sails lie: their centre on the stage's pivot, at the stage's scale. Still in lot 1. */
 export function poseAiles(corps: Rect, s: SpriteIso, ailes: SpriteIso): Rect | null {
   if (!s.ailes) return null;
-  const k = K * s.ailes.echelle;
-  const px = corps.x + s.ailes.pivot[0] * K;
-  const py = corps.y + s.ailes.pivot[1] * K;
+  // The body's own scale (its `pose` is bigger by `echelleDe`): the sails follow it.
+  const f = corps.w / (s.size[0] * (K / (s.pxScale ?? 1)));
+  const k = f * K * s.ailes.echelle;
+  const px = corps.x + s.ailes.pivot[0] * K * f;
+  const py = corps.y + s.ailes.pivot[1] * K * f;
   return {
     x: px - ailes.anchor[0] * k,
     y: py - ailes.anchor[1] * k,
@@ -759,7 +795,7 @@ export function ombresDe(code: BuildingCode, stade: Stade, ambiance: Ambiance = 
       ? ombreAiles(ailes.volumes, s.ailes.pivotGrille, s.ailes.echelle, 0, LUNE)
       : []),
   ];
-  return locales.map((p) => enveloppe(p.map(([x, y]): Point => [gx + x, gy + y])));
+  return locales.map((p) => grandi(code, enveloppe(p.map(([x, y]): Point => [gx + x, gy + y]))));
 }
 
 /** One unit of height on the map, in dp: pxPerUnit * sin 60 (iso-maquettes test), in sprite px, scaled like a cell. */
@@ -776,9 +812,12 @@ export function ombreSocleDe(code: BuildingCode, stade: Stade): { d: string; rec
   if (!socle || DEJA_PEINTE.has(nomImage(code, stade, "nuit"))) return null;
   const [gx, gy] = emplacements[code].coin;
   const pieces = socle.ombre.map((o) =>
-    paires(o).map(([x, y]): Point => {
-      const [sx, sy] = ecranXY([gx + x, gy + y]);
-      return [sx, sy - socle.hauteur * Z_DP];
+    grandi(
+      code,
+      paires(o).map(([x, y]): Point => [gx + x, gy + y]),
+    ).map((g): Point => {
+      const [sx, sy] = ecranXY(g);
+      return [sx, sy - socle.hauteur * Z_DP * echelleDe(code)];
     }),
   );
   const pts = pieces.flat();
@@ -842,7 +881,7 @@ const RANG = new Map(
  */
 const MONTREES = new Map<string, ReturnType<typeof lisiereMontree>>();
 const montreePour = (visible: readonly (readonly boolean[])[]) => {
-  const cle = visible.map((l) => l.map((v) => (v ? 1 : 0)).join("")).join("/");
+  const cle = CASES.map(([gx, gy]) => (visible[gy]?.[gx] ? 1 : 0)).join("");
   let m = MONTREES.get(cle);
   if (!m) {
     m = lisiereMontree(visible);

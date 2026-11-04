@@ -8,7 +8,7 @@
 
 import { buildingCodes } from "@/db/schema";
 import { DECORS_EN_IMAGE } from "./carteDemo";
-import { type Case, emplacements, sol, TAILLE } from "./isoLayout";
+import { CASES, COTES, cle, emplacements, sol, TAILLE } from "./isoLayout";
 import {
   type Biome,
   biomes,
@@ -88,7 +88,6 @@ export function choisir<T extends { poids: number }>(liste: readonly T[], u: num
   return liste[liste.length - 1] as T;
 }
 
-const cle = ([gx, gy]: Case) => gy * TAILLE + gx;
 /** Every footprint of every building, shown or not: a decal never lands under one. */
 export const SOUS_BATIMENT: ReadonlySet<number> = new Set(
   buildingCodes.flatMap((code) => emplacements[code].cases.map(cle)),
@@ -175,9 +174,7 @@ export function detailCase(gx: number, gy: number, v: VariantesSpec): DetailCase
 }
 
 const table = (b: Biome): readonly DetailCase[] =>
-  Array.from({ length: TAILLE * TAILLE }, (_, i) =>
-    detailCase(i % TAILLE, Math.floor(i / TAILLE), biomes[b].variantes),
-  );
+  CASES.map(([gx, gy]) => detailCase(gx, gy, biomes[b].variantes));
 const TABLES: Record<Biome, readonly DetailCase[]> = {
   defaut: table("defaut"),
   defautNuit: table("defautNuit"),
@@ -199,7 +196,7 @@ export const estTerre = (gx: number, gy: number) => {
  * island.
  */
 export function bordsDe(visible: readonly (readonly boolean[])[]): Uint8Array {
-  const bords = new Uint8Array(TAILLE * TAILLE);
+  const bords = new Uint8Array(COTES * COTES);
   const dehors = (gx: number, gy: number) => visible[gy]?.[gx] !== true;
   // Whether a cell of the ring at distance `r` is off the island.
   const anneau = (gx: number, gy: number, r: number) =>
@@ -209,11 +206,10 @@ export function bordsDe(visible: readonly (readonly boolean[])[]): Uint8Array {
     )
       .filter(([dx, dy]) => Math.max(Math.abs(dx), Math.abs(dy)) === r)
       .some(([dx, dy]) => dehors(gx + dx, gy + dy));
-  for (let gy = 0; gy < TAILLE; gy++)
-    for (let gx = 0; gx < TAILLE; gx++)
-      // A stream cell too (T22): the stream is drawn under the rim's dusk, which darkens it like the lawn.
-      if (!dehors(gx, gy) && (estTerre(gx, gy) || brut(gx, gy) === "eau"))
-        bords[cle([gx, gy])] = ([1, 2, 3] as const).find((r) => anneau(gx, gy, r)) ?? 0;
+  // A stream cell too (T22): the stream is drawn under the rim's dusk, which darkens it like the lawn.
+  for (const [gx, gy] of CASES)
+    if (!dehors(gx, gy) && (estTerre(gx, gy) || brut(gx, gy) === "eau"))
+      bords[cle([gx, gy])] = ([1, 2, 3] as const).find((r) => anneau(gx, gy, r)) ?? 0;
   return bords;
 }
 

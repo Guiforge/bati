@@ -9,7 +9,7 @@ import { useContext } from "react";
 import { ClipPath, Defs, G, Path } from "react-native-svg";
 import { rawColors } from "@/constants/rawColors";
 import { AlentoursContext } from "./alentours";
-import { emplacements, TAILLE } from "./isoLayout";
+import { COTES, cle, DEBUT, emplacements } from "./isoLayout";
 import { type Biome, biomes } from "./isoSpec";
 import { MotifsSol } from "./MotifsSol";
 import { type Motif, remplissage, VOILE_OMBRE } from "./motifs";
@@ -34,7 +34,6 @@ const PAVES: Record<Biome, { clair: string; sombre: string }> = {
   defautNuit: { clair: rawColors.isoPaveClairNuit, sombre: rawColors.isoPaveSombreNuit },
 };
 
-const cle = ([gx, gy]: readonly [number, number]) => gy * TAILLE + gx;
 /** The texture of each rank: beaten earth, stones, paving. */
 const MOTIFS: readonly Motif[] = ["terre", "pierres", "paves"];
 /** FIN-DIS: the first tier's island, with its starters' ground, holds about 80 cells; the second about 125. */
@@ -46,7 +45,7 @@ export function Rues({
   biome,
   ombre,
 }: {
-  /** The cells (keys `gy * TAILLE + gx`) whose box touches the tile. */
+  /** The cells (keys `cle`) whose box touches the tile. */
   dedans: ReadonlySet<number>;
   /** The cells on the island. */
   visibles: ReadonlySet<number>;
@@ -97,7 +96,7 @@ export function Rues({
     .flatMap(({ liste }) => liste.map((e) => e.d))
     .join("");
   const pierres = [...dedans]
-    .map((k) => [k % TAILLE, Math.floor(k / TAILLE)] as const)
+    .map((k) => [(k % COTES) + DEBUT, Math.floor(k / COTES) + DEBUT] as const)
     .filter(([gx, gy]) => estPave(gx, gy))
     .map(([gx, gy]) => pavageCase(gx, gy));
   const idPave = ombre ? "pave-ombre" : "pave";

@@ -13,7 +13,7 @@ import type { BuildingCode } from "@/db/schema";
 import type { VillageTier } from "@/db/village";
 import { COTE, ecranXY, etatCarte, LARGEUR } from "./carteDemo";
 import { EAU_GX, PARCELLES } from "./champs";
-import type { Case } from "./isoLayout";
+import { CASES, type Case } from "./isoLayout";
 import { clairiere, distCases, mulberry32 } from "./monde";
 import type { Point } from "./ombres";
 import type { Emprise } from "./profondeur";
@@ -314,7 +314,7 @@ const CACHE_FORET = new Map<string, Masse[]>();
 const cleForet = (
   visible: readonly (readonly boolean[])[],
   champs: readonly (readonly [number, number, number, number])[],
-) => `${visible.map((l) => l.map((v) => (v ? 1 : 0)).join("")).join("|")}/${champs.join("|")}`;
+) => `${CASES.map(([gx, gy]) => (visible[gy]?.[gx] ? 1 : 0)).join("")}/${champs.join("|")}`;
 
 /**
  * The forest round the island of `visible`: a jittered lattice of wooded patches round it,
@@ -1025,8 +1025,8 @@ const CACHE_VOILE = new WeakMap<readonly (readonly boolean[])[], Voile>();
 export function voileVillage(visible: readonly (readonly boolean[])[]): Voile {
   const deja = CACHE_VOILE.get(visible);
   if (deja) return deja;
-  const pts = visible.flatMap((l, gy) =>
-    l.flatMap((v, gx) => (v ? [ecranXY([gx + 0.5, gy + 0.5])] : [])),
+  const pts = CASES.flatMap(([gx, gy]) =>
+    visible[gy]?.[gx] ? [ecranXY([gx + 0.5, gy + 0.5])] : [],
   );
   const [xs, ys] = [pts.map((p) => p[0]), pts.map((p) => p[1])];
   const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];

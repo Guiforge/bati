@@ -138,7 +138,17 @@ import {
 } from "./habitants";
 import { angleAiles, DepartContext, HorlogeContext, reflet, type useHorloge } from "./horloge";
 import { IsoCroissance } from "./IsoCroissance";
-import { type Case, emplacements, rempart, type Sol, sol, TAILLE } from "./isoLayout";
+import {
+  CASES,
+  type Case,
+  cle as cleDeCase,
+  DEBUT,
+  emplacements,
+  rempart,
+  type Sol,
+  sol,
+  TAILLE,
+} from "./isoLayout";
 import {
   type Ambiance,
   type Biome,
@@ -408,11 +418,11 @@ function Tuile({
   // the seam (qa-audit1). Only rim cells take the wide margin (the inner ones cost +34 % cells).
   const marge = COTE / 3;
   const margeBord = Math.max(marge, PORTEE_BORD + OMBRE_ILE);
-  const cleDe = (gx: number, gy: number) => gy * TAILLE + gx;
+  const cleDe = (gx: number, gy: number) => cleDeCase([gx, gy]);
   const visibles = new Set(cases.map(([gx, gy]) => cleDe(gx, gy)));
   const rive = ([gx, gy]: Case) =>
-    gx === 0 ||
-    gy === 0 ||
+    gx === DEBUT ||
+    gy === DEBUT ||
     gx === TAILLE - 1 ||
     gy === TAILLE - 1 ||
     !(
@@ -2081,9 +2091,7 @@ export function IsoCarte({
   // The painted surroundings on (alentours.ts): the props in the depth order, the forest over the ground.
   const peint = useContext(AlentoursContext);
   const decor = seul ? [] : decorDe(peint, visible, montres, palier);
-  const cases: Case[] = [];
-  for (let gy = 0; gy < TAILLE; gy++)
-    for (let gx = 0; gx < TAILLE; gx++) if (visible[gy]?.[gx]) cases.push([gx, gy]);
+  const cases = CASES.filter(([gx, gy]) => visible[gy]?.[gx]);
   const rects = tuiles(PixelRatio.get());
   const boites = new Set<string>(montres.filter((c) => !spriteDe(c, stade(c), ambiance)));
   const { indices, pieces, figurines, animaux, lisiere } = elementsMontes(

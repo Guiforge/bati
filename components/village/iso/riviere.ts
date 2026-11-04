@@ -6,7 +6,7 @@
 // melts it into the lawn. At the bridge and the cascade, which keep their painted images, the line is
 // centred and as wide as their channel. Pure; Tuile draws `ruisseauDe(visible)` in every ground tile.
 
-import { type Case, sol as grilleMaitre, type Sol } from "./isoLayout";
+import { CASES, type Case, sol as grilleMaitre, type Sol } from "./isoLayout";
 import type { Point } from "./ombres";
 import { cheminRuban, lisse, ruban } from "./ruban";
 import { hasard } from "./solVarie";
@@ -50,7 +50,7 @@ export function chaineEau(grille: Grille = grilleMaitre): Case[] {
         [x, y - 1],
       ] as const
     ).filter(([a, b]) => eau(a, b));
-  const cases = grille.flatMap((l, y) => l.flatMap((_, x): Case[] => (eau(x, y) ? [[x, y]] : [])));
+  const cases = CASES.filter(([x, y]) => eau(x, y));
   const debut = cases.find((c) => voisins(c).length <= 1);
   if (!debut) return [];
   const vus = new Set<string>();

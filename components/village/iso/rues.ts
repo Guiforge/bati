@@ -10,7 +10,7 @@
 import { type BuildingCode, buildingCodes } from "@/db/schema";
 import { COTE, ecranXY, HAUTEUR, LARGEUR, pose, spriteDe } from "./carteDemo";
 import { accrochesDe } from "./feux";
-import { type Case, emplacements, sol, TAILLE } from "./isoLayout";
+import { CASES, type Case, emplacements, sol, TAILLE } from "./isoLayout";
 import type { Stade } from "./isoSpec";
 import type { Point } from "./ombres";
 import { cheminRuban, disque, ruban } from "./ruban";
@@ -87,10 +87,7 @@ export type Arete = { de: Case; vers: Case; classe: Classe; d: string };
 
 /** Every street edge between two neighbouring street cells (towards +gx or +gy), once; `camp` draws them all at rank 0's width. */
 const aretes = (camp: boolean): readonly Arete[] =>
-  Array.from(
-    { length: TAILLE * TAILLE },
-    (_, i) => [i % TAILLE, Math.floor(i / TAILLE)] as const,
-  ).flatMap(([gx, gy]) =>
+  CASES.flatMap(([gx, gy]) =>
     estRue(gx, gy)
       ? (
           [
@@ -152,10 +149,7 @@ function surEmprise(code: BuildingCode, p: Point): Point {
   return [Math.min(x + w, Math.max(x, p[0])), Math.min(y + d, Math.max(y, p[1]))];
 }
 
-const RUES: readonly Case[] = Array.from(
-  { length: TAILLE * TAILLE },
-  (_, i): Case => [i % TAILLE, Math.floor(i / TAILLE)],
-).filter(([gx, gy]) => estRue(gx, gy));
+const RUES: readonly Case[] = CASES.filter(([gx, gy]) => estRue(gx, gy));
 
 /**
  * One footpath per building (the campfire, which stands on the crossing, has none): from its door,

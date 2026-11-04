@@ -7,7 +7,7 @@
 // moves; Monde.tsx draws it.
 
 import { COTE, ecranXY, emprise, HAUTEUR, LARGEUR } from "./carteDemo";
-import { paliers } from "./isoLayout";
+import { CASES, paliers } from "./isoLayout";
 import tuilesJson from "./mondeTuiles/tuiles.json";
 import { ileJouable, PART_ILE } from "./navigation";
 import { bruit, hasard as hachage } from "./solVarie";
@@ -59,8 +59,8 @@ export function clairiere(visible: readonly (readonly boolean[])[]): number {
 export function distCases(
   visible: readonly (readonly boolean[])[],
 ): (px: number, py: number) => number {
-  const centres = visible.flatMap((ligne, gy) =>
-    ligne.flatMap((v, gx) => (v ? [ecranXY([gx + 0.5, gy + 0.5])] : [])),
+  const centres = CASES.flatMap(([gx, gy]) =>
+    visible[gy]?.[gx] ? [ecranXY([gx + 0.5, gy + 0.5])] : [],
   );
   const [a, b] = [COTE / 2, COTE / 4];
   const echelle = (a * b) / Math.hypot(a, b);

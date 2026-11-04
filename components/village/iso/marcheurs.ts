@@ -11,7 +11,17 @@
 // that rank under a stable key.
 
 import type { BuildingCode } from "@/db/schema";
-import { type Case, emplacements, rempart, type Sol, sol, TAILLE } from "./isoLayout";
+import {
+  CASES,
+  type Case,
+  cle,
+  dansLaGrille,
+  emplacements,
+  grilleDe,
+  rempart,
+  type Sol,
+  sol,
+} from "./isoLayout";
 import { chevauche, derriere, type Emprise } from "./profondeur";
 import type { Cible } from "./tapBatiment";
 import {
@@ -133,10 +143,8 @@ export type Carte = {
   animaux?: readonly { nom: string; cellule: Case }[];
 };
 
-const cle = ([gx, gy]: Case) => gy * TAILLE + gx;
 const egales = (a: Case, b: Case) => a[0] === b[0] && a[1] === b[1];
 
-const dansLaGrille = ([gx, gy]: Case) => gx >= 0 && gy >= 0 && gx < TAILLE && gy < TAILLE;
 const COUTS: Partial<Record<Sol, number>> = {
   chemin: COUT_CHEMIN,
   pont: COUT_CHEMIN,
@@ -154,11 +162,12 @@ export function grilleCouts(carte: Carte): number[][] {
     ...rempart.map(cle),
     ...(carte.obstacles ?? []).map(cle),
   ]);
-  return sol.map((ligne, gy) =>
-    ligne.map((s, gx) =>
-      carte.visible[gy]?.[gx] && !closes.has(cle([gx, gy])) ? (COUTS[s] ?? Infinity) : Infinity,
-    ),
-  );
+  return grilleDe((gx, gy) => {
+    const s = sol[gy]?.[gx];
+    return s !== undefined && carte.visible[gy]?.[gx] && !closes.has(cle([gx, gy]))
+      ? (COUTS[s] ?? Infinity)
+      : Infinity;
+  });
 }
 
 const VOISINS: readonly Case[] = [
@@ -268,9 +277,7 @@ export function casesDuLieu(lieu: Lieu, carte: Carte): Case[] {
     const [fx, fy] = emplacements.campfire.coin;
     const autour = (c: Case) => Math.abs(c[0] - rx) + Math.abs(c[1] - ry);
     const loin = (c: Case) => Math.abs(c[0] - fx) + Math.abs(c[1] - fy);
-    const tous = unique(sol.flatMap((l, gy) => l.map((_, gx): Case => [gx, gy]))).filter(
-      (c) => autour(c) >= 4 && autour(c) <= 9,
-    );
+    const tous = unique([...CASES]).filter((c) => autour(c) >= 4 && autour(c) <= 9);
     return tous.sort((a, b) => loin(b) - loin(a) || cle(a) - cle(b)).slice(0, 3);
   }
   return tri(unique(touchant(lieu, 1)));

@@ -13,7 +13,7 @@ import type { Practice } from "@/db/crestRules";
 import type { BuildingCode } from "@/db/schema";
 import type { VillageTier } from "@/db/village";
 import { ecranXY } from "./carteDemo";
-import { type Case, emplacements, paliers, sol, TAILLE } from "./isoLayout";
+import { type Case, cle, emplacements, paliers, sol, TAILLE } from "./isoLayout";
 import { batiments } from "./isoSpec";
 import { noeud, SENTIERS } from "./rues";
 import { hasard } from "./solVarie";
@@ -82,7 +82,6 @@ const TIERS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const satisfies readonl
 /** A district reaches this far (cells) from its building's footprint. */
 const PORTEE = 5;
 
-const cle = ([gx, gy]: Case) => gy * TAILLE + gx;
 const estRue = ([gx, gy]: Case) => sol[gy]?.[gx] === "chemin" || sol[gy]?.[gx] === "pont";
 const VOISINS = [
   [1, 0],

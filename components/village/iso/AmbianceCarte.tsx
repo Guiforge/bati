@@ -75,10 +75,19 @@ function Bords({ bord, nul }: { bord: string; nul: string }) {
   );
 }
 
+/** The pools reach this far up and left of the map's box: the land grew that way (isoLayout.ts `DEBUT`). */
+const MARGE_MARES = 256;
+
 /** All the night's pools in one Svg: one soft radial gradient per warmth, edge at opacity 0 (iter-01 H1-01). */
 function Mares({ flaques }: { flaques: readonly Flaque[] }) {
   return (
-    <Svg width={LARGEUR} height={HAUTEUR} style={ABSOLU} testID="iso-flaques-nuit">
+    <Svg
+      width={LARGEUR + MARGE_MARES}
+      height={HAUTEUR + MARGE_MARES}
+      viewBox={`${-MARGE_MARES} ${-MARGE_MARES} ${LARGEUR + MARGE_MARES} ${HAUTEUR + MARGE_MARES}`}
+      style={{ ...ABSOLU, left: -MARGE_MARES, top: -MARGE_MARES }}
+      testID="iso-flaques-nuit"
+    >
       <Defs>
         {(["tiede", "chaude"] as const).map((k) => {
           const [corps, coeur] =

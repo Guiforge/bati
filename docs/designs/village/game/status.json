@@ -39,16 +39,16 @@
   "piste_ordre": 6,
   "etape": "Page de choix : maquettes rapides ou prompt Claude Design",
   "ordre": 3,
-  "statut": "attend Guillaume",
+  "statut": "fait",
   "debut": "2026-11-04T11:40:00+01:00",
-  "fin": null,
+  "fin": "2026-11-04T13:00:00+01:00",
   "heures": null,
-  "restant_min": 0.5,
-  "restant_max": 1.5,
-  "reste": "0.5 à 1.5 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": "Page de choix publiee, attend la reponse dans checkpoint.md"
+  "note": "Maquettes de la session, C, panneau seul en fin de seance. Maquettes : https://claude.ai/artifact/QK826RGP7fanTi4wLG4cZL"
  },
  {
   "id": "G4",
@@ -90,8 +90,8 @@
   "piste_ordre": 6,
   "etape": "Le tap d'evolution en attente",
   "ordre": 6,
-  "statut": "attend Guillaume",
-  "debut": null,
+  "statut": "en cours",
+  "debut": "2026-11-04T13:00:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 1,
@@ -99,7 +99,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": "Depend de la direction choisie dans checkpoint.md"
+  "note": "Panneau C en construction"
  },
  {
   "id": "G7",
@@ -107,8 +107,8 @@
   "piste_ordre": 6,
   "etape": "Du batiment vers les exercices et le journal",
   "ordre": 7,
-  "statut": "attend Guillaume",
-  "debut": "2026-11-04T11:35:00+01:00",
+  "statut": "en cours",
+  "debut": "2026-11-04T13:00:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 1,
@@ -116,7 +116,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": "Liens de la carte faits et joues ; le tiroir vers la carte depend de la direction"
+  "note": "Panneau C en construction"
  },
  {
   "id": "G8",
@@ -124,8 +124,8 @@
   "piste_ordre": 6,
   "etape": "De la fin de seance vers le village",
   "ordre": 8,
-  "statut": "attend Guillaume",
-  "debut": null,
+  "statut": "en cours",
+  "debut": "2026-11-04T13:00:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 1,
@@ -133,7 +133,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": "Depend de la direction choisie dans checkpoint.md"
+  "note": "Panneau C en construction"
  },
  {
   "id": "G9",
@@ -141,7 +141,7 @@
   "piste_ordre": 6,
   "etape": "Langues, accessibilite, mouvement reduit",
   "ordre": 9,
-  "statut": "attend Guillaume",
+  "statut": "à faire",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -150,7 +150,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": "Depend de la direction choisie dans checkpoint.md"
+  "note": "Apres le panneau"
  },
  {
   "id": "G10",
@@ -158,7 +158,7 @@
   "piste_ordre": 6,
   "etape": "Flux Maestro des chemins principaux",
   "ordre": 10,
-  "statut": "attend Guillaume",
+  "statut": "à faire",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -167,7 +167,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": "Depend de la direction choisie dans checkpoint.md"
+  "note": "Apres le panneau"
  },
  {
   "id": "G11",
@@ -175,7 +175,7 @@
   "piste_ordre": 6,
   "etape": "Theo sur le parcours, mara sur les ecrans, suite complete",
   "ordre": 11,
-  "statut": "attend Guillaume",
+  "statut": "à faire",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -184,7 +184,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": "Depend de la direction choisie dans checkpoint.md"
+  "note": "Apres le panneau"
  },
  {
   "id": "G12",

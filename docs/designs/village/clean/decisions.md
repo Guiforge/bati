@@ -10,6 +10,11 @@
 - 03/11 : réglage du masque arrêté après trois passes et une ronde ciblée : les planches sur aplat ne montrent pas le vrai sol, les captures en jeu tranchent.
 - 03/11 : 47 éléments sur 171 ne font pas la taille que donnerait leur source d'aujourd'hui (17 de plus de 2 px). Je garde les webp livrés, sans toucher à ces éléments : les captures montrent ce que voit le joueur. Le prochain `integrate.py` les régénérera depuis les sources ; il faudra alors relire ces 47.
 
+- 04/11 : fusion de la piste malgré les bords gris restants : mara ne les voit qu'au zoom, et ce sont en bonne partie les ombres du code.
+- 04/11 : ombres et X des rues non touchés : `components/village/iso/` est à LIFE.
+- 04/11 : 114 branches locales fusionnées supprimées, toutes contenues dans le tip. Les non fusionnées restent.
+- 04/11 : worktree `agent-a6d9e6f2e26961458` gardé : git le dit modifié et le garde-fou de session interdit de lire son état. Commit déjà fusionné.
+
 ## Worktrees laissés, pour Guillaume
 
 | Worktree | Pourquoi |

@@ -20,7 +20,7 @@ export const dureeMoment = (genre: GenreMoment): number => (genre === "stade" ? 
 export const TENUE_MS = 1000;
 
 /** The old stage gives way to the new one here, ms (stade). */
-export const ECHANGE_MS = 200;
+export const ECHANGE_MS = 270;
 /** The lights come on here, ms (stade). */
 export const LUMIERES_MS = 450;
 
@@ -77,7 +77,7 @@ export function poseMoment(genre: GenreMoment, t: number): PoseMoment {
     };
   }
   const g = rampe(t, 0, 100) - rampe(t, 500, 760);
-  const poussiere = t < ECHANGE_MS ? 0 : t < 760 ? 1 : 1 - rampe(t, 760, 1000);
+  const poussiere = t < ECHANGE_MS ? 0 : t < 760 ? 1 : 1 - rampe(t, 760, 960);
   return {
     lueur: g,
     lueurEchelle: 0.6 + 0.4 * rampe(t, 0, 200),
@@ -86,9 +86,9 @@ export function poseMoment(genre: GenreMoment, t: number): PoseMoment {
     nouveau:
       t < ECHANGE_MS
         ? 0
-        : t < 340
-          ? 0.88 + 0.18 * rampe(t, 200, 340)
-          : 1.06 - 0.06 * rampe(t, 340, 420),
+        : t < ECHANGE_MS + 140
+          ? 0.88 + 0.18 * rampe(t, ECHANGE_MS, ECHANGE_MS + 140)
+          : 1.06 - 0.06 * rampe(t, ECHANGE_MS + 140, ECHANGE_MS + 220),
     lumieres: rampe(t, LUMIERES_MS, 530),
     poussiere,
     poussiereEchelle: 1 + 0.25 * (1 - poussiere),

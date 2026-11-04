@@ -30,9 +30,9 @@ describe("a stage change, from the tap", () => {
     expect(p.poussiere).toBe(1);
   });
 
-  test("the new stage overshoots to 1.06 at 340 ms and is on 1 by 420 ms", () => {
-    expect(poseMoment("stade", 340).nouveau).toBeCloseTo(1.06, 5);
-    expect(poseMoment("stade", 420).nouveau).toBeCloseTo(1, 5);
+  test("the new stage overshoots to 1.06 at 410 ms and is on 1 by 490 ms (the swap 70 ms later than the first cut, once the scaffold is ink)", () => {
+    expect(poseMoment("stade", 410).nouveau).toBeCloseTo(1.06, 5);
+    expect(poseMoment("stade", 490).nouveau).toBeCloseTo(1, 5);
   });
 
   test("the lights come on at 450 to 530 ms, in the still-black mass", () => {

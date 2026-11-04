@@ -54,7 +54,7 @@ import {
   tempsMoment,
 } from "./moment";
 import { OmbreSocle, Planche } from "./PlancheCarte";
-import { PEINTS } from "./peints";
+import { PEINTS, peintDe } from "./peints";
 import { coinsEmprise } from "./revelation";
 
 const ABSOLU = { position: "absolute" } as const;
@@ -227,10 +227,32 @@ export function IsoCroissance({
   const nuit = vie === "nuit";
   const genre = genreDeCroissance(ancien, nouveau);
   const duree = dureeMoment(genre);
-  const sNouveau = spriteDe(code, nouveau, vie);
-  const sAncien = ancien && genre === "stade" ? spriteDe(code, ancien, vie) : undefined;
-  const sEchafaudage: SpriteIso | undefined = MAQUETTES[echafaudageDe(code)];
   const base = useContext(RangsBldContext)?.bases[code] ?? 0;
+  // The silhouette is the real final sprite: the one the engine draws at that rank (a painted
+  // building's stage is not the legacy stage of the same level: a campfire at rank 10 is a tornado).
+  const spriteAuRang = (rang: number): SpriteIso | undefined => {
+    const data = BATIMENT_MOTEUR ? DONNEES_BLD[code] : undefined;
+    if (!data || !PEINTS[code]) return undefined;
+    const v = etatBatiment(data, rang, { baseRank: base, nuit, rule: "B" }).stage;
+    return peintDe(code, v, vie);
+  };
+  const sNouveau = (rangs ? spriteAuRang(rangs.vers) : undefined) ?? spriteDe(code, nouveau, vie);
+  const sAncien =
+    ancien && genre === "stade"
+      ? ((rangs && rangs.de > 0 ? spriteAuRang(rangs.de) : undefined) ??
+        spriteDe(code, ancien, vie))
+      : undefined;
+  // A rank beat: the body as it stands, redrawn over the light, so the light is behind it and the
+  // building is never hidden by it.
+  const sRang =
+    genre === "rang"
+      ? ((rangs && rangs.de > 0 ? spriteAuRang(rangs.de) : undefined) ??
+        spriteDe(code, ancien ?? nouveau, vie))
+      : undefined;
+  const sEchafaudage: SpriteIso | undefined = MAQUETTES[echafaudageDe(code)];
+  // True once the clock runs: the new stage and the pieces are not shown before (no silhouette over
+  // the site while the camera glides).
+  const [demarre, setDemarre] = useState(delai <= 0);
   // The layer's own clock, ms from the tap.
   const h = useSharedValue(0);
   // True once the lights are on: the new stage's banner and windows show from then.
@@ -246,6 +268,7 @@ export function IsoCroissance({
     const debut = tempsMoment(genre, { saute: false, reduit });
     if (debut >= duree) {
       h.set(duree);
+      setDemarre(true);
       setAllume(true);
       setTermine(true);
       return;
@@ -256,6 +279,7 @@ export function IsoCroissance({
       // A rank's lights are on at once, with the start: no second timer of the same delay (Android
       // fires equal ones in either order).
       setTimeout(() => {
+        setDemarre(true);
         h.set(withTiming(duree, { duration: duree, easing: Easing.linear }));
         if (genre !== "stade") setAllume(true);
       }, attend),
@@ -271,13 +295,14 @@ export function IsoCroissance({
     for (const id of attendu.current) clearTimeout(id);
     cancelAnimation(h);
     h.set(tempsMoment(genre, { saute: true, reduit: false }));
+    setDemarre(true);
     setAllume(true);
     setTermine(true);
   }, [saute, genre, h]);
 
   const styleLueur = useAnimatedStyle(() => {
     const p = poseMoment(genre, h.get());
-    return { opacity: p.lueur * (nuit ? 1 : 0.45), transform: [{ scale: p.lueurEchelle }] };
+    return { opacity: p.lueur * (nuit ? 1 : 0.8), transform: [{ scale: p.lueurEchelle }] };
   });
   const styleAncien = useAnimatedStyle(() => ({
     transform: [{ scale: poseMoment(genre, h.get()).ancien ? 1 : 0 }],
@@ -305,6 +330,8 @@ export function IsoCroissance({
   const [lw, lh] = [taille, (taille * TAILLES.lueur[1]) / TAILLES.lueur[0]];
   const centre: readonly [number, number] =
     genre === "stade" ? [n.x + n.w / 2, n.y + n.h / 2] : [n.x + n.w / 2, n.y + 0.4 * n.h];
+  // A long low body (the road, a wall) takes no tall glow, which would wash its neighbours: the ground pool only.
+  const bas = n.h < 0.9 * n.w;
   const spriteLueur = spriteMoment(IMAGES.lueur[nuit ? "nuit" : "jour"], TAILLES.lueur);
 
   // The footprint: the pool at night, the puffs at its corners.
@@ -328,13 +355,15 @@ export function IsoCroissance({
           testID={`iso-croissance-lueur-${code}`}
           style={[carte, { transformOrigin: [centre[0], centre[1], 0] }, styleLueur]}
         >
-          <Planche
-            s={spriteLueur}
-            rect={{ x: centre[0] - lw / 2, y: centre[1] - lh / 2, w: lw, h: lh }}
-            testID={`iso-croissance-lueur-image-${code}`}
-          />
-          {/* At night the same light, squashed flat, pools on the ground (one image, no node of its own). */}
-          {nuit && genre === "stade" ? (
+          {bas ? null : (
+            <Planche
+              s={spriteLueur}
+              rect={{ x: centre[0] - lw / 2, y: centre[1] - lh / 2, w: lw, h: lh }}
+              testID={`iso-croissance-lueur-image-${code}`}
+            />
+          )}
+          {/* The same light, squashed flat, pools on the ground (one image, no node of its own): at night, and by day under a low body. */}
+          {(nuit || bas) && genre === "stade" ? (
             <Planche
               s={spriteLueur}
               rect={{ x: centreP[0] - solW / 2, y: centreP[1] - solH / 2, w: solW, h: solH }}
@@ -343,6 +372,9 @@ export function IsoCroissance({
           ) : null}
         </Animated.View>
       )}
+      {sRang && !termine ? (
+        <Planche s={sRang} rect={pose(code, sRang)} testID={`iso-croissance-corps-${code}`} />
+      ) : null}
       {genre === "stade" ? (
         <>
           {/* The old stage and the scaffold (or the heap of a building not there yet), then ink. */}
@@ -385,7 +417,11 @@ export function IsoCroissance({
           <Animated.View
             pointerEvents="none"
             testID={`iso-croissance-nouveau-${code}`}
-            style={[carte, { transformOrigin: origineNouveau }, styleNouveau]}
+            style={[
+              carte,
+              { opacity: demarre ? 1 : 0, transformOrigin: origineNouveau },
+              styleNouveau,
+            ]}
           >
             <Planche s={sNouveau} rect={n} testID={`iso-croissance-nouveau-image-${code}`} />
             {termine ? null : (
@@ -448,7 +484,7 @@ export function IsoCroissance({
           nuit={nuit}
           centres={COINS_BOUFFEES.map((c) => [
             centreP[0] + (coins[c]?.[0] ?? 0),
-            centreP[1] + (coins[c]?.[1] ?? 0) - 20,
+            centreP[1] + (coins[c]?.[1] ?? 0),
           ])}
           pied={centreP}
           genre={genre}
@@ -480,7 +516,11 @@ function Bouffees({
 }) {
   const style = useAnimatedStyle(() => {
     const p = poseMoment(genre, horloge.get());
-    return { opacity: p.poussiere, transform: [{ scale: p.poussiereEchelle }] };
+    // A small drift upward as it clears (poussiereEchelle 1 to 1.25).
+    return {
+      opacity: p.poussiere,
+      transform: [{ translateY: -40 * (p.poussiereEchelle - 1) }, { scale: p.poussiereEchelle }],
+    };
   });
   return (
     <Animated.View
@@ -503,7 +543,8 @@ function Bouffees({
         const repli = TAILLES.bouffees[i];
         if (!img || !repli || c[0] === undefined || c[1] === undefined) return null;
         const s = spriteMoment(img[nuit ? "nuit" : "jour"], repli);
-        const w = 1.2 * COTE;
+        // 0.78 COTE: 35 % under the first size, they hid the reveal.
+        const w = 0.78 * COTE;
         const h = (w * s.size[1]) / s.size[0];
         return (
           <Planche

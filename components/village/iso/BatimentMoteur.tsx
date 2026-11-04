@@ -21,7 +21,7 @@
 // vector). Lights breathe on the map's clock and stand still without it or with reduced motion.
 
 import { Image } from "expo-image";
-import { createContext, Fragment, type ReactNode, useContext } from "react";
+import { createContext, Fragment, type ReactNode, useContext, useEffect, useState } from "react";
 import { View } from "react-native";
 import type { AddOn, BuildingData, LightAnchor, Point } from "@/constants/buildingData";
 import { buildingStageFor, type StageRule, type VisualStage } from "@/constants/buildingStages";
@@ -305,6 +305,17 @@ function Moteur({
   reclame,
 }: Omit<PropsBatiment, "actif">) {
   const etat = etatBatiment(data, rank, { baseRank, nuit, rule });
+  const [vu, setVu] = useState(etat.stage);
+  const [avant, setAvant] = useState<typeof etat.stage | null>(null);
+  if (vu !== etat.stage) {
+    setAvant(vu);
+    setVu(etat.stage);
+  }
+  useEffect(() => {
+    if (!avant) return;
+    const id = setTimeout(() => setAvant(null), 700);
+    return () => clearTimeout(id);
+  }, [avant]);
   const k = corps.w / taille[0];
   const px = (o: Point): Point => [corps.x + o[0] * k, corps.y + o[1] * k];
   const geo: Geo = { px, ancre };
@@ -314,6 +325,8 @@ function Moteur({
       {masque || !etat.magie ? null : <MagieSol magie={etat.magie} px={px} />}
       <Ajouts layer="behind" etat={etat} geo={geo} />
       <View pointerEvents="none" testID="batiment-corps" style={enBoite(boite)}>
+        {/* The stage left stays under the new one while its image decodes: never a frame without the building. Same key as when it was the current one: the same view, not a new one that would decode again (blank). */}
+        {avant ? <Fragment key={avant}>{sprite(avant)}</Fragment> : null}
         <Fragment key={etat.stage}>{sprite(etat.stage)}</Fragment>
         <Ajouts layer="sousAiles" etat={etat} geo={geo} />
         {couches?.(etat.stage, rank, baseRank)}

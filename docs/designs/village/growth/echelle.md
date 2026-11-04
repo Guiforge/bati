@@ -39,7 +39,7 @@ Trois coins de campagne, chacun sa couleur de culture et son histoire : le grain
 | 7 à 9 | Les vergers à l'est : grange, rangs d'arbres sombres, ruches sans couleur | Hameau des vergers, un puits | Gravier sur les trois chemins | Fenêtres dans deux terroirs |
 | 10 à 12 | Les pâtures du nord : murets, bergeries, longues bandes de champs à l'ouest | Bourg marchand à la croisée du nord | Pavés à la croisée, terre ailleurs | Trois groupes de lumières séparés, le bourg le plus fort |
 
-**Force** : variété, chaque palier ouvre un coin nouveau, on a envie de voir le suivant. **Risque** : trois couleurs de plus à garder calmes, des champs qui passent en patchwork. **Compte** : 12 peintures de pièces, dont 3 routes.
+**Force** : variété, chaque palier ouvre un coin nouveau, on a envie de voir le suivant. **Risque** : trois couleurs de plus à garder calmes, des champs qui passent en patchwork. **Compte** : 11 peintures de pièces, dont 3 routes.
 
 ## Proposition F : La forêt recule
 
@@ -62,6 +62,6 @@ La prospérité se gagne sur la forêt. Au début des souches à la lisière, pu
 | mara (art) | F, R, T | T est un patchwork à la taille du téléphone. R : pavés et lanternes plus clairs que le feu. F : clairières claires, trop de lumière | T : une seule famille de teintes, on distingue par la forme, sans ruches. R : pavés gris-brun mats. F : clairières en valeur moyenne, une petite lumière par clairière |
 | env (sol) | F, R, T | Pour T, il faut repeindre le sol de chaque terroir. Pour R, créer la route et son passage de rivière. Pour F, la clairière existe déjà | Noté comme coût ci-dessous, pas corrigeable par un concept |
 
-**Coût de sol, pour le choix** : F s'appuie sur la clairière nord déjà peinte, R demande une route neuve, T demande de repeindre des sols (la grande tache sombre à l'est). **Mon avis : F**, si la bande de ce soir tient la promesse. Les trois juges la placent en tête, et j'ai relu leurs raisons sans images.
+**Coût de sol, pour le choix** : F s'appuie sur la clairière nord déjà peinte, R demande une route neuve, T demande de repeindre des sols (la grande tache sombre à l'est). Les trois juges placent F en tête, sur le texte seul. **Mon avis après les images : un mélange, la route de R et le recul de F au nord-ouest.** R tient le mieux à l'image, et le montage de F est le moins réussi. Le mélange n'est pas dessiné.
 
 **Cassé aujourd'hui, à fondre avant de poser** (env) : la coupe rectangulaire au pied de la route sud, le bord carré à gauche du coin, les taches sombres plates, le haut de carte en bruit uni.

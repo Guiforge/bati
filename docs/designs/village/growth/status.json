@@ -65,7 +65,7 @@
   "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "38 images, 0,30 $"
  },
  {
   "id": "G5",
@@ -73,16 +73,16 @@
   "piste_ordre": 8,
   "etape": "La croissance des paliers 1 à 12, proposition par proposition",
   "ordre": 5,
-  "statut": "en cours",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
-  "restant_min": 0.5,
-  "restant_max": 1.5,
-  "reste": "0.5 à 1.5 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Montages sur les vrais rendus ; bande Klein enchaînée abandonnée"
  },
  {
   "id": "G6",
@@ -90,16 +90,16 @@
   "piste_ordre": 8,
   "etape": "Les lumières de nuit",
   "ordre": 6,
-  "statut": "à faire",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
-  "restant_min": 0.2,
-  "restant_max": 0.5,
-  "reste": "0.2 à 0.5 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Klein sur les montages, 12 images, pas cohérentes entre elles"
  },
  {
   "id": "G7",
@@ -107,16 +107,16 @@
   "piste_ordre": 8,
   "etape": "Page de choix pour Guillaume",
   "ordre": 7,
-  "statut": "à faire",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
-  "restant_min": 0.5,
-  "restant_max": 1,
-  "reste": "0.5 à 1 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "https://claude.ai/artifact/CdyBba3Bdn9UxRqWf63wYH"
  },
  {
   "id": "G8",
@@ -133,7 +133,7 @@
   "reste": "2 à 4 h",
   "avancement": null,
   "total": null,
-  "note": "attend le choix et le budget de PROBE"
+  "note": "attend le choix de Guillaume (checkpoint.md) et le budget de PROBE"
  },
  {
   "id": "G9",

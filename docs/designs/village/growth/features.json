@@ -63,7 +63,8 @@
         0.5,
         1.5
       ],
-      "status": "done"
+      "status": "done",
+      "note": "38 images, 0,30 $"
     },
     {
       "id": "G5",
@@ -74,7 +75,8 @@
         0.5,
         1.5
       ],
-      "status": "doing"
+      "status": "done",
+      "note": "Montages sur les vrais rendus ; bande Klein enchaînée abandonnée"
     },
     {
       "id": "G6",
@@ -85,7 +87,8 @@
         0.2,
         0.5
       ],
-      "status": "todo"
+      "status": "done",
+      "note": "Klein sur les montages, 12 images, pas cohérentes entre elles"
     },
     {
       "id": "G7",
@@ -96,7 +99,8 @@
         0.5,
         1
       ],
-      "status": "todo"
+      "status": "done",
+      "note": "https://claude.ai/artifact/CdyBba3Bdn9UxRqWf63wYH"
     },
     {
       "id": "G8",
@@ -108,7 +112,7 @@
         4
       ],
       "status": "waiting",
-      "note": "attend le choix et le budget de PROBE"
+      "note": "attend le choix de Guillaume (checkpoint.md) et le budget de PROBE"
     },
     {
       "id": "G9",

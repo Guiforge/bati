@@ -6,4 +6,6 @@
 - 04/11 A3 en attente : Skia absent de l'appli (`checkpoint.md`, Q1).
 - 04/11 A4, A5 atelier navigateur, `render`, `strip`, `sheet`. A6 calibrage : nuit 1,47 %, jour 2,67 et 3,36 %, mara PASS au 2e passage. Le 1er avait vu la place sans pavage (ids SVG globaux), corrigé.
 - 04/11 **Fusion 1** dans `feat/village-iso` : 4a5b6c9bb.
-- Strip : `img/` (fin de piste) ; pas de strip avant/après, rien n'a changé dans l'appli.
+- 04/11 Guillaume choisit A, amendement du prompt : 6c6e60707.
+- 04/11 A7, A8 `clip` et `check` : a60c5f7d7. **Fusion 2.**
+- Strips : `img/strip-jour.jpg`, `img/strip-nuit.jpg`. Pas d'avant/après : rien n'a changé dans l'appli.

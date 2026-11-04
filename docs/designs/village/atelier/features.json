@@ -103,8 +103,8 @@
    "status": "done",
    "note": "Nuit 1,47 %, jour 2,67 et 3,36 % (cible 2 %) ; mara PASS sur les 3 ; écart du jour écrit dans PIPELINE.md",
    "debut": "2026-11-04T17:55:00+01:00",
-   "fin": "2026-11-04T18:45:00+01:00",
-   "heures": 0.8
+   "fin": "2026-11-04T18:05:00+01:00",
+   "heures": 0.2
   },
   {
    "id": "A7",
@@ -115,9 +115,11 @@
     1,
     2
    ],
-   "status": "doing",
-   "note": "",
-   "debut": "2026-11-04T18:05:00+01:00"
+   "status": "done",
+   "note": "Horloge factice : 61 images distinctes, et 27 sur 31 identiques à l'octet entre 2 passes, le reste à moins de 8 niveaux. Ailes vues ; villageois qui marche pas isolé",
+   "debut": "2026-11-04T18:05:00+01:00",
+   "fin": "2026-11-04T18:32:00+01:00",
+   "heures": 0.4
   },
   {
    "id": "A8",
@@ -128,9 +130,11 @@
     2,
     3
    ],
-   "status": "doing",
-   "note": "",
-   "debut": "2026-11-04T18:05:00+01:00"
+   "status": "done",
+   "note": "Paliers 1, 6, 12 en 72 s. Seul le budget de mouvement fait échouer ; occlusion et ancres en simple rapport pour LAYOUT",
+   "debut": "2026-11-04T18:05:00+01:00",
+   "fin": "2026-11-04T18:32:00+01:00",
+   "heures": 0.4
   },
   {
    "id": "A9",

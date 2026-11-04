@@ -14,6 +14,7 @@ import type { VillageTier } from "@/db/village";
 import { COTE, ecranXY, etatCarte, LARGEUR } from "./carteDemo";
 import { EAU_GX, PARCELLES } from "./champs";
 import type { Case } from "./isoLayout";
+import type { Stade } from "./isoSpec";
 import { clairiere, distCases, mulberry32 } from "./monde";
 import type { Point } from "./ombres";
 import type { Emprise } from "./profondeur";
@@ -1099,6 +1100,11 @@ export type Accessoire = {
   pied?: readonly [number, number];
   /** On this building's roof (the cat): drawn right after it, its foot on its sprite's top. */
   sur?: BuildingCode;
+  /**
+   * With `sur`: where the roof is, by the stage the building wears, dp from the top of its tap mask.
+   * The mask's top is the tallest thing (the farm's corn stalk), not the roof the cat sits on.
+   */
+  decalage?: Partial<Record<Stade, readonly [number, number]>>;
   /** Off the island, beside a plot the painted ground carries (loupe BC): shown with the painted ground, from `palier`, whatever the cells. */
   hors?: true;
   /** Mirrored: a repeat of a prop shown elsewhere in the same view stands flipped (art rule 3). */
@@ -1149,7 +1155,15 @@ export const ACCESSOIRES: readonly Accessoire[] = [
   { nom: "tonneaux_3", case: [4, 18], batiment: "champion_arena" },
   { nom: "cloture_1", case: [9, 18], batiment: "champion_arena", palier: 10 },
   // The stories (style bible of 31/10 §8).
-  { nom: "chat_1", case: [4, 7], sur: "farm", batiment: "farm", palier: 3 },
+  {
+    nom: "chat_1",
+    case: [4, 7],
+    sur: "farm",
+    // Measured on foyer renders at zoom 2.4 (6.3 screen px per dp): the thatch ridge, not the corn tip.
+    decalage: { solid: [-6, 9], grand: [-6, 19] },
+    batiment: "farm",
+    palier: 3,
+  },
   { nom: "pecheur_1", case: [2, 11], pied: [2.55, 11.02], palier: 2 },
   { nom: "sieste_1", case: [7, 9], palier: 3 },
   { nom: "charrette_cassee_1", case: [13, 18], palier: 10 },

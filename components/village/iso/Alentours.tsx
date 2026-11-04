@@ -642,7 +642,11 @@ export function AccessoirePeint({
   lumiere: Ambiance;
   stade: (code: BuildingCode) => Stade;
 }) {
-  const pied = (a.sur ? surLeToit(a.sur, stade(a.sur)) : null) ?? piedAccessoire(a);
+  const stadeToit = a.sur ? stade(a.sur) : undefined;
+  const toit = a.sur && stadeToit ? surLeToit(a.sur, stadeToit) : null;
+  const d = stadeToit ? a.decalage?.[stadeToit] : undefined;
+  const pied: readonly [number, number] =
+    (toit && d ? ([toit[0] + d[0], toit[1] + d[1]] as const) : toit) ?? piedAccessoire(a);
   const { w, h, pied: k } = TOILE_ACCESSOIRE;
   useDump(() => ({
     id: `prop_${a.nom}`,

@@ -1,0 +1,78 @@
+# Maestro E2E Test - end of a session: the village opens the building that rose, once
+#
+# Needs: a LOW-LEVEL hero (a fresh install after onboarding: level 1, no history) whose first
+# session raises a building, so the victory screen offers "See your village" (tonight-view-village)
+# and a building becomes ready to evolve. Dev build, iso village on. If the session raises nothing
+# the flow FAILS at tonight-view-village: it does not pass vacuously.
+#
+# After the tap, the map waits DELAI_FETE_MS (20 s; 0 under reduced motion) for the party before the
+# panel opens by itself, on the building that is ready. Asserted: the panel opened with the Evolve
+# button, the building has NOT evolved (the claim waits for the tap), Back closes it, and leaving
+# the village then returning does not open it again (the opening is spent: `prendreOuverture`).
+#
+# The session screens never settle (timer): see subflows/play-to-victory.yaml for the capped taps.
+appId: com.guiforge.bati.dev
+---
+- launchApp:
+    clearState: true
+- runFlow: subflows/complete-onboarding.yaml
+
+# Play the first quest to the victory screen and stop there (Continue not tapped).
+- runFlow: subflows/play-a-quest-to-victory.yaml
+
+- scrollUntilVisible:
+    element:
+      id: "tonight-view-village"
+    direction: DOWN
+    timeout: 20000
+- takeScreenshot: village-eos-1-victory
+- tapOn:
+    id: "tonight-view-village"
+
+- extendedWaitUntil:
+    visible:
+      id: "village-screen"
+    timeout: 20000
+- takeScreenshot: village-eos-2-map
+# The party delay, then the panel by itself.
+- extendedWaitUntil:
+    visible:
+      id: "iso-bulle-nom"
+    timeout: 30000
+- assertVisible:
+    id: "village-claim"
+- assertNotVisible:
+    id: "village-title"
+- takeScreenshot: village-eos-3-panel-open
+
+# Not evolved yet: the button is still there. Nothing was written without the tap.
+- assertVisible:
+    id: "village-claim"
+
+# Back closes the panel, the title returns.
+- back
+- assertNotVisible:
+    id: "iso-bulle-nom"
+- extendedWaitUntil:
+    visible:
+      id: "village-title"
+    timeout: 5000
+- takeScreenshot: village-eos-4-closed
+
+# Leave the village and return: the panel does not open again. Waits past the delay's worth of
+# settling by asserting after a full re-focus, then once more after the title is up.
+- tapOn:
+    id: "tab-journal"
+    waitToSettleTimeoutMs: 500
+- assertVisible:
+    id: "journal-screen"
+- tapOn:
+    id: "tab-village"
+    waitToSettleTimeoutMs: 500
+- assertVisible:
+    id: "village-screen"
+- assertVisible:
+    id: "village-title"
+- assertNotVisible:
+    id: "iso-bulle-nom"
+- takeScreenshot: village-eos-5-returned

@@ -658,7 +658,13 @@ export function ContenuBatiment({
                 pret ? t("village.claim_ready_a11y", { name: nomTexte }) : nomTexte
               }, ${levelText(building, t)}`}
             >
-              <Text fontFamily="heading" fontWeight="700" fontSize={20} color="bgDark">
+              <Text
+                testID="iso-bulle-titre"
+                fontFamily="heading"
+                fontWeight="700"
+                fontSize={20}
+                color="bgDark"
+              >
                 {nomTexte}
               </Text>
             </View>

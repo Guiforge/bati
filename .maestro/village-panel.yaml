@@ -1,0 +1,87 @@
+# Maestro E2E Test - the iso village's building panel: open, follow a link, come back
+#
+# Needs: the dev build with the iso village on (INTEGRATION), a fresh install. Onboarding gives a
+# hero with a few buildings; no session is needed. A linked row (a session or an exercise of the
+# Quarry/Archery family) only exists once the hero has trained, so that part is skipped cleanly
+# when no row shows; everything else is asserted.
+#
+# What it guards: the panel is state in the village tab. A row inside it pushes a screen and Back
+# must find the SAME panel open (it used to close the panel before the push, so Back showed the map
+# with the title back). The assertions read that state, the panel's name and the hidden title, not
+# which screen came up.
+#
+# There is no testID per building on the map (it is drawn, not made of views), so the drawer's row
+# opens the panel. The first row tap after a cold start can be lost (see village-sheet-check.yaml),
+# so it is uncapped on purpose. Selects by testID only: en and fr both pass.
+appId: com.guiforge.bati.dev
+---
+- launchApp:
+    clearState: true
+- runFlow: subflows/complete-onboarding.yaml
+
+- tapOn:
+    id: "tab-village"
+    waitToSettleTimeoutMs: 500
+- assertVisible:
+    id: "village-screen"
+- assertVisible:
+    id: "village-title"
+- tapOn:
+    id: "village-drawer-open"
+- assertVisible:
+    id: "village-drawer"
+- takeScreenshot: village-panel-1-drawer
+
+# --- 1. the row opens the panel, the drawer goes, the title steps aside ---------------
+- tapOn:
+    id: "village-building-row"
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: "iso-bulle-nom"
+    timeout: 10000
+- assertNotVisible:
+    id: "village-drawer"
+- assertNotVisible:
+    id: "village-title"
+- takeScreenshot: village-panel-2-open
+
+# --- 2. a linked row pushes a screen; Back returns to the same open panel ---------------
+# Its name is the panel's: copied, so the check is "the same building", not "some building".
+# The name Text itself (iso-bulle-nom is the accessible wrapper, whose label also says the rank).
+- copyTextFrom:
+    id: "iso-bulle-titre"
+# Neither exists for a hero who has not trained that building; the block is then skipped. The
+# movements are the panel's first section, so a movement row is tried first, else a session row.
+- runFlow:
+    when:
+      visible:
+        id: "iso-bulle-exercice"
+    commands:
+      - tapOn:
+          id: "iso-bulle-exercice"
+          index: 0
+      - runFlow: subflows/village-panel-back-check.yaml
+- runFlow:
+    when:
+      notVisible:
+        id: "iso-bulle-exercice"
+      visible:
+        id: "iso-bulle-seance"
+    commands:
+      - tapOn:
+          id: "iso-bulle-seance"
+          index: 0
+      - runFlow: subflows/village-panel-back-check.yaml
+
+# --- 3. Back closes the panel and the title returns --------------------------------------
+- back
+- assertNotVisible:
+    id: "iso-bulle-nom"
+- extendedWaitUntil:
+    visible:
+      id: "village-title"
+    timeout: 5000
+- assertVisible:
+    id: "village-screen"
+- takeScreenshot: village-panel-5-closed

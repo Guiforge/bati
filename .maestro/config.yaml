@@ -15,6 +15,9 @@ flows:
   - oath-flow.yaml
   - session-interruptions.yaml
   - village-sheet-check.yaml
+  - village-panel.yaml
+  - village-evolve.yaml
+  - village-end-of-session.yaml
 
 # screenshots.yaml, audit.yaml and audit-fresh.yaml are absent on purpose: they assert nothing
 # and take minutes each. They are run by name, by scripts/screenshots.sh and scripts/audit-shots.sh.

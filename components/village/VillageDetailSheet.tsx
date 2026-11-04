@@ -296,6 +296,27 @@ export function BuildingLevel({
   );
 }
 
+function sessionTitle(
+  session: Record<
+    "enTitle" | "frTitle" | "deTitle" | "esTitle" | "ruTitle" | "zhTitle",
+    string | null | undefined
+  >,
+  language: AppLanguage,
+) {
+  if (!session.enTitle) return null;
+  return localizedTitle(
+    {
+      enTitle: session.enTitle,
+      frTitle: session.frTitle ?? "",
+      deTitle: session.deTitle ?? "",
+      esTitle: session.esTitle ?? "",
+      ruTitle: session.ruTitle ?? "",
+      zhTitle: session.zhTitle ?? "",
+    },
+    language,
+  );
+}
+
 /**
  * What a building's figures say, under its name: the driver, the bar, the milestone, the deeds,
  * the claim and the links. One writer for the sheet (list, Journal, flag off) and the iso bubble.
@@ -398,7 +419,8 @@ export function BuildingFacts({
   const pretAuPlafond = surCarte && !!onClaim && building.nextTarget === null;
   const suiveuse = surCarte && building.driver === "prereq" && built;
   const open = (href: string) => {
-    onClose();
+    // On the card, Back from the pushed screen returns to the same open panel; the sheet closes.
+    if (!surCarte) onClose();
     router.push(href as never);
   };
 
@@ -437,6 +459,79 @@ export function BuildingFacts({
 
   const reclameEnHaut = surCarte ? reclame : null;
   const reclameEnBas = surCarte ? null : reclame;
+
+  // On the card the movements come first, then the sessions that raised it (the mockup's order).
+  const exercices = surCarte &&
+    extra?.kind === "sessions" &&
+    (extra.exercises?.length ?? 0) > 0 && (
+      <YStack gap="2" testID="iso-bulle-exercices">
+        <SectionLabel>{t("village.detail_exercises_title")}</SectionLabel>
+        {extra.exercises?.map((exercise) => (
+          <XStack
+            key={exercise.exerciseId}
+            testID="iso-bulle-exercice"
+            justify="space-between"
+            gap="2"
+            minH={48}
+            items="center"
+            opacity="press:0.7"
+            onPress={() => open(`/exercises/${exercise.exerciseId}`)}
+            accessibilityRole="link"
+            accessibilityLabel={t("village.open_exercise_a11y", {
+              name: localizedName(exercise, language),
+            })}
+          >
+            <Text fontSize={12} color="primaryText" flex={1}>
+              {localizedName(exercise, language)}
+            </Text>
+            <Text fontSize={12} color="textSecondary">
+              {t("village.detail_recent_units", { volume: exercise.volume })}
+            </Text>
+            <ChevronRight size={16} color="primaryText" />
+          </XStack>
+        ))}
+      </YStack>
+    );
+
+  const recentes = extra?.kind === "sessions" && extra.sessions.length > 0 && (
+    <YStack gap="2">
+      <SectionLabel>{t("village.detail_recent_title")}</SectionLabel>
+      {extra.sessions.map((session) => {
+        const title = sessionTitle(session, language);
+        const when = getDateTimeFormat(language, RECENT_WORK_DATE_OPTIONS).format(
+          session.performedAt,
+        );
+        return (
+          <XStack
+            key={session.sessionId}
+            testID="iso-bulle-seance"
+            justify="space-between"
+            gap="2"
+            {...(surCarte
+              ? {
+                  minH: 48,
+                  items: "center" as const,
+                  opacity: "press:0.7" as const,
+                  onPress: () => open(`/journal/${session.sessionId}?from=village`),
+                  accessibilityRole: "link" as const,
+                  accessibilityLabel: t("village.open_session_a11y", {
+                    what: title ?? when,
+                  }),
+                }
+              : {})}
+          >
+            <Text fontSize={12} color={surCarte ? "primaryText" : "textSecondary"} flex={1}>
+              {`${title ? `${title} · ` : ""}${when}`}
+            </Text>
+            <Text fontSize={12} color="textSecondary">
+              {t("village.detail_recent_units", { volume: session.volume })}
+            </Text>
+            {surCarte ? <ChevronRight size={16} color="primaryText" /> : null}
+          </XStack>
+        );
+      })}
+    </YStack>
+  );
 
   // A fragment: its rows are the parent's, so the sheet's gaps are the ones it always had.
   return (
@@ -497,85 +592,8 @@ export function BuildingFacts({
         ) : null}
       </YStack>
 
-      {extra?.kind === "sessions" && extra.sessions.length > 0 && (
-        <YStack gap="2">
-          <SectionLabel>{t("village.detail_recent_title")}</SectionLabel>
-          {extra.sessions.map((session) => {
-            const title = session.enTitle
-              ? localizedTitle(
-                  {
-                    enTitle: session.enTitle,
-                    frTitle: session.frTitle ?? "",
-                    deTitle: session.deTitle ?? "",
-                    esTitle: session.esTitle ?? "",
-                    ruTitle: session.ruTitle ?? "",
-                    zhTitle: session.zhTitle ?? "",
-                  },
-                  language,
-                )
-              : null;
-            const when = getDateTimeFormat(language, RECENT_WORK_DATE_OPTIONS).format(
-              session.performedAt,
-            );
-            return (
-              <XStack
-                key={session.sessionId}
-                justify="space-between"
-                gap="2"
-                {...(surCarte
-                  ? {
-                      minH: 48,
-                      items: "center" as const,
-                      opacity: "press:0.7" as const,
-                      onPress: () => open(`/journal/${session.sessionId}?from=village`),
-                      accessibilityRole: "link" as const,
-                      accessibilityLabel: t("village.open_session_a11y", {
-                        what: title ?? when,
-                      }),
-                    }
-                  : {})}
-              >
-                <Text fontSize={12} color={surCarte ? "primaryText" : "textSecondary"} flex={1}>
-                  {`${title ? `${title} · ` : ""}${when}`}
-                </Text>
-                <Text fontSize={12} color="textSecondary">
-                  {t("village.detail_recent_units", { volume: session.volume })}
-                </Text>
-                {surCarte ? <ChevronRight size={16} color="primaryText" /> : null}
-              </XStack>
-            );
-          })}
-        </YStack>
-      )}
-
-      {surCarte && extra?.kind === "sessions" && (extra.exercises?.length ?? 0) > 0 && (
-        <YStack gap="2" testID="iso-bulle-exercices">
-          <SectionLabel>{t("village.detail_exercises_title")}</SectionLabel>
-          {extra.exercises?.map((exercise) => (
-            <XStack
-              key={exercise.exerciseId}
-              justify="space-between"
-              gap="2"
-              minH={48}
-              items="center"
-              opacity="press:0.7"
-              onPress={() => open(`/exercises/${exercise.exerciseId}`)}
-              accessibilityRole="link"
-              accessibilityLabel={t("village.open_exercise_a11y", {
-                name: localizedName(exercise, language),
-              })}
-            >
-              <Text fontSize={12} color="primaryText" flex={1}>
-                {localizedName(exercise, language)}
-              </Text>
-              <Text fontSize={12} color="textSecondary">
-                {t("village.detail_recent_units", { volume: exercise.volume })}
-              </Text>
-              <ChevronRight size={16} color="primaryText" />
-            </XStack>
-          ))}
-        </YStack>
-      )}
+      {exercices}
+      {recentes}
 
       {listed.length > 0 && (
         <YStack gap="2">

@@ -1,0 +1,12 @@
+# Reusable: a row inside the village panel was just tapped and a screen opened over it (the copied
+# name is the panel's). Back, and the SAME panel must still be showing, the title still stepped aside.
+appId: com.guiforge.bati.dev
+---
+- takeScreenshot: village-panel-3-linked-screen
+- back
+- assertVisible:
+    id: "iso-bulle-nom"
+- assertNotVisible:
+    id: "village-title"
+- assertVisible: ${maestro.copiedText}
+- takeScreenshot: village-panel-4-back-with-panel

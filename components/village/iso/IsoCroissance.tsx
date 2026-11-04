@@ -58,8 +58,8 @@ import { PEINTS } from "./peints";
 import { coinsEmprise } from "./revelation";
 
 const ABSOLU = { position: "absolute" } as const;
-/** The amber rim: the ink copy sits over an amber copy offset up and left by this much, dp. */
-const LISERE_DP = 1.5;
+/** The amber rim: the ink copy sits over an amber copy offset up and left by this much, dp (1.5 read as a hairline at the default zoom). */
+const LISERE_DP = 2.5;
 
 // Fixed names: a painter replaces these files, nothing else changes (placeholders: the concept pieces).
 const IMAGES = {
@@ -277,7 +277,7 @@ export function IsoCroissance({
 
   const styleLueur = useAnimatedStyle(() => {
     const p = poseMoment(genre, h.get());
-    return { opacity: p.lueur * (nuit ? 1 : 0.6), transform: [{ scale: p.lueurEchelle }] };
+    return { opacity: p.lueur * (nuit ? 1 : 0.45), transform: [{ scale: p.lueurEchelle }] };
   });
   const styleAncien = useAnimatedStyle(() => ({
     transform: [{ scale: poseMoment(genre, h.get()).ancien ? 1 : 0 }],
@@ -300,7 +300,8 @@ export function IsoCroissance({
   ];
   const origineNouveau = [pied[0], pied[1], 0] as [number, number, number];
   // The light: a big one behind a stage, a small one over the upper body for a rank.
-  const taille = Math.max(n.w, n.h) * (genre === "stade" ? 1.05 : 0.5);
+  // By the body's geometric mean for a stage: a long low sprite (the road) must not throw a glow over its neighbours.
+  const taille = genre === "stade" ? Math.sqrt(n.w * n.h) * 1.15 : Math.max(n.w, n.h) * 0.5;
   const [lw, lh] = [taille, (taille * TAILLES.lueur[1]) / TAILLES.lueur[0]];
   const centre: readonly [number, number] =
     genre === "stade" ? [n.x + n.w / 2, n.y + n.h / 2] : [n.x + n.w / 2, n.y + 0.4 * n.h];

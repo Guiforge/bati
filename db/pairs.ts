@@ -285,7 +285,8 @@ export async function sweepExpiredInvites(now = nowDate()): Promise<void> {
 }
 
 /**
- * One tap, and the secret is gone from this database, its page overwritten, with a tombstone so the
+ * One tap, and the secret is gone from this database's tables and main file (`flushLog` says what the
+ * log keeps), with a tombstone so the
  * hero's other device drops its copy at the next sync rather than bring the pair back (the same one
  * hero content uses, 0074).
  *

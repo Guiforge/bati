@@ -104,7 +104,8 @@ export function snapshotDatabaseTo(destinationPath: string): Promise<void> {
 }
 
 /**
- * Takes the pairs out of a plaintext snapshot: a pair's secret travels only sealed, and a local copy
+ * Takes the pairs out of a plaintext snapshot: of the files Bati writes, a pair's secret is only ever in a
+ * sealed one (Android's own backup is the phone's, see docs/architecture/backup-and-sync.md), and a local copy
  * kept for a support session must not outlive an unlink. `secure_delete` overwrites the rows' pages,
  * or the secret would still be readable in the file. The hero restoring such a copy pairs again,
  * which is the price of never writing one in clear.

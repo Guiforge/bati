@@ -25,6 +25,7 @@ jest.mock("@/components/session/CountdownView", () => ({ CountdownView: () => nu
 jest.mock("@/components/session/PausedOverlay", () => ({ PausedOverlay: () => null }));
 jest.mock("@/components/session/RestView", () => ({ RestView: () => null }));
 jest.mock("@/components/session/VictoryView", () => ({ VictoryView: () => null }));
+jest.mock("@/components/session/PainStopView", () => ({ PainStopView: () => null }));
 jest.mock("@/components/session/WarmupView", () => ({ WarmupView: () => null }));
 
 type Slot = { exercise: { style: string } };

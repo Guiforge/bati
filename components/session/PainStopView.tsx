@@ -41,22 +41,34 @@ export function PainStopView() {
   }, [attempt, hasSets, saveSession]);
 
   // Quit clears the session state, and it keeps the row: `savedSessionId` is set by now.
-  const leave = () => {
+  const leave = useCallback(() => {
     quitSession();
     router.dismissTo("/");
-  };
+  }, [quitSession, router]);
 
   // Back from here is the session that just ended. Until the save lands, there is nowhere to go.
   // On focus only: the Safety page opens over this screen, and back there must return here.
   useFocusEffect(
-    // biome-ignore lint/correctness/useExhaustiveDependencies: `leave` reads only stable store and router calls.
     useCallback(() => {
       const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
         if (saved) leave();
         return true;
       });
       return () => subscription.remove();
-    }, [saved]),
+    }, [saved, leave]),
+  );
+
+  const safetyLink = (
+    <Pressable
+      testID="pain-stop-safety"
+      hitSlop={12}
+      accessibilityRole="link"
+      onPress={() => router.push("/safety" as never)}
+    >
+      <AppText py="2" color="primaryText" fontWeight="700">
+        {t("pause.safety_link")}
+      </AppText>
+    </Pressable>
   );
 
   return (
@@ -83,20 +95,12 @@ export function PainStopView() {
           >
             {t("common.retry")}
           </AppButton>
+          {safetyLink}
         </>
       ) : saved ? (
         <>
           <VillagerSays villager="herbalist" pose="talk" shown={t("session.pain_stop_line")} />
-          <Pressable
-            testID="pain-stop-safety"
-            hitSlop={12}
-            accessibilityRole="link"
-            onPress={() => router.push("/safety" as never)}
-          >
-            <AppText py="2" color="primaryText" fontWeight="700">
-              {t("pause.safety_link")}
-            </AppText>
-          </Pressable>
+          {safetyLink}
           <AppButton testID="pain-stop-continue" onPress={leave}>
             {t("session.continue")}
           </AppButton>

@@ -1210,7 +1210,8 @@ export const deletedContent = sqliteTable("deleted_content", {
 
 /**
  * Companions (0082): two phones that share a secret. `name` is what this hero calls the other and is
- * never sent. `secret` leaves this database only inside a sealed backup or sync (`scrubPairs`).
+ * never sent. `secret` leaves this database only inside a sealed backup or sync (`scrubPairs`), or the
+ * phone's own system backup, which takes the whole database.
  */
 export const pairs = sqliteTable("pairs", {
   id: text().primaryKey(),

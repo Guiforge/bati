@@ -103,6 +103,8 @@ test("nothing says 'nothing is lost' until it is true: a failed save offers Retr
 
   expect(view.queryByTestId("villager-line-block")).toBeNull();
   expect(view.queryByTestId("pain-stop-continue")).toBeNull();
+  // The Safety page does not wait for the save.
+  expect(view.getByTestId("pain-stop-safety")).toBeTruthy();
 
   await act(async () => fireEvent.press(view.getByTestId("pain-stop-retry")));
 

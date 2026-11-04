@@ -18,7 +18,13 @@ export function PainStopLink() {
       accessibilityRole="button"
       accessibilityLabel={t("session.pain_stop")}
     >
-      <AppText py="2" fontSize={14} fontWeight="700" color="text" style={{ textAlign: "center" }}>
+      <AppText
+        py="2"
+        fontSize={14}
+        fontWeight="700"
+        color="text"
+        style={{ textAlign: "center", textDecorationLine: "underline" }}
+      >
         {t("session.pain_stop")}
       </AppText>
     </Pressable>

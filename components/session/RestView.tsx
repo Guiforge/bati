@@ -353,7 +353,9 @@ export function RestView() {
                 <AppText testID="rest-pain-rule" fontSize={14} color="textSecondary">
                   {t("session.pain_rule")}
                 </AppText>
-                <PainStopLink />
+                <YStack items="flex-start">
+                  <PainStopLink />
+                </YStack>
               </>
             ) : null}
 

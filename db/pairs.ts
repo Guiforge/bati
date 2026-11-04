@@ -12,7 +12,8 @@ import {
   replyOpens,
   sealReply,
 } from "@/src/multiplayer/linkInvite";
-import { db, schema, transactionOrFallback } from "./client";
+import { reportError } from "@/src/reportError";
+import { db, schema, transactionOrFallback, withIsolatedConnection } from "./client";
 
 const { deletedContent, pairInvites, pairs } = schema;
 
@@ -46,6 +47,18 @@ function withoutParams<T>(write: () => Promise<T>): Promise<T> {
 }
 
 /**
+ * On its own connection: on the app's, Drizzle's unfinalized statements make a checkpoint fail, on a
+ * phone and not under jest. Never a reason to fail the write it follows, which is already done.
+ */
+async function flushLog(): Promise<void> {
+  try {
+    await withIsolatedConnection((conn) => conn.getFirstAsync("PRAGMA wal_checkpoint(TRUNCATE)"));
+  } catch (error) {
+    reportError("pairs.checkpoint", error);
+  }
+}
+
+/**
  * Overwrites what it deletes, for a table holding a secret. Off again after: it slows every delete.
  * The checkpoint is half of it: the database is in WAL mode, so the old bytes stay in the main file and
  * in the log until one runs. A busy database skips it without failing, and the next one finishes the job.
@@ -54,7 +67,7 @@ export async function withSecureDelete<T>(work: () => Promise<T>): Promise<T> {
   await db.run(sql`PRAGMA secure_delete = ON`);
   try {
     const result = await work();
-    await db.run(sql`PRAGMA wal_checkpoint(TRUNCATE)`);
+    await flushLog();
     return result;
   } finally {
     await db.run(sql`PRAGMA secure_delete = OFF`);

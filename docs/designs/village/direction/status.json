@@ -90,16 +90,16 @@
   "piste_ordre": 5,
   "etape": "Page de choix pour Guillaume",
   "ordre": 6,
-  "statut": "en cours",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
-  "restant_min": 0.2,
-  "restant_max": 0.5,
-  "reste": "0.2 à 0.5 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "page publiée, lien dans checkpoint.md"
  },
  {
   "id": "D7",
@@ -107,7 +107,7 @@
   "piste_ordre": 5,
   "etape": "target.md et images choisies",
   "ordre": 7,
-  "statut": "à faire",
+  "statut": "attend Guillaume",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -116,7 +116,7 @@
   "reste": "0.2 à 0.5 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "attend le choix de Guillaume"
  },
  {
   "id": "D8",
@@ -124,7 +124,7 @@
   "piste_ordre": 5,
   "etape": "Clôture de la piste",
   "ordre": 8,
-  "statut": "à faire",
+  "statut": "attend Guillaume",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -133,6 +133,6 @@
   "reste": "0.1 à 0.3 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "après target.md"
  }
 ]

@@ -1,9 +1,9 @@
 # Maestro E2E Test - end of a session: the village opens the building that rose, once
 #
-# Needs: a LOW-LEVEL hero (a fresh install after onboarding: level 1, no history) whose first
-# session raises a building, so the victory screen offers "See your village" (tonight-view-village)
-# and a building becomes ready to evolve. Dev build, iso village on. If the session raises nothing
-# the flow FAILS at tonight-view-village: it does not pass vacuously.
+# Needs: a hero whose next session raises a building already primed, so the victory screen offers
+# "See your village" (tonight-view-village) and a building becomes ready to evolve. Run it through
+# scripts/game/village-eos.sh, which prepares that hero. If the session raises nothing the flow FAILS
+# at tonight-view-village: it does not pass vacuously. Dev build, iso village on.
 #
 # After the tap, the map waits DELAI_FETE_MS (20 s; 0 under reduced motion) for the party before the
 # panel opens by itself, on the building that is ready. Asserted: the panel opened with the Evolve
@@ -11,21 +11,25 @@
 # the village then returning does not open it again (the opening is spent: `prendreOuverture`).
 #
 # The session screens never settle (timer): see subflows/play-to-victory.yaml for the capped taps.
-# The CALLER resets the hero (scripts/game/village-flows.sh does the pm clear): no clearState here,
-# it would erase the dev client's saved server URL. Dev build only (INTEGRATION on).
+# No clearState: it would erase the dev client's saved server URL and this hero.
 appId: com.guiforge.bati.dev
 ---
 - runFlow: subflows/boot-dev-client.yaml
-- runFlow: subflows/complete-onboarding.yaml
+- extendedWaitUntil:
+    visible:
+      id: "tab-quests"
+    timeout: 60000
 
-# Play the first quest to the victory screen and stop there (Continue not tapped).
+# Play the quest to the victory screen and stop there (Continue not tapped).
 - runFlow: subflows/play-a-quest-to-victory.yaml
 
+# Centred: at the bottom of the scroll it can count as visible while the footer covers it.
 - scrollUntilVisible:
     element:
       id: "tonight-view-village"
     direction: DOWN
     timeout: 20000
+    centerElement: true
 - takeScreenshot: village-eos-1-victory
 - tapOn:
     id: "tonight-view-village"
@@ -33,13 +37,14 @@ appId: com.guiforge.bati.dev
 - extendedWaitUntil:
     visible:
       id: "village-screen"
-    timeout: 20000
+    timeout: 30000
 - takeScreenshot: village-eos-2-map
-# The party delay, then the panel by itself.
+# The party delay after the map's first load, then the panel by itself. Generous: a dev bundle
+# takes over 12 s to draw the map, and the 20 s only start once the claim is written.
 - extendedWaitUntil:
     visible:
       id: "iso-bulle-nom"
-    timeout: 30000
+    timeout: 60000
 - assertVisible:
     id: "village-claim"
 - assertNotVisible:

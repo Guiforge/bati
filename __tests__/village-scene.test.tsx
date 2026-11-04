@@ -1,5 +1,5 @@
 import "./helpers/gestureRuntime";
-import { act, fireEvent, render, waitFor, within } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react-native";
 import { Dimensions, StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import * as Reanimated from "react-native-reanimated";
@@ -518,6 +518,14 @@ describe("VillageScene", () => {
       await waitFor(() => expect(last()?.croissance).toBeDefined());
       await act(async () => last()?.onCroissanceFinie?.());
       expect((await findByTestId("village-evolved")).props.accessibilityLiveRegion).toBe("polite");
+      // After the absolute map in the tree (so it draws over it), the strip still first for TalkBack.
+      // Jest cannot see pixels: that the sentence is actually visible above the strip is for the
+      // emulator (bottom = the strip's measured height, set by onLayout).
+      const tree = JSON.stringify(screen.toJSON());
+      expect(tree.indexOf("village-evolved-bandeau")).toBeGreaterThan(
+        tree.indexOf('"village-hero"'),
+      );
+      expect(tree.indexOf("village-drawer-open")).toBeLessThan(tree.indexOf('"village-hero"'));
     });
 
     it("a counted session evolves nothing by itself: the ready building waits for its tap", async () => {

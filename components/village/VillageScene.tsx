@@ -287,6 +287,7 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
   const [amorceePour, setAmorceePour] = useState<string | undefined>(undefined);
   // Reduced motion plays no scene: this sentence says it instead (and TalkBack reads it).
   const [evolved, setEvolved] = useState<string | null>(null);
+  const [bandeauH, setBandeauH] = useState(0);
   // The sheet (portal, overlay, frame) is dead weight behind the scene until the first tap,
   // and has to outlive the selection afterwards or it would vanish instead of sliding shut.
   const [sheetMounted, setSheetMounted] = useState(false);
@@ -319,6 +320,8 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
   /** The one door to the bubble: a tap on the map, its outside tap, and T26's villagers. */
   const ouvrirBulle = (o: Ouverture | null) => {
     if (o) {
+      // The sentence captions the last claim: the next thing the hero opens retires it.
+      setEvolved(null);
       haptics.selection();
       setBulleMontee(true);
     }
@@ -1042,15 +1045,9 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
               right: 0,
               flexDirection: "column-reverse",
             }}
+            onLayout={(e) => setBandeauH(e.nativeEvent.layout.height)}
           >
             <VillageBandeau tier={scene.tier} onPress={openDrawer} />
-            {/* Reduced motion plays no scene: the sentence stays on the page, over the strip, since
-                the drawer the claim came from is closed by then. */}
-            {evolvedLine ? (
-              <YStack bg="bgDark" px="4" pt="2">
-                {evolvedLine}
-              </YStack>
-            ) : null}
           </View>
           <View
             testID={landscape ? "village-map-side" : "village-hero"}
@@ -1066,6 +1063,24 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
             {isoMap(layout.carteW, layout.carteH, isoMarge)}
             {heroLayers}
           </View>
+          {/* Reduced motion plays no scene: the sentence stays on the page. It comes after the map in
+              the tree because the map is absolute and would cover it before it; the strip still
+              reads first for TalkBack (live region, polite). It rests on the strip's top edge. */}
+          {evolvedLine ? (
+            <YStack
+              testID="village-evolved-bandeau"
+              position="absolute"
+              l={0}
+              r={0}
+              b={bandeauH}
+              bg="bgDark"
+              px="4"
+              pt="2"
+              pb="2"
+            >
+              {evolvedLine}
+            </YStack>
+          ) : null}
         </>
       ) : (
         <XStack flex={1}>

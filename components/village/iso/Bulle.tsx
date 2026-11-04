@@ -681,8 +681,9 @@ export function ContenuBatiment({
           <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
             <BuildingLevel building={building} aligne="flex-start" />
           </View>
-          {/* A built follower says it once, as the link below (which carries the rank). */}
-          {building.driver === "prereq" && building.level > 0 ? null : (
+          {/* A built follower and a starter say it once, in the line below (which carries the rank). */}
+          {(building.driver === "prereq" && building.level > 0) ||
+          building.driver === "tier" ? null : (
             <Text fontSize={14} color="bgDark">
               {feedsLine(building, t, language)}
             </Text>

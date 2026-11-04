@@ -1656,6 +1656,8 @@
     "detail_style_driver": "{{volume}} Wdh. {{style}}",
     "detail_recent_title": "Einheiten, die es wachsen ließen",
     "detail_recent_units": "{{volume}} Wdh.",
+    "detail_exercises_title": "Übungen, die du dafür gemacht hast",
+    "silhouette_a11y": "Die nächste Stufe deines Gebäudes {{name}}",
     "detail_prereq_driver": "Wächst mit dem Gebäude {{building}}, derzeit Rang {{level}}",
     "detail_prereq_locked": "Erscheint, wenn das Gebäude {{building}} Rang {{target}} erreicht. Derzeit Rang {{level}}",
     "detail_bosses_driver_one": "{{count}} Boss besiegt",

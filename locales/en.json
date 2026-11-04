@@ -1656,6 +1656,8 @@
     "detail_style_driver": "{{volume}} reps of {{style}}",
     "detail_recent_title": "Sessions that raised it",
     "detail_recent_units": "{{volume}} reps",
+    "detail_exercises_title": "Movements you did for it",
+    "silhouette_a11y": "The next stage of your {{name}}",
     "detail_prereq_driver": "Rises with the {{building}}, currently rank {{level}}",
     "detail_prereq_locked": "Appears when the {{building}} reaches rank {{target}}. It is at rank {{level}}",
     "detail_bosses_driver_one": "{{count}} boss beaten",

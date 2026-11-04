@@ -103,6 +103,37 @@ describe("accomplishment queries", () => {
     expect(byStyle.map((s) => s.sessionId)).toEqual([2, 1]);
   });
 
+  test("getContributingExercises ranks the movements the hero did by volume", async () => {
+    const completed = require("../db/completed") as typeof import("../db/completed");
+
+    const pushup = t.sqlite.prepare("SELECT id FROM exercises WHERE enName = 'Push-ups'").get() as {
+      id: number;
+    };
+    const squat = t.sqlite.prepare("SELECT id FROM exercises WHERE enName = 'Squat'").get() as
+      | { id: number }
+      | undefined;
+    if (!squat) throw new Error("Expected seeded exercise 'Squat'");
+
+    const at = seconds("2026-01-01T00:00:00Z");
+    t.sqlite.exec(`
+      INSERT INTO completed_sessions (id, performedAt) VALUES (1, ${at}), (2, ${at + 86_400});
+      INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder)
+        VALUES (1, ${pushup.id}, 'reps', 20, ${at}, 0),
+               (2, ${pushup.id}, 'reps', 12, ${at}, 0),
+               (2, ${squat.id}, 'reps', 50, ${at}, 1);
+    `);
+
+    const chest = await completed.getContributingExercises({ muscle: "chest" });
+    // The muscle join counts each round once; squats never trained the chest.
+    expect(chest.map((e) => e.exerciseId)).toEqual([pushup.id]);
+    expect(chest[0]?.volume).toBe(32);
+    expect(chest[0]?.enName).toBe("Push-ups");
+
+    const legs = await completed.getContributingExercises({ muscle: "legs" });
+    expect(legs.map((e) => e.exerciseId)).toContain(squat.id);
+    expect(await completed.getContributingExercises({ muscle: "legs" }, 1)).toHaveLength(1);
+  });
+
   test("getRecentContributingSessions honours its limit", async () => {
     const completed = require("../db/completed") as typeof import("../db/completed");
 

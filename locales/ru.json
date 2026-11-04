@@ -1666,6 +1666,8 @@
     "detail_style_driver": "{{volume}} повторов {{style}}",
     "detail_recent_title": "Тренировки, которые его подняли",
     "detail_recent_units": "{{volume}} повторов",
+    "detail_exercises_title": "Упражнения, которые ты для него делал",
+    "silhouette_a11y": "Следующая стадия твоего здания {{name}}",
     "detail_prereq_driver": "Растёт вместе с {{building}}, сейчас уровень {{level}}",
     "detail_prereq_locked": "Появится, когда {{building}} достигнет уровня {{target}}. Сейчас уровень {{level}}.",
     "detail_bosses_driver_one": "{{count}} босс побеждён",

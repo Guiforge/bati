@@ -1448,6 +1448,8 @@
     "detail_style_driver": "{{style}} {{volume}} 次",
     "detail_recent_title": "把它垫高的训练",
     "detail_recent_units": "{{volume}} 次",
+    "detail_exercises_title": "你为它做过的动作",
+    "silhouette_a11y": "你的{{name}}的下一阶段",
     "detail_prereq_driver": "随 {{building}} 一同升级，当前品阶 {{level}}",
     "detail_prereq_locked": "{{building}} 到品阶 {{target}} 时出现，现在品阶 {{level}}",
     "detail_bosses_driver_other": "已击败 {{count}} 个 Boss",

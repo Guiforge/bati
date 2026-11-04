@@ -22,6 +22,7 @@ import type { VillageBuilding, VillageTier } from "@/db/village";
 import { mesurerFenetre, type Ouverture } from "./bulle";
 import {
   COTE,
+  CROISSANCE_CAMERA_MS,
   centreBatiment,
   ecranXY,
   etatAvec,
@@ -123,6 +124,9 @@ function useTempsOnde(enScene: boolean, joue: boolean, cle: string | undefined) 
   return { t, revele: enScene && fini !== cle };
 }
 
+/** How long the layer's clock waits from the tap: the camera's glide to the building, none when reduced. */
+const delaiMoment = (reduit: boolean): number => (reduit ? 0 : CROISSANCE_CAMERA_MS);
+
 /** The timers of one growth, in order; the caller clears them (see the effect that mounts them). */
 function planifierCroissance({
   cle,
@@ -141,15 +145,17 @@ function planifierCroissance({
   setPose: (cle: string) => void;
   setLance: (v: { cle: string; etape: 1 | 2 }) => void;
 }) {
-  // The moment plays from the tap (step 1, the layer is mounted), the new stage is the map's from
-  // its end (step 2), and the owner drops the growth, once, a beat later.
+  // The layer is mounted from the tap (step 1, its images decode) but its clock waits for the
+  // camera to arrive (`delaiMoment`), the new stage is the map's from the moment's end (step 2),
+  // and the owner drops the growth, once, a beat later.
   const duree = dureeMoment(genre);
+  const delai = delaiMoment(reduit);
   if (reduit) reveler();
   return [
     setTimeout(() => setPose(cle), ECHAFAUDAGE_APRES_MS),
     setTimeout(() => setLance({ cle, etape: 1 }), 0),
-    setTimeout(() => setLance({ cle, etape: 2 }), duree),
-    setTimeout(terminer, reduit ? 0 : duree + TENUE_MS),
+    setTimeout(() => setLance({ cle, etape: 2 }), delai + duree),
+    setTimeout(terminer, reduit ? 0 : delai + duree + TENUE_MS),
   ];
 }
 
@@ -425,6 +431,7 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
             nouveau: stadeNiveau(i.code, vise(i.code)),
             rangs: { de: i.oldLevel, vers: vise(i.code) },
             saute: sautee === cle,
+            delai: delaiMoment(reduit),
           },
         ]),
   );
@@ -621,7 +628,8 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
         terminer();
       },
       setPose,
-      setLance,
+      // A skip (step 2) is final: the step-1 timer, armed before it, must not undo it.
+      setLance: (v) => setLance((p) => (v.etape === 1 && p?.cle === v.cle ? p : v)),
     });
     return () => {
       for (const x of [...autres, ...mouvement.current]) clearTimeout(x);

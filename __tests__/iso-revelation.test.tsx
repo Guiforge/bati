@@ -4,6 +4,7 @@ import "react-native-gesture-handler/jestSetup";
 import "@/i18n";
 import { act, configure, render, screen } from "@testing-library/react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { CROISSANCE_CAMERA_MS } from "@/components/village/iso/carteDemo";
 import { IsoVillage } from "@/components/village/iso/IsoVillage";
 import {
   ARRIVEE_MAX_MS,
@@ -78,7 +79,7 @@ async function delaiJusquALaCouche(oldLevel: number, reduit: boolean, onRevelati
     for (let ms = 0; ms <= 3000; ms += 10) {
       if (screen.queryAllByTestId(/^iso-croissance-lueur-(?!image)/).length > 0) {
         // The moment ends and the map announces the new stage once.
-        await act(() => jest.advanceTimersByTime(1500));
+        await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + 1500));
         return ms;
       }
       await act(() => jest.advanceTimersByTime(10));

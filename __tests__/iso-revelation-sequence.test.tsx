@@ -142,6 +142,10 @@ describe("the reveal, rendered", () => {
     expect(style("iso-croissance-nouveau-tent").scale).toBe(0);
     expect(style("iso-croissance-ancien-tent").scale).toBe(1);
     expect(screen.queryAllByTestId("iso-croissance-lisere-nouveau-tent")).toHaveLength(1);
+    // The camera is still gliding: the site waits as it is, the clock has not started.
+    expect(screen.queryAllByTestId("iso-croissance-echafaudage-tent")).toHaveLength(1);
+    await avance(CROISSANCE_CAMERA_MS - 20);
+    expect(style("iso-croissance-ancien-tent").scale).toBe(1);
     await avance(ECHANGE_MS + 20);
     expect(style("iso-croissance-ancien-tent").scale).toBe(0);
     expect(style("iso-croissance-nouveau-tent").scale).toBeGreaterThan(0.88);
@@ -157,7 +161,7 @@ describe("the reveal, rendered", () => {
 
   it("the story line shows at its time for 1.5 s, from the stage the building reached", async () => {
     await jouer(false);
-    await avance(STADE_MS + 20);
+    await avance(CROISSANCE_CAMERA_MS + STADE_MS + 20);
     expect(screen.queryAllByTestId("iso-legende-revelation")).toHaveLength(0);
     await avance(LEGENDE_DEBUT_MS);
     const attendu = i18next.t(`village.iso.legende.tent.${stadeReel("tent", buildingStage(4))}`);
@@ -189,7 +193,7 @@ describe("the reveal, rendered", () => {
 
   it("after the whole moment (2.4 s) the line is gone", async () => {
     await jouer(false);
-    await avance(STADE_MS + LEGENDE_DEBUT_MS + LEGENDE_MS + 100);
+    await avance(CROISSANCE_CAMERA_MS + STADE_MS + LEGENDE_DEBUT_MS + LEGENDE_MS + 100);
     expect(screen.queryAllByTestId(/^iso-legende-/)).toHaveLength(0);
   });
 });
@@ -211,7 +215,7 @@ describe("passing the animation", () => {
 
   it("the line is a polite live region with a status role", async () => {
     await jouer(false);
-    await avance(STADE_MS + LEGENDE_DEBUT_MS + 50);
+    await avance(CROISSANCE_CAMERA_MS + STADE_MS + LEGENDE_DEBUT_MS + 50);
     const l = screen.getByTestId("iso-legende-revelation");
     expect(l.props.accessibilityLiveRegion).toBe("polite");
     expect(l.props.role).toBe("status");

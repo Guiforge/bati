@@ -8,7 +8,7 @@
 // masks it); a rank inside a stage hides nothing, it adds the new piece(s) and a small light.
 // Nothing here is tappable or counted. A skip (`saute`) and reduced motion put the clock on the end.
 
-import { Fragment, useContext, useEffect, useState } from "react";
+import { Fragment, useContext, useEffect, useRef, useState } from "react";
 import { Image as ImageRN } from "react-native";
 import Animated, {
   cancelAnimation,
@@ -205,6 +205,7 @@ export function IsoCroissance({
   biome = "defaut",
   rangs,
   saute = false,
+  delai = 0,
 }: {
   code: BuildingCode;
   /** The stage left behind; null when the building was not there. */
@@ -218,6 +219,8 @@ export function IsoCroissance({
   rangs?: { de: number; vers: number };
   /** A second tap: the clock goes to the end. */
   saute?: boolean;
+  /** ms from the mount before the clock starts: the camera is still gliding to the building. */
+  delai?: number;
 }) {
   // As Maquette: the sprite follows the light, and the day lights no window.
   const vie = lumiere === "jour" ? lumiere : ambiance;
@@ -236,6 +239,8 @@ export function IsoCroissance({
   // are invisible by then) and only the new body stays until the owner drops the growth.
   const [termine, setTermine] = useState(false);
   const reduit = useMouvementReduit();
+  // The pending starts, so a skip can drop them.
+  const attendu = useRef<ReturnType<typeof setTimeout>[]>([]);
   // biome-ignore lint/correctness/useExhaustiveDependencies: the clock starts once per mount; the owner keys the layer by growth
   useEffect(() => {
     const debut = tempsMoment(genre, { saute: false, reduit });
@@ -245,17 +250,23 @@ export function IsoCroissance({
       setTermine(true);
       return;
     }
-    h.set(withTiming(duree, { duration: duree, easing: Easing.linear }));
-    const ids = [
-      setTimeout(() => setAllume(true), genre === "stade" ? LUMIERES_MS : 0),
-      setTimeout(() => setTermine(true), duree + 20),
+    const attend = reduit ? 0 : delai;
+    attendu.current = [
+      // The site stands (the old stage and its scaffold) while the camera glides; the clock starts on arrival.
+      setTimeout(
+        () => h.set(withTiming(duree, { duration: duree, easing: Easing.linear })),
+        attend,
+      ),
+      setTimeout(() => setAllume(true), attend + (genre === "stade" ? LUMIERES_MS : 0)),
+      setTimeout(() => setTermine(true), attend + duree + 20),
     ];
     return () => {
-      for (const id of ids) clearTimeout(id);
+      for (const id of attendu.current) clearTimeout(id);
     };
   }, []);
   useEffect(() => {
     if (!saute) return;
+    for (const id of attendu.current) clearTimeout(id);
     cancelAnimation(h);
     h.set(tempsMoment(genre, { saute: true, reduit: false }));
     setAllume(true);

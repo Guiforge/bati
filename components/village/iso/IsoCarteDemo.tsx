@@ -2060,6 +2060,8 @@ export function IsoCarte({
       nouveau: Stade;
       rangs: { de: number; vers: number };
       saute: boolean;
+      /** ms the layer's clock waits for the camera (IsoVillage `delaiMoment`). */
+      delai?: number;
     }
   >;
   /** The light the sprites are painted under; only `nuit` has sprites yet. */
@@ -2261,6 +2263,7 @@ export function IsoCarte({
             nouveau={croissance.nouveau}
             rangs={croissance.rangs}
             saute={croissance.saute}
+            delai={croissance.delai}
             ambiance={ambiance}
             lumiere={lumiere}
             biome={biome}

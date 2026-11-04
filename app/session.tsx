@@ -7,6 +7,7 @@ import { ActiveExerciseView } from "@/components/session/ActiveExerciseView";
 import { BossTauntOverlay } from "@/components/session/BossTauntOverlay";
 import { CancelStartBanner } from "@/components/session/CancelStartBanner";
 import { CountdownView } from "@/components/session/CountdownView";
+import { PainStopView } from "@/components/session/PainStopView";
 import { PausedOverlay } from "@/components/session/PausedOverlay";
 import { RestView } from "@/components/session/RestView";
 import { VictoryView } from "@/components/session/VictoryView";
@@ -35,6 +36,7 @@ export default function SessionScreen() {
   const status = useSessionStore((s) => s.status);
   const prePauseStatus = useSessionStore((s) => s.prePauseStatus);
   const quest = useSessionStore((s) => s.quest);
+  const painStop = useSessionStore((s) => s.stopReason === "pain");
   const pauseSession = useSessionStore((s) => s.pauseSession);
   const resumeSession = useSessionStore((s) => s.resumeSession);
   const currentRoundIndex = useSessionStore((s) => s.currentRoundIndex);
@@ -90,7 +92,7 @@ export default function SessionScreen() {
         <ActiveExerciseView key={`${currentRoundIndex}:${currentExerciseIndex}`} />
       )}
       {displayStatus === "resting" && <RestView />}
-      {status === "finished" && <VictoryView />}
+      {status === "finished" && (painStop ? <PainStopView /> : <VictoryView />)}
 
       {/* Overlay sits on top of the active view when paused */}
       <PausedOverlay />

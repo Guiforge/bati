@@ -385,6 +385,66 @@ describe("useSessionStore", () => {
    * under two minutes the save waits behind "that was short": the journal got the reading time.
    * Both doors to "finished" stamp the end, and both readers stop there.
    */
+  describe("the pain stop", () => {
+    const completed = require("@/db/completed") as { createCompletedSession: jest.Mock };
+
+    beforeEach(async () => {
+      await store.getState().startSession(mockQuest, "medium");
+      store.getState().skipWarmup();
+      store.getState().finishCountdown();
+      store.getState().completeExercise(10);
+      completed.createCompletedSession.mockClear();
+    });
+
+    test("ends the session where it stands and keeps the sets as they are", async () => {
+      const done = store.getState().results;
+
+      store.getState().stopForPain();
+
+      expect(store.getState().status).toBe("finished");
+      expect(store.getState().stopReason).toBe("pain");
+      expect(store.getState().results).toEqual(done);
+
+      await store.getState().saveSession(null);
+      const row = completed.createCompletedSession.mock.calls[0]?.[0];
+      expect(row.stopReason).toBe("pain");
+      expect(row.exercises).toEqual(done);
+      expect(row.rounds).toBe(mockQuest.rounds);
+    });
+
+    test("a session ended the normal way writes no reason", async () => {
+      store.setState({ status: "finished", endTime: Date.now() });
+      await store.getState().saveSession(null);
+      expect(completed.createCompletedSession.mock.calls[0]?.[0].stopReason).toBeNull();
+    });
+
+    test("a pause under way is not session time", () => {
+      const now = jest.spyOn(Date, "now");
+      now.mockReturnValue(5_000_000);
+      store.getState().pauseSession();
+      now.mockReturnValue(5_600_000);
+
+      store.getState().stopForPain();
+
+      expect(store.getState().endTime).toBe(5_000_000);
+      expect(store.getState().prePauseStatus).toBeNull();
+      now.mockRestore();
+    });
+
+    test("does not outlive the session, in either direction", async () => {
+      store.getState().stopForPain();
+      store.getState().quitSession();
+      expect(store.getState().stopReason).toBeNull();
+
+      store.getState().stopForPain(); // Idle: nothing to stop.
+      expect(store.getState().stopReason).toBeNull();
+      expect(store.getState().status).toBe("idle");
+
+      await store.getState().startSession(mockQuest, "medium");
+      expect(store.getState().stopReason).toBeNull();
+    });
+  });
+
   describe("a short session kept after a delay", () => {
     const completed = require("@/db/completed") as { createCompletedSession: jest.Mock };
     const T0 = 1_760_000_000_000;

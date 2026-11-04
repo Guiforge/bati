@@ -596,11 +596,14 @@ describe("RestView", () => {
   it("says the pain rule after a skipped set, and at no other rest", async () => {
     const rested = await mountRest();
     expect(rested.queryByTestId("rest-pain-rule")).toBeNull();
+    // A normal rest gains nothing.
+    expect(rested.queryByTestId("session-pain-stop")).toBeNull();
     rested.unmount();
 
     useSessionStore.setState({ lastSetSkipped: true });
     const skipped = await mountRest();
     // Translations are keys in this suite (see the `@/i18n` mock above).
     expect(skipped.getByText("session.pain_rule")).toBeTruthy();
+    expect(skipped.getByTestId("session-pain-stop")).toBeTruthy();
   });
 });

@@ -435,6 +435,27 @@ describe("quitting the session", () => {
     mockCanGoBack.mockReturnValue(true);
   });
 
+  it("does not offer the pain stop to a hero who only paused", async () => {
+    pauseMidSession();
+    const paused = await mountPaused();
+    expect(paused.queryByTestId("confirm-dialog-extra")).toBeNull();
+  });
+
+  it("offers the pain stop on the way out, and it keeps the sets Quit would erase", async () => {
+    const { alert, paused } = await tapQuit();
+    const set = { exerciseId: 1, sortOrder: 0, result: { type: "reps" as const, value: 10 } };
+    useSessionStore.setState({ results: [set] });
+
+    await act(async () => fireEvent.press(paused.getByTestId("confirm-dialog-extra")));
+
+    expect(useSessionStore.getState().status).toBe("finished");
+    expect(useSessionStore.getState().stopReason).toBe("pain");
+    expect(useSessionStore.getState().results).toEqual([set]);
+    expect(mockBack).not.toHaveBeenCalled();
+    useSessionStore.setState({ stopReason: null });
+    alert.mockRestore();
+  });
+
   it("keeps the session until the hero confirms", async () => {
     const { alert, paused } = await tapQuit();
 

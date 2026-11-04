@@ -31,6 +31,7 @@ export function PausedOverlay() {
   const resumeSession = useSessionStore((s) => s.resumeSession);
   const restartRound = useSessionStore((s) => s.restartRound);
   const quitSession = useSessionStore((s) => s.quitSession);
+  const stopForPain = useSessionStore((s) => s.stopForPain);
   const rounds = useSessionStore((s) => s.quest?.rounds ?? 1);
   // A whole outing never counts down (`useCountdownCues` is handed 0 there), so the beeps switch
   // was a control wired to nothing on a ride. A mixed quest keeps it: its later sets do count.
@@ -223,6 +224,13 @@ export function PausedOverlay() {
           confirming === "quit" ? "session.quit_button" : "session.restart_round_button",
         )}
         cancelLabel={t("common.cancel")}
+        // Only on the way out, and only here: a hero who came to quit because it hurts keeps the
+        // sets Quit would erase. An outing has its Finish, which already keeps the trace.
+        extraLabel={confirming === "quit" && !allOuting ? t("session.pain_stop") : undefined}
+        onExtra={() => {
+          setConfirming(null);
+          stopForPain();
+        }}
         onCancel={() => setConfirming(null)}
         onConfirm={() => {
           const action = confirming;

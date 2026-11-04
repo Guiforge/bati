@@ -38,7 +38,15 @@ import { crestFootprint } from "@/components/village/crestGeometry";
 import { revealedToday, useCrestLine } from "@/components/village/crestLine";
 import { forceEnDev, useAmbianceDev } from "@/components/village/iso/ambianceDev";
 import { Bulle, ContenuBatiment, ContenuVillageois } from "@/components/village/iso/Bulle";
-import { apresTap, HAUTEUR_BARRE, type Ouverture } from "@/components/village/iso/bulle";
+import {
+  apresTap,
+  batimentAOuvrir,
+  DELAI_FETE_MS,
+  HAUTEUR_BARRE,
+  type Ouverture,
+  ouvertureDe,
+  prendreOuverture,
+} from "@/components/village/iso/bulle";
 import { aireDepuisFenetre, dispositionIso } from "@/components/village/iso/disposition";
 import { prendreFete } from "@/components/village/iso/habitants";
 import type { Croissance, IsoVillage } from "@/components/village/iso/IsoVillage";
@@ -275,6 +283,8 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
   const [pending, setPending] = useState<ClaimedStages | null>(null);
   // Whether the stages were read this visit: the automatic evolution waits for them.
   const [claimedRead, setClaimedRead] = useState(false);
+  // The session key whose automatic write is done (the end-of-session panel waits for it).
+  const [amorceePour, setAmorceePour] = useState<string | undefined>(undefined);
   // Reduced motion plays no scene: this sentence says it instead (and TalkBack reads it).
   const [evolved, setEvolved] = useState<string | null>(null);
   // The sheet (portal, overlay, frame) is dead weight behind the scene until the first tap,
@@ -535,6 +545,7 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
     const items = amorce(previous, claimed, { avant: new Set(before.keys()) });
     if (items.length === 0) {
       autoFor.current = key;
+      setAmorceePour(key);
       return;
     }
     autoBusy.current = true;
@@ -542,6 +553,7 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
       .then((stages) => {
         autoFor.current = key;
         setClaimed(stages);
+        setAmorceePour(key);
       })
       .catch((error) => reportError("village.autoEvolve", error))
       .finally(() => {
@@ -567,6 +579,55 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
   const aire = areaFits ? area : aireDepuisFenetre(width, height, HAUTEUR_BARRE, insets.bottom);
   const layout = dispositionIso(aire.w, aire.h);
   const landscape = iso && layout.paysage;
+
+  // A building named by a list (the drawer, a follower's link, the end of a session) opens its
+  // panel on the map: its place on the window is found through the map's own hit test, so the
+  // halo and the dock know it. Off screen, or no map yet: no anchor, the bottom dock, no halo.
+  const ouvertureSurCarte = (code: BuildingCode): Ouverture =>
+    (viseur.current
+      ? ouvertureDe(code, viseur.current, { w: layout.carteW, h: layout.carteH })
+      : null) ?? { cible: { type: "batiment", code }, ancre: [0, 0], sansAncre: true };
+
+  // The end of a session (G8): once the party is over and the map is calm, the panel opens by
+  // itself on the first ready building, one this session raised first. Once per session key
+  // (module state, so a remount does not repeat it), and only if nothing else is up by then; the
+  // player's tap on Evolve remains the only thing that upgrades. Read at the timer, not rendered.
+  const enFocus = useRef(true);
+  useFocusEffect(
+    useCallback(() => {
+      enFocus.current = true;
+      return () => {
+        enFocus.current = false;
+      };
+    }, []),
+  );
+  const finDeSeance = useRef<{
+    code: BuildingCode | undefined;
+    libre: boolean;
+    ouvrir: (code: BuildingCode) => void;
+  }>({ code: undefined, libre: false, ouvrir: () => undefined });
+  useEffect(() => {
+    finDeSeance.current = {
+      code: batimentAOuvrir(upgradable, risen),
+      libre: !bulle && !drawerOpen && !croissance && !pending && enFocus.current,
+      ouvrir: (code) => ouvrirBulle(ouvertureSurCarte(code)),
+    };
+  });
+  // The write of this session's stages is done: only then is "ready" true (see the autoFor effect).
+  const declenche = iso && growth.length > 0 && !!scene && amorceePour === (grown ?? "");
+  useEffect(() => {
+    if (!declenche) return;
+    const timer = setTimeout(
+      () => {
+        if (!prendreOuverture(grown)) return;
+        const { code, libre, ouvrir } = finDeSeance.current;
+        if (code && libre) ouvrir(code);
+      },
+      reducedMotion ? 0 : DELAI_FETE_MS,
+    );
+    return () => clearTimeout(timer);
+  }, [declenche, grown, reducedMotion]);
+
   const paintingMotion = useAnimatedStyle(() => ({
     transform: [
       { translateY: reducedMotion ? 0 : scrollY.value * PARALLAX_FACTOR },
@@ -816,13 +877,19 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
   // scrim is darkest: above the name it sat on the bright top of the painting (an aurora on tier 12),
   // secondary text on pale turquoise. The flame shares the name's line, which gives the panel back
   // a whole row. Its box is the skeleton's.
+  // While a building's panel is up, or a claim's growth plays, the map is the subject: the title
+  // block, the villager and the bottom scrim give way (and TalkBack skips them), then come back.
+  const titreCache = iso && (bulle?.cible.type === "batiment" || !!croissance);
   const heroTitle = (
     <YStack
       testID="village-title"
       // The map under the title keeps its drags; the crest keeps its press. Iso: spoken in reading
       // order, after the drawer's strip, which comes first in the tree.
-      pointerEvents="box-none"
-      importantForAccessibility="auto"
+      pointerEvents={titreCache ? "none" : "box-none"}
+      importantForAccessibility={titreCache ? "no-hide-descendants" : "auto"}
+      accessibilityElementsHidden={titreCache}
+      opacity={titreCache ? 0 : 1}
+      transition={iso && !reducedMotion ? "quick" : undefined}
       position="absolute"
       t={titleTop}
       l={0}
@@ -864,6 +931,8 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
           height: iso
             ? heroHeight - titleTop + 24
             : Math.max(Math.round(heroHeight * 0.62), heroHeight - titleTop + 24),
+          // Gone with the title (no fade: a gradient has no opacity transition of its own).
+          opacity: titreCache ? 0 : 1,
         }}
       />
 
@@ -878,7 +947,7 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
 
       {/* The one floating villager in the app: part of the painting, above the title, so it
       scrolls with it and the cards below are never under it. Its zone is this band. */}
-      <VillagerCameo band={villageCameoBand(width, height, insets.top)} />
+      <VillagerCameo band={titreCache ? null : villageCameoBand(width, height, insets.top)} />
     </>
   );
 
@@ -886,7 +955,9 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
   // keeps it in the drawer. Leaving the drawer first lets the map show what the tap does.
   const openFromList = (building: VillageBuilding) => {
     setDrawerOpen(false);
-    openBuilding(building);
+    // Iso: the building's panel on the map, with its halo, not the old sheet.
+    if (iso) ouvrirBulle(ouvertureSurCarte(building.code));
+    else openBuilding(building);
   };
   const claimFromList = (codes: readonly BuildingCode[]) => {
     setDrawerOpen(false);
@@ -1134,6 +1205,7 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
           ouverte={bulle}
           onClose={fermerBulle}
           onDehors={(x, y) => ouvrirBulle(apresTap(bulle, viseur.current?.(x, y) ?? null))}
+          zone={{ w: layout.carteW, h: layout.carteH }}
           contenu={(o, nom) => {
             if (o.cible.type === "villageois")
               return (
@@ -1158,6 +1230,7 @@ export function VillageScene({ iso = INTEGRATION }: { iso?: boolean } = {}) {
                 baseRank={baseRankOf(scene.buildings, building.code)}
                 onClose={fermerBulle}
                 onClaim={(b) => claim([b.code])}
+                onSuivre={(suivi) => ouvrirBulle(ouvertureSurCarte(suivi))}
               />
             ) : null;
           }}

@@ -238,6 +238,8 @@ type FactsProps = DetailProps & {
   onClaim?: () => void;
   /** The iso card only: linked rows, the exercises, no repeated sentence. The old sheet leaves it out. */
   surCarte?: boolean;
+  /** The card only: a built follower says "Follows the X" as a link that moves the panel to X. */
+  onSuivre?: (code: BuildingCode) => void;
 };
 
 function BuildingDetail(props: FactsProps) {
@@ -274,11 +276,18 @@ function BuildingDetail(props: FactsProps) {
 }
 
 /** The building's level and its pips: in the sheet's header, and in the iso map's bubble. */
-export function BuildingLevel({ building }: { building: VillageBuilding }) {
+export function BuildingLevel({
+  building,
+  aligne = "flex-end",
+}: {
+  building: VillageBuilding;
+  /** The panel reads it from the left, under the name. */
+  aligne?: "flex-start" | "flex-end";
+}) {
   const { t } = useTranslation();
   const built = building.level > 0;
   return (
-    <YStack items="flex-end" gap={5}>
+    <YStack items={aligne} gap={5}>
       <Text fontSize={13} fontWeight="600" color={`${built ? "resourceGold" : "textSecondary"}`}>
         {levelText(building, t)}
       </Text>
@@ -302,6 +311,7 @@ export function BuildingFacts({
   onClose,
   onClaim,
   surCarte = false,
+  onSuivre,
 }: FactsProps) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -402,13 +412,59 @@ export function BuildingFacts({
         }))
       : [];
 
+  // The one action. On the card it stands first, before the deeds, so it never needs a scroll.
+  const reclame = onClaim ? (
+    <YStack gap="2">
+      {surCarte ? null : (
+        <Text fontSize={13} color="textSecondary">
+          {t("village.claim_ready_body", { name: nameOf(building, language) })}
+        </Text>
+      )}
+      <AppButton
+        testID="village-claim"
+        // The bubble's one action (village-bulle.md): 48 dp, over AppButton's 44.
+        minH={48}
+        onPress={onClaim}
+        accessibilityRole="button"
+        accessibilityLabel={t("village.claim_action_a11y", {
+          name: nameOf(building, language),
+        })}
+      >
+        {t("village.claim_action")}
+      </AppButton>
+    </YStack>
+  ) : null;
+
+  const reclameEnHaut = surCarte ? reclame : null;
+  const reclameEnBas = surCarte ? null : reclame;
+
   // A fragment: its rows are the parent's, so the sheet's gaps are the ones it always had.
   return (
     <>
+      {reclameEnHaut}
       <YStack gap="2">
-        <Text fontSize={13.5} lineHeight="20px" color="text">
-          {driverLine}
-        </Text>
+        {suiveuse && onSuivre && prereqCode ? (
+          <XStack
+            testID="iso-bulle-suit"
+            minH={48}
+            items="center"
+            justify="space-between"
+            gap="2"
+            opacity="press:0.7"
+            onPress={() => onSuivre(prereqCode)}
+            accessibilityRole="link"
+            accessibilityLabel={t("village.follows_a11y", { building: prereqName })}
+          >
+            <Text fontSize={13.5} lineHeight="20px" color="primaryText" flex={1}>
+              {t("village.follows", { building: prereqName })}
+            </Text>
+            <ChevronRight size={16} color="primaryText" />
+          </XStack>
+        ) : (
+          <Text fontSize={13.5} lineHeight="20px" color="text">
+            {driverLine}
+          </Text>
+        )}
         {building.kept ? (
           <Text fontSize={12.5} lineHeight="18px" color="textSecondary">
             {t("village.kept_level")}
@@ -569,25 +625,7 @@ export function BuildingFacts({
         />
       ) : null}
 
-      {onClaim ? (
-        <YStack gap="2">
-          <Text fontSize={13} color="textSecondary">
-            {t("village.claim_ready_body", { name: nameOf(building, language) })}
-          </Text>
-          <AppButton
-            testID="village-claim"
-            // The bubble's one action (village-bulle.md): 48 dp, over AppButton's 44.
-            minH={48}
-            onPress={onClaim}
-            accessibilityRole="button"
-            accessibilityLabel={t("village.claim_action_a11y", {
-              name: nameOf(building, language),
-            })}
-          >
-            {t("village.claim_action")}
-          </AppButton>
-        </YStack>
-      ) : null}
+      {reclameEnBas}
 
       {link ? (
         <QuestLink

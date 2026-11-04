@@ -349,6 +349,137 @@ describe("VillageScene", () => {
       expect(scene.queryByTestId("iso-bulle-nom", { includeHiddenElements: true })).toBeNull();
     });
 
+    it("while a building's panel is up the title, the scrim and the villager give way, then come back", async () => {
+      mockScene([campfire, forgeUp]);
+      jest.spyOn(village, "getClaimedStages").mockResolvedValue({ forge: 2 });
+      jest.spyOn(village, "claimStage").mockResolvedValue({ forge: 4 });
+      Dimensions.set({ window: { ...portrait, fontScale: 1 } });
+      const scene = await renderScene(true);
+      await scene.findByTestId("iso-village");
+      const titre = () => scene.getByTestId("village-title", { includeHiddenElements: true });
+      expect(titre().props.importantForAccessibility).toBe("auto");
+      const forgeTap: Ouverture = { cible: { type: "batiment", code: "forge" }, ancre: [195, 150] };
+      await act(async () => last()?.onBulle?.(forgeTap));
+      await scene.findByTestId("iso-panneau");
+      expect(titre().props.importantForAccessibility).toBe("no-hide-descendants");
+      // Closed by the outside tap on the empty map, the title is back.
+      const viseur = last()?.viseur;
+      if (viseur) viseur.current = () => null;
+      const dehors = scene.getByTestId("iso-bulle-dehors", { includeHiddenElements: true });
+      const ici = { nativeEvent: { pageX: 10, pageY: 10 } };
+      await fireEvent(dehors, "pressIn", ici);
+      await fireEvent.press(dehors, ici);
+      expect(scene.queryByTestId("iso-panneau")).toBeNull();
+      expect(titre().props.importantForAccessibility).toBe("auto");
+    });
+
+    it("hides the title while a claim's growth plays, and brings it back after", async () => {
+      mockScene([campfire, forgeUp]);
+      jest.spyOn(village, "getClaimedStages").mockResolvedValue({ forge: 2 });
+      jest.spyOn(village, "claimStage").mockResolvedValue({ forge: 4 });
+      const { findByLabelText, findByTestId, getByTestId } = await renderIsoDrawer();
+      await fireEvent.press(await findByLabelText("Forge ready to evolve, rank 4"));
+      await fireEvent.press(await findByTestId("village-claim"));
+      await waitFor(() => expect(last()?.croissance).toBeDefined());
+      const titre = () => getByTestId("village-title", { includeHiddenElements: true });
+      expect(titre().props.importantForAccessibility).toBe("no-hide-descendants");
+      await act(async () => last()?.onCroissanceFinie?.());
+      expect(titre().props.importantForAccessibility).toBe("auto");
+    });
+
+    describe("the end of a session opens the panel by itself (G8)", () => {
+      const farmReady = building("farm", 4, {
+        driver: "muscle",
+        metricValue: 650,
+        nextTarget: 1000,
+      });
+      const settle = () => act(async () => new Promise((r) => setTimeout(r, 20)));
+
+      it("on the building the session raised, once, also after the screen remounts", async () => {
+        // The forge and the farm are both ready; the farm is the one this session raised.
+        mockParams = { grown: "farm:3:4" };
+        mockScene([campfire, forgeUp, farmReady]);
+        jest
+          .spyOn(village, "getClaimedStages")
+          .mockResolvedValue({ forge: 2, farm: 2, campfire: 4 });
+        const write = jest.spyOn(village, "claimStage").mockResolvedValue({});
+        const scene = await renderScene(true);
+        const nom = await scene.findByTestId("iso-bulle-nom");
+        expect(nom.props.accessibilityLabel).toBe("Farm ready to evolve, rank 4");
+        // Only the player's tap upgrades.
+        expect(write).not.toHaveBeenCalled();
+        expect(last()?.croissance).toBeUndefined();
+        await scene.unmount();
+        const again = await renderScene(true);
+        await again.findByTestId("iso-village");
+        await waitFor(() => expect(last()?.reclamables).toEqual(["forge", "farm"]));
+        await settle();
+        expect(again.queryByTestId("iso-bulle-nom", { includeHiddenElements: true })).toBeNull();
+      });
+
+      it("falls back to the first ready building when the session raised none of them", async () => {
+        mockParams = { grown: "campfire:3:4" };
+        mockScene([campfire, forgeUp, farmReady]);
+        jest
+          .spyOn(village, "getClaimedStages")
+          .mockResolvedValue({ forge: 2, farm: 2, campfire: 4 });
+        jest.spyOn(village, "claimStage").mockResolvedValue({});
+        const scene = await renderScene(true);
+        expect((await scene.findByTestId("iso-bulle-nom")).props.accessibilityLabel).toBe(
+          "Forge ready to evolve, rank 4",
+        );
+      });
+
+      it("never on a plain visit, even with a building ready", async () => {
+        mockScene([campfire, forgeUp]);
+        jest.spyOn(village, "getClaimedStages").mockResolvedValue({ forge: 2 });
+        const scene = await renderScene(true);
+        await scene.findByTestId("iso-village");
+        await waitFor(() => expect(last()?.reclamables).toEqual(["forge"]));
+        await settle();
+        expect(scene.queryByTestId("iso-bulle-nom", { includeHiddenElements: true })).toBeNull();
+      });
+
+      it("never when nothing is ready", async () => {
+        mockParams = { grown: "campfire:3:5" };
+        mockScene([campfire]);
+        jest.spyOn(village, "getClaimedStages").mockResolvedValue({ campfire: 4 });
+        const scene = await renderScene(true);
+        await scene.findByTestId("iso-village");
+        await settle();
+        expect(last()?.reclamables).toEqual([]);
+        expect(scene.queryByTestId("iso-bulle-nom", { includeHiddenElements: true })).toBeNull();
+      });
+
+      it("waits for the write of the session's stages: the building is ready only after", async () => {
+        // Never written: the farm rose in the session, so it is written at its old level, then ready.
+        mockParams = { grown: "farm:2:4" };
+        mockScene([campfire, farmReady]);
+        const mem: village.ClaimedStages = {};
+        jest
+          .spyOn(village, "getClaimedStages")
+          .mockImplementation(() => Promise.resolve({ ...mem }));
+        jest.spyOn(village, "claimStage").mockImplementation((items) => {
+          for (const { code, level } of items) mem[code] = level;
+          return Promise.resolve({ ...mem });
+        });
+        const scene = await renderScene(true);
+        expect((await scene.findByTestId("iso-bulle-nom")).props.accessibilityLabel).toBe(
+          "Farm ready to evolve, rank 4",
+        );
+      });
+
+      it("published mode (iso off) never opens it", async () => {
+        mockParams = { grown: "forge:3:4" };
+        mockScene([campfire, forgeUp]);
+        const scene = await renderScene(false);
+        await scene.findByTestId("village-next");
+        await settle();
+        expect(scene.queryByTestId("iso-panneau")).toBeNull();
+        expect(scene.queryByTestId("iso-bulle-nom", { includeHiddenElements: true })).toBeNull();
+      });
+    });
+
     it("unmounted during the site: nothing is written, the building is ready again", async () => {
       mockScene([campfire, forgeUp]);
       jest.spyOn(village, "getClaimedStages").mockResolvedValue({ forge: 2 });
@@ -410,8 +541,9 @@ describe("VillageScene", () => {
       ]);
       jest.spyOn(village, "getClaimedStages").mockResolvedValue({ farm: 4 });
       const write = jest.spyOn(village, "claimStage").mockResolvedValue({});
-      const { findByText } = await renderIsoDrawer();
-      await findByText("Ready to evolve");
+      const { findAllByText } = await renderIsoDrawer();
+      // In the drawer's row, and in the panel the end of the session opens by itself.
+      expect((await findAllByText("Ready to evolve")).length).toBeGreaterThan(0);
       expect(write).not.toHaveBeenCalled();
     });
 
@@ -430,13 +562,14 @@ describe("VillageScene", () => {
         building("forge", 3, { driver: "muscle", metricValue: 300, nextTarget: 500 }),
       ]);
       mockIsoProps.length = 0;
-      const { findByLabelText, findByTestId } = await renderIsoDrawer();
+      const { findByTestId } = await renderScene(true);
       // Seeded at the level it stood at before the session: nothing was ready, now the forge is.
       await waitFor(() => expect(last()?.reclamables).toEqual(["forge"]));
       expect(mem).toEqual({ forge: 2, campfire: 4 });
       expect(last()?.niveauxReclames).toEqual({ forge: 2, campfire: 4 });
       write.mockClear();
-      await fireEvent.press(await findByLabelText("Forge ready to evolve, rank 3"));
+      // The end of the session opened the forge's panel by itself: the tap is the player's.
+      expect(write).not.toHaveBeenCalled();
       await fireEvent.press(await findByTestId("village-claim"));
       await waitFor(() => expect(last()?.croissance).toBeDefined());
       expect(write).not.toHaveBeenCalled();
@@ -697,12 +830,18 @@ describe("VillageScene", () => {
   });
 
   it("leaves the drawer when one of its rows opens a building", async () => {
+    Dimensions.set({ window: { ...portrait, fontScale: 1 } });
     mockScene([campfire, forge]);
     const scene = await renderScene(true);
     await fireEvent.press(await scene.findByTestId("village-drawer-open"));
     const rows = await scene.findAllByTestId("village-building-row");
     await fireEvent.press(rows[0] as (typeof rows)[number]);
-    expect(await scene.findByTestId("village-detail")).toBeTruthy();
+    // Iso: the building's panel on the map, not the old sheet (text at 100 %, so the panel and not its sheet).
+    expect(await scene.findByTestId("iso-panneau")).toBeTruthy();
+    expect(scene.getByTestId("iso-bulle-nom").props.accessibilityLabel).toBe("Forge, rank 1");
+    expect(scene.queryByTestId("village-detail")).toBeNull();
+    // No anchor from a list: the bottom dock, no halo.
+    expect(scene.queryByTestId("iso-halo", { includeHiddenElements: true })).toBeNull();
   });
 
   // The shield's press stays on the title, and the title is read as it stands: no hidden copy.

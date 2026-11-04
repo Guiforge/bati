@@ -1668,6 +1668,8 @@
     "detail_recent_units": "{{volume}} повторов",
     "detail_exercises_title": "Упражнения, которые ты для него делал",
     "silhouette_a11y": "Следующая стадия твоего здания {{name}}",
+    "follows": "Следует за зданием {{building}}",
+    "follows_a11y": "Следует за зданием {{building}}, показать",
     "open_session_a11y": "Открыть эту тренировку в журнале: {{what}}",
     "open_exercise_a11y": "Открыть упражнение: {{name}}",
     "detail_prereq_driver": "Растёт вместе с {{building}}, сейчас уровень {{level}}",

@@ -1731,6 +1731,8 @@
     "detail_recent_units": "{{volume}} reps",
     "detail_exercises_title": "Ejercicios que has hecho para él",
     "silhouette_a11y": "La siguiente etapa de tu edificio {{name}}",
+    "follows": "Sigue al edificio {{building}}",
+    "follows_a11y": "Sigue al edificio {{building}}, mostrarlo",
     "open_session_a11y": "Abrir en el Diario: {{what}}",
     "open_exercise_a11y": "Abrir el movimiento: {{name}}",
     "detail_prereq_driver": "Sube con el edificio {{building}}, ahora en grado {{level}}",

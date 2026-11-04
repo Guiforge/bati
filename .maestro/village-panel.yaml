@@ -14,6 +14,7 @@
 # so it is uncapped on purpose. Selects by testID only: en and fr both pass.
 # The CALLER resets the hero (scripts/game/village-flows.sh does the pm clear): no clearState here,
 # it would erase the dev client's saved server URL. Dev build only (INTEGRATION on).
+# Every tap caps its settle wait: a grown map never settles, and Maestro hung on it for 10 minutes.
 appId: com.guiforge.bati.dev
 ---
 - runFlow: subflows/boot-dev-client.yaml
@@ -30,6 +31,7 @@ appId: com.guiforge.bati.dev
     id: "village-title"
 - tapOn:
     id: "village-drawer-open"
+    waitToSettleTimeoutMs: 500
 - assertVisible:
     id: "village-drawer"
 - takeScreenshot: village-panel-1-drawer
@@ -38,6 +40,7 @@ appId: com.guiforge.bati.dev
 - tapOn:
     id: "village-building-row"
     index: 0
+    waitToSettleTimeoutMs: 500
 - extendedWaitUntil:
     visible:
       id: "iso-bulle-nom"
@@ -63,6 +66,7 @@ appId: com.guiforge.bati.dev
 - tapOn:
     id: "iso-bulle-exercice"
     index: 0
+    waitToSettleTimeoutMs: 500
 - runFlow: subflows/village-panel-back-check.yaml
 
 # --- 3. Back closes the panel and the title returns --------------------------------------

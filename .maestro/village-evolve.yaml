@@ -10,6 +10,7 @@
 # The ready marker on a drawer row is `village-building-ready` (a testID, not its translated text).
 # The CALLER resets the hero (scripts/game/village-flows.sh does the pm clear): no clearState here,
 # it would erase the dev client's saved server URL. Dev build only (INTEGRATION on).
+# Every tap caps its settle wait: a grown map never settles, and Maestro hung on it for 10 minutes.
 appId: com.guiforge.bati.dev
 ---
 - runFlow: subflows/boot-dev-client.yaml
@@ -23,6 +24,7 @@ appId: com.guiforge.bati.dev
     id: "village-screen"
 - tapOn:
     id: "village-drawer-open"
+    waitToSettleTimeoutMs: 500
 # Loud failure if nothing is ready: the rows of the drawer scroll, so look for the marker first.
 - scrollUntilVisible:
     element:
@@ -34,6 +36,7 @@ appId: com.guiforge.bati.dev
 - tapOn:
     id: "village-building-ready"
     index: 0
+    waitToSettleTimeoutMs: 500
 - extendedWaitUntil:
     visible:
       id: "iso-bulle-nom"
@@ -48,6 +51,7 @@ appId: com.guiforge.bati.dev
 # --- Evolve ---------------------------------------------------------------------------
 - tapOn:
     id: "village-claim"
+    waitToSettleTimeoutMs: 500
 - assertNotVisible:
     id: "iso-bulle-nom"
 # The growth plays (title hidden), then the title comes back.
@@ -63,7 +67,10 @@ appId: com.guiforge.bati.dev
 # handle on a drawer row).
 - tapOn:
     id: "village-drawer-open"
-- tapOn: ${maestro.copiedText}
+    waitToSettleTimeoutMs: 500
+- tapOn:
+    text: ${maestro.copiedText}
+    waitToSettleTimeoutMs: 500
 - extendedWaitUntil:
     visible:
       id: "iso-bulle-nom"

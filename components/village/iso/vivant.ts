@@ -4,6 +4,7 @@
 // lasts one cycle and starts and ends on a cycle boundary, hidden (opacity 0): the clock rests on
 // a boundary outside a wave, with reduced motion and unfocused, so nothing is ever caught mid-way.
 
+import { ecranXY } from "./carteDemo";
 import { CYCLE_MS } from "./horloge";
 import { emplacements, lieux } from "./isoLayout";
 
@@ -73,9 +74,15 @@ const CASES_BATIES: ReadonlySet<string> = new Set(
 export const sousBatiment = (gx: number, gy: number): boolean =>
   CASES_BATIES.has(`${Math.floor(gx)},${Math.floor(gy)}`);
 
+/** Whether a grid point is drawn over the windmill's sails (a sprite taller than its footprint): the ground point shows on screen where the sails turn. */
+export const sousAiles = (gx: number, gy: number): boolean => {
+  const [x, y] = ecranXY([gx, gy]);
+  return ZONE_LUCIOLES.evite.some(([cx, cy, r]) => Math.hypot(x - cx, y - cy) < r);
+};
+
 /**
  * Where the fireflies hover, in grid units; fixed. Each sits on a cell the island shows and no
- * building covers (a few seeded tries per firefly, none placed if all miss), so none floats over
+ * building covers (two dozen seeded tries per firefly, none placed if all miss), so none floats over
  * the void or in front of a sail. They are dealt in turn to the groups.
  */
 export function lucioles(
@@ -84,10 +91,10 @@ export function lucioles(
   const [x0, x1] = ZONE_LUCIOLES.gx;
   const [y0, y1] = ZONE_LUCIOLES.gy;
   return Array.from({ length: NOMBRE_LUCIOLES }, (_, i) => {
-    for (let t = 0; t < 12; t++) {
+    for (let t = 0; t < 24; t++) {
       const gx = x0 + (x1 - x0) * hasard(100 + i, 3 * t);
       const gy = y0 + (y1 - y0) * hasard(100 + i, 3 * t + 1);
-      if (visible[Math.floor(gy)]?.[Math.floor(gx)] && !sousBatiment(gx, gy))
+      if (visible[Math.floor(gy)]?.[Math.floor(gx)] && !sousBatiment(gx, gy) && !sousAiles(gx, gy))
         return [
           { gx, gy, r: 1.6 + 0.8 * hasard(100 + i, 3 * t + 2), groupe: i % GROUPES_LUCIOLES },
         ];

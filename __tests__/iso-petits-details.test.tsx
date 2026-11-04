@@ -1,8 +1,10 @@
 import "@/i18n";
 import { render, screen } from "@testing-library/react-native";
 import * as Reanimated from "react-native-reanimated";
+import { ecranXY, pose, poseAiles } from "@/components/village/iso/carteDemo";
 import { CYCLE_MS, DepartContext, HorlogeContext } from "@/components/village/iso/horloge";
 import { emplacements, ileVisible } from "@/components/village/iso/isoLayout";
+import { windmill as windmillPeint } from "@/components/village/iso/peints/windmill";
 import { Lucioles } from "@/components/village/iso/petitsDetails";
 import {
   DERIVE_LUCIOLES,
@@ -83,6 +85,21 @@ describe("fireflies", () => {
     );
   });
 
+  test("none is drawn over the windmill's sails, at any stage (a ground point under a tall sprite)", () => {
+    const visible = ileVisible(12, buildingCodes);
+    const points = lucioles(visible).map((p) => ecranXY([p.gx, p.gy]));
+    expect(points).toHaveLength(NOMBRE_LUCIOLES);
+    for (const [stade, vues] of Object.entries(windmillPeint.stades)) {
+      const corps = vues?.jour;
+      const ailes = windmillPeint.ailes?.[stade as keyof typeof windmillPeint.stades]?.jour;
+      if (!corps || !ailes) continue;
+      const r = poseAiles(pose("windmill", corps), corps, ailes);
+      if (!r) continue;
+      for (const [x, y] of points)
+        expect(x < r.x || x > r.x + r.w || y < r.y || y > r.y + r.h).toBe(true);
+    }
+  });
+
   test("the points are dealt to every group, which beat out of step and both rest out", () => {
     const groupes = new Set(lucioles(ileVisible(12, buildingCodes)).map((p) => p.groupe));
     expect(groupes.size).toBe(GROUPES_LUCIOLES);
@@ -119,7 +136,7 @@ describe("fireflies", () => {
 
 describe("the fireflies' zone (isoLayout.json lieux)", () => {
   test("is read from the layout", () => {
-    expect(ZONE_LUCIOLES).toEqual({ gx: [3, 7], gy: [0, 3] });
+    expect(ZONE_LUCIOLES).toEqual({ gx: [3, 7], gy: [0, 3], evite: [[636, 44, 80]] });
   });
 });
 

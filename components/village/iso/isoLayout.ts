@@ -263,8 +263,13 @@ export const lieux = (() => {
   if (gx0 === undefined || gx1 === undefined || gy0 === undefined || gy1 === undefined)
     throw new Error("isoLayout.json lieux.lucioles: gx and gy need two bounds");
   if (!(gx0 < gx1 && gy0 < gy1)) throw new Error("isoLayout.json lieux.lucioles: empty zone");
+  const evite = lucioles.evite.map(([x, y, r]) => {
+    if (x === undefined || y === undefined || r === undefined || r <= 0)
+      throw new Error("isoLayout.json lieux.lucioles.evite: a disc is [x, y, radius]");
+    return [x, y, r] as const;
+  });
   return {
-    lucioles: { gx: [gx0, gx1], gy: [gy0, gy1] } as const,
+    lucioles: { gx: [gx0, gx1], gy: [gy0, gy1], evite } as const,
   };
 })();
 

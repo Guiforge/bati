@@ -129,6 +129,9 @@ Material (163), Guava (201), Gson (87). Aucune Play Services ni ML Kit. Critère
 
 ## À savoir
 
+- **`bench-c` plante au démarrage (04/11).** Deux essais en `-read-only` sur le port 5570, avec `emulator-5554` et
+  `emulator-5556` déjà lancés, le second avec `-memory 2048 -cores 2` : exit 139 pendant le démarrage à froid, sans
+  message dans le journal. Cause non cherchée, à la demande de Guillaume.
 - **L'invitation par QR n'est pas scellée, elle ne peut pas l'être.** Qui lit le code peut lire les messages de cette
   paire. D'où la caméra seulement, et 7 jours. Rien ne revient, donc A n'apprend pas qui l'a utilisée. Le lien, lui, n'a
   plus ce défaut.

@@ -688,12 +688,16 @@ const grandi = (code: BuildingCode, poly: readonly Point[]): Point[] => {
 export const ECHELLE_ROCHER_POSE = 0.5;
 /** Audit T43 round 1: the tier-1 lamp post stood taller than the tent; drawn at this share of its size it stays under it. */
 export const ECHELLE_LANTERNE_POSE = 0.6;
+/** Rule 22 (bridge readable): the bridge's mock-up is small and dark beside buildings drawn 25 % bigger, so it is drawn bigger too, about its anchor. */
+export const ECHELLE_PONT_POSE = 1.35;
 export const reduitPiece = (cle: string) =>
   cle.startsWith("decor/rochers")
     ? ECHELLE_ROCHER_POSE
     : cle.startsWith("decor/lanterne")
       ? ECHELLE_LANTERNE_POSE
-      : 1;
+      : cle.startsWith("eau/canal_pont")
+        ? ECHELLE_PONT_POSE
+        : 1;
 
 /** A piece's anchor on its cell's bottom corner; the cascade's falling sheet (canvas `sails`) is centred on the cell's back corner. */
 export const posePiece = ([gx, gy]: Case, s: SpriteIso): Rect => poseEn([gx + 1, gy + 1], s);

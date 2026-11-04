@@ -90,16 +90,16 @@
   "piste_ordre": 6,
   "etape": "Le tap d'evolution en attente",
   "ordre": 6,
-  "statut": "en cours",
+  "statut": "fait",
   "debut": "2026-11-04T13:00:00+01:00",
-  "fin": null,
+  "fin": "2026-11-04T16:35:00+01:00",
   "heures": null,
-  "restant_min": 1,
-  "restant_max": 2,
-  "reste": "1 à 2 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": "Panneau C en construction"
+  "note": "Joue et flux village-evolve vert : le panneau part, le moment, retour a la vue, plus de marteau"
  },
  {
   "id": "G7",
@@ -107,16 +107,16 @@
   "piste_ordre": 6,
   "etape": "Du batiment vers les exercices et le journal",
   "ordre": 7,
-  "statut": "en cours",
+  "statut": "fait",
   "debut": "2026-11-04T13:00:00+01:00",
-  "fin": null,
+  "fin": "2026-11-04T16:35:00+01:00",
   "heures": null,
-  "restant_min": 1,
-  "restant_max": 2,
-  "reste": "1 à 2 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": "Panneau C en construction"
+  "note": "Joue et flux village-panel vert : tiroir vers panneau, fiche et journal, un seul Back retrouve le panneau"
  },
  {
   "id": "G8",
@@ -124,16 +124,16 @@
   "piste_ordre": 6,
   "etape": "De la fin de seance vers le village",
   "ordre": 8,
-  "statut": "en cours",
+  "statut": "fait",
   "debut": "2026-11-04T13:00:00+01:00",
-  "fin": null,
+  "fin": "2026-11-04T16:35:00+01:00",
   "heures": null,
-  "restant_min": 1,
-  "restant_max": 2,
-  "reste": "1 à 2 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": "Panneau C en construction"
+  "note": "Flux village-end-of-session vert (scripts/game/village-eos.sh) : panneau seul, rien sans le tap, une seule fois"
  },
  {
   "id": "G9",
@@ -141,8 +141,8 @@
   "piste_ordre": 6,
   "etape": "Langues, accessibilite, mouvement reduit",
   "ordre": 9,
-  "statut": "à faire",
-  "debut": null,
+  "statut": "en cours",
+  "debut": "2026-11-04T16:35:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 1,
@@ -158,16 +158,16 @@
   "piste_ordre": 6,
   "etape": "Flux Maestro des chemins principaux",
   "ordre": 10,
-  "statut": "à faire",
-  "debut": null,
-  "fin": null,
+  "statut": "fait",
+  "debut": "2026-11-04T14:00:00+01:00",
+  "fin": "2026-11-04T16:35:00+01:00",
   "heures": null,
-  "restant_min": 1,
-  "restant_max": 2,
-  "reste": "1 à 2 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": "Apres le panneau"
+  "note": "3 flux verts sur emulator-5554, hors de config.yaml jusqu'a G12"
  },
  {
   "id": "G11",
@@ -201,6 +201,6 @@
   "reste": "0.5 à 1 h",
   "avancement": null,
   "total": null,
-  "note": "Attend le go de Guillaume, apres la fin de la piste"
+  "note": "Attend le go de Guillaume, apres la fin de la piste. Remettre dans .maestro/config.yaml village-panel, village-evolve et village-end-of-session (retires tant que INTEGRATION est off)"
  }
 ]

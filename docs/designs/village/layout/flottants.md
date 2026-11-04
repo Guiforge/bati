@@ -28,6 +28,8 @@ Hypothèse de départ (CLEAN a recoupé 174 éléments sans recalculer les ancra
    Le tonneau « dans le DOM mais invisible » est `tonneaux_1`: le camp du palier 1 est recouvert par le training_dummy dès qu'il se pose. Les déplacer demande de choisir une case libre sur un plan qui est en train de changer (autre agent): **non fait, décision**. Règle du produit à trancher: rien ne disparaît, donc un accessoire recouvert est un manque.
 3. **La botte de foin 1 de la ferme** (case 3,8) a sa moitié gauche au-dessus de l'eau de la rivière. Décalée de 0,3 vers la terre, elle passe derrière le toit de la ferme (pire). Remise comme avant. **Décision**: autre case.
 
+**Ancres des bâtiments corrigées (04/11)**: chaque stade a son ancre au pied de sa peinture (`ancres` dans `peints/<code>.ts`, produit par `pied()` de `integrate.py`), 0 bâtiment au-delà de 2 px aux paliers 1, 6, 12 avec et sans `haut=1`; les éléments et le bassin de la fontaine lisent l'ancre nominale (bas de toile moins 64). Avant/après: `img/ancres-avant-apres.jpg`.
+
 ## Ce que `check` voit maintenant (`scripts/atelier/check.js`)
 
 - Porte **anchors**: ajoute les éléments (`batiment-teaser|gag|addon`) par leur ligne opaque la plus basse contre le bord bas de leur boîte. Ils ne sont dans le DOM que dans les états `bld=<code>&rang=N` (le moteur de bâtiment), pas dans la carte de démo: la porte ne les voit donc pas sur les 12 paliers. Mesuré une fois sur les 176 fichiers: 0 au-dessus de 2 px.

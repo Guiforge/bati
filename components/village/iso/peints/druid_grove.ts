@@ -32,7 +32,14 @@ const masque_mythic = {
   bits: "0000000000000000000000000000000000000000000f800000000000000000000000001f800000000000000000000000001fc00000000000000000000000003fff0000000000000000000000007fffc00000000000000000000001ffffe0000000000000000000037fffffd8000000000000000000fffffffffe000000000000000000ffffffffff000000000000000000ffffffffff000000000000000003fffffffffe0c000000000000000fffffffffffff000000000000001fffffffffffff800000000000001fffffffffffffc00000000000003fffffffffffffc0000000000001ffffffffffffff80000000000001ffffffffffffffbe000000000001fffffffffffffffe000000000001ffffffffffffffff80000000007fffffffffffffffffc000000000ffffffffffffffffffc000000000ffffffffffffffffff8000000001ffffffffffffffffff0000000003ffffffffffffffffff0000000003fffffffffffffffff80000000001ffffffffffffffff0000000000001fffffffffffffff1800000000003fffffffffffffff7f00000000007fffffffffffffffff80000000007ffffffffffffffffff8000000003ffffffffffffffffff8000000003ffffffffffffffffff800000000fffffffbfffffffffff800000000ffffffeffffffffffffc00000000fffffffffffffffffffc000000001ffffffffffffffffffc00000000ffffffffffffffffffc000000001fffffffffffffffffec000000001ff0fffffffffffff8c0000000001fc07ffffffffffff800000000001bc01ffffffffffff800000000000001fffffffffffff800000000000003fe7fffffffeffe00000000000003fc1fffffffc7fe00000000000001fc1bffffffc7fe00000000000001e01fffffffc1dc00000000000000001ffffffec00000000000000000001ffffff6c00000000000000000001dfffff7c000000000000000000019fffff7c00000000000000000001bffffe6c00000000000000000000bffffe6c000000000000000000009ffffeec000000000000000000001ffffee0000000000000000000003fffffe0000000000000000000003ffffc60000000000000000000003ffffc20000000000000000000003ffffc00000000000000000000003ffffc00000000000000000000003ffffc00000000000000000000003ffffe00000000000000000000003ffffe00000000000000000000003ffffe00000000000000000000007fffff00000000000000000000007fffff8000000000000000000000ffffff8000000000000000000001ffffffc000000000000000000003ffffffc000000000000000000007ffffffe00000000000000000000ffffffff00000000000000000003ffffffff80000000000000000003ffffffff80000000000000000003ffffffff80000000000000000000ffffffff00000000000000000000ffffffff00000000000000000000ffffffef00000000000000000000ffffffef800000000000000003f8ffffffff80000000000000000ffcffffffff00000000000000001ffcffffffff00380000000000001ffcffffffff01fe0000000000001ff8ffffffff1dff8000000000000ffbfffffffffdffc000000000001ffbfffffffffeffc000000000039ffbfffffffffeffc00000000007dffcffffffffffff800000000007dfffffffffffffff800000000007dfffffffffffffffc00000000007dfffffffffffffffc0000000000ffffffffffffffffffc00000001effffffffffffffffffc00000001fffffffffffffffffffc00000001fffffffffffffffffffc00000003fffffffffffffffffffc00000003fffffffffffffffffffc00000003fffffffffffffffffffe00000003ffffffffffffffffffff00000007ffffffffffffffffffffe000001fffffffffffffffffffffe000001ffffffffffffffffffffff000003ffffffffffffffffffffff80000fffffffffffffffffffffffc0000fffffffffffffffffffffffc0000ffffffffffffffffffffffff00007ffffffffffffffffffffffe00007fffffffffffffffffffffff00003fffffffffffffffffffffff80003fffffffffffffffffffffff00007ffffffffffffffffffffff800007ffffffffffffffffffffff800007ffffffffffffffffffffff000003fffffffffffffffffffffe000007fffffffffffffffffffffe000007fffffffffffffffffffffc000003fffffffffffffffffffffc000000fffffffffffffffffffffc000000fffffffffffffffffffff8000000fffffffffffffffffffff8000000ffffffffffffffffffffc00000001fffffffffffffffffffc00000000fffffffffffffffffff0000000007ffffffffffffffffff0000000001fffffffffffffffffc00000000007ffffffffffffffff800000000003fffffffffffffffc000000000003ffffffffffffffc0000000000001ffffffffffffffc0000000000000ffffffffffffff8000000000000001fffffffffff000000000000000007fffffffffc000000000000000003fffffffffc000000000000000000dfffffffc000000000000000000007ffffff8000000000000000000001fffe6000000000000000000000003ffe0000000000000000000000000dfc000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
 };
 
-const ancre = [448, 1104] as const;
+// The ground anchor of each stage: one below its painting's lowest opaque row at the footprint's front corner.
+const ancres = {
+  rough: [448, 1102] as const,
+  solid: [448, 1101] as const,
+  grand: [448, 1093] as const,
+  legendary: [448, 1104] as const,
+  mythic: [448, 1094] as const,
+};
 const taille = [896, 1168] as const;
 
 export const druid_grove: Omit<PeintBld, "donnees"> = {
@@ -40,14 +47,14 @@ export const druid_grove: Omit<PeintBld, "donnees"> = {
     rough: {
       jour: {
         image: require("@/assets/images/village/iso/peints/druid_grove/rough.jour.webp"),
-        anchor: ancre,
+        anchor: ancres.rough,
         size: taille,
         ombre: [],
         masque: masque_rough,
       },
       nuit: {
         image: require("@/assets/images/village/iso/peints/druid_grove/rough.nuit.webp"),
-        anchor: ancre,
+        anchor: ancres.rough,
         size: taille,
         ombre: [],
         masque: masque_rough,
@@ -56,14 +63,14 @@ export const druid_grove: Omit<PeintBld, "donnees"> = {
     solid: {
       jour: {
         image: require("@/assets/images/village/iso/peints/druid_grove/solid.jour.webp"),
-        anchor: ancre,
+        anchor: ancres.solid,
         size: taille,
         ombre: [],
         masque: masque_solid,
       },
       nuit: {
         image: require("@/assets/images/village/iso/peints/druid_grove/solid.nuit.webp"),
-        anchor: ancre,
+        anchor: ancres.solid,
         size: taille,
         ombre: [],
         masque: masque_solid,
@@ -72,14 +79,14 @@ export const druid_grove: Omit<PeintBld, "donnees"> = {
     grand: {
       jour: {
         image: require("@/assets/images/village/iso/peints/druid_grove/grand.jour.webp"),
-        anchor: ancre,
+        anchor: ancres.grand,
         size: taille,
         ombre: [],
         masque: masque_grand,
       },
       nuit: {
         image: require("@/assets/images/village/iso/peints/druid_grove/grand.nuit.webp"),
-        anchor: ancre,
+        anchor: ancres.grand,
         size: taille,
         ombre: [],
         masque: masque_grand,
@@ -88,14 +95,14 @@ export const druid_grove: Omit<PeintBld, "donnees"> = {
     legendary: {
       jour: {
         image: require("@/assets/images/village/iso/peints/druid_grove/legendary.jour.webp"),
-        anchor: ancre,
+        anchor: ancres.legendary,
         size: taille,
         ombre: [],
         masque: masque_legendary,
       },
       nuit: {
         image: require("@/assets/images/village/iso/peints/druid_grove/legendary.nuit.webp"),
-        anchor: ancre,
+        anchor: ancres.legendary,
         size: taille,
         ombre: [],
         masque: masque_legendary,
@@ -104,14 +111,14 @@ export const druid_grove: Omit<PeintBld, "donnees"> = {
     mythic: {
       jour: {
         image: require("@/assets/images/village/iso/peints/druid_grove/mythic.jour.webp"),
-        anchor: ancre,
+        anchor: ancres.mythic,
         size: taille,
         ombre: [],
         masque: masque_mythic,
       },
       nuit: {
         image: require("@/assets/images/village/iso/peints/druid_grove/mythic.nuit.webp"),
-        anchor: ancre,
+        anchor: ancres.mythic,
         size: taille,
         ombre: [],
         masque: masque_mythic,

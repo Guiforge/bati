@@ -218,7 +218,7 @@
   "reste": "3 à 6 h",
   "avancement": null,
   "total": null,
-  "note": "attend le choix"
+  "note": "attend le choix ; porte props : 6 accessoires à replacer"
  },
  {
   "id": "L13",
@@ -328,15 +328,15 @@
   "piste_ordre": 7,
   "etape": "Ancres des bâtiments",
   "ordre": 20,
-  "statut": "en cours",
+  "statut": "fait",
   "debut": null,
   "fin": null,
-  "heures": null,
-  "restant_min": 0.5,
-  "restant_max": 1.5,
-  "reste": "0.5 à 1.5 h",
+  "heures": 0.2,
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "une ancre par stade, durable dans integrate.py ; occlusion à 12 contre 10 : fontaine et salle plus couvertes une fois descendues"
  }
 ]

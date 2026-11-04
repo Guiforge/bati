@@ -568,7 +568,7 @@ function profondeur(r, A) {
     [
       ...fs
         .readFileSync(path.join(A.ROOT, "components/village/iso/alentours.ts"), "utf8")
-        .matchAll(/nom: "(\w+)",[^}\n]*sur: "(\w+)"/g),
+        .matchAll(/nom: "(\w+)",[^}]*sur: "(\w+)"/g),
     ].map((m) => [m[1], m[2]]),
   );
   const choses = r.rangs.flatMap((c) => {

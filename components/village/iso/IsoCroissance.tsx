@@ -19,6 +19,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import type { BuildingData } from "@/constants/buildingData";
+import spec from "@/constants/isoSpec.json";
 import { rawColors } from "@/constants/rawColors";
 import type { BuildingCode } from "@/db/schema";
 import { BATIMENT_MOTEUR, etatBatiment } from "./batiment";
@@ -128,7 +129,8 @@ function piecesNeuves(
   if (!corps) return [];
   const r = pose(code, corps);
   const k = r.w / corps.size[0];
-  const [ax, ay] = corps.anchor;
+  // The elements' offsets are read from the nominal anchor, not from the stage's own (on its painting's foot).
+  const [ax, ay] = [corps.anchor[0], corps.size[1] - spec.anchorMarginPx];
   const au = (o: readonly [number, number], sprite: string | null, cle: string) => {
     const e = sprite ? elements[sprite] : undefined;
     if (!e) return [];

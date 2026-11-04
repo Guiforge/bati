@@ -263,5 +263,9 @@ export const ZBASSIN = 0.48;
 /** The middle of a basin's water in sprite px: its footprint's centre (from the bottom corner), raised. */
 export function centreBassin(code: BuildingCode, s: SpriteIso): readonly [number, number] {
   const [ex, ey] = batiments[code]?.emprise ?? [1, 1];
-  return [s.anchor[0], s.anchor[1] - ((ex + ey) / 2) * (spec.S / 4) - ZBASSIN * PX_PAR_HAUTEUR];
+  // The nominal anchor (canvas bottom minus the margin): the stage's own anchor sits on its painting's foot.
+  return [
+    s.anchor[0],
+    s.size[1] - spec.anchorMarginPx - ((ex + ey) / 2) * (spec.S / 4) - ZBASSIN * PX_PAR_HAUTEUR,
+  ];
 }

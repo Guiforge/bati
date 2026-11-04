@@ -7,6 +7,7 @@
 import type { ReactNode } from "react";
 import type { BuildingData } from "@/constants/buildingData";
 import type { VisualStage } from "@/constants/buildingStages";
+import spec from "@/constants/isoSpec.json";
 import { BatimentMoteur } from "./BatimentMoteur";
 import type { Rect } from "./carteDemo";
 import type { EtatBld } from "./etatBld";
@@ -46,7 +47,7 @@ export function MoteurBld({
       rule="B"
       corps={corps}
       taille={s.size}
-      ancre={s.anchor}
+      ancre={[s.anchor[0], s.size[1] - spec.anchorMarginPx]} // nominal: the elements' offsets read from it
       masque={masque}
       sprite={sprite}
       couches={couches}

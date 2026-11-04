@@ -3,7 +3,7 @@
 // locales, reduced motion, rest, and a skip.
 import "react-native-gesture-handler/jestSetup";
 import "@/i18n";
-import { act, configure, render, screen } from "@testing-library/react-native";
+import { act, configure, fireEvent, render, screen } from "@testing-library/react-native";
 import i18next from "i18next";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
@@ -146,11 +146,23 @@ describe("the reveal, rendered", () => {
     expect(screen.queryAllByTestId("iso-croissance-echafaudage-tent")).toHaveLength(1);
     await avance(CROISSANCE_CAMERA_MS - 20);
     expect(style("iso-croissance-ancien-tent").scale).toBe(1);
+    // The new image has decoded (expo-image's load event): only then may the old stage give way.
+    await act(() => {
+      fireEvent(screen.getByTestId("iso-croissance-nouveau-image-tent"), "load", {
+        nativeEvent: { source: { width: 1, height: 1, url: "" } },
+      });
+    });
     await avance(ECHANGE_MS + 20);
     expect(style("iso-croissance-ancien-tent").scale).toBe(0);
     expect(style("iso-croissance-nouveau-tent").scale).toBeGreaterThan(0.88);
     await avance(STADE_MS);
     expect(style("iso-croissance-nouveau-tent").scale).toBeCloseTo(1, 2);
+  });
+
+  it("never a frame without the building: the old stage stays while the new image has not decoded", async () => {
+    await jouer(false);
+    await avance(CROISSANCE_CAMERA_MS + ECHANGE_MS + 300);
+    expect(style("iso-croissance-ancien-tent").scale).toBe(1);
   });
 
   it("dust at three corners of the footprint", async () => {

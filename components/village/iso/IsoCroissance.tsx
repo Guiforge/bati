@@ -304,8 +304,11 @@ export function IsoCroissance({
     const p = poseMoment(genre, h.get());
     return { opacity: p.lueur * (nuit ? 1 : 0.8), transform: [{ scale: p.lueurEchelle }] };
   });
+  // The old stage stays until the new image has decoded (a low body such as the road showed the
+  // light's pool alone for a frame while it decoded): never a frame without the building.
+  const nouveauPret = useSharedValue(false);
   const styleAncien = useAnimatedStyle(() => ({
-    transform: [{ scale: poseMoment(genre, h.get()).ancien ? 1 : 0 }],
+    transform: [{ scale: poseMoment(genre, h.get()).ancien || !nouveauPret.get() ? 1 : 0 }],
   }));
   const styleNouveau = useAnimatedStyle(() => ({
     transform: [{ scale: poseMoment(genre, h.get()).nouveau }],
@@ -423,7 +426,12 @@ export function IsoCroissance({
               styleNouveau,
             ]}
           >
-            <Planche s={sNouveau} rect={n} testID={`iso-croissance-nouveau-image-${code}`} />
+            <Planche
+              s={sNouveau}
+              rect={n}
+              onCharge={() => nouveauPret.set(true)}
+              testID={`iso-croissance-nouveau-image-${code}`}
+            />
             {termine ? null : (
               <Encre
                 genre={genre}

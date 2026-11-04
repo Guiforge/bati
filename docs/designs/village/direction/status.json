@@ -107,16 +107,16 @@
   "piste_ordre": 5,
   "etape": "target.md et images choisies",
   "ordre": 7,
-  "statut": "attend Guillaume",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
-  "restant_min": 0.2,
-  "restant_max": 0.5,
-  "reste": "0.2 à 0.5 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": "attend le choix de Guillaume"
+  "note": "direction A reprise, 18 images de plus, 1,33 $"
  },
  {
   "id": "D8",
@@ -124,15 +124,15 @@
   "piste_ordre": 5,
   "etape": "Clôture de la piste",
   "ordre": 8,
-  "statut": "attend Guillaume",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
-  "restant_min": 0.1,
-  "restant_max": 0.3,
-  "reste": "0.1 à 0.3 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": "après target.md"
+  "note": ""
  }
 ]

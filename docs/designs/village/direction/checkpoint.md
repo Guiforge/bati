@@ -31,3 +31,8 @@ Une courte session écrit `target.md` (les images choisies dans `img/`, une diza
 
 ## Réponse de Guillaume
 
+04/11, dans la conversation : « ok on suit ta reco, reprends en améliorant notamment le palier 1 ».
+
+- **Q1** : direction A, `A_t1_v2`, `A_t6_v1`, `A_t12_v2`, `A_t12n_v2`, à reprendre en mieux, surtout le palier 1. Règles reprises de C : forêt sombre et variée, densité des toits, flaque chaude au coeur.
+- **Q2** : oui, `lisiere` et `pieds` peuvent reculer une fois, puis être reverrouillés sur un rendu qu'il valide.
+

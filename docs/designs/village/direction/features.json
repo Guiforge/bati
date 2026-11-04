@@ -10,7 +10,7 @@
     {"id": "D4", "group": "3 peintures", "name": "Essais Klein", "check": "planche Klein : 3 directions, 4 états, 2 variantes, sur les rendus de l atelier", "estimate_h": [0.3, 0.6], "status": "done", "note": "24 images, 0,26 $ ; A et B changent trop peu, prompts renforcés pour la suite"},
     {"id": "D5", "group": "3 peintures", "name": "Peintures FLUX 3 Image", "check": "planche FLUX 3 : 3 directions, 4 états, 2 variantes par palier ; total FLUX sous 5 $", "estimate_h": [0.3, 0.8], "status": "done", "note": "24 images, 1,68 $ ; piste à 1,94 $"},
     {"id": "D6", "group": "4 choix", "name": "Page de choix pour Guillaume", "check": "checkpoint.md et une page : directions côte à côte par palier, plan vu de dessus pour chacune", "estimate_h": [0.2, 0.5], "status": "done", "note": "page publiée, lien dans checkpoint.md"},
-    {"id": "D7", "group": "5 cible", "name": "target.md et images choisies", "check": "target.md : images choisies dans img/, 10 règles courtes, ce que prennent LAYOUT, GROWTH et POLISH", "estimate_h": [0.2, 0.5], "status": "waiting", "note": "attend le choix de Guillaume"},
-    {"id": "D8", "group": "fin", "name": "Clôture de la piste", "check": "summary, status.json final, scratch archivé, fusion dans feat/village-iso, poussé", "estimate_h": [0.1, 0.3], "status": "waiting", "note": "après target.md"}
+    {"id": "D7", "group": "5 cible", "name": "target.md et images choisies", "check": "target.md : images choisies dans img/, 10 règles courtes, ce que prennent LAYOUT, GROWTH et POLISH", "estimate_h": [0.2, 0.5], "status": "done", "note": "direction A reprise, 18 images de plus, 1,33 $"},
+    {"id": "D8", "group": "fin", "name": "Clôture de la piste", "check": "summary, status.json final, scratch archivé, fusion dans feat/village-iso, poussé", "estimate_h": [0.1, 0.3], "status": "done"}
   ]
 }

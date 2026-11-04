@@ -281,6 +281,8 @@ export const rawColors = {
   isoVocationBois: "#6B4A2E",
   /** The glint on a legendary banner's finial: gold at its brightest. */
   isoEclat: "#FFF0C4",
+  /** The water glints (motion files `miroitement`): a soft slate-blue, never white, by day and by night. */
+  isoEclatEau: "#8FA8C8",
   /** The two cloud shadows crossing the map (bible §5, E5): the bible's shadow, drawn at 18 %. */
   isoOmbreNuage: "#2E3552",
   /** The forest floor, from the frame's top to its bottom. */

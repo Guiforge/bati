@@ -16,7 +16,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import Svg, { Ellipse } from "react-native-svg";
+import Svg, { Defs, Ellipse, RadialGradient, Stop } from "react-native-svg";
 import type { Point } from "@/constants/buildingData";
 import type { VisualStage } from "@/constants/buildingStages";
 import { rawColors } from "@/constants/rawColors";
@@ -523,12 +523,18 @@ function Eclat({
       ]}
     >
       <Svg width={ECLAT_L} height={ECLAT_H} style={{ transform: [{ rotate: `${ANGLE_ISO}deg` }] }}>
+        <Defs>
+          <RadialGradient id={`eclat-${testID}`}>
+            <Stop offset="0" stopColor={rawColors.isoEclatEau} stopOpacity={0.5} />
+            <Stop offset="1" stopColor={rawColors.isoEclatEau} stopOpacity={0} />
+          </RadialGradient>
+        </Defs>
         <Ellipse
           cx={ECLAT_L / 2}
           cy={ECLAT_H / 2}
           rx={ECLAT_L / 2}
           ry={ECLAT_H / 2}
-          fill={rawColors.isoEclat}
+          fill={`url(#eclat-${testID})`}
         />
       </Svg>
     </Animated.View>

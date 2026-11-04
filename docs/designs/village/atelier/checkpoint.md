@@ -36,3 +36,5 @@ Le jour ne passe donc pas la barre des 2 %. Ce qui reste : le détail fin, déco
 Écris sous le titre ci-dessous : A, B ou C.
 
 ## Réponse de Guillaume
+
+A (donnée dans la conversation le 04/11 : « we follow you reco »).

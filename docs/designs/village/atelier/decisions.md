@@ -12,3 +12,4 @@
 - 04/11. **Une seule visite émulateur.** La seconde servait à vérifier que le découpage n'a rien changé : sans découpage, l'appli n'a pas bougé. Si Guillaume choisit B, elle reste due.
 - 04/11. **Fusion 1 sans le découpage**, pour ne pas bloquer DIRECTION : rien ne change dans l'appli, tout est derrière `ATELIER_WEB`.
 - 04/11. **`scripts/life/status.py` prend un nom de piste** plutôt qu'une copie du script.
+- 04/11. **Guillaume choisit A : pas de Skia, on garde les vues, l'atelier reste dans le navigateur.** A3 et A9 abandonnés, sans objet. Le prompt reçoit un amendement en tête de `PROMPT-tracks.md`, pour que les pistes suivantes ne cherchent pas une liste de dessin. Seconde visite émulateur annulée : l'appli n'a pas bougé.

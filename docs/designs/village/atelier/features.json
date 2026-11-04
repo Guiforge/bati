@@ -58,8 +58,8 @@
     0,
     0
    ],
-   "status": "waiting",
-   "note": "Skia n'est pas dans l'appli : attend la réponse de Guillaume (checkpoint.md), Q1"
+   "status": "dropped",
+   "note": "Guillaume a choisi A le 04/11 : pas de Skia, l'appli garde ses vues"
   },
   {
    "id": "A4",
@@ -115,8 +115,9 @@
     1,
     2
    ],
-   "status": "todo",
-   "note": ""
+   "status": "doing",
+   "note": "",
+   "debut": "2026-11-04T18:05:00+01:00"
   },
   {
    "id": "A8",
@@ -127,8 +128,9 @@
     2,
     3
    ],
-   "status": "todo",
-   "note": ""
+   "status": "doing",
+   "note": "",
+   "debut": "2026-11-04T18:05:00+01:00"
   },
   {
    "id": "A9",
@@ -139,8 +141,8 @@
     0,
     0
    ],
-   "status": "waiting",
-   "note": "N'existe que si la liste existe : suit la réponse à Q1"
+   "status": "dropped",
+   "note": "Sans objet : pas de liste de dessin (choix A du 04/11)"
   }
  ]
 }

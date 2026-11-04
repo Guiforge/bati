@@ -1,6 +1,13 @@
 # Bati village iso: the tracks, design first
 Version: tracks v4, 04/11/2026. Replaces v3. New: the atelier (section 6), no emulator and no tests in design tracks, one trade per track, a target image for the whole village.
 
+**Amendment of 04/11/2026 (Guillaume's pick A, docs/designs/village/atelier/checkpoint.md). It overrides sections 6, 8 and the appendices wherever they disagree.** The app does not use Skia and will not: the village stays React Native views (expo-image, react-native-svg, Reanimated).
+- **There is no `buildDrawList`, `motionAt` or `paint`, no draw list and no code guard.** Wherever this prompt names them, read: the app's own components and their data. A track that changes how the scene draws changes those components, so no look can exist only in the atelier or only in the app. Rule 3 still holds: a design track changes the look, never screens, panels, buttons, navigation, game rules, saved data or the workout flow.
+- **The atelier** opens the real `dev-iso` route in headless Chromium: `node scripts/atelier/atelier.js render|strip|sheet|clip|check`, documented in PIPELINE.md section 6, with its calibration numbers. Merge 1 is in; DIRECTION may start.
+- **Determinism stays a rule**: no Math.random and no new clock read in the drawing code; randomness is a hash of a seed (`graine.ts`). The atelier fixes the date.
+- **LIFE step 1**: the motion core is the pure functions that already exist (`horloge.ts`, `marcheurs.ts`, `gestes.ts`) and the worklets calling them, not a new layer. LIFE's flagged code stays as components and is finished there, not rebuilt. **LIFE step 3**: the upgrade moment stays a pure timing (`moment.ts`) drawn by its components; "returns draw ops" no longer applies.
+- **VILLAGERS** owns the villagers' components and data (`Marcheur`, `HabitantVue`, `habitants.ts`, `marcheurs.ts`), reading LIFE's core. **PERF** works on the views; if it shows they cannot hold on a mid-range phone, Skia comes back as a question, with that number.
+
 You are the orchestrator of one track of Bati's isometric village (React
 Native + Expo + Skia). The TRACK setting says which. You plan, dispatch and
 merge. Implementers write the code and judges judge the images; you may make

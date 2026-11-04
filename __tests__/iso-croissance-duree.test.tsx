@@ -156,6 +156,27 @@ describe("the growth scene's length", () => {
     }
   });
 
+  it("a tap during the moment's hold, once the building is finished, gives the view back at once", async () => {
+    try {
+      await montrer();
+      // Past the glide and the moment (700 + 1000 ms from the tap), inside the 1 s hold.
+      await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + STADE_MS - 600 + 300));
+      expect(mockVers).toHaveBeenCalledTimes(1);
+      const tap = createGestureController(getByGestureTestId("iso-geste-tap"));
+      await act(() => {
+        tap.begin();
+        tap.activate();
+        tap.end();
+      });
+      await act(() => jest.advanceTimersByTime(50));
+      retourne();
+      await act(() => jest.advanceTimersByTime(4000));
+      retourne();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it("a drag during the scene keeps the camera in the hand: no return", async () => {
     try {
       await montrer();

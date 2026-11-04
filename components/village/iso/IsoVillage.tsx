@@ -392,6 +392,14 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
   // A second tap skips the moment: the layer's clock goes to its end.
   const [sautee, setSautee] = useState<string | undefined>(undefined);
   const anciens = new Map(enCours ? avecChantier.map((i) => [i.code, i.oldLevel] as const) : []);
+  // The engine draws a building by its rank: until the moment's end the map shows the rank it had
+  // (its sprite, flames and pieces), or the new stage's flame stands over the site before the swap.
+  const rangsAffiches = enCours
+    ? new Map([
+        ...niveaux,
+        ...monte.filter((i) => i.oldLevel > 0).map((i) => [i.code, i.oldLevel] as const),
+      ])
+    : niveaux;
   const niveauAffiche = (code: BuildingCode) => {
     const ancien = anciens.get(code);
     return ancien !== undefined && ancien > 0 ? ancien : vise(code);
@@ -553,7 +561,9 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
       const b = code ? parCode.get(code) : undefined;
       // A touch skips the scene (VI-29): the new stage shows at once and the owner is told.
       // A touch on a building still opens it (T38): the tap must not be lost to the skip.
-      if (enCours) passer();
+      // Through the hold too (the finished building stands 1 s before the view goes back): a touch
+      // then ends the scene and gives the view back at once.
+      if (cle !== undefined && !reduit && rendu.current !== cle) passer();
       if (onBulle) {
         mesurerFenetre(racine.current, (ox, oy) => {
           origine.current = [ox, oy];
@@ -670,7 +680,9 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
                       }
                     >
                       <RevelationContext.Provider value={plan}>
-                        <RangsBldContext.Provider value={{ rangs: niveaux, bases: basesReclamees }}>
+                        <RangsBldContext.Provider
+                          value={{ rangs: rangsAffiches, bases: basesReclamees }}
+                        >
                           <IsoCarte
                             visible={visible}
                             montres={construits}

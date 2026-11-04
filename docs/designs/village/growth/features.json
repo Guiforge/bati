@@ -185,6 +185,18 @@
       ],
       "status": "waiting",
       "note": "attend les renders de LAYOUT (L6, L7)"
+    },
+    {
+      "id": "G15",
+      "group": "4 poser",
+      "name": "Forêt du sud aux paliers 1 à 3",
+      "check": "strip des paliers 1 à 4 : la forêt couvre le sud, recule en laissant des souches, le coin arrive au palier 4 ; crops verrouillés intacts ; masses ajoutées comptées",
+      "estimate_h": [
+        1,
+        3
+      ],
+      "status": "waiting",
+      "note": "attend la fusion de LAYOUT ; lisiereSud dépendra du palier"
     }
   ]
 }

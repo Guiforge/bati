@@ -53,9 +53,10 @@ ul { margin: 0; padding-left: 1.2em; max-width: 68ch; display: grid; gap: 4px; }
 </style>
 <main>
 <header style="display:grid;gap:10px">
-  <p class="doux">Piste GROWTH, 04/11/2026, à choisir au réveil. Rien n'est peint pour de bon, rien n'est posé dans le jeu.</p>
+  <p class="doux">Piste GROWTH, 04/11/2026. Rien n'est peint pour de bon, rien n'est posé dans le jeu.</p>
   <h1>Comment les alentours racontent la prospérité</h1>
-  <p>Trois idées, palier par palier. <b>Mon avis : un mélange, la route de R et la forêt qui recule de F au nord-ouest.</b> R est celle qui tient le mieux à l'image. Les trois juges préfèrent F sur le texte, mais son montage est le moins réussi. Le mélange n'est pas dessiné.</p>
+  <p><b>Tu as choisi F, la forêt recule</b>, avec les essais de pièces du montage et le recul permis dans <code>lisiere</code>. Nouveau, à ta demande : aux paliers 1 à 3, la forêt couvre le sud et recule en laissant des souches, puis le coin arrive au palier 4. Fais glisser la réglette de 1 à 4 pour le voir.</p>
+  <p>Ton plan du palier 12 n'est pas dans ces images : LAYOUT ne l'a pas encore appliqué. La bande F sera refaite sur ses rendus avant toute peinture, avec la route qui évite l'observatoire et le moulin, et le bosquet qui garde sa forêt derrière lui.</p>
 </header>
 
 <section>
@@ -96,7 +97,7 @@ ul { margin: 0; padding-left: 1.2em; max-width: 68ch; display: grid; gap: 4px; }
 
 <section>
   <h2>La nuit</h2>
-  <p>Klein repeint le jour de chaque montage, paliers 3, 6, 9 et 12. Ces images <b>ne sont pas cohérentes entre elles</b> : teinte qui varie, palier 9 de T presque en plein jour, palier 12 de F en filtre bleu, chaîne de R trop voyante, feux inventés. Regarde seulement quelles lumières s'ajoutent. La première colonne est la nuit d'aujourd'hui.</p>
+  <p>Klein repeint le jour de chaque montage, paliers 3, 6, 9 et 12. Ces images <b>ne sont pas cohérentes entre elles</b> : teinte qui varie, palier 9 de T presque en plein jour, palier 12 de F en filtre bleu, chaîne de R trop voyante, feux inventés. Regarde seulement quelles lumières s'ajoutent. La première colonne est la nuit d'aujourd'hui. Les nuits de F datent d'avant la forêt du sud.</p>
   <div class="defile"><div id="nuits" style="display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:6px;min-width:700px"></div></div>
 </section>
 
@@ -113,7 +114,6 @@ ul { margin: 0; padding-left: 1.2em; max-width: 68ch; display: grid; gap: 4px; }
   <label for="note">Mélange, reprise, question de la lisière, ou ce qui ne va pas :</label>
   <textarea id="note" placeholder="Par exemple : la route de R, le recul de F au nord-ouest, pas de pavés."></textarea>
   <p id="etat" role="status"></p>
-  <p class="doux">Une question précise pour toi : la forêt peut-elle reculer dans la zone du crop <code>lisiere</code> ? LAYOUT le fait reculer une fois et te le fera revalider. F en dépend.</p>
 </section>
 
 <section>

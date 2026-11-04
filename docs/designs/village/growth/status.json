@@ -236,5 +236,22 @@
   "avancement": null,
   "total": null,
   "note": "attend les renders de LAYOUT (L6, L7)"
+ },
+ {
+  "id": "G15",
+  "piste": "Alentours qui grandissent",
+  "piste_ordre": 8,
+  "etape": "Forêt du sud aux paliers 1 à 3",
+  "ordre": 15,
+  "statut": "attend Guillaume",
+  "debut": null,
+  "fin": null,
+  "heures": null,
+  "restant_min": 1,
+  "restant_max": 3,
+  "reste": "1 à 3 h",
+  "avancement": null,
+  "total": null,
+  "note": "attend la fusion de LAYOUT ; lisiereSud dépendra du palier"
  }
 ]

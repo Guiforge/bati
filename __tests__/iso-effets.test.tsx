@@ -16,8 +16,7 @@ import {
   spriteDe,
   stadeReel,
 } from "@/components/village/iso/carteDemo";
-import { CHANTIER_MS } from "@/components/village/iso/chantier";
-import { perchoirDe } from "@/components/village/iso/corbeaux";
+import { perchoirDe } from "@/components/village/iso/creatures";
 import { Effets } from "@/components/village/iso/Effets";
 import {
   boiteEffet,
@@ -44,6 +43,7 @@ import { HorlogeContext, useHorloge } from "@/components/village/iso/horloge";
 import { IsoCarteDemo } from "@/components/village/iso/IsoCarteDemo";
 import { type Croissance, IsoVillage } from "@/components/village/iso/IsoVillage";
 import { batiments } from "@/components/village/iso/isoSpec";
+import { STADE_MS } from "@/components/village/iso/moment";
 import { NOEUDS_RECLAMABLES } from "@/components/village/iso/reclame";
 import { VeilleContext } from "@/components/village/iso/veilleuses";
 import { buildingStage } from "@/constants/buildingLevels";
@@ -230,8 +230,8 @@ async function toucherToit(code: "farm" | "forge") {
   if (!p) throw new Error(`no perch on ${code}`);
   await act(() => {
     createGestureController(getByGestureTestId("iso-geste-pan")).begin({
-      x: (p.x - LARGEUR / 2) * (v.scale ?? 1) + 195 + (v.translateX ?? 0) + 4,
-      y: (p.y - HAUTEUR / 2) * (v.scale ?? 1) + 195 + (v.translateY ?? 0),
+      x: (p[0] - LARGEUR / 2) * (v.scale ?? 1) + 195 + (v.translateX ?? 0) + 4,
+      y: (p[1] - HAUTEUR / 2) * (v.scale ?? 1) + 195 + (v.translateY ?? 0),
     });
     jest.advanceTimersByTime(50);
   });
@@ -256,13 +256,13 @@ describe("the building effects, worst case and gates", () => {
       jest.useFakeTimers({ now: 1_800_000_000_000 + k * 15_000 * 7 });
       try {
         await render(carte({ croissance: { cle: `w${k}`, items } }));
-        await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + CHANTIER_MS));
+        await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + STADE_MS));
         await toucherToit("farm");
         await toucherToit("forge");
         await act(() => jest.advanceTimersByTime(300));
         const effets = screen.queryAllByTestId(/^iso-effet-/).length;
         const n = compte(screen.toJSON());
-        // The village is quiet from the new stage on: the burst and the golden wave take the effects' places.
+        // The village is quiet from the tap on: no trade effect plays.
         expect(effets).toBe(0);
         pire = Math.max(pire, n);
         expect(n).toBeLessThanOrEqual(63);

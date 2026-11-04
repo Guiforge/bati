@@ -6,13 +6,12 @@
 // for the one behaviour that moves (`marche`), when the walk of marcheurs.ts `planifierAnimaux`
 // starts. At rest, with reduced motion or frozen, no plan exists: the animal holds its rest pose.
 // shortcut: only the poses repos, a and b exist, so each `poses` below is a best use of them and
-// `aPeindre` names the clip to paint when T31 point 3 is done; the rat has one drawing, so its
-// plan (vivant.ts `planifierRat`) drives its run and its stops, not a pose.
+// `aPeindre` names the clip to paint when T31 point 3 is done.
 
 /** Pose images per second of the animals' drawn sheets (performance.md); horloge.ts reads it from here. */
 export const IMAGES_PAR_SECONDE = 8;
 
-export type AnimalVie = "chat" | "poule" | "corbeau" | "rat";
+export type AnimalVie = "poule";
 /** The images of an animal's sheet: 0 rest, 1 pose a, 2 pose b (carteDemo.ts `POSES_ANIMAL`). */
 export type Pose = 0 | 1 | 2;
 
@@ -44,80 +43,7 @@ export const FIN_MARGE_MS = 500;
 /** Each animal starts at its own offset in 0 to this, ms. */
 export const DECALAGE_MAX_MS = 3000;
 
-// The wave lasts 15 to 20 s, so a nap is 6 to 11 s here (the card said 10 to 30): the rest pose
-// of the cat is asleep, so it dozes on between waves.
 export const VIES: Record<AnimalVie, readonly Comportement[]> = {
-  chat: [
-    {
-      id: "dort",
-      poids: 60,
-      duree: [6000, 11000],
-      poses: [0],
-      suit: ["baille", "reveil"],
-      depart: true,
-      aPeindre: "chat roulé en boule, flancs qui montent",
-    },
-    {
-      id: "baille",
-      poids: 10,
-      duree: [1500, 2500],
-      poses: [0, 1, 1, 0],
-      suit: ["dort", "reveil"],
-      aPeindre: "chat qui bâille, 3 images",
-    },
-    {
-      id: "reveil",
-      poids: 10,
-      duree: [1200, 2000],
-      poses: [1],
-      suit: ["etire", "assis"],
-      aPeindre: "chat qui lève la tête",
-    },
-    {
-      id: "etire",
-      poids: 10,
-      duree: [2000, 3000],
-      poses: [1, 2, 2, 1],
-      suit: ["marche", "assis", "leche"],
-      aPeindre: "chat qui s'étire, dos creusé",
-    },
-    {
-      id: "marche",
-      poids: 12,
-      duree: [4500, 6500],
-      poses: [1, 2],
-      suit: ["assis", "leche", "dort"],
-      marche: true,
-      aPeindre: "marche du chat, 4 images",
-    },
-    {
-      id: "assis",
-      poids: 25,
-      duree: [2500, 4500],
-      poses: [1],
-      suit: ["leche", "dort", "marche", "chasse"],
-      depart: true,
-      aPeindre: "chat assis, queue enroulée",
-    },
-    {
-      id: "leche",
-      poids: 15,
-      duree: [2000, 4000],
-      poses: [2, 1, 2, 1],
-      suit: ["assis", "dort", "marche"],
-      depart: true,
-      aPeindre: "chat qui se lèche la patte",
-    },
-    {
-      id: "chasse",
-      poids: 20,
-      duree: [2500, 3500],
-      poses: [2, 1, 2, 1, 2],
-      suit: ["assis", "marche"],
-      rare: true,
-      aPeindre: "chat qui bondit sur un papillon",
-    },
-  ],
   poule: [
     {
       id: "picore",
@@ -164,98 +90,11 @@ export const VIES: Record<AnimalVie, readonly Comportement[]> = {
       aPeindre: "poule qui bat des ailes",
     },
   ],
-  corbeau: [
-    {
-      id: "pose",
-      poids: 50,
-      duree: [3000, 6000],
-      poses: [0],
-      suit: ["lisse", "tourne", "sautille", "croasse"],
-      depart: true,
-      aPeindre: "corbeau posé, plumes qui frémissent",
-    },
-    {
-      id: "lisse",
-      poids: 25,
-      duree: [2000, 3500],
-      poses: [1, 0, 1, 0],
-      suit: ["pose", "tourne"],
-      depart: true,
-      aPeindre: "corbeau qui se lisse les plumes",
-    },
-    {
-      id: "tourne",
-      poids: 20,
-      duree: [1200, 2200],
-      poses: [2],
-      suit: ["pose", "lisse", "sautille"],
-      aPeindre: "corbeau qui tourne la tête",
-    },
-    {
-      id: "sautille",
-      poids: 15,
-      duree: [4500, 6500],
-      poses: [1, 2],
-      suit: ["pose", "lisse"],
-      marche: true,
-      aPeindre: "sautillements du corbeau, 3 images",
-    },
-    {
-      id: "croasse",
-      poids: 20,
-      duree: [1500, 2500],
-      poses: [2, 1, 2],
-      suit: ["pose", "sautille"],
-      rare: true,
-      aPeindre: "corbeau bec ouvert qui croasse",
-    },
-  ],
-  rat: [
-    {
-      id: "cache",
-      poids: 50,
-      duree: [3000, 6000],
-      poses: [0],
-      suit: ["renifle", "file"],
-      depart: true,
-      aPeindre: "rat tapi, museau qui frémit",
-    },
-    {
-      id: "renifle",
-      poids: 30,
-      duree: [1500, 3000],
-      poses: [1, 0, 1],
-      suit: ["cache", "file", "dresse"],
-      depart: true,
-      aPeindre: "rat qui renifle le sol",
-    },
-    {
-      id: "file",
-      poids: 20,
-      duree: [4500, 6500],
-      poses: [1, 2],
-      suit: ["cache", "renifle"],
-      marche: true,
-      aPeindre: "course du rat, 4 images",
-    },
-    {
-      id: "dresse",
-      poids: 20,
-      duree: [1500, 2500],
-      poses: [2],
-      suit: ["cache", "file"],
-      rare: true,
-      aPeindre: "rat dressé sur ses pattes arrière",
-    },
-  ],
 };
 
 /** The poses an animal can be left in between waves (drawn once a day), and the clips to paint for the others. */
 export const REPOS: Record<AnimalVie, { poses: readonly Pose[]; aPeindre: string }> = {
-  chat: { poses: [0], aPeindre: "chat assis, chat roulé en boule" },
   poule: { poses: [0], aPeindre: "poule accroupie sur ses pattes" },
-  corbeau: { poses: [0], aPeindre: "corbeau tête rentrée" },
-  rat: { poses: [0], aPeindre: "rat pelotonné" },
 };
 
 /** The seeds of an animal's plan for a wave, of its rare day and of its rest pose. */

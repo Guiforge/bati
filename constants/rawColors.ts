@@ -151,8 +151,7 @@ export const rawColors = {
   isoFumee: "#7F8EA2",
   /** The dragon's breath (T41): a warm ash, pale, so it reads on the lair's blue-grey rock and in its black mouth. */
   isoCendreClaire: "#E4DCCB",
-  /** The dust of a building site (Chantier.tsx): a dry earth tone, and the ink of its outline. */
-  isoPoussiere: "#8E7C66",
+  /** The ink outline of the little puffs of dust (petitsDetails.tsx). */
   isoPoussiereEncre: "#1A1511",
   /** AUDIT-DA 39: the warm stone laid over a painted block that came out saturated blue (Retouches.tsx), lit, mid and shaded face. */
   isoPierreChaudeClair: "#8C7A66",
@@ -173,13 +172,8 @@ export const rawColors = {
   isoRempartBoisNuitCoupe: "#6A5238",
   isoRempartBoisNuitClair: "#4A3322",
   isoRempartBoisNuitSombre: "#281B12",
-  /** The crows flying over the forest (petitsDetails.tsx): ink black, and a cold rim that lifts the silhouette off the forest. */
-  isoCorbeau: "#2C3440",
-  isoCorbeauBord: "#A9C0DA",
   /** The fireflies: a clear cold cyan-blue, no warm light (the windows and the fire are the only warm ones). */
   isoLuciole: "#6EC9E8",
-  /** The rat on the path: a mid cold grey, lighter than the grass so it reads, with the ground ink as its outline. */
-  isoRat: "#74848F",
   /** T27 point 4, the building effects of a wave (effets.ts): the wizard's runes, a cold violet; the druids' motes, a green no fire mixes into. */
   isoRune: "#A58CE0",
   isoLucioleVerte: "#DDE6A4",
@@ -287,10 +281,8 @@ export const rawColors = {
   isoVocationBois: "#6B4A2E",
   /** The glint on a legendary banner's finial: gold at its brightest. */
   isoEclat: "#FFF0C4",
-  /** The growth reveal's flat silhouette, in the shape of the stage that comes (anim-31): warm ochre, drawn at 70 %. */
-  isoSilhouette: "#C9A060",
-  /** The reveal's dust puff by day (E5, H4-05): the bible's wood, darker than the sunlit ground it rises from. */
-  isoPoussiereJour: "#6B4A2E",
+  /** The water glints (motion files `miroitement`): a soft slate-blue, never white, by day and by night. */
+  isoEclatEau: "#8FA8C8",
   /** The two cloud shadows crossing the map (bible §5, E5): the bible's shadow, drawn at 18 %. */
   isoOmbreNuage: "#2E3552",
   /** The forest floor, from the frame's top to its bottom. */

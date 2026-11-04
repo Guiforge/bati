@@ -33,8 +33,8 @@ const REGLES: readonly (readonly [RegExp, Famille])[] = [
   [/^iso-flamme-/, "feux"],
   [/^iso-fumee-/, "fumees"],
   [/^iso-marcheur-/, "villageois"],
-  [/^iso-(animal|rongeur)/, "betes"],
-  [/^iso-(oiseaux|corbeau-envol-)/, "oiseaux"],
+  [/^iso-(animal|creature-(souris|chat|dragon))/, "betes"],
+  [/^iso-creature-oiseau-/, "oiseaux"],
   [/^iso-(lucioles|effet-lucioles-)/, "lucioles"],
   [/^iso-(fenetres|porte)-/, "lumieres"],
   [/^iso-(lueur|eclat-anime|effet-signal)-/, "signal"],
@@ -53,8 +53,7 @@ export function familleDe(testID: string): Famille | null | undefined {
 
 /**
  * DECISIONS 30/10: nothing is cut, the families take turns. Water, fires, smoke, villagers,
- * animals and the night lights play the whole wave (6), the birds keep a seat for the roof crows a
- * touch startles (7), and the eighth seat turns with the wave's cycles: the building signal first
+ * animals and the night lights play the whole wave (6), the birds keep a seat for the roof birds (7), and the eighth seat turns with the wave's cycles: the building signal first
  * (ready glows, legendary glints: what the hero should see at once), the fireflies, then a gust of
  * the sails. A growth takes that seat for as long as it plays.
  */

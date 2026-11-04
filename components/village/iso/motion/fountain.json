@@ -1,3 +1,3 @@
 {
-  "effets": [{ "kind": "miroitement", "at": [460, 860], "fromRank": 1, "nb": 2, "rayon": 90 }]
+  "effets": [{ "kind": "miroitement", "at": [460, 860], "fromRank": 1, "nb": 3, "rayon": 190 }]
 }

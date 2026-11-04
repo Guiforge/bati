@@ -8,7 +8,6 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { type SharedValue, useAnimatedReaction, useSharedValue } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 import type { BuildingCode } from "@/db/schema";
-import { DECALAGE_OUVRIER_MS, ouvriersChantiers } from "./chantier";
 import { effetsDeVague } from "./effets";
 import { useMouvementReduit } from "./fige";
 import { feteDue, garderPoses, type Habitant, rassembler } from "./habitants";
@@ -33,7 +32,6 @@ import {
 import { mouvementDeVague } from "./mouvement";
 import type { Emprise } from "./profondeur";
 import { type Veille, veilleDeVague } from "./veilleuses";
-import { planifierRat, RatForceContext } from "./vivant";
 
 type Etat = {
   c0: number;
@@ -75,8 +73,6 @@ export type MarcheurVu = {
   c0: number;
   /** The footprint its depth rank is measured on: the cells of its segment. */
   emprise: Emprise;
-  /** Striking at a building site (L6-T02): its start delay in ms, so the strikes are out of step; undefined otherwise. */
-  frappe?: number;
 };
 
 /** The reduced-motion party lasts this long, ms: they stand on the square, then go back to their places. */
@@ -96,8 +92,6 @@ export function useMarcheurs(
   carteBase: Carte,
   horloge: SharedValue<number> | null,
   lumieres: Lumieres,
-  /** The buildings with a site on now: up to three villagers each leave their rest cell to strike beside it. */
-  chantiers: readonly BuildingCode[] = [],
   vie: Vie = { habitants: [] },
 ): {
   marcheurs: readonly MarcheurVu[];
@@ -113,8 +107,6 @@ export function useMarcheurs(
   const depart = useContext(DepartContext);
   const focus = useIsFocused();
   const reduit = useMouvementReduit();
-  const ratForce = useContext(RatForceContext);
-  const ratForceRef = useRef(ratForce);
   // Waves planned since this map was mounted: the rare acts fall in the first few.
   const rangRef = useRef(0);
   const actif = focus && !reduit;
@@ -140,7 +132,6 @@ export function useMarcheurs(
     lumieresRef.current = lumieres;
     vieRef.current = vie;
     reduitRef.current = reduit;
-    ratForceRef.current = ratForce;
   });
   useEffect(() => {
     if (!reduit || !feteDue(vie.fete, celebree.current)) return;
@@ -156,7 +147,6 @@ export function useMarcheurs(
     [],
   );
   const etatRef = useRef<Etat | null>(null);
-  const [garde, setGarde] = useState<Partial<Record<Role, Case>>>({});
   // Where every role stood at the last render: the next wave starts there.
   const finsRef = useRef<Partial<Record<Role, Case>>>({});
   // The plan the UI thread follows, and the indices it last told React about.
@@ -175,7 +165,6 @@ export function useMarcheurs(
       favori: vieRef.current.favori,
     });
     setJour(jour);
-    setGarde({});
     const veille: Veille = {
       ...veilleDeVague(
         c0,
@@ -190,11 +179,9 @@ export function useMarcheurs(
       mouvement: mouvementDeVague(carteRef.current.montres, jour, numero),
     };
     const marcheuses = planifierAnimaux(carteRef.current, vague, jour, numero, rangRef.current);
-    const rat = planifierRat(jour, numero, marcheuses.length, rangRef.current, ratForceRef.current);
     const betes = [
       ...marcheuses,
       ...viesSansMarche(carteRef.current, marcheuses, jour, numero, rangRef.current),
-      ...(rat ? [rat] : []),
     ];
     rangRef.current++;
     const suivant: Etat = { c0, vague, indices: [], veille, betes };
@@ -255,14 +242,7 @@ export function useMarcheurs(
 
   const roles = rolesPresents(carte.montres);
   const repos = reposInitial(roles, carte, jour, etat?.vague.fins ?? {});
-  // The strikers are chosen on the map without the inhabitants: one on a site cell steps aside (below).
-  const ouvriers = ouvriersChantiers(chantiers, carteBase, repos, jour);
-  // A villager who struck at a site stays where it struck once the site is over, until a wave walks
-  // it away (T02b-qa: they jumped back to their rest cell). The site's cells are free of every rest.
-  const cleOuvriers = JSON.stringify(ouvriers);
-  if (cleOuvriers !== "{}" && cleOuvriers !== JSON.stringify(garde)) setGarde(ouvriers);
-  const fins =
-    cleOuvriers === "{}" ? reposInitial(roles, carte, jour, { ...repos, ...garde }) : repos;
+  const fins = reposInitial(roles, carte, jour, repos);
   useEffect(() => {
     finsRef.current = fins;
   });
@@ -280,22 +260,8 @@ export function useMarcheurs(
   const marcheurs = roles.flatMap((role): MarcheurVu[] => {
     const cellule = posees[role];
     if (!cellule) return [];
-    const frappe = ouvriers[role];
-    if (frappe)
-      return [
-        {
-          role,
-          cellule: frappe,
-          segments: null,
-          indice: 0,
-          c0: 0,
-          emprise: { coin: frappe, emprise: [1, 1] },
-          frappe: Object.keys(ouvriers).indexOf(role) * DECALAGE_OUVRIER_MS,
-        },
-      ];
     const k = etat?.vague.marcheurs.findIndex((m) => m.role === role) ?? -1;
-    // One who struck sits out the rest of its wave: its plan starts from where it stood before.
-    const marcheur = actif && etat && k >= 0 && !garde[role] ? etat.vague.marcheurs[k] : undefined;
+    const marcheur = actif && etat && k >= 0 ? etat.vague.marcheurs[k] : undefined;
     const debout = { coin: cellule, emprise: [1, 1] } as const;
     if (!etat || !marcheur)
       return [{ role, cellule, segments: null, indice: 0, c0: 0, emprise: debout }];

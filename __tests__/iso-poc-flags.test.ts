@@ -28,7 +28,7 @@ describe("the iso flags by build", () => {
     expect(m?.INTEGRATION).toBe(false);
     expect(m?.BATIMENT_MOTEUR).toBe(false);
     expect(Object.values(m?.BLD_PEINTS ?? {}).every((v) => v === false)).toBe(true);
-    expect(m && tout(m)).toEqual([false, false, false, false]);
+    expect(m && tout(m)).toEqual([false, false, false]);
   });
 
   test("a .perf release turns everything on", () => {
@@ -40,19 +40,19 @@ describe("the iso flags by build", () => {
     expect(m?.INTEGRATION).toBe(true);
     expect(m?.BATIMENT_MOTEUR).toBe(true);
     expect(Object.values(m?.BLD_PEINTS ?? {}).every((v) => v === true)).toBe(true);
-    expect(m && tout(m)).toEqual([true, true, true, true]);
+    expect(m && tout(m)).toEqual([true, true, true]);
   });
 
   test("a dev client turns everything on", () => {
     const m = flags({ dev: true, uri: PUBLIE, env: "development" });
     expect(m?.INTEGRATION).toBe(true);
-    expect(m && tout(m)).toEqual([true, true, true, true]);
+    expect(m && tout(m)).toEqual([true, true, true]);
   });
 
   test("jest sees the shipped values although __DEV__ is true", () => {
     const m = flags({ dev: true, uri: PUBLIE, env: "test" });
     expect(m?.INTEGRATION).toBe(false);
     expect(m?.BATIMENT_MOTEUR).toBe(false);
-    expect(m && tout(m)).toEqual([false, false, false, false]);
+    expect(m && tout(m)).toEqual([false, false, false]);
   });
 });

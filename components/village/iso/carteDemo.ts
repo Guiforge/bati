@@ -228,14 +228,9 @@ export const PLACE: Point = (() => {
   return [coin[0] + emprise[0] / 2, coin[1] + emprise[1] / 2];
 })();
 
-/** The camera's move to the building that rose; the cross-fade and spring start after it, not in it. */
+/** The camera's move to the building that rose (the moment itself plays from the tap, moment.ts). */
 // 700 ms, ease-in-out: the old 500 ms read as a jump (audit-anim anim-09).
 export const CROISSANCE_CAMERA_MS = 700;
-/** The whole growth play, camera first, after which the layer is dropped. */
-// The camera takes 200 ms more than before, the play keeps its second after it: 1.7 s from the tap
-// (a site: 2 s with the 1 s of building).
-export const CROISSANCE_MS = 1700;
-
 /** A building's footprint centre, where the camera looks when it has just grown. */
 export const centreBatiment = (code: BuildingCode): Point => {
   const { coin, emprise } = emplacements[code];
@@ -521,7 +516,7 @@ export const VERRES_LANTERNE = [
   "323,248 326,245 360,228 366,227 366,328 358,334 338,344 327,349 323,348",
 ] as const;
 
-export type Animal = "chat" | "poule" | "corbeau";
+export type Animal = "poule";
 /** The poses of an animal's sheet, in the order of horloge.ts `poseAnimal`. */
 export const POSES_ANIMAL = ["repos", "a", "b"] as const;
 export const cleAnimal = (
@@ -535,20 +530,16 @@ export type AnimalCarte = { nom: Animal; avec?: BuildingCode; piece: PieceCarte 
 
 /**
  * Fixed places on grass, off every path and footprint (iso-pieces.test.ts measures the shadows):
- * the hen between the farm and the street, the cat by the well, the crow at the west edge among
- * the trees. `piece.cle` is the rest pose, whose shadow stands for all three.
+ * the hen between the farm and the street (the old cat by the well and the roof crows left with
+ * the life track: the wall's cat is painted, creatures.ts). `piece.cle` is the rest pose, whose shadow stands for both.
  */
-export const ANIMAUX: readonly AnimalCarte[] = (
-  [
-    ["poule", "farm", [5, 6]],
-    ["chat", "well", [7, 12]],
-    ["corbeau", undefined, [1, 9]],
-  ] as const
-).map(([nom, avec, c]) => ({
-  nom,
-  ...(avec ? { avec } : {}),
-  piece: { cle: cleAnimal(nom, "repos"), miroir: false, case: c, decor: true },
-}));
+export const ANIMAUX: readonly AnimalCarte[] = ([["poule", "farm", [5, 6]]] as const).map(
+  ([nom, avec, c]) => ({
+    nom,
+    ...(avec ? { avec } : {}),
+    piece: { cle: cleAnimal(nom, "repos"), miroir: false, case: c, decor: true },
+  }),
+);
 
 /** Whether an animal shows: its building (if any) is shown, and its cell and shadow are on the island. */
 export const animalMontre = (

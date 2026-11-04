@@ -1,23 +1,12 @@
 // The buildings engine on its test building (constants/buildings/essai.ts, the windmill's stages,
 // no new art): add-ons, site teasers, the gag slot, lights, the night sprite, the clan mark, the
-// keeper, and the two moments. Plus the proof that with the flags off nothing moves.
+// keeper. Plus the proof that with the flags off nothing moves.
 import "react-native-gesture-handler/jestSetup";
-import { act, configure, fireEvent, render, screen } from "@testing-library/react-native";
-import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { configure, render, screen } from "@testing-library/react-native";
+import { Text, View } from "react-native";
 import { BatimentMoteur } from "@/components/village/iso/BatimentMoteur";
 import { BATIMENT_MOTEUR, etatBatiment, type Marque } from "@/components/village/iso/batiment";
 import { claimableParRang, enAttente, MONTEE_PAR_RANG } from "@/components/village/iso/montee";
-import {
-  ETAPES,
-  echelleCorps,
-  genreDe,
-  planSpectacle,
-  rangsA,
-  rebond,
-  sautGardien,
-} from "@/components/village/iso/spectacleBatiment";
-import { useSpectacleBatiment } from "@/components/village/iso/useSpectacleBatiment";
 import { gagBeatAt, gagIsOneAtATime } from "@/constants/buildingData";
 import { buildingStage } from "@/constants/buildingLevels";
 import { BUILDING_STAGES_RULE, buildingStageFor } from "@/constants/buildingStages";
@@ -162,224 +151,46 @@ describe("what the building wears, rank by rank", () => {
   });
 });
 
-describe("the two moments, as plans", () => {
-  it("a stage change is the full show, a rank inside a stage the short beat, nothing else rises", () => {
-    expect(genreDe("windmill", 2, 3, { rule })).toBe("stade");
-    expect(genreDe("windmill", 3, 4, { rule })).toBe("rang");
-    expect(genreDe("windmill", 4, 4, { rule })).toBeNull();
-    expect(genreDe("windmill", 5, 4, { rule })).toBeNull();
-    expect(ETAPES.stade.map(([e]) => e)).toEqual([
-      "anticipation",
-      "echafaudage",
-      "poussiere",
-      "revelation",
-      "gardien",
-      "marque",
-    ]);
-    expect(ETAPES.rang.map(([e]) => e)).toEqual(["poussiere", "revelation", "gardien"]);
+// What the engine draws at a rank, mounted: the layers stand, flat, and none can be tapped. The
+// growth moment is not here (it plays on the map's real path, IsoCroissance).
+describe("the layers, mounted", () => {
+  beforeEach(() => {
+    mockReduit = false;
   });
-
-  it("update day: one show straight to the new rank, no rank in between", () => {
-    expect(genreDe("windmill", 1, 10, { rule })).toBe("stade");
-    const plan = planSpectacle("stade", 1, 10, false);
-    for (let t = 0; t <= plan.total; t += 25) {
-      const { corps, marque } = rangsA(plan, t);
-      expect([1, 10]).toContain(corps);
-      expect([1, 10]).toContain(marque);
-    }
-    expect(rangsA(plan, plan.total)).toEqual({ corps: 10, marque: 10 });
-  });
-
-  it("the clan mark takes its next form after the building does", () => {
-    const plan = planSpectacle("stade", 2, 3, false);
-    const revele = plan.etapes.find((e) => e.etape === "revelation");
-    const marque = plan.etapes.find((e) => e.etape === "marque");
-    expect(revele && marque).toBeTruthy();
-    const t = (revele?.debut ?? 0) + 1;
-    expect(rangsA(plan, t)).toEqual({ corps: 3, marque: 2 });
-    expect(rangsA(plan, marque?.debut ?? 0).marque).toBe(3);
-  });
-
-  it("the body is on screen at every frame, in both moments, night or day", () => {
-    for (const genre of ["stade", "rang"] as const) {
-      const plan = planSpectacle(genre, 2, 3, false);
-      for (let t = 0; t <= plan.total; t += 5) {
-        for (const v of echelleCorps(plan, t)) {
-          expect(v).toBeGreaterThanOrEqual(0.9);
-          expect(v).toBeLessThanOrEqual(1.1);
-        }
-      }
-      expect(rebond(1)).toBe(1);
-      expect(sautGardien(plan, plan.total)).toBe(0);
-    }
-  });
-
-  it("reduced motion has no steps and lands on the final image", () => {
-    const plan = planSpectacle("stade", 2, 3, true);
-    expect(plan.etapes).toEqual([]);
-    expect(plan.total).toBe(0);
-    expect(rangsA(plan, 0)).toEqual({ corps: 3, marque: 3 });
-    expect(echelleCorps(plan, 0)).toEqual([1, 1]);
-  });
-});
-
-// A parent that does what IsoVillage will: a tap starts the moment, nothing else does.
-// biome-ignore lint/style/useComponentExportOnlyModules: a test harness
-function Parent({
-  nuit = false,
-  rank = 3,
-  masque = false,
-}: {
-  nuit?: boolean;
-  rank?: number;
-  masque?: boolean;
-}) {
-  const { spectacle, jouer, fini } = useSpectacleBatiment();
-  const [rang, setRang] = useState(rank);
-  return (
-    <View>
-      <Pressable
-        testID="tap"
-        onPress={() => {
-          const s = jouer("windmill", rang, rang + 1, { rule });
-          if (s) setRang(rang + 1);
-        }}
-      />
+  const ids = () => screen.queryAllByTestId(/^batiment-/).map((n) => n.props.testID as string);
+  const monte = (rank: number, nuit = false) =>
+    render(
       <BatimentMoteur
         actif
         data={data}
-        rank={rang}
+        rank={rank}
         nuit={nuit}
         rule={rule}
         corps={BOITE}
         taille={[896, 1344]}
         ancre={[448, 1300]}
-        spectacle={spectacle}
-        onFini={fini}
-        sprite={(stade, suivant) => (
-          <View testID={suivant ? `sprite-${stade}-suivant` : "sprite"} />
-        )}
+        sprite={() => <View testID="sprite" />}
         couches={() => <View testID="couches" />}
         reclame={<View testID="reclame" />}
-        masque={masque}
-      />
-    </View>
-  );
-}
-/** Where step `i` of a moment starts, ms: the steps overlap, so the tests move to absolute times. */
-const debut = (genre: "stade" | "rang", i: number) => ETAPES[genre][i]?.[1] ?? 0;
-let horloge = 0;
-const jusqua = (t: number) => {
-  const d = t - horloge;
-  horloge = t;
-  return act(() => {
-    jest.advanceTimersByTime(d);
-  });
-};
-const ids = () => screen.queryAllByTestId(/^batiment-/).map((n) => n.props.testID as string);
+      />,
+    );
 
-describe("the layers, mounted", () => {
-  beforeEach(() => {
-    mockReduit = false;
-    jest.useFakeTimers();
-  });
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
-  it("nothing plays without a tap, whatever the rank", async () => {
-    await render(<Parent rank={4} />);
-    await act(() => {
-      jest.advanceTimersByTime(5000);
-    });
-    expect(ids()).not.toContain("batiment-echafaudage");
-    expect(ids()).not.toContain("batiment-poussiere");
+  it("a rank draws its add-ons, its mark and the sprite, with nothing of a show", async () => {
+    await monte(5);
     expect(screen.getByTestId("sprite")).toBeTruthy();
-  });
-
-  it("a tap on a stage change plays the full show, the body stays, then it ends once", async () => {
-    await render(<Parent rank={4} />);
-    expect(ids()).toContain("batiment-marque-fanion");
-    await fireEvent.press(screen.getByTestId("tap"));
-    horloge = 0;
-    expect(screen.getByTestId("batiment-poussiere")).toBeTruthy();
-    // The scaffold takes the gag slot with the build gag, while the anticipation lets go.
-    await jusqua(debut("stade", 1) + 10);
-    expect(ids()).toContain("batiment-echafaudage");
-    expect(ids()).toContain("batiment-gag-chantier");
-    expect(
-      ids().filter((i) => i.startsWith("batiment-gag-") && i !== "batiment-gag-chantier"),
-    ).toEqual([]);
-    expect(screen.getByTestId("sprite")).toBeTruthy();
-    // The reveal: the new rank's pieces, the old mark until the last step.
-    await jusqua(debut("stade", 3) - 10);
-    expect(ids()).toContain("batiment-echafaudage");
-    await jusqua(debut("stade", 3) + 10);
-    expect(ids()).not.toContain("batiment-echafaudage");
-    // Rank 5 opens grand: the rank 4 teaser is gone, painted in, the rank 4 beat still holds the slot.
-    expect(ids()).not.toContain("batiment-teaser");
-    expect(ids()).toContain("batiment-gag-4");
-    expect(ids()).toContain("batiment-marque-fanion");
-    await jusqua(debut("stade", 5) + 20);
     expect(ids()).toContain("batiment-marque-banniere");
-    await act(() => {
-      jest.advanceTimersByTime(2000);
-    });
-    expect(ids()).not.toContain("batiment-poussiere");
-    expect(ids()).toContain("batiment-gag-4");
-  });
-
-  it("a rank inside a stage plays the short beat: dust, the new piece, no scaffold", async () => {
-    await render(<Parent rank={3} />);
-    expect(ids()).not.toContain("batiment-addon-4");
-    await fireEvent.press(screen.getByTestId("tap"));
-    horloge = 0;
-    await jusqua(debut("rang", 1) + 10);
     expect(ids()).toContain("batiment-addon-4");
     expect(ids()).not.toContain("batiment-echafaudage");
-    await act(() => {
-      jest.advanceTimersByTime(2000);
-    });
-    expect(ids()).toContain("batiment-addon-4");
+    expect(ids()).not.toContain("batiment-poussiere");
   });
 
-  it("the show reads the same by night, with its lights, and none of the layers can be tapped", async () => {
-    await render(<Parent rank={4} nuit />);
-    expect(ids()).toContain("batiment-lueur-fire");
-    await fireEvent.press(screen.getByTestId("tap"));
-    horloge = 0;
-    await jusqua(debut("stade", 1) + 10);
-    expect(ids()).toContain("batiment-echafaudage");
+  it("by night the lights are there, and none of the layers can be tapped", async () => {
+    await monte(4, true);
     expect(ids()).toContain("batiment-lueur-fire");
     for (const n of screen.queryAllByTestId(/^batiment-/)) {
       if (n.props.testID === "batiment-corps") continue;
       expect(n.props.pointerEvents).toBe("none");
       expect(n.props.onPress).toBeUndefined();
-      expect(n.props.onClick).toBeUndefined();
     }
-  });
-
-  it("a second tap during a moment does nothing", async () => {
-    await render(<Parent rank={4} />);
-    await fireEvent.press(screen.getByTestId("tap"));
-    await fireEvent.press(screen.getByTestId("tap"));
-    await act(() => {
-      jest.advanceTimersByTime(10_000);
-    });
-    // Rank 4 -> 5 once: the banner, not a rank 6 piece.
-    expect(ids()).toContain("batiment-marque-banniere");
-    expect(ids()).not.toContain("batiment-addon-6");
-  });
-
-  it("with reduced motion the final image is there at once, the moment stays, lights stand still", async () => {
-    mockReduit = true;
-    await render(<Parent rank={4} nuit />);
-    await fireEvent.press(screen.getByTestId("tap"));
-    expect(ids()).toContain("batiment-marque-banniere");
-    expect(ids()).toContain("batiment-gardien-reagit");
-    expect(ids()).not.toContain("batiment-poussiere");
-    expect(ids()).not.toContain("batiment-echafaudage");
-    expect(screen.getByTestId("sprite")).toBeTruthy();
-    expect(ids()).toContain("batiment-lueur-fire");
   });
 });

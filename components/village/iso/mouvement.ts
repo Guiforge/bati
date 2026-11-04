@@ -8,6 +8,7 @@ import type { LightAnchor } from "@/constants/buildingData";
 import { atteint } from "@/constants/buildingData";
 import type { BuildingCode } from "@/db/schema";
 import { graine } from "./graine";
+import { CYCLE_MS } from "./horloge";
 import { MOUVEMENTS } from "./motion";
 import type { Effet } from "./motion/types";
 
@@ -38,9 +39,22 @@ export function effetsAuRang(
   );
 }
 
-/** Animated nodes one entry costs while it moves. */
+/** Animated nodes one entry costs while it moves (a building's windows share one, `noeudsBld`). */
 export const noeudsDe = (e: Effet): number =>
   e.kind === "particules" || e.kind === "miroitement" ? e.nb : 1;
+
+const estFenetre = (e: Effet) => e.kind === "lueur" && e.lueur === "fenetre";
+
+/**
+ * Animated nodes a building's whole file costs: its windows are one node together (a group that
+ * breathes and comes up at dusk as one), and only one painted flame shows at a time (its stage's).
+ */
+export function noeudsBld(effets: readonly Effet[]): number {
+  const seuls = effets.filter((e) => e.kind !== "flamme" && !estFenetre(e));
+  const groupes =
+    (effets.some(estFenetre) ? 1 : 0) + (effets.some((e) => e.kind === "flamme") ? 1 : 0);
+  return seuls.reduce((s, e) => s + noeudsDe(e), groupes);
+}
 
 /** Every window's turn at dusk, 0 to n - 1: the order is the day's own, so it is not the list's. */
 export function ordreAllumage(n: number, cle: string): readonly number[] {
@@ -49,6 +63,62 @@ export function ordreAllumage(n: number, cle: string): readonly number[] {
   const clef = (i: number) => Math.imul(g + i * 40503 + 1, 2654435761) >>> 0;
   const trie = Array.from({ length: n }, (_, i) => i).sort((a, b) => clef(a) - clef(b) || a - b);
   return Array.from({ length: n }, (_, i) => trie.indexOf(i));
+}
+
+/**
+ * How many of `nFenetres` windows of `code` get a node of their own while the dusk lights them one
+ * by one (the others wait in the group's fade, after those). The nodes come out of what the wave's
+ * buildings leave of MOUVEMENT_NOEUDS_MAX at their steady count (a window group is one node), shared
+ * out in code order: a wave that is full lights the windows as one group, as it always could.
+ */
+export function fenetresSeules(
+  code: BuildingCode,
+  vague: ReadonlySet<BuildingCode>,
+  nFenetres: number,
+): number {
+  const dans = [...vague].sort();
+  let reste =
+    MOUVEMENT_NOEUDS_MAX - dans.reduce((s, c) => s + noeudsBld(MOUVEMENTS[c]?.effets ?? []), 0);
+  let part = 0;
+  for (const c of dans) {
+    const w = (MOUVEMENTS[c]?.effets ?? []).filter(estFenetre).length;
+    const donne = Math.max(0, Math.min(w - 1, reste));
+    reste -= donne;
+    if (c === code) part = donne;
+  }
+  return part >= nFenetres - 1 ? nFenetres : part;
+}
+
+/** A stable share of a cycle (0 to 1) per building: its light, its glints and its flame do not breathe in step with the next one's. */
+export const dephasage = (code: string): number => (graine(`${code}:phase`) % 1000) / 1000;
+
+/** The depth a window, crystal, beam or glyph breathes to: a candle, not a blink. */
+const SOUFFLE_CREUX = 0.5;
+
+/**
+ * A steady light's breath at clock `c`, 1 down to 1 - SOUFFLE_CREUX: `battements` (1 or 2 a cycle,
+ * 5 s or 2.5 s each) and `phase` (`dephasage`) put two buildings out of step. The phase is ramped
+ * by sin^2 over the cycle, so at every boundary (the rest pose, and where the layer mounts) it is
+ * exactly 1, the still light.
+ */
+export function souffleLueur(c: number, phase: number, battements: number): number {
+  "worklet";
+  const u = (c % CYCLE_MS) / CYCLE_MS;
+  const theta = battements * u + phase * Math.sin(Math.PI * u) ** 2;
+  return 1 - (SOUFFLE_CREUX * (1 - Math.cos(2 * Math.PI * theta))) / 2;
+}
+
+/** How far a painted flame grows at the top of its breath (scaleY), and sideways (scaleX): only ever 1 or more. */
+const FLAMME_HAUT = 0.07;
+const FLAMME_LARGE = 0.025;
+
+/** The painted flame's growth at clock `c`: two slow swells a cycle, out of step with the others (`phase`), 1 and 1 at every boundary. */
+export function respirationFlamme(c: number, phase: number, part = 1): { y: number; x: number } {
+  "worklet";
+  const u = (c % CYCLE_MS) / CYCLE_MS;
+  const theta = 2 * u + phase * Math.sin(Math.PI * u) ** 2;
+  const v = (1 - Math.cos(2 * Math.PI * theta)) / 2;
+  return { y: 1 + FLAMME_HAUT * part * v, x: 1 + FLAMME_LARGE * part * v };
 }
 
 /** How long `n` windows take to be all lit, ms. */
@@ -77,7 +147,7 @@ export function mouvementDeVague(
   const candidats = montres
     .flatMap((code) => {
       const m = MOUVEMENTS[code];
-      return m ? [{ code, noeuds: m.effets.reduce((s, e) => s + noeudsDe(e), 0) }] : [];
+      return m ? [{ code, noeuds: noeudsBld(m.effets) }] : [];
     })
     .sort(
       (a, b) =>

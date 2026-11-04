@@ -23,7 +23,6 @@ import { mesurerFenetre, type Ouverture } from "./bulle";
 import {
   COTE,
   CROISSANCE_CAMERA_MS,
-  CROISSANCE_MS,
   centreBatiment,
   ecranXY,
   etatAvec,
@@ -39,23 +38,23 @@ import {
   ZOOM_FOYER_SEUL,
   ZOOM_MAX,
 } from "./carteDemo";
-import { CHANTIER_MS, ECHAFAUDAGE_APRES_MS } from "./chantier";
+import { ECHAFAUDAGE_APRES_MS } from "./chantier";
 import { PalierContext } from "./detail";
 import { donneesSeul } from "./donneesBld";
 import { RangsBldContext } from "./etatBld";
 import { CroissanceContext, useBascule } from "./familles";
-import { accrochesDe } from "./feux";
 import { legendaire } from "./fierte";
 import { FigeContext, useMouvementReduit } from "./fige";
 import { type PriseVillageois, villageoisAuPoint } from "./habitants";
-import { type Depart, DepartContext, EffroiContext, HorlogeContext, useHorloge } from "./horloge";
+import { type Depart, DepartContext, HorlogeContext, useHorloge } from "./horloge";
 import { IsoCarte } from "./IsoCarteDemo";
 import type { Ambiance, Biome, Stade } from "./isoSpec";
 import { Monde } from "./Monde";
+import { dureeMoment, type GenreMoment, TENUE_MS } from "./moment";
 import { carteDepuisEcran, ecranDepuisCarte } from "./navigation";
 import { OmbresNuages } from "./OmbresNuages";
 import { useFonduOuverture } from "./ouverture";
-import { Lucioles, Oiseaux } from "./petitsDetails";
+import { Lucioles } from "./petitsDetails";
 import { LegendeRevelation } from "./Revelation";
 import { ReclamablesContext, repartirReclamables } from "./reclame";
 import {
@@ -108,10 +107,11 @@ function sansChantier(
 }
 
 /**
- * The reveal's timing, 0 to ONDE_MS once `joue`, and whether the village is still quiet: the
- * silence ends with the wave, even when the growth step stays at 2 (the owner drops it later).
+ * The pulse's timing, 0 to ONDE_MS once `joue` (the moment is over), and whether the village is
+ * still quiet: from the tap (`enScene`) until the pulse has crossed, even when the growth step
+ * stays at 2 (the owner drops it later).
  */
-function useTempsOnde(joue: boolean, cle: string | undefined) {
+function useTempsOnde(enScene: boolean, joue: boolean, cle: string | undefined) {
   const t = useSharedValue(0);
   const [fini, setFini] = useState<string | undefined>(undefined);
   useEffect(() => {
@@ -121,14 +121,17 @@ function useTempsOnde(joue: boolean, cle: string | undefined) {
     const id = setTimeout(() => setFini(cle), ONDE_MS);
     return () => clearTimeout(id);
   }, [joue, cle, t]);
-  return { t, revele: joue && fini !== cle };
+  return { t, revele: enScene && fini !== cle };
 }
+
+/** How long the layer's clock waits from the tap: the camera's glide to the building, none when reduced. */
+const delaiMoment = (reduit: boolean): number => (reduit ? 0 : CROISSANCE_CAMERA_MS);
 
 /** The timers of one growth, in order; the caller clears them (see the effect that mounts them). */
 function planifierCroissance({
   cle,
   reduit,
-  avecChantier: chantier,
+  genre,
   reveler,
   terminer,
   setPose,
@@ -136,25 +139,23 @@ function planifierCroissance({
 }: {
   cle: string;
   reduit: boolean;
-  avecChantier: boolean;
+  genre: GenreMoment;
   reveler: () => void;
   terminer: () => void;
   setPose: (cle: string) => void;
   setLance: (v: { cle: string; etape: 1 | 2 }) => void;
 }) {
-  // The camera moves first, the site stands, then the cross-fade and spring (played together
-  // they drown in the zoom); the owner drops the growth, once, when the new stage has settled.
-  const duree = chantier ? CHANTIER_MS : 0;
+  // The layer is mounted from the tap (step 1, its images decode) but its clock waits for the
+  // camera to arrive (`delaiMoment`), the new stage is the map's from the moment's end (step 2),
+  // and the owner drops the growth, once, a beat later.
+  const duree = dureeMoment(genre);
+  const delai = delaiMoment(reduit);
   if (reduit) reveler();
-  // No step 1 without a site: two timers of the same delay may fire in either order on Android
-  // (T02b-qa: step 2 then step 1 left the scaffold up for good once the claim was written).
-  // The site works while the camera moves (T37: the new stage under 2 s after the tap).
-  const ouvre = duree > 0 ? duree : CROISSANCE_CAMERA_MS;
   return [
     setTimeout(() => setPose(cle), ECHAFAUDAGE_APRES_MS),
-    ...(duree > 0 ? [setTimeout(() => setLance({ cle, etape: 1 }), 0)] : []),
-    setTimeout(() => setLance({ cle, etape: 2 }), ouvre),
-    setTimeout(terminer, reduit ? 0 : ouvre + CROISSANCE_MS - CROISSANCE_CAMERA_MS),
+    setTimeout(() => setLance({ cle, etape: 1 }), 0),
+    setTimeout(() => setLance({ cle, etape: 2 }), delai + duree),
+    setTimeout(terminer, reduit ? 0 : delai + duree + TENUE_MS),
   ];
 }
 
@@ -189,7 +190,7 @@ function hautAEcran(
   return haut ? ecranDepuisCarte(haut, vue, aire, { largeur: LARGEUR, hauteur: HAUTEUR }) : null;
 }
 
-/** Whether the reveal plays: a growth has a first building, motion is on, and the new stage shows. */
+/** Whether the pulse plays: a growth has a first building, motion is on, and the moment is over. */
 function jouerRevelation(
   premier: BuildingCode | undefined,
   reduit: boolean,
@@ -214,7 +215,7 @@ function legendeDe(
 /** The ready glows keep still (no animated node) in reduced motion and during the reveal. */
 const sansSignal = (reduit: boolean, revele: boolean): boolean => reduit || revele;
 
-/** T41: the reveal's plan, from the first building that rose (revelation.ts `planOnde`); null when none plays. */
+/** The village's plan while a growth plays: quiet from the tap, the pulse (revelation.ts `planOnde`) once the moment is over; null when none plays. */
 function planRevelation(
   joue: boolean,
   source: BuildingCode | undefined,
@@ -222,13 +223,11 @@ function planRevelation(
   construits: readonly BuildingCode[],
   monte: readonly { code: BuildingCode }[],
   stade: (code: BuildingCode) => Stade,
-  jour: boolean,
 ): RevelationVillage | null {
   if (!joue || !source) return null;
   return {
     t,
     source,
-    jour,
     ...planOnde(
       ecranXY(centreBatiment(source)),
       construits
@@ -237,7 +236,6 @@ function planRevelation(
           code,
           centre: ecranXY(centreBatiment(code)),
           ameliore: ameliore(stade(code)),
-          fenetres: (accrochesDe(code, stade(code))?.fenetres.length ?? 0) > 0,
         })),
     ),
   };
@@ -377,37 +375,44 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
   const avecChantier = monte.filter(
     (i) => i.oldLevel <= 0 || stadeNiveau(i.code, i.oldLevel) !== stadeNiveau(i.code, vise(i.code)),
   );
-  // The `cle` whose steps have started, and the step it is at: 1 once the camera has moved (the
-  // site stands), 2 once it is over (the new stage fades in and springs, then the owner drops the
-  // growth). Before step 2 the old stage is what stands; reduced motion shows the new one at once.
+  // The `cle` whose steps have started, and the step it is at: 1 from the tap (the moment plays in
+  // its layer), 2 once the moment is over (the new stage is the map's, then the owner drops the
+  // growth). Reduced motion shows the new stage at once.
   const [lance, setLance] = useState<{ cle: string; etape: 1 | 2 } | undefined>(undefined);
   const etape = lance?.cle === cle ? lance?.etape : undefined;
   const enCours = cle !== undefined && !reduit && etape !== 2;
   // T16: a growth takes the families' turning seat from the next cycle boundary (familles.ts).
   const bascule = useBascule(cle !== undefined && !reduit, horloge.c);
-  const sites = new Set(enCours && etape === 1 ? avecChantier.map((i) => i.code) : []);
-  // The scaffold stands from the scene's start, so the camera never frames a bare plot, and a beat
-  // into the cross-fade, while the growth layer's images decode (T02b-qa: one bare frame there).
-  const [parti, setParti] = useState<string | undefined>(undefined);
-  const echafaudages = new Set(
-    cle !== undefined && !reduit && parti !== cle ? avecChantier.map((i) => i.code) : [],
+  // The buildings that were not there: a heap of stones stands in the layer and they cast nothing yet.
+  const neufs = new Set(
+    cle !== undefined && !reduit
+      ? avecChantier.filter((i) => i.oldLevel <= 0).map((i) => i.code)
+      : [],
   );
-  useEffect(() => {
-    if (cle === undefined || etape !== 2) return;
-    // The scaffold goes at the impact, under the dust, not a timer's lag later.
-    const t = setTimeout(() => setParti(cle), IMPACT_MS);
-    return () => clearTimeout(t);
-  }, [cle, etape]);
+  // A second tap skips the moment: the layer's clock goes to its end.
+  const [sautee, setSautee] = useState<string | undefined>(undefined);
   const anciens = new Map(enCours ? avecChantier.map((i) => [i.code, i.oldLevel] as const) : []);
+  // The engine draws a building by its rank: until the moment's end the map shows the rank it had
+  // (its sprite, flames and pieces), or the new stage's flame stands over the site before the swap.
+  const rangsAffiches = enCours
+    ? new Map([
+        ...niveaux,
+        ...monte.filter((i) => i.oldLevel > 0).map((i) => [i.code, i.oldLevel] as const),
+      ])
+    : niveaux;
   const niveauAffiche = (code: BuildingCode) => {
     const ancien = anciens.get(code);
     return ancien !== undefined && ancien > 0 ? ancien : vise(code);
   };
   const stade = (code: BuildingCode) => stadeNiveau(code, niveauAffiche(code));
-  // T41: from the new stage on, the village is quiet (no night lights, trade effects, glows or
-  // glints) and the burst and the golden wave play on their own timing, once, over ONDE_MS.
-  const { t: tOnde, revele } = useTempsOnde(jouerRevelation(premier, reduit, etape), cle);
-  const plan = planRevelation(revele, premier, tOnde, construits, monte, stade, lumiere === "jour");
+  // From the tap on, the village is quiet (no night lights, trade effects, glows or glints) until
+  // the pulse of light has crossed it, once, over ONDE_MS after the moment.
+  const { t: tOnde, revele } = useTempsOnde(
+    premier !== undefined && !reduit && cle !== undefined,
+    jouerRevelation(premier, reduit, etape),
+    cle,
+  );
+  const plan = planRevelation(revele, premier, tOnde, construits, monte, stade);
   // H4-08: the hammers the map draws are the only ones a tap can hit (none over a site in play).
   const prets = sansChantier(reclamables, monte, cle !== undefined && !reduit);
   const touchables = cibles(construits, stade, visible, prets, (code) =>
@@ -416,26 +421,26 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
   const legendaires = new Set(
     construits.filter((code) => legendaire(code, niveaux.get(code) ?? 0)),
   );
-  // The new stage is hidden while its layer plays over it, and a building that was not there
-  // until the site is over.
-  // A building that was not there is hidden (its heap of stones shown) only once its scaffold has
-  // stood a beat: its image decodes on the first frame, the heap is drawn at once (T03-qa: one frame
-  // of a bare heap at the tap).
+  // A stage change is drawn by its layer from a beat after the tap (the map's sprite is hidden then,
+  // not before: the layer's images decode on the first frame); a rank inside a stage hides nothing.
   const [pose, setPose] = useState<string | undefined>(undefined);
   const masques = new Set(
-    reduit
-      ? []
-      : monte
-          .filter((i) => etape === 2 || (enCours && i.oldLevel <= 0 && pose === cle))
-          .map((i) => i.code),
+    reduit ? [] : avecChantier.filter(() => etape === 2 || pose === cle).map((i) => i.code),
   );
-  // The growth layers, played by the map in each building's place in the depth order.
+  // The growth layers, played by the map in each building's place in the depth order, from the tap.
   const croissances = new Map(
-    cle === undefined || reduit || etape !== 2
+    cle === undefined || reduit
       ? []
       : monte.map((i) => [
           i.code,
-          { cle, ancien: i.oldLevel > 0 ? stadeDuNiveau(i.code, i.oldLevel) : null },
+          {
+            cle,
+            ancien: i.oldLevel > 0 ? stadeDuNiveau(i.code, i.oldLevel) : null,
+            nouveau: stadeNiveau(i.code, vise(i.code)),
+            rangs: { de: i.oldLevel, vers: vise(i.code) },
+            saute: sautee === cle,
+            delai: delaiMoment(reduit),
+          },
         ]),
   );
   // The owner is told once per growth, whether the scene ran its course or a touch skipped it.
@@ -474,6 +479,7 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
   const passer = () => {
     if (cle === undefined) return;
     saute.current = cle;
+    setSautee(cle);
     // A tap that skips the scene still gives the camera back, once (the bubble it opens is placed
     // from the view held at the touch, the finger's own, so the return does not move it).
     rendre();
@@ -555,7 +561,9 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
       const b = code ? parCode.get(code) : undefined;
       // A touch skips the scene (VI-29): the new stage shows at once and the owner is told.
       // A touch on a building still opens it (T38): the tap must not be lost to the skip.
-      if (enCours) passer();
+      // Through the hold too (the finished building stands 1 s before the view goes back): a touch
+      // then ends the scene and gives the view back at once.
+      if (cle !== undefined && !reduit && rendu.current !== cle) passer();
       if (onBulle) {
         mesurerFenetre(racine.current, (ox, oy) => {
           origine.current = [ox, oy];
@@ -622,7 +630,7 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
     const autres = planifierCroissance({
       cle,
       reduit,
-      avecChantier: avecChantier.length > 0,
+      genre: avecChantier.length > 0 ? "stade" : "rang",
       reveler,
       terminer: () => {
         // Once, at the very end of the growth (all its buildings), unless a touch dropped it.
@@ -630,7 +638,8 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
         terminer();
       },
       setPose,
-      setLance,
+      // A skip (step 2) is final: the step-1 timer, armed before it, must not undo it.
+      setLance: (v) => setLance((p) => (v.etape === 1 && p?.cle === v.cle ? p : v)),
     });
     return () => {
       for (const x of [...autres, ...mouvement.current]) clearTimeout(x);
@@ -664,64 +673,50 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
               <DepartContext.Provider value={departDe(seul, horloge.depart)}>
                 {/* T16: a growth takes the turning seat of the families (familles.ts). */}
                 <CroissanceContext.Provider value={bascule}>
-                  <EffroiContext.Provider value={horloge.effroi}>
-                    <PalierContext.Provider value={camera.detail}>
-                      <ReclamablesContext.Provider
-                        value={
-                          reclamables
-                            ? repartirReclamables(prets, sansSignal(reduit, revele))
-                            : null
-                        }
-                      >
-                        <RevelationContext.Provider value={plan}>
-                          <RangsBldContext.Provider
-                            value={{ rangs: niveaux, bases: basesReclamees }}
-                          >
-                            <IsoCarte
-                              visible={visible}
-                              montres={construits}
-                              seul={seul !== undefined}
-                              stade={stade}
-                              masques={masques}
-                              chantiers={sites}
-                              echafaudages={echafaudages}
-                              legendaires={legendaires}
-                              croissances={croissances}
-                              ambiance={ambiance}
-                              lumiere={lumiere}
-                              biome={biome}
-                              blason={blason}
-                              palier={habitantsDe(seul, tier)}
-                              fete={fete}
-                              prise={prise}
-                            />
-                          </RangsBldContext.Provider>
-                        </RevelationContext.Provider>
-                      </ReclamablesContext.Provider>
-                      <Lucioles
-                        visible={visible}
-                        biome={biome}
-                        ambiance={lumiere === "jour" ? lumiere : ambiance}
-                      />
-                      {/* E5: two cloud shadows drift over the whole map by day, on the one clock. */}
-                      <OmbresNuages lumiere={lumiere} />
-                    </PalierContext.Provider>
-                  </EffroiContext.Provider>
+                  <PalierContext.Provider value={camera.detail}>
+                    <ReclamablesContext.Provider
+                      value={
+                        reclamables ? repartirReclamables(prets, sansSignal(reduit, revele)) : null
+                      }
+                    >
+                      <RevelationContext.Provider value={plan}>
+                        <RangsBldContext.Provider
+                          value={{ rangs: rangsAffiches, bases: basesReclamees }}
+                        >
+                          <IsoCarte
+                            visible={visible}
+                            montres={construits}
+                            seul={seul !== undefined}
+                            stade={stade}
+                            masques={masques}
+                            echafaudages={neufs}
+                            legendaires={legendaires}
+                            croissances={croissances}
+                            ambiance={ambiance}
+                            lumiere={lumiere}
+                            biome={biome}
+                            blason={blason}
+                            palier={habitantsDe(seul, tier)}
+                            fete={fete}
+                            prise={prise}
+                          />
+                        </RangsBldContext.Provider>
+                      </RevelationContext.Provider>
+                    </ReclamablesContext.Provider>
+                    <Lucioles
+                      visible={visible}
+                      biome={biome}
+                      ambiance={lumiere === "jour" ? lumiere : ambiance}
+                    />
+                    {/* E5: two cloud shadows drift over the whole map by day, on the one clock. */}
+                    <OmbresNuages lumiere={lumiere} />
+                  </PalierContext.Provider>
                 </CroissanceContext.Provider>
               </DepartContext.Provider>
             </HorlogeContext.Provider>
           </Animated.View>
         </Animated.View>
       </GestureDetector>
-      {/* The crows fly over the whole map, after the camera layer: they do not pan with the land. */}
-      <Oiseaux
-        biome={biome}
-        ambiance={lumiere}
-        width={width}
-        height={height}
-        horloge={horloge.c}
-        depart={horloge.depart}
-      />
       <LegendeRevelation
         legende={legende}
         onFin={() => setLegende(null)}

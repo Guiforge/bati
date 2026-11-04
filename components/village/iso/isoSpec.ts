@@ -145,7 +145,7 @@ export type BiomeSpec = {
   feu: Record<keyof typeof raw.biomes.defaut.feu, TokenCouleur>;
   /** A last stage's pride (Fierte.tsx): banner cloth, gold trim, pole, glint, warm windows, ink. */
   fierte: Record<keyof typeof raw.biomes.defaut.fierte, TokenCouleur>;
-  /** The small lives (petitsDetails.tsx): crows and their rim, fireflies, rat and its outline. */
+  /** The small lives (petitsDetails.tsx): fireflies. */
   vivant: Record<keyof typeof raw.biomes.defaut.vivant, TokenCouleur>;
   decors: {
     /** The folder part of a decor image's key (pieces.ts). */
@@ -236,9 +236,7 @@ export type VieAmbiance = {
   lueurFeux: boolean;
   /** The small animals walk a little in a wave. */
   animaux: boolean;
-  /** Crows perch on some roofs and fly off at a touch. */
-  corbeaux: boolean;
-  /** The flock crossing over the forest: by day only. */
+  /** Birds land on some roofs: by day only. */
   oiseaux: boolean;
 };
 const vie: Record<Ambiance, VieAmbiance> = raw.vieParAmbiance;

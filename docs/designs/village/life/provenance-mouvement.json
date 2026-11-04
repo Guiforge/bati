@@ -1,0 +1,130 @@
+{
+ "assets/images/village/iso/mouvement/dust_1.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "c620035a0c1ca8e0.png",
+   "sha256": "c620035a0c1ca8e071ade0500ac4d91841683faf40107c1d76e7ff7ab1556c2d"
+  },
+  "prompt": "Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Two separate small warm dust clouds side by side with clear space between, a left one and a right one, with different shapes. Each is a small cloud of soft irregular brush touches in light ochre and rosy beige, lit from the upper left so its left side is the lightest, rounded soft edges, the base fraying into thin transparent wisps. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/mouvement/dust_1.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/dust__a1c0.png"
+ },
+ "assets/images/village/iso/mouvement/dust_2.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "c620035a0c1ca8e0.png",
+   "sha256": "c620035a0c1ca8e071ade0500ac4d91841683faf40107c1d76e7ff7ab1556c2d"
+  },
+  "prompt": "Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Two separate small warm dust clouds side by side with clear space between, a left one and a right one, with different shapes. Each is a small cloud of soft irregular brush touches in light ochre and rosy beige, lit from the upper left so its left side is the lightest, rounded soft edges, the base fraying into thin transparent wisps. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/mouvement/dust_2.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/dust__a1c0.png"
+ },
+ "assets/images/village/iso/mouvement/smoke_1.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "04b614b025f62abd.png",
+   "sha256": "04b614b025f62abda25a648979bed95f8de01b5df4e532c65996714dfc7ac053"
+  },
+  "prompt": "Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Two separate drawings side by side with clear space between, a left one and a right one, with different shapes. Each is a column of three or four stacked puffs of smoke, small at the bottom and widening upward, in warm brown-grey with two close values, soft irregular edges, each puff a readable brush touch slightly separate from its neighbour, the top puff the palest. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/mouvement/smoke_1.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/smoke__a1c0.png"
+ },
+ "assets/images/village/iso/mouvement/smoke_2.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "04b614b025f62abd.png",
+   "sha256": "04b614b025f62abda25a648979bed95f8de01b5df4e532c65996714dfc7ac053"
+  },
+  "prompt": "Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Two separate drawings side by side with clear space between, a left one and a right one, with different shapes. Each is a column of three or four stacked puffs of smoke, small at the bottom and widening upward, in warm brown-grey with two close values, soft irregular edges, each puff a readable brush touch slightly separate from its neighbour, the top puff the palest. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/mouvement/smoke_2.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/smoke__a1c0.png"
+ },
+ "assets/images/village/iso/mouvement/steam.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "1966d7d5acc6fc70.png",
+   "sha256": "1966d7d5acc6fc706411a35dcc7d728358c1e09e61ac4549750a84beabf487a5"
+  },
+  "prompt": "Flat magenta background (#FF00FF), one even colour, nothing else in the frame. A rising trail of three small separate wisps of cream-white mist, stacked one above the other with a wide gap of empty background between them, each wisp a short soft elongated smudge of pale cream paint, slightly curved, its ends feathered and translucent. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/mouvement/steam.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/steam__a3c0.png"
+ },
+ "assets/images/village/iso/mouvement/spark.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "3991b7b6f1f1c30c.png",
+   "sha256": "3991b7b6f1f1c30cc04b870df2e2951b3e3d5f19f42e2b2f067b397dcefb22c0"
+  },
+  "prompt": "Flat pure black background (#000000), nothing else in the frame. One small drop-shaped spark with a round head and a short soft tail trailing downward, a cream core and a gold edge fading smoothly into the dark, small in the middle of the frame. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/mouvement/spark.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/spark__a1c1.png"
+ },
+ "assets/images/village/iso/mouvement/ember.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "16737bf3c38f7095.png",
+   "sha256": "16737bf3c38f70957d6dfacbf083626d7091e8adab1a991e278c4ccd7e4f9234"
+  },
+  "prompt": "Flat pure black background (#000000), nothing else in the frame. One small slightly irregular round ember, a cream core, an amber ring around it, and a brick red edge melting smoothly into the dark, small in the middle of the frame. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/mouvement/ember.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/ember__a1c0.png"
+ },
+ "assets/images/village/iso/mouvement/mote.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "5307fb3632de2306.png",
+   "sha256": "5307fb3632de2306bfa6812b21c8ed144a493bc8d1067f1211bfda0a7fc2e9d4"
+  },
+  "prompt": "Flat pure black background (#000000), nothing else in the frame. One warm grain of light, golden cream in the middle, a very soft amber halo around it fading smoothly into the dark, small in the middle of the frame. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/mouvement/mote.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/mote__a1c0.png"
+ }
+}

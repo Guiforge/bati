@@ -1,31 +1,20 @@
-// T37: the reveal's length, what it sets off, and the delay from the tap to the new stage (point 1,
-// measured here; the emulator measure is qa's).
+// What a growth sets off (haptic, hammer, story line), when its layer is there after the tap, and
+// the pulse of light that crosses the village once the moment is over (revelation.ts).
 import "react-native-gesture-handler/jestSetup";
 import "@/i18n";
 import { act, configure, render, screen } from "@testing-library/react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { CROISSANCE_CAMERA_MS } from "@/components/village/iso/carteDemo";
-import { CHANTIER_MS } from "@/components/village/iso/chantier";
 import { IsoVillage } from "@/components/village/iso/IsoVillage";
 import {
-  ANTICIPATION_MS,
   ARRIVEE_MAX_MS,
-  allumeOnde,
-  anneauOnde,
-  ECHELLE_BITMAP,
-  eclatDe,
   flareOnde,
   IMPACT_MS,
   LEGENDE_DEBUT_MS,
   LEGENDE_MS,
   LUIT_MS,
-  NB_POINTS,
-  NOEUDS_ONDE,
-  NOUVEAU_MS,
   ONDE_MS,
   planOnde,
-  pointsChemin,
-  REVELATION_MS,
   retardOnde,
   revelation,
 } from "@/components/village/iso/revelation";
@@ -47,9 +36,8 @@ jest.setTimeout(15_000);
 const buildings = buildingCodes.map((code) => ({ code, level: 4 }));
 
 describe("the reveal", () => {
-  it("the layer lasts one second at most, the whole moment 2.4 s with its story line", () => {
-    expect(ANTICIPATION_MS).toBeGreaterThan(0);
-    expect(REVELATION_MS).toBeLessThanOrEqual(ONDE_MS);
+  it("the pulse lasts one second at most, the story line follows the moment", () => {
+    expect(ONDE_MS).toBeLessThanOrEqual(1000);
     expect(LEGENDE_DEBUT_MS + LEGENDE_MS).toBe(2400);
     expect(LEGENDE_MS).toBe(1500);
   });
@@ -71,8 +59,8 @@ describe("the reveal", () => {
   });
 });
 
-/** ms from the tap (the growth set) to the first frame the new stage shows, in 10 ms steps; null if never. */
-async function delaiJusquAuNouveau(oldLevel: number, reduit: boolean, onRevelation: () => void) {
+/** ms from the tap (the growth set) to the first frame the growth layer is there, in 10 ms steps; null if never. */
+async function delaiJusquALaCouche(oldLevel: number, reduit: boolean, onRevelation: () => void) {
   mockReduit.v = reduit;
   jest.useFakeTimers();
   try {
@@ -89,8 +77,9 @@ async function delaiJusquAuNouveau(oldLevel: number, reduit: boolean, onRevelati
       </GestureHandlerRootView>,
     );
     for (let ms = 0; ms <= 3000; ms += 10) {
-      // Reduced motion lays no growth layer: the new stage is the map's own sprite from the start.
-      if (reduit || screen.queryAllByTestId(/^iso-croissance-nouveau-(?!image)/).length > 0) {
+      if (screen.queryAllByTestId(/^iso-croissance-lueur-(?!image)/).length > 0) {
+        // The moment ends and the map announces the new stage once.
+        await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + 1500));
         return ms;
       }
       await act(() => jest.advanceTimersByTime(10));
@@ -102,63 +91,34 @@ async function delaiJusquAuNouveau(oldLevel: number, reduit: boolean, onRevelati
   }
 }
 
-describe("the delay from the tap to the new stage (point 1)", () => {
-  it("reduced motion: at once, and the reveal is announced once at the tap", async () => {
+describe("the growth layer after the tap", () => {
+  it("reduced motion: no layer at all, the new stage is the map's own, announced once at the tap", async () => {
     const on = jest.fn();
-    expect(await delaiJusquAuNouveau(2, true, on)).toBe(0);
+    expect(await delaiJusquALaCouche(2, true, on)).toBeNull();
     expect(on).toHaveBeenCalledTimes(1);
   });
 
-  it("rank rising inside a stage: the camera's 0.5 s only", async () => {
-    const on = jest.fn();
-    expect(await delaiJusquAuNouveau(3, false, on)).toBe(CROISSANCE_CAMERA_MS);
-  });
-
-  it("new stage after a site: the site works while the camera moves, so 1 s (the device adds about 0.9 s)", async () => {
-    const on = jest.fn();
-    const ms = await delaiJusquAuNouveau(2, false, on);
-    expect(ms).toBe(CHANTIER_MS);
-    expect(on).toHaveBeenCalledTimes(1);
+  it("a stage change and a rank both have their layer from the tap, announced once", async () => {
+    for (const oldLevel of [2, 3]) {
+      const on = jest.fn();
+      expect(await delaiJusquALaCouche(oldLevel, false, on)).toBe(0);
+      expect(on).toHaveBeenCalledTimes(1);
+    }
   });
 });
 
-describe("the burst and the golden wave (T41)", () => {
-  it("both end inside the reveal's second, and every light is out again at the end", () => {
+describe("the pulse of light (T41)", () => {
+  it("it ends inside its second, and every fire is back to rest at the end", () => {
     expect(ONDE_MS).toBeLessThanOrEqual(1000);
     expect(ARRIVEE_MAX_MS + LUIT_MS).toBeLessThan(ONDE_MS);
-    for (const retard of [0, 200, ARRIVEE_MAX_MS]) {
-      expect(allumeOnde(retard - 1, retard)).toBe(0);
-      expect(allumeOnde(retard, retard)).toBe(1);
-      expect(allumeOnde(ONDE_MS, retard)).toBe(0);
-      expect(flareOnde(ONDE_MS, retard)).toBe(0);
-    }
-    expect(anneauOnde(0).opacite).toBe(0);
-    expect(anneauOnde(IMPACT_MS).opacite).toBeGreaterThan(0.8);
-    expect(anneauOnde(ONDE_MS).opacite).toBe(0);
-    // The points: none before the new stage, none at the end, 2 to 4 dp wide while they live.
-    expect(pointsChemin(NOUVEAU_MS - 1, 0) + pointsChemin(NOUVEAU_MS - 1, 1)).toBe("");
-    expect(pointsChemin(ONDE_MS, 0) + pointsChemin(ONDE_MS, 1)).toBe("");
-    const vivants = pointsChemin(NOUVEAU_MS + 200, 0) + pointsChemin(NOUVEAU_MS + 200, 1);
-    expect(vivants.match(/M/g)?.length).toBeGreaterThanOrEqual(4);
-    expect(NB_POINTS).toBeGreaterThanOrEqual(8);
-    expect(NB_POINTS).toBeLessThanOrEqual(12);
+    for (const retard of [0, 200, ARRIVEE_MAX_MS]) expect(flareOnde(ONDE_MS, retard)).toBe(0);
   });
 
-  it("the burst belongs to the trade: runes, embers, motes, gold by default, never violet", () => {
-    expect(eclatDe("wizard_tower").genre).toBe("runes");
-    expect(eclatDe("forge").genre).toBe("braise");
-    expect(eclatDe("dragon_lair").genre).toBe("braise");
-    expect(eclatDe("druid_grove").genre).toBe("lucioles");
-    expect(eclatDe("tent")).toEqual({ genre: "etincelles", tons: ["resourceGold", "isoEclat"] });
-    for (const code of buildingCodes) expect(eclatDe(code).tons).not.toContain("isoRune");
-  });
-
-  it("the wave reaches the near ones first, lights at most NOEUDS_ONDE windows, skips the plain stage", () => {
+  it("the pulse reaches the near ones first and skips the plain stage", () => {
     const b = (code: (typeof buildingCodes)[number], x: number, ameliore = true) => ({
       code,
       centre: [x, 0] as const,
       ameliore,
-      fenetres: true,
     });
     const plan = planOnde(
       [0, 0],
@@ -172,25 +132,12 @@ describe("the burst and the golden wave (T41)", () => {
         b("barn", 650),
       ],
     );
-    expect([...plan.allume]).toEqual(["forge", "well", "windmill", "tent"]);
-    expect(plan.allume.size).toBe(NOEUDS_ONDE);
     expect(plan.retards.has("quarry")).toBe(false);
     expect(plan.retards.get("forge")).toBeLessThan(plan.retards.get("farm") ?? 0);
     expect(retardOnde(10_000)).toBe(ARRIVEE_MAX_MS);
     // The front leaves at the impact, and a diamond's distance is |dx| + 2|dy|.
     expect(retardOnde(0)).toBe(IMPACT_MS);
-    const diag = planOnde(
-      [0, 0],
-      [{ code: "tent", centre: [100, 100], ameliore: true, fenetres: true }],
-    );
+    const diag = planOnde([0, 0], [{ code: "tent", centre: [100, 100], ameliore: true }]);
     expect(diag.retards.get("tent")).toBe(retardOnde(300));
-  });
-});
-
-describe("the ring's bitmap (qa-audit2)", () => {
-  it("is drawn well under its size: Svg redraws a software bitmap every frame", () => {
-    // 1400 x 700 dp at 2.625 px/dp was 27 MB per frame; under 0.5 it is a quarter or less.
-    expect(ECHELLE_BITMAP).toBeLessThanOrEqual(0.5);
-    expect(ECHELLE_BITMAP).toBeGreaterThan(0.2);
   });
 });

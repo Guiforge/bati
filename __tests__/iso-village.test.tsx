@@ -15,7 +15,6 @@ import { PretDemo } from "@/app/dev-iso";
 import type { Ouverture } from "@/components/village/iso/bulle";
 import {
   CROISSANCE_CAMERA_MS,
-  CROISSANCE_MS,
   cadrage,
   cadrageComplet,
   centreBatiment,
@@ -33,17 +32,17 @@ import {
   type Vue,
   ZOOM_MAX,
 } from "@/components/village/iso/carteDemo";
-import { CHANTIER_MS } from "@/components/village/iso/chantier";
+import { ECHAFAUDAGE_APRES_MS } from "@/components/village/iso/chantier";
 import { croissanceDemo } from "@/components/village/iso/croissanceDemo";
 import { PalierContext } from "@/components/village/iso/detail";
 import { IsoCroissance } from "@/components/village/iso/IsoCroissance";
 import { type Croissance, IsoVillage } from "@/components/village/iso/IsoVillage";
 import { batiments, vieDe } from "@/components/village/iso/isoSpec";
+import { STADE_MS, TENUE_MS } from "@/components/village/iso/moment";
 import { bornesPan, ileCentree, type Limites, ramener } from "@/components/village/iso/navigation";
 import { dureeFondu, FONDU_OUVERTURE_MS } from "@/components/village/iso/ouverture";
 import { Planche } from "@/components/village/iso/PlancheCarte";
 import { NOEUDS_RECLAMABLES, repartirReclamables } from "@/components/village/iso/reclame";
-import { NOUVEAU_MS } from "@/components/village/iso/revelation";
 import {
   type BlasonCrest,
   boiteStatue,
@@ -145,18 +144,27 @@ describe("IsoVillage", () => {
     expect(camera()).toEqual(cadrage(visible, 390, 390));
   });
 
-  // Audit T43 round 1: white gulls flew at night (isoSpec.json vieParAmbiance `oiseaux`).
-  it("flies no flock at night, and one by day", async () => {
+  // Audit T43 round 1: birds flew at night (isoSpec.json vieParAmbiance `oiseaux`).
+  it("has no roof bird at night, and the farm's and the forge's by day", async () => {
     expect([vieDe("nuit").oiseaux, vieDe("jour").oiseaux]).toEqual([false, true]);
-    await afficher(12, { campfire: 1 });
-    expect(screen.queryByTestId("iso-oiseaux")).toBeNull();
+    await afficher(12, { campfire: 1, farm: 5, forge: 5 });
+    expect(screen.queryAllByTestId(/^iso-creature-oiseau-/)).toHaveLength(0);
     await screen.unmount();
     await render(
       <GestureHandlerRootView>
-        <IsoVillage tier={12} buildings={[]} width={390} height={390} lumiere="jour" />
+        <IsoVillage
+          tier={12}
+          buildings={[
+            { code: "farm", level: 5 },
+            { code: "forge", level: 5 },
+          ]}
+          width={390}
+          height={390}
+          lumiere="jour"
+        />
       </GestureHandlerRootView>,
     );
-    expect(screen.queryByTestId("iso-oiseaux")).not.toBeNull();
+    expect(screen.queryAllByTestId(/^iso-creature-oiseau-[a-z]+$/)).toHaveLength(2);
   });
 
   it("shows a built building at the stage of its level, and not an unbuilt one", async () => {
@@ -230,11 +238,10 @@ describe("growth on return from a session", () => {
   const ancien = () => screen.queryByTestId("iso-croissance-ancien-forge");
   const nouveau = () => screen.queryByTestId("iso-croissance-nouveau-forge");
 
-  // The camera moves first, then the building site stands (L6-T02) when the stage changes; the
-  // fade and spring layers start when the site is over (at once when there is no site).
+  // The moment plays from the tap, in its layer (moment.ts); the map's sprite is hidden a beat
+  // after it and the new stage is the map's own once the moment is over.
   const apresCamera = () => act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS));
-  const apresChantier = () =>
-    act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + CHANTIER_MS));
+  const apresChantier = () => act(() => jest.advanceTimersByTime(STADE_MS));
 
   beforeEach(() => {
     mockReduit = false;
@@ -244,50 +251,30 @@ describe("growth on return from a session", () => {
     jest.useRealTimers();
   });
 
-  it("cross-fades the old stage into the new one, is done within 1.5 s and plays once", async () => {
+  it("plays the moment from the tap, hands the new stage to the map after it, is done within 2 s and plays once", async () => {
     const fini = jest.fn();
     await render(arbre(12, { campfire: 1, forge: 4 }, forge, fini));
-    // During the camera's move and the site the OLD stage stands, shown by the map itself, and no
-    // layer plays: a fade and a spring started with the zoom are drowned in it (qa, L3-T05 tour 2).
-    expect(StyleSheet.flatten(lire("forge")?.props.style).opacity).toBeUndefined();
-    expect(lire("forge")?.props.source).toEqual([spriteDe("forge", "rough")?.image]);
-    expect(ancien()).toBeNull();
-    expect(nouveau()).toBeNull();
-    // T03: the scaffold stands from the scene's start; its villagers and dust come after the camera.
-    expect(screen.getByTestId("iso-echafaudage-forge")).toBeTruthy();
-    expect(screen.queryByTestId("iso-poussiere-forge")).toBeNull();
-    await apresCamera();
-    expect(screen.getByTestId("iso-echafaudage-forge")).toBeTruthy();
-    expect(screen.getByTestId("iso-poussiere-forge")).toBeTruthy();
-    // The old stage stands under the scaffold (T02b), shown, and no heap of stones on it.
-    expect(StyleSheet.flatten(lire("forge")?.props.style).opacity).toBeUndefined();
-    expect(lire("forge")?.props.source).toEqual([spriteDe("forge", "rough")?.image]);
-    expect(screen.queryByTestId("iso-tas-forge")).toBeNull();
-    expect(fini).not.toHaveBeenCalled();
-    await act(() => jest.advanceTimersByTime(CHANTIER_MS - CROISSANCE_CAMERA_MS - 1));
-    expect(screen.getByTestId("iso-echafaudage-forge")).toBeTruthy();
-    expect(nouveau()).toBeNull();
-    await act(() => jest.advanceTimersByTime(1));
-    // The site is over and the layers are up; the scaffold stays a beat over them while they decode
-    // (T02b-qa: one bare frame), then goes.
-    expect(screen.queryByTestId("iso-poussiere-forge")).toBeNull();
-    expect(screen.getByTestId("iso-echafaudage-forge")).toBeTruthy();
-    await act(() => jest.advanceTimersByTime(NOUVEAU_MS));
-    expect(screen.queryByTestId("iso-echafaudage-forge")).toBeNull();
-    // Level 2 was rough, level 4 is solid: both layers are up, over the sprite the map draws.
+    // From the tap: the layer is up with the old stage and its scaffold, the new stage not there yet,
+    // and the map's own sprite (the old stage) still shown under it.
     expect(ancien()).not.toBeNull();
     expect(nouveau()).not.toBeNull();
+    expect(screen.getByTestId("iso-croissance-echafaudage-forge")).toBeTruthy();
+    expect(StyleSheet.flatten(lire("forge")?.props.style).opacity).toBeUndefined();
+    expect(lire("forge")?.props.source).toEqual([spriteDe("forge", "rough")?.image]);
     expect(screen.getByTestId("iso-croissance-ancien-image-forge").props.source).toEqual([
       spriteDe("forge", "rough")?.image,
     ]);
     expect(screen.getByTestId("iso-croissance-nouveau-image-forge").props.source).toEqual([
       spriteDe("forge", "solid")?.image,
     ]);
-    // The real sprite is hidden while the layer plays, so the fade and the spring show.
+    // A beat later the map's sprite is hidden under the layer (its images have decoded).
+    await act(() => jest.advanceTimersByTime(ECHAFAUDAGE_APRES_MS + 10));
     expect(StyleSheet.flatten(lire("forge")?.props.style).opacity).toBe(0);
     expect(fini).not.toHaveBeenCalled();
-    await act(() => jest.advanceTimersByTime(CROISSANCE_MS - CROISSANCE_CAMERA_MS - NOUVEAU_MS));
-    // Called once, after the new stage has settled (L6-T13 writes the claimed stage here).
+    await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + STADE_MS));
+    expect(fini).not.toHaveBeenCalled();
+    await act(() => jest.advanceTimersByTime(TENUE_MS));
+    // Called once, after the glide, the moment and the hold (L6-T13 writes the claimed stage here).
     expect(fini).toHaveBeenCalledTimes(1);
     // The owner drops the growth: nothing is left mounted, hence nothing animating.
     await screen.rerender(arbre(12, { campfire: 1, forge: 4 }));
@@ -298,7 +285,7 @@ describe("growth on return from a session", () => {
     expect(fini).toHaveBeenCalledTimes(1);
   }, 20_000);
 
-  it("T03: the villagers who struck stay where they struck once the site is over", async () => {
+  it("nobody strikes the site: no villager leaves its place during the moment", async () => {
     await render(arbre(12, { campfire: 1, forge: 4 }, forge));
     const debout = () =>
       Object.fromEntries(
@@ -310,15 +297,9 @@ describe("growth on return from a session", () => {
     const avant = debout();
     await apresCamera();
     const pendant = debout();
-    const ouvriers = Object.keys(pendant).filter((id) => avant[id] && avant[id] !== pendant[id]);
-    expect(ouvriers.length).toBeGreaterThan(0);
-    await act(() => jest.advanceTimersByTime(CHANTIER_MS));
-    await act(() => jest.advanceTimersByTime(NOUVEAU_MS));
-    await screen.rerender(arbre(12, { campfire: 1, forge: 4 }));
-    const apres = debout();
-    expect(ouvriers.filter((i) => apres[i]).length).toBeGreaterThan(0);
-    for (const id of ouvriers.filter((i) => apres[i]))
-      expect([id, apres[id]]).toEqual([id, pendant[id]]);
+    expect(Object.keys(avant).length).toBeGreaterThan(0);
+    const communs = Object.keys(pendant).filter((id) => avant[id]);
+    expect(communs.map((id) => pendant[id])).toEqual(communs.map((id) => avant[id]));
   });
 
   it("lays the layer on the very rectangle the map gives the sprite, shadow included", async () => {
@@ -329,14 +310,10 @@ describe("growth on return from a session", () => {
     const sprite = spriteDe("campfire", "rough");
     assert(sprite);
     const r = pose("campfire", sprite);
-    const couche = StyleSheet.flatten(
-      screen.getByTestId("iso-croissance-nouveau-campfire").props.style,
-    );
-    expect([couche.left, couche.top, couche.width, couche.height]).toEqual([r.x, r.y, r.w, r.h]);
     const image = StyleSheet.flatten(
       screen.getByTestId("iso-croissance-nouveau-image-campfire").props.style,
     );
-    expect([image.left, image.top, image.width, image.height]).toEqual([0, 0, r.w, r.h]);
+    expect([image.left, image.top, image.width, image.height]).toEqual([r.x, r.y, r.w, r.h]);
     // The map wears the building's socle shadow over its sprite; the layer must too, or the
     // swap at the end changes what is drawn.
     expect(ombreSocleDe("campfire", "rough")).not.toBeNull();
@@ -346,13 +323,13 @@ describe("growth on return from a session", () => {
   it("does not play again for the same value on a re-render", async () => {
     const fini = jest.fn();
     await render(arbre(12, { campfire: 1, forge: 4 }, forge, fini));
-    await act(() => jest.advanceTimersByTime(CROISSANCE_MS + CHANTIER_MS));
+    await act(() => jest.advanceTimersByTime(TENUE_MS + STADE_MS));
     await screen.rerender(arbre(12, { campfire: 1, forge: 4 }, forge, fini));
     await act(() => jest.advanceTimersByTime(5000));
     expect(fini).toHaveBeenCalledTimes(1);
   });
 
-  it("fades in from nothing when the old stage is not known, and skips a building not on the map", async () => {
+  it("a building that was not there stands on its heap of stones in the layer, and one not on the map is skipped", async () => {
     await render(
       arbre(
         12,
@@ -366,31 +343,24 @@ describe("growth on return from a session", () => {
         },
       ),
     );
-    // T03-qa: the scaffold first, the heap a beat later, so no frame shows the heap alone.
-    expect(screen.getByTestId("iso-echafaudage-forge")).toBeTruthy();
-    expect(screen.queryByTestId("iso-tas-forge")).toBeNull();
-    await act(() => jest.advanceTimersByTime(NOUVEAU_MS));
+    // No old stage: the heap of stones and the scaffold, from the tap, in the layer.
     expect(screen.getByTestId("iso-tas-forge")).toBeTruthy();
-    // No old stage: a heap of stones stands on the plot under the scaffold, gone with the site.
-    await apresCamera();
-    expect(screen.getByTestId("iso-tas-forge")).toBeTruthy();
-    expect(screen.getByTestId("iso-echafaudage-forge")).toBeTruthy();
-    await act(() => jest.advanceTimersByTime(CHANTIER_MS));
-    await act(() => jest.advanceTimersByTime(NOUVEAU_MS));
-    expect(screen.queryByTestId("iso-tas-forge")).toBeNull();
-    expect(ancien()).toBeNull();
+    expect(screen.getByTestId("iso-croissance-echafaudage-forge")).toBeTruthy();
+    expect(ancien()).not.toBeNull();
+    expect(screen.queryByTestId("iso-croissance-ancien-image-forge")).toBeNull();
     expect(nouveau()).not.toBeNull();
     expect(screen.queryByTestId("iso-croissance-nouveau-windmill")).toBeNull();
   });
 
-  it("shows no old layer when the stage did not change", async () => {
+  it("a rank inside a stage has a light and no old stage, no scaffold, no new body", async () => {
     const memeStade = { cle: "y", items: [{ code: "forge" as const, oldLevel: 3 }] };
     await render(arbre(12, { campfire: 1, forge: 4 }, memeStade));
-    await apresCamera();
-    // Same stage: no site, the spring alone.
-    expect(screen.queryByTestId("iso-echafaudage-forge")).toBeNull();
+    expect(screen.queryByTestId("iso-croissance-echafaudage-forge")).toBeNull();
     expect(ancien()).toBeNull();
-    expect(nouveau()).not.toBeNull();
+    expect(nouveau()).toBeNull();
+    expect(screen.queryByTestId("iso-croissance-lueur-forge")).not.toBeNull();
+    // The map keeps drawing the building itself: nothing is hidden.
+    expect(StyleSheet.flatten(lire("forge")?.props.style).opacity).toBeUndefined();
   });
 
   it("with reduced motion mounts no layer and ends at once", async () => {
@@ -402,7 +372,7 @@ describe("growth on return from a session", () => {
     expect(lire("forge")?.props.source).toEqual([spriteDe("forge", "solid")?.image]);
     await act(() => jest.advanceTimersByTime(0));
     // Reduced motion: no site either, just the fade.
-    expect(screen.queryByTestId("iso-echafaudage-forge")).toBeNull();
+    expect(screen.queryByTestId("iso-croissance-echafaudage-forge")).toBeNull();
     expect(fini).toHaveBeenCalledTimes(1);
   });
 });
@@ -572,7 +542,7 @@ describe("growth layer detail (L4-T03)", () => {
       await render(
         arbre(12, { campfire: 1 }, { cle: "c", items: [{ code: "campfire", oldLevel: 0 }] }),
       );
-      await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + CHANTIER_MS));
+      await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + STADE_MS));
       const taille = (id: string) => {
         const src = screen.getByTestId(id).props.source as { width?: number; height?: number }[];
         return [src[0]?.width, src[0]?.height];
@@ -620,7 +590,6 @@ describe("ambiance and biome (L4-AUD I7)", () => {
       );
     const parDefaut = dessin();
     expect(screen.queryAllByTestId(/^iso-lisiere-/).length).toBeGreaterThan(0);
-    expect(screen.queryAllByTestId(/^iso-animal-/).length).toBeGreaterThan(0);
     await a.unmount();
     const b = await render(avec({ ambiance: "nuit", biome: "defaut" }));
     expect(dessin()).toBe(parDefaut);
@@ -664,9 +633,8 @@ describe("each view shows its own image (L4-AUD)", () => {
       }
       const forge = screen.getByTestId("iso-maquette-forge").props.source;
       expect(JSON.stringify(forge)).toContain("/forge/");
-      // The cat stands by the well and the hen by the farm, both on the island from tier 1.
-      for (const nom of ["chat", "poule"])
-        expect(screen.queryAllByTestId(new RegExp(`^iso-animal-${nom}`)).length).toBeGreaterThan(0);
+      // The hen by the farm stands on the island from tier 1 (the old cat by the well is gone).
+      expect(screen.queryAllByTestId(/^iso-animal-poule/).length).toBeGreaterThan(0);
     },
   );
 });
@@ -719,7 +687,25 @@ describe("ready to evolve (L6-T13)", () => {
       nativeEvent: { layout: { width: 390, height: 390 } },
     });
     await act(() => jest.advanceTimersByTime(4000));
-    expect(screen.queryAllByTestId(/^iso-echafaudage-/)).toHaveLength(0);
+    expect(screen.queryAllByTestId(/^iso-croissance-/)).toHaveLength(0);
+  });
+
+  // bati://dev-iso?mode=pret&pret=<code>&rang=N: the full map, that building ready to rise from rank N.
+  it("Prêt with a target: the whole map, the named wall ready from its rank, and its moment on its footprint", async () => {
+    await render(
+      <GestureHandlerRootView>
+        <TamaguiProvider config={config} defaultTheme="dark">
+          <PretDemo palier={12} jouer cible={{ code: "castle_wall", rang: 2 }} />
+        </TamaguiProvider>
+      </GestureHandlerRootView>,
+    );
+    await fireEvent(screen.getByTestId("iso-pret-aire"), "layout", {
+      nativeEvent: { layout: { width: 390, height: 390 } },
+    });
+    expect(screen.queryAllByTestId(/^iso-marteau-/)).toHaveLength(1);
+    expect(screen.getAllByTestId("iso-marteau-castle_wall")).toHaveLength(1);
+    await act(() => jest.advanceTimersByTime(1600));
+    expect(screen.getAllByTestId("iso-croissance-lueur-castle_wall")).toHaveLength(1);
   });
 
   it("Prêt with jouer: the climb starts 1.5 s in, and does not restart", async () => {
@@ -729,9 +715,9 @@ describe("ready to evolve (L6-T13)", () => {
       nativeEvent: { layout: { width: 390, height: 390 } },
     });
     await act(() => jest.advanceTimersByTime(1400));
-    expect(screen.queryAllByTestId(/^iso-echafaudage-/)).toHaveLength(0);
+    expect(screen.queryAllByTestId(/^iso-croissance-/)).toHaveLength(0);
     await act(() => jest.advanceTimersByTime(100 + CROISSANCE_CAMERA_MS));
-    expect(screen.queryAllByTestId(/^iso-echafaudage-/).length).toBeGreaterThan(0);
+    expect(screen.queryAllByTestId(/^iso-croissance-echafaudage-/).length).toBeGreaterThan(0);
     for (let ms = 0; ms < 8000; ms += 10) await act(() => jest.advanceTimersByTime(10));
     expect(revele).toHaveBeenCalledTimes(1);
   });
@@ -784,26 +770,23 @@ describe("ready to evolve (L6-T13)", () => {
     await render(<Pret />);
     const { code, oldLevel } = await toucherLePret();
     await act(() => jest.advanceTimersByTime(10));
-    // The site stands (the claimed level is the old one, the building's own is the new one)...
+    // The moment plays in its layer (the claimed level is the old one, the building's own is the new one)...
     await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS));
-    expect(screen.getByTestId(`iso-echafaudage-${code}`)).toBeTruthy();
+    expect(screen.getByTestId(`iso-croissance-echafaudage-${code}`)).toBeTruthy();
     expect(lire(code)?.props.source).toEqual([spriteDe(code, stadeAu(code, oldLevel))?.image]);
-    // ...and goes by itself; the new stage fades in, then the owner writes the claim.
-    await act(() => jest.advanceTimersByTime(CHANTIER_MS));
+    // ...the new stage is the layer's at its end...
+    await act(() => jest.advanceTimersByTime(STADE_MS));
     expect(screen.getByTestId(`iso-croissance-nouveau-image-${code}`).props.source).toEqual([
       spriteDe(code, stadeAu(code, 9))?.image,
     ]);
-    // E2: the scaffold leaves with the new stage's landing, no later than NOUVEAU_MS into the reveal.
-    for (let ms = 0; ms <= NOUVEAU_MS && screen.queryByTestId(`iso-echafaudage-${code}`); ms += 10)
-      await act(() => jest.advanceTimersByTime(10));
-    expect(screen.queryByTestId(`iso-echafaudage-${code}`)).toBeNull();
-    await act(() => jest.advanceTimersByTime(CROISSANCE_MS));
+    // ...and the owner writes the claim by itself, then the map draws the new stage.
+    await act(() => jest.advanceTimersByTime(TENUE_MS));
     expect(lire(code)?.props.source).toEqual([spriteDe(code, stadeAu(code, 9))?.image]);
   });
 
   // T37 (device qa-3110b): the new stage 2.9 s after the tap, 0.7 s with reduced motion. Same path
   // as the device: dev-iso's Prêt mode, a real tap, the tab's props (claim in play = new level).
-  it("Prêt: the new stage shows within 1.1 s of timers after the tap, announced once", async () => {
+  it("Prêt: the moment starts at the tap, and the claim is announced once", async () => {
     const revele = jest.fn();
     await render(<Pret onRevelation={revele} />);
     const { code } = await toucherLePret();
@@ -812,7 +795,10 @@ describe("ready to evolve (L6-T13)", () => {
       await act(() => jest.advanceTimersByTime(10));
       ms += 10;
     }
-    expect(ms).toBeLessThanOrEqual(1100);
+    // The layer is up from the tap; the claim is announced when the moment is over.
+    expect(ms).toBeLessThanOrEqual(100);
+    // In steps: a timer set by a commit only exists once the commit is done.
+    for (let t = 0; t < STADE_MS + TENUE_MS; t += 10) await act(() => jest.advanceTimersByTime(10));
     expect(revele).toHaveBeenCalledTimes(1);
   });
 
@@ -821,16 +807,15 @@ describe("ready to evolve (L6-T13)", () => {
     const revele = jest.fn();
     await render(<Pret onRevelation={revele} />);
     const { code } = await toucherLePret();
-    expect(screen.queryByTestId(`iso-echafaudage-${code}`)).toBeNull();
+    expect(screen.queryByTestId(`iso-croissance-echafaudage-${code}`)).toBeNull();
     expect(lire(code)?.props.source).toEqual([spriteDe(code, stadeAu(code, 9))?.image]);
     expect(revele).toHaveBeenCalledTimes(1);
   });
 
-  // Android fires two timers of the same delay in either order: step 2 then step 1 left the
-  // scaffold up for good (T02b-qa). No two steps of a scene may share a delay.
+  // Android fires two timers of the same delay in either order: no two steps of a scene may share one.
   it.each([
-    ["with a site", 2],
-    ["without one", 3],
+    ["a stage change", 2],
+    ["a rank", 3],
   ])("the steps of a scene never fire at the same time (%s)", async (_, oldLevel) => {
     const espion = jest.spyOn(global, "setTimeout");
     await render(arbre(12, { campfire: 1, forge: 4 }));
@@ -838,16 +823,18 @@ describe("ready to evolve (L6-T13)", () => {
     await screen.rerender(
       arbre(12, { campfire: 1, forge: 4 }, { cle: "t", items: [{ code: "forge", oldLevel }] }),
     );
+    // The scene's own steps: the beat that hides the map's sprite, the moment's end, the hold's end
+    // (the layer's own timers run on its clock and are not steps of the scene).
     const delais = espion.mock.calls
       .map((c) => c[1])
-      .filter((d) => (d ?? 0) >= CROISSANCE_CAMERA_MS);
+      .filter((d): d is number => typeof d === "number" && d >= 100);
     espion.mockRestore();
     expect(delais.length).toBeGreaterThanOrEqual(2);
     expect(new Set(delais).size).toBe(delais.length);
   });
 
   it("the evolution scene lasts 3 s at most, and a touch on the map ends it at once", async () => {
-    expect(CROISSANCE_MS + CHANTIER_MS).toBeLessThanOrEqual(3000);
+    expect(STADE_MS + TENUE_MS).toBeLessThanOrEqual(3000);
     const fini = jest.fn();
     const scene = { cle: "s", items: [{ code: "forge" as const, oldLevel: 2 }] };
     await render(arbre(12, { campfire: 1, forge: 4 }, scene, fini));
@@ -860,7 +847,7 @@ describe("ready to evolve (L6-T13)", () => {
       tap.end({ x: 5, y: 5 });
       jest.advanceTimersByTime(50);
     });
-    await act(() => jest.advanceTimersByTime(CROISSANCE_MS + CHANTIER_MS));
+    await act(() => jest.advanceTimersByTime(TENUE_MS + STADE_MS));
     expect(fini).toHaveBeenCalledTimes(1);
   });
 });

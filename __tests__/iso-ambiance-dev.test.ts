@@ -5,7 +5,6 @@ jest.mock("@/constants/isoPoc", () => ({
 }));
 
 import { forceEnDev, useAmbianceDev } from "@/components/village/iso/ambianceDev";
-import { echafaudageDessine } from "@/components/village/iso/chantier";
 import { choisirLumiere } from "@/components/village/iso/lumiere";
 
 describe("village light forced from the dev screen", () => {
@@ -17,14 +16,5 @@ describe("village light forced from the dev screen", () => {
     expect(choisirLumiere({ ...base, force: forceEnDev(false, force) })).toBe("jour");
     useAmbianceDev.getState().set(undefined);
     expect(choisirLumiere({ ...base, force: forceEnDev(true, undefined) })).toBe("jour");
-  });
-});
-
-describe("the old art's vector scaffold", () => {
-  test("never drawn over a painted building, still drawn for an unpainted one or a new plot", () => {
-    expect(echafaudageDessine("campfire", false, true)).toBe(false);
-    expect(echafaudageDessine("windmill", false, true)).toBe(true);
-    expect(echafaudageDessine("campfire", true, true)).toBe(true);
-    expect(echafaudageDessine("windmill", false, false)).toBe(false); // no site, no scaffold
   });
 });

@@ -1,0 +1,32 @@
+{
+  "effets": [
+    {
+      "kind": "lueur",
+      "lueur": "fire",
+      "at": [450, 105],
+      "fromRank": 3,
+      "fromBase": 10
+    },
+    {
+      "kind": "lueur",
+      "lueur": "fenetre",
+      "at": [385, 470],
+      "fromRank": 3,
+      "fromBase": 10
+    },
+    {
+      "kind": "lueur",
+      "lueur": "fenetre",
+      "at": [515, 465],
+      "fromRank": 3,
+      "fromBase": 10
+    },
+    {
+      "kind": "lueur",
+      "lueur": "fenetre",
+      "at": [520, 612],
+      "fromRank": 3,
+      "fromBase": 10
+    }
+  ]
+}

@@ -80,12 +80,11 @@ describe("the small animals' walks (L5-T10)", () => {
     return { n, vague, betes: planifierAnimaux(carte, vague, JOUR, n) };
   });
 
-  test("the three animals stand on the full map, and one or two walk in most waves, never more", () => {
+  test("the hen (the old cat left with LIFE) stands on the full map, and walks in most waves, never more", () => {
     expect(carte.animaux?.length).toBe(ANIMAUX.length);
     for (const { betes } of plans) expect(betes.length).toBeLessThanOrEqual(BETES_PAR_VAGUE);
     expect(plans.filter((p) => p.betes.length >= 1).length).toBeGreaterThan(VAGUES.length * 0.8);
-    expect(plans.some((p) => p.betes.length === 2)).toBe(true);
-    // All three get their turn over the waves.
+    // It gets its turn over the waves.
     expect(new Set(plans.flatMap((p) => p.betes.map((b) => b.nom)))).toEqual(
       new Set(ANIMAUX.map((a) => a.nom)),
     );

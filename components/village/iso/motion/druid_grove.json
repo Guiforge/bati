@@ -1,0 +1,16 @@
+{
+  "effets": [
+    {
+      "kind": "lueur",
+      "lueur": "crystal",
+      "at": [545, 598],
+      "fromRank": 10
+    },
+    {
+      "kind": "lueur",
+      "lueur": "crystal",
+      "at": [540, 355],
+      "fromRank": 10
+    }
+  ]
+}

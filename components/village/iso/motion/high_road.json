@@ -1,0 +1,29 @@
+{
+  "effets": [
+    {
+      "kind": "lueur",
+      "lueur": "fenetre",
+      "at": [575, 355],
+      "fromRank": 10
+    },
+    {
+      "kind": "lueur",
+      "lueur": "fenetre",
+      "at": [645, 450],
+      "fromRank": 10
+    },
+    {
+      "kind": "lueur",
+      "lueur": "fenetre",
+      "at": [335, 515],
+      "fromRank": 10
+    },
+    {
+      "kind": "miroitement",
+      "at": [670, 900],
+      "fromRank": 10,
+      "nb": 1,
+      "rayon": 150
+    }
+  ]
+}

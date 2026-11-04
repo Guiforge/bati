@@ -30,13 +30,9 @@ const getAnimatedStyle = Reanimated.getAnimatedStyle as unknown as (component: {
 const casesDe = (a: (typeof ANIMAUX)[number]) => a.piece.case.join(",");
 
 describe("the small animals' places (L4-T08c)", () => {
-  test("three fixed places, on grass, off every footprint, each in its own cell", () => {
-    expect(ANIMAUX.map((a) => [a.nom, casesDe(a)])).toEqual([
-      ["poule", "5,6"],
-      ["chat", "7,12"],
-      ["corbeau", "1,9"],
-    ]);
-    expect(new Set(ANIMAUX.map(casesDe)).size).toBe(3);
+  test("one fixed place (the hen: the old cat left with LIFE), on grass, off every footprint", () => {
+    expect(ANIMAUX.map((a) => [a.nom, casesDe(a)])).toEqual([["poule", "5,6"]]);
+    expect(new Set(ANIMAUX.map(casesDe)).size).toBe(1);
     for (const a of ANIMAUX) {
       const [gx, gy] = a.piece.case;
       expect([a.nom, sol[gy]?.[gx]]).toEqual([a.nom, "herbe"]);
@@ -68,17 +64,12 @@ describe("the small animals' places (L4-T08c)", () => {
   });
 
   test("they sort in depth with the rest, and show only with their building and their cell", () => {
-    expect(ORDRE_CARTE.filter((e) => e.type === "animal")).toHaveLength(3);
+    expect(ORDRE_CARTE.filter((e) => e.type === "animal")).toHaveLength(1);
     const plein = ileVisible(12, buildingCodes);
-    const [poule, chat, corbeau] = ANIMAUX;
-    assert(poule && chat && corbeau);
+    const [poule] = ANIMAUX;
+    assert(poule);
     expect(animalMontre(poule, plein, [])).toBe(false);
     expect(animalMontre(poule, plein, ["farm"])).toBe(true);
-    expect(animalMontre(chat, plein, ["farm"])).toBe(false);
-    expect(animalMontre(chat, plein, ["well"])).toBe(true);
-    expect(animalMontre(corbeau, plein, [])).toBe(true);
-    // The crow's cell joins the island at tier 6.
-    expect(animalMontre(corbeau, etatCarte(1, false).visible, [])).toBe(false);
     const vide = Array.from({ length: TAILLE }, () => Array.from({ length: TAILLE }, () => false));
     expect(ANIMAUX.some((a) => animalMontre(a, vide, buildingCodes))).toBe(false);
   });
@@ -105,18 +96,18 @@ describe("sprites of the villager canvas stand on the centre of their cell", () 
 function Scene({ c, set }: { c: number; set?: jest.Mock }) {
   const horloge = Reanimated.useSharedValue(c);
   if (set) horloge.set = set;
-  const chat = ANIMAUX.find((a) => a.nom === "chat");
-  assert(chat);
+  const poule = ANIMAUX.find((a) => a.nom === "poule");
+  assert(poule);
   return (
     <HorlogeContext.Provider value={horloge}>
-      <Animal a={chat} />
+      <Animal a={poule} />
     </HorlogeContext.Provider>
   );
 }
 
 const opacites = () =>
   POSES_ANIMAL.map((p) => {
-    const vue = screen.getByTestId(`iso-animal-chat-${p}`).parent;
+    const vue = screen.getByTestId(`iso-animal-poule-${p}`).parent;
     assert(vue);
     return getAnimatedStyle(vue as never).opacity;
   });
@@ -134,18 +125,18 @@ describe("the animal view", () => {
     const set = jest.fn();
     await render(<Scene c={CYCLE_MS + 130} set={set} />);
     for (const p of POSES_ANIMAL) {
-      const vue = screen.getByTestId(`iso-animal-chat-${p}`).parent;
+      const vue = screen.getByTestId(`iso-animal-poule-${p}`).parent;
       expect(vue?.props.pointerEvents).toBe("none");
     }
     expect(set).not.toHaveBeenCalled();
   });
 
   test("without a clock (reduced motion, unfocused) only the rest pose is mounted", async () => {
-    const chat = ANIMAUX.find((a) => a.nom === "chat");
-    assert(chat);
-    await render(<Animal a={chat} />);
-    expect(screen.queryAllByTestId(/^iso-animal-chat/).map((n) => n.props.testID)).toEqual([
-      "iso-animal-chat",
+    const poule = ANIMAUX.find((a) => a.nom === "poule");
+    assert(poule);
+    await render(<Animal a={poule} />);
+    expect(screen.queryAllByTestId(/^iso-animal-poule/).map((n) => n.props.testID)).toEqual([
+      "iso-animal-poule",
     ]);
   });
 });
@@ -161,9 +152,9 @@ describe("the animals on the map", () => {
     );
 
   test("mount only the ones whose place is shown", async () => {
-    expect(await montes(ileVisible(12, buildingCodes), sans("farm"))).toEqual(
-      new Set(["chat", "corbeau"]),
-    );
+    expect(await montes(ileVisible(12, buildingCodes), sans("farm"))).toEqual(new Set());
+    await screen.unmount();
+    expect(await montes(ileVisible(12, buildingCodes), buildingCodes)).toEqual(new Set(["poule"]));
     await screen.unmount();
     expect(await montes(etatCarte(1, false).visible, [])).toEqual(new Set());
   });

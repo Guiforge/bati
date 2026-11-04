@@ -1,6 +1,7 @@
 // T38, constat 17 of the exit audit ("the demo growth is too short"): the scene's length, measured.
-// Camera 0.5 s, site 1.5 s, cross-fade 1.5 s: over at 3 s, not before; and the demo's own pick
-// (croissanceDemo) always has a site.
+// The camera glides to the building first (CROISSANCE_CAMERA_MS), then the moment plays 1 s, then the
+// map holds the finished building 1 s: over at 2.7 s from the tap, not before;
+// and the demo's own pick (croissanceDemo) always changes stage.
 import "react-native-gesture-handler/jestSetup";
 import "@/i18n";
 import { act, configure, render } from "@testing-library/react-native";
@@ -9,10 +10,10 @@ import {
   createGestureController,
   getByGestureTestId,
 } from "react-native-gesture-handler/jest-utils";
-import { CROISSANCE_CAMERA_MS, CROISSANCE_MS } from "@/components/village/iso/carteDemo";
-import { CHANTIER_MS } from "@/components/village/iso/chantier";
+import { CROISSANCE_CAMERA_MS } from "@/components/village/iso/carteDemo";
 import { croissanceDemo } from "@/components/village/iso/croissanceDemo";
 import { IsoVillage } from "@/components/village/iso/IsoVillage";
+import { STADE_MS, TENUE_MS } from "@/components/village/iso/moment";
 import { buildingCodes } from "@/db/schema";
 
 jest.mock("react-native-worklets", () => ({
@@ -53,7 +54,7 @@ jest.setTimeout(15_000);
 const buildings = buildingCodes.map((code) => ({ code, level: 5 }));
 
 describe("the growth scene's length", () => {
-  it("the demo's pick has a site, so the scene lasts 2 s whole (T37)", async () => {
+  it("the demo's pick has a site, so the scene lasts the glide plus 2 s whole (T37)", async () => {
     const grown = croissanceDemo(buildings, 0);
     expect(grown).not.toBeNull();
     const [code, ancien] = (grown ?? "").split(":");
@@ -75,10 +76,9 @@ describe("the growth scene's length", () => {
           />
         </GestureHandlerRootView>,
       );
-      expect(CROISSANCE_MS + CHANTIER_MS - CROISSANCE_CAMERA_MS).toBe(2000);
-      await act(() =>
-        jest.advanceTimersByTime(CROISSANCE_MS + CHANTIER_MS - CROISSANCE_CAMERA_MS - 50),
-      );
+      expect(STADE_MS + TENUE_MS).toBe(2000);
+      const total = CROISSANCE_CAMERA_MS + STADE_MS + TENUE_MS;
+      await act(() => jest.advanceTimersByTime(total - 50));
       expect(fin).not.toHaveBeenCalled();
       await act(() => jest.advanceTimersByTime(60));
       expect(fin).toHaveBeenCalledTimes(1);
@@ -149,6 +149,27 @@ describe("the growth scene's length", () => {
         tap.activate();
         tap.end();
       });
+      await act(() => jest.advanceTimersByTime(4000));
+      retourne();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it("a tap during the moment's hold, once the building is finished, gives the view back at once", async () => {
+    try {
+      await montrer();
+      // Past the glide and the moment (700 + 1000 ms from the tap), inside the 1 s hold.
+      await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + STADE_MS - 600 + 300));
+      expect(mockVers).toHaveBeenCalledTimes(1);
+      const tap = createGestureController(getByGestureTestId("iso-geste-tap"));
+      await act(() => {
+        tap.begin();
+        tap.activate();
+        tap.end();
+      });
+      await act(() => jest.advanceTimersByTime(50));
+      retourne();
       await act(() => jest.advanceTimersByTime(4000));
       retourne();
     } finally {

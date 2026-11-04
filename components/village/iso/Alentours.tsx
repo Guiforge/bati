@@ -1,55 +1,39 @@
 // The painted surroundings, drawn (alentours.ts is the pure side): the terrain under the map's
 // vector paths (Monde), the forest masses between the ground and the sprites (IsoCarte), the props in
-// the depth order (IsoCarte), the painted mice and birds (petitsDetails.tsx picks them).
+// the depth order (IsoCarte).
 // Each behind its flag. Painted by day, and every layer has its night
 // baked from the same curve as the buildings' (scripts/iso/nuit_alentours.py, famille_jour.nuit): the
-// ground, the forest, the props and the mice pick their `.nuit` file by the light.
+// ground, the forest, the props pick their `.nuit` file by the light.
 // Never a tap target: every
 // view is `pointerEvents="none"` and the building tap reads the sprites' masks (tapBatiment.ts).
 
 import { Image } from "expo-image";
 import { useContext } from "react";
 import { View } from "react-native";
-import Animated, { type SharedValue, useAnimatedStyle } from "react-native-reanimated";
 import Svg, { Defs, Ellipse, RadialGradient, Stop } from "react-native-svg";
 import { fade, rawColors } from "@/constants/rawColors";
 import type { BuildingCode } from "@/db/schema";
 import {
   type Accessoire,
   AlentoursContext,
-  FRAME_SOURIS_MS,
-  IMAGE_ANIMAL,
   type Masse,
   massesForet,
   type NomAccessoire,
   type NomForet,
   ombreHorsRoute,
   piedAccessoire,
-  SOURIS,
   TERRAIN,
   TOILE_ACCESSOIRE,
   TOILE_FORET,
   TUILE_TERRAIN,
   tuileTerre,
 } from "./alentours";
-import { COTE, ecranXY, pose, spriteDe } from "./carteDemo";
+import { ecranXY, pose, spriteDe } from "./carteDemo";
 import type { Culture, TuileChamp } from "./champs";
 import { useDump } from "./dumpSprites";
-import { type Depart, HorlogeContext } from "./horloge";
 import type { Ambiance, Stade } from "./isoSpec";
 import { solCharge } from "./ouverture";
 import { hautMasque } from "./tapBatiment";
-import { AnimauxContext } from "./useMarcheurs";
-import {
-  CORBEAUX,
-  courseRat,
-  RAT,
-  remousCorbeau,
-  VOL_ECHELLE,
-  VOL_H,
-  VOL_L,
-  volCorbeaux,
-} from "./vivant";
 
 /** The terrain's tiles (alentours.ts TUILES_TERRAIN), by row then column: Metro needs every require spelled out. */
 const TERRE: readonly { r: number; c: number; jour: number; nuit: number }[] = [
@@ -314,26 +298,7 @@ const ACCESSOIRES_IMAGES: Record<NomAccessoire, { jour: number; nuit: number }> 
   },
 };
 
-const SOURIS_IMAGES = {
-  souris_grise: {
-    jour: require("@/assets/images/village/iso/animaux/souris_grise.webp"),
-    nuit: require("@/assets/images/village/iso/animaux/souris_grise.nuit.webp"),
-  },
-  souris_brune: {
-    jour: require("@/assets/images/village/iso/animaux/souris_brune.webp"),
-    nuit: require("@/assets/images/village/iso/animaux/souris_brune.nuit.webp"),
-  },
-  souris_noire: {
-    jour: require("@/assets/images/village/iso/animaux/souris_noire.webp"),
-    nuit: require("@/assets/images/village/iso/animaux/souris_noire.nuit.webp"),
-  },
-} as const;
-const OISEAU = require("@/assets/images/village/iso/animaux/oiseau.webp");
-
 const moment = (a: Ambiance) => (a === "nuit" ? "nuit" : "jour");
-/** A strip of four frames, as laid out: one layout size for the whole family (the image-size ratchet). */
-const BANDE = { width: IMAGE_ANIMAL.w * 4, height: IMAGE_ANIMAL.h } as const;
-
 /** The tiles' overlap on their right and bottom neighbours, dp (3 px of the painting). */
 const JOINT = 1;
 
@@ -704,168 +669,6 @@ export function AccessoirePeint({
         transform: a.flip ? [{ scaleX: -1 }] : undefined,
       }}
     />
-  );
-}
-
-/** One frame window of a strip: the strip slides by a whole frame on the clock. */
-function Bande({
-  source,
-  x,
-  y,
-  echelle = 1,
-  image,
-  dy,
-  testID,
-}: {
-  source: number;
-  x: number;
-  y: number;
-  echelle?: number;
-  /** The frame to show, 0 to 3, read from the clock: a worklet. */
-  image: () => number;
-  /** The strip's own rise and fall, dp, read from the clock (a worklet); none when absent. */
-  dy?: () => number;
-  testID: string;
-}) {
-  const style = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: -IMAGE_ANIMAL.w * image() }, { translateY: dy ? dy() : 0 }],
-    };
-  });
-  return (
-    <View
-      pointerEvents="none"
-      style={{
-        position: "absolute",
-        left: x,
-        top: y,
-        width: IMAGE_ANIMAL.w,
-        height: IMAGE_ANIMAL.h,
-        overflow: "hidden",
-        transform: [{ scale: echelle }],
-      }}
-    >
-      <Animated.View testID={testID} style={[BANDE, style]}>
-        <Image source={source} contentFit="fill" style={BANDE} />
-      </Animated.View>
-    </View>
-  );
-}
-
-/** The mice's group box, dp: the lead in front, two behind, room for their offsets. */
-const GROUPE_L = 48;
-const GROUPE_H = 20;
-
-/**
- * The painted mice (Guillaume, 01/11: several, small, fast): three of them scurry along the rat's
- * run in its waves (vivant.ts `courseRat`), its rank in the depth order, hidden at rest. One node
- * moves the group, one per mouse slides its four running frames: 4 nodes where the rat had 1.
- */
-export function SourisPeintes({ lumiere = "nuit" }: { lumiere?: Ambiance }) {
-  const horloge = useContext(HorlogeContext);
-  const animaux = useContext(AnimauxContext);
-  const bete = animaux?.betes.find((x) => x.nom === "rat");
-  const c0 = animaux?.c0 ?? 0;
-  const [ax, ay] = ecranXY([RAT.gx0, RAT.gy + RAT.decalage]);
-  const style = useAnimatedStyle(() => {
-    if (!horloge || !bete) return { opacity: 0, transform: [{ translateX: 0 }, { translateY: 0 }] };
-    const r = courseRat(horloge.get() - c0, bete.vie, bete.segments);
-    return {
-      opacity: r.opacite,
-      transform: [
-        { translateX: (r.g - RAT.gx0) * (COTE / 2) },
-        { translateY: (r.g - RAT.gx0) * (COTE / 4) },
-        { scaleX: r.sens },
-      ],
-    };
-  });
-  return (
-    <Animated.View
-      pointerEvents="none"
-      testID="iso-souris"
-      style={[
-        {
-          position: "absolute",
-          left: ax - GROUPE_L / 2,
-          top: ay - GROUPE_H + 2,
-          width: GROUPE_L,
-          height: GROUPE_H,
-        },
-        style,
-      ]}
-    >
-      {SOURIS.map((s) => (
-        <Bande
-          key={s.nom}
-          source={SOURIS_IMAGES[s.nom][moment(lumiere)]}
-          x={GROUPE_L / 2 + s.dx - IMAGE_ANIMAL.w / 2}
-          y={GROUPE_H - IMAGE_ANIMAL.h - 3 + s.dy}
-          image={() => {
-            "worklet";
-            const c = horloge?.get() ?? 0;
-            return Math.floor(c / FRAME_SOURIS_MS + s.phase) % 4;
-          }}
-          testID={`iso-souris-${s.nom}`}
-        />
-      ))}
-    </Animated.View>
-  );
-}
-
-const HORS_CHAMP = { opacity: 0, transform: [{ translateX: -VOL_L }, { translateY: 0 }] };
-
-/**
- * The painted birds (replacing the drawn V of crows): the same crossing (vivant.ts `volCorbeaux`),
- * four painted birds, each beating its four wing frames at its own rate. The painting faces left: the
- * group is mirrored when it flies right. 1 + 4 nodes, as the drawn flock's Svg and its 4 paths.
- */
-export function OiseauxPeints({
-  width,
-  height,
-  horloge,
-  depart,
-}: {
-  width: number;
-  height: number;
-  horloge: SharedValue<number> | null;
-  depart: SharedValue<Depart> | null;
-}) {
-  const style = useAnimatedStyle(() => {
-    if (!horloge || !depart) return HORS_CHAMP;
-    const v = volCorbeaux(horloge.get(), depart.get(), width, height);
-    return {
-      opacity: v.opacite,
-      transform: [{ translateX: v.x }, { translateY: v.y }, { scaleX: -v.sens }],
-    };
-  });
-  return (
-    <Animated.View
-      pointerEvents="none"
-      testID="iso-oiseaux"
-      style={[{ position: "absolute", left: 0, top: 0, width: VOL_L, height: VOL_H }, style]}
-    >
-      {CORBEAUX.map(([x, y, k], i) => (
-        <Bande
-          key={`${x},${y}`}
-          source={OISEAU}
-          x={x * VOL_ECHELLE - IMAGE_ANIMAL.w / 2}
-          y={y * VOL_ECHELLE - IMAGE_ANIMAL.h / 2}
-          echelle={1.05 * k}
-          image={() => {
-            "worklet";
-            if (!horloge || !depart) return 0;
-            const v = volCorbeaux(horloge.get(), depart.get(), width, height);
-            return Math.floor(v.p * (14 + i) * 4 + i) % 4;
-          }}
-          dy={() => {
-            "worklet";
-            if (!horloge || !depart) return 0;
-            return remousCorbeau(volCorbeaux(horloge.get(), depart.get(), width, height).p, i);
-          }}
-          testID={`iso-oiseau-${i}`}
-        />
-      ))}
-    </Animated.View>
   );
 }
 

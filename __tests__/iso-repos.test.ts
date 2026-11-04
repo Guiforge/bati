@@ -86,18 +86,6 @@ describe("the resting poses (T40)", () => {
     expect(paires).toBeGreaterThan(0);
   });
 
-  test("the cat pose needs a cat close by: drawable with one two cells away, never without", () => {
-    for (let j = 0; j < 20; j++)
-      expect(poses(12, j).some((g) => g.pose === "joue_chat")).toBe(false);
-    const vus = new Set<string | undefined>();
-    for (let j = 0; j < 60; j++) {
-      const [x, y] = poses(12, j)[0]?.cellule ?? [0, 0];
-      const carte = { ...carteDe(12), animaux: [{ nom: "chat", cellule: [x + 2, y] as Case }] };
-      for (const g of placerHabitants(12, carte, j)) vus.add(g.pose);
-    }
-    expect(vus.has("joue_chat")).toBe(true);
-  });
-
   test("whoever the party moved stands up, and so does its partner", () => {
     for (let j = 0; j < 40; j++) {
       const gens = poses(12, j);

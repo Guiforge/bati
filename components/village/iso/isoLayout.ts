@@ -257,21 +257,24 @@ function sansTrou(visible: boolean[][]): boolean[][] {
 
 /** Named places of the small lives (isoLayout.json `lieux`): read by vivant.ts, checked here. */
 export const lieux = (() => {
-  const { lucioles, rat } = raw.lieux;
+  const { lucioles } = raw.lieux;
   const [gx0, gx1] = lucioles.gx;
   const [gy0, gy1] = lucioles.gy;
   if (gx0 === undefined || gx1 === undefined || gy0 === undefined || gy1 === undefined)
     throw new Error("isoLayout.json lieux.lucioles: gx and gy need two bounds");
   if (!(gx0 < gx1 && gy0 < gy1)) throw new Error("isoLayout.json lieux.lucioles: empty zone");
-  if (!(rat.gx0 < rat.gx1)) throw new Error("isoLayout.json lieux.rat: gx0 must be before gx1");
+  const evite = lucioles.evite.map(([x, y, r]) => {
+    if (x === undefined || y === undefined || r === undefined || r <= 0)
+      throw new Error("isoLayout.json lieux.lucioles.evite: a disc is [x, y, radius]");
+    return [x, y, r] as const;
+  });
   return {
-    lucioles: { gx: [gx0, gx1], gy: [gy0, gy1] } as const,
-    rat: { gy: rat.gy, gx0: rat.gx0, gx1: rat.gx1, decalage: rat.decalage } as const,
+    lucioles: { gx: [gx0, gx1], gy: [gy0, gy1], evite } as const,
   };
 })();
 
 /**
- * The roof points where a crow perches (isoLayout.json `toits`), by painted stage `<code>_<stade>`:
+ * The roof points where a bird lands (isoLayout.json `toits`), by painted stage `<code>_<stade>`:
  * a point of the ridge's top edge, in sprite px.
  */
 export const toits: ReadonlyMap<string, readonly [u: number, v: number]> = new Map(

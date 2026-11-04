@@ -592,6 +592,9 @@ export function BuildingFacts({
         ) : null}
       </YStack>
 
+      {/* Before the long lists (a wall's stones, the deeds): the one action must not sit below a scroll of 24 stones. */}
+      {reclameEnBas}
+
       {exercices}
       {recentes}
 
@@ -642,8 +645,6 @@ export function BuildingFacts({
           language={language}
         />
       ) : null}
-
-      {reclameEnBas}
 
       {link ? (
         <QuestLink

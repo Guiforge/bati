@@ -14,7 +14,7 @@ import { accrochesDe, variante } from "./feux";
 import { LumieresContext } from "./fige";
 import { HorlogeContext } from "./horloge";
 import { type Ambiance, type Biome, biomes, type SpriteIso, type Stade, vieDe } from "./isoSpec";
-import { allumeOnde, RevelationContext } from "./revelation";
+import { RevelationContext } from "./revelation";
 import { boiteFenetres, coinsFenetre, fenetres, porte, VeilleContext } from "./veilleuses";
 
 const OPACITE_FENETRES = 0.85;
@@ -53,21 +53,8 @@ export function Veilles({
   if (!lumieres || !a || !veille || !horloge || !vieDe(ambiance).lueurFeux) return null;
   const k = corps.w / s.size[0];
   const couleur = rawColors[biomes[biome].feu.lueur];
-  // T41: during a reveal the wave's lights and door glows are off; the golden wave lights its own windows.
-  if (revelation)
-    return revelation.allume.has(code) && a.fenetres.length > 0 ? (
-      <Fenetres
-        boite={boiteFenetres(a)}
-        coins={a.fenetres.map(coinsFenetre)}
-        corps={corps}
-        k={k}
-        n={variante(code)}
-        couleur={couleur}
-        horloge={horloge}
-        onde={{ t: revelation.t, retard: revelation.retards.get(code) ?? 0 }}
-        testID={`iso-fenetres-${code}`}
-      />
-    ) : null;
+  // During a growth the village is quiet: no wave light and no door glow (the moment is the one light).
+  if (revelation) return null;
   const visites = veille.portes[code];
   return (
     <>
@@ -107,7 +94,6 @@ function Fenetres({
   n,
   couleur,
   horloge,
-  onde,
   testID,
 }: {
   boite: { x: number; y: number; w: number; h: number };
@@ -117,12 +103,10 @@ function Fenetres({
   n: number;
   couleur: string;
   horloge: SharedValue<number>;
-  /** T41: lit by the reveal's golden wave instead of the ambient clock. */
-  onde?: { t: SharedValue<number>; retard: number };
   testID: string;
 }) {
   const style = useAnimatedStyle(() => ({
-    opacity: onde ? allumeOnde(onde.t.get(), onde.retard) : fenetres(horloge.get(), n),
+    opacity: fenetres(horloge.get(), n),
   }));
   const [w, h] = [boite.w * k, boite.h * k];
   return (

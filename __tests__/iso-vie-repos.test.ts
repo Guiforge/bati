@@ -1,15 +1,9 @@
 // E5: what moves at rest and how the reveal's caption is placed. The cloud shadows cross the whole
-// map and come back off it; the flock's path changes from one crossing to the next; the caption
+// map and come back off it; the caption
 // sits over the building that rose, or at the bottom when the roof is too near the top.
 
-import { CYCLE_MS } from "@/components/village/iso/horloge";
-import {
-  ANTICIPATION_MS,
-  NOUVEAU_MS,
-  placeLegende,
-  poseSilhouette,
-} from "@/components/village/iso/revelation";
-import { NUAGE_MS, NUAGES, nuageA, VOL_H, volCorbeaux } from "@/components/village/iso/vivant";
+import { placeLegende } from "@/components/village/iso/revelation";
+import { NUAGE_MS, NUAGES, nuageA } from "@/components/village/iso/vivant";
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 
@@ -28,33 +22,6 @@ describe("cloud shadows", () => {
   });
   test("the two never stand together", () => {
     expect(Math.abs((NUAGES[0]?.decalage ?? 0) - (NUAGES[1]?.decalage ?? 0))).toBeGreaterThan(0.3);
-  });
-});
-
-describe("the flock (anim-36)", () => {
-  test("its height is drawn anew at each crossing, over the frame's middle", () => {
-    const h = 800;
-    // Mid-cycle of every cycle a wave may play it in: the one it flies in shows.
-    const vols = Array.from({ length: 12 }, (_, n) =>
-      [0, 1, 2].map((k) => volCorbeaux((k + 0.5) * CYCLE_MS, { n: n + 1, c0: 0 }, 400, h)),
-    )
-      .flat()
-      .filter((v) => v.opacite === 1);
-    expect(vols).toHaveLength(12);
-    const milieux = vols.map((v) => v.y + VOL_H / 2);
-    expect(Math.min(...milieux)).toBeGreaterThan(h * 0.2);
-    expect(Math.max(...milieux)).toBeLessThan(h * 0.7);
-    expect(new Set(milieux.map(Math.round)).size).toBeGreaterThan(6);
-  });
-});
-
-describe("the reveal's silhouette (anim-30, anim-31)", () => {
-  test("shows only between the gathering and the new stage; from the start for a new building", () => {
-    expect(poseSilhouette(ANTICIPATION_MS - 1, false).echelle).toBe(0);
-    expect(poseSilhouette(ANTICIPATION_MS, false).echelle).toBeGreaterThan(0.9);
-    expect(poseSilhouette(NOUVEAU_MS - 1, false).echelle).toBeGreaterThan(0.9);
-    expect(poseSilhouette(NOUVEAU_MS, false).echelle).toBe(0);
-    expect(poseSilhouette(0, true).echelle).toBeGreaterThan(0.9);
   });
 });
 

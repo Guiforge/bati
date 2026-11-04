@@ -1,0 +1,21 @@
+{
+  "effets": [
+    { "kind": "lueur", "lueur": "fire", "at": [455, 955], "fromRank": 1 },
+    {
+      "kind": "flamme",
+      "stade": "legendary",
+      "at": [505, 368],
+      "fromRank": 7,
+      "zone": [420, 200, 170, 168],
+      "pivot": [505, 368]
+    },
+    {
+      "kind": "flamme",
+      "stade": "mythic",
+      "at": [410, 440],
+      "fromRank": 10,
+      "zone": [200, 60, 420, 380],
+      "pivot": [410, 440]
+    }
+  ]
+}

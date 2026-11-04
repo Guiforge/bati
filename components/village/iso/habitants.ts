@@ -232,9 +232,8 @@ function partenaire(out: readonly Habitant[], i: number, carte: Carte): Duo | un
 }
 
 /** The poses that suit `g` now: its tier, its place, and what they need beside it. */
-function posesPossibles(g: Habitant, palier: number, chats: readonly Case[], duo?: Duo) {
+function posesPossibles(g: Habitant, palier: number, duo?: Duo) {
   const exigence = {
-    chat: chats.some((c) => distance(c, g.cellule) <= 2),
     voisin: !!duo,
     mur: faceDuMur(g.cellule, g.lieu) !== undefined,
   };
@@ -275,7 +274,6 @@ export function donnerPoses(
 ): Habitant[] {
   const h = hasard(`${jour}:poses`);
   const out = gens.map((g) => ({ ...g }));
-  const chats = (carte.animaux ?? []).filter((a) => a.nom === "chat").map((a) => a.cellule);
   const pris = new Set<IdPose>();
   const ordre = out
     .map((_, i) => ({ i, k: h() }))
@@ -285,7 +283,7 @@ export function donnerPoses(
     const g = out[i];
     if (!g || g.pose) continue;
     const duo = partenaire(out, i, carte);
-    const ok = posesPossibles(g, palier, chats, duo);
+    const ok = posesPossibles(g, palier, duo);
     const neuves = ok.filter((p) => !pris.has(p.id));
     const pool = neuves.length > 0 ? neuves : ok;
     const p = pool[Math.floor(h() * pool.length)];

@@ -1,0 +1,130 @@
+{
+ "assets/images/village/iso/moment/lueur_jour.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "92753ace5f0dfa1c.png",
+   "sha256": "92753ace5f0dfa1c8b971bbf51e35c049dbcc3835afa197e0f183189de8b4c65"
+  },
+  "prompt": "Flat pure black background (#000000), nothing else in the frame. A large soft round glow of warm light filling the frame, strongest at the centre and melting evenly outward to nothing well before the edge of the picture. A pale cream centre blending into soft pale gold. Across it, three very broad, barely-there, irregular bands of paler light, each one wide, uneven and blurred into the glow. Every transition is blended and gradual, painted with broad translucent washes. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/moment/lueur_jour.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/lueur_jour__bc1.png"
+ },
+ "assets/images/village/iso/moment/lueur_nuit.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "e1ef0d3660d6c2b2.png",
+   "sha256": "e1ef0d3660d6c2b2bc702bf57fd517bc06caf60cad9b14bccd6f26672d3b5dd5"
+  },
+  "prompt": "Flat pure black background (#000000), nothing else in the frame. A large soft round glow of warm light filling the frame, strongest at the centre and melting evenly outward to nothing well before the edge of the picture. A small centre of pale cream blending into deep amber (#F0A848). Across it, three very broad, barely-there, irregular bands of slightly paler amber, each one wide, uneven and blurred into the glow. Every transition is blended and gradual, painted with broad translucent washes. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/moment/lueur_nuit.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/lueur_nuit__bc1.png"
+ },
+ "assets/images/village/iso/moment/bouffee_1_jour.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "b5e8b01c8320bba3.png",
+   "sha256": "b5e8b01c8320bba39d5753e3e60c478cd76bcfe57ead165db3201a2d12d2b315"
+  },
+  "prompt": "Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Three separate small clusters of dust in a row with clear space between, different sizes and shapes. Each is a loose group of dabbed, uneven brush flecks in warm ochre and rosy beige, with a ragged torn outline and gaps in it, the lower edge breaking up into scattered specks, lit from the upper left, matte and dry. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/moment/bouffee_1_jour.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/bouffee_jour__bc0.png"
+ },
+ "assets/images/village/iso/moment/bouffee_2_jour.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "b5e8b01c8320bba3.png",
+   "sha256": "b5e8b01c8320bba39d5753e3e60c478cd76bcfe57ead165db3201a2d12d2b315"
+  },
+  "prompt": "Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Three separate small clusters of dust in a row with clear space between, different sizes and shapes. Each is a loose group of dabbed, uneven brush flecks in warm ochre and rosy beige, with a ragged torn outline and gaps in it, the lower edge breaking up into scattered specks, lit from the upper left, matte and dry. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/moment/bouffee_2_jour.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/bouffee_jour__bc0.png"
+ },
+ "assets/images/village/iso/moment/bouffee_3_jour.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "b5e8b01c8320bba3.png",
+   "sha256": "b5e8b01c8320bba39d5753e3e60c478cd76bcfe57ead165db3201a2d12d2b315"
+  },
+  "prompt": "Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Three separate small clusters of dust in a row with clear space between, different sizes and shapes. Each is a loose group of dabbed, uneven brush flecks in warm ochre and rosy beige, with a ragged torn outline and gaps in it, the lower edge breaking up into scattered specks, lit from the upper left, matte and dry. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/moment/bouffee_3_jour.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/bouffee_jour__bc0.png"
+ },
+ "assets/images/village/iso/moment/bouffee_1_nuit.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "ebaf7059704349dd.png",
+   "sha256": "ebaf7059704349dd5a02710eadf36dd4f2e05945133df71fef077368019ebd82"
+  },
+  "prompt": "Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Three separate small clusters of dust in a row with clear space between, different sizes and shapes. Each is a loose airy drift of dabbed, uneven brush flecks in muted slate-grey and dusty mauve, dark and dull, floating and not piled up, with a ragged torn outline and gaps in it, a soft dark underside with a touch of amber, the lower edge breaking up into scattered specks, matte and dry. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/moment/bouffee_1_nuit.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/bouffee_nuit__cc1.png"
+ },
+ "assets/images/village/iso/moment/bouffee_2_nuit.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "ebaf7059704349dd.png",
+   "sha256": "ebaf7059704349dd5a02710eadf36dd4f2e05945133df71fef077368019ebd82"
+  },
+  "prompt": "Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Three separate small clusters of dust in a row with clear space between, different sizes and shapes. Each is a loose airy drift of dabbed, uneven brush flecks in muted slate-grey and dusty mauve, dark and dull, floating and not piled up, with a ragged torn outline and gaps in it, a soft dark underside with a touch of amber, the lower edge breaking up into scattered specks, matte and dry. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/moment/bouffee_2_nuit.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/bouffee_nuit__cc1.png"
+ },
+ "assets/images/village/iso/moment/bouffee_3_nuit.webp": {
+  "model": "flux-3-image",
+  "provider": "Black Forest Labs (direct API)",
+  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+  "signed_original": {
+   "file": "ebaf7059704349dd.png",
+   "sha256": "ebaf7059704349dd5a02710eadf36dd4f2e05945133df71fef077368019ebd82"
+  },
+  "prompt": "Flat magenta background (#FF00FF), one even colour, nothing else in the frame. Three separate small clusters of dust in a row with clear space between, different sizes and shapes. Each is a loose airy drift of dabbed, uneven brush flecks in muted slate-grey and dusty mauve, dark and dull, floating and not piled up, with a ragged torn outline and gaps in it, a soft dark underside with a touch of amber, the lower edge breaking up into scattered specks, matte and dry. Hand-painted matte gouache with soft visible brush touches, no outline, no gloss, no fine grain, no text, no letters.",
+  "seed": null,
+  "width": 1024,
+  "height": 1024,
+  "generated": "2026-11-04",
+  "used_for": "assets/images/village/iso/moment/bouffee_3_nuit.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/bouffee_nuit__cc1.png"
+ }
+}

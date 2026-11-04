@@ -368,6 +368,9 @@ describe("the iso demo screen (L0-T06)", () => {
   // T22: the stream is drawn in the ground tiles, so a water cell costs no Image node and no veil
   // Svg any more (18 of each at tier 12 before: 122 images, now 104). The counts are a ratchet: a new image per cell shows here.
   test("the map's image and pattern nodes at tiers 1 and 12 (T22: none per stream cell)", async () => {
+    // The villagers' day is drawn from the calendar day (useMarcheurs), so the counts below move
+    // with it: pin the clock to the day they were measured on.
+    const now = jest.spyOn(Date, "now").mockReturnValue(new Date(2026, 10, 3, 12, 0).getTime());
     await ouvrir();
     // Svg roots also count the world's, which follow the layout: the veils are checked by testID below.
     const compte = () =>
@@ -407,6 +410,7 @@ describe("the iso demo screen (L0-T06)", () => {
     // F4: castle_wall's 22 painted wall pieces, one image a cell, in place of 5 Svgs (94 to 116).
     expect(vus).toEqual({ 1: 29, 12: 112 }); // loupe BC r6: the two grid rocks are gone (116 to 112, each was a piece image and its ink-darkened twin); T43 round 1: thickets, 156 lisiere pieces became about 70; C1: the forge dispute is one image for two inhabitants
     expect(screen.queryAllByTestId(/^iso-voile-/)).toHaveLength(2);
+    now.mockRestore();
   });
 
   // L1-T19 (item 14): three villagers stand on the square, at every tier, drawn over the path at

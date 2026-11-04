@@ -57,7 +57,7 @@ export const wizard_tower: BuildingData = {
       { rank: 2, beat: "A plain worn broom leaning on a low bar.", sprite: "elements/gag_2" },
       {
         rank: 4,
-        beat: "Two brooms beside two wooden buckets, one tipped over with a small puddle of clear pale blue water. All dark areas are neutral grey, with no red and no pink anywhere. Objects alone, no people, no letters or runes, no ground patch, one subject centred on a flat magenta background, thick clear shapes readable at 16 dp, ink outlines, matte paint.",
+        beat: "Two brooms beside two wooden buckets, one tipped over with a small puddle of clear pale blue water. All dark areas are neutral grey, with no red and no pink anywhere..",
         sprite: "elements/gag_4",
       },
       {

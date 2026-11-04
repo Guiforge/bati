@@ -11,3 +11,5 @@
 - 04/11, paysage et texte au-dessus de 130 % : la feuille existante, pas de 3e mise en page.
 - 04/11, reportées, à revoir après les captures : « Evolve all » qui enchaîne et « cette séance a nourri ce bâtiment » (demandes de Theo), grain de papier (Mara, sans FLUX pour l'instant).
 - 04/11, `scripts/game/status.py` copie celui de LIFE : son fichier appartient a LIFE, et le tableau de bord garde un seul format.
+- 04/11, verdicts sur vraies captures : theo et mara, dans `verdicts-panneau.md`. Gardés : halo plus net, silhouette moins bouchée, vide autour du bouton, note technique en bas, délai de 20 à 10 s (le panneau ne cache pas la carte). Écartés : la roue (outil du dev client, pas l'app) ; le paysage, le jeton de parchemin et les pastilles, hors du panneau ou pour POLISH ; le grain peint, POLISH (mara : pas vital).
+- 04/11, pour Guillaume à la fin : le rythme du rang 2 (10 séances pour un débutant) touche les chiffres figés du héros ; « cette séance a nourri ce bâtiment » est une fonction de plus.

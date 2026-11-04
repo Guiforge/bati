@@ -141,7 +141,7 @@
   "piste_ordre": 6,
   "etape": "Langues, accessibilite, mouvement reduit",
   "ordre": 9,
-  "statut": "en cours",
+  "statut": "en pause",
   "debut": "2026-11-04T16:35:00+01:00",
   "fin": null,
   "heures": null,
@@ -150,7 +150,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": "Apres le panneau"
+  "note": "Fait : 6 langues, 200 % en feuille, mouvement reduit immobile, phrase visible, paysage. Reste : TalkBack jamais ecoute sur appareil, phrase et silhouette non rejouees au flux"
  },
  {
   "id": "G10",
@@ -158,16 +158,16 @@
   "piste_ordre": 6,
   "etape": "Flux Maestro des chemins principaux",
   "ordre": 10,
-  "statut": "fait",
+  "statut": "en pause",
   "debut": "2026-11-04T14:00:00+01:00",
   "fin": "2026-11-04T16:35:00+01:00",
   "heures": null,
-  "restant_min": 0,
-  "restant_max": 0,
-  "reste": "fini",
+  "restant_min": 1,
+  "restant_max": 2,
+  "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": "3 flux verts sur emulator-5554, hors de config.yaml jusqu'a G12"
+  "note": "Fin de seance verte sur le code final ; panneau et evolution verts a 4256233c, pas rejoues apres 67b2eadc et 308d28f7 (arret pendant le rejeu)"
  },
  {
   "id": "G11",
@@ -175,7 +175,7 @@
   "piste_ordre": 6,
   "etape": "Theo sur le parcours, mara sur les ecrans, suite complete",
   "ordre": 11,
-  "statut": "à faire",
+  "statut": "en pause",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -184,7 +184,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": "Apres le panneau"
+  "note": "theo et mara rendus (verdicts-panneau.md), corrections faites sans 2e passage ; suite complete et build de fin pas lances"
  },
  {
   "id": "G12",
@@ -192,7 +192,7 @@
   "piste_ordre": 6,
   "etape": "activer INTEGRATION",
   "ordre": 12,
-  "statut": "attend Guillaume",
+  "statut": "en pause",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -201,6 +201,23 @@
   "reste": "0.5 à 1 h",
   "avancement": null,
   "total": null,
-  "note": "Attend le go de Guillaume, apres la fin de la piste. Remettre dans .maestro/config.yaml village-panel, village-evolve et village-end-of-session (retires tant que INTEGRATION est off)"
+  "note": "Pas commence : attend le go de Guillaume, remettre les 3 flux dans config.yaml"
+ },
+ {
+  "id": "G13",
+  "piste": "Le jeu (page Village)",
+  "piste_ordre": 6,
+  "etape": "Bugs du moment d'evolution, venus de LIFE",
+  "ordre": 13,
+  "statut": "en pause",
+  "debut": null,
+  "fin": null,
+  "heures": null,
+  "restant_min": 1,
+  "restant_max": 3,
+  "reste": "1 à 3 h",
+  "avancement": null,
+  "total": null,
+  "note": "Pas commence : signales par Guillaume a l'arret, pas reproduits ici, voir summary-2.md"
  }
 ]

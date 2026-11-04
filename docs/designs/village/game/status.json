@@ -90,7 +90,7 @@
   "piste_ordre": 6,
   "etape": "Le tap d'evolution en attente",
   "ordre": 6,
-  "statut": "à faire",
+  "statut": "attend Guillaume",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -99,7 +99,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Depend de la direction choisie dans checkpoint.md"
  },
  {
   "id": "G7",
@@ -107,7 +107,7 @@
   "piste_ordre": 6,
   "etape": "Du batiment vers les exercices et le journal",
   "ordre": 7,
-  "statut": "en cours",
+  "statut": "attend Guillaume",
   "debut": "2026-11-04T11:35:00+01:00",
   "fin": null,
   "heures": null,
@@ -116,7 +116,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": "Liens de la carte faits et joues ; le tiroir vers la carte attend le choix de la direction"
+  "note": "Liens de la carte faits et joues ; le tiroir vers la carte depend de la direction"
  },
  {
   "id": "G8",
@@ -124,7 +124,7 @@
   "piste_ordre": 6,
   "etape": "De la fin de seance vers le village",
   "ordre": 8,
-  "statut": "à faire",
+  "statut": "attend Guillaume",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -133,7 +133,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Depend de la direction choisie dans checkpoint.md"
  },
  {
   "id": "G9",
@@ -141,7 +141,7 @@
   "piste_ordre": 6,
   "etape": "Langues, accessibilite, mouvement reduit",
   "ordre": 9,
-  "statut": "à faire",
+  "statut": "attend Guillaume",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -150,7 +150,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Depend de la direction choisie dans checkpoint.md"
  },
  {
   "id": "G10",
@@ -158,7 +158,7 @@
   "piste_ordre": 6,
   "etape": "Flux Maestro des chemins principaux",
   "ordre": 10,
-  "statut": "à faire",
+  "statut": "attend Guillaume",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -167,7 +167,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Depend de la direction choisie dans checkpoint.md"
  },
  {
   "id": "G11",
@@ -175,7 +175,7 @@
   "piste_ordre": 6,
   "etape": "Theo sur le parcours, mara sur les ecrans, suite complete",
   "ordre": 11,
-  "statut": "à faire",
+  "statut": "attend Guillaume",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -184,7 +184,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Depend de la direction choisie dans checkpoint.md"
  },
  {
   "id": "G12",

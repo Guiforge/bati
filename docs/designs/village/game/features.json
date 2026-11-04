@@ -16,7 +16,9 @@
   "locales/ (cles village.* neuves seulement)",
   ".maestro/village-*.yaml",
   "__tests__/village-*.test.tsx (les suites de ces fichiers)",
-  "constants/isoPoc.ts (la seule ligne INTEGRATION, a l'item G12, apres le go de Guillaume)"
+  "constants/isoPoc.ts (la seule ligne INTEGRATION, a l'item G12, apres le go de Guillaume)",
+  "db/completed.ts (lecture getContributingExercises)",
+  "app/(tabs)/journal/[id].tsx (retour from=village)"
  ],
  "shared_read_only": [
   "components/village/iso/ (sauf Bulle.tsx et bulle.ts : a LIFE, camera, moment, mouvement, creatures)",
@@ -111,7 +113,8 @@
     1,
     2
    ],
-   "status": "todo"
+   "status": "blocked",
+   "note": "Depend de la direction choisie dans checkpoint.md"
   },
   {
    "id": "G7",
@@ -122,9 +125,9 @@
     1,
     2
    ],
-   "status": "doing",
+   "status": "blocked",
    "debut": "2026-11-04T11:35:00+01:00",
-   "note": "Liens de la carte faits et joues ; le tiroir vers la carte attend le choix de la direction"
+   "note": "Liens de la carte faits et joues ; le tiroir vers la carte depend de la direction"
   },
   {
    "id": "G8",
@@ -135,7 +138,8 @@
     1,
     2
    ],
-   "status": "todo"
+   "status": "blocked",
+   "note": "Depend de la direction choisie dans checkpoint.md"
   },
   {
    "id": "G9",
@@ -146,7 +150,8 @@
     1,
     2
    ],
-   "status": "todo"
+   "status": "blocked",
+   "note": "Depend de la direction choisie dans checkpoint.md"
   },
   {
    "id": "G10",
@@ -157,7 +162,8 @@
     1,
     2
    ],
-   "status": "todo"
+   "status": "blocked",
+   "note": "Depend de la direction choisie dans checkpoint.md"
   },
   {
    "id": "G11",
@@ -168,7 +174,8 @@
     1,
     2
    ],
-   "status": "todo"
+   "status": "blocked",
+   "note": "Depend de la direction choisie dans checkpoint.md"
   },
   {
    "id": "G12",

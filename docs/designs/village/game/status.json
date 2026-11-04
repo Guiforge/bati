@@ -22,16 +22,16 @@
   "piste_ordre": 6,
   "etape": "Idees en texte, auditees par theo et mara",
   "ordre": 2,
-  "statut": "en cours",
+  "statut": "fait",
   "debut": "2026-11-04T11:20:00+01:00",
-  "fin": null,
+  "fin": "2026-11-04T11:40:00+01:00",
   "heures": null,
-  "restant_min": 0.5,
-  "restant_max": 1,
-  "reste": "0.5 à 1 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "3 directions ; theo et mara : C, puis A, puis B"
  },
  {
   "id": "G3",
@@ -39,8 +39,8 @@
   "piste_ordre": 6,
   "etape": "Page de choix : maquettes rapides ou prompt Claude Design",
   "ordre": 3,
-  "statut": "à faire",
-  "debut": null,
+  "statut": "attend Guillaume",
+  "debut": "2026-11-04T11:40:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 0.5,
@@ -48,7 +48,7 @@
   "reste": "0.5 à 1.5 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Page de choix publiee, attend la reponse dans checkpoint.md"
  },
  {
   "id": "G4",
@@ -56,8 +56,8 @@
   "piste_ordre": 6,
   "etape": "Les exercices qui nourrissent le batiment",
   "ordre": 4,
-  "statut": "à faire",
-  "debut": null,
+  "statut": "en cours",
+  "debut": "2026-11-04T11:40:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 1,
@@ -65,7 +65,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Contenu commun aux 3 directions, invisible en publie"
  },
  {
   "id": "G5",
@@ -73,8 +73,8 @@
   "piste_ordre": 6,
   "etape": "Le prochain stade en silhouette",
   "ordre": 5,
-  "statut": "à faire",
-  "debut": null,
+  "statut": "en cours",
+  "debut": "2026-11-04T11:40:00+01:00",
   "fin": null,
   "heures": null,
   "restant_min": 1,
@@ -82,7 +82,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "Contenu commun aux 3 directions, invisible en publie"
  },
  {
   "id": "G6",

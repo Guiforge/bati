@@ -56,8 +56,10 @@
     0.5,
     1
    ],
-   "status": "doing",
-   "debut": "2026-11-04T11:20:00+01:00"
+   "status": "done",
+   "debut": "2026-11-04T11:20:00+01:00",
+   "fin": "2026-11-04T11:40:00+01:00",
+   "note": "3 directions ; theo et mara : C, puis A, puis B"
   },
   {
    "id": "G3",
@@ -68,7 +70,9 @@
     0.5,
     1.5
    ],
-   "status": "todo"
+   "status": "blocked",
+   "debut": "2026-11-04T11:40:00+01:00",
+   "note": "Page de choix publiee, attend la reponse dans checkpoint.md"
   },
   {
    "id": "G4",
@@ -79,7 +83,9 @@
     1,
     2
    ],
-   "status": "todo"
+   "status": "doing",
+   "debut": "2026-11-04T11:40:00+01:00",
+   "note": "Contenu commun aux 3 directions, invisible en publie"
   },
   {
    "id": "G5",
@@ -90,7 +96,9 @@
     1,
     2
    ],
-   "status": "todo"
+   "status": "doing",
+   "debut": "2026-11-04T11:40:00+01:00",
+   "note": "Contenu commun aux 3 directions, invisible en publie"
   },
   {
    "id": "G6",

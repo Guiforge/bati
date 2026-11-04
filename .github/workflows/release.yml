@@ -337,6 +337,21 @@ jobs:
           fi
           echo "Play Billing: absent from the dex and the manifest" >> "$GITHUB_STEP_SUMMARY"
 
+      # The QR scanner's promise, kept: no Play Services, no ML Kit, nothing F-Droid's scanner flags,
+      # and no new library under com.google. R8 renames classes, so this reads its mapping as well as
+      # the dex. A package new to fdroid/apk-google-packages.txt is a decision, not a chore: read
+      # what brought it in first (docs/designs/multiplayer/qr-scanner.md).
+      - name: No Google code in the foss APK
+        if: matrix.variant == 'foss'
+        env:
+          APK_PATH: ${{ steps.artefacts.outputs.apk_path }}
+        run: |
+          # Into a file and not through tee: a pipe would hide the script's exit code from `bash -e`.
+          python3 scripts/apk-no-google.py "$APK_PATH" android/app/build/outputs/mapping/release/mapping.txt \
+            --allowed fdroid/apk-google-packages.txt > no-google.txt || { cat no-google.txt; exit 1; }
+          cat no-google.txt
+          echo "No Google code: $(head -1 no-google.txt)" >> "$GITHUB_STEP_SUMMARY"
+
       # Play refuses updates whose native code cannot run on 16 KB memory pages from 2027-02-01.
       # Every .so in v2.6.0 already complies; a single native dependency built with the old 4 KB
       # linker default would break that silently, and the first report would be a rejected upload.

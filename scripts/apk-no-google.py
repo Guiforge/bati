@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """Which Google classes a release APK really holds, by R8's mapping and by the dex itself.
 
-    scripts/apk-no-google.py <apk> <mapping.txt> [--baseline <earlier.classes.txt>] [--write <out.txt>]
+    scripts/apk-no-google.py <apk> <mapping.txt> [--allowed <packages.txt>] [--baseline <earlier.classes.txt>] [--write <out.txt>]
 
 R8 renames classes, so a dex listing alone is blind: the mapping is what names them. Fails on any
 class under F-Droid's own code signatures (fdroid/suss-code-signatures.txt) or Play Services or ML
-Kit by name; `--baseline` lists what a change added under com/google. Used by the QR scanner's GO
-criteria, see docs/designs/multiplayer/qr-scanner.md.
+Kit by name. `--allowed` fails on any class under com.google outside the packages it lists: by package,
+because R8 keeps or drops an inner class from one build to the next and only a new library should fail a
+release. `--baseline` lists what a change added, class by class. Used by the QR scanner's GO criteria
+(docs/designs/multiplayer/qr-scanner.md) and by release.yml on the foss APK.
 """
-import pathlib, re, subprocess, sys, tempfile, zipfile
+import os, pathlib, re, subprocess, sys, tempfile, zipfile
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 FORBIDDEN = re.compile(r"com\.google\.(android\.gms|mlkit|firebase|android\.play)|play[._]services", re.I)
@@ -23,7 +25,7 @@ def mapped_classes(mapping: str) -> set[str]:
 
 
 def dex_classes(apk: str) -> set[str]:
-    sdk = pathlib.Path.home() / "Android/Sdk/build-tools"
+    sdk = pathlib.Path(os.environ.get("ANDROID_HOME") or pathlib.Path.home() / "Android/Sdk") / "build-tools"
     dexdump = sorted(sdk.glob("*/dexdump"))[-1]
     found: set[str] = set()
     with tempfile.TemporaryDirectory() as tmp, zipfile.ZipFile(apk) as z:
@@ -39,6 +41,7 @@ def main() -> int:
     args = sys.argv[1:]
     baseline = args[args.index("--baseline") + 1] if "--baseline" in args else None
     write = args[args.index("--write") + 1] if "--write" in args else None
+    allowed = args[args.index("--allowed") + 1] if "--allowed" in args else None
     apk, mapping = args[0], args[1]
 
     classes = mapped_classes(mapping) | dex_classes(apk)
@@ -68,7 +71,19 @@ def main() -> int:
         print(f"added under com.google since baseline: {len(added)}")
         for c in added[:40]:
             print(f"  + {c}")
-    return 1 if bad else 0
+    # Reading nothing would also be finding nothing forbidden.
+    if len(classes) < 1000 or not any(c.startswith("com.guiforge.bati.") for c in classes):
+        print(f"could not read the app's classes out of {apk}: {len(classes)} found")
+        return 1
+    unexpected: list[str] = []
+    if allowed:
+        lines = pathlib.Path(allowed).read_text().splitlines()
+        packages = tuple(f"{line}." for line in lines if line and not line.startswith("#"))
+        unexpected = [c for c in google if not c.startswith(packages)]
+        print(f"under com.google outside {allowed}: {len(unexpected)}")
+        for c in unexpected[:40]:
+            print(f"  NEW {c}")
+    return 1 if bad or unexpected else 0
 
 
 if __name__ == "__main__":

@@ -102,6 +102,10 @@ la dernière ligne de la bulle serrée à 200 %, qui vient du composant ; TalkBa
    à une séance normale. Il reste aussi dans le dialogue de Quitter.
 3. **La phrase devient « Bien joué d'avoir écouté ton corps, rien n'est perdu »**, qui marche quel que soit le genre.
 
+Vérifié en release sur émulateur le 04/11 : un tap sur le bouton de pause termine la séance (`stopReason=pain`, la série
+faite reste). En français, à 130 % sur 360×640, « Quitter la quête » reste visible sans défiler sur l'écran de pause, même
+avec « Refaire le tour » affiché, et dans son dialogue ; la phrase tient dans la bulle.
+
 **À savoir :**
 
 - **`docs/legal/privacy.md` a changé,** ainsi que le texte dans l'app, en six langues, daté du 4 novembre. J'ai écrit que

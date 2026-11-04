@@ -457,6 +457,7 @@ async function mesurerPalier(tier, lumiere, o, sortie, v, A, crochets) {
       Object.assign(res, m, {
         valeur: { coeur: val.coeur, peripherie: val.peripherie, miniature },
         dumpLu: Boolean(dump),
+        camera: dump?.camera ?? null,
       });
       // The living state: no fige, the clock runs from the focus.
       await ouvrir(lienVivant(tier, lumiere, o));

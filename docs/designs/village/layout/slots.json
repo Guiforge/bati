@@ -1,0 +1,509 @@
+{
+ "debut": -9,
+ "slots": [
+  {
+   "id": "Q1",
+   "kind": "quartier",
+   "box": [
+    3,
+    -6,
+    8,
+    -1
+   ],
+   "taille": [
+    6,
+    6
+   ],
+   "tier": 12,
+   "dehors": false,
+   "contient": "quartier du nord, rive est, derriere la carriere et le mannequin",
+   "libre": "la rue du nord (gx 0 et gx -1) a l'ouest, le chemin gy 2 au sud"
+  },
+  {
+   "id": "Q2",
+   "kind": "quartier",
+   "box": [
+    -7,
+    11,
+    -2,
+    16
+   ],
+   "taille": [
+    6,
+    6
+   ],
+   "tier": 12,
+   "dehors": false,
+   "contient": "quartier du sud-ouest, sous la ferme",
+   "libre": "la ferme et son parvis au nord, la rue gx -4 a l'est"
+  },
+  {
+   "id": "Q3",
+   "kind": "quartier",
+   "box": [
+    -8,
+    -3,
+    -5,
+    2
+   ],
+   "taille": [
+    4,
+    6
+   ],
+   "tier": 11,
+   "dehors": false,
+   "contient": "quartier de la clairiere ouest, au dessus de l'observatoire",
+   "libre": "l'observatoire et son parvis au sud, la rue gx -4 a l'est"
+  },
+  {
+   "id": "Q4",
+   "kind": "quartier",
+   "box": [
+    -8,
+    -8,
+    -4,
+    -5
+   ],
+   "taille": [
+    5,
+    4
+   ],
+   "tier": 11,
+   "dehors": false,
+   "contient": "quartier du nord-ouest, ou la foret recule, a gauche du bosquet",
+   "libre": "le bosquet (gx -3) garde sa foret derriere lui, jamais de maison a l'est de gx -4"
+  },
+  {
+   "id": "Q5",
+   "kind": "quartier",
+   "box": [
+    -8,
+    7,
+    -5,
+    9
+   ],
+   "taille": [
+    4,
+    3
+   ],
+   "tier": 11,
+   "dehors": false,
+   "contient": "quartier de l'ouest, le long de la rue gy 7",
+   "libre": "la rue gy 7 au nord-est"
+  },
+  {
+   "id": "Q6",
+   "kind": "quartier",
+   "box": [
+    15,
+    17,
+    17,
+    19
+   ],
+   "taille": [
+    3,
+    3
+   ],
+   "tier": 10,
+   "dehors": false,
+   "contient": "quartier du sud-est, hors du rempart",
+   "libre": "le rempart au nord, la route du sud a l'ouest"
+  },
+  {
+   "id": "H1",
+   "kind": "dehors",
+   "box": [
+    -14,
+    -2,
+    -8,
+    3
+   ],
+   "taille": [
+    7,
+    6
+   ],
+   "tier": 10,
+   "dehors": true,
+   "contient": "clairiere ouest, au dessus de l'observatoire : hameau",
+   "libre": "l'arriere du bosquet reste en foret"
+  },
+  {
+   "id": "H2",
+   "kind": "dehors",
+   "box": [
+    -14,
+    4,
+    -8,
+    9
+   ],
+   "taille": [
+    7,
+    6
+   ],
+   "tier": 10,
+   "dehors": true,
+   "contient": "deux fermes de la clairiere",
+   "libre": "la lisiere sud de la clairiere"
+  },
+  {
+   "id": "H3",
+   "kind": "dehors",
+   "box": [
+    -18,
+    -4,
+    -14,
+    3
+   ],
+   "taille": [
+    5,
+    8
+   ],
+   "tier": 10,
+   "dehors": true,
+   "contient": "petit bourg marchand (deplace a l'ouest de la clairiere)",
+   "libre": "le bosquet et sa foret arriere, jamais plus a l'est que gx -8"
+  },
+  {
+   "id": "P-tent",
+   "kind": "parvis",
+   "box": [
+    5,
+    8,
+    8,
+    11
+   ],
+   "taille": [
+    4,
+    4
+   ],
+   "tier": 1,
+   "dehors": false,
+   "contient": "rien",
+   "libre": "parvis de tent: 2 cases sur ses faces +gx et +gy"
+  },
+  {
+   "id": "P-training_dummy",
+   "kind": "parvis",
+   "box": [
+    7,
+    1,
+    9,
+    3
+   ],
+   "taille": [
+    3,
+    3
+   ],
+   "tier": 1,
+   "dehors": false,
+   "contient": "rien",
+   "libre": "parvis de training_dummy: 2 cases sur ses faces +gx et +gy"
+  },
+  {
+   "id": "P-heroes_hall",
+   "kind": "parvis",
+   "box": [
+    8,
+    7,
+    12,
+    11
+   ],
+   "taille": [
+    5,
+    5
+   ],
+   "tier": 1,
+   "dehors": false,
+   "contient": "rien",
+   "libre": "parvis de heroes_hall: 2 cases sur ses faces +gx et +gy"
+  },
+  {
+   "id": "P-farm",
+   "kind": "parvis",
+   "box": [
+    -1,
+    9,
+    2,
+    13
+   ],
+   "taille": [
+    4,
+    5
+   ],
+   "tier": 3,
+   "dehors": false,
+   "contient": "rien",
+   "libre": "parvis de farm: 2 cases sur ses faces +gx et +gy"
+  },
+  {
+   "id": "P-forge",
+   "kind": "parvis",
+   "box": [
+    12,
+    7,
+    15,
+    10
+   ],
+   "taille": [
+    4,
+    4
+   ],
+   "tier": 2,
+   "dehors": false,
+   "contient": "rien",
+   "libre": "parvis de forge: 2 cases sur ses faces +gx et +gy"
+  },
+  {
+   "id": "P-archery_range",
+   "kind": "parvis",
+   "box": [
+    14,
+    11,
+    17,
+    15
+   ],
+   "taille": [
+    4,
+    5
+   ],
+   "tier": 2,
+   "dehors": false,
+   "contient": "rien",
+   "libre": "parvis de archery_range: 2 cases sur ses faces +gx et +gy"
+  },
+  {
+   "id": "P-well",
+   "kind": "parvis",
+   "box": [
+    7,
+    14,
+    9,
+    16
+   ],
+   "taille": [
+    3,
+    3
+   ],
+   "tier": 1,
+   "dehors": false,
+   "contient": "rien",
+   "libre": "parvis de well: 2 cases sur ses faces +gx et +gy"
+  },
+  {
+   "id": "P-quarry",
+   "kind": "parvis",
+   "box": [
+    3,
+    0,
+    6,
+    3
+   ],
+   "taille": [
+    4,
+    4
+   ],
+   "tier": 3,
+   "dehors": false,
+   "contient": "rien",
+   "libre": "parvis de quarry: 2 cases sur ses faces +gx et +gy"
+  },
+  {
+   "id": "P-windmill",
+   "kind": "parvis",
+   "box": [
+    0,
+    5,
+    3,
+    8
+   ],
+   "taille": [
+    4,
+    4
+   ],
+   "tier": 4,
+   "dehors": false,
+   "contient": "rien",
+   "libre": "parvis de windmill: 2 cases sur ses faces +gx et +gy"
+  },
+  {
+   "id": "P-wizard_tower",
+   "kind": "parvis",
+   "box": [
+    16,
+    1,
+    18,
+    3
+   ],
+   "taille": [
+    3,
+    3
+   ],
+   "tier": 4,
+   "dehors": false,
+   "contient": "rien",
+   "libre": "parvis de wizard_tower: 2 cases sur ses faces +gx et +gy"
+  },
+  {
+   "id": "P-druid_grove",
+   "kind": "parvis",
+   "box": [
+    -3,
+    -5,
+    0,
+    -2
+   ],
+   "taille": [
+    4,
+    4
+   ],
+   "tier": 5,
+   "dehors": false,
+   "contient": "rien",
+   "libre": "parvis de druid_grove: 2 cases sur ses faces +gx et +gy"
+  },
+  {
+   "id": "P-fountain",
+   "kind": "parvis",
+   "box": [
+    10,
+    13,
+    13,
+    16
+   ],
+   "taille": [
+    4,
+    4
+   ],
+   "tier": 2,
+   "dehors": false,
+   "contient": "rien",
+   "libre": "parvis de fountain: 2 cases sur ses faces +gx et +gy"
+  },
+  {
+   "id": "P-armory",
+   "kind": "parvis",
+   "box": [
+    15,
+    8,
+    18,
+    11
+   ],
+   "taille": [
+    4,
+    4
+   ],
+   "tier": 3,
+   "dehors": false,
+   "contient": "rien",
+   "libre": "parvis de armory: 2 cases sur ses faces +gx et +gy"
+  },
+  {
+   "id": "P-barn",
+   "kind": "parvis",
+   "box": [
+    -3,
+    -2,
+    0,
+    2
+   ],
+   "taille": [
+    4,
+    5
+   ],
+   "tier": 5,
+   "dehors": false,
+   "contient": "rien",
+   "libre": "parvis de barn: 2 cases sur ses faces +gx et +gy"
+  },
+  {
+   "id": "P-watchtower",
+   "kind": "parvis",
+   "box": [
+    17,
+    6,
+    19,
+    8
+   ],
+   "taille": [
+    3,
+    3
+   ],
+   "tier": 6,
+   "dehors": false,
+   "contient": "rien",
+   "libre": "parvis de watchtower: 2 cases sur ses faces +gx et +gy"
+  },
+  {
+   "id": "P-observatory",
+   "kind": "parvis",
+   "box": [
+    -6,
+    3,
+    -3,
+    6
+   ],
+   "taille": [
+    4,
+    4
+   ],
+   "tier": 7,
+   "dehors": false,
+   "contient": "rien",
+   "libre": "parvis de observatory: 2 cases sur ses faces +gx et +gy"
+  },
+  {
+   "id": "P-high_road",
+   "kind": "parvis",
+   "box": [
+    19,
+    11,
+    21,
+    14
+   ],
+   "taille": [
+    3,
+    4
+   ],
+   "tier": 8,
+   "dehors": false,
+   "contient": "rien",
+   "libre": "parvis de high_road: 2 cases sur ses faces +gx et +gy"
+  },
+  {
+   "id": "P-dragon_lair",
+   "kind": "parvis",
+   "box": [
+    10,
+    0,
+    14,
+    4
+   ],
+   "taille": [
+    5,
+    5
+   ],
+   "tier": 8,
+   "dehors": false,
+   "contient": "rien",
+   "libre": "parvis de dragon_lair: 2 cases sur ses faces +gx et +gy"
+  },
+  {
+   "id": "P-champion_arena",
+   "kind": "parvis",
+   "box": [
+    5,
+    17,
+    9,
+    21
+   ],
+   "taille": [
+    5,
+    5
+   ],
+   "tier": 9,
+   "dehors": false,
+   "contient": "rien",
+   "libre": "parvis de champion_arena: 2 cases sur ses faces +gx et +gy"
+  }
+ ]
+}

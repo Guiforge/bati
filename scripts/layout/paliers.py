@@ -111,6 +111,8 @@ def main():
     for code, t in PLOT.items():
         for c in plot(code):
             brut[c] = t
+    if "rue" in L:  # the street's cells (scripts/layout/rue.py) join with the first building they lead to
+        poser([tuple(p) for p in L["rue"]["cases"]], L["rue"]["palier"], 1)
     poser([tuple(p) for p in L["rempart"]], REMPART, 1)
     for gx, gy, w, h in L["champs"]:
         poser([(gx + i, gy + j) for i in range(w) for j in range(h)], CHAMPS, 1)

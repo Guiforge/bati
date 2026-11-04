@@ -97,5 +97,17 @@ def fente(sortie):
     im.save(sortie, quality=85)
 
 
+def rue(sortie):
+    im = Image.new("RGB", (N * K, N * K))
+    dr = ImageDraw.Draw(im)
+    base(dr, 12)
+    grille(dr)
+    for x, y in L.get("rue", {}).get("cases", []):
+        dr.rectangle([(x - D) * K + 3, (y - D) * K + 3, (x - D + 1) * K - 4, (y - D + 1) * K - 4], fill=(255, 60, 160))
+    batiments(dr, 12)
+    dr.text((8, N * K - 14), "rue: " + L.get("rue", {}).get("option", "?"), fill=(255, 255, 255))
+    im.save(sortie, quality=85)
+
+
 if __name__ == "__main__":
-    {"bands": bandes, "slots": fente}[sys.argv[1]](sys.argv[2])
+    {"bands": bandes, "slots": fente, "rue": rue}[sys.argv[1]](sys.argv[2])

@@ -93,7 +93,7 @@ Tout est dans `constants/isoPoc.ts`.
 
 - « Local » = `BUILD_LOCAL` : dev client (hors jest) ou `.perf`, reconnu à l'id d'application `com.guiforge.bati.<suffixe>`. Un build publié est `com.guiforge.bati`, donc faux.
 - Un drapeau passe à `true` à la main dans `isoPoc.ts` quand Guillaume a jugé la couche ou le bâtiment. La piste GAME met `INTEGRATION` à `true`. Jusque-là, une version publiée montre la vieille scène 2D (`VillageScene`, `iso = INTEGRATION`).
-- La route de dev `bati://dev-iso` (`app/dev-iso.tsx`) ouvre la carte iso : `?bld=<code>&rang=N`, `?peint=sol,foret,decor,animaux` ou `?peint=tout`.
+- La route de dev `bati://dev-iso` (`app/dev-iso.tsx`) ouvre la carte iso : `?bld=<code>&rang=N`, `?peint=sol,foret,decor` ou `?peint=tout`.
 - Mouvement réduit : tout est immobile (`useMouvementReduit`). Les lueurs ne se touchent jamais.
 
 ## 4. Ajouter une créature ou un effet de mouvement
@@ -101,8 +101,8 @@ Tout est dans `constants/isoPoc.ts`.
 C'est le travail de LIFE, **en cours** : ce qui suit décrit l'existant, pas un système fini.
 
 - **Effets sur un bâtiment** : `components/village/iso/motion/<code>.json` + une ligne dans `motion/index.ts`. Quatre genres : `lueur`, `particules`, `vent`, `miroitement` (`motion/types.ts`, `KINDS`). Particules : `fumee`, `vapeur`, `etincelle`, `braise`, `poussiere`, `magie`. Les ancres sont en pixels du canevas, mesurées sur la peinture. Existent aujourd'hui : `forge`, `windmill`, `fountain`. Le dessin est dans `MouvementBld.tsx`. Test : `__tests__/iso-mouvement.test.tsx`. Les particules portent encore un sprite de remplacement.
-- **Créatures** : concept seulement. `scripts/life/c1_creatures.py` (Blender, `flatpak run --filesystem=home org.blender.Blender -b --python scripts/life/c1_creatures.py -- [dossier] [noms]`), `c1_flux.py gen|cut|measure` (Klein), `c1_planche.py` (planche de comparaison, sans FLUX). Rien de tout ça n'est encore dans l'app.
-- **Moment d'évolution** : `scripts/life/u3_pieces.py gen|cut` (FLUX 3 Image seul) et `u3_films.py all|one` (maquettes). Pièces dans `assets/images/village/iso/pieces/`.
+- **Créatures** (dans l'app : souris de la ferme, chat du rempart, oiseaux de toit, dragon endormi). Rendu : `components/village/iso/Creatures.tsx`, lieux et horaires : `creatures.ts`. Les images sont des **bandes** (3 poses côte à côte, jour et `.nuit`) dans `assets/images/village/iso/creatures/`, faites par `python3 -I scripts/life/creatures_bandes.py` depuis les poses isolées de `docs/designs/village/life/creatures-sources/` (hors du bundle). Pour en ajouter une : peindre les poses en FLUX 3 Image (`c1_flux.py gen|cut|measure`, `c1_planche.py` pour comparer), les déposer dans `creatures-sources/`, ajouter une ligne à `BANDES`, lancer le script, noter la provenance dans `docs/designs/village/life/provenance-creatures.json`, puis brancher l'espèce dans `creatures.ts` et `Creatures.tsx`. Pas de corbeau ni de rat dessinés dans la carte : ils ont été retirés. Blender (`c1_creatures.py`) ne sert qu'aux concepts.
+- **Moment d'évolution** : un seul moment (`moment.ts`, `IsoCroissance.tsx`), 1000 ms pour un stade, 450 ms pour un rang, un second toucher de la carte le saute. Pièces : `scripts/life/u3_pieces.py gen|cut` (FLUX 3 Image seul), pièces dans `assets/images/village/iso/pieces/`. Le lien `show=` n'existe plus : pour le voir, `bati://dev-iso?mode=pret&palier=N&jouer=1` (le bâtiment est choisi par `croissanceDemo`).
 - Suivi : `scripts/life/status.py` régénère `docs/designs/village/life/status.json` depuis `features.json`.
 - Règles : pas de personne peinte (les villageois ont leur piste), de petites choses à la fois, jamais une kermesse.
 

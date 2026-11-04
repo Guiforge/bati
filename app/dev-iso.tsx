@@ -123,7 +123,7 @@ export default function DevIsoRoute() {
     zoom?: string;
     /** `?jouer=1` with `mode=pret`: the ready building is claimed 1.5 s in, for a capture no finger plays (H3-01). */
     jouer?: string;
-    /** `?peint=sol,foret,decor,animaux` or `?peint=tout`: the painted surroundings' layers on (alentours.ts), whatever constants/isoPoc.ts ALENTOURS says. */
+    /** `?peint=sol,foret,decor` or `?peint=tout`: the painted surroundings' layers on (alentours.ts), whatever constants/isoPoc.ts ALENTOURS says. */
     peint?: string;
     /** `?nu=1`: hides the dev controls above the map, which then fills the screen (loop captures). */
     nu?: string;

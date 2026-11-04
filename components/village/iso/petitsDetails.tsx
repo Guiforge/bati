@@ -120,8 +120,3 @@ function GroupeLucioles({
     </Animated.View>
   );
 }
-
-/** shortcut: IsoVillage.tsx still mounts the old flock's slot; it draws nothing now. Delete this and that line (and its import) together. */
-export function Oiseaux(_props: Record<string, unknown>) {
-  return null;
-}

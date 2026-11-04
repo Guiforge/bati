@@ -11,7 +11,6 @@ gets the same `nuit` with no lights, from its own day file:
 - foret/<mass>.webp            -> <mass>.nuit.webp (the forest was graded live by a veil; now baked)
 - foret/plan_*.webp (day)      -> plan_*.nuit.webp (rewritten)
 - accessoires/<nom>.webp       -> <nom>.nuit.webp (rewritten)
-- animaux/souris_*.webp        -> souris_*.nuit.webp (rewritten)
 - rempart/<piece>.webp, champs/<tile>.webp (F4, scripts/iso/rempart_champs.py) -> <name>.nuit.webp
 The day files are never touched. AmbianceCarte drops its flat night veil under the painted layers.
 """
@@ -39,7 +38,6 @@ if __name__ == "__main__":
         *sorted((ISO / "sol").glob("terrain_??.webp")),
         *sorted(f for f in (ISO / "foret").glob("*.webp") if ".nuit" not in f.name),
         *sorted(f for f in (ISO / "accessoires").glob("*.webp") if ".nuit" not in f.name),
-        *sorted(f for f in (ISO / "animaux").glob("souris_*.webp") if ".nuit" not in f.name),
         *sorted(f for d in ("rempart", "champs") for f in (ISO / d).glob("*.webp") if ".nuit" not in f.name),
     ]
     for f in fichiers:

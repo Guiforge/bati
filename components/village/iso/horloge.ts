@@ -78,22 +78,13 @@ export type Depart = { n: number; c0: number };
 /** The one source of a wave start, with the clock: the walkers plan only on a change of `n`. */
 export const DepartContext = createContext<SharedValue<Depart> | null>(null);
 
-/**
- * A touch of the map with a place: `n` counts them, `c0` is the clock value it landed at, `x` and
- * `y` where, in the map's dp. Nothing reads it since the roof crows left (LIFE C7).
- */
-export type Effroi = { n: number; c0: number; x: number; y: number };
-export const EffroiContext = createContext<SharedValue<Effroi> | null>(null);
-
 export function useHorloge(): {
   c: SharedValue<number>;
   depart: SharedValue<Depart>;
-  effroi: SharedValue<Effroi>;
-  touche: (x?: number, y?: number) => void;
+  touche: () => void;
 } {
   const c = useSharedValue(0);
   const depart = useSharedValue<Depart>({ n: 0, c0: 0 });
-  const effroi = useSharedValue<Effroi>({ n: 0, c0: 0, x: 0, y: 0 });
   const focus = useIsFocused();
   const reducedMotion = useMouvementReduit();
   // null until the reader state is known: no wave starts on the first render under TalkBack.
@@ -110,19 +101,18 @@ export function useHorloge(): {
   const finSv = useSharedValue(0);
 
   // Callable from a gesture worklet: extends the wave from where the clock stands, no jump.
-  const lance = (x?: number, y?: number) => {
+  const lance = () => {
     "worklet";
     const de = c.get();
-    if (x !== undefined && y !== undefined) effroi.set({ n: effroi.get().n + 1, c0: de, x, y });
     const cible = cibleVie(de);
     finSv.set(cible);
     // Only from a rest pose (a multiple of the cycle) does a wave start; mid-wave it is extended.
     if (de % CYCLE_MS === 0) depart.set({ n: depart.get().n + 1, c0: de });
     c.set(withTiming(cible, { duration: cible - de, easing: Easing.linear }));
   };
-  const touche = (x?: number, y?: number) => {
+  const touche = () => {
     "worklet";
-    if (actifSv.get()) lance(x, y);
+    if (actifSv.get()) lance();
   };
 
   // A new planning window every VAGUE_MIN_MS of clock, so the walkers go on walking for 60 s.
@@ -152,5 +142,5 @@ export function useHorloge(): {
     // Also on unmount and before each restart: no timing outlives the map or the focus.
     return () => cancelAnimation(c);
   }, [actif, pret]);
-  return { c, depart, effroi, touche };
+  return { c, depart, touche };
 }

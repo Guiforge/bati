@@ -45,7 +45,7 @@ import { CroissanceContext, useBascule } from "./familles";
 import { legendaire } from "./fierte";
 import { FigeContext, useMouvementReduit } from "./fige";
 import { type PriseVillageois, villageoisAuPoint } from "./habitants";
-import { type Depart, DepartContext, EffroiContext, HorlogeContext, useHorloge } from "./horloge";
+import { type Depart, DepartContext, HorlogeContext, useHorloge } from "./horloge";
 import { IsoCarte } from "./IsoCarteDemo";
 import type { Ambiance, Biome, Stade } from "./isoSpec";
 import { Monde } from "./Monde";
@@ -53,7 +53,7 @@ import { dureeMoment, type GenreMoment, TENUE_MS } from "./moment";
 import { carteDepuisEcran, ecranDepuisCarte } from "./navigation";
 import { OmbresNuages } from "./OmbresNuages";
 import { useFonduOuverture } from "./ouverture";
-import { Lucioles, Oiseaux } from "./petitsDetails";
+import { Lucioles } from "./petitsDetails";
 import { LegendeRevelation } from "./Revelation";
 import { ReclamablesContext, repartirReclamables } from "./reclame";
 import {
@@ -655,63 +655,48 @@ export function IsoVillage<B extends Pick<VillageBuilding, "code" | "level">>({
               <DepartContext.Provider value={departDe(seul, horloge.depart)}>
                 {/* T16: a growth takes the turning seat of the families (familles.ts). */}
                 <CroissanceContext.Provider value={bascule}>
-                  <EffroiContext.Provider value={horloge.effroi}>
-                    <PalierContext.Provider value={camera.detail}>
-                      <ReclamablesContext.Provider
-                        value={
-                          reclamables
-                            ? repartirReclamables(prets, sansSignal(reduit, revele))
-                            : null
-                        }
-                      >
-                        <RevelationContext.Provider value={plan}>
-                          <RangsBldContext.Provider
-                            value={{ rangs: niveaux, bases: basesReclamees }}
-                          >
-                            <IsoCarte
-                              visible={visible}
-                              montres={construits}
-                              seul={seul !== undefined}
-                              stade={stade}
-                              masques={masques}
-                              echafaudages={neufs}
-                              legendaires={legendaires}
-                              croissances={croissances}
-                              ambiance={ambiance}
-                              lumiere={lumiere}
-                              biome={biome}
-                              blason={blason}
-                              palier={habitantsDe(seul, tier)}
-                              fete={fete}
-                              prise={prise}
-                            />
-                          </RangsBldContext.Provider>
-                        </RevelationContext.Provider>
-                      </ReclamablesContext.Provider>
-                      <Lucioles
-                        visible={visible}
-                        biome={biome}
-                        ambiance={lumiere === "jour" ? lumiere : ambiance}
-                      />
-                      {/* E5: two cloud shadows drift over the whole map by day, on the one clock. */}
-                      <OmbresNuages lumiere={lumiere} />
-                    </PalierContext.Provider>
-                  </EffroiContext.Provider>
+                  <PalierContext.Provider value={camera.detail}>
+                    <ReclamablesContext.Provider
+                      value={
+                        reclamables ? repartirReclamables(prets, sansSignal(reduit, revele)) : null
+                      }
+                    >
+                      <RevelationContext.Provider value={plan}>
+                        <RangsBldContext.Provider value={{ rangs: niveaux, bases: basesReclamees }}>
+                          <IsoCarte
+                            visible={visible}
+                            montres={construits}
+                            seul={seul !== undefined}
+                            stade={stade}
+                            masques={masques}
+                            echafaudages={neufs}
+                            legendaires={legendaires}
+                            croissances={croissances}
+                            ambiance={ambiance}
+                            lumiere={lumiere}
+                            biome={biome}
+                            blason={blason}
+                            palier={habitantsDe(seul, tier)}
+                            fete={fete}
+                            prise={prise}
+                          />
+                        </RangsBldContext.Provider>
+                      </RevelationContext.Provider>
+                    </ReclamablesContext.Provider>
+                    <Lucioles
+                      visible={visible}
+                      biome={biome}
+                      ambiance={lumiere === "jour" ? lumiere : ambiance}
+                    />
+                    {/* E5: two cloud shadows drift over the whole map by day, on the one clock. */}
+                    <OmbresNuages lumiere={lumiere} />
+                  </PalierContext.Provider>
                 </CroissanceContext.Provider>
               </DepartContext.Provider>
             </HorlogeContext.Provider>
           </Animated.View>
         </Animated.View>
       </GestureDetector>
-      {/* The crows fly over the whole map, after the camera layer: they do not pan with the land. */}
-      <Oiseaux
-        biome={biome}
-        ambiance={lumiere}
-        width={width}
-        height={height}
-        horloge={horloge.c}
-        depart={horloge.depart}
-      />
       <LegendeRevelation
         legende={legende}
         onFin={() => setLegende(null)}

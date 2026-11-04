@@ -1,5 +1,5 @@
 {
- "assets/images/village/iso/creatures/mouse_run_a.webp": {
+ "docs/designs/village/life/creatures-sources/mouse_run_a.webp": {
   "model": "flux-3-image",
   "provider": "Black Forest Labs (direct API)",
   "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
@@ -18,10 +18,14 @@
     "sha256": "0d34a5dc8d0b10b89a65f79150d2907e082fea6830d3b1a786a6badd7380fc57"
    }
   ],
-  "used_for": "assets/images/village/iso/creatures/mouse_run_a.webp",
-  "raw": "docs/designs/village/life/scratch/final/raw/mouse_run_a__a1c1.png"
+  "used_for": "docs/designs/village/life/creatures-sources/mouse_run_a.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/mouse_run_a__a1c1.png",
+  "strip": [
+   "assets/images/village/iso/creatures/mouse_bande.webp",
+   "assets/images/village/iso/creatures/mouse_bande.nuit.webp"
+  ]
  },
- "assets/images/village/iso/creatures/mouse_run_b.webp": {
+ "docs/designs/village/life/creatures-sources/mouse_run_b.webp": {
   "model": "flux-3-image",
   "provider": "Black Forest Labs (direct API)",
   "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
@@ -40,10 +44,14 @@
     "sha256": "48f62e25983db0c4fd08c0155e769802a878c5adfbc81377a46a138faf156410"
    }
   ],
-  "used_for": "assets/images/village/iso/creatures/mouse_run_b.webp",
-  "raw": "docs/designs/village/life/scratch/final/raw/mouse_run_b__a2c1.png"
+  "used_for": "docs/designs/village/life/creatures-sources/mouse_run_b.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/mouse_run_b__a2c1.png",
+  "strip": [
+   "assets/images/village/iso/creatures/mouse_bande.webp",
+   "assets/images/village/iso/creatures/mouse_bande.nuit.webp"
+  ]
  },
- "assets/images/village/iso/creatures/mouse_sit.webp": {
+ "docs/designs/village/life/creatures-sources/mouse_sit.webp": {
   "model": "flux-3-image",
   "provider": "Black Forest Labs (direct API)",
   "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
@@ -66,10 +74,14 @@
     "sha256": "48f62e25983db0c4fd08c0155e769802a878c5adfbc81377a46a138faf156410"
    }
   ],
-  "used_for": "assets/images/village/iso/creatures/mouse_sit.webp",
-  "raw": "docs/designs/village/life/scratch/final/raw/mouse_sit__a2c1.png"
+  "used_for": "docs/designs/village/life/creatures-sources/mouse_sit.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/mouse_sit__a2c1.png",
+  "strip": [
+   "assets/images/village/iso/creatures/mouse_bande.webp",
+   "assets/images/village/iso/creatures/mouse_bande.nuit.webp"
+  ]
  },
- "assets/images/village/iso/creatures/cat_walk_a.webp": {
+ "docs/designs/village/life/creatures-sources/cat_walk_a.webp": {
   "model": "flux-3-image",
   "provider": "Black Forest Labs (direct API)",
   "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
@@ -88,10 +100,14 @@
     "sha256": "cc1ad5c1c5b3ec56169b9669a42ecb8e0c4eafcbd0ed60754e8c815516891733"
    }
   ],
-  "used_for": "assets/images/village/iso/creatures/cat_walk_a.webp",
-  "raw": "docs/designs/village/life/scratch/final/raw/cat_walk_a__a1c1.png"
+  "used_for": "docs/designs/village/life/creatures-sources/cat_walk_a.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/cat_walk_a__a1c1.png",
+  "strip": [
+   "assets/images/village/iso/creatures/cat_bande.webp",
+   "assets/images/village/iso/creatures/cat_bande.nuit.webp"
+  ]
  },
- "assets/images/village/iso/creatures/cat_walk_b.webp": {
+ "docs/designs/village/life/creatures-sources/cat_walk_b.webp": {
   "model": "flux-3-image",
   "provider": "Black Forest Labs (direct API)",
   "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
@@ -110,10 +126,14 @@
     "sha256": "a3ef84db0090479330459b6b57a6d1a3bb4127bc662253fd6a5dec25fa38be62"
    }
   ],
-  "used_for": "assets/images/village/iso/creatures/cat_walk_b.webp",
-  "raw": "docs/designs/village/life/scratch/final/raw/cat_walk_b__a2c0.png"
+  "used_for": "docs/designs/village/life/creatures-sources/cat_walk_b.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/cat_walk_b__a2c0.png",
+  "strip": [
+   "assets/images/village/iso/creatures/cat_bande.webp",
+   "assets/images/village/iso/creatures/cat_bande.nuit.webp"
+  ]
  },
- "assets/images/village/iso/creatures/cat_sit.webp": {
+ "docs/designs/village/life/creatures-sources/cat_sit.webp": {
   "model": "flux-3-image",
   "provider": "Black Forest Labs (direct API)",
   "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
@@ -136,10 +156,14 @@
     "sha256": "a3ef84db0090479330459b6b57a6d1a3bb4127bc662253fd6a5dec25fa38be62"
    }
   ],
-  "used_for": "assets/images/village/iso/creatures/cat_sit.webp",
-  "raw": "docs/designs/village/life/scratch/final/raw/cat_sit__a2c1.png"
+  "used_for": "docs/designs/village/life/creatures-sources/cat_sit.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/cat_sit__a2c1.png",
+  "strip": [
+   "assets/images/village/iso/creatures/cat_bande.webp",
+   "assets/images/village/iso/creatures/cat_bande.nuit.webp"
+  ]
  },
- "assets/images/village/iso/creatures/bird_wings_up.webp": {
+ "docs/designs/village/life/creatures-sources/bird_wings_up.webp": {
   "model": "flux-3-image",
   "provider": "Black Forest Labs (direct API)",
   "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
@@ -158,10 +182,14 @@
     "sha256": "856e98698eefe97d44a7dd63969425a8f784de898b33353616fc38f91fc10c93"
    }
   ],
-  "used_for": "assets/images/village/iso/creatures/bird_wings_up.webp",
-  "raw": "docs/designs/village/life/scratch/final/raw/bird_wings_up__a1c0.png"
+  "used_for": "docs/designs/village/life/creatures-sources/bird_wings_up.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/bird_wings_up__a1c0.png",
+  "strip": [
+   "assets/images/village/iso/creatures/bird_bande.webp",
+   "assets/images/village/iso/creatures/bird_bande.nuit.webp"
+  ]
  },
- "assets/images/village/iso/creatures/bird_wings_down.webp": {
+ "docs/designs/village/life/creatures-sources/bird_wings_down.webp": {
   "model": "flux-3-image",
   "provider": "Black Forest Labs (direct API)",
   "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
@@ -180,10 +208,14 @@
     "sha256": "21dcb30bf1cca7405902f182b7fdf294c7e0dce012a61b97f937b795a6769fac"
    }
   ],
-  "used_for": "assets/images/village/iso/creatures/bird_wings_down.webp",
-  "raw": "docs/designs/village/life/scratch/final/raw/bird_wings_down__a2c0.png"
+  "used_for": "docs/designs/village/life/creatures-sources/bird_wings_down.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/bird_wings_down__a2c0.png",
+  "strip": [
+   "assets/images/village/iso/creatures/bird_bande.webp",
+   "assets/images/village/iso/creatures/bird_bande.nuit.webp"
+  ]
  },
- "assets/images/village/iso/creatures/bird_perched.webp": {
+ "docs/designs/village/life/creatures-sources/bird_perched.webp": {
   "model": "flux-3-image",
   "provider": "Black Forest Labs (direct API)",
   "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
@@ -206,8 +238,12 @@
     "sha256": "21dcb30bf1cca7405902f182b7fdf294c7e0dce012a61b97f937b795a6769fac"
    }
   ],
-  "used_for": "assets/images/village/iso/creatures/bird_perched.webp",
-  "raw": "docs/designs/village/life/scratch/final/raw/bird_perched__a2c0.png"
+  "used_for": "docs/designs/village/life/creatures-sources/bird_perched.webp",
+  "raw": "docs/designs/village/life/scratch/final/raw/bird_perched__a2c0.png",
+  "strip": [
+   "assets/images/village/iso/creatures/bird_bande.webp",
+   "assets/images/village/iso/creatures/bird_bande.nuit.webp"
+  ]
  },
  "assets/images/village/iso/creatures/dragon_sleep.webp": {
   "model": "flux-3-image",

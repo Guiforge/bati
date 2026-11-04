@@ -590,7 +590,6 @@ describe("ambiance and biome (L4-AUD I7)", () => {
       );
     const parDefaut = dessin();
     expect(screen.queryAllByTestId(/^iso-lisiere-/).length).toBeGreaterThan(0);
-    expect(screen.queryAllByTestId(/^iso-animal-/).length).toBeGreaterThan(0);
     await a.unmount();
     const b = await render(avec({ ambiance: "nuit", biome: "defaut" }));
     expect(dessin()).toBe(parDefaut);

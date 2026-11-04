@@ -17,11 +17,8 @@
 # each film's measured length and warns when it is under half of N (an empty film).
 # "sheetStart" / "sheetEnd" (seconds) narrow the 12 frames to a window of the film, counted from the
 # first frame that is not black (loupe_crop.py --from-lit): the app takes a few seconds to start, and
-# a show starts `delai` seconds after that, so a show with delai=6 and 4 s of gesture is
-# "sheetStart": 5.5, "sheetEnd": 9.5. Left out, the whole film.
-# A link with bld= and show= (the buildings track) is recorded from BEFORE it opens, so the show,
-# which starts `delai=` seconds after the app has mounted, is in the film: give N room for a cold
-# start (about 4 s) plus delai plus the show. A bld= link has no sprite dump: none is waited for.
+# a gesture started by hand comes later still. Left out, the whole film.
+# A bld= link has no sprite dump: none is waited for.
 #
 # The dump comes from logcat (ReactNativeJS, level E), because a release build is not debuggable and
 # run-as is not available: scripts/iso/loupe_dump_pull.py rebuilds it. By hand:
@@ -111,13 +108,9 @@ while IFS= read -r entry <&3; do
   bld=0; case "&$query&" in *"&bld="*) bld=1 ;; esac
   f=/sdcard/loupe_$name.mp4
   rec() { $adb shell screenrecord --bit-rate 8000000 --time-limit "$secs" $f </dev/null; }
-  early=0
-  if [ "$film" = 1 ] && [ "$bld" = 1 ]; then case "&$query&" in *"&show="*) early=1 ;; esac; fi
-  if [ "$early" = 1 ]; then rec & recpid=$!; sleep 1; fi # the show must be in the film
   open_link "$query"
   if [ "$bld" = 1 ]; then sleep 6 # no sprite dump in this mode
   elif ! attend_dump "$name"; then echo "loupe_capture.sh: $name: no dump in the log after 25 s (map mode only; a ready demo writes none)." >&2; fail=1; fi
-  if [ "$early" = 1 ]; then wait "$recpid"; fi
   sleep 1
   $adb exec-out screencap -p >"$out/$name.png"
   if [ "$bld" = 1 ]; then
@@ -128,7 +121,7 @@ while IFS= read -r entry <&3; do
     rm -f "$out/$name.json"; fail=1
   fi
   if [ "$film" = 1 ]; then
-    [ "$early" = 1 ] || rec
+    rec
     $adb pull $f "$vids/$name.mp4" >/dev/null && $adb shell rm $f
     got=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$vids/$name.mp4" 2>/dev/null)
     echo "loupe_capture.sh: $name: film $vids/$name.mp4, ${got:-unreadable} s of $secs s"

@@ -43,7 +43,7 @@ const getAnimatedStyle = Reanimated.getAnimatedStyle as unknown as (component: {
 // Raised 64 to 68 in the "sublime" loop (E1, Guillaume): the three banners sway at rest.
 const PLAFOND_NOEUDS = 68;
 /** Exact counts at tier 12, every building at level 5 (L5-T02, then L5-T09: the 18 water glints in 5 nodes, -13; L5-T03: +5 flames, +10 smoke puffs; a growing building hides its fire, so growth adds 3 + 6; T23: the sky and its 5 nodes, 3 stars and 2 mist bands, are gone): to raise on purpose, never to chase. */
-const NOEUDS_SANS_VILLAGEOIS = 32;
+const NOEUDS_SANS_VILLAGEOIS = 29;
 /** Two growths played at most, 6 nodes each. A growing campfire or forge hides its fire: -2 flames, -4 puffs. */
 const NOEUDS_CROISSANCE_MAX = 12; // the moment (moment.ts): per growth 6 (light and its ground pool, old stage and its ink, new stage and its ink, dust)
 const NOEUDS_FEU_MASQUE = 6;
@@ -101,12 +101,19 @@ const NOEUDS_PIRE_ABSOLU_ATTENDU = 62 + NOEUDS_BANNIERES + NOEUDS_OMBRES_MARCHEU
  */
 const effetsEtSignal = () => screen.queryAllByTestId(/^iso-(effet-|lueur-|eclat-anime-)/).length;
 /** Between the windows alone and every light and glint: what a wave holds above the rest map. */
-const dansLaVague = (n: number, base: number) => {
-  expect(n).toBeGreaterThanOrEqual(base + NOEUDS_FENETRES_VAGUE);
+const dansLaVague = (n: number, base: number, plancher = NOEUDS_FENETRES_VAGUE) => {
+  expect(n).toBeGreaterThanOrEqual(base + plancher);
   expect(n).toBeLessThanOrEqual(
     base + NOEUDS_VEILLES_MAX + NOEUDS_ECLATS + NOEUDS_OMBRES_MARCHEURS + NOEUDS_EFFETS_MAX,
   );
 };
+/**
+ * During the moment the map is `seul`: the 6 creature nodes (two mice stations, the wall's cat, 2
+ * each) are unmounted, while the first wave's 4 walkers leave their standing node for a shadow and a
+ * walking one (+4 net): the count sits 2 under the old floor, which counted neither. Measured on the
+ * map (every id diffed, 04/11), so the floors below are lowered by exactly this, no more.
+ */
+const NOEUDS_MOMENT_ECART = 2;
 /** Campfire and forge growing: the fire hidden under the new sprite. */
 const NOEUDS_CROISSANCE_FEUX = NOEUDS_REPOS + NOEUDS_CROISSANCE_MAX - NOEUDS_FEU_MASQUE;
 /** The worst case: two buildings without fire grow. */
@@ -282,7 +289,7 @@ describe("the whole map's animated nodes", () => {
       expect(screen.getAllByTestId(/^iso-fumee-/)).toHaveLength(6);
       const n = compte(screen.toJSON());
       expect(n).toBeLessThanOrEqual(PLAFOND_NOEUDS);
-      expect(n).toBeGreaterThanOrEqual(NOEUDS_CROISSANCE_FEUX);
+      expect(n).toBeGreaterThanOrEqual(NOEUDS_CROISSANCE_FEUX - NOEUDS_MOMENT_ECART);
     } finally {
       jest.useRealTimers();
     }
@@ -330,7 +337,7 @@ describe("the whole map's animated nodes", () => {
       const n = compte(screen.toJSON());
       // The base: the rest map and the 2 new bodies; the village is quiet, no wave light.
       expect(n).toBeGreaterThanOrEqual(NOEUDS_REPOS + NOEUDS_APRES_MOMENT);
-      expect(NOEUDS_REPOS).toBe(48 + NOEUDS_BANNIERES);
+      expect(NOEUDS_REPOS).toBe(45 + NOEUDS_BANNIERES);
       // A finger on the farm's roof, then on the forge's: a wave starts, over the wave's night lights
       // (2 to 4) and glints (up to 2).
       await toucherToit("farm");
@@ -505,7 +512,11 @@ describe("the building site (L6-T02)", () => {
       expect(screen.queryAllByTestId(/^iso-croissance-echafaudage-/)).toHaveLength(2);
       expect(screen.queryAllByTestId(/^iso-croissance-nouveau-(?!image)/)).toHaveLength(2);
       const n = compte(screen.toJSON());
-      dansLaVague(n, NOEUDS_REPOS + NOEUDS_CROISSANCE_MAX);
+      dansLaVague(
+        n,
+        NOEUDS_REPOS + NOEUDS_CROISSANCE_MAX,
+        NOEUDS_FENETRES_VAGUE - NOEUDS_MOMENT_ECART,
+      );
       expect(n).toBeLessThanOrEqual(PLAFOND_NOEUDS);
       await act(() => jest.advanceTimersByTime(STADE_MS));
       expect(screen.queryAllByTestId(/^iso-croissance-nouveau-(?!image)/)).toHaveLength(2);

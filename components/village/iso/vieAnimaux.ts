@@ -11,7 +11,7 @@
 /** Pose images per second of the animals' drawn sheets (performance.md); horloge.ts reads it from here. */
 export const IMAGES_PAR_SECONDE = 8;
 
-export type AnimalVie = "chat" | "poule" | "corbeau";
+export type AnimalVie = "chat" | "poule";
 /** The images of an animal's sheet: 0 rest, 1 pose a, 2 pose b (carteDemo.ts `POSES_ANIMAL`). */
 export type Pose = 0 | 1 | 2;
 
@@ -163,59 +163,12 @@ export const VIES: Record<AnimalVie, readonly Comportement[]> = {
       aPeindre: "poule qui bat des ailes",
     },
   ],
-  corbeau: [
-    {
-      id: "pose",
-      poids: 50,
-      duree: [3000, 6000],
-      poses: [0],
-      suit: ["lisse", "tourne", "sautille", "croasse"],
-      depart: true,
-      aPeindre: "corbeau posé, plumes qui frémissent",
-    },
-    {
-      id: "lisse",
-      poids: 25,
-      duree: [2000, 3500],
-      poses: [1, 0, 1, 0],
-      suit: ["pose", "tourne"],
-      depart: true,
-      aPeindre: "corbeau qui se lisse les plumes",
-    },
-    {
-      id: "tourne",
-      poids: 20,
-      duree: [1200, 2200],
-      poses: [2],
-      suit: ["pose", "lisse", "sautille"],
-      aPeindre: "corbeau qui tourne la tête",
-    },
-    {
-      id: "sautille",
-      poids: 15,
-      duree: [4500, 6500],
-      poses: [1, 2],
-      suit: ["pose", "lisse"],
-      marche: true,
-      aPeindre: "sautillements du corbeau, 3 images",
-    },
-    {
-      id: "croasse",
-      poids: 20,
-      duree: [1500, 2500],
-      poses: [2, 1, 2],
-      suit: ["pose", "sautille"],
-      rare: true,
-      aPeindre: "corbeau bec ouvert qui croasse",
-    },
-  ],
 };
 
 /** The poses an animal can be left in between waves (drawn once a day), and the clips to paint for the others. */
 export const REPOS: Record<AnimalVie, { poses: readonly Pose[]; aPeindre: string }> = {
   chat: { poses: [0], aPeindre: "chat assis, chat roulé en boule" },
   poule: { poses: [0], aPeindre: "poule accroupie sur ses pattes" },
-  corbeau: { poses: [0], aPeindre: "corbeau tête rentrée" },
 };
 
 /** The seeds of an animal's plan for a wave, of its rare day and of its rest pose. */

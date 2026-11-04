@@ -53,47 +53,6 @@ export const MAQUETTES_1: Readonly<Record<string, SpriteIso>> = {
     ],
     pxScale: 2,
   },
-  "animal/corbeau_a.nuit.webp": {
-    image: require("@/assets/images/village/iso/blockout/pieces/animal_corbeau_a.webp"),
-    anchor: [71, 107],
-    size: [134, 118],
-    ombre: [
-      [
-        0.422, 0.557, 0.476, 0.418, 0.495, 0.378, 0.495, 0.377, 0.496, 0.376, 0.497, 0.375, 0.498,
-        0.374, 0.5, 0.374, 0.501, 0.374, 0.502, 0.373, 0.621, 0.379, 0.627, 0.498, 0.627, 0.499,
-        0.626, 0.5, 0.626, 0.502, 0.625, 0.503, 0.624, 0.504, 0.623, 0.505, 0.622, 0.505, 0.582,
-        0.524, 0.443, 0.578,
-      ],
-    ],
-    pxScale: 2,
-  },
-  "animal/corbeau_b.nuit.webp": {
-    image: require("@/assets/images/village/iso/blockout/pieces/animal_corbeau_b.webp"),
-    anchor: [71, 107],
-    size: [134, 118],
-    ombre: [
-      [
-        0.412, 0.447, 0.413, 0.445, 0.414, 0.442, 0.414, 0.441, 0.432, 0.403, 0.433, 0.402, 0.434,
-        0.401, 0.434, 0.4, 0.435, 0.399, 0.436, 0.398, 0.436, 0.397, 0.437, 0.397, 0.438, 0.396,
-        0.621, 0.379, 0.604, 0.563, 0.603, 0.563, 0.603, 0.564, 0.602, 0.564, 0.601, 0.565, 0.6,
-        0.566, 0.599, 0.566, 0.598, 0.567, 0.597, 0.568, 0.559, 0.586, 0.558, 0.587, 0.555, 0.587,
-        0.553, 0.588, 0.552, 0.588, 0.443, 0.578, 0.422, 0.557, 0.412, 0.448,
-      ],
-    ],
-    pxScale: 2,
-  },
-  "animal/corbeau_repos.nuit.webp": {
-    image: require("@/assets/images/village/iso/blockout/pieces/animal_corbeau_repos.webp"),
-    anchor: [71, 107],
-    size: [134, 118],
-    ombre: [
-      [
-        0.422, 0.557, 0.441, 0.503, 0.441, 0.502, 0.513, 0.422, 0.514, 0.421, 0.576, 0.395, 0.621,
-        0.379, 0.605, 0.424, 0.579, 0.486, 0.578, 0.487, 0.498, 0.559, 0.497, 0.559, 0.443, 0.578,
-      ],
-    ],
-    pxScale: 2,
-  },
   "animal/poule_a.nuit.webp": {
     image: require("@/assets/images/village/iso/blockout/pieces/animal_poule_a.webp"),
     anchor: [59, 84],

@@ -136,14 +136,7 @@ import {
   TOUCHE_H,
   TOUCHE_L,
 } from "./habitants";
-import {
-  angleAiles,
-  DepartContext,
-  EffroiContext,
-  HorlogeContext,
-  reflet,
-  type useHorloge,
-} from "./horloge";
+import { angleAiles, DepartContext, HorlogeContext, reflet, type useHorloge } from "./horloge";
 import { IsoCroissance } from "./IsoCroissance";
 import { type Case, emplacements, rempart, type Sol, sol, TAILLE } from "./isoLayout";
 import {
@@ -1701,20 +1694,18 @@ export function IsoCarteDemo({
   return (
     <HorlogeContext.Provider value={horloge.c}>
       <DepartContext.Provider value={horloge.depart}>
-        <EffroiContext.Provider value={horloge.effroi}>
-          <IsoCarte
-            visible={visible}
-            montres={montres}
-            stade={(code) => stadeDemo(code, palier)}
-            lumiere={lumiere}
-            blason={blason}
-            palier={palier}
-            fete={fete}
-            // The demo has no levels: at the last tier every building stands at its last stage and rank.
-            legendaires={palier === 12 ? new Set(montres) : undefined}
-          />
-          <Lucioles visible={visible} ambiance={lumiere} />
-        </EffroiContext.Provider>
+        <IsoCarte
+          visible={visible}
+          montres={montres}
+          stade={(code) => stadeDemo(code, palier)}
+          lumiere={lumiere}
+          blason={blason}
+          palier={palier}
+          fete={fete}
+          // The demo has no levels: at the last tier every building stands at its last stage and rank.
+          legendaires={palier === 12 ? new Set(montres) : undefined}
+        />
+        <Lucioles visible={visible} ambiance={lumiere} />
       </DepartContext.Provider>
     </HorlogeContext.Provider>
   );

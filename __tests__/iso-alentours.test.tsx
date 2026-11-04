@@ -40,11 +40,10 @@ describe("the layers' flags", () => {
   test("ship off, and a dev link names the ones it wants", () => {
     expect(Object.values(ALENTOURS).every((v) => !v)).toBe(true);
     expect(alentoursDe(undefined)).toBe(ALENTOURS);
-    expect(alentoursDe("sol,animaux")).toEqual({
+    expect(alentoursDe("sol,decor")).toEqual({
       sol: true,
       foret: false,
-      decor: false,
-      animaux: true,
+      decor: true,
     });
     expect(Object.values(alentoursDe("tout")).every(Boolean)).toBe(true);
   });
@@ -183,9 +182,9 @@ describe("the map with every painted layer", () => {
         <IsoVillage tier={12} buildings={buildings} width={411} height={520} />
       </GestureHandlerRootView>,
     );
-    expect(
-      screen.queryAllByTestId(/^iso-(terrain-peint|foret-peinte|accessoire-)/),
-    ).toHaveLength(0);
+    expect(screen.queryAllByTestId(/^iso-(terrain-peint|foret-peinte|accessoire-)/)).toHaveLength(
+      0,
+    );
   });
 });
 

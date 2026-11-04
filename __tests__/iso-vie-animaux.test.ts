@@ -144,7 +144,7 @@ describe("the machine", () => {
     const rares = (rare: boolean) =>
       NOMS.flatMap((nom) =>
         Array.from({ length: 400 }, (_, n) => plan(nom, n, false, rare)).flat(),
-      ).filter((e) => VIES.chat.concat(VIES.poule, VIES.corbeau).find((c) => c.id === e.id)?.rare);
+      ).filter((e) => VIES.chat.concat(VIES.poule).find((c) => c.id === e.id)?.rare);
     expect(rares(false)).toEqual([]);
     expect(rares(true).length).toBeGreaterThan(0);
   });

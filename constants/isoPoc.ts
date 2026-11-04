@@ -53,22 +53,20 @@ export const MODE_VIE: "vagues" | "continu" = "continu";
 export const DUREE_VIE_MS = 60000;
 
 /** The painted surroundings' layers (docs/designs/village-surroundings, stage 5), each behind its own flag. */
-export const COUCHES_ALENTOURS = ["sol", "foret", "decor", "animaux"] as const;
+export const COUCHES_ALENTOURS = ["sol", "foret", "decor"] as const;
 export type Alentours = Readonly<Record<(typeof COUCHES_ALENTOURS)[number], boolean>>;
 
 // Read in release too, like INTEGRATION, and all off until each layer is judged: `sol` the painted
 // terrain under the vector paths and fields, `foret` the painted masses in groups round the island
 // (in place of the vector forest tiles and the lisiere's round trees), `decor` the painted props and
-// stories, `animaux` the painted mice and birds (in place of the drawn rat and crows). No
-// screen-fixed foreground plane: it is gone for good (loupe BC, G03). app/dev-iso.tsx turns them on for a capture with
-// `?peint=sol,foret,decor,animaux` (or `?peint=tout`).
+// stories. No screen-fixed foreground plane: it is gone for good (loupe BC, G03).
+// app/dev-iso.tsx turns them on for a capture with `?peint=sol,foret,decor` (or `?peint=tout`).
 // shortcut: source rule, like INTEGRATION: all on in local builds, all off in a published one until
 // Guillaume has judged each layer; then flip that layer's value to `true` here.
 export const ALENTOURS: Alentours = {
   sol: BUILD_LOCAL,
   foret: BUILD_LOCAL,
   decor: BUILD_LOCAL,
-  animaux: BUILD_LOCAL,
 };
 
 // The painted buildings of the buildings track (docs/designs/village-buildings), each behind its

@@ -516,7 +516,7 @@ export const VERRES_LANTERNE = [
   "323,248 326,245 360,228 366,227 366,328 358,334 338,344 327,349 323,348",
 ] as const;
 
-export type Animal = "chat" | "poule" | "corbeau";
+export type Animal = "chat" | "poule";
 /** The poses of an animal's sheet, in the order of horloge.ts `poseAnimal`. */
 export const POSES_ANIMAL = ["repos", "a", "b"] as const;
 export const cleAnimal = (
@@ -530,14 +530,13 @@ export type AnimalCarte = { nom: Animal; avec?: BuildingCode; piece: PieceCarte 
 
 /**
  * Fixed places on grass, off every path and footprint (iso-pieces.test.ts measures the shadows):
- * the hen between the farm and the street, the cat by the well, the crow at the west edge among
- * the trees. `piece.cle` is the rest pose, whose shadow stands for all three.
+ * the hen between the farm and the street, the cat by the well (the roof crows left with the life
+ * track). `piece.cle` is the rest pose, whose shadow stands for both.
  */
 export const ANIMAUX: readonly AnimalCarte[] = (
   [
     ["poule", "farm", [5, 6]],
     ["chat", "well", [7, 12]],
-    ["corbeau", undefined, [1, 9]],
   ] as const
 ).map(([nom, avec, c]) => ({
   nom,

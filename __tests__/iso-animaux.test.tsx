@@ -30,13 +30,12 @@ const getAnimatedStyle = Reanimated.getAnimatedStyle as unknown as (component: {
 const casesDe = (a: (typeof ANIMAUX)[number]) => a.piece.case.join(",");
 
 describe("the small animals' places (L4-T08c)", () => {
-  test("three fixed places, on grass, off every footprint, each in its own cell", () => {
+  test("two fixed places, on grass, off every footprint, each in its own cell", () => {
     expect(ANIMAUX.map((a) => [a.nom, casesDe(a)])).toEqual([
       ["poule", "5,6"],
       ["chat", "7,12"],
-      ["corbeau", "1,9"],
     ]);
-    expect(new Set(ANIMAUX.map(casesDe)).size).toBe(3);
+    expect(new Set(ANIMAUX.map(casesDe)).size).toBe(2);
     for (const a of ANIMAUX) {
       const [gx, gy] = a.piece.case;
       expect([a.nom, sol[gy]?.[gx]]).toEqual([a.nom, "herbe"]);
@@ -68,17 +67,14 @@ describe("the small animals' places (L4-T08c)", () => {
   });
 
   test("they sort in depth with the rest, and show only with their building and their cell", () => {
-    expect(ORDRE_CARTE.filter((e) => e.type === "animal")).toHaveLength(3);
+    expect(ORDRE_CARTE.filter((e) => e.type === "animal")).toHaveLength(2);
     const plein = ileVisible(12, buildingCodes);
-    const [poule, chat, corbeau] = ANIMAUX;
-    assert(poule && chat && corbeau);
+    const [poule, chat] = ANIMAUX;
+    assert(poule && chat);
     expect(animalMontre(poule, plein, [])).toBe(false);
     expect(animalMontre(poule, plein, ["farm"])).toBe(true);
     expect(animalMontre(chat, plein, ["farm"])).toBe(false);
     expect(animalMontre(chat, plein, ["well"])).toBe(true);
-    expect(animalMontre(corbeau, plein, [])).toBe(true);
-    // The crow's cell joins the island at tier 6.
-    expect(animalMontre(corbeau, etatCarte(1, false).visible, [])).toBe(false);
     const vide = Array.from({ length: TAILLE }, () => Array.from({ length: TAILLE }, () => false));
     expect(ANIMAUX.some((a) => animalMontre(a, vide, buildingCodes))).toBe(false);
   });
@@ -161,9 +157,7 @@ describe("the animals on the map", () => {
     );
 
   test("mount only the ones whose place is shown", async () => {
-    expect(await montes(ileVisible(12, buildingCodes), sans("farm"))).toEqual(
-      new Set(["chat", "corbeau"]),
-    );
+    expect(await montes(ileVisible(12, buildingCodes), sans("farm"))).toEqual(new Set(["chat"]));
     await screen.unmount();
     expect(await montes(etatCarte(1, false).visible, [])).toEqual(new Set());
   });

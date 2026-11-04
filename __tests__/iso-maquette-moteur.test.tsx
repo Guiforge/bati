@@ -26,8 +26,6 @@ configure({ defaultIncludeHiddenElements: true });
 const etat: EtatBld = {
   code: "windmill",
   rang: 10,
-  avant: 9,
-  delai: 1.5,
   palier: 12,
   semaine: false,
 };

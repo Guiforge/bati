@@ -3,12 +3,7 @@
 // sits over the building that rose, or at the bottom when the roof is too near the top.
 
 import { CYCLE_MS } from "@/components/village/iso/horloge";
-import {
-  ANTICIPATION_MS,
-  NOUVEAU_MS,
-  placeLegende,
-  poseSilhouette,
-} from "@/components/village/iso/revelation";
+import { placeLegende } from "@/components/village/iso/revelation";
 import { NUAGE_MS, NUAGES, nuageA, VOL_H, volCorbeaux } from "@/components/village/iso/vivant";
 
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
@@ -45,16 +40,6 @@ describe("the flock (anim-36)", () => {
     expect(Math.min(...milieux)).toBeGreaterThan(h * 0.2);
     expect(Math.max(...milieux)).toBeLessThan(h * 0.7);
     expect(new Set(milieux.map(Math.round)).size).toBeGreaterThan(6);
-  });
-});
-
-describe("the reveal's silhouette (anim-30, anim-31)", () => {
-  test("shows only between the gathering and the new stage; from the start for a new building", () => {
-    expect(poseSilhouette(ANTICIPATION_MS - 1, false).echelle).toBe(0);
-    expect(poseSilhouette(ANTICIPATION_MS, false).echelle).toBeGreaterThan(0.9);
-    expect(poseSilhouette(NOUVEAU_MS - 1, false).echelle).toBeGreaterThan(0.9);
-    expect(poseSilhouette(NOUVEAU_MS, false).echelle).toBe(0);
-    expect(poseSilhouette(0, true).echelle).toBeGreaterThan(0.9);
   });
 });
 

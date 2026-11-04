@@ -10,7 +10,6 @@ import {
   FIGURINES,
   stadeDemo,
 } from "@/components/village/iso/carteDemo";
-import { ouvriersChantiers } from "@/components/village/iso/chantier";
 import { type Case, sol } from "@/components/village/iso/isoLayout";
 import {
   type Carte,
@@ -120,25 +119,6 @@ test("a beast's fixed slot suits every cell it walks over", () => {
         }
       }
     }
-  expect(fautes.slice(0, 5)).toEqual([]);
-});
-
-test("a worker standing at a site is in front of everything behind its cell", () => {
-  const fautes: string[] = [];
-  for (const jour of [24000, 24001, 24002]) {
-    const sites = carte.montres.slice(0, 40);
-    for (const site of sites) {
-      const o = ouvriersChantiers([site], carte, {}, jour);
-      for (const cell of Object.values(o)) {
-        const w: Emprise = { coin: cell, emprise: [1, 1] };
-        const rang = rangsMarcheurs(vues, [w])[0] ?? 0;
-        vues.forEach((e, i) => {
-          if ((derriere(e, w) && i >= rang) || (derriere(w, e) && i < rang))
-            fautes.push(`${jour} ${site} ${cell} ${e.coin}`);
-        });
-      }
-    }
-  }
   expect(fautes.slice(0, 5)).toEqual([]);
 });
 

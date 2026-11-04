@@ -5,11 +5,10 @@
 // A lone building (not `semaine=1`) stands on its own plot and two cells round it, no inhabitants,
 // the camera opened on it at the game's close zoom (IsoVillage `seul`). The clock of the map's life
 // is IsoVillage's own (useHorloge), so wings and glows run unless the frame is frozen or the device
-// asks for reduced motion. The show is PretDemo's claim, played untouched after 1.5 s through the croissance prop, unless the
-// building has engine data (donneesBld.ts, the engine flag on): then the map's Maquette plays the
-// engine's own show, from EtatBldContext, and the claim stays out of the way.
+// asks for reduced motion. A building with engine data (donneesBld.ts, the engine flag on) is drawn
+// by the map's Maquette from EtatBldContext. No growth plays here: the moment is the village's claim.
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { type LayoutChangeEvent, View } from "react-native";
 import { etatCarte } from "@/components/village/iso/carteDemo";
 import { donneesSeul } from "@/components/village/iso/donneesBld";
@@ -25,17 +24,8 @@ const seulDe = (e: EtatBld) => (e.semaine ? undefined : e.code);
 
 export function BatimentSeul({ etat, lumiere }: { etat: EtatBld; lumiere: Ambiance }) {
   const [aire, setAire] = useState({ w: 0, h: 0 });
-  const [jouee, setJouee] = useState(false);
-  const [fini, setFini] = useState(false);
-  const { show, code, rang, avant, delai } = etat;
-  useEffect(() => {
-    if (!show) return;
-    const t = setTimeout(() => setJouee(true), delai * 1000);
-    return () => clearTimeout(t);
-  }, [show, delai]);
-  // The engine plays its own show (MoteurBld); IsoVillage's claim would play over it.
-  const donnees = donneesSeul(code);
-  const attend = show !== undefined && !fini && !donnees;
+  const donnees = donneesSeul(etat.code);
+  const { code, rang } = etat;
   const batiments = etat.semaine
     ? etatCarte(etat.palier, false).montres.map((c) => ({ code: c, level: rang }))
     : [{ code, level: rang }];
@@ -56,15 +46,6 @@ export function BatimentSeul({ etat, lumiere }: { etat: EtatBld; lumiere: Ambian
             width={aire.w}
             height={aire.h}
             lumiere={lumiere}
-            reclamables={attend && !jouee ? [code] : []}
-            niveauxReclames={attend ? { [code]: jouee ? rang : avant } : undefined}
-            croissance={
-              jouee && attend ? { cle: "bld", items: [{ code, oldLevel: avant }] } : undefined
-            }
-            onCroissanceFinie={() => {
-              setFini(true);
-              setJouee(false);
-            }}
           />
         ) : null}
         <View

@@ -228,14 +228,9 @@ export const PLACE: Point = (() => {
   return [coin[0] + emprise[0] / 2, coin[1] + emprise[1] / 2];
 })();
 
-/** The camera's move to the building that rose; the cross-fade and spring start after it, not in it. */
+/** The camera's move to the building that rose (the moment itself plays from the tap, moment.ts). */
 // 700 ms, ease-in-out: the old 500 ms read as a jump (audit-anim anim-09).
 export const CROISSANCE_CAMERA_MS = 700;
-/** The whole growth play, camera first, after which the layer is dropped. */
-// The camera takes 200 ms more than before, the play keeps its second after it: 1.7 s from the tap
-// (a site: 2 s with the 1 s of building).
-export const CROISSANCE_MS = 1700;
-
 /** A building's footprint centre, where the camera looks when it has just grown. */
 export const centreBatiment = (code: BuildingCode): Point => {
   const { coin, emprise } = emplacements[code];

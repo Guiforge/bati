@@ -1,43 +1,200 @@
-// A building that has just grown, on the iso map (L3-T05, FIN-MAG): the old stage gathers itself
-// (squashes 4 % and lifts 6 px), goes flat and warm, holds for the impact, and the new stage lands
-// 6 % too big and settles (revelation.ts has the timeline, `poseAncien` and `poseNouveau`).
-// E5 (anim-30, anim-31): once gathered, the old stage gives way to a flat warm ochre silhouette in
-// the shape of the stage that comes; nothing of the new stage itself shows before the hit-stop ends.
-// Transform only, on the UI thread, all ending by themselves; the parent unmounts this once they
-// are done. The squash is on the sprite's own view (an Image inside), never on a Svg, and no
-// opacity is animated: a stage is hidden by a scale of 0. A last stage lights its banner and
-// windows once it is down. Never mounted with reduced motion: the new sprite is simply there.
-// IsoCarte mounts it in the building's own place in the depth order (after its sprite and site):
-// laid over the whole map, it hid whatever stood in front of the building while it played.
+// A building that has just grown, on the iso map: the "Contre-jour" moment (moment.ts has the
+// timeline, LIFE U5 and U6). Mounted from the player's tap, in the building's own place in the depth
+// order (after its sprite), and ending by itself on its own clock `h` (ms from the tap) that every
+// style reads on the UI thread: transforms and opacity only. The parts, back to front: the light
+// behind the body (and, at night, its pool on the ground), the old stage and its scaffold, the new
+// stage (colour, amber rim, ink) and the dust at the footprint corners. The ink is `tintColor` of
+// the same sprite: no painting per building. A stage change hides the map's own sprite (the owner
+// masks it); a rank inside a stage hides nothing, it adds the new piece(s) and a small light.
+// Nothing here is tappable or counted. A skip (`saute`) and reduced motion put the clock on the end.
 
-import { useContext, useEffect, useState } from "react";
+import { Fragment, useContext, useEffect, useState } from "react";
+import { Image as ImageRN } from "react-native";
 import Animated, {
+  cancelAnimation,
   Easing,
+  type SharedValue,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import type { BuildingData } from "@/constants/buildingData";
 import { rawColors } from "@/constants/rawColors";
 import type { BuildingCode } from "@/db/schema";
-import { PopFin } from "./Chantier";
-import { ombreSocleDe, pose, spriteDe } from "./carteDemo";
+import { BATIMENT_MOTEUR, etatBatiment } from "./batiment";
+import { Tas } from "./Chantier";
+import type { Rect } from "./carteDemo";
+import {
+  COTE,
+  centreBatiment,
+  ecranXY,
+  enStade,
+  HAUTEUR,
+  LARGEUR,
+  ombreSocleDe,
+  pose,
+  spriteDe,
+  stadeReel,
+} from "./carteDemo";
+import { echafaudageDe } from "./chantier";
+import { DONNEES_BLD } from "./donneesBld";
+import { RangsBldContext } from "./etatBld";
 import { Fierte } from "./Fierte";
 import { useMouvementReduit } from "./fige";
-import type { Ambiance, Biome, Stade } from "./isoSpec";
-import { OmbreSocle, Planche } from "./PlancheCarte";
-import { EclatRevelation } from "./Revelation";
+import type { Ambiance, Biome, SpriteIso, Stade } from "./isoSpec";
+import { MAQUETTES } from "./maquettes";
 import {
-  IMPACT_MS,
-  ONDE_MS,
-  poseAncienVisible,
-  poseNouveau,
-  poseSilhouette,
-  REVELATION_MS,
-  RevelationContext,
-} from "./revelation";
+  COINS_BOUFFEES,
+  dureeMoment,
+  echelleEchafaudage,
+  type GenreMoment,
+  genreDeCroissance,
+  LUMIERES_MS,
+  poseMoment,
+  tempsMoment,
+} from "./moment";
+import { OmbreSocle, Planche } from "./PlancheCarte";
+import { PEINTS } from "./peints";
+import { coinsEmprise } from "./revelation";
 
-/** The silhouette's fixed opacity (anim-31): a warm shape the ground shows through a little. */
-const OPACITE_SILHOUETTE = 0.7;
+const ABSOLU = { position: "absolute" } as const;
+/** The amber rim: the ink copy sits over an amber copy offset up and left by this much, dp. */
+const LISERE_DP = 1.5;
+
+// Fixed names: a painter replaces these files, nothing else changes (placeholders: the concept pieces).
+const IMAGES = {
+  lueur: {
+    jour: require("@/assets/images/village/iso/moment/lueur_jour.webp"),
+    nuit: require("@/assets/images/village/iso/moment/lueur_nuit.webp"),
+  },
+  bouffees: [
+    {
+      jour: require("@/assets/images/village/iso/moment/bouffee_1_jour.webp"),
+      nuit: require("@/assets/images/village/iso/moment/bouffee_1_nuit.webp"),
+    },
+    {
+      jour: require("@/assets/images/village/iso/moment/bouffee_2_jour.webp"),
+      nuit: require("@/assets/images/village/iso/moment/bouffee_2_nuit.webp"),
+    },
+    {
+      jour: require("@/assets/images/village/iso/moment/bouffee_3_jour.webp"),
+      nuit: require("@/assets/images/village/iso/moment/bouffee_3_nuit.webp"),
+    },
+  ],
+} as const;
+/** Sizes of the placeholders, used when the bundler gives none (a test). */
+const TAILLES = {
+  lueur: [512, 504],
+  bouffees: [
+    [304, 225],
+    [320, 232],
+    [246, 189],
+  ],
+} as const;
+
+/** A moment image as a sprite: its own size, anchored at its centre. */
+function spriteMoment(image: number, repli: readonly [number, number]): SpriteIso {
+  const src = ImageRN.resolveAssetSource(image);
+  const size: readonly [number, number] = src?.width
+    ? [src.width, src.height ?? repli[1]]
+    : [repli[0], repli[1]];
+  return { image, size, anchor: [size[0] / 2, size[1] / 2], ombre: [] };
+}
+
+/** `r` drawn `f` times larger about its sprite's ground anchor. */
+function agrandi(r: Rect, s: SpriteIso, f: number): Rect {
+  if (f === 1) return r;
+  const k = r.w / s.size[0];
+  const [ax, ay] = [r.x + s.anchor[0] * k, r.y + s.anchor[1] * k];
+  return { x: ax - (ax - r.x) * f, y: ay - (ay - r.y) * f, w: r.w * f, h: r.h * f };
+}
+
+/** A new piece of a rank: the painted element and where it stands on the map (the engine's own placement). */
+type PieceRang = { cle: string; s: SpriteIso; rect: Rect };
+
+/** What rank `vers` wears that rank `de` did not: add-ons, the site teaser, the rank's beat; painted ones only. */
+function piecesNeuves(
+  code: BuildingCode,
+  rangs: { de: number; vers: number; base: number },
+  vie: Ambiance,
+): PieceRang[] {
+  const data: BuildingData | undefined = BATIMENT_MOTEUR ? DONNEES_BLD[code] : undefined;
+  const elements = PEINTS[code]?.elements;
+  if (!data || !elements) return [];
+  const options = { baseRank: rangs.base, nuit: vie === "nuit", rule: "B" } as const;
+  const avant = etatBatiment(data, rangs.de, options);
+  const apres = etatBatiment(data, rangs.vers, options);
+  const corps = spriteDe(code, stadeReel(code, enStade(apres.stage)), vie);
+  if (!corps) return [];
+  const r = pose(code, corps);
+  const k = r.w / corps.size[0];
+  const [ax, ay] = corps.anchor;
+  const au = (o: readonly [number, number], sprite: string | null, cle: string) => {
+    const e = sprite ? elements[sprite] : undefined;
+    if (!e) return [];
+    const [w, h] = [e.size[0] * k, e.size[1] * k];
+    const [x, y] = [r.x + o[0] * k, r.y + o[1] * k];
+    const s: SpriteIso = {
+      image: vie === "nuit" ? e.nuit : e.jour,
+      size: e.size,
+      anchor: [e.size[0] / 2, e.size[1]],
+      ombre: [],
+    };
+    return [{ cle, s, rect: { x: x - w / 2, y: y - h, w, h } }];
+  };
+  const ajouts = apres.addOns
+    .filter((a) => !avant.addOns.includes(a))
+    .flatMap((a) => au([ax + a.anchorOffset[0], ay + a.anchorOffset[1]], a.sprite, `a${a.rank}`));
+  const t = apres.teaser;
+  const teaser =
+    t && t !== avant.teaser
+      ? au([ax + t.anchorOffset[0], ay + t.anchorOffset[1]], t.sprite, "t")
+      : [];
+  const g = apres.gag;
+  const ouGeste = g?.at ?? apres.gagSlot;
+  const geste = g && g !== avant.gag && ouGeste ? au(ouGeste, g.sprite, "g") : [];
+  return [...ajouts, ...teaser, ...geste];
+}
+
+/** One sprite of an ink group: its rect and whether it wears the amber rim. */
+type PieceEncre = { s: SpriteIso; rect: Rect; rebord: boolean; id: string };
+
+/** The ink over the colour and the amber rim under it, all faded by the one animated opacity (one node for the group). */
+function Encre({
+  pieces,
+  genre,
+  h,
+}: {
+  pieces: readonly PieceEncre[];
+  genre: GenreMoment;
+  h: SharedValue<number>;
+}) {
+  const style = useAnimatedStyle(() => ({ opacity: poseMoment(genre, h.get()).encre }));
+  return (
+    <Animated.View pointerEvents="none" style={[ABSOLU, { left: 0, top: 0 }, style]}>
+      {pieces.map(({ s, rect, rebord, id }) => (
+        <Fragment key={id}>
+          {rebord ? (
+            <Planche
+              s={s}
+              rect={{ ...rect, x: rect.x - LISERE_DP, y: rect.y - LISERE_DP }}
+              ancre={rect}
+              teinte={rawColors.isoLueur}
+              testID={`iso-croissance-lisere-${id}`}
+            />
+          ) : null}
+          <Planche
+            s={s}
+            rect={rect}
+            ancre={rect}
+            teinte={rawColors.isoInk}
+            testID={`iso-croissance-encre-${id}`}
+          />
+        </Fragment>
+      ))}
+    </Animated.View>
+  );
+}
 
 export function IsoCroissance({
   code,
@@ -46,6 +203,8 @@ export function IsoCroissance({
   ambiance = "nuit",
   lumiere = "nuit",
   biome = "defaut",
+  rangs,
+  saute = false,
 }: {
   code: BuildingCode;
   /** The stage left behind; null when the building was not there. */
@@ -55,156 +214,292 @@ export function IsoCroissance({
   ambiance?: Ambiance;
   lumiere?: Ambiance;
   biome?: Biome;
+  /** The ranks the growth goes between: a rank inside a stage draws the piece it adds. */
+  rangs?: { de: number; vers: number };
+  /** A second tap: the clock goes to the end. */
+  saute?: boolean;
 }) {
   // As Maquette: the sprite follows the light, and the day lights no window.
   const vie = lumiere === "jour" ? lumiere : ambiance;
+  const nuit = vie === "nuit";
+  const genre = genreDeCroissance(ancien, nouveau);
+  const duree = dureeMoment(genre);
   const sNouveau = spriteDe(code, nouveau, vie);
-  // A rank rising inside a stage has the same sprite before and after, and a building that was not
-  // there has none: no old stage to gather, the new one lands at once.
-  const sAncien = ancien && ancien !== nouveau ? spriteDe(code, ancien, vie) : undefined;
-  const revelation = useContext(RevelationContext);
-  // The layer's own clock, 0 to ONDE_MS: the context's ends the village's silence and may go first.
+  const sAncien = ancien && genre === "stade" ? spriteDe(code, ancien, vie) : undefined;
+  const sEchafaudage: SpriteIso | undefined = MAQUETTES[echafaudageDe(code)];
+  const base = useContext(RangsBldContext)?.bases[code] ?? 0;
+  // The layer's own clock, ms from the tap.
   const h = useSharedValue(0);
-  // 2 once the new stage is down: a last stage lights its banner and windows then.
-  const [phase, setPhase] = useState<0 | 2>(0);
-  // The owner already skips the layer with reduced motion (T37); should it ever mount, it lands at once.
+  // True once the lights are on: the new stage's banner and windows show from then.
+  const [allume, setAllume] = useState(false);
+  // True once the moment is over: the light, the old stage, the ink and the dust are unmounted (they
+  // are invisible by then) and only the new body stays until the owner drops the growth.
+  const [termine, setTermine] = useState(false);
   const reduit = useMouvementReduit();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the clock starts once per mount; the owner keys the layer by growth
   useEffect(() => {
-    if (reduit) {
-      h.set(ONDE_MS);
-      setPhase(2);
+    const debut = tempsMoment(genre, { saute: false, reduit });
+    if (debut >= duree) {
+      h.set(duree);
+      setAllume(true);
+      setTermine(true);
       return;
     }
-    h.set(withTiming(ONDE_MS, { duration: ONDE_MS, easing: Easing.linear }));
-    const id = setTimeout(() => setPhase(2), REVELATION_MS);
-    return () => clearTimeout(id);
-  }, [h, reduit]);
-  const styleAncien = useAnimatedStyle(() => {
-    const p = poseAncienVisible(h.get());
-    return { transform: [{ translateY: p.y }, { scale: p.echelle }] };
+    h.set(withTiming(duree, { duration: duree, easing: Easing.linear }));
+    const ids = [
+      setTimeout(() => setAllume(true), genre === "stade" ? LUMIERES_MS : 0),
+      setTimeout(() => setTermine(true), duree + 20),
+    ];
+    return () => {
+      for (const id of ids) clearTimeout(id);
+    };
+  }, []);
+  useEffect(() => {
+    if (!saute) return;
+    cancelAnimation(h);
+    h.set(tempsMoment(genre, { saute: true, reduit: false }));
+    setAllume(true);
+    setTermine(true);
+  }, [saute, genre, h]);
+
+  const styleLueur = useAnimatedStyle(() => {
+    const p = poseMoment(genre, h.get());
+    return { opacity: p.lueur * (nuit ? 1 : 0.6), transform: [{ scale: p.lueurEchelle }] };
   });
-  const neuf = !sAncien;
-  const styleSilhouette = useAnimatedStyle(() => {
-    const p = poseSilhouette(h.get(), neuf);
-    return { transform: [{ translateY: p.y }, { scale: p.echelle }] };
-  });
-  const styleNouveau = useAnimatedStyle(() => {
-    const p = poseNouveau(h.get());
-    return { transform: [{ translateY: p.y }, { scale: p.echelle }] };
-  });
+  const styleAncien = useAnimatedStyle(() => ({
+    transform: [{ scale: poseMoment(genre, h.get()).ancien ? 1 : 0 }],
+  }));
+  const styleNouveau = useAnimatedStyle(() => ({
+    transform: [{ scale: poseMoment(genre, h.get()).nouveau }],
+  }));
+  const stylePiece = useAnimatedStyle(() => ({
+    transform: [{ scale: poseMoment(genre, h.get()).nouveau }],
+  }));
+
+  const pieces = genre === "rang" && rangs ? piecesNeuves(code, { ...rangs, base }, vie) : [];
   if (!sNouveau) return null;
 
-  // Both stages hang from the same anchor on the ground, so each is placed by its own pose.
-  const couche = (s: typeof sNouveau) => {
-    const r = pose(code, s);
-    const k = r.w / s.size[0];
-    return {
-      r,
-      origine: `${s.anchor[0] * k}px ${s.anchor[1] * k}px`,
-    };
-  };
-  const n = couche(sNouveau);
-  const a = sAncien ? couche(sAncien) : null;
+  const n = pose(code, sNouveau);
+  const k = n.w / sNouveau.size[0];
+  const pied: readonly [number, number] = [
+    n.x + sNouveau.anchor[0] * k,
+    n.y + sNouveau.anchor[1] * k,
+  ];
+  const origineNouveau = [pied[0], pied[1], 0] as [number, number, number];
+  // The light: a big one behind a stage, a small one over the upper body for a rank.
+  const taille = Math.max(n.w, n.h) * (genre === "stade" ? 1.05 : 0.5);
+  const [lw, lh] = [taille, (taille * TAILLES.lueur[1]) / TAILLES.lueur[0]];
+  const centre: readonly [number, number] =
+    genre === "stade" ? [n.x + n.w / 2, n.y + n.h / 2] : [n.x + n.w / 2, n.y + 0.4 * n.h];
+  const spriteLueur = spriteMoment(IMAGES.lueur[nuit ? "nuit" : "jour"], TAILLES.lueur);
+
+  // The footprint: the pool at night, the puffs at its corners.
+  const coins = coinsEmprise(code);
+  const centreP = ecranXY(centreBatiment(code));
+  const largeurSol = Math.max(...coins.map((c) => c[0])) - Math.min(...coins.map((c) => c[0]));
+  const solW = 1.3 * (largeurSol + 2 * COTE);
+  const solH = solW * 0.25;
+
+  const f = echelleEchafaudage(code);
+  const rEchaf = sEchafaudage ? agrandi(pose(code, sEchafaudage), sEchafaudage, f) : null;
+  const rAncien = sAncien ? pose(code, sAncien) : null;
+  const carte = { position: "absolute", left: 0, top: 0, width: LARGEUR, height: HAUTEUR } as const;
+
   return (
     <>
-      {a && sAncien ? (
+      {/* Behind everything of the building: the light, and at night its pool on the ground. */}
+      {termine ? null : (
         <Animated.View
           pointerEvents="none"
-          testID={`iso-croissance-ancien-${code}`}
-          style={[
-            {
-              position: "absolute",
-              left: a.r.x,
-              top: a.r.y,
-              width: a.r.w,
-              height: a.r.h,
-              transformOrigin: a.origine,
-            },
-            styleAncien,
-          ]}
+          testID={`iso-croissance-lueur-${code}`}
+          style={[carte, { transformOrigin: [centre[0], centre[1], 0] }, styleLueur]}
         >
           <Planche
-            s={sAncien}
-            rect={{ x: 0, y: 0, w: a.r.w, h: a.r.h }}
-            ancre={a.r}
-            testID={`iso-croissance-ancien-image-${code}`}
+            s={spriteLueur}
+            rect={{ x: centre[0] - lw / 2, y: centre[1] - lh / 2, w: lw, h: lh }}
+            testID={`iso-croissance-lueur-image-${code}`}
           />
+          {/* At night the same light, squashed flat, pools on the ground (one image, no node of its own). */}
+          {nuit && genre === "stade" ? (
+            <Planche
+              s={spriteLueur}
+              rect={{ x: centreP[0] - solW / 2, y: centreP[1] - solH / 2, w: solW, h: solH }}
+              testID={`iso-croissance-sol-image-${code}`}
+            />
+          ) : null}
         </Animated.View>
-      ) : null}
-      {/* The silhouette: the coming stage's own outline in one warm ochre, at a fixed 70 %. */}
-      <Animated.View
-        pointerEvents="none"
-        testID={`iso-croissance-silhouette-${code}`}
-        style={[
-          {
-            position: "absolute",
-            left: n.r.x,
-            top: n.r.y,
-            width: n.r.w,
-            height: n.r.h,
-            transformOrigin: n.origine,
-            opacity: OPACITE_SILHOUETTE,
-          },
-          styleSilhouette,
-        ]}
-      >
-        <Planche
-          s={sNouveau}
-          rect={{ x: 0, y: 0, w: n.r.w, h: n.r.h }}
-          ancre={n.r}
-          teinte={rawColors.isoSilhouette}
-          testID={`iso-croissance-silhouette-image-${code}`}
+      )}
+      {genre === "stade" ? (
+        <>
+          {/* The old stage and the scaffold (or the heap of a building not there yet), then ink. */}
+          {termine ? null : (
+            <Animated.View
+              pointerEvents="none"
+              testID={`iso-croissance-ancien-${code}`}
+              style={[carte, { transformOrigin: origineNouveau }, styleAncien]}
+            >
+              {sAncien ? null : <Tas code={code} />}
+              {rAncien && sAncien ? (
+                <Planche
+                  s={sAncien}
+                  rect={rAncien}
+                  testID={`iso-croissance-ancien-image-${code}`}
+                />
+              ) : null}
+              {sEchafaudage && rEchaf ? (
+                <Planche
+                  s={sEchafaudage}
+                  rect={rEchaf}
+                  testID={`iso-croissance-echafaudage-${code}`}
+                />
+              ) : null}
+              <Encre
+                genre={genre}
+                h={h}
+                pieces={[
+                  ...(rAncien && sAncien
+                    ? [{ s: sAncien, rect: rAncien, rebord: true, id: `ancien-${code}` }]
+                    : []),
+                  ...(sEchafaudage && rEchaf
+                    ? [{ s: sEchafaudage, rect: rEchaf, rebord: false, id: `echafaudage-${code}` }]
+                    : []),
+                ]}
+              />
+            </Animated.View>
+          )}
+          {/* The new stage pops from its foot: colour, then amber rim and ink over it, then the lights. */}
+          <Animated.View
+            pointerEvents="none"
+            testID={`iso-croissance-nouveau-${code}`}
+            style={[carte, { transformOrigin: origineNouveau }, styleNouveau]}
+          >
+            <Planche s={sNouveau} rect={n} testID={`iso-croissance-nouveau-image-${code}`} />
+            {termine ? null : (
+              <Encre
+                genre={genre}
+                h={h}
+                pieces={[{ s: sNouveau, rect: n, rebord: true, id: `nouveau-${code}` }]}
+              />
+            )}
+            {allume ? (
+              <Fierte
+                code={code}
+                stade={nouveau}
+                s={sNouveau}
+                corps={n}
+                biome={biome}
+                ambiance={vie}
+                legendaire={false}
+                anime={false}
+              />
+            ) : null}
+          </Animated.View>
+        </>
+      ) : (
+        pieces.map((p) => (
+          <Animated.View
+            key={p.cle}
+            pointerEvents="none"
+            testID={`iso-croissance-piece-${code}-${p.cle}`}
+            style={[
+              carte,
+              { transformOrigin: [p.rect.x + p.rect.w / 2, p.rect.y + p.rect.h, 0] },
+              stylePiece,
+            ]}
+          >
+            <Planche s={p.s} rect={p.rect} testID={`iso-croissance-piece-image-${code}-${p.cle}`} />
+            {termine ? null : (
+              <Encre
+                genre={genre}
+                h={h}
+                pieces={[{ s: p.s, rect: p.rect, rebord: false, id: `piece-${code}-${p.cle}` }]}
+              />
+            )}
+          </Animated.View>
+        ))
+      )}
+      {/* The map draws the socle shadow over the sprite; a stage's layer covers it, so it is redrawn above. */}
+      {genre === "stade" ? (
+        <OmbreSocle
+          code={code}
+          socle={ombreSocleDe(code, nouveau)}
+          testID={`iso-croissance-socle-${code}`}
+          biome={biome}
         />
-      </Animated.View>
-      <Animated.View
-        pointerEvents="none"
-        testID={`iso-croissance-nouveau-${code}`}
-        style={[
-          {
-            position: "absolute",
-            left: n.r.x,
-            top: n.r.y,
-            width: n.r.w,
-            height: n.r.h,
-            transformOrigin: n.origine,
-          },
-          styleNouveau,
-        ]}
-      >
-        <Planche
-          s={sNouveau}
-          rect={{ x: 0, y: 0, w: n.r.w, h: n.r.h }}
-          ancre={n.r}
-          testID={`iso-croissance-nouveau-image-${code}`}
-        />
-        {/* A last stage lights its banner and windows first, as it settles (still drawings). */}
-        {nouveau !== "grand" || phase === 2 ? (
-          <Fierte
-            code={code}
-            stade={nouveau}
-            s={sNouveau}
-            corps={{ x: 0, y: 0, w: n.r.w, h: n.r.h }}
-            biome={biome}
-            ambiance={vie}
-            legendaire={false}
-            anime={false}
-          />
-        ) : null}
-      </Animated.View>
-      {/* The map draws the socle shadow over the sprite; the layer covers it, so it is redrawn
-          above the layer, as the real sprite will wear it. */}
-      <OmbreSocle
-        code={code}
-        socle={ombreSocleDe(code, nouveau)}
-        testID={`iso-croissance-socle-${code}`}
-        biome={biome}
-      />
-      {/* T41: the trade's burst on every stage that rises (the ring and dust are ground light, drawn by IsoCarte under the objects). */}
-      {revelation ? (
-        <EclatRevelation code={code} stade={nouveau} s={sNouveau} corps={n.r} t={revelation.t} />
       ) : null}
-      {/* AUDIT-DA 36, E5: the site ends on one puff of dust at the building's foot, at the impact (one node, half a second). */}
-      <PopFin code={code} delai={IMPACT_MS} />
+      {/* Dark dust at three corners of the footprint, whatever its size (1x3 wall, 1x2 road). */}
+      {genre === "stade" && !termine ? (
+        <Bouffees
+          code={code}
+          nuit={nuit}
+          centres={COINS_BOUFFEES.map((c) => [
+            centreP[0] + (coins[c]?.[0] ?? 0),
+            centreP[1] + (coins[c]?.[1] ?? 0) - 20,
+          ])}
+          pied={centreP}
+          genre={genre}
+          horloge={h}
+        />
+      ) : null}
     </>
+  );
+}
+
+/**
+ * The three puffs, one animated node: they swell together about the footprint's centre, which
+ * also drifts them a little outward as they clear. Each is a static image box.
+ */
+function Bouffees({
+  code,
+  nuit,
+  centres,
+  pied,
+  genre,
+  horloge,
+}: {
+  code: BuildingCode;
+  nuit: boolean;
+  centres: readonly (readonly number[])[];
+  pied: readonly [number, number];
+  genre: GenreMoment;
+  horloge: SharedValue<number>;
+}) {
+  const style = useAnimatedStyle(() => {
+    const p = poseMoment(genre, horloge.get());
+    return { opacity: p.poussiere, transform: [{ scale: p.poussiereEchelle }] };
+  });
+  return (
+    <Animated.View
+      pointerEvents="none"
+      testID={`iso-croissance-bouffee-${code}`}
+      style={[
+        ABSOLU,
+        {
+          left: 0,
+          top: 0,
+          width: LARGEUR,
+          height: HAUTEUR,
+          transformOrigin: [pied[0], pied[1], 0],
+        },
+        style,
+      ]}
+    >
+      {centres.map((c, i) => {
+        const img = IMAGES.bouffees[i];
+        const repli = TAILLES.bouffees[i];
+        if (!img || !repli || c[0] === undefined || c[1] === undefined) return null;
+        const s = spriteMoment(img[nuit ? "nuit" : "jour"], repli);
+        const w = 1.2 * COTE;
+        const h = (w * s.size[1]) / s.size[0];
+        return (
+          <Planche
+            key={img.jour}
+            s={s}
+            rect={{ x: c[0] - w / 2, y: c[1] - h / 2, w, h }}
+            testID={`iso-croissance-bouffee-image-${code}-${i}`}
+          />
+        );
+      })}
+    </Animated.View>
   );
 }

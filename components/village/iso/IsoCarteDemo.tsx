@@ -42,25 +42,18 @@ import {
   type ReactElement,
   type ReactNode,
   useContext,
-  useEffect,
   useLayoutEffect,
   useState,
 } from "react";
 import { PixelRatio, View } from "react-native";
 import Animated, {
-  Easing,
   type SharedValue,
   useAnimatedStyle,
   useDerivedValue,
-  useSharedValue,
-  withDelay,
-  withRepeat,
-  withSequence,
-  withTiming,
 } from "react-native-reanimated";
 import Svg, { ClipPath, Defs, G, Path, Polygon, Text } from "react-native-svg";
 import { ailesAuRang, type BuildingData } from "@/constants/buildingData";
-import type { VisualStage } from "@/constants/buildingStages";
+import { buildingStageFor, type VisualStage } from "@/constants/buildingStages";
 import { BATIMENT_MOTEUR } from "@/constants/isoPoc";
 import { rawColors } from "@/constants/rawColors";
 import type { Practice } from "@/db/crestRules";
@@ -80,14 +73,11 @@ import {
   voileVillage,
 } from "./alentours";
 import { bordDe, PORTEE_BORD } from "./bord";
-import { Echafaudage, Poussiere } from "./Chantier";
-import { CorbeauToit } from "./CorbeauxToits";
 import {
   ANIMAUX,
   type AnimalCarte,
   ailesDe,
   COTE,
-  centreBatiment,
   cleAnimal,
   DECORS_EN_IMAGE,
   ECHELLE_DECODE_LANTERNE,
@@ -124,24 +114,17 @@ import {
   voileDe,
 } from "./carteDemo";
 import { type Champs, champsDe, tuilesChamps } from "./champs";
-import { COUP_MS, COUPS, echafaudageDessine, RETOUR_COUP_MS } from "./chantier";
-import { CODES_A_CORBEAU } from "./corbeaux";
+import { ChatRempart, DragonEndormi, OiseauToit, Souris } from "./Creatures";
+import { CODES_A_PERCHOIR, stations } from "./creatures";
 import { DONNEES_BLD } from "./donneesBld";
 import { Effets } from "./Effets";
 import { BannieresVocation, ChoseDeVocation, SolVocation } from "./EnsembleVocation";
-import {
-  ArretAilesContext,
-  type EtatBld,
-  EtatBldContext,
-  etatDeRang,
-  RangsBldContext,
-} from "./etatBld";
+import { type EtatBld, EtatBldContext, etatDeRang, RangsBldContext } from "./etatBld";
 import { Feux } from "./FeuxDessines";
 import { Fierte } from "./Fierte";
 import { useTour } from "./familles";
 import { accrochesDe } from "./feux";
 import { bannieres, eclatsAnimes, tissuBlason } from "./fierte";
-import { useMouvementReduit } from "./fige";
 import { poseA } from "./gestes";
 import {
   type CibleVillageois,
@@ -193,14 +176,13 @@ import type { Point } from "./ombres";
 import { batimentCharge } from "./ouverture";
 import { OmbreSocle, Planche } from "./PlancheCarte";
 import { ailesPeintes, PEINTS, peintDe } from "./peints";
-import { Lucioles, Rongeur } from "./petitsDetails";
+import { Lucioles } from "./petitsDetails";
 import { clePiece, eauTracee } from "./pieces";
 import type { Emprise } from "./profondeur";
 import { blocD, type Construction, construire, type Famille, QuartiersContext } from "./quartiers";
 import { Reclame } from "./Reclame";
 import { PanRempart } from "./Rempart";
 import { Retouches } from "./Retouches";
-import { AnneauRevelation } from "./Revelation";
 import { Rues } from "./RuesDessinees";
 import { ReclamablesContext } from "./reclame";
 import {
@@ -235,7 +217,6 @@ import { Veilles } from "./VeillesDessinees";
 import { VariantesContext } from "./variantes";
 import { VeilleContext } from "./veilleuses";
 import { type Etape, type Pose, poseVie } from "./vieAnimaux";
-import { EMPRISE_RAT, ratMontre } from "./vivant";
 import { CASES_VOCATION, chosesDe, EMPRISES_VOCATION, vocationDeBlason } from "./vocation";
 
 // Every colour comes from the biome (isoSpec.json biomes, token names of rawColors.ts).
@@ -832,13 +813,9 @@ function AilesVivantes({
   horloge: SharedValue<number>;
 }) {
   const tour = useTour("moulin");
-  const arret = useContext(ArretAilesContext);
   const style = useAnimatedStyle(() => {
     const libre = angleAiles(tour(horloge.get()));
-    const a = arret ? arret.get() : null;
-    // A show holds the sails (still at the tap, 45 degrees at the reveal) and lets them go again.
-    const angle = a && a.poids > 0 ? libre + (a.angle - libre) * a.poids : libre;
-    return { transform: [{ rotate: `${angle}rad` }] };
+    return { transform: [{ rotate: `${libre}rad` }] };
   });
   const k = rect.w / s.size[0];
   return (
@@ -914,15 +891,15 @@ function MaquetteMoteur({
   corps: Rect;
   vie: Ambiance;
 }) {
-  const image = (v: VisualStage, suivant: boolean) => {
+  const image = (v: VisualStage) => {
     const st = peintDe(code, v, vie) ?? spriteDe(code, stadeReel(code, enStade(v)), vie);
     return (
       <Planche
         s={st}
         rect={st ? pose(code, st) : null}
-        invisible={masque || suivant}
-        onCharge={suivant ? undefined : batimentCharge}
-        testID={suivant ? `iso-maquette-${code}-suivant` : `iso-maquette-${code}`}
+        invisible={masque}
+        onCharge={batimentCharge}
+        testID={`iso-maquette-${code}`}
       />
     );
   };
@@ -1504,10 +1481,6 @@ const PERIODE_PAS_MS = 380;
 /** The bounce's height, dp. */
 const SAUT_PAS = 2;
 
-/** How high a villager rises on its toes before a strike, dp, and how far it leans back, degrees (a strike swings it past upright, so the blow reads without an arm drawn). */
-const LEVEE_COUP = 5;
-const PENCHE_COUP = 26;
-
 const ORIENTATION_DEBOUT = { dos: false, miroir: false };
 
 const spriteMarcheur = (role: Role, dos: boolean) =>
@@ -1548,41 +1521,8 @@ function Marcheur({
   const rect = s ? poseCentre(m.cellule, s) : null;
   const [cx, cy] = m.cellule;
   const c0 = m.c0;
-  // A strike at a building site: lean back slowly, swing through past upright fast (the blow lands
-  // at the end of each cycle, chantier.ts `impact`), a fixed number of times, out of step with the
-  // others; the same node as the walk, and 0 the rest of the time.
-  const coup = useSharedValue(0);
-  const reduit = useMouvementReduit();
-  const frappe = reduit ? undefined : m.frappe;
-  useEffect(() => {
-    coup.set(
-      frappe === undefined
-        ? 0
-        : withDelay(
-            frappe,
-            withSequence(
-              withRepeat(
-                withSequence(
-                  withTiming(1, { duration: COUP_MS * 0.7 }),
-                  withTiming(-0.45, { duration: COUP_MS * 0.3, easing: Easing.in(Easing.quad) }),
-                ),
-                COUPS,
-              ),
-              // Upright again after the last blow, not leaning until the site unmounts.
-              withTiming(0, { duration: RETOUR_COUP_MS }),
-            ),
-          ),
-    );
-  }, [coup, frappe]);
   const style = useAnimatedStyle(() => {
-    if (!segments || !horloge)
-      return {
-        transform: [
-          { translateX: 0 },
-          { translateY: -LEVEE_COUP * Math.max(coup.get(), 0) },
-          { rotate: `${-PENCHE_COUP * coup.get()}deg` },
-        ],
-      };
+    if (!segments || !horloge) return { transform: [{ translateX: 0 }] };
     const t = horloge.get() - c0;
     const p = positionA(segments, t);
     // ecranXY of the walker's centre less that of the start cell's centre, where the view sits.
@@ -1793,11 +1733,9 @@ function Objets({
   carte,
   stade,
   horloge,
-  chantiers,
   vie,
   prise,
 }: {
-  chantiers: readonly BuildingCode[];
   objets: readonly ReactElement[];
   emprises: readonly Emprise[];
   carte: Carte;
@@ -1815,7 +1753,6 @@ function Objets({
       fenetres: (code) => (accrochesDe(code, stade(code))?.fenetres.length ?? 0) > 0,
       porte: (code) => accrochesDe(code, stade(code))?.porte != null,
     },
-    chantiers,
     vie,
   );
   // The side a touched villager was turned to, by id (T26): kept until a wave walks it away.
@@ -2072,17 +2009,13 @@ function insere<T>(liste: readonly T[], x: T | null, rang: number | null): T[] {
   return rang === null ? [...liste] : [...liste.slice(0, rang), x as T, ...liste.slice(rang)];
 }
 
-/** A building hidden behind its heap of stones: masked while a site (or its bare scaffold) stands. */
+/** A building hidden behind its heap of stones: masked while its growth layer shows the heap (a building not there before). */
 function enTasDe(
   code: BuildingCode,
   masques: ReadonlySet<BuildingCode> | undefined,
-  chantiers: ReadonlySet<BuildingCode> | undefined,
   echafaudages: ReadonlySet<BuildingCode> | undefined,
 ) {
-  return (
-    (masques?.has(code) ?? false) &&
-    ((chantiers?.has(code) ?? false) || (echafaudages?.has(code) ?? false))
-  );
+  return (masques?.has(code) ?? false) && (echafaudages?.has(code) ?? false);
 }
 
 /**
@@ -2094,7 +2027,6 @@ export function IsoCarte({
   montres,
   stade,
   masques,
-  chantiers,
   echafaudages,
   legendaires,
   croissances,
@@ -2121,7 +2053,6 @@ export function IsoCarte({
   /** A building alone (BatimentSeul): no villager, no decor, no camp props, nothing but the building and its ground. */
   seul?: boolean;
   /** Buildings with a site on now (L6-T02): scaffold and dust right after the sprite, and villagers striking beside it. */
-  chantiers?: ReadonlySet<BuildingCode>;
   /** Buildings whose scaffold already stands, before its villagers come (T03: the camera's move, so a new plot is never bare). */
   echafaudages?: ReadonlySet<BuildingCode>;
   /** Buildings at their highest rank (fierte.ts): a small glint on their banner. */
@@ -2130,7 +2061,16 @@ export function IsoCarte({
    * Growths playing (IsoVillage), by building: its new stage is `stade`'s, `ancien` the one left
    * (null when it was not there); `cle` mounts the layer once per growth.
    */
-  croissances?: ReadonlyMap<BuildingCode, { cle: string; ancien: Stade | null }>;
+  croissances?: ReadonlyMap<
+    BuildingCode,
+    {
+      cle: string;
+      ancien: Stade | null;
+      nouveau: Stade;
+      rangs: { de: number; vers: number };
+      saute: boolean;
+    }
+  >;
   /** The light the sprites are painted under; only `nuit` has sprites yet. */
   ambiance?: Ambiance;
   /** The light of the map (lumiere.ts): `jour` washes the ground and puts the night's lights out. */
@@ -2141,6 +2081,9 @@ export function IsoCarte({
   blason?: { crest: BlasonCrest | null; onPress: () => void };
 }) {
   const horloge = useContext(HorlogeContext);
+  const jourCarte = useJour();
+  const etatBld = useContext(EtatBldContext);
+  const rangsBld = useContext(RangsBldContext);
   // The painted surroundings on (alentours.ts): the props in the depth order, the forest over the ground.
   const peint = useContext(AlentoursContext);
   const decor = seul ? [] : decorDe(peint, visible, montres, palier);
@@ -2188,7 +2131,7 @@ export function IsoCarte({
     sienne,
   );
   // A building hidden behind its heap of stones (a site with no old stage) casts nothing yet.
-  const enTas = (code: BuildingCode) => enTasDe(code, masques, chantiers, echafaudages);
+  const enTas = (code: BuildingCode) => enTasDe(code, masques, echafaudages);
   // What a veil may darken: buildings and decor, never water's own shadow (see `voileDe`). The
   // animals walk, so their shadow is a contact oval that goes with them (Animal), not a cast one.
   const portees = [
@@ -2256,8 +2199,32 @@ export function IsoCarte({
         ),
       insere(vues.map(noeud), statue, rangStatue),
     );
-  const rangRat = ratMontre(visible) ? borneRang(emprisesE, EMPRISE_RAT)[0] : null;
-  const avecRat = <T,>(liste: readonly T[], rat: T) => insere(liste, rat, rangRat);
+  // LIFE: the mice and the sleeping dragon each have a footprint of their own, ranked after the rest.
+  const rangLair =
+    etatBld?.code === "dragon_lair" ? etatBld.rang : rangsBld?.rangs.get("dragon_lair");
+  const mythique =
+    BATIMENT_MOTEUR &&
+    rangLair !== undefined &&
+    buildingStageFor("dragon_lair", rangLair, rangsBld?.bases.dragon_lair ?? 0) === "mythic";
+  const bestioles = seul ? [] : stations(visible, montres, mythique, jourCarte);
+  const { emprises: emprisesF, rangs: rangsBestioles } = placer(
+    emprisesE,
+    bestioles.map((b) => ({ e: b.e, dessus: false })),
+  );
+  const avecBestioles = (liste: ReactElement[]) =>
+    bestioles.reduce(
+      (l, b, k) =>
+        insere(
+          l,
+          b.espece === "dragon" ? (
+            <DragonEndormi key="dragon" pied={b.pts[0] ?? [0, 0]} lumiere={lumiere} />
+          ) : (
+            <Souris key={`s${b.id}`} id={b.id} sel={b.sel} pts={b.pts} lumiere={lumiere} />
+          ),
+          rangsBestioles[k] ?? null,
+        ),
+      liste,
+    );
   const reflets = refletsPar(vues, (e, x, y) => couvre(e, x, y, stade));
   // The ready-to-evolve glows take the glints' place in the budget: never both (T03 review, 64 flat).
   const reclames = useContext(ReclamablesContext);
@@ -2288,24 +2255,16 @@ export function IsoCarte({
           banniere={fanions.has(code)}
           tissu={tissu}
         />
-        {CODES_A_CORBEAU.has(code) ? <CorbeauToit {...commun} /> : null}
-        {/* Masked during a site only when there is no old stage: then a heap of stones stands in. */}
-        {/* A painted building keeps its own image through the site: the old art's black vector scaffold is not drawn over it (dust and the new stage's fade carry the change). */}
-        {echafaudageDessine(
-          code,
-          commun.masque,
-          Boolean(echafaudages?.has(code) || chantiers?.has(code)),
-        ) ? (
-          <Echafaudage code={code} neuf={commun.masque} />
-        ) : null}
-        {chantiers?.has(code) ? <Poussiere code={code} /> : null}
-        {/* A growth plays over the sprite and its site, and under all that stands in front. */}
+        {CODES_A_PERCHOIR.has(code) ? <OiseauToit {...commun} /> : null}
+        {/* A growth plays over the sprite, and under all that stands in front. */}
         {croissance ? (
           <IsoCroissance
             key={croissance.cle}
             code={code}
             ancien={croissance.ancien}
-            nouveau={commun.stade}
+            nouveau={croissance.nouveau}
+            rangs={croissance.rangs}
+            saute={croissance.saute}
             ambiance={ambiance}
             lumiere={lumiere}
             biome={biome}
@@ -2327,13 +2286,20 @@ export function IsoCarte({
     ) : e.type === "animal" ? (
       <Animal key={`a${e.piece.case.join(",")}`} a={e.animal} ambiance={ambiance} />
     ) : e.type === "pan" ? (
-      <PanRempart
-        key={`m${e.troncon}`}
-        cases={montresDuTroncon(e.troncon, visible, montres)}
-        stade={stade("castle_wall")}
-        lumiere={lumiere}
-        entree={croissances?.has("castle_wall") === true}
-      />
+      <Fragment key={`m${e.troncon}`}>
+        <PanRempart
+          cases={montresDuTroncon(e.troncon, visible, montres)}
+          stade={stade("castle_wall")}
+          lumiere={lumiere}
+          entree={croissances?.has("castle_wall") === true}
+        />
+        <ChatRempart
+          troncon={e.troncon}
+          cases={montresDuTroncon(e.troncon, visible, montres)}
+          stade={stade("castle_wall")}
+          lumiere={lumiere}
+        />
+      </Fragment>
     ) : (
       <PieceOuLisiere
         key={`${e.type}${e.piece.case.join(",")}`}
@@ -2387,19 +2353,10 @@ export function IsoCarte({
         stade={stade}
         voileAlentours={voileVillage(visible)}
       />
-      {/* The reveal's ring and dust are ground light: below the objects, never over a neighbour in front. */}
-      {revelation ? (
-        <AnneauRevelation
-          code={revelation.source}
-          pied={ecranXY(centreBatiment(revelation.source))}
-          t={revelation.t}
-        />
-      ) : null}
       <Objets
-        objets={avecRat(noeudsVues(), <Rongeur key="rongeur" biome={biome} lumiere={lumiere} />)}
-        emprises={avecRat(emprisesE, EMPRISE_RAT)}
+        objets={avecBestioles(noeudsVues())}
+        emprises={emprisesF}
         stade={stade}
-        chantiers={[...(chantiers ?? [])]}
         vie={{ habitants, fete, favori: metierFavori(blason?.crest?.animal) }}
         prise={prise}
         carte={{
@@ -2409,8 +2366,8 @@ export function IsoCarte({
           obstacles,
           animaux: betes,
           occupees: fixes,
-          // What the walkers are ranked against on screen (Objets' `emprises`), statue and rat included.
-          vues: avecRat(emprisesE, EMPRISE_RAT),
+          // What the walkers are ranked against on screen (Objets' `emprises`), statue and creatures included.
+          vues: emprisesF,
         }}
         horloge={horloge}
       />

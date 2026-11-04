@@ -12,12 +12,10 @@ import {
 import * as Reanimated from "react-native-reanimated";
 import {
   CROISSANCE_CAMERA_MS,
-  CROISSANCE_MS,
   HAUTEUR,
   LARGEUR,
   stadeReel,
 } from "@/components/village/iso/carteDemo";
-import { CHANTIER_MS } from "@/components/village/iso/chantier";
 import { perchoirDe } from "@/components/village/iso/corbeaux";
 import {
   basculer,
@@ -31,6 +29,7 @@ import {
 import { FigeContext } from "@/components/village/iso/fige";
 import { CYCLE_MS } from "@/components/village/iso/horloge";
 import { type Croissance, IsoVillage } from "@/components/village/iso/IsoVillage";
+import { STADE_MS, TENUE_MS } from "@/components/village/iso/moment";
 import { buildingStage } from "@/constants/buildingLevels";
 import { buildingCodes } from "@/db/schema";
 
@@ -160,7 +159,7 @@ const village = (fige: boolean, c?: Croissance, prets = false, lumiere?: "jour" 
  */
 async function pireCas(fige = false, lumiere?: "jour" | "nuit") {
   await render(village(fige, croissance, true, lumiere));
-  const etapes = [await balayer(CROISSANCE_CAMERA_MS + CHANTIER_MS + CROISSANCE_MS)];
+  const etapes = [await balayer(CROISSANCE_CAMERA_MS + STADE_MS + TENUE_MS)];
   await screen.rerender(village(fige, undefined, true, lumiere));
   await toucherToit("farm");
   await toucherToit("forge");

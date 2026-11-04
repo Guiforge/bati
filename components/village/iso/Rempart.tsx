@@ -20,8 +20,8 @@ import { useDump } from "./dumpSprites";
 import { useMouvementReduit } from "./fige";
 import type { Case } from "./isoLayout";
 import type { Ambiance, Stade } from "./isoSpec";
+import { ECHANGE_MS } from "./moment";
 import { dessinPans, PANS_VECTORIELS, type PiecePeinte, piecesPeintes } from "./rempart";
-import { ANTICIPATION_MS, REVELATION_MS } from "./revelation";
 
 /** The bible's ink: 8 px of outline at S, 1 dp here; an edge two faces share shows about half. */
 const TRAIT = 1.1;
@@ -146,13 +146,12 @@ export function PanRempart({
   );
 }
 
-/** The old stage over the new one, fading out with the growth layer (the only animated node, while it plays). */
+/** The old stage over the new one, fading out as the moment swaps stages (the only animated node, while it plays). */
+const SORTIE_MS = 250;
 function Sortie({ children }: { children: ReactNode }) {
   const opacite = useSharedValue(1);
   useEffect(() => {
-    opacite.set(
-      withDelay(ANTICIPATION_MS, withTiming(0, { duration: REVELATION_MS - ANTICIPATION_MS })),
-    );
+    opacite.set(withDelay(ECHANGE_MS, withTiming(0, { duration: SORTIE_MS })));
   }, [opacite]);
   const style = useAnimatedStyle(() => ({ opacity: opacite.get() }));
   return (

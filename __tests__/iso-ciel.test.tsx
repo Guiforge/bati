@@ -14,19 +14,14 @@ import {
   LARGEUR,
   stadeReel,
 } from "@/components/village/iso/carteDemo";
-import { CHANTIER_MS } from "@/components/village/iso/chantier";
 import { perchoirDe } from "@/components/village/iso/corbeaux";
 import { BANNIERES_MAX, ECLATS_ANIMES } from "@/components/village/iso/fierte";
 import { FigeContext } from "@/components/village/iso/fige";
 import { type Croissance, IsoVillage } from "@/components/village/iso/IsoVillage";
 import { MARCHEURS_PAR_VAGUE } from "@/components/village/iso/marcheurs";
+import { STADE_MS } from "@/components/village/iso/moment";
 import { NOEUDS_RECLAMABLES } from "@/components/village/iso/reclame";
-import {
-  NOEUDS_ONDE,
-  NOUVEAU_MS,
-  ONDE_MS,
-  REVELATION_MS,
-} from "@/components/village/iso/revelation";
+import { ONDE_MS } from "@/components/village/iso/revelation";
 import { buildingStage } from "@/constants/buildingLevels";
 import { buildingCodes } from "@/db/schema";
 
@@ -49,9 +44,11 @@ const getAnimatedStyle = Reanimated.getAnimatedStyle as unknown as (component: {
 const PLAFOND_NOEUDS = 68;
 /** Exact counts at tier 12, every building at level 5 (L5-T02, then L5-T09: the 18 water glints in 5 nodes, -13; L5-T03: +5 flames, +10 smoke puffs; a growing building hides its fire, so growth adds 3 + 6; T23: the sky and its 5 nodes, 3 stars and 2 mist bands, are gone): to raise on purpose, never to chase. */
 const NOEUDS_SANS_VILLAGEOIS = 32;
-/** Two growths played at most, 3 nodes each (old sprite, new sprite, pop) (L5-AUD I1). A growing campfire or forge hides its fire: -2 flames, -4 puffs. */
-const NOEUDS_CROISSANCE_MAX = 6; // AUDIT-DA 36: +1 each for the closing pop of dust
+/** Two growths played at most, 6 nodes each. A growing campfire or forge hides its fire: -2 flames, -4 puffs. */
+const NOEUDS_CROISSANCE_MAX = 12; // the moment (moment.ts): per growth 6 (light and its ground pool, old stage and its ink, new stage and its ink, dust)
 const NOEUDS_FEU_MASQUE = 6;
+/** Once the moment is over only each new body stays mounted (its scale, held on 1). */
+const NOEUDS_APRES_MOMENT = 2;
 /**
  * The villagers (L5-T04): each role whose building stands has one animated node, standing or walking, so its image is
  * never mounted again when a wave starts (7 roles at tier 12). A wave adds none.
@@ -281,7 +278,8 @@ describe("the whole map's animated nodes", () => {
         oldLevel: 1,
       }));
       await render(village({ cle: "a", items }));
-      await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + CHANTIER_MS));
+      // 300 ms into the moment: every part of both growths is up, the village is quiet.
+      await act(() => jest.advanceTimersByTime(300));
       // Only the first two growths play (L5-AUD I1): the other two show their new stage at once.
       expect(screen.queryAllByTestId(/^iso-croissance-nouveau-(?!image)/).length).toBe(2);
       // The campfire and the forge are growing: their fire waits for the new sprite.
@@ -289,7 +287,7 @@ describe("the whole map's animated nodes", () => {
       expect(screen.getAllByTestId(/^iso-fumee-/)).toHaveLength(6);
       const n = compte(screen.toJSON());
       expect(n).toBeLessThanOrEqual(PLAFOND_NOEUDS);
-      dansLaVague(n, NOEUDS_CROISSANCE_FEUX);
+      expect(n).toBeGreaterThanOrEqual(NOEUDS_CROISSANCE_FEUX);
     } finally {
       jest.useRealTimers();
     }
@@ -303,7 +301,8 @@ describe("the whole map's animated nodes", () => {
         oldLevel: 1,
       }));
       await render(village({ cle: "j", items }, undefined, "jour"));
-      await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + CHANTIER_MS));
+      // The moment is over (a finger on a roof skips it anyway): the new bodies stay, one node each.
+      await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + STADE_MS));
       const n = compte(screen.toJSON());
       await toucherToit("farm");
       await toucherToit("forge");
@@ -325,14 +324,15 @@ describe("the whole map's animated nodes", () => {
         oldLevel: 1,
       }));
       await render(village({ cle: "b", items }));
-      await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + CHANTIER_MS));
+      // The moment is over (a finger on a roof skips it anyway): the new bodies stay, one node each.
+      await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + STADE_MS));
       expect(screen.queryAllByTestId(/^iso-croissance-nouveau-(?!image)/).length).toBe(2);
       // Tent and well: no fire hidden, nothing else masked: the whole rest map, plus 2 nodes for each of the 2 growths played.
       expect(screen.getAllByTestId(/^iso-flamme-/)).toHaveLength(5);
       const n = compte(screen.toJSON());
-      // The base of the worst case: the rest map and the 2 growths, 47, plus the wave already on.
-      dansLaVague(n, NOEUDS_CROISSANCE_PIRE);
-      expect(NOEUDS_REPOS).toBe(42 + NOEUDS_BANNIERES);
+      // The base: the rest map and the 2 new bodies; the village is quiet, no wave light.
+      expect(n).toBeGreaterThanOrEqual(NOEUDS_REPOS + NOEUDS_APRES_MOMENT);
+      expect(NOEUDS_REPOS).toBe(43 + NOEUDS_BANNIERES);
       // A finger on the farm's roof, then on the forge's (L5-T10): both crows fly, one node each, over
       // the wave's night lights (2 to 4) and glints (up to 2): 47 + 4 + 2 + 2 = 55 at most, 9 under the cap.
       await toucherToit("farm");
@@ -347,9 +347,7 @@ describe("the whole map's animated nodes", () => {
       expect(pire).toBeLessThan(PLAFOND_NOEUDS);
       // T27: the glints and the effects share the signal seat (4 nodes).
       expect(effetsEtSignal()).toBeLessThanOrEqual(NOEUDS_RECLAMABLES);
-      // At least the 2 windows and the 2 crows above the growth worst case; the doors lit (0 to 2)
-      // and the glints shown follow the day's wave plan and which buildings grow.
-      expect(pire).toBeGreaterThanOrEqual(NOEUDS_CROISSANCE_PIRE + NOEUDS_FENETRES_VAGUE);
+      expect(pire).toBeGreaterThanOrEqual(NOEUDS_REPOS + NOEUDS_APRES_MOMENT);
     } finally {
       jest.useRealTimers();
     }
@@ -362,7 +360,8 @@ describe("the whole map's animated nodes", () => {
         oldLevel: 1,
       }));
       await render(village({ cle: "c", items }, buildingCodes));
-      await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + CHANTIER_MS));
+      // The moment is over (a finger on a roof skips it anyway): the new bodies stay, one node each.
+      await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + STADE_MS));
       await toucherToit("farm");
       await toucherToit("forge");
       await act(() => jest.advanceTimersByTime(300));
@@ -375,7 +374,7 @@ describe("the whole map's animated nodes", () => {
       const pire = compte(screen.toJSON());
       // Measured 56 on 30/10 (61 before T23); the doors lit follow the day's plan, so a bound, not an exact count.
       expect(pire).toBeGreaterThanOrEqual(
-        NOEUDS_CROISSANCE_PIRE + NOEUDS_FENETRES_VAGUE + lueurs + NOEUDS_CORBEAUX_MAX,
+        NOEUDS_REPOS + NOEUDS_APRES_MOMENT + lueurs + NOEUDS_CORBEAUX_MAX,
       );
       expect(pire).toBeLessThanOrEqual(
         NOEUDS_CROISSANCE_PIRE +
@@ -415,10 +414,10 @@ describe("the reveal (T37)", () => {
           />
         </GestureHandlerRootView>,
       );
-      await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + CHANTIER_MS));
+      await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + STADE_MS));
       await toucherToit("farm");
       await toucherToit("forge");
-      for (const ms of [20, 100, REVELATION_MS]) {
+      for (const ms of [20, 100, 300]) {
         await act(() => jest.advanceTimersByTime(ms));
         expect(screen.queryAllByTestId(/^iso-croissance-nouveau-(?!image)/).length).toBe(2);
         expect(compte(screen.toJSON())).toBeLessThanOrEqual(PLAFOND_NOEUDS);
@@ -428,7 +427,7 @@ describe("the reveal (T37)", () => {
     }
   });
 
-  test("T41: the village is quiet, the burst and the golden wave take its places, 64 at most, nothing left after", async () => {
+  test("T41: the village is quiet, the pulse of light takes its places, 64 at most, nothing left after", async () => {
     jest.useFakeTimers();
     try {
       const items = (["tent", "well", "quarry", "watchtower"] as const).map((code) => ({
@@ -447,25 +446,21 @@ describe("the reveal (T37)", () => {
           />
         </GestureHandlerRootView>,
       );
-      await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + CHANTIER_MS));
+      await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + STADE_MS));
       await toucherToit("farm");
       await toucherToit("forge");
       await act(() => jest.advanceTimersByTime(300));
-      // The two growths played carry a burst each; the ring starts at the first one's foot.
-      expect(screen.queryAllByTestId(/^iso-revelation-eclat-/)).toHaveLength(2);
-      expect(screen.queryAllByTestId("iso-revelation-onde")).toHaveLength(1);
-      // Quiet: no wave light, glow, glint or trade effect; the windows lit are the wave's own.
+      // Quiet: no wave light, glow, glint, window or trade effect.
       expect(screen.queryAllByTestId(/^iso-(porte|lueur|eclat-anime|effet)-/)).toHaveLength(0);
-      expect(screen.queryAllByTestId(/^iso-fenetres-/).length).toBeLessThanOrEqual(NOEUDS_ONDE);
+      expect(screen.queryAllByTestId(/^iso-fenetres-/)).toHaveLength(0);
       const pire = compte(screen.toJSON());
       expect(pire).toBeLessThanOrEqual(PLAFOND_NOEUDS);
       // The worst case before T41 (the wave's lights, glows and glints on top of two growths) was 63.
       // Measured 62 (T41, 31/10), never above the 63 it was: the cap of 64 is untouched.
       expect(pire).toBeLessThanOrEqual(NOEUDS_PIRE_ABSOLU_ATTENDU + 1);
-      // The silence ends with the wave, even though the owner never drops the growth here: the
-      // burst and the ring are unmounted and the ready glows speak again.
+      // The silence ends with the pulse, even though the owner never drops the growth here: the
+      // ready glows speak again.
       await act(() => jest.advanceTimersByTime(ONDE_MS + 100));
-      expect(screen.queryAllByTestId(/^iso-revelation-/)).toHaveLength(0);
       expect(screen.queryAllByTestId(/^iso-lueur-/).length).toBeGreaterThan(0);
       expect(compte(screen.toJSON())).toBeLessThanOrEqual(PLAFOND_NOEUDS);
     } finally {
@@ -499,7 +494,7 @@ describe("the building site (L6-T02)", () => {
       await render(
         <FigeContext.Provider value>{village({ cle: "f", items })}</FigeContext.Provider>,
       );
-      await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + CHANTIER_MS + 1000));
+      await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS + STADE_MS + 1000));
       expect(
         screen.queryAllByTestId(/^iso-(echafaudage|poussiere|croissance-(?!ancien|nouveau))/),
       ).toHaveLength(0);
@@ -513,27 +508,18 @@ describe("the building site (L6-T02)", () => {
     jest.useFakeTimers();
     try {
       await render(village({ cle: "s", items }));
-      // Camera first: the old stage under its scaffold (T03), nobody strikes yet.
-      expect(screen.queryAllByTestId(/^iso-echafaudage-/)).toHaveLength(2);
-      expect(screen.queryAllByTestId(/^iso-poussiere-/)).toHaveLength(0);
       await act(() => jest.advanceTimersByTime(CROISSANCE_CAMERA_MS));
-      // Only the first two growths play; each wears a scaffold and one node of dust.
-      expect(screen.queryAllByTestId(/^iso-echafaudage-/)).toHaveLength(2);
-      expect(screen.queryAllByTestId(/^iso-poussiere-/)).toHaveLength(2);
-      expect(screen.queryAllByTestId(/^iso-croissance-nouveau-/)).toHaveLength(0);
+      // From the tap: the moment's layers of the first two growths, each with its scaffold.
+      expect(screen.queryAllByTestId(/^iso-croissance-echafaudage-/)).toHaveLength(2);
+      expect(screen.queryAllByTestId(/^iso-croissance-nouveau-(?!image)/)).toHaveLength(2);
       const n = compte(screen.toJSON());
-      // The villagers reuse their own node: the sites add 2 nodes (dust) over the rest map, plus
-      // the night lights of the wave the first frames start.
-      dansLaVague(n, NOEUDS_REPOS + 2);
+      dansLaVague(n, NOEUDS_REPOS + NOEUDS_CROISSANCE_MAX);
       expect(n).toBeLessThanOrEqual(PLAFOND_NOEUDS);
-      await act(() => jest.advanceTimersByTime(CHANTIER_MS));
-      await act(() => jest.advanceTimersByTime(NOUVEAU_MS));
-      expect(screen.queryAllByTestId(/^iso-(echafaudage|poussiere)-(?!pop)/)).toHaveLength(0);
-      expect(screen.queryAllByTestId(/^iso-poussiere-pop-/)).toHaveLength(2);
+      await act(() => jest.advanceTimersByTime(STADE_MS));
       expect(screen.queryAllByTestId(/^iso-croissance-nouveau-(?!image)/)).toHaveLength(2);
       // The growth is over: the owner drops it and nothing of the site is mounted.
       await screen.rerender(village());
-      expect(screen.queryAllByTestId(/^iso-(echafaudage|poussiere|croissance)-/)).toHaveLength(0);
+      expect(screen.queryAllByTestId(/^iso-croissance-/)).toHaveLength(0);
       await act(() => jest.advanceTimersByTime(35000));
       expect(compte(screen.toJSON())).toBe(NOEUDS_REPOS + ombresDeMarche());
     } finally {

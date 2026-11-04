@@ -2,7 +2,7 @@
 // clip to, the day over them, and the shadows that must go with (or wait for) what casts them.
 import "react-native-gesture-handler/jestSetup";
 import { render } from "@testing-library/react-native";
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { useSharedValue } from "react-native-reanimated";
 import {
   cheminSvg,
@@ -37,10 +37,10 @@ function noeuds(arbre: Noeud | Noeud[] | null, motif: RegExp): string[] {
 }
 
 async function carte(p: {
-  croissances?: ReadonlyMap<BuildingCode, { cle: string; ancien: null }>;
+  croissances?: ComponentProps<typeof IsoCarte>["croissances"];
   lumiere?: Ambiance;
   masques?: ReadonlySet<BuildingCode>;
-  chantiers?: ReadonlySet<BuildingCode>;
+  echafaudages?: ReadonlySet<BuildingCode>;
 }) {
   const r = await render(
     <Horloge>
@@ -64,7 +64,20 @@ describe("the growth layer", () => {
     expect(code).toBeDefined();
     if (!code) return;
     const t = JSON.stringify(
-      await carte({ croissances: new Map([[code, { cle: "g1", ancien: null }]]) }),
+      await carte({
+        croissances: new Map([
+          [
+            code,
+            {
+              cle: "g1",
+              ancien: null,
+              nouveau: "rough" as const,
+              rangs: { de: 0, vers: 1 },
+              saute: false,
+            },
+          ],
+        ]),
+      }),
     );
     const ici = t.indexOf(`iso-croissance-nouveau-${code}`);
     expect(ici).toBeGreaterThan(t.indexOf(`iso-maquette-${code}`));
@@ -105,7 +118,7 @@ describe("the shadows on the map", () => {
     expect(code).toBeDefined();
     if (!code) return;
     const ombres = (a: Noeud | Noeud[] | null) => JSON.stringify(a).match(/"d":"M[^"]*"/g) ?? [];
-    const tas = await carte({ masques: new Set([code]), chantiers: new Set([code]) });
+    const tas = await carte({ masques: new Set([code]), echafaudages: new Set([code]) });
     expect(noeuds(tas, new RegExp(`^iso-socle-${code}$`))).toHaveLength(0);
     expect(ombres(tas).join("").length).toBeLessThan(ombres(sans).join("").length);
     // AUDIT-DA 26: its contact shadow goes with it.

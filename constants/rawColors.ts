@@ -151,8 +151,7 @@ export const rawColors = {
   isoFumee: "#7F8EA2",
   /** The dragon's breath (T41): a warm ash, pale, so it reads on the lair's blue-grey rock and in its black mouth. */
   isoCendreClaire: "#E4DCCB",
-  /** The dust of a building site (Chantier.tsx): a dry earth tone, and the ink of its outline. */
-  isoPoussiere: "#8E7C66",
+  /** The ink outline of the little puffs of dust (petitsDetails.tsx). */
   isoPoussiereEncre: "#1A1511",
   /** AUDIT-DA 39: the warm stone laid over a painted block that came out saturated blue (Retouches.tsx), lit, mid and shaded face. */
   isoPierreChaudeClair: "#8C7A66",
@@ -287,10 +286,6 @@ export const rawColors = {
   isoVocationBois: "#6B4A2E",
   /** The glint on a legendary banner's finial: gold at its brightest. */
   isoEclat: "#FFF0C4",
-  /** The growth reveal's flat silhouette, in the shape of the stage that comes (anim-31): warm ochre, drawn at 70 %. */
-  isoSilhouette: "#C9A060",
-  /** The reveal's dust puff by day (E5, H4-05): the bible's wood, darker than the sunlit ground it rises from. */
-  isoPoussiereJour: "#6B4A2E",
   /** The two cloud shadows crossing the map (bible §5, E5): the bible's shadow, drawn at 18 %. */
   isoOmbreNuage: "#2E3552",
   /** The forest floor, from the frame's top to its bottom. */

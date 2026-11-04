@@ -35,10 +35,7 @@
       "group": "Restes des batiments",
       "name": "Losange gris retire",
       "check": "planche avant/apres de chaque stade sur la couleur du sol, en jeu sur fontaine, rempart, ferme, armurerie ; verrou des loupes 83 fichiers",
-      "estimate_h": [
-        1,
-        3
-      ],
+      "estimate_h": [1, 3],
       "status": "done"
     },
     {
@@ -46,10 +43,7 @@
       "group": "Restes des batiments",
       "name": "Deux images manquantes",
       "check": "windmill teaser_r6 et well gag_1 peints en flux-3-image, decoupes, integres, visibles sur la planche d'elements",
-      "estimate_h": [
-        0.5,
-        1
-      ],
+      "estimate_h": [0.5, 1],
       "status": "done"
     },
     {
@@ -57,10 +51,7 @@
       "group": "Restes des batiments",
       "name": "Controle des modeles",
       "check": "docs/designs/village/clean/modeles.md : chaque sprite et son modele, liste de tout ce qui n'est pas FLUX 3 Image ou Klein",
-      "estimate_h": [
-        0.2,
-        0.5
-      ],
+      "estimate_h": [0.2, 0.5],
       "status": "done"
     },
     {
@@ -68,10 +59,7 @@
       "group": "Restes des batiments",
       "name": "Build .perf et captures",
       "check": "serie de captures du tip : 7 gags repeints en jeu, planches d'elements, losanges corriges, avec le commit note",
-      "estimate_h": [
-        1,
-        2
-      ],
+      "estimate_h": [1, 2],
       "status": "done"
     },
     {
@@ -79,10 +67,7 @@
       "group": "Restes des batiments",
       "name": "Vieux worktrees",
       "check": "git worktree list : seuls restent les non fusionnes et les tenus, listes pour Guillaume",
-      "estimate_h": [
-        0.2,
-        0.5
-      ],
+      "estimate_h": [0.2, 0.5],
       "status": "done"
     },
     {
@@ -90,10 +75,7 @@
       "group": "1. Inventaire",
       "name": "Inventaire",
       "check": "inventory.md : docs/designs, scripts/iso, tests, branches, worktrees ; utilise ou non, fusionne ou non, unique ou doublon",
-      "estimate_h": [
-        0.5,
-        1
-      ],
+      "estimate_h": [0.5, 1],
       "status": "done"
     },
     {
@@ -101,10 +83,7 @@
       "group": "2-3. Tri et archive",
       "name": "Archiver puis retirer",
       "check": "~/bati-archives/<date>-clean.tgz relu, archive-index.md, depot sans vieilles experiences ; rien de la liste jamais touchee",
-      "estimate_h": [
-        1,
-        2
-      ],
+      "estimate_h": [1, 2],
       "status": "done"
     },
     {
@@ -112,10 +91,7 @@
       "group": "4. Ancienne scene",
       "name": "Scene 2D gardee",
       "check": "le build publie affiche toujours la scene 2D, INTEGRATION intact",
-      "estimate_h": [
-        0.1,
-        0.3
-      ],
+      "estimate_h": [0.1, 0.3],
       "status": "done"
     },
     {
@@ -123,10 +99,7 @@
       "group": "5. Structure",
       "name": "Structure et README",
       "check": "docs/designs/village/README.md dit ce qui est ou, dossiers verrouilles listes",
-      "estimate_h": [
-        0.3,
-        0.7
-      ],
+      "estimate_h": [0.3, 0.7],
       "status": "done"
     },
     {
@@ -134,10 +107,7 @@
       "group": "6. Guide",
       "name": "PIPELINE.md",
       "check": "ajouter ou editer un batiment, creature, mouvement, nuit, drapeaux, outils et commandes ; commandes verifiees",
-      "estimate_h": [
-        0.5,
-        1
-      ],
+      "estimate_h": [0.5, 1],
       "status": "done"
     },
     {
@@ -145,10 +115,7 @@
       "group": "7. Tests",
       "name": "Dette de tests et suite verte",
       "check": "suite complete verte sous Node 24, tests-debt.md soldee dont fdroid-scanignore",
-      "estimate_h": [
-        1,
-        3
-      ],
+      "estimate_h": [1, 3],
       "status": "done"
     },
     {
@@ -156,10 +123,7 @@
       "group": "Fin",
       "name": "Fin de piste",
       "check": "summary, status final, scratch archive et vide, push, emplacement libere",
-      "estimate_h": [
-        0.3,
-        0.5
-      ],
+      "estimate_h": [0.3, 0.5],
       "status": "done"
     },
     {
@@ -167,10 +131,7 @@
       "group": "Restes des batiments",
       "name": "Derniere ronde sur ce qui se voit",
       "check": "captures en jeu des pieces reprises : high_road mythique, moulin grand de nuit, arene mythique, armurerie gag_2, elements roses ou a interieur blanc",
-      "estimate_h": [
-        0.5,
-        1
-      ],
+      "estimate_h": [0.5, 1],
       "status": "done"
     },
     {
@@ -178,11 +139,16 @@
       "group": "Restes des batiments",
       "name": "Ombres en polygones",
       "check": "decision de Guillaume dans checkpoint.md, puis item pour LIFE ou POLISH : le code dessine ces ombres dans components/village/iso/, a LIFE",
-      "estimate_h": [
-        0,
-        1
-      ],
-      "status": "attend Guillaume"
+      "estimate_h": [0, 1],
+      "status": "done"
+    },
+    {
+      "id": "C8",
+      "group": "Grand menage",
+      "name": "Worktrees et branches gardes",
+      "check": "bundle clone et verifie avant toute suppression ; rien de ce qu'une session utilise",
+      "estimate_h": [0, 1],
+      "status": "done"
     }
   ]
 }

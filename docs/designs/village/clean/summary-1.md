@@ -43,6 +43,7 @@ Deux tests dépendaient de l'horloge et sont tombés à minuit (`past-session-sh
 - **Le dernier rapport de la troisième passe de masque** ne m'est jamais parvenu : ses tests ont été relancés aux passes suivantes.
 
 ## Worktrees et branches gardés
+Soldé le 04/11 : archivés puis supprimés, voir la fin de [`decisions.md`](decisions.md). Liste d'origine :
 Liste détaillée : [`decisions.md`](decisions.md).
 - **Fusionnés mais modifiés (git refuse) :** `audit-copie-fr`, `design-exos`, `wearable`, et `agent-a6d9e6f2e26961458` (le ménage de cette session, commit déjà fusionné, sa branche `clean-menage` reste accrochée).
 - **Non fusionnés ou avec travail en cours :** `~/.cache/bati-v03`, `fleet-past-session`, `iso-audit`, `~/.cache/bati-art-loop/iso/p0-wt`.

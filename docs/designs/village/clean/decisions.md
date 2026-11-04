@@ -28,3 +28,12 @@
 | `~/.cache/bati-art-loop/iso/p0-wt` | HEAD détaché, non fusionné |
 | `~/.cache/bati-bench/src/BUILD-28P-…`, `BUILD-29P-…` | fusionnés, mais ce sont les sources de builds du banc d'essai, pas de vieux chantiers |
 | `.claude/worktrees/iso` | `feat/village-iso`, verrouillé par cette session |
+
+## Worktrees et branches, réponse de Guillaume (04/11)
+
+Archives dans `~/bati-archives/` : `2026-11-04-branches.bundle` (toutes les branches locales et les HEAD détachés), `2026-11-04-branches.txt` (commit de chaque référence), `2026-11-04-worktrees-gardes.tgz` (fichiers des worktrees sans `node_modules` ni builds Gradle, plus leur dossier d'administration git et le patch indexé de `bati-v03`). Bundle cloné, `fsck` passé, les 107 commits de la liste présents ; tgz relu en entier.
+
+- **Retirés :** `agent-a6d9e6f2e26961458`, `audit-copie-fr`, `design-exos`, `wearable`, `fleet-past-session`, `iso-audit`, `~/.cache/bati-v03`, `~/.cache/bati-art-loop/iso/p0-wt`, les 2 `~/.cache/bati-bench/src/BUILD-*`.
+- **Branches supprimées :** 91, en local. Aucune branche distante n'a bougé.
+- **Gardées :** `main`, `feat/village-iso`, `track-clean` (cette session), `track-life` (session en cours), `feat/multiplayer-lot0` et `worktree-multi_0` (session `multi_0` en cours).
+- **Restaurer une branche :** `git fetch ~/bati-archives/2026-11-04-branches.bundle <branche>:<branche>`.

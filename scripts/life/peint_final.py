@@ -64,19 +64,21 @@ J = {
               "melting smoothly into the dark, small in the middle of the frame." + TAIL, "blk", [], "glow", 1024),
     "mote": ("part", BLK + "One warm grain of light, golden cream in the middle, a very soft amber halo around it fading smoothly "
              "into the dark, small in the middle of the frame." + TAIL, "blk", [], "glow", 1024),
-    "lueur_jour": ("moment", BLK + "A large soft round halo of warm light filling the frame, painted as broad translucent washes: a soft cream "
-                   "centre blending outward into gold, then eight wide faint wedge-shaped beams that fade as they go out, every "
-                   "transition blended and gradual, the whole thing dissolving into the dark well before the edge of the picture." + TAIL, "blk", [], "lueur", 1024),
-    "lueur_nuit": ("moment", BLK + "A large soft round halo of warm light filling the frame, painted as broad translucent washes: a small "
-                   "bright centre with a little cream in it, blending outward into deep amber, then eight wide faint wedge-shaped beams "
-                   "that fade as they go out, every transition blended and gradual, the whole thing dissolving into the dark well before "
-                   "the edge of the picture." + TAIL, "blk", [], "lueur", 1024),
-    "bouffee_jour": ("moment", MAG + "Three separate small puffs of warm dust in a row with clear space between, different sizes and shapes. "
-                     "Each is made of three or four merged round soft masses in light ochre and rosy beige, lighter than sand, lit from the "
-                     "upper left, the edges frayed into thin transparent wisps, soft brush." + TAIL, "mag", [], "soft", 1024),
-    "bouffee_nuit": ("moment", MAG + "Three separate small puffs of dust in a row with clear space between, different sizes and shapes. "
-                     "Each is made of three or four merged round soft masses in light blue-grey, with a touch of warm amber on the "
-                     "underside, the edges frayed into thin transparent wisps, soft brush." + TAIL, "mag", [], "soft", 1024),
+    "lueur_jour": ("moment", BLK + "A large soft round glow of warm light filling the frame, strongest at the centre and melting evenly outward "
+                   "to nothing well before the edge of the picture. A pale cream centre blending into soft pale gold. Across it, three "
+                   "very broad, barely-there, irregular bands of paler light, each one wide, uneven and blurred into the glow. Every "
+                   "transition is blended and gradual, painted with broad translucent washes." + TAIL, "blk", [], "lueur", 1024),
+    "lueur_nuit": ("moment", BLK + "A large soft round glow of warm light filling the frame, strongest at the centre and melting evenly outward "
+                   "to nothing well before the edge of the picture. A small centre of pale cream blending into deep amber (#F0A848). "
+                   "Across it, three very broad, barely-there, irregular bands of slightly paler amber, each one wide, uneven and "
+                   "blurred into the glow. Every transition is blended and gradual, painted with broad translucent washes." + TAIL, "blk", [], "lueur", 1024),
+    "bouffee_jour": ("moment", MAG + "Three separate small clusters of dust in a row with clear space between, different sizes and shapes. "
+                     "Each is a loose group of dabbed, uneven brush flecks in warm ochre and rosy beige, with a ragged torn outline and "
+                     "gaps in it, the lower edge breaking up into scattered specks, lit from the upper left, matte and dry." + TAIL, "mag", [], "soft", 1024),
+    "bouffee_nuit": ("moment", MAG + "Three separate small clusters of dust in a row with clear space between, different sizes and shapes. "
+                     "Each is a loose airy drift of dabbed, uneven brush flecks in muted slate-grey and dusty mauve, dark and dull, floating and not piled up, with a "
+                     "ragged torn outline and gaps in it, a soft dark underside with a touch of amber, the lower edge breaking up into "
+                     "scattered specks, matte and dry." + TAIL, "mag", [], "soft", 1024),
 }
 J["echafaudage_3x3"] = ("moment", "Image 1 is a wooden building scaffold. Paint a larger version of it in exactly the same painted style, same dark purple-brown "
     "posts, rope lashings, pale blue-grey boards, thick ink line and isometric camera angle. Make it one and a half times wider in both ground "
@@ -276,9 +278,11 @@ def cut_raw(key, stem):
         if kind == "lueur":  # a glow melts out before the picture edge, and its colour never goes to white
             h, w = a.shape
             r = np.hypot(*np.meshgrid(np.arange(w) - w / 2, np.arange(h) - h / 2)[::-1][::-1]) / (min(h, w) / 2)
-            t = np.clip((0.97 - r) / 0.3, 0, 1)
-            a = a * t * t * (3 - 2 * t)
-            col = np.minimum(col, (242, 226, 180))
+            a = np.clip(gblur(a, 40), 0, 1)  # the bands are broad washes: no brush edge or ring survives
+            t = np.clip(1 - r / 0.85, 0, 1) ** 1.3  # strongest at the centre, zero at 0.85 of the radius
+            a = a ** 1.5 * t  # a little contrast keeps the faint bands, which the raw only carries in its brightness
+            col = np.minimum(col, (240, 214, 150) if key == "lueur_jour" else (242, 226, 180))
+            a = np.clip(a * (1.4 if key == "lueur_jour" else 1.25), 0, 1)
         else:  # spark, ember, mote: soft rim (blur of the premultiplied colour), the ember also fades from its own radius
             ys, xs = np.nonzero(a > (0.3 if key == "ember" else 0.04))
             cy, cx, R = ys.mean(), xs.mean(), np.sqrt(len(ys) / np.pi)
@@ -304,7 +308,7 @@ def cut_raw(key, stem):
 
 
 # ------------------------------------------------------------------ export
-SOFT_OPACITY = {"dust": 0.8, "steam": 0.7, "smoke": 1.0, "bouffee_jour": 0.9, "bouffee_nuit": 0.9}
+SOFT_OPACITY = {"dust": 0.8, "steam": 0.7, "smoke": 1.0, "bouffee_jour": 0.9, "bouffee_nuit": 0.8}
 
 
 def split3(a, n):
@@ -326,12 +330,17 @@ def pieces(key, stem):
         aa[:, x0:x1] = a[:, x0:x1]
         if kind == "soft":
             aa = biggest(aa)
-            aa = np.clip(gblur(aa, 3), 0, 1)
+            aa = np.clip(gblur(aa, 1.2 if base.startswith('bouffee') else 3), 0, 1)
             aa *= SOFT_OPACITY.get(base, 1.0)
             ys = np.nonzero(aa.max(1) > 0.03)[0]
             if base == "smoke":  # opacity falls upward
                 t = np.clip((ys.max() - np.arange(aa.shape[0])) / max(1, ys.max() - ys.min()), 0, 1)
                 aa = aa * (0.95 - 0.5 * t)[:, None]
+        if base == "bouffee_nuit":  # dusk dust: opaque mean luminance held near 80, no channel above 125 (the glow sits near 170)
+            lum = col.mean(-1)
+            m = aa > 0.3
+            g = 80 / max(lum[m].mean(), 1) if m.any() else 1
+            col = np.minimum(col * g, 125)
         out.append(rgba(col, aa))
     return out
 
@@ -513,6 +522,44 @@ def sheet(group):
     print("sheet", FINAL / f"{name}.png", sh.size)
 
 
+def export_moment2():
+    """Write the picked lueur_* / bouffee_* straight into assets/.../moment/ at their real size, merge their provenance."""
+    pk = picks()
+    prov = json.loads((RAW / "provenance.json").read_text())
+    used = {}
+    for key, stem in pk.items():
+        if key not in ("lueur_jour", "lueur_nuit", "bouffee_jour", "bouffee_nuit"):
+            continue
+        for i, arr in enumerate(pieces(key, stem), 1):
+            name, im = (key, square(arr, 256, 256)) if key.startswith("lueur") else (f"bouffee_{i}_{key.split('_')[1]}", square(arr, 128, 120))
+            im.save(ROOT / "assets/images/village/iso/moment" / f"{name}.webp", quality=92, method=6)
+            used[name] = (stem, f"assets/images/village/iso/moment/{name}.webp")
+    f = ROOT / "docs/designs/village/life/provenance-moment.json"
+    old = json.loads(f.read_text())
+    for name, (stem, dest) in used.items():
+        e = dict(prov[f"docs/designs/village/life/scratch/final/raw/{stem}.png"])
+        e["used_for"] = dest
+        e["raw"] = f"docs/designs/village/life/scratch/final/raw/{stem}.png"
+        old[dest] = e
+    f.write_text(json.dumps(old, indent=1, ensure_ascii=False))
+    print(list(used))
+
+
+def sheet2(old):
+    """moment2.png: per piece, old then new, on ochre then night slate, real size."""
+    new = ROOT / "assets/images/village/iso/moment"
+    names = sorted(p.stem for p in new.glob("*.webp"))
+    cell = 270
+    sh = Image.new("RGB", (len(names) * (cell + 4), 4 * cell + 20), (30, 30, 30))
+    d = ImageDraw.Draw(sh)
+    for i, n in enumerate(names):
+        d.text((i * (cell + 4) + 4, 4), n + " old/new, ochre then night", fill=(255, 255, 255))
+        for r, (src, bg) in enumerate([(pathlib.Path(old), OCHRE), (new, OCHRE), (pathlib.Path(old), NIGHT), (new, NIGHT)]):
+            sh.paste(tile(Image.open(src / f"{n}.webp").convert("RGBA"), bg, 1.0, (cell, cell)), (i * (cell + 4), 20 + r * cell))
+    sh.save(FINAL / "moment2.png")
+    print("sheet", FINAL / "moment2.png", sh.size)
+
+
 if __name__ == "__main__":
     c = sys.argv[1]
     if c == "gen":
@@ -527,3 +574,7 @@ if __name__ == "__main__":
         export(sys.argv[2])
     elif c == "sheet":
         sheet(sys.argv[2])
+    elif c == "export2":
+        export_moment2()
+    elif c == "sheet2":
+        sheet2(sys.argv[2])

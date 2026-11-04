@@ -14,7 +14,13 @@ Tes réponses sur la page sont dans la collection `picks`, document `guillaume`.
 
 ## Réponse de Guillaume
 
-04/11, dans la session : « je prefere -> La foret ». **F est choisie.** Pas de mélange. Restent ouverts : les essais de pièces (rien dans `picks` sur la page) et la zone du crop `lisiere`.
+04/11, dans la session : « je prefere -> La foret ». **F est choisie.** Pas de mélange. 
+
+04/11, ensuite : « oui la forêt peut reculer dans lisiere, garde ceux du montage. D'ailleurs on peut mettre de la forêt en bas dans les premiers paliers et la faire disparaître. »
+
+- **`lisiere`** : le recul y est permis.
+- **Pièces** : les essais du montage. `ferme1_x_v2`, `ferme3_F_v1`, `ferme3_F_v2`, `ferme4_F_v1`, `hameau1_F_v2`, `hameau2_F_v1`, `bourg_F_v1` ; routes à choisir à la peinture, le montage les trace sans concept.
+- **Forêt du sud aux paliers 1 à 3** : ajoutée à la bande F (`img/bande-F.jpg`), item G15.
 
 ## Ce qui change avec ton plan du palier 12
 

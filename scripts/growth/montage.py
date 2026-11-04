@@ -4,13 +4,14 @@ A concept page only, never in the game. A pure montage cannot drift between tier
 edits from tier to tier did not hold (progress.md). Places are indicative: LAYOUT's enlarged map does not exist yet.
     montage.py        writes scratch/montage/<P>_<tier>.png, and img/bande-<P>.jpg
     montage.py nuit   then Klein night edits of tiers 3 6 9 12 from those montages (scratch/montage/nuit_<P>_<tier>.png, img/nuit-<P>.jpg)"""
+import math
 import pathlib
 import random
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT / "scripts" / "growth"))
-from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageStat
+from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageOps, ImageStat
 
 D = ROOT / "docs/designs/village/growth"
 S = D / "scratch"
@@ -49,7 +50,8 @@ P = {
                   (12, FIN, COBBLE, [(400, 960), (620, 790), (720, 700)])],
     },
     "F": {
-        "pieces": [LEAN,
+        # The lean-to stands by the camp: the south land is forest at tier 1.
+        "pieces": [(1, FIN, "ferme1_x_v2", 770, 1395, 90),
                    (5, 8, "hameau1_F_v2", 120, 790, 100), (9, FIN, "hameau2_F_v1", 120, 780, 165),
                    (7, FIN, "ferme3_F_v1", 320, 700, 150),
                    (10, FIN, "ferme4_F_v1", 110, 625, 190),
@@ -128,9 +130,44 @@ def clearing(canvas, polygon, seed):
             d.ellipse((x - 4, y - 2.5, x + 4, y + 2.5), fill=(120, 96, 66), outline=(15, 21, 24))
 
 
+# F: forest on the south land at tiers 1 to 3 (Guillaume, 04/11), where the corner arrives at tier 4. Polygons in the full frame, the path's corridor left open.
+SUD_G = [(0, 1380), (200, 1435), (440, 1560), (460, 1600), (530, 1730), (470, 1850), (440, 1900), (0, 1900)]
+SUD_D = [(550, 1575), (850, 1425), (1080, 1580), (1080, 1900), (580, 1930), (530, 1880), (580, 1730)]
+# The line the forest has pulled back to, by tier: all of it at tier 1, then less, and gone at tier 4.
+SUD_LIGNE = {1: 0, 2: 1610, 3: 1760}
+
+
+def foret_sud(canvas, tier):
+    """The real south forest of the render, moved up over the bare land, with stumps along the line it has pulled back to."""
+    limite = SUD_LIGNE[tier]
+    mask = Image.new("L", canvas.size, 0)
+    d = ImageDraw.Draw(mask)
+    d.polygon(SUD_G, fill=255)
+    d.polygon(SUD_D, fill=255)
+    # An irregular cut, a stand of trees and not a ruled line.
+    d.polygon([(0, 0), (1080, 0), *[(x, limite + 34 * math.sin(x / 70) + 18 * math.sin(x / 23)) for x in range(1080, -1, -20)]], fill=0)
+    mask = mask.filter(ImageFilter.GaussianBlur(7))
+    forest = canvas.copy()  # outside every patch: the render itself, never black
+    gauche, droite = canvas.crop((0, 1810, 430, 2180)), canvas.crop((620, 1780, 1080, 2135))
+    for patch, at in ((gauche, (0, 1660)), (ImageOps.mirror(droite), (620, 1680)), (gauche, (0, 1380)), (droite, (620, 1425))):
+        edge = Image.new("L", patch.size, 0)  # soft on all sides, so no patch shows a ruled edge
+        ImageDraw.Draw(edge).rectangle((26, 26, patch.width - 26, patch.height - 26), fill=255)
+        forest.paste(patch, at, edge.filter(ImageFilter.GaussianBlur(18)))
+    canvas.paste(forest, (0, 0), mask)
+    if limite:
+        rng = random.Random(tier)
+        draw = ImageDraw.Draw(canvas)
+        for _ in range(26):
+            x = rng.choice((rng.uniform(20, 430), rng.uniform(610, 1060)))
+            y = limite - rng.uniform(6, 70)
+            draw.ellipse((x - 5, y - 3, x + 5, y + 3), fill=(120, 96, 66), outline=(15, 21, 24))
+
+
 def compose(prop, tier):
     canvas = Image.open(FIXE / f"t{tier}-jour.png").convert("RGB")
     spec = P[prop]
+    if prop == "F" and tier in SUD_LIGNE:
+        foret_sud(canvas, tier)
     last = None
     for first, polygon in spec.get("clear", []):
         if first <= tier:

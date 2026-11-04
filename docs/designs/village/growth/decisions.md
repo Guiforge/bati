@@ -10,3 +10,4 @@
 - 04/11 **Pas de FLUX 3 Image.** Klein seul, sonde `growth_klein` : ni peinture finale ni pose ce soir.
 - 04/11 **Guillaume choisit F, la forêt recule.** Mon mélange R + F est écarté.
 - 04/11 **Le recul de F reste à gauche du bosquet** : son plan met le bosquet au pied de la forêt du fond (règle 23). Bourg et route de F à replacer sur les rendus de LAYOUT (G14), avant la peinture.
+- 04/11 **Forêt au sud aux paliers 1 à 3, demandée par Guillaume.** Elle couvre le sol nu, recule en laissant des souches à 2 et 3, disparaît au palier 4 où le coin arrive. Le coin et les crops, jugés à partir du palier 6, ne bougent pas. L'appentis du palier 1 passe près du camp, sinon la forêt le couvre. Dans le jeu, `lisiereSud` donne les mêmes masses à tous les paliers : il faudra le rendre dépendant du palier (G15).

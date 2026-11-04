@@ -10,5 +10,6 @@
 Ce que la piste ajoute au palier 12 si le choix suit le plan : 0 image montée, 0 chose qui bouge, environ 7 Mo de fichiers (estimation), à confronter à PROBE.
 
 - 04/11 Choix de Guillaume : F. Plan du palier 12 reporté sur F : `img/plan-sur-F.jpg`.
+- 04/11 Forêt du sud aux paliers 1 à 3 dans la bande F, montage : `img/bande-F.jpg`. Montée en plus aux paliers 1 à 3 : les masses de forêt qu'elle ajoute, à compter à G15.
 
-**La suite** : lire `picks/guillaume` sur la page (`ArtifactData`, collection `picks`) et `checkpoint.md`. F est choisie. G14 attend le plan de LAYOUT (L6, L7), G8 attend G14 et le budget de PROBE. G9 attend le choix sur LAYOUT, G11 sa fusion.
+**La suite** : réponses de Guillaume dans `checkpoint.md`. F est choisie. G14 attend le plan de LAYOUT (L6, L7), G8 attend G14 et le budget de PROBE. G9 attend le choix sur LAYOUT, G11 sa fusion.

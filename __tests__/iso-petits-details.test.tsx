@@ -57,7 +57,7 @@ describe("fireflies", () => {
       expect(p.gy).toBeGreaterThanOrEqual(ZONE_LUCIOLES.gy[0]);
       expect(p.gy).toBeLessThan(ZONE_LUCIOLES.gy[1]);
       expect(Math.abs(p.gx - (ZONE_LUCIOLES.gx[0] + ZONE_LUCIOLES.gx[1]) / 2)).toBeLessThanOrEqual(
-        2,
+        2.5,
       );
     }
   });
@@ -136,7 +136,7 @@ describe("fireflies", () => {
 
 describe("the fireflies' zone (isoLayout.json lieux)", () => {
   test("is read from the layout", () => {
-    expect(ZONE_LUCIOLES).toEqual({ gx: [3, 7], gy: [0, 3], evite: [[636, 44, 80]] });
+    expect(ZONE_LUCIOLES).toEqual({ gx: [2, 7], gy: [0, 3], evite: [[636, 44, 80]] });
   });
 });
 

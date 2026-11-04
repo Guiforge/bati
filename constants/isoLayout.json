@@ -105,7 +105,7 @@
   "lieux": {
     "_doc": "Named places of the small lives (L5-AUD I6): the fireflies' patch of ground, the cells [from, to) in gx and gy, and `evite`, the discs [x, y, radius] in map dp where none shows: the windmill's sails (hub of its tallest stage, half the sheet's diagonal and a halo), which a ground firefly would be drawn over.",
     "lucioles": {
-      "gx": [3, 7],
+      "gx": [2, 7],
       "gy": [0, 3],
       "evite": [[636, 44, 80]]
     }

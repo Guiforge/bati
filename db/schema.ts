@@ -86,6 +86,9 @@ export type ExerciseStyle = (typeof exerciseStyles)[number];
 export const locomotionCodes = ["walk", "run", "ride"] as const;
 export type Locomotion = (typeof locomotionCodes)[number];
 
+/** Why a session ended, when it was not the normal way (`0083`). The reason and nothing more about it. */
+export type StopReason = "pain";
+
 /**
  * The two populations `exercises.creator` and `quests.author` tell apart, next to the columns
  * that hold them so nothing has to import the database client to know what "mine" means.
@@ -651,6 +654,9 @@ export const completedQuest = sqliteTable(
     // session's the moment a summer save describes a winter workout. `createCompletedSession`
     // reads it off `performedAt`, like 0038 does.
     tzOffsetMin: int().$defaultFn(() => 0 - new Date().getTimezoneOffset()),
+    // Why the session ended (`0083`): null is a normal end, and every row from before the column.
+    // Only `countsForPlay` reads it.
+    stopReason: text().$type<StopReason>(),
   },
   (table) => ({
     performedAtIdx: index("completed_sessions_performed_at_idx").on(table.performedAt),
@@ -697,6 +703,9 @@ export const completedExercises = sqliteTable(
     // played in a running light week (a quest run at full volume excepted, D-52). `createCompletedSession`
     // is its one writer.
     ladderNeutral: int({ mode: "boolean" }).notNull().default(false),
+    // Neutral for one reason only: a running light week lightened the quest (`0083`). Zero on a
+    // movement left inside that week, which stays a skip, and on every row from before the column.
+    lightWeekNeutral: int({ mode: "boolean" }).notNull().default(false),
 
     notes: text().notNull().default(""),
     performedAt: int({ mode: "timestamp" })

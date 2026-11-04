@@ -7653,44 +7653,6 @@
     "how": "its night, graded offline by scripts/bld/integrate.py (famille_jour.nuit, no FLUX). The edge of the ground was cleaned by mask (grey footprint plate, straight diamond edge, key magenta fringe; scripts/bld/sans_losange.py), without FLUX.",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
   },
-  "assets/images/village/iso/pieces/animal_chat_repos.webp": {
-    "model": "flux-3-image",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
-    "signed_original": {
-      "file": "1062a91914a1fa47.png",
-      "sha256": "1062a91914a1fa470740ab90f507018b93cc474087e395f0f534014993c62c75"
-    },
-    "prompt": "Image 1 is a flat-shaded blockout that fixes the exact shape, the orthographic camera angle, the framing, the footprint and the base colour of every material of this object. Paint exactly this object as an illustration: the same silhouette, every part in the same place and at the same size, and the colours of image 1 kept as they are, since they are already the colours of the night. It is night: cold moonlight comes from the upper left, so the faces turned to the left are pale and bluish and the faces turned to the right are in deep shadow, exactly as in image 1. The only warm colours are inside the openings, nothing; the walls and the ground around them keep their cold night colours.The object stands alone on a flat studio backdrop of pure chroma green (#00FF00), evenly lit, untouched by the night scene, that fills the whole image from edge to edge, all four corners included; the object ends at its own base and everything around it is that same flat colour. The base is bare, clean-cut stone or timber right up to its inked edge. A grey tabby cat curled up asleep in a round loaf shape with its head tucked on its front paws, two pointed ears, its tail wrapped around the front, seen from the side, Every fill is flat, with no gradient: the stone is dull desaturated slate grey with no blue tint, the timber is dark umber brown, and every face turned right is in deep obsidian shadow. No purple, violet or lavender anywhere: the shadows are almost neutral blue-black with very little colour, and the stone, plaster and timber are all dull and desaturated. Every outline is a thick, continuous, solid black ink line, about as thick as a finger, with no gaps and no thin hatching. Shading is crisp cel-shading in two or three flat tones per material, with hard edges.  Image 2 is the same subject in the app's own artwork: take from it the materials and the colours, and keep the shape, the pose, the angle and the framing of image 1. The colours stay muted and dull: no bright red, no light blue, no violet.  Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is a cold, desaturated night: the object's shadows are deep obsidian blue (#0B0F19), a cold pale moonlight catches its top edges, and hard-edged cool moonlight falls on it from the upper left. One object alone, seen from above in the same orthographic three-quarter view as image 1, on the flat background described above. Hand-made pre-industrial materials, named by what they are: dressed stone, rough-hewn timber, red-brown clay tiles, straw thatch, wrought iron, woven cloth. The artwork is unsigned and wordless.",
-    "seed": null,
-    "width": 768,
-    "height": 768,
-    "generated": "2026-10-31",
-    "references": [
-      {
-        "path": "scripts/iso/blockouts/renders/peinture/animal_chat_dort.green.png",
-        "sha256": "c2ef7e3ae839deedc7f9d270bc599b47fc77b3bdfb0fda84a840c0308a814b7b"
-      },
-      {
-        "path": "docs/designs/village-iso-v1/evidence/T36/lotG/chat_dort_ref.png",
-        "sha256": "4297a894742787a593174ae91cf686264fcb053ebd31a7d38be24e22a0334fcd"
-      }
-    ],
-    "original_size": [
-      768,
-      768
-    ],
-    "cutout": "adaptive key measured on the signed original (iso_loop recut), alpha of the candidate kept, no blockout mask",
-    "reencoded": "WebP q90 with alpha (PIL, method 6)",
-    "edited": false,
-    "accepted_by": "chef",
-    "review": {
-      "verdict": "pass",
-      "failed_items": [],
-      "file": "docs/designs/village-iso-v1/reviews/T36-lotDG.md"
-    },
-    "note": "chat_dort c1 cropped to its opaque box and fitted to the 142 x 107 thumbnail's box (3,9,118,104), anchor 77,80 kept"
-  },
   "assets/images/village/iso/pieces/decor_arbre_a.webp": {
     "model": "flux-3-image",
     "provider": "Black Forest Labs (direct API)",
@@ -9054,43 +9016,6 @@
       {
         "path": "docs/designs/village-iso-v1/evidence/T40/peinture2/repos_dort_ref.png",
         "sha256": "6ee3c7e0b31877c4a2bacc8d2106b08f694bc20487d56dbdb4479813fee0c291"
-      }
-    ],
-    "original_size": [
-      768,
-      768
-    ],
-    "cutout": "adaptive key measured on the signed original (iso_loop recut), alpha of the candidate kept, no blockout mask",
-    "reencoded": "WebP q90 with alpha (PIL, method 6)",
-    "edited": false,
-    "accepted_by": "chef",
-    "review": {
-      "verdict": "pass",
-      "failed_items": [],
-      "file": "docs/designs/village-iso-v1/reviews/T40-peinture.md"
-    }
-  },
-  "assets/images/village/iso/repos/repos_joue_chat.webp": {
-    "model": "flux-3-image",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
-    "signed_original": {
-      "file": "3bc230cb4d32c2d9.png",
-      "sha256": "3bc230cb4d32c2d93364db3a3e52055a974532e3a7baa7c4ce7bfe6a4f7f035d"
-    },
-    "prompt": "Every figure is drawn with a thick, continuous, solid black ink contour around every shape, about as thick as a finger, with no gaps. Colour is two or three flat cel-shading tones per material with hard edges: no painterly rendering, no texture, no rim light, no white edge, no halo. Every figure is fully painted, a whole body with a head and a face, nothing left as a plain mannequin shape.  Image 1 is a flat-shaded blockout that fixes the exact shape, the orthographic camera angle, the framing, the footprint and the base colour of every material of this object. Paint exactly this object as an illustration: the same silhouette, every part in the same place and at the same size, and the colours of image 1 kept as they are, since they are already the colours of the night. It is night: cold moonlight comes from the upper left, so the faces turned to the left are pale and bluish and the faces turned to the right are in deep shadow, exactly as in image 1. The only warm colours are inside the openings, nothing; the walls and the ground around them keep their cold night colours.The object stands alone on a flat studio backdrop of pure chroma green (#00FF00), evenly lit, untouched by the night scene, that fills the whole image from edge to edge, all four corners included; the object ends at its own base and everything around it is that same flat colour. The base is bare, clean-cut stone or timber right up to its inked edge. A village minstrel crouching with one hand held out toward a small grey cat sitting in front, in a muted dark red tunic with a pale belt and brown trousers, Every fill is flat, with no gradient: the stone is dull desaturated slate grey with no blue tint, the timber is dark umber brown, and every face turned right is in deep obsidian shadow. No purple, violet or lavender anywhere: the shadows are almost neutral blue-black with very little colour, and the stone, plaster and timber are all dull and desaturated. Image 2 is a finished village character in the exact ink weight and flat shading wanted: copy its contour thickness, its flat tones and its muted colours, and keep the shape, the pose, the angle and the framing of image 1.  Rendered as a dark-fantasy Franco-Belgian graphic-novel illustration with thick, confident black ink outlines and flat cel-shaded color fills with hard-edged shadows. The palette is a cold, desaturated night: the object's shadows are deep obsidian blue (#0B0F19), a cold pale moonlight catches its top edges, and hard-edged cool moonlight falls on it from the upper left. One object alone, seen from above in the same orthographic three-quarter view as image 1, on the flat background described above. Hand-made pre-industrial materials, named by what they are: dressed stone, rough-hewn timber, red-brown clay tiles, straw thatch, wrought iron, woven cloth. The artwork is unsigned and wordless.",
-    "seed": null,
-    "width": 768,
-    "height": 768,
-    "generated": "2026-10-31",
-    "references": [
-      {
-        "path": "scripts/iso/blockouts/renders/repos/repos_joue_chat.green.png",
-        "sha256": "055fd8b3638a1022cc257a5aff55780c0d66e46b043fda3ba1f0c943c0e46ebd"
-      },
-      {
-        "path": "docs/designs/village-iso-v1/evidence/T40/peinture2/repos_joue_chat_ref.png",
-        "sha256": "e0eb727be0cd4916989e9c4a4e65afa7410abac276605536d12e927c4b2ea5c5"
       }
     ],
     "original_size": [

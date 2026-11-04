@@ -12,7 +12,6 @@ export type IdPose =
   | "assis_tonneau"
   | "porte_panier"
   | "lit"
-  | "joue_chat"
   | "dort"
   | "discutent"
   | "range_caisses"
@@ -26,7 +25,7 @@ export type PoseRepos = {
   /** The first tier where it can be drawn. */
   palier: number;
   /** What it needs next to the habitant: a cat within two cells, or a free neighbour (the pair), or the cell right in front of its building's wall. */
-  exige?: "chat" | "voisin" | "mur";
+  exige?: "voisin" | "mur";
   image: SpriteIso;
   /** The figure's box on its canvas, px: x0, y0, x1, y1, from the opaque pixels (alpha above 40) of the image. What a touch aims at. */
   corps: readonly [x0: number, y0: number, x1: number, y1: number];
@@ -80,18 +79,6 @@ export const POSES_REPOS: readonly PoseRepos[] = [
     lieux: ["place", "batiment"],
     palier: 3,
     image: sprite(require("@/assets/images/village/iso/repos/repos_lit.webp"), [384, 670], 5.548),
-  },
-  {
-    id: "joue_chat",
-    corps: [246, 77, 523, 692],
-    lieux: ["place", "batiment"],
-    palier: 4,
-    exige: "chat",
-    image: sprite(
-      require("@/assets/images/village/iso/repos/repos_joue_chat.webp"),
-      [407, 472],
-      4.445,
-    ),
   },
   {
     id: "dort",

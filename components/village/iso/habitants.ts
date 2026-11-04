@@ -234,8 +234,6 @@ function partenaire(out: readonly Habitant[], i: number, carte: Carte): Duo | un
 /** The poses that suit `g` now: its tier, its place, and what they need beside it. */
 function posesPossibles(g: Habitant, palier: number, duo?: Duo) {
   const exigence = {
-    // ponytail: no animal of the map is a cat since the old one went (the wall's is painted, creatures.ts), so this pose never shows; bring a cat back or drop `joue_chat`.
-    chat: false,
     voisin: !!duo,
     mur: faceDuMur(g.cellule, g.lieu) !== undefined,
   };

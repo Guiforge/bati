@@ -599,7 +599,7 @@ function Respire({
   phase: number;
 }) {
   const style = useAnimatedStyle(() => {
-    const r = respirationFlamme(horloge.get(), phase);
+    const r = respirationFlamme(horloge.get(), phase, e.part);
     return { transform: [{ scaleX: r.x }, { scaleY: r.y }] };
   });
   if (!image) return null;

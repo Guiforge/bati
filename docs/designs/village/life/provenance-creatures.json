@@ -244,27 +244,5 @@
    "assets/images/village/iso/creatures/bird_bande.webp",
    "assets/images/village/iso/creatures/bird_bande.nuit.webp"
   ]
- },
- "assets/images/village/iso/creatures/dragon_sleep.webp": {
-  "model": "flux-3-image",
-  "provider": "Black Forest Labs (direct API)",
-  "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
-  "signed_original": {
-   "file": "8a01b6676889d32b.png",
-   "sha256": "8a01b6676889d32b3b5e2d8a5438c6d13ee9e3c6ab988b4f148ab0cfa36e9d80"
-  },
-  "prompt": "Image 1 is a drawing of a big dragon curled asleep in a ring. Repaint it as a clean hand-painted sprite. Very thick dark ink outline (#0F1518), about three times thicker than in image 1, even and bold around the whole shape and around every paw or claw. Only three to six big flat colour shapes, each with two soft values: fur, feathers and scales are plain colour masses, with no individual hairs, no feather lines, no hatching, no scale pattern. Simple gentle face. Warm light from the upper left, cool slate shade on the right side of the body. Matte, no gloss, no ground, no cast shadow. Flat pure green background (#00B140), one even colour filling the frame to every edge, nothing else. Same camera angle, same position and same size in the frame as image 1. The scales are only three flat bands of value: light on the back, a mid tone, a dark one underneath, no scale drawing. The back spikes are large, bold and clearly readable. The tail is tucked inside the curled shape. Head down, eyes closed, rust-red body with an ochre belly.",
-  "seed": null,
-  "width": 1024,
-  "height": 1024,
-  "generated": "2026-11-04",
-  "references": [
-   {
-    "path": "docs/designs/village/life/scratch/c1/flux/raw/dragon_b_breathe_in.png",
-    "sha256": "5d824f74e57183ffe6f6e1ec9ea01e89f0e4c8ac7ce294dacd15c1df6566933a"
-   }
-  ],
-  "used_for": "assets/images/village/iso/creatures/dragon_sleep.webp",
-  "raw": "docs/designs/village/life/scratch/final/raw/dragon_sleep__a1c1.png"
  }
 }

@@ -1,12 +1,11 @@
-// LIFE C3 to C7: the painted creatures (mice, the wall's cat, roof birds, the mythic lair's dragon).
+// LIFE C3 to C7: the painted creatures (mice, the wall's cat, roof birds; the lair's dragon is the painted one, motion/dragon_lair.json).
 // The pure rules (where they may live, what a timeline does on a cycle boundary), then the map.
 import "@/i18n";
 import assert from "node:assert/strict";
-import { act, configure, render, screen } from "@testing-library/react-native";
+import { configure, render, screen } from "@testing-library/react-native";
 import * as Reanimated from "react-native-reanimated";
 import { COTE, etatCarte, LARGEUR, stadeDemo } from "@/components/village/iso/carteDemo";
 import {
-  CASE_DRAGON,
   CODES_A_PERCHOIR,
   CYCLES_VISITE,
   HAUTEUR_VILLAGEOIS,
@@ -14,7 +13,6 @@ import {
   PART_CHAT,
   PART_SOURIS,
   perchoirDe,
-  souffle,
   stations,
   TAILLES,
   tronconDuChat,
@@ -95,10 +93,10 @@ describe("their size, by ratio to a villager", () => {
 describe("where they live", () => {
   test("no mouse without the barn or the farm; the farm's west side needs the farm itself", () => {
     for (const jour of JOURS) {
-      expect(stations(tout, sans("barn", "farm"), false, jour)).toEqual([]);
-      const grange = stations(tout, sans("farm"), false, jour);
+      expect(stations(tout, sans("barn", "farm"), jour)).toEqual([]);
+      const grange = stations(tout, sans("farm"), jour);
       expect(grange.map((s) => s.id)).toEqual(["ferme-nord"]);
-      expect(stations(tout, sans("barn"), false, jour).map((s) => s.id)).toEqual([
+      expect(stations(tout, sans("barn"), jour).map((s) => s.id)).toEqual([
         "ferme-nord",
         "ferme-ouest",
       ]);
@@ -106,26 +104,18 @@ describe("where they live", () => {
   });
 
   test("a mouse is mounted whatever the day (the node count never moves), and the day only says whether it is out", () => {
-    const vus = JOURS.flatMap((j) => stations(tout, buildingCodes, false, j).map((s) => s.present));
+    const vus = JOURS.flatMap((j) => stations(tout, buildingCodes, j).map((s) => s.present));
     expect(vus.every((p) => p === true || p === false)).toBe(true);
     expect(vus).toContain(true);
     expect(vus).toContain(false);
-    for (const j of JOURS) expect(stations(tout, buildingCodes, false, j)).toHaveLength(2);
-  });
-
-  test("no dragon below the mythic stage, none without its lair, one at the mythic one", () => {
-    const dragons = (m: boolean, montres: readonly BuildingCode[]) =>
-      stations(tout, montres, m, 20_000).filter((s) => s.espece === "dragon");
-    expect(dragons(false, buildingCodes)).toEqual([]);
-    expect(dragons(true, sans("dragon_lair"))).toEqual([]);
-    expect(dragons(true, buildingCodes)).toHaveLength(1);
+    for (const j of JOURS) expect(stations(tout, buildingCodes, j)).toHaveLength(2);
   });
 
   test("nothing stands on a building's footprint, and every waypoint is inside its own footprint", () => {
     const sous = new Set(
       buildingCodes.flatMap((c) => emplacements[c].cases.map(([x, y]) => `${x},${y}`)),
     );
-    for (const s of stations(tout, buildingCodes, true, 20_000)) {
+    for (const s of stations(tout, buildingCodes, 20_000)) {
       for (let i = 0; i < s.e.emprise[0]; i++)
         for (let j = 0; j < s.e.emprise[1]; j++)
           expect([s.id, sous.has(`${s.e.coin[0] + i},${s.e.coin[1] + j}`)]).toEqual([s.id, false]);
@@ -138,12 +128,11 @@ describe("where they live", () => {
         expect(gy).toBeLessThan(s.e.coin[1] + s.e.emprise[1]);
       }
     }
-    expect(sous.has(CASE_DRAGON.join(","))).toBe(false);
   });
 
   test("a station off the island is not mounted", () => {
     const vide = tout.map((r) => r.map(() => false));
-    expect(stations(vide, buildingCodes, true, 20_000)).toEqual([]);
+    expect(stations(vide, buildingCodes, 20_000)).toEqual([]);
   });
 
   test("the cat's stretch is one of the wall's, drawn by the day", () => {
@@ -209,12 +198,6 @@ describe("the timelines", () => {
     expect(vole).toBeGreaterThan(0);
     expect(Math.max(...vitesses)).toBeLessThan(135);
   });
-
-  test("the dragon breathes 3 % at most, and is at its size on every boundary", () => {
-    for (let k = 0; k < 10; k++) expect(souffle(k * CYCLE_MS)).toBeCloseTo(1, 10);
-    expect(souffle(CYCLE_MS / 2)).toBeCloseTo(1.03, 10);
-    for (let c = 0; c < CYCLE_MS * 2; c += 50) expect(souffle(c)).toBeLessThanOrEqual(1.03 + 1e-9);
-  });
 });
 
 type Noeud = { props?: Record<string, unknown>; children?: unknown[] | null };
@@ -277,7 +260,6 @@ describe("on the map", () => {
     expect(parIds(/^iso-creature-souris-/)).toHaveLength(2);
     expect(parIds(/^iso-creature-chat-/)).toHaveLength(1);
     expect(parIds(/^iso-creature-oiseau-/)).toHaveLength(0);
-    expect(parIds(/^iso-creature-dragon/)).toHaveLength(0);
     expect(creatures()).toHaveLength(6);
     expect(animes(screen.toJSON())).toBeGreaterThanOrEqual(6);
     for (const v of creatures()) expect(v.props.pointerEvents ?? "none").toBe("none");
@@ -288,16 +270,6 @@ describe("on the map", () => {
     expect(parIds(/^iso-creature-oiseau-/)).toHaveLength(2);
     for (const v of parIds(/^iso-creature-oiseau-/))
       expect(getAnimatedStyle(v as never).opacity).toBe(0);
-  });
-
-  test("the dragon: only at the mythic stage, one node, never a target", async () => {
-    await render(<Hote />);
-    expect(screen.queryAllByTestId("iso-creature-dragon")).toHaveLength(0);
-    await screen.unmount();
-    await render(<Hote mythique />);
-    const d = screen.getAllByTestId("iso-creature-dragon");
-    expect(d).toHaveLength(1);
-    expect(animes(d[0])).toBe(1);
   });
 
   test("the village goes quiet while an upgrade is revealed: no creature at all", async () => {
@@ -315,8 +287,5 @@ describe("on the map", () => {
       expect(v.props.pointerEvents ?? "none").toBe("none");
     }
     expect(screen.queryAllByTestId(/^iso-creature-.*-bande$/)).toHaveLength(0);
-    expect(screen.queryAllByTestId("iso-creature-dragon")).toHaveLength(1);
-    await act(() => jest.advanceTimersByTime(3000));
-    expect(screen.queryAllByTestId("iso-creature-dragon")).toHaveLength(1);
   });
 });

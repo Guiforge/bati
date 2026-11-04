@@ -1,0 +1,13 @@
+{
+  "effets": [
+    {
+      "kind": "flamme",
+      "stade": "mythic",
+      "at": [450, 905],
+      "fromRank": 5,
+      "zone": [378, 722, 150, 196],
+      "pivot": [450, 905],
+      "part": 0.42
+    }
+  ]
+}

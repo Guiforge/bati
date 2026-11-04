@@ -1,6 +1,6 @@
 // Every building's motion file, imported statically (Metro bundles the JSON, nothing is read by
 // name at run time). A building with no entry here moves as it did: its `lights` drawn still.
-// archery_range and dragon_lair have none on purpose. The archery range's pale wind streaks (mythic
+// archery_range has none on purpose. The archery range's pale wind streaks (mythic
 // stage, behind the targets) run across the shed and the tower, so a zone copy of them would drag
 // the timber along; a `vent` there waits for the streaks to be painted on their own layer.
 
@@ -10,6 +10,7 @@ import barn from "./barn.json";
 import campfire from "./campfire.json";
 import castleWall from "./castle_wall.json";
 import championArena from "./champion_arena.json";
+import dragonLair from "./dragon_lair.json";
 import druidGrove from "./druid_grove.json";
 import farm from "./farm.json";
 import forge from "./forge.json";
@@ -34,6 +35,7 @@ export const MOUVEMENTS: Readonly<Partial<Record<BuildingCode, MouvementBld>>> =
   campfire: campfire as unknown as MouvementBld,
   castle_wall: castleWall as unknown as MouvementBld,
   champion_arena: championArena as unknown as MouvementBld,
+  dragon_lair: dragonLair as unknown as MouvementBld,
   druid_grove: druidGrove as unknown as MouvementBld,
   farm: farm as unknown as MouvementBld,
   forge: forge as unknown as MouvementBld,

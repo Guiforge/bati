@@ -1,6 +1,5 @@
 // The map's small painted creatures (LIFE C3 to C7), pure side (drawn by Creatures.tsx): mice by
-// the barn and the farm, a cat on the wall, birds that land on a roof, the sleeping dragon of the
-// mythic lair. Decoration only: nothing gates on them, nothing taps them. Every pose is a function
+// the barn and the farm, a cat on the wall, birds that land on a roof. Decoration only: nothing gates on them, nothing taps them. Every pose is a function
 // of the ambient clock `c` (horloge.ts) and of the day's seed, never of a timer or of chance.
 //
 // The clock rests on a multiple of CYCLE_MS, so the timelines are built on whole cycles: an even
@@ -16,7 +15,7 @@ import type { Emprise } from "./profondeur";
 import { hasard } from "./vivant";
 
 export type Pt = readonly [x: number, y: number];
-export type Espece = "souris" | "chat" | "oiseau" | "dragon";
+export type Espece = "souris" | "chat" | "oiseau";
 
 /** One image of the walking sheets lasts this long: 8 a second. */
 const MS_IMAGE = 125;
@@ -45,7 +44,6 @@ export const TAILLES: Record<Espece, { l: number; h: number }> = {
   souris: boite(PART_SOURIS, 88 / 109, 155 / 109),
   chat: boite(PART_CHAT, 117 / 128, 157 / 128),
   oiseau: { l: 20, h: 15 },
-  dragon: { l: 72, h: 64 },
 };
 
 /** The images of a sheet, in order: two of the walk (or of the flight) and the rest one. */
@@ -143,13 +141,6 @@ export function visite(c: number, jour: number, sel: number, perche: Pt): Pas {
   };
 }
 
-/** The sleeping dragon's breath, +3 % at the most, one a cycle: 1 on every cycle boundary (the rest pose). */
-export function souffle(c: number): number {
-  "worklet";
-  const s = Math.sin((Math.PI * c) / CYCLE_MS);
-  return 1 + 0.03 * s * s;
-}
-
 // --- Where they live ----------------------------------------------------------------------------
 
 /** The buildings with a roof point for a bird (isoLayout.json `toits`). */
@@ -190,7 +181,7 @@ export const surLeMur = (cases: readonly Case[]): Pt[] =>
 
 type Station = {
   id: string;
-  espece: "souris" | "dragon";
+  espece: "souris";
   /** Its one footprint in the depth order. */
   e: Emprise;
   /** The waypoints of its feet, dp. */
@@ -230,12 +221,6 @@ const SOURIS = [
   avec: readonly BuildingCode[];
 }[];
 
-/**
- * The dragon's cell: open grass at the lair's left, outside the stone and clear of the cave's
- * mouth (the painting already has a sleeping one inside and a carved one on the roof).
- */
-export const CASE_DRAGON: Case = [13, 2];
-
 const cellsVisibles = (e: Emprise, visible: readonly (readonly boolean[])[]): boolean =>
   Array.from({ length: e.emprise[0] }, (_, i) =>
     Array.from(
@@ -248,12 +233,11 @@ const cellsVisibles = (e: Emprise, visible: readonly (readonly boolean[])[]): bo
 
 /**
  * The creatures that live on the ground and have a place of their own (the cat, the birds and the
- * wall are the wall's and the roofs': Creatures.tsx). `mythique`: the lair stands at its mythic stage.
+ * wall are the wall's and the roofs': Creatures.tsx).
  */
 export function stations(
   visible: readonly (readonly boolean[])[],
   montres: readonly BuildingCode[],
-  mythique: boolean,
   jour: number,
 ): Station[] {
   const souris = SOURIS.filter(
@@ -268,20 +252,5 @@ export function stations(
       pts: s.gy.flatMap((gy) => s.gx.map((gx) => ecranXY([gx, gy]))),
     }),
   );
-  const dragon: Station[] =
-    mythique &&
-    montres.includes("dragon_lair") &&
-    cellsVisibles({ coin: CASE_DRAGON, emprise: [1, 1] }, visible)
-      ? [
-          {
-            id: "dragon",
-            espece: "dragon",
-            e: { coin: CASE_DRAGON, emprise: [1, 1] },
-            sel: 3,
-            present: true,
-            pts: [ecranXY([CASE_DRAGON[0] + 0.5, CASE_DRAGON[1] + 0.5])],
-          },
-        ]
-      : [];
-  return [...souris, ...dragon];
+  return souris;
 }

@@ -44,8 +44,8 @@ describe("the motion files", () => {
     }
   });
 
-  test("19 buildings have a file (archery_range and dragon_lair none), and one wave of them fits the node budget", () => {
-    expect(Object.keys(MOUVEMENTS)).toHaveLength(19);
+  test("20 buildings have a file (archery_range none), and one wave of them fits the node budget", () => {
+    expect(Object.keys(MOUVEMENTS)).toHaveLength(20);
     for (const m of Object.values(MOUVEMENTS)) {
       expect(noeudsBld(m.effets)).toBeLessThanOrEqual(MOUVEMENT_NOEUDS_MAX);
     }
@@ -251,6 +251,31 @@ describe("MouvementBld", () => {
     expect(noeuds()).toHaveLength(3);
     expect(screen.queryAllByTestId("iso-fenetres-windmill")).toHaveLength(1);
     expect(screen.queryAllByTestId("batiment-lueur-fenetre")).toHaveLength(5);
+  });
+});
+
+describe("the sleeping dragon's breath (dragon_lair)", () => {
+  const dragon = (MOUVEMENTS.dragon_lair?.effets ?? []).flatMap((e) =>
+    e.kind === "flamme" ? [e] : [],
+  );
+
+  test("one painted breath on the mythic painting, from its rank, 3 % at most, a tight zone about its feet", () => {
+    expect(dragon).toHaveLength(1);
+    const [e] = dragon;
+    expect(e?.stade).toBe("mythic");
+    expect(e?.fromRank).toBe(5);
+    // The painting is 896 x 1152: the zone is the cave's, the pivot on its bottom edge.
+    const [x, y, w, h] = e?.zone ?? [0, 0, 0, 0];
+    expect(w).toBeLessThan(200);
+    expect(h).toBeLessThan(220);
+    expect(e?.pivot[1]).toBeLessThanOrEqual(y + h);
+    expect(e?.pivot[0]).toBeGreaterThanOrEqual(x);
+    for (let c = 0; c < 2 * CYCLE_MS; c += 50) {
+      const r = respirationFlamme(c, 0.3, e?.part);
+      expect(r.y).toBeLessThanOrEqual(1.03 + 1e-9);
+      expect(r.x).toBeLessThanOrEqual(1.03);
+    }
+    expect(respirationFlamme(0, 0.3, e?.part).y).toBeCloseTo(1, 10);
   });
 });
 

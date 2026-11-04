@@ -22,7 +22,6 @@ import {
   type Pas,
   type Pt,
   perchoirDe,
-  souffle,
   surLeMur,
   TAILLES,
   tronconDuChat,
@@ -50,16 +49,12 @@ const DOSSIER = {
     jour: require("@/assets/images/village/iso/creatures/bird_bande.webp"),
     nuit: require("@/assets/images/village/iso/creatures/bird_bande.nuit.webp"),
   },
-  dragon: {
-    jour: require("@/assets/images/village/iso/creatures/dragon_sleep.webp"),
-    nuit: require("@/assets/images/village/iso/creatures/dragon_sleep.nuit.webp"),
-  },
 } as const;
 
-/** Frames of a sheet: the dragon is one image. */
-const IMAGES: Record<Espece, number> = { souris: 3, chat: 3, oiseau: 3, dragon: 1 };
+/** Frames of a sheet. */
+const IMAGES: Record<Espece, number> = { souris: 3, chat: 3, oiseau: 3 };
 /** Width of the contact oval under its feet, dp (none for a bird: it flies). */
-const OMBRE: Record<Espece, number> = { souris: 6, chat: 7, oiseau: 0, dragon: 44 };
+const OMBRE: Record<Espece, number> = { souris: 6, chat: 7, oiseau: 0 };
 
 const source = (espece: Espece, lumiere: Ambiance) =>
   DOSSIER[espece][lumiere === "nuit" ? "nuit" : "jour"];
@@ -283,33 +278,5 @@ export function OiseauToit({
       }}
       testID={testID}
     />
-  );
-}
-
-/** The sleeping dragon of the mythic lair: still, but for its slow breath (+3 %, pivot at its feet). */
-export function DragonEndormi({ pied, lumiere = "nuit" }: { pied: Pt; lumiere?: Ambiance }) {
-  const horloge = useContext(HorlogeContext);
-  const reduit = useMouvementReduit();
-  const { l, h } = TAILLES.dragon;
-  const respire = useAnimatedStyle(() => {
-    const s = horloge ? souffle(horloge.get()) : 1;
-    // Scaled about its feet: up to the middle, scale, back down.
-    return { transform: [{ translateY: h / 2 }, { scale: s }, { translateY: -h / 2 }] };
-  });
-  if (useContext(RevelationContext)) return null;
-  const testID = "iso-creature-dragon";
-  if (reduit || !horloge)
-    return <Immobile espece="dragon" lumiere={lumiere} pied={pied} image={0} testID={testID} />;
-  return (
-    <View pointerEvents="none" style={posee(pied[0], pied[1], l, h)}>
-      <OmbreContact x={l / 2} y={h} largeur={OMBRE.dragon} />
-      <Animated.View testID={testID} style={[{ width: l, height: h }, respire]}>
-        <Image
-          source={source("dragon", lumiere)}
-          contentFit="fill"
-          style={{ width: l, height: h }}
-        />
-      </Animated.View>
-    </View>
   );
 }

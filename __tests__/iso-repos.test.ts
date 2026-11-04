@@ -86,13 +86,6 @@ describe("the resting poses (T40)", () => {
     expect(paires).toBeGreaterThan(0);
   });
 
-  test("the cat pose is never drawn: no animal of the map is a cat since the old one left (the wall's is painted)", () => {
-    for (let j = 0; j < 60; j++) {
-      expect(poses(12, j).some((g) => g.pose === "joue_chat")).toBe(false);
-      for (const g of placerHabitants(12, carteDe(12), j)) expect(g.pose).not.toBe("joue_chat");
-    }
-  });
-
   test("whoever the party moved stands up, and so does its partner", () => {
     for (let j = 0; j < 40; j++) {
       const gens = poses(12, j);

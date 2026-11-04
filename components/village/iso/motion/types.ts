@@ -62,6 +62,8 @@ export type Flamme = Pose & {
   stade: VisualStage;
   zone: readonly [x: number, y: number, w: number, h: number];
   pivot: Point;
+  /** The share of the default breath (1): the sleeping dragon takes a little less than half (+3 % at most). */
+  part?: number;
 };
 
 export type Effet = Lueur | Particules | Vent | Miroitement | Flamme;

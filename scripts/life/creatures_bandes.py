@@ -4,7 +4,7 @@
 
 Reads the frames in docs/designs/village/life/creatures-sources/ (provenance-creatures.json says
 which flux-3-image generation made each), writes <nom>_bande.webp and <nom>_bande.nuit.webp in
-assets/images/village/iso/creatures/, plus dragon_sleep.nuit.webp from the kept dragon_sleep.webp.
+assets/images/village/iso/creatures/.
 Add a creature: drop its frames in creatures-sources/, add a line to BANDES, run, log provenance.
 """
 import pathlib
@@ -32,5 +32,3 @@ for nom, frames in BANDES.items():
     bande.save(D / f"{nom}_bande.webp", "WEBP", quality=90, method=6)
     nuit(bande, None).save(D / f"{nom}_bande.nuit.webp", "WEBP", quality=90, method=6)
     print(nom, bande.size)
-dragon = Image.open(D / "dragon_sleep.webp").convert("RGBA")
-nuit(dragon, None).save(D / "dragon_sleep.nuit.webp", "WEBP", quality=90, method=6)

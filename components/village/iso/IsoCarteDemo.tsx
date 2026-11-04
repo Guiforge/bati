@@ -53,7 +53,7 @@ import Animated, {
 } from "react-native-reanimated";
 import Svg, { ClipPath, Defs, G, Path, Polygon, Text } from "react-native-svg";
 import { ailesAuRang, type BuildingData } from "@/constants/buildingData";
-import { buildingStageFor, type VisualStage } from "@/constants/buildingStages";
+import type { VisualStage } from "@/constants/buildingStages";
 import { BATIMENT_MOTEUR } from "@/constants/isoPoc";
 import { rawColors } from "@/constants/rawColors";
 import type { Practice } from "@/db/crestRules";
@@ -73,7 +73,7 @@ import {
   voileVillage,
 } from "./alentours";
 import { bordDe, PORTEE_BORD } from "./bord";
-import { ChatRempart, DragonEndormi, OiseauToit, Souris } from "./Creatures";
+import { ChatRempart, OiseauToit, Souris } from "./Creatures";
 import {
   ANIMAUX,
   type AnimalCarte,
@@ -2075,8 +2075,6 @@ export function IsoCarte({
 }) {
   const horloge = useContext(HorlogeContext);
   const jourCarte = useJour();
-  const etatBld = useContext(EtatBldContext);
-  const rangsBld = useContext(RangsBldContext);
   // The painted surroundings on (alentours.ts): the props in the depth order, the forest over the ground.
   const peint = useContext(AlentoursContext);
   const decor = seul ? [] : decorDe(peint, visible, montres, palier);
@@ -2190,14 +2188,8 @@ export function IsoCarte({
         ),
       insere(vues.map(noeud), statue, rangStatue),
     );
-  // LIFE: the mice and the sleeping dragon each have a footprint of their own, ranked after the rest.
-  const rangLair =
-    etatBld?.code === "dragon_lair" ? etatBld.rang : rangsBld?.rangs.get("dragon_lair");
-  const mythique =
-    BATIMENT_MOTEUR &&
-    rangLair !== undefined &&
-    buildingStageFor("dragon_lair", rangLair, rangsBld?.bases.dragon_lair ?? 0) === "mythic";
-  const bestioles = seul ? [] : stations(visible, montres, mythique, jourCarte);
+  // LIFE: the mice each have a footprint of their own, ranked after the rest.
+  const bestioles = seul ? [] : stations(visible, montres, jourCarte);
   const { emprises: emprisesF, rangs: rangsBestioles } = placer(
     emprisesE,
     bestioles.map((b) => ({ e: b.e, dessus: false })),
@@ -2207,18 +2199,14 @@ export function IsoCarte({
       (l, b, k) =>
         insere(
           l,
-          b.espece === "dragon" ? (
-            <DragonEndormi key="dragon" pied={b.pts[0] ?? [0, 0]} lumiere={lumiere} />
-          ) : (
-            <Souris
-              key={`s${b.id}`}
-              id={b.id}
-              sel={b.sel}
-              pts={b.pts}
-              present={b.present}
-              lumiere={lumiere}
-            />
-          ),
+          <Souris
+            key={`s${b.id}`}
+            id={b.id}
+            sel={b.sel}
+            pts={b.pts}
+            present={b.present}
+            lumiere={lumiere}
+          />,
           rangsBestioles[k] ?? null,
         ),
       liste,

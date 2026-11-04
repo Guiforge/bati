@@ -113,12 +113,12 @@ const FLAMME_HAUT = 0.07;
 const FLAMME_LARGE = 0.025;
 
 /** The painted flame's growth at clock `c`: two slow swells a cycle, out of step with the others (`phase`), 1 and 1 at every boundary. */
-export function respirationFlamme(c: number, phase: number): { y: number; x: number } {
+export function respirationFlamme(c: number, phase: number, part = 1): { y: number; x: number } {
   "worklet";
   const u = (c % CYCLE_MS) / CYCLE_MS;
   const theta = 2 * u + phase * Math.sin(Math.PI * u) ** 2;
   const v = (1 - Math.cos(2 * Math.PI * theta)) / 2;
-  return { y: 1 + FLAMME_HAUT * v, x: 1 + FLAMME_LARGE * v };
+  return { y: 1 + FLAMME_HAUT * part * v, x: 1 + FLAMME_LARGE * part * v };
 }
 
 /** How long `n` windows take to be all lit, ms. */

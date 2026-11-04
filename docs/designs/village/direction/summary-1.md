@@ -29,5 +29,5 @@ FLUX : 3,34 $ sur 5 $ (Klein 0,26 $, FLUX 3 Image 3,08 $). Registre : 108,19 $ s
 
 1. **Regarde `img/cible-planche.jpg`.** Si le palier 12 de jour te gêne, `r2_t12_2` et `flux3_A_t12_v2` sont dans l'archive. Il suffit de le dire.
 2. **Les crops** : tu as dit oui. LAYOUT te montrera le rendu avant de les reverrouiller.
-3. **La rue en S ou ton plan** : le plan garde la porte et le pont, mais ne borde pas encore une rue. LAYOUT te posera la question.
+3. **La rue** : ton plan est validé et il fait foi pour le placement. LAYOUT te proposera comment une rue relie ces places.
 4. LAYOUT peut démarrer, avec GROWTH étapes 1 à 3 à côté.

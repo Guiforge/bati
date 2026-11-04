@@ -44,7 +44,7 @@ Demandé par Guillaume le 04/11. Les bâtiments du joueur ne sont pas repeints :
 
 ## Le plan du palier 12, point de départ de LAYOUT
 
-Choisi par Guillaume le 04/11, placement par placement, sur le vrai jeu : `img/plan-t12-essai.jpg`. C'est un essai dans l'atelier, non conservé. Le sol, les chemins, les ombres et les zones de tap ne sont pas refaits.
+Validé par Guillaume le 04/11, placement par placement, sur le vrai jeu (« c'est notre nouvelle config ») : `img/plan-t12-essai.jpg`. **Pour le placement, ce plan passe avant les images peintes.** C'est un essai dans l'atelier, non conservé dans le code. Le sol, les chemins, les ombres et les zones de tap ne sont pas refaits.
 
 21. **Bâtiments du joueur à +25 % environ**, sans toucher au mur ni au coin verrouillé. Zoom par défaut inchangé.
 22. **Autre rive** : moulin au bord de l'eau, ferme, grange et observatoire espacés, l'observatoire le plus loin à gauche. **Un pont lisible** et un chemin vers chacun.
@@ -80,7 +80,7 @@ Retirés de `rempart` : [17, 4], [17, 5], [17, 7], [17, 8]. Le reste ne bouge pa
 - La carrière (83,0 %) : le mannequin, large, la couvre. Il a gêné à chaque place essayée : forge, tour de guet, antre, carrière. Agrandir ou aérer le coeur lui fera une vraie place.
 - La ferme et la tour du sorcier touchent presque les bords de l'écran au zoom par défaut. L'occlusion ne le compte pas.
 - Le coeur reste serré.
-- La direction A : le plan garde la porte et le pont, mais les bâtiments ne bordent pas encore une rue en S. LAYOUT tranche, avec Guillaume, si ce plan la remplace.
+- La direction A : le plan garde la porte et le pont, mais les bâtiments ne bordent pas encore une rue en S. LAYOUT garde ces places et propose à Guillaume comment une rue peut les relier.
 - Non testé : la nuit, les autres paliers, le zoom minimum, la vraie grille agrandie, les crops verrouillés (`lisiere` et `pieds` peuvent reculer une fois).
 
 **Trois pièges pour refaire l'essai :**

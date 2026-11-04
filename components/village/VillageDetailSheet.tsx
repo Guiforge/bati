@@ -485,7 +485,7 @@ export function BuildingFacts({
               {localizedName(exercise, language)}
             </Text>
             <Text fontSize={12} color="textSecondary">
-              {t("village.detail_recent_units", { volume: exercise.volume })}
+              {t("village.detail_recent_units", { volume: formatCount(language, exercise.volume) })}
             </Text>
             <ChevronRight size={16} color="primaryText" />
           </XStack>

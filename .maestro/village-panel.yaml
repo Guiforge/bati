@@ -1,9 +1,8 @@
 # Maestro E2E Test - the iso village's building panel: open, follow a link, come back
 #
-# Needs: the dev build with the iso village on (INTEGRATION), a fresh install. Onboarding gives a
-# hero with a few buildings; no session is needed. A linked row (a session or an exercise of the
-# Quarry/Archery family) only exists once the hero has trained, so that part is skipped cleanly
-# when no row shows; everything else is asserted.
+# Needs: the dev build with the iso village on (INTEGRATION) and a debug build for seed-hero.yaml
+# (3 years of history), so the first building row has linked rows (movements, sessions). They are
+# mandatory: the flow fails if none shows.
 #
 # What it guards: the panel is state in the village tab. A row inside it pushes a screen and Back
 # must find the SAME panel open (it used to close the panel before the push, so Back showed the map
@@ -13,11 +12,14 @@
 # There is no testID per building on the map (it is drawn, not made of views), so the drawer's row
 # opens the panel. The first row tap after a cold start can be lost (see village-sheet-check.yaml),
 # so it is uncapped on purpose. Selects by testID only: en and fr both pass.
+# The CALLER resets the hero (scripts/game/village-flows.sh does the pm clear): no clearState here,
+# it would erase the dev client's saved server URL. Dev build only (INTEGRATION on).
 appId: com.guiforge.bati.dev
 ---
-- launchApp:
-    clearState: true
+- runFlow: subflows/boot-dev-client.yaml
 - runFlow: subflows/complete-onboarding.yaml
+# A trained hero: the linked rows below must exist, or the flow fails (no vacuous pass).
+- runFlow: subflows/seed-hero.yaml
 
 - tapOn:
     id: "tab-village"
@@ -51,28 +53,17 @@ appId: com.guiforge.bati.dev
 # The name Text itself (iso-bulle-nom is the accessible wrapper, whose label also says the rank).
 - copyTextFrom:
     id: "iso-bulle-titre"
-# Neither exists for a hero who has not trained that building; the block is then skipped. The
-# movements are the panel's first section, so a movement row is tried first, else a session row.
-- runFlow:
-    when:
-      visible:
-        id: "iso-bulle-exercice"
-    commands:
-      - tapOn:
-          id: "iso-bulle-exercice"
-          index: 0
-      - runFlow: subflows/village-panel-back-check.yaml
-- runFlow:
-    when:
-      notVisible:
-        id: "iso-bulle-exercice"
-      visible:
-        id: "iso-bulle-seance"
-    commands:
-      - tapOn:
-          id: "iso-bulle-seance"
-          index: 0
-      - runFlow: subflows/village-panel-back-check.yaml
+# Mandatory: scroll the panel to a linked row, fail if there is none. The movements are the panel's
+# first section, so one is tried first; the hero is seeded, so the first building (a trained one)
+# has them. Fails loudly otherwise.
+- scrollUntilVisible:
+    element:
+      id: "iso-bulle-exercice"
+    timeout: 10000
+- tapOn:
+    id: "iso-bulle-exercice"
+    index: 0
+- runFlow: subflows/village-panel-back-check.yaml
 
 # --- 3. Back closes the panel and the title returns --------------------------------------
 - back

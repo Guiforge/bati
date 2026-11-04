@@ -8,10 +8,11 @@
 # Asserts state, not the screen: after Evolve the panel is gone and the title is back, then the
 # same building reopened no longer offers Evolve, which is the read of what the tap wrote.
 # The ready marker on a drawer row is `village-building-ready` (a testID, not its translated text).
+# The CALLER resets the hero (scripts/game/village-flows.sh does the pm clear): no clearState here,
+# it would erase the dev client's saved server URL. Dev build only (INTEGRATION on).
 appId: com.guiforge.bati.dev
 ---
-- launchApp:
-    clearState: true
+- runFlow: subflows/boot-dev-client.yaml
 - runFlow: subflows/complete-onboarding.yaml
 - runFlow: subflows/seed-hero.yaml
 

@@ -11,10 +11,11 @@
 # the village then returning does not open it again (the opening is spent: `prendreOuverture`).
 #
 # The session screens never settle (timer): see subflows/play-to-victory.yaml for the capped taps.
+# The CALLER resets the hero (scripts/game/village-flows.sh does the pm clear): no clearState here,
+# it would erase the dev client's saved server URL. Dev build only (INTEGRATION on).
 appId: com.guiforge.bati.dev
 ---
-- launchApp:
-    clearState: true
+- runFlow: subflows/boot-dev-client.yaml
 - runFlow: subflows/complete-onboarding.yaml
 
 # Play the first quest to the victory screen and stop there (Continue not tapped).

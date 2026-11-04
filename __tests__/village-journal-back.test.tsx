@@ -144,7 +144,7 @@ describe("back from a session", () => {
     exercises: [
       {
         exerciseId: 7,
-        volume: 5,
+        volume: 2288,
         enName: "Bench press",
         frName: "",
         deName: "",
@@ -184,6 +184,7 @@ describe("back from a session", () => {
   test("on the card the movements come before the sessions that raised it", async () => {
     await mountFacts(true, jest.fn());
     const flat = JSON.stringify(screen.toJSON());
+    expect(screen.getByText(/2,288/)).toBeTruthy();
     expect(flat.indexOf("Bench press")).toBeGreaterThan(-1);
     expect(flat.indexOf("Bench press")).toBeLessThan(flat.indexOf("Push day"));
   });

@@ -191,7 +191,7 @@
     1
    ],
    "status": "blocked",
-   "note": "Attend le go de Guillaume, apres la fin de la piste"
+   "note": "Attend le go de Guillaume, apres la fin de la piste. Remettre dans .maestro/config.yaml village-panel, village-evolve et village-end-of-session (retires tant que INTEGRATION est off)"
   }
  ]
 }

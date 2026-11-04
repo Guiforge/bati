@@ -3,7 +3,11 @@
 appId: com.guiforge.bati.dev
 ---
 - takeScreenshot: village-panel-3-linked-screen
+# Hardware Back, once: the pushed page must take it. The panel's own Back handler used to stay
+# registered under the page, so the first press closed the hidden panel and the page stayed.
 - back
+- assertVisible:
+    id: "village-screen"
 - assertVisible:
     id: "iso-bulle-nom"
 - assertNotVisible:

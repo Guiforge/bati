@@ -23,7 +23,13 @@ jest.mock("@/db/completed", () => ({
   getRecentContributingSessions: jest.fn(() => mockSessions),
   getContributingExercises: jest.fn(() => Promise.resolve(mockExercices)),
 }));
-jest.mock("expo-router", () => ({ useRouter: () => ({ push: jest.fn() }) }));
+let mockFocused = true;
+jest.mock("expo-router", () => ({
+  useRouter: () => ({ push: jest.fn() }),
+  // Focus is a flag the test flips; the effect re-runs on each render like the real hook on focus.
+  useFocusEffect: (cb: () => undefined | (() => void)) =>
+    require("react").useEffect(() => (mockFocused ? cb() : undefined)),
+}));
 jest.mock("@/hooks/useReducedMotion", () => ({ useReducedMotion: () => true }));
 
 const METRICS = {
@@ -344,6 +350,17 @@ describe("Bulle (T14)", () => {
     });
     expect(pris).toBe(true);
     expect(etat()).toBe("fermee");
+  });
+
+  it("while the village is blurred (a screen pushed from the panel), Back is left to the router", async () => {
+    ecran();
+    mockFocused = false;
+    const spy = jest.spyOn(BackHandler, "addEventListener");
+    spy.mockClear();
+    await monter({ depart: ouverture("forge") });
+    mockFocused = true;
+    expect(spy).not.toHaveBeenCalled();
+    expect(etat()).not.toBe("fermee");
   });
 
   it("offers Evolve only when ready: hammer, words and a 48 dp button that closes and claims", async () => {

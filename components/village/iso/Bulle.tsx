@@ -7,6 +7,7 @@
 // or by tapping the same element again.
 
 import { LinearGradient } from "expo-linear-gradient";
+import { useFocusEffect } from "expo-router";
 import { type ReactNode, type RefObject, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -153,15 +154,17 @@ export function Bulle({
   // Above its anchor the bubble hangs from its bottom edge (the tail's), so it grows upwards.
   const cale = caleDe(placee, taille, ecran.height);
 
-  // As in VillageDetailSheet: registered while open, so the router never sees the press.
-  useEffect(() => {
+  // As in VillageDetailSheet: registered while open, so the router never sees the press. Also only
+  // while the village is focused: a screen pushed from the panel leaves it open underneath, and
+  // its Back must reach the router, not close the hidden panel.
+  useFocusEffect(() => {
     if (!ouverte) return;
     const sub = BackHandler.addEventListener("hardwareBackPress", () => {
       onClose();
       return true;
     });
     return () => sub.remove();
-  }, [ouverte, onClose]);
+  });
   useEffect(() => {
     if (feuille && nom.current) AccessibilityInfo.sendAccessibilityEvent(nom.current, "focus");
   }, [feuille]);

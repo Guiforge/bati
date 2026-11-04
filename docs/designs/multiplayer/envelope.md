@@ -60,7 +60,12 @@ messages de cette paire. Elle n'est donc acceptée que par la caméra, sur un é
 
 `en-tête ‖ made-at u32 ‖ clé publique de A 32`, soit **65 octets**. Année et semaine à zéro. Aucun
 secret : A garde la moitié privée dans `pair_invites` (`0084`), sur ce téléphone seulement, jusqu'à la
-réponse ou 7 jours, puis l'écrase. Valable 7 jours.
+réponse ou 7 jours, puis la supprime. Valable 7 jours.
+
+**La suppression n'est pas un effacement physique immédiat.** `secure_delete` et un checkpoint la sortent du
+fichier principal, mais la base est en WAL et les anciennes pages restent dans le journal jusqu'à ce que SQLite les
+réutilise, un relancement n'y change rien (mesuré sur une build de release). Il faut lire les fichiers privés de
+l'app pour les voir, donc un téléphone rooté. Même limite pour le secret d'une paire déliée.
 
 ### Kind 4, la réponse d'appairage
 

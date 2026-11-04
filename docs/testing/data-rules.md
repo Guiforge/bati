@@ -1038,7 +1038,8 @@ whether the proposed goal was reached, and it reads no byHand row.
 
 **R130. A link invitation waiting.** `pair_invites` (0084) holds the private half of an X25519 pair, is `local` to
 this device, and goes when the answer comes (`completeLinkInvite`) or after seven days (`sweepExpiredInvites`), with
-`secure_delete`. A plain backup has its rows removed (`NEVER_IN_PLAINTEXT`, `scrubPairs`). A link never accepts a
+`secure_delete` and a checkpoint, which clear the main file and not yet the WAL's old pages (the `shortcut:` in
+`db/pairs.ts`). A plain backup has its rows removed (`NEVER_IN_PLAINTEXT`, `scrubPairs`). A link never accepts a
 kind 2 invite, which holds a secret: `readCode` refuses it by the door it came through (`__tests__/db-pairs.test.ts`).
 
 **R129. The pain stop.** `completed_sessions.stopReason` (0083) is NULL on a normal end and on every older row,

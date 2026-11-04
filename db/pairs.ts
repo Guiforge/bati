@@ -47,8 +47,13 @@ function withoutParams<T>(write: () => Promise<T>): Promise<T> {
 }
 
 /**
- * On its own connection: on the app's, Drizzle's unfinalized statements make a checkpoint fail, on a
- * phone and not under jest. Never a reason to fail the write it follows, which is already done.
+ * Moves what was deleted out of the main file. On its own connection: on the app's, Drizzle's open
+ * statements make a checkpoint fail, on a phone and not under jest. Never a reason to fail the write
+ * it follows, which is already done.
+ *
+ * shortcut: those same statements hold a reader, so the log is not truncated and the old bytes stay in
+ * it until SQLite reuses the pages (measured on a release build, a relaunch does not clear them). Only
+ * someone reading the app's private files can see them. Finalizing Drizzle's statements is the real fix.
  */
 async function flushLog(): Promise<void> {
   try {
@@ -58,11 +63,7 @@ async function flushLog(): Promise<void> {
   }
 }
 
-/**
- * Overwrites what it deletes, for a table holding a secret. Off again after: it slows every delete.
- * The checkpoint is half of it: the database is in WAL mode, so the old bytes stay in the main file and
- * in the log until one runs. A busy database skips it without failing, and the next one finishes the job.
- */
+/** Overwrites what it deletes, for a table holding a secret. Off again after: it slows every delete. */
 export async function withSecureDelete<T>(work: () => Promise<T>): Promise<T> {
   await db.run(sql`PRAGMA secure_delete = ON`);
   try {

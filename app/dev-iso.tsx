@@ -60,8 +60,9 @@ import { type BlasonCrest, blasonFactice, NOM_STATUE } from "@/components/villag
 import { useCameraIso } from "@/components/village/iso/useCameraIso";
 import { estDefaut, VariantesContext, variantesDe } from "@/components/village/iso/variantes";
 import { animalDeVocation } from "@/components/village/iso/vocation";
+import { buildingCeiling } from "@/constants/buildingLevels";
 import { ISO_POC } from "@/constants/isoPoc";
-import { type BuildingCode, buildingCodes } from "@/db/schema";
+import { type BuildingCode, buildingCodes, buildingDefinitions } from "@/db/schema";
 import type { VillageTier } from "@/db/village";
 import { playHit } from "@/src/sounds";
 
@@ -107,7 +108,10 @@ export default function DevIsoRoute() {
     rang,
     base,
     semaine,
+    pret,
   } = useLocalSearchParams<{
+    /** `?mode=pret&pret=<code>&rang=N[&ambiance=nuit]`: the full map, that building ready to rise from rank N (a rank at or past its ceiling just stands: the mythic lair's dragon). */
+    pret?: string;
     /** `?bld=<code>&rang=N` (+ `base`, `semaine=1`): the buildings track's capture states (etatBld.ts). */
     bld?: string;
     rang?: string;
@@ -163,7 +167,11 @@ export default function DevIsoRoute() {
                 <DevIso
                   lumiere={ambianceForcee(ambiance) ?? "nuit"}
                   nu={nu === "1"}
-                  depart={{ palier: palierDe(palier), mode: mode === "pret" ? "pret" : "carte" }}
+                  depart={{
+                    palier: palierDe(palier),
+                    mode: mode === "pret" ? "pret" : "carte",
+                    pret: ciblePretDe(pret, rang),
+                  }}
                   jouer={jouer === "1"}
                   foyer={buildingCodes.find((c) => c === foyer)}
                   zoomFoyer={Number(zoom) > 0 ? Number(zoom) : 1.6}
@@ -240,12 +248,46 @@ function Sonde({
   );
 }
 
+/** The ready building a dev link names (`?pret=` and `?rang=`). */
+type CiblePret = { code: BuildingCode; rang: number };
+
+const plafondDe = (code: BuildingCode) =>
+  buildingCeiling({ tier: buildingDefinitions[code].tier, code });
+
+/** The target of `?pret=<code>&rang=N`, or undefined when the code is not a building or N is not a rank. */
+const ciblePretDe = (pret: string | undefined, rang: string | undefined): CiblePret | undefined => {
+  const code = buildingCodes.find((c) => c === pret);
+  return code && rang !== undefined && /^\d+$/.test(rang)
+    ? { code, rang: Number(rang) }
+    : undefined;
+};
+
 /**
  * PretDemo's ready building and the level it rises from. "Neuf" (T02b): from nothing, so the site
  * shows its heap of stones; nothing holds its claimed level then (a claimed 0 takes it off the map).
  */
-function etatPret(palier: VillageTier, essai: number, neuf: boolean, banniere: boolean) {
-  const batiments = etatCarte(palier, false).montres.map((code) => ({ code, level: 9 }));
+function etatPret(
+  palier: VillageTier,
+  essai: number,
+  neuf: boolean,
+  banniere: boolean,
+  cible?: CiblePret,
+) {
+  const montres = etatCarte(palier, false).montres;
+  if (cible && montres.includes(cible.code)) {
+    // `?pret=<code>&rang=N`: that building, ready to rise from rank N to its ceiling. A rank at or
+    // past the ceiling claims nothing: the building just stands there (the mythic lair's dragon).
+    const plafond = plafondDe(cible.code);
+    return {
+      batiments: montres.map((code) => ({
+        code,
+        level: code === cible.code ? Math.max(plafond, cible.rang) : 9,
+      })),
+      pret: cible.rang < plafond ? cible.code : undefined,
+      ancien: neuf ? 0 : cible.rang,
+    };
+  }
+  const batiments = montres.map((code) => ({ code, level: 9 }));
   // "Bannière" (T03): the ready building is one that flies a banner on its last stage, so the
   // scene rises into it and qa sees the banner come in with the fade.
   const candidats = banniere ? batiments.filter((b) => !SANS_BANNIERE.has(b.code)) : batiments;
@@ -285,8 +327,11 @@ export function PretDemo({
   lumiere = "nuit",
   nu = false,
   jouer = false,
+  cible,
   onRevelation,
 }: {
+  /** The building and rank a `?pret=<code>&rang=N` link names. */
+  cible?: CiblePret;
   /** Claims the ready building 1.5 s in, as the tap on it does (dev route only: in the tab the player's touch is the only door). */
   jouer?: boolean;
   palier: VillageTier;
@@ -302,7 +347,7 @@ export function PretDemo({
   const [fini, setFini] = useState(-1);
   const [neuf, setNeuf] = useState(false);
   const [banniere, setBanniere] = useState(false);
-  const { batiments, pret, ancien } = etatPret(palier, essai, neuf, banniere);
+  const { batiments, pret, ancien } = etatPret(palier, essai, neuf, banniere, cible);
   const reclame = pret && fini !== essai;
   // As the tab: a claim in play is no longer ready, and the new level is already the shown one.
   const enJeu = jouee === `demo:${essai}`;
@@ -332,7 +377,11 @@ export function PretDemo({
           height={aire.h}
           lumiere={lumiere}
           reclamables={reclame && !enJeu && pret ? [pret] : []}
-          niveauxReclames={pret && !neuf ? { [pret]: reclame && !enJeu ? ancien : 9 } : undefined}
+          niveauxReclames={
+            pret && !neuf
+              ? { [pret]: reclame && !enJeu ? ancien : cible ? plafondDe(pret) : 9 }
+              : undefined
+          }
           onOpen={(b) => {
             if (reclame && b.code === pret) setJouee(`demo:${essai}`);
           }}
@@ -437,7 +486,7 @@ function DevIso({
   crest: BlasonCrest | null;
   /** The controls above the map are not drawn (`?nu=1`). */
   nu: boolean;
-  depart: { palier: VillageTier; mode: "carte" | "pret" };
+  depart: { palier: VillageTier; mode: "carte" | "pret"; pret?: CiblePret };
 }) {
   const insets = useSafeAreaInsets();
   const [palier, setPalier] = useState<VillageTier>(depart.palier);
@@ -534,6 +583,7 @@ function DevIso({
           lumiere={lumiere}
           nu={nu}
           jouer={jouer}
+          cible={depart.pret}
           onRevelation={revelerPret}
         />
       </YStack>

@@ -691,6 +691,24 @@ describe("ready to evolve (L6-T13)", () => {
     expect(screen.queryAllByTestId(/^iso-croissance-/)).toHaveLength(0);
   });
 
+  // bati://dev-iso?mode=pret&pret=<code>&rang=N: the full map, that building ready to rise from rank N.
+  it("Prêt with a target: the whole map, the named wall ready from its rank, and its moment on its footprint", async () => {
+    await render(
+      <GestureHandlerRootView>
+        <TamaguiProvider config={config} defaultTheme="dark">
+          <PretDemo palier={12} jouer cible={{ code: "castle_wall", rang: 2 }} />
+        </TamaguiProvider>
+      </GestureHandlerRootView>,
+    );
+    await fireEvent(screen.getByTestId("iso-pret-aire"), "layout", {
+      nativeEvent: { layout: { width: 390, height: 390 } },
+    });
+    expect(screen.queryAllByTestId(/^iso-marteau-/)).toHaveLength(1);
+    expect(screen.getAllByTestId("iso-marteau-castle_wall")).toHaveLength(1);
+    await act(() => jest.advanceTimersByTime(1600));
+    expect(screen.getAllByTestId("iso-croissance-lueur-castle_wall")).toHaveLength(1);
+  });
+
   it("Prêt with jouer: the climb starts 1.5 s in, and does not restart", async () => {
     const revele = jest.fn();
     await render(<Pret jouer onRevelation={revele} />);

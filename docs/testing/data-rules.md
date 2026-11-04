@@ -1044,7 +1044,7 @@ kind 2 invite, which holds a secret: `readCode` refuses it by the door it came t
 
 **R129. The pain stop.** `completed_sessions.stopReason` (0083) is NULL on a normal end and on every older row,
 `'pain'` when the hero said so; `stopForPain` is its one writer, through `saveSession`, and a stop before any set
-writes no row. Only `countsForPlay` reads it: a pain stop counts at most once per seven local days, decided over the
+writes no row. The pause screen offers it in one tap, outings excepted. Only `countsForPlay` reads it: a pain stop counts at most once per seven local days, decided over the
 whole journal (`countedPainStops`) and never stored, so two merged devices agree. A swap down the ladder that reached
 its level counts (`setsLeftForEasier`). `lightWeekNeutral` (0083) marks a set only a light week made neutral; a
 movement left that week keeps 0, and older rows keep 0 with no backfill (`__tests__/counts-for-play.test.ts`,

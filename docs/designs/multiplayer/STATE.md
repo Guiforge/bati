@@ -51,8 +51,9 @@ Total réel : 1 h 40, de 09:37 à 11:15. Reste : ce qui dépend de toi, listé d
 
 ### B2 : ce qui a été ajouté
 
-- Le geste apparaît à trois endroits, tous déjà hors du chemin normal : le dialogue de confirmation de Quitter (bouton
-  du milieu), à côté du texte de douleur dans `ActiveExerciseView`, et à côté de celui de `RestView`. J'ai ajouté
+- Le geste apparaît à quatre endroits : l'écran de pause (décision du 04/11, un bouton, sans dialogue), le dialogue de
+  confirmation de Quitter (bouton du milieu), à côté du texte de douleur dans `ActiveExerciseView`, et à côté de celui de
+  `RestView`. J'ai ajouté
   `RestView`, que le brief ne citait pas : sinon le geste n'existerait à côté du texte que sans aucune série à garder.
 - `stopForPain` termine la séance, `PainStopView` remplace la victoire : la bulle de l'herboriste, le lien vers la page
   Sécurité, Continuer vers l'accueil. Aucune question, y compris « c'était court ».
@@ -63,6 +64,8 @@ Total réel : 1 h 40, de 09:37 à 11:15. Reste : ce qui dépend de toi, listé d
 - **Une étape d'aventure avance sur un arrêt**, comme aujourd'hui sur une séance où tout le reste est passé. Le brief
   dit « inchangé » : je n'y ai pas touché.
 - **Les sorties n'ont pas le geste** : leur « Terminer » garde déjà la trace.
+- **Contrainte pour le lot 1 (décision du 04/11) :** un 2e arrêt dans la semaine ne fait pas de frappe, et « rien n'est
+  perdu » reste dit au héros. Le lot 1 ne doit jamais présenter cet arrêt comme un échec.
 
 ### B6 : invitation par lien
 

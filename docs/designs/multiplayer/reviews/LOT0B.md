@@ -2,7 +2,7 @@
 
 **Les trous du lot 0 sont fermés, et la porte est verte : l'arrêt pour douleur marche sur téléphone sans rien ajouter à
 une séance normale, une variante plus facile compte, et un lien d'invitation ne porte plus aucun secret.** Le lot 1 peut
-partir. Il reste la clé Play et trois décisions, plus bas. Une limite aussi, à connaître : une clé supprimée reste
+partir. Il reste la clé Play ; tes trois décisions du 04/11 sont appliquées, plus bas. Une limite aussi, à connaître : une clé supprimée reste
 lisible dans le WAL pour qui lit les fichiers privés de l'app.
 
 ## Ce qui a été construit
@@ -86,7 +86,7 @@ documentation et les commentaires qui promettaient trop.
 
 **Écarté après vérification :** le départage de deux arrêts le même jour se fait par uuid v7, qui suit déjà l'heure.
 
-**Laissé, à ta main ou pour plus tard :** les décisions ci-dessous ; « Read Train safely », un libellé existant bancal ;
+**Laissé pour plus tard :** « Read Train safely », un libellé existant bancal ;
 la dernière ligne de la bulle serrée à 200 %, qui vient du composant ; TalkBack, non essayé.
 
 ## Ce dont j'ai besoin de toi
@@ -94,18 +94,13 @@ la dernière ligne de la bulle serrée à 200 %, qui vient du composant ; TalkBa
 **Avant de fusionner**, inchangé depuis le lot 0 : l'empreinte SHA-256 de la clé de signature d'app Play, puis
 `adb shell pm get-app-links com.guiforge.bati` une fois `assetlinks.json` publié.
 
-**Décisions :**
+**Décisions, prises le 04/11 :**
 
-1. **« Rien n'est perdu » au 2e arrêt de la semaine.** Les séries sont gardées, mais ce 2e arrêt ne fait pas de frappe,
-   alors que finir en forçant en ferait une. Sophie y voit le point le plus proche de la ligne rouge. Tes deux consignes
-   sont appliquées telles quelles. **Je recommande de les garder :** rien n'est retiré, et le plafond est ce qui empêche la
-   triche. Le lot 1 devra simplement ne jamais présenter cela comme un échec.
-2. **Pendant une série normale, le geste est à trois taps** : Pause, Quitter, puis le bouton. Le mettre sur l'écran de
-   pause le ramènerait à deux, Martine le demande, mais ton brief le limite au chemin d'arrêt. **Je recommande de le mettre
-   sur l'écran de pause :** ça n'ajoute aucun tap à une séance normale, et une personne qui a mal ne pense pas à
-   « Quitter ».
-3. **« Bien joué de t'être écouté »** est au masculin, je l'ai gardé mot pour mot. Si Bati doit rester neutre, il faudra
-   une autre tournure, par exemple « Bien joué d'avoir écouté ton corps, rien n'est perdu ». **Je recommande celle-ci.**
+1. **« Rien n'est perdu » reste au 2e arrêt de la semaine.** Ce 2e arrêt ne fait pas de frappe, le plafond empêche la
+   triche. **Le lot 1 ne devra jamais présenter cet arrêt comme un échec.**
+2. **Le geste est sur l'écran de pause** : deux taps pendant une série (Pause, le bouton), sans dialogue, sans rien ajouter
+   à une séance normale. Il reste aussi dans le dialogue de Quitter.
+3. **La phrase devient « Bien joué d'avoir écouté ton corps, rien n'est perdu »**, qui marche quel que soit le genre.
 
 **À savoir :**
 

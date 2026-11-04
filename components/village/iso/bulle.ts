@@ -14,7 +14,12 @@ export type CibleBulle =
   | { type: "villageois"; id: string; role: Role; habitant: boolean };
 
 /** A bubble asked for: its subject, and the point its tail aims at, in window dp. */
-export type Ouverture = { cible: CibleBulle; ancre: readonly [x: number, y: number] };
+export type Ouverture = {
+  cible: CibleBulle;
+  ancre: readonly [x: number, y: number];
+  /** Opened from a list: the building's place on the window is unknown, so no halo and the bottom dock. */
+  sansAncre?: boolean;
+};
 
 /** Where a view's top left lies in the window (its own seam: a jest host never measures). */
 export function mesurerFenetre(
@@ -80,10 +85,20 @@ export function etatBulle(
   taille: Taille | null,
   ecran: Taille & { fontScale: number },
   insets: Insets,
-): { feuille: boolean; placee: Extract<Placement, { mode: "bulle" }> | null } {
-  if (!ouverte) return { feuille: false, placee: null };
-  if (ecran.fontScale > ECHELLE_FEUILLE) return { feuille: true, placee: null };
-  if (!taille) return { feuille: false, placee: null };
+): {
+  feuille: boolean;
+  placee: Extract<Placement, { mode: "bulle" }> | null;
+  /** A building's parchment panel, docked to the screen: no placement, no measure. */
+  panneau: boolean;
+} {
+  if (!ouverte) return { feuille: false, placee: null, panneau: false };
+  if (ecran.fontScale > ECHELLE_FEUILLE) return { feuille: true, placee: null, panneau: false };
+  if (ouverte.cible.type === "batiment") {
+    // Landscape has no height for a panel docked on the screen: the sheet, same content.
+    const paysage = ecran.w > ecran.h;
+    return { feuille: paysage, placee: null, panneau: !paysage };
+  }
+  if (!taille) return { feuille: false, placee: null, panneau: false };
   const p = placerBulle({
     ancre: ouverte.ancre,
     taille,
@@ -91,7 +106,9 @@ export function etatBulle(
     insets,
     fontScale: ecran.fontScale,
   });
-  return p.mode === "bulle" ? { feuille: false, placee: p } : { feuille: true, placee: null };
+  return p.mode === "bulle"
+    ? { feuille: false, placee: p, panneau: false }
+    : { feuille: true, placee: null, panneau: false };
 }
 
 /**
@@ -152,4 +169,75 @@ export function placerBulle({
     cote,
     queueX: borne(ax - x, COIN, taille.w - COIN),
   };
+}
+
+/** The building panel is held to this share of the window's height; its content scrolls past it. */
+const PART_PANNEAU = 0.35;
+/** How far below its anchor (the sprite's top centre) a building's body reaches, dp: kept clear of the panel. */
+export const CORPS_BATIMENT = 96;
+
+export const hauteurMaxPanneau = (ecranH: number): number => Math.floor(PART_PANNEAU * ecranH);
+
+const recouvre = (a0: number, a1: number, b0: number, b1: number) =>
+  Math.max(0, Math.min(a1, b1) - Math.max(a0, b0));
+
+/**
+ * Which edge the panel docks to: the bottom (above the tab bar, `insets.bottom` carries it) unless
+ * the tapped building's body would end under it, as after a zoom; then the top, below the safe
+ * area. When both would hide it, the one that hides less. The camera never moves for this.
+ */
+export function coteDuPanneau(
+  ancre: readonly [x: number, y: number],
+  hauteurPanneau: number,
+  ecran: Taille,
+  insets: Insets,
+): "haut" | "bas" {
+  const fond = ecran.h - insets.bottom;
+  const y = ancre[1];
+  const sousLeBas = recouvre(y, y + CORPS_BATIMENT, fond - hauteurPanneau, fond);
+  const sousLeHaut = recouvre(y, y + CORPS_BATIMENT, insets.top, insets.top + hauteurPanneau);
+  return sousLeBas <= sousLeHaut ? "bas" : "haut";
+}
+
+/** How long the party gets before the panel opens by itself: 10 s (was 20, the longest planning wave, judged too long; the panel does not hide the map). */
+export const DELAI_FETE_MS = 10_000;
+
+// The last session key whose end-of-session panel was decided. Module state survives a remount of
+// the screen (a ref does not), like `prendreFete`.
+let derniereOuverture: string | undefined;
+
+/** True the first time `cleSeance` is seen, false every time after (also after a remount). */
+export function prendreOuverture(cleSeance: string | undefined): boolean {
+  if (!cleSeance || cleSeance === derniereOuverture) return false;
+  derniereOuverture = cleSeance;
+  return true;
+}
+
+/** The building the end of a session opens: one this session raised, else the first ready. */
+export function batimentAOuvrir(
+  prets: readonly BuildingCode[],
+  eleves: ReadonlySet<BuildingCode>,
+): BuildingCode | undefined {
+  return prets.find((c) => eleves.has(c)) ?? prets[0];
+}
+
+/** Step of the search grid, dp: finer than the smallest tappable sprite. */
+const PAS_RECHERCHE = 12;
+
+/**
+ * A building's opening (its anchor on the window) found through the map's own hit test, for a
+ * building named by a list and not touched on the map. Null when it is off the screen or hidden.
+ */
+export function ouvertureDe(
+  code: BuildingCode,
+  viser: (x: number, y: number) => Ouverture | null,
+  aire: Taille,
+): Ouverture | null {
+  for (let y = PAS_RECHERCHE / 2; y < aire.h; y += PAS_RECHERCHE) {
+    for (let x = PAS_RECHERCHE / 2; x < aire.w; x += PAS_RECHERCHE) {
+      const o = viser(x, y);
+      if (o && o.cible.type === "batiment" && o.cible.code === code) return o;
+    }
+  }
+  return null;
 }

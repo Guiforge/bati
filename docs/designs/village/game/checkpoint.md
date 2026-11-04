@@ -13,3 +13,7 @@ Guillaume, la page de choix : https://claude.ai/artifact/3j3191iMw5PQVUPNzqCFxe 
 - **Activer INTEGRATION :** ton go à la toute fin de la piste, item G12.
 
 ## Réponse de Guillaume
+
+Écrans : maquettes de la session.
+Direction : C, le panneau.
+Fin de séance : le panneau s'ouvre seul sur le premier bâtiment prêt.

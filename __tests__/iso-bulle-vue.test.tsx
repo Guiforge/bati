@@ -18,10 +18,18 @@ import config from "@/tamagui.config";
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/db/adventures", () => ({ listFinishedRunSummaries: jest.fn().mockResolvedValue([]) }));
 let mockSessions: Promise<unknown[]> = Promise.resolve([]);
+let mockExercices: unknown[] = [];
 jest.mock("@/db/completed", () => ({
   getRecentContributingSessions: jest.fn(() => mockSessions),
+  getContributingExercises: jest.fn(() => Promise.resolve(mockExercices)),
 }));
-jest.mock("expo-router", () => ({ useRouter: () => ({ push: jest.fn() }) }));
+let mockFocused = true;
+jest.mock("expo-router", () => ({
+  useRouter: () => ({ push: jest.fn() }),
+  // Focus is a flag the test flips; the effect re-runs on each render like the real hook on focus.
+  useFocusEffect: (cb: () => undefined | (() => void)) =>
+    require("react").useEffect(() => (mockFocused ? cb() : undefined)),
+}));
 jest.mock("@/hooks/useReducedMotion", () => ({ useReducedMotion: () => true }));
 
 const METRICS = {
@@ -47,9 +55,21 @@ const batiment = (code: BuildingCode, over: Partial<VillageBuilding> = {}) =>
     ...over,
   }) as VillageBuilding;
 
-const BATIMENTS = [batiment("forge"), batiment("well")];
+const BATIMENTS = [
+  batiment("forge"),
+  batiment("well"),
+  batiment("farm"),
+  batiment("barn", { driver: "prereq", relatedMuscle: null, metricValue: 4, nextTarget: 5 }),
+  batiment("quarry", { level: 0, metricValue: 0, nextTarget: 1 }),
+];
 const ouverture = (code: BuildingCode, ancre: [number, number] = [180, 400]): Ouverture => ({
   cible: { type: "batiment", code },
+  ancre,
+});
+
+/** A trade's bubble: the one shell still placed by `placerBulle`. Buildings have the panel. */
+const forgeron = (ancre: [number, number] = [180, 400]): Ouverture => ({
+  cible: { type: "villageois", id: "smith", role: "smith", habitant: false },
   ancre,
 });
 
@@ -98,6 +118,7 @@ function Hote({
               years={null}
               onClose={() => setBulle(null)}
               onClaim={onClaim}
+              onSuivre={(code) => setBulle(ouverture(code, [180, 200]))}
             />
           ) : null;
         }}
@@ -145,18 +166,69 @@ async function toucher(x0: number, y0: number, x1 = x0, y1 = y0) {
 afterEach(() => jest.restoreAllMocks());
 
 describe("Bulle (T14)", () => {
-  it("opens hidden, then above its anchor once measured, its name first for the screen reader", async () => {
+  it("a villager's bubble opens hidden, then above its anchor once measured, its name first", async () => {
     ecran();
-    await monter({ depart: ouverture("forge") });
+    await monter({ depart: forgeron() });
     await mesurer();
     const style = StyleSheet.flatten(screen.getByTestId("iso-bulle").props.style);
     // Above its anchor it hangs from its bottom edge, the tail's: 640 - (400 - tail - 200) - 200.
     expect([style.left, style.top, style.bottom]).toEqual([30, undefined, 640 - 400 + QUEUE_BULLE]);
     const nom = screen.getByTestId("iso-bulle-nom");
     expect(nom.props.accessibilityRole).toBe("header");
+    expect(screen.queryByTestId("iso-panneau")).toBeNull();
+  });
+
+  it("a building is the parchment panel docked on the screen: no measure, no tail, its name first", async () => {
+    ecran();
+    await monter({ depart: ouverture("forge", [180, 200]) });
+    // No Modal and no measure: it shows at once, a layer of the screen's own tree.
+    expect(screen.queryByTestId("iso-bulle")).toBeNull();
+    const panneau = StyleSheet.flatten(screen.getByTestId("iso-panneau").props.style);
+    expect([panneau.left, panneau.right, panneau.bottom]).toEqual([0, 0, 0]);
+    const nom = screen.getByTestId("iso-bulle-nom");
+    expect(nom.props.accessibilityRole).toBe("header");
     expect(nom.props.accessibilityLabel).toBe("Forge, rank 3");
-    // The sheet's frame stays mounted, empty: the content is in the bubble only.
     expect(screen.getAllByTestId("iso-bulle-nom")).toHaveLength(1);
+    // The halo marks the building, and is never tappable nor spoken.
+    const halo = screen.getByTestId("iso-halo", { includeHiddenElements: true });
+    expect(halo.props.pointerEvents).toBe("none");
+    expect(halo.props.importantForAccessibility).toBe("no-hide-descendants");
+  });
+
+  it("docks at the top when the building would end under the bottom panel", async () => {
+    ecran();
+    await monter({ depart: ouverture("forge", [180, 450]) });
+    const panneau = StyleSheet.flatten(screen.getByTestId("iso-panneau").props.style);
+    expect([panneau.top, panneau.bottom]).toEqual([METRICS.insets.top, undefined]);
+  });
+
+  it("opened from a list (no anchor): the bottom dock, no halo", async () => {
+    ecran();
+    await monter({ depart: { ...ouverture("forge", [0, 0]), sansAncre: true } });
+    expect(StyleSheet.flatten(screen.getByTestId("iso-panneau").props.style).bottom).toBe(0);
+    expect(screen.queryByTestId("iso-halo")).toBeNull();
+  });
+
+  it("keeps the same panel from one building to the next, content changing in place", async () => {
+    ecran();
+    await monter({ depart: ouverture("forge"), viser: () => ouverture("well", [100, 100]) });
+    const avant = screen.getByTestId("iso-panneau");
+    await toucher(100, 100);
+    expect(etat()).toBe("well");
+    expect(screen.getByTestId("iso-panneau")).toBe(avant);
+    expect(screen.getByTestId("iso-bulle-nom").props.accessibilityLabel).toMatch(/^Well/);
+  });
+
+  it("draws the halo still under reduced motion, and takes it away with the panel", async () => {
+    ecran();
+    await monter({ depart: ouverture("forge") });
+    expect(
+      StyleSheet.flatten(
+        screen.getByTestId("iso-halo", { includeHiddenElements: true }).props.style,
+      ).opacity,
+    ).toBe(1);
+    await toucher(20, 30);
+    expect(screen.queryByTestId("iso-halo")).toBeNull();
   });
 
   it("is the bottom sheet above 130 % text, with the same content and no frame", async () => {
@@ -168,21 +240,20 @@ describe("Bulle (T14)", () => {
     expect(feuille.getByTestId("iso-bulle-chiffres")).toBeTruthy();
   });
 
-  it("is placed once: the deeds arriving grow it away from its tail, never move it nor make it a sheet", async () => {
+  it("is placed once: the lines arriving grow it away from its tail, never move it nor make it a sheet", async () => {
     ecran();
-    await monter({ depart: ouverture("forge") });
+    await monter({ depart: forgeron() });
     await mesurer();
     const avant = StyleSheet.flatten(screen.getByTestId("iso-bulle").props.style);
     await mesurer(300, 520);
     const apres = StyleSheet.flatten(screen.getByTestId("iso-bulle").props.style);
     expect([apres.left, apres.top, apres.bottom]).toEqual([avant.left, avant.top, avant.bottom]);
     expect(screen.getAllByTestId("iso-bulle-nom")).toHaveLength(1);
-    expect(etat()).toBe("forge");
   });
 
   it("measures again when the window turns, so the old size never leaves the frame past an edge", async () => {
     ecran();
-    await monter({ depart: ouverture("forge", [180, 600]) });
+    await monter({ depart: forgeron([180, 600]) });
     await mesurer(300, 200);
     jest.spyOn(require("react-native"), "useWindowDimensions").mockReturnValue({
       width: 740,
@@ -193,7 +264,7 @@ describe("Bulle (T14)", () => {
     await screen.rerender(
       <SafeAreaProvider initialMetrics={METRICS}>
         <TamaguiProvider config={config} defaultTheme="dark">
-          <Hote depart={ouverture("forge", [180, 600])} />
+          <Hote depart={forgeron([180, 600])} />
         </TamaguiProvider>
       </SafeAreaProvider>,
     );
@@ -224,9 +295,23 @@ describe("Bulle (T14)", () => {
 
   it("moves to the sheet when its first measure is too tall for the window", async () => {
     ecran();
-    await monter({ depart: ouverture("forge") });
+    await monter({ depart: forgeron() });
     await mesurer(300, 500);
     expect(screen.queryByTestId("iso-bulle")).toBeNull();
+    expect(
+      within(screen.getByTestId("iso-bulle-feuille")).getByTestId("iso-bulle-nom"),
+    ).toBeTruthy();
+  });
+
+  it("a building is the sheet in landscape, same content", async () => {
+    jest.spyOn(require("react-native"), "useWindowDimensions").mockReturnValue({
+      width: 740,
+      height: 360,
+      scale: 2,
+      fontScale: 1,
+    });
+    await monter({ depart: ouverture("forge") });
+    expect(screen.queryByTestId("iso-panneau")).toBeNull();
     expect(
       within(screen.getByTestId("iso-bulle-feuille")).getByTestId("iso-bulle-nom"),
     ).toBeTruthy();
@@ -248,7 +333,6 @@ describe("Bulle (T14)", () => {
     await monter({ depart: ouverture("forge"), viser: () => vise });
     await toucher(100, 500);
     expect(etat()).toBe("well");
-    await mesurer();
     expect(screen.getByTestId("iso-bulle-nom").props.accessibilityLabel).toMatch(/^Well/);
     vise = ouverture("well", [101, 499]);
     await toucher(101, 499);
@@ -266,6 +350,17 @@ describe("Bulle (T14)", () => {
     });
     expect(pris).toBe(true);
     expect(etat()).toBe("fermee");
+  });
+
+  it("while the village is blurred (a screen pushed from the panel), Back is left to the router", async () => {
+    ecran();
+    mockFocused = false;
+    const spy = jest.spyOn(BackHandler, "addEventListener");
+    spy.mockClear();
+    await monter({ depart: ouverture("forge") });
+    mockFocused = true;
+    expect(spy).not.toHaveBeenCalled();
+    expect(etat()).not.toBe("fermee");
   });
 
   it("offers Evolve only when ready: hammer, words and a 48 dp button that closes and claims", async () => {
@@ -326,6 +421,45 @@ describe("Bulle (T14)", () => {
     await mesurer();
     await toucher(1, 1);
     expect(etat()).toBe("fermee");
+  });
+
+  it("a ready building has its hammer, words and Evolve at the top, before the exercises", async () => {
+    ecran();
+    mockSessions = Promise.resolve([
+      { sessionId: 1, performedAt: new Date(2026, 10, 4), volume: 39, enTitle: "Chop Wood" },
+    ]);
+    mockExercices = [{ exerciseId: 7, volume: 2140, enName: "Row" }];
+    await monter({ depart: ouverture("forge", [180, 200]), pret: ["forge"] });
+    await screen.findByTestId("iso-bulle-exercices");
+    const arbre = JSON.stringify(screen.toJSON());
+    const claim = arbre.indexOf('"village-claim"');
+    expect(claim).toBeGreaterThan(-1);
+    expect(claim).toBeLessThan(arbre.indexOf('"iso-bulle-exercices"'));
+    expect(claim).toBeLessThan(arbre.indexOf("Chop Wood"));
+    mockSessions = Promise.resolve([]);
+    mockExercices = [];
+  });
+
+  it("a follower says it follows the Farm, one link that moves the panel to the Farm in place", async () => {
+    ecran();
+    await monter({ depart: ouverture("barn", [180, 200]) });
+    const lien = screen.getByTestId("iso-bulle-suit");
+    expect(lien.props.accessibilityRole).toBe("link");
+    expect(screen.getByText("Follows the Farm")).toBeTruthy();
+    const avant = screen.getByTestId("iso-panneau");
+    await fireEvent.press(lien);
+    expect(etat()).toBe("farm");
+    expect(screen.getByTestId("iso-panneau")).toBe(avant);
+  });
+
+  it("a building never fed says what to do and shows no empty list", async () => {
+    ecran();
+    await monter({ depart: ouverture("quarry", [180, 200]) });
+    expect(screen.getByText("Built by training your chest")).toBeTruthy();
+    expect(screen.queryByTestId("iso-bulle-exercices")).toBeNull();
+    expect(screen.queryByTestId("iso-bulle-suit")).toBeNull();
+    // Unbuilt: no silhouette of a next stage.
+    expect(screen.queryByTestId("iso-bulle-silhouette")).toBeNull();
   });
 
   it("has 12 tappable points at most, the backdrop included", async () => {

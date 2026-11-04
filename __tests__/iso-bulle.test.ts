@@ -3,12 +3,18 @@
 
 import {
   apresTap,
+  batimentAOuvrir,
+  CORPS_BATIMENT,
+  coteDuPanneau,
   etatBulle,
   HAUTEUR_BARRE,
   hauteurMaxBulle,
+  hauteurMaxPanneau,
   largeurBulle,
   type Ouverture,
+  ouvertureDe,
   placerBulle,
+  prendreOuverture,
   QUEUE_BULLE,
 } from "@/components/village/iso/bulle";
 import { HAUTEUR, LARGEUR } from "@/components/village/iso/carteDemo";
@@ -114,17 +120,96 @@ describe("placerBulle", () => {
 });
 
 describe("etatBulle", () => {
-  const o: Ouverture = { cible: { type: "batiment", code: "forge" }, ancre: [180, 400] };
+  const o: Ouverture = {
+    cible: { type: "villageois", id: "smith", role: "smith", habitant: false },
+    ancre: [180, 400],
+  };
+  const batiment: Ouverture = { cible: { type: "batiment", code: "forge" }, ancre: [180, 400] };
   const ecran = { ...ECRAN, fontScale: 1 };
+  const vide = { feuille: false, placee: null, panneau: false };
 
-  it("waits hidden for its size, then is placed", () => {
-    expect(etatBulle(o, null, ecran, INSETS)).toEqual({ feuille: false, placee: null });
+  it("waits hidden for its size, then is placed (a villager's bubble)", () => {
+    expect(etatBulle(o, null, ecran, INSETS)).toEqual(vide);
     expect(etatBulle(o, TAILLE, ecran, INSETS).placee?.cote).toBe("haut");
-    expect(etatBulle(null, TAILLE, ecran, INSETS)).toEqual({ feuille: false, placee: null });
+    expect(etatBulle(null, TAILLE, ecran, INSETS)).toEqual(vide);
   });
 
   it("goes to the sheet at once beyond 130 %, before any measure (read live)", () => {
     expect(etatBulle(o, null, { ...ecran, fontScale: 2 }, INSETS).feuille).toBe(true);
+    expect(etatBulle(batiment, null, { ...ecran, fontScale: 2 }, INSETS)).toEqual({
+      ...vide,
+      feuille: true,
+    });
+  });
+
+  it("a building is a docked panel at once, with no measure; the sheet in landscape", () => {
+    expect(etatBulle(batiment, null, ecran, INSETS)).toEqual({ ...vide, panneau: true });
+    expect(etatBulle(batiment, null, { w: 740, h: 360, fontScale: 1 }, INSETS)).toEqual({
+      ...vide,
+      feuille: true,
+    });
+  });
+});
+
+describe("coteDuPanneau", () => {
+  // The tab bar is part of the bottom inset, as Bulle.tsx passes it.
+  const insets = { top: 24, bottom: 16 + HAUTEUR_BARRE, left: 0, right: 0 };
+  const h = hauteurMaxPanneau(ECRAN.h);
+  const cote = (y: number) => coteDuPanneau([180, y], h, ECRAN, insets);
+
+  it("caps the panel at 35 % of the window", () => {
+    expect(h).toBe(224);
+  });
+
+  it("docks at the bottom while the building stays above it", () => {
+    expect(cote(200)).toBe("bas");
+    // Its body just clears the panel's top edge (640 - 76 - 224 = 340).
+    expect(cote(340 - CORPS_BATIMENT)).toBe("bas");
+  });
+
+  it("docks at the top when the building's body would end under the bottom panel", () => {
+    expect(cote(340 - CORPS_BATIMENT + 60)).toBe("haut");
+    expect(cote(500)).toBe("haut");
+  });
+
+  it("takes the side that hides the building least when both would", () => {
+    // A 330 dp panel covers 234 to 564 at the bottom and 24 to 354 at the top.
+    const haut = coteDuPanneau([180, 200], 330, ECRAN, insets);
+    const bas = coteDuPanneau([180, 270], 330, ECRAN, insets);
+    expect([haut, bas]).toEqual(["bas", "haut"]);
+  });
+});
+
+describe("the end-of-session panel", () => {
+  it("picks a building the session raised, else the first ready", () => {
+    expect(batimentAOuvrir(["forge", "farm"], new Set(["farm"]))).toBe("farm");
+    expect(batimentAOuvrir(["forge", "farm"], new Set())).toBe("forge");
+    expect(batimentAOuvrir([], new Set(["farm"]))).toBeUndefined();
+  });
+
+  it("is taken once per session key, never for none", () => {
+    expect(prendreOuverture("forge:1:2-a")).toBe(true);
+    expect(prendreOuverture("forge:1:2-a")).toBe(false);
+    expect(prendreOuverture("forge:2:3-b")).toBe(true);
+    expect(prendreOuverture(undefined)).toBe(false);
+    expect(prendreOuverture("")).toBe(false);
+  });
+});
+
+describe("ouvertureDe", () => {
+  const puits = (x: number, y: number): Ouverture | null =>
+    x > 100 && x < 130 && y > 200 && y < 240
+      ? { cible: { type: "batiment", code: "well" }, ancre: [x, y] }
+      : null;
+
+  it("finds a building's opening through the map's own hit test", () => {
+    const o = ouvertureDe("well", puits, { w: 360, h: 500 });
+    expect(o?.cible).toEqual({ type: "batiment", code: "well" });
+  });
+
+  it("is null for a building that is off the area or hidden", () => {
+    expect(ouvertureDe("forge", puits, { w: 360, h: 500 })).toBeNull();
+    expect(ouvertureDe("well", puits, { w: 360, h: 150 })).toBeNull();
   });
 });
 

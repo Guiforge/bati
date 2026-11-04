@@ -1,0 +1,80 @@
+# Maestro E2E Test - Evolve: the claim is written, the panel goes, the building stays evolved
+#
+# Needs: the dev build with the iso village on, and a hero with at least one building READY to
+# evolve. A fresh install has none, so this flow seeds the 3y hero (seed-hero.yaml: ~550 sessions,
+# a village far past its claimed stages). If the village still shows no ready building the flow
+# FAILS on purpose (assertVisible below): a skipped flow that passes proves nothing.
+#
+# Asserts state, not the screen: after Evolve the panel is gone and the title is back, then the
+# same building reopened no longer offers Evolve, which is the read of what the tap wrote.
+# The ready marker on a drawer row is `village-building-ready` (a testID, not its translated text).
+# The CALLER resets the hero (scripts/game/village-flows.sh does the pm clear): no clearState here,
+# it would erase the dev client's saved server URL. Dev build only (INTEGRATION on).
+# Every tap caps its settle wait: a grown map never settles, and Maestro hung on it for 10 minutes.
+appId: com.guiforge.bati.dev
+---
+- runFlow: subflows/boot-dev-client.yaml
+- runFlow: subflows/complete-onboarding.yaml
+- runFlow: subflows/seed-hero.yaml
+
+- tapOn:
+    id: "tab-village"
+    waitToSettleTimeoutMs: 500
+- assertVisible:
+    id: "village-screen"
+- tapOn:
+    id: "village-drawer-open"
+    waitToSettleTimeoutMs: 500
+# Loud failure if nothing is ready: the rows of the drawer scroll, so look for the marker first.
+- scrollUntilVisible:
+    element:
+      id: "village-building-ready"
+    direction: DOWN
+    timeout: 20000
+- takeScreenshot: village-evolve-1-drawer
+# The marker sits in its row: the tap lands on the row and opens that building's panel.
+- tapOn:
+    id: "village-building-ready"
+    index: 0
+    waitToSettleTimeoutMs: 500
+- extendedWaitUntil:
+    visible:
+      id: "iso-bulle-nom"
+    timeout: 10000
+# The name Text itself (iso-bulle-nom is the accessible wrapper, whose label also says the rank).
+- copyTextFrom:
+    id: "iso-bulle-titre"
+- assertVisible:
+    id: "village-claim"
+- takeScreenshot: village-evolve-2-panel
+
+# --- Evolve ---------------------------------------------------------------------------
+- tapOn:
+    id: "village-claim"
+    waitToSettleTimeoutMs: 500
+- assertNotVisible:
+    id: "iso-bulle-nom"
+# The growth plays (title hidden), then the title comes back.
+- extendedWaitUntil:
+    visible:
+      id: "village-title"
+    timeout: 30000
+- takeScreenshot: village-evolve-3-after
+
+# --- reopen the same building: no Evolve left ----------------------------------------------
+# The drawer lists the same buildings; the one just evolved carries no ready marker any more. Open
+# the first row whose name is the copied one by its text (the name is dynamic, so text is the only
+# handle on a drawer row).
+- tapOn:
+    id: "village-drawer-open"
+    waitToSettleTimeoutMs: 500
+- tapOn:
+    text: ${maestro.copiedText}
+    waitToSettleTimeoutMs: 500
+- extendedWaitUntil:
+    visible:
+      id: "iso-bulle-nom"
+    timeout: 10000
+- assertNotVisible:
+    id: "village-claim"
+- takeScreenshot: village-evolve-4-reopened

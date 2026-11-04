@@ -18,7 +18,8 @@
   "__tests__/village-*.test.tsx (les suites de ces fichiers)",
   "constants/isoPoc.ts (la seule ligne INTEGRATION, a l'item G12, apres le go de Guillaume)",
   "db/completed.ts (lecture getContributingExercises)",
-  "app/(tabs)/journal/[id].tsx (retour from=village)"
+  "app/(tabs)/journal/[id].tsx (retour from=village)",
+  "constants/rawColors.ts (un jeton pour le halo du panneau)"
  ],
  "shared_read_only": [
   "components/village/iso/ (sauf Bulle.tsx et bulle.ts : a LIFE, camera, moment, mouvement, creatures)",
@@ -72,9 +73,10 @@
     0.5,
     1.5
    ],
-   "status": "blocked",
+   "status": "done",
    "debut": "2026-11-04T11:40:00+01:00",
-   "note": "Page de choix publiee, attend la reponse dans checkpoint.md"
+   "note": "Maquettes de la session, C, panneau seul en fin de seance. Maquettes : https://claude.ai/artifact/QK826RGP7fanTi4wLG4cZL",
+   "fin": "2026-11-04T13:00:00+01:00"
   },
   {
    "id": "G4",
@@ -113,8 +115,10 @@
     1,
     2
    ],
-   "status": "blocked",
-   "note": "Depend de la direction choisie dans checkpoint.md"
+   "status": "done",
+   "note": "Joue et flux village-evolve vert : le panneau part, le moment, retour a la vue, plus de marteau",
+   "debut": "2026-11-04T13:00:00+01:00",
+   "fin": "2026-11-04T16:35:00+01:00"
   },
   {
    "id": "G7",
@@ -125,9 +129,10 @@
     1,
     2
    ],
-   "status": "blocked",
-   "debut": "2026-11-04T11:35:00+01:00",
-   "note": "Liens de la carte faits et joues ; le tiroir vers la carte depend de la direction"
+   "status": "done",
+   "debut": "2026-11-04T13:00:00+01:00",
+   "note": "Joue et flux village-panel vert : tiroir vers panneau, fiche et journal, un seul Back retrouve le panneau",
+   "fin": "2026-11-04T16:35:00+01:00"
   },
   {
    "id": "G8",
@@ -138,8 +143,10 @@
     1,
     2
    ],
-   "status": "blocked",
-   "note": "Depend de la direction choisie dans checkpoint.md"
+   "status": "done",
+   "note": "Flux village-end-of-session vert (scripts/game/village-eos.sh) : panneau seul, rien sans le tap, une seule fois",
+   "debut": "2026-11-04T13:00:00+01:00",
+   "fin": "2026-11-04T16:35:00+01:00"
   },
   {
    "id": "G9",
@@ -150,8 +157,9 @@
     1,
     2
    ],
-   "status": "blocked",
-   "note": "Depend de la direction choisie dans checkpoint.md"
+   "status": "paused",
+   "note": "Fait : 6 langues, 200 % en feuille, mouvement reduit immobile, phrase visible, paysage. Reste : TalkBack jamais ecoute sur appareil, phrase et silhouette non rejouees au flux",
+   "debut": "2026-11-04T16:35:00+01:00"
   },
   {
    "id": "G10",
@@ -162,8 +170,10 @@
     1,
     2
    ],
-   "status": "blocked",
-   "note": "Depend de la direction choisie dans checkpoint.md"
+   "status": "paused",
+   "note": "Fin de seance verte sur le code final ; panneau et evolution verts a 4256233c, pas rejoues apres 67b2eadc et 308d28f7 (arret pendant le rejeu)",
+   "fin": "2026-11-04T16:35:00+01:00",
+   "debut": "2026-11-04T14:00:00+01:00"
   },
   {
    "id": "G11",
@@ -174,8 +184,8 @@
     1,
     2
    ],
-   "status": "blocked",
-   "note": "Depend de la direction choisie dans checkpoint.md"
+   "status": "paused",
+   "note": "theo et mara rendus (verdicts-panneau.md), corrections faites sans 2e passage ; suite complete et build de fin pas lances"
   },
   {
    "id": "G12",
@@ -186,8 +196,20 @@
     0.5,
     1
    ],
-   "status": "blocked",
-   "note": "Attend le go de Guillaume, apres la fin de la piste"
+   "status": "paused",
+   "note": "Pas commence : attend le go de Guillaume, remettre les 3 flux dans config.yaml"
+  },
+  {
+   "id": "G13",
+   "group": "4. Controles",
+   "name": "Bugs du moment d'evolution, venus de LIFE",
+   "check": "sur emulateur : le passage au tap montre le batiment final ; la Fontaine a son bouton Evolve ; plus de vieille palissade 1,4 s a cote du nouveau mur",
+   "estimate_h": [
+    1,
+    3
+   ],
+   "status": "paused",
+   "note": "Pas commence : signales par Guillaume a l'arret, pas reproduits ici, voir summary-2.md"
   }
  ]
 }

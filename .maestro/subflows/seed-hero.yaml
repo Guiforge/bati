@@ -21,6 +21,12 @@ appId: com.guiforge.bati.dev
 - tapOn:
     id: "settings-dev"
 
+# On a phone-sized screen the button shows without a scroll, and scrolling before the page has
+# drawn goes straight past it. Optional: a smaller screen falls through to the scroll.
+- extendedWaitUntil:
+    visible: "3y"
+    timeout: 15000
+    optional: true
 - scrollUntilVisible:
     element:
       text: "3y"

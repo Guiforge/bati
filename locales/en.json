@@ -1658,6 +1658,8 @@
     "detail_recent_units": "{{volume}} reps",
     "detail_exercises_title": "Movements you did for it",
     "silhouette_a11y": "The next stage of your {{name}}",
+    "follows": "Follows the {{building}}",
+    "follows_a11y": "Follows the {{building}}, show it",
     "open_session_a11y": "Open in the Journal: {{what}}",
     "open_exercise_a11y": "Open the movement: {{name}}",
     "detail_prereq_driver": "Rises with the {{building}}, currently rank {{level}}",

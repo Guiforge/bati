@@ -1,0 +1,102 @@
+# Reusable: from the moment a session opens, through it to the victory screen with the session
+# banked (XP shown), and stop there: Continue is not tapped. `run-a-session.yaml` is this plus
+# Continue; village-end-of-session.yaml needs the victory screen itself (its "See your village").
+#
+# Two doors reach it: the quest details screen (`complete-a-session.yaml` taps its start first)
+# and Home's Start, which opens the session directly. Quests vary in rounds and exercises, so the
+# session is walked generically rather than step-counted: complete an exercise, skip the rest that
+# follows, until victory shows up. Selects by testID only, so it is locale-agnostic (en/fr).
+#
+# Every tap on a session screen caps `waitToSettleTimeoutMs`. Maestro waits for the view tree to
+# stop changing around each tap, and a session screen never stops: its timer ticks every second.
+# Uncapped, each tap sat through Maestro's own ceiling, 10 to 18 s, which was 54% of the whole
+# suite (measured 2026-09-13). `retryTapIfNoChange: false` keeps a tap that lands during a tick
+# from being fired twice, which would skip a set.
+appId: com.guiforge.bati.dev
+---
+# An adventure step opens with its story before the session does. Nothing on the quest gallery
+# path shows one, so `optional` covers both entry points — but a flow that does not know about
+# the modal simply sits behind it until it times out, which is what adventure-journey did.
+- tapOn:
+    id: "narrative-confirm"
+    optional: true
+
+# Warm-up runs first and is on by default (preferences.getWarmupEnabled defaults to true).
+# Skip it: these flows are about the workout, and walking the warm-up adds minutes of real
+# timers to every run.
+#
+# Wait for the button before tapping it. A bare `optional` tap silently does nothing when the
+# warm-up screen has not mounted yet, and the flow then sat through the whole warm-up — which
+# is 4 to 10 steps depending on the quest's length, far past the 15s below. That is what made
+# adventure-journey fail and what made the passing flows take five minutes each.
+- extendedWaitUntil:
+    visible:
+      id: "session-skip-warmup"
+    timeout: 15000
+    optional: true
+- tapOn:
+    id: "session-skip-warmup"
+    optional: true
+    waitToSettleTimeoutMs: 500
+    retryTapIfNoChange: false
+
+# The start screen waits ten seconds, or for GO when Settings says so. Tapped either way, so a
+# flow neither sits through the wait nor hangs on it.
+- extendedWaitUntil:
+    visible:
+      id: "session-start-go"
+    timeout: 15000
+    optional: true
+- tapOn:
+    id: "session-start-go"
+    optional: true
+    waitToSettleTimeoutMs: 500
+    retryTapIfNoChange: false
+
+# The start screen hands over to the first exercise. Optional, because a timed first exercise
+# can already have run out and handed over to its rest: the loop below handles either screen.
+- extendedWaitUntil:
+    visible:
+      id: "session-complete-exercise"
+    timeout: 15000
+    optional: true
+
+# `times` is a guard against an infinite loop if a screen ever gets stuck.
+- repeat:
+    times: 80
+    # Either footer button: a session under two minutes shows Keep instead of Continue, and the
+    # loop used to wait for a Continue that never came.
+    while:
+      notVisible:
+        id: "session-victory-(continue|keep-short)"
+    commands:
+      - tapOn:
+          id: "session-complete-exercise"
+          optional: true
+          waitToSettleTimeoutMs: 500
+          retryTapIfNoChange: false
+      - tapOn:
+          id: "session-skip-rest"
+          optional: true
+          waitToSettleTimeoutMs: 500
+          retryTapIfNoChange: false
+
+- extendedWaitUntil:
+    visible:
+      id: "session-victory-(continue|keep-short)"
+    timeout: 20000
+
+# A session under two minutes is not saved until the hero keeps it (TRIVIAL_SESSION_SECONDS in
+# VictoryView). A flow walks a session far faster than a hero trains, so it lands here whenever
+# the taps above are quick. It used to pass only because each tap wasted eleven seconds.
+- tapOn:
+    id: "session-victory-keep-short"
+    optional: true
+
+# Continue is on screen and disabled for the whole save, and a tap on it then does nothing.
+# `enabled: true` does not see it change, so wait for the XP earned instead: its testID only
+# exists once the session is banked. Generous, because a slow write must not fail the run.
+- extendedWaitUntil:
+    visible:
+      id: "session-victory-xp"
+    timeout: 20000

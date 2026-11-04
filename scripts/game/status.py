@@ -13,6 +13,7 @@ STATUTS = {
     "done": "fait",
     "blocked": "attend Guillaume",
     "dropped": "abandonné",
+    "paused": "en pause",
 }
 
 

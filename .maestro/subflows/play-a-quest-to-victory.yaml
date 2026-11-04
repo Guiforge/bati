@@ -1,0 +1,20 @@
+# Reusable: from anywhere with the tab bar, open the first quest of the gallery and play it to the
+# victory screen, stopping there (Continue is not tapped). Same entry as start-a-quest-session.yaml,
+# which goes on to tap Continue through complete-a-session.yaml.
+appId: com.guiforge.bati.dev
+---
+- tapOn:
+    id: "tab-quests"
+    waitToSettleTimeoutMs: 500
+- extendedWaitUntil:
+    visible:
+      id: "quests-quest-card"
+    timeout: 30000
+- tapOn:
+    id: "quests-quest-card"
+    index: 0
+- assertVisible:
+    id: "quest-start"
+- tapOn:
+    id: "quest-start"
+- runFlow: play-to-victory.yaml

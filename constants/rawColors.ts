@@ -365,6 +365,8 @@ export const rawColors = {
   ink800: "#262A33",
   /** The phylactère's paper, a step under bone so a speech bubble never outshines the screen's action; ink text 12.6:1, ink800 name 9.3:1. */
   parchment: "#D9CFBC",
+  /** `parchment` at nothing: the fade at the cut end of the building panel. Transparent black would grey it. */
+  parchmentClair: "rgba(217, 207, 188, 0)",
   ink900: "#101217",
   /** `glassBorder` at nothing: the ends of a fading rule. Transparent black would grey it. */
   glassBorderClear: "rgba(236, 228, 212, 0)",

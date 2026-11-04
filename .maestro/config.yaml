@@ -19,6 +19,9 @@ flows:
 # screenshots.yaml, audit.yaml and audit-fresh.yaml are absent on purpose: they assert nothing
 # and take minutes each. They are run by name, by scripts/screenshots.sh and scripts/audit-shots.sh.
 #
+# village-panel, village-evolve and village-end-of-session are absent on purpose: the panel needs
+# INTEGRATION, off in the published build (G12 adds them back). Run: scripts/game/village-flows.sh <name>.
+#
 # subflows/ holds reusable fragments (e.g. complete-onboarding.yaml) pulled in
 # via `runFlow:` — they are not standalone entries here.
 

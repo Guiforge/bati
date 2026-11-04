@@ -1,0 +1,16 @@
+# Prepares the hero of village-end-of-session.yaml; scripts/game/village-eos.sh runs both.
+#
+# A first session leaves nothing ready: `amorce` primes the levels on a plain visit, and only what
+# rises after that waits for the tap. So one session, then one plain visit.
+appId: com.guiforge.bati.dev
+---
+- runFlow: subflows/boot-dev-client.yaml
+- runFlow: subflows/complete-onboarding.yaml
+- runFlow: subflows/start-a-quest-session.yaml
+- tapOn:
+    id: "tab-village"
+    waitToSettleTimeoutMs: 500
+- extendedWaitUntil:
+    visible:
+      id: "village-screen"
+    timeout: 30000

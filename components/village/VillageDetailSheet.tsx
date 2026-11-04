@@ -238,6 +238,8 @@ type FactsProps = DetailProps & {
   onClaim?: () => void;
   /** The iso card only: linked rows, the exercises, no repeated sentence. The old sheet leaves it out. */
   surCarte?: boolean;
+  /** The card only: a built follower says "Follows the X" as a link that moves the panel to X. */
+  onSuivre?: (code: BuildingCode) => void;
 };
 
 function BuildingDetail(props: FactsProps) {
@@ -274,11 +276,18 @@ function BuildingDetail(props: FactsProps) {
 }
 
 /** The building's level and its pips: in the sheet's header, and in the iso map's bubble. */
-export function BuildingLevel({ building }: { building: VillageBuilding }) {
+export function BuildingLevel({
+  building,
+  aligne = "flex-end",
+}: {
+  building: VillageBuilding;
+  /** The panel reads it from the left, under the name. */
+  aligne?: "flex-start" | "flex-end";
+}) {
   const { t } = useTranslation();
   const built = building.level > 0;
   return (
-    <YStack items="flex-end" gap={5}>
+    <YStack items={aligne} gap={5}>
       <Text fontSize={13} fontWeight="600" color={`${built ? "resourceGold" : "textSecondary"}`}>
         {levelText(building, t)}
       </Text>
@@ -287,39 +296,24 @@ export function BuildingLevel({ building }: { building: VillageBuilding }) {
   );
 }
 
-/** The one action of a ready building: the 48 dp Evolve button, with the sheet's sentence above it. */
-export function ActionReclamer({
-  building,
-  language,
-  onClaim,
-  avecTexte = false,
-}: {
-  building: VillageBuilding;
-  language: AppLanguage;
-  onClaim: () => void;
-  avecTexte?: boolean;
-}) {
-  const { t } = useTranslation();
-  return (
-    <YStack gap="2">
-      {avecTexte ? (
-        <Text fontSize={13} color="textSecondary">
-          {t("village.claim_ready_body", { name: nameOf(building, language) })}
-        </Text>
-      ) : null}
-      <AppButton
-        testID="village-claim"
-        // The bubble's one action (village-bulle.md): 48 dp, over AppButton's 44.
-        minH={48}
-        onPress={onClaim}
-        accessibilityRole="button"
-        accessibilityLabel={t("village.claim_action_a11y", {
-          name: nameOf(building, language),
-        })}
-      >
-        {t("village.claim_action")}
-      </AppButton>
-    </YStack>
+function sessionTitle(
+  session: Record<
+    "enTitle" | "frTitle" | "deTitle" | "esTitle" | "ruTitle" | "zhTitle",
+    string | null | undefined
+  >,
+  language: AppLanguage,
+) {
+  if (!session.enTitle) return null;
+  return localizedTitle(
+    {
+      enTitle: session.enTitle,
+      frTitle: session.frTitle ?? "",
+      deTitle: session.deTitle ?? "",
+      esTitle: session.esTitle ?? "",
+      ruTitle: session.ruTitle ?? "",
+      zhTitle: session.zhTitle ?? "",
+    },
+    language,
   );
 }
 
@@ -338,6 +332,7 @@ export function BuildingFacts({
   onClose,
   onClaim,
   surCarte = false,
+  onSuivre,
 }: FactsProps) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -388,14 +383,14 @@ export function BuildingFacts({
           : `${t("village.detail_muscle_driver", {
               volume: formatCount(language, building.metricValue),
               muscle: muscleLabel,
-            })}. ${repUnitNote}`;
+            })}${surCarte ? "" : `. ${repUnitNote}`}`;
       case "style":
         return building.level === 0
           ? t("village.detail_unlock_style", { style: styleLabel })
           : `${t("village.detail_style_driver", {
               volume: formatCount(language, building.metricValue),
               style: styleLabel,
-            })}. ${repUnitNote}`;
+            })}${surCarte ? "" : `. ${repUnitNote}`}`;
       case "prereq":
         return building.level === 0
           ? t("village.detail_prereq_locked", {
@@ -424,7 +419,8 @@ export function BuildingFacts({
   const pretAuPlafond = surCarte && !!onClaim && building.nextTarget === null;
   const suiveuse = surCarte && building.driver === "prereq" && built;
   const open = (href: string) => {
-    onClose();
+    // On the card, Back from the pushed screen returns to the same open panel; the sheet closes.
+    if (!surCarte) onClose();
     router.push(href as never);
   };
 
@@ -438,13 +434,132 @@ export function BuildingFacts({
         }))
       : [];
 
+  // The one action. On the card it stands first, before the deeds, so it never needs a scroll.
+  const reclame = onClaim ? (
+    <YStack gap="2">
+      {surCarte ? null : (
+        <Text fontSize={13} color="textSecondary">
+          {t("village.claim_ready_body", { name: nameOf(building, language) })}
+        </Text>
+      )}
+      <AppButton
+        testID="village-claim"
+        // The bubble's one action (village-bulle.md): 48 dp, over AppButton's 44.
+        minH={48}
+        onPress={onClaim}
+        accessibilityRole="button"
+        accessibilityLabel={t("village.claim_action_a11y", {
+          name: nameOf(building, language),
+        })}
+      >
+        {t("village.claim_action")}
+      </AppButton>
+    </YStack>
+  ) : null;
+
+  const reclameEnHaut = surCarte ? reclame : null;
+  const reclameEnBas = surCarte ? null : reclame;
+
+  // On the card the movements come first, then the sessions that raised it (the mockup's order).
+  const exercices = surCarte &&
+    extra?.kind === "sessions" &&
+    (extra.exercises?.length ?? 0) > 0 && (
+      <YStack gap="2" testID="iso-bulle-exercices">
+        <SectionLabel>{t("village.detail_exercises_title")}</SectionLabel>
+        {extra.exercises?.map((exercise) => (
+          <XStack
+            key={exercise.exerciseId}
+            testID="iso-bulle-exercice"
+            justify="space-between"
+            gap="2"
+            minH={48}
+            items="center"
+            opacity="press:0.7"
+            onPress={() => open(`/exercises/${exercise.exerciseId}`)}
+            accessibilityRole="link"
+            accessibilityLabel={t("village.open_exercise_a11y", {
+              name: localizedName(exercise, language),
+            })}
+          >
+            <Text fontSize={12} color="primaryText" flex={1}>
+              {localizedName(exercise, language)}
+            </Text>
+            <Text fontSize={12} color="textSecondary">
+              {t("village.detail_recent_units", { volume: formatCount(language, exercise.volume) })}
+            </Text>
+            <ChevronRight size={16} color="primaryText" />
+          </XStack>
+        ))}
+      </YStack>
+    );
+
+  const recentes = extra?.kind === "sessions" && extra.sessions.length > 0 && (
+    <YStack gap="2">
+      <SectionLabel>{t("village.detail_recent_title")}</SectionLabel>
+      {extra.sessions.map((session) => {
+        const title = sessionTitle(session, language);
+        const when = getDateTimeFormat(language, RECENT_WORK_DATE_OPTIONS).format(
+          session.performedAt,
+        );
+        return (
+          <XStack
+            key={session.sessionId}
+            testID="iso-bulle-seance"
+            justify="space-between"
+            gap="2"
+            {...(surCarte
+              ? {
+                  minH: 48,
+                  items: "center" as const,
+                  opacity: "press:0.7" as const,
+                  onPress: () => open(`/journal/${session.sessionId}?from=village`),
+                  accessibilityRole: "link" as const,
+                  accessibilityLabel: t("village.open_session_a11y", {
+                    what: title ?? when,
+                  }),
+                }
+              : {})}
+          >
+            <Text fontSize={12} color={surCarte ? "primaryText" : "textSecondary"} flex={1}>
+              {`${title ? `${title} · ` : ""}${when}`}
+            </Text>
+            <Text fontSize={12} color="textSecondary">
+              {t("village.detail_recent_units", { volume: session.volume })}
+            </Text>
+            {surCarte ? <ChevronRight size={16} color="primaryText" /> : null}
+          </XStack>
+        );
+      })}
+    </YStack>
+  );
+
   // A fragment: its rows are the parent's, so the sheet's gaps are the ones it always had.
   return (
     <>
+      {reclameEnHaut}
       <YStack gap="2">
-        <Text fontSize={13.5} lineHeight="20px" color="text">
-          {driverLine}
-        </Text>
+        {suiveuse && onSuivre && prereqCode ? (
+          <XStack
+            testID="iso-bulle-suit"
+            minH={48}
+            items="center"
+            justify="space-between"
+            gap="2"
+            opacity="press:0.7"
+            onPress={() => onSuivre(prereqCode)}
+            accessibilityRole="link"
+            accessibilityLabel={t("village.follows_a11y", { building: prereqName })}
+          >
+            <Text fontSize={13.5} lineHeight="20px" color="primaryText" flex={1}>
+              {t("village.follows", { building: prereqName })}
+            </Text>
+            <ChevronRight size={16} color="primaryText" />
+          </XStack>
+        ) : (
+          <Text fontSize={13.5} lineHeight="20px" color="text">
+            {driverLine}
+          </Text>
+        )}
         {building.kept ? (
           <Text fontSize={12.5} lineHeight="18px" color="textSecondary">
             {t("village.kept_level")}
@@ -478,91 +593,17 @@ export function BuildingFacts({
       </YStack>
 
       {/* Before the long lists (a wall's stones, the deeds): the one action must not sit below a scroll of 24 stones. */}
-      {/* On the map's bubble the caller draws it above the figures (`ActionReclamer`): below them
-          the fountain's was past the bubble's fold, "Ready to evolve" with no button in sight. */}
-      {onClaim && !surCarte ? (
-        <ActionReclamer building={building} language={language} onClaim={onClaim} avecTexte />
+      {reclameEnBas}
+
+      {/* On the card the unit note is a footnote at the end, out of the middle of the figures. */}
+      {surCarte && built && (building.driver === "muscle" || building.driver === "style") ? (
+        <Text testID="iso-bulle-note" fontSize={11} lineHeight="16px" color="textSecondary">
+          {repUnitNote}
+        </Text>
       ) : null}
 
-      {extra?.kind === "sessions" && extra.sessions.length > 0 && (
-        <YStack gap="2">
-          <SectionLabel>{t("village.detail_recent_title")}</SectionLabel>
-          {extra.sessions.map((session) => {
-            const title = session.enTitle
-              ? localizedTitle(
-                  {
-                    enTitle: session.enTitle,
-                    frTitle: session.frTitle ?? "",
-                    deTitle: session.deTitle ?? "",
-                    esTitle: session.esTitle ?? "",
-                    ruTitle: session.ruTitle ?? "",
-                    zhTitle: session.zhTitle ?? "",
-                  },
-                  language,
-                )
-              : null;
-            const when = getDateTimeFormat(language, RECENT_WORK_DATE_OPTIONS).format(
-              session.performedAt,
-            );
-            return (
-              <XStack
-                key={session.sessionId}
-                justify="space-between"
-                gap="2"
-                {...(surCarte
-                  ? {
-                      minH: 48,
-                      items: "center" as const,
-                      opacity: "press:0.7" as const,
-                      onPress: () => open(`/journal/${session.sessionId}?from=village`),
-                      accessibilityRole: "link" as const,
-                      accessibilityLabel: t("village.open_session_a11y", {
-                        what: title ?? when,
-                      }),
-                    }
-                  : {})}
-              >
-                <Text fontSize={12} color={surCarte ? "primaryText" : "textSecondary"} flex={1}>
-                  {`${title ? `${title} · ` : ""}${when}`}
-                </Text>
-                <Text fontSize={12} color="textSecondary">
-                  {t("village.detail_recent_units", { volume: session.volume })}
-                </Text>
-                {surCarte ? <ChevronRight size={16} color="primaryText" /> : null}
-              </XStack>
-            );
-          })}
-        </YStack>
-      )}
-
-      {surCarte && extra?.kind === "sessions" && (extra.exercises?.length ?? 0) > 0 && (
-        <YStack gap="2" testID="iso-bulle-exercices">
-          <SectionLabel>{t("village.detail_exercises_title")}</SectionLabel>
-          {extra.exercises?.map((exercise) => (
-            <XStack
-              key={exercise.exerciseId}
-              justify="space-between"
-              gap="2"
-              minH={48}
-              items="center"
-              opacity="press:0.7"
-              onPress={() => open(`/exercises/${exercise.exerciseId}`)}
-              accessibilityRole="link"
-              accessibilityLabel={t("village.open_exercise_a11y", {
-                name: localizedName(exercise, language),
-              })}
-            >
-              <Text fontSize={12} color="primaryText" flex={1}>
-                {localizedName(exercise, language)}
-              </Text>
-              <Text fontSize={12} color="textSecondary">
-                {t("village.detail_recent_units", { volume: exercise.volume })}
-              </Text>
-              <ChevronRight size={16} color="primaryText" />
-            </XStack>
-          ))}
-        </YStack>
-      )}
+      {exercices}
+      {recentes}
 
       {listed.length > 0 && (
         <YStack gap="2">

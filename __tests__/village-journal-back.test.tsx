@@ -116,6 +116,89 @@ describe("back from a session", () => {
     expect(mockRouter.push).toHaveBeenCalledWith("/journal/42?from=village");
   });
 
+  const base = {
+    code: "archery_range",
+    level: 2,
+    driver: "muscle",
+    relatedMuscle: "chest",
+    metricValue: 10,
+    nextTarget: 20,
+    tier: 2,
+    kept: false,
+  };
+  const extra = {
+    kind: "sessions",
+    sessions: [
+      {
+        sessionId: 42,
+        performedAt: new Date(),
+        volume: 10,
+        enTitle: "Push day",
+        frTitle: "",
+        deTitle: "",
+        esTitle: "",
+        ruTitle: "",
+        zhTitle: "",
+      },
+    ],
+    exercises: [
+      {
+        exerciseId: 7,
+        volume: 2288,
+        enName: "Bench press",
+        frName: "",
+        deName: "",
+        esName: "",
+        ruName: "",
+        zhName: "",
+      },
+    ],
+  };
+  async function mountFacts(surCarte: boolean, onClose: () => void) {
+    await render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <BuildingFacts
+          surCarte={surCarte}
+          building={base as never}
+          extra={extra as never}
+          language="en"
+          feeds={null}
+          years={null}
+          formatDate={() => ""}
+          onClose={onClose}
+        />
+      </TamaguiProvider>,
+    );
+  }
+
+  test("on the card, a linked row pushes without closing, so Back finds the panel open", async () => {
+    const onClose = jest.fn();
+    await mountFacts(true, onClose);
+    await fireEvent.press(screen.getByLabelText(/Open in the Journal: Push day/));
+    await fireEvent.press(screen.getByLabelText(/Bench press/));
+    expect(mockRouter.push).toHaveBeenCalledWith("/journal/42?from=village");
+    expect(mockRouter.push).toHaveBeenCalledWith("/exercises/7");
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  test("on the card the movements come before the sessions that raised it", async () => {
+    await mountFacts(true, jest.fn());
+    const flat = JSON.stringify(screen.toJSON());
+    expect(screen.getByText(/2,288/)).toBeTruthy();
+    expect(flat.indexOf("Bench press")).toBeGreaterThan(-1);
+    expect(flat.indexOf("Bench press")).toBeLessThan(flat.indexOf("Push day"));
+  });
+
+  test("the rep-unit note is a footnote on the card and stays in the driver line on the sheet", async () => {
+    await mountFacts(true, jest.fn());
+    expect(screen.getByTestId("iso-bulle-note")).toBeTruthy();
+    expect(screen.queryByText(/training\. A hold counts/)).toBeNull();
+    await screen.unmount();
+    await mountFacts(false, jest.fn());
+    expect(screen.queryByTestId("iso-bulle-note")).toBeNull();
+    expect(screen.getByText(/training\. A hold counts/)).toBeTruthy();
+  });
+
   test("from the village, the back arrow unwinds the tab and lands on the village", async () => {
     mockParams = { id: "5", from: "village" };
     await mountScreen();

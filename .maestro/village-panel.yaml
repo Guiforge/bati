@@ -1,0 +1,82 @@
+# Maestro E2E Test - the iso village's building panel: open, follow a link, come back
+#
+# Needs: the dev build with the iso village on (INTEGRATION) and a debug build for seed-hero.yaml
+# (3 years of history), so the first building row has linked rows (movements, sessions). They are
+# mandatory: the flow fails if none shows.
+#
+# What it guards: the panel is state in the village tab. A row inside it pushes a screen and Back
+# must find the SAME panel open (it used to close the panel before the push, so Back showed the map
+# with the title back). The assertions read that state, the panel's name and the hidden title, not
+# which screen came up.
+#
+# There is no testID per building on the map (it is drawn, not made of views), so the drawer's row
+# opens the panel. The first row tap after a cold start can be lost (see village-sheet-check.yaml),
+# so it is uncapped on purpose. Selects by testID only: en and fr both pass.
+# The CALLER resets the hero (scripts/game/village-flows.sh does the pm clear): no clearState here,
+# it would erase the dev client's saved server URL. Dev build only (INTEGRATION on).
+# Every tap caps its settle wait: a grown map never settles, and Maestro hung on it for 10 minutes.
+appId: com.guiforge.bati.dev
+---
+- runFlow: subflows/boot-dev-client.yaml
+- runFlow: subflows/complete-onboarding.yaml
+# A trained hero: the linked rows below must exist, or the flow fails (no vacuous pass).
+- runFlow: subflows/seed-hero.yaml
+
+- tapOn:
+    id: "tab-village"
+    waitToSettleTimeoutMs: 500
+- assertVisible:
+    id: "village-screen"
+- assertVisible:
+    id: "village-title"
+- tapOn:
+    id: "village-drawer-open"
+    waitToSettleTimeoutMs: 500
+- assertVisible:
+    id: "village-drawer"
+- takeScreenshot: village-panel-1-drawer
+
+# --- 1. the row opens the panel, the drawer goes, the title steps aside ---------------
+- tapOn:
+    id: "village-building-row"
+    index: 0
+    waitToSettleTimeoutMs: 500
+- extendedWaitUntil:
+    visible:
+      id: "iso-bulle-nom"
+    timeout: 10000
+- assertNotVisible:
+    id: "village-drawer"
+- assertNotVisible:
+    id: "village-title"
+- takeScreenshot: village-panel-2-open
+
+# --- 2. a linked row pushes a screen; Back returns to the same open panel ---------------
+# Its name is the panel's: copied, so the check is "the same building", not "some building".
+# The name Text itself (iso-bulle-nom is the accessible wrapper, whose label also says the rank).
+- copyTextFrom:
+    id: "iso-bulle-titre"
+# Mandatory: scroll the panel to a linked row, fail if there is none. The movements are the panel's
+# first section, so one is tried first; the hero is seeded, so the first building (a trained one)
+# has them. Fails loudly otherwise.
+- scrollUntilVisible:
+    element:
+      id: "iso-bulle-exercice"
+    timeout: 10000
+- tapOn:
+    id: "iso-bulle-exercice"
+    index: 0
+    waitToSettleTimeoutMs: 500
+- runFlow: subflows/village-panel-back-check.yaml
+
+# --- 3. Back closes the panel and the title returns --------------------------------------
+- back
+- assertNotVisible:
+    id: "iso-bulle-nom"
+- extendedWaitUntil:
+    visible:
+      id: "village-title"
+    timeout: 5000
+- assertVisible:
+    id: "village-screen"
+- takeScreenshot: village-panel-5-closed

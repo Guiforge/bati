@@ -1658,6 +1658,8 @@
     "detail_recent_units": "{{volume}} Wdh.",
     "detail_exercises_title": "Übungen, die du dafür gemacht hast",
     "silhouette_a11y": "Die nächste Stufe deines Gebäudes {{name}}",
+    "follows": "Folgt dem Gebäude {{building}}",
+    "follows_a11y": "Folgt dem Gebäude {{building}}, anzeigen",
     "open_session_a11y": "Im Journal öffnen: {{what}}",
     "open_exercise_a11y": "Bewegung öffnen: {{name}}",
     "detail_prereq_driver": "Wächst mit dem Gebäude {{building}}, derzeit Rang {{level}}",

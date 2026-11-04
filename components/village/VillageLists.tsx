@@ -366,7 +366,12 @@ function BuildingRow({
           )}
         </Text>
         {ready ? (
-          <Text fontSize={11.5} fontWeight="600" color="resourceGold">
+          <Text
+            testID="village-building-ready"
+            fontSize={11.5}
+            fontWeight="600"
+            color="resourceGold"
+          >
             {t("village.claim_ready")}
           </Text>
         ) : null}

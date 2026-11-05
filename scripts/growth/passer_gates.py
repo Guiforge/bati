@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The atelier's check on the 12 tiers, by day, default stage then `haut=1`: scratch/fixe3/chk/{default,haut}.txt and .json.
+"""The atelier's check on the 12 tiers, by day, default stage then `haut=1`: scratch/fixe4/chk/{default,haut}.txt and .json.
 
     passer_gates.py            both
     passer_gates.py default    or haut
@@ -12,7 +12,7 @@ import subprocess
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
-CHK = ROOT / "docs/designs/village/growth/scratch/fixe3/chk"
+CHK = ROOT / "docs/designs/village/growth/scratch/fixe4/chk"
 TIERS = "1,2,3,4,5,6,7,8,9,10,11,12"
 
 

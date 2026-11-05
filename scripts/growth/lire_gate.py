@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reads the atelier's check JSON (scratch/fixe3/chk/check-*.json, the last), by tier: the painted pieces under 50 % visible with the tile their
+"""Reads the atelier's check JSON (scratch/fixe4/chk/check-*.json, the last), by tier: the painted pieces under 50 % visible with the tile their
 foot stands on (what poser_drops.json is keyed by), the buildings under 85 % visible, and every building or hook box a piece covers.
 
     lire_gate.py [json]
@@ -11,7 +11,7 @@ import pathlib
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
-CHK = ROOT / "docs/designs/village/growth/scratch/fixe3/chk"
+CHK = ROOT / "docs/designs/village/growth/scratch/fixe4/chk"
 
 
 def main():

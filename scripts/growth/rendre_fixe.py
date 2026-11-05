@@ -10,7 +10,7 @@ import subprocess
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
-OUT = ROOT / "docs/designs/village/growth/scratch/fixe3"
+OUT = ROOT / "docs/designs/village/growth/scratch/fixe4"
 TMP = OUT / "tmp"
 
 

@@ -30,9 +30,9 @@ SC = 0.19
 BOX = {"A1a": (66, 48), "A1b": (66, 48), "A1c": (66, 48), "A2": (92, 50), "A3": (140, 64), "A5": (92, 52), "A6": (80, 56), "A7": (130, 50),
        "A8": (118, 56), "B5": (92, 50), "B6": (125, 52),
        "hameau1_F_v2": (150, 999), "hameau2_F_v1": (190, 999), "ferme3_F_v1": (150, 999), "ferme3_F_v2": (150, 999),
-       "ferme4_F_v1": (190, 999), "bourg_F_v1": (260, 999), "mat": (46, 120)}
+       "ferme4_F_v1": (190, 999), "bourg_F_v1": (260, 999), "mat": (60, 200), "feu": (95, 100)}
 CANVAS = {"A1a": "decor1x1", "A1b": "decor1x1", "A1c": "decor1x1", "A2": "building1x2", "A3": "building2x3", "A5": "building1x2", "A6": "building1x2",
-          "A7": "building1x3", "A8": "building2x3", "B5": "building1x2", "B6": "building2x3", "A4": "decor1x1", "mat": "decor1x1"}
+          "A7": "building1x3", "A8": "building2x3", "B5": "building1x2", "B6": "building2x3", "A4": "decor1x1", "mat": "decor1x1", "feu": "decor1x1"}
 STUMP_W = 100  # px, the widest painted stump (about 1/7 of the sheet) after scaling: a quarter of a cell
 LICENCE = "OpenAI output terms: the API account holder owns the output (gpt-image-2.5-sunburst), personal or commercial use"
 
@@ -107,6 +107,10 @@ def anchor_of(im):
 
 def lights(jour, name=""):
     """Tiny dim windows: warm blobs of 12-300 px framed by ink (dark ring). None for pieces with no window (stall, stumps, gardens, open sheds)."""
+    if name in ("mat", "feu"):  # lanterns, brazier and flames: yellow-orange and bright; the vivid red banners (low green) stay unlit
+        a = np.asarray(jour.convert("RGB")).astype(int)
+        m = (a[..., 0] > 190) & (a[..., 1] > 105) & (a[..., 2] < 120) & (a[..., 0] - a[..., 2] > 90) & (np.asarray(jour.getchannel("A")) > 200)
+        return Image.fromarray(m.astype(np.uint8) * 255)
     if name == "A4" or name.startswith(("souche", "copeaux", "A3", "A7", "B6")):
         return None
     rgb = jour.convert("RGB")
@@ -131,8 +135,26 @@ def lights(jour, name=""):
     return Image.fromarray(out.astype(np.uint8) * 255)
 
 
+def nuit_chaud(jour, name):
+    """Night of the mast and the bonfire: the graded night, the warm glowing parts (lantern glass, flames) kept at their day colour and
+    brightened, a soft halo round them. The thin ochre trim of the banners is opened away, so it is not lit."""
+    a = np.asarray(jour.convert("RGB")).astype(int)
+    warm = (a[..., 0] > 190) & (a[..., 1] > 100) & (a[..., 2] < (38 if name == "mat" else 130)) & (a[..., 0] - a[..., 2] > 80) & (np.asarray(jour.getchannel("A")) > 200)
+    m = Image.fromarray(warm.astype(np.uint8) * 255).filter(ImageFilter.MinFilter(5)).filter(ImageFilter.MaxFilter(5))
+    base = FJ.nuit(jour, None).convert("RGB")
+    rgb = jour.convert("RGB")
+    vif = Image.eval(rgb, lambda v: min(255, round(v * 1.12)))
+    soft = m.filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.GaussianBlur(1.2))
+    n = Image.composite(vif, base, soft)
+    halo = m.filter(ImageFilter.GaussianBlur(FJ.HALO_PX * 1.6)).point(lambda v: round(v * 0.55))
+    n = Image.composite(ImageChops.screen(n, Image.new("RGB", n.size, FJ.LUEUR)), n, halo)
+    out = n.convert("RGBA")
+    out.putalpha(jour.getchannel("A"))
+    return out
+
+
 def write(name, jour, canvas, src_raw, how, prompt_note=""):
-    nuit = FJ.nuit(jour, lights(jour, name))
+    nuit = nuit_chaud(jour, name) if name in ("mat", "feu") else FJ.nuit(jour, lights(jour, name))
     side = {"slug": f"pieces/{name}", "source": "openai", "size": list(jour.size), "anchor": anchor_of(jour), "canvas": canvas, "mask": iso_loop.tap_mask(jour)}
     jour.save(F / f"{name}.jour.webp", "WEBP", quality=90, method=6)
     nuit.save(F / f"{name}.nuit.webp", "WEBP", quality=90, method=6)

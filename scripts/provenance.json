@@ -11154,6 +11154,16 @@
     "how": "quarter or countryside piece painted from its concept: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
     "licence": "same as the source render; see that entry"
   },
+  "docs/designs/village/growth/scratch/final/feu.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/feu_1.png",
+    "how": "quarter or countryside piece painted from its concept: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/feu.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/feu_1.png",
+    "how": "quarter or countryside piece painted from its concept: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
   "docs/designs/village/growth/scratch/final/hameau1_F_v2.jour.webp": {
     "derived_from": "docs/designs/village/growth/scratch/final/raw/hameau1_F_v2_1.png",
     "how": "quarter or countryside piece painted from its concept: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
@@ -11175,12 +11185,12 @@
     "licence": "same as the source render; see that entry"
   },
   "docs/designs/village/growth/scratch/final/mat.jour.webp": {
-    "derived_from": "docs/designs/village/growth/scratch/final/raw/mat_1.png",
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/mat_3.png",
     "how": "quarter or countryside piece painted from its concept: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
     "licence": "same as the source render; see that entry"
   },
   "docs/designs/village/growth/scratch/final/mat.nuit.webp": {
-    "derived_from": "docs/designs/village/growth/scratch/final/raw/mat_1.png",
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/mat_3.png",
     "how": "quarter or countryside piece painted from its concept: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
     "licence": "same as the source render; see that entry"
   },
@@ -11744,6 +11754,37 @@
     "session": "growth-2",
     "date": "2026-11-05"
   },
+  "docs/designs/village/growth/scratch/final/raw/feu_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Draw one new object in the same hand, seen from the same isometric three-quarter view from above, standing alone. A great square bonfire for the heart of a village square: a tall tidy stack of split logs laid in a crossed pile about as tall as a house, inside a low ring of stones, with big bright flames, yellow and orange with a deep orange edge, rising from the top of the pile and a few sparks, standing on its own. A few unlit logs and stones lie around the ring's foot. The flames are the brightest part of the picture. The object stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth, sand or grass, the base ends cleanly on the magenta, and the painted parts never use the magenta colour. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters, no symbols.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 1514,
+      "input_tokens_details": {
+        "image_tokens": 1248,
+        "text_tokens": 266
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 3270
+    },
+    "cost": 0.064,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
   "docs/designs/village/growth/scratch/final/raw/hameau1_F_v2_1.png": {
     "model": "gpt-image-2.5-sunburst",
     "response_model": null,
@@ -11842,6 +11883,68 @@
       "total_tokens": 3275
     },
     "cost": 0.0641,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/final/raw/mat_2.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Draw one new object in the same hand, seen from the same isometric three-quarter view from above, standing alone. A tall festive mast for a village square, a very tall straight dark timber pole with a wide crossbar near the top, taller than a three-storey house, filling most of the picture's height. Hung from the crossbar and the pole, four long banners of vivid saturated red, a strong pure red like fresh madder dye, with a narrow dull ochre trim, swallow-tailed ends, hanging still: the red is the brightest and most saturated colour of the picture. Three small iron lanterns with a warm yellow-orange glowing glass hang on short chains from the crossbar and the pole. At the foot of the pole a round low stone brazier with a bright orange fire in it and a few stones around the pole's base. The object stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth, sand or grass, the base ends cleanly on the magenta, and the painted parts never use the magenta colour. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters, no symbols.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 1570,
+      "input_tokens_details": {
+        "image_tokens": 1248,
+        "text_tokens": 322
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 3326
+    },
+    "cost": 0.0643,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/final/raw/mat_3.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Draw one new object in the same hand, seen from the same isometric three-quarter view from above, standing alone. A tall festive mast for a village square, drawn narrow and very tall: one slim straight dark timber pole, three times the height of a house, filling the picture's height, and the whole object no wider than a fifth of its height. A short slim crossbar near the top, only a little wider than the pole. Hung straight down from the pole and the short crossbar, three long narrow banners of vivid saturated red, a strong pure red like fresh madder dye, with a narrow dull ochre trim, swallow-tailed ends, hanging still, one above the other along the pole: the red is the brightest and most saturated colour of the picture. Two small iron lanterns with a warm yellow-orange glowing glass hang on short chains from the pole, one near the top and one in the middle. At the foot of the pole a small round low stone brazier with a bright orange fire in it and a few stones around the pole's base. The object stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth, sand or grass, the base ends cleanly on the magenta, and the painted parts never use the magenta colour. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters, no symbols.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 1614,
+      "input_tokens_details": {
+        "image_tokens": 1248,
+        "text_tokens": 366
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 3370
+    },
+    "cost": 0.0645,
     "session": "growth-2",
     "date": "2026-11-05"
   },

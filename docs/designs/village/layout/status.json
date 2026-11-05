@@ -269,7 +269,7 @@
   "reste": "0.5 à 1 h",
   "avancement": null,
   "total": null,
-  "note": "lock_check OK ; crops lisiere et pieds à valider : img/reverrou-lisiere-pieds.jpg"
+  "note": "reverrouillage accepté par Guillaume le 05/11, à faire après la pose de GROWTH (forêt et quartiers autour), sur un nouveau rendu ; lock_check OK"
  },
  {
   "id": "L16",
@@ -320,7 +320,7 @@
   "reste": "0.3 à 1 h",
   "avancement": null,
   "total": null,
-  "note": "après le reverrouillage"
+  "note": "à fermer avec L15, après GROWTH"
  },
  {
   "id": "L19",

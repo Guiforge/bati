@@ -13,3 +13,5 @@
 - 05/11 **Les bouts de chemin près de la porte sud restent, retardés** : douze cases portent les routes de l'arène et de l'est, elles arrivent aux paliers 7 et 8 pour que le coin du palier 6 ne change pas. Les culs-de-sac sont retirés. Écart à la réponse de Guillaume, signalé dans `checkpoint.md`.
 - 05/11 **Accroches : pas de zéro exigé** : la règle laisse à GAME les recouvrements qui restent, et le seuil de 1 % n'a pas bougé. Aucune boîte changée.
 - 05/11 **Fusion dans `feat/village-iso` avant le reverrouillage** : `lock_check` passe, et GROWTH attendait le plan pour G15.
+- 05/11 **`lisiere` et `pieds` se reverrouillent après la pose de GROWTH** (réponse de Guillaume) : le crop `img/reverrou-lisiere-pieds.jpg` ne sert plus de référence, un nouveau rendu le remplacera.
+- 05/11 **Le coin de la porte au palier 6 est accepté, bouts de chemin retardés compris, et le chariot reste** (réponse de Guillaume).

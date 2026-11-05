@@ -16,3 +16,9 @@
 - **POLISH** : la nuit, la place pavée (`isoPaveClairNuit`) se lit comme un aplat moutarde à bords durs, noté par les 3 juges. Le plan ne semble pas en cause, d'après la lecture du code seulement : aucun rendu d'avant le plan n'a été comparé. Moulin blanc aux paliers 4 et 5.
 - **TRACES et POLISH** : les chemins bruns plats contre la route peinte du sud, noté par env et mara. Tracé gardé, c'est le plan de Guillaume.
 - **Tests** : `tests-debt.md` liste ceux que la grille casse, par lecture, aucun lancé. À payer avant `main`.
+- **VILLAGERS** : aucun villageois ne traverse les ponts. Il faut des trajets qui relient les deux rives (ponts en [2, 10] et [2, 2]).
+- **GROWTH** : le palier 1 a perdu 8 accessoires, et le camp n'a plus qu'une lanterne. Il doit retrouver de la vie : souches, bois, forêt de la bande F qui le serre.
+- **GROWTH et POLISH** : mara ne voit pas de point focal. La place du feu doit devenir le coeur, par la lumière et par des maisons qui bordent la rue, sans redéplacer de bâtiment.
+- **GROWTH** : les paliers 8 à 12 doivent se distinguer par les quartiers.
+- **GROWTH, à la fin de ta pose** : préviens LAYOUT. `lisiere` et `pieds` se reverrouillent sur un rendu avec ta forêt et tes quartiers, validé par Guillaume (L15).
+- **POLISH** : à peindre avec les autres chemins bruns, les bouts de chemin près de la porte sud, qui arrivent aux paliers 7 et 8 : (18, 13), (16, 15), (11, 17), (12, 17), (9, 17), (10, 17), (19, 10), (19, 13), (8, 17). Le chariot couvert devant la porte reste.

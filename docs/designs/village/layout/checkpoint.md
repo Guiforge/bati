@@ -41,3 +41,8 @@ Ton plan du palier 12 est réel sur une grille agrandie, avec les paliers 1 à 1
 
 ## Réponse de Guillaume sur la dernière validation
 
+05/11 :
+
+- **A** : oui, mais après la pose de GROWTH (forêt et quartiers autour), pas maintenant.
+- **B** : accepté. Ces bouts de chemin devront être peints, à noter pour POLISH avec les autres chemins bruns.
+- **C** : on garde le chariot.

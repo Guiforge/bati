@@ -81,6 +81,7 @@ import type {
   Locomotion,
   MuscleCode,
   QuestTargetType,
+  StopReason,
 } from "@/db/schema";
 import { updateStreakAfterSession } from "@/db/streaks";
 import type { Target } from "@/db/targets";
@@ -498,6 +499,8 @@ interface SessionState {
    * because it answers the same question about a different write.
    */
   triumphBonusPaid: boolean;
+  /** "I'm stopping, it hurts" (`stopForPain`). In memory until the save: a finished session has no snapshot. */
+  stopReason: StopReason | null;
 
   // Actions
   startSession: (
@@ -540,6 +543,8 @@ interface SessionState {
   /** Ends an outing from outside any view. See the implementation for why it exists. */
   completeOuting: () => void;
   skipExercise: () => void;
+  /** Ends the session here, on the hero's word, with the sets done so far (`0083`). */
+  stopForPain: () => void;
   swapCurrentExercise: (exercise: Exercise) => void;
   updateLastResult: (resultValue: number) => void;
   skipRest: () => void;
@@ -1459,6 +1464,7 @@ export const useSessionStore = create<SessionState>()(
     crestSeenBefore: null,
     savedResult: null,
     triumphBonusPaid: false,
+    stopReason: null,
 
     startSession: async (quest, userLevel, options) => {
       /**
@@ -1529,6 +1535,7 @@ export const useSessionStore = create<SessionState>()(
         crestSeenBefore: null,
         savedResult: null,
         triumphBonusPaid: false,
+        stopReason: null,
       });
 
       // An outing measures ground; a workout in a room does not. Called after the state is set
@@ -1738,6 +1745,7 @@ export const useSessionStore = create<SessionState>()(
         crestSeenBefore: null,
         savedResult: null,
         triumphBonusPaid: false,
+        stopReason: null,
       });
       // Whether the hero quit or the session ended, the service must let go: it holds a wake
       // lock and a permanent notification, and nothing else will stop it.
@@ -2012,6 +2020,38 @@ export const useSessionStore = create<SessionState>()(
       });
     },
 
+    /**
+     * Not a quit: `quitSession` throws the sets away, and a hero who stops because it hurts loses
+     * nothing. Nor a skip, which goes on to the next set. The session ends where it stands, the set
+     * under way leaving no row, like a skip, and `saveSession` writes what is there as it would any
+     * session, `ladderNeutralSets` keeping the missing rounds off the ladder.
+     */
+    stopForPain: () => {
+      const { quest, status, prePauseStatus, lastPauseTimestamp, timerStartTimestamp } = get();
+      if (!quest || status === "idle" || status === "finished") return;
+
+      // As at every other way out of a rest: a very long hold nobody answered logs its target.
+      const unanswered = holdNeedingAnswer(get());
+      if (unanswered?.target) get().updateLastResult(unanswered.target.value);
+
+      // A pause running now is not the session's: `resumeSession` is what would have counted it.
+      const endTime = lastPauseTimestamp ?? Date.now();
+      const resting = (status === "paused" ? prePauseStatus : status) === "resting";
+      const restTaken = resting && timerStartTimestamp ? (endTime - timerStartTimestamp) / 1000 : 0;
+
+      set({
+        status: "finished",
+        prePauseStatus: null,
+        lastPauseTimestamp: null,
+        endTime,
+        restTakenSeconds: get().restTakenSeconds + Math.max(0, restTaken),
+        timerStartTimestamp: null,
+        timerDuration: 0,
+        firstSideSeconds: null,
+        stopReason: "pain",
+      });
+    },
+
     keepLongHold: () => set({ longHoldKept: true }),
 
     nextSide: () => {
@@ -2266,6 +2306,7 @@ export const useSessionStore = create<SessionState>()(
         exercises: results,
         rounds: quest.rounds,
         performedAt: new Date(startTime),
+        stopReason: get().stopReason,
       });
 
       // The session exists now, so the hits it earned can be written and attributed to it. This

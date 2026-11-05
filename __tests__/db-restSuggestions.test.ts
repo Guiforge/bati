@@ -134,6 +134,18 @@ describe("db/restSuggestions", () => {
       expect(result.heavyWeeks).toBeGreaterThanOrEqual(4);
     });
 
+    // Only bites under a zone that changes its clocks: the Paris run of the gate is what proves it.
+    test("a late evening does not lose a week to the clock change behind it", () => {
+      const { restSuggestionAt } =
+        require("../db/restSuggestions") as typeof import("../db/restSuggestions");
+      const now = new Date(2026, 10, 3, 23, 38);
+      const sessions = [0, 1, 2, 3].flatMap((week) =>
+        [1, 2, 4, 6].map((offset) => new Date(2026, 10, 3 - week * 7 - offset)),
+      );
+
+      expect(restSuggestionAt(sessions, now).heavyWeeks).toBe(4);
+    });
+
     test("an easier week in the middle resets the count", async () => {
       const { getRestSuggestion } =
         require("../db/restSuggestions") as typeof import("../db/restSuggestions");

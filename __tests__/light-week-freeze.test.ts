@@ -130,6 +130,36 @@ describe("a running light week freezes the ladder and the target", () => {
     expect(flags.map((f) => f.n)).toEqual([1, 0]);
   });
 
+  test("lightWeekNeutral marks the light week's sets and leaves a movement skipped that week out", async () => {
+    const { createCompletedSession } =
+      require("../db/completed") as typeof import("../db/completed");
+    const plank = (roundIndex: number): CompletedExerciseInput => ({
+      exerciseId: idOf("Plank"),
+      roundIndex,
+      sortOrder: 0,
+      result: { type: "time", value: 30 },
+      target: { type: "time", value: 30 },
+      prescribed: 30,
+    });
+    await createCompletedSession({ lightened: true, rounds: 1, exercises: [plank(0)] }); // No week yet.
+    await lw().acceptLightWeek(new Date(Date.now() - DAY));
+    await createCompletedSession({ lightened: true, rounds: 1, exercises: [plank(0)] });
+    await createCompletedSession({ lightened: true, rounds: 2, exercises: [plank(0)] }); // A round skipped.
+    await createCompletedSession({ lightened: false, rounds: 1, exercises: [plank(0)] });
+
+    const rows = t.sqlite
+      .prepare(
+        "SELECT ladderNeutral AS n, lightWeekNeutral AS l FROM completed_exercises ORDER BY id",
+      )
+      .all();
+    expect(rows).toEqual([
+      { n: 0, l: 0 },
+      { n: 1, l: 1 },
+      { n: 1, l: 0 },
+      { n: 0, l: 0 },
+    ]);
+  });
+
   test("lightenRounds takes one round and marks only a quest that really lost it", () => {
     const { lightenRounds } = lw();
     expect(lightenRounds({ rounds: 3 }, null, true, false)).toEqual({ rounds: 2, lightened: true });

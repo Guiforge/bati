@@ -43,6 +43,12 @@
         <data android:mimeType="application/json"/>
         <category android:name="android.intent.category.DEFAULT"/>
       </intent-filter>
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW"/>
+        <data android:scheme="https" android:host="getbati.app" android:path="/d"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+      </intent-filter>
     </activity>
     <receiver android:name=".widget.Flame" android:exported="false" android:label="@string/widget_flame_label">
       <intent-filter>

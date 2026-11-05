@@ -40,3 +40,25 @@ export const WEEKLY_TARGETS = [2, 3, 4] as const;
  * target. It must be one of `WEEKLY_TARGETS`, or the oath screen opens with no chip selected.
  */
 export const DEFAULT_WEEKLY_TARGET = 3;
+
+/**
+ * The hero's flame quota, from the stored oath (the `oath` preference, or nothing): the bar the
+ * flame is measured against and the goal a challenge freezes when it starts. Sessions per week,
+ * never reps: the two heroes of a challenge are held to their own promise, not to each other's
+ * volume. Any oath shape but `weekly_sessions` leaves the baseline, a mangled one too.
+ */
+export function weeklyGoal(oathJson: string | null | undefined): number {
+  if (!oathJson) return DEFAULT_WEEKLY_QUOTA;
+  try {
+    const parsed: unknown = JSON.parse(oathJson);
+    if (typeof parsed !== "object" || parsed === null) return DEFAULT_WEEKLY_QUOTA;
+    const { metric, weeklyTarget } = parsed as { metric?: string; weeklyTarget?: number };
+    if (metric !== "weekly_sessions" || typeof weeklyTarget !== "number") {
+      return DEFAULT_WEEKLY_QUOTA;
+    }
+    return Math.max(1, Math.floor(weeklyTarget));
+  } catch {
+    // Not reported: the flame has always read a mangled oath as no oath, and has an answer for it.
+    return DEFAULT_WEEKLY_QUOTA;
+  }
+}

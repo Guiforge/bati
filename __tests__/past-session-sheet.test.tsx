@@ -316,7 +316,8 @@ describe("PastSessionSheet, a session written down", () => {
     expect(screen.getByRole("button", { name: "Yesterday" })).toBeTruthy();
     const longDates = screen
       .getAllByRole("button")
-      .filter((b) => /\d{1,2}, 20|October|September/.test(String(b.props.accessibilityLabel)));
+      // Any digit, never a month's name: naming two made this fail from the fourth of November.
+      .filter((b) => /\d/.test(String(b.props.accessibilityLabel)));
     expect(longDates.length).toBeGreaterThanOrEqual(5);
   });
 });

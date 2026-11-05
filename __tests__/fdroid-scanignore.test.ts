@@ -70,6 +70,18 @@ function packageDirs(): string[] {
   return dirs;
 }
 
+describe("our own modules", () => {
+  // `scandelete` covers node_modules only: a flagged line here is not deleted, it fails the build.
+  test("no local module's build.gradle holds anything the scanner objects to", () => {
+    const dir = path.join(ROOT, "modules");
+    const flagged = fs
+      .readdirSync(dir)
+      .flatMap((name) => gradleFilesOf(path.join(dir, name)))
+      .filter((file) => scannerObjectsTo(fs.readFileSync(file, "utf8")));
+    expect(flagged).toEqual([]);
+  });
+});
+
 describe("F-Droid recipe scanignore", () => {
   test("every node_modules build.gradle the scanner objects to is neutralised", () => {
     const flagged: string[] = [];

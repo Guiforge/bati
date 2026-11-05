@@ -308,6 +308,7 @@ describe("the countdown beeps, from inside a session", () => {
     });
     const paused = await mountPaused();
     expect(paused.queryByTestId("session-sound")).toBeNull();
+    expect(paused.queryByTestId("session-pause-pain-stop")).toBeNull();
     expect(paused.getByTestId("session-resume")).toBeTruthy();
   });
 });
@@ -433,6 +434,43 @@ describe("quitting the session", () => {
     mockBack.mockClear();
     mockReplace.mockClear();
     mockCanGoBack.mockReturnValue(true);
+  });
+
+  it("stops for pain from the pause itself, in one tap, keeping the sets", async () => {
+    pauseMidSession();
+    const paused = await mountPaused();
+    const set = { exerciseId: 1, sortOrder: 0, result: { type: "reps" as const, value: 10 } };
+    useSessionStore.setState({ results: [set] });
+
+    await act(async () => fireEvent.press(paused.getByTestId("session-pause-pain-stop")));
+
+    expect(useSessionStore.getState().status).toBe("finished");
+    expect(useSessionStore.getState().stopReason).toBe("pain");
+    expect(useSessionStore.getState().results).toEqual([set]);
+    expect(mockBack).not.toHaveBeenCalled();
+    useSessionStore.setState({ stopReason: null });
+  });
+
+  it("does not ask a hero who only paused anything about the way out", async () => {
+    pauseMidSession();
+    const paused = await mountPaused();
+    expect(paused.queryByTestId("confirm-dialog-extra")).toBeNull();
+    expect(useSessionStore.getState().stopReason).toBeNull();
+  });
+
+  it("offers the pain stop on the way out, and it keeps the sets Quit would erase", async () => {
+    const { alert, paused } = await tapQuit();
+    const set = { exerciseId: 1, sortOrder: 0, result: { type: "reps" as const, value: 10 } };
+    useSessionStore.setState({ results: [set] });
+
+    await act(async () => fireEvent.press(paused.getByTestId("confirm-dialog-extra")));
+
+    expect(useSessionStore.getState().status).toBe("finished");
+    expect(useSessionStore.getState().stopReason).toBe("pain");
+    expect(useSessionStore.getState().results).toEqual([set]);
+    expect(mockBack).not.toHaveBeenCalled();
+    useSessionStore.setState({ stopReason: null });
+    alert.mockRestore();
   });
 
   it("keeps the session until the hero confirms", async () => {

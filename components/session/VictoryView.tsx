@@ -26,6 +26,7 @@ import { bossDisplayName } from "@/constants/bosses";
 import { getQuestColorTokensFromQuest } from "@/constants/exerciseColors";
 import { LEVEL_CARD_HEIGHT } from "@/constants/layout";
 import { fade, rawColors } from "@/constants/rawColors";
+import { TRIVIAL_SESSION_SECONDS } from "@/constants/sessionFloor";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
 import {
   UNTRACED_PAID_SECONDS_PER_DAY,
@@ -64,27 +65,6 @@ import { TonightList } from "./TonightList";
 
 /** The big feasts that are a card when another one holds the screen, and are marked seen as such. */
 const RELEGATED_KINDS: Feast["kind"][] = ["legendary", "age", "anniversary"];
-
-/**
- * Under this, the session is asked about rather than saved.
- *
- * A time-based set records `Math.max(1, elapsedSeconds)` and ends whenever the hero taps done,
- * so starting an expedition and stopping after five seconds writes a real `completed_sessions`
- * row — one that counts toward the streak and toward `weekly_sessions`, the eight-week oath.
- * The hole is not new (a strength quest can be saved after one rep and a run of skips), but an
- * expedition makes it a single accidental tap: go out, change your mind, and the week is
- * credited.
- *
- * This does not try to police intent. It is an offline single-player app; a hero determined to
- * cheat their own oath will, and nothing here should pretend otherwise. What it catches is the
- * accident, and it catches it the way a sports watch does — by asking, because the hero is the
- * only one who knows whether those ninety seconds were the whole outing or a false start.
- *
- * Deliberately about the clock and nothing else. A rule that reasoned about reps would need one
- * definition per style, and two definitions of "did this count" is the drift this codebase
- * already spends a lot of comments avoiding.
- */
-const TRIVIAL_SESSION_SECONDS = 120;
 
 /**
  * The villager's slot at the top of the hero banner. 88 dp holds a name row and three lines of

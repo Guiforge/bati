@@ -39,8 +39,10 @@ boot() {
   }
   echo "$me" >"$dir/$serial"
   exec 9>&-
+  # EMU_EXTRA_ARGS: a boot with something more, the QR scanner's virtual camera scene for one.
+  # shellcheck disable=SC2086
   setsid nohup "$HOME/Android/Sdk/emulator/emulator" -avd "$avd" -port "$port" -no-audio \
-    -no-snapshot -gpu host -feature -Vulkan >"$dir/log-$serial" 2>&1 </dev/null &
+    -no-snapshot -gpu host -feature -Vulkan ${EMU_EXTRA_ARGS:-} >"$dir/log-$serial" 2>&1 </dev/null &
   pid=$!
   for _ in $(seq 120); do
     if ! kill -0 "$pid" 2>/dev/null; then

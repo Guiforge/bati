@@ -1,0 +1,25 @@
+{
+  "note": "Frozen. Written once, never regenerated: a change of format is a new version. See docs/designs/multiplayer/envelope.md.",
+  "key": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
+  "week": {
+    "pairId": "00112233445566778899aabbccddeeff",
+    "senderId": "a1a2a3a4a5a6a7a8",
+    "isoYear": 2026,
+    "isoWeek": 45,
+    "stamp": 1793750400,
+    "goal": 3,
+    "paused": false,
+    "days": [1, 0, 1, 0, 0, 0, 0],
+    "headerHex": "010100112233445566778899aabbccddeeffa1a2a3a4a5a6a7a807ea2d",
+    "envelopeHex": "010100112233445566778899aabbccddeeffa1a2a3a4a5a6a7a807ea2d977984df544d7b94c615477e1196c2e6a601a654fe4ff200f07c0c84b3d56545cd47a794e3cdfc5ee9",
+    "link": "https://getbati.app/d#AQEAESIzRFVmd4iZqrvM3e7_oaKjpKWmp6gH6i2XeYTfVE17lMYVR34RlsLmpgGmVP5P8gDwfAyEs9VlRc1Hp5Tjzfxe6Q"
+  },
+  "invite": {
+    "pairId": "00112233445566778899aabbccddeeff",
+    "senderId": "a1a2a3a4a5a6a7a8",
+    "madeAt": 1793750400,
+    "secret": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
+    "hex": "010200112233445566778899aabbccddeeffa1a2a3a4a5a6a7a80000006aea7580000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+    "link": "https://getbati.app/d#AQIAESIzRFVmd4iZqrvM3e7_oaKjpKWmp6gAAABq6nWAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8"
+  }
+}

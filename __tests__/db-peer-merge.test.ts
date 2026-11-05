@@ -714,6 +714,35 @@ test("a newer row here that has no uuid takes the other's, so the two devices ag
   expect(await backup().compareWithPeer(file)).toMatchObject({ peerChanges: 0 });
 });
 
+describe("the pain stop and the light-week flag travel with their rows", () => {
+  test("a stop on one device arrives on the other, and a normal end stays a normal end", async () => {
+    let stopped = "";
+    const file = await peer("pain.db", (sqlite) => {
+      stopped = addSession(sqlite, 1_750_000_000, adminExercise());
+      sqlite
+        .prepare("UPDATE completed_sessions SET stopReason = 'pain' WHERE uuid = ?")
+        .run(stopped);
+      sqlite.prepare("UPDATE completed_exercises SET lightWeekNeutral = 1").run();
+    });
+    const normal = addSession(t.sqlite, 1_750_100_000, adminExercise());
+
+    await merge().mergePeer(file);
+
+    const reason = (uuid: string) =>
+      t.sqlite.prepare("SELECT stopReason FROM completed_sessions WHERE uuid = ?").get(uuid);
+    expect(reason(stopped)).toEqual({ stopReason: "pain" });
+    expect(reason(normal)).toEqual({ stopReason: null });
+    expect(
+      t.sqlite
+        .prepare(
+          `SELECT lightWeekNeutral FROM completed_exercises e
+           JOIN completed_sessions s ON s.id = e.sessionId WHERE s.uuid = ?`,
+        )
+        .get(stopped),
+    ).toEqual({ lightWeekNeutral: 1 });
+  });
+});
+
 describe("error branches", () => {
   const sessionCount = () =>
     (t.sqlite.prepare("SELECT count(*) AS n FROM completed_sessions").get() as { n: number }).n;

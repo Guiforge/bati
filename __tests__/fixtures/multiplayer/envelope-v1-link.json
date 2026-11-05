@@ -1,0 +1,19 @@
+{
+  "note": "Frozen. Written once by Node's own crypto, never regenerated: a change of format is a new version. See docs/designs/multiplayer/envelope.md. The two private keys are RFC 7748's test keys.",
+  "pairId": "102132435465768798a9bacbdcedfe0f",
+  "inviterId": "a1a2a3a4a5a6a7a8",
+  "joinerId": "b1b2b3b4b5b6b7b8",
+  "madeAt": 1793750400,
+  "repliedAt": 1793754000,
+  "inviterSecret": "dwdtCnMYpX08FsFyUbJmRd9ML4frwJkqsXf7pR25LCo=",
+  "inviterPublic": "hSDwCYkwp1R0i33ctD73Wg2/Og0mOBr066SpjqqbTmo=",
+  "joinerSecret": "XasIfmJKikt54X+Lg4AO5m87sSkmGLb9HC+LJ/+I4Os=",
+  "joinerPublic": "3p7bfXt9wbTTW2HC7OQ1Nz+DQ8hbeGdNrfx+FG+IK08=",
+  "pairKey": "pu3K8JWctcTp8aisye7PepUJ/NoCvyqg1FBgbrcyh88=",
+  "replyClearHex": "0104102132435465768798a9bacbdcedfe0fb1b2b3b4b5b6b7b8000000de9edb7d7b7dc1b4d35b61c2ece435373f8343c85b78674dadfc7e146f882b4f",
+  "pairKeyHex": "a6edcaf0959cb5c4e9f1a8acc9eecf7a9509fcda02bf2aa0d450606eb73287cf",
+  "inviteHex": "0103102132435465768798a9bacbdcedfe0fa1a2a3a4a5a6a7a80000006aea75808520f0098930a754748b7ddcb43ef75a0dbf3a0d26381af4eba4a98eaa9b4e6a",
+  "inviteLink": "https://getbati.app/d#AQMQITJDVGV2h5ipusvc7f4PoaKjpKWmp6gAAABq6nWAhSDwCYkwp1R0i33ctD73Wg2_Og0mOBr066SpjqqbTmo",
+  "replyHex": "0104102132435465768798a9bacbdcedfe0fb1b2b3b4b5b6b7b8000000de9edb7d7b7dc1b4d35b61c2ece435373f8343c85b78674dadfc7e146f882b4f000102030405060708090a0b71eb4b09363538e99379c7450fcb7d4c48d54c80",
+  "replyLink": "https://getbati.app/d#AQQQITJDVGV2h5ipusvc7f4PsbKztLW2t7gAAADentt9e33BtNNbYcLs5DU3P4NDyFt4Z02t_H4Ub4grTwABAgMEBQYHCAkKC3HrSwk2NTjpk3nHRQ_LfUxI1UyA"
+}

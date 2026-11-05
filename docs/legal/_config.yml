@@ -11,3 +11,7 @@ description: >-
   A dark-fantasy fitness RPG for Android. Workouts become quests, reps become damage, and the
   village you build is made of what you actually lifted. Offline first, no account, no tracking.
 url: https://getbati.app
+
+# Dot folders are skipped unless named. Android reads this one to verify the sealed link (/d).
+include:
+  - .well-known

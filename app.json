@@ -15,6 +15,12 @@
           "action": "VIEW",
           "category": ["DEFAULT"],
           "data": [{ "mimeType": "application/json" }]
+        },
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "category": ["BROWSABLE", "DEFAULT"],
+          "data": [{ "scheme": "https", "host": "getbati.app", "path": "/d" }]
         }
       ]
     },

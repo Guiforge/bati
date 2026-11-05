@@ -350,6 +350,26 @@ tombstone.
   exists) and never merged (`mergePeer` refuses on the newest migration); the previous build reads this
   build's file as unreadable. Nothing is lost on either side.
 
+### Companions (0082)
+
+Table `pairs`, classed `merged`: a multiplayer companion's secret and the name this hero gave them. By id,
+the later `updatedAt` wins, a same-second tie goes to the larger `pairCanon`. Unlinking writes a
+`deleted_content` tombstone, so the other device drops its copy at its next sync (`honourTombstones`) and an
+older copy cannot bring it back. The fingerprint's content segment gains one `r:<id>` row per pair, only where
+the schema has the table.
+
+**A secret leaves the phone sealed or not at all.** A plaintext backup has its pairs removed
+(`scrubPairs`, with `secure_delete`, since a deleted row otherwise stays readable in the file's pages), so
+restoring one means pairing again. Two copies do keep them, both already protected: the sealed backup and sync
+that carry them to the hero's other device, and Android's own backup, which copies the database only where
+the transport encrypts client-side (above). The local pre-migration copy is scrubbed as well, so an unlinked
+pair's secret does not wait two updates there, and a restore by support means pairing again.
+
+**A link invitation waiting (0084).** Table `pair_invites`, classed `local`: the private half of an X25519 pair
+until the answer comes or seven days pass. Sync never carries it, so an answer opened on the hero's other phone
+is refused and the link is sent again. `scrubPairs` removes these rows too; a sealed backup keeps them, like
+the rest of the file.
+
 ### The hero's bosses (0079)
 
 A boss is a creation of its own: table `hero_bosses` (hero rows only, `uuid` UNIQUE), classed `merged` in
@@ -550,7 +570,8 @@ merge can hand A the friend's version (`ponytail:` in `importAdventure`).
   Two kept copies of a dead movement are never written again, so they can differ, and both read `level`.
 - Joining by scanning a QR code from the other device (the audit's scout: four typed fields
   become one gesture). expo-camera's scanner is Play Services' code scanner and ML Kit, both
-  proprietary, which F-Droid refuses; it needs a ZXing-based scanner module of our own.
+  proprietary, which F-Droid refuses. `modules/bati-scanner` (zxing-cpp and CameraX, multiplayer
+  lot 0, [qr-scanner.md](../designs/multiplayer/qr-scanner.md)) now removes that obstacle.
 - An "ignore certificate errors" switch, as Joplin has. It turns the check off for every host; the
   private-authority case it is used for is covered by trusting the hero's own authority (below).
 

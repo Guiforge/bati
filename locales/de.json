@@ -673,6 +673,9 @@
     "crit_rule_one": "Kritischer Treffer: {{one}} % bei einer Wiederholung mehr, nicht darüber.",
     "pain_rule": "Stechender Schmerz? Hör hier auf. Überspringen kostet nichts.",
     "pain_rule_last": "Stechender Schmerz? Hör hier auf.",
+    "pain_stop": "Ich höre auf, es tut weh",
+    "pain_stop_line": "Gut, dass du auf dich gehört hast, nichts ist verloren",
+    "pain_stop_quit_body": "Abbrechen löscht diese Einheit. Wenn es weh tut, höre lieber auf: Deine Sätze bleiben.",
     "overtime": "BONUSZEIT",
     "pause_accessibility": "Einheit pausieren",
     "paused_subtitle": "Durchatmen. Weiter geht's, wann du willst.",
@@ -1796,7 +1799,7 @@
     "title": "Datenschutz",
     "summary": "Bati sammelt nichts. Die App funktioniert offline, mit drei standardmäßig deaktivierten Ausnahmen: der Karte hinter einer Tour, einem täglichen Blick auf neue Versionen der App und der Gerätesynchronisierung. Ist die Karte eingeschaltet, fragt das Telefon einen Kartendienst nach dem Gebiet, in dem Sie waren, was diesem Dienst ungefähr verrät, wo Sie sich aufhielten. Die Versionsprüfung fragt GitHub, ob ein neueres Bati erschienen ist, und verrät dabei nur Ihre IP-Adresse und die Uhrzeit. Die Gerätesynchronisierung sendet den Verlauf jedes Geräts, auf dem Telefon verschlüsselt, an einen Nextcloud- oder WebDAV-Server Ihrer Wahl, der ihn nicht lesen kann. Alles andere, was Sie hier tun, bleibt auf Ihrem Telefon, außer Sie senden es selbst und bewusst per E-Mail.",
     "storage_title": "Wo Ihr Training gespeichert ist",
-    "storage_body": "Jede Einheit, jeder Satz, jede Quest, jedes Abenteuer, jeder Erfolg und jede Einstellung wird in eine Datenbank im privaten Speicher dieser App auf Ihrem Gerät geschrieben. Nichts wird an uns gesendet: Es gibt keinen Server von uns und kein Konto. Die Datenbank verlässt das Telefon nur in einer Sicherung, die Sie anlegen, in einer Quest- oder Abenteuerdatei, die Sie teilen (unverschlüsselt, sie enthält die dafür erstellten Übungen und deren Fotos), oder über die Gerätesynchronisierung. Diese ist aus, bis Sie sie einschalten, und die Daten werden auf dem Telefon verschlüsselt, bevor sie an einen Server Ihrer Wahl gehen. Wer die App löscht, löscht damit auch die Datenbank vom Telefon. Die eigene Sicherung Ihres Telefons (die von Google oder Seedvault) kann eine Kopie behalten, erstellt vom System und nicht von Bati, und so bekommt ein neues Telefon Ihren Helden zurück: Sie können sie in den Einstellungen des Telefons abschalten.",
+    "storage_body": "Jede Einheit, jeder Satz, jede Quest, jedes Abenteuer, jeder Erfolg und jede Einstellung wird in eine Datenbank im privaten Speicher dieser App auf Ihrem Gerät geschrieben. Nichts wird an uns gesendet: Es gibt keinen Server von uns und kein Konto. Die Datenbank verlässt das Telefon nur in einer Sicherung, die Sie anlegen, in einer Quest- oder Abenteuerdatei, die Sie teilen (unverschlüsselt, sie enthält die dafür erstellten Übungen und deren Fotos), oder über die Gerätesynchronisierung. Diese ist aus, bis Sie sie einschalten, und die Daten werden auf dem Telefon verschlüsselt, bevor sie an einen Server Ihrer Wahl gehen. Wer die App löscht, löscht damit auch die Datenbank vom Telefon. Die eigene Sicherung Ihres Telefons (die von Google oder Seedvault) kann eine Kopie behalten, erstellt vom System und nicht von Bati, und so bekommt ein neues Telefon Ihren Helden zurück: Sie können sie in den Einstellungen des Telefons abschalten. Eine Einheit kann festhalten, dass Sie sie wegen Schmerzen beendet haben: dieser Grund und nichts weiter. Er bleibt beim Rest Ihres Journals, und Bati sendet ihn nie an einen anderen Spieler.",
     "backups_title": "Sicherungen, die Sie selbst anlegen",
     "backups_body": "„Datei speichern“ schreibt Ihre Datenbank in eine Datei, die Sie benennen, dorthin, wo Androids Bildschirm „Speichern unter“ es erlaubt (dieses Gerät, eine installierte Cloud-App, ein USB-Stick); ein kleiner Link daneben übergibt die Datei stattdessen an eine andere App. In beiden Fällen sendet Bati sie nicht selbst irgendwohin. Diese Datei ist nicht verschlüsselt, außer Sie legen in den Einstellungen ein „Sicherungspasswort“ fest: Ohne das kann jeder, der sie öffnet, Ihren Trainingsverlauf lesen. Mit der Verschlüsselung öffnet sie sich nur mit Ihrem Passwort oder Ihren zwölf Wiederherstellungswörtern, und ohne eins von beiden kann niemand sie öffnen oder für Sie zurückholen. Eine Wiederherstellung ersetzt alles; Ihre bisherige Datenbank bleibt als Notfallkopie auf dem Gerät.",
     "never_title": "Was Bati nie tut",
@@ -1811,7 +1814,7 @@
     "children_body": "Bati richtet sich an Menschen ab {{age}} Jahren und nicht an jüngere. Sie sammelt von niemandem personenbezogene Daten, egal welchen Alters.",
     "contact_title": "Fragen",
     "contact_body": "Schreiben Sie an contact@getbati.app zu dieser Richtlinie, zu einem Fehler, einer Idee oder einer Funktion, die Sie sich wünschen. Da die App keine Daten über Sie speichert, gibt es nichts, was wir für Sie exportieren oder löschen könnten: Die Deinstallation löscht jeden Eintrag auf diesem Telefon. Kopien, die Sie angelegt haben, bleiben, wo Sie sie abgelegt haben: die Sicherung des Telefons, gespeicherte Dateien und Ihr Synchronisierungsordner.",
-    "updated": "Zuletzt aktualisiert am 17. Oktober 2026"
+    "updated": "Zuletzt aktualisiert am 4. November 2026"
   },
   "feedback": {
     "subject": "Bati {{version}}: Feedback",

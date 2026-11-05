@@ -1,0 +1,6 @@
+# The only packages under com.google the foss APK may hold, all free software: Material (Apache-2.0),
+# Guava (Apache-2.0), Gson (Apache-2.0). Read by scripts/apk-no-google.py in release.yml. A new line here
+# is a new library in every APK: read what brought it in first, and never add Play Services or ML Kit.
+com.google.android.material
+com.google.common
+com.google.gson

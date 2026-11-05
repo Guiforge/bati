@@ -26,6 +26,10 @@ module.exports = function withAndroidFileIntentScheme(config) {
         // (MissingPrefix), and `prebuild --clean` regenerates the manifest without needing it.
         if (filter.$) delete filter.$["data-generated"];
       }
+      // The sealed link's App Link filter gets the same marker from Expo, and fails lint the same way.
+      if (data.some((d) => d.$?.["android:host"] === "getbati.app") && filter.$) {
+        delete filter.$["data-generated"];
+      }
     }
     return cfg;
   });

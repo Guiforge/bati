@@ -2,7 +2,7 @@ import { startOfDay } from "date-fns";
 import { desc, sql } from "drizzle-orm";
 import { ETERNAL_FLAME_DAYS, FLAME_DORMANT_DAYS, FLAME_PIVOT } from "@/constants/flame";
 import { isPausedOn, PAUSE_KEY, type PausePeriod, parsePausePeriods } from "@/constants/pause";
-import { DEFAULT_WEEKLY_QUOTA } from "@/constants/weeklyTargets";
+import { weeklyGoal } from "@/constants/weeklyTargets";
 import { db, schema } from "./client";
 import { countsAsSession } from "./completed";
 import { dayKey } from "./dates";
@@ -79,22 +79,7 @@ export async function getWeeklyQuota(): Promise<number> {
     .where(sql`${userPreferences.key} = 'oath'`)
     .limit(1);
 
-  const row = rows[0];
-  if (!row) return DEFAULT_WEEKLY_QUOTA;
-
-  try {
-    const parsed: unknown = JSON.parse(row.value);
-    if (typeof parsed !== "object" || parsed === null) return DEFAULT_WEEKLY_QUOTA;
-
-    const { metric, weeklyTarget } = parsed as { metric?: string; weeklyTarget?: number };
-    if (metric !== "weekly_sessions" || typeof weeklyTarget !== "number") {
-      return DEFAULT_WEEKLY_QUOTA;
-    }
-
-    return Math.max(1, Math.floor(weeklyTarget));
-  } catch {
-    return DEFAULT_WEEKLY_QUOTA;
-  }
+  return weeklyGoal(rows[0]?.value);
 }
 
 /** Every pause the hero declared (M-04), read from the preference the way the quota reads the oath. */

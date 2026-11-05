@@ -2,7 +2,7 @@ import { Directory, File } from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { defaultDatabaseDirectory } from "expo-sqlite";
 
-import { snapshotDatabaseTo } from "@/db/backup";
+import { scrubPairs, snapshotDatabaseTo } from "@/db/backup";
 import { closeDatabase, DB_NAME, SAFETY_NAME, serializeOnDatabase } from "@/db/client";
 import { dayKey } from "@/db/dates";
 import { SCHEMA_VERSION } from "@/db/schemaVersion";
@@ -163,6 +163,7 @@ export async function writePreMigrationCopy(): Promise<void> {
   deleteIfPresent(PREMIGRATE_TMP);
   try {
     await snapshotDatabaseTo(pathIn(PREMIGRATE_TMP));
+    await scrubPairs(pathIn(PREMIGRATE_TMP));
     // Two generations. The newest alone would let the update after a damaging one replace the
     // only good copy with the damaged one.
     if (fileIn(PREMIGRATE_NAME).exists) {
@@ -246,6 +247,7 @@ async function writeSnapshotNow(stem?: string): Promise<File> {
   const file = name + extension(encrypted);
   if (!encrypted) {
     await snapshotDatabaseTo(pathIn(file));
+    await scrubPairs(pathIn(file));
     return fileIn(file);
   }
 

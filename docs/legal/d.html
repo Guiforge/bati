@@ -1,0 +1,34 @@
+---
+layout: null
+permalink: /d
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bati</title>
+    <meta name="robots" content="noindex" />
+    <meta name="referrer" content="no-referrer" />
+    <!-- What the link holds is after the #, which a browser never sends. The one script below copies
+         it into the button that opens Bati, and does nothing else. The policy makes that a rule: only
+         that exact script may run, and it has nothing it could load from or send to. Without
+         JavaScript the button opens Bati empty. Changing the script means changing its hash here. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'sha256-mFp519dJTW4y1aigemycM/r9iikPzWt7Qfpmsp4auMg='" />
+    <style>
+      :root { color-scheme: dark; }
+      body { margin: 0; min-height: 100vh; display: grid; place-content: center; gap: 16px; padding: 24px;
+             background: #0C0D11; color: #ECE4D4; font: 18px/1.5 system-ui, sans-serif; max-width: 28rem; }
+      a { display: block; padding: 14px; border: 1px solid #ECE4D4; border-radius: 8px; text-align: center;
+          color: inherit; text-decoration: none; }
+    </style>
+  </head>
+  <body>
+    <p>This link is for the Bati app. This page sends nothing anywhere: only the app can read what it holds.</p>
+    <p>With Bati installed, tap Open in Bati. If nothing happens, open the link from your messages again and choose Bati.</p>
+    <p lang="fr">Ce lien est pour l'app Bati. Cette page n'envoie rien, seule l'app peut lire ce qu'il contient. Si Bati est installée, touche Open in Bati. Si rien ne se passe, rouvre le lien depuis tes messages et choisis Bati.</p>
+    <a id="open" href="bati://">Open in Bati</a>
+    <a href="/">Get Bati</a>
+    <script>if(location.hash)document.getElementById("open").href="bati://d"+location.hash;</script>
+  </body>
+</html>

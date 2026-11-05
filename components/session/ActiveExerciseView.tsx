@@ -15,6 +15,7 @@ import { Paragraph } from "@/components/common/Paragraph";
 import { Crosshair, Minus, Pause, Plus } from "@/components/icons";
 import { formatShare } from "@/components/journal/journalFormat";
 import { slotCaption } from "@/components/quests/substitutionCaption";
+import { PainStopLink } from "@/components/session/PainStopLink";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { fade, rawColors } from "@/constants/rawColors";
@@ -933,13 +934,16 @@ export function ActiveExerciseView() {
                   the hero changed still fights on the prescribed one, so the line says where the
                   boss stops counting instead of promising odds on their number. */}
                         {skipRefused ? (
-                          <AppText
-                            fontSize={12}
-                            color="textSecondary"
-                            style={{ textAlign: "center" }}
-                          >
-                            {t("session.pain_rule_last")}
-                          </AppText>
+                          <>
+                            <AppText
+                              fontSize={12}
+                              color="textSecondary"
+                              style={{ textAlign: "center" }}
+                            >
+                              {t("session.pain_rule_last")}
+                            </AppText>
+                            <PainStopLink />
+                          </>
                         ) : (
                           <>
                             <AppText
@@ -997,6 +1001,7 @@ export function ActiveExerciseView() {
                               : t("session.hold_fight_hint")}
                   </AppText>
                 )}
+                {isTimeBased && !isOuting && skipRefused ? <PainStopLink /> : null}
 
                 {bossFight && !fightLive ? (
                   <AppText fontSize={12} color="textSecondary" style={{ textAlign: "center" }}>

@@ -6,7 +6,7 @@ head_title: "Privacy policy for Bati"
 description: "Bati collects nothing about you. No account, no server of ours, no analytics. Offline first, with three exceptions, all off by default: the map, which tells a tile host roughly where you go, a daily question to GitHub about a newer version, and device sync, which sends your history encrypted to a server you choose."
 type: legal
 status: active
-updated: 2026-10-21
+updated: 2026-11-04
 permalink: /privacy/
 related: [../planning/roadmap.md]
 ---
@@ -42,7 +42,7 @@ francés: **contact@getbati.app**
 
 # Privacy Policy for Bati
 
-**Last updated: 21 October 2026**
+**Last updated: 4 November 2026**
 
 Bati is an offline-first training app. It has no account, no server of its own, and no analytics.
 This page exists because both app stores require a privacy policy URL, and because the short
@@ -75,6 +75,8 @@ and air-pressure readings of an outing) is written to a
   sync you switch on, or a quest or adventure file you share, all described below, and a sync is
   always encrypted on the phone first.
 - We cannot read it. There is no server to read it from.
+- A session can record that you stopped it because of pain: that reason and nothing more, not where
+  or how much. It stays with the rest of your journal, and Bati never sends it to another player.
 - **Your phone's own backup carries it.** Android backs up app data by itself (Google's backup on
   most phones, Seedvault on LineageOS, /e/OS and GrapheneOS, or a cable or wireless transfer to a
   new phone), and Bati lets it take this database, so a new phone gets your hero back without you
@@ -331,7 +333,7 @@ Questions about this policy, and anything else (a bug, an idea, a feature you wi
 
 # Politique de confidentialité de Bati
 
-**Dernière mise à jour : 21 octobre 2026**
+**Dernière mise à jour : 4 novembre 2026**
 
 Bati est une application d'entraînement hors ligne d'abord. Pas de compte, pas de serveur à nous,
 pas d'analytics. Cette page existe parce que les deux stores exigent une URL de politique de
@@ -366,6 +368,9 @@ votre appareil**.
   quête ou d'aventure que vous partagez, décrits plus bas, et une synchronisation est toujours
   chiffrée sur le téléphone avant de partir.
 - Nous ne pouvons pas le lire. Il n'existe aucun serveur pour le lire.
+- Une séance peut noter que vous l'avez arrêtée à cause d'une douleur : cette raison et rien de plus,
+  ni où ni combien. Elle reste avec le reste de votre journal, et Bati ne l'envoie jamais à un autre
+  joueur.
 - **La sauvegarde de votre téléphone l'emporte.** Android sauvegarde de lui-même les données des
   applications (la sauvegarde Google sur la plupart des téléphones, Seedvault sur LineageOS, /e/OS
   et GrapheneOS, ou un transfert par câble ou sans fil vers un nouveau téléphone), et Bati le

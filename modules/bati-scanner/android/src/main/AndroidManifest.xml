@@ -1,0 +1,14 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+      The camera, for reading a QR code and nothing else: frames go to the decoder and are dropped,
+      none is stored. Asked for at runtime when the scanner opens, never at launch. Justified again
+      in __tests__/android-permissions.test.ts.
+
+      The two uses-feature lines are what keep a phone without a camera able to install the app:
+      declaring CAMERA alone makes both features implied and required, and the store then filters
+      that phone out for a scanner it may never open.
+    -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
+</manifest>

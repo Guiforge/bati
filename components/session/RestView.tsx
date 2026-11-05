@@ -11,6 +11,7 @@ import { Button } from "@/components/common/Button";
 import { FONT_CAPS } from "@/components/common/fontCaps";
 import { GameIcon } from "@/components/common/GameIcon";
 import { Minus, Pause, Plus } from "@/components/icons";
+import { PainStopLink } from "@/components/session/PainStopLink";
 import { REST_HEADER_HEIGHT } from "@/components/session/sessionArt";
 import { getExerciseThumb } from "@/constants/assetMap";
 import type { CompletedExerciseInput } from "@/db/completed";
@@ -345,11 +346,17 @@ export function RestView() {
 
             {/* The pain rule, where a hero stalls: it lived on a page behind Settings, and "I
                 couldn't" is the tap that says something may be wrong. In the review card's place,
-                which a skip hides. Said once, with no link out of a running session. */}
+                which a skip hides. Said once, and the one way out beside it is the stop that keeps
+                the sets. */}
             {lastSetSkipped ? (
-              <AppText testID="rest-pain-rule" fontSize={14} color="textSecondary">
-                {t("session.pain_rule")}
-              </AppText>
+              <>
+                <AppText testID="rest-pain-rule" fontSize={14} color="textSecondary">
+                  {t("session.pain_rule")}
+                </AppText>
+                <YStack items="flex-start">
+                  <PainStopLink />
+                </YStack>
+              </>
             ) : null}
 
             {/* Where the hero is: the movement about to start, in the running screen's own words. At

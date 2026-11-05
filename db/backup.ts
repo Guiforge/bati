@@ -1,5 +1,4 @@
 import { sql } from "drizzle-orm";
-
 import migrations from "../drizzle/migrations";
 import { reportError } from "../src/reportError";
 import {
@@ -14,6 +13,7 @@ import {
 import { hasPendingMigrations, migrateClient } from "./migrationRunner";
 import { SCHEMA_VERSION } from "./schemaVersion";
 import { errorTrail, sqlString } from "./sql";
+import { NEVER_IN_PLAINTEXT } from "./syncTables";
 
 /**
  * Backup and restore, the SQL half.
@@ -101,6 +101,30 @@ export function snapshotDatabaseTo(destinationPath: string): Promise<void> {
   // connection is where those live. The isolated handle is about *statements*, this queue is
   // about transactions; both are needed. See `vacuumIntoFile`.
   return serializeOnDatabase(() => vacuumIntoFile(destinationPath));
+}
+
+/**
+ * Takes the pairs out of a plaintext snapshot: of the files Bati writes, a pair's secret is only ever in a
+ * sealed one (Android's own backup is the phone's, see docs/architecture/backup-and-sync.md), and a local copy
+ * kept for a support session must not outlive an unlink. `secure_delete` overwrites the rows' pages,
+ * or the secret would still be readable in the file. The hero restoring such a copy pairs again,
+ * which is the price of never writing one in clear.
+ *
+ * Invitations waiting for an answer go too: each holds a private key (0084).
+ *
+ * The tables may not be there: the copy taken before an update runs on the schema before them, and a
+ * failure here would cost the update its safety net.
+ */
+export function scrubPairs(snapshotPath: string): Promise<void> {
+  return withIsolatedConnection(async (conn) => {
+    await conn.execAsync(`ATTACH DATABASE ${sqlString(snapshotPath)} AS ${CANDIDATE}`);
+    await conn.execAsync(`PRAGMA ${CANDIDATE}.secure_delete = ON`);
+    for (const table of NEVER_IN_PLAINTEXT) {
+      if (await hasTable(conn, CANDIDATE, table)) {
+        await conn.execAsync(`DELETE FROM ${CANDIDATE}.${table}`);
+      }
+    }
+  });
 }
 
 /** Timestamps of every migration this build ships, for the compatibility check below. */
@@ -427,6 +451,7 @@ function heroContent(
   canon: CanonicalColumns | null,
   adventures: boolean,
   bosses: boolean,
+  companions: boolean,
 ): string {
   const keys = MERGED_PREFERENCES.map(sqlString).join(", ");
   // By uuid (0066), as `mergePeer` matches them, so a rename is a change to one row and not a row
@@ -469,6 +494,13 @@ function heroContent(
     UNION ALL SELECT 'b:' || uuid, updatedAt, uuid,
         ${canonOf("hero_bosses", canon?.heroBosses)}
       FROM ${schema}.hero_bosses x`
+          : ""
+      }${
+        // The pairs (0082), only where the schema has the table; none, no row.
+        companions
+          ? `
+    UNION ALL SELECT 'r:' || id, updatedAt, id, ${canon ? pairCanon("x") : "NULL"}
+      FROM ${schema}.pairs x`
           : ""
       }`;
 }
@@ -553,6 +585,9 @@ async function hasPhotos(conn: IsolatedConnection, schema: string): Promise<bool
   return Number(row?.n ?? 0) > 0;
 }
 
+/** What settles two copies of a pair stamped in the same second, on both devices alike. */
+export const pairCanon = (alias: string) => `${alias}.name || '/' || ifnull(${alias}.peerId, '')`;
+
 /** What a correction of a session written down changed, as one text to settle a tie on. */
 export const handCanon = (alias: string) =>
   `json_array(${alias}.performedAt, ${alias}.durationSeconds, ${alias}.outing, ${alias}.leaguesM, ${alias}.label, ${alias}.byHand)`;
@@ -627,13 +662,14 @@ function newerIn(
 ): string {
   // `adventures` is "both devices are on one build": the schemas then have the same tables.
   const bosses = adventures;
+  const companions = adventures;
   // Equal dates are settled by content when both devices are on one build, so that `y` only covers
   // `x` when it is later, or equal and not smaller: the same order `mergePeer` writes by.
   const covers = canon
     ? "(ifnull(y.at, 0) > ifnull(x.at, 0) OR (ifnull(y.at, 0) = ifnull(x.at, 0) AND ifnull(y.canon, '') >= ifnull(x.canon, '')))"
     : "ifnull(y.at, 0) >= ifnull(x.at, 0)";
-  return `SELECT count(*) FROM (${heroContent(a, named, canon, adventures, bosses)}) x
-    WHERE NOT EXISTS (SELECT 1 FROM (${heroContent(b, named, canon, adventures, bosses)}) y WHERE y.id = x.id AND ${covers})
+  return `SELECT count(*) FROM (${heroContent(a, named, canon, adventures, bosses, companions)}) x
+    WHERE NOT EXISTS (SELECT 1 FROM (${heroContent(b, named, canon, adventures, bosses, companions)}) y WHERE y.id = x.id AND ${covers})
       AND NOT EXISTS (SELECT 1 FROM (${tombstonesOfB}) t WHERE t.uuid = x.uuid AND t.deletedAt >= ifnull(x.at, 0))`;
 }
 
@@ -745,6 +781,7 @@ export function compareWithPeer(path: string): Promise<PeerComparison> {
     const canon = sameBuild && named ? await canonicalColumns(conn, CANDIDATE) : null;
     const peerAdventures = await hasColumn(conn, CANDIDATE, "adventures", "uuid");
     const peerBosses = await hasTable(conn, CANDIDATE, "hero_bosses");
+    const peerPairs = await hasTable(conn, CANDIDATE, "pairs");
     const peerStamps = await stampColumns(conn, CANDIDATE);
     const localStamps = await stampColumns(conn, "main");
     const peerHasPhotos = await hasPhotos(conn, CANDIDATE);
@@ -772,7 +809,7 @@ export function compareWithPeer(path: string): Promise<PeerComparison> {
          (SELECT value FROM ${CANDIDATE}.user_preferences WHERE key = 'villageName') AS peerVillage,
          (SELECT count(*) FROM main.completed_sessions) AS localSessions,
          (${sessionsStamp(CANDIDATE, peerStamps)}) AS s,
-         (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent(CANDIDATE, peerNamed, null, peerAdventures, peerBosses)})) AS c,
+         (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent(CANDIDATE, peerNamed, null, peerAdventures, peerBosses, peerPairs)})) AS c,
          (SELECT count(*) FROM (${peerGone})) AS g,
          ${extraStamp(CANDIDATE, peerContentGone)} AS x,
          ${photosStamp(CANDIDATE, peerHasPhotos)} AS p`,
@@ -815,7 +852,7 @@ export function stateFingerprint(): Promise<string> {
     const row = await conn.getFirstAsync<Record<string, string | number | null>>(
       `SELECT
          (${sessionsStamp("main", [...STAMP_COLUMNS])}) AS s,
-         (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent("main", true, null, true, true)})) AS c,
+         (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent("main", true, null, true, true, true)})) AS c,
          (SELECT count(*) FROM (${gone})) AS g,
          ${extraStamp("main", await contentTombstones(conn, "main"))} AS x,
          ${photosStamp("main", true)} AS p`,

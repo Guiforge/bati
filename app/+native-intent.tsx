@@ -1,4 +1,6 @@
 import { holdIncomingFile } from "@/src/incomingFile";
+import { MULTIPLAYER_ENABLED } from "@/src/multiplayer/flag";
+import { holdIncomingLink, isSealedLink } from "@/src/multiplayer/link";
 
 /**
  * Where a URL another app opened Bati with lands.
@@ -14,6 +16,11 @@ export function redirectSystemPath({ path }: { path: string; initial: boolean })
   // which another app could aim at `/dev/zero` or at Bati's own files.
   if (path.startsWith("content://")) {
     return `/quest-import?n=${holdIncomingFile(path)}`;
+  }
+  // A sealed link goes to its screen with nothing in the route: what it holds is not the router's.
+  if (isSealedLink(path)) {
+    if (!MULTIPLAYER_ENABLED) return "/";
+    return `/pairing?n=${holdIncomingLink(path)}`;
   }
   return path;
 }

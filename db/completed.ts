@@ -1,6 +1,7 @@
 import { differenceInCalendarDays } from "date-fns";
 import { and, asc, count, countDistinct, desc, eq, gt, gte, lt, ne, sql, sum } from "drizzle-orm";
 import type { SQLiteColumn } from "drizzle-orm/sqlite-core";
+import { TRIVIAL_SESSION_SECONDS } from "@/constants/sessionFloor";
 import { reportError } from "@/src/reportError";
 import { db, schema, type TransactionTx, transactionOrFallback } from "./client";
 import type { Exercise } from "./exercises";
@@ -14,6 +15,7 @@ import type {
   Locomotion,
   MuscleCode,
   QuestTargetType,
+  StopReason,
 } from "./schema";
 import { uuidv7 } from "./uuid";
 import { repEquivalentSql } from "./workUnits";
@@ -114,6 +116,8 @@ export type CompletedSessionInput = {
   rounds?: number;
   /** The quest ran with a round off (`lightenRounds`): only then is a light-week session neutral (D-52). */
   lightened?: boolean;
+  /** Absent on a normal end. Only `countsForPlay` reads it back (`0083`). */
+  stopReason?: StopReason | null;
 
   exercises: CompletedExerciseInput[];
 };
@@ -245,6 +249,11 @@ function handColumns(input: CompletedSessionInput) {
   return { byHand: input.byHand ?? null, label: input.label ?? null };
 }
 
+/** Neutral either way for the ladder; `lightWeekNeutral` only when the week is the whole reason. */
+function neutralColumns(lightWeekSet: boolean, left: boolean) {
+  return { ladderNeutral: lightWeekSet || left, lightWeekNeutral: lightWeekSet && !left };
+}
+
 function insertSets(tx: TransactionTx, rows: (typeof completedExercises.$inferInsert)[]) {
   return rows.length === 0 ? Promise.resolve() : tx.insert(completedExercises).values(rows);
 }
@@ -296,6 +305,7 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
         ascentM: input.ascentM ?? null,
         outing: input.outing ?? null,
         ...handColumns(input),
+        stopReason: input.stopReason,
         tzOffsetMin: 0 - performedAt.getTimezoneOffset(),
         originDevice,
       })
@@ -359,7 +369,7 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
           typeof ex.prescribed === "number" && Number.isFinite(ex.prescribed)
             ? Math.max(1, Math.floor(ex.prescribed))
             : null,
-        ladderNeutral: (lightWeek && input.lightened === true) || (neutral[index] ?? false),
+        ...neutralColumns(lightWeek && input.lightened === true, neutral[index] === true),
         notes: ex.notes ?? "",
         performedAt: ex.performedAt ?? input.performedAt ?? new Date(),
       };
@@ -830,6 +840,180 @@ export const OUTING_COUNTS_AFTER_SECONDS = 10 * 60;
 export const countsAsSession = () =>
   sql`(${completedQuest.outing} IS NULL
     OR COALESCE(${completedQuest.movingSeconds}, ${completedQuest.durationSeconds}) >= ${OUTING_COUNTS_AFTER_SECONDS})`;
+
+/** R1's outing: strictly more than two minutes, and at least a kilometre. */
+const PLAY_OUTING_OVER_SECONDS = 2 * 60;
+const PLAY_OUTING_MIN_METRES = 1000;
+
+/** One saved set, as `completed_exercises` holds it. */
+export type PlaySet = {
+  exerciseId: number;
+  roundIndex: number;
+  sortOrder: number;
+  resultValue: number;
+  targetValue: number | null;
+  prescribedValue: number | null;
+  ladderNeutral: boolean;
+  lightWeekNeutral: boolean;
+  /** Sides this result was done on (`0069`), and whether the movement has two (`exercises.perSide`). */
+  sides: number;
+  perSide: boolean;
+};
+
+/** What R1 reads of a session: `completed_sessions` columns and its sets. */
+export type PlaySession = {
+  uuid: string;
+  outing: Locomotion | null;
+  byHand: "session" | "distance" | null;
+  durationSeconds: number | null;
+  movingSeconds: number | null;
+  leaguesM: number | null;
+  stopReason: StopReason | null;
+  sets: readonly PlaySet[];
+};
+
+/** A session that ended on the pain stop, as the rolling window reads it. */
+export type PainStop = { uuid: string; performedAt: Date; tzOffsetMin: number };
+
+/** What R1 needs beyond the session, read once by whoever asks about many. */
+export type PlayContext = {
+  /** `exercises.prerequisiteExerciseId` by movement: the variation ladder (`fetchLadderRows`). */
+  ladder: ReadonlyMap<number, number | null>;
+  /** Every pain stop in the journal, whichever device logged it. */
+  painStops: readonly PainStop[];
+};
+
+/** Whether `movement` sits under `planned` on its ladder, however many rungs down. */
+function isBelowOnLadder(
+  movement: number,
+  planned: number,
+  ladder: PlayContext["ladder"],
+): boolean {
+  const seen = new Set([planned]);
+  for (let rung = ladder.get(planned); rung != null; rung = ladder.get(rung)) {
+    if (rung === movement) return true;
+    // Hero content can write a loop into the ladder: the walk stops rather than hang.
+    if (seen.has(rung)) return false;
+    seen.add(rung);
+  }
+  return false;
+}
+
+/** The flag says the set is suspect, unless a light week is the whole reason it was raised. */
+const leftOnTheWay = (set: PlaySet) => set.ladderNeutral && !set.lightWeekNeutral;
+
+/**
+ * The sets a hero left for an easier movement: the right gesture when a knee pulls, and no reason
+ * for the session to fall. A slot qualifies when every movement after the first is below the first
+ * on its ladder, the last of them was kept to the end, and no round went missing on the way.
+ *
+ * The first row stands for the planned movement. A swap made before any rep leaves no row of what
+ * it replaced, and that session already counted on its own rows, harder or easier: the journal
+ * cannot tell it from the quest as written.
+ */
+function setsLeftForEasier(
+  sets: readonly PlaySet[],
+  ladder: PlayContext["ladder"],
+): ReadonlySet<PlaySet> {
+  const lastRound = Math.max(...sets.map((set) => set.roundIndex));
+  const forgiven = new Set<PlaySet>();
+  for (const sortOrder of new Set(sets.map((set) => set.sortOrder))) {
+    const rows = sets
+      .filter((set) => set.sortOrder === sortOrder)
+      .sort((a, b) => a.roundIndex - b.roundIndex);
+    const planned = rows[0]?.exerciseId;
+    const final = rows[rows.length - 1]?.exerciseId;
+    if (planned === undefined || final === undefined || final === planned) continue;
+
+    const kept = rows.filter((set) => set.exerciseId === final);
+    if (
+      new Set(rows.map((set) => set.roundIndex)).size === lastRound + 1 &&
+      rows.every(
+        (set) => set.exerciseId === planned || isBelowOnLadder(set.exerciseId, planned, ladder),
+      ) &&
+      !kept.some(leftOnTheWay)
+    ) {
+      for (const set of rows) if (set.exerciseId !== final) forgiven.add(set);
+    }
+  }
+  return forgiven;
+}
+
+/**
+ * Whether every set reached what the app proposed, and no movement was left on the way.
+ *
+ * `prescribedValue` is the proposal (`0070`), `targetValue` what a row older than it has: for a
+ * movement swapped in, that is what the slot asked of it, since nothing is queried mid-session. A
+ * skip writes no row, and `ladderNeutral` is how the rows say so. A row from before `0083` that a
+ * light week flagged reads as a skip: nothing in it says otherwise, and no game had read one.
+ */
+function reachedProposedGoal(sets: readonly PlaySet[], ladder: PlayContext["ladder"]): boolean {
+  if (sets.length === 0) return false;
+  const forgiven = setsLeftForEasier(sets, ladder);
+  return sets.every((set) => {
+    const proposed = set.prescribedValue ?? set.targetValue;
+    return (
+      proposed !== null &&
+      set.resultValue >= proposed &&
+      (!set.perSide || set.sides === 2) &&
+      (!leftOnTheWay(set) || forgiven.has(set))
+    );
+  });
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const PAIN_STOP_EVERY_DAYS = 7;
+
+/** The day on the hero's own calendar when the session happened, from what its row wrote down. */
+const localDay = (stop: PainStop) =>
+  Math.floor((stop.performedAt.getTime() + stop.tzOffsetMin * 60_000) / DAY_MS);
+
+/**
+ * The pain stops that count: the first, then the first at least seven local days after the last one
+ * that counted. A stop that does not count costs nothing and does not push the next one back.
+ *
+ * Decided over the whole journal each time and never stored, so two devices that merged their
+ * journals agree whichever order the rows arrived in. A same-day tie goes to the smaller uuid.
+ */
+export function countedPainStops(stops: readonly PainStop[]): ReadonlySet<string> {
+  const counted = new Set<string>();
+  let last: number | null = null;
+  const inOrder = [...stops].sort(
+    (a, b) => localDay(a) - localDay(b) || (a.uuid < b.uuid ? -1 : a.uuid > b.uuid ? 1 : 0),
+  );
+  for (const stop of inOrder) {
+    const day = localDay(stop);
+    if (last === null || day - last >= PAIN_STOP_EVERY_DAYS) {
+      counted.add(stop.uuid);
+      last = day;
+    }
+  }
+  return counted;
+}
+
+/**
+ * R1, the counted session: what hits a shared boss, and later what raises the village. Stricter than
+ * `countsAsSession`, which asks only whether the hero showed up. Nothing the hero typed counts: a
+ * shared result has to rest on what Bati measured. A hero who stops because it hurts is the exception
+ * to the goal rule, so a companion waiting never pays for finishing through pain.
+ *
+ * TODO(r1-imported-outing): "an imported outing, only with a trace, after dedup". Bati imports no
+ * outing yet and no column marks one, so none can reach this function.
+ */
+export function countsForPlay(session: PlaySession, context: PlayContext): boolean {
+  if (session.byHand !== null) return false;
+  if (session.stopReason === "pain") {
+    return countedPainStops(context.painStops).has(session.uuid);
+  }
+  if (session.outing !== null) {
+    const seconds = session.movingSeconds ?? session.durationSeconds ?? 0;
+    return seconds > PLAY_OUTING_OVER_SECONDS && (session.leaguesM ?? 0) >= PLAY_OUTING_MIN_METRES;
+  }
+  return (
+    (session.durationSeconds ?? 0) >= TRIVIAL_SESSION_SECONDS &&
+    reachedProposedGoal(session.sets, context.ladder)
+  );
+}
 
 /**
  * The start of today where the hero is standing.

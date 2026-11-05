@@ -1030,6 +1030,26 @@ constructors read them from `adventures`, so changing the monster between two pl
 next hit the new monster's. The `boss_fights` columns are written at creation and read by nothing.
 Invariant: the fight's stats equal its adventure's at the next hit. `__tests__/db-hero-adventures.test.ts`.
 
+**R128. Companions.** `pairs` (0082) is merged by id, later `updatedAt` first, and a pair with a tombstone at or
+after its stamp stays dead (`__tests__/db-pairs.test.ts`). Its `secret` is never in a plaintext backup:
+`writeSnapshotNow` runs `scrubPairs`, and that test reads the file's bytes. An envelope is never written to the
+database in lot 0. `countsForPlay` (R1 of the village spec, `db/completed.ts`) is not `countsAsSession`: it asks
+whether the proposed goal was reached, and it reads no byHand row.
+
+**R130. A link invitation waiting.** `pair_invites` (0084) holds the private half of an X25519 pair, is `local` to
+this device, and goes when the answer comes (`completeLinkInvite`) or after seven days (`sweepExpiredInvites`), with
+`secure_delete` and a checkpoint, which clear the main file and not yet the WAL's old pages (the `shortcut:` in
+`db/pairs.ts`). A plain backup has its rows removed (`NEVER_IN_PLAINTEXT`, `scrubPairs`). A link never accepts a
+kind 2 invite, which holds a secret: `readCode` refuses it by the door it came through (`__tests__/db-pairs.test.ts`).
+
+**R129. The pain stop.** `completed_sessions.stopReason` (0083) is NULL on a normal end and on every older row,
+`'pain'` when the hero said so; `stopForPain` is its one writer, through `saveSession`, and a stop before any set
+writes no row. The pause screen offers it in one tap, outings excepted. Only `countsForPlay` reads it: a pain stop counts at most once per seven local days, decided over the
+whole journal (`countedPainStops`) and never stored, so two merged devices agree. A swap down the ladder that reached
+its level counts (`setsLeftForEasier`). `lightWeekNeutral` (0083) marks a set only a light week made neutral; a
+movement left that week keeps 0, and older rows keep 0 with no backfill (`__tests__/counts-for-play.test.ts`,
+`__tests__/light-week-freeze.test.ts`).
+
 **R126. The hero's boss.** Migration 0079 moved the voice of 0077 into a table of its own, `hero_bosses`
 (hero rows, `uuid` UNIQUE; name, painted `monster`, `weaknessMuscle`, `resistanceMuscle`, `linesJson`,
 `artJson`), and gave `adventures` a nullable `heroBossUuid`. The two 0077 columns below are emptied by the

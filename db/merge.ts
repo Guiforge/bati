@@ -6,6 +6,7 @@ import {
   canonicalColumns,
   handCanon,
   MERGED_PREFERENCES,
+  pairCanon,
   photosWon,
   setsCanon,
 } from "./backup";
@@ -13,6 +14,7 @@ import { db, type IsolatedConnection, schema, withWritableConnection } from "./c
 import { deleteSession, parseRecords } from "./completed";
 import { getExerciseUsage, invalidateExercisesCache, removeExercise } from "./exercises";
 import { adventuresUsingBoss } from "./heroBosses";
+import { withSecureDelete } from "./pairs";
 import { type MovedMovement, redecideAfterChange, redecideSessions } from "./personalRecords";
 import { adventuresUsingQuest, invalidateQuestTemplates, removeQuest } from "./quests";
 import { sqlString } from "./sql";
@@ -216,6 +218,7 @@ async function mergeInto(
   changes += await mergeAuthored(conn, ADVENTURES, canon);
   // By uuid, and an adventure names its boss by uuid, so the order between the two does not matter.
   changes += await mergeBosses(conn, canon);
+  changes += await mergePairs(conn);
 
   // Sessions this device neither has nor deleted.
   await conn.execAsync(`INSERT INTO temp.fresh SELECT uuid FROM ${PEER}.completed_sessions
@@ -536,6 +539,19 @@ async function mergeAuthored(
  * carries its uuid, copied verbatim), so there is no map and nothing to translate. Returns how many
  * rows it wrote.
  */
+/** By id, the later stamp, and a tie as `compareWithPeer` settles it. A dead pair stays dead. */
+async function mergePairs(conn: IsolatedConnection): Promise<number> {
+  const won = `SELECT p.id FROM ${PEER}.pairs p LEFT JOIN main.pairs l ON l.id = p.id
+    WHERE (l.id IS NULL OR p.updatedAt > l.updatedAt
+           OR (p.updatedAt = l.updatedAt AND ${pairCanon("p")} > ${pairCanon("l")}))
+      AND NOT EXISTS (SELECT 1 FROM main.deleted_content d WHERE d.uuid = p.id AND d.deletedAt >= p.updatedAt)`;
+  const written = await count(conn, won);
+  await conn.execAsync(
+    `INSERT OR REPLACE INTO main.pairs SELECT * FROM ${PEER}.pairs WHERE id IN (${won})`,
+  );
+  return written;
+}
+
 async function mergeBosses(conn: IsolatedConnection, canon: CanonicalColumns): Promise<number> {
   const cols = await columnsOf(conn, "hero_bosses", ["id"]);
   const rows = await conn.getAllAsync<HeroRow>(
@@ -881,6 +897,11 @@ export async function honourTombstones(): Promise<number> {
     await db.delete(schema.heroBosses).where(eq(schema.heroBosses.id, id));
     removed++;
   }
+  // A pair unlinked on the other device: its secret goes here too (nothing else names a pair).
+  await withSecureDelete(async () => {
+    await db.run(sql`DELETE FROM pairs WHERE EXISTS
+      (SELECT 1 FROM deleted_content d WHERE d.uuid = pairs.id AND d.deletedAt >= pairs.updatedAt)`);
+  });
   for (const { id } of await db.all<{ id: number }>(dead("exercises", "creator"))) {
     const usage = await getExerciseUsage(id);
     if (Object.values(usage).some((n) => n > 0)) continue;

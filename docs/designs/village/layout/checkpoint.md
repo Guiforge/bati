@@ -28,3 +28,16 @@ Ton plan du palier 12 est réel sur une grille agrandie, avec les paliers 1 à 1
 7. Le mannequin : [7, 0].
 8. Le recul maximal : zoom minimum gardé à 0,43.
 
+
+## Dernière validation (05/11)
+
+**Page : https://claude.ai/artifact/5L9wKWn3QuUJRyeWA8na28**, section du haut.
+
+1. **Reverrouiller `lisiere` et `pieds`** sur `img/reverrou-lisiere-pieds.jpg` (mon avis : oui).
+2. **Le coin de la porte au palier 6** : l'art est identique, mais 12,7 % des pixels changent, surtout par le voile de lumière, plus clair de 5 niveaux, et par l'étal et la fontaine déplacés. `img/porte-t6-avant-apres.jpg` (mon avis : accepter).
+3. **Le chariot couvert qui bouche la porte sud** : il est peint dans le sol verrouillé, et 2 juges le notent. Le laisser, ou le retirer par une retouche locale (mon avis : le laisser, il raconte la porte).
+
+À savoir : les bouts de chemin près de la porte sont retardés aux paliers 7 et 8, pas supprimés, car ils portent les routes de l'arène et de l'est. Dis-le si tu veux autre chose.
+
+## Réponse de Guillaume sur la dernière validation
+

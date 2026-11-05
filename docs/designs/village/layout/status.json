@@ -209,16 +209,16 @@
   "piste_ordre": 7,
   "etape": "Appliquer le plan choisi",
   "ordre": 13,
-  "statut": "en cours",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
-  "restant_min": 3,
-  "restant_max": 6,
-  "reste": "3 à 6 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": "choix du 05/11 : rue nord, pont B, mannequin [7, 0], palier 1 sans maison ; 8 accessoires à replacer, 8 accroches à régler"
+  "note": "rue nord, palier 1 sans maison, mannequin [7, 0], pont B de jour et de nuit ; 8 accessoires retirés, faute de place libre ; 8 accroches couvertes restent"
  },
  {
   "id": "L13",
@@ -226,16 +226,16 @@
   "piste_ordre": 7,
   "etape": "Recalculer le sol et le décor",
   "ordre": 14,
-  "statut": "à faire",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
-  "restant_min": 4,
-  "restant_max": 8,
-  "reste": "4 à 8 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": "bouts de chemin de la porte sud retirés ; revue de code des cases négatives avant la fusion"
+  "note": "sol cuit sans position de bâtiment, rien à recalculer ; lisière régénérée (110 pièces), quartiers, clairière et densité sur toute la grille ; polygones du sud et bords à 0,43 demandent une repeinture"
  },
  {
   "id": "L14",
@@ -243,16 +243,16 @@
   "piste_ordre": 7,
   "etape": "Villageois, tap, cadrage",
   "ordre": 15,
-  "statut": "à faire",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
-  "restant_min": 2,
-  "restant_max": 4,
-  "reste": "2 à 4 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": "zoom minimum gardé à 0,43"
+  "note": "480 vagues par palier, 0 violation ; tap 0 ; île entière à 0,43 aux paliers 6 et 12 ; aucun villageois ne passe un pont"
  },
  {
   "id": "L15",
@@ -260,7 +260,7 @@
   "piste_ordre": 7,
   "etape": "Coin verrouillé et crops",
   "ordre": 16,
-  "statut": "à faire",
+  "statut": "attend Guillaume",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -269,7 +269,7 @@
   "reste": "0.5 à 1 h",
   "avancement": null,
   "total": null,
-  "note": "recul de lisiere et pieds validé par Guillaume le 05/11, à reverrouiller"
+  "note": "lock_check OK ; crops lisiere et pieds à valider : img/reverrou-lisiere-pieds.jpg"
  },
  {
   "id": "L16",
@@ -277,16 +277,16 @@
   "piste_ordre": 7,
   "etape": "Recouvrements restants pour GAME",
   "ordre": 17,
-  "statut": "à faire",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
-  "restant_min": 0.2,
-  "restant_max": 0.5,
-  "reste": "0.2 à 0.5 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "liste dans handoff.md"
  },
  {
   "id": "L17",
@@ -294,16 +294,16 @@
   "piste_ordre": 7,
   "etape": "Contrôles de fin",
   "ordre": 18,
-  "statut": "à faire",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
-  "restant_min": 1,
-  "restant_max": 2,
-  "reste": "1 à 2 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "occlusion, ancres, accessoires, ordre, tap à 0 aux 12 paliers et aux deux stades ; accroches 8 au palier 12 ; env 5, mara 5, theo 6,5"
  },
  {
   "id": "L18",
@@ -311,7 +311,7 @@
   "piste_ordre": 7,
   "etape": "Clôture de la piste",
   "ordre": 19,
-  "statut": "à faire",
+  "statut": "attend Guillaume",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -320,7 +320,7 @@
   "reste": "0.3 à 1 h",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "après le reverrouillage"
  },
  {
   "id": "L19",

@@ -9,5 +9,6 @@
 - 04/11 plan, paliers, rues, emplacements, crops, sur `track-layout-proposition` : a84829a96
 - 04/11 page de choix : https://claude.ai/artifact/5L9wKWn3QuUJRyeWA8na28
 - 05/11 réponse de Guillaume : toutes les recommandations suivies, voir `checkpoint.md`
+- 05/11 plan appliqué, revue de code et juges passés, fusionné : 8adef3259
 
-**Ensuite** : L12 sur `track-layout-proposition`, à fusionner avec `track-layout` d'abord. Worktree : `.claude/worktrees/agent-a0a0fcb4b5cff6b61`, `npm ci` déjà fait.
+**Ensuite** : la réponse de Guillaume dans `checkpoint.md` sur les crops, puis L15 et L18.

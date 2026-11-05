@@ -10,3 +10,6 @@
 - 04/11 **Pas de juges avant la page** : Guillaume juge lui-même les propositions, les juges passent une fois sur le plan appliqué.
 - 04/11 **Un pont peint essayé dès maintenant** (0,29 $) : la règle 22 veut un pont lisible, et aucun réglage de données n'y arrive. Rien n'est posé avant le choix.
 - 05/11 **Guillaume suit les 8 recommandations** : son plan, rue nord, palier 1 sans maison, recul des crops validé sans les bouts de chemin, pont B, mannequin [7, 0], zoom minimum 0,43.
+- 05/11 **Les bouts de chemin près de la porte sud restent, retardés** : douze cases portent les routes de l'arène et de l'est, elles arrivent aux paliers 7 et 8 pour que le coin du palier 6 ne change pas. Les culs-de-sac sont retirés. Écart à la réponse de Guillaume, signalé dans `checkpoint.md`.
+- 05/11 **Accroches : pas de zéro exigé** : la règle laisse à GAME les recouvrements qui restent, et le seuil de 1 % n'a pas bougé. Aucune boîte changée.
+- 05/11 **Fusion dans `feat/village-iso` avant le reverrouillage** : `lock_check` passe, et GROWTH attendait le plan pour G15.

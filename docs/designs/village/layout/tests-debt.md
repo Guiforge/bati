@@ -19,3 +19,7 @@ No test was run. Known to touch tests: none found by reading; `IsoCarteDemo` gai
 - `iso-layout`: mannequin en [7, 0], `paliers` regeneres par `scripts/layout/paliers.py` (paliers 1 a 12, quartiers, chemins retenus).
 - `iso-perf-compteur` et le cliquet de taille d'images : une image de pont de plus (18 a 28 Ko).
 - Aucun test lance.
+
+- `iso-marcheurs-*`, `iso-habitants`: plus aucune case de lieu le long du rempart (`casesDuLieu("castle_wall")` vide) et sans les cases `[17, 10]` et `[12, 15]` pour `porte`.
+- `iso-pieces`, `iso-eau`: le pont a une image jour (`eau/canal_pont.jour.webp`) choisie par la lumiere ; figurines `farmer_face` et `herbalist_face` : ancre y 736 et 729.
+- `iso-accessoires`: huit accessoires retires, cinq deplaces.

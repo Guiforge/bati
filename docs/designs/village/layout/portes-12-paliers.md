@@ -1,91 +1,72 @@
-# Portes de `check`, 12 paliers, jour, stade par défaut (05/11)
+# Portes de `check`, 12 paliers, jour (mesurées sur le commit `7cf285987`)
 
-La dernière ligne `GATE FAILED` est la SOMME des 12 paliers. Mesure avant les derniers réglages (sacs_de_grain_1 en [3, 5], chemins retenus) : à relancer avec `scripts/layout/portes.sh` (défaut) et `scripts/layout/portes.sh haut=1`.
+`scripts/layout/portes-tout.sh DOSSIER` (rebuild, puis `portes.sh` par défaut, puis `portes.sh haut=1`). La dernière ligne `GATE FAILED` d'un lancement SOMME les 12 paliers : les tableaux donnent le palier seul.
+
+## Stade par défaut de l'atelier
+
+| Palier | Bâtiments | Occlusion sous 85 % | Pire | Ancrages | Accessoires sous 50 % | Crochets couverts | Tap |
+|---|---|---|---|---|---|---|---|
+| 1 | 6 | 0 | fountain 99.2 % | 0 | 0 | 0 | 0 |
+| 2 | 8 | 0 | archery_range 93.5 % | 0 | 0 | 2 | 0 |
+| 3 | 12 | 0 | heroes_hall 87.7 % | 0 | 0 | 3 | 0 |
+| 4 | 15 | 0 | heroes_hall 85.8 % | 0 | 0 | 3 | 0 |
+| 5 | 17 | 0 | heroes_hall 85.8 % | 0 | 0 | 5 | 0 |
+| 6 | 17 | 0 | heroes_hall 85.8 % | 0 | 0 | 4 | 0 |
+| 7 | 18 | 0 | heroes_hall 85.7 % | 0 | 0 | 6 | 0 |
+| 8 | 20 | 0 | heroes_hall 85.6 % | 0 | 0 | 6 | 0 |
+| 9 | 21 | 0 | heroes_hall 85.7 % | 0 | 0 | 7 | 0 |
+| 10 | 21 | 0 | heroes_hall 85.7 % | 0 | 0 | 6 | 0 |
+| 11 | 21 | 0 | heroes_hall 85.6 % | 0 | 0 | 7 | 0 |
+| 12 | 21 | 0 | heroes_hall 85.6 % | 0 | 0 | 7 | 0 |
+
+Somme des 12 paliers : `occlusion 0, anchors 0, props 0, depth 0, hooks 56, tap 0, motion 0`
+
+Palier 12, lignes de détail :
 
 ```
-== palier 1 ==
-GATE occlusion: 0 of 6 buildings under 85.0 % visible; worst first (px = device px covered):
-GATE anchors: 2 of 13 sprites more than 2 device px off (0 float above their foot); dump read, layers {"forest":187,"building":6,"prop":7,"villager":4}, 0 dump 
-GATE props: 0 of 4 props under 50.0 % visible
-GATE depth: 0 violated pairs among 13 standing things (a is behind b by footprint, but drawn after it)
-GATE hooks: 0 of 6 drawn hook boxes covered (over 1.0 % of their opaque pixels)
-GATE tap: 0 buildings no tap reaches (under 400 opaque device px free of a later tappable building)
-== palier 2 ==
-GATE occlusion: 0 of 8 buildings under 85.0 % visible; worst first (px = device px covered):
-GATE anchors: 2 of 18 sprites more than 2 device px off (0 float above their foot); dump read, layers {"forest":185,"building":8,"prop":10,"villager":5}, 0 dump
-GATE props: 0 of 8 props under 50.0 % visible
-GATE depth: 0 violated pairs among 18 standing things (a is behind b by footprint, but drawn after it)
-GATE hooks: 2 of 8 drawn hook boxes covered (over 1.0 % of their opaque pixels):
-GATE tap: 0 buildings no tap reaches (under 400 opaque device px free of a later tappable building)
-== palier 3 ==
-GATE occlusion: 0 of 12 buildings under 85.0 % visible; worst first (px = device px covered):
-GATE anchors: 1 of 30 sprites more than 2 device px off (0 float above their foot); dump read, layers {"forest":184,"decor":2,"building":12,"prop":15,"villager"
-GATE props: 0 of 14 props under 50.0 % visible
-GATE depth: 0 violated pairs among 30 standing things (a is behind b by footprint, but drawn after it)
-GATE hooks: 4 of 12 drawn hook boxes covered (over 1.0 % of their opaque pixels):
-GATE tap: 0 buildings no tap reaches (under 400 opaque device px free of a later tappable building)
-== palier 4 ==
-GATE occlusion: 0 of 15 buildings under 85.0 % visible; worst first (px = device px covered):
-GATE anchors: 1 of 39 sprites more than 2 device px off (0 float above their foot); dump read, layers {"forest":180,"building":16,"decor":2,"prop":21,"villager"
-GATE props: 1 of 20 props under 50.0 % visible:
-GATE depth: 0 violated pairs among 39 standing things (a is behind b by footprint, but drawn after it)
-GATE hooks: 3 of 15 drawn hook boxes covered (over 1.0 % of their opaque pixels):
-GATE tap: 0 buildings no tap reaches (under 400 opaque device px free of a later tappable building)
-== palier 5 ==
-GATE occlusion: 0 of 17 buildings under 85.0 % visible; worst first (px = device px covered):
-GATE anchors: 0 of 46 sprites more than 2 device px off (0 float above their foot); dump read, layers {"forest":182,"villager":11,"building":18,"prop":26,"decor
-GATE props: 1 of 26 props under 50.0 % visible:
-GATE depth: 0 violated pairs among 46 standing things (a is behind b by footprint, but drawn after it)
-GATE hooks: 3 of 17 drawn hook boxes covered (over 1.0 % of their opaque pixels):
-GATE tap: 0 buildings no tap reaches (under 400 opaque device px free of a later tappable building)
-== palier 6 ==
-GATE occlusion: 0 of 17 buildings under 85.0 % visible; worst first (px = device px covered):
-GATE anchors: 0 of 48 sprites more than 2 device px off (0 float above their foot); dump read, layers {"forest":178,"villager":12,"building":18,"prop":28,"decor
-GATE props: 1 of 28 props under 50.0 % visible:
-GATE depth: 0 violated pairs among 48 standing things (a is behind b by footprint, but drawn after it)
-GATE hooks: 4 of 17 drawn hook boxes covered (over 1.0 % of their opaque pixels):
-GATE tap: 0 buildings no tap reaches (under 400 opaque device px free of a later tappable building)
-== palier 7 ==
-GATE occlusion: 1 of 18 buildings under 85.0 % visible; worst first (px = device px covered):
-GATE anchors: 0 of 51 sprites more than 2 device px off (0 float above their foot); dump read, layers {"forest":181,"villager":14,"building":19,"prop":30,"decor
-GATE props: 1 of 30 props under 50.0 % visible:
-GATE depth: 0 violated pairs among 51 standing things (a is behind b by footprint, but drawn after it)
-GATE hooks: 6 of 18 drawn hook boxes covered (over 1.0 % of their opaque pixels):
-GATE tap: 0 buildings no tap reaches (under 400 opaque device px free of a later tappable building)
-== palier 8 ==
-GATE occlusion: 0 of 20 buildings under 85.0 % visible; worst first (px = device px covered):
-GATE anchors: 0 of 54 sprites more than 2 device px off (0 float above their foot); dump read, layers {"forest":180,"villager":15,"building":21,"prop":31,"decor
-GATE props: 1 of 31 props under 50.0 % visible:
-GATE depth: 0 violated pairs among 54 standing things (a is behind b by footprint, but drawn after it)
-GATE hooks: 6 of 20 drawn hook boxes covered (over 1.0 % of their opaque pixels):
-GATE tap: 0 buildings no tap reaches (under 400 opaque device px free of a later tappable building)
-== palier 9 ==
 GATE occlusion: 0 of 21 buildings under 85.0 % visible; worst first (px = device px covered):
-GATE anchors: 0 of 56 sprites more than 2 device px off (0 float above their foot); dump read, layers {"forest":180,"villager":17,"building":22,"prop":32,"decor
-GATE props: 1 of 32 props under 50.0 % visible:
-GATE depth: 0 violated pairs among 56 standing things (a is behind b by footprint, but drawn after it)
-GATE hooks: 8 of 21 drawn hook boxes covered (over 1.0 % of their opaque pixels):
-GATE tap: 0 buildings no tap reaches (under 400 opaque device px free of a later tappable building)
-== palier 10 ==
-GATE occlusion: 0 of 21 buildings under 85.0 % visible; worst first (px = device px covered):
-GATE anchors: 0 of 59 sprites more than 2 device px off (0 float above their foot); dump read, layers {"forest":178,"villager":17,"building":22,"prop":35,"decor
-GATE props: 1 of 35 props under 50.0 % visible:
-GATE depth: 0 violated pairs among 59 standing things (a is behind b by footprint, but drawn after it)
-GATE hooks: 8 of 21 drawn hook boxes covered (over 1.0 % of their opaque pixels):
-GATE tap: 0 buildings no tap reaches (under 400 opaque device px free of a later tappable building)
-== palier 11 ==
-GATE occlusion: 0 of 21 buildings under 85.0 % visible; worst first (px = device px covered):
-GATE anchors: 0 of 59 sprites more than 2 device px off (0 float above their foot); dump read, layers {"forest":178,"villager":18,"building":22,"prop":35,"decor
-GATE props: 1 of 35 props under 50.0 % visible:
-GATE depth: 0 violated pairs among 59 standing things (a is behind b by footprint, but drawn after it)
-GATE hooks: 9 of 21 drawn hook boxes covered (over 1.0 % of their opaque pixels):
-GATE tap: 0 buildings no tap reaches (under 400 opaque device px free of a later tappable building)
-== palier 12 ==
-GATE occlusion: 0 of 21 buildings under 85.0 % visible; worst first (px = device px covered):
-GATE anchors: 0 of 59 sprites more than 2 device px off (0 float above their foot); dump read, layers {"forest":178,"villager":19,"building":22,"prop":35,"decor
-GATE props: 1 of 35 props under 50.0 % visible:
-GATE depth: 0 violated pairs among 59 standing things (a is behind b by footprint, but drawn after it)
-GATE hooks: 9 of 21 drawn hook boxes covered (over 1.0 % of their opaque pixels):
-GATE tap: 0 buildings no tap reaches (under 400 opaque device px free of a later tappable building)
-GATE FAILED: occlusion 1, anchors 6, props 9, depth 0, hooks 62, tap 0, motion 0
+heroes_hall       85.6 %  iso-maquette-campfire 1729px, iso-maquette-forge 299px, iso-habitant-h8 22px
+archery_range     87.2 %  iso-pan 566px, iso-accessoire-ratelier_1 482px
+campfire          88.0 %  iso-maquette-archery_range 738px
+castle_wall       88.4 %  iso-pan 359px, iso-maquette-high_road 5px
+fountain          95.1 %  iso-pan 628px
+quarry            96.1 %  iso-maquette-training_dummy 717px
+forge             96.5 %  iso-maquette-armory 462px, iso-marcheur-smith 121px
+wizard_tower      97.0 %  iso-accessoire-menhir_2 185px
+GATE hooks: 7 of 21 drawn hook boxes covered (over 1.0 % of their opaque pixels):
 ```
+
+## Tous les bâtiments à leur plus haut stade (`haut=1`)
+
+| Palier | Bâtiments | Occlusion sous 85 % | Pire | Ancrages | Accessoires sous 50 % | Crochets couverts | Tap |
+|---|---|---|---|---|---|---|---|
+| 1 | 6 | 0 | heroes_hall 87.9 % | 0 | 0 | 1 | 0 |
+| 2 | 8 | 0 | heroes_hall 85.9 % | 0 | 0 | 2 | 0 |
+| 3 | 12 | 0 | heroes_hall 85.8 % | 0 | 0 | 6 | 0 |
+| 4 | 15 | 0 | heroes_hall 85.8 % | 0 | 0 | 6 | 0 |
+| 5 | 17 | 0 | heroes_hall 85.8 % | 0 | 0 | 7 | 0 |
+| 6 | 17 | 0 | heroes_hall 85.8 % | 0 | 0 | 7 | 0 |
+| 7 | 18 | 0 | heroes_hall 85.7 % | 0 | 0 | 6 | 0 |
+| 8 | 20 | 0 | heroes_hall 85.6 % | 0 | 0 | 6 | 0 |
+| 9 | 21 | 0 | heroes_hall 85.7 % | 0 | 0 | 7 | 0 |
+| 10 | 21 | 0 | heroes_hall 85.7 % | 0 | 0 | 7 | 0 |
+| 11 | 21 | 0 | heroes_hall 85.6 % | 0 | 0 | 7 | 0 |
+| 12 | 21 | 0 | heroes_hall 85.6 % | 0 | 0 | 7 | 0 |
+
+Somme des 12 paliers : `occlusion 0, anchors 0, props 0, depth 0, hooks 69, tap 0, motion 0`
+
+Palier 12, lignes de détail :
+
+```
+GATE occlusion: 0 of 21 buildings under 85.0 % visible; worst first (px = device px covered):
+heroes_hall       85.6 %  iso-maquette-campfire 1729px, iso-maquette-forge 299px, iso-habitant-h8 22px
+archery_range     87.2 %  iso-pan 566px, iso-accessoire-ratelier_1 482px
+campfire          88.0 %  iso-maquette-archery_range 738px
+castle_wall       88.4 %  iso-pan 359px, iso-maquette-high_road 5px
+fountain          95.1 %  iso-pan 628px
+quarry            96.1 %  iso-maquette-training_dummy 717px
+forge             96.5 %  iso-maquette-armory 462px, iso-marcheur-smith 121px
+wizard_tower      97.0 %  iso-accessoire-menhir_2 185px
+GATE hooks: 7 of 21 drawn hook boxes covered (over 1.0 % of their opaque pixels):
+```
+

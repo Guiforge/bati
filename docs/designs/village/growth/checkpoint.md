@@ -80,3 +80,16 @@ Ta question : le changement de disposition est-il pris en compte ? **Pas dans le
 - **Peinture (G8)** : il faut ton choix **et** le budget d'images de PROBE, qui n'a pas encore tourné.
 - **Quartiers (G9, G10)** : ils attendent ton choix sur la proposition de LAYOUT.
 - **Poser et cuire (G11)** : attend la fusion de LAYOUT.
+
+## 05/11 soir : le village posé, à regarder
+
+Bandes : `img/apres2-strip-jour.jpg` et `img/apres2-strip-nuit.jpg`. Avant correction : `img/apres-strip-*.jpg`.
+
+1. **Coup d'oeil de 5 minutes sur la bande.** Les paliers 8 à 12 se lisent-ils différents ? Les trois juges disent : le 8 est un vrai cap (remparts de pierre), le 12 se confond avec le 11, le cœur ne bouge plus après le 8.
+2. **Le point focal est raté.** Le mât de fête (palier 10) est posé, mais Theo l'a cherché sans le voir : trop petit, de la couleur des toits. Mon avis : le grandir 2,5 fois et le repeindre en rouge vif, un seul vrai éclat de couleur, environ 0,15 $. Et donner au 12 un sommet au centre (feu de joie ou grande bannière). Oui, non, ou autre idée ?
+3. **Revalider `lisiere` et `pieds` (L15).** Au palier 6, le jardin N5 (3,8) et une maison de Q1 (4,-4) entrent dans ces deux crops dorés. LAYOUT les reverrouille sur ce rendu si tu dis oui.
+4. **Couronne de souches du bourg** (palier 12) : elle est peinte dans l'image. La garder, ou repeindre le bourg sans (environ 0,07 $) ?
+
+## Réponse de Guillaume, village posé
+
+(en attente)

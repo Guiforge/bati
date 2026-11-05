@@ -11,3 +11,5 @@
 - **VILLAGERS** : si A est choisie, des maisons de Q1 à Q5 ne doivent pas recevoir de villageois tant qu'elles restent à plat (`quartiers.md`, trois façons de poser une pièce).
 - **LAYOUT** : G11 pas commencé, L15 attend encore. `slots.md` dit qu'il n'y a pas de quartier à l'est et ne connaît pas N1 à N6 (`quartiers.md`).
 - **POLISH** : les chemins bruns se repeignent avec FLUX 3 Image, collés sous masque tiré du tracé des rues (`PIPELINE.md`, `growth/img/bakeoff2-chemins.jpg`, `scripts/growth/bakeoff2.py`, commande `colle`).
+- **LAYOUT (L15)** : quartiers, souches et campagne posés (`components/village/iso/piecesPosees.ts`). `lisiere` et `pieds` à reverrouiller sur un rendu avec forêt et quartiers, après l'accord de Guillaume (`growth/checkpoint.md`).
+- **POLISH** : lumière de nuit aux fenêtres des nouveaux quartiers et de la campagne, ombres de pied des pièces, rouge du moulin qui vole l'oeil à la place. Rien de cela n'est fait ici.

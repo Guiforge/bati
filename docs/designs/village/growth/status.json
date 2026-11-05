@@ -124,7 +124,7 @@
   "piste_ordre": 8,
   "etape": "Peindre les fermes, hameaux et routes choisis",
   "ordre": 8,
-  "statut": "en cours",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -133,7 +133,7 @@
   "reste": "2 à 4 h",
   "avancement": null,
   "total": null,
-  "note": "2.5-sunburst ; bourg et fermes rapprochés"
+  "note": "bourg, fermes, hameaux en 2.5-sunburst ; relevés au niveau des quartiers à la pose"
  },
  {
   "id": "G9",
@@ -158,7 +158,7 @@
   "piste_ordre": 8,
   "etape": "Peindre les quartiers",
   "ordre": 10,
-  "statut": "en cours",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -167,7 +167,7 @@
   "reste": "2 à 4 h",
   "avancement": null,
   "total": null,
-  "note": "2.5-sunburst ; pièces de mara"
+  "note": "pièces de mara, 2.5-sunburst ; mât de fête ajouté, 0,064 $"
  },
  {
   "id": "G11",
@@ -175,7 +175,7 @@
   "piste_ordre": 8,
   "etape": "Poser et cuire",
   "ordre": 11,
-  "statut": "à faire",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -184,7 +184,7 @@
   "reste": "3 à 6 h",
   "avancement": null,
   "total": null,
-  "note": "après G8, G10"
+  "note": "poser.py, piecesPosees.ts ; img/apres2-strip-*.jpg ; LOCK_OK, portes inchangées"
  },
  {
   "id": "G12",
@@ -201,7 +201,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": "attend G11"
+  "note": "env, mara, code, theo passés ; reste ton coup d'oeil et la revalidation de lisiere et pieds (L15)"
  },
  {
   "id": "G13",
@@ -218,7 +218,7 @@
   "reste": "0.3 à 1 h",
   "avancement": null,
   "total": null,
-  "note": "attend G12"
+  "note": "fermeture après ta réponse : archive scratch, retrait de growth-iso/"
  },
  {
   "id": "G14",
@@ -311,7 +311,7 @@
   "piste_ordre": 8,
   "etape": "Peindre les souches",
   "ordre": 19,
-  "statut": "en cours",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -320,6 +320,6 @@
   "reste": "",
   "avancement": null,
   "total": null,
-  "note": "2.5-sunburst"
+  "note": "2.5-sunburst ; 16 au plus par palier"
  }
 ]

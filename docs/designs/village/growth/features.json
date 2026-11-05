@@ -113,8 +113,8 @@
         2,
         4
       ],
-      "status": "doing",
-      "note": "2.5-sunburst ; bourg et fermes rapprochés"
+      "status": "done",
+      "note": "bourg, fermes, hameaux en 2.5-sunburst ; relevés au niveau des quartiers à la pose"
     },
     {
       "id": "G9",
@@ -137,8 +137,8 @@
         2,
         4
       ],
-      "status": "doing",
-      "note": "2.5-sunburst ; pièces de mara"
+      "status": "done",
+      "note": "pièces de mara, 2.5-sunburst ; mât de fête ajouté, 0,064 $"
     },
     {
       "id": "G11",
@@ -149,8 +149,8 @@
         3,
         6
       ],
-      "status": "todo",
-      "note": "après G8, G10"
+      "status": "done",
+      "note": "poser.py, piecesPosees.ts ; img/apres2-strip-*.jpg ; LOCK_OK, portes inchangées"
     },
     {
       "id": "G12",
@@ -162,7 +162,7 @@
         2
       ],
       "status": "waiting",
-      "note": "attend G11"
+      "note": "env, mara, code, theo passés ; reste ton coup d'oeil et la revalidation de lisiere et pieds (L15)"
     },
     {
       "id": "G13",
@@ -174,7 +174,7 @@
         1
       ],
       "status": "waiting",
-      "note": "attend G12"
+      "note": "fermeture après ta réponse : archive scratch, retrait de growth-iso/"
     },
     {
       "id": "G14",
@@ -245,8 +245,8 @@
         0.3,
         1
       ],
-      "status": "doing",
-      "note": "2.5-sunburst"
+      "status": "done",
+      "note": "2.5-sunburst ; 16 au plus par palier"
     }
   ]
 }

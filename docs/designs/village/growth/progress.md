@@ -31,3 +31,4 @@ Ce que la piste ajoute au palier 12 si le choix suit le plan : 0 image montée, 
 - 05/11 Pose (G11) : `scripts/growth/poser.py`, table `components/village/iso/piecesPosees.ts`. Bandes `img/apres-strip-jour.jpg` et `-nuit.jpg`. LOCK_OK, portes à 0 sauf un accessoire de G15 au palier 2, bundle OK.
 
 **Ajouté au palier 12** (v4.3) : 54 pièces de quartier, 16 souches et copeaux, 5 pièces de campagne (bourg, fermes, champs, hameau), soit 75 images de jour et autant de nuit, 50 fichiers webp (1,2 Mo). 0 SVG, 0 chose qui bouge. 9 masses de forêt en moins aux paliers 11 et 12.
+- 05/11 Passe de correction : campagne relevée à la valeur des quartiers (0 $), mât de fête au centre de la place au palier 10 (0,064 $). `img/apres2-strip-*.jpg`. Poussé.

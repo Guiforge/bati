@@ -50,9 +50,9 @@ second renumérote les siennes.
 | Étape | Statut | Temps | Reste (estimé) |
 | --- | --- | --- | --- |
 | L1 Spec et audit | done, deux tours, aucun ❌ restant, 6 points à trancher ci-dessous | 0 h 08 | 0 |
-| L2 Semaine du duo | en cours : `duoWeek` pur et testé | | 1 h |
-| L3 Envoi et réception | à faire | | 1 h 30 |
-| L4 Carte et appairage | à faire | | 2 h 30 |
+| L2 Semaine du duo | done : `duoWeek`, `0085`, synchro, copie en clair, délier | 0 h 10 | 0 |
+| L3 Envoi et réception | done : kind 5, vecteurs figés, scénarios à deux téléphones en tests | 0 h 08 | 0 |
+| L4 Carte et appairage | code fait, six langues ; à voir sur émulateur | 0 h 12 | 0 h 30 |
 | L5 WAL | code fait (`releasingStatements`), mesure sur émulateur à faire | | 0 h 30 |
 | L6 Porte | à faire | | 2 h |
 

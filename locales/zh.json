@@ -2888,7 +2888,7 @@
     "show_qr": "显示我的二维码",
     "reply_pending": "{{name}} 还没收到你的回复。",
     "reply_send": "现在通知",
-    "fallen_count": "一起击败的首领：{{count}}",
+    "fallen_count_other": "一起击败的首领：{{count}}",
     "fold_line": "{{name}} · {{state}}",
     "victory_fact": "双人挑战：本周 {{hits}} / {{goal}}",
     "victory_fact_label": "双人挑战，本周 {{hits}} / {{goal}}",

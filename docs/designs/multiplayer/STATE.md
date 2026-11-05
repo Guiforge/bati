@@ -52,9 +52,11 @@ second renumérote les siennes.
 | L1 Spec et audit | done, deux tours, aucun ❌ restant, 6 points à trancher ci-dessous | 0 h 08 | 0 |
 | L2 Semaine du duo | done : `duoWeek`, `0085`, synchro, copie en clair, délier | 0 h 10 | 0 |
 | L3 Envoi et réception | done : kind 5, vecteurs figés, scénarios à deux téléphones en tests | 0 h 08 | 0 |
-| L4 Carte et appairage | code fait, six langues ; à voir sur émulateur | 0 h 12 | 0 h 30 |
-| L5 WAL | code fait (`releasingStatements`), mesure sur émulateur à faire | | 0 h 30 |
-| L6 Porte | à faire | | 2 h |
+| L4 Carte et appairage | done, six langues, vu sur build de release à 100 et 130 % | 0 h 12 | 0 |
+| L5 WAL | done, WAL à 0 octet et clé introuvable après suppression, mesuré sur release | 0 h 06 | 0 |
+| L6 Porte | done sauf ton essai sur téléphone, voir [LOT1.md](reviews/LOT1.md) | 0 h 23 | ton essai |
+
+Total réel : environ 1 h, de 20:31 à 21:30. PR ouverte, non fusionnée.
 
 ### À trancher
 

@@ -60,7 +60,7 @@ pas encore publiées). `feat/village-iso` s'arrête à `0081` : la branche qui f
 | `tsc`, biome | verts |
 | `licenses:check` | vert, 902 paquets, aucun bloqué |
 | Android lint | non lancé : la branche ne touche ni `app.json`, ni `plugins/`, ni `android/`, ni le lockfile, seuls déclencheurs du job |
-| `deadcode` | **non lancé** : knip plante dans ce worktree (`File 'expo/tsconfig.base' not found`, sous Node 24 comme 26), sans rapport avec le diff. La CI le passera |
+| `deadcode` | knip plante dans ce worktree (`File 'expo/tsconfig.base' not found`, sous Node 24 comme 26). **La CI l'a fait tourner et l'a fait échouer** sur deux exports que seuls les tests lisaient ; retirés, **CI verte** (check, node-stage, secrets, signoff) |
 | WAL (L5) | **prouvé** sur build de release, ci-dessous |
 
 ### L5 : la mesure
@@ -155,4 +155,4 @@ pour la chute et la fuite (le texte dit déjà l'état, rien ne bouge en mouveme
   restaurer n'est toujours pas écrit (dette du lot 0).
 - Les traductions de, es, ru et zh sont d'un agent : « coup » y est Treffer, golpe, удар, 打击 ; une relecture native
   ne ferait pas de mal, surtout le russe « дуэт-вызов ».
-- `deadcode` n'a pas tourné ici, voir la porte.
+- `deadcode` ne tourne pas dans ce worktree ; c'est la CI qui l'a passé, voir la porte.

@@ -39,6 +39,42 @@ branche qui fusionne en second renumérote ses migrations.
 
 Total réel : 1 h 40, de 09:37 à 11:15. Reste : ce qui dépend de toi, listé dans le rapport.
 
+## Lot 1 : le défi à deux
+
+Branche `feat/multiplayer-lot1`, partie de `main` (`6b3deaa6`). Commencé le 05/11 à 20:31. Spec :
+[LOT1-SPEC.md](LOT1-SPEC.md).
+
+**Numéros de migration :** ce lot prend `0085`. `feat/village-iso` s'arrête à `0081` : la branche qui fusionne en
+second renumérote les siennes.
+
+| Étape | Statut | Temps | Reste (estimé) |
+| --- | --- | --- | --- |
+| L1 Spec et audit | done, deux tours, aucun ❌ restant, 6 points à trancher ci-dessous | 0 h 08 | 0 |
+| L2 Semaine du duo | en cours : `duoWeek` pur et testé | | 1 h |
+| L3 Envoi et réception | à faire | | 1 h 30 |
+| L4 Carte et appairage | à faire | | 2 h 30 |
+| L5 WAL | code fait (`releasingStatements`), mesure sur émulateur à faire | | 0 h 30 |
+| L6 Porte | à faire | | 2 h |
+
+### À trancher
+
+1. **« L'onglet des boss » n'existe pas.** La barre d'onglets a Accueil, Aventures, Quêtes, Village, Journal. La carte
+   va sur l'écran « Boss » du Journal (`app/(tabs)/journal/bosses.tsx`), le seul écran consacré aux boss. Si tu pensais
+   à l'onglet Aventures (où se jouent les boss des campagnes), c'est un déplacement du composant.
+2. **« Léo : 1 sur 2 » hors duel** (audit, Martine) : ton brief demande le compte de l'autre sur la carte, l'audit y
+   voit deux nombres bruts côte à côte, ce que le duel interdit. Gardé comme tu l'as écrit ; à couper en « Léo a envoyé
+   ses coups le 4 nov. » si tu préfères.
+3. **L'usure** (audit, Maël) : six boss, six affixes, un décompte cosmétique. Cohérent avec « jamais plus d'XP à deux »,
+   mais la nouveauté s'use en quelques mois. Rien à faire dans ce lot.
+4. **L'objectif est ramené entre 2 et 4** (audit, Maël et Sophie), les bornes du serment. Un objectif à 1 n'existe pas
+   par le serment, mais une enveloppe peut le porter.
+5. **Un objectif qui ne peut que baisser ?** (audit, tour 2, Sophie et Martine) Après une blessure, l'objectif figé
+   reste haut ; la sortie est la pause, qui gèle la semaine. L'audit propose `min(figé, serment actuel)`. Pas fait : tu
+   as écrit « figé », et baisser son objectif le samedi ferait tomber le boss. Dis-moi si tu le veux.
+6. **« Prévenir Léo » juste après une pause ?** (audit, tour 2, Martine) Aujourd'hui la pause part avec « Envoyer mes
+   coups », que la carte propose à zéro coup (S10). Un bouton sur l'écran de pause serait une surface du duo hors de
+   l'écran Boss, que ton brief ne prévoit pas.
+
 ### B2 : comment une séance s'arrête aujourd'hui, avant ce lot
 
 - **Pause, puis « Quitter la quête », puis confirmation** : `quitSession` efface tout. Rien n'est écrit, aucune

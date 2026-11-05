@@ -334,3 +334,16 @@ export async function nameTheirSide(pairId: string, peerId: string): Promise<voi
     .set({ peerId, updatedAt: nowDate() })
     .where(and(eq(pairs.id, pairId), isNull(pairs.peerId)));
 }
+
+/** The link invitations waiting for an answer on this phone, oldest first: when each was made. */
+export function listInvites(): Promise<{ id: string; madeAt: Date }[]> {
+  return db
+    .select({ id: pairInvites.id, madeAt: pairInvites.madeAt })
+    .from(pairInvites)
+    .orderBy(pairInvites.madeAt);
+}
+
+/** "Annuler": the private key of a waiting invitation is overwritten; an answer finds nothing. */
+export async function cancelInvite(id: string): Promise<void> {
+  await withSecureDelete(() => db.delete(pairInvites).where(eq(pairInvites.id, id)));
+}

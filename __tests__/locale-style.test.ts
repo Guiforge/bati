@@ -197,6 +197,9 @@ describe("locale typography", () => {
   it("fr.json says tu everywhere but the policy and the safety notices", () => {
     const drifted = entriesOf("fr.json")
       .filter((e) => !VOUS_SURFACES.some((prefix) => e.key.startsWith(prefix)))
+      // The duo's rule speaks to the two players at once: a plural, not a formal "vous". Guillaume's
+      // own sentence (multiplayer lot 1, decision 4), kept word for word.
+      .filter((e) => e.key !== "duo.rule")
       .filter((e) => VOUS.test(e.value))
       .map((e) => `${e.key}: ${e.value.slice(0, 70)}`);
 

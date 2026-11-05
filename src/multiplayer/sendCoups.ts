@@ -1,5 +1,8 @@
+import { Share } from "react-native";
+import { dayKey } from "@/db/dates";
 import { myPauseTouches, myWeekDays } from "@/db/duo";
 import type { Pair } from "@/db/pairs";
+import { getPreference, setPreference } from "@/db/preferences";
 import { encodeBundle } from "./bundle";
 import { type IsoWeek, isoWeekOf, previousWeek, weekStart } from "./duoWeek";
 import { sealWeek } from "./envelope";
@@ -36,3 +39,18 @@ async function sealMyWeek(pair: Pair, week: IsoWeek, now: Date): Promise<Uint8Ar
 
 /** "Prévenir maintenant" (E7): the pairing answer alone, a kind 4 as lot 0 sent it. */
 export const replyLink = (reply: Uint8Array) => linkFor(reply);
+
+const sentKey = (pairId: string) => `duo_sent_${pairId}`;
+
+/**
+ * "Envoyer mes coups", the one handler the victory line and the card both call (E1). Remembers the
+ * day, on this phone, so the card knows whether a pause has gone out since it began (S10).
+ */
+export async function sendCoups(pair: Pair): Promise<void> {
+  const now = new Date();
+  await Share.share({ message: await coupsLink(pair, now) });
+  await setPreference(sentKey(pair.id), dayKey(now));
+}
+
+/** The local day of the last "Envoyer mes coups" to this companion, or null. */
+export const lastSentOn = (pairId: string) => getPreference(sentKey(pairId));

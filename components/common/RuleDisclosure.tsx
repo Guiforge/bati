@@ -16,11 +16,14 @@ import { Info } from "@/components/icons";
 export function RuleDisclosure({
   text,
   testID,
+  label,
   open: controlled,
   onToggle,
 }: {
   text: string;
   testID: string;
+  /** The link's words, when the rule answers another question than what a figure pays. */
+  label?: string;
   /** Held by the caller when something else needs to know (the form's footer resets it). */
   open?: boolean;
   onToggle?: () => void;
@@ -40,7 +43,7 @@ export function RuleDisclosure({
         <XStack gap="2" items="center">
           <Info size={16} color="textSecondary" />
           <Text fontSize={14} color="textSecondary" textDecorationLine="underline">
-            {t("past_session.rule_link")}
+            {label ?? t("past_session.rule_link")}
           </Text>
         </XStack>
       </Pressable>

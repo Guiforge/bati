@@ -214,7 +214,7 @@ texte dit déjà tout.
 | --- | --- | --- |
 | Aucun compagnon | (pas de carte de boss) | Un bloc seul : « Affronte un boss à deux. Chacun tient sa propre semaine, à son rythme. » et le bouton « Inviter un compagnon » |
 | Invitation en attente | (pas de carte de boss) | « Invitation envoyée le 4 nov. Elle reste valable 7 jours. » et « Annuler » |
-| Compagnon rejoint, rien reçu encore | « Le boss attend vos premiers coups. » | La ligne du compagnon dit « Léo : rien reçu pour l'instant » |
+| Compagnon rejoint, rien reçu encore | « Le boss attend les premiers coups. » | La ligne du compagnon dit « Léo : rien reçu pour l'instant » |
 | Réponse pas encore partie (chez B) | inchangée | « Léo n'a pas encore ta réponse. » et « Prévenir maintenant » (E7) |
 | Pause pas encore partie | « Ta pause n'est pas encore partie. Envoie-la pour que le boss attende. » | « Envoyer mes coups » marche à zéro coup (S10) |
 | Semaine en cours | « Le boss est là jusqu'à dimanche. » | — |

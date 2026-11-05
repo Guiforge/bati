@@ -60,6 +60,51 @@ async function playContext(): Promise<PlayContext> {
   };
 }
 
+type SessionRow = typeof completedQuest.$inferSelect;
+
+/** Rows as R1 reads them: each session with its sets, and the context it needs once for all. */
+async function asPlayed(rows: readonly SessionRow[]): Promise<(row: SessionRow) => boolean> {
+  if (rows.length === 0) return () => false;
+  const [sets, context] = await Promise.all([
+    db
+      .select({
+        sessionId: completedExercises.sessionId,
+        exerciseId: completedExercises.exerciseId,
+        roundIndex: completedExercises.roundIndex,
+        sortOrder: completedExercises.sortOrder,
+        resultValue: completedExercises.resultValue,
+        targetValue: completedExercises.targetValue,
+        prescribedValue: completedExercises.prescribedValue,
+        ladderNeutral: completedExercises.ladderNeutral,
+        lightWeekNeutral: completedExercises.lightWeekNeutral,
+        sides: completedExercises.sides,
+        perSide: exercises.perSide,
+      })
+      .from(completedExercises)
+      .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
+      .where(
+        inArray(
+          completedExercises.sessionId,
+          rows.map((row) => row.id),
+        ),
+      ),
+    playContext(),
+  ]);
+  return (row) => {
+    const session: PlaySession = {
+      uuid: row.uuid ?? "",
+      outing: row.outing,
+      byHand: row.byHand,
+      durationSeconds: row.durationSeconds,
+      movingSeconds: row.movingSeconds,
+      leaguesM: row.leaguesM,
+      stopReason: row.stopReason,
+      sets: sets.filter((set) => set.sessionId === row.id),
+    };
+    return countsForPlay(session, context);
+  };
+}
+
 /**
  * F1 to F4: Monday first, whether the hero landed a hit each day of `week`. Read from the journal
  * every time, so a session synced from the hero's other device counts as soon as it arrives.
@@ -72,51 +117,22 @@ export async function myWeekDays(week: IsoWeek, now = new Date()): Promise<boole
     .select()
     .from(completedQuest)
     .where(and(gte(completedQuest.performedAt, from), lt(completedQuest.performedAt, until)));
+  const counts = await asPlayed(rows);
   const days = Array.from({ length: 7 }, () => false);
-  if (rows.length === 0) return days;
-
-  const sets = await db
-    .select({
-      sessionId: completedExercises.sessionId,
-      exerciseId: completedExercises.exerciseId,
-      roundIndex: completedExercises.roundIndex,
-      sortOrder: completedExercises.sortOrder,
-      resultValue: completedExercises.resultValue,
-      targetValue: completedExercises.targetValue,
-      prescribedValue: completedExercises.prescribedValue,
-      ladderNeutral: completedExercises.ladderNeutral,
-      lightWeekNeutral: completedExercises.lightWeekNeutral,
-      sides: completedExercises.sides,
-      perSide: exercises.perSide,
-    })
-    .from(completedExercises)
-    .innerJoin(exercises, eq(exercises.id, completedExercises.exerciseId))
-    .where(
-      inArray(
-        completedExercises.sessionId,
-        rows.map((row) => row.id),
-      ),
-    );
-  const context = await playContext();
-
   for (const row of rows) {
     // F4: a session dated after now is a moved clock, not a hit.
     if (row.performedAt > now) continue;
     const day = ownCalendarDay(row.performedAt, row.tzOffsetMin ?? 0);
-    if (!sameWeek(isoWeekOf(day), week)) continue;
-    const session: PlaySession = {
-      uuid: row.uuid ?? "",
-      outing: row.outing,
-      byHand: row.byHand,
-      durationSeconds: row.durationSeconds,
-      movingSeconds: row.movingSeconds,
-      leaguesM: row.leaguesM,
-      stopReason: row.stopReason,
-      sets: sets.filter((set) => set.sessionId === row.id),
-    };
-    if (countsForPlay(session, context)) days[weekdayIndex(day)] = true;
+    if (sameWeek(isoWeekOf(day), week) && counts(row)) days[weekdayIndex(day)] = true;
   }
   return days;
+}
+
+/** E1: whether the session just saved landed a hit, so the victory offers to send it. */
+export async function sessionCounts(sessionId: number): Promise<boolean> {
+  const rows = await db.select().from(completedQuest).where(eq(completedQuest.id, sessionId));
+  const [row] = rows;
+  return row !== undefined && (await asPlayed(rows))(row);
 }
 
 /** S5, S6: a pause of this hero touched `week` (a period is `from` included, `until` excluded). */

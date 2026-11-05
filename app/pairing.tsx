@@ -1,5 +1,6 @@
-import { Redirect, useLocalSearchParams } from "expo-router";
+import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 // biome-ignore lint/correctness/useReactNativePlatformComponents: the scanner module is Android only (expo-module.config.json), and so is the one screen that opens it.
 import { PermissionsAndroid, ScrollView, Share } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -8,62 +9,107 @@ import { AppButton } from "@/components/common/AppButton";
 import { Input } from "@/components/common/Input";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
 import { QrCode } from "@/components/multiplayer/QrCode";
+import { getDateTimeFormat } from "@/constants/dateFormatters";
+import { setDuel } from "@/db/duo";
 import {
   acceptInvite,
   acceptLinkInvite,
+  cancelInvite,
   completeLinkInvite,
   createLinkInvite,
   createPair,
+  listInvites,
   listPairs,
   MAX_PAIRS,
   type Pair,
   unlinkPair,
 } from "@/db/pairs";
 import { ScannerView } from "@/modules/bati-scanner";
+import { weekStart } from "@/src/multiplayer/duoWeek";
 import { MULTIPLAYER_ENABLED } from "@/src/multiplayer/flag";
-import { encodeInvite, type Invite, KIND_INVITE } from "@/src/multiplayer/invite";
-import { bytesOfLink, linkFor, takeIncomingLink } from "@/src/multiplayer/link";
+import { encodeInvite, type Invite } from "@/src/multiplayer/invite";
+import { linkFor, takeIncomingLink } from "@/src/multiplayer/link";
 import { encodeLinkInvite, type LinkInvite } from "@/src/multiplayer/linkInvite";
-import { type Received, readCode } from "@/src/multiplayer/received";
+import { type Received, readCode, type TakenWeek, takeWeeks } from "@/src/multiplayer/received";
 import { reportError } from "@/src/reportError";
+import { useSettingsStore } from "@/stores/settings";
 
 /**
- * Pairing, minimal (multiplayer lot 0, D1). Dev-only like app/dev.tsx, so no i18n and no polish: this
- * screen proves the plumbing, the lots that ship give it its real words and its real place.
+ * Companions (multiplayer lot 1, LOT1-SPEC.md § 5.5): invite face to face or by message, join, the
+ * list with its duel switch and unlink, the invitations waiting, and whatever a code or a link
+ * brought. Nothing it receives changes anything until the hero says so, except a companion's week,
+ * which is kept and said (E5).
  *
- * Nothing it receives changes anything until the hero says so: a code or a link is shown for what it
- * is, and only "Accept" writes. Two ways to pair: a code on the screen, with the secret in it, for two
- * people in one room; a link, with no secret in it, and an answer that has to come back.
+ * A code shown in the room holds the pair's secret: that one never reaches a share sheet.
  */
 const NAME_MAX = 40;
 
-/** A code shown in the room holds the pair's secret: that one never reaches a share sheet. */
-function shareable(link: string): boolean {
-  const bytes = bytesOfLink(link);
-  return bytes !== null && bytes[1] !== KIND_INVITE;
+/** What a received code asks of the hero before anything is written, if it asks anything. */
+function askingOf(received: Received | null): "received_reply" | "received_invite" | null {
+  if (received === null) return null;
+  return received.kind === "reply" ? "received_reply" : "received_invite";
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: a dev screen proving the plumbing, rewritten by the lot that ships it.
+/** A pairing that did not happen, as the screen says it. */
+function refusal(outcome: string): string {
+  if (outcome === "full") return "refused.full";
+  return outcome === "known" ? "refused.alreadyCompanion" : "refused.damaged";
+}
+
+/** What the screen says, by locale key under `duo.`, with what it needs. */
+type Note = { key: string; values?: Record<string, string | number> };
+
 export default function PairingScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const language = useSettingsStore((s) => s.language);
   const { n } = useLocalSearchParams<{ n?: string }>();
   const [pairs, setPairs] = useState<Pair[]>([]);
+  const [invites, setInvites] = useState<{ id: string; madeAt: Date }[]>([]);
   const [name, setName] = useState("");
-  const [shown, setShown] = useState<string | null>(null);
+  const [faceCode, setFaceCode] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [received, setReceived] = useState<Received | null>(null);
-  const [note, setNote] = useState<string | null>(null);
+  const [taken, setTaken] = useState<TakenWeek[] | null>(null);
+  const [answer, setAnswer] = useState<string | null>(null);
+  const [note, setNote] = useState<Note | null>(null);
+  const [busy, setBusy] = useState<"preparing" | "reading" | null>(null);
 
-  const refresh = () => listPairs().then(setPairs);
+  const date = (at: Date) =>
+    getDateTimeFormat(language, { day: "numeric", month: "short" }).format(at);
+  const refresh = async () => {
+    const [p, i] = await Promise.all([listPairs(), listInvites()]);
+    setPairs(p);
+    setInvites(i);
+  };
   const fail = (context: string) => (error: unknown) => {
     reportError(context, error);
-    setNote("That did not work.");
+    setBusy(null);
+    setNote({ key: "failed" });
+  };
+  const say = (key: string, values?: Note["values"]) => setNote({ key, values });
+
+  const showWeeks = async (weeks: Uint8Array[]) => {
+    const result = await takeWeeks(weeks);
+    if (typeof result === "string") say(`refused.${result}`);
+    else setTaken(result);
+    await refresh();
   };
 
   const receive = (text: string, via: "link" | "scan") => {
     setScanning(false);
     setNote(null);
-    readCode(text, via).then(setReceived).catch(fail("pairing.read"));
+    setTaken(null);
+    setBusy("reading");
+    readCode(text, via)
+      .then((read) => {
+        setBusy(null);
+        if (read.kind === "weeks") return showWeeks(read.weeks);
+        if (read.kind === "unreadable") return say(`refused.${read.why}`);
+        setReceived(read);
+      })
+      .catch(fail("pairing.read"));
   };
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `n` is what says a new link is held.
@@ -77,234 +123,335 @@ export default function PairingScreen() {
   // A build where this is off still answers bati://pairing: home, not a blank screen with no way out.
   if (!MULTIPLAYER_ENABLED) return <Redirect href="/" />;
 
-  const invite = async () => {
+  const showFaceCode = async () => {
     const made = await createPair(name);
-    if (made === "full") return setNote(`At most ${MAX_PAIRS} companions.`);
-    if (made === "known") return setNote("Already a companion.");
-    setShown(linkFor(encodeInvite(made)));
+    if (typeof made === "string") return say(refusal(made));
+    setFaceCode(linkFor(encodeInvite(made)));
     setName("");
-    setNote(null);
     await refresh();
   };
 
-  const sendLink = async () => {
-    const started = Date.now();
+  const sendInvite = async () => {
+    setBusy("preparing");
     const made = await createLinkInvite();
-    if (made === "full") return setNote(`At most ${MAX_PAIRS} invitations waiting.`);
-    const link = linkFor(encodeLinkInvite(made));
-    setShown(link);
-    setNote(`Waiting for an answer. Key made in ${Date.now() - started} ms.`);
-    await Share.share({ message: link });
+    setBusy(null);
+    if (made === "full") return say("refused.full");
+    await refresh();
+    await Share.share({ message: linkFor(encodeLinkInvite(made)) });
   };
 
   const scan = async () => {
     // Here and nowhere earlier: the permission is asked when the scanner opens, and only then.
-    const answer = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA);
-    if (answer === PermissionsAndroid.RESULTS.GRANTED) setScanning(true);
-    else setNote("The scanner needs the camera. A link works without it.");
+    const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA);
+    if (granted === PermissionsAndroid.RESULTS.GRANTED) setScanning(true);
+    else say("camera_needed");
   };
 
-  const accept = async (from: Invite) => {
-    const outcome = await acceptInvite(from, name);
-    setNote(
-      outcome === "paired"
-        ? "Paired."
-        : outcome === "full"
-          ? `At most ${MAX_PAIRS} companions.`
-          : "This invite is yours, or already a companion.",
-    );
+  const joinFaceToFace = async (invite: Invite, chosen: string) => {
+    const outcome = await acceptInvite(invite, chosen);
+    say(outcome === "paired" ? "joined" : refusal(outcome), { name: chosen });
+  };
+
+  const joinByLink = async (invite: LinkInvite, chosen: string) => {
+    setBusy("preparing");
+    const outcome = await acceptLinkInvite(invite, chosen);
+    setBusy(null);
+    if (!(outcome instanceof Uint8Array)) return say(refusal(outcome));
+    setAnswer(linkFor(outcome));
+    say("joined_link");
+  };
+
+  /** Phone A: the answer, and the weeks that rode with it, read once the pair is written. */
+  const keepAnswer = async (bytes: Uint8Array, weeks: Uint8Array[], chosen: string) => {
+    const outcome = await completeLinkInvite(bytes, chosen);
+    if (outcome !== "paired") return say(refusal(outcome));
+    say("joined", { name: chosen });
+    if (weeks.length > 0) await showWeeks(weeks);
+  };
+
+  const accept = async () => {
+    const chosen = name.trim();
+    if (received?.kind === "invite") await joinFaceToFace(received.invite, chosen);
+    if (received?.kind === "linkInvite") await joinByLink(received.invite, chosen);
+    if (received?.kind === "reply") await keepAnswer(received.bytes, received.weeks, chosen);
     setReceived(null);
     setName("");
     await refresh();
   };
 
-  const acceptLink = async (from: LinkInvite) => {
-    const started = Date.now();
-    const outcome = await acceptLinkInvite(from, name);
-    if (outcome instanceof Uint8Array) {
-      setShown(linkFor(outcome));
-      setNote(`Paired. Send this answer back. Key agreed in ${Date.now() - started} ms.`);
-    } else {
-      setNote(
-        outcome === "full"
-          ? `At most ${MAX_PAIRS} companions.`
-          : "This invite is yours, already a companion, or damaged.",
-      );
-    }
-    setReceived(null);
-    setName("");
-    await refresh();
-  };
-
-  const completeLink = async (bytes: Uint8Array) => {
-    const outcome = await completeLinkInvite(bytes, name);
-    setNote(
-      outcome === "paired"
-        ? "Paired."
-        : outcome === "full"
-          ? `At most ${MAX_PAIRS} companions.`
-          : "This answer no longer matches an invitation here.",
-    );
-    setReceived(null);
-    setName("");
-    await refresh();
-  };
-
-  // What the three kinds that ask for a name have in common: a sentence and what Accept does.
-  const asking =
-    received?.kind === "invite"
-      ? {
-          line: "An invitation to pair with this phone. What do you call them?",
-          accept: () => accept(received.invite),
-        }
-      : received?.kind === "linkInvite"
-        ? {
-            line: "An invitation to pair with this phone. What do you call them?",
-            accept: () => acceptLink(received.invite),
-          }
-        : received?.kind === "reply"
-          ? {
-              line: "Someone answered your invitation. What do you call them?",
-              accept: () => completeLink(received.bytes),
-            }
-          : null;
+  const asking = askingOf(received);
 
   return (
     <YStack flex={1} bg="background" pt={insets.top} pb={insets.bottom}>
       <XStack px="4" py="3" items="center" gap="3">
         <ScreenBackButton />
         <Text fontSize={20} fontWeight="700" color="text">
-          Companions
+          {t("duo.companions_title")}
         </Text>
       </XStack>
       <ScrollView
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ padding: 16, gap: 12 }}
+        contentContainerStyle={{
+          padding: 16,
+          gap: 12,
+          maxWidth: 520,
+          width: "100%",
+          alignSelf: "center",
+        }}
       >
+        {busy !== null ? (
+          <Text color="textSecondary" testID="pairing-busy">
+            {t(`duo.${busy}`)}
+          </Text>
+        ) : null}
+
         {asking !== null ? (
           <YStack gap="2" testID="pairing-received-invite">
-            <Text color="text">{asking.line}</Text>
-            <Input
-              testID="pairing-receive-name"
-              value={name}
-              onChangeText={setName}
-              maxLength={NAME_MAX}
-              placeholder="Their name, only you see it"
-            />
+            <Text color="text">{t(`duo.${asking}`)}</Text>
+            <NameField value={name} onChange={setName} testID="pairing-receive-name" />
             <AppButton
               testID="pairing-accept"
               disabled={name.trim() === ""}
-              onPress={() => asking.accept().catch(fail("pairing.accept"))}
+              onPress={() => accept().catch(fail("pairing.accept"))}
             >
-              Accept
+              {t(asking === "received_reply" ? "duo.keep" : "duo.join")}
             </AppButton>
             <AppButton testID="pairing-decline" variant="outline" onPress={() => setReceived(null)}>
-              Decline
+              {t("duo.ignore")}
             </AppButton>
           </YStack>
-        ) : received?.kind === "weeks" ? (
-          <Text color="text" testID="pairing-received-week">
-            {received.weeks.length} week(s) from a companion.
-          </Text>
-        ) : received?.kind === "unreadable" ? (
-          <Text color="textSecondary" testID="pairing-unreadable">
-            {received.why}
-          </Text>
         ) : null}
 
         {note !== null ? (
-          <Text color="textSecondary" testID="pairing-note">
-            {note}
+          <Text color="text" testID="pairing-note">
+            {t(`duo.${note.key}`, note.values)}
           </Text>
         ) : null}
 
-        {scanning ? (
-          <YStack height={320} overflow="hidden" rounded="3">
-            <ScannerView
-              testID="pairing-scanner"
-              style={{ flex: 1 }}
-              onScan={(event) => receive(event.nativeEvent.text, "scan")}
-              onCameraError={(event) => {
-                reportError("pairing.camera", new Error(event.nativeEvent.message));
-                setScanning(false);
-                setNote("The camera would not open. A link works without it.");
-              }}
-            />
-          </YStack>
-        ) : asking === null ? (
+        {answer !== null ? (
           <AppButton
-            testID="pairing-scan"
+            testID="pairing-tell-now"
             variant="outline"
-            onPress={() => scan().catch(fail("pairing.scan"))}
+            onPress={() => Share.share({ message: answer }).catch(fail("pairing.answer"))}
           >
-            Scan a code
+            {t("duo.reply_send")}
           </AppButton>
         ) : null}
 
-        {shown !== null ? (
-          <YStack gap="2" items="center">
-            <QrCode value={shown} size={320} />
-            {/* Only what carries no secret goes to a share sheet. Dev-only text, read by the test bench. */}
-            {shareable(shown) ? (
-              <>
-                <Text color="textSecondary" fontSize={10} testID="pairing-link-text">
-                  {shown}
-                </Text>
-                <AppButton
-                  testID="pairing-share-again"
-                  variant="outline"
-                  onPress={() => Share.share({ message: shown }).catch(fail("pairing.share"))}
-                >
-                  Send it
-                </AppButton>
-              </>
-            ) : null}
-            <AppButton testID="pairing-hide-code" variant="outline" onPress={() => setShown(null)}>
-              Done
-            </AppButton>
-          </YStack>
-        ) : asking === null ? (
-          <YStack gap="2">
-            <AppButton
-              testID="pairing-send-link"
-              variant="outline"
-              onPress={() => sendLink().catch(fail("pairing.sendLink"))}
-            >
-              Send a link
-            </AppButton>
-            <Input
-              testID="pairing-invite-name"
-              value={name}
-              onChangeText={setName}
-              maxLength={NAME_MAX}
-              placeholder="Their name, only you see it"
-            />
-            <AppButton
-              testID="pairing-invite"
-              disabled={name.trim() === ""}
-              onPress={() => invite().catch(fail("pairing.invite"))}
-            >
-              Show a code, face to face
-            </AppButton>
-          </YStack>
+        {taken !== null ? (
+          <TakenWeeks
+            taken={taken}
+            date={date}
+            onSee={() => router.replace("/journal/bosses" as never)}
+          />
         ) : null}
 
-        {pairs.map((pair) => (
-          <XStack key={pair.id} items="center" justify="space-between" gap="3">
-            <Text color="text" testID={`pairing-pair-${pair.name}`}>
-              {pair.name}
+        {scanning || asking === null ? (
+          <Scanner
+            scanning={scanning}
+            onStart={() => scan().catch(fail("pairing.scan"))}
+            onScan={(text) => receive(text, "scan")}
+            onError={() => {
+              setScanning(false);
+              say("camera_failed");
+            }}
+          />
+        ) : null}
+
+        {faceCode !== null ? (
+          <FaceCode code={faceCode} onDone={() => setFaceCode(null)} />
+        ) : asking === null ? (
+          <InviteButtons
+            full={pairs.length >= MAX_PAIRS}
+            name={name}
+            setName={setName}
+            onFace={() => showFaceCode().catch(fail("pairing.invite"))}
+            onLink={() => sendInvite().catch(fail("pairing.sendLink"))}
+          />
+        ) : null}
+
+        {invites.map((pending) => (
+          <XStack key={pending.id} items="center" justify="space-between" gap="3" flexWrap="wrap">
+            <Text color="textSecondary" flex={1} minW={140}>
+              {t("duo.invited_on", { date: date(pending.madeAt) })}
             </Text>
             <AppButton
-              testID={`pairing-unlink-${pair.name}`}
+              testID="pairing-cancel-invite"
               variant="outline"
               fullWidth={false}
-              onPress={() => unlinkPair(pair.id).then(refresh).catch(fail("pairing.unlink"))}
+              onPress={() => cancelInvite(pending.id).then(refresh).catch(fail("pairing.cancel"))}
             >
-              Unlink
+              {t("duo.cancel")}
             </AppButton>
           </XStack>
         ))}
+
+        {pairs.map((pair) => (
+          <CompanionRow
+            key={pair.id}
+            pair={pair}
+            onChange={() => refresh().catch(fail("pairing.list"))}
+            onError={fail("pairing.pair")}
+          />
+        ))}
       </ScrollView>
+    </YStack>
+  );
+}
+
+/** The camera, opened only here (§ 6), or the button that opens it. */
+function Scanner(props: {
+  scanning: boolean;
+  onStart: () => void;
+  onScan: (text: string) => void;
+  onError: () => void;
+}) {
+  const { t } = useTranslation();
+  if (!props.scanning) {
+    return (
+      <AppButton testID="pairing-scan" variant="outline" onPress={props.onStart}>
+        {t("duo.scan")}
+      </AppButton>
+    );
+  }
+  return (
+    <YStack height={320} overflow="hidden" rounded="3">
+      <ScannerView
+        testID="pairing-scanner"
+        style={{ flex: 1 }}
+        onScan={(event) => props.onScan(event.nativeEvent.text)}
+        onCameraError={(event) => {
+          reportError("pairing.camera", new Error(event.nativeEvent.message));
+          props.onError();
+        }}
+      />
+    </YStack>
+  );
+}
+
+/** The code for a companion in the room. It holds the pair's secret: shown, never shared. */
+function FaceCode({ code, onDone }: { code: string; onDone: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <YStack gap="3" items="center">
+      <QrCode value={code} size={280} />
+      <Text color="text" style={{ textAlign: "center" }}>
+        {t("duo.qr_face_hint")}
+      </Text>
+      <AppButton testID="pairing-hide-code" variant="outline" onPress={onDone}>
+        {t("duo.done")}
+      </AppButton>
+    </YStack>
+  );
+}
+
+function InviteButtons(props: {
+  full: boolean;
+  name: string;
+  setName: (v: string) => void;
+  onFace: () => void;
+  onLink: () => void;
+}) {
+  const { t } = useTranslation();
+  if (props.full) return <Text color="textSecondary">{t("duo.companions_max")}</Text>;
+  return (
+    <YStack gap="2">
+      <NameField value={props.name} onChange={props.setName} testID="pairing-invite-name" />
+      <AppButton testID="pairing-invite" disabled={props.name.trim() === ""} onPress={props.onFace}>
+        {t("duo.face_to_face")}
+      </AppButton>
+      <AppButton testID="pairing-send-link" variant="outline" onPress={props.onLink}>
+        {t("duo.by_message")}
+      </AppButton>
+    </YStack>
+  );
+}
+
+/** E5: what a companion's code brought, week by week, and the way to the card it changed. */
+function TakenWeeks({
+  taken,
+  date,
+  onSee,
+}: {
+  taken: TakenWeek[];
+  date: (at: Date) => string;
+  onSee: () => void;
+}) {
+  const { t } = useTranslation();
+  const line = (week: TakenWeek) =>
+    week.outcome === "new"
+      ? t("duo.received_week", {
+          name: week.name,
+          date: date(weekStart(week)),
+          hits: week.hits,
+          goal: week.goal,
+        })
+      : t(week.outcome === "same" ? "duo.nothing_new" : "duo.refused.ahead");
+  return (
+    <YStack gap="2" testID="pairing-received-week">
+      {taken.map((week) => (
+        <Text key={`${week.pairId}:${week.isoYear}:${week.isoWeek}`} color="text">
+          {line(week)}
+        </Text>
+      ))}
+      <AppButton testID="pairing-see-boss" onPress={onSee}>
+        {t("duo.see_boss")}
+      </AppButton>
+    </YStack>
+  );
+}
+
+function NameField(props: { value: string; onChange: (v: string) => void; testID: string }) {
+  const { t } = useTranslation();
+  return (
+    <Input
+      testID={props.testID}
+      value={props.value}
+      onChangeText={props.onChange}
+      maxLength={NAME_MAX}
+      placeholder={t("duo.name_placeholder")}
+      accessibilityLabel={t("duo.name_placeholder")}
+    />
+  );
+}
+
+/** One companion: their name as this hero calls them, the duel switch (D1), unlink in one tap. */
+function CompanionRow({
+  pair,
+  onChange,
+  onError,
+}: {
+  pair: Pair;
+  onChange: () => void;
+  onError: (error: unknown) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <YStack gap="2" py="2" borderTopWidth={1} borderColor="glassBorder">
+      <XStack items="center" justify="space-between" gap="3" flexWrap="wrap">
+        <Text color="text" fontSize={16} flex={1} minW={120} testID={`pairing-pair-${pair.name}`}>
+          {pair.name}
+        </Text>
+        <AppButton
+          testID={`pairing-unlink-${pair.name}`}
+          variant="outline"
+          fullWidth={false}
+          onPress={() => unlinkPair(pair.id).then(onChange, onError)}
+        >
+          {t("duo.unlink")}
+        </AppButton>
+      </XStack>
+      <AppButton
+        testID={`pairing-duel-${pair.name}`}
+        variant="outline"
+        backgroundColor="surface2"
+        accessibilityRole="switch"
+        accessibilityState={{ checked: pair.duel }}
+        accessibilityLabel={t("duo.duel_label")}
+        onPress={() => setDuel(pair.id, !pair.duel).then(onChange, onError)}
+      >
+        {t(pair.duel ? "duo.duel_on" : "duo.duel_off")}
+      </AppButton>
     </YStack>
   );
 }

@@ -263,10 +263,9 @@ export function casesDuLieu(lieu: Lieu, carte: Carte): Case[] {
   if (lieu === "porte")
     return tri(
       unique([
-        [17, 10],
+        // Not the cells under the gatehouse's door (17, 10) and the south gate (12, 15): a villager standing there hides the gate.
         [18, 10],
         [19, 10],
-        [12, 15],
         [12, 16],
         [12, 17],
       ]),
@@ -280,6 +279,8 @@ export function casesDuLieu(lieu: Lieu, carte: Carte): Case[] {
     const tous = unique([...CASES]).filter((c) => autour(c) >= 4 && autour(c) <= 9);
     return tous.sort((a, b) => loin(b) - loin(a) || cle(a) - cle(b)).slice(0, 3);
   }
+  // The wall's own gate is `porte`: nobody stands along its footprint, where they would hide it (occlusion gate, tier 7).
+  if (lieu === "castle_wall") return [];
   return tri(unique(touchant(lieu, 1)));
 }
 

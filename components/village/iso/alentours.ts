@@ -1139,14 +1139,14 @@ export const ACCESSOIRES: readonly Accessoire[] = [
   { nom: "ratelier_1", case: [15, 14], batiment: "archery_range" },
   { nom: "ratelier_2", case: [14, 14], batiment: "archery_range", palier: 5 },
   { nom: "caisses_1", case: [16, 7], batiment: "armory" },
-  { nom: "etal_1", case: [13, 14], batiment: "fountain", palier: 6 },
+  { nom: "etal_1", case: [9, 12], batiment: "fountain", palier: 6 },
   { nom: "menhir_1", case: [0, -6], batiment: "druid_grove" },
   { nom: "menhir_3", case: [0, -8], batiment: "druid_grove", palier: 7 },
   { nom: "menhir_2", case: [17, 1], batiment: "wizard_tower" },
   { nom: "lanterne_2", case: [16, 6], batiment: "watchtower" },
   { nom: "poteau_indicateur_1", case: [19, 14], batiment: "high_road" },
   { nom: "tonneaux_3", case: [4, 18], batiment: "champion_arena" },
-  { nom: "cloture_1", case: [9, 18], batiment: "champion_arena", palier: 10 },
+  { nom: "cloture_1", case: [10, 18], batiment: "champion_arena", palier: 10 },
   // The stories (style bible of 31/10 §8).
   {
     nom: "chat_1",

@@ -1990,7 +1990,7 @@ export const MAQUETTES_5: Readonly<Record<string, SpriteIso>> = {
   },
   "villageois/farmer_face.nuit.webp": {
     image: require("@/assets/images/village/iso/pieces/villageois_farmer_face.webp"),
-    anchor: [384, 704],
+    anchor: [384, 736],
     size: [768, 768],
     ombre: [
       [
@@ -2021,7 +2021,7 @@ export const MAQUETTES_5: Readonly<Record<string, SpriteIso>> = {
   },
   "villageois/herbalist_face.nuit.webp": {
     image: require("@/assets/images/village/iso/pieces/villageois_herbalist_face.webp"),
-    anchor: [384, 704],
+    anchor: [384, 729],
     size: [768, 768],
     ombre: [
       [

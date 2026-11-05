@@ -1140,8 +1140,8 @@ export const ACCESSOIRES: readonly Accessoire[] = [
   { nom: "ratelier_2", case: [14, 14], batiment: "archery_range", palier: 5 },
   { nom: "caisses_1", case: [16, 7], batiment: "armory" },
   { nom: "etal_1", case: [9, 12], batiment: "fountain", palier: 6 },
-  { nom: "menhir_1", case: [0, -6], batiment: "druid_grove" },
-  { nom: "menhir_3", case: [0, -8], batiment: "druid_grove", palier: 7 },
+  { nom: "menhir_1", case: [-2, -7], batiment: "druid_grove" },
+  { nom: "menhir_3", case: [-4, -8], batiment: "druid_grove", palier: 7 },
   { nom: "menhir_2", case: [17, 1], batiment: "wizard_tower" },
   { nom: "lanterne_2", case: [16, 6], batiment: "watchtower" },
   { nom: "poteau_indicateur_1", case: [19, 14], batiment: "high_road" },
@@ -1158,7 +1158,7 @@ export const ACCESSOIRES: readonly Accessoire[] = [
     palier: 3,
   },
   { nom: "pecheur_1", case: [2, 11], pied: [2.55, 11.02], palier: 2 },
-  { nom: "charrette_cassee_1", case: [13, 18], palier: 10 },
+  { nom: "charrette_cassee_1", case: [15, 19], palier: 10 },
   { nom: "renard_1", case: [-4, 8], batiment: "farm", palier: 4 },
   // The south corner, off the island: the cart alone, on the road's edge beside the wheat plot (docs/designs/village-loop/loupes/bc/route_tuiles.json). The painted ground carries its own fence, hay, barrels and crates. It repeats the prop 6 cells or more away on the island, so mirrored.
   // Round 5: wholly on the road, near its east edge, never across it. The painted road is about 150 px wide here (x 255 to 405 at y 1600 on p06) and the cart's art 71 px, so the foot at screen px (346, 1630) keeps the wheel 20 px inside the edge.

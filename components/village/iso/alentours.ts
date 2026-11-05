@@ -128,7 +128,13 @@ const PARCELLES_RECTS = Object.values(PARCELLES).map(
   ([a, b, c, d]) => [a, b, c - a, d - b] as const,
 );
 
-/** The roads leaving the village, sampled every 0.3 cell, every one of them whether it shows yet or not. */
+/**
+ * Where the south road's painted stretch ends, as gx + gy: the painted ground stops at 36.8 on both
+ * axes and the road with it, in a square cut a little past 75 (growth G15). Past it the road is not
+ * drawn, so a mass may stand on its cells and close the cut; the road's visible length stays clear.
+ */
+const FIN_ROUTE_PEINTE = 78;
+/** The roads leaving the village, sampled every 0.3 cell, every one of them whether it shows yet or not, to where it is painted. */
 const ROUTES: readonly (readonly [number, number])[] = SORTIES.flatMap((s) =>
   s.branches.flatMap((b) =>
     b.slice(1).flatMap((p, i) => {
@@ -137,7 +143,7 @@ const ROUTES: readonly (readonly [number, number])[] = SORTIES.flatMap((s) =>
       return Array.from(
         { length: n },
         (_, k) => [q[0] + ((p[0] - q[0]) * k) / n, q[1] + ((p[1] - q[1]) * k) / n] as const,
-      );
+      ).filter(([x, y]) => x + y <= FIN_ROUTE_PEINTE);
     }),
   ),
 );
@@ -179,12 +185,9 @@ function libre(
   y: number,
   largeur: number,
   hauteur: number,
+  degages: readonly (readonly [number, number])[] = POINTS_DEGAGES,
 ): boolean {
-  if (
-    POINTS_DEGAGES.some(
-      ([px, py]) => Math.abs(px - x) < largeur / 2 && py > y - hauteur && py < y + 4,
-    )
-  )
+  if (degages.some(([px, py]) => Math.abs(px - x) < largeur / 2 && py > y - hauteur && py < y + 4))
     return false;
   // Its crown's middle too: a big mass must not stand over a glade between its samples.
   const coeur = [-0.2, 0, 0.2].map((d): [number, number] => [x + d * largeur, y - hauteur * 0.45]);
@@ -284,14 +287,19 @@ export const TUILES_ROUTE_SUD: readonly Point[] = [
  * (round 4), so no mass box, border masses included, crosses the corridor. `libre`'s crown samples
  * keep 0.9 cell off the road line as well.
  */
-export const POINTS_DEGAGES: readonly (readonly [number, number])[] = [
-  ...ROUTE_SUD.map((p) => ecranXY(p)),
-  ...TUILES_ROUTE_SUD.flatMap(([gx, gy], k): (readonly [number, number])[] => {
-    const [x, y] = ecranXY([gx + 0.5, gy + 0.5]);
-    const n = TUILES_ROUTE_SUD[k + 1];
-    const mid = n ? ecranXY([(gx + n[0]) / 2 + 0.5, (gy + n[1]) / 2 + 0.5]) : null;
-    return [[x, y], [x - 14, y], [x + 14, y], [x, y - 7], [x, y + 7], ...(mid ? [mid] : [])];
-  }),
+const POINTS_ROUTE: readonly (readonly [number, number])[] = [
+  ...ROUTE_SUD.filter(([gx, gy]) => gx + gy <= FIN_ROUTE_PEINTE).map((p) => ecranXY(p)),
+  ...TUILES_ROUTE_SUD.filter(([gx, gy]) => gx + gy + 1 <= FIN_ROUTE_PEINTE).flatMap(
+    ([gx, gy], k): (readonly [number, number])[] => {
+      const [x, y] = ecranXY([gx + 0.5, gy + 0.5]);
+      const n = TUILES_ROUTE_SUD[k + 1];
+      const mid = n ? ecranXY([(gx + n[0]) / 2 + 0.5, (gy + n[1]) / 2 + 0.5]) : null;
+      return [[x, y], [x - 14, y], [x + 14, y], [x, y - 7], [x, y + 7], ...(mid ? [mid] : [])];
+    },
+  ),
+];
+/** The lattice over each plot and cottage, painted from tier 4 only. */
+const POINTS_PARCELLES: readonly (readonly [number, number])[] = [
   ...[...PARCELLES_RECTS, ...COTTAGES_RECTS].flatMap(([a, b, w, h]) => {
     const [nx, ny] = [Math.ceil(w) + 1, Math.ceil(h) + 1];
     return Array.from({ length: nx * ny }, (_, k) =>
@@ -302,12 +310,21 @@ export const POINTS_DEGAGES: readonly (readonly [number, number])[] = [
     );
   }),
 ];
+export const POINTS_DEGAGES: readonly (readonly [number, number])[] = [
+  ...POINTS_ROUTE,
+  ...POINTS_PARCELLES,
+];
 
-/** The south lisiere, computed once: it is the same at every tier (the island is far from it), so the walk is paid once. */
-let LISIERE_SUD: Masse[] | null = null;
-const lisiereFigee = (ok: OkMasse): Masse[] => {
-  LISIERE_SUD ??= lisiereSud(ok);
-  return LISIERE_SUD;
+/**
+ * The south lisiere, computed once per band (the corner shown or not): within a band it is the same
+ * at every tier (the island is far from it), so each walk is paid once. Before the corner, no plot
+ * or cottage is painted, so the lisiere may stand where they will be.
+ */
+const LISIERE_SUD: [Masse[] | null, Masse[] | null] = [null, null];
+const lisiereFigee = (coin: boolean, ok: OkMasse): Masse[] => {
+  const b = coin ? 1 : 0;
+  LISIERE_SUD[b] ??= lisiereSud(ok);
+  return LISIERE_SUD[b];
 };
 // By content, not identity: etatCarte and etatAvec hand back a new `visible` on every call, and the walk costs hundreds of ms.
 // shortcut: never evicted, the islands a session sees are few (a tier and what stands on it); bound it if that stops being true.
@@ -337,12 +354,21 @@ export function massesForet(
   const exclus = [...champs, ...PARCELLES_RECTS, ...COTTAGES_RECTS];
   const ok = (x: number, y: number, e: number) =>
     libre(dist, clair, exclus, x, y, TOILE_FORET.w * e, TOILE_FORET.h * e);
+  // Under tier 4 the corner is not painted yet: no plot or cottage to spare, and the baked ground's
+  // dark south land is for the forest to cover.
+  const coin = (visible[LIGNE_COIN] ?? []).some(Boolean);
+  const libreSud = (x: number, y: number, e: number) =>
+    libre(dist, clair, champs, x, y, TOILE_FORET.w * e, TOILE_FORET.h * e, POINTS_ROUTE);
   // The south lisiere owns the land past the painted ground's edge: the ring leaves it alone.
   const horsLisiere = (x: number, y: number, e: number) =>
     !dansLisiere(...grille(x, y), DEBUT_ANNEAU) && ok(x, y, e);
-  const out = [...anneau(dist, clair, horsLisiere), ...bordure(ok), ...lisiereFigee(ok)].sort(
-    (a, b) => a.y - b.y,
-  );
+  const base = [
+    ...anneau(dist, clair, horsLisiere),
+    ...bordure(ok),
+    ...lisiereFigee(coin, coin ? ok : libreSud),
+  ];
+  const sud = coin ? [] : terreSud(libreSud, base, avanceSud(clair));
+  const out = [...base, ...sud].sort((a, b) => a.y - b.y);
   CACHE_FORET.set(cle, out);
   return out;
 }
@@ -410,15 +436,21 @@ function sbLibre(tous: readonly Masse[], fx: number, fy: number, flip: boolean):
  * (3 when none is free: a hole is worse than a distant twin).
  */
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: one lattice walk, each point a short list of steps
-function combler(ok: OkMasse, deja: readonly Masse[]): Masse[] {
+function combler(
+  ok: OkMasse,
+  deja: readonly Masse[],
+  zone: (gx: number, gy: number) => boolean = dansLisiere,
+  depart: readonly [number, number] = [14, 36],
+  classe: (gx: number, gy: number) => number = classeLisiere,
+): Masse[] {
   const tous = [...deja];
   const ajouts: Masse[] = [];
-  for (let gy = 36; gy <= FOND_LISIERE; gy += 1.5) {
-    for (let gx = 14; gx <= FOND_LISIERE; gx += 1.5) {
-      if ((gx <= LISIERE_DEBUT && gy <= LISIERE_DEBUT) || Math.abs(gx - gy) > 20) continue;
+  for (let gy = depart[1]; gy <= FOND_LISIERE; gy += 1.5) {
+    for (let gx = depart[0]; gx <= FOND_LISIERE; gx += 1.5) {
+      if (!zone(gx, gy) || Math.abs(gx - gy) > 20) continue;
       const [px, py] = ecranXY([gx, gy]);
       if (tous.some((m) => sousCouronne(px, py, m))) continue;
-      const echelle = classeLisiere(gx, gy);
+      const echelle = classe(gx, gy);
       // The foot goes further down, then aside, while the box would cover a cell of the road (the road's tip).
       const { w, h } = TOILE_FORET;
       const pieds = [0, -0.3, 0.3].flatMap((d) =>
@@ -491,6 +523,62 @@ function boucher(ok: OkMasse, deja: readonly Masse[]): Masse[] {
       }
     }
   return ajouts;
+}
+
+/**
+ * The south land under tier 4 (growth G15). The baked ground there is two flat dark polygons (left:
+ * gy past 23, right: gx past 22.8, a pale strip between them where the road will run), and the corner
+ * that paves them arrives at tier 4. Until then the forest stands on them: a 3.6 cell lattice of big
+ * masses, then the holes, over everything between the south lisiere and `avance` cells short of
+ * each polygon's edge, so the forest's edge backs off as the island grows (`avanceSud`) and is gone
+ * at tier 4, where `massesForet` stops calling it. Its feet may pass the lisiere's line to close
+ * a hole; the road's cells stay open (`ok`).
+ */
+const BORD_SUD = 23;
+/** The island's row that only tier 4 and after reach: the corner is shown. */
+const LIGNE_COIN = 19;
+/** The clearing's width at tier 1 and at tier 4 (monde.ts `clairiere`): the forest's edge backs off between the two. */
+const CLAIRIERE_T1 = 38;
+const CLAIRIERE_T4 = 58;
+const AVANCE_MAX = 7;
+const avanceSud = (clair: number) =>
+  AVANCE_MAX *
+  (1 - Math.min(1, Math.max(0, (clair - CLAIRIERE_T1) / (CLAIRIERE_T4 - CLAIRIERE_T1))));
+const GROSSES = [1.3, 1.5] as const;
+function terreSud(ok: OkMasse, deja: readonly Masse[], avance: number): Masse[] {
+  const zone = (gx: number, gy: number) =>
+    !dansLisiere(gx, gy) &&
+    gx >= 8 &&
+    gy >= 11 &&
+    (gy >= BORD_SUD - avance || gx >= BORD_SUD - avance);
+  const classe = (gx: number, gy: number) =>
+    GROSSES[
+      Math.floor(mulberry32(Math.round(gx * 8) * 7919 + Math.round(gy * 8) * 104729 + 3)() * 2)
+    ] ?? 1.5;
+  const tous = [...deja];
+  const out: Masse[] = [];
+  const n = Math.floor((LISIERE_DEBUT - 8) / PAS_LISIERE) + 1;
+  for (let j = 0; j < n; j++) {
+    for (let i = 0; i < n; i++) {
+      const hasard = mulberry32(70001 + j * 104729 + i * 7919);
+      const gx = 8 + (i + (hasard() - 0.5) * 0.5) * PAS_LISIERE;
+      const gy = 8 + (j + (hasard() - 0.5) * 0.5) * PAS_LISIERE;
+      if (!zone(gx, gy) || Math.abs(gx - gy) > 20) continue;
+      const [x, y] = ecranXY([gx, gy]);
+      if (tous.some((m) => sousCouronne(x, y, m))) continue;
+      const echelle = classe(gx, gy);
+      const nom = especeLibre(tous, gx, gy);
+      if (!nom || !ok(x, y, echelle)) continue;
+      const flip = tous.length % 2 === 1;
+      const m: Masse = { nom, x, y, echelle, flip, sb: sbLibre(tous, gx, gy, flip) };
+      tous.push(m);
+      out.push(m);
+    }
+  }
+  const gros = combler(ok, tous, zone, [8, 11], classe);
+  // What the big masses' boxes cannot reach beside the road: small masses, which come closer to it.
+  const rives = combler(ok, [...tous, ...gros], zone, [8, 11], () => 0.7);
+  return varierSousBois([...out, ...gros, ...rives]);
 }
 
 function lisiereSud(ok: OkMasse): Masse[] {
@@ -1124,6 +1212,12 @@ export type Accessoire = {
 export const ACCESSOIRES: readonly Accessoire[] = [
   // The camp (tier 1).
   { nom: "lanterne_1", case: [9, 11] },
+  // Back at tier 1 (growth G15): the camp's stores in the patch of grass inside the path's loop by
+  // the lantern, and a wood pile on the grass west of the road, clear of every plot's cells.
+  { nom: "caisses_2", case: [7, 11] },
+  { nom: "sacs_de_grain_2", case: [5, 11] },
+  { nom: "tonneaux_1", case: [8, 12] },
+  { nom: "tas_de_bois_2", case: [4, 11] },
   // The trades.
   { nom: "tas_de_bois_1", case: [15, 6], batiment: "forge" },
   { nom: "bottes_de_foin_1", case: [-2, 12], batiment: "farm" },

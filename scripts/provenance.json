@@ -10974,6 +10974,921 @@
     "session": "growth-2",
     "date": "2026-11-05"
   },
+  "docs/designs/village/growth/scratch/final/A1a.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/A1a_1.png",
+    "how": "quarter or countryside piece painted from its concept: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/A1a.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/A1a_1.png",
+    "how": "quarter or countryside piece painted from its concept: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/A1b.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/A1b_1.png",
+    "how": "quarter or countryside piece painted from its concept: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/A1b.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/A1b_1.png",
+    "how": "quarter or countryside piece painted from its concept: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/A1c.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/A1c_1.png",
+    "how": "quarter or countryside piece painted from its concept: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/A1c.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/A1c_1.png",
+    "how": "quarter or countryside piece painted from its concept: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/A2.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/A2_1.png",
+    "how": "quarter or countryside piece painted from its concept: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/A2.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/A2_1.png",
+    "how": "quarter or countryside piece painted from its concept: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/A3.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/A3_1.png",
+    "how": "quarter or countryside piece painted from its concept: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/A3.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/A3_1.png",
+    "how": "quarter or countryside piece painted from its concept: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/A4.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/A4_1.png",
+    "how": "the real etal_1 stall repainted desaturated, same shape and stripes: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/A4.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/A4_1.png",
+    "how": "the real etal_1 stall repainted desaturated, same shape and stripes: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/A5.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/A5_1.png",
+    "how": "quarter or countryside piece painted from its concept: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/A5.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/A5_1.png",
+    "how": "quarter or countryside piece painted from its concept: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/A6.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/A6_1.png",
+    "how": "quarter or countryside piece painted from its concept: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/A6.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/A6_1.png",
+    "how": "quarter or countryside piece painted from its concept: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/A7.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/A7_1.png",
+    "how": "quarter or countryside piece painted from its concept: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/A7.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/A7_1.png",
+    "how": "quarter or countryside piece painted from its concept: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/A8.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/A8_1.png",
+    "how": "quarter or countryside piece painted from its concept: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/A8.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/A8_1.png",
+    "how": "quarter or countryside piece painted from its concept: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/B5.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/B5_1.png",
+    "how": "quarter or countryside piece painted from its concept: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/B5.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/B5_1.png",
+    "how": "quarter or countryside piece painted from its concept: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/B6.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/B6_1.png",
+    "how": "quarter or countryside piece painted from its concept: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/B6.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/B6_1.png",
+    "how": "quarter or countryside piece painted from its concept: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/bourg_F_v1.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/bourg_F_v1_1.png",
+    "how": "quarter or countryside piece painted from its concept: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/bourg_F_v1.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/bourg_F_v1_1.png",
+    "how": "quarter or countryside piece painted from its concept: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/copeaux_1.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/souches_1.png",
+    "how": "one stump or chip heap cut from the sheet of seven: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/copeaux_1.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/souches_1.png",
+    "how": "one stump or chip heap cut from the sheet of seven: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/copeaux_2.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/souches_1.png",
+    "how": "one stump or chip heap cut from the sheet of seven: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/copeaux_2.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/souches_1.png",
+    "how": "one stump or chip heap cut from the sheet of seven: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/ferme3_F_v1.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/ferme3_F_v1_1.png",
+    "how": "quarter or countryside piece painted from its concept: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/ferme3_F_v1.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/ferme3_F_v1_1.png",
+    "how": "quarter or countryside piece painted from its concept: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/ferme3_F_v2.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/ferme3_F_v2_1.png",
+    "how": "quarter or countryside piece painted from its concept: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/ferme3_F_v2.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/ferme3_F_v2_1.png",
+    "how": "quarter or countryside piece painted from its concept: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/ferme4_F_v1.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/ferme4_F_v1_1.png",
+    "how": "quarter or countryside piece painted from its concept: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/ferme4_F_v1.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/ferme4_F_v1_1.png",
+    "how": "quarter or countryside piece painted from its concept: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/hameau1_F_v2.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/hameau1_F_v2_1.png",
+    "how": "quarter or countryside piece painted from its concept: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/hameau1_F_v2.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/hameau1_F_v2_1.png",
+    "how": "quarter or countryside piece painted from its concept: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/hameau2_F_v1.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/hameau2_F_v1_1.png",
+    "how": "quarter or countryside piece painted from its concept: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/hameau2_F_v1.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/hameau2_F_v1_1.png",
+    "how": "quarter or countryside piece painted from its concept: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/raw/A1a_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of one small house: repaint exactly this house, same shape, same roof, same chimney, same doors, same framing, same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The house stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the bottom edges of the walls end cleanly on the magenta. The walls are a darker, duller grey-brown plaster. The thatch is dark warm grey-brown: a few long even strokes, calm. One tiny dim window with a faint dull glow, no vivid orange. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters, no flags, no red.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/quartiers/A1a_v2.png",
+        "sha256": "8fd92ddf95ca4c6287eddf8aec467766b30f36920338defae5d681694faf24b1"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2513,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 241
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4269
+    },
+    "cost": 0.0721,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/final/raw/A1b_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of one small house: repaint exactly this house, same shape, same roof with its small eave on the left, same chimney, same door, same windows, same framing, same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The house stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the bottom edges of the walls end cleanly on the magenta. The walls are a darker, duller grey-brown plaster. The roof is dark grey-brown wooden shingles in flat even rows, no warm tile. The windows are tiny and dim with a faint dull glow, no vivid orange. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters, no flags, no red.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/quartiers/A1b_v2.png",
+        "sha256": "52c44df0cb665dd879f1c5be47567b7435b6c78c6a19a9047eac544a10e8e6f6"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2526,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 254
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4282
+    },
+    "cost": 0.0722,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/final/raw/A1c_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of one small house: repaint exactly this house, same gable shape, same door, same windows, same chimney, same framing, same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The house stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the bottom edges of the walls end cleanly on the magenta. The walls are a darker, duller grey-brown plaster. Keep it low: the walls are about a quarter shorter than in the concept and the roof a little flatter, with a single chimney. The roof is dark grey-brown slate in flat even rows, no warm tile. The windows are tiny and dim with a faint dull glow, no vivid orange. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters, no flags, no red.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/quartiers/A1c_v2.png",
+        "sha256": "c2bdf70b5aa65508da64fa3b650b5b90991053bf5a497549884e9213040fb506"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2543,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 271
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4299
+    },
+    "cost": 0.0723,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/final/raw/A2_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of one long low house: repaint exactly this house, same long shape, same thatched roof, same stone gable wall, same door, same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The house stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the bottom edges of the walls end cleanly on the magenta. The walls are a darker, duller grey-brown plaster. The thatch is dark warm grey-brown: a few long even strokes, calm. At most one tiny dim window with a faint dull glow, no vivid orange. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters, no flags, no red.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/quartiers/A2_v2.png",
+        "sha256": "761e95b77013fabea8a8dde63dad2ceb0cab7c1ee4ffc416a8d22959c3dd847b"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2519,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 247
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4275
+    },
+    "cost": 0.0721,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/final/raw/A3_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of narrow strip gardens with low hurdle fences and low roofed sheds: repaint this garden as one single connected flat block, one compact rectangle with one silhouette, the same strip gardens with dark soil rows and low hurdle fences, the same low sheds joined side by side, not four separate plots; one narrow dirt lane may run through it. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The block stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the edges of the block end cleanly on the magenta. The soil is dark dull brown, the crops dull muted greens, the shed roofs dark warm grey-brown thatch in a few long even strokes. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters, no flags, no red.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/quartiers/A3_v2.png",
+        "sha256": "0de0c1dcf8d435759c77c0be9dbcdb5286308041756e00e29d967e4f647da432"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2533,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 261
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4289
+    },
+    "cost": 0.0722,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/final/raw/A4_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the sprite of one market stall: repaint exactly this stall, same shape, same stripes in the same number and the same positions, same crates and produce beneath the counter, same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The stall stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground, no shadow underneath, the bottoms of the legs and crates end cleanly on the magenta. The colours are desaturated but not grey: the stripes a dull muted slate-blue and a dull cream, the timber a dull grey-brown, the produce muted dull greens and ochre, every colour keeping a trace of its hue. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters, no flags, no red.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/final/work/etal_in.png",
+        "sha256": "6fce6f1da46e25ae3024590d900b13a871ec42cca8e067d820d860ee86f207b4"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2516,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 244
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4272
+    },
+    "cost": 0.0721,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/final/raw/A5_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of one low timber workshop with a lean-to and stacked planks: repaint exactly this workshop, same shape, same lean-to on the left, same stacked planks along the wall, same door, same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The workshop stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the bottom edges of the walls end cleanly on the magenta. The walls are dull grey-brown weathered planks. The thatch is dark warm grey-brown: a few long even strokes, calm. One tiny dim window with a faint dull glow, no vivid orange. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters, no flags, no red.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/quartiers/A5_v1.png",
+        "sha256": "ebc38302f934ecff9d3a9140eb6afd2276f7d687d8eb4879b2a9906449bcd5be"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2527,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 255
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4283
+    },
+    "cost": 0.0722,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/final/raw/A6_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of one narrow stone house: repaint exactly this house, same narrow shape, same roof, same door, same windows, same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The house stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the bottom edges of the walls end cleanly on the magenta. The walls are a darker, duller grey-brown plaster. Lower it to one and a half storeys: the walls are about a third shorter, the upper windows sit right under the eaves. The roof is dark grey-brown slate in flat even rows, no warm tile. The windows are tiny and dim with a faint dull glow, no vivid orange. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters, no flags, no red.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/quartiers/A6_v2.png",
+        "sha256": "ad0daf748f449b88855043c3efa7a634095cd260e39a8fdb5ccbadd6213246df"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2541,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 269
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4297
+    },
+    "cost": 0.0723,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/final/raw/A7_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of one long open timber hall: repaint exactly this hall, same long shape, same heavy timber posts, same big roof, same empty trestles under it, same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The hall stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the bottom edges of the walls end cleanly on the magenta. No floor: the posts end cleanly on the magenta, which shows through the open side. The posts are dull dark grey-brown timber. The thatch is dark warm grey-brown: a few long even strokes, calm. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters, no flags, no red.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/quartiers/A7_v1.png",
+        "sha256": "b07e82e339cf4128ba8f54276af2de3901a554da33bbeb5a0b83dd05e82eef0b"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2524,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 252
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4280
+    },
+    "cost": 0.0722,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/final/raw/A8_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of one L-shaped low house: repaint exactly this house, same L shape, same thatched roof, same small timber gable, same short steps, same door, same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The house stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the bottom edges of the walls end cleanly on the magenta. The walls are a darker, duller grey-brown plaster. The thatch is dark warm grey-brown: a few long even strokes, calm. One tiny dim window with a faint dull glow, no vivid orange. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters, no flags, no red.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/quartiers/A8_v1.png",
+        "sha256": "5acb55b243943aa68c3a4365bfcc7fe449e1ce9c400680999f17f4227a2d9664"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2522,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 250
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4278
+    },
+    "cost": 0.0722,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/final/raw/B5_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of one low cabin with a shingled roof: repaint exactly this cabin, same shape, same roof, same door, same windows, same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The cabin stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the bottom edges of the walls end cleanly on the magenta. The walls are a darker, duller grey-brown plaster. Remove the two cut stumps; keep one small pile of logs beside the door, smaller than in the concept. The roof is dark grey-brown wooden shingles in flat even rows, no warm tile. The windows are tiny and dim with a faint dull glow, no vivid orange. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters, no flags, no red.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/quartiers/B5_v1.png",
+        "sha256": "262941ffb5fa3d4998d362f1b5f47a36564a699f4e48e8fbea7889cbb80a8274"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2541,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 269
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4297
+    },
+    "cost": 0.0723,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/final/raw/B6_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of one low open-fronted shed with long logs resting on trestles: repaint exactly this shed, same shape, same roof, same open front, same long logs, same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The shed stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the bottom edges of the walls end cleanly on the magenta. The walls are dull grey-brown rough stone and timber. The roof is dark grey-brown wooden shingles in flat even rows, no warm tile. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters, no flags, no red.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/quartiers/B6_v1.png",
+        "sha256": "38d02910ba3a1837049b7f411b553d2b3784e9bfdae91e6104d9bd74897c3e87"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2508,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 236
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4264
+    },
+    "cost": 0.0721,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/final/raw/bourg_F_v1_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of a village of eleven small low houses around a larger open-sided roof, with a low row of hedge along the front edge: repaint exactly this scene, same houses, same larger roof in the middle, same hedge, same layout, same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The scene stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth, sand or grass, every wall, fence, stump and crop row stands directly on the magenta and ends cleanly on it. The walls are a dull dark grey-brown. The roofs are dark grey-brown thatch or wooden shingles, no warm tile. Windows are tiny and dim with a faint dull glow, no vivid orange. Everything is one step darker in value than usual: walls, roofs, fences, soil and wood all in low dark values. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters, no flags, no red.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/concepts/bourg_F_v1.png",
+        "sha256": "430a37977b98eefbc33ad4aa591a73e301db3a1847a92a5befde9c4f92657f90"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2564,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 292
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4320
+    },
+    "cost": 0.0724,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/final/raw/ferme3_F_v1_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of a farm with one tall stone barn under a thatched roof, a fence around a field of crop rows and a few cut stumps: repaint exactly this scene, same barn, same fence, same crop rows, same stumps, same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The scene stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth, sand or grass, every wall, fence, stump and crop row stands directly on the magenta and ends cleanly on it. The walls are a dull dark grey-brown. The roofs are dark grey-brown thatch or wooden shingles, no warm tile. Windows are tiny and dim with a faint dull glow, no vivid orange. Everything is one step darker in value than usual: walls, roofs, fences, soil and wood all in low dark values. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters, no flags, no red.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/concepts/ferme3_F_v1.png",
+        "sha256": "4df38287bd10d1ea79cedac151154bba8e52d7dab24c06f3c51e40adf9480b58"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2565,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 293
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4321
+    },
+    "cost": 0.0724,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/final/raw/ferme3_F_v2_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of a farm with one long stone barn under a shingled roof, a fence around a field of crop rows and a few cut stumps: repaint exactly this scene, same barn, same fence, same crop rows, same stumps, same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The scene stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth, sand or grass, every wall, fence, stump and crop row stands directly on the magenta and ends cleanly on it. The walls are a dull dark grey-brown. The roofs are dark grey-brown thatch or wooden shingles, no warm tile. Windows are tiny and dim with a faint dull glow, no vivid orange. Everything is one step darker in value than usual: walls, roofs, fences, soil and wood all in low dark values. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters, no flags, no red.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/concepts/ferme3_F_v2.png",
+        "sha256": "060f7fe9d7023b31113b1e3ed3abf0df773f7560998d3f6e867fb7af99b560c5"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2566,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 294
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4322
+    },
+    "cost": 0.0724,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/final/raw/ferme4_F_v1_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of four long low roofed sheds among plots of crop rows and round bushes: repaint exactly this scene, same sheds, same plots, same bushes, same layout, same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The scene stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth, sand or grass, every wall, fence, stump and crop row stands directly on the magenta and ends cleanly on it. The walls are a dull dark grey-brown. The roofs are dark grey-brown thatch or wooden shingles, no warm tile. Windows are tiny and dim with a faint dull glow, no vivid orange. Everything is one step darker in value than usual: walls, roofs, fences, soil and wood all in low dark values. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters, no flags, no red.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/concepts/ferme4_F_v1.png",
+        "sha256": "218483d737efb8fd171cd157f51fe06dde3bac163f461e37d8df28097beecb15"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2550,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 278
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4306
+    },
+    "cost": 0.0723,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/final/raw/hameau1_F_v2_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of a hamlet of four log cabins with shingled roofs, a few cut stumps and two fallen logs: repaint exactly this scene, same four cabins, same layout, same stumps and logs, same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The scene stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth, sand or grass, every wall, fence, stump and crop row stands directly on the magenta and ends cleanly on it. The walls are a dull dark grey-brown. The roofs are dark grey-brown thatch or wooden shingles, no warm tile. Windows are tiny and dim with a faint dull glow, no vivid orange. Everything is one step darker in value than usual: walls, roofs, fences, soil and wood all in low dark values. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters, no flags, no red.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/concepts/hameau1_F_v2.png",
+        "sha256": "6d4b6be148f8453102741176edb8828f1e01bb060a81e73ed3941ad12a3096a2"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2559,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 287
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4315
+    },
+    "cost": 0.0723,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/final/raw/hameau2_F_v1_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of a hamlet of six low log cabins around a round stone well, with a few cut stumps: repaint exactly this scene, same six cabins, same round well, same layout, same stumps, same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The scene stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth, sand or grass, every wall, fence, stump and crop row stands directly on the magenta and ends cleanly on it. The walls are a dull dark grey-brown. The roofs are dark grey-brown thatch or wooden shingles, no warm tile. Windows are tiny and dim with a faint dull glow, no vivid orange. Everything is one step darker in value than usual: walls, roofs, fences, soil and wood all in low dark values. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters, no flags, no red.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/concepts/hameau2_F_v1.png",
+        "sha256": "7d82991004fd6724403991a77d6550972611e202d856aa0bd348dd00cefd8b13"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2559,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 287
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4315
+    },
+    "cost": 0.0723,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/final/raw/souches_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is a sheet of five cut tree stumps and two small heaps of wood chips on a flat magenta background: repaint exactly this sheet, the same five stumps and the same two chip heaps in the same arrangement, every piece standing apart with clear magenta around it. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The sizes are closer together: the widest stump about one seventh of the picture width and the smallest about one ninth, the chip heaps about one twelfth. The cut tops are darker, a low-value mid brown with dark rings, not pale; the bark is dark brown. Moss on two stumps at most, the ones that have it, dull dark green. The chips are dull tan. The background is a flat uniform magenta #FF00FF that fills the whole picture: no ground plate, no painted cast shadow, no people, no letters, no flags, no red. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/souches_gpt_2.png",
+        "sha256": "f142b4ba4e3c7a6c7298721c3f6dbdf25cea196986eaf26a7aab5ce9117ffc8f"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2538,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 266
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4294
+    },
+    "cost": 0.0722,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/final/souche_1.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/souches_1.png",
+    "how": "one stump or chip heap cut from the sheet of seven: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/souche_1.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/souches_1.png",
+    "how": "one stump or chip heap cut from the sheet of seven: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/souche_2.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/souches_1.png",
+    "how": "one stump or chip heap cut from the sheet of seven: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/souche_2.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/souches_1.png",
+    "how": "one stump or chip heap cut from the sheet of seven: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/souche_3.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/souches_1.png",
+    "how": "one stump or chip heap cut from the sheet of seven: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/souche_3.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/souches_1.png",
+    "how": "one stump or chip heap cut from the sheet of seven: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/souche_4.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/souches_1.png",
+    "how": "one stump or chip heap cut from the sheet of seven: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/souche_4.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/souches_1.png",
+    "how": "one stump or chip heap cut from the sheet of seven: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/souche_5.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/souches_1.png",
+    "how": "one stump or chip heap cut from the sheet of seven: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/souche_5.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/souches_1.png",
+    "how": "one stump or chip heap cut from the sheet of seven: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
   "docs/designs/village/layout/scratch/pont/a1_c0.png": {
     "model": "flux-3-image",
     "provider": "Black Forest Labs (direct API)",

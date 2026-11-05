@@ -9,7 +9,6 @@ import { fromHex } from "./envelope";
  * flavour, never the rule, and the boss has no health to lose.
  */
 export const AFFIXES = ["swift", "armoured", "hungry", "cunning", "ancient", "furious"] as const;
-export type Affix = (typeof AFFIXES)[number];
 
 const BOSSES = Object.keys(BOSS_ASSETS) as BossAssetKey[];
 

@@ -227,12 +227,10 @@ test("a duplicate or an old envelope changes nothing", async () => {
   });
   assert(Array.isArray(replayed));
   expect(replayed.map((t) => t.outcome)).toEqual(["same"]);
-  const known = await on("A", async (m) => {
-    const [pair] = await m.pairs.listPairs();
-    assert(pair);
-    return m.duo.theirWeek(pair.id, W45);
-  });
-  expect(known?.days).toEqual([1, 1, 0, 0, 0, 0, 0]);
+  const known = phones.A.sqlite.prepare("SELECT days FROM duo_weeks WHERE isoWeek = 45").get() as {
+    days: string;
+  };
+  expect(JSON.parse(known.days)).toEqual([1, 1, 0, 0, 0, 0, 0]);
 });
 
 test("a second pain stop in the week lands no hit, and the companion sees only the first", async () => {

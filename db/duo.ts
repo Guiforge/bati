@@ -194,12 +194,6 @@ export async function recordTheirWeek(
   return "new";
 }
 
-/** What this phone knows of a companion's week, if anything. */
-export async function theirWeek(pairId: string, week: IsoWeek): Promise<WeekState | null> {
-  const [row] = await db.select().from(duoWeeks).where(whereWeek(pairId, week));
-  return stateOf(row);
-}
-
 /**
  * The week as both phones should read it, and S2 made durable: the first time a week reads fallen
  * here, `fallenAt` is written, and from then on nothing takes it back.

@@ -38,6 +38,14 @@ const pairs = () => require("../db/pairs") as typeof import("../db/pairs");
 const backup = () => require("../db/backup") as typeof import("../db/backup");
 const merge = () => require("../db/merge") as typeof import("../db/merge");
 
+/** The days a companion's latest envelope gave for a week, as stored, or null. */
+const daysOf = (pairId: string, week: { isoYear: number; isoWeek: number }) => {
+  const row = t.sqlite
+    .prepare("SELECT days FROM duo_weeks WHERE pairId = ? AND isoYear = ? AND isoWeek = ?")
+    .get(pairId, week.isoYear, week.isoWeek) as { days: string | null } | undefined;
+  return row?.days ? (JSON.parse(row.days) as number[]) : null;
+};
+
 const W45 = { isoYear: 2026, isoWeek: 45 };
 const W44 = { isoYear: 2026, isoWeek: 44 };
 const PAIR = "00112233445566778899aabbccddeeff";
@@ -150,7 +158,7 @@ describe("their envelopes (S4)", () => {
     expect(await duo().recordTheirWeek(id, W45, theirs(100))).toBe("same");
     expect(await duo().recordTheirWeek(id, W45, theirs(50, [0, 0, 0, 0, 0, 0, 0]))).toBe("same");
     expect(await duo().recordTheirWeek(id, W45, theirs(200, [1, 1, 1, 0, 0, 0, 0]))).toBe("new");
-    expect((await duo().theirWeek(id, W45))?.days).toEqual([1, 1, 1, 0, 0, 0, 0]);
+    expect(daysOf(id, W45)).toEqual([1, 1, 1, 0, 0, 0, 0]);
   });
 });
 
@@ -178,7 +186,7 @@ describe("a fallen boss (S1, S2, S9)", () => {
 
     await pairs().unlinkPair(id);
     expect(await duo().fallenTogether()).toBe(1);
-    expect(await duo().theirWeek(id, W44)).toBeNull();
+    expect(daysOf(id, W44)).toBeNull();
     const words = t.sqlite
       .prepare("SELECT count(*) AS n FROM duo_weeks WHERE days IS NOT NULL")
       .get();
@@ -261,7 +269,7 @@ describe("plaintext copies and the hero's other device", () => {
     await merge().mergePeer(file);
     await merge().honourTombstones();
     expect(await pairs().listPairs()).toHaveLength(0);
-    expect(await duo().theirWeek(id, W45)).toBeNull();
+    expect(daysOf(id, W45)).toBeNull();
     expect(await duo().fallenTogether()).toBe(1);
   });
 });

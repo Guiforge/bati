@@ -197,12 +197,20 @@ describe("plaintext copies and the hero's other device", () => {
   }
 
   test("a plaintext copy keeps the count, without the companion or what they said", async () => {
-    await fallenWeek();
+    const id = await fallenWeek();
+    await duo().recordTheirWeek(id, W44, theirs(100));
+    t.sqlite
+      .prepare("INSERT INTO user_preferences (key, value) VALUES (?, '2026-11-05')")
+      .run(`duo_sent_${id}`);
     const file = path.join(dir, "plain.db");
     await backup().snapshotDatabaseTo(file);
     await backup().scrubPairs(file);
     const copy = new Database(file);
     expect(copy.prepare("SELECT count(*) AS n FROM pairs").get()).toEqual({ n: 0 });
+    expect(
+      copy.prepare("SELECT count(*) AS n FROM user_preferences WHERE key LIKE 'duo_sent_%'").get(),
+    ).toEqual({ n: 0 });
+    // Only the fallen week stays, week 44 went with what the companion said of it.
     expect(copy.prepare("SELECT stamp, goal, paused, days FROM duo_weeks").all()).toEqual([
       { stamp: null, goal: null, paused: null, days: null },
     ]);

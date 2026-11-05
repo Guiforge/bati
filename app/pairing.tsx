@@ -200,7 +200,7 @@ export default function PairingScreen() {
         }}
       >
         {busy !== null ? (
-          <Text color="textSecondary" testID="pairing-busy">
+          <Text color="textSecondary" testID="pairing-busy" accessibilityLiveRegion="polite">
             {t(`duo.${busy}`)}
           </Text>
         ) : null}
@@ -210,26 +210,33 @@ export default function PairingScreen() {
             <Text color="text">{t(`duo.${asking}`)}</Text>
             <NameField value={name} onChange={setName} testID="pairing-receive-name" />
             <AppButton
+              minH={48}
               testID="pairing-accept"
               disabled={name.trim() === ""}
               onPress={() => accept().catch(fail("pairing.accept"))}
             >
               {t(asking === "received_reply" ? "duo.keep" : "duo.join")}
             </AppButton>
-            <AppButton testID="pairing-decline" variant="outline" onPress={() => setReceived(null)}>
+            <AppButton
+              minH={48}
+              testID="pairing-decline"
+              variant="outline"
+              onPress={() => setReceived(null)}
+            >
               {t("duo.ignore")}
             </AppButton>
           </YStack>
         ) : null}
 
         {note !== null ? (
-          <Text color="text" testID="pairing-note">
+          <Text color="text" testID="pairing-note" accessibilityLiveRegion="polite">
             {t(`duo.${note.key}`, note.values)}
           </Text>
         ) : null}
 
         {answer !== null ? (
           <AppButton
+            minH={48}
             testID="pairing-tell-now"
             variant="outline"
             onPress={() => Share.share({ message: answer }).catch(fail("pairing.answer"))}
@@ -276,6 +283,7 @@ export default function PairingScreen() {
               {t("duo.invited_on", { date: date(pending.madeAt) })}
             </Text>
             <AppButton
+              minH={48}
               testID="pairing-cancel-invite"
               variant="outline"
               fullWidth={false}
@@ -309,7 +317,7 @@ function Scanner(props: {
   const { t } = useTranslation();
   if (!props.scanning) {
     return (
-      <AppButton testID="pairing-scan" variant="outline" onPress={props.onStart}>
+      <AppButton minH={48} testID="pairing-scan" variant="outline" onPress={props.onStart}>
         {t("duo.scan")}
       </AppButton>
     );
@@ -338,7 +346,7 @@ function FaceCode({ code, onDone }: { code: string; onDone: () => void }) {
       <Text color="text" style={{ textAlign: "center" }}>
         {t("duo.qr_face_hint")}
       </Text>
-      <AppButton testID="pairing-hide-code" variant="outline" onPress={onDone}>
+      <AppButton minH={48} testID="pairing-hide-code" variant="outline" onPress={onDone}>
         {t("duo.done")}
       </AppButton>
     </YStack>
@@ -356,12 +364,17 @@ function InviteButtons(props: {
   if (props.full) return <Text color="textSecondary">{t("duo.companions_max")}</Text>;
   return (
     <YStack gap="2">
-      <NameField value={props.name} onChange={props.setName} testID="pairing-invite-name" />
-      <AppButton testID="pairing-invite" disabled={props.name.trim() === ""} onPress={props.onFace}>
-        {t("duo.face_to_face")}
-      </AppButton>
-      <AppButton testID="pairing-send-link" variant="outline" onPress={props.onLink}>
+      <AppButton minH={48} testID="pairing-send-link" variant="outline" onPress={props.onLink}>
         {t("duo.by_message")}
+      </AppButton>
+      <NameField value={props.name} onChange={props.setName} testID="pairing-invite-name" />
+      <AppButton
+        minH={48}
+        testID="pairing-invite"
+        disabled={props.name.trim() === ""}
+        onPress={props.onFace}
+      >
+        {t("duo.face_to_face")}
       </AppButton>
     </YStack>
   );
@@ -386,7 +399,13 @@ function TakenWeeks({
           hits: week.hits,
           goal: week.goal,
         })
-      : t(week.outcome === "same" ? "duo.nothing_new" : "duo.refused.ahead");
+      : t(
+          week.outcome === "same"
+            ? "duo.nothing_new"
+            : week.outcome === "ahead"
+              ? "duo.refused.ahead"
+              : "duo.refused.outside",
+        );
   return (
     <YStack gap="2" testID="pairing-received-week">
       {taken.map((week) => (
@@ -395,7 +414,7 @@ function TakenWeeks({
           {week.fallen ? ` ${t("duo.state.fallen")}` : ""}
         </Text>
       ))}
-      <AppButton testID="pairing-see-boss" onPress={onSee}>
+      <AppButton minH={48} testID="pairing-see-boss" onPress={onSee}>
         {t("duo.see_boss")}
       </AppButton>
     </YStack>
@@ -434,6 +453,7 @@ function CompanionRow({
           {pair.name}
         </Text>
         <AppButton
+          minH={48}
           testID={`pairing-unlink-${pair.name}`}
           variant="outline"
           fullWidth={false}
@@ -444,6 +464,7 @@ function CompanionRow({
         </AppButton>
       </XStack>
       <AppButton
+        minH={48}
         testID={`pairing-duel-${pair.name}`}
         variant="outline"
         backgroundColor="surface2"

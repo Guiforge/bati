@@ -128,6 +128,11 @@ export function scrubPairs(snapshotPath: string): Promise<void> {
     // their days are theirs, and this copy outlives the pair.
     if (await hasTable(conn, CANDIDATE, "duo_weeks")) {
       await conn.execAsync(`UPDATE ${CANDIDATE}.duo_weeks SET ${COMPANION_WORDS_GONE}`);
+      await conn.execAsync(`DELETE FROM ${CANDIDATE}.duo_weeks WHERE fallenAt IS NULL`);
+      // When this phone last sent to a companion: a pair id in a key, of no use without the pair.
+      await conn.execAsync(
+        `DELETE FROM ${CANDIDATE}.user_preferences WHERE key LIKE 'duo\\_sent\\_%' ESCAPE '\\'`,
+      );
     }
   });
 }

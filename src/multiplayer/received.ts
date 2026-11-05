@@ -1,6 +1,7 @@
 import { readDuoWeek, recordTheirWeek } from "@/db/duo";
 import { answerArrived, listPairs, nameTheirSide, type Pair, replyStanding } from "@/db/pairs";
 import { decodeBundle } from "./bundle";
+import { isoWeekOf } from "./duoWeek";
 import { KIND_WEEK, openEnvelope } from "./envelope";
 import { decodeInvite, type Invite } from "./invite";
 import { bytesOfLink } from "./link";
@@ -72,8 +73,11 @@ export type TakenWeek = {
   goal: number;
   /** The boss fell for this week, as this phone now reads it (S1). */
   fallen: boolean;
-  outcome: "new" | "same" | "ahead";
+  outcome: "new" | "same" | "ahead" | "outside";
 };
+
+const weekKey = ({ isoYear, isoWeek }: { isoYear: number; isoWeek: number }) =>
+  isoYear * 100 + isoWeek;
 
 /**
  * F4: a stamp ahead of this clock would win every later merge, so past 14 hours it waits. Fourteen,
@@ -106,7 +110,8 @@ type Opened = NonNullable<Exclude<Awaited<ReturnType<typeof openWithAnyPair>>, "
 
 async function takeOne({ pair, header, state }: Opened, now: Date): Promise<TakenWeek> {
   const week = { isoYear: header.isoYear, isoWeek: header.isoWeek };
-  const ahead = state.stamp > now.getTime() / 1000 + AHEAD_SECONDS;
+  const ahead =
+    state.stamp > now.getTime() / 1000 + AHEAD_SECONDS || weekKey(week) > weekKey(isoWeekOf(now));
   const base = {
     pairId: pair.id,
     name: pair.name,
@@ -115,6 +120,11 @@ async function takeOne({ pair, header, state }: Opened, now: Date): Promise<Take
     goal: state.goal,
   };
   if (ahead) return { ...base, outcome: "ahead", fallen: false };
+  // S8: a week before this phone wrote the pair was never part of the challenge, and a week number
+  // no calendar has is a damaged message: neither may fell a boss.
+  if (week.isoWeek < 1 || week.isoWeek > 53 || weekKey(week) < weekKey(isoWeekOf(pair.createdAt))) {
+    return { ...base, outcome: "outside", fallen: false };
+  }
   const outcome = await recordTheirWeek(pair.id, week, state);
   await answerArrived(pair.id);
   if (pair.peerId === null) await nameTheirSide(pair.id, header.senderId);

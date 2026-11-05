@@ -74,6 +74,13 @@ second renumérote les siennes.
 6. **« Prévenir Léo » juste après une pause ?** (audit, tour 2, Martine) Aujourd'hui la pause part avec « Envoyer mes
    coups », que la carte propose à zéro coup (S10). Un bouton sur l'écran de pause serait une surface du duo hors de
    l'écran Boss, que ton brief ne prévoit pas.
+7. **Dire la chute du boss sur la victoire ?** (audit de la PR, Maël) La séance qui fait tomber le boss l'enregistre,
+   mais la victoire ne le dit pas : le § 5.4 dit « rien d'autre ». Le joueur le lit sur la carte, ou l'autre à la
+   réception du lien. Une ligne de texte suffirait.
+8. **Le compte de l'autre peut baisser** (audit de la PR, Yann) : son enveloppe la plus récente gagne, même avec moins
+   de jours, par exemple s'il a supprimé une séance. C'est son état complet, voulu par envelope.md ; un boss tombé, lui,
+   ne recule jamais.
+9. **Deux compagnons aux objectifs différents** : la victoire dit « 2 sur 3 » avec l'objectif du premier.
 
 ### B2 : comment une séance s'arrête aujourd'hui, avant ce lot
 

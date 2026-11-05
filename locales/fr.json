@@ -3238,7 +3238,8 @@
       "unknownPair": "Une invitation expirée, ou un compagnon qui n'est pas sur ce téléphone.",
       "ahead": "Ce message vient d'une horloge en avance. Il sera lu plus tard.",
       "full": "Cinq compagnons au plus.",
-      "damaged": "Cette invitation est abîmée, ou elle vient de ce téléphone."
+      "damaged": "Cette invitation est abîmée, ou elle vient de ce téléphone.",
+      "outside": "Ce message parle d'une semaine hors du défi."
     },
     "duel_label": "Comparer nos semaines"
   }

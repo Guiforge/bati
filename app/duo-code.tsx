@@ -20,14 +20,17 @@ export default function DuoCodeScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { pair: pairId } = useLocalSearchParams<{ pair?: string }>();
-  const [shown, setShown] = useState<{ pair: Pair; link: string } | null>(null);
+  const [shown, setShown] = useState<{ pair: Pair; link: string } | "failed" | null>(null);
 
   useEffect(() => {
     if (!MULTIPLAYER_ENABLED) return;
     (async () => {
       const pair = (await listPairs()).find((p) => p.id === pairId);
-      if (pair) setShown({ pair, link: await coupsLink(pair) });
-    })().catch((error: unknown) => reportError("duo.code", error));
+      setShown(pair ? { pair, link: await coupsLink(pair) } : "failed");
+    })().catch((error: unknown) => {
+      reportError("duo.code", error);
+      setShown("failed");
+    });
   }, [pairId]);
 
   if (!MULTIPLAYER_ENABLED) return <Redirect href="/" />;
@@ -41,7 +44,11 @@ export default function DuoCodeScreen() {
         </Text>
       </XStack>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16, alignItems: "center" }}>
-        {shown ? (
+        {shown === "failed" ? (
+          <Text color="text" testID="duo-code-failed">
+            {t("duo.failed")}
+          </Text>
+        ) : shown ? (
           <>
             <YStack accessible accessibilityLabel={t("duo.qr_label", { name: shown.pair.name })}>
               <QrCode value={shown.link} size={280} />

@@ -3108,7 +3108,8 @@
       "unknownPair": "An expired invitation, or a companion who is not on this phone.",
       "ahead": "This message comes from a clock running ahead. It will be read later.",
       "full": "Five companions at most.",
-      "damaged": "This invitation is damaged, or it comes from this phone."
+      "damaged": "This invitation is damaged, or it comes from this phone.",
+      "outside": "This message is about a week outside the challenge."
     },
     "duel_label": "Compare our weeks"
   }

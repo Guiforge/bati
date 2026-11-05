@@ -3237,7 +3237,8 @@
       "unknownPair": "Una invitación caducada, o un compañero que no está en este teléfono.",
       "ahead": "Este mensaje viene de un reloj adelantado. Se leerá más tarde.",
       "full": "Cinco compañeros como máximo.",
-      "damaged": "Esta invitación está dañada, o viene de este teléfono."
+      "damaged": "Esta invitación está dañada, o viene de este teléfono.",
+      "outside": "Este mensaje habla de una semana fuera del desafío."
     },
     "duel_label": "Comparar nuestras semanas"
   }

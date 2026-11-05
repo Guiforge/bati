@@ -262,3 +262,23 @@ test("a clock a week ahead invents no hit on the other phone", async () => {
   assert(Array.isArray(taken));
   expect(taken.map((t) => t.outcome)).toEqual(["ahead", "ahead"]);
 });
+
+test("a week from before the pair existed cannot fell a boss", async () => {
+  await pairByLink();
+  outing("B", local(3));
+  // A seals week 44, the week before either phone wrote the pair.
+  const old = await on("A", async (m) => {
+    await send("B", local(3));
+    const [pair] = await m.pairs.listPairs();
+    assert(pair);
+    return m.send.coupsLink(pair, new Date(2026, 9, 28, 12));
+  });
+  const taken = await on("B", async (m) => {
+    const read = await m.received.readCode(old, "link");
+    assert(read.kind === "weeks");
+    return m.received.takeWeeks(read.weeks, local(3, 14));
+  });
+  assert(Array.isArray(taken));
+  expect(taken.map((t) => [t.isoWeek, t.outcome, t.fallen])).toEqual([[44, "outside", false]]);
+  expect(await on("B", (m) => m.duo.fallenTogether())).toBe(0);
+});

@@ -15,9 +15,9 @@ import {
 } from "@/components/journal/nocturne";
 import { getBossAsset } from "@/constants/assetMap";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
-import { fallenTogether, readDuoWeek } from "@/db/duo";
+import { fallenTogether, pauseTouches, readDuoWeek } from "@/db/duo";
 import { cancelInvite, listInvites, listPairs, MAX_PAIRS, type Pair } from "@/db/pairs";
-import { getActivePause } from "@/db/pause";
+import { getPausePeriods } from "@/db/streaks";
 import { type DuoWeek, isoWeekOf, previousWeek, weekStart } from "@/src/multiplayer/duoWeek";
 import { MULTIPLAYER_ENABLED } from "@/src/multiplayer/flag";
 import { lastSentOn, replyLink, sendCoups } from "@/src/multiplayer/sendCoups";
@@ -42,10 +42,18 @@ type Loaded = { cards: Card[]; invites: { id: string; madeAt: Date }[]; fallen: 
 /** S10: a pause touched this week and nothing went out since it began. */
 async function pauseUnsent(pair: Pair, week: DuoWeek): Promise<boolean> {
   if (week.result !== "frozen") return false;
-  const pause = await getActivePause();
-  if (pause === null) return false;
+  // The latest pause that touched this week, ended or not: one taken Monday to Wednesday still
+  // has to reach the companion on Thursday.
+  const touching = (await getPausePeriods()).filter((p) =>
+    pauseTouches([p], isoWeekOf(new Date())),
+  );
+  const latest = touching
+    .map((p) => p.from)
+    .sort()
+    .pop();
+  if (latest === undefined) return false;
   const sent = await lastSentOn(pair.id);
-  return sent === null || sent < pause.from;
+  return sent === null || sent < latest;
 }
 
 async function load(now: Date): Promise<Loaded> {
@@ -255,7 +263,12 @@ export function DuoSection() {
         <XStack gap={11} items="center">
           <NImage source={getBossAsset(boss)} size={40} round />
           <NText flex={1}>
-            {t("duo.fold_line", { name: card.pair.name, state: t(`duo.state.${stateKey(card)}`) })}
+            {["fled", "frozen", "waiting", "pauseUnsent"].includes(stateKey(card))
+              ? card.pair.name
+              : t("duo.fold_line", {
+                  name: card.pair.name,
+                  state: t(`duo.state.${stateKey(card)}`),
+                })}
           </NText>
         </XStack>
       </NBlock>
@@ -289,7 +302,7 @@ export function DuoSection() {
           {t("duo.invite")}
         </NButton>
       ) : null}
-      {fallen > 0 || cards.length > 0 ? (
+      {fallen > 0 ? (
         <NMuted testID="duo-fallen-count">{t("duo.fallen_count", { count: fallen })}</NMuted>
       ) : null}
     </YStack>

@@ -3117,7 +3117,8 @@
       "unknownPair": "Eine abgelaufene Einladung, oder ein Gefährte, der nicht auf diesem Handy ist.",
       "ahead": "Diese Nachricht kommt von einer vorgehenden Uhr. Sie wird später gelesen.",
       "full": "Höchstens fünf Gefährten.",
-      "damaged": "Diese Einladung ist beschädigt, oder sie stammt von diesem Handy."
+      "damaged": "Diese Einladung ist beschädigt, oder sie stammt von diesem Handy.",
+      "outside": "Diese Nachricht betrifft eine Woche außerhalb der Challenge."
     },
     "duel_label": "Unsere Wochen vergleichen"
   }

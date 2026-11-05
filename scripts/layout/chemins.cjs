@@ -8,7 +8,7 @@ const out = path.join(os.tmpdir(), `chemins-${process.pid}.cjs`);
 const stub = path.join(os.tmpdir(), `stub-${process.pid}.js`);
 fs.writeFileSync(
   stub,
-  "const v = () => new Proxy(function () {}, { get: (_, k) => (k === '__esModule' ? true : v()), apply: () => v(), construct: () => v() });\nmodule.exports = v();\n",
+  "const v = () => { const f = function () {}; Object.defineProperty(f, '__esModule', { value: true }); return new Proxy(f, { get: (t, k) => (k in t ? t[k] : v()), apply: () => v(), construct: () => v(), ownKeys: (t) => [...Reflect.ownKeys(t), 'File', 'Directory', 'Paths', 'openDatabaseSync', 'openDatabaseAsync', 'SQLiteProvider', 'useSQLiteContext', 'deleteDatabaseSync'], getOwnPropertyDescriptor: (t, k) => (k in t ? Reflect.getOwnPropertyDescriptor(t, k) : { value: v(), enumerable: true, configurable: true, writable: true }) }); };\nmodule.exports = v();\n",
 );
 esbuild
   .build({
@@ -18,12 +18,26 @@ esbuild
     format: "cjs",
     outfile: out,
     logLevel: "error",
-    loader: { ".webp": "empty", ".png": "empty", ".jpg": "empty", ".ogg": "empty", ".mp3": "empty", ".ttf": "empty" },
+    loader: {
+      ".webp": "empty",
+      ".png": "empty",
+      ".jpg": "empty",
+      ".ogg": "empty",
+      ".mp3": "empty",
+      ".ttf": "empty",
+      ".sql": "empty",
+    },
     plugins: [
       {
         name: "stub-native",
         setup(b) {
-          b.onResolve({ filter: /^(react-native|expo|@expo|react-native-|@react-native|@shopify|@tamagui|tamagui|@legendapp)/ }, () => ({ path: stub }));
+          b.onResolve(
+            {
+              filter:
+                /^(react-native|expo|@expo|react-native-|@react-native|@shopify|@tamagui|tamagui|@legendapp)/,
+            },
+            () => ({ path: stub }),
+          );
         },
       },
     ],

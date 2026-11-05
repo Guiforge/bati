@@ -23,3 +23,15 @@ No test was run. Known to touch tests: none found by reading; `IsoCarteDemo` gai
 - `iso-marcheurs-*`, `iso-habitants`: plus aucune case de lieu le long du rempart (`casesDuLieu("castle_wall")` vide) et sans les cases `[17, 10]` et `[12, 15]` pour `porte`.
 - `iso-pieces`, `iso-eau`: le pont a une image jour (`eau/canal_pont.jour.webp`) choisie par la lumiere ; figurines `farmer_face` et `herbalist_face` : ancre y 736 et 729.
 - `iso-accessoires`: huit accessoires retires, cinq deplaces.
+
+## Tests named by the code review (05/11), none run, none fixed
+
+The grid starts at gx = gy = -9 (`DEBUT`), keys are `cle` (isoLayout.ts), every cell is `CASES`. A test that counts `TAILLE * TAILLE` cells, keys by `gy * TAILLE + gx` or treats 0 and `TAILLE - 1` as the grid's edge reads only the old 20 x 20 map; replacement everywhere: `CASES`, `cle`, `DEBUT`, `dansLaGrille` from `@/components/village/iso/isoLayout`.
+
+- `iso-layout.test.ts:54` (all cells), `:146` (own `cle`), `:165` (the edge of the grid is `DEBUT` and `TAILLE - 1`, not 0), `:248` (cells of a plot are `dansLaGrille`, negative ones are valid). Also the corners of the 11 moved buildings and the removed wall sections.
+- `iso-rues.test.ts:24` (all cells: `CASES`) and the west exit `[0, 10]`, now a plot cell.
+- `iso-sol-varie.test.ts:17` (`CASES`), `:93`, `:101`, `:152`, `:162`, `:172` (keys: use `cle`; `bordsDe` is indexed by `cle`, so `[2]` and `[TAILLE + 2]` are other cells now).
+- `iso-motifs.test.tsx:13`, `iso-route-sud.test.tsx:47`, `iso-a7-nuit-ouverture.test.tsx:47` (the set of every cell: keys of `CASES` through `cle`).
+- `iso-focal-b1.test.tsx:88` (`vus.add(cle([gx, gy]))`, and the frame counts the grown island).
+- `iso-maquettes.test.ts`: the image count (164 now 165: the bridge's day image `eau/canal_pont.jour.webp`), the demo's stage rule (`etapes` table, not the grid) and the anchors test (`farmer_face` 736 and `herbalist_face` 729). The generator keeps the new anchors and the `.jour` key (checked by running `UPDATE_ISO_MAQUETTES=1`: the entries carry `anchor: [384,736]`, `[384,729]` and the `eau/canal_pont.jour.webp` block); it orders and formats the index differently from the committed files, so its output was not kept.
+- `iso-lisiere`: the generator reads a grid with negative cells and the lisiere JSON was regenerated (see `paliers.md`); the test compares both.

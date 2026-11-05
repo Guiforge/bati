@@ -44,11 +44,11 @@ const DECALE_MAX = MARGE_X - 16;
 const CLAIRIERE = 80;
 /** The clearing round a one-cell island: the forest stands almost against the first hamlet (L6-T19). */
 const CLAIRIERE_MIN = 28;
-const CELLULES_MAX = paliers.flat().filter((p) => p !== null).length;
+const CELLULES_MAX = CASES.filter(([gx, gy]) => paliers[gy]?.[gx] != null).length;
 
 /** The clearing's width for an island of `visible`: it widens with the island, so the forest backs off as the village grows. */
 export function clairiere(visible: readonly (readonly boolean[])[]): number {
-  const n = visible.flat().filter(Boolean).length;
+  const n = CASES.filter(([gx, gy]) => visible[gy]?.[gx]).length;
   return CLAIRIERE_MIN + (CLAIRIERE - CLAIRIERE_MIN) * Math.min(1, n / CELLULES_MAX);
 }
 

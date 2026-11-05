@@ -39,7 +39,7 @@ PLOT = {
 }
 # The wall's stages keep starting at tier 6 (palisade through tier 6, the locked corner's look); its plot only joins earlier.
 ETAPES_A_PART = {"castle_wall": 6, "watchtower": 6}
-RETENUES = {(18, 13): 7, (19, 13): 8, (16, 15): 7, (11, 17): 7, (12, 17): 7, (8, 17): 8, (9, 17): 7, (10, 17): 7, (19, 10): 7, (3, 15): 7, (4, 15): 7, (5, 15): 7}
+RETENUES = {(18, 13): 7, (19, 13): 8, (16, 15): 7, (11, 17): 7, (12, 17): 7, (8, 17): 8, (9, 17): 7, (10, 17): 7, (19, 10): 7}
 REMPART = 4  # the south corner (gate, L of wall, road, field) arrives at tier 4, where the painted `.t1-3` ground bands give way
 CHAMPS = 4
 MARGE_PLOT = 2

@@ -41,3 +41,4 @@ for (let t = 1; t <= 12; t++) {
   console.log(`tier ${t}: ${montres.length} buildings, ${cellules} cells walked (${ponts} on a bridge, ${ouest} on the west bank), ${mauvais.length} violations`, [...new Set(mauvais)].slice(0, 5));
 }
 console.log("total violations", total);
+

@@ -13,7 +13,7 @@ import type { Practice } from "@/db/crestRules";
 import type { BuildingCode } from "@/db/schema";
 import type { VillageTier } from "@/db/village";
 import { ecranXY } from "./carteDemo";
-import { type Case, cle, emplacements, paliers, sol, TAILLE } from "./isoLayout";
+import { CASES, type Case, cle, emplacements, paliers, sol } from "./isoLayout";
 import { batiments } from "./isoSpec";
 import { noeud, SENTIERS } from "./rues";
 import { hasard } from "./solVarie";
@@ -122,10 +122,7 @@ function distance([gx, gy]: Case, code: BuildingCode): number {
 type Plan = Construction & { grandit: boolean };
 const plans = new Map<number, readonly Plan[]>();
 
-const TOUTES: readonly Case[] = Array.from(
-  { length: TAILLE * TAILLE },
-  (_, i): Case => [i % TAILLE, Math.floor(i / TAILLE)],
-);
+const TOUTES: readonly Case[] = CASES;
 const palierDe = ([gx, gy]: Case) => paliers[gy]?.[gx] ?? null;
 /** Whether a cell touches a cell the island of tier `t` does not hold. */
 const bordDe = (c: Case, t: number) =>

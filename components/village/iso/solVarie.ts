@@ -8,7 +8,7 @@
 
 import { buildingCodes } from "@/db/schema";
 import { DECORS_EN_IMAGE } from "./carteDemo";
-import { CASES, COTES, cle, emplacements, sol, TAILLE } from "./isoLayout";
+import { CASES, COTES, cle, DEBUT, emplacements, sol, TAILLE } from "./isoLayout";
 import {
   type Biome,
   biomes,
@@ -125,11 +125,12 @@ function galetsDe(gx: number, gy: number, v: VariantesSpec) {
   );
 }
 
-/** How much of the biome's decal rate a cell keeps: 1 at the middle of the grid, 0.35 at the rim (L6-T18). */
+/** How much of the biome's decal rate a cell keeps: 1 at the middle of the whole grid (the old map and the land grown up and left), 0.35 at the rim (L6-T18). */
 export function densite(gx: number, gy: number): number {
-  const dx = Math.abs(gx - (TAILLE - 1) / 2);
-  const dy = Math.abs(gy - (TAILLE - 1) / 2);
-  const t = (Math.max(dx, dy) + Math.min(dx, dy) / 2) / (TAILLE * 0.72);
+  const milieu = (DEBUT + TAILLE - 1) / 2;
+  const dx = Math.abs(gx - milieu);
+  const dy = Math.abs(gy - milieu);
+  const t = (Math.max(dx, dy) + Math.min(dx, dy) / 2) / (COTES * 0.72);
   return 1 - 0.65 * Math.min(1, t);
 }
 
@@ -191,8 +192,7 @@ export const estTerre = (gx: number, gy: number) => {
 };
 
 /**
- * How many cells each land cell is from the island's edge (1 to 3, else 0), indexed `gy * TAILLE +
- * gx`, for the island `visible[gy][gx]`: once per island, not per tile. Off the grid is off the
+ * How many cells each land cell is from the island's edge (1 to 3, else 0), indexed by `cle` (isoLayout.ts), for the island `visible[gy][gx]`: once per island, not per tile. Off the grid is off the
  * island.
  */
 export function bordsDe(visible: readonly (readonly boolean[])[]): Uint8Array {

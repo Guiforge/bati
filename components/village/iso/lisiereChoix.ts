@@ -3,7 +3,17 @@
 // JSON through lisiere.ts and never calls this, so the choice costs nothing at start-up.
 
 import { type BuildingCode, buildingCodes } from "@/db/schema";
-import { type Case, emplacements, paliers, type Sol, sol, TAILLE } from "./isoLayout";
+import {
+  CASES,
+  type Case,
+  DEBUT,
+  dansLaGrille,
+  emplacements,
+  paliers,
+  type Sol,
+  sol,
+  TAILLE,
+} from "./isoLayout";
 import { type PieceLisiere, RAYON } from "./lisiere";
 import { MAQUETTES } from "./maquettes";
 import { enveloppe, type Point, zoneOmbre } from "./ombres";
@@ -77,9 +87,8 @@ function sousOmbre(cleImage: string, [gx, gy]: Case): Case[] {
   );
 }
 
-const surLaGrille = ([gx, gy]: Case) => gx >= 0 && gy >= 0 && gx < TAILLE && gy < TAILLE;
-const grille = (): Case[] =>
-  Array.from({ length: TAILLE * TAILLE }, (_, i): Case => [i % TAILLE, Math.floor(i / TAILLE)]);
+const surLaGrille = dansLaGrille;
+const grille = (): readonly Case[] => CASES;
 
 /** Footprint cells of the grid, by building: a plot not yet shown may carry a piece (tier 2 round). */
 const EMPRISES = new Map<string, BuildingCode>(
@@ -131,8 +140,8 @@ export function choisir(cles: readonly string[]): PieceLisiere[] {
   const interdites = casesOmbrees(cles);
   const posees = new Set<string>();
   const pieces: PieceLisiere[] = [];
-  for (let gy = -BORD; gy < TAILLE + BORD; gy++)
-    for (let gx = -BORD; gx < TAILLE + BORD; gx++) {
+  for (let gy = DEBUT - BORD; gy < TAILLE + BORD; gy++)
+    for (let gx = DEBUT - BORD; gx < TAILLE + BORD; gx++) {
       const c: Case = [gx, gy];
       const kind = kindDe(c);
       const image = candidate(c, posees, interdites) ? varianteDecor(kind, c, cles) : undefined;

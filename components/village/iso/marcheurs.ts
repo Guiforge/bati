@@ -264,10 +264,9 @@ export function casesDuLieu(lieu: Lieu, carte: Carte): Case[] {
     return tri(
       unique([
         // Not the cells under the gatehouse's door (17, 10) and the south gate (12, 15): a villager standing there hides the gate.
+        // The south gate's cells (12, 16) and (12, 17) are the opening onto the south road: nobody stands there either.
         [18, 10],
         [19, 10],
-        [12, 16],
-        [12, 17],
       ]),
     );
   if (lieu === "lisiere") {

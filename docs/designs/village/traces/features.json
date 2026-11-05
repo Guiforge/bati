@@ -1,0 +1,169 @@
+{
+  "piste": "Traces du journal",
+  "piste_ordre": 13,
+  "owns": [
+    "docs/designs/village/traces/",
+    "scripts/traces/"
+  ],
+  "owns_later": {
+    "note": "Après le choix de Guillaume et la fusion de LAYOUT, aux étapes 4 et 5. Rien ce soir.",
+    "paths": [
+      "components/village/iso/traces.ts",
+      "components/village/iso/Traces.tsx",
+      "assets/images/village/iso/traces/"
+    ]
+  },
+  "shared_read_only": [
+    "docs/designs/village/PROMPT-tracks.md",
+    "docs/designs/village/PIPELINE.md",
+    "docs/designs/village/direction/",
+    "docs/designs/village/layout/",
+    "docs/designs/village/growth/",
+    "docs/designs/village-style-bible.md",
+    "docs/product/",
+    "db/schema.ts",
+    "db/streaks.ts",
+    "constants/flame.ts",
+    "constants/pause.ts",
+    "scripts/iso/iso_loop.py",
+    "scripts/bld/concepts.py",
+    "scripts/growth/klein.py",
+    "components/village/iso/",
+    "constants/isoLayout.json",
+    "assets/images/village/iso/"
+  ],
+  "items": [
+    {
+      "id": "T1",
+      "group": "1 idées",
+      "name": "Les traces en texte",
+      "check": "idees.md : 15 traces, chacune avec son aspect, sa place, le fait du journal, sa croissance, simple ou cachée",
+      "estimate_h": [
+        0.5,
+        1
+      ],
+      "status": "done",
+      "note": ""
+    },
+    {
+      "id": "T2",
+      "group": "1 idées",
+      "name": "Audit rapide",
+      "check": "audit.md : verdicts de theo (plaisir, découverte), mara (lisible à taille téléphone) et contrôle des promesses de Bati",
+      "estimate_h": [
+        0.3,
+        1
+      ],
+      "status": "done",
+      "note": ""
+    },
+    {
+      "id": "T3",
+      "group": "2 règles",
+      "name": "Les règles des traces",
+      "check": "regles.md : les règles de l'annexe H, et la question de la séance supprimée posée à Guillaume",
+      "estimate_h": [
+        0.2,
+        0.5
+      ],
+      "status": "done",
+      "note": ""
+    },
+    {
+      "id": "T4",
+      "group": "3 choix",
+      "name": "Concepts Klein des 5 favorites",
+      "check": "planche img/ : chaque favorite à chaque stade de croissance, seule puis posée sur un vrai rendu au palier 6",
+      "estimate_h": [
+        1,
+        2
+      ],
+      "status": "done",
+      "note": ""
+    },
+    {
+      "id": "T5",
+      "group": "3 choix",
+      "name": "La page de choix",
+      "check": "une page unique et checkpoint.md : la liste, les concepts, ce qu'on attend de Guillaume",
+      "estimate_h": [
+        0.5,
+        1
+      ],
+      "status": "done",
+      "note": ""
+    },
+    {
+      "id": "T6",
+      "group": "3 choix",
+      "name": "Le choix de Guillaume",
+      "check": "« Réponse de Guillaume » dans checkpoint.md",
+      "estimate_h": [
+        0,
+        0
+      ],
+      "status": "done",
+      "note": "05/11 : toutes les recommandations"
+    },
+    {
+      "id": "T7",
+      "group": "4 peinture",
+      "name": "Peindre les traces choisies",
+      "check": "une peinture FLUX 3 Image par stade, petite, planche jour et nuit dans img/",
+      "estimate_h": [
+        1.5,
+        3
+      ],
+      "status": "paused",
+      "note": "attend le budget d'images de PROBE et le tour de TRACES"
+    },
+    {
+      "id": "T8",
+      "group": "4 peinture",
+      "name": "Les places des traces",
+      "check": "chaque trace posée près de son bâtiment ou de la route, rendu atelier aux paliers 6 et 12, `check` sans occlusion nouvelle",
+      "estimate_h": [
+        1,
+        2
+      ],
+      "status": "paused",
+      "note": "attend la fusion de LAYOUT et le tour de TRACES"
+    },
+    {
+      "id": "T9",
+      "group": "5 code",
+      "name": "La dérivation journal vers traces",
+      "check": "une fonction pure dans le code du village, typecheck et bundle, même résultat pour le même journal",
+      "estimate_h": [
+        1,
+        2
+      ],
+      "status": "paused",
+      "note": "accord de Guillaume donné ; attend la fusion de LAYOUT et le tour de TRACES"
+    },
+    {
+      "id": "T10",
+      "group": "5 code",
+      "name": "États de dev pour les traces",
+      "check": "un paramètre de `dev-iso` affiche n'importe quelle trace, rendu atelier",
+      "estimate_h": [
+        0.5,
+        1
+      ],
+      "status": "paused",
+      "note": "attend T9"
+    },
+    {
+      "id": "T11",
+      "group": "6 contrôles",
+      "name": "Trois journaux, trois villages",
+      "check": "rendu atelier au palier 6 d'un coureur, d'un adepte des tractions et d'un joueur tranquille, différents d'un coup d'oeil ; theo et mara une fois",
+      "estimate_h": [
+        0.5,
+        1
+      ],
+      "status": "paused",
+      "note": "attend T7 à T10"
+    }
+  ]
+}

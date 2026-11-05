@@ -133,7 +133,7 @@
   "reste": "2 à 4 h",
   "avancement": null,
   "total": null,
-  "note": "F choisie ; attend G14 et le budget de PROBE"
+  "note": "F choisie ; PROBE abandonné (v4.3) ; attend G14 et le choix de Guillaume sur les quartiers"
  },
  {
   "id": "G9",
@@ -141,7 +141,7 @@
   "piste_ordre": 8,
   "etape": "Concepts des quartiers",
   "ordre": 9,
-  "statut": "attend Guillaume",
+  "statut": "en cours",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -150,7 +150,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": "attend le choix de la proposition de LAYOUT"
+  "note": "3 directions écrites et auditées, 44 concepts Klein, montages en cours"
  },
  {
   "id": "G10",
@@ -167,7 +167,7 @@
   "reste": "2 à 4 h",
   "avancement": null,
   "total": null,
-  "note": "attend G9 et le budget de PROBE"
+  "note": "PROBE abandonné (v4.3) ; attend le choix de Guillaume sur les quartiers"
  },
  {
   "id": "G11",
@@ -184,7 +184,7 @@
   "reste": "3 à 6 h",
   "avancement": null,
   "total": null,
-  "note": "attend la fusion de LAYOUT"
+  "note": "LAYOUT fusionné ; attend les peintures"
  },
  {
   "id": "G12",
@@ -226,7 +226,7 @@
   "piste_ordre": 8,
   "etape": "Refaire la bande F sur le plan de LAYOUT",
   "ordre": 14,
-  "statut": "attend Guillaume",
+  "statut": "en cours",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -235,7 +235,7 @@
   "reste": "0.3 à 1 h",
   "avancement": null,
   "total": null,
-  "note": "attend les renders de LAYOUT (L6, L7)"
+  "note": "sur les rendus de G15"
  },
  {
   "id": "G15",
@@ -243,15 +243,49 @@
   "piste_ordre": 8,
   "etape": "Forêt du sud aux paliers 1 à 3",
   "ordre": 15,
-  "statut": "attend Guillaume",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
-  "restant_min": 1,
-  "restant_max": 3,
-  "reste": "1 à 3 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": "attend la fusion de LAYOUT ; lisiereSud dépendra du palier"
+  "note": "+32 masses au palier 1, -6 au 4+ ; recul discret de 1 à 3, grand saut au 4"
+ },
+ {
+  "id": "G16",
+  "piste": "Alentours qui grandissent",
+  "piste_ordre": 8,
+  "etape": "Regarnir le camp du palier 1",
+  "ordre": 16,
+  "statut": "fait",
+  "debut": null,
+  "fin": null,
+  "heures": null,
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
+  "avancement": null,
+  "total": null,
+  "note": "4 accessoires rendus ; pas de souche, aucun sprite"
+ },
+ {
+  "id": "G17",
+  "piste": "Alentours qui grandissent",
+  "piste_ordre": 8,
+  "etape": "Page de choix des quartiers",
+  "ordre": 17,
+  "statut": "à faire",
+  "debut": null,
+  "fin": null,
+  "heures": null,
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "",
+  "avancement": null,
+  "total": null,
+  "note": ""
  }
 ]

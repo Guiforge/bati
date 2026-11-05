@@ -125,7 +125,7 @@
         2
       ],
       "status": "doing",
-      "note": "plan de LAYOUT fusionné"
+      "note": "3 directions écrites et auditées, 44 concepts Klein, montages en cours"
     },
     {
       "id": "G10",
@@ -196,8 +196,8 @@
         1,
         3
       ],
-      "status": "doing",
-      "note": "LAYOUT fusionné"
+      "status": "done",
+      "note": "+32 masses au palier 1, -6 au 4+ ; recul discret de 1 à 3, grand saut au 4"
     },
     {
       "id": "G16",
@@ -208,8 +208,8 @@
         0.3,
         1
       ],
-      "status": "doing",
-      "note": "avec G15"
+      "status": "done",
+      "note": "4 accessoires rendus ; pas de souche, aucun sprite"
     },
     {
       "id": "G17",

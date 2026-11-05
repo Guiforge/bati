@@ -19,7 +19,14 @@ Tes réponses sur la page vont dans la collection `picks`, document `guillaume`.
 
 ## Réponse de Guillaume
 
-(à remplir)
+05/11 : « On prend toute tes reco ». Questions répondues sur la page (`picks`, document `guillaume`), le reste par ce message. La page ne proposait pas d'avis trace par trace : la liste ci-dessous est lue dans mes favorites, et ses cases restent vides sur la page.
+
+1. **Les traces gardées : le sentier de la rive, le sol nu sous la poutre, l'arbre du premier feu, la souche qui repart, l'aire battue.** Toutes en « garder l'idée, repeindre » : aucun essai Klein n'est retenu tel quel, la peinture suit les changements demandés par l'audit. Les dix autres ne sont pas gardées pour l'instant.
+2. **Une séance supprimée** : accepté, « rien ne recule, sauf ce que tu effaces ».
+3. **Sa date pour l'arbre** : oui, une séance supprimée garde sa date.
+4. **Voir une trace arriver** : oui, un petit moment discret, pour GAME.
+5. **Les côtes du monstre** : attendre que les campagnes soient fusionnées entre téléphones.
+6. **Une trace liée à l'heure** : non.
 
 ## Ce que ta réponse débloque, et ce qu'elle ne suffit pas à débloquer
 

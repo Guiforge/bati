@@ -90,16 +90,16 @@
   "piste_ordre": 13,
   "etape": "Le choix de Guillaume",
   "ordre": 6,
-  "statut": "attend Guillaume",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
   "restant_min": 0,
   "restant_max": 0,
-  "reste": "0 à 0 h",
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": "attend la page T5"
+  "note": "05/11 : toutes les recommandations"
  },
  {
   "id": "T7",
@@ -107,7 +107,7 @@
   "piste_ordre": 13,
   "etape": "Peindre les traces choisies",
   "ordre": 7,
-  "statut": "attend Guillaume",
+  "statut": "en pause",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -116,7 +116,7 @@
   "reste": "1.5 à 3 h",
   "avancement": null,
   "total": null,
-  "note": "attend le choix de Guillaume et le budget d'images de PROBE ; hors de cette session"
+  "note": "attend le budget d'images de PROBE et le tour de TRACES"
  },
  {
   "id": "T8",
@@ -124,7 +124,7 @@
   "piste_ordre": 13,
   "etape": "Les places des traces",
   "ordre": 8,
-  "statut": "attend Guillaume",
+  "statut": "en pause",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -133,7 +133,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": "attend T6 et les places de LAYOUT ; hors de cette session"
+  "note": "attend la fusion de LAYOUT et le tour de TRACES"
  },
  {
   "id": "T9",
@@ -141,7 +141,7 @@
   "piste_ordre": 13,
   "etape": "La dérivation journal vers traces",
   "ordre": 9,
-  "statut": "attend Guillaume",
+  "statut": "en pause",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -150,7 +150,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": "attend T6 ; hors de cette session"
+  "note": "accord de Guillaume donné ; attend la fusion de LAYOUT et le tour de TRACES"
  },
  {
   "id": "T10",
@@ -158,7 +158,7 @@
   "piste_ordre": 13,
   "etape": "États de dev pour les traces",
   "ordre": 10,
-  "statut": "attend Guillaume",
+  "statut": "en pause",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -167,7 +167,7 @@
   "reste": "0.5 à 1 h",
   "avancement": null,
   "total": null,
-  "note": "attend T9 ; hors de cette session"
+  "note": "attend T9"
  },
  {
   "id": "T11",
@@ -175,7 +175,7 @@
   "piste_ordre": 13,
   "etape": "Trois journaux, trois villages",
   "ordre": 11,
-  "statut": "attend Guillaume",
+  "statut": "en pause",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -184,6 +184,6 @@
   "reste": "0.5 à 1 h",
   "avancement": null,
   "total": null,
-  "note": "attend T7 à T10 ; hors de cette session"
+  "note": "attend T7 à T10"
  }
 ]

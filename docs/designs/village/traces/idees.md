@@ -1,6 +1,6 @@
 # Traces : les idées
 
-Quinze petits détails peints, nés du journal du joueur. Ils restent pour toujours. Liste à choisir par Guillaume, à faire relire par theo et mara. Rien n'est peint ni codé.
+Quinze petits détails peints, nés du journal du joueur. Ils restent pour toujours. **Choix de Guillaume le 05/11 : sentier, poutre, arbre, souche, aire** (`checkpoint.md`). Les cinq de la fin de cette page sont la liste d'avant l'audit. Rien n'est peint ni codé.
 
 ## Ce qui vaut pour les quinze
 

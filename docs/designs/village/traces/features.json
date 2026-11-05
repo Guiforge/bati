@@ -102,8 +102,8 @@
         0,
         0
       ],
-      "status": "waiting",
-      "note": "attend la page T5"
+      "status": "done",
+      "note": "05/11 : toutes les recommandations"
     },
     {
       "id": "T7",
@@ -114,8 +114,8 @@
         1.5,
         3
       ],
-      "status": "waiting",
-      "note": "attend le choix de Guillaume et le budget d'images de PROBE ; hors de cette session"
+      "status": "paused",
+      "note": "attend le budget d'images de PROBE et le tour de TRACES"
     },
     {
       "id": "T8",
@@ -126,8 +126,8 @@
         1,
         2
       ],
-      "status": "waiting",
-      "note": "attend T6 et les places de LAYOUT ; hors de cette session"
+      "status": "paused",
+      "note": "attend la fusion de LAYOUT et le tour de TRACES"
     },
     {
       "id": "T9",
@@ -138,8 +138,8 @@
         1,
         2
       ],
-      "status": "waiting",
-      "note": "attend T6 ; hors de cette session"
+      "status": "paused",
+      "note": "accord de Guillaume donné ; attend la fusion de LAYOUT et le tour de TRACES"
     },
     {
       "id": "T10",
@@ -150,8 +150,8 @@
         0.5,
         1
       ],
-      "status": "waiting",
-      "note": "attend T9 ; hors de cette session"
+      "status": "paused",
+      "note": "attend T9"
     },
     {
       "id": "T11",
@@ -162,8 +162,8 @@
         0.5,
         1
       ],
-      "status": "waiting",
-      "note": "attend T7 à T10 ; hors de cette session"
+      "status": "paused",
+      "note": "attend T7 à T10"
     }
   ]
 }

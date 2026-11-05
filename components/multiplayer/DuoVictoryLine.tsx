@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
-import { myWeekDays, sessionCounts } from "@/db/duo";
+import { myWeekDays, readDuoWeek, sessionCounts } from "@/db/duo";
 import { listPairs, type Pair } from "@/db/pairs";
 import { clampGoal, isoWeekOf } from "@/src/multiplayer/duoWeek";
 import { MULTIPLAYER_ENABLED } from "@/src/multiplayer/flag";
@@ -24,7 +24,10 @@ export function DuoVictoryLine({ sessionId }: { sessionId: number }) {
     (async () => {
       const pairs = await listPairs();
       if (pairs.length === 0 || !(await sessionCounts(sessionId))) return;
-      const days = await myWeekDays(isoWeekOf(new Date()));
+      const week = isoWeekOf(new Date());
+      // This session may be the hit that fells the boss: reading the week is what records it (S9).
+      for (const pair of pairs) await readDuoWeek(pair, week);
+      const days = await myWeekDays(week);
       setState({ pairs, hits: days.filter(Boolean).length });
     })().catch((error: unknown) => reportError("duo.victory", error));
   }, [sessionId]);

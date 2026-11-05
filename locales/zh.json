@@ -2876,7 +2876,7 @@
     "theirs_none": "{{name}}：暂时还没收到",
     "mine_pct": "你：本周完成 {{pct}}%",
     "theirs_pct": "{{name}}：本周完成 {{pct}}%",
-    "card_label": "本周首领，{{boss}}。你 {{mine}}，{{name}} {{theirs}}。",
+    "card_label": "本周首领，{{boss}}。你 {{mine}}，{{name}} {{theirs}}。 {{state}}",
     "count_of": "{{hits}} / {{goal}}",
     "pct_of": "{{pct}}%",
     "nothing_yet": "未收到",

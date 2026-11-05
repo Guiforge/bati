@@ -3053,7 +3053,7 @@
     "theirs_none": "{{name}}: nothing received yet",
     "mine_pct": "You: {{pct}}% of your week",
     "theirs_pct": "{{name}}: {{pct}}% of their week",
-    "card_label": "Boss of the week, {{boss}}. You {{mine}}, {{name}} {{theirs}}.",
+    "card_label": "Boss of the week, {{boss}}. You {{mine}}, {{name}} {{theirs}}. {{state}}",
     "count_of": "{{hits}} of {{goal}}",
     "pct_of": "{{pct}}%",
     "nothing_yet": "nothing received",

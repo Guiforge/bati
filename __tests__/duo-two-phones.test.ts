@@ -148,7 +148,11 @@ test("both keep their week: the boss falls on both phones", async () => {
     outing("B", local(day));
   }
   await send("B", local(5));
-  await send("A", local(5, 13));
+  const onB = await send("A", local(5, 13));
+  // B is told at once, where the link opens, and the fall is counted without the card ever shown.
+  assert(Array.isArray(onB));
+  expect(onB.find((t) => t.isoWeek === 45)?.fallen).toBe(true);
+  expect(await on("B", (m) => m.duo.fallenTogether())).toBe(1);
   expect(await resultOn("A", local(5, 14))).toBe("fallen");
   expect(await resultOn("B", local(5, 14))).toBe("fallen");
 });

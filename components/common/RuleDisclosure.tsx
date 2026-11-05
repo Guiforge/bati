@@ -7,7 +7,7 @@ import { Info } from "@/components/icons";
 /**
  * "Ce que ça rapporte": the rule behind a figure, one tap away, in the one shape every surface
  * uses (the past-session sheet, the goal sheet, the outing panel, the recap). An `Info` glyph and
- * the words, underlined, on a 44 dp target; the rule unfolds in place and a second tap folds it.
+ * the words, underlined, on a 48 dp target; the rule unfolds in place and a second tap folds it.
  * Never a bare "ⓘ", never a sentence cut with an ellipsis, never a dialog for an explanation.
  *
  * `testID` names the rule text; the link is `${testID}-link`. Unfolding is instant: nothing here
@@ -37,7 +37,7 @@ export function RuleDisclosure({
         testID={`${testID}-link`}
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
-        style={{ minHeight: 44, justifyContent: "center" }}
+        style={{ minHeight: 48, justifyContent: "center" }}
         onPress={onToggle ?? (() => setInner((v) => !v))}
       >
         <XStack gap="2" items="center">

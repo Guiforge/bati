@@ -111,7 +111,7 @@ de A n'est pas arrivée. Au plus 239 octets, 341 caractères de lien. Vecteurs :
 [`envelope-v1-bundle.json`](../../../__tests__/fixtures/multiplayer/envelope-v1-bundle.json), bâtis à la main à partir
 des vecteurs figés des kinds 1 et 4. Code : [`src/multiplayer/bundle.ts`](../../../src/multiplayer/bundle.ts).
 
-Une enveloppe de semaine dont le `stamp` dépasse de plus de 24 h l'horloge du lecteur est mise de côté (« pas
+Une enveloppe de semaine dont le `stamp` dépasse de plus de 14 h l'horloge du lecteur est mise de côté (« pas
 encore ») : dernier écrit gagnant, elle gagnerait toutes les fusions suivantes.
 
 ## Budget

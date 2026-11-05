@@ -50,11 +50,7 @@ async function pauseUnsent(pair: Pair, week: DuoWeek): Promise<boolean> {
 
 async function load(now: Date): Promise<Loaded> {
   const week = isoWeekOf(now);
-  const [pairs, invites, fallen] = await Promise.all([
-    listPairs(),
-    listInvites(),
-    fallenTogether(),
-  ]);
+  const [pairs, invites] = await Promise.all([listPairs(), listInvites()]);
   const cards = await Promise.all(
     pairs.map(async (pair): Promise<Card> => {
       const current = await readDuoWeek(pair, week, now);
@@ -72,7 +68,8 @@ async function load(now: Date): Promise<Loaded> {
     Math.min(1, c.current.mine.hits / c.current.mine.goal) +
     Math.min(1, (c.current.theirs?.hits ?? 0) / (c.current.theirs?.goal ?? 1));
   cards.sort((a, b) => progress(b) - progress(a));
-  return { cards, invites, fallen };
+  // After the cards: reading a week may be what writes its fall, and the count must include it.
+  return { cards, invites, fallen: await fallenTogether() };
 }
 
 const pct = (hits: number, goal: number) => Math.min(100, Math.round((hits / goal) * 100));
@@ -93,17 +90,21 @@ export function DuoSection() {
   const router = useRouter();
   const language = useSettingsStore((s) => s.language);
   const reducedMotion = useSettingsStore((s) => s.reducedMotion);
-  const [loaded, setLoaded] = useState<Loaded | null>(null);
+  const [loaded, setLoaded] = useState<Loaded | "failed" | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
 
   const refresh = useCallback(() => {
     load(new Date())
       .then(setLoaded)
-      .catch((error: unknown) => reportError("duo.load", error));
+      .catch((error: unknown) => {
+        reportError("duo.load", error);
+        setLoaded("failed");
+      });
   }, []);
   useFocusEffect(refresh);
 
   if (!MULTIPLAYER_ENABLED || loaded === null) return null;
+  if (loaded === "failed") return <NMuted testID="duo-failed">{t("duo.failed")}</NMuted>;
 
   const date = (at: Date) =>
     getDateTimeFormat(language, { day: "numeric", month: "short" }).format(at);
@@ -135,6 +136,7 @@ export function DuoSection() {
       label: t("duo.card_label", {
         boss,
         name,
+        state: t(`duo.state.${stateKey(card)}`),
         mine: duel
           ? t("duo.pct_of", { pct: pct(mine.hits, mine.goal) })
           : t("duo.count_of", { hits: mine.hits, goal: mine.goal }),
@@ -203,6 +205,7 @@ export function DuoSection() {
           <YStack gap={6}>
             <NMuted>{t("duo.reply_pending", { name: card.pair.name })}</NMuted>
             <NButton
+              minH={48}
               testID={`duo-reply-${card.pair.name}`}
               onPress={() => {
                 const reply = card.pair.reply;
@@ -273,6 +276,7 @@ export function DuoSection() {
         <NBlock key={pending.id} gap={8} testID="duo-invite-pending">
           <NMuted>{t("duo.invite_pending", { date: date(pending.madeAt) })}</NMuted>
           <NButton
+            minH={48}
             testID="duo-invite-cancel"
             onPress={() => cancelInvite(pending.id).then(refresh, fail("duo.cancel"))}
           >

@@ -1,4 +1,4 @@
-import { recordTheirWeek } from "@/db/duo";
+import { readDuoWeek, recordTheirWeek } from "@/db/duo";
 import { answerArrived, listPairs, nameTheirSide, type Pair, replyStanding } from "@/db/pairs";
 import { decodeBundle } from "./bundle";
 import { KIND_WEEK, openEnvelope } from "./envelope";
@@ -70,11 +70,16 @@ export type TakenWeek = {
   isoWeek: number;
   hits: number;
   goal: number;
+  /** The boss fell for this week, as this phone now reads it (S1). */
+  fallen: boolean;
   outcome: "new" | "same" | "ahead";
 };
 
-/** F4: a stamp more than a day past this clock would win every later merge. Read it later. */
-const AHEAD_SECONDS = 86_400;
+/**
+ * F4: a stamp ahead of this clock would win every later merge, so past 14 hours it waits. Fourteen,
+ * the widest gap between two time zones, as `duoWeek` allows for the end of a week.
+ */
+const AHEAD_SECONDS = 14 * 3600;
 
 /**
  * Opens the weeks of a code with the pair whose key fits, and keeps what is news (S4). The first
@@ -91,26 +96,29 @@ export async function takeWeeks(
   for (const bytes of weeks) {
     const opened = await openWithAnyPair(bytes, pairs);
     if (opened === "newer") newer = true;
-    if (opened === null || opened === "newer") continue;
-    const { pair, header, state } = opened;
-    const week = { isoYear: header.isoYear, isoWeek: header.isoWeek };
-    const ahead = state.stamp > now.getTime() / 1000 + AHEAD_SECONDS;
-    const outcome = ahead ? "ahead" : await recordTheirWeek(pair.id, week, state);
-    if (!ahead) {
-      await answerArrived(pair.id);
-      if (pair.peerId === null) await nameTheirSide(pair.id, header.senderId);
-    }
-    taken.push({
-      pairId: pair.id,
-      name: pair.name,
-      ...week,
-      hits: state.days.filter((n) => n > 0).length,
-      goal: state.goal,
-      outcome,
-    });
+    else if (opened !== null) taken.push(await takeOne(opened, now));
   }
   if (taken.length > 0) return taken;
   return newer ? "newer" : "unknownPair";
+}
+
+type Opened = NonNullable<Exclude<Awaited<ReturnType<typeof openWithAnyPair>>, "newer">>;
+
+async function takeOne({ pair, header, state }: Opened, now: Date): Promise<TakenWeek> {
+  const week = { isoYear: header.isoYear, isoWeek: header.isoWeek };
+  const ahead = state.stamp > now.getTime() / 1000 + AHEAD_SECONDS;
+  const base = {
+    pairId: pair.id,
+    name: pair.name,
+    ...week,
+    hits: state.days.filter((n) => n > 0).length,
+    goal: state.goal,
+  };
+  if (ahead) return { ...base, outcome: "ahead", fallen: false };
+  const outcome = await recordTheirWeek(pair.id, week, state);
+  await answerArrived(pair.id);
+  if (pair.peerId === null) await nameTheirSide(pair.id, header.senderId);
+  return { ...base, outcome, fallen: (await readDuoWeek(pair, week, now)).result === "fallen" };
 }
 
 async function openWithAnyPair(bytes: Uint8Array, pairs: readonly Pair[]) {

@@ -24,7 +24,7 @@ par Guillaume.
 - **F3.** Le jour d'un coup est le jour local de la séance, lu sur sa ligne (`performedAt` + `tzOffsetMin`), pas le
   jour de l'envoi. Une sortie faite hors réseau le dimanche et envoyée le lundi compte pour la semaine du dimanche.
 - **F4.** Une séance datée après l'instant présent ne porte pas de coup. Une enveloppe reçue dont le `stamp` dépasse l'horloge
-  du téléphone de plus de 24 h est refusée (« pas encore »), sinon elle gagnerait toutes les fusions suivantes. Un jour
+  du téléphone de plus de 14 h est refusée (« pas encore »), sinon elle gagnerait toutes les fusions suivantes. Un jour
   de l'autre postérieur à demain, sur l'horloge du téléphone qui lit, ne compte pas. Une horloge avancée n'invente donc
   aucun coup chez l'autre et ne bloque pas la semaine.
 - **F5.** Un 2e arrêt pour douleur ne porte pas de coup et n'est jamais dit comme un échec : aucun écran du duo ne parle d'une

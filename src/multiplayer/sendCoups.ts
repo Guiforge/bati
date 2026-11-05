@@ -48,8 +48,10 @@ const sentKey = (pairId: string) => `duo_sent_${pairId}`;
  */
 export async function sendCoups(pair: Pair): Promise<void> {
   const now = new Date();
-  await Share.share({ message: await coupsLink(pair, now) });
-  await setPreference(sentKey(pair.id), dayKey(now));
+  const result = await Share.share({ message: await coupsLink(pair, now) });
+  // shortcut: Android reports `sharedAction` even for a sheet closed unused; iOS is honest. The
+  // card's "pause not sent" line then clears early on Android, the boss still waits on this phone.
+  if (result.action === Share.sharedAction) await setPreference(sentKey(pair.id), dayKey(now));
 }
 
 /** The local day of the last "Envoyer mes coups" to this companion, or null. */

@@ -392,6 +392,7 @@ function TakenWeeks({
       {taken.map((week) => (
         <Text key={`${week.pairId}:${week.isoYear}:${week.isoWeek}`} color="text">
           {line(week)}
+          {week.fallen ? ` ${t("duo.state.fallen")}` : ""}
         </Text>
       ))}
       <AppButton testID="pairing-see-boss" onPress={onSee}>
@@ -436,6 +437,7 @@ function CompanionRow({
           testID={`pairing-unlink-${pair.name}`}
           variant="outline"
           fullWidth={false}
+          accessibilityLabel={`${t("duo.unlink")}, ${pair.name}`}
           onPress={() => unlinkPair(pair.id).then(onChange, onError)}
         >
           {t("duo.unlink")}
@@ -447,7 +449,7 @@ function CompanionRow({
         backgroundColor="surface2"
         accessibilityRole="switch"
         accessibilityState={{ checked: pair.duel }}
-        accessibilityLabel={t("duo.duel_label")}
+        accessibilityLabel={`${t("duo.duel_label")}, ${pair.name}`}
         onPress={() => setDuel(pair.id, !pair.duel).then(onChange, onError)}
       >
         {t(pair.duel ? "duo.duel_on" : "duo.duel_off")}

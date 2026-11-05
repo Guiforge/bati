@@ -3287,7 +3287,7 @@
     "theirs_none": "{{name}}: пока ничего не получено",
     "mine_pct": "Ты: {{pct}} % твоей недели",
     "theirs_pct": "{{name}}: {{pct}} % его недели",
-    "card_label": "Босс недели, {{boss}}. Ты {{mine}}, {{name}} {{theirs}}.",
+    "card_label": "Босс недели, {{boss}}. Ты {{mine}}, {{name}} {{theirs}}. {{state}}",
     "count_of": "{{hits}} из {{goal}}",
     "pct_of": "{{pct}} %",
     "nothing_yet": "ничего не получено",

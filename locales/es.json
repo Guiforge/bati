@@ -3181,7 +3181,7 @@
     "theirs_none": "{{name}}: aún no ha llegado nada",
     "mine_pct": "Tú: {{pct}} % de tu semana",
     "theirs_pct": "{{name}}: {{pct}} % de su semana",
-    "card_label": "Jefe de la semana, {{boss}}. Tú {{mine}}, {{name}} {{theirs}}.",
+    "card_label": "Jefe de la semana, {{boss}}. Tú {{mine}}, {{name}} {{theirs}}. {{state}}",
     "count_of": "{{hits}} de {{goal}}",
     "pct_of": "{{pct}} %",
     "nothing_yet": "nada recibido",

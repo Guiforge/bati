@@ -23,6 +23,7 @@ const mockSend = jest.fn();
 jest.mock("@/db/duo", () => ({
   sessionCounts: () => mockCounts(),
   myWeekDays: async () => [true, false, true, false, false, false, false],
+  readDuoWeek: async () => ({ result: "inProgress" }),
 }));
 jest.mock("@/db/pairs", () => ({ listPairs: () => mockPairs() }));
 jest.mock("@/src/multiplayer/sendCoups", () => ({ sendCoups: (pair: unknown) => mockSend(pair) }));

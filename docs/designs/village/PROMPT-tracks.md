@@ -318,3 +318,16 @@ Guillaume's decision of 05/11: first make a great village, measure later. This s
 - **New order**: GROWTH, AUDIT, POLISH, LIFE then VILLAGERS, TRACES, **PERF, then GAME** last.
 - **PERF before GAME**: PERF measures on the perf build, fixes the 3 biggest costs and runs the real phone with Guillaume, as its appendix says. The full test suite, the Maestro flows and CI green move to the end of GAME, which comes after and changes the code again.
 - piste_ordre: Mesure tôt 6 is dropped; Performance 14, Le jeu (page Village) 15.
+
+## Amendment of 05/11 (tracks v4.4): GPT Image 2 as a second painter
+Guillaume bought 20 $ of OpenAI credit. This section changes the "only FLUX 3 Image and FLUX 3 Image Klein" rule as follows; everything else in section 7 stays.
+- **Allowed models**: FLUX 3 Image, FLUX 3 Image Klein, and **OpenAI GPT Image 2** (model id `gpt-image-2`), only through the OpenAI Images API. Never an older OpenAI image model (dall-e, gpt-image-1, gpt-image-1.5, chatgpt-image-latest), even if a library defaults to it: check the model in every call and in the manifest.
+- **Key**: read OPENAI_API_KEY from the environment, or else from ~/.config/bati/openai.env (outside the repo, never copied into it). Never print it, write it in another file, a log, a commit or a report.
+- **Budget**: OpenAI spend has its own registry, kept like FLUX's: one small wrapper (scripts/iso/openai_loop.py or a branch of iso_loop.py) that reserves and records the cost of every call under a lock, with a cap of 20 $ in total and 5 $ per session unless Guillaume writes more in VALIDATIONS.md (BUDGET_OPENAI_V1). Cost is token based: record the input and output tokens of each call and the price the response implies. A single batch above 3 $ waits for Guillaume.
+- **Same rules as FLUX**: never send a Thronebreaker image; the words of a prompt never name a game, studio, film, comic or artist; our own renders, paintings and sheets may be sent as references or as the image to edit; every image goes into scripts/provenance.json with its model, prompt and inputs; no painted people.
+- **What it is for**: edits that need understanding and several references at once, where FLUX struggled:
+  1. **The paths**: turn the flat brown path strokes into painted dirt and cobbled paths, by editing the baked ground chunks (our own image in, same size out), tier band by tier band.
+  2. **Small props and quarters pieces** made from a reference sheet of our own buildings, so the style matches.
+  3. **Paintovers** for POLISH (the square as the focal point).
+- **Bake-off first, in GROWTH**: before using it for production, paint the same 3 jobs with FLUX 3 Image and with GPT Image 2: one quarters house of direction A, the tree stumps, one ground chunk with its paths repainted. Show both side by side at phone size on one checkpoint page, with mara's view on style match (ink, flat colours, no gloss, no AI smoothness). Guillaume picks the painter per kind of job; write the result in PIPELINE.md. About 1 to 2 $ of OpenAI.
+- **A second pair of eyes (optional)**: a GPT vision model may judge renders as an extra "stranger", text only, a few cents a call, inside the same OpenAI budget.

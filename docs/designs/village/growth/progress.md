@@ -27,3 +27,7 @@ Ce que la piste ajoute au palier 12 si le choix suit le plan : 0 image montée, 
 
 **La suite** : le choix du peintre sur cette page (document `guillaume` de `picks`) ou dans `checkpoint.md`. Puis : écrire le résultat dans PIPELINE.md, rapprocher H1 à H3, peindre (G8, G10), poser (G11), prévenir LAYOUT (L15).
 - 05/11 Tour 2 du banc d'essai : `img/bakeoff2-*.jpg`, `scripts/growth/bakeoff2.py`, 0,69 $ OpenAI (10 images). Page mise à jour : https://claude.ai/artifact/PRXjCkLdN2Kdn6WbpGKg9V
+- 05/11 Peinture : 19 images en `gpt-image-2.5-sunburst`, 1,37 $, aucune reprise. Planche `img/pieces-finales.jpg`.
+- 05/11 Pose (G11) : `scripts/growth/poser.py`, table `components/village/iso/piecesPosees.ts`. Bandes `img/apres-strip-jour.jpg` et `-nuit.jpg`. LOCK_OK, portes à 0 sauf un accessoire de G15 au palier 2, bundle OK.
+
+**Ajouté au palier 12** (v4.3) : 54 pièces de quartier, 16 souches et copeaux, 5 pièces de campagne (bourg, fermes, champs, hameau), soit 75 images de jour et autant de nuit, 50 fichiers webp (1,2 Mo). 0 SVG, 0 chose qui bouge. 9 masses de forêt en moins aux paliers 11 et 12.

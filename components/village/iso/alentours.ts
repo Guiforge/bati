@@ -17,6 +17,7 @@ import { CASES, type Case } from "./isoLayout";
 import type { Stade } from "./isoSpec";
 import { clairiere, distCases, mulberry32 } from "./monde";
 import type { Point } from "./ombres";
+import { type NomPiece, PIECES, TOILES_PIECES } from "./piecesPosees";
 import type { Emprise } from "./profondeur";
 import { SORTIES } from "./rues";
 import { BANDES_TERRAIN } from "./solBandes";
@@ -1137,6 +1138,12 @@ export function voileVillage(visible: readonly (readonly boolean[])[]): Voile {
 /** A prop's canvas (240 x 220 px), dp, and where its foot is in it (a share of its height). */
 export const TOILE_ACCESSOIRE = { w: 57.6, h: 52.8, pied: 212 / 220 } as const;
 
+/** A prop's canvas: the fixed one, or a painted piece's own (pieces.ts), the foot at the same share of its height. */
+export const toileDe = (nom: Accessoire["nom"]): { w: number; h: number; pied: number } =>
+  nom in TOILES_PIECES
+    ? { ...TOILES_PIECES[nom as NomPiece], pied: TOILE_ACCESSOIRE.pied }
+    : TOILE_ACCESSOIRE;
+
 export const NOMS_ACCESSOIRES = [
   "caisses_1",
   "caisses_2",
@@ -1177,13 +1184,15 @@ export const NOMS_ACCESSOIRES = [
 export type NomAccessoire = (typeof NOMS_ACCESSOIRES)[number];
 
 export type Accessoire = {
-  nom: NomAccessoire;
+  nom: NomAccessoire | NomPiece;
   /** The cell it stands on: its footprint in the depth order, 1 x 1. */
   case: Case;
   /** Shown with this building only. */
   batiment?: BuildingCode;
   /** From this tier (the camp first, the town last); 1 when absent. */
   palier?: VillageTier;
+  /** Gone from this tier: the piece that replaces it in place stands from the same tier (etal_1, then the grey stall). */
+  avant?: VillageTier;
   /** Its foot, a grid point, when not the cell's middle (the fisherman on the bridge's front edge). */
   pied?: readonly [number, number];
   /** On this building's roof (the cat): drawn right after it, its foot on its sprite's top. */
@@ -1233,7 +1242,7 @@ export const ACCESSOIRES: readonly Accessoire[] = [
   { nom: "ratelier_1", case: [15, 14], batiment: "archery_range" },
   { nom: "ratelier_2", case: [14, 14], batiment: "archery_range", palier: 5 },
   { nom: "caisses_1", case: [16, 7], batiment: "armory" },
-  { nom: "etal_1", case: [9, 12], batiment: "fountain", palier: 6 },
+  { nom: "etal_1", case: [9, 12], batiment: "fountain", palier: 6, avant: 8 },
   { nom: "menhir_1", case: [-2, -7], batiment: "druid_grove" },
   { nom: "menhir_3", case: [-4, -8], batiment: "druid_grove", palier: 7 },
   { nom: "menhir_2", case: [17, 1], batiment: "wizard_tower" },
@@ -1271,7 +1280,25 @@ export function accessoiresMontres(
     (a) =>
       (a.hors ? solPeint : visible[a.case[1]]?.[a.case[0]] === true) &&
       (a.batiment === undefined || montres.includes(a.batiment)) &&
-      (a.palier ?? 1) <= palier,
+      (a.palier ?? 1) <= palier &&
+      (a.avant ?? Number.POSITIVE_INFINITY) > palier,
+  );
+}
+
+/**
+ * The painted pieces (piecesPosees.ts: quarters, stumps, countryside) that show at a tier: decor on the props' own path, from their first
+ * tier to the one that replaces them in place. A piece with no `hors` stands on the island and waits for its cell.
+ */
+export function piecesMontrees(
+  visible: readonly (readonly boolean[])[],
+  palier: VillageTier,
+  solPeint = false,
+): Accessoire[] {
+  return PIECES.filter(
+    (a) =>
+      (a.hors ? solPeint : visible[a.case[1]]?.[a.case[0]] === true) &&
+      a.palier <= palier &&
+      (a.avant ?? Number.POSITIVE_INFINITY) > palier,
   );
 }
 

@@ -30,11 +30,14 @@ QUARTIERS = [
     ("Q5", 7, [-8, 7, -5, 9], "quartier de l'ouest, le long de la rue gy 7", "la rue gy 7 au nord-est"),
     ("Q6", 7, [15, 17, 17, 19], "quartier du sud-est, hors du rempart", "le rempart au nord, la route du sud a l'ouest"),
 ]
-# Outside the grid (painted world), west of the grove: the retreat of the forest (direction F). The grove keeps the back forest.
+# Outside the grid (painted world), west of the grove, brought into the fixed camera's frame (growth G11): each box is the footprint of the painted
+# piece that stands there (scripts/growth/poser.py, poser_f.json), a piece's width over 2 half-cells. The tier is the piece's first one.
+# The grove keeps the back forest (rule 23): nothing north-east of gx -10 / gy -8.
 DEHORS = [
-    ("H1", [-16, -2, -10, 3], "clairiere ouest, au dessus de l'observatoire : hameau", "l'arriere du bosquet reste en foret"),
-    ("H2", [-16, 4, -10, 9], "deux fermes de la clairiere", "la lisiere sud de la clairiere"),
-    ("H3", [-21, -4, -17, 3], "petit bourg marchand (deplace a l'ouest de la clairiere)", "le bosquet et sa foret arriere, jamais plus a l est que gx -10"),
+    ("H1", 7, [-14, 0, -10, 4], "clairiere ouest, au dessus de l'observatoire : cabanes au 7, hameau a leur place au 9", "l'arriere du bosquet reste en foret ; l'observatoire est a gx -6"),
+    ("H2", 10, [-18, -5, -12, 0], "deux fermes de la clairiere : la premiere au 10, la seconde au 11", "le hameau H1 au sud, les champs H4 a l'ouest"),
+    ("H3", 12, [-15, -13, -11, -8], "petit bourg marchand au 12, au bord de la foret, a gauche du bosquet", "le bosquet et sa foret arriere (gx -3, gy -5)"),
+    ("H4", 11, [-23, -10, -19, -7], "champs de la ferme au 11, plus loin dans la clairiere", "la foret du nord-ouest, derriere"),
 ]
 
 
@@ -89,9 +92,9 @@ def main():
                       "tier": voulu, "dehors": False, "contient": quoi, "libre": libre})
         if t > voulu:
             bad.append(f"{sid} opens at tier {t}, wanted {voulu}: add or fix its hull (paliers.py reads slots.json)")
-    for sid, box, quoi, libre in DEHORS:
+    for sid, voulu, box, quoi, libre in DEHORS:
         slots.append({"id": sid, "kind": "dehors", "box": box, "taille": [box[2] - box[0] + 1, box[3] - box[1] + 1],
-                      "tier": 10, "dehors": True, "contient": quoi, "libre": libre})
+                      "tier": voulu, "dehors": True, "contient": quoi, "libre": libre})
     for code, b in parvis.items():
         slots.append({"id": f"P-{code}", "kind": "parvis", "box": list(b), "taille": [b[2] - b[0] + 1, b[3] - b[1] + 1],
                       "tier": L["etapes"].get(code, 1), "dehors": False, "contient": "rien", "libre": f"parvis de {code}: 2 cases sur ses faces +gx et +gy"})

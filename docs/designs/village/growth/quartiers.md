@@ -175,3 +175,15 @@ Le tableau de la direction A est le plan de départ. Le montage en diffère, fau
 | N6 | | | 1 | 2 | 2 | 2 | 3 |
 
 N3 est vide et N2 n'a qu'une maison sur 4 : leurs cases cachent la salle ou tombent sur un chemin. Q6 n'a pas de jardins. Le montage garde à l'oeil les bâtiments du joueur et n'a pas passé `check`.
+
+## Posé dans la scène (G11, 05/11)
+
+Les finales (`scratch/final/`, `gpt-image-2.5-sunburst`) sont dans l'atelier et dans l'appli : `scripts/growth/poser.py` écrit `components/village/iso/piecesPosees.ts` (la table : pièce, case de pied, pied, palier, `avant`, `flip`, `hors`), `piecesImages.ts` (les `require`) et copie les webp en `assets/images/village/iso/accessoires/piece_<id>.webp` et `.nuit.webp` (1,2 Mo pour 50 fichiers, 4,5 px au dp au plus). Une pièce est un accessoire (`Accessoire`, `alentours.ts`) : décor, jamais tapable, jamais compté, jamais la marque du clan. Départs de `montage_plan.py` ; ce que les portes de `check` ont refusé est dans `scripts/growth/poser_drops.json`, avec la raison. `boucle_gate.py` relance la porte `props` et écarte les pièces sous 50 % ; `lire_gate.py` lit le JSON de `check`.
+
+| Palier | 1 | 2 | 3 | 6 | 7 | 8 | 9 | 10 | 11 | 12 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Pièces de quartier (jour) | 0 | 0 | 0 | 3 | 9 | 17 | 23 | 32 | 41 | 54 |
+| Souches et copeaux | 3 | 6 | 9 | 9 | 11 | 11 | 15 | 15 | 16 | 16 |
+| Campagne | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 2 | 4 | 5 |
+
+Cases N : **N1** 3 pièces (le grand étal gris `A4` remplace `etal_1` en place au 8, un second au 9, la halle `A7` au 11 à leur place). **N2** aucune : ses 4 cases sont derrière la salle et la forge (sous 50 % ou accroche de la forge couverte). **N3** 5 cases sur 6, la sixième (8,6) n'a pas été essayée. **N4** le jardin `A3` du 6 au 11 puis la taverne `A8` au 12 ; ses deux maisons sont sous 50 % (le puits, le jardin). **N5** le jardin seul : les deux maisons sont sous 50 % (la tente, le jardin). **N6** 2 maisons sur 5 (la troisième cachait 50,8 % du tas de bois de la forge, `tas_de_bois_1`). Le montage avait déjà écarté N2 et N3 ; ici la porte `props` dit pourquoi. Les ruelles de Q1 (cases (5,0) et (5,1)) : laissées de côté, la case passe en `#` dans `isoLayout.json` mais le sol cuit ne la peint pas et seuls les villageois la liraient comme chemin.

@@ -26,6 +26,7 @@ import {
   TOILE_ACCESSOIRE,
   TOILE_FORET,
   TUILE_TERRAIN,
+  toileDe,
   tuileTerre,
 } from "./alentours";
 import { ecranXY, pose, spriteDe } from "./carteDemo";
@@ -33,6 +34,8 @@ import type { Culture, TuileChamp } from "./champs";
 import { useDump } from "./dumpSprites";
 import type { Ambiance, Stade } from "./isoSpec";
 import { solCharge } from "./ouverture";
+import { IMAGES_PIECES } from "./piecesImages";
+import type { NomPiece } from "./piecesPosees";
 import { hautMasque } from "./tapBatiment";
 
 /** The terrain's tiles (alentours.ts TUILES_TERRAIN), by row then column: Metro needs every require spelled out. */
@@ -647,7 +650,7 @@ export function AccessoirePeint({
   const d = stadeToit ? a.decalage?.[stadeToit] : undefined;
   const pied: readonly [number, number] =
     (toit && d ? ([toit[0] + d[0], toit[1] + d[1]] as const) : toit) ?? piedAccessoire(a);
-  const { w, h, pied: k } = TOILE_ACCESSOIRE;
+  const { w, h, pied: k } = toileDe(a.nom);
   useDump(() => ({
     id: `prop_${a.nom}`,
     layer: "prop",
@@ -662,7 +665,11 @@ export function AccessoirePeint({
     <Image
       testID={`iso-accessoire-${a.nom}`}
       pointerEvents="none"
-      source={ACCESSOIRES_IMAGES[a.nom][moment(lumiere)]}
+      source={
+        (a.nom in IMAGES_PIECES
+          ? IMAGES_PIECES[a.nom as NomPiece]
+          : ACCESSOIRES_IMAGES[a.nom as NomAccessoire])[moment(lumiere)]
+      }
       contentFit="fill"
       style={{
         position: "absolute",

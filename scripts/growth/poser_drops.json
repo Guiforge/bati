@@ -1,0 +1,146 @@
+[
+ [
+  "piece_a1c",
+  5,
+  -2,
+  "under 50 % visible (13 % at tier 6, by iso-maquette-training_dummy)"
+ ],
+ [
+  "piece_a1a",
+  11,
+  7,
+  "under 50 % visible (44 % at tier 6, by iso-maquette-forge)"
+ ],
+ [
+  "piece_a1b",
+  5,
+  9,
+  "under 50 % visible (1 % at tier 7, by iso-maquette-tent)"
+ ],
+ [
+  "piece_a5",
+  13,
+  7,
+  "under 50 % visible (1 % at tier 8, by iso-maquette-forge)"
+ ],
+ [
+  "piece_a2",
+  -5,
+  -7,
+  "under 50 % visible (26 % at tier 9, by iso-maquette-druid_grove)"
+ ],
+ [
+  "piece_a1a",
+  17,
+  5,
+  "under 50 % visible (48 % at tier 9, by iso-maquette-watchtower)"
+ ],
+ [
+  "piece_a1c",
+  15,
+  6,
+  "under 50 % visible (40 % at tier 10, by iso-accessoire-tas_de_bois_1)"
+ ],
+ [
+  "piece_a1a",
+  6,
+  13,
+  "under 50 % visible (48 % at tier 10, by iso-maquette-well)"
+ ],
+ [
+  "piece_a1b",
+  -8,
+  -6,
+  "under 50 % visible (33 % at tier 12, by iso-accessoire-piece_b5)"
+ ],
+ [
+  "piece_a1c",
+  7,
+  -4,
+  "under 50 % visible (37 % at tier 12, by iso-accessoire-piece_a6)"
+ ],
+ [
+  "piece_a1a",
+  -7,
+  8,
+  "under 50 % visible (28 % at tier 11, by iso-accessoire-piece_a3)"
+ ],
+ [
+  "piece_a1c",
+  4,
+  13,
+  "under 50 % visible (17 % at tier 7, by iso-accessoire-piece_a3)"
+ ],
+ [
+  "piece_a1c",
+  -4,
+  12,
+  "under 50 % visible (4 % at tier 11, by iso-accessoire-piece_a3)"
+ ],
+ [
+  "piece_a1c",
+  4,
+  -6,
+  "under 50 % visible (43 % at tier 12, by iso-accessoire-piece_a2)"
+ ],
+ [
+  "piece_a5",
+  5,
+  -4,
+  "under 50 % visible (33 % at tier 12, by iso-accessoire-piece_a1b)"
+ ],
+ [
+  "piece_a1a",
+  7,
+  -3,
+  "under 50 % visible (20 % at tier 12, by iso-accessoire-piece_a5)"
+ ],
+ [
+  "piece_a1b",
+  14,
+  7,
+  "covers the forge's hook (11.7 % of it) from tier 6: behind the forge, on its east side"
+ ],
+ [
+  "piece_a1b",
+  19,
+  6,
+  "covers 130 px of the watchtower from tier 8 (N6): the building stays whole"
+ ],
+ [
+  "piece_a1c",
+  4,
+  9,
+  "under 50 % visible (23 % at tier 12, by the N5 garden piece_a3 and the tent)"
+ ],
+ [
+  "piece_copeaux_1",
+  -7,
+  -7,
+  "under 50 % visible (0 % at tier 9, by iso-accessoire-piece_b5)"
+ ],
+ [
+  "piece_a1c",
+  4,
+  9,
+  "under 50 % visible (23 % at tier 12, by iso-accessoire-piece_a3)"
+ ],
+ [
+  "piece_a1c",
+  4,
+  9,
+  "under 50 % visible (23 % at tier 12, by iso-accessoire-piece_a3)"
+ ],
+ [
+  "piece_souche_3",
+  14,
+  7,
+  "under 50 % visible (0 % at tier 6, by iso-maquette-armory)"
+ ],
+ [
+  "piece_a1c",
+  16,
+  6,
+  "covers 50.8 % of the forge's wood pile tas_de_bois_1 from tier 9 (it stands at 49.2 % visible, under the 50 % gate): N6, behind the armoury"
+ ]
+]

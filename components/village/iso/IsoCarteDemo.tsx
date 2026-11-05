@@ -69,6 +69,7 @@ import {
   accessoiresMontres,
   empriseAccessoire,
   horsTerrain,
+  piecesMontrees,
   piedAccessoire,
   voileVillage,
 } from "./alentours";
@@ -182,6 +183,7 @@ import { OmbreSocle, Planche } from "./PlancheCarte";
 import { ailesPeintes, PEINTS, peintDe } from "./peints";
 import { Lucioles } from "./petitsDetails";
 import { clePiece, eauTracee } from "./pieces";
+import { degagesForet } from "./piecesPosees";
 import type { Emprise } from "./profondeur";
 import { blocD, type Construction, construire, type Famille, QuartiersContext } from "./quartiers";
 import { Reclame } from "./Reclame";
@@ -1939,7 +1941,13 @@ const decorDe = (
   visible: readonly (readonly boolean[])[],
   montres: readonly BuildingCode[],
   palier: VillageTier | undefined,
-) => (peint.decor ? accessoiresMontres(visible, montres, palier ?? 12, peint.sol) : []);
+) =>
+  peint.decor
+    ? [
+        ...accessoiresMontres(visible, montres, palier ?? 12, peint.sol),
+        ...piecesMontrees(visible, palier ?? 12, peint.sol),
+      ]
+    : [];
 
 /** The mounted indices, less the lisiere when the painted forest stands in its place. */
 const sansLisiere = (indices: readonly number[], peint: Alentours) =>
@@ -2203,7 +2211,7 @@ export function IsoCarte({
         insere(
           liste,
           <AccessoirePeint
-            key={`d${a.nom}${a.case.join(",")}`}
+            key={`d${a.nom}${a.case.join(",")}${a.pied?.join(",") ?? ""}`}
             a={a}
             lumiere={lumiere}
             stade={stade}
@@ -2353,7 +2361,7 @@ export function IsoCarte({
       {/* The painted forest: over the ground and the vector roads it keeps clear of, under the light (graded at night) and the sprites. */}
       <ForetSiPeinte
         visible={visible}
-        champs={champs.blocs}
+        champs={[...champs.blocs, ...degagesForet(palier ?? 12)]}
         pieds={decor.filter((a) => a.hors && a.nom === "charrette_1").map(piedAccessoire)}
         lumiere={lumiere}
       />

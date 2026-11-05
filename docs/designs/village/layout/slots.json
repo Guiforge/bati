@@ -113,28 +113,28 @@
    "id": "H1",
    "kind": "dehors",
    "box": [
-    -16,
-    -2,
+    -14,
+    0,
     -10,
-    3
+    4
    ],
    "taille": [
-    7,
-    6
+    5,
+    5
    ],
-   "tier": 10,
+   "tier": 7,
    "dehors": true,
-   "contient": "clairiere ouest, au dessus de l'observatoire : hameau",
-   "libre": "l'arriere du bosquet reste en foret"
+   "contient": "clairiere ouest, au dessus de l'observatoire : cabanes au 7, hameau a leur place au 9",
+   "libre": "l'arriere du bosquet reste en foret ; l'observatoire est a gx -6"
   },
   {
    "id": "H2",
    "kind": "dehors",
    "box": [
-    -16,
-    4,
-    -10,
-    9
+    -18,
+    -5,
+    -12,
+    0
    ],
    "taille": [
     7,
@@ -142,26 +142,44 @@
    ],
    "tier": 10,
    "dehors": true,
-   "contient": "deux fermes de la clairiere",
-   "libre": "la lisiere sud de la clairiere"
+   "contient": "deux fermes de la clairiere : la premiere au 10, la seconde au 11",
+   "libre": "le hameau H1 au sud, les champs H4 a l'ouest"
   },
   {
    "id": "H3",
    "kind": "dehors",
    "box": [
-    -21,
-    -4,
-    -17,
-    3
+    -15,
+    -13,
+    -11,
+    -8
    ],
    "taille": [
     5,
-    8
+    6
    ],
-   "tier": 10,
+   "tier": 12,
    "dehors": true,
-   "contient": "petit bourg marchand (deplace a l'ouest de la clairiere)",
-   "libre": "le bosquet et sa foret arriere, jamais plus a l est que gx -10"
+   "contient": "petit bourg marchand au 12, au bord de la foret, a gauche du bosquet",
+   "libre": "le bosquet et sa foret arriere (gx -3, gy -5)"
+  },
+  {
+   "id": "H4",
+   "kind": "dehors",
+   "box": [
+    -23,
+    -10,
+    -19,
+    -7
+   ],
+   "taille": [
+    5,
+    4
+   ],
+   "tier": 11,
+   "dehors": true,
+   "contient": "champs de la ferme au 11, plus loin dans la clairiere",
+   "libre": "la foret du nord-ouest, derriere"
   },
   {
    "id": "P-tent",

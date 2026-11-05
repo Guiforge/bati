@@ -1,0 +1,20 @@
+[
+  [1, "souche_1", [14.5, 6.5], false, "g"],
+  [1, "souche_3", [14.5, 7.7], true, "g"],
+  [1, "souche_2", [16.5, 7.0], false, "g"],
+  [1, "copeaux_2", [13.9, 6.0], false, "g"],
+  [2, "souche_4", [9.6, 21.4], false, "g"],
+  [2, "souche_1", [24.8, 14.9], true, "g"],
+  [2, "souche_5", [10.2, 22.4], false, "g"],
+  [3, "souche_2", [8.4, 24.4], true, "g"],
+  [3, "souche_3", [26.2, 16.8], false, "g"],
+  [3, "souche_5", [24.6, 19.0], true, "g"],
+  [7, "souche_3", [200, 860], false],
+  [7, "souche_5", [40, 775], false],
+  [9, "souche_4", [465, 700], false],
+  [9, "copeaux_1", [520, 748], false],
+  [9, "souche_2", [585, 715], true],
+  [9, "souche_1", [190, 735], false],
+  [9, "copeaux_2", [60, 850], false],
+  [11, "souche_5", [420, 748], false]
+]

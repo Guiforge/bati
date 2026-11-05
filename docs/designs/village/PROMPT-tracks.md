@@ -331,3 +331,6 @@ Guillaume bought 20 $ of OpenAI credit. This section changes the "only FLUX 3 Im
   3. **Paintovers** for POLISH (the square as the focal point).
 - **Bake-off first, in GROWTH**: before using it for production, paint the same 3 jobs with FLUX 3 Image and with GPT Image 2: one quarters house of direction A, the tree stumps, one ground chunk with its paths repainted. Show both side by side at phone size on one checkpoint page, with mara's view on style match (ink, flat colours, no gloss, no AI smoothness). Guillaume picks the painter per kind of job; write the result in PIPELINE.md. About 1 to 2 $ of OpenAI.
 - **A second pair of eyes (optional)**: a GPT vision model may judge renders as an extra "stranger", text only, a few cents a call, inside the same OpenAI budget.
+
+### Exception to v4.4, 05/11 (Guillaume's go in the GROWTH session)
+OpenAI also lists `gpt-image-2.5-sunburst` and `gpt-image-2.6-sunburst`, same token rates, presented for image editing. For the bake-off only, these two may be called, through `scripts/iso/openai_loop.py`, under the same budget and rules. Production still uses only `gpt-image-2` until Guillaume's pick is written in PIPELINE.md.

@@ -3017,7 +3017,6 @@
   },
   "duo": {
     "kicker": "Boss of the week",
-    "boss_line": "{{boss}}. {{affix}}",
     "affix": {
       "swift": "It strikes fast this week.",
       "armoured": "Its armour has hardened this week.",

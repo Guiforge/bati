@@ -2840,7 +2840,6 @@
   },
   "duo": {
     "kicker": "本周首领",
-    "boss_line": "{{boss}}。{{affix}}",
     "affix": {
       "swift": "本周它出手极快。",
       "armoured": "本周它的铠甲变硬了。",

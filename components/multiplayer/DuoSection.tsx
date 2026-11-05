@@ -171,12 +171,11 @@ export function DuoSection() {
               />
             </YStack>
             <YStack flex={1} gap={2}>
-              <NText fontWeight="500">
-                {t("duo.boss_line", { boss: bossName, affix: t(`duo.affix.${affix}`) })}
-              </NText>
-              <NMuted testID={`duo-state-${card.pair.name}`}>
+              <NText fontWeight="500">{bossName}</NText>
+              <NText testID={`duo-state-${card.pair.name}`}>
                 {t(`duo.state.${stateKey(card)}`)}
-              </NMuted>
+              </NText>
+              <NMuted>{t(`duo.affix.${affix}`)}</NMuted>
             </YStack>
           </XStack>
           <YStack gap={4}>
@@ -261,7 +260,8 @@ export function DuoSection() {
   };
 
   return (
-    <YStack gap={8} testID="duo-section" width="100%" maxW={520} self="center">
+    // A gap below: the shelf of bosses felled alone is another list, not the duo's last line.
+    <YStack gap={8} testID="duo-section" width="100%" maxW={520} self="center" mb={24}>
       {cards.length === 0 ? (
         <NBlock gap={10}>
           <NText>{t("duo.intro")}</NText>

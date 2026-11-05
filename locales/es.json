@@ -3145,7 +3145,6 @@
   },
   "duo": {
     "kicker": "Jefe de la semana",
-    "boss_line": "{{boss}}. {{affix}}",
     "affix": {
       "swift": "Esta semana golpea rápido.",
       "armoured": "Esta semana su armadura se ha endurecido.",

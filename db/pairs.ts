@@ -55,9 +55,10 @@ function withoutParams<T>(write: () => Promise<T>): Promise<T> {
  * statements make a checkpoint fail, on a phone and not under jest. Never a reason to fail the write
  * it follows, which is already done.
  *
- * shortcut: those same statements hold a reader, so the log is not truncated and the old bytes stay in
- * it until SQLite reuses the pages (measured on a release build, a relaunch does not clear them). Only
- * someone reading the app's private files can see them. Finalizing Drizzle's statements is the real fix.
+ * TRUNCATE empties the log too, now that Drizzle's statements are finalised once read
+ * (`db/releasingStatements.ts`): measured on a release build on 05/11, the deleted key was in neither
+ * file afterwards and the log was 0 bytes. A reader left open elsewhere would make it a passive
+ * checkpoint again, without error: the bytes would then wait for SQLite to reuse their pages.
  */
 async function flushLog(): Promise<void> {
   try {

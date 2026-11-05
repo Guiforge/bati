@@ -62,10 +62,12 @@ messages de cette paire. Elle n'est donc acceptée que par la caméra, sur un é
 secret : A garde la moitié privée dans `pair_invites` (`0084`), sur ce téléphone seulement, jusqu'à la
 réponse ou 7 jours, puis la supprime. Valable 7 jours.
 
-**La suppression n'est pas un effacement physique immédiat.** `secure_delete` et un checkpoint la sortent du
-fichier principal, mais la base est en WAL et les anciennes pages restent dans le journal jusqu'à ce que SQLite les
-réutilise, un relancement n'y change rien (mesuré sur une build de release). Il faut lire les fichiers privés de
-l'app pour les voir, donc un téléphone rooté. Même limite pour le secret d'une paire déliée.
+**La suppression vide les deux fichiers depuis le lot 1.** `secure_delete` réécrit les pages, puis
+`wal_checkpoint(TRUNCATE)` vide le journal : mesuré le 05/11 sur une build de release, la clé privée d'une invitation
+annulée n'est plus ni dans `bati.v3.db` ni dans `-wal` (0 octet). Au lot 0 bis, les instructions de Drizzle jamais
+finalisées retenaient un lecteur et la clé restait dans le journal ; elles sont finalisées après lecture
+(`db/releasingStatements.ts`). Une sauvegarde prise avant la suppression, celle du téléphone comprise, garde ce
+qu'elle a copié.
 
 ### Kind 4, la réponse d'appairage
 

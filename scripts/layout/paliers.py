@@ -39,6 +39,7 @@ PLOT = {
 }
 # The wall's stages keep starting at tier 6 (palisade through tier 6, the locked corner's look); its plot only joins earlier.
 ETAPES_A_PART = {"castle_wall": 6, "watchtower": 6}
+RETENUES = {(18, 13): 7, (19, 13): 8, (16, 15): 7, (11, 17): 7, (12, 17): 7}
 REMPART = 4  # the south corner (gate, L of wall, road, field) arrives at tier 4, where the painted `.t1-3` ground bands give way
 CHAMPS = 4
 MARGE_PLOT = 2
@@ -142,6 +143,10 @@ def main():
                 if brut.get(fin, 99) > sl["tier"]:
                     brut[fin] = sl["tier"]
                 fin = prev[fin]
+    # The two path bits beside the south gate that the locked crop `porte` (tier 6) never showed: held at their old tiers.
+    for c, t in RETENUES.items():
+        if c in terre:
+            brut[c] = t
     # The rest: the nearest hull cell's tier plus the distance (Chebyshev), cap 12.
     pts = list(brut.items())
     t0 = {}

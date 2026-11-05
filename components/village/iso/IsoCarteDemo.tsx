@@ -1250,10 +1250,14 @@ function PieceOuLisiere({
   const voile = e.type === "piece" && !e.piece.decor ? voileDe(e.piece.case, portees) : "";
   const opacite = e.type === "lisiere" ? lisiere.get(e.piece.case.join(",")) : undefined;
   // The lisiere is stored without an ambiance: its image key is resolved here.
+  // A water piece has a day image when one is painted (the bridge), else the night's serves both.
+  const cleJour = e.type === "piece" ? e.piece.cle.replace(".nuit.", ".jour.") : "";
   const piece =
     e.type === "lisiere"
       ? { ...e.piece, cle: clePiece(e.piece.famille, e.piece.nom, ambiance) }
-      : e.piece;
+      : ambiance === "jour" && !e.piece.decor && MAQUETTES[cleJour]
+        ? { ...e.piece, cle: cleJour }
+        : e.piece;
   return (
     <Piece
       piece={piece}

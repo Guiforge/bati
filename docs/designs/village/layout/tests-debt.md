@@ -12,3 +12,10 @@
 ## Design track L4/L5 (04/11)
 
 No test was run. Known to touch tests: none found by reading; `IsoCarteDemo` gains an optional `haut` prop and `Accessoire` an optional `decalage` (the cat). `check.js` gate `props` is new: any caller that parses the "GATE FAILED" line sees a new key.
+
+## L12 a L14 (05/11)
+
+- `iso-accessoires`, `iso-pieces`, `iso-animaux`: accessoires deplaces avec les batiments, pont en deux images (jour, nuit), cle `eau/canal_pont.jour.webp`.
+- `iso-layout`: mannequin en [7, 0], `paliers` regeneres par `scripts/layout/paliers.py` (paliers 1 a 12, quartiers, chemins retenus).
+- `iso-perf-compteur` et le cliquet de taille d'images : une image de pont de plus (18 a 28 Ko).
+- Aucun test lance.

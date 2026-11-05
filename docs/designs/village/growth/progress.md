@@ -17,3 +17,9 @@ Ce que la piste ajoute au palier 12 si le choix suit le plan : 0 image montée, 
 - 05/11 Trois directions de quartiers, auditées par theo, mara, env : `quartiers.md`. 44 concepts Klein : `img/quartiers-*.jpg`, 0,35 $.
 
 **Ajouté au palier 12 à ce stade** : -6 masses de forêt (173 contre 179), 4 accessoires, 0 SVG, 0 chose qui bouge. Aux paliers 1 à 3 : +32 masses.
+- 05/11 G14 bande F sur le plan : `img/bande-F2.jpg`. Montages des quartiers : `img/quartiers-bande-A.jpg`, `-B`, `-C`, `quartiers-A-t*.jpg`, `coeur-A-t12.jpg`, `vignette-A.jpg`. 0 $.
+- 05/11 Page de choix : https://claude.ai/artifact/TGeq36n8R1z8cD7dykz2it
+
+**Si A est choisie, ajout estimé au palier 12** (montage, jour seul, à doubler pour la nuit) : environ 56 pièces montées, 8 à 10 peintures. 0 chose qui bouge, 0 SVG. Rien de cela n'est posé.
+
+**La suite** : réponses de Guillaume sur la page, document `guillaume` de la collection `picks`, ou dans `checkpoint.md`. Puis G8, G10, G11. Quand G11 est fini, prévenir LAYOUT (L15).

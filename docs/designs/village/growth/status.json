@@ -133,7 +133,7 @@
   "reste": "2 à 4 h",
   "avancement": null,
   "total": null,
-  "note": "F choisie ; PROBE abandonné (v4.3) ; attend G14 et le choix de Guillaume sur les quartiers"
+  "note": "attend les réponses de Guillaume sur la page des quartiers (question 3)"
  },
  {
   "id": "G9",
@@ -141,16 +141,16 @@
   "piste_ordre": 8,
   "etape": "Concepts des quartiers",
   "ordre": 9,
-  "statut": "en cours",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
-  "restant_min": 1,
-  "restant_max": 2,
-  "reste": "1 à 2 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": "3 directions écrites et auditées, 44 concepts Klein, montages en cours"
+  "note": "3 directions, 44 Klein, montages 6 à 12 pour A, 8, 10, 12 pour B et C"
  },
  {
   "id": "G10",
@@ -167,7 +167,7 @@
   "reste": "2 à 4 h",
   "avancement": null,
   "total": null,
-  "note": "PROBE abandonné (v4.3) ; attend le choix de Guillaume sur les quartiers"
+  "note": "attend le choix de direction ; FLUX 3 Image"
  },
  {
   "id": "G11",
@@ -184,7 +184,7 @@
   "reste": "3 à 6 h",
   "avancement": null,
   "total": null,
-  "note": "LAYOUT fusionné ; attend les peintures"
+  "note": "attend G8 et G10"
  },
  {
   "id": "G12",
@@ -226,16 +226,16 @@
   "piste_ordre": 8,
   "etape": "Refaire la bande F sur le plan de LAYOUT",
   "ordre": 14,
-  "statut": "en cours",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
-  "restant_min": 0.3,
-  "restant_max": 1,
-  "reste": "0.3 à 1 h",
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": "sur les rendus de G15"
+  "note": "img/bande-F2.jpg ; H2 et H3 à moitié hors cadre, recul de H1 invisible"
  },
  {
   "id": "G15",
@@ -277,15 +277,15 @@
   "piste_ordre": 8,
   "etape": "Page de choix des quartiers",
   "ordre": 17,
-  "statut": "à faire",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
   "restant_min": 0,
   "restant_max": 0,
-  "reste": "",
+  "reste": "fini",
   "avancement": null,
   "total": null,
-  "note": ""
+  "note": "https://claude.ai/artifact/TGeq36n8R1z8cD7dykz2it"
  }
 ]

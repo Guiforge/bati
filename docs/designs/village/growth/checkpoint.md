@@ -1,5 +1,27 @@
 # Alentours : choix pour Guillaume
 
+## Quartiers, 05/11, en attente
+
+**Page : https://claude.ai/artifact/TGeq36n8R1z8cD7dykz2it** (privée, à toi seul).
+
+1. **Quelle direction ?** A La rue bâtie, B Les métiers, C Les nappes, ou un mélange. Mon avis : A, comme theo, mara et env.
+2. **Les petits trous N1 à N6** près de la place et le long de la rue : d'accord ?
+3. **H2 et H3 sont à moitié hors de l'écran** : les rapprocher, ou les laisser ?
+4. **L'étal à rayures** passe-t-il à un étal gris au palier 8 ?
+5. **Un toit chaud par groupe de 6 maisons** (env), ou la règle 11 ?
+6. **Peindre des souches** pour le camp et le recul de la forêt ?
+7. **Quels essais de pièces gardes-tu ?** Deux par pièce, sur la page.
+
+Tes réponses sur la page sont dans la collection `picks`, document `guillaume`. Tu peux aussi écrire ci-dessous.
+
+### Réponse de Guillaume, quartiers
+
+(en attente)
+
+---
+
+## Échelle de prospérité, 04/11, répondu
+
 **Page : https://claude.ai/artifact/CdyBba3Bdn9UxRqWf63wYH** (privée, à toi seul).
 
 Trois propositions pour fermes, hameaux, routes et lumières de nuit, palier par palier, avec une réglette de 1 à 12. Rien n'est posé dans le jeu.

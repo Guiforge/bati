@@ -156,3 +156,22 @@ A, puis B, puis C. Fond magenta plat pour le détourage.
 | env (sol) | A, B, C | Une maison sans pied peint flotte. A1 répété 15 fois = lotissement. Ruelles droites = quartier plaqué. La nappe de C a une couture sur tout son contour. N4 3x2 trop serré pour une taverne en L | 3 variantes d'A1, miroir, ruelles courbes raccordées en patte d'oie, décal de pied à la pose, N4 sans cour en L, échelle calée sur la salle et la forge |
 
 **Reste vrai après correction** : aucune hauteur n'est testée avec `check`. Env demande un toit chaud par groupe de 6, ce qui contredit la règle 11 (la tuile rouille est au joueur) : question pour Guillaume.
+
+## Ce que le montage de A a vraiment posé (05/11)
+
+Le tableau de la direction A est le plan de départ. Le montage en diffère, faute de place ou pour étaler les paliers 10 à 12 (`scripts/growth/montage_plan.py`, `scratch/plan/dropped_A.txt`).
+
+| Lieu | 6 | 7 | 8 | 9 | 10 | 11 | 12 |
+|---|---|---|---|---|---|---|---|
+| Q1 | 3 | 5 | 8 | 9 | 11 | 14 | 19 |
+| Q2 | | | | | 4 | 7 | 10 |
+| Q3 | | | 4 | 5 | 5 | 7 | 9 |
+| Q4 | | | | 3 | 3 | 5 | 7 |
+| Q5 | | 3 | 3 | 3 | 3 | 4 | 5 |
+| N1 | | | 1 | 2 | 2 | 1 | 1 |
+| N2 | | | | | 1 | 1 | 1 |
+| N3 | | | | | | | |
+| N4 | 1 | 2 | 2 | 2 | 2 | 2 | 1 |
+| N6 | | | 1 | 2 | 2 | 2 | 3 |
+
+N3 est vide et N2 n'a qu'une maison sur 4 : leurs cases cachent la salle ou tombent sur un chemin. Q6 n'a pas de jardins. Le montage garde à l'oeil les bâtiments du joueur et n'a pas passé `check`.

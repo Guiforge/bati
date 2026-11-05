@@ -1,0 +1,286 @@
+<title>Quartiers du village</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:wght@500;700&family=Alegreya+Sans:wght@400;500;700&display=swap">
+<style>
+/* Layout: one reading column, with wide bands driven by one tier slider. Colours from the village's own night palette. */
+:root {
+  color-scheme: dark;
+  --sol: #15191A; --panneau: #1F2523; --trait: #39423C; --texte: #E8E2D0; --doux: #A9AB98; --lueur: #F0A848; --mousse: #8FA268; --sur-lueur: #15191A;
+  --titre: "Alegreya", Georgia, serif; --corps: "Alegreya Sans", "Trebuchet MS", sans-serif;
+}
+body { background: var(--sol); color: var(--texte); font: 400 17px/1.5 var(--corps); }
+main { max-width: 1240px; margin: 0 auto; padding-block: 28px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 44px; }
+main > * { min-width: 0; }
+h1, h2, h3 { font-family: var(--titre); font-weight: 700; line-height: 1.15; text-wrap: balance; margin: 0; }
+h1 { font-size: 2.4rem; } h2 { font-size: 1.6rem; } h3 { font-size: 1.15rem; color: var(--lueur); }
+p { margin: 0; max-width: 68ch; }
+section { display: grid; gap: 14px; } section > * { min-width: 0; }
+.doux { color: var(--doux); }
+img { display: block; width: 100%; height: auto; border-radius: 3px; background: var(--panneau); }
+table { border-collapse: collapse; font-size: .95rem; font-variant-numeric: tabular-nums; min-width: 620px; }
+th, td { text-align: left; padding: 6px 12px 6px 0; border-bottom: 1px solid var(--trait); vertical-align: top; }
+th { color: var(--doux); font-weight: 500; }
+.defile { overflow-x: auto; }
+.reglette { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--sol); padding-block: 10px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--sol); }
+.reglette output { font: 700 1.4rem var(--titre); color: var(--lueur); min-width: 6.5ch; }
+.reglette input { flex: 1 1 220px; min-width: 0; accent-color: var(--lueur); height: 28px; }
+.deux { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.trois { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+figure { margin: 0; display: grid; gap: 4px; align-content: start; min-width: 0; }
+figcaption { font-size: .92rem; color: var(--doux); }
+figcaption b { color: var(--texte); }
+.prop { display: grid; gap: 8px; align-content: start; min-width: 0; }
+.pieces { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+.piece { display: grid; gap: 6px; align-content: start; }
+.choix { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.choix button { appearance: none; background: none; border: 2px solid transparent; padding: 0; cursor: pointer; border-radius: 4px; color: inherit; font: inherit; }
+.choix button[aria-pressed="true"] { border-color: var(--lueur); }
+button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px solid var(--lueur); outline-offset: 2px; }
+.choisir { display: flex; flex-wrap: wrap; gap: 8px; }
+.choisir button { background: var(--panneau); color: var(--texte); border: 1px solid var(--trait); padding: 10px 16px; border-radius: 4px; font: 500 1rem var(--corps); cursor: pointer; }
+.choisir button[aria-pressed="true"] { background: var(--lueur); color: var(--sur-lueur); border-color: var(--lueur); }
+.question { display: grid; gap: 8px; padding-block: 12px; border-top: 1px solid var(--trait); }
+textarea { width: 100%; box-sizing: border-box; min-height: 90px; background: var(--panneau); color: var(--texte); border: 1px solid var(--trait); padding: 10px; font: inherit; border-radius: 4px; }
+#etat { font-size: .92rem; color: var(--mousse); min-height: 1.4em; }
+ul { margin: 0; padding-left: 1.2em; max-width: 68ch; display: grid; gap: 4px; }
+@media (max-width: 860px) {
+  .trois { grid-template-columns: 1fr; }
+  h1 { font-size: 2rem; }
+}
+</style>
+<main>
+<header style="display:grid;gap:10px">
+  <p class="doux">Piste GROWTH, 05/11/2026. Concepts collés sur les vrais rendus de l'atelier. Rien de neuf n'est peint pour de bon.</p>
+  <h1>Les quartiers : quelle ville entre tes bâtiments ?</h1>
+  <p>LAYOUT est fusionné. Trois idées de quartiers à choisir, sur ton plan. <b>Ta réponse lance la peinture.</b> La forêt du sud et le camp du palier 1, eux, sont déjà dans le jeu.</p>
+  <p><b>Mon avis : A, La rue bâtie</b>, et theo, mara et env la classent aussi en tête, sur le texte. <b>Deux réserves à l'image</b> : la place du feu ne gagne presque rien, et les paliers 10, 11 et 12 restent proches vus de loin.</p>
+</header>
+
+<section>
+  <h2>Ce qui est déjà posé dans le jeu</h2>
+  <p>La forêt couvre le sud aux paliers 1 à 3, et les polygones sombres sont cachés. Elle recule puis laisse la place au coin au palier 4. Le camp du palier 1 retrouve 4 accessoires : caisses, tonneaux, sacs et bois.</p>
+  <figure><img data-img="foret" alt="Paliers 1 à 4 : la forêt couvre le sud, le coin arrive au palier 4"><figcaption>Paliers 1, 2, 3 et 4, rendus réels. Le palier 2 est cadré plus près.</figcaption></figure>
+  <ul>
+    <li><b>Le recul de 1 à 3 est discret</b>, 1 à 2 cases. Le grand saut est au palier 4.</li>
+    <li>Il reste des trous sombres le long de la route aux paliers 1 à 3.</li>
+    <li>Il n'y a <b>pas de souches</b> : aucun sprite n'existe. J'en peindrai si tu veux.</li>
+    <li>La découpe carrée au pied de la route sud est fermée par la forêt. <b>En échange, la route visible s'arrête environ 100 px plus haut.</b></li>
+  </ul>
+</section>
+
+<section>
+  <h2>La bande F sur ton plan</h2>
+  <p>Ta proposition F, la forêt recule, sur les rendus de LAYOUT. J'ai étalé les arrivées, car rien d'autre ne change au palier 10 et après : cabanes au 7 et hameau au 9 (H1), une ferme au 10 et une au 11 (H2), le bourg au 12 (H3). Une seule route, depuis la rue de l'ouest, évite l'observatoire et le moulin.</p>
+  <figure><img data-img="bande-F2" alt="Les 12 paliers de F sur le plan de LAYOUT"><figcaption>Paliers 1 à 12, montage. Les pièces se lisent comme des autocollants.</figcaption></figure>
+  <ul>
+    <li><b>H2 et H3 sont à moitié hors de l'écran</b> : le bourg du palier 12 se voit à peine. Voir la question 3.</li>
+    <li><b>Le recul se voit mal à H1</b> : ce pré est déjà ouvert à tous les paliers, il n'y a rien à faire reculer. Il se voit seulement à H3.</li>
+    <li>La route en gravier se lit comme une bande pâle.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Les paliers 6 à 12, avec et sans A</h2>
+  <p>Fais glisser la réglette. À gauche le jeu d'aujourd'hui, à droite la direction A.</p>
+  <div class="reglette">
+    <output id="palier-lu" for="palier">Palier 12</output>
+    <input id="palier" type="range" min="6" max="12" step="1" value="12" aria-label="Palier du village">
+  </div>
+  <div class="deux">
+    <figure><img id="vue-auj" alt=""><figcaption><b>Aujourd'hui</b></figcaption></figure>
+    <figure><img id="vue-A" alt=""><figcaption><b>A, La rue bâtie</b></figcaption></figure>
+  </div>
+</section>
+
+<section>
+  <h2>Les trois idées</h2>
+  <div class="trois">
+    <div class="prop"><h3>A. La rue bâtie</h3>
+      <p>La ville part du feu et remonte la rue. Le palier se lit à la distance jusqu'où les maisons sont arrivées.</p>
+      <ul><li><b>Marché</b> au bord de la place, halle au 11</li><li><b>Taverne</b> au 12, près du puits</li><li><b>Q1</b> devient une petite ville, avec ses ateliers</li><li>Scierie et grumes de B à la lisière (9, 11)</li></ul>
+      <p class="doux">Le moins de peinture : 8 pièces, plus 2 reprises de B. Risque : beaucoup d'images montées, environ 56 pièces au palier 12, jour seul.</p></div>
+    <div class="prop"><h3>B. Les métiers</h3>
+      <p>Chaque quartier a son métier, reconnaissable : maçons, potiers, maraîchers, bûcherons, vanniers.</p>
+      <ul><li>Une phrase à dire à un ami</li><li>Le meilleur palier 11 selon theo : hangar et scierie</li><li>Le coeur reste presque vide, sauf les maisons de A</li></ul>
+      <p class="doux">15 peintures. Risque : une scierie ressemble à un bâtiment à taper, et ces métiers sont trop petits pour se lire au téléphone (mara).</p></div>
+    <div class="prop"><h3>C. Les nappes</h3>
+      <p>Chaque emplacement est une grande image à plat, repeinte en plus riche à certains paliers.</p>
+      <ul><li>Rien ne passe jamais devant un bâtiment</li><li>Le moins d'images montées</li><li>Aucune façade près du feu</li></ul>
+      <p class="doux">15 peintures, surtout grandes. Risque : un tapis, sans relief, avec une couture sur tout son contour. Theo et env la classent derniers, mara devant B.</p></div>
+  </div>
+  <figure><img data-img="bande-B" alt="Direction B aux paliers 8, 10 et 12"><figcaption><b>B</b>, paliers 8, 10, 12</figcaption></figure>
+  <figure><img data-img="bande-C" alt="Direction C aux paliers 8, 10 et 12"><figcaption><b>C</b>, paliers 8, 10, 12. Les plaques pâles sont le pire collage des trois.</figcaption></figure>
+</section>
+
+<section>
+  <h2>Ce que A ne règle pas</h2>
+  <div class="deux">
+    <figure><img data-img="coeur" alt="La place du feu au palier 12 avec A"><figcaption><b>La place, palier 12.</b> La petite halle est confuse sur son pavé cloné.</figcaption></figure>
+    <figure><img data-img="vignette" alt="Vignettes floues des paliers 9, 10, 11 et 12"><figcaption><b>Vignettes floues, paliers 9, 10, 11, 12.</b> Les trois dernières se ressemblent.</figcaption></figure>
+  </div>
+  <ul>
+    <li><b>Point focal</b> : les cases autour de la place sont trop petites. N3 reste vide et N2 n'a qu'une maison sur 4, sinon elles couvrent la salle ou un chemin. Ce que les quartiers font pour la place : un dégradé de valeur, c'est tout. La vraie réponse est à POLISH, par la lumière.</li>
+    <li><b>Paliers 10 à 12</b> : d'un palier au suivant, l'écart sur la vignette passe de 0,34 à 0,39 entre 10 et 11, et de 0,08 à 0,29 entre 11 et 12, après une reprise. Entre 9 et 10, il est de 0,95. Ça se voit en regardant de près, pas d'un coup d'oeil.</li>
+    <li><b>La place reste la plus claire</b> (108), devant les quartiers (99 à 104), sauf Q6 (114), qui est la route et le pré du sud du rendu.</li>
+    <li>Pas de puits sur la placette de Q1 : aucun concept n'en montre un seul.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Les pièces de A</h2>
+  <p>Deux essais Klein par pièce. Touche celui que tu gardes. Défauts : plaque de terre sous presque toutes, à retirer à la peinture ; A6 et A8 v1 montent trop haut ; A1c tire vers le gris-bleu.</p>
+  <div class="pieces" id="pieces"></div>
+  <figure><img data-img="sheet-B" alt="Planche des pièces de B"><figcaption><b>Pièces de B</b>. B5 et B6 servent aussi à A.</figcaption></figure>
+  <figure><img data-img="sheet-C" alt="Planche des pièces de C"><figcaption><b>Pièces de C</b></figcaption></figure>
+</section>
+
+<section>
+  <h2>Tes réponses</h2>
+  <p>Enregistrées ici, la prochaine session les lit. Tu peux aussi écrire sous « Réponse de Guillaume » dans <code>growth/checkpoint.md</code>.</p>
+  <div id="questions"></div>
+  <label for="note">Mélange, reprise, ou ce qui ne va pas :</label>
+  <textarea id="note" placeholder="Par exemple : A sans la halle, et les grumes de B dès le palier 8."></textarea>
+  <p id="etat" role="status"></p>
+</section>
+
+<section>
+  <h2>La suite</h2>
+  <ul>
+    <li>Après ta réponse : peinture FLUX 3 Image des quartiers et de F, puis pose et cuisson, avec <code>check</code> à chaque pose.</li>
+    <li><code>lisiere</code> et <code>pieds</code> se reverrouillent ensuite avec toi, avec LAYOUT.</li>
+  </ul>
+  <p class="doux">Dépensé cette session : 0,35 $ sur 4 $, en Klein seul.</p>
+</section>
+</main>
+<script>
+const IMG = /*IMAGES*/{};
+const src = (n) => IMG[n] ?? "";
+const pad = (n) => String(n).padStart(2, "0");
+document.querySelectorAll("[data-img]").forEach((el) => { el.src = src(el.dataset.img); });
+
+const reglette = document.getElementById("palier");
+const lu = document.getElementById("palier-lu");
+const auj = document.getElementById("vue-auj");
+const vueA = document.getElementById("vue-A");
+function montrer() {
+  const t = Number(reglette.value);
+  lu.textContent = `Palier ${t}`;
+  auj.src = src(`auj_${pad(t)}`);
+  auj.alt = `Le jeu aujourd'hui, palier ${t}`;
+  vueA.src = src(`A_${pad(t)}`);
+  vueA.alt = `Direction A, palier ${t}`;
+}
+reglette.addEventListener("input", montrer);
+montrer();
+
+const PIECES = [
+  ["A1a", "Maison, chaume"], ["A1b", "Maison, bardeaux"], ["A1c", "Maison, ardoise"], ["A2", "Longue maison"],
+  ["A3", "Jardins en lanières"], ["A4", "Étal gris (8 à 10)"], ["A5", "Atelier"], ["A6", "Maison de ville (10+)"],
+  ["A7", "Halle (11+)"], ["A8", "Taverne (12)"], ["B5", "Cabane et grumes (9+)"], ["B6", "Scierie (11+)"],
+];
+const QUESTIONS = [
+  ["direction", "1. Quelle direction ?", [["A", "A, La rue bâtie"], ["B", "B, Les métiers"], ["C", "C, Les nappes"], ["melange", "Un mélange, voir ma note"]]],
+  ["n", "2. A utilise les petits trous N1 à N6, près de la place et le long de la rue. D'accord ?", [["oui", "Oui, N1 à N6"], ["non", "Non, seulement les quartiers"]]],
+  ["bourg", "3. H2 et H3 tombent hors de l'écran. Que faire ?", [["rapprocher", "Rapprocher le hameau, les fermes et le bourg"], ["laisser", "Les laisser, on les voit en déplaçant la carte"]]],
+  ["etal", "4. L'étal à rayures du marché passe à un étal gris au palier 8 (règle 11) ?", [["gris", "Oui, gris"], ["rayures", "Non, il garde ses rayures"]]],
+  ["toit", "5. Env veut un toit chaud par groupe de 6 maisons pour éviter un lotissement. La règle 11 réserve la tuile rouille à tes bâtiments. Que garder ?", [["regle", "La règle 11, pas de toit chaud"], ["env", "Un toit chaud par groupe"]]],
+  ["souches", "6. Peindre des souches pour le camp et le recul de la forêt ?", [["oui", "Oui, une petite pièce de plus"], ["non", "Non"]]],
+];
+
+const etat = { reponses: {}, pieces: {}, note: "" };
+const zoneEtat = document.getElementById("etat");
+let doc = null;
+let ecrit = Promise.resolve();
+function enregistrer() {
+  if (!doc) { zoneEtat.textContent = "Enregistrement indisponible ici : écris ton choix dans checkpoint.md."; return; }
+  ecrit = ecrit.then(() => doc.set({ ...etat })).then(
+    () => { zoneEtat.textContent = "Enregistré."; },
+    () => { zoneEtat.textContent = "Non enregistré : écris ton choix dans checkpoint.md."; },
+  );
+}
+
+const boutonsPiece = {};
+const zonePieces = document.getElementById("pieces");
+for (const [id, nom] of PIECES) {
+  const d = document.createElement("div");
+  d.className = "piece";
+  const c = document.createElement("div");
+  c.className = "choix";
+  boutonsPiece[id] = {};
+  for (const v of ["v1", "v2"]) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.setAttribute("aria-pressed", "false");
+    b.setAttribute("aria-label", `${nom}, essai ${v}`);
+    const im = document.createElement("img");
+    im.src = src(`${id}_${v}`);
+    im.alt = "";
+    b.append(im);
+    b.addEventListener("click", () => {
+      etat.pieces[id] = etat.pieces[id] === v ? null : v;
+      peindre();
+      enregistrer();
+    });
+    boutonsPiece[id][v] = b;
+    c.append(b);
+  }
+  const l = document.createElement("span");
+  l.className = "doux";
+  l.textContent = `${id}, ${nom}`;
+  d.append(c, l);
+  zonePieces.append(d);
+}
+
+const boutonsQ = {};
+const zoneQ = document.getElementById("questions");
+for (const [id, texte, options] of QUESTIONS) {
+  const d = document.createElement("div");
+  d.className = "question";
+  const p = document.createElement("p");
+  p.textContent = texte;
+  const g = document.createElement("div");
+  g.className = "choisir";
+  g.setAttribute("role", "group");
+  g.setAttribute("aria-label", texte);
+  boutonsQ[id] = {};
+  for (const [val, nom] of options) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = nom;
+    b.setAttribute("aria-pressed", "false");
+    b.addEventListener("click", () => {
+      etat.reponses[id] = etat.reponses[id] === val ? null : val;
+      peindre();
+      enregistrer();
+    });
+    boutonsQ[id][val] = b;
+    g.append(b);
+  }
+  d.append(p, g);
+  zoneQ.append(d);
+}
+
+const note = document.getElementById("note");
+note.addEventListener("change", () => { etat.note = note.value; enregistrer(); });
+function peindre() {
+  for (const id in boutonsPiece) for (const v in boutonsPiece[id]) boutonsPiece[id][v].setAttribute("aria-pressed", String(etat.pieces[id] === v));
+  for (const id in boutonsQ) for (const v in boutonsQ[id]) boutonsQ[id][v].setAttribute("aria-pressed", String(etat.reponses[id] === v));
+  if (document.activeElement !== note) note.value = etat.note ?? "";
+}
+
+(async () => {
+  const db = await claude.use("db");
+  if (!db) { zoneEtat.textContent = "Enregistrement indisponible ici : écris ton choix dans checkpoint.md."; return; }
+  doc = db.doc("picks/guillaume");
+  const lue = await doc.get().catch(() => null);
+  const donnees = lue && (typeof lue.data === "function" ? lue.data() : lue.data ?? lue);
+  if (donnees) {
+    etat.reponses = donnees.reponses ?? {};
+    etat.pieces = donnees.pieces ?? {};
+    etat.note = donnees.note ?? "";
+    peindre();
+  }
+})();
+</script>

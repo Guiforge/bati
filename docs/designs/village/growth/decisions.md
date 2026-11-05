@@ -11,3 +11,9 @@
 - 04/11 **Guillaume choisit F, la forêt recule.** Mon mélange R + F est écarté.
 - 04/11 **Le recul de F reste à gauche du bosquet** : son plan met le bosquet au pied de la forêt du fond (règle 23). Bourg et route de F à replacer sur les rendus de LAYOUT (G14), avant la peinture.
 - 04/11 **Forêt au sud aux paliers 1 à 3, demandée par Guillaume.** Elle couvre le sol nu, recule en laissant des souches à 2 et 3, disparaît au palier 4 où le coin arrive. Le coin et les crops, jugés à partir du palier 6, ne bougent pas. L'appentis du palier 1 passe près du camp, sinon la forêt le couvre. Dans le jeu, `lisiereSud` donne les mêmes masses à tous les paliers : il faudra le rendre dépendant du palier (G15).
+- 05/11 **Direction A recommandée pour les quartiers**, classée première par theo, mara et env sur le texte. Elle prend la cabane et la scierie de B, à Q4, pour donner un volume au palier 11.
+- 05/11 **Arrivées de F étalées** : H1 au 7 et au 9, H2 au 10 et au 11, H3 au 12, pour que les paliers 10 à 12 changent. `slots.json` dit encore 10 pour les trois : à changer à la pose.
+- 05/11 **Une seule reprise de montage**, pour les paliers 10 à 12 et la route de F. Écart sur la vignette 11 à 12 : de 0,08 à 0,29. Pas d'autre reprise : Guillaume juge les concepts.
+- 05/11 **Forêt du sud : +32 masses au palier 1**, au-dessus de l'objectif de 25, gardées : elles cachent les polygones sombres. Moins de masses laisse des trous. PERF le saura par `progress.md`.
+- 05/11 **Pied de la route sud fermé par la forêt** : la route visible finit 100 px plus haut. Montré à Guillaume sur la page.
+- 05/11 **Branche locale `track-growth-iso`**, poussée vers `track-growth` : la session est isolée dans le worktree `iso`, et `track-growth` est prise par son ancien worktree, resté derrière.

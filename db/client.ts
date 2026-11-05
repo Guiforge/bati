@@ -7,6 +7,7 @@ import {
   openDatabaseSync,
   type SQLiteDatabase,
 } from "expo-sqlite";
+import { releasingStatements } from "./releasingStatements";
 import * as schema from "./schema";
 import { SCHEMA_VERSION } from "./schemaVersion";
 import { sqlString } from "./sql";
@@ -73,7 +74,7 @@ function createSingleton(): DbSingleton {
   // Durable, and already expected: `commitRestore` has always deleted the `-wal` and `-shm`
   // sidecars alongside `-journal`, for a mode this database was never actually put into.
   expoDb.execSync("PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;");
-  const db = drizzle(expoDb, { schema });
+  const db = drizzle(releasingStatements(expoDb), { schema });
   return { expoDb, db };
 }
 

@@ -124,7 +124,7 @@
   "piste_ordre": 8,
   "etape": "Peindre les fermes, hameaux et routes choisis",
   "ordre": 8,
-  "statut": "attend Guillaume",
+  "statut": "en cours",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -133,7 +133,7 @@
   "reste": "2 à 4 h",
   "avancement": null,
   "total": null,
-  "note": "attend le choix du peintre (G18) ; bourg et fermes à rapprocher d'abord"
+  "note": "2.5-sunburst ; bourg et fermes rapprochés"
  },
  {
   "id": "G9",
@@ -158,7 +158,7 @@
   "piste_ordre": 8,
   "etape": "Peindre les quartiers",
   "ordre": 10,
-  "statut": "attend Guillaume",
+  "statut": "en cours",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -167,7 +167,7 @@
   "reste": "2 à 4 h",
   "avancement": null,
   "total": null,
-  "note": "A choisie, pièces de mara ; attend le choix du peintre (G18)"
+  "note": "2.5-sunburst ; pièces de mara"
  },
  {
   "id": "G11",
@@ -175,7 +175,7 @@
   "piste_ordre": 8,
   "etape": "Poser et cuire",
   "ordre": 11,
-  "statut": "attend Guillaume",
+  "statut": "à faire",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -184,7 +184,7 @@
   "reste": "3 à 6 h",
   "avancement": null,
   "total": null,
-  "note": "attend G8 et G10"
+  "note": "après G8, G10"
  },
  {
   "id": "G12",
@@ -294,7 +294,7 @@
   "piste_ordre": 8,
   "etape": "Banc d'essai FLUX 3 contre GPT Image 2",
   "ordre": 18,
-  "statut": "attend Guillaume",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -303,6 +303,23 @@
   "reste": "",
   "avancement": null,
   "total": null,
-  "note": "page prête, attend le choix du peintre par sorte de travail : https://claude.ai/artifact/PRXjCkLdN2Kdn6WbpGKg9V"
+  "note": "choix de Guillaume le 05/11, PIPELINE.md"
+ },
+ {
+  "id": "G19",
+  "piste": "Alentours qui grandissent",
+  "piste_ordre": 8,
+  "etape": "Peindre les souches",
+  "ordre": 19,
+  "statut": "en cours",
+  "debut": null,
+  "fin": null,
+  "heures": null,
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "",
+  "avancement": null,
+  "total": null,
+  "note": "2.5-sunburst"
  }
 ]

@@ -10,3 +10,4 @@
 - **POLISH** : la place du feu comme coeur reste à toi. Les petits trous autour d'elle sont trop serrés : N3 vide, N2 à une maison sur 4 sur le montage de A. Les quartiers donnent seulement un dégradé de valeur.
 - **VILLAGERS** : si A est choisie, des maisons de Q1 à Q5 ne doivent pas recevoir de villageois tant qu'elles restent à plat (`quartiers.md`, trois façons de poser une pièce).
 - **LAYOUT** : G11 pas commencé, L15 attend encore. `slots.md` dit qu'il n'y a pas de quartier à l'est et ne connaît pas N1 à N6 (`quartiers.md`).
+- **POLISH** : les chemins bruns se repeignent avec FLUX 3 Image, collés sous masque tiré du tracé des rues (`PIPELINE.md`, `growth/img/bakeoff2-chemins.jpg`, `scripts/growth/bakeoff2.py`, commande `colle`).

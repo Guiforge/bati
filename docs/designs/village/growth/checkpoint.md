@@ -8,7 +8,7 @@
 
 ### Réponse de Guillaume, banc d'essai
 
-(en attente)
+05/11, dans la session : « ok on suit tes recos elle sont top ». Donc `gpt-image-2.5-sunburst` pour la maison et les petites pièces, souches comprises, et FLUX 3 Image pour les chemins, collés sur l'original sous masque. C'est aussi son accord pour 2.5-sunburst en production.
 
 ---
 

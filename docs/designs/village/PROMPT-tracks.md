@@ -334,3 +334,6 @@ Guillaume bought 20 $ of OpenAI credit. This section changes the "only FLUX 3 Im
 
 ### Exception to v4.4, 05/11 (Guillaume's go in the GROWTH session)
 OpenAI also lists `gpt-image-2.5-sunburst` and `gpt-image-2.6-sunburst`, same token rates, presented for image editing. For the bake-off only, these two may be called, through `scripts/iso/openai_loop.py`, under the same budget and rules. Production still uses only `gpt-image-2` until Guillaume's pick is written in PIPELINE.md.
+
+### Painters picked, 05/11 (Guillaume, GROWTH bake-off)
+Production may call `gpt-image-2.5-sunburst` through `scripts/iso/openai_loop.py`, under the same budget and rules, for houses, quarters pieces and small props. Paths and other edits of the ground: FLUX 3 Image, composited on the source through a mask. `gpt-image-2` stays allowed but is not preferred; `gpt-image-2.6-sunburst` is dropped. Result and reasons in PIPELINE.md.

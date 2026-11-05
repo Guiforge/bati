@@ -172,3 +172,13 @@ Téléphone de référence : émulateur 1080x2400 à 420 dpi (`bati-bench`, 411,
 - `integrate.py` et `sans_losange.py` n'ont pas été rejoués : ils lisent le worktree iso, et une autre session y travaille.
 - La forme exacte de `concepts.py pick` et `board` (arguments positionnels après le code) : seul le `argparse` est lu.
 - Le script qui construisait la page « Bâtiments du village iso » est introuvable dans le dépôt (voir `docs/designs/village-buildings/pipeline.md`, section 2).
+
+## Quel peintre pour quoi (banc d'essai du 05/11, choix de Guillaume)
+
+| Travail | Peintre | Pourquoi |
+|---|---|---|
+| Maisons, pièces de quartiers, petits accessoires | `gpt-image-2.5-sunburst`, qualité haute, `scripts/iso/openai_loop.py` | Trait net proche des sprites, suit la consigne, magenta franc. 0,066 à 0,072 $ l'image à 1024 x 1024 |
+| Chemins et autres retouches du sol | FLUX 3 Image, collé sur l'original sous masque | Ne bouge rien, texture de terre juste. 0,048 $ l'image. Hors masque : écart 0,00 |
+| Écartés | `gpt-image-2.6-sunburst` (fond noir et halo sur la maison), `gpt-image-2` en premier choix (déplace le décor, 3 fois plus cher) | |
+
+Tout modèle OpenAI repeint tout le décor : ne jamais garder son image entière pour le sol. Le `mask` de l'API a rendu des blocs noirs avec deux formats. Un masque par couleur rate les pavés sombres : le tirer du tracé des rues. Planches : `growth/img/bakeoff*.jpg`.

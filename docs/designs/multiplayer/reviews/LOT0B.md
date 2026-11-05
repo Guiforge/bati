@@ -5,6 +5,16 @@ une séance normale, une variante plus facile compte, et un lien d'invitation ne
 partir. Tes trois décisions du 04/11 sont appliquées, plus bas. Une limite aussi, à connaître : une clé supprimée reste
 lisible dans le WAL pour qui lit les fichiers privés de l'app.
 
+## Fusion
+
+**Fusionné dans `main` le 05/11/2026, PR #229, merge commit `c4b3cca7`, avec le lot 0.**
+
+La CI était rouge à la fusion, par choix de Guillaume : `expo-doctor` signalait 10 paquets en retard sur les correctifs du
+SDK 58, comme sur `main` depuis le 03/11. Cette étape a coupé la suite du job `check`, donc licences, vulnérabilités,
+audit des workflows et comparaison du prebuild n'ont pas tourné en CI sur cette PR. Ils sont passés en local sur la
+branche de correction des dépendances. Reste à faire à la main : `adb shell pm get-app-links com.guiforge.bati` sur un
+vrai téléphone une fois la page en ligne, et l'essai sur un vrai téléphone avant la prochaine release.
+
 ## Ce qui a été construit
 
 | Étape | Livré | Temps (environ) |

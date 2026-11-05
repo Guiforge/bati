@@ -1,6 +1,7 @@
 # Multijoueur, lot 0 : état
 
 Branche `feat/multiplayer-lot0`, partie de `main` (`4150b9b4`). Commencé le 03/11 à 22:17.
+**Fusionné dans `main` le 05/11, PR #229, commit `c4b3cca7`,** avec le lot 0 bis.
 Plan : section « Décisions du 03/11 » de l'audit. Format : [envelope.md](envelope.md). Scanner :
 [qr-scanner.md](qr-scanner.md). Rapport : [reviews/LOT0.md](reviews/LOT0.md).
 
@@ -19,7 +20,7 @@ le rapport.
 
 ## Lot 0 bis
 
-Décidé le 04/11, commencé à 09:37. Même branche, fusionné avec le lot 0 une fois la clé Play reçue.
+Décidé le 04/11, commencé à 09:37. Même branche, fusionné avec le lot 0 le 05/11 (PR #229, `c4b3cca7`).
 
 **Numéros de migration :** le lot 0 a pris `0082`, ce lot `0083` et `0084`, `feat/village-iso` est à `0081`. La
 branche qui fusionne en second renumérote ses migrations.
@@ -144,5 +145,5 @@ Material (163), Guava (201), Gson (87). Aucune Play Services ni ML Kit. Critère
 - **Le drapeau `paused` de l'enveloppe dit au compagnon que le héros est en pause.** Il en a besoin pour geler la
   semaine des deux, et la pause peut vouloir dire malade. Le texte du lot 1 (« Le boss attend », sans nom) reste à
   écrire sans en dire plus.
-- **La page `/d` et l'App Link partent au prochain merge.** La page n'annonce aucun jeu. Sans le drapeau, un lien
+- **La page `/d` et l'App Link sont dans `main` depuis le 05/11.** La page n'annonce aucun jeu. Sans le drapeau, un lien
   ouvre l'accueil.

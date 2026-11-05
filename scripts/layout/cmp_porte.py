@@ -15,8 +15,10 @@ def vis(L, x, y, t, d):
     return c != "-" and LET.index(c) + 1 <= t
 
 
-for y in range(12, 20):
-    for x in range(11, 20):
-        s = new["sol"][y - new["debut"]][x - new["debut"]]
-        if s in "#=" and vis(new, x, y, 6, new["debut"]) and not vis(old, x, y, 6, 0):
-            print("new path cell visible at tier 6:", x, y)
+for T in (4, 5, 6):
+    for y in range(12, 20):
+        for x in range(11, 20):
+            c = new["sol"][y - new["debut"]][x - new["debut"]]
+            if c in "#=" and vis(new, x, y, T, new["debut"]) and not vis(old, x, y, T, 0):
+                print(f"tier {T}: path cell visible now, not before:", x, y)
+print("done")

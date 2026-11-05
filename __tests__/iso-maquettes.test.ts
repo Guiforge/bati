@@ -65,8 +65,9 @@ function webps(dir: string): string[] {
  * `eau/canal_droit.nuit.webp`, `echafaudage/1x1.nuit.webp`, `villageois/smith_face.nuit.webp`.
  */
 function cleMaquette(f: string): string {
-  const piece = /^pieces\/([a-z]+)_([a-z0-9_]+)\.webp$/.exec(f);
-  return piece?.[1] && piece[2] ? clePiece(piece[1], piece[2]) : f;
+  // `eau_canal_pont.jour.webp`: a piece with a day image keeps `.jour` in its key (the night's is the bare file).
+  const piece = /^pieces\/([a-z]+)_([a-z0-9_]+?)(\.jour)?\.webp$/.exec(f);
+  return piece?.[1] && piece[2] ? clePiece(piece[1], piece[2], piece[3] ? "jour" : "nuit") : f;
 }
 
 /**

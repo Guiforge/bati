@@ -137,7 +137,7 @@ Palier 12, `haut=1`, les 8 boîtes de crochet couvertes (plus de 1 % de leurs pi
 
 Les ancres du palier 1 : 2 sur 12 hors de 2 px, deux figurines de la place, `villageois/farmer_face` (iso-figurine-11-12, 3,5 px) et `villageois/herbalist_face` (iso-figurine-10-11, 2,8 px), aucune ne flotte. Au palier 12 : 0 sur 59.
 
-**Mannequin en [7, 0]** (non appliqué, `essai.py`, `img/prop-mannequin-7-0.jpg`), palier 12 seul, `haut=1` : `GATE FAILED: occlusion 0, anchors 0, props 8, depth 0, hooks 9, tap 0, motion 0`. Le seul gain est la **carrière : 96,1 %** (mannequin 717 px) contre 86,7 %. Les 8 accessoires cachés sont les mêmes, les crochets passent de 8 à 9 : la carrière tombe de 13,2 % à 2,5 % mais le bosquet (druid_grove grand) prend 1,1 % (villageois h1, 191 px).
+**Mannequin en [7, 0]** (non appliqué, mesuré avec un script jetable depuis supprimé, `img/prop-mannequin-7-0.jpg`), palier 12 seul, `haut=1` : `GATE FAILED: occlusion 0, anchors 0, props 8, depth 0, hooks 9, tap 0, motion 0`. Le seul gain est la **carrière : 96,1 %** (mannequin 717 px) contre 86,7 %. Les 8 accessoires cachés sont les mêmes, les crochets passent de 8 à 9 : la carrière tombe de 13,2 % à 2,5 % mais le bosquet (druid_grove grand) prend 1,1 % (villageois h1, 191 px).
 
 Plans vus de dessus par bande : `img/prop-plan-t1-3.jpg`, `-t4-6`, `-t7-9`, `-t10-12`.
 
@@ -165,7 +165,6 @@ Les deux ponts ([2, 10] et [2, 2]) sont des cases `=` de `isoLayout.json` ; `pie
 - `python3 scripts/layout/paliers.py` : réécrit `paliers` et `etapes` ; `python3 scripts/layout/rue.py nord|ouest` : applique une rue puis relance `paliers.py`.
 - `scripts/layout/rendre.sh` : paliers 1, 3, 6, 9, 12 jour, 12 nuit, recul, dans `img/prop-*.jpg`, et la ligne de porte d'occlusion de chaque palier ; `scripts/layout/une.sh NOM PALIER LUMIERE QUERY` : un seul état.
 - `python3 scripts/layout/plan.py bands|slots|rue SORTIE` : plans vus de dessus.
-- `python3 scripts/layout/essai.py NOM DOSSIER code=gx,gy ...` : essaie des positions sur une copie du plan (rend le palier 1, mesure le 12, restaure).
 - Le sud (coin de la porte) arrive au palier 4 (voir `handoff.md`).
 
 ## La rue (L8)
@@ -174,7 +173,7 @@ Deux options, `scripts/layout/rue.py` : **nord** (défaut de la branche) : deuxi
 
 ## Les cadrages verrouillés (L10)
 
-`img/prop-crops.jpg` : `porte`, `lisiere`, `pieds` (tuiles de `loupes/bc/card.md`, palier 6, jour) avant (`origin/track-layout`) et après (`scripts/layout/crops.sh origin/track-layout DOSSIER`, puis `montage_crops.py`). `lock_check.py` : LOCK_OK (aucun fichier du verrou touché). L'art du coin de la porte sud n'a pas bougé ; son cadrage de palier 6 a bougé un peu parce que l'ouverture suit la largeur du bâti. `lisiere` et `pieds` changent presque entièrement : leurs tuiles sont la terre nouvelle, désormais pleine de bâtiments, et les trois masses de forêt vectorielles qui s'y trouvaient ont déjà reculé (la clairière suit l'île). Il n'y a pas eu besoin de repeindre ni de régénérer `isoLisiere.json`.
+`img/prop-crops.jpg` : `porte`, `lisiere`, `pieds` (tuiles de `loupes/bc/card.md`, palier 6, jour) avant (`origin/track-layout`) et après (un worktree jetable). `lock_check.py` : LOCK_OK (aucun fichier du verrou touché). L'art du coin de la porte sud n'a pas bougé ; son cadrage de palier 6 a bougé un peu parce que l'ouverture suit la largeur du bâti. `lisiere` et `pieds` changent presque entièrement : leurs tuiles sont la terre nouvelle, désormais pleine de bâtiments, et les trois masses de forêt vectorielles qui s'y trouvaient ont déjà reculé (la clairière suit l'île). Il n'y a pas eu besoin de repeindre ni de régénérer `isoLisiere.json`.
 
 ### Mesure des deux rues (palier 12 seul, `haut=1`, après la fusion)
 

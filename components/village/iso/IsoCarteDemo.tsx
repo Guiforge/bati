@@ -1235,6 +1235,7 @@ function Piece({
 function PieceOuLisiere({
   e,
   ambiance,
+  lumiere,
   biome,
   portees,
   lisiere,
@@ -1242,6 +1243,8 @@ function PieceOuLisiere({
 }: {
   e: Extract<ElementCarte, { type: "piece" | "lisiere" }>;
   ambiance: Ambiance;
+  /** The map's light (not the sprites' ambiance, which defaults to night): a water piece wears its day image by day. */
+  lumiere: Ambiance;
   biome: Biome;
   portees: readonly Point[][];
   lisiere: ReadonlyMap<string, number>;
@@ -1255,7 +1258,7 @@ function PieceOuLisiere({
   const piece =
     e.type === "lisiere"
       ? { ...e.piece, cle: clePiece(e.piece.famille, e.piece.nom, ambiance) }
-      : ambiance === "jour" && !e.piece.decor && MAQUETTES[cleJour]
+      : lumiere === "jour" && !e.piece.decor && MAQUETTES[cleJour]
         ? { ...e.piece, cle: cleJour }
         : e.piece;
   return (
@@ -2313,6 +2316,7 @@ export function IsoCarte({
         key={`${e.type}${e.piece.case.join(",")}`}
         e={e}
         ambiance={ambiance}
+        lumiere={lumiere}
         biome={biome}
         portees={portees}
         lisiere={lisiere}

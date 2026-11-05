@@ -1138,7 +1138,7 @@ export function voileVillage(visible: readonly (readonly boolean[])[]): Voile {
 /** A prop's canvas (240 x 220 px), dp, and where its foot is in it (a share of its height). */
 export const TOILE_ACCESSOIRE = { w: 57.6, h: 52.8, pied: 212 / 220 } as const;
 
-/** A prop's canvas: the fixed one, or a painted piece's own (pieces.ts), the foot at the same share of its height. */
+/** A prop's canvas: the fixed one, or a painted piece's own (piecesPosees.ts), the foot at the same share of its height. */
 export const toileDe = (nom: Accessoire["nom"]): { w: number; h: number; pied: number } =>
   nom in TOILES_PIECES
     ? { ...TOILES_PIECES[nom as NomPiece], pied: TOILE_ACCESSOIRE.pied }

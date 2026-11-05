@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The gate lines per tier out of scratch/fixe2/chk/default.txt and haut.txt (passer_gates.py): one row a tier, the counts the 12-tier summary adds up.
+"""The gate lines per tier out of scratch/fixe3/chk/default.txt and haut.txt (passer_gates.py): one row a tier, the counts the 12-tier summary adds up.
 
     table_gates.py
 """
@@ -7,7 +7,7 @@ import pathlib
 import re
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
-CHK = ROOT / "docs/designs/village/growth/scratch/fixe2/chk"
+CHK = ROOT / "docs/designs/village/growth/scratch/fixe3/chk"
 GATES = ("occlusion", "anchors", "props", "depth", "hooks", "tap")
 
 

@@ -30,9 +30,9 @@ SC = 0.19
 BOX = {"A1a": (66, 48), "A1b": (66, 48), "A1c": (66, 48), "A2": (92, 50), "A3": (140, 64), "A5": (92, 52), "A6": (80, 56), "A7": (130, 50),
        "A8": (118, 56), "B5": (92, 50), "B6": (125, 52),
        "hameau1_F_v2": (150, 999), "hameau2_F_v1": (190, 999), "ferme3_F_v1": (150, 999), "ferme3_F_v2": (150, 999),
-       "ferme4_F_v1": (190, 999), "bourg_F_v1": (260, 999)}
+       "ferme4_F_v1": (190, 999), "bourg_F_v1": (260, 999), "mat": (46, 120)}
 CANVAS = {"A1a": "decor1x1", "A1b": "decor1x1", "A1c": "decor1x1", "A2": "building1x2", "A3": "building2x3", "A5": "building1x2", "A6": "building1x2",
-          "A7": "building1x3", "A8": "building2x3", "B5": "building1x2", "B6": "building2x3", "A4": "decor1x1"}
+          "A7": "building1x3", "A8": "building2x3", "B5": "building1x2", "B6": "building2x3", "A4": "decor1x1", "mat": "decor1x1"}
 STUMP_W = 100  # px, the widest painted stump (about 1/7 of the sheet) after scaling: a quarter of a cell
 LICENCE = "OpenAI output terms: the API account holder owns the output (gpt-image-2.5-sunburst), personal or commercial use"
 

@@ -31,7 +31,7 @@ def main():
     out = ["tiers: 1/8 thumb d_pixel before -> after | whole d_pixel before -> after | core d_pixel before -> after"]
     for a, b in zip(tiers, tiers[1:], strict=False):
         row = []
-        for folder in ("fixe", "fixe2"):
+        for folder in ("fixe", "fixe3"):
             ia, ib = load(folder, a), load(folder, b)
             t = float(np.abs(thumb(ib) - thumb(ia)).mean())
             w = float(np.abs(np.asarray(ib.convert("L"), dtype=np.float64) - np.asarray(ia.convert("L"), dtype=np.float64)).mean())
@@ -39,7 +39,7 @@ def main():
             row.append((t, w, c))
         (t0, w0, c0), (t1, w1, c1) = row
         out.append(f"{a}->{b}: 1/8 thumb {t0:.2f} -> {t1:.2f} | whole {w0:.2f} -> {w1:.2f} | core {c0:.2f} -> {c1:.2f}")
-    (S / "fixe2" / "vignette.txt").write_text("\n".join(out) + "\n")
+    (S / "fixe3" / "vignette.txt").write_text("\n".join(out) + "\n")
     print("\n".join(out))
 
 

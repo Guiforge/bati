@@ -11174,6 +11174,16 @@
     "how": "quarter or countryside piece painted from its concept: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
     "licence": "same as the source render; see that entry"
   },
+  "docs/designs/village/growth/scratch/final/mat.jour.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/mat_1.png",
+    "how": "quarter or countryside piece painted from its concept: the painted day sprite; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
+  "docs/designs/village/growth/scratch/final/mat.nuit.webp": {
+    "derived_from": "docs/designs/village/growth/scratch/final/raw/mat_1.png",
+    "how": "quarter or countryside piece painted from its concept: its night: the grade of the existing nights (famille_jour.nuit), small windows warmed, no model; trimmed, keyed on the magenta, scaled to the game's density",
+    "licence": "same as the source render; see that entry"
+  },
   "docs/designs/village/growth/scratch/final/raw/A1a_1.png": {
     "model": "gpt-image-2.5-sunburst",
     "response_model": null,
@@ -11801,6 +11811,37 @@
       "total_tokens": 4315
     },
     "cost": 0.0723,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/final/raw/mat_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Draw one new object in the same hand: a tall festive mast for a village square, seen from the same isometric three-quarter view from above, standing alone. A straight dark weathered timber pole about three times the height of a house, with a crossbar near the top, and long narrow banners hanging from the pole and the crossbar, in dull muted red and dull ochre in alternating bands, a little frayed at the tips, hanging still. At its foot a small low round stone brazier with a small warm fire in it and a few stones around the pole's base. The object stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth, sand or grass, the base ends cleanly on the magenta, and the banners never touch the magenta except through their own edge. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters, no symbols.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 1519,
+      "input_tokens_details": {
+        "image_tokens": 1248,
+        "text_tokens": 271
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 3275
+    },
+    "cost": 0.0641,
     "session": "growth-2",
     "date": "2026-11-05"
   },

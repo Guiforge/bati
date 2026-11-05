@@ -78,6 +78,10 @@ export const IMAGES_PIECES: Record<NomPiece, { jour: number; nuit: number }> = {
     jour: require("@/assets/images/village/iso/accessoires/piece_hameau2_f_v1.webp"),
     nuit: require("@/assets/images/village/iso/accessoires/piece_hameau2_f_v1.nuit.webp"),
   },
+  piece_mat: {
+    jour: require("@/assets/images/village/iso/accessoires/piece_mat.webp"),
+    nuit: require("@/assets/images/village/iso/accessoires/piece_mat.nuit.webp"),
+  },
   piece_souche_1: {
     jour: require("@/assets/images/village/iso/accessoires/piece_souche_1.webp"),
     nuit: require("@/assets/images/village/iso/accessoires/piece_souche_1.nuit.webp"),

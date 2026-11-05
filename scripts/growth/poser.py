@@ -10,11 +10,13 @@ foyer=campfire zoom 0.45, 1.18125 px a dp, the campfire [12, 11] at (540, 1255).
 import json
 import math
 import pathlib
+import statistics
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT / "scripts" / "growth"))
 import montage_plan as MP
+import numpy as np
 from PIL import Image
 
 FIN = MP.FIN
@@ -29,7 +31,37 @@ MAX_PX_DP = 4.5  # native px a dp kept in the copied files (the props' own is 4.
 
 # every id of the finals that reaches the scene
 FINALS = ["A1a", "A1b", "A1c", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "B5", "B6", "bourg_F_v1", "ferme3_F_v1", "ferme3_F_v2",
-          "ferme4_F_v1", "hameau1_F_v2", "hameau2_F_v1", "copeaux_1", "copeaux_2", "souche_1", "souche_2", "souche_3", "souche_4", "souche_5"]
+          "ferme4_F_v1", "hameau1_F_v2", "hameau2_F_v1", "copeaux_1", "copeaux_2", "mat", "souche_1", "souche_2", "souche_3", "souche_4", "souche_5"]
+
+
+def lum(im):
+    a = np.asarray(im).astype(float)
+    return float((0.299 * a[..., 0] + 0.587 * a[..., 1] + 0.114 * a[..., 2])[a[..., 3] > 200].mean())
+
+
+def lift(im, g, k=1.0):
+    """A levels curve of exponent g (under 1 lifts), faded out under the ink line (luma 25 to 70) so the outline keeps its black; roofs warmed a touch. Alpha untouched."""
+    a = np.asarray(im).astype(float)
+    rgb = a[..., :3]
+    y = (0.299 * rgb[..., 0] + 0.587 * rgb[..., 1] + 0.114 * rgb[..., 2])[..., None]
+    t = np.clip((y - 25 * k) / (45 * k), 0, 1)
+    t = t * t * (3 - 2 * t)
+    up = 255 * (rgb / 255) ** g * np.array([1.05, 1.0, 0.94])
+    out = rgb + (np.minimum(up, 255) - rgb) * t
+    return Image.fromarray(np.dstack([out, a[..., 3]]).clip(0, 255).astype(np.uint8), "RGBA")
+
+
+def gamma_for(im, target, k=1.0):
+    """The exponent that brings the picture's mean luminance to `target` (bisection)."""
+    lo, hi = 0.3, 1.0
+    for _ in range(18):
+        mid = (lo + hi) / 2
+        lo, hi = (mid, hi) if lum(lift(im, mid, k)) > target else (lo, mid)
+    return (lo + hi) / 2
+
+
+def a_median(suf=".jour.webp"):
+    return statistics.median(lum(Image.open(FINAL / f"{i}{suf}").convert("RGBA")) for i in FINALS if i.startswith(("A", "B")))
 
 
 def ident(i):
@@ -54,7 +86,7 @@ def fit(i, wmax, hmax):
 
 
 # ---------------------------------------------------------------- the montage's pieces, as finals
-SIZE = {k: v for k, v in MP.SIZES.items()}
+SIZE = {k: v for k, v in MP.SIZES.items()} | {"ma": (40, 100)}  # the mast: a tall thin piece
 TRY = {"N1", "N2", "N3", "N4", "N5", "N6", "Q6"}
 # a quarter piece the gates dropped or moved, by (quarter, first tier, rounded montage gx, gy): None drops it, a pair moves it
 EDITS = {}
@@ -117,6 +149,14 @@ def n1():
     ]
 
 
+MAT_FOOT = (15.5, 12.1)  # the square's centre: the free cell between the fountain, the campfire and the street, off every path and hook
+
+
+def mat():
+    """The festive mast of the square (scripts/growth/mat.py), from tier 10: a free cell, by its foot."""
+    return at_foot("mat", "M:10", 10, FIN, MAT_FOOT) | dict(why="M")
+
+
 def stump_rows():
     out = []
     for first, i, (x, y), mirror, *rest in STUMPS_PX:
@@ -163,12 +203,20 @@ def copy_images(widths):
     -> {name: (width dp, height dp of the padded canvas)}."""
     ASSETS.mkdir(parents=True, exist_ok=True)
     toiles = {}
+    # the countryside is painted near black: lifted to the quarters' median, by day and by night (the night's ink line is darker, so its fade is scaled)
+    cibles = {".jour.webp": (a_median() * 0.97, 1.0), ".nuit.webp": (a_median(".nuit.webp") * 0.97, 0.45)}
+    print("A median luminance", {k: round(a_median(k), 1) for k in cibles})
     for i in FINALS:
         if ident(i) not in widths:
             continue
         wdp = widths[ident(i)]
         for suf in (".jour.webp", ".nuit.webp"):
             im = Image.open(FINAL / f"{i}{suf}").convert("RGBA")
+            if "_F_" in i:
+                cible, k = cibles[suf]
+                avant = lum(im)
+                im = lift(im, gamma_for(im, cible, k), k)
+                print(f"  {i}{suf}: luminance {avant:.1f} -> {lum(im):.1f} (target {cible:.1f})")
             f = min(1.0, MAX_PX_DP * wdp / im.width)
             if f < 1:
                 im = im.resize((round(im.width * f), round(im.height * f)), Image.LANCZOS)
@@ -181,7 +229,7 @@ def copy_images(widths):
 
 def main():
     rows, dropped = piece_rows()
-    allrows = rows + n1() + stump_rows() + farm_rows()
+    allrows = rows + n1() + [mat()] + stump_rows() + farm_rows()
     # what the atelier's gates refused (a piece under 50 % visible, a hook covered), by picture and the cell its foot stands on, with the reason
     drops = json.loads((ROOT / "scripts/growth/poser_drops.json").read_text()) if (ROOT / "scripts/growth/poser_drops.json").exists() else []
     gone = {(i, cx, cy) for i, cx, cy, _why in drops}
@@ -195,6 +243,8 @@ def main():
         return 0 <= y < len(sol) and 0 <= x < len(sol[0]) and sol[y][x] in "#="
 
     def cases(r):
+        if r["why"] == "M":  # a tall mast: the picture's middle hangs in the air, only its foot stands on the ground
+            return [tuple(math.floor(v) for v in foot(r))]
         return [(math.floor(r["gx"]), math.floor(r["gy"])), tuple(math.floor(v) for v in foot(r))]
 
     kept = []

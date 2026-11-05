@@ -202,9 +202,9 @@ export default function PairingScreen() {
               Decline
             </AppButton>
           </YStack>
-        ) : received?.kind === "week" ? (
+        ) : received?.kind === "weeks" ? (
           <Text color="text" testID="pairing-received-week">
-            A week from {received.from}: {received.summary}. Nothing was changed.
+            {received.weeks.length} week(s) from a companion.
           </Text>
         ) : received?.kind === "unreadable" ? (
           <Text color="textSecondary" testID="pairing-unreadable">

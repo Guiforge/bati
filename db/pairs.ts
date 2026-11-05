@@ -1,4 +1,4 @@
-import { and, eq, isNotNull, lt, sql } from "drizzle-orm";
+import { and, eq, isNotNull, isNull, lt, sql } from "drizzle-orm";
 import { batiCrypto } from "@/modules/bati-crypto";
 import { fromBase64, hex } from "@/src/multiplayer/envelope";
 import { INVITE_DAYS, type Invite, SECRET_BYTES } from "@/src/multiplayer/invite";
@@ -325,4 +325,12 @@ export async function answerArrived(pairId: string): Promise<void> {
     .update(pairs)
     .set({ reply: null, updatedAt: nowDate() })
     .where(and(eq(pairs.id, pairId), isNotNull(pairs.reply)));
+}
+
+/** Phone A after a face-to-face pairing: the first week from B names B's id in the pair. */
+export async function nameTheirSide(pairId: string, peerId: string): Promise<void> {
+  await db
+    .update(pairs)
+    .set({ peerId, updatedAt: nowDate() })
+    .where(and(eq(pairs.id, pairId), isNull(pairs.peerId)));
 }

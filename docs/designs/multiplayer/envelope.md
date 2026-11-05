@@ -22,7 +22,7 @@ C'est la donnée associée de l'AEAD : changer un octet fait refuser l'enveloppe
 | Décalage | Taille | Champ | Note |
 | --- | --- | --- | --- |
 | 0 | 1 | version | 1 |
-| 1 | 1 | kind | 1 = semaine, 2 = invitation en face à face, 3 = invitation par lien, 4 = réponse d'appairage |
+| 1 | 1 | kind | 1 = semaine, 2 = invitation en face à face, 3 = invitation par lien, 4 = réponse d'appairage, 5 = paquet (sans le reste de l'en-tête, voir plus bas) |
 | 2 | 16 | pair id | aléatoire, jamais un uuid v7, qui dirait la date de l'appairage |
 | 18 | 8 | sender key id | l'identifiant de l'expéditeur dans cette paire |
 | 26 | 2 | année ISO | |
@@ -39,7 +39,7 @@ donnée associée. Le clair :
 | --- | --- | --- | --- |
 | 0 | 4 | stamp | secondes epoch, l'horloge de la fusion |
 | 4 | 1 | goal | objectif figé au lancement, en séances (`weeklyGoal`), jamais des reps |
-| 5 | 1 | flags | bit 0 = en pause |
+| 5 | 1 | flags | bit 0 = une pause a touché cette semaine (précisé au lot 1 : même bit, même place) |
 | 6 | 7 | days | séances comptées par jour ISO, lundi d'abord |
 
 **L'état complet de la semaine, jamais un delta.** Un message perdu ou répété ne casse rien.
@@ -99,6 +99,18 @@ remplacer les messages dans la messagerie. Il pourrait aussi répondre avant B a
 A se retrouve appairé avec lui, et lit « déjà un compagnon » quand la vraie réponse arrive ; B se croit appairé
 et personne ne l'écoute. L'enjeu reste petit, une enveloppe ne portant que des séances comptées par jour, et le
 QR en face à face n'a pas ce trou.
+
+### Kind 5, le paquet (lot 1)
+
+`version 1 ‖ kind 5 ‖ nombre n (1 à 3) ‖ n fois (longueur 1 octet ‖ enveloppe)`. Pas d'en-tête de 29 octets : le
+paquet ne scelle rien, chaque enveloppe intérieure (kind 1 ou 4, jamais 2, 3 ou 5) s'authentifie seule. C'est ce que
+porte un « Envoyer mes coups » : la semaine en cours, la précédente, et chez B la réponse d'appairage tant qu'une semaine
+de A n'est pas arrivée. Au plus 239 octets, 341 caractères de lien. Vecteurs :
+[`envelope-v1-bundle.json`](../../../__tests__/fixtures/multiplayer/envelope-v1-bundle.json), bâtis à la main à partir
+des vecteurs figés des kinds 1 et 4. Code : [`src/multiplayer/bundle.ts`](../../../src/multiplayer/bundle.ts).
+
+Une enveloppe de semaine dont le `stamp` dépasse de plus de 24 h l'horloge du lecteur est mise de côté (« pas
+encore ») : dernier écrit gagnant, elle gagnerait toutes les fusions suivantes.
 
 ## Budget
 

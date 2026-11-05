@@ -311,3 +311,10 @@ Goal: small painted details born from the player's own journal, which stay forev
 
 ### J. Not scheduled
 Ambient sound layers per building (Guillaume's wish of 29/10) become an optional SOUND track after GAME, if he wants it then.
+
+## Amendment of 05/11 (tracks v4.3): no early probe, PERF before GAME
+Guillaume's decision of 05/11: first make a great village, measure later. This section replaces what amendment v4.2 says about PROBE and the order.
+- **PROBE is dropped.** No track waits for docs/designs/village/probe/probe.md. GROWTH and TRACES may paint now. Every track that adds images or moving things still writes in progress.md what it adds at tier 12 (images, SVGs, moving things), so PERF knows where the weight comes from. The motion budget stays the one in PIPELINE.md until PERF measures.
+- **New order**: GROWTH, AUDIT, POLISH, LIFE then VILLAGERS, TRACES, **PERF, then GAME** last.
+- **PERF before GAME**: PERF measures on the perf build, fixes the 3 biggest costs and runs the real phone with Guillaume, as its appendix says. The full test suite, the Maestro flows and CI green move to the end of GAME, which comes after and changes the code again.
+- piste_ordre: Mesure tôt 6 is dropped; Performance 14, Le jeu (page Village) 15.

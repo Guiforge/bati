@@ -6,7 +6,8 @@ import pathlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 D = ROOT / "docs/designs/village/growth"
-images = {k: "data:image/jpeg;base64," + base64.b64encode((D / f"img/bakeoff-{k}.jpg").read_bytes()).decode() for k in ("maison", "souches", "chemins")}
+FILES = {"maison": "bakeoff-maison", "souches": "bakeoff-souches", "chemins": "bakeoff-chemins", "maison2": "bakeoff2-maison", "chemins2": "bakeoff2-chemins"}
+images = {k: "data:image/jpeg;base64," + base64.b64encode((D / f"img/{f}.jpg").read_bytes()).decode() for k, f in FILES.items()}
 page = (ROOT / "scripts/growth/page-peintre.html").read_text()
 html = page.replace("/*IMAGES*/{}", json.dumps(images))
 assert html != page

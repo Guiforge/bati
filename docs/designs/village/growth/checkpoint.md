@@ -4,7 +4,7 @@
 
 **Page : https://claude.ai/artifact/PRXjCkLdN2Kdn6WbpGKg9V** (privée, à toi seul).
 
-**Quel peintre pour chaque sorte de travail ?** Maison, souches, chemins : FLUX 3 ou GPT Image 2. Mon avis : FLUX 3 pour les chemins, GPT Image 2 pour les petites pièces, la maison à ton oeil.
+**Quel peintre pour chaque sorte de travail ?** Maison, souches, chemins : FLUX 3, `gpt-image-2`, `gpt-image-2.5-sunburst` ou `gpt-image-2.6-sunburst`. Mon avis : 2.5-sunburst pour la maison et les petites pièces, FLUX 3 pour les chemins, collés sur l'original sous masque. Choisir un modèle récent en production demande aussi de lever l'exception de `PROMPT-tracks.md`.
 
 ### Réponse de Guillaume, banc d'essai
 

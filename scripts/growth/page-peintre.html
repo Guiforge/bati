@@ -35,18 +35,79 @@ textarea { width: 100%; box-sizing: border-box; min-height: 90px; background: va
 </style>
 <main>
 <header style="display:grid;gap:10px">
-  <p class="doux">Piste GROWTH, 05/11/2026. FLUX 3 Image à gauche, GPT Image 2 à droite. Même texte, mêmes images données. Rien n'est posé dans le jeu.</p>
+  <p class="doux">Piste GROWTH, 05/11/2026. Même texte, mêmes images données. Rien n'est posé dans le jeu.</p>
   <h1>Qui peint quoi ?</h1>
-  <p>Trois travaux, deux essais par peintre, en une passe. Choisis un peintre pour chaque sorte de travail. <b>Mon avis : FLUX 3 pour les chemins, GPT Image 2 pour les petites pièces, et la maison à ton oeil.</b></p>
+  <p>Deux tours : FLUX 3 contre <code>gpt-image-2</code>, puis, à ta demande, les modèles plus récents d'OpenAI, <code>gpt-image-2.5-sunburst</code> et <code>gpt-image-2.6-sunburst</code>. Choisis un peintre pour chaque sorte de travail.</p>
+  <p><b>Mon avis : 2.5-sunburst pour la maison et les petites pièces, FLUX 3 pour les chemins, collés sur l'original sous masque.</b> 2.5-sunburst n'a pas peint les souches : ce choix-là s'appuie sur la maison.</p>
   <div class="defile"><table>
     <thead><tr><th>Travail</th><th>Mesuré</th><th>Mara (style)</th></tr></thead>
     <tbody>
-      <tr><td>Maison</td><td>GPT suit mieux les corrections</td><td>FLUX, essai 1 : se fond dans le décor</td></tr>
-      <tr><td>Souches</td><td>GPT seul respecte le nombre : 5 et 2</td><td>GPT, essai 2, à réduire et assombrir</td></tr>
-      <tr><td>Chemins</td><td>FLUX ne bouge rien, GPT déplace tout</td><td>FLUX, essai 1 : plus net</td></tr>
+      <tr><td>Maison</td><td>2.5 suit la consigne et donne un magenta franc. 2.6 sort sur fond noir avec un halo.</td><td>2.5, essai 1 : le trait et la chaleur des sprites</td></tr>
+      <tr><td>Souches</td><td>Tour 1 seulement. <code>gpt-image-2</code> seul respecte le nombre : 5 et 2.</td><td><code>gpt-image-2</code>, essai 2, à réduire et assombrir</td></tr>
+      <tr><td>Chemins</td><td>Une fois collés, aucun peintre ne change rien hors des chemins (0,00).</td><td>FLUX, essai 1, 2.5 en second</td></tr>
     </tbody>
   </table></div>
 </header>
+
+<section>
+  <h2>Tour 2 : la maison</h2>
+  <figure><img data-img="maison2" alt="La maison par FLUX 3, gpt-image-2, 2.5-sunburst et 2.6-sunburst, en grand puis à la taille du jeu"><figcaption>En haut, FLUX 3 et <code>gpt-image-2</code> pour comparer, puis 2.5, puis 2.6. Dessous, à la taille du jeu.</figcaption></figure>
+  <ul>
+    <li><b>2.5-sunburst</b> : trait net et épais, fond magenta franc, pas de plaque, murs ternes. Son chaume reste un peu strié et répétitif, et sa fenêtre plus vive que demandé.</li>
+    <li><b>2.6-sunburst</b> : fond noir avec un halo, contre la consigne, sur les deux essais. Le halo reste en fantôme après détourage.</li>
+  </ul>
+  <div class="choisir" data-q="maison"></div>
+</section>
+
+<section>
+  <h2>Tour 2 : les chemins</h2>
+  <figure><img data-img="chemins2" alt="Le sol repeint par les quatre peintres, puis collé sur l'original sous masque"><figcaption>« colle » : seuls les pixels des chemins sont repris, sur l'image d'origine. En bas, les essais avec le masque de l'API, ratés.</figcaption></figure>
+  <div class="defile"><table>
+    <thead><tr><th></th><th>Écart hors chemins (sur 255)</th><th>Repères déplacés sur 17</th></tr></thead>
+    <tbody>
+      <tr><td><code>gpt-image-2</code>, image entière</td><td>25,76</td><td>17</td></tr>
+      <tr><td>2.5-sunburst, image entière</td><td>12,34</td><td>0</td></tr>
+      <tr><td>2.6-sunburst, image entière</td><td>13,20</td><td>0 (1 px au plus)</td></tr>
+      <tr><td>FLUX 3, image entière</td><td>1,40</td><td>0</td></tr>
+      <tr><td><b>2.5 collé</b></td><td>0,04</td><td>0</td></tr>
+      <tr><td><b>2.6 collé</b></td><td>0,04</td><td>0</td></tr>
+      <tr><td><b>FLUX 3 collé</b></td><td>0,01</td><td>0</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><b>Les nouveaux modèles ne déplacent plus rien, mais ils repeignent quand même tout</b> : façades lissées, perte du trait (mara). Il faut donc coller, quel que soit le peintre.</li>
+    <li><b>Le masque de l'API a échoué</b> : la zone sort en blocs noirs, sur les deux modèles, avec deux formats. Je n'en ai pas essayé d'autre. Ça peut venir de moi.</li>
+    <li><b>Le masque par couleur rate les chemins pavés sombres près de la place</b> : ils restent plats dans les trois collages. Les chemins sont tracés par le code : un masque tiré de leur tracé devrait les prendre, ce n'est pas essayé.</li>
+    <li>Je ne vois pas de couture à 1024 px. Je n'ai pas zoomé plus.</li>
+  </ul>
+  <div class="choisir" data-q="chemins"></div>
+</section>
+
+<section>
+  <h2>Tour 1 : les souches</h2>
+  <p>Les modèles récents n'ont pas peint ce travail. Mon avis se base sur leur comportement sur la maison.</p>
+  <figure><img data-img="souches" alt="Les souches peintes par FLUX 3 à gauche et gpt-image-2 à droite, puis posées à la taille du jeu"><figcaption>En bas, une pièce moyenne fait 40 px de large. La forêt sous elles n'est pas leur vraie place.</figcaption></figure>
+  <ul>
+    <li><b>FLUX</b> : 9 pièces dans une grille au lieu de 7, presque identiques, avec de gros tas de planches. Au téléphone, de petits points bruns bien posés.</li>
+    <li><b><code>gpt-image-2</code></b> : exactement 5 souches et 2 tas de copeaux, formes variées, bien séparées. Mais les dessus de coupe sont pâles, et les plus grosses souches trop grandes.</li>
+  </ul>
+  <div class="choisir" data-q="souches"></div>
+</section>
+
+<section>
+  <h2>Ce que ça coûte</h2>
+  <div class="defile"><table>
+    <thead><tr><th></th><th>Par image, 1024 x 1024, qualité haute</th></tr></thead>
+    <tbody>
+      <tr><td>2.5-sunburst et 2.6-sunburst</td><td>0,066 à 0,072 $</td></tr>
+      <tr><td>FLUX 3 Image</td><td>0,048 $</td></tr>
+      <tr><td><code>gpt-image-2</code></td><td>0,22 à 0,23 $</td></tr>
+    </tbody>
+  </table></div>
+  <p>Les modèles récents coûtent environ 3 fois moins que <code>gpt-image-2</code>, au même tarif au token. Dépensé sur OpenAI : 2,04 $ sur 20 $, dont 2,96 $ de marge sur le plafond de 5 $ de cette session. FLUX reste 1,4 fois moins cher.</p>
+</section>
+
+<h2 style="margin-bottom:-28px">Le tour 1 en détail</h2>
 
 <section>
   <h2>Une maison de A</h2>
@@ -54,19 +115,8 @@ textarea { width: 100%; box-sizing: border-box; min-height: 90px; background: va
   <ul>
     <li><b>FLUX</b> : garde le toit sombre et le trait épais, proche de tes bâtiments. Mais il oublie les corrections demandées : fenêtre orange vive, murs et cheminée clairs, chaume moucheté. Son fond est rose et pas franc, le détourage a quand même marché.</li>
     <li><b>GPT</b> : applique presque tout : murs ternes, cheminée sombre, petite fenêtre, chaume calme. Mais son toit sort plus clair et plus chaud, plus lisse aussi, et la maison plus large.</li>
-    <li><b>Mara garde FLUX</b> pour la valeur (règle 11). Je pense que c'est l'inverse qui se reprend le mieux : demander à GPT un toit plus sombre semble plus simple que faire obéir FLUX. Je ne l'ai pas essayé.</li>
+    <li><b>Mara gardait FLUX</b> à ce tour, avant de voir 2.5-sunburst.</li>
   </ul>
-  <div class="choisir" data-q="maison"></div>
-</section>
-
-<section>
-  <h2>Les souches</h2>
-  <figure><img data-img="souches" alt="Les souches peintes par FLUX 3 à gauche et GPT Image 2 à droite, puis posées à la taille du jeu"><figcaption>En bas, une pièce moyenne fait 40 px de large. La forêt sous elles n'est pas leur vraie place.</figcaption></figure>
-  <ul>
-    <li><b>FLUX</b> : 9 pièces dans une grille au lieu de 7, presque identiques, avec de gros tas de planches. Au téléphone, de petits points bruns bien posés.</li>
-    <li><b>GPT</b> : exactement 5 souches et 2 tas de copeaux, formes variées, bien séparées. Mais les dessus de coupe sont pâles, et les plus grosses souches trop grandes.</li>
-  </ul>
-  <div class="choisir" data-q="souches"></div>
 </section>
 
 <section>
@@ -85,21 +135,7 @@ textarea { width: 100%; box-sizing: border-box; min-height: 90px; background: va
     <li><b>GPT repeint toute l'image</b> : un zoom d'environ 3 %, et tout bouge, jusqu'à 33 px, en plus d'une couche douce sur tout le décor. Tel quel, c'est inutilisable : les ombres et les zones de tap du jeu ne suivraient plus. Ses pavés sont plus détaillés.</li>
     <li><b>FLUX ne bouge rien</b> et repeint le trait : pavés près de la place, terre plus loin. À l'essai 2, ses chemins de terre sont plus clairs que la route du sud.</li>
     <li>Les petits points noirs le long des chemins restent chez FLUX.</li>
-    <li><b>Une rustine existe, non essayée</b> : recaler l'image de GPT sur l'originale et ne garder que les chemins, sous masque.</li>
   </ul>
-  <div class="choisir" data-q="chemins"></div>
-</section>
-
-<section>
-  <h2>Ce que ça coûte</h2>
-  <div class="defile"><table>
-    <thead><tr><th></th><th>Par image, 1024 x 1024</th><th>Ce banc d'essai</th></tr></thead>
-    <tbody>
-      <tr><td>FLUX 3 Image</td><td>0,048 $</td><td>0,29 $ (6 images)</td></tr>
-      <tr><td>GPT Image 2, qualité haute</td><td>0,22 à 0,23 $</td><td>1,35 $ (6 images)</td></tr>
-    </tbody>
-  </table></div>
-  <p>GPT coûte à peu près 4,7 fois plus. Le prix des qualités moyenne et basse n'est pas mesuré : elles pourraient suffire pour des pièces aussi petites. Il reste 18,65 $ d'OpenAI sur 20 $, avec 3,65 $ de marge sur cette session.</p>
 </section>
 
 <section>
@@ -114,7 +150,7 @@ textarea { width: 100%; box-sizing: border-box; min-height: 90px; background: va
 <script>
 const IMG = /*IMAGES*/{};
 document.querySelectorAll("[data-img]").forEach((el) => { el.src = IMG[el.dataset.img] ?? ""; });
-const OPTIONS = [["flux", "FLUX 3"], ["gpt", "GPT Image 2"]];
+const OPTIONS = [["flux", "FLUX 3"], ["g2", "gpt-image-2"], ["g25", "2.5-sunburst"], ["g26", "2.6-sunburst"]];
 const etat = { peintres: {}, note: "" };
 const zoneEtat = document.getElementById("etat");
 let doc = null;

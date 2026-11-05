@@ -5,7 +5,9 @@
     openai_loop.py selfcheck   the refusals, offline, against a temp ledger
 
 From Python: `edit(out, prompt, images, size, quality, session)` and `generate(out, prompt, size,
-quality, session)`. Nothing is sent but to api.openai.com, with model `gpt-image-2` and no other.
+quality, session, model, mask)`. Nothing is sent but to api.openai.com, with one of the three
+models of ALLOWED (default `gpt-image-2`; the two sunburst ones only for the GROWTH bake-off, tracks
+exception of 05/11) and no other. A response may name a dated snapshot of the same id.
 
 Sources (official, read 2026-11-05):
 - Pricing, per 1M tokens, Standard: image input 8.00, image output 30.00, text input 5.00
@@ -18,6 +20,10 @@ Sources (official, read 2026-11-05):
   text_tokens}, output_tokens}. https://developers.openai.com/api/reference/resources/images/methods/edit
 - Image input tokens ARE counted and billed at the image input rate (they are in input_tokens_details).
 - Model page: https://developers.openai.com/api/docs/models/gpt-image-2
+- Sunburst pages and the image generation guide (read 2026-11-05): quality low|medium|high|xhigh|max|auto
+  for 2.5 and 2.6; 2.6 also takes `complexity` low|medium|high (default high, left unset here);
+  `mask` on /v1/images/edits: PNG with an alpha channel, same size and format as the first image,
+  transparent pixels = where to edit, "entirely prompt-based", shape not followed exactly.
 
 Not confirmed by any page: tokens per image by size and quality. The reservations below are
 pessimistic guesses, settled on the real `usage`; a response without `usage` settles at the whole
@@ -35,6 +41,7 @@ import json
 import math
 import os
 import pathlib
+import re
 import sys
 import tempfile
 import time
@@ -49,6 +56,7 @@ sys.path.insert(0, str(L.ROOT / "scripts"))
 from lib import flux  # noqa: E402
 
 MODEL = "gpt-image-2"
+ALLOWED = ("gpt-image-2", "gpt-image-2.5-sunburst", "gpt-image-2.6-sunburst")
 HOST = "https://api.openai.com"
 KEY_FILE = pathlib.Path.home() / ".config" / "bati" / "openai.env"
 VALIDATIONS = L.ROOT / "docs" / "designs" / "village-iso-v1" / "VALIDATIONS.md"
@@ -131,9 +139,14 @@ def estimate(size: str, quality: str, n_inputs: int) -> float:
     return math.ceil((RESERVE_1MP[quality] * max(1.0, w * h / 1048576) + RESERVE_PER_INPUT * n_inputs) * 100) / 100
 
 
+def model_ok(asked: str, got: str) -> bool:
+    """The exact id, or that id plus a date (`-YYYY-MM-DD`): nothing else."""
+    return got == asked or (got.startswith(asked + "-") and re.fullmatch(r"\d{4}-\d{2}-\d{2}", got[len(asked) + 1:]) is not None)
+
+
 def reserve(amount: float, session: str, model: str = MODEL) -> float:
-    if model != MODEL:
-        sys.exit(f"refused: model {model!r}, only {MODEL!r}")
+    if model not in ALLOWED:
+        sys.exit(f"refused: model {model!r}, only {ALLOWED}")
     session = session.strip().lower()
     if not session:
         sys.exit("refused: a session id is required")
@@ -196,7 +209,7 @@ def _post(path: str, body: bytes, content_type: str) -> dict:
         raise RuntimeError(f"OpenAI call failed: {_scrub(type(error).__name__ + ': ' + str(error))[:300]}") from None
 
 
-def _multipart(fields: dict, files: list) -> tuple[bytes, str]:
+def _multipart(fields: dict, files: list, mask=None) -> tuple[bytes, str]:
     boundary = uuid.uuid4().hex
     parts = []
     for name, value in fields.items():
@@ -204,15 +217,21 @@ def _multipart(fields: dict, files: list) -> tuple[bytes, str]:
     for path in files:
         parts.append((f'--{boundary}\r\nContent-Disposition: form-data; name="image[]"; filename="{path.name}"\r\n'
                       "Content-Type: image/png\r\n\r\n").encode() + path.read_bytes() + b"\r\n")
+    if mask:
+        parts.append((f'--{boundary}\r\nContent-Disposition: form-data; name="mask"; filename="{mask.name}"\r\n'
+                      "Content-Type: image/png\r\n\r\n").encode() + mask.read_bytes() + b"\r\n")
     parts.append(f"--{boundary}--\r\n".encode())
     return b"".join(parts), f"multipart/form-data; boundary={boundary}"
 
 
-def _run(out, prompt, images, size, quality, session) -> dict:
+def _run(out, prompt, images, size, quality, session, model=MODEL, mask=None) -> dict:
     out = pathlib.Path(out)
     images = [pathlib.Path(i) for i in images]
-    model = MODEL
-    assert model == "gpt-image-2"
+    if model not in ALLOWED:  # before the key, the reservation and the disk
+        sys.exit(f"refused: model {model!r}, only {ALLOWED}")
+    mask = pathlib.Path(mask) if mask else None
+    if mask and (not mask.is_file() or not images or mask.suffix != ".png"):
+        sys.exit("refused: a mask is a PNG file and goes with an input image")
     session = session.strip().lower()
     _key()  # before reserve: a missing key must not burn a reservation
     if quality not in QUALITIES:
@@ -229,11 +248,11 @@ def _run(out, prompt, images, size, quality, session) -> dict:
         if not i.is_file():
             sys.exit(f"refused: input {i} is missing")
     amount = reserve(estimate(size, quality, len(images)), session, model)
-    cost, entry, response = amount, {"model": model, "size": size, "quality": quality, "out": str(out)}, None
+    cost, entry, response = amount, {"model": model, "size": size, "quality": quality, "out": str(out), "mask": str(mask) if mask else None}, None
     try:
         fields = {"model": model, "prompt": prompt, "size": size, "quality": quality, "n": 1}
         if images:
-            body, ctype = _multipart(fields, images)
+            body, ctype = _multipart(fields, images, mask)
             response = _post("/v1/images/edits", body, ctype)
         else:
             response = _post("/v1/images/generations", json.dumps(fields).encode(), "application/json")
@@ -247,7 +266,7 @@ def _run(out, prompt, images, size, quality, session) -> dict:
         out.parent.mkdir(parents=True, exist_ok=True)
         part = out.with_name(f".{out.name}.part")
         part.write_bytes(base64.b64decode(response["data"][0]["b64_json"]))
-        if response.get("model", model) != MODEL:
+        if not model_ok(model, str(response.get("model", model))):
             quarantine = out.with_name(out.name + ".WRONG-MODEL.quarantine")
             os.replace(part, quarantine)
             sys.exit(f"refused: response model {response.get('model')!r}, bytes kept in {quarantine}")
@@ -260,23 +279,23 @@ def _run(out, prompt, images, size, quality, session) -> dict:
         settle(amount, session, cost, entry)
     rel = str(out.resolve().relative_to(L.ROOT)) if out.resolve().is_relative_to(L.ROOT) else str(out.resolve())
     flux.record(rel, {
-        "model": MODEL, "provider": "OpenAI Images API", "prompt": prompt, "size": size, "quality": quality,
+        "model": model, "response_model": response.get("model"), "mask": str(mask) if mask else None, "provider": "OpenAI Images API", "prompt": prompt, "size": size, "quality": quality,
         "inputs": [{"path": str(i), "sha256": hashlib.sha256(i.read_bytes()).hexdigest()} for i in images],
         "tokens": entry["usage"], "cost": cost, "session": session, "date": time.strftime("%Y-%m-%d"),
     })
     return {"out": str(out), "cost": cost, "usage": entry["usage"]}
 
 
-def edit(out, prompt, images, size="1024x1024", quality="medium", session="") -> dict:
+def edit(out, prompt, images, size="1024x1024", quality="medium", session="", model=MODEL, mask=None) -> dict:
     if not images:
         sys.exit("refused: edit needs at least one image (1 to 16)")
     if len(images) > 16:
         sys.exit("refused: at most 16 input images")
-    return _run(out, prompt, images, size, quality, session)
+    return _run(out, prompt, images, size, quality, session, model, mask)
 
 
-def generate(out, prompt, size="1024x1024", quality="medium", session="") -> dict:
-    return _run(out, prompt, [], size, quality, session)
+def generate(out, prompt, size="1024x1024", quality="medium", session="", model=MODEL) -> dict:
+    return _run(out, prompt, [], size, quality, session, model)
 
 
 # --- self-check ------------------------------------------------------------------------------
@@ -296,7 +315,19 @@ def selfcheck() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         BUDGET, VALIDATIONS = pathlib.Path(tmp) / "b.json", pathlib.Path(tmp) / "none.md"
         try:
-            assert "model" in _refuses(lambda: reserve(0.1, "s", "gpt-image-1.5"))
+            for bad in ("gpt-image-1.5", "gpt-image-1", "gpt-image-2.5-flare", "dall-e-3", "gpt-image-2.5"):
+                assert "model" in _refuses(lambda: reserve(0.1, "s", bad)), bad
+                assert "model" in _refuses(lambda: _run(pathlib.Path(tmp) / "m.png", "p", [], "1024x1024", "low", "s", bad)), bad
+            for good in ALLOWED:
+                reserve(0.01, "s", good)
+            assert model_ok("gpt-image-2.5-sunburst", "gpt-image-2.5-sunburst")
+            assert model_ok("gpt-image-2.5-sunburst", "gpt-image-2.5-sunburst-2026-09-08")
+            assert model_ok("gpt-image-2", "gpt-image-2-2026-04-21")
+            for got in ("gpt-image-2.5-sunburst-x", "gpt-image-2.5-sunburst-2026-9-08", "gpt-image-2.5-sunburst-2026-09-08-1",
+                        "gpt-image-2.6-sunburst", "gpt-image-2.5-flare", "gpt-image-1", "gpt-image-2.5-sunburst2026-09-08"):
+                assert not model_ok("gpt-image-2.5-sunburst", got), got
+            assert not model_ok("gpt-image-2", "gpt-image-2.5-sunburst")
+            assert "mask" in _refuses(lambda: _run(pathlib.Path(tmp) / "m.png", "p", [], "1024x1024", "low", "s", MODEL, pathlib.Path(tmp) / "nomask.png"))
             assert "batch" in _refuses(lambda: reserve(3.01, "s"))
             assert "session id" in _refuses(lambda: reserve(0.1, " "))
             reserve(2.9, "a")
@@ -309,7 +340,7 @@ def selfcheck() -> None:
             assert "hard stop" in _refuses(lambda: reserve(2.9, "g"))
             settle(2.9, "b", 0.1234, {})
             data = ledger()
-            assert data["real"] == 0.1234 and abs(data["reserved"] - 16.5) < 1e-6, data
+            assert data["real"] == 0.1234 and abs(data["reserved"] - 16.53) < 1e-6, data
             VALIDATIONS.write_text("## x\n\n## Lignes\n2026-11-05 BUDGET_OPENAI_V1: 40\n")
             assert total_cap() == 40.0
             assert price({"input_tokens": 1000, "input_tokens_details": {"image_tokens": 600, "text_tokens": 400},

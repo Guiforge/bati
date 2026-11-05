@@ -26,3 +26,4 @@ Ce que la piste ajoute au palier 12 si le choix suit le plan : 0 image montée, 
 - 05/11 Choix de Guillaume sur les quartiers : A. Amendement v4.4 ajouté. Registre OpenAI `scripts/iso/openai_loop.py`, relu. Banc d'essai FLUX 3 contre GPT Image 2 : `img/bakeoff-*.jpg`, 0,29 $ FLUX, 1,35 $ OpenAI. Page : https://claude.ai/artifact/PRXjCkLdN2Kdn6WbpGKg9V
 
 **La suite** : le choix du peintre sur cette page (document `guillaume` de `picks`) ou dans `checkpoint.md`. Puis : écrire le résultat dans PIPELINE.md, rapprocher H1 à H3, peindre (G8, G10), poser (G11), prévenir LAYOUT (L15).
+- 05/11 Tour 2 du banc d'essai : `img/bakeoff2-*.jpg`, `scripts/growth/bakeoff2.py`, 0,69 $ OpenAI (10 images). Page mise à jour : https://claude.ai/artifact/PRXjCkLdN2Kdn6WbpGKg9V

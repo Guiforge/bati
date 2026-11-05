@@ -7925,6 +7925,11 @@
       "audited_after": true
     }
   },
+  "assets/images/village/iso/pieces/eau_canal_pont.jour.webp": {
+    "derived_from": "docs/designs/village/layout/scratch/pont/a2_c1.png",
+    "how": "bridge B of the layout proposal: green key, despill and a 512x768 canvas (anchor [256, 704]) by docs/designs/village/layout/scratch/pont/cut.py, jour grade; replaces the Blender mock-up of the same file name",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
+  },
   "assets/images/village/iso/pieces/eau_canal_pont.webp": {
     "derived_from": "docs/designs/village/layout/scratch/pont/a2_c1.png",
     "how": "bridge B of the layout proposal: green key, despill and a 512x768 canvas (anchor [256, 704]) by docs/designs/village/layout/scratch/pont/cut.py, nuit grade; replaces the Blender mock-up of the same file name",
@@ -10269,6 +10274,706 @@
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 85, from splash-bg3.jpg"
   },
+  "docs/designs/village/growth/scratch/bakeoff/chemins_flux_1.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "a496e9c8473ac9f7.png",
+      "sha256": "a496e9c8473ac9f74f04aec2ab45ffe24c6ba1d0537fa8dce8f19c153699e9ff"
+    },
+    "prompt": "Image 1 is a hand-painted village map chunk seen from above at an isometric angle. Repaint it in place: same size, same camera, same layout. Change only the flat brown path strokes: the lighter flat brown ones become hand-painted packed dirt paths with soft worn edges, a few pebbles and tufts, and the darker flat brown ones near the square become worn cobblestones painted stone by stone in muted grey-brown. Keep the exact route and the exact width of every path. Everything else stays exactly as it is, building pixels included: buildings, walls, fences, props, grass, water, trees, small figures. Image 2 is a crop of the painted dirt road at the south of the same village: match its palette and brush texture for the dirt paths. No new people, no letters, no flags.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-11-05",
+    "extra": {
+      "width": 1024,
+      "height": 1024
+    },
+    "references": [
+      {
+        "path": "docs/designs/village/growth/scratch/bakeoff/in/chunk.png",
+        "sha256": "8ea688bd89a788d5c3300976b02fec3505f5cc5ee8c26f65cea896d8e9b15220"
+      },
+      {
+        "path": "docs/designs/village/growth/scratch/bakeoff/in/road.png",
+        "sha256": "d8fbd77944748a80e5c4cff6587d116f464b833dc1e73b46fc01ed90e3dc3ea1"
+      }
+    ]
+  },
+  "docs/designs/village/growth/scratch/bakeoff/chemins_flux_2.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "b82ba5f9d0b1e4f0.png",
+      "sha256": "b82ba5f9d0b1e4f0eb626fa4b4d0f8f57fee87ad4c1596c84337aec6d87d5e27"
+    },
+    "prompt": "Image 1 is a hand-painted village map chunk seen from above at an isometric angle. Repaint it in place: same size, same camera, same layout. Change only the flat brown path strokes: the lighter flat brown ones become hand-painted packed dirt paths with soft worn edges, a few pebbles and tufts, and the darker flat brown ones near the square become worn cobblestones painted stone by stone in muted grey-brown. Keep the exact route and the exact width of every path. Everything else stays exactly as it is, building pixels included: buildings, walls, fences, props, grass, water, trees, small figures. Image 2 is a crop of the painted dirt road at the south of the same village: match its palette and brush texture for the dirt paths. No new people, no letters, no flags.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-11-05",
+    "extra": {
+      "width": 1024,
+      "height": 1024
+    },
+    "references": [
+      {
+        "path": "docs/designs/village/growth/scratch/bakeoff/in/chunk.png",
+        "sha256": "8ea688bd89a788d5c3300976b02fec3505f5cc5ee8c26f65cea896d8e9b15220"
+      },
+      {
+        "path": "docs/designs/village/growth/scratch/bakeoff/in/road.png",
+        "sha256": "d8fbd77944748a80e5c4cff6587d116f464b833dc1e73b46fc01ed90e3dc3ea1"
+      }
+    ]
+  },
+  "docs/designs/village/growth/scratch/bakeoff/chemins_g25_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is a hand-painted village map chunk seen from above at an isometric angle. Repaint it in place: same size, same camera, same layout. Change only the flat brown path strokes: the lighter flat brown ones become hand-painted packed dirt paths with soft worn edges, a few pebbles and tufts, and the darker flat brown ones near the square become worn cobblestones painted stone by stone in muted grey-brown. Keep the exact route and the exact width of every path. Everything else stays exactly as it is, building pixels included: buildings, walls, fences, props, grass, water, trees, small figures. Image 2 is a crop of the painted dirt road at the south of the same village: match its palette and brush texture for the dirt paths. No new people, no letters, no flags.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/chunk.png",
+        "sha256": "8ea688bd89a788d5c3300976b02fec3505f5cc5ee8c26f65cea896d8e9b15220"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/road.png",
+        "sha256": "d8fbd77944748a80e5c4cff6587d116f464b833dc1e73b46fc01ed90e3dc3ea1"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 1751,
+      "input_tokens_details": {
+        "image_tokens": 1553,
+        "text_tokens": 198
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 3507
+    },
+    "cost": 0.0661,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/bakeoff/chemins_g25_2.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/mask_paths.png",
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is a hand-painted village map chunk seen from above at an isometric angle. Repaint it in place: same size, same camera, same layout. Change only the flat brown path strokes: the lighter flat brown ones become hand-painted packed dirt paths with soft worn edges, a few pebbles and tufts, and the darker flat brown ones near the square become worn cobblestones painted stone by stone in muted grey-brown. Keep the exact route and the exact width of every path. Everything else stays exactly as it is, building pixels included: buildings, walls, fences, props, grass, water, trees, small figures. Image 2 is a crop of the painted dirt road at the south of the same village: match its palette and brush texture for the dirt paths. No new people, no letters, no flags.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/chunk.png",
+        "sha256": "8ea688bd89a788d5c3300976b02fec3505f5cc5ee8c26f65cea896d8e9b15220"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/road.png",
+        "sha256": "d8fbd77944748a80e5c4cff6587d116f464b833dc1e73b46fc01ed90e3dc3ea1"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 1751,
+      "input_tokens_details": {
+        "image_tokens": 1553,
+        "text_tokens": 198
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 3507
+    },
+    "cost": 0.0661,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/bakeoff/chemins_g25_3.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/mask_paths_rgb.png",
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is a hand-painted village map chunk seen from above at an isometric angle. Repaint it in place: same size, same camera, same layout. Change only the flat brown path strokes: the lighter flat brown ones become hand-painted packed dirt paths with soft worn edges, a few pebbles and tufts, and the darker flat brown ones near the square become worn cobblestones painted stone by stone in muted grey-brown. Keep the exact route and the exact width of every path. Everything else stays exactly as it is, building pixels included: buildings, walls, fences, props, grass, water, trees, small figures. Image 2 is a crop of the painted dirt road at the south of the same village: match its palette and brush texture for the dirt paths. No new people, no letters, no flags.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/chunk.png",
+        "sha256": "8ea688bd89a788d5c3300976b02fec3505f5cc5ee8c26f65cea896d8e9b15220"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/road.png",
+        "sha256": "d8fbd77944748a80e5c4cff6587d116f464b833dc1e73b46fc01ed90e3dc3ea1"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 1751,
+      "input_tokens_details": {
+        "image_tokens": 1553,
+        "text_tokens": 198
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 3507
+    },
+    "cost": 0.0661,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/bakeoff/chemins_g26_1.png": {
+    "model": "gpt-image-2.6-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is a hand-painted village map chunk seen from above at an isometric angle. Repaint it in place: same size, same camera, same layout. Change only the flat brown path strokes: the lighter flat brown ones become hand-painted packed dirt paths with soft worn edges, a few pebbles and tufts, and the darker flat brown ones near the square become worn cobblestones painted stone by stone in muted grey-brown. Keep the exact route and the exact width of every path. Everything else stays exactly as it is, building pixels included: buildings, walls, fences, props, grass, water, trees, small figures. Image 2 is a crop of the painted dirt road at the south of the same village: match its palette and brush texture for the dirt paths. No new people, no letters, no flags.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/chunk.png",
+        "sha256": "8ea688bd89a788d5c3300976b02fec3505f5cc5ee8c26f65cea896d8e9b15220"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/road.png",
+        "sha256": "d8fbd77944748a80e5c4cff6587d116f464b833dc1e73b46fc01ed90e3dc3ea1"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 1751,
+      "input_tokens_details": {
+        "image_tokens": 1553,
+        "text_tokens": 198
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 3507
+    },
+    "cost": 0.0661,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/bakeoff/chemins_g26_2.png": {
+    "model": "gpt-image-2.6-sunburst",
+    "response_model": null,
+    "mask": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/mask_paths.png",
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is a hand-painted village map chunk seen from above at an isometric angle. Repaint it in place: same size, same camera, same layout. Change only the flat brown path strokes: the lighter flat brown ones become hand-painted packed dirt paths with soft worn edges, a few pebbles and tufts, and the darker flat brown ones near the square become worn cobblestones painted stone by stone in muted grey-brown. Keep the exact route and the exact width of every path. Everything else stays exactly as it is, building pixels included: buildings, walls, fences, props, grass, water, trees, small figures. Image 2 is a crop of the painted dirt road at the south of the same village: match its palette and brush texture for the dirt paths. No new people, no letters, no flags.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/chunk.png",
+        "sha256": "8ea688bd89a788d5c3300976b02fec3505f5cc5ee8c26f65cea896d8e9b15220"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/road.png",
+        "sha256": "d8fbd77944748a80e5c4cff6587d116f464b833dc1e73b46fc01ed90e3dc3ea1"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 1751,
+      "input_tokens_details": {
+        "image_tokens": 1553,
+        "text_tokens": 198
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 3507
+    },
+    "cost": 0.0661,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/bakeoff/chemins_g26_3.png": {
+    "model": "gpt-image-2.6-sunburst",
+    "response_model": null,
+    "mask": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/mask_paths_rgb.png",
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is a hand-painted village map chunk seen from above at an isometric angle. Repaint it in place: same size, same camera, same layout. Change only the flat brown path strokes: the lighter flat brown ones become hand-painted packed dirt paths with soft worn edges, a few pebbles and tufts, and the darker flat brown ones near the square become worn cobblestones painted stone by stone in muted grey-brown. Keep the exact route and the exact width of every path. Everything else stays exactly as it is, building pixels included: buildings, walls, fences, props, grass, water, trees, small figures. Image 2 is a crop of the painted dirt road at the south of the same village: match its palette and brush texture for the dirt paths. No new people, no letters, no flags.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/chunk.png",
+        "sha256": "8ea688bd89a788d5c3300976b02fec3505f5cc5ee8c26f65cea896d8e9b15220"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/road.png",
+        "sha256": "d8fbd77944748a80e5c4cff6587d116f464b833dc1e73b46fc01ed90e3dc3ea1"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 1751,
+      "input_tokens_details": {
+        "image_tokens": 1553,
+        "text_tokens": 198
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 3507
+    },
+    "cost": 0.0661,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/bakeoff/chemins_gpt_1.png": {
+    "model": "gpt-image-2",
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is a hand-painted village map chunk seen from above at an isometric angle. Repaint it in place: same size, same camera, same layout. Change only the flat brown path strokes: the lighter flat brown ones become hand-painted packed dirt paths with soft worn edges, a few pebbles and tufts, and the darker flat brown ones near the square become worn cobblestones painted stone by stone in muted grey-brown. Keep the exact route and the exact width of every path. Everything else stays exactly as it is, building pixels included: buildings, walls, fences, props, grass, water, trees, small figures. Image 2 is a crop of the painted dirt road at the south of the same village: match its palette and brush texture for the dirt paths. No new people, no letters, no flags.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "docs/designs/village/growth/scratch/bakeoff/in/chunk.png",
+        "sha256": "8ea688bd89a788d5c3300976b02fec3505f5cc5ee8c26f65cea896d8e9b15220"
+      },
+      {
+        "path": "docs/designs/village/growth/scratch/bakeoff/in/road.png",
+        "sha256": "d8fbd77944748a80e5c4cff6587d116f464b833dc1e73b46fc01ed90e3dc3ea1"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 1731,
+      "input_tokens_details": {
+        "image_tokens": 1553,
+        "text_tokens": 178
+      },
+      "output_tokens": 7024,
+      "output_tokens_details": {
+        "image_tokens": 7024,
+        "text_tokens": 0
+      },
+      "total_tokens": 8755
+    },
+    "cost": 0.2241,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/bakeoff/chemins_gpt_2.png": {
+    "model": "gpt-image-2",
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is a hand-painted village map chunk seen from above at an isometric angle. Repaint it in place: same size, same camera, same layout. Change only the flat brown path strokes: the lighter flat brown ones become hand-painted packed dirt paths with soft worn edges, a few pebbles and tufts, and the darker flat brown ones near the square become worn cobblestones painted stone by stone in muted grey-brown. Keep the exact route and the exact width of every path. Everything else stays exactly as it is, building pixels included: buildings, walls, fences, props, grass, water, trees, small figures. Image 2 is a crop of the painted dirt road at the south of the same village: match its palette and brush texture for the dirt paths. No new people, no letters, no flags.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "docs/designs/village/growth/scratch/bakeoff/in/chunk.png",
+        "sha256": "8ea688bd89a788d5c3300976b02fec3505f5cc5ee8c26f65cea896d8e9b15220"
+      },
+      {
+        "path": "docs/designs/village/growth/scratch/bakeoff/in/road.png",
+        "sha256": "d8fbd77944748a80e5c4cff6587d116f464b833dc1e73b46fc01ed90e3dc3ea1"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 1731,
+      "input_tokens_details": {
+        "image_tokens": 1553,
+        "text_tokens": 178
+      },
+      "output_tokens": 7024,
+      "output_tokens_details": {
+        "image_tokens": 7024,
+        "text_tokens": 0
+      },
+      "total_tokens": 8755
+    },
+    "cost": 0.2241,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/bakeoff/maison_flux_1.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "9dc10ef767342273.png",
+      "sha256": "9dc10ef7673422733331a79e08e8b94d5400355f1000cccac61c05255f2b17be"
+    },
+    "prompt": "Image 1 is the concept of one small house: repaint exactly this house, same shape, same roof, same chimney, same doors, same framing and same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The house stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the bottom edges of the walls end cleanly on the magenta. The walls are a darker, duller grey-brown plaster. The chimney is darker stone. One tiny dim window with a faint dull glow, no vivid orange. The thatch is calm: a few long even strokes. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-11-05",
+    "extra": {
+      "width": 1024,
+      "height": 1024
+    },
+    "references": [
+      {
+        "path": "docs/designs/village/growth/scratch/quartiers/A1a_v2.png",
+        "sha256": "8fd92ddf95ca4c6287eddf8aec467766b30f36920338defae5d681694faf24b1"
+      },
+      {
+        "path": "docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ]
+  },
+  "docs/designs/village/growth/scratch/bakeoff/maison_flux_2.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "9ad393f3afe828d9.png",
+      "sha256": "9ad393f3afe828d915d8f605a0c8c66a44420ee016a631a2fd20b26b68fc7da8"
+    },
+    "prompt": "Image 1 is the concept of one small house: repaint exactly this house, same shape, same roof, same chimney, same doors, same framing and same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The house stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the bottom edges of the walls end cleanly on the magenta. The walls are a darker, duller grey-brown plaster. The chimney is darker stone. One tiny dim window with a faint dull glow, no vivid orange. The thatch is calm: a few long even strokes. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-11-05",
+    "extra": {
+      "width": 1024,
+      "height": 1024
+    },
+    "references": [
+      {
+        "path": "docs/designs/village/growth/scratch/quartiers/A1a_v2.png",
+        "sha256": "8fd92ddf95ca4c6287eddf8aec467766b30f36920338defae5d681694faf24b1"
+      },
+      {
+        "path": "docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ]
+  },
+  "docs/designs/village/growth/scratch/bakeoff/maison_g25_1.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of one small house: repaint exactly this house, same shape, same roof, same chimney, same doors, same framing and same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The house stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the bottom edges of the walls end cleanly on the magenta. The walls are a darker, duller grey-brown plaster. The chimney is darker stone. One tiny dim window with a faint dull glow, no vivid orange. The thatch is calm: a few long even strokes. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/quartiers/A1a_v2.png",
+        "sha256": "8fd92ddf95ca4c6287eddf8aec467766b30f36920338defae5d681694faf24b1"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2507,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 235
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4263
+    },
+    "cost": 0.0721,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/bakeoff/maison_g25_2.png": {
+    "model": "gpt-image-2.5-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of one small house: repaint exactly this house, same shape, same roof, same chimney, same doors, same framing and same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The house stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the bottom edges of the walls end cleanly on the magenta. The walls are a darker, duller grey-brown plaster. The chimney is darker stone. One tiny dim window with a faint dull glow, no vivid orange. The thatch is calm: a few long even strokes. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/quartiers/A1a_v2.png",
+        "sha256": "8fd92ddf95ca4c6287eddf8aec467766b30f36920338defae5d681694faf24b1"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2507,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 235
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4263
+    },
+    "cost": 0.0721,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/bakeoff/maison_g26_1.png": {
+    "model": "gpt-image-2.6-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of one small house: repaint exactly this house, same shape, same roof, same chimney, same doors, same framing and same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The house stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the bottom edges of the walls end cleanly on the magenta. The walls are a darker, duller grey-brown plaster. The chimney is darker stone. One tiny dim window with a faint dull glow, no vivid orange. The thatch is calm: a few long even strokes. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/quartiers/A1a_v2.png",
+        "sha256": "8fd92ddf95ca4c6287eddf8aec467766b30f36920338defae5d681694faf24b1"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2507,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 235
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4263
+    },
+    "cost": 0.0721,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/bakeoff/maison_g26_2.png": {
+    "model": "gpt-image-2.6-sunburst",
+    "response_model": null,
+    "mask": null,
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of one small house: repaint exactly this house, same shape, same roof, same chimney, same doors, same framing and same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The house stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the bottom edges of the walls end cleanly on the magenta. The walls are a darker, duller grey-brown plaster. The chimney is darker stone. One tiny dim window with a faint dull glow, no vivid orange. The thatch is calm: a few long even strokes. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/quartiers/A1a_v2.png",
+        "sha256": "8fd92ddf95ca4c6287eddf8aec467766b30f36920338defae5d681694faf24b1"
+      },
+      {
+        "path": "/home/guiforge/Documents/code/bati/.claude/worktrees/iso/docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2507,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 235
+      },
+      "output_tokens": 1756,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      },
+      "total_tokens": 4263
+    },
+    "cost": 0.0721,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/bakeoff/maison_gpt_1.png": {
+    "model": "gpt-image-2",
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of one small house: repaint exactly this house, same shape, same roof, same chimney, same doors, same framing and same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The house stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the bottom edges of the walls end cleanly on the magenta. The walls are a darker, duller grey-brown plaster. The chimney is darker stone. One tiny dim window with a faint dull glow, no vivid orange. The thatch is calm: a few long even strokes. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "docs/designs/village/growth/scratch/quartiers/A1a_v2.png",
+        "sha256": "8fd92ddf95ca4c6287eddf8aec467766b30f36920338defae5d681694faf24b1"
+      },
+      {
+        "path": "docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2487,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 215
+      },
+      "output_tokens": 7024,
+      "output_tokens_details": {
+        "image_tokens": 7024,
+        "text_tokens": 0
+      },
+      "total_tokens": 9511
+    },
+    "cost": 0.23,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/bakeoff/maison_gpt_2.png": {
+    "model": "gpt-image-2",
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is the concept of one small house: repaint exactly this house, same shape, same roof, same chimney, same doors, same framing and same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The house stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the bottom edges of the walls end cleanly on the magenta. The walls are a darker, duller grey-brown plaster. The chimney is darker stone. One tiny dim window with a faint dull glow, no vivid orange. The thatch is calm: a few long even strokes. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "docs/designs/village/growth/scratch/quartiers/A1a_v2.png",
+        "sha256": "8fd92ddf95ca4c6287eddf8aec467766b30f36920338defae5d681694faf24b1"
+      },
+      {
+        "path": "docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 2487,
+      "input_tokens_details": {
+        "image_tokens": 2272,
+        "text_tokens": 215
+      },
+      "output_tokens": 7024,
+      "output_tokens_details": {
+        "image_tokens": 7024,
+        "text_tokens": 0
+      },
+      "total_tokens": 9511
+    },
+    "cost": 0.23,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/bakeoff/souches_flux_1.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "8267e754034857f3.png",
+      "sha256": "8267e754034857f3850ce7839ca69d4902836c14b9747c630f449207b5124607"
+    },
+    "prompt": "Image 1 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks, matte brush texture and low dark values, none of their shapes. Paint one small cluster sheet on a flat uniform magenta #FF00FF background that fills the whole picture: five separate cut tree stumps of different sizes, the widest about one seventh of the picture width and the smallest about one eleventh, two of them with a little green moss on the bark, and two small heaps of pale wood chips about one tenth of the picture width. Every piece stands apart with clear magenta around it. Isometric 2:1 view from above at the same angle as the buildings, light from the upper left, low dark value. Each piece is a simple solid silhouette with a thick ink outline and two or three flat colours, because the picture will be shrunk until a stump is about forty pixels wide. No ground plate, no painted cast shadow, no people, no letters.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-11-05",
+    "extra": {
+      "width": 1024,
+      "height": 1024
+    },
+    "references": [
+      {
+        "path": "docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ]
+  },
+  "docs/designs/village/growth/scratch/bakeoff/souches_flux_2.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "4c8a5b117afeedd1.png",
+      "sha256": "4c8a5b117afeedd114ac9e5dfb67b5da7eef3edcb3f7757610d9baa53106c6e7"
+    },
+    "prompt": "Image 1 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks, matte brush texture and low dark values, none of their shapes. Paint one small cluster sheet on a flat uniform magenta #FF00FF background that fills the whole picture: five separate cut tree stumps of different sizes, the widest about one seventh of the picture width and the smallest about one eleventh, two of them with a little green moss on the bark, and two small heaps of pale wood chips about one tenth of the picture width. Every piece stands apart with clear magenta around it. Isometric 2:1 view from above at the same angle as the buildings, light from the upper left, low dark value. Each piece is a simple solid silhouette with a thick ink outline and two or three flat colours, because the picture will be shrunk until a stump is about forty pixels wide. No ground plate, no painted cast shadow, no people, no letters.",
+    "seed": null,
+    "width": 1024,
+    "height": 1024,
+    "generated": "2026-11-05",
+    "extra": {
+      "width": 1024,
+      "height": 1024
+    },
+    "references": [
+      {
+        "path": "docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ]
+  },
+  "docs/designs/village/growth/scratch/bakeoff/souches_gpt_1.png": {
+    "model": "gpt-image-2",
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks, matte brush texture and low dark values, none of their shapes. Paint one small cluster sheet on a flat uniform magenta #FF00FF background that fills the whole picture: five separate cut tree stumps of different sizes, the widest about one seventh of the picture width and the smallest about one eleventh, two of them with a little green moss on the bark, and two small heaps of pale wood chips about one tenth of the picture width. Every piece stands apart with clear magenta around it. Isometric 2:1 view from above at the same angle as the buildings, light from the upper left, low dark value. Each piece is a simple solid silhouette with a thick ink outline and two or three flat colours, because the picture will be shrunk until a stump is about forty pixels wide. No ground plate, no painted cast shadow, no people, no letters.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 1465,
+      "input_tokens_details": {
+        "image_tokens": 1248,
+        "text_tokens": 217
+      },
+      "output_tokens": 7024,
+      "output_tokens_details": {
+        "image_tokens": 7024,
+        "text_tokens": 0
+      },
+      "total_tokens": 8489
+    },
+    "cost": 0.2218,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
+  "docs/designs/village/growth/scratch/bakeoff/souches_gpt_2.png": {
+    "model": "gpt-image-2",
+    "provider": "OpenAI Images API",
+    "prompt": "Image 1 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks, matte brush texture and low dark values, none of their shapes. Paint one small cluster sheet on a flat uniform magenta #FF00FF background that fills the whole picture: five separate cut tree stumps of different sizes, the widest about one seventh of the picture width and the smallest about one eleventh, two of them with a little green moss on the bark, and two small heaps of pale wood chips about one tenth of the picture width. Every piece stands apart with clear magenta around it. Isometric 2:1 view from above at the same angle as the buildings, light from the upper left, low dark value. Each piece is a simple solid silhouette with a thick ink outline and two or three flat colours, because the picture will be shrunk until a stump is about forty pixels wide. No ground plate, no painted cast shadow, no people, no letters.",
+    "size": "1024x1024",
+    "quality": "high",
+    "inputs": [
+      {
+        "path": "docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
+        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
+      }
+    ],
+    "tokens": {
+      "input_tokens": 1465,
+      "input_tokens_details": {
+        "image_tokens": 1248,
+        "text_tokens": 217
+      },
+      "output_tokens": 7024,
+      "output_tokens_details": {
+        "image_tokens": 7024,
+        "text_tokens": 0
+      },
+      "total_tokens": 8489
+    },
+    "cost": 0.2218,
+    "session": "growth-2",
+    "date": "2026-11-05"
+  },
   "docs/designs/village/layout/scratch/pont/a1_c0.png": {
     "model": "flux-3-image",
     "provider": "Black Forest Labs (direct API)",
@@ -10511,360 +11216,5 @@
     "derived_from": "fastlane/featureGraphic-bg.jpg",
     "how": "cover-crop + left ink fade + cartouche tagline",
     "licence": "same as the source render; see that entry"
-  },
-  "assets/images/village/iso/pieces/eau_canal_pont.jour.webp": {
-    "derived_from": "docs/designs/village/layout/scratch/pont/a2_c1.png",
-    "how": "bridge B of the layout proposal: green key, despill and a 512x768 canvas (anchor [256, 704]) by docs/designs/village/layout/scratch/pont/cut.py, jour grade; replaces the Blender mock-up of the same file name",
-    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use"
-  },
-  "docs/designs/village/growth/scratch/bakeoff/chemins_flux_1.png": {
-    "model": "flux-3-image",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
-    "signed_original": {
-      "file": "a496e9c8473ac9f7.png",
-      "sha256": "a496e9c8473ac9f74f04aec2ab45ffe24c6ba1d0537fa8dce8f19c153699e9ff"
-    },
-    "prompt": "Image 1 is a hand-painted village map chunk seen from above at an isometric angle. Repaint it in place: same size, same camera, same layout. Change only the flat brown path strokes: the lighter flat brown ones become hand-painted packed dirt paths with soft worn edges, a few pebbles and tufts, and the darker flat brown ones near the square become worn cobblestones painted stone by stone in muted grey-brown. Keep the exact route and the exact width of every path. Everything else stays exactly as it is, building pixels included: buildings, walls, fences, props, grass, water, trees, small figures. Image 2 is a crop of the painted dirt road at the south of the same village: match its palette and brush texture for the dirt paths. No new people, no letters, no flags.",
-    "seed": null,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-11-05",
-    "extra": {
-      "width": 1024,
-      "height": 1024
-    },
-    "references": [
-      {
-        "path": "docs/designs/village/growth/scratch/bakeoff/in/chunk.png",
-        "sha256": "8ea688bd89a788d5c3300976b02fec3505f5cc5ee8c26f65cea896d8e9b15220"
-      },
-      {
-        "path": "docs/designs/village/growth/scratch/bakeoff/in/road.png",
-        "sha256": "d8fbd77944748a80e5c4cff6587d116f464b833dc1e73b46fc01ed90e3dc3ea1"
-      }
-    ]
-  },
-  "docs/designs/village/growth/scratch/bakeoff/chemins_flux_2.png": {
-    "model": "flux-3-image",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
-    "signed_original": {
-      "file": "b82ba5f9d0b1e4f0.png",
-      "sha256": "b82ba5f9d0b1e4f0eb626fa4b4d0f8f57fee87ad4c1596c84337aec6d87d5e27"
-    },
-    "prompt": "Image 1 is a hand-painted village map chunk seen from above at an isometric angle. Repaint it in place: same size, same camera, same layout. Change only the flat brown path strokes: the lighter flat brown ones become hand-painted packed dirt paths with soft worn edges, a few pebbles and tufts, and the darker flat brown ones near the square become worn cobblestones painted stone by stone in muted grey-brown. Keep the exact route and the exact width of every path. Everything else stays exactly as it is, building pixels included: buildings, walls, fences, props, grass, water, trees, small figures. Image 2 is a crop of the painted dirt road at the south of the same village: match its palette and brush texture for the dirt paths. No new people, no letters, no flags.",
-    "seed": null,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-11-05",
-    "extra": {
-      "width": 1024,
-      "height": 1024
-    },
-    "references": [
-      {
-        "path": "docs/designs/village/growth/scratch/bakeoff/in/chunk.png",
-        "sha256": "8ea688bd89a788d5c3300976b02fec3505f5cc5ee8c26f65cea896d8e9b15220"
-      },
-      {
-        "path": "docs/designs/village/growth/scratch/bakeoff/in/road.png",
-        "sha256": "d8fbd77944748a80e5c4cff6587d116f464b833dc1e73b46fc01ed90e3dc3ea1"
-      }
-    ]
-  },
-  "docs/designs/village/growth/scratch/bakeoff/chemins_gpt_1.png": {
-    "model": "gpt-image-2",
-    "provider": "OpenAI Images API",
-    "prompt": "Image 1 is a hand-painted village map chunk seen from above at an isometric angle. Repaint it in place: same size, same camera, same layout. Change only the flat brown path strokes: the lighter flat brown ones become hand-painted packed dirt paths with soft worn edges, a few pebbles and tufts, and the darker flat brown ones near the square become worn cobblestones painted stone by stone in muted grey-brown. Keep the exact route and the exact width of every path. Everything else stays exactly as it is, building pixels included: buildings, walls, fences, props, grass, water, trees, small figures. Image 2 is a crop of the painted dirt road at the south of the same village: match its palette and brush texture for the dirt paths. No new people, no letters, no flags.",
-    "size": "1024x1024",
-    "quality": "high",
-    "inputs": [
-      {
-        "path": "docs/designs/village/growth/scratch/bakeoff/in/chunk.png",
-        "sha256": "8ea688bd89a788d5c3300976b02fec3505f5cc5ee8c26f65cea896d8e9b15220"
-      },
-      {
-        "path": "docs/designs/village/growth/scratch/bakeoff/in/road.png",
-        "sha256": "d8fbd77944748a80e5c4cff6587d116f464b833dc1e73b46fc01ed90e3dc3ea1"
-      }
-    ],
-    "tokens": {
-      "input_tokens": 1731,
-      "input_tokens_details": {
-        "image_tokens": 1553,
-        "text_tokens": 178
-      },
-      "output_tokens": 7024,
-      "output_tokens_details": {
-        "image_tokens": 7024,
-        "text_tokens": 0
-      },
-      "total_tokens": 8755
-    },
-    "cost": 0.2241,
-    "session": "growth-2",
-    "date": "2026-11-05"
-  },
-  "docs/designs/village/growth/scratch/bakeoff/chemins_gpt_2.png": {
-    "model": "gpt-image-2",
-    "provider": "OpenAI Images API",
-    "prompt": "Image 1 is a hand-painted village map chunk seen from above at an isometric angle. Repaint it in place: same size, same camera, same layout. Change only the flat brown path strokes: the lighter flat brown ones become hand-painted packed dirt paths with soft worn edges, a few pebbles and tufts, and the darker flat brown ones near the square become worn cobblestones painted stone by stone in muted grey-brown. Keep the exact route and the exact width of every path. Everything else stays exactly as it is, building pixels included: buildings, walls, fences, props, grass, water, trees, small figures. Image 2 is a crop of the painted dirt road at the south of the same village: match its palette and brush texture for the dirt paths. No new people, no letters, no flags.",
-    "size": "1024x1024",
-    "quality": "high",
-    "inputs": [
-      {
-        "path": "docs/designs/village/growth/scratch/bakeoff/in/chunk.png",
-        "sha256": "8ea688bd89a788d5c3300976b02fec3505f5cc5ee8c26f65cea896d8e9b15220"
-      },
-      {
-        "path": "docs/designs/village/growth/scratch/bakeoff/in/road.png",
-        "sha256": "d8fbd77944748a80e5c4cff6587d116f464b833dc1e73b46fc01ed90e3dc3ea1"
-      }
-    ],
-    "tokens": {
-      "input_tokens": 1731,
-      "input_tokens_details": {
-        "image_tokens": 1553,
-        "text_tokens": 178
-      },
-      "output_tokens": 7024,
-      "output_tokens_details": {
-        "image_tokens": 7024,
-        "text_tokens": 0
-      },
-      "total_tokens": 8755
-    },
-    "cost": 0.2241,
-    "session": "growth-2",
-    "date": "2026-11-05"
-  },
-  "docs/designs/village/growth/scratch/bakeoff/maison_flux_1.png": {
-    "model": "flux-3-image",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
-    "signed_original": {
-      "file": "9dc10ef767342273.png",
-      "sha256": "9dc10ef7673422733331a79e08e8b94d5400355f1000cccac61c05255f2b17be"
-    },
-    "prompt": "Image 1 is the concept of one small house: repaint exactly this house, same shape, same roof, same chimney, same doors, same framing and same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The house stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the bottom edges of the walls end cleanly on the magenta. The walls are a darker, duller grey-brown plaster. The chimney is darker stone. One tiny dim window with a faint dull glow, no vivid orange. The thatch is calm: a few long even strokes. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters.",
-    "seed": null,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-11-05",
-    "extra": {
-      "width": 1024,
-      "height": 1024
-    },
-    "references": [
-      {
-        "path": "docs/designs/village/growth/scratch/quartiers/A1a_v2.png",
-        "sha256": "8fd92ddf95ca4c6287eddf8aec467766b30f36920338defae5d681694faf24b1"
-      },
-      {
-        "path": "docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
-        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
-      }
-    ]
-  },
-  "docs/designs/village/growth/scratch/bakeoff/maison_flux_2.png": {
-    "model": "flux-3-image",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
-    "signed_original": {
-      "file": "9ad393f3afe828d9.png",
-      "sha256": "9ad393f3afe828d915d8f605a0c8c66a44420ee016a631a2fd20b26b68fc7da8"
-    },
-    "prompt": "Image 1 is the concept of one small house: repaint exactly this house, same shape, same roof, same chimney, same doors, same framing and same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The house stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the bottom edges of the walls end cleanly on the magenta. The walls are a darker, duller grey-brown plaster. The chimney is darker stone. One tiny dim window with a faint dull glow, no vivid orange. The thatch is calm: a few long even strokes. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters.",
-    "seed": null,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-11-05",
-    "extra": {
-      "width": 1024,
-      "height": 1024
-    },
-    "references": [
-      {
-        "path": "docs/designs/village/growth/scratch/quartiers/A1a_v2.png",
-        "sha256": "8fd92ddf95ca4c6287eddf8aec467766b30f36920338defae5d681694faf24b1"
-      },
-      {
-        "path": "docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
-        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
-      }
-    ]
-  },
-  "docs/designs/village/growth/scratch/bakeoff/maison_gpt_1.png": {
-    "model": "gpt-image-2",
-    "provider": "OpenAI Images API",
-    "prompt": "Image 1 is the concept of one small house: repaint exactly this house, same shape, same roof, same chimney, same doors, same framing and same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The house stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the bottom edges of the walls end cleanly on the magenta. The walls are a darker, duller grey-brown plaster. The chimney is darker stone. One tiny dim window with a faint dull glow, no vivid orange. The thatch is calm: a few long even strokes. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters.",
-    "size": "1024x1024",
-    "quality": "high",
-    "inputs": [
-      {
-        "path": "docs/designs/village/growth/scratch/quartiers/A1a_v2.png",
-        "sha256": "8fd92ddf95ca4c6287eddf8aec467766b30f36920338defae5d681694faf24b1"
-      },
-      {
-        "path": "docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
-        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
-      }
-    ],
-    "tokens": {
-      "input_tokens": 2487,
-      "input_tokens_details": {
-        "image_tokens": 2272,
-        "text_tokens": 215
-      },
-      "output_tokens": 7024,
-      "output_tokens_details": {
-        "image_tokens": 7024,
-        "text_tokens": 0
-      },
-      "total_tokens": 9511
-    },
-    "cost": 0.23,
-    "session": "growth-2",
-    "date": "2026-11-05"
-  },
-  "docs/designs/village/growth/scratch/bakeoff/maison_gpt_2.png": {
-    "model": "gpt-image-2",
-    "provider": "OpenAI Images API",
-    "prompt": "Image 1 is the concept of one small house: repaint exactly this house, same shape, same roof, same chimney, same doors, same framing and same size in the picture. Image 2 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks and brush texture, none of their shapes. Changes to make. The house stands alone on a flat uniform magenta #FF00FF background that fills the whole picture: no ground plate, no diamond of earth or sand, no grass, the bottom edges of the walls end cleanly on the magenta. The walls are a darker, duller grey-brown plaster. The chimney is darker stone. One tiny dim window with a faint dull glow, no vivid orange. The thatch is calm: a few long even strokes. The ink outline has the same thickness as on the reference sheet. Flat colours, matte surfaces, no gloss, no painted cast shadow, no people, no letters.",
-    "size": "1024x1024",
-    "quality": "high",
-    "inputs": [
-      {
-        "path": "docs/designs/village/growth/scratch/quartiers/A1a_v2.png",
-        "sha256": "8fd92ddf95ca4c6287eddf8aec467766b30f36920338defae5d681694faf24b1"
-      },
-      {
-        "path": "docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
-        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
-      }
-    ],
-    "tokens": {
-      "input_tokens": 2487,
-      "input_tokens_details": {
-        "image_tokens": 2272,
-        "text_tokens": 215
-      },
-      "output_tokens": 7024,
-      "output_tokens_details": {
-        "image_tokens": 7024,
-        "text_tokens": 0
-      },
-      "total_tokens": 9511
-    },
-    "cost": 0.23,
-    "session": "growth-2",
-    "date": "2026-11-05"
-  },
-  "docs/designs/village/growth/scratch/bakeoff/souches_flux_1.png": {
-    "model": "flux-3-image",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
-    "signed_original": {
-      "file": "8267e754034857f3.png",
-      "sha256": "8267e754034857f3850ce7839ca69d4902836c14b9747c630f449207b5124607"
-    },
-    "prompt": "Image 1 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks, matte brush texture and low dark values, none of their shapes. Paint one small cluster sheet on a flat uniform magenta #FF00FF background that fills the whole picture: five separate cut tree stumps of different sizes, the widest about one seventh of the picture width and the smallest about one eleventh, two of them with a little green moss on the bark, and two small heaps of pale wood chips about one tenth of the picture width. Every piece stands apart with clear magenta around it. Isometric 2:1 view from above at the same angle as the buildings, light from the upper left, low dark value. Each piece is a simple solid silhouette with a thick ink outline and two or three flat colours, because the picture will be shrunk until a stump is about forty pixels wide. No ground plate, no painted cast shadow, no people, no letters.",
-    "seed": null,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-11-05",
-    "extra": {
-      "width": 1024,
-      "height": 1024
-    },
-    "references": [
-      {
-        "path": "docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
-        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
-      }
-    ]
-  },
-  "docs/designs/village/growth/scratch/bakeoff/souches_flux_2.png": {
-    "model": "flux-3-image",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
-    "signed_original": {
-      "file": "4c8a5b117afeedd1.png",
-      "sha256": "4c8a5b117afeedd114ac9e5dfb67b5da7eef3edcb3f7757610d9baa53106c6e7"
-    },
-    "prompt": "Image 1 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks, matte brush texture and low dark values, none of their shapes. Paint one small cluster sheet on a flat uniform magenta #FF00FF background that fills the whole picture: five separate cut tree stumps of different sizes, the widest about one seventh of the picture width and the smallest about one eleventh, two of them with a little green moss on the bark, and two small heaps of pale wood chips about one tenth of the picture width. Every piece stands apart with clear magenta around it. Isometric 2:1 view from above at the same angle as the buildings, light from the upper left, low dark value. Each piece is a simple solid silhouette with a thick ink outline and two or three flat colours, because the picture will be shrunk until a stump is about forty pixels wide. No ground plate, no painted cast shadow, no people, no letters.",
-    "seed": null,
-    "width": 1024,
-    "height": 1024,
-    "generated": "2026-11-05",
-    "extra": {
-      "width": 1024,
-      "height": 1024
-    },
-    "references": [
-      {
-        "path": "docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
-        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
-      }
-    ]
-  },
-  "docs/designs/village/growth/scratch/bakeoff/souches_gpt_1.png": {
-    "model": "gpt-image-2",
-    "provider": "OpenAI Images API",
-    "prompt": "Image 1 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks, matte brush texture and low dark values, none of their shapes. Paint one small cluster sheet on a flat uniform magenta #FF00FF background that fills the whole picture: five separate cut tree stumps of different sizes, the widest about one seventh of the picture width and the smallest about one eleventh, two of them with a little green moss on the bark, and two small heaps of pale wood chips about one tenth of the picture width. Every piece stands apart with clear magenta around it. Isometric 2:1 view from above at the same angle as the buildings, light from the upper left, low dark value. Each piece is a simple solid silhouette with a thick ink outline and two or three flat colours, because the picture will be shrunk until a stump is about forty pixels wide. No ground plate, no painted cast shadow, no people, no letters.",
-    "size": "1024x1024",
-    "quality": "high",
-    "inputs": [
-      {
-        "path": "docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
-        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
-      }
-    ],
-    "tokens": {
-      "input_tokens": 1465,
-      "input_tokens_details": {
-        "image_tokens": 1248,
-        "text_tokens": 217
-      },
-      "output_tokens": 7024,
-      "output_tokens_details": {
-        "image_tokens": 7024,
-        "text_tokens": 0
-      },
-      "total_tokens": 8489
-    },
-    "cost": 0.2218,
-    "session": "growth-2",
-    "date": "2026-11-05"
-  },
-  "docs/designs/village/growth/scratch/bakeoff/souches_gpt_2.png": {
-    "model": "gpt-image-2",
-    "provider": "OpenAI Images API",
-    "prompt": "Image 1 is a reference sheet of three finished buildings of the same village (forge, hall, tent): copy only their ink line weight, flat colour blocks, matte brush texture and low dark values, none of their shapes. Paint one small cluster sheet on a flat uniform magenta #FF00FF background that fills the whole picture: five separate cut tree stumps of different sizes, the widest about one seventh of the picture width and the smallest about one eleventh, two of them with a little green moss on the bark, and two small heaps of pale wood chips about one tenth of the picture width. Every piece stands apart with clear magenta around it. Isometric 2:1 view from above at the same angle as the buildings, light from the upper left, low dark value. Each piece is a simple solid silhouette with a thick ink outline and two or three flat colours, because the picture will be shrunk until a stump is about forty pixels wide. No ground plate, no painted cast shadow, no people, no letters.",
-    "size": "1024x1024",
-    "quality": "high",
-    "inputs": [
-      {
-        "path": "docs/designs/village/growth/scratch/bakeoff/in/sheet.png",
-        "sha256": "25b04d185495eab002349572eaaf0c3875798d7324d1958b62a3f1fcac3c49a6"
-      }
-    ],
-    "tokens": {
-      "input_tokens": 1465,
-      "input_tokens_details": {
-        "image_tokens": 1248,
-        "text_tokens": 217
-      },
-      "output_tokens": 7024,
-      "output_tokens_details": {
-        "image_tokens": 7024,
-        "text_tokens": 0
-      },
-      "total_tokens": 8489
-    },
-    "cost": 0.2218,
-    "session": "growth-2",
-    "date": "2026-11-05"
   }
 }

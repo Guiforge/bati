@@ -27,9 +27,9 @@ test("the rule is folded, and a tap unfolds it in place, a second one folds it",
   expect(screen.queryByTestId("rule")).toBeNull();
 });
 
-test("the target is 44 dp tall", async () => {
+test("the target is 48 dp tall, the floor of every target since the duo lot", async () => {
   await wrap(<RuleDisclosure testID="rule" text="The rule." />);
-  expect(JSON.stringify(screen.getByTestId("rule-link").props.style)).toContain('"minHeight":44');
+  expect(JSON.stringify(screen.getByTestId("rule-link").props.style)).toContain('"minHeight":48');
 });
 
 test("a caller may hold the state", async () => {

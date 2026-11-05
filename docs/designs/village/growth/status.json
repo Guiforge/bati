@@ -133,7 +133,7 @@
   "reste": "2 à 4 h",
   "avancement": null,
   "total": null,
-  "note": "attend les réponses de Guillaume sur la page des quartiers (question 3)"
+  "note": "attend le choix du peintre (G18) ; bourg et fermes à rapprocher d'abord"
  },
  {
   "id": "G9",
@@ -167,7 +167,7 @@
   "reste": "2 à 4 h",
   "avancement": null,
   "total": null,
-  "note": "attend le choix de direction ; FLUX 3 Image"
+  "note": "A choisie, pièces de mara ; attend le choix du peintre (G18)"
  },
  {
   "id": "G11",
@@ -287,5 +287,22 @@
   "avancement": null,
   "total": null,
   "note": "https://claude.ai/artifact/TGeq36n8R1z8cD7dykz2it"
+ },
+ {
+  "id": "G18",
+  "piste": "Alentours qui grandissent",
+  "piste_ordre": 8,
+  "etape": "Banc d'essai FLUX 3 contre GPT Image 2",
+  "ordre": 18,
+  "statut": "attend Guillaume",
+  "debut": null,
+  "fin": null,
+  "heures": null,
+  "restant_min": 0,
+  "restant_max": 0,
+  "reste": "",
+  "avancement": null,
+  "total": null,
+  "note": "page prête, attend le choix du peintre par sorte de travail : https://claude.ai/artifact/PRXjCkLdN2Kdn6WbpGKg9V"
  }
 ]

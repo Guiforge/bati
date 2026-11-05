@@ -4,7 +4,8 @@
   "owns": [
     "docs/designs/village/growth/",
     "scripts/growth/",
-    "components/village/iso/alentours.ts (forêt du sud, G15)"
+    "components/village/iso/alentours.ts (forêt du sud, G15)",
+    "scripts/iso/openai_loop.py"
   ],
   "shared_read_only": [
     "docs/designs/village/PROMPT-tracks.md",
@@ -113,7 +114,7 @@
         4
       ],
       "status": "waiting",
-      "note": "attend les réponses de Guillaume sur la page des quartiers (question 3)"
+      "note": "attend le choix du peintre (G18) ; bourg et fermes à rapprocher d'abord"
     },
     {
       "id": "G9",
@@ -137,7 +138,7 @@
         4
       ],
       "status": "waiting",
-      "note": "attend le choix de direction ; FLUX 3 Image"
+      "note": "A choisie, pièces de mara ; attend le choix du peintre (G18)"
     },
     {
       "id": "G11",
@@ -222,6 +223,18 @@
       ],
       "status": "done",
       "note": "https://claude.ai/artifact/TGeq36n8R1z8cD7dykz2it"
+    },
+    {
+      "id": "G18",
+      "group": "3 peinture",
+      "name": "Banc d'essai FLUX 3 contre GPT Image 2",
+      "check": "une maison de A, les souches, un morceau de sol avec ses chemins repeints, par les deux peintres, côte à côte à la taille du téléphone, avis de mara, une page ; Guillaume choisit le peintre par sorte de travail, résultat dans PIPELINE.md",
+      "estimate_h": [
+        1,
+        3
+      ],
+      "status": "waiting",
+      "note": "page prête, attend le choix du peintre par sorte de travail : https://claude.ai/artifact/PRXjCkLdN2Kdn6WbpGKg9V"
     }
   ]
 }

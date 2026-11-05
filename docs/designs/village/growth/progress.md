@@ -23,3 +23,6 @@ Ce que la piste ajoute au palier 12 si le choix suit le plan : 0 image montée, 
 **Si A est choisie, ajout estimé au palier 12** (montage, jour seul, à doubler pour la nuit) : environ 56 pièces montées, 8 à 10 peintures. 0 chose qui bouge, 0 SVG. Rien de cela n'est posé.
 
 **La suite** : réponses de Guillaume sur la page, document `guillaume` de la collection `picks`, ou dans `checkpoint.md`. Puis G8, G10, G11. Quand G11 est fini, prévenir LAYOUT (L15).
+- 05/11 Choix de Guillaume sur les quartiers : A. Amendement v4.4 ajouté. Registre OpenAI `scripts/iso/openai_loop.py`, relu. Banc d'essai FLUX 3 contre GPT Image 2 : `img/bakeoff-*.jpg`, 0,29 $ FLUX, 1,35 $ OpenAI. Page : https://claude.ai/artifact/PRXjCkLdN2Kdn6WbpGKg9V
+
+**La suite** : le choix du peintre sur cette page (document `guillaume` de `picks`) ou dans `checkpoint.md`. Puis : écrire le résultat dans PIPELINE.md, rapprocher H1 à H3, peindre (G8, G10), poser (G11), prévenir LAYOUT (L15).

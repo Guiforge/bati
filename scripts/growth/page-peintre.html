@@ -1,0 +1,167 @@
+<title>Banc d'essai des peintres</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:wght@500;700&family=Alegreya+Sans:wght@400;500;700&display=swap">
+<style>
+/* Layout: one column, each job one board and one pick. Colours from the village's own night palette. */
+:root {
+  color-scheme: dark;
+  --sol: #15191A; --panneau: #1F2523; --trait: #39423C; --texte: #E8E2D0; --doux: #A9AB98; --lueur: #F0A848; --mousse: #8FA268; --sur-lueur: #15191A;
+  --titre: "Alegreya", Georgia, serif; --corps: "Alegreya Sans", "Trebuchet MS", sans-serif;
+}
+body { background: var(--sol); color: var(--texte); font: 400 17px/1.5 var(--corps); }
+main { max-width: 900px; margin: 0 auto; padding-block: 28px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 44px; }
+main > * { min-width: 0; }
+h1, h2 { font-family: var(--titre); font-weight: 700; line-height: 1.15; text-wrap: balance; margin: 0; }
+h1 { font-size: 2.4rem; } h2 { font-size: 1.6rem; }
+p { margin: 0; max-width: 68ch; }
+section { display: grid; gap: 14px; } section > * { min-width: 0; }
+.doux { color: var(--doux); }
+img { display: block; width: 100%; height: auto; border-radius: 3px; background: var(--panneau); }
+figure { margin: 0; display: grid; gap: 4px; min-width: 0; }
+figcaption { font-size: .92rem; color: var(--doux); }
+.defile { overflow-x: auto; }
+table { border-collapse: collapse; font-size: .95rem; font-variant-numeric: tabular-nums; min-width: 520px; }
+th, td { text-align: left; padding: 6px 12px 6px 0; border-bottom: 1px solid var(--trait); vertical-align: top; }
+th { color: var(--doux); font-weight: 500; }
+ul { margin: 0; padding-left: 1.2em; max-width: 68ch; display: grid; gap: 4px; }
+.choisir { display: flex; flex-wrap: wrap; gap: 8px; }
+.choisir button { background: var(--panneau); color: var(--texte); border: 1px solid var(--trait); padding: 10px 16px; border-radius: 4px; font: 500 1rem var(--corps); cursor: pointer; }
+.choisir button[aria-pressed="true"] { background: var(--lueur); color: var(--sur-lueur); border-color: var(--lueur); }
+button:focus-visible, textarea:focus-visible { outline: 2px solid var(--lueur); outline-offset: 2px; }
+textarea { width: 100%; box-sizing: border-box; min-height: 90px; background: var(--panneau); color: var(--texte); border: 1px solid var(--trait); padding: 10px; font: inherit; border-radius: 4px; }
+#etat { font-size: .92rem; color: var(--mousse); min-height: 1.4em; }
+@media (max-width: 860px) { h1 { font-size: 2rem; } }
+</style>
+<main>
+<header style="display:grid;gap:10px">
+  <p class="doux">Piste GROWTH, 05/11/2026. FLUX 3 Image à gauche, GPT Image 2 à droite. Même texte, mêmes images données. Rien n'est posé dans le jeu.</p>
+  <h1>Qui peint quoi ?</h1>
+  <p>Trois travaux, deux essais par peintre, en une passe. Choisis un peintre pour chaque sorte de travail. <b>Mon avis : FLUX 3 pour les chemins, GPT Image 2 pour les petites pièces, et la maison à ton oeil.</b></p>
+  <div class="defile"><table>
+    <thead><tr><th>Travail</th><th>Mesuré</th><th>Mara (style)</th></tr></thead>
+    <tbody>
+      <tr><td>Maison</td><td>GPT suit mieux les corrections</td><td>FLUX, essai 1 : se fond dans le décor</td></tr>
+      <tr><td>Souches</td><td>GPT seul respecte le nombre : 5 et 2</td><td>GPT, essai 2, à réduire et assombrir</td></tr>
+      <tr><td>Chemins</td><td>FLUX ne bouge rien, GPT déplace tout</td><td>FLUX, essai 1 : plus net</td></tr>
+    </tbody>
+  </table></div>
+</header>
+
+<section>
+  <h2>Une maison de A</h2>
+  <figure><img data-img="maison" alt="La maison peinte par FLUX 3 à gauche et GPT Image 2 à droite, puis posée à la taille du jeu"><figcaption>En haut en grand, en bas à la taille du jeu. La place dans le décor est arbitraire.</figcaption></figure>
+  <ul>
+    <li><b>FLUX</b> : garde le toit sombre et le trait épais, proche de tes bâtiments. Mais il oublie les corrections demandées : fenêtre orange vive, murs et cheminée clairs, chaume moucheté. Son fond est rose et pas franc, le détourage a quand même marché.</li>
+    <li><b>GPT</b> : applique presque tout : murs ternes, cheminée sombre, petite fenêtre, chaume calme. Mais son toit sort plus clair et plus chaud, plus lisse aussi, et la maison plus large.</li>
+    <li><b>Mara garde FLUX</b> pour la valeur (règle 11). Je pense que c'est l'inverse qui se reprend le mieux : demander à GPT un toit plus sombre semble plus simple que faire obéir FLUX. Je ne l'ai pas essayé.</li>
+  </ul>
+  <div class="choisir" data-q="maison"></div>
+</section>
+
+<section>
+  <h2>Les souches</h2>
+  <figure><img data-img="souches" alt="Les souches peintes par FLUX 3 à gauche et GPT Image 2 à droite, puis posées à la taille du jeu"><figcaption>En bas, une pièce moyenne fait 40 px de large. La forêt sous elles n'est pas leur vraie place.</figcaption></figure>
+  <ul>
+    <li><b>FLUX</b> : 9 pièces dans une grille au lieu de 7, presque identiques, avec de gros tas de planches. Au téléphone, de petits points bruns bien posés.</li>
+    <li><b>GPT</b> : exactement 5 souches et 2 tas de copeaux, formes variées, bien séparées. Mais les dessus de coupe sont pâles, et les plus grosses souches trop grandes.</li>
+  </ul>
+  <div class="choisir" data-q="souches"></div>
+</section>
+
+<section>
+  <h2>Un morceau de sol, chemins repeints</h2>
+  <figure><img data-img="chemins" alt="Le sol repeint par FLUX 3 à gauche et GPT Image 2 à droite"><figcaption>Le sol n'est pas isolé : l'atelier n'a pas de vue sans bâtiments, donc le morceau en porte 17. C'est un test plus dur.</figcaption></figure>
+  <div class="defile"><table>
+    <thead><tr><th></th><th>Écart hors chemins (sur 255)</th><th>Dans les chemins</th><th>Repères déplacés</th></tr></thead>
+    <tbody>
+      <tr><td>FLUX, essai 1</td><td>1,40</td><td>15,4</td><td>0 sur 17</td></tr>
+      <tr><td>FLUX, essai 2</td><td>2,42</td><td>27,0</td><td>0 sur 17</td></tr>
+      <tr><td>GPT, essai 1</td><td>25,76</td><td>28,6</td><td>17 sur 17</td></tr>
+      <tr><td>GPT, essai 2</td><td>24,18</td><td>30,3</td><td>17 sur 17</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><b>GPT repeint toute l'image</b> : un zoom d'environ 3 %, et tout bouge, jusqu'à 33 px, en plus d'une couche douce sur tout le décor. Tel quel, c'est inutilisable : les ombres et les zones de tap du jeu ne suivraient plus. Ses pavés sont plus détaillés.</li>
+    <li><b>FLUX ne bouge rien</b> et repeint le trait : pavés près de la place, terre plus loin. À l'essai 2, ses chemins de terre sont plus clairs que la route du sud.</li>
+    <li>Les petits points noirs le long des chemins restent chez FLUX.</li>
+    <li><b>Une rustine existe, non essayée</b> : recaler l'image de GPT sur l'originale et ne garder que les chemins, sous masque.</li>
+  </ul>
+  <div class="choisir" data-q="chemins"></div>
+</section>
+
+<section>
+  <h2>Ce que ça coûte</h2>
+  <div class="defile"><table>
+    <thead><tr><th></th><th>Par image, 1024 x 1024</th><th>Ce banc d'essai</th></tr></thead>
+    <tbody>
+      <tr><td>FLUX 3 Image</td><td>0,048 $</td><td>0,29 $ (6 images)</td></tr>
+      <tr><td>GPT Image 2, qualité haute</td><td>0,22 à 0,23 $</td><td>1,35 $ (6 images)</td></tr>
+    </tbody>
+  </table></div>
+  <p>GPT coûte à peu près 4,7 fois plus. Le prix des qualités moyenne et basse n'est pas mesuré : elles pourraient suffire pour des pièces aussi petites. Il reste 18,65 $ d'OpenAI sur 20 $, avec 3,65 $ de marge sur cette session.</p>
+</section>
+
+<section>
+  <h2>Ta réponse</h2>
+  <p>Tes choix de chaque travail sont enregistrés ici. Tu peux aussi écrire sous « Réponse de Guillaume » dans <code>growth/checkpoint.md</code>.</p>
+  <label for="note">Une remarque :</label>
+  <textarea id="note" placeholder="Par exemple : GPT pour la maison mais le toit plus sombre."></textarea>
+  <p id="etat" role="status"></p>
+  <p class="doux">Ensuite : peinture des quartiers de A, des souches, de F rapprochée dans l'écran, et résultat écrit dans <code>PIPELINE.md</code>. Les pièces retenues par mara, faute de choix enregistrés sur l'autre page, sont dans <code>decisions.md</code>.</p>
+</section>
+</main>
+<script>
+const IMG = /*IMAGES*/{};
+document.querySelectorAll("[data-img]").forEach((el) => { el.src = IMG[el.dataset.img] ?? ""; });
+const OPTIONS = [["flux", "FLUX 3"], ["gpt", "GPT Image 2"]];
+const etat = { peintres: {}, note: "" };
+const zoneEtat = document.getElementById("etat");
+let doc = null;
+let ecrit = Promise.resolve();
+function enregistrer() {
+  if (!doc) { zoneEtat.textContent = "Enregistrement indisponible ici : écris ton choix dans checkpoint.md."; return; }
+  ecrit = ecrit.then(() => doc.set({ ...etat })).then(
+    () => { zoneEtat.textContent = "Enregistré."; },
+    () => { zoneEtat.textContent = "Non enregistré : écris ton choix dans checkpoint.md."; },
+  );
+}
+const boutons = {};
+document.querySelectorAll("[data-q]").forEach((g) => {
+  const q = g.dataset.q;
+  g.setAttribute("role", "group");
+  g.setAttribute("aria-label", `Peintre pour ${q}`);
+  boutons[q] = {};
+  for (const [val, nom] of OPTIONS) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = nom;
+    b.setAttribute("aria-pressed", "false");
+    b.addEventListener("click", () => {
+      etat.peintres[q] = etat.peintres[q] === val ? null : val;
+      peindre();
+      enregistrer();
+    });
+    boutons[q][val] = b;
+    g.append(b);
+  }
+});
+const note = document.getElementById("note");
+note.addEventListener("change", () => { etat.note = note.value; enregistrer(); });
+function peindre() {
+  for (const q in boutons) for (const v in boutons[q]) boutons[q][v].setAttribute("aria-pressed", String(etat.peintres[q] === v));
+  if (document.activeElement !== note) note.value = etat.note ?? "";
+}
+(async () => {
+  const db = await claude.use("db");
+  if (!db) { zoneEtat.textContent = "Enregistrement indisponible ici : écris ton choix dans checkpoint.md."; return; }
+  doc = db.doc("picks/guillaume");
+  const lue = await doc.get().catch(() => null);
+  const donnees = lue && (typeof lue.data === "function" ? lue.data() : lue.data ?? lue);
+  if (donnees) {
+    etat.peintres = donnees.peintres ?? {};
+    etat.note = donnees.note ?? "";
+    peindre();
+  }
+})();
+</script>

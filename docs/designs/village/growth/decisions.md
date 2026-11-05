@@ -17,3 +17,9 @@
 - 05/11 **Forêt du sud : +32 masses au palier 1**, au-dessus de l'objectif de 25, gardées : elles cachent les polygones sombres. Moins de masses laisse des trous. PERF le saura par `progress.md`.
 - 05/11 **Pied de la route sud fermé par la forêt** : la route visible finit 100 px plus haut. Montré à Guillaume sur la page.
 - 05/11 **Branche locale `track-growth-iso`**, poussée vers `track-growth` : la session est isolée dans le worktree `iso`, et `track-growth` est prise par son ancien worktree, resté derrière.
+- 05/11 **Guillaume choisit A** (`checkpoint.md`). Le bourg et les fermes seront rapprochés dans l'écran, à refaire sur le plan avant peinture : `slots.json` H1 à H3 sont à toi puisque LAYOUT est fusionné. Rien de cela n'est encore posé.
+- 05/11 **Pièces de A choisies par mara**, la page n'ayant rien enregistré : A1a v2, A1b v2, A1c v2, A2 v2, A3 v2, A4 v1, A5 v1, A6 v2, A7 v1, A8 v1, B5 v1, B6 v1. À reprendre : A1c trop haute (règle 12), A6 à deux étages, à réduire ou placer loin du joueur. Si Guillaume a d'autres choix, les siens passent avant.
+- 05/11 **Étal désaturé, pas gris** (réponse 4) : A4 v1 à reprendre à la peinture, sa toile est grise.
+- 05/11 **Le morceau de sol du banc d'essai porte 17 bâtiments et accessoires** : `dev-iso` n'a pas de vue sans bâtiments. Test plus dur, gardé.
+- 05/11 **GPT en qualité haute partout dans le banc d'essai**, le premier appel coûtant 0,22 $. Moyenne et basse pas mesurées.
+- 05/11 **Banc d'essai dans `scripts/provenance.json`**, comme l'amendement le demande, avec des chemins de `scratch/` : ces fichiers partent à l'archive en fin de piste.

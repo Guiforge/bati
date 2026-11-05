@@ -1,5 +1,17 @@
 # Alentours : choix pour Guillaume
 
+## Banc d'essai, 05/11, en attente
+
+**Page : https://claude.ai/artifact/PRXjCkLdN2Kdn6WbpGKg9V** (privée, à toi seul).
+
+**Quel peintre pour chaque sorte de travail ?** Maison, souches, chemins : FLUX 3 ou GPT Image 2. Mon avis : FLUX 3 pour les chemins, GPT Image 2 pour les petites pièces, la maison à ton oeil.
+
+### Réponse de Guillaume, banc d'essai
+
+(en attente)
+
+---
+
 ## Quartiers, 05/11, en attente
 
 **Page : https://claude.ai/artifact/TGeq36n8R1z8cD7dykz2it** (privée, à toi seul).
@@ -16,7 +28,17 @@ Tes réponses sur la page sont dans la collection `picks`, document `guillaume`.
 
 ### Réponse de Guillaume, quartiers
 
-(en attente)
+05/11, dans la session :
+
+1. **A**, La rue bâtie.
+2. **N1 à N6 : oui**, partout où ça ne couvre pas l'accroche d'un bâtiment.
+3. **On rapproche le bourg et les fermes** dans l'écran.
+4. **L'étal désaturé**, pas gris.
+5. **On garde la règle 11** : pas de toit chaud.
+6. **Oui, des souches.**
+7. **Ses choix sur la page, sinon ceux que mara préfère.** La page n'a rien enregistré (`picks/guillaume` absent) : mara choisit.
+
+Puis : avant de peindre, le banc d'essai FLUX 3 contre GPT Image 2 de l'amendement v4.4, sur une page, et on s'arrête jusqu'à son choix.
 
 ---
 

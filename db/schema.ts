@@ -1208,6 +1208,11 @@ export const deletedContent = sqliteTable("deleted_content", {
   deletedAt: int({ mode: "timestamp" }).notNull(),
 });
 
+/** A BLOB column, as the bytes the driver hands over (`Uint8Array`: expo-sqlite, and a Buffer in tests). */
+const bytes = customType<{ data: Uint8Array; driverData: Uint8Array }>({
+  dataType: () => "blob",
+});
+
 /**
  * Companions (0082): two phones that share a secret. `name` is what this hero calls the other and is
  * never sent. `secret` leaves this database only inside a sealed backup or sync (`scrubPairs`), or the
@@ -1221,7 +1226,34 @@ export const pairs = sqliteTable("pairs", {
   peerId: text(),
   createdAt: int({ mode: "timestamp" }).notNull(),
   updatedAt: int({ mode: "timestamp" }).notNull(),
+  /** This hero's weekly goal, frozen when the pair was written (0085). */
+  goal: int().notNull().default(2),
+  /** "Compare our weeks", local to this hero and never sent (0085). */
+  duel: int({ mode: "boolean" }).notNull().default(false),
+  /** Phone B's pairing answer, until a week from A proves A has it (0085). */
+  reply: bytes(),
 });
+
+/**
+ * What a companion said about one ISO week (0085): their latest envelope, and when this phone saw
+ * the boss fall. `fallenAt` is never cleared; the companion's columns go NULL on an unlink and in a
+ * plaintext copy.
+ */
+export const duoWeeks = sqliteTable(
+  "duo_weeks",
+  {
+    pairId: text().notNull(),
+    isoYear: int().notNull(),
+    isoWeek: int().notNull(),
+    stamp: int(),
+    goal: int(),
+    paused: int({ mode: "boolean" }),
+    /** JSON, seven counts, Monday first. */
+    days: text(),
+    fallenAt: int({ mode: "timestamp" }),
+  },
+  (table) => ({ pk: primaryKey({ columns: [table.pairId, table.isoYear, table.isoWeek] }) }),
+);
 
 /**
  * A link invitation waiting for its answer (0084). `privateKey` stays on this device and goes when the
@@ -1232,11 +1264,6 @@ export const pairInvites = sqliteTable("pair_invites", {
   privateKey: text().notNull(),
   selfId: text().notNull(),
   madeAt: int({ mode: "timestamp" }).notNull(),
-});
-
-/** A BLOB column, as the bytes the driver hands over (`Uint8Array`: expo-sqlite, and a Buffer in tests). */
-const bytes = customType<{ data: Uint8Array; driverData: Uint8Array }>({
-  dataType: () => "blob",
 });
 
 /**

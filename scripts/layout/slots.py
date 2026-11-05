@@ -24,7 +24,7 @@ LETTRES = "123456789abc"
 # id, wanted tier (6 to 12, rule 6), box, what it holds, what stays clear
 QUARTIERS = [
     ("Q1", 6, [3, -6, 8, -1], "quartier du nord, rive est, derriere la carriere et le mannequin", "la rue du nord (gx 0 et gx -1) a l'ouest, le chemin gy 2 au sud"),
-    ("Q2", 10, [-7, 11, -2, 16], "quartier du sud-ouest, sous la ferme", "la ferme et son parvis au nord, la rue gx -4 a l'est"),
+    ("Q2", 10, [-7, 11, -3, 16], "quartier du sud-ouest, sous la ferme", "la ferme et son parvis au nord, la rue gx -4 a l'est"),
     ("Q3", 8, [-8, -3, -5, 2], "quartier de la clairiere ouest, au dessus de l'observatoire", "l'observatoire et son parvis au sud, la rue gx -4 a l'est"),
     ("Q4", 9, [-8, -8, -4, -5], "quartier du nord-ouest, ou la foret recule, a gauche du bosquet", "le bosquet (gx -3) garde sa foret derriere lui, jamais de maison a l'est de gx -4"),
     ("Q5", 7, [-8, 7, -5, 9], "quartier de l'ouest, le long de la rue gy 7", "la rue gy 7 au nord-est"),

@@ -209,7 +209,7 @@
   "piste_ordre": 7,
   "etape": "Appliquer le plan choisi",
   "ordre": 13,
-  "statut": "attend Guillaume",
+  "statut": "en cours",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -218,7 +218,7 @@
   "reste": "3 à 6 h",
   "avancement": null,
   "total": null,
-  "note": "attend le choix ; 8 accessoires à replacer, 8 accroches à régler, pont choisi à poser"
+  "note": "choix du 05/11 : rue nord, pont B, mannequin [7, 0], palier 1 sans maison ; 8 accessoires à replacer, 8 accroches à régler"
  },
  {
   "id": "L13",
@@ -226,7 +226,7 @@
   "piste_ordre": 7,
   "etape": "Recalculer le sol et le décor",
   "ordre": 14,
-  "statut": "attend Guillaume",
+  "statut": "à faire",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -235,7 +235,7 @@
   "reste": "4 à 8 h",
   "avancement": null,
   "total": null,
-  "note": "attend le choix ; revue de code des cases négatives avant la fusion"
+  "note": "bouts de chemin de la porte sud retirés ; revue de code des cases négatives avant la fusion"
  },
  {
   "id": "L14",
@@ -243,7 +243,7 @@
   "piste_ordre": 7,
   "etape": "Villageois, tap, cadrage",
   "ordre": 15,
-  "statut": "attend Guillaume",
+  "statut": "à faire",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -252,7 +252,7 @@
   "reste": "2 à 4 h",
   "avancement": null,
   "total": null,
-  "note": "attend le choix"
+  "note": "zoom minimum gardé à 0,43"
  },
  {
   "id": "L15",
@@ -260,7 +260,7 @@
   "piste_ordre": 7,
   "etape": "Coin verrouillé et crops",
   "ordre": 16,
-  "statut": "attend Guillaume",
+  "statut": "à faire",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -269,7 +269,7 @@
   "reste": "0.5 à 1 h",
   "avancement": null,
   "total": null,
-  "note": "attend le choix"
+  "note": "recul de lisiere et pieds validé par Guillaume le 05/11, à reverrouiller"
  },
  {
   "id": "L16",
@@ -277,7 +277,7 @@
   "piste_ordre": 7,
   "etape": "Recouvrements restants pour GAME",
   "ordre": 17,
-  "statut": "attend Guillaume",
+  "statut": "à faire",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -286,7 +286,7 @@
   "reste": "0.2 à 0.5 h",
   "avancement": null,
   "total": null,
-  "note": "attend le choix"
+  "note": ""
  },
  {
   "id": "L17",
@@ -294,7 +294,7 @@
   "piste_ordre": 7,
   "etape": "Contrôles de fin",
   "ordre": 18,
-  "statut": "attend Guillaume",
+  "statut": "à faire",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -303,7 +303,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": "attend le choix"
+  "note": ""
  },
  {
   "id": "L18",
@@ -311,7 +311,7 @@
   "piste_ordre": 7,
   "etape": "Clôture de la piste",
   "ordre": 19,
-  "statut": "attend Guillaume",
+  "statut": "à faire",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -320,7 +320,7 @@
   "reste": "0.3 à 1 h",
   "avancement": null,
   "total": null,
-  "note": "attend le choix"
+  "note": ""
  },
  {
   "id": "L19",

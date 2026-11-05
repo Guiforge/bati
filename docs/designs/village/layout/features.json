@@ -194,8 +194,8 @@
         3,
         6
       ],
-      "status": "waiting",
-      "note": "attend le choix ; 8 accessoires à replacer, 8 accroches à régler, pont choisi à poser"
+      "status": "doing",
+      "note": "choix du 05/11 : rue nord, pont B, mannequin [7, 0], palier 1 sans maison ; 8 accessoires à replacer, 8 accroches à régler"
     },
     {
       "id": "L13",
@@ -206,8 +206,8 @@
         4,
         8
       ],
-      "status": "waiting",
-      "note": "attend le choix ; revue de code des cases négatives avant la fusion"
+      "status": "todo",
+      "note": "bouts de chemin de la porte sud retirés ; revue de code des cases négatives avant la fusion"
     },
     {
       "id": "L14",
@@ -218,8 +218,8 @@
         2,
         4
       ],
-      "status": "waiting",
-      "note": "attend le choix"
+      "status": "todo",
+      "note": "zoom minimum gardé à 0,43"
     },
     {
       "id": "L15",
@@ -230,8 +230,8 @@
         0.5,
         1
       ],
-      "status": "waiting",
-      "note": "attend le choix"
+      "status": "todo",
+      "note": "recul de lisiere et pieds validé par Guillaume le 05/11, à reverrouiller"
     },
     {
       "id": "L16",
@@ -242,8 +242,8 @@
         0.2,
         0.5
       ],
-      "status": "waiting",
-      "note": "attend le choix"
+      "status": "todo",
+      "note": ""
     },
     {
       "id": "L17",
@@ -254,8 +254,8 @@
         1,
         2
       ],
-      "status": "waiting",
-      "note": "attend le choix"
+      "status": "todo",
+      "note": ""
     },
     {
       "id": "L18",
@@ -266,8 +266,8 @@
         0.3,
         1
       ],
-      "status": "waiting",
-      "note": "attend le choix"
+      "status": "todo",
+      "note": ""
     },
     {
       "id": "L19",

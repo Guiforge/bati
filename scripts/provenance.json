@@ -10312,6 +10312,106 @@
     "generated": "2026-08-02",
     "reencoded": "cwebp -q 85, from splash-bg3.jpg"
   },
+  "docs/designs/village/layout/scratch/pont/a1_c0.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "1dc2abc0479c9b9c.png",
+      "sha256": "1dc2abc0479c9b9c38ce58756dc855a5299dd6d98d24c62e252fd43f1647add4"
+    },
+    "prompt": "Image 1 is a plain grey model of a small footbridge on a flat green background. Paint that same footbridge, keeping exactly its camera angle, its footprint and the direction of its deck: a deck of eight warm honey-brown oak planks laid across two thick beams, a short block of rough-cut warm grey stone at each end where the deck rests, and along each long side a low rail of three rough timber posts joined by one top rail. Light falls from the left: the left-facing sides of planks and posts are warm gold, the right-facing sides are in cool slate blue-grey shadow (#2E3552). Hand-painted matte gouache with visible brush strokes, two or three values in each plank, a dark brown-black ink outline of even medium thickness around every shape. The bridge stands alone on the flat pure chroma green (#00FF00) that fills the picture to every edge: nothing under it, no water, no ground, no cast shadow, no people, no text.",
+    "seed": null,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-11-04",
+    "references": [
+      {
+        "path": "docs/designs/village/layout/scratch/pont/ref.png",
+        "sha256": "768905220c9cf87b777099dda4bcf2c9fae646acb2be3d749cfc0363a7b38261"
+      }
+    ]
+  },
+  "docs/designs/village/layout/scratch/pont/a1_c1.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "fd26912ba3a0460b.png",
+      "sha256": "fd26912ba3a0460b8fbb65e7847baf6d0978ac7c4fe7bca0462384c853922486"
+    },
+    "prompt": "Image 1 is a plain grey model of a small footbridge on a flat green background. Paint that same footbridge, keeping exactly its camera angle, its footprint and the direction of its deck: a deck of eight warm honey-brown oak planks laid across two thick beams, a short block of rough-cut warm grey stone at each end where the deck rests, and along each long side a low rail of three rough timber posts joined by one top rail. Light falls from the left: the left-facing sides of planks and posts are warm gold, the right-facing sides are in cool slate blue-grey shadow (#2E3552). Hand-painted matte gouache with visible brush strokes, two or three values in each plank, a dark brown-black ink outline of even medium thickness around every shape. The bridge stands alone on the flat pure chroma green (#00FF00) that fills the picture to every edge: nothing under it, no water, no ground, no cast shadow, no people, no text.",
+    "seed": null,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-11-04",
+    "references": [
+      {
+        "path": "docs/designs/village/layout/scratch/pont/ref.png",
+        "sha256": "768905220c9cf87b777099dda4bcf2c9fae646acb2be3d749cfc0363a7b38261"
+      }
+    ]
+  },
+  "docs/designs/village/layout/scratch/pont/a1_c2.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "96c33f9da25a1a68.png",
+      "sha256": "96c33f9da25a1a68b1950da2d48e634be59476142acc1ac8b9cc407dbe07e5bc"
+    },
+    "prompt": "Image 1 is a plain grey model of a small footbridge on a flat green background. Paint that same footbridge, keeping exactly its camera angle, its footprint and the direction of its deck: a deck of eight warm honey-brown oak planks laid across two thick beams, a short block of rough-cut warm grey stone at each end where the deck rests, and along each long side a low rail of three rough timber posts joined by one top rail. Light falls from the left: the left-facing sides of planks and posts are warm gold, the right-facing sides are in cool slate blue-grey shadow (#2E3552). Hand-painted matte gouache with visible brush strokes, two or three values in each plank, a dark brown-black ink outline of even medium thickness around every shape. The bridge stands alone on the flat pure chroma green (#00FF00) that fills the picture to every edge: nothing under it, no water, no ground, no cast shadow, no people, no text.",
+    "seed": null,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-11-04",
+    "references": [
+      {
+        "path": "docs/designs/village/layout/scratch/pont/ref.png",
+        "sha256": "768905220c9cf87b777099dda4bcf2c9fae646acb2be3d749cfc0363a7b38261"
+      }
+    ]
+  },
+  "docs/designs/village/layout/scratch/pont/a2_c1.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "1ab53d496ae52698.png",
+      "sha256": "1ab53d496ae52698a8e36e99b355a4b65647e1987413f14866d3d63c6fbefb03"
+    },
+    "prompt": "Image 1 is a plain grey model of a small footbridge on a flat green background. Paint that same footbridge, keeping exactly its camera angle, its footprint and the direction of its deck: a deck of eight warm honey-brown oak planks laid across two thick beams, a short block of rough-cut warm grey stone at each end where the deck rests, and along each long side a low rail of three rough timber posts joined by one top rail. Light falls from the left: the left-facing sides of planks and posts are warm gold, the right-facing sides are in cool slate blue-grey shadow (#2E3552). Hand-painted matte gouache with visible brush strokes, two or three values in each plank, a thick dark brown-black ink outline (#0F1518), bold and clearly visible, around the whole bridge and around every plank, post and stone. The bridge stands alone on the flat pure chroma green (#00FF00) that fills the picture to every edge: nothing under it, no water, no ground, no cast shadow, no people, no text.",
+    "seed": null,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-11-04",
+    "references": [
+      {
+        "path": "docs/designs/village/layout/scratch/pont/ref.png",
+        "sha256": "768905220c9cf87b777099dda4bcf2c9fae646acb2be3d749cfc0363a7b38261"
+      }
+    ]
+  },
+  "docs/designs/village/layout/scratch/pont/a2_c2.png": {
+    "model": "flux-3-image",
+    "provider": "Black Forest Labs (direct API)",
+    "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
+    "signed_original": {
+      "file": "be054b441a38a0fa.png",
+      "sha256": "be054b441a38a0fa80c9054b2b623fbafa7affe7519523f6010e7e8617b78906"
+    },
+    "prompt": "Image 1 is a plain grey model of a small footbridge on a flat green background. Paint that same footbridge, keeping exactly its camera angle, its footprint and the direction of its deck: a deck of eight warm honey-brown oak planks laid across two thick beams, a short block of rough-cut warm grey stone at each end where the deck rests, and along each long side a low rail of three rough timber posts joined by one top rail. Light falls from the left: the left-facing sides of planks and posts are warm gold, the right-facing sides are in cool slate blue-grey shadow (#2E3552). Hand-painted matte gouache with visible brush strokes, two or three values in each plank, a thick dark brown-black ink outline (#0F1518), bold and clearly visible, around the whole bridge and around every plank, post and stone. The bridge stands alone on the flat pure chroma green (#00FF00) that fills the picture to every edge: nothing under it, no water, no ground, no cast shadow, no people, no text.",
+    "seed": null,
+    "width": 1024,
+    "height": 768,
+    "generated": "2026-11-04",
+    "references": [
+      {
+        "path": "docs/designs/village/layout/scratch/pont/ref.png",
+        "sha256": "768905220c9cf87b777099dda4bcf2c9fae646acb2be3d749cfc0363a7b38261"
+      }
+    ]
+  },
   "docs/designs/village/life/scratch/u3/pieces/raw/burst_0.png": {
     "model": "flux-3-image",
     "provider": "Black Forest Labs (direct API)",

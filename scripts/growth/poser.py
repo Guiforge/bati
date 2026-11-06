@@ -31,7 +31,7 @@ MAX_PX_DP = 4.5  # native px a dp kept in the copied files (the props' own is 4.
 
 # every id of the finals that reaches the scene
 FINALS = ["A1a", "A1b", "A1c", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "B5", "B6", "bourg_F_v1", "ferme3_F_v1", "ferme3_F_v2",
-          "ferme4_F_v1", "hameau1_F_v2", "hameau2_F_v1", "copeaux_1", "copeaux_2", "mat", "feu", "souche_1", "souche_2", "souche_3", "souche_4", "souche_5"]
+          "ferme4_F_v1", "hameau1_F_v2", "hameau2_F_v1", "copeaux_1", "copeaux_2", "mat", "souche_1", "souche_2", "souche_3", "souche_4", "souche_5"]
 
 
 def lum(im):
@@ -157,12 +157,7 @@ def mat():
     return at_foot("mat", "M:10", 10, FIN, MAT_FOOT, mirror=True) | dict(why="M")
 
 
-FEU_FOOT = (19.0, 15.6)  # the bonfire of tier 12: the paved square between the campfire and the fountain, by its foot
-
-
-def feu():
-    """The tier-12 bonfire (scripts/growth/mat.py feu): a free spot of the square, by its foot."""
-    return at_foot("feu", "F12", 12, FIN, FEU_FOOT) | dict(why="M")
+# The tier-12 bonfire (scripts/growth/mat.py feu, scratch/final/feu.*) was placed by the gate, then removed by Guillaume on 06/11.
 
 
 def stump_rows():
@@ -237,7 +232,7 @@ def copy_images(widths):
 
 def main():
     rows, dropped = piece_rows()
-    allrows = rows + n1() + [mat(), feu()] + stump_rows() + farm_rows()
+    allrows = rows + n1() + [mat()] + stump_rows() + farm_rows()
     # what the atelier's gates refused (a piece under 50 % visible, a hook covered), by picture and the cell its foot stands on, with the reason
     drops = json.loads((ROOT / "scripts/growth/poser_drops.json").read_text()) if (ROOT / "scripts/growth/poser_drops.json").exists() else []
     gone = {(i, cx, cy) for i, cx, cy, _why in drops}

@@ -25,3 +25,4 @@
 - 05/11 **Banc d'essai dans `scripts/provenance.json`**, comme l'amendement le demande, avec des chemins de `scratch/` : ces fichiers partent à l'archive en fin de piste.
 - 05/11 **Tour 2 du banc d'essai, accord de Guillaume** : `gpt-image-2.5-sunburst` et `gpt-image-2.6-sunburst`, exception écrite dans `PROMPT-tracks.md`, banc d'essai seulement. Aucun repère déplacé, 0,07 $ l'image, mais ils repeignent quand même tout le décor.
 - 05/11 **Le collage sous masque est le mode à retenir pour les chemins**, quel que soit le peintre : 0,00 hors du masque. Le masque de l'API sort en blocs noirs, deux formats essayés. Le masque par couleur rate les pavés sombres : à tirer du tracé des rues, pas essayé.
+- 06/11 **Mât rouge gardé, feu de joie retiré**, choix de Guillaume. Le palier 12 n'a pas de sommet au centre.

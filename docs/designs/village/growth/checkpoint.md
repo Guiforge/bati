@@ -93,3 +93,5 @@ Bandes : `img/apres2-strip-jour.jpg` et `img/apres2-strip-nuit.jpg`. Avant corre
 ## Réponse de Guillaume, village posé
 
 (en attente)
+
+06/11, dans la session : « le mat se voit mais enleve le feu ». Mât gardé au palier 10, feu de joie retiré (image gardée dans scratch/final et dans la provenance).

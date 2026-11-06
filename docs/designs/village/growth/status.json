@@ -192,7 +192,7 @@
   "piste_ordre": 8,
   "etape": "Contrôles de fin",
   "ordre": 12,
-  "statut": "attend Guillaume",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -201,7 +201,7 @@
   "reste": "1 à 2 h",
   "avancement": null,
   "total": null,
-  "note": "env, mara, code, theo passés ; reste ton coup d'oeil et la revalidation de lisiere et pieds (L15)"
+  "note": "portes refaites sans le feu, identiques ; lisiere et pieds reverrouillés au palier 6 (loupes/bc/relock-2026-11-06), LOCK_OK"
  },
  {
   "id": "G13",
@@ -209,7 +209,7 @@
   "piste_ordre": 8,
   "etape": "Clôture de la piste",
   "ordre": 13,
-  "statut": "attend Guillaume",
+  "statut": "fait",
   "debut": null,
   "fin": null,
   "heures": null,
@@ -218,7 +218,7 @@
   "reste": "0.3 à 1 h",
   "avancement": null,
   "total": null,
-  "note": "fermeture après ta réponse : archive scratch, retrait de growth-iso/"
+  "note": "scratch archivé dans ~/bati-archives/2026-11-06-growth.tgz et vidé, growth-iso/ retiré, summary-5.md"
  },
  {
   "id": "G14",

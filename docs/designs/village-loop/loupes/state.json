@@ -87,16 +87,16 @@
     {
       "loupe": "bc",
       "crop": "bc-lisiere",
-      "path": "docs/designs/village-loop/loupes/bc/r6/bc-lisiere.png",
-      "capture": "docs/designs/village-loop/loupes/bc/r6/captures-7",
-      "locked": "2026-11-02"
+      "path": "docs/designs/village-loop/loupes/bc/relock-2026-11-06/bc-lisiere.png",
+      "capture": "docs/designs/village-loop/loupes/bc/relock-2026-11-06/render-t6-jour.png",
+      "locked": "2026-11-06"
     },
     {
       "loupe": "bc",
       "crop": "bc-pieds",
-      "path": "docs/designs/village-loop/loupes/bc/r6/bc-pieds.png",
-      "capture": "docs/designs/village-loop/loupes/bc/r6/captures-7",
-      "locked": "2026-11-02"
+      "path": "docs/designs/village-loop/loupes/bc/relock-2026-11-06/bc-pieds.png",
+      "capture": "docs/designs/village-loop/loupes/bc/relock-2026-11-06/render-t6-jour.png",
+      "locked": "2026-11-06"
     },
     {
       "loupe": "bc",

@@ -95,3 +95,5 @@ Bandes : `img/apres2-strip-jour.jpg` et `img/apres2-strip-nuit.jpg`. Avant corre
 (en attente)
 
 06/11, dans la session : « le mat se voit mais enleve le feu ». Mât gardé au palier 10, feu de joie retiré (image gardée dans scratch/final et dans la provenance).
+
+06/11, ensuite : « OK pour le retrait du feu », rendu et planches à refaire, portes une fois, note pour AUDIT et POLISH, puis reverrouiller `lisiere` et `pieds` sur le rendu final et fermer. Fait.

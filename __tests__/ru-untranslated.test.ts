@@ -55,6 +55,7 @@ const EXCEPTIONS: Record<string, string> = {
   "village.crest_legend": "placeholder only",
   "village.crest_legend_coat": "'what, coat'",
   "village.hall_times": "'×N'",
+  "duo.fold_line": "'name · state'",
   // Developer-facing example values in a text field.
   "sync.serverPlaceholder": "example host name",
   "sync.webdavUrlPlaceholder": "example URL",

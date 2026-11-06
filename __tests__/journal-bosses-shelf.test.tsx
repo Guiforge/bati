@@ -19,6 +19,8 @@ const mockPush = jest.fn();
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn() }),
   useNavigation: () => ({ canGoBack: () => true }),
+  // The duo card above the shelf loads on focus; this suite is about the shelf.
+  useFocusEffect: jest.fn(),
 }));
 jest.mock("@/stores/settings", () => ({
   useSettingsStore: (selector: (s: { language: string }) => unknown) =>

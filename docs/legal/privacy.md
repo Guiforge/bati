@@ -42,7 +42,7 @@ francés: **contact@getbati.app**
 
 # Privacy Policy for Bati
 
-**Last updated: 4 November 2026**
+**Last updated: 5 November 2026**
 
 Bati is an offline-first training app. It has no account, no server of its own, and no analytics.
 This page exists because both app stores require a privacy policy URL, and because the short
@@ -283,6 +283,10 @@ the same on-device database.
 fingerprint. Android runs the check; Bati never sees your fingerprint, only whether it matched.
 Nothing else in the app asks for it, and every backup opens with its password without it.
 
+**Camera (optional).** Only when you open the duo challenge's scanner, to read a companion's code
+on the screen in front of you. The picture is read on your phone, line by line, and never kept or
+sent. Bati asks for it at that moment, not before; a link works without it.
+
 ## Crash reports
 
 If Bati crashes, it writes the error and its stack trace **to your device only**. When a
@@ -301,6 +305,21 @@ A recap, an outing card or the year in review can be shared as a picture. Bati d
 phone from your own data (a route map included, with its OpenStreetMap credit) and hands it to
 your phone's share sheet. Bati sends it nowhere itself, and it goes only where you choose to send
 it. Once it has left, whoever receives it keeps it, and what they do with it is up to them.
+
+## Playing with a companion
+
+The duo challenge travels in messages **you send yourself**, as a link through your own messaging
+app or a code scanned face to face. There is no server and no account. A message carries, for one
+week: how many counted sessions you did each day, your weekly goal and whether a pause touched the
+week. It is sealed so that only that one companion can open it. It never carries a name, a weight,
+a heart rate, a trace or any free text: the format has no room for one. Whoever carries the
+message (your messaging app) sees that two links concern the same pair and the same week, nothing
+of what is in them.
+
+What your companion sends you stays in the on-device database, and in your encrypted sync if you
+use one. A plaintext backup keeps only the weeks the boss fell, without what your companion said
+and without your companions. Unlinking a companion erases what they sent you and keeps your count.
+The name you give a companion is yours, like a contact, and never leaves your phone.
 
 ## Children
 
@@ -333,7 +352,7 @@ Questions about this policy, and anything else (a bug, an idea, a feature you wi
 
 # Politique de confidentialité de Bati
 
-**Dernière mise à jour : 4 novembre 2026**
+**Dernière mise à jour : 5 novembre 2026**
 
 Bati est une application d'entraînement hors ligne d'abord. Pas de compte, pas de serveur à nous,
 pas d'analytics. Cette page existe parce que les deux stores exigent une URL de politique de
@@ -605,6 +624,10 @@ sauvegarde, derrière votre empreinte. Android fait la vérification ; Bati ne v
 empreinte, seulement si elle correspond. Rien d'autre dans l'application ne la demande, et chaque
 sauvegarde s'ouvre avec son mot de passe sans elle.
 
+**Caméra (facultatif).** Seulement quand vous ouvrez le scanner du défi à deux, pour lire le code
+d'un compagnon sur l'écran devant vous. L'image est lue sur votre téléphone et n'est jamais
+gardée ni envoyée. Bati la demande à ce moment-là, pas avant ; un lien marche sans elle.
+
 ## Rapports de crash
 
 En cas de plantage, Bati écrit l'erreur et sa trace **uniquement sur votre appareil**. Quand
@@ -625,6 +648,22 @@ la dessine sur votre téléphone à partir de vos propres données (carte du tra
 crédit OpenStreetMap) et la remet au partage de votre téléphone. Bati ne l'envoie nulle part
 lui-même, et elle ne va que là où vous décidez de l'envoyer. Une fois partie, celui ou celle qui la
 reçoit la garde, et ce qu'il en fait le regarde.
+
+## Jouer avec un compagnon
+
+Le défi à deux passe par des messages **que vous envoyez vous-même**, un lien par votre propre
+messagerie ou un code scanné en face à face. Il n'y a ni serveur ni compte. Un message porte, pour
+une semaine : combien de séances comptées vous avez faites chaque jour, votre objectif de la
+semaine et si une pause l'a touchée. Il est scellé pour que ce seul compagnon puisse l'ouvrir. Il
+ne porte jamais un nom, un poids, un pouls, une trace ni aucun texte libre : le format n'a pas de
+place pour cela. Qui transporte le message (votre messagerie) voit que deux liens concernent la
+même paire et la même semaine, rien de ce qu'ils contiennent.
+
+Ce que votre compagnon vous envoie reste dans la base de votre téléphone, et dans votre synchro
+chiffrée si vous en avez une. Une sauvegarde en clair ne garde que les semaines où le boss est
+tombé, sans ce qu'a dit votre compagnon et sans vos compagnons. Délier un compagnon efface ce
+qu'il vous a envoyé et garde votre décompte. Le nom que vous donnez à un compagnon est à vous,
+comme un contact, et ne quitte jamais votre téléphone.
 
 ## Enfants
 

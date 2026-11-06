@@ -127,6 +127,17 @@ mid-sentence, so a label is never lowercased into a sentence (`inSentence()` in
 | loot | The victory screen's rewards | loot | butin |  | Beute | botín | 战利品 |  |
 | gauntlet | The armoured glove, in titles and lore | gauntlet | gantelet | gant (a winter glove) | Panzerhandschuh | guantelete | 臂铠 | 手套 |
 
+## Together
+
+The duo challenge (multiplayer lot 1). A *hit* here is a counted session, never damage: the
+fight's own word for damage stays in **Fight**.
+
+| Term | Means | en | fr | fr never | de | es | zh | zh never |
+|---|---|---|---|---|---|---|---|---|
+| hit (duo) | A counted session, as the duo challenge sends it to the companion; one a day at most | hit (Send my hits) | coup (Envoyer mes coups) | frappe | Treffer | golpe | 打击 |  |
+| companion | The other player of a pair, named by this hero like a contact | companion | compagnon | ami, partenaire | Gefährte | compañero | 搭档 | 朋友 |
+| duo challenge | The weekly boss two companions face, each keeping their own week | duo challenge | défi à deux | duel (the optional comparison's word) | Duo-Challenge | desafío en pareja | 双人挑战 |  |
+
 ## Village
 
 | Term | Means | en | fr | fr never | de | es | zh | zh never |

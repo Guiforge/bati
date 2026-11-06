@@ -18,6 +18,7 @@ import { withSecureDelete } from "./pairs";
 import { type MovedMovement, redecideAfterChange, redecideSessions } from "./personalRecords";
 import { adventuresUsingQuest, invalidateQuestTemplates, removeQuest } from "./quests";
 import { sqlString } from "./sql";
+import { COMPANION_WORDS_GONE } from "./syncTables";
 
 /**
  * Device sync's merge (roadmap 4.18 phase 4), apart from db/backup.ts: that module is imported by
@@ -219,6 +220,7 @@ async function mergeInto(
   // By uuid, and an adventure names its boss by uuid, so the order between the two does not matter.
   changes += await mergeBosses(conn, canon);
   changes += await mergePairs(conn);
+  changes += await mergeDuoWeeks(conn);
 
   // Sessions this device neither has nor deleted.
   await conn.execAsync(`INSERT INTO temp.fresh SELECT uuid FROM ${PEER}.completed_sessions
@@ -549,6 +551,44 @@ async function mergePairs(conn: IsolatedConnection): Promise<number> {
   await conn.execAsync(
     `INSERT OR REPLACE INTO main.pairs SELECT * FROM ${PEER}.pairs WHERE id IN (${won})`,
   );
+  return written;
+}
+
+/**
+ * What companions said of each week (0085), by pair and week: their later envelope wins, as
+ * `mergeWeek` decides it (the larger stamp; on a tie the larger goal, pause and days), and the
+ * earlier `fallenAt`, so a boss one device saw fall stays fallen on both. A row is never removed.
+ * A pair unlinked on either device takes its companion's words with it (`honourTombstones`).
+ *
+ * shortcut: a tie compares `days` as JSON text, which orders "[1," before "[10,". Days hold 0 or 1
+ * (one hit a day), so it only matters against a build that sends counts.
+ */
+async function mergeDuoWeeks(conn: IsolatedConnection): Promise<number> {
+  if ((await count(conn, `SELECT 1 FROM ${PEER}.sqlite_master WHERE name = 'duo_weeks'`)) === 0) {
+    return 0;
+  }
+  const theirsWin = (p: string, l: string) =>
+    `(ifnull(${p}.stamp, -1) > ifnull(${l}.stamp, -1) OR (${p}.stamp = ${l}.stamp
+      AND (${p}.goal, ${p}.paused, ${p}.days) > (${l}.goal, ${l}.paused, ${l}.days)))`;
+  const written = await count(
+    conn,
+    `SELECT 1 FROM ${PEER}.duo_weeks p LEFT JOIN main.duo_weeks l
+       ON l.pairId = p.pairId AND l.isoYear = p.isoYear AND l.isoWeek = p.isoWeek
+     WHERE l.pairId IS NULL OR ${theirsWin("p", "l")}
+       OR (p.fallenAt IS NOT NULL AND (l.fallenAt IS NULL OR p.fallenAt < l.fallenAt))`,
+  );
+  const won = theirsWin("excluded", "duo_weeks");
+  await conn.execAsync(`INSERT INTO main.duo_weeks
+      (pairId, isoYear, isoWeek, stamp, goal, paused, days, fallenAt)
+    SELECT pairId, isoYear, isoWeek, stamp, goal, paused, days, fallenAt FROM ${PEER}.duo_weeks WHERE true
+    ON CONFLICT(pairId, isoYear, isoWeek) DO UPDATE SET
+      stamp = CASE WHEN ${won} THEN excluded.stamp ELSE stamp END,
+      goal = CASE WHEN ${won} THEN excluded.goal ELSE goal END,
+      paused = CASE WHEN ${won} THEN excluded.paused ELSE paused END,
+      days = CASE WHEN ${won} THEN excluded.days ELSE days END,
+      fallenAt = CASE WHEN fallenAt IS NULL THEN excluded.fallenAt
+                      WHEN excluded.fallenAt IS NULL THEN fallenAt
+                      ELSE min(fallenAt, excluded.fallenAt) END`);
   return written;
 }
 
@@ -901,6 +941,11 @@ export async function honourTombstones(): Promise<number> {
   await withSecureDelete(async () => {
     await db.run(sql`DELETE FROM pairs WHERE EXISTS
       (SELECT 1 FROM deleted_content d WHERE d.uuid = pairs.id AND d.deletedAt >= pairs.updatedAt)`);
+    // Its weeks stay for the count, without what the companion said (0085), as on this device.
+    await db.run(
+      sql.raw(`UPDATE duo_weeks SET ${COMPANION_WORDS_GONE} WHERE stamp IS NOT NULL
+        AND pairId NOT IN (SELECT id FROM pairs) AND pairId IN (SELECT uuid FROM deleted_content)`),
+    );
   });
   for (const { id } of await db.all<{ id: number }>(dead("exercises", "creator"))) {
     const usage = await getExerciseUsage(id);

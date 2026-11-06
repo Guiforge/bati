@@ -39,6 +39,64 @@ branche qui fusionne en second renumérote ses migrations.
 
 Total réel : 1 h 40, de 09:37 à 11:15. Reste : ce qui dépend de toi, listé dans le rapport.
 
+## Lot 1 : le défi à deux
+
+Branche `feat/multiplayer-lot1`, partie de `main` (`6b3deaa6`). Commencé le 05/11 à 20:31. Spec :
+[LOT1-SPEC.md](LOT1-SPEC.md).
+
+**Numéros de migration :** ce lot prend `0085`. `feat/village-iso` s'arrête à `0081` : la branche qui fusionne en
+second renumérote les siennes.
+
+| Étape | Statut | Temps | Reste (estimé) |
+| --- | --- | --- | --- |
+| L1 Spec et audit | done, deux tours, aucun ❌ restant, points tranchés le 06/11 ci-dessous | 0 h 08 | 0 |
+| L2 Semaine du duo | done : `duoWeek`, `0085`, synchro, copie en clair, délier | 0 h 10 | 0 |
+| L3 Envoi et réception | done : kind 5, vecteurs figés, scénarios à deux téléphones en tests | 0 h 08 | 0 |
+| L4 Carte et appairage | done, six langues, vu sur build de release à 100 et 130 % | 0 h 12 | 0 |
+| L5 WAL | done, WAL à 0 octet et clé introuvable après suppression, mesuré sur release | 0 h 06 | 0 |
+| L6 Porte | done sauf ton essai sur téléphone, à faire après le lot 1 bis, voir [LOT1.md](reviews/LOT1.md) | 0 h 23 | ton essai |
+| Retour du 06/11 | done : chute dite sur la victoire, objectif de la paire ouverte, avertissement de restauration | 0 h 30 | 0 |
+
+Total réel : environ 1 h, de 20:31 à 21:30. PR ouverte, non fusionnée.
+
+### Tranché le 06/11
+
+Guillaume a lu le rapport et répondu aux dix points le 06/11.
+
+1. **La carte reste sur Journal > Boss.** Rien à déplacer.
+2. **« Léo : 1 sur 2 » reste hors duel**, avec « reçu le 4 nov. » : dans un duo, savoir où en est l'autre est le but ;
+   chacun est compté contre son propre objectif figé, jamais un volume brut. Spec § 5.2 à jour.
+3. **L'usure : rien dans ce lot**, noté sous « Plus tard ».
+4. **Objectif ramené entre 2 et 4**, à l'écriture et à la lecture : gardé.
+5. **L'objectif figé ne baisse jamais**, même après une blessure : la sortie est la pause, qui gèle la semaine des deux.
+   Spec O1.
+6. **Aucun « Prévenir Léo » sur l'écran de pause** : le lot 1 bis enverra la pause tout seul.
+7. **La victoire dit la chute** quand la séance est le coup qui fait tomber le boss : « Le boss est tombé ! Boss tombés
+   ensemble : 5 ». Fait, testé, spec § 5.4.
+8. **Le compte de l'autre peut baisser** quand sa dernière enveloppe a moins de jours : gardé, c'est son état complet.
+   Un boss tombé ne recule jamais. Spec S12.
+9. **Objectifs différents** : la victoire prend l'objectif de la paire que le Journal ouvre en premier (la plus
+   avancée), par la même fonction de tri (`mostAdvancedFirst`). Fait, testé.
+10. **Android dit « partagé » pour une feuille fermée** : le `shortcut:` reste, **remplacé par le lot 1 bis**, qui
+    pilotera « Ta pause n'est pas encore partie » sur l'accord d'un relais, plus sur la feuille de partage.
+
+**Dette du lot 0, soldée ici :** restaurer une copie sans compagnons sur un téléphone qui en a le dit avant de rien
+remplacer : « Tes compagnons seront retirés de ce téléphone. Le compte des boss tombés reste. Tu pourras les inviter à
+nouveau. » Une confirmation, six langues, derrière le drapeau (`companionsLeaving`, `hooks/useBackup.tsx`).
+
+Aucune migration de plus : `0085` reste la seule du lot.
+
+### Plus tard
+
+- **L'usure** (audit, Maël) : plus de boss et d'affixes, peut-être liés au village. Six boss et six affixes s'usent en
+  quelques mois.
+
+### Lot 1 bis : la synchro automatique
+
+À venir, branche à part, après la fusion de cette PR. Une fois appairées, les semaines voyagent seules par des relais
+Nostr publics et gratuits, les mêmes enveloppes scellées ; le lien et le QR restent en secours. Ce lot-ci ne peaufine
+plus l'envoi à la main et n'ajoute aucune surface qui ne servirait qu'à le pousser.
+
 ### B2 : comment une séance s'arrête aujourd'hui, avant ce lot
 
 - **Pause, puis « Quitter la quête », puis confirmation** : `quitSession` efface tout. Rien n'est écrit, aucune

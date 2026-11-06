@@ -30,6 +30,7 @@ export const TABLE_SYNC = {
   adventure_steps: "merged",
   hero_bosses: "merged",
   pairs: "merged",
+  duo_weeks: "merged",
   adventure_runs: "local",
   adventure_run_steps: "local",
   boss_fights: "local",
@@ -43,3 +44,9 @@ export const TABLE_SYNC = {
 
 /** What holds a key: a plaintext copy of the database has these rows removed (`scrubPairs`). */
 export const NEVER_IN_PLAINTEXT = ["pairs", "pair_invites"] as const;
+
+/**
+ * What a companion said of a week (`duo_weeks`, 0085), dropped from a plaintext copy and on an unlink.
+ * The row itself stays: its `fallenAt` is the "fallen together" count, which never goes down.
+ */
+export const COMPANION_WORDS_GONE = "stamp = NULL, goal = NULL, paused = NULL, days = NULL";

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { XStack, YStack } from "tamagui";
 import { ChevronRight, Skull } from "@/components/icons";
 import { NBlock, NImage, NKicker, NMuted, NPage, NText } from "@/components/journal/nocturne";
+import { DuoSection } from "@/components/multiplayer/DuoSection";
 import { getBossAsset } from "@/constants/assetMap";
 import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { type BossKill, getBossKills, getStandingBosses, type StandingBoss } from "@/db/journal";
@@ -39,6 +40,8 @@ export default function BossesScreen() {
 
   return (
     <NPage title={t("journal.bosses_title")} testID="journal-bosses">
+      {/* The duo challenge leads the screen when the flag is on, above the bosses felled alone. */}
+      <DuoSection />
       {kills?.length === 0 && <NMuted>{t("journal.bosses_empty")}</NMuted>}
       <YStack gap={6}>
         {kills?.map((kill, index) => (

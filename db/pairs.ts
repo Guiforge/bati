@@ -1,4 +1,4 @@
-import { eq, lt, sql } from "drizzle-orm";
+import { and, eq, isNotNull, isNull, lt, sql } from "drizzle-orm";
 import { batiCrypto } from "@/modules/bati-crypto";
 import { fromBase64, hex } from "@/src/multiplayer/envelope";
 import { INVITE_DAYS, type Invite, SECRET_BYTES } from "@/src/multiplayer/invite";
@@ -14,8 +14,12 @@ import {
 } from "@/src/multiplayer/linkInvite";
 import { reportError } from "@/src/reportError";
 import { db, schema, transactionOrFallback, withIsolatedConnection } from "./client";
+import { frozenGoal } from "./duo";
 
-const { deletedContent, pairInvites, pairs } = schema;
+const { deletedContent, duoWeeks, pairInvites, pairs } = schema;
+
+/** `COMPANION_WORDS_GONE`, as Drizzle writes it: what an unlinked companion said of their weeks. */
+const GONE = { stamp: null, goal: null, paused: null, days: null };
 
 /** At most this many companions: a duo game, and a bound on what one hero's phone carries. */
 export const MAX_PAIRS = 5;
@@ -51,9 +55,10 @@ function withoutParams<T>(write: () => Promise<T>): Promise<T> {
  * statements make a checkpoint fail, on a phone and not under jest. Never a reason to fail the write
  * it follows, which is already done.
  *
- * shortcut: those same statements hold a reader, so the log is not truncated and the old bytes stay in
- * it until SQLite reuses the pages (measured on a release build, a relaunch does not clear them). Only
- * someone reading the app's private files can see them. Finalizing Drizzle's statements is the real fix.
+ * TRUNCATE empties the log too, now that Drizzle's statements are finalised once read
+ * (`db/releasingStatements.ts`): measured on a release build on 05/11, the deleted key was in neither
+ * file afterwards and the log was 0 bytes. A reader left open elsewhere would make it a passive
+ * checkpoint again, without error: the bytes would then wait for SQLite to reuse their pages.
  */
 async function flushLog(): Promise<void> {
   try {
@@ -82,6 +87,7 @@ export async function withSecureDelete<T>(work: () => Promise<T>): Promise<T> {
  */
 export async function createPair(name: string): Promise<Invite | PairingRefusal> {
   const now = nowDate();
+  const goal = await frozenGoal();
   const invite: Invite = {
     pairId: await randomHex(16),
     senderId: await randomHex(8),
@@ -99,6 +105,7 @@ export async function createPair(name: string): Promise<Invite | PairingRefusal>
         peerId: null,
         createdAt: now,
         updatedAt: now,
+        goal,
       });
       return invite;
     }),
@@ -114,6 +121,7 @@ export async function acceptInvite(
   name: string,
 ): Promise<"paired" | PairingRefusal> {
   const now = nowDate();
+  const goal = await frozenGoal();
   const selfId = await randomHex(8);
   return withoutParams(() =>
     transactionOrFallback(async (tx) => {
@@ -128,6 +136,7 @@ export async function acceptInvite(
         peerId: invite.senderId,
         createdAt: now,
         updatedAt: now,
+        goal,
       });
       return "paired";
     }),
@@ -166,14 +175,15 @@ export async function createLinkInvite(): Promise<LinkInvite | "full"> {
 /**
  * Phone B, by link: derives the pair's key, writes the pair, and returns the answer to send back.
  * `known` covers a hero opening their own invitation, and `refused` a public key that yields no
- * shared secret. The answer is not kept: lost, the hero unlinks and accepts again while the
- * invitation lives.
+ * shared secret. The answer is kept on the pair (`reply`, 0085) and rides with the hero's sends until a
+ * week from A proves A has it (`answerArrived`).
  */
 export async function acceptLinkInvite(
   invite: LinkInvite,
   name: string,
 ): Promise<Uint8Array | PairingRefusal | "refused"> {
   const now = nowDate();
+  const goal = await frozenGoal();
   const keys = await newKeyPair();
   const selfId = await randomHex(8);
   const secret = derivePairKey(keys.secret, invite.publicKey, {
@@ -204,6 +214,8 @@ export async function acceptLinkInvite(
         peerId: invite.senderId,
         createdAt: now,
         updatedAt: now,
+        goal,
+        reply: answer,
       });
       return answer;
     }),
@@ -267,6 +279,7 @@ export function completeLinkInvite(
           peerId: reply.senderId,
           createdAt: now,
           updatedAt: now,
+          goal: await frozenGoal(),
         });
         await tx.delete(pairInvites).where(eq(pairInvites.id, reply.pairId));
         return "paired";
@@ -298,10 +311,40 @@ export async function unlinkPair(id: string): Promise<void> {
   await withSecureDelete(() =>
     transactionOrFallback(async (tx) => {
       await tx.delete(pairs).where(eq(pairs.id, id));
+      await tx.update(duoWeeks).set(GONE).where(eq(duoWeeks.pairId, id));
       await tx
         .insert(deletedContent)
         .values({ uuid: id, deletedAt })
         .onConflictDoUpdate({ target: deletedContent.uuid, set: { deletedAt } });
     }),
   );
+}
+
+/** E3: a week from A has arrived, so A holds the answer, and B's sends stop carrying it. */
+export async function answerArrived(pairId: string): Promise<void> {
+  await db
+    .update(pairs)
+    .set({ reply: null, updatedAt: nowDate() })
+    .where(and(eq(pairs.id, pairId), isNotNull(pairs.reply)));
+}
+
+/** Phone A after a face-to-face pairing: the first week from B names B's id in the pair. */
+export async function nameTheirSide(pairId: string, peerId: string): Promise<void> {
+  await db
+    .update(pairs)
+    .set({ peerId, updatedAt: nowDate() })
+    .where(and(eq(pairs.id, pairId), isNull(pairs.peerId)));
+}
+
+/** The link invitations waiting for an answer on this phone, oldest first: when each was made. */
+export function listInvites(): Promise<{ id: string; madeAt: Date }[]> {
+  return db
+    .select({ id: pairInvites.id, madeAt: pairInvites.madeAt })
+    .from(pairInvites)
+    .orderBy(pairInvites.madeAt);
+}
+
+/** "Annuler": the private key of a waiting invitation is overwritten; an answer finds nothing. */
+export async function cancelInvite(id: string): Promise<void> {
+  await withSecureDelete(() => db.delete(pairInvites).where(eq(pairInvites.id, id)));
 }

@@ -22,7 +22,7 @@ C'est la donnée associée de l'AEAD : changer un octet fait refuser l'enveloppe
 | Décalage | Taille | Champ | Note |
 | --- | --- | --- | --- |
 | 0 | 1 | version | 1 |
-| 1 | 1 | kind | 1 = semaine, 2 = invitation en face à face, 3 = invitation par lien, 4 = réponse d'appairage |
+| 1 | 1 | kind | 1 = semaine, 2 = invitation en face à face, 3 = invitation par lien, 4 = réponse d'appairage, 5 = paquet (sans le reste de l'en-tête, voir plus bas) |
 | 2 | 16 | pair id | aléatoire, jamais un uuid v7, qui dirait la date de l'appairage |
 | 18 | 8 | sender key id | l'identifiant de l'expéditeur dans cette paire |
 | 26 | 2 | année ISO | |
@@ -39,7 +39,7 @@ donnée associée. Le clair :
 | --- | --- | --- | --- |
 | 0 | 4 | stamp | secondes epoch, l'horloge de la fusion |
 | 4 | 1 | goal | objectif figé au lancement, en séances (`weeklyGoal`), jamais des reps |
-| 5 | 1 | flags | bit 0 = en pause |
+| 5 | 1 | flags | bit 0 = une pause a touché cette semaine (précisé au lot 1 : même bit, même place) |
 | 6 | 7 | days | séances comptées par jour ISO, lundi d'abord |
 
 **L'état complet de la semaine, jamais un delta.** Un message perdu ou répété ne casse rien.
@@ -62,10 +62,12 @@ messages de cette paire. Elle n'est donc acceptée que par la caméra, sur un é
 secret : A garde la moitié privée dans `pair_invites` (`0084`), sur ce téléphone seulement, jusqu'à la
 réponse ou 7 jours, puis la supprime. Valable 7 jours.
 
-**La suppression n'est pas un effacement physique immédiat.** `secure_delete` et un checkpoint la sortent du
-fichier principal, mais la base est en WAL et les anciennes pages restent dans le journal jusqu'à ce que SQLite les
-réutilise, un relancement n'y change rien (mesuré sur une build de release). Il faut lire les fichiers privés de
-l'app pour les voir, donc un téléphone rooté. Même limite pour le secret d'une paire déliée.
+**La suppression vide les deux fichiers depuis le lot 1.** `secure_delete` réécrit les pages, puis
+`wal_checkpoint(TRUNCATE)` vide le journal : mesuré le 05/11 sur une build de release, la clé privée d'une invitation
+annulée n'est plus ni dans `bati.v3.db` ni dans `-wal` (0 octet). Au lot 0 bis, les instructions de Drizzle jamais
+finalisées retenaient un lecteur et la clé restait dans le journal ; elles sont finalisées après lecture
+(`db/releasingStatements.ts`). Une sauvegarde prise avant la suppression, celle du téléphone comprise, garde ce
+qu'elle a copié.
 
 ### Kind 4, la réponse d'appairage
 
@@ -99,6 +101,18 @@ remplacer les messages dans la messagerie. Il pourrait aussi répondre avant B a
 A se retrouve appairé avec lui, et lit « déjà un compagnon » quand la vraie réponse arrive ; B se croit appairé
 et personne ne l'écoute. L'enjeu reste petit, une enveloppe ne portant que des séances comptées par jour, et le
 QR en face à face n'a pas ce trou.
+
+### Kind 5, le paquet (lot 1)
+
+`version 1 ‖ kind 5 ‖ nombre n (1 à 3) ‖ n fois (longueur 1 octet ‖ enveloppe)`. Pas d'en-tête de 29 octets : le
+paquet ne scelle rien, chaque enveloppe intérieure (kind 1 ou 4, jamais 2, 3 ou 5) s'authentifie seule. C'est ce que
+porte un « Envoyer mes coups » : la semaine en cours, la précédente, et chez B la réponse d'appairage tant qu'une semaine
+de A n'est pas arrivée. Au plus 239 octets, 341 caractères de lien. Vecteurs :
+[`envelope-v1-bundle.json`](../../../__tests__/fixtures/multiplayer/envelope-v1-bundle.json), bâtis à la main à partir
+des vecteurs figés des kinds 1 et 4. Code : [`src/multiplayer/bundle.ts`](../../../src/multiplayer/bundle.ts).
+
+Une enveloppe de semaine dont le `stamp` dépasse de plus de 14 h l'horloge du lecteur est mise de côté (« pas
+encore ») : dernier écrit gagnant, elle gagnerait toutes les fusions suivantes.
 
 ## Budget
 

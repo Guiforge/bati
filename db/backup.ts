@@ -13,7 +13,7 @@ import {
 import { hasPendingMigrations, migrateClient } from "./migrationRunner";
 import { SCHEMA_VERSION } from "./schemaVersion";
 import { errorTrail, sqlString } from "./sql";
-import { NEVER_IN_PLAINTEXT } from "./syncTables";
+import { COMPANION_WORDS_GONE, NEVER_IN_PLAINTEXT } from "./syncTables";
 
 /**
  * Backup and restore, the SQL half.
@@ -124,6 +124,34 @@ export function scrubPairs(snapshotPath: string): Promise<void> {
         await conn.execAsync(`DELETE FROM ${CANDIDATE}.${table}`);
       }
     }
+    // A companion's weeks (0085) stay for the "fallen together" count, without what they said:
+    // their days are theirs, and this copy outlives the pair.
+    if (await hasTable(conn, CANDIDATE, "duo_weeks")) {
+      await conn.execAsync(`UPDATE ${CANDIDATE}.duo_weeks SET ${COMPANION_WORDS_GONE}`);
+      await conn.execAsync(`DELETE FROM ${CANDIDATE}.duo_weeks WHERE fallenAt IS NULL`);
+      // When this phone last sent to a companion: a pair id in a key, of no use without the pair.
+      await conn.execAsync(
+        `DELETE FROM ${CANDIDATE}.user_preferences WHERE key LIKE 'duo\\_sent\\_%' ESCAPE '\\'`,
+      );
+    }
+  });
+}
+
+/**
+ * Whether restoring the staged copy takes this phone's companions away: it holds none while this
+ * phone has some. Always the case for a plain copy, which `scrubPairs` emptied. The fallen count
+ * stays, since the copy keeps its fallen weeks (LOT1-SPEC.md S9).
+ */
+export function companionsLeaving(stagedPath: string): Promise<boolean> {
+  return withIsolatedConnection(async (conn) => {
+    const count = async (schema: string) =>
+      Number(
+        (await conn.getFirstAsync<{ n: number }>(`SELECT count(*) AS n FROM ${schema}.pairs`))?.n ??
+          0,
+      );
+    if ((await count("main")) === 0) return false;
+    await conn.execAsync(`ATTACH DATABASE ${sqlString(stagedPath)} AS ${CANDIDATE}`);
+    return !(await hasTable(conn, CANDIDATE, "pairs")) || (await count(CANDIDATE)) === 0;
   });
 }
 
@@ -452,6 +480,7 @@ function heroContent(
   adventures: boolean,
   bosses: boolean,
   companions: boolean,
+  duos: boolean,
 ): string {
   const keys = MERGED_PREFERENCES.map(sqlString).join(", ");
   // By uuid (0066), as `mergePeer` matches them, so a rename is a change to one row and not a row
@@ -501,6 +530,14 @@ function heroContent(
           ? `
     UNION ALL SELECT 'r:' || id, updatedAt, id, ${canon ? pairCanon("x") : "NULL"}
       FROM ${schema}.pairs x`
+          : ""
+      }${
+        // What companions said of each week (0085): their stamp dates the row, their days settle a tie.
+        duos
+          ? `
+    UNION ALL SELECT 'w:' || pairId || ':' || isoYear || ':' || isoWeek, stamp, NULL,
+        ${canon ? "ifnull(x.days, '')" : "NULL"}
+      FROM ${schema}.duo_weeks x`
           : ""
       }`;
 }
@@ -668,8 +705,8 @@ function newerIn(
   const covers = canon
     ? "(ifnull(y.at, 0) > ifnull(x.at, 0) OR (ifnull(y.at, 0) = ifnull(x.at, 0) AND ifnull(y.canon, '') >= ifnull(x.canon, '')))"
     : "ifnull(y.at, 0) >= ifnull(x.at, 0)";
-  return `SELECT count(*) FROM (${heroContent(a, named, canon, adventures, bosses, companions)}) x
-    WHERE NOT EXISTS (SELECT 1 FROM (${heroContent(b, named, canon, adventures, bosses, companions)}) y WHERE y.id = x.id AND ${covers})
+  return `SELECT count(*) FROM (${heroContent(a, named, canon, adventures, bosses, companions, companions)}) x
+    WHERE NOT EXISTS (SELECT 1 FROM (${heroContent(b, named, canon, adventures, bosses, companions, companions)}) y WHERE y.id = x.id AND ${covers})
       AND NOT EXISTS (SELECT 1 FROM (${tombstonesOfB}) t WHERE t.uuid = x.uuid AND t.deletedAt >= ifnull(x.at, 0))`;
 }
 
@@ -782,6 +819,7 @@ export function compareWithPeer(path: string): Promise<PeerComparison> {
     const peerAdventures = await hasColumn(conn, CANDIDATE, "adventures", "uuid");
     const peerBosses = await hasTable(conn, CANDIDATE, "hero_bosses");
     const peerPairs = await hasTable(conn, CANDIDATE, "pairs");
+    const peerDuos = await hasTable(conn, CANDIDATE, "duo_weeks");
     const peerStamps = await stampColumns(conn, CANDIDATE);
     const localStamps = await stampColumns(conn, "main");
     const peerHasPhotos = await hasPhotos(conn, CANDIDATE);
@@ -809,7 +847,7 @@ export function compareWithPeer(path: string): Promise<PeerComparison> {
          (SELECT value FROM ${CANDIDATE}.user_preferences WHERE key = 'villageName') AS peerVillage,
          (SELECT count(*) FROM main.completed_sessions) AS localSessions,
          (${sessionsStamp(CANDIDATE, peerStamps)}) AS s,
-         (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent(CANDIDATE, peerNamed, null, peerAdventures, peerBosses, peerPairs)})) AS c,
+         (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent(CANDIDATE, peerNamed, null, peerAdventures, peerBosses, peerPairs, peerDuos)})) AS c,
          (SELECT count(*) FROM (${peerGone})) AS g,
          ${extraStamp(CANDIDATE, peerContentGone)} AS x,
          ${photosStamp(CANDIDATE, peerHasPhotos)} AS p`,
@@ -852,7 +890,7 @@ export function stateFingerprint(): Promise<string> {
     const row = await conn.getFirstAsync<Record<string, string | number | null>>(
       `SELECT
          (${sessionsStamp("main", [...STAMP_COLUMNS])}) AS s,
-         (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent("main", true, null, true, true, true)})) AS c,
+         (SELECT ifnull(max(at), 0) || ':' || count(*) FROM (${heroContent("main", true, null, true, true, true, true)})) AS c,
          (SELECT count(*) FROM (${gone})) AS g,
          ${extraStamp("main", await contentTombstones(conn, "main"))} AS x,
          ${photosStamp("main", true)} AS p`,

@@ -20,6 +20,7 @@ import { useToast } from "@/components/common/Toast";
 import { ChevronRight } from "@/components/icons";
 import { SessionNotebook } from "@/components/journal/SessionNotebook";
 import { useConfirmForget } from "@/components/journal/useConfirmForget";
+import { DuoVictoryLine } from "@/components/multiplayer/DuoVictoryLine";
 import { ShareButton } from "@/components/share/ShareButton";
 import { getBossAsset, getQuestAsset } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
@@ -963,6 +964,8 @@ export function VictoryView() {
               )}
             </YStack>
           )}
+          {/* The duo challenge's one line (multiplayer lot 1), once the session is banked. */}
+          {result ? <DuoVictoryLine sessionId={result.sessionId} /> : null}
         </ScrollView>
       </KeyboardAvoidingView>
 

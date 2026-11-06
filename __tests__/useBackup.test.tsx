@@ -26,6 +26,7 @@ let mockStageGate: Promise<void> | null = null;
 let mockSaveOutcome: () => { name: string } | null | "noPicker" = () => ({ name: "x.db" });
 let mockDecryptOutcomes: string[] = [];
 let mockEncryption = "off";
+let mockLeaving = false;
 
 jest.mock("@/src/backupCipher", () => ({
   encryptionStatus: () => Promise.resolve(mockEncryption),
@@ -40,6 +41,7 @@ jest.mock("@/db/backup", () => ({
   }),
   // Recorded nowhere, so the order tests below keep meaning what they meant before it existed.
   bringForward: jest.fn(() => Promise.resolve(mockForward)),
+  companionsLeaving: jest.fn(() => Promise.resolve(mockLeaving)),
   keepDeviceSettings: jest.fn(async () => {
     mockCalls.push("keepDevice");
     await Promise.resolve();
@@ -165,6 +167,7 @@ beforeEach(() => {
   mockSaveOutcome = () => ({ name: "x.db" });
   mockDecryptOutcomes = [];
   mockEncryption = "off";
+  mockLeaving = false;
   mockAutoFolderOutcome = () => null;
   mockEnableOutcome = () => "Documents/Bati";
   mockDisableOutcome = () => {};
@@ -728,5 +731,47 @@ describe("useBackup — export", () => {
 
     expect(mockAlerts).toEqual(["backup.exportFailed"]);
     expect(mockReportedErrors).toEqual(["backup.export"]);
+  });
+});
+
+describe("a copy that would take the companions away (lot 0 debt)", () => {
+  async function importLeaving() {
+    mockLeaving = true;
+    await render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <BackupProbe />
+      </TamaguiProvider>,
+    );
+    await act(() => latest.runImport());
+    await waitFor(() => expect(screen.getByText("backup.companionsBody")).toBeTruthy());
+  }
+
+  test("says so before anything is replaced, and goes ahead once confirmed", async () => {
+    await importLeaving();
+    expect(mockCalls).not.toContain("keepDevice");
+    expect(useRestoreStore.getState().phase).toBe("idle");
+
+    await act(async () => fireEvent.press(screen.getByTestId("confirm-dialog-confirm")));
+    await waitFor(() => expect(useRestoreStore.getState().phase).toBe("restoring"));
+    expect(mockCalls).toContain("keepDevice");
+  });
+
+  test("cancelled, the staged file is discarded and nothing is restored", async () => {
+    await importLeaving();
+    await act(async () => fireEvent.press(screen.getByTestId("confirm-dialog-cancel")));
+    await waitFor(() => expect(mockCalls).toContain("discard"));
+    expect(mockCalls).not.toContain("keepDevice");
+    expect(useRestoreStore.getState().phase).toBe("idle");
+  });
+
+  test("without companions to lose, no question", async () => {
+    await render(
+      <TamaguiProvider config={config} defaultTheme="dark">
+        <BackupProbe />
+      </TamaguiProvider>,
+    );
+    await act(() => latest.runImport());
+    await waitFor(() => expect(useRestoreStore.getState().phase).toBe("restoring"));
+    expect(screen.queryByText("backup.companionsBody")).toBeNull();
   });
 });

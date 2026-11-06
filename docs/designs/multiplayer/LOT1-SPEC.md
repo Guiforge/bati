@@ -34,7 +34,8 @@ par Guillaume.
 
 - **O1.** L'objectif de chacun est `weeklyGoal` (le quota de la flamme, ou le chiffre du serment hebdo), figé au moment
   où la paire est écrite sur ce téléphone, ramené entre 2 et 4 (les bornes de `WEEKLY_TARGETS`). Il ne bouge plus
-  ensuite, même si le serment change. Un objectif à 1 ferait tomber un boss par semaine sans effort.
+  ensuite, même si le serment change. Un objectif à 1 ferait tomber un boss par semaine sans effort. Il ne baisse
+  jamais, même après une blessure : la sortie est la pause, qui gèle la semaine des deux (tranché le 06/11).
 - **O2.** L'autre lit mon objectif dans mon enveloppe (champ `goal`), ramené entre 2 et 4 à la lecture aussi : un
   autre build ne fait pas tomber un boss avec un objectif à 1. Jamais des reps, jamais un volume.
 - **O3.** « Ma semaine est tenue » : mes coups de la semaine ISO ≥ mon objectif. Pareil pour l'autre, sur sa dernière
@@ -79,6 +80,8 @@ l'autre peut vivre jusqu'à 14 h derrière. Une enveloppe écrite son dimanche s
 - **S9.** Le décompte « boss tombés ensemble » ne baisse jamais : ni par une enveloppe, ni par un délier, ni par une
   restauration d'une copie en clair (qui le garde), ni par la synchro. Restaurer une copie plus ancienne rend la base
   de cette copie, décompte compris, comme pour tout le journal. Il compte les semaines notées tombées, toutes paires confondues.
+- **S12.** Le compte de l'autre peut baisser : sa dernière enveloppe est son état complet et gagne, même avec moins de
+  jours (une séance supprimée chez lui). Un boss tombé, lui, ne recule jamais (S2). Tranché le 06/11.
 
 - **S10.** Une pause doit pouvoir partir sans séance. Quand une pause a touché la semaine en cours et que je n'ai rien
   envoyé depuis, la carte le dit (« Ta pause n'est pas encore partie. Envoie-la pour que le boss attende. ») et
@@ -184,6 +187,8 @@ Hiérarchie, de haut en bas :
 3. Deux lignes de progression, d'abord toi, puis le compagnon : « Toi : 2 sur 3 cette semaine », « Léo : 1 sur 2, reçu le
    4 nov. » (la date du dernier message reçu). Le compte de l'autre est demandé par Guillaume (brief du lot 1, L4) ;
    c'est ce qu'il a envoyé, jamais un manque. Une petite jauge (`InkGauge`) sous chacune, plafonnée au plein.
+   Tranché le 06/11, hors duel aussi : dans un duo, savoir où en est l'autre est le but, et chacun est compté contre son
+   propre objectif figé, jamais un volume brut. Ce n'est pas la comparaison que D2 interdit.
 4. La règle en un tap : « Comment le battre ? » ouvre « Le boss tombe si vous tenez tous les deux votre semaine. »
    (`RuleDisclosure`).
 5. Les actions : « Envoyer mes coups » (principal), « Montrer mon QR » (secondaire). Côte à côte au-dessus de 360 dp,
@@ -245,6 +250,12 @@ sous le texte. Le fait se lit dès que la séance est sauvée, sans animation.
 - Plusieurs : le tap déplie sur place un bouton par compagnon, « À Léo », « À Inès » ; chacun ouvre la feuille de
   partage avec son propre lien. Aucune feuille Tamagui, aucun écran de plus.
 - Aucune ligne si la séance n'a pas compté ou s'il n'y a aucun compagnon. Rien d'autre sur la victoire.
+- **La chute** (tranché le 06/11) : quand la séance est le coup qui fait tomber un boss (les deux objectifs atteints
+  pour cette semaine ISO, la dernière enveloppe de l'autre déjà sur ce téléphone), le fait devient « Le boss est
+  tombé ! Boss tombés ensemble : 5 », le décompte après cette chute. Une fois : une semaine déjà tombée avant ne le
+  redit pas. Avec plusieurs compagnons, une seule ligne, sans nom. Aucune XP, aucune animation de plus.
+- **L'objectif affiché** (tranché le 06/11) : si les objectifs des paires diffèrent, celui de la paire que le Journal
+  ouvre en premier (la plus avancée, `mostAdvancedFirst`), pour que les deux écrans disent la même chose.
 - Partage annulé ou impossible : rien ne change, aucun message (fermer la feuille n'est pas un échec). Le bouton reste.
 
 TalkBack : « Défi à deux, 2 sur 3 cette semaine » puis « Envoyer mes coups à Léo, ouvre le partage ».
@@ -315,11 +326,13 @@ cherchés dans `bati.v3.db-wal`), que le secret n'y est plus.
 - Glossaire : « coup (défi à deux) » et « compagnon », avec leur phrase, dans les six langues.
 - Test : une sortie sauvée porte un coup ; une semaine qui finit entre deux fuseaux (S11).
 - TalkBack : le conteneur de la carte n'avale pas ses boutons.
-- La confirmation de restauration d'une copie en clair dit que les compagnons partent, quand il y en a (dette du lot 0).
+- La confirmation de restauration d'une copie en clair dit que les compagnons partent, quand il y en a (dette du lot 0) :
+  « Tes compagnons seront retirés de ce téléphone. Le compte des boss tombés reste. Tu pourras les inviter à nouveau. »
+  Fait le 06/11, après le choix du fichier, quand la copie n'a aucun compagnon et ce téléphone au moins un.
 - Limite assumée : la ligne de la victoire revient après chaque séance comptée, même si les coups sont déjà partis
   aujourd'hui. Le lien porte l'état complet, renvoyer ne casse rien.
 
 ## 9. Hors du lot
 
 Notifications et relances, Home, XP, plusieurs boss par semaine, duel caché en mode famille (le mode famille n'existe
-pas), import de sortie, Nostr.
+pas), import de sortie. La synchro automatique par relais Nostr est le lot 1 bis, sur sa propre branche.

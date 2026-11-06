@@ -49,40 +49,53 @@ second renumérote les siennes.
 
 | Étape | Statut | Temps | Reste (estimé) |
 | --- | --- | --- | --- |
-| L1 Spec et audit | done, deux tours, aucun ❌ restant, 6 points à trancher ci-dessous | 0 h 08 | 0 |
+| L1 Spec et audit | done, deux tours, aucun ❌ restant, points tranchés le 06/11 ci-dessous | 0 h 08 | 0 |
 | L2 Semaine du duo | done : `duoWeek`, `0085`, synchro, copie en clair, délier | 0 h 10 | 0 |
 | L3 Envoi et réception | done : kind 5, vecteurs figés, scénarios à deux téléphones en tests | 0 h 08 | 0 |
 | L4 Carte et appairage | done, six langues, vu sur build de release à 100 et 130 % | 0 h 12 | 0 |
 | L5 WAL | done, WAL à 0 octet et clé introuvable après suppression, mesuré sur release | 0 h 06 | 0 |
-| L6 Porte | done sauf ton essai sur téléphone, voir [LOT1.md](reviews/LOT1.md) | 0 h 23 | ton essai |
+| L6 Porte | done sauf ton essai sur téléphone, à faire après le lot 1 bis, voir [LOT1.md](reviews/LOT1.md) | 0 h 23 | ton essai |
+| Retour du 06/11 | done : chute dite sur la victoire, objectif de la paire ouverte, avertissement de restauration | 0 h 30 | 0 |
 
 Total réel : environ 1 h, de 20:31 à 21:30. PR ouverte, non fusionnée.
 
-### À trancher
+### Tranché le 06/11
 
-1. **« L'onglet des boss » n'existe pas.** La barre d'onglets a Accueil, Aventures, Quêtes, Village, Journal. La carte
-   va sur l'écran « Boss » du Journal (`app/(tabs)/journal/bosses.tsx`), le seul écran consacré aux boss. Si tu pensais
-   à l'onglet Aventures (où se jouent les boss des campagnes), c'est un déplacement du composant.
-2. **« Léo : 1 sur 2 » hors duel** (audit, Martine) : ton brief demande le compte de l'autre sur la carte, l'audit y
-   voit deux nombres bruts côte à côte, ce que le duel interdit. Gardé comme tu l'as écrit ; à couper en « Léo a envoyé
-   ses coups le 4 nov. » si tu préfères.
-3. **L'usure** (audit, Maël) : six boss, six affixes, un décompte cosmétique. Cohérent avec « jamais plus d'XP à deux »,
-   mais la nouveauté s'use en quelques mois. Rien à faire dans ce lot.
-4. **L'objectif est ramené entre 2 et 4** (audit, Maël et Sophie), les bornes du serment. Un objectif à 1 n'existe pas
-   par le serment, mais une enveloppe peut le porter.
-5. **Un objectif qui ne peut que baisser ?** (audit, tour 2, Sophie et Martine) Après une blessure, l'objectif figé
-   reste haut ; la sortie est la pause, qui gèle la semaine. L'audit propose `min(figé, serment actuel)`. Pas fait : tu
-   as écrit « figé », et baisser son objectif le samedi ferait tomber le boss. Dis-moi si tu le veux.
-6. **« Prévenir Léo » juste après une pause ?** (audit, tour 2, Martine) Aujourd'hui la pause part avec « Envoyer mes
-   coups », que la carte propose à zéro coup (S10). Un bouton sur l'écran de pause serait une surface du duo hors de
-   l'écran Boss, que ton brief ne prévoit pas.
-7. **Dire la chute du boss sur la victoire ?** (audit de la PR, Maël) La séance qui fait tomber le boss l'enregistre,
-   mais la victoire ne le dit pas : le § 5.4 dit « rien d'autre ». Le joueur le lit sur la carte, ou l'autre à la
-   réception du lien. Une ligne de texte suffirait.
-8. **Le compte de l'autre peut baisser** (audit de la PR, Yann) : son enveloppe la plus récente gagne, même avec moins
-   de jours, par exemple s'il a supprimé une séance. C'est son état complet, voulu par envelope.md ; un boss tombé, lui,
-   ne recule jamais.
-9. **Deux compagnons aux objectifs différents** : la victoire dit « 2 sur 3 » avec l'objectif du premier.
+Guillaume a lu le rapport et répondu aux dix points le 06/11.
+
+1. **La carte reste sur Journal > Boss.** Rien à déplacer.
+2. **« Léo : 1 sur 2 » reste hors duel**, avec « reçu le 4 nov. » : dans un duo, savoir où en est l'autre est le but ;
+   chacun est compté contre son propre objectif figé, jamais un volume brut. Spec § 5.2 à jour.
+3. **L'usure : rien dans ce lot**, noté sous « Plus tard ».
+4. **Objectif ramené entre 2 et 4**, à l'écriture et à la lecture : gardé.
+5. **L'objectif figé ne baisse jamais**, même après une blessure : la sortie est la pause, qui gèle la semaine des deux.
+   Spec O1.
+6. **Aucun « Prévenir Léo » sur l'écran de pause** : le lot 1 bis enverra la pause tout seul.
+7. **La victoire dit la chute** quand la séance est le coup qui fait tomber le boss : « Le boss est tombé ! Boss tombés
+   ensemble : 5 ». Fait, testé, spec § 5.4.
+8. **Le compte de l'autre peut baisser** quand sa dernière enveloppe a moins de jours : gardé, c'est son état complet.
+   Un boss tombé ne recule jamais. Spec S12.
+9. **Objectifs différents** : la victoire prend l'objectif de la paire que le Journal ouvre en premier (la plus
+   avancée), par la même fonction de tri (`mostAdvancedFirst`). Fait, testé.
+10. **Android dit « partagé » pour une feuille fermée** : le `shortcut:` reste, **remplacé par le lot 1 bis**, qui
+    pilotera « Ta pause n'est pas encore partie » sur l'accord d'un relais, plus sur la feuille de partage.
+
+**Dette du lot 0, soldée ici :** restaurer une copie sans compagnons sur un téléphone qui en a le dit avant de rien
+remplacer : « Tes compagnons seront retirés de ce téléphone. Le compte des boss tombés reste. Tu pourras les inviter à
+nouveau. » Une confirmation, six langues, derrière le drapeau (`companionsLeaving`, `hooks/useBackup.tsx`).
+
+Aucune migration de plus : `0085` reste la seule du lot.
+
+### Plus tard
+
+- **L'usure** (audit, Maël) : plus de boss et d'affixes, peut-être liés au village. Six boss et six affixes s'usent en
+  quelques mois.
+
+### Lot 1 bis : la synchro automatique
+
+À venir, branche à part, après la fusion de cette PR. Une fois appairées, les semaines voyagent seules par des relais
+Nostr publics et gratuits, les mêmes enveloppes scellées ; le lien et le QR restent en secours. Ce lot-ci ne peaufine
+plus l'envoi à la main et n'ajoute aucune surface qui ne servirait qu'à le pousser.
 
 ### B2 : comment une séance s'arrête aujourd'hui, avant ce lot
 

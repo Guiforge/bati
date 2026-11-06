@@ -2,8 +2,8 @@
 
 **Le défi à deux est construit, derrière le drapeau, et marche sur une build de release : la carte du boss, la ligne de
 la victoire, les compagnons, l'envoi par lien ou QR, la semaine tombée, enfuie ou gelée.** Les huit scénarios à deux
-téléphones tournent en tests sur deux vraies bases. Le secret supprimé quitte enfin le WAL, mesuré. La PR attend ton
-essai sur téléphone et neuf petites décisions, plus bas.
+téléphones tournent en tests sur deux vraies bases. Le secret supprimé quitte enfin le WAL, mesuré. Tes réponses du 06/11
+sont appliquées (plus bas, « Retour du 06/11 ») ; l'essai sur téléphone se fera une fois, avec le lot 1 bis.
 
 ## Ce qui a été construit
 
@@ -118,9 +118,31 @@ glossaire, distinct des dégâts de campagne ; l'objectif borné de 2 à 4 à la
 **Écarté ou laissé :** « Délier » sans dialogue (ta décision du lot 0) ; le fondu au lieu de deux animations distinctes
 pour la chute et la fuite (le texte dit déjà l'état, rien ne bouge en mouvement réduit).
 
+## Retour du 06/11
+
+Tes réponses aux dix points, et ce qu'elles ont changé :
+
+- **La chute se dit sur la victoire** (point 7) : la séance qui fait tomber un boss affiche « Le boss est tombé ! Boss
+  tombés ensemble : 5 », une fois, sans nom, même avec plusieurs compagnons. `readDuoWeek` dit `justFell` à la lecture
+  qui écrit `fallenAt`, et à aucune autre. Tests : `db-duo` (la chute dite une fois, pas avant, pas après) et
+  `duo-victory-line` (la chute, une seule ligne sans nom avec deux compagnons).
+- **Objectifs différents** (point 9) : la victoire prend l'objectif de la paire que le Journal ouvre en premier,
+  par la même fonction (`mostAdvancedFirst`, sortie de `DuoSection` vers `duoWeek.ts`). Testé.
+- **La restauration prévient** (dette du lot 0) : une copie sans compagnons, sur un téléphone qui en a, demande
+  confirmation avant de rien remplacer : « Tes compagnons seront retirés de ce téléphone. Le compte des boss tombés
+  reste. Tu pourras les inviter à nouveau. » Annuler jette le fichier préparé. Six langues, derrière le drapeau.
+  Tests : `db-keep-device-settings` (sur deux vraies bases) et `useBackup`.
+- **Écrit dans la spec, points fermés** : « Léo : 1 sur 2 » hors duel (§ 5.2), l'objectif figé qui ne baisse jamais
+  (O1), le compte de l'autre qui peut baisser (S12), la chute sur la victoire (§ 5.4).
+- **Rien fait, voulu** : aucun « Prévenir Léo » sur la pause (point 6) et le `shortcut:` du partage Android reste
+  (point 10) : le lot 1 bis enverra seul, par des relais Nostr. L'usure est sous « Plus tard » dans STATE.md.
+- Aucune migration de plus. Aucun nouveau tour d'audit : rien ne touche une ligne rouge.
+
 ## Ce dont j'ai besoin de toi
 
-**L'essai sur téléphone**, build avec `EXPO_PUBLIC_MULTIPLAYER=1` au prebuild et à la build :
+**L'essai sur téléphone.** À faire après le lot 1 bis : un seul essai pour les deux lots.
+
+Build avec `EXPO_PUBLIC_MULTIPLAYER=1` au prebuild et à la build :
 
 1. Journal > Boss, « Inviter un compagnon », « Par message » : le lien part, l'invitation apparaît avec « Annuler ».
 2. Sur l'autre téléphone, ouvrir le lien, « Rejoindre » sous un nom : « C'est fait » et « Prévenir maintenant ».
@@ -131,28 +153,16 @@ pour la chute et la fuite (le texte dit déjà l'état, rien ne bouge en mouveme
 6. « Montrer mon QR » scanné par l'autre en vrai, à l'intérieur et dehors. La caméra n'est demandée qu'au scanner.
 7. TalkBack sur la carte et sur la ligne de la victoire : l'état est dit, chaque bouton a son nom.
 8. À 130 % et 200 % de police, en russe aussi : rien de coupé.
-9. Fermer la feuille de partage sans rien envoyer : voir le point 10 ci-dessous.
+9. La séance qui fait tomber le boss : la victoire dit « Le boss est tombé ! Boss tombés ensemble : N », la suivante
+   de la semaine ne le redit pas.
+10. Restaurer une copie en clair avec un compagnon : le message prévient avant ; « Annuler » ne change rien.
 
-**À trancher** (aussi dans [STATE.md](../STATE.md)) :
-
-1. **La carte vit sur Journal > Boss**, faute d'onglet Boss dans la barre.
-2. **« Léo : 1 sur 2 » hors duel**, comme ton brief le demande, ou « Léo a envoyé ses coups le 4 nov. » sans compte.
-3. **L'usure** : six boss, six affixes, un compte cosmétique.
-4. **Objectif borné de 2 à 4**, les bornes du serment.
-5. **Un objectif qui ne peut que baisser** après une blessure ? Pas fait : tu as écrit « figé ».
-6. **« Prévenir Léo » juste après une pause**, hors de l'écran Boss ?
-7. **Dire la chute du boss sur la victoire**, contre le « rien d'autre » du § 5.4 ?
-8. **Le compte de l'autre peut baisser** si sa nouvelle enveloppe a moins de jours ; un boss tombé ne recule jamais.
-9. **Deux compagnons aux objectifs différents** : la victoire prend l'objectif du premier.
-10. **Android dit « partagé » même quand on ferme la feuille** : la ligne « Ta pause n'est pas encore partie » s'efface
-    alors trop tôt sur ce téléphone. Marqué `shortcut:` dans `sendCoups.ts`.
+Les dix points sont tranchés (06/11), réponses dans [STATE.md](../STATE.md).
 
 **À savoir :**
 
 - **Fiches Play et F-Droid, Sécurité des données** : la caméra et le partage entre joueurs devront y entrer le jour où le
   drapeau tombe, comme dans `privacy.md` (déjà fait, en anglais et en français, et dans l'app en six langues).
-- **La restauration d'une copie en clair** efface les compagnons et garde le compte ; le message qui le dirait avant de
-  restaurer n'est toujours pas écrit (dette du lot 0).
 - Les traductions de, es, ru et zh sont d'un agent : « coup » y est Treffer, golpe, удар, 打击 ; une relecture native
   ne ferait pas de mal, surtout le russe « дуэт-вызов ».
 - `deadcode` ne tourne pas dans ce worktree ; c'est la CI qui l'a passé, voir la porte.

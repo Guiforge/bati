@@ -113,3 +113,13 @@ export function duoWeek(input: DuoWeekInput): DuoWeek {
         : afterTheWeek(weekEnd(week), them?.receivedAt ?? null, now);
   return { result, mine, theirs: them };
 }
+
+/**
+ * How far a week has gone, each side against its own goal, capped: the Journal opens the most
+ * advanced card first, and the victory line reads that same pair's goal (decision 9 of 06/11).
+ */
+const weekProgress = ({ mine, theirs }: DuoWeek) =>
+  Math.min(1, mine.hits / mine.goal) + Math.min(1, (theirs?.hits ?? 0) / (theirs?.goal ?? 1));
+
+/** Most advanced first, as a sort comparator; ties keep the order they came in. */
+export const mostAdvancedFirst = (a: DuoWeek, b: DuoWeek) => weekProgress(b) - weekProgress(a);

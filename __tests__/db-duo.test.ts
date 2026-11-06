@@ -176,6 +176,22 @@ describe("a fallen boss (S1, S2, S9)", () => {
     expect((await duo().readDuoWeek({ id, goal: 2 }, W45, NOW)).result).toBe("fallen");
   });
 
+  test("the read that records the fall says it just fell, and no read after it does", async () => {
+    const id = await aPair();
+    session(local(2));
+    await duo().recordTheirWeek(id, W45, theirs(Math.floor(local(5).getTime() / 1000)));
+    // One hit of two: not yet.
+    expect((await duo().readDuoWeek({ id, goal: 2 }, W45, NOW)).justFell).toBe(false);
+
+    session(local(4));
+    expect((await duo().readDuoWeek({ id, goal: 2 }, W45, NOW)).justFell).toBe(true);
+    expect((await duo().readDuoWeek({ id, goal: 2 }, W45, NOW)).justFell).toBe(false);
+    // Another counted session the same week: already fallen, nothing new to say.
+    session(local(6));
+    expect((await duo().readDuoWeek({ id, goal: 2 }, W45, NOW)).justFell).toBe(false);
+    expect(await duo().fallenTogether()).toBe(1);
+  });
+
   test("an unlink keeps the count and drops what the companion said", async () => {
     const id = await aPair();
     session(local(2));

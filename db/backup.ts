@@ -137,6 +137,24 @@ export function scrubPairs(snapshotPath: string): Promise<void> {
   });
 }
 
+/**
+ * Whether restoring the staged copy takes this phone's companions away: it holds none while this
+ * phone has some. Always the case for a plain copy, which `scrubPairs` emptied. The fallen count
+ * stays, since the copy keeps its fallen weeks (LOT1-SPEC.md S9).
+ */
+export function companionsLeaving(stagedPath: string): Promise<boolean> {
+  return withIsolatedConnection(async (conn) => {
+    const count = async (schema: string) =>
+      Number(
+        (await conn.getFirstAsync<{ n: number }>(`SELECT count(*) AS n FROM ${schema}.pairs`))?.n ??
+          0,
+      );
+    if ((await count("main")) === 0) return false;
+    await conn.execAsync(`ATTACH DATABASE ${sqlString(stagedPath)} AS ${CANDIDATE}`);
+    return !(await hasTable(conn, CANDIDATE, "pairs")) || (await count(CANDIDATE)) === 0;
+  });
+}
+
 /** Timestamps of every migration this build ships, for the compatibility check below. */
 function knownMigrationTimes(): Set<number> {
   const journal = migrations.journal as { entries: { when: number }[] };

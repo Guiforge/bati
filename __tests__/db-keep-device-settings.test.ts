@@ -36,6 +36,31 @@ function setPref(sqlite: Database.Database, key: string, value: string) {
     .run(key, value);
 }
 
+function addPair(sqlite: Database.Database, id: string) {
+  sqlite
+    .prepare(
+      "INSERT INTO pairs (id, secret, name, selfId, createdAt, updatedAt) VALUES (?, 's', 'Léo', 'me', 1, 1)",
+    )
+    .run(id);
+}
+
+test("a copy without companions, restored on a phone that has some, says they leave", async () => {
+  const staged = path.join(dir, "plain.db");
+  await backup().snapshotDatabaseTo(staged);
+  // Nobody here: nothing to say.
+  expect(await backup().companionsLeaving(staged)).toBe(false);
+
+  addPair(t.sqlite, "p1");
+  expect(await backup().companionsLeaving(staged)).toBe(true);
+
+  // A copy that holds companions of its own takes none away.
+  const sealed = new Database(staged);
+  addPair(sealed, "p2");
+  sealed.close();
+  expect(await backup().companionsLeaving(staged)).toBe(false);
+  t.sqlite.exec("DELETE FROM pairs");
+});
+
 function prefs(file: string): Record<string, string> {
   const sqlite = new Database(file);
   const rows = sqlite.prepare("SELECT key, value FROM user_preferences").all() as {

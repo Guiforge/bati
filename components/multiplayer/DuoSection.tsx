@@ -18,7 +18,13 @@ import { getDateTimeFormat } from "@/constants/dateFormatters";
 import { fallenTogether, pauseTouches, readDuoWeek } from "@/db/duo";
 import { cancelInvite, listInvites, listPairs, MAX_PAIRS, type Pair } from "@/db/pairs";
 import { getPausePeriods } from "@/db/streaks";
-import { type DuoWeek, isoWeekOf, previousWeek, weekStart } from "@/src/multiplayer/duoWeek";
+import {
+  type DuoWeek,
+  isoWeekOf,
+  mostAdvancedFirst,
+  previousWeek,
+  weekStart,
+} from "@/src/multiplayer/duoWeek";
 import { MULTIPLAYER_ENABLED } from "@/src/multiplayer/flag";
 import { lastSentOn, replyLink, sendCoups } from "@/src/multiplayer/sendCoups";
 import { weeklyBoss } from "@/src/multiplayer/weeklyBoss";
@@ -72,10 +78,7 @@ async function load(now: Date): Promise<Loaded> {
     }),
   );
   // The most advanced week first: it is the one card left open.
-  const progress = (c: Card) =>
-    Math.min(1, c.current.mine.hits / c.current.mine.goal) +
-    Math.min(1, (c.current.theirs?.hits ?? 0) / (c.current.theirs?.goal ?? 1));
-  cards.sort((a, b) => progress(b) - progress(a));
+  cards.sort((a, b) => mostAdvancedFirst(a.current, b.current));
   // After the cards: reading a week may be what writes its fall, and the count must include it.
   return { cards, invites, fallen: await fallenTogether() };
 }

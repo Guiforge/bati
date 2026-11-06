@@ -7,6 +7,7 @@ import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import {
   type BackupRejection,
   bringForward,
+  companionsLeaving,
   keepDeviceSettings,
   validateBackup,
 } from "@/db/backup";
@@ -28,6 +29,7 @@ import {
 } from "@/src/backupFiles";
 import { wordCandidates } from "@/src/backupWords";
 import { isLowMemory } from "@/src/lowMemory";
+import { MULTIPLAYER_ENABLED } from "@/src/multiplayer/flag";
 import { reportError } from "@/src/reportError";
 import { useRestoreStore } from "@/stores/restore";
 
@@ -150,7 +152,38 @@ export function useBackup() {
   // after it would be ignored until a restart. Here, not in useConfirmDialog: other callers'
   // cancel records a decision (SyncPrompt's "keep"), which an unmount must not make for the hero.
   const declineJoin = useRef<(() => void) | null>(null);
-  useEffect(() => () => declineJoin.current?.(), []);
+  const declineCompanions = useRef<(() => void) | null>(null);
+  useEffect(
+    () => () => {
+      declineJoin.current?.();
+      declineCompanions.current?.();
+    },
+    [],
+  );
+
+  /**
+   * A copy without companions, restored on a phone that has some, removes them (lot 0 debt, closed
+   * in lot 1): said once before anything is replaced. Cancelled, or unmounted with the question
+   * open, the restore stops.
+   */
+  const companionsAccepted = useCallback(
+    async (staged: string) => {
+      if (!MULTIPLAYER_ENABLED || !(await companionsLeaving(staged))) return true;
+      return new Promise<boolean>((resolve) => {
+        declineCompanions.current = () => resolve(false);
+        ask({
+          title: t("backup.confirmTitle"),
+          body: t("backup.companionsBody"),
+          confirmLabel: t("backup.confirmCta"),
+          cancelLabel: t("common.cancel"),
+          destructive: true,
+          onConfirm: () => resolve(true),
+          onCancel: () => resolve(false),
+        });
+      });
+    },
+    [ask, t],
+  );
 
   const offerJoin = useCallback(
     async (join: (options: { asPrimary: boolean }) => Promise<void>, byWords = false) => {
@@ -188,6 +221,18 @@ export function useBackup() {
     return "cancelled" as const;
   }, [showError, t]);
 
+  // An older backup is migrated here, before the swap, or refused: never swapped in to fail its
+  // migration on every launch. The picker and `runAdopt` both come through this line. Then the
+  // last question before anything is replaced; declined, it is a cancel like the password's.
+  const forwardThenAsk = useCallback(
+    async (staged: string) => {
+      const forward = await bringForward(staged);
+      if (!forward.ok) return forward.reason;
+      return (await companionsAccepted(staged)) ? null : ("cancelled" as const);
+    },
+    [companionsAccepted],
+  );
+
   const checkStaged = useCallback(
     async (staged: string): Promise<StagedVerdict> => {
       const attempt = (secret?: string) =>
@@ -215,15 +260,13 @@ export function useBackup() {
 
       const check = await validateBackup(staged);
       if (!check.ok) return { verdict: check.reason };
-      // An older backup is migrated here, before the swap, or refused: never swapped in to fail
-      // its migration on every launch. The picker and `runAdopt` both come through this line.
-      const forward = await bringForward(staged);
-      if (!forward.ok) return { verdict: forward.reason };
+      const stop = await forwardThenAsk(staged);
+      if (stop !== null) return { verdict: stop };
       // Offered later, by the caller, once the copies are kept: adopting the key now would change
       // the vault of a restore that may still be abandoned.
       return { verdict: "ok", join: opened.join, byWords };
     },
-    [askSecret, lowMemoryStop],
+    [askSecret, forwardThenAsk, lowMemoryStop],
   );
 
   useEffect(() => {

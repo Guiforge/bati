@@ -196,13 +196,14 @@ export async function recordTheirWeek(
 
 /**
  * The week as both phones should read it, and S2 made durable: the first time a week reads fallen
- * here, `fallenAt` is written, and from then on nothing takes it back.
+ * here, `fallenAt` is written, and from then on nothing takes it back. `justFell` is that first
+ * time: what the victory line says (decision 7 of 06/11).
  */
 export async function readDuoWeek(
   pair: { id: string; goal: number },
   week: IsoWeek,
   now = new Date(),
-): Promise<DuoWeek> {
+): Promise<DuoWeek & { justFell: boolean }> {
   const [row] = await db.select().from(duoWeeks).where(whereWeek(pair.id, week));
   const [myDays, myPaused] = await Promise.all([myWeekDays(week, now), myPauseTouches(week)]);
   const read = duoWeek({
@@ -214,7 +215,8 @@ export async function readDuoWeek(
     fallenAt: row?.fallenAt ?? null,
     now,
   });
-  if (read.result === "fallen" && !row?.fallenAt) {
+  const justFell = read.result === "fallen" && !row?.fallenAt;
+  if (justFell) {
     await db
       .insert(duoWeeks)
       .values({ pairId: pair.id, ...week, fallenAt: now })
@@ -223,7 +225,7 @@ export async function readDuoWeek(
         set: { fallenAt: sql`ifnull(${duoWeeks.fallenAt}, ${Math.floor(now.getTime() / 1000)})` },
       });
   }
-  return read;
+  return { ...read, justFell };
 }
 
 /** S9: every week a boss fell, with any companion, unlinked ones too. Never goes down. */

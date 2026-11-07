@@ -227,14 +227,15 @@ Each rule has a number that a test reuses. The file is `__tests__/p2p-*.test.ts`
 **Pairing code v1.** Binary, written as base64url text with `toBase64Url`, like the multiplayer QR
 (`src/multiplayer/link.ts`):
 
-`version 1 ‖ expiresAt u32 (unix s) ‖ token 32 ‖ installId 8 ‖ deviceId 32 ‖ name len u8 ‖ UTF-8 ≤ 32 ‖ routes u8 count, then per route: type u8 (1 = lan) ‖ len u8 ‖ data`
+`version 1 ‖ expiresAt u32 (unix s) ‖ token 32 ‖ installId 16 (the UUID's bytes) ‖ deviceId 32 ‖ name len u8 ‖ UTF-8 ≤ 32 ‖ routes u8 count, then per route: type u8 (1 = lan) ‖ len u8 ‖ data`
 
 The lan data is `port u16 ‖ n × (family u8 ‖ 4 or 16 bytes)`.
 
-The text fallback shows the same string in groups of 4 characters. The field strips spaces and dashes before
-decoding.
+The text fallback shows the same string in groups of 4 characters, separated by spaces. The field strips
+whitespace only before decoding: `-` is a base64url character.
 
-**Frames** (inside TLS): `len u32 ‖ type u8 ‖ body`.
+**Frames** (inside TLS): `len u32 ‖ type u8 ‖ body`, where `len` counts the type byte and the body, big-endian like
+every integer here.
 
 | Type | Frame | Body |
 | --- | --- | --- |
@@ -386,7 +387,7 @@ All copy goes in `locales/*.json`, all six languages, under the rules of `docs/p
   - S8 counts a sync only after an ack;
   - `Paths.document/p2p/` is outside Google backup and device transfer (`dataExtractionRules`), checked on a phone;
   - the QR on its dark background is read by 3 phones, including at 60 % width at 200 %;
-  - the text code typed with spaces or dashes decodes, and a mistyped one says `codeExpired`, never a crash.
+  - the text code typed with spaces or line breaks decodes, and a mistyped one says `codeExpired`, never a crash.
 
 ## 7. Out of this lot
 

@@ -21,7 +21,7 @@ Issue [#232](https://github.com/Guiforge/bati/issues/232). Branch `feat/p2p-sync
 | 0. Worktree `../bati-p2p-sync`, `npm ci` | done |
 | 1. Spec | done |
 | 2. Persona audit, 2 rounds by fresh agents | done. Round 1: 15 fixes. Round 2: 12 fixes and 3 decisions, all applied |
-| 3. Frozen vectors, red first | to do |
+| 3. Frozen vectors, red first | done: `scripts/p2p-vectors.py` (stdlib only), code, names, frames; 34 tests in `__tests__/p2p-{code,names,frames}.test.ts`. Kotlin read-back comes with the module (step 6) |
 | 4. Unit tests, then code | to do |
 | 5. Node stage `test/node/p2p/` | to do |
 | 6. Native module, screens, locales, privacy | to do |

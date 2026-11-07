@@ -38,7 +38,7 @@ dev, `--no-dev --minify` and `.perf` release workflows.
   `@expo/config-plugins`, which is why the latter is not a dependency.
 
   Three packages are held out of the version check via `expo.install.exclude` — `jest`,
-  `@types/jest`, `typescript`. They run ahead of what SDK 57 expects (jest 30, TS 7) and are
+  `@types/jest`, `typescript`. They run ahead of what SDK 58 expects (jest 30, TS 7) and are
   verified by `npm test` and `tsc` on every push, so the SDK's expectation is advice here, not a
   constraint. This list is for *tooling* only. Never add a native module to it: those are pinned
   by `expo/bundledNativeModules.json` on purpose, F-Droid rebuilds them from source against the
@@ -95,7 +95,7 @@ type of the same name). Unused locals, fallthrough and console are Biome's job: 
 `process.env["EXPO_PUBLIC_X"]`) and `exactOptionalPropertyTypes` — measured on 2026-08-16 at 50
 errors, nearly all in dependency types: Tamagui's `transition`/`enterStyle` and expo-image's
 `ImageSource` do not accept an explicit `undefined`, and `reducedMotion ? undefined : "bouncy"`
-is how every animation here is switched off. Re-measured on 2026-10-22 after Tamagui 3: 139 (143 on 3.1.10, 2026-11-01),
+is how every animation here is switched off. Re-measured on 2026-10-22 after Tamagui 3: 139 (143 on 3.1.10, 2026-11-01; 148 on 3.2.3, 2026-11-06),
 now spread through the app's own code as much as dependency types. Re-measure with
 `npx tsc --noEmit --exactOptionalPropertyTypes` when Tamagui is bumped; enable it under 20.
 

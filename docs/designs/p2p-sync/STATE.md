@@ -16,6 +16,9 @@ Issue [#232](https://github.com/Guiforge/bati/issues/232). Branch `feat/p2p-sync
 - **07/11, the whole feature ([PLAN.md](PLAN.md)):** both devices open at the same time, no mailbox, no background
   job. Phase 2 uses Nostr only as the meeting point, then a direct connection over IPv6. Wi-Fi Direct and Tor wait
   for the D5 numbers. #232 is covered for sync, partly for backup, and not for the profile and signer, on purpose.
+- **07/11, after the audit of the full plan:** the internet question ships only at 70 % success in D5, else Tor
+  first. One link in v1, linking another replaces it. The copy says "link", never "pair" (`pairs` are multiplayer
+  companions). The internet route has its own flag.
 
 ## Steps
 
@@ -26,7 +29,7 @@ Issue [#232](https://github.com/Guiforge/bati/issues/232). Branch `feat/p2p-sync
 | 2. Persona audit, 2 rounds by fresh agents | done. Round 1: 15 fixes. Round 2: 12 fixes and 3 decisions, all applied |
 | 3. Frozen vectors, red first | done: `scripts/p2p-vectors.py` (stdlib only), code, names, frames; 34 tests in `__tests__/p2p-{code,names,frames}.test.ts`. Kotlin read-back comes with the module (step 6) |
 | 3b. Full plan: every situation, setting and test ([PLAN.md](PLAN.md)), SPEC §4, §6, §7 aligned | done |
-| 3c. Persona audit of the updated SPEC and PLAN, one round by a fresh agent | to do |
+| 3c. Persona audit of the updated SPEC and PLAN, one round by a fresh agent | done: passes with fixes, all applied. A10 was wording (`holdBack` already listens first), now held by test S1b. Text code gets a check character per group (`codeTypo`); vectors to regenerate in step 4 |
 | 4. Unit tests, then code | to do |
 | 5. Node stage `test/node/p2p/` | to do |
 | 6. Native module, screens, locales, privacy | to do |

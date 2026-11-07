@@ -189,12 +189,17 @@ Each rule has a number that a test reuses. The file is `__tests__/p2p-*.test.ts`
     The swap only goes ahead once that save has succeeded. A copy that would live only on the device being
     replaced does not count;
   - the copy also stays in `Paths.document/p2p/kept/` (the last 3), listed in Settings under "Copies kept before a
-    swap", with "Save as" and "Restore";
+    swap", with "Save as", "Restore" and "Delete". With none, the list says "No copy kept.";
+  - `p2p/in/` is emptied once a received file is read, and a `.part` is deleted after 24 h or when the source sha
+    changes, so `p2p/` never holds more than the outbox, one incoming file and 3 kept copies;
   - if any of this fails, the swap does not happen.
 
   `write` is never called with a `-kept-` name (S5).
 - **S7.** `syncNow` on a P2P account outside an open session returns `notNow` and does nothing. Launch sync
-  (`prepareSyncAtLaunch`) skips P2P.
+  (`prepareSyncAtLaunch`) tries P2P quietly for 30 s, listener and NSD open, nothing shown; with no peer it returns
+  `notNow` in silence.
+- **S7b.** Nothing syncs on a device while a session, an outing or a timer runs on it: no launch try, and "Sync now"
+  says "Finish your session first." The existing prompts already wait (`components/SyncPrompt.tsx:275`).
 - **S8.** The "Protect your hero" card counts a P2P sync in the last 7 days exactly like a device sync
   (data-safety.md). A P2P sync counts as successful only when the peer acknowledged our file (S4). `peerGone`
   and `interrupted` never count.
@@ -235,8 +240,10 @@ Each rule has a number that a test reuses. The file is `__tests__/p2p-*.test.ts`
 
 The lan data is `port u16 ‖ n × (family u8 ‖ 4 or 16 bytes)`.
 
-The text fallback shows the same string in groups of 4 characters, separated by spaces. The field strips
-whitespace only before decoding: `-` is a base64url character.
+The text fallback shows the same string in groups of 4 characters, each followed by one check character, groups
+separated by spaces. The check character is the base64url character of `SHA-256(group index u8 ‖ the 4 characters)[0]
+mod 64`, so a typo names its group (`codeTypo`). The field strips whitespace only before decoding: `-` is a
+base64url character. The QR carries the string without check characters. Frozen in `code-v1.json` (`grouped`).
 
 **Frames** (inside TLS): `len u32 ‖ type u8 ‖ body`, where `len` counts the type byte and the body, big-endian like
 every integer here.
@@ -276,8 +283,10 @@ reads "My other device: sync with your other phone or tablet, on the same Wi-Fi.
 `docs/product/glossary.md` with its one-line explanation.
 
 - **Choosing it with a server or folder account on:** "This replaces sync with {server}. Your history stays on this
-  device." with "Replace" and "Keep {server}" as a text link.
-- **Choosing it while already linked to another device:** "Forget {name} first, then pair this one."
+  device. From now on, sync happens when Bati is open on both devices." with "Replace" and "Keep {server}" as a text
+  link.
+- **Linking while already linked (L2):** "This replaces the link with {old name}." with "Replace". The same installId
+  after a reinstall only asks "Link {name} again?".
 
 The sheet is the one the current sync uses (`SyncSetupSheet`, `SyncStatusSheet`). No new component except the code
 view, which is the multiplayer `QrCode`.
@@ -296,7 +305,7 @@ view, which is the multiplayer `QrCode`.
     other device."
   - If the camera is refused: "Bati needs the camera to read the code. Nothing is recorded." with "Allow the camera"
     and the same "Type the code" link.
-- **A, confirm:** "Link {name of B}?" with "Link" (the only button) and "Not this one" as a text link.
+- **A, confirm:** "Link {name of B} ({last 4 characters of its device ID})?" with "Link" (the only button) and "Not this one" as a text link.
 - **Both, linked:** "Linked with {name}." Then the first sync starts by itself.
 
 **Settings › Sync, once linked.** The row reads "{name}, last synced {when}". Under it are "Sync now" and "Forget
@@ -314,8 +323,10 @@ this device".
 | --- | --- | --- |
 | No peer after 30 s | `notInSight`: "{name} isn't in sight. Open Bati on it, on the same Wi-Fi." | "Try again" |
 | Peer announced on NSD, TCP unreachable | `blocked`: "This Wi-Fi keeps devices from reaching each other (a guest network, a VPN). Try another network, or your phone's hotspot." | "Try again" |
-| Expired, used or unknown token (L5) | `codeExpired`: "This code doesn't work anymore. Show a new one on the other device." | "Show a new code" |
-| Peer presents an unknown ID (L8, reinstall) | `unknownDevice`: "{name} doesn't recognise this device anymore, probably after a reinstall. Pair them again." | "Pair again" |
+| Expired, used or unknown token (L5) | `codeExpired`: "This code doesn't work anymore. Show a new one on the other device." When the clock is the cause (L3): "Check the date and time on both devices." | "Show a new code" |
+| A check character does not match (text code) | `codeTypo`: "There's a typo in group {n}. Check it and try again." | none, the field stays filled |
+| No network at all (airplane mode, Wi-Fi off) | `offline`: "This device isn't on a network. Turn on Wi-Fi and try again." | "Try again" |
+| Peer presents an unknown ID (L8, reinstall) | `unknownDevice`: "{name} doesn't know this device anymore. It was reinstalled, or it forgot this one. Link them again." | "Link again" |
 | `versionMismatch` (C3, L6) | "Update Bati on the other device, then try again." | none |
 | Silence (C4), `peerGone` (S4), 3 bad blocks (T2), cancel on the other side | `interrupted`: "The sync stopped halfway. Nothing was lost. Try again." | "Try again" |
 | Receiver's storage cannot hold the file (checked before the first block, and on a write failure) | `noSpace`: "Not enough space on this device to receive your history. Free some space and try again." | "Try again" |

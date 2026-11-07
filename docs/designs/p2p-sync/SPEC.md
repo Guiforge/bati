@@ -13,6 +13,10 @@ After two persona audit rounds he also decided:
 - Pairing has a text fallback for those who cannot scan.
 - A swap without a backup folder requires a copy saved elsewhere first.
 
+Later on 07/11 he chose the whole feature's shape: both devices open at the same time, never a mailbox or a
+background job, and Nostr only as the meeting point for Phase 2. [PLAN.md](PLAN.md) lists every situation, every
+setting and every test of both phases; this spec is Phase 1.
+
 Everything stays behind `P2P_SYNC_ENABLED` (`src/p2p/flag.ts`, a literal read of `EXPO_PUBLIC_P2P_SYNC`, like
 `src/multiplayer/flag.ts`). Without the flag there is no screen, no listener and no NSD announcement, and the
 existing sync accounts work exactly as they do today.
@@ -271,6 +275,10 @@ Settings › Sync gains a third choice beside the server and the folder: **"My o
 reads "My other device: sync with your other phone or tablet, on the same Wi-Fi." The word "device" goes into
 `docs/product/glossary.md` with its one-line explanation.
 
+- **Choosing it with a server or folder account on:** "This replaces sync with {server}. Your history stays on this
+  device." with "Replace" and "Keep {server}" as a text link.
+- **Choosing it while already linked to another device:** "Forget {name} first, then pair this one."
+
 The sheet is the one the current sync uses (`SyncSetupSheet`, `SyncStatusSheet`). No new component except the code
 view, which is the multiplayer `QrCode`.
 
@@ -310,11 +318,15 @@ this device".
 | Peer presents an unknown ID (L8, reinstall) | `unknownDevice`: "{name} doesn't recognise this device anymore, probably after a reinstall. Pair them again." | "Pair again" |
 | `versionMismatch` (C3, L6) | "Update Bati on the other device, then try again." | none |
 | Silence (C4), `peerGone` (S4), 3 bad blocks (T2), cancel on the other side | `interrupted`: "The sync stopped halfway. Nothing was lost. Try again." | "Try again" |
+| Receiver's storage cannot hold the file (checked before the first block, and on a write failure) | `noSpace`: "Not enough space on this device to receive your history. Free some space and try again." | "Try again" |
 
 `notNow` (S7) is never shown: it is what a launch sync returns, silently.
 
 **Forget.** "Forget this device". The confirmation reads "{name} won't sync with this one anymore. If you lost it,
 change your password too."
+
+**After 14 days without a sync.** The existing sync card on Home says once: "Last synced with {name} 14 days ago.
+Open Bati on both to catch up." No red, no counter, and it does not come back once dismissed until a sync succeeds.
 
 **Swap without a backup folder.** One more step in the confirmation: "Save a copy of this device first, in case you
 want it back." The only button is "Save a copy". The swap button appears only after the save has succeeded.
@@ -343,6 +355,8 @@ All copy goes in `locales/*.json`, all six languages, under the rules of `docs/p
 ## 6. Fini quand
 
 - Every rule above has a test that fails before its code.
+- Every Phase 1 row of [PLAN.md](PLAN.md) §2 (tables A, B and D) has the test it names, and the device passes D1 to
+  D4 and D6 are written down.
 - Node stage: `test/node/p2p/`, with two harness devices over Node `tls` and `net`, and toxiproxy. The scenarios:
   - random convergence over a replayable seed;
   - a reset at 40 % that resumes;
@@ -392,9 +406,10 @@ All copy goes in `locales/*.json`, all six languages, under the rules of `docs/p
 ## 7. Out of this lot
 
 - **Phase 2, the internet route, with Nostr as the meeting point (decided 07/11).**
-  - A spike compares Tor onion, WebRTC, QUIC (quiche built from source) and a Syncthing-style session relay. The
-    criteria are an F-Droid source build, 16 KB pages, size, success between Wi-Fi and 4G, and what each leaks.
-    Guillaume decides on the report.
+  - Shape decided later the same day: both devices open, Nostr carries only a sealed note with the LAN and global
+    IPv6 addresses, then the same TLS channel connects directly. No mailbox, no background job. A failure says
+    `unreachable` and points to the same Wi-Fi or a hotspot. Tor or Wi-Fi Direct are decided on the D5 numbers.
+    Situations, settings and tests: [PLAN.md](PLAN.md) §1 to §3, table C.
   - The audited draft for Nostr discovery, kept for that phase:
     - kind 21059, ephemeral;
     - a fresh secp256k1 key per event, Schnorr per BIP-340;
@@ -402,12 +417,13 @@ All copy goes in `locales/*.json`, all six languages, under the rules of `docs/p
     - `created_at` rounded to the minute;
     - content `nonce 12 ‖ AES-GCM ‖ tag 16` under an HKDF of the link secret (info `bati/p2p/offer/v1`), with AAD = tag ‖ kind ‖
       created_at and a plaintext padded to 256 bytes;
-    - 3 constant relays and an off-by-default switch, "Help devices find each other";
+    - 3 constant relays and an off-by-default switch, "Find each other through the internet", asked once after
+      linking;
     - `src/nostrRelay.ts`, the only allowed module in `noJsNetwork.grit`, shared with multiplayer lot 1 bis;
     - a 4th network destination, with its privacy text and listings.
 
-    It is a fallback for discovery only. On a network that blocks devices from reaching each other it changes
-    nothing, and the copy must never say otherwise.
+    Nostr only helps devices find each other. Whether they then connect depends on the networks (IPv6 reachable or
+    not), and the copy must never promise more.
 - A Nostr profile, an npub, a signer (NIP-46 or NIP-55): dropped on 07/11, against P1.
 - More than two devices, background sync, a foreground service.
 - P2P and a server account at the same time.

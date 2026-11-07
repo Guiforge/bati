@@ -13,6 +13,9 @@ Issue [#232](https://github.com/Guiforge/bati/issues/232). Branch `feat/p2p-sync
   - Nostr moves to Phase 2;
   - pairing gets a text fallback, behind A's confirmation;
   - a swap with no backup folder requires a copy saved off the device.
+- **07/11, the whole feature ([PLAN.md](PLAN.md)):** both devices open at the same time, no mailbox, no background
+  job. Phase 2 uses Nostr only as the meeting point, then a direct connection over IPv6. Wi-Fi Direct and Tor wait
+  for the D5 numbers. #232 is covered for sync, partly for backup, and not for the profile and signer, on purpose.
 
 ## Steps
 
@@ -22,8 +25,12 @@ Issue [#232](https://github.com/Guiforge/bati/issues/232). Branch `feat/p2p-sync
 | 1. Spec | done |
 | 2. Persona audit, 2 rounds by fresh agents | done. Round 1: 15 fixes. Round 2: 12 fixes and 3 decisions, all applied |
 | 3. Frozen vectors, red first | done: `scripts/p2p-vectors.py` (stdlib only), code, names, frames; 34 tests in `__tests__/p2p-{code,names,frames}.test.ts`. Kotlin read-back comes with the module (step 6) |
+| 3b. Full plan: every situation, setting and test ([PLAN.md](PLAN.md)), SPEC §4, §6, §7 aligned | done |
+| 3c. Persona audit of the updated SPEC and PLAN, one round by a fresh agent | to do |
 | 4. Unit tests, then code | to do |
 | 5. Node stage `test/node/p2p/` | to do |
 | 6. Native module, screens, locales, privacy | to do |
 | 7. Emulators, then two phones in release | to do |
-| 8. Phase 2 spike | after the merge |
+| 8. Phase 2: Nostr meeting, IPv6 listener, PLAN.md table C | after the merge |
+| 9. D5 measured apart, then Tor or Wi-Fi Direct decided | after Phase 2 |
+| 10. Reply on #232, drafted and shown to Guillaume first | to do |

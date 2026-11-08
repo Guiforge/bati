@@ -102,6 +102,26 @@ describe("sync over P2P, with the app's real data code on both devices", () => {
     expect(plainDatabasesOutside(tablet)).toEqual([]);
   });
 
+  test("the password is given after the sheet closed: joining reads the file that arrived (A12)", async () => {
+    const lan = makeLan();
+    const phone = await make("phone", lan);
+    const tablet = await make("tablet", lan);
+    await phone.app.cipher.enableEncryption(HERO_PASSWORD, "en");
+    const history = phone.addSessions(3, "phone");
+    await pair(phone, tablet);
+    let sheets = await openBoth(phone, tablet);
+    await sync(phone);
+    // The tablet's own run takes the phone's file before anything is asked.
+    await tablet.app.deviceSync.syncNow({ snapshotFirst: true }).catch(() => undefined);
+    sheets.close();
+    await joinOverP2p(tablet);
+    sheets = await openBoth(phone, tablet);
+    expect(
+      await converge([phone, tablet], history, 6, { secrets: [HERO_PASSWORD] }),
+    ).toBeGreaterThan(0);
+    sheets.close();
+  });
+
   test("a tablet that trained before linking keeps its session through the merge (S1b, A11)", async () => {
     const lan = makeLan();
     const phone = await make("phone", lan);

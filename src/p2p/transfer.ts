@@ -23,7 +23,8 @@ export const hex = (bytes: Uint8Array) =>
   Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 
 function ensure(dir: Directory): Directory {
-  if (!dir.exists) dir.create();
+  // Parents too: on a device `create` makes no missing parent (`p2p/` the first time).
+  if (!dir.exists) dir.create({ intermediates: true });
   return dir;
 }
 

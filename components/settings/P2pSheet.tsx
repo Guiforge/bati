@@ -517,6 +517,10 @@ function TypeStep({ onCode }: { onCode: (code: PairingCode) => void }) {
         color="text"
         autoCapitalize="none"
         autoCorrect={false}
+        spellCheck={false}
+        // Android: no suggestion strip, whose tap replaced a group with a word (emulator, 08/11).
+        keyboardType="visible-password"
+        importantForAutofill="no"
         multiline
         py={8}
         value={typed}

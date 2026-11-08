@@ -403,7 +403,12 @@ export class Session {
     switch (frame.type) {
       case "hello":
         if (this.role.kind !== "scan") this.peerName = frame.name;
-        this.show({ step: "connected", name: this.peerName });
+        // B waits for A's yes before anything reads as syncing (emulator, 08/11).
+        this.show(
+          this.role.kind === "scan"
+            ? { step: "waiting" }
+            : { step: "connected", name: this.peerName },
+        );
         return Promise.resolve();
       case "pair":
         return this.paired(frame.token, frame.random, frame.installId);
@@ -468,6 +473,7 @@ export class Session {
     });
     await batiP2p().setPins([this.peerId], false);
     await this.channel.send({ type: "linked", random: mine });
+    this.show({ step: "connected", name: this.peerName });
     await this.announce();
   }
 
@@ -486,6 +492,7 @@ export class Session {
         ? [{ host: this.dialledAt.host, port: preferredPort(hex(secret)) }]
         : [],
     });
+    this.show({ step: "connected", name: this.peerName });
     await this.announce();
   }
 

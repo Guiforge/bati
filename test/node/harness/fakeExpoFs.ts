@@ -171,8 +171,9 @@ export class Directory {
   get exists(): boolean {
     return fs.existsSync(toPath(this.uri)) && fs.statSync(toPath(this.uri)).isDirectory();
   }
-  create(): void {
-    fs.mkdirSync(toPath(this.uri), { recursive: true });
+  /** As on a device: a missing parent fails unless `intermediates` (P2P's `p2p/out` did, 08/11). */
+  create(options?: { intermediates?: boolean }): void {
+    fs.mkdirSync(toPath(this.uri), { recursive: options?.intermediates === true });
   }
   delete(): void {
     fs.rmSync(toPath(this.uri), { recursive: true });

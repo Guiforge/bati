@@ -6,6 +6,7 @@ import android.net.nsd.NsdServiceInfo
 import android.os.Build
 import android.provider.Settings
 import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyInfo
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import expo.modules.kotlin.exception.CodedException
@@ -23,6 +24,7 @@ import java.net.NetworkInterface
 import java.net.ServerSocket
 import java.net.Socket
 import java.net.SocketTimeoutException
+import java.security.KeyFactory
 import java.security.KeyPairGenerator
 import java.security.KeyStore
 import java.security.PrivateKey
@@ -125,14 +127,23 @@ class BatiP2pModule : Module() {
 
   private fun identity(): Pair<Array<X509Certificate>, PrivateKey> {
     val ks = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
+    // A key from before 08/11 allowed SHA-256 only, and TLS signs with no digest of its own
+    // (Conscrypt hands the key a hash: "Incompatible digest" on an emulator, the handshake
+    // failed). Such a key never completed a handshake, so no link can pin it: replace it.
+    if (ks.containsAlias(ALIAS) && !signsForTls(ks.getKey(ALIAS, null) as PrivateKey)) ks.deleteEntry(ALIAS)
     if (!ks.containsAlias(ALIAS)) {
       val now = System.currentTimeMillis()
       val spec =
         KeyGenParameterSpec
           .Builder(ALIAS, KeyProperties.PURPOSE_SIGN)
           .setAlgorithmParameterSpec(ECGenParameterSpec("secp256r1"))
-          .setDigests(KeyProperties.DIGEST_SHA256)
-          .setCertificateSubject(X500Principal("CN=device"))
+          // NONE: TLS hands the key a digest it computed itself; the others for completeness.
+          .setDigests(
+            KeyProperties.DIGEST_NONE,
+            KeyProperties.DIGEST_SHA256,
+            KeyProperties.DIGEST_SHA384,
+            KeyProperties.DIGEST_SHA512,
+          ).setCertificateSubject(X500Principal("CN=device"))
           .setCertificateNotBefore(java.util.Date(now - 24L * 3600 * 1000))
           .setCertificateNotAfter(java.util.Date(now + 100L * 365 * 24 * 3600 * 1000))
           .build()
@@ -144,6 +155,11 @@ class BatiP2pModule : Module() {
     }
     val chain = ks.getCertificateChain(ALIAS).map { it as X509Certificate }.toTypedArray()
     return Pair(chain, ks.getKey(ALIAS, null) as PrivateKey)
+  }
+
+  private fun signsForTls(key: PrivateKey): Boolean {
+    val info = KeyFactory.getInstance(key.algorithm, "AndroidKeyStore").getKeySpec(key, KeyInfo::class.java)
+    return KeyProperties.DIGEST_NONE in info.digests
   }
 
   private fun sslContext(tm: PinTrustManager): SSLContext {

@@ -30,14 +30,18 @@ jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }
 jest.mock("@/src/reportError", () => ({ reportError: () => {} }));
 
 let mockFlag = true;
+let mockInternetFlag = false;
 jest.mock("@/src/p2p/flag", () => ({
   get P2P_SYNC_ENABLED() {
     return mockFlag;
   },
+  get P2P_INTERNET_ENABLED() {
+    return mockInternetFlag;
+  },
 }));
 
 // The edge of the device: network, screen, clipboard, camera.
-const mockNetwork = { isConnected: true };
+const mockNetwork = { isConnected: true, type: "WIFI" };
 jest.mock("expo-network", () => ({
   getNetworkStateAsync: () => Promise.resolve({ ...mockNetwork }),
   NetworkStateType: { WIFI: "WIFI", ETHERNET: "ETHERNET" },
@@ -84,13 +88,21 @@ jest.mock("@/src/deviceSync", () => ({
   syncFolderOf: () => ({ folder: "files", user: "" }),
   forgetPeer: () => Promise.resolve(),
   lastMerge: () => Promise.resolve(null),
-  syncWifiOnly: () => Promise.resolve(false),
+  syncWifiOnly: () => Promise.resolve(mockWifiOnly),
   setSyncWifiOnly: () => Promise.resolve(),
 }));
 let mockLink: { name: string; peerId: string } | null = null;
+let mockWifiOnly = false;
+let mockInternet = false;
+const mockSetInternet = jest.fn((on: boolean) => {
+  mockInternet = on;
+  return Promise.resolve();
+});
 jest.mock("@/src/p2p/link", () => ({
   ...jest.requireActual("@/src/p2p/link"),
   readLink: () => Promise.resolve(mockLink),
+  internetOn: () => Promise.resolve(mockInternet),
+  setInternet: (on: boolean) => mockSetInternet(on),
 }));
 let mockKept: { name: string; delete: jest.Mock }[] = [];
 jest.mock("@/src/p2pSync", () => ({ keptCopies: () => mockKept }));
@@ -170,6 +182,11 @@ const see = (text: string) => expect(screen.getByText(text)).toBeTruthy();
 
 beforeEach(() => {
   mockFlag = true;
+  mockInternetFlag = false;
+  mockInternet = false;
+  mockWifiOnly = false;
+  mockNetwork.type = "WIFI";
+  mockSetInternet.mockClear();
   mockOpened.length = 0;
   mockNetwork.isConnected = true;
   mockLink = null;
@@ -575,5 +592,66 @@ describe("the linked device in Settings", () => {
     await press("p2p-copy-delete");
     expect(file.delete).toHaveBeenCalledTimes(1);
     await waitFor(() => see("No copy kept."));
+  });
+});
+
+describe("Phase 2: the internet meeting on screen (U6, U9, U11, C2)", () => {
+  const linkedPeer = { name: "Pixel 7", peerId: "ab".repeat(32) };
+
+  test("U6: asked once after linking, off until the hero says yes, and what relays see is said first", async () => {
+    mockInternetFlag = true;
+    await sheet("pair");
+    await press("p2p-show");
+    await act(async () => last().hooks.onLinked({ name: "Pixel 7" }));
+    await emit({ step: "connected", name: "Pixel 7" });
+    see(en.p2p.internetQuestion);
+    see(en.p2p.internetBody);
+    expect(mockSetInternet).not.toHaveBeenCalled();
+    await press("p2p-internet-yes");
+    expect(mockSetInternet).toHaveBeenCalledWith(true);
+    see(en.p2p.internetOn);
+  });
+
+  test("with the Phase 2 flag off, no question and no switch", async () => {
+    await sheet("pair");
+    await press("p2p-show");
+    await act(async () => last().hooks.onLinked({ name: "Pixel 7" }));
+    await emit({ step: "connected", name: "Pixel 7" });
+    expect(screen.queryByTestId("p2p-internet-question")).toBeNull();
+  });
+
+  test("the switch on goes into the sync, and a silent meeting says 'unreachable' (C1, C2)", async () => {
+    mockInternetFlag = true;
+    mockInternet = true;
+    mockLink = linkedPeer;
+    await sheet("sync");
+    await waitFor(() => expect(mockOpened.length).toBe(1));
+    expect(last().role).toEqual(expect.objectContaining({ kind: "sync", internet: true }));
+    await emit({ step: "ended", cause: "unreachable" });
+    see(mockWords("p2p.unreachable", { name: "Pixel 7" }));
+    see(en.p2p.tryAgain);
+  });
+
+  test("U11: nobody met with the switch on: the hint says it must be on, on both", async () => {
+    mockInternetFlag = true;
+    mockInternet = true;
+    mockLink = linkedPeer;
+    await sheet("sync");
+    await waitFor(() => expect(mockOpened.length).toBe(1));
+    await emit({ step: "ended", cause: "notInSight" });
+    see(en.p2p.bothSwitches);
+  });
+
+  test("U9: on mobile data with sync waiting for Wi-Fi, the internet route is not tried, and that is said", async () => {
+    mockInternetFlag = true;
+    mockInternet = true;
+    mockWifiOnly = true;
+    mockNetwork.type = "CELLULAR";
+    mockLink = linkedPeer;
+    await sheet("sync");
+    await waitFor(() => expect(mockOpened.length).toBe(1));
+    expect(last().role).toEqual(expect.objectContaining({ internet: false }));
+    await emit({ step: "ended", cause: "notInSight" });
+    see(en.p2p.wifiOnlyHint);
   });
 });

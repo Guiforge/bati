@@ -2426,7 +2426,21 @@
     "saveFirstTitle": "Erst eine Kopie sichern",
     "saveFirst": "Sichere zuerst eine Kopie dieses Geräts, falls du sie zurückhaben willst.",
     "saveCta": "Kopie speichern",
-    "saved": "Kopie gespeichert. Du kannst jetzt seine Version übernehmen."
+    "saved": "Kopie gespeichert. Du kannst jetzt seine Version übernehmen.",
+    "unreachable": "{{name}} wurde gefunden, aber die Verbindung über das Internet klappte nicht. Versuch es im selben WLAN oder über den Hotspot deines Handys.",
+    "bothSwitches": "Prüfe, ob „Über das Internet finden“ auf beiden Geräten an ist.",
+    "wifiOnlyHint": "Du bist im Mobilfunknetz und die Synchronisierung wartet auf WLAN: Der Weg über das Internet wurde nicht versucht.",
+    "internetQuestion": "Auch synchronisieren, wenn ihr nicht im selben WLAN seid?",
+    "internetBody": "Bati nutzt dann öffentliche Nostr-Relays, um dein anderes Gerät zu finden. Sie können nichts lesen, sehen aber eine Stunde lang die IP-Adresse dieses Geräts. Dein Verlauf selbst geht immer direkt von Gerät zu Gerät.",
+    "internetYes": "Ja",
+    "internetNotNow": "Jetzt nicht",
+    "internetOn": "Synchronisieren über das Internet ist an. Schalte es auch auf dem anderen Gerät ein.",
+    "internetOff": "Synchronisiert wird weiter nur im selben WLAN. Du kannst das in den Einstellungen ändern.",
+    "internetSwitch": "Über das Internet finden",
+    "internetNote": "Öffentliche Nostr-Relays helfen beiden Geräten, sich zu finden, und sehen ihre IP-Adressen. Dein Verlauf geht nie über sie.",
+    "internetNoteWifi": "Öffentliche Nostr-Relays helfen beiden Geräten, sich zu finden, und sehen ihre IP-Adressen. Im Mobilfunknetz wartet es auf WLAN, wie die übrige Synchronisierung.",
+    "apartTitle": "Länger nicht synchronisiert",
+    "apartBody": "Zuletzt mit {{name}} vor {{days}} Tagen synchronisiert. Öffne Bati auf beiden Geräten, um aufzuholen."
   },
   "whats_new": {
     "title": "Neu in {{version}}",

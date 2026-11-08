@@ -1,19 +1,21 @@
 import * as Clipboard from "expo-clipboard";
+import * as Network from "expo-network";
 import type { TFunction } from "i18next";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 // biome-ignore lint/correctness/useReactNativePlatformComponents: the scanner module is Android only (expo-module.config.json), and so is the camera permission it needs.
 import { PermissionsAndroid, Pressable, useWindowDimensions } from "react-native";
 import { Text, YStack } from "tamagui";
-
 import { AppButton } from "@/components/common/AppButton";
 import { FormSheet } from "@/components/common/FormSheet";
 import { Input } from "@/components/common/Input";
 import { QrCode } from "@/components/multiplayer/QrCode";
 import { useP2pSession } from "@/hooks/useP2pSession";
 import { ScannerView } from "@/modules/bati-scanner";
+import { syncWifiOnly } from "@/src/deviceSync";
 import { groupCode, type PairingCode, readCode, readTypedCode } from "@/src/p2p/code";
-import { readLink } from "@/src/p2p/link";
+import { P2P_INTERNET_ENABLED } from "@/src/p2p/flag";
+import { internetOn, readLink, setInternet } from "@/src/p2p/link";
 import type { Role, SessionCause, SessionView } from "@/src/p2p/session";
 import { reportError } from "@/src/reportError";
 
@@ -27,6 +29,21 @@ type Props = {
 };
 
 type Step = "choose" | "show" | "scan" | "type" | "sync";
+
+/**
+ * Whether this sync may look for the other device through the internet (Phase 2): the flag, the
+ * hero's switch, and not on mobile data when sync waits for Wi-Fi (C6). `waitWifi` says why not.
+ */
+async function internetRoute(): Promise<{ internet: boolean; waitWifi: boolean }> {
+  if (!P2P_INTERNET_ENABLED || !(await internetOn())) return { internet: false, waitWifi: false };
+  const state = await Network.getNetworkStateAsync().catch(() => null);
+  const metered =
+    state !== null &&
+    state.type !== Network.NetworkStateType.WIFI &&
+    state.type !== Network.NetworkStateType.ETHERNET;
+  const waitWifi = metered && (await syncWifiOnly().catch(() => false));
+  return { internet: !waitWifi, waitWifi };
+}
 
 /** A code that never became a session: the camera read it, and it was no use. */
 type LocalEnd = { cause: SessionCause; clock: boolean };
@@ -46,10 +63,12 @@ export function P2pSheet({ open, mode, onClose, onLinked }: Props) {
   const [peer, setPeer] = useState("");
   const [localEnd, setLocalEnd] = useState<LocalEnd | null>(null);
   const [asText, setAsText] = useState(false);
-  const lastRole = useRef<Role | null>(null);
+  // State, not a ref: `retry` reads it and is handed to the render helpers (React Compiler).
+  const [lastRole, setLastRole] = useState<Role | null>(null);
+  const [route, setRoute] = useState({ internet: false, waitWifi: false });
 
   const start = (role: Role, next: Step) => {
-    lastRole.current = role;
+    setLastRole(role);
     setLocalEnd(null);
     setAsText(false);
     setStep(next);
@@ -66,11 +85,12 @@ export function P2pSheet({ open, mode, onClose, onLinked }: Props) {
       setStep("choose");
       return;
     }
-    readLink()
-      .then((link) => {
+    Promise.all([readLink(), internetRoute()])
+      .then(([link, found]) => {
         if (link === null) return setStep("choose");
         setPeer(link.name);
-        start({ kind: "sync", link }, "sync");
+        setRoute(found);
+        start({ kind: "sync", link, internet: found.internet }, "sync");
       })
       .catch((e) => reportError("p2p.link", e));
   }, [open, mode]);
@@ -91,7 +111,7 @@ export function P2pSheet({ open, mode, onClose, onLinked }: Props) {
     localEnd ?? (view?.step === "ended" ? { cause: view.cause, clock: false } : null);
 
   const retry = () => {
-    const role = lastRole.current;
+    const role = lastRole;
     if (role !== null) start(role, step);
   };
 
@@ -107,6 +127,7 @@ export function P2pSheet({ open, mode, onClose, onLinked }: Props) {
   const body = bodyFor({
     mode,
     step,
+    route,
     view,
     ended,
     name,
@@ -136,6 +157,7 @@ export function P2pSheet({ open, mode, onClose, onLinked }: Props) {
 type Ctx = {
   mode: Props["mode"];
   step: Step;
+  route: { internet: boolean; waitWifi: boolean };
   view: SessionView | null;
   ended: LocalEnd | null;
   name: string;
@@ -165,6 +187,7 @@ function bodyFor(c: Ctx): ReactNode {
         clock={c.ended.clock}
         name={c.name}
         step={c.step}
+        route={c.route}
         onRetry={c.retry}
         onNewCode={c.show}
         onScanAgain={c.scanAgain}
@@ -276,6 +299,7 @@ function Syncing({
           {t("p2p.linked", { name: linked })}
         </Text>
       ) : null}
+      {linked !== null && P2P_INTERNET_ENABLED ? <InternetQuestion /> : null}
       {done ? (
         <>
           <Text testID="p2p-done" color="text" accessibilityLiveRegion="polite">
@@ -513,12 +537,45 @@ function TypeStep({ onCode }: { onCode: (code: PairingCode) => void }) {
   );
 }
 
+/**
+ * Asked once, right after linking (PLAN.md §1): the internet route is off until the hero says yes,
+ * and what a relay sees is said before, not after.
+ */
+function InternetQuestion() {
+  const { t } = useTranslation();
+  const [answered, setAnswered] = useState<boolean | null>(null);
+  const answer = (yes: boolean) => {
+    setAnswered(yes);
+    setInternet(yes).catch((e) => reportError("p2p.internet", e));
+  };
+  if (answered !== null) {
+    return (
+      <Text testID="p2p-internet-answered" color="textSecondary">
+        {t(answered ? "p2p.internetOn" : "p2p.internetOff")}
+      </Text>
+    );
+  }
+  return (
+    <YStack gap="2" testID="p2p-internet-question">
+      <Text color="text">{t("p2p.internetQuestion")}</Text>
+      <Text color="textSecondary">{t("p2p.internetBody")}</Text>
+      <AppButton testID="p2p-internet-yes" variant="outline" onPress={() => answer(true)}>
+        {t("p2p.internetYes")}
+      </AppButton>
+      <TextLink testID="p2p-internet-no" onPress={() => answer(false)}>
+        {t("p2p.internetNotNow")}
+      </TextLink>
+    </YStack>
+  );
+}
+
 /** How a session ended, in the words of SPEC.md section 4, with the one action that fits. */
 function Ended({
   cause,
   clock,
   name,
   step,
+  route,
   onRetry,
   onNewCode,
   onScanAgain,
@@ -527,6 +584,7 @@ function Ended({
   clock: boolean;
   name: string;
   step: Step;
+  route: Ctx["route"];
   onRetry: () => void;
   onNewCode: () => void;
   onScanAgain: () => void;
@@ -536,6 +594,15 @@ function Ended({
   const text = endedText(t, cause, shower, name);
   // Linked before, now unknown to the other side: the reinstall hint belongs to a sync, not a first link.
   const hint = cause === "notInSight" && step === "sync" ? t("p2p.notInSightHint", { name }) : null;
+  // C3, C6: the internet route was asked for and could not have met, or was not tried.
+  const routeHint =
+    cause === "notInSight" && step === "sync"
+      ? route.waitWifi
+        ? t("p2p.wifiOnlyHint")
+        : route.internet
+          ? t("p2p.bothSwitches")
+          : null
+      : null;
   const action = endedAction(t, cause, shower, { onRetry, onNewCode, onScanAgain });
   return (
     <YStack gap="3">
@@ -550,6 +617,11 @@ function Ended({
       {hint ? (
         <Text testID="p2p-hint" color="textSecondary">
           {hint}
+        </Text>
+      ) : null}
+      {routeHint ? (
+        <Text testID="p2p-route-hint" color="textSecondary">
+          {routeHint}
         </Text>
       ) : null}
       {action ? (

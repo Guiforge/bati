@@ -6,7 +6,11 @@ import { Text, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { FormSheet } from "@/components/common/FormSheet";
 import { useConfirmDialog } from "@/components/common/useConfirmDialog";
-import { idSuffix } from "@/src/p2p/link";
+import { Wifi } from "@/components/icons";
+import { SettingRow } from "@/components/settings/SettingRow";
+import { syncWifiOnly } from "@/src/deviceSync";
+import { P2P_INTERNET_ENABLED } from "@/src/p2p/flag";
+import { idSuffix, internetOn, setInternet } from "@/src/p2p/link";
 import { keptCopies } from "@/src/p2pSync";
 import { reportError } from "@/src/reportError";
 import { syncAgo } from "@/src/syncWords";
@@ -36,6 +40,8 @@ export function P2pStatus({ open, account, onClose, onSyncNow, onForget, onLinkO
   const running = useSyncStore((s) => s.running);
   const lastSyncAt = useSyncStore((s) => s.lastSyncAt);
   const [copies, setCopies] = useState<ReturnType<typeof keptCopies>>([]);
+  const [internet, setInternetState] = useState(false);
+  const [wifiOnly, setWifiOnly] = useState(false);
   const { ask, dialog } = useConfirmDialog();
   const who = { name: account.name, suffix: idSuffix(account.peerId) };
 
@@ -48,7 +54,14 @@ export function P2pStatus({ open, account, onClose, onSyncNow, onForget, onLinkO
   };
   // biome-ignore lint/correctness/useExhaustiveDependencies: read when the sheet opens.
   useEffect(() => {
-    if (open) reload();
+    if (!open) return;
+    reload();
+    Promise.all([internetOn(), syncWifiOnly()])
+      .then(([on, wifi]) => {
+        setInternetState(on);
+        setWifiOnly(wifi);
+      })
+      .catch((e) => reportError("p2p.internet", e));
   }, [open]);
 
   return (
@@ -62,6 +75,25 @@ export function P2pStatus({ open, account, onClose, onSyncNow, onForget, onLinkO
         <AppButton testID="p2p-sync-now" disabled={running} onPress={onSyncNow}>
           {t("sync.now")}
         </AppButton>
+
+        {P2P_INTERNET_ENABLED ? (
+          <>
+            <SettingRow
+              testID="p2p-internet"
+              icon={<Wifi size={22} color="text" />}
+              label={t("p2p.internetSwitch")}
+              value={internet ? t("common.on") : t("common.off")}
+              onPress={() => {
+                const next = !internet;
+                setInternetState(next);
+                setInternet(next).catch((e) => reportError("p2p.internet", e));
+              }}
+            />
+            <Text color="textSecondary" fontSize="2">
+              {t(wifiOnly ? "p2p.internetNoteWifi" : "p2p.internetNote")}
+            </Text>
+          </>
+        ) : null}
 
         <YStack gap="1">
           <Text color="text" fontWeight="700">

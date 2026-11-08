@@ -2527,7 +2527,21 @@
     "saveFirstTitle": "Guarda primero una copia",
     "saveFirst": "Guarda primero una copia de este dispositivo, por si quieres recuperarla.",
     "saveCta": "Guardar una copia",
-    "saved": "Copia guardada. Ya puedes tomar su versión."
+    "saved": "Copia guardada. Ya puedes tomar su versión.",
+    "unreachable": "Se encontró {{name}}, pero no se pudo conectar por internet. Prueba en la misma Wi-Fi o con el punto de acceso de tu teléfono.",
+    "bothSwitches": "Comprueba que «Encontrarse por internet» esté activado en los dos dispositivos.",
+    "wifiOnlyHint": "Estás con datos móviles y la sincronización espera a la Wi-Fi: no se probó la vía por internet.",
+    "internetQuestion": "¿Sincronizar también cuando no estéis en la misma Wi-Fi?",
+    "internetBody": "Bati usará entonces relés públicos de Nostr para encontrar tu otro dispositivo. No pueden leer nada, pero ven la dirección IP de este dispositivo durante una hora. Tu historial siempre va directamente de un dispositivo a otro.",
+    "internetYes": "Sí",
+    "internetNotNow": "Ahora no",
+    "internetOn": "La sincronización por internet está activada. Actívala también en el otro dispositivo.",
+    "internetOff": "La sincronización sigue en la misma Wi-Fi. Puedes cambiarlo en Ajustes.",
+    "internetSwitch": "Encontrarse por internet",
+    "internetNote": "Relés públicos de Nostr ayudan a los dos dispositivos a encontrarse y ven sus direcciones IP. Tu historial nunca pasa por ellos.",
+    "internetNoteWifi": "Relés públicos de Nostr ayudan a los dos dispositivos a encontrarse y ven sus direcciones IP. Con datos móviles espera a la Wi-Fi, como el resto de la sincronización.",
+    "apartTitle": "Sin sincronizar desde hace tiempo",
+    "apartBody": "Última sincronización con {{name}} hace {{days}} días. Abre Bati en los dos para ponerte al día."
   },
   "whats_new": {
     "title": "Novedades de la {{version}}",

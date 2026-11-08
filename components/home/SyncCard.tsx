@@ -11,10 +11,12 @@ import { syncNoticeKind } from "@/components/home/syncNoticeKind";
 import { X } from "@/components/icons";
 import {
   dismissMergeCard,
+  dismissP2pApart,
   forgetLostSync,
   type LastMerge,
   lastMerge,
   lostSync,
+  p2pApart,
   type SyncHealth,
   syncHealth,
 } from "@/src/deviceSync";
@@ -43,15 +45,17 @@ export function SyncCard() {
   const [lost, setLost] = useState<string | null>(null);
   const [health, setHealth] = useState<SyncHealth | null>(null);
   const [merge, setMerge] = useState<LastMerge | null>(null);
+  const [apart, setApart] = useState<{ name: string; days: number } | null>(null);
 
   // Read again after every run: a sync that just failed or just merged changes the answer.
   // biome-ignore lint/correctness/useExhaustiveDependencies: `failure` and `lastSyncAt` are the signal that a run ended, not values the effect reads.
   useEffect(() => {
-    Promise.all([lostSync(), syncHealth(), lastMerge()])
-      .then(([server, h, m]) => {
+    Promise.all([lostSync(), syncHealth(), lastMerge(), p2pApart()])
+      .then(([server, h, m, away]) => {
         setLost(server);
         setHealth(h);
         setMerge(m);
+        setApart(away);
         if (server !== null && !lostReported) {
           lostReported = true;
           reportError(
@@ -69,6 +73,7 @@ export function SyncCard() {
     failure,
     failingSince: health?.failingSince ?? null,
     merge,
+    apart,
     now: Date.now(),
   });
   if (kind === "lost") {
@@ -123,6 +128,20 @@ export function SyncCard() {
         onClose={() => {
           setMerge(null);
           dismissMergeCard().catch((error: unknown) => reportError("sync.mergeCard", error));
+        }}
+        closeLabel={t("common.close")}
+      />
+    );
+  }
+  if (kind === "apart" && apart) {
+    return (
+      <SyncNotice
+        testID="home-sync-apart"
+        title={t("p2p.apartTitle")}
+        body={t("p2p.apartBody", { name: apart.name, days: apart.days })}
+        onClose={() => {
+          setApart(null);
+          dismissP2pApart().catch((error: unknown) => reportError("p2p.apart", error));
         }}
         closeLabel={t("common.close")}
       />

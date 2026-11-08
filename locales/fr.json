@@ -2527,7 +2527,21 @@
     "saveFirstTitle": "Garde d'abord une copie",
     "saveFirst": "Enregistre d'abord une copie de cet appareil, au cas où tu voudrais la retrouver.",
     "saveCta": "Enregistrer une copie",
-    "saved": "Copie enregistrée. Tu peux maintenant reprendre sa version."
+    "saved": "Copie enregistrée. Tu peux maintenant reprendre sa version.",
+    "unreachable": "Bati a trouvé {{name}}, mais la connexion par internet n'a pas marché. Essaie sur le même Wi-Fi, ou avec le partage de connexion de ton téléphone.",
+    "bothSwitches": "Vérifie que « Se trouver par internet » est activé sur les deux appareils.",
+    "wifiOnlyHint": "En données mobiles, la synchro attend le Wi-Fi : la voie internet n'a pas été tentée.",
+    "internetQuestion": "Synchroniser aussi quand tes appareils ne sont pas sur le même Wi-Fi ?",
+    "internetBody": "Bati passe alors par des relais Nostr publics pour retrouver ton autre appareil. Ils ne peuvent rien lire, mais voient l'adresse IP de cet appareil pendant une heure. Ton historique, lui, va toujours d'appareil à appareil.",
+    "internetYes": "Oui",
+    "internetNotNow": "Pas maintenant",
+    "internetOn": "La synchro par internet est activée. Active-la aussi sur l'autre appareil.",
+    "internetOff": "La synchro reste sur le même Wi-Fi. Tu peux changer ça dans les Réglages.",
+    "internetSwitch": "Se trouver par internet",
+    "internetNote": "Des relais Nostr publics aident les deux appareils à se trouver, et voient leurs adresses IP. Ton historique ne passe jamais par eux.",
+    "internetNoteWifi": "Des relais Nostr publics aident les deux appareils à se trouver, et voient leurs adresses IP. En données mobiles, elle attend le Wi-Fi, comme le reste de la synchro.",
+    "apartTitle": "Pas de synchro depuis un moment",
+    "apartBody": "Dernière synchro avec {{name}} il y a {{days}} jours. Ouvre Bati sur les deux pour rattraper."
   },
   "whats_new": {
     "title": "Nouveautés de la {{version}}",

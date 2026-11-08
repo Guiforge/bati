@@ -327,6 +327,7 @@ import {
   connectWebDav,
   disconnectSync,
   dismissMergeCard,
+  dismissP2pApart,
   forgetLostSync,
   forgetPeer,
   joinPeer,
@@ -334,6 +335,7 @@ import {
   lastMerge,
   lostSync,
   mergeWithPeer,
+  p2pApart,
   prepareSyncAtLaunch,
   recordSyncOutcome,
   rememberAnswer,
@@ -2313,5 +2315,42 @@ describe("error branches", () => {
         expect.any(Error),
       );
     });
+  });
+});
+
+describe("two linked devices apart for two weeks (E1)", () => {
+  const DAY = 86_400_000;
+  const linked = () =>
+    mockSecure.set(
+      "bati.sync.account",
+      JSON.stringify({ kind: "p2p", peerId: "ab", name: "Pixel 7" }),
+    );
+
+  test("said after 14 days without a sync, closed until the next one, and never for a server", async () => {
+    mockSecure.clear();
+    linked();
+    const synced = Date.now() - 15 * DAY;
+    mockSecure.set(
+      "bati.sync.health",
+      JSON.stringify({ lastSuccessAt: synced, failure: null, failingSince: null }),
+    );
+    expect(await p2pApart()).toEqual({ name: "Pixel 7", days: 15 });
+    expect(await p2pApart(synced + 13 * DAY)).toBeNull();
+    await dismissP2pApart();
+    expect(await p2pApart()).toBeNull();
+    // A sync, then two more weeks apart: the card comes back for the new gap.
+    mockSecure.set(
+      "bati.sync.health",
+      JSON.stringify({ lastSuccessAt: synced + DAY, failure: null, failingSince: null }),
+    );
+    expect(await p2pApart(synced + 16 * DAY)).toEqual({ name: "Pixel 7", days: 15 });
+    mockSecure.set("bati.sync.account", JSON.stringify({ kind: "folder", uri: "content://x" }));
+    expect(await p2pApart()).toBeNull();
+  });
+
+  test("a link never synced has no 'last synced' to speak of", async () => {
+    mockSecure.clear();
+    linked();
+    expect(await p2pApart()).toBeNull();
   });
 });

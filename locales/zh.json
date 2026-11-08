@@ -2296,7 +2296,21 @@
     "saveFirstTitle": "先保存一份副本",
     "saveFirst": "请先保存这台设备的一份副本，以防你想找回它。",
     "saveCta": "保存副本",
-    "saved": "副本已保存。现在可以使用对方的版本了。"
+    "saved": "副本已保存。现在可以使用对方的版本了。",
+    "unreachable": "已找到{{name}}，但无法通过互联网连接。请在同一 Wi-Fi 下重试，或使用手机热点。",
+    "bothSwitches": "请确认两台设备都已开启“通过互联网互相找到”。",
+    "wifiOnlyHint": "你正在使用移动数据，而同步会等待 Wi-Fi：没有尝试互联网途径。",
+    "internetQuestion": "不在同一 Wi-Fi 下时也同步吗？",
+    "internetBody": "Bati 会通过公共 Nostr 中继找到你的另一台设备。中继无法读取任何内容，但在一小时内能看到这台设备的 IP 地址。你的历史记录始终直接在设备之间传输。",
+    "internetYes": "是",
+    "internetNotNow": "暂不",
+    "internetOn": "已开启通过互联网同步。也请在另一台设备上开启。",
+    "internetOff": "同步仍只在同一 Wi-Fi 下进行。你可以在设置中更改。",
+    "internetSwitch": "通过互联网互相找到",
+    "internetNote": "公共 Nostr 中继帮助两台设备互相找到，并能看到它们的 IP 地址。你的历史记录从不经过中继。",
+    "internetNoteWifi": "公共 Nostr 中继帮助两台设备互相找到，并能看到它们的 IP 地址。使用移动数据时，它会和其他同步一样等待 Wi-Fi。",
+    "apartTitle": "有一段时间没同步了",
+    "apartBody": "上次与{{name}}同步是在 {{days}} 天前。在两台设备上都打开 Bati 即可补上。"
   },
   "whats_new": {
     "title": "{{version}} 有什么新",

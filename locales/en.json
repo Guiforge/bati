@@ -2424,7 +2424,21 @@
     "saveFirstTitle": "Keep a copy first",
     "saveFirst": "Save a copy of this device first, in case you want it back.",
     "saveCta": "Save a copy",
-    "saved": "Copy saved. You can take its version now."
+    "saved": "Copy saved. You can take its version now.",
+    "unreachable": "Found {{name}}, but couldn't connect over the internet. Try on the same Wi-Fi, or your phone's hotspot.",
+    "bothSwitches": "Check that \"Find each other through the internet\" is on, on both devices.",
+    "wifiOnlyHint": "You're on mobile data, and sync waits for Wi-Fi: the internet route was not tried.",
+    "internetQuestion": "Also sync when you're not on the same Wi-Fi?",
+    "internetBody": "Bati then uses public Nostr relays to find your other device. They can't read anything, but they see this device's IP address for an hour. Your history itself always goes device to device.",
+    "internetYes": "Yes",
+    "internetNotNow": "Not now",
+    "internetOn": "Sync over the internet is on. Turn it on on the other device too.",
+    "internetOff": "Sync stays on the same Wi-Fi. You can change it in Settings.",
+    "internetSwitch": "Find each other through the internet",
+    "internetNote": "Public Nostr relays help both devices find each other, and see their IP addresses. Your history never goes through them.",
+    "internetNoteWifi": "Public Nostr relays help both devices find each other, and see their IP addresses. On mobile data it waits for Wi-Fi, like the rest of sync.",
+    "apartTitle": "Not synced for a while",
+    "apartBody": "Last synced with {{name}} {{days}} days ago. Open Bati on both to catch up."
   },
   "whats_new": {
     "title": "What's new in {{version}}",

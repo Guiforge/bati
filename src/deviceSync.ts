@@ -235,6 +235,29 @@ export function setSyncWifiOnly(on: boolean): Promise<void> {
     : deletePreference(SYNC_WIFI_ONLY_PREFERENCE);
 }
 
+/** E1: two linked devices this long apart, Home says so once. P2P only syncs with both open. */
+const APART_MS = 14 * 24 * 60 * 60 * 1000;
+const STORE_APART_SEEN = "bati.p2p.apartSeen";
+
+/**
+ * The other device, when the last sync with it is 14 days old and the hero has not closed the card
+ * for that sync yet. `null` for any other account, a link never synced, or a card already closed.
+ */
+export async function p2pApart(now = Date.now()): Promise<{ name: string; days: number } | null> {
+  const account = await syncAccount();
+  if (account?.kind !== "p2p") return null;
+  const { lastSuccessAt } = await syncHealth();
+  if (lastSuccessAt === null || now - lastSuccessAt < APART_MS) return null;
+  if ((await SecureStore.getItemAsync(STORE_APART_SEEN)) === String(lastSuccessAt)) return null;
+  return { name: account.name, days: Math.floor((now - lastSuccessAt) / 86_400_000) };
+}
+
+/** Closed until the next successful sync, which moves `lastSuccessAt` and so reopens nothing by itself. */
+export async function dismissP2pApart(): Promise<void> {
+  const { lastSuccessAt } = await syncHealth();
+  await SecureStore.setItemAsync(STORE_APART_SEEN, String(lastSuccessAt));
+}
+
 /** How the last runs went, kept across launches so "failing for days" can be said at all. */
 const STORE_HEALTH = "bati.sync.health";
 export type SyncHealth = {

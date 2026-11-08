@@ -35,6 +35,7 @@ jest.mock("expo-router", () => ({
 jest.mock("@/src/deviceSync", () => ({
   lostSync: async () => null,
   syncHealth: async () => ({ lastSuccessAt: null, failure: null, failingSince: null }),
+  p2pApart: async () => null,
   lastMerge: async () => null,
   syncAccount: async () => null,
 }));

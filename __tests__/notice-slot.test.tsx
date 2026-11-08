@@ -43,6 +43,7 @@ const mockReads = {
 jest.mock("@/src/deviceSync", () => ({
   lostSync: async () => mockReads.lost,
   syncHealth: async () => ({ lastSuccessAt: null, failure: null, failingSince: null }),
+  p2pApart: async () => null,
   lastMerge: async () => null,
 }));
 jest.mock("@/src/whatsNew", () => ({

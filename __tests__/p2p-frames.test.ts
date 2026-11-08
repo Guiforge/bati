@@ -45,6 +45,13 @@ const expected: Record<string, Frame> = Object.fromEntries(
         return [v.type, { type: "ack", sha256: fromHex(v.sha256 ?? "") }];
       case "ping":
         return [v.type, { type: "ping" }];
+      case "pair":
+        return [
+          v.type,
+          { type: "pair", token: fromHex(v.token ?? ""), random: fromHex(v.random ?? "") },
+        ];
+      case "linked":
+        return [v.type, { type: "linked", random: fromHex(v.random ?? "") }];
       default:
         return [v.type, { type: "bye", reason: v.reason ?? 0 }];
     }

@@ -54,6 +54,15 @@ def code(expires_at: int, token: bytes, install_id: bytes, device_id: bytes, nam
     )
 
 
+B64URL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+
+
+def grouped(text: str) -> str:
+    # Each group of 4 is followed by a check character, so a typo names its group (SPEC.md section 2).
+    groups = [text[i : i + 4] for i in range(0, len(text), 4)]
+    return " ".join(g + B64URL[hashlib.sha256(bytes([n]) + g.encode()).digest()[0] % 64] for n, g in enumerate(groups))
+
+
 def frame(kind: int, body: bytes) -> bytes:
     # len counts the type byte and the body.
     return struct.pack(">I", 1 + len(body)) + bytes([kind]) + body
@@ -61,6 +70,14 @@ def frame(kind: int, body: bytes) -> bytes:
 
 def pattern(size: int) -> bytes:
     return bytes((i * 31 + 7) % 251 for i in range(size))
+
+
+def typo(shown: str, group: int) -> str:
+    # One character of the group changed: its check character no longer matches.
+    parts = shown.split(" ")
+    g = parts[group]
+    parts[group] = ("B" if g[0] == "A" else "A") + g[1:]
+    return " ".join(parts)
 
 
 def main() -> None:
@@ -105,9 +122,11 @@ def main() -> None:
             },
         ],
         "grouped": {
-            "case": "the text fallback in groups of 4; the field strips whitespace only, since '-' is base64url",
-            "typed": " ".join(b64url(good)[i : i + 4] for i in range(0, len(b64url(good)), 4)).replace(" ", "\n", 2),
+            "case": "the text fallback: groups of 4 plus a check character; the field strips whitespace only, since '-' is base64url",
+            "shown": grouped(b64url(good)),
+            "typed": grouped(b64url(good)).replace(" ", "\n", 2),
             "text": b64url(good),
+            "typo": {"group": 3, "typed": typo(grouped(b64url(good)), 3)},
         },
         "refused": [
             {"case": "expired", "reason": "expired", "now": expires_at + 1, "text": b64url(good)},
@@ -161,11 +180,14 @@ def main() -> None:
             {"type": "ack", "hex": frame(5, whole).hex(), "sha256": whole.hex()},
             {"type": "ping", "hex": frame(6, b"").hex()},
             {"type": "bye", "hex": frame(7, bytes([3])).hex(), "reason": 3},
+            {"type": "pair", "hex": frame(8, token + r_b).hex(), "token": token.hex(), "random": r_b.hex()},
+            {"type": "linked", "hex": frame(9, r_a).hex(), "random": r_a.hex()},
         ],
         "refused": [
             {"case": "frame over 256 KiB", "hex": struct.pack(">I", 256 * 1024 + 1).hex() + "04"},
             {"case": "unknown type", "hex": frame(99, b"").hex()},
             {"case": "zero length", "hex": struct.pack(">I", 0).hex()},
+            {"case": "pair with a short body", "hex": frame(8, token).hex()},
         ],
     }
 

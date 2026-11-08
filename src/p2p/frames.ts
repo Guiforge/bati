@@ -25,14 +25,39 @@ export type Frame =
   | { type: "block"; index: number; bytes: Uint8Array }
   | { type: "ack"; sha256: Uint8Array }
   | { type: "ping" }
-  | { type: "bye"; reason: number };
+  | { type: "bye"; reason: number }
+  /** B to A on a first connection: the code's token, and B's half of the link secret (L4). */
+  | { type: "pair"; token: Uint8Array; random: Uint8Array }
+  /** A to B once the hero confirmed: A's half (L4). */
+  | { type: "linked"; random: Uint8Array };
+
+/** Why a side closes, in a `bye` (SPEC.md section 2). */
+export const BYE = {
+  cancel: 1,
+  codeExpired: 2,
+  notThisOne: 3,
+  versionMismatch: 4,
+  badBlocks: 5,
+  noSpace: 6,
+  busy: 7,
+} as const;
 
 export type ReadFrame =
   | { kind: "frame"; frame: Frame; used: number }
   | { kind: "more" }
   | { kind: "bad" };
 
-const TYPES = ["hello", "announce", "want", "block", "ack", "ping", "bye"] as const;
+const TYPES = [
+  "hello",
+  "announce",
+  "want",
+  "block",
+  "ack",
+  "ping",
+  "bye",
+  "pair",
+  "linked",
+] as const;
 
 export function blockHashes(file: Uint8Array): Uint8Array[] {
   const hashes: Uint8Array[] = [];
@@ -97,6 +122,10 @@ function bodyOf(frame: Frame): Uint8Array {
       return new Uint8Array(0);
     case "bye":
       return Uint8Array.of(frame.reason);
+    case "pair":
+      return Uint8Array.from([...frame.token, ...frame.random]);
+    case "linked":
+      return frame.random;
   }
 }
 
@@ -127,12 +156,27 @@ function parseBody(type: (typeof TYPES)[number], body: Uint8Array): Frame | null
     case "block":
       if (body.length < 4 || body.length > 4 + BLOCK_BYTES) return null;
       return { type, index: view.getUint32(0), bytes: body.slice(4) };
+    default:
+      return parseFixed(type, body);
+  }
+}
+
+/** The frames whose body has one exact length. */
+const FIXED = { ack: 32, ping: 0, bye: 1, pair: 64, linked: 32 } as const;
+
+function parseFixed(type: keyof typeof FIXED, body: Uint8Array): Frame | null {
+  if (body.length !== FIXED[type]) return null;
+  switch (type) {
     case "ack":
-      return body.length === 32 ? { type, sha256: body.slice() } : null;
+      return { type, sha256: body.slice() };
     case "ping":
-      return body.length === 0 ? { type } : null;
+      return { type };
     case "bye":
-      return body.length === 1 ? { type, reason: body[0] ?? 0 } : null;
+      return { type, reason: body[0] ?? 0 };
+    case "pair":
+      return { type, token: body.slice(0, 32), random: body.slice(32) };
+    case "linked":
+      return { type, random: body.slice() };
   }
 }
 

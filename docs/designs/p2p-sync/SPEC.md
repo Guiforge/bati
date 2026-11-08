@@ -196,9 +196,9 @@ Each rule has a number that a test reuses. The file is `__tests__/p2p-*.test.ts`
 
   `write` is never called with a `-kept-` name (S5).
 - **S7.** `syncNow` on a P2P account outside an open session returns `notNow` and does nothing. Launch sync
-  (`prepareSyncAtLaunch`) tries P2P quietly for 30 s, listener and NSD open, nothing shown; with no peer it returns
-  `notNow` in silence.
-- **S7b.** Nothing syncs on a device while a session, an outing or a timer runs on it: no launch try, and "Sync now"
+  (`prepareSyncAtLaunch`) skips P2P (D1): two launches within the same 30 s are too rare to keep a listener
+  open for.
+- **S7b.** Nothing syncs on a device while a session, an outing or a timer runs on it: "Sync now"
   says "Finish your session first." The existing prompts already wait (`components/SyncPrompt.tsx:275`).
 - **S8.** The "Protect your hero" card counts a P2P sync in the last 7 days exactly like a device sync
   (data-safety.md). A P2P sync counts as successful only when the peer acknowledged our file (S4). `peerGone`
@@ -256,7 +256,9 @@ every integer here.
 | 4 | block | index u32, bytes |
 | 5 | ack | sha 32 |
 | 6 | ping | none |
-| 7 | bye | reason u8 |
+| 7 | bye | reason u8: 1 cancel, 2 codeExpired, 3 notThisOne, 4 versionMismatch, 5 badBlocks, 6 noSpace, 7 busy |
+| 8 | pair | token 32 ‖ random 32 (B to A, first frame after hello on a first connection, L4) |
+| 9 | linked | random 32 (A to B, once the hero confirmed, L4) |
 
 Frozen vectors in `__tests__/fixtures/p2p/`:
 - `code-v1.json`: codes, their text form, and refused codes (expired, unknown version, unknown route, oversize name);

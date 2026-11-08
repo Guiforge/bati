@@ -1,4 +1,4 @@
-import { encodeCode, groupCode, readCode } from "../src/p2p/code";
+import { encodeCode, groupCode, readCode, readTypedCode } from "../src/p2p/code";
 import vectors from "./fixtures/p2p/code-v1.json";
 
 const fromHex = (hex: string) =>
@@ -34,12 +34,40 @@ describe("pairing code v1 (L3, L6), against the frozen vectors", () => {
     });
   });
 
-  test("the text fallback round-trips through spaces and line breaks, never through dashes", () => {
-    expect(groupCode(vectors.grouped.text).replace(/\s/g, "")).toBe(vectors.grouped.text);
-    expect(readCode(vectors.grouped.typed, vectors.now).ok).toBe(true);
-    // '-' is a base64url character: stripping it would change the code, so it is kept and the code fails.
-    const dashed = vectors.grouped.text.match(/.{1,4}/g)?.join("-") ?? "";
-    expect(readCode(dashed, vectors.now).ok).toBe(false);
+  test("the text fallback: groups of 4, each with its check character", () => {
+    expect(groupCode(vectors.grouped.text)).toBe(vectors.grouped.shown);
+    expect(readTypedCode(vectors.grouped.shown, vectors.now)).toEqual(
+      readCode(vectors.grouped.text, vectors.now),
+    );
+    // Spaces and line breaks anywhere, or none at all, read the same.
+    expect(readTypedCode(vectors.grouped.typed, vectors.now).ok).toBe(true);
+    expect(readTypedCode(vectors.grouped.shown.replace(/\s/g, ""), vectors.now).ok).toBe(true);
+  });
+
+  test("a typo names its group, counted from 1 for the hero (P5)", () => {
+    expect(readTypedCode(vectors.grouped.typo.typed, vectors.now)).toEqual({
+      ok: false,
+      reason: "typo",
+      group: vectors.grouped.typo.group + 1,
+    });
+  });
+
+  test("one typo in any group is caught in that group (P5)", () => {
+    const groups = vectors.grouped.shown.split(" ");
+    groups.forEach((g, n) => {
+      const swapped = (g[0] === "A" ? "B" : "A") + g.slice(1);
+      const typed = [...groups.slice(0, n), swapped, ...groups.slice(n + 1)].join(" ");
+      expect(readTypedCode(typed, vectors.now)).toEqual({
+        ok: false,
+        reason: "typo",
+        group: n + 1,
+      });
+    });
+  });
+
+  test("a dash is never stripped: '-' is a base64url character", () => {
+    const dashed = vectors.grouped.shown.replace(/ /g, "-");
+    expect(readTypedCode(dashed, vectors.now).ok).toBe(false);
   });
 
   test("a code from more than a minute in the future is refused, a clock a little behind is not", () => {

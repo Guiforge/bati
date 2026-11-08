@@ -31,9 +31,14 @@
     }
   ],
   "grouped": {
-    "case": "the text fallback in groups of 4; the field strips whitespace only, since '-' is base64url",
-    "typed": "AWrv\nEsAA\nAQID BAUG BwgJ CgsM DQ4P EBES ExQV FhcY GRob HB0e HwEj RWeJ q83v ASNF Z4mr ze9J CTvr Yzy8 hrmj 7V8l N_co IG7t Cx8U dXbN JV-w Swaq ZhJQ aXhl bCBk ZSBH dWls bGF1 bWUB ARih FQTA qAEX Bv6A AAAA AAAA HC0- T1pr fI0",
-    "text": "AWrvEsAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHwEjRWeJq83vASNFZ4mrze9JCTvrYzy8hrmj7V8lN_coIG7tCx8UdXbNJV-wSwaqZhJQaXhlbCBkZSBHdWlsbGF1bWUBARihFQTAqAEXBv6AAAAAAAAAHC0-T1prfI0"
+    "case": "the text fallback: groups of 4 plus a check character; the field strips whitespace only, since '-' is base64url",
+    "shown": "AWrvK EsAAm AQID6 BAUGX BwgJm CgsMA DQ4PO EBESE ExQVu FhcYN GRobr HB0ef HwEjx RWeJY q83vj ASNFG Z4mrH ze9JJ CTvrg Yzy8Z hrmj9 7V8lQ N_coC IG7tC Cx8Uf dXbNe JV-w8 SwaqS ZhJQr aXhlX bCBkX ZSBHP dWlsm bGF1P bWUBD ARihd FQTA2 qAEXc Bv6AZ AAAAY AAAAy HC0-W T1pr- fI0h",
+    "typed": "AWrvK\nEsAAm\nAQID6 BAUGX BwgJm CgsMA DQ4PO EBESE ExQVu FhcYN GRobr HB0ef HwEjx RWeJY q83vj ASNFG Z4mrH ze9JJ CTvrg Yzy8Z hrmj9 7V8lQ N_coC IG7tC Cx8Uf dXbNe JV-w8 SwaqS ZhJQr aXhlX bCBkX ZSBHP dWlsm bGF1P bWUBD ARihd FQTA2 qAEXc Bv6AZ AAAAY AAAAy HC0-W T1pr- fI0h",
+    "text": "AWrvEsAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHwEjRWeJq83vASNFZ4mrze9JCTvrYzy8hrmj7V8lN_coIG7tCx8UdXbNJV-wSwaqZhJQaXhlbCBkZSBHdWlsbGF1bWUBARihFQTAqAEXBv6AAAAAAAAAHC0-T1prfI0",
+    "typo": {
+      "group": 3,
+      "typed": "AWrvK EsAAm AQID6 AAUGX BwgJm CgsMA DQ4PO EBESE ExQVu FhcYN GRobr HB0ef HwEjx RWeJY q83vj ASNFG Z4mrH ze9JJ CTvrg Yzy8Z hrmj9 7V8lQ N_coC IG7tC Cx8Uf dXbNe JV-w8 SwaqS ZhJQr aXhlX bCBkX ZSBHP dWlsm bGF1P bWUBD ARihd FQTA2 qAEXc Bv6AZ AAAAY AAAAy HC0-W T1pr- fI0h"
+    }
   },
   "refused": [
     {

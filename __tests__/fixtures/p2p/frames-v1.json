@@ -58,6 +58,17 @@
       "type": "bye",
       "hex": "000000020703",
       "reason": 3
+    },
+    {
+      "type": "pair",
+      "hex": "0000004108000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f6d50c9d1a88bbe7f6420dc07cbc7bdd02e9bfb7dfec29c0b5a8226b362bb5e87",
+      "token": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "random": "6d50c9d1a88bbe7f6420dc07cbc7bdd02e9bfb7dfec29c0b5a8226b362bb5e87"
+    },
+    {
+      "type": "linked",
+      "hex": "0000002109317f28e28bd41460fa9fec3f11993640037e30ce2360b08294b7773709e4f4c1",
+      "random": "317f28e28bd41460fa9fec3f11993640037e30ce2360b08294b7773709e4f4c1"
     }
   ],
   "refused": [
@@ -72,6 +83,10 @@
     {
       "case": "zero length",
       "hex": "00000000"
+    },
+    {
+      "case": "pair with a short body",
+      "hex": "0000002108000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"
     }
   ]
 }

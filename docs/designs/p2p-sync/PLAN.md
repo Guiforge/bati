@@ -106,8 +106,8 @@ All copy goes in `locales/*.json`, six languages, following `docs/product/writin
 
 | # | Situation | What the hero sees | Test |
 | --- | --- | --- | --- |
-| B1 | Both open, launch sync | Nothing, then the result line (rule U4) | unit S3, node X1, D1 |
-| B2 | Only one open, launch sync | Nothing at all (`notNow`, rule S7) | unit S4 |
+| B1 | Both open the sync sheet | It starts by itself, then the result line (rule U4) | unit S3, node X1, D1 |
+| B2 | Launch, or "Sync now" outside the sheet | Launch never tries P2P, and a sync outside the sheet returns `notNow` silently (rule S7) | unit S4 |
 | B3 | "Sync now", the other is closed | "Open Bati on {name} too. Sync starts by itself." After 30 s, `notInSight` with "Try again" | UI U7, node X5 |
 | B4 | Both tap "Sync now" together | One session, converges in one tap each (rule S2b) | node X11 |
 | B5 | Both edited since last time | The existing merge, through the prompt | unit S2, node X7 |
@@ -115,7 +115,7 @@ All copy goes in `locales/*.json`, six languages, following `docs/product/writin
 | B7 | Wi-Fi drops, or the phone moves to 4G mid-transfer | `interrupted`, resumes later | node X13 (toxiproxy reset at 40 %) |
 | B8 | Cancel on either side | The sheet closes, nothing written, `.part` kept | UI U8, node X14 |
 | B9 | A corrupted block | Asked again. Three bad ones give `interrupted`. | node X15 |
-| B10 | A session, an outing (GPS, screen off) or a timer is running on one device | Nothing syncs on that device until it ends: no launch sync, and "Sync now" says "Finish your session first." The prompts already wait (`SyncPrompt.tsx:275`) | unit S5, S5b (outing running) |
+| B10 | A session, an outing (GPS, screen off) or a timer is running on one device | Nothing syncs on that device until it ends: "Sync now" says "Finish your session first." The prompts already wait (`SyncPrompt.tsx:275`) | unit S5, S5b (outing running) |
 | B11 | Receiver storage full | `noSpace`, new: "Not enough space on this device to receive your history. Free some space and try again." | unit S6, node X16 |
 | B12 | History over `MAX_SEALED_BYTES` (256 MiB) | The existing `unreadable` text on the receiving side. Never sent: the sender checks the size first. | unit S7 |
 | B13 | Big but allowed (photos, 100 MB) | "{x} of {y} MB" progress, no timeout while blocks flow | node X17 |
@@ -144,7 +144,7 @@ All copy goes in `locales/*.json`, six languages, following `docs/product/writin
 | C6 | `syncWifiOnly` on and on 4G | `wifiOnly`, new: "You're on mobile data, and sync waits for Wi-Fi." with "Change in Settings" | unit S10, UI U9 |
 | C7 | Meeting note replayed, old, forged, oversize, wrong hour | Ignored, and it never connects anywhere | unit N1 to N6, node X27 |
 | C8 | Hour boundary during the meeting | Found (hour ±1) | unit N1 |
-| C9 | A stranger at the published address (port scan) | The listener only runs while the sheet is open or during the launch sync, and drops anyone without the pinned certificate in under 5 s and 1 KB | node X28, kt K2 |
+| C9 | A stranger at the published address (port scan) | The listener only runs while the sheet is open, and drops anyone without the pinned certificate in under 5 s and 1 KB | node X28, kt K2 |
 | C10 | Switch turned off mid-session | The current transfer ends, and no new note is published | unit N7 |
 | C11 | Privacy | The note holds no installId, name, device ID or readable address. Key and tag change every hour, notes have a constant size. The relay still sees the IP of each device that talks to it, and the internet question says so | node X29 (capture) |
 

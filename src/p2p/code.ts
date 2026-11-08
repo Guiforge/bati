@@ -1,3 +1,4 @@
+import { sha256 } from "@noble/hashes/sha2.js";
 import { fromBase64Url, toBase64Url } from "@/src/multiplayer/envelope";
 
 /**
@@ -29,7 +30,9 @@ export type PairingCode = {
 
 export type ReadCode =
   | { ok: true; code: PairingCode }
-  | { ok: false; reason: "expired" | "version" | "malformed" };
+  | { ok: false; reason: "expired" | "version" | "malformed" }
+  /** `group` counts from 1, as the hero reads them. */
+  | { ok: false; reason: "typo"; group: number };
 
 export function encodeCode(code: PairingCode): string {
   const name = new TextEncoder().encode(code.name);
@@ -56,8 +59,34 @@ export function encodeCode(code: PairingCode): string {
   return toBase64Url(Uint8Array.from(bytes));
 }
 
-/** The text fallback: groups of 4 with spaces. Never dashes, which base64url uses. */
-export const groupCode = (text: string) => text.match(/.{1,4}/g)?.join(" ") ?? "";
+const B64URL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+const GROUP = 4;
+
+/** The check character of group `n`: a typo in a group changes it (SPEC.md section 2). */
+const checkOf = (n: number, group: string) =>
+  B64URL[(sha256(Uint8Array.from([n, ...new TextEncoder().encode(group)]))[0] ?? 0) % 64] ?? "";
+
+/** The text fallback: groups of 4, each followed by its check character, spaces between. Never dashes. */
+export const groupCode = (text: string) =>
+  (text.match(/.{1,4}/g) ?? []).map((g, n) => g + checkOf(n, g)).join(" ");
+
+/**
+ * A code typed or pasted from the text fallback. Whitespace anywhere is ignored, so the groups are
+ * found by length, and each one is checked before the code is read.
+ */
+export function readTypedCode(typed: string, nowSeconds: number): ReadCode {
+  const chars = typed.replace(/\s/g, "");
+  let text = "";
+  for (let n = 0, at = 0; at < chars.length; n++, at += GROUP + 1) {
+    const chunk = chars.slice(at, at + GROUP + 1);
+    const group = chunk.slice(0, -1);
+    if (chunk.length < 2 || checkOf(n, group) !== chunk.slice(-1)) {
+      return { ok: false, reason: "typo", group: n + 1 };
+    }
+    text += group;
+  }
+  return readCode(text, nowSeconds);
+}
 
 export function readCode(text: string, nowSeconds: number): ReadCode {
   const bytes = fromBase64Url(text.replace(/\s/g, ""));

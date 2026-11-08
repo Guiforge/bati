@@ -2547,7 +2547,9 @@
     "copySaved": "Enregistrée sous {{name}}.",
     "deleteCopyTitle": "Supprimer cette copie ?",
     "deleteCopyBody": "Elle garde l'historique de cet appareil d'avant qu'il prenne celui de l'autre. Une fois supprimée, elle est perdue.",
-    "restoreHint": "Pour en remettre une : enregistre-la, puis Réglages › Restaurer une sauvegarde."
+    "restoreHint": "Pour en remettre une : enregistre-la, puis Réglages › Restaurer une sauvegarde.",
+    "sasOnA": "Vérifie que {{name}} affiche le même nombre, puis lie :",
+    "sasOnB": "Vérifie que {{name}} affiche ce nombre :"
   },
   "whats_new": {
     "title": "Nouveautés de la {{version}}",

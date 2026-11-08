@@ -133,6 +133,10 @@ describe("relays (N7, C4, C5)", () => {
     relays.deliver(JSON.stringify(["EVENT", "bati0", { ...event, sig: "00".repeat(64) }]));
     relays.deliver(JSON.stringify(["EVENT", "bati0", { ...event, content: "x".repeat(70_000) }]));
     relays.deliver("not json");
+    // Wrong shapes and another kind are dropped before any signature is checked (audit 08/11).
+    relays.deliver(JSON.stringify(["EVENT", "bati0", { ...event, tags: "x" }]));
+    relays.deliver(JSON.stringify(["EVENT", "bati0", { ...event, created_at: "now" }]));
+    relays.deliver(JSON.stringify(["EVENT", "bati0", { ...event, kind: 1 }]));
     expect(got).toEqual([]);
     reader.close();
   });

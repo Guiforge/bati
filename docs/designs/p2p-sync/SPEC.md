@@ -70,8 +70,10 @@ Each rule has a number that a test reuses. The file is `__tests__/p2p-*.test.ts`
 - **L4.** First connection:
   1. B pins A's device ID from the code before sending anything.
   2. A refuses any token that is expired, already used or unknown.
-  3. A shows "Link {name of B}?" with one button. Nothing is pinned until the hero confirms on A. Someone who
-     photographed the code and connected first shows up there under a name the hero does not know.
+  3. A shows "Link {name of B}?" with one button. Nothing is pinned until the hero confirms on A.
+     Both screens also show a six-digit check number, from both device IDs and the token, and the hero checks
+     they match before linking (security audit 08/11). A name and an ID suffix are chosen by whoever connects;
+     a stranger who photographed the code and connected first makes A show digits B does not show.
   4. On confirmation A pins B's device ID.
   5. Each side sends 32 fresh random bytes inside the channel. Both store the link secret
      `HKDF-SHA256(rA ‖ rB, salt = idA ‖ idB, info = "bati/p2p/link/v1")`.
@@ -111,6 +113,9 @@ Each rule has a number that a test reuses. The file is `__tests__/p2p-*.test.ts`
   2. then NSD results, in arrival order.
 
   The first address that passes the TLS pin wins. An address that fails is not retried in the same session.
+  Addresses from a code or from NSD are dialled only in this device's own ranges (private IPv4, link-local, ULA);
+  only the meeting note, sealed under the link, may name a global address. The link's port is an HMAC of the
+  link secret.
 
   Both devices listen on the link's port (derived from the link secret, so a kept address stays good) and both
   dial: the lower device ID at once, through kept addresses, NSD and the meeting note; the higher one after 3 s,
@@ -122,7 +127,8 @@ Each rule has a number that a test reuses. The file is `__tests__/p2p-*.test.ts`
 
 **Connection**
 
-- **C1.** The listener:
+- **C1.** Before the token is checked (A showing a code), a socket may send a hello then a pair, within 5 s
+  and 1 KB; anything else closes that socket only, and the code stays valid (security audit 08/11). The listener:
   - is open only while the sheet is open;
   - takes one connection at a time;
   - has a 5 s handshake deadline;
@@ -448,3 +454,14 @@ All copy goes in `locales/*.json`, all six languages, under the rules of `docs/p
 - A Nostr profile, an npub, a signer (NIP-46 or NIP-55): dropped on 07/11, against P1.
 - More than two devices, background sync, a foreground service.
 - P2P and a server account at the same time.
+
+## 8. Residual risks, accepted (security audit 08/11)
+
+- **Android 7 to 9 negotiate TLS 1.2, where certificates cross in clear.** A device on the same Wi-Fi then sees the
+  two device IDs. They are random keys, tied to no account, name or installId. TLS 1.3 (Android 10 and up) hides
+  them. Any client that connects to the listener also receives the listener's certificate before its own is
+  checked: same exposure, same answer.
+- **While the sheet is open, the listener is on a stable port per link.** It can be found by a scan on that Wi-Fi,
+  or on the internet if the internet route published a global address. It only answers the pinned device.
+- **A peer that is linked can send an older file under its own name.** The counters of `deviceSync` refuse it
+  (`replayed`), as for a server that hands back an old version.

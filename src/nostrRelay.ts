@@ -26,6 +26,31 @@ export type Filter = { kinds?: number[]; "#x"?: string[]; since?: number };
 export const RELAYS = ["wss://relay.damus.io", "wss://nos.lol", "wss://relay.primal.net"];
 /** NIP-11 limits seen on 07/11: nos.lol takes 128 KB a message; a meeting is under 1 KB. */
 const MAX_MESSAGE = 64 * 1024;
+/** Event ids remembered to drop repeats; the oldest go first. */
+const MAX_SEEN = 1000;
+
+function isEvent(value: unknown): value is NostrEvent {
+  const e = value as Partial<NostrEvent> | null;
+  return (
+    typeof e === "object" &&
+    e !== null &&
+    typeof e.id === "string" &&
+    typeof e.pubkey === "string" &&
+    typeof e.sig === "string" &&
+    typeof e.content === "string" &&
+    typeof e.kind === "number" &&
+    typeof e.created_at === "number" &&
+    Array.isArray(e.tags) &&
+    e.tags.every((t) => Array.isArray(t) && t.every((v) => typeof v === "string"))
+  );
+}
+
+/** What the relay was asked for: it may send anything, this keeps only that. */
+function matches(e: NostrEvent, filter: Filter): boolean {
+  if (filter.kinds && !filter.kinds.includes(e.kind)) return false;
+  const wanted = filter["#x"];
+  return !wanted || e.tags.some((t) => t[0] === "x" && wanted.includes(t[1] ?? ""));
+}
 
 const hex = (bytes: Uint8Array) =>
   Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
@@ -128,9 +153,12 @@ export class RelayPool {
     }
     if (!Array.isArray(message) || message[0] !== "EVENT" || typeof message[1] !== "string") return;
     const subscription = this.subscriptions.get(message[1]);
-    const event = message[2] as NostrEvent;
-    if (!subscription || this.seen.has(event?.id) || !verifyEvent(event)) return;
+    const event = message[2];
+    // Shape and filter first, the Schnorr check last: a relay that floods pays for nothing (audit 08/11).
+    if (!subscription || !isEvent(event) || !matches(event, subscription.filter)) return;
+    if (this.seen.has(event.id) || !verifyEvent(event)) return;
     this.seen.add(event.id);
+    if (this.seen.size > MAX_SEEN) this.seen.delete(this.seen.values().next().value ?? "");
     subscription.onEvent(event);
   }
 

@@ -2444,7 +2444,9 @@
     "copySaved": "Saved as {{name}}.",
     "deleteCopyTitle": "Delete this copy?",
     "deleteCopyBody": "It holds this device's history from before it took the other one's. Once deleted, it is gone.",
-    "restoreHint": "To bring one back: save it, then Settings › Restore a backup."
+    "restoreHint": "To bring one back: save it, then Settings › Restore a backup.",
+    "sasOnA": "Check that {{name}} shows the same number, then link:",
+    "sasOnB": "Check that {{name}} shows this number:"
   },
   "whats_new": {
     "title": "What's new in {{version}}",

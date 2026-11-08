@@ -1,5 +1,7 @@
 import fs from "node:fs";
-import { readCode } from "../src/p2p/code";
+import tls from "node:tls";
+import { type PairingCode, readCode } from "../src/p2p/code";
+import { encodeFrame } from "../src/p2p/frames";
 import type { SessionView } from "../src/p2p/session";
 import { disk } from "../test/node/harness/fakeExpoFs";
 import { fakeRelays } from "./helpers/fakeRelays";
@@ -59,7 +61,11 @@ describe("pairing (L4, L5)", () => {
       name: "Pixel B",
       suffix: b.p2p.identity.id.slice(-4).toUpperCase(),
       again: false,
+      sas: expect.stringMatching(/^\d{3} \d{3}$/),
     });
+    // The check number on A is the one B shows while it waits (L4).
+    const onB = await viewOf(scanning.views, (v) => v.step === "waiting" && v.sas !== undefined);
+    expect(onB.step === "waiting" && onB.sas).toBe(confirm?.step === "confirm" && confirm.sas);
     // Nothing pinned before the hero answers (L4).
     expect(await a.link.readLink()).toBeNull();
     await shown.session.confirm(true);
@@ -99,8 +105,15 @@ describe("pairing (L4, L5)", () => {
     const forged = { ...read.code, token: new Uint8Array(32) };
     const scanning = open(b, { kind: "scan", code: forged });
     expect(await ended(scanning)).toEqual({ step: "ended", cause: "codeExpired" });
-    expect(await ended(shown)).toEqual({ step: "ended", cause: "codeExpired" });
+    // A wrong token costs that socket only: A still shows its code, which still works (audit 08/11).
+    expect(shown.views.some((v) => v.step === "ended")).toBe(false);
+    expect(shown.views.at(-1)?.step).toBe("code");
     expect(await a.link.readLink()).toBeNull();
+    const c = p2pPeer(lan, "C");
+    const real = open(c, { kind: "scan", code: read.code });
+    await viewOf(shown.views, (v) => v.step === "confirm");
+    shown.session.cancel();
+    real.session.cancel();
   });
 
   test("a code naming another device ID never connects (A6)", async () => {
@@ -332,4 +345,91 @@ describe("over the internet, two different networks (C1 to C3)", () => {
     expect(relays.published).toEqual([]);
     onL.session.cancel();
   }, 15_000);
+});
+
+describe("a stranger during pairing (security audit 08/11)", () => {
+  /** A raw TLS client with a certificate of its own, as a phone on the same Wi-Fi would have. */
+  function stranger(port: number) {
+    const me = makeIdentity();
+    return tls.connect({
+      host: "127.0.0.1",
+      port,
+      key: me.key,
+      cert: me.cert,
+      rejectUnauthorized: false,
+      checkServerIdentity: () => undefined,
+    });
+  }
+
+  async function showing() {
+    const lan = makeLan();
+    const a = p2pPeer(lan, "A");
+    const shown = open(a, { kind: "show" });
+    const code = await viewOf(shown.views, (v) => v.step === "code");
+    if (code.step !== "code") throw new Error("no code");
+    const read = readCode(code.text, Math.floor(Date.now() / 1000));
+    if (!read.ok) throw new Error(read.reason);
+    return { lan, a, shown, read: read.code };
+  }
+
+  /** The real B, after the stranger: it must still pair with the same code. */
+  async function realPairs(lan: Lan, shown: Opened, code: PairingCode) {
+    const b = p2pPeer(lan, "B");
+    const scanning = open(b, { kind: "scan", code });
+    await viewOf(shown.views, (v) => v.step === "confirm");
+    shown.session.cancel();
+    scanning.session.cancel();
+  }
+
+  test("silence, a forbidden frame, or a flood costs that socket only, and the code still pairs", async () => {
+    const { lan, shown, read } = await showing();
+    const port = read.lan.port;
+    // A flood of junk past the 1 KB allowed before the token.
+    const flood = stranger(port);
+    await new Promise((resolve) => flood.once("secureConnect", resolve));
+    flood.write(Buffer.concat([Buffer.from([1]), Buffer.alloc(4096, 7)]));
+    await new Promise((resolve) => flood.once("close", resolve));
+    // A frame A never takes before pairing: a bye that used to end the whole session.
+    const rude = stranger(port);
+    await new Promise((resolve) => rude.once("secureConnect", resolve));
+    rude.write(
+      Buffer.concat([Buffer.from([1]), Buffer.from(encodeFrame({ type: "bye", reason: 1 }))]),
+    );
+    await new Promise((resolve) => rude.once("close", resolve));
+    expect(shown.views.some((v) => v.step === "ended" || v.step === "connected")).toBe(false);
+    await realPairs(lan, shown, read);
+  });
+
+  test("a stranger that holds the only slot in silence is let go after 5 s", async () => {
+    const { lan, shown, read } = await showing();
+    const quiet = stranger(read.lan.port);
+    await new Promise((resolve) => quiet.once("secureConnect", resolve));
+    quiet.on("data", () => undefined);
+    const closedAt = await new Promise<number>((resolve) =>
+      quiet.once("close", () => resolve(Date.now())),
+    );
+    expect(closedAt).toBeGreaterThan(0);
+    await realPairs(lan, shown, read);
+  }, 20_000);
+});
+
+describe("addresses and check numbers", () => {
+  test("a code or NSD may only send this device to its own networks", () => {
+    const { isLocalAddress } = p2pPeer(makeLan(), "A").session;
+    for (const ok of ["10.1.2.3", "172.20.0.1", "192.168.1.9", "169.254.3.4", "fe80::1", "fd12::3"])
+      expect(isLocalAddress(ok)).toBe(true);
+    for (const no of ["8.8.8.8", "172.32.0.1", "2a01:4a0::1", "1.1.1.1"])
+      expect(isLocalAddress(no)).toBe(false);
+  });
+
+  test("the check number depends on both devices: a stranger's differs from B's", () => {
+    const { checkNumber } = p2pPeer(makeLan(), "A").session;
+    const a = new Uint8Array(32).fill(1);
+    const b = new Uint8Array(32).fill(2);
+    const stranger = new Uint8Array(32).fill(3);
+    const token = new Uint8Array(32).fill(9);
+    expect(checkNumber(a, b, token)).toMatch(/^\d{3} \d{3}$/);
+    expect(checkNumber(a, b, token)).toBe(checkNumber(a, b, token));
+    expect(checkNumber(a, stranger, token)).not.toBe(checkNumber(a, b, token));
+  });
 });

@@ -295,7 +295,7 @@ describe("U3: showing a code (A)", () => {
     see("This code works once, for 10 minutes.");
 
     // Two phones named alike are told apart by the end of their ID (A5b).
-    await emit({ step: "confirm", name: "Pixel 7", suffix: "AB12", again: false });
+    await emit({ step: "confirm", name: "Pixel 7", suffix: "AB12", again: false, sas: "123 456" });
     see("Link Pixel 7 (AB12)?");
     await press("p2p-link");
     expect(mockConfirm).toHaveBeenCalledWith(true);
@@ -312,7 +312,7 @@ describe("U3: showing a code (A)", () => {
   test("'Not this one' answers no", async () => {
     await sheet();
     await press("p2p-show");
-    await emit({ step: "confirm", name: "Pixel 7", suffix: "AB12", again: false });
+    await emit({ step: "confirm", name: "Pixel 7", suffix: "AB12", again: false, sas: "123 456" });
     await press("p2p-not-this");
     expect(mockConfirm).toHaveBeenCalledWith(false);
   });
@@ -320,7 +320,7 @@ describe("U3: showing a code (A)", () => {
   test("U2b: the same device after a reinstall only asks 'Link {name} again?'", async () => {
     await sheet("pair");
     await press("p2p-show");
-    await emit({ step: "confirm", name: "Pixel 7", suffix: "CD34", again: true });
+    await emit({ step: "confirm", name: "Pixel 7", suffix: "CD34", again: true, sas: "123 456" });
     expect(screen.getByText("Link Pixel 7 again?")).toBeTruthy();
   });
 });

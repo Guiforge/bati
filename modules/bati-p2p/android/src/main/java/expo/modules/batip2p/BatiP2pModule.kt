@@ -57,6 +57,9 @@ class BatiP2pModule : Module() {
 
   @Volatile private var server: SSLServerSocket? = null
   private val busy = AtomicBoolean(false)
+  private val accepted =
+    java.util.concurrent.ConcurrentHashMap
+      .newKeySet<Int>()
 
   @Volatile private var registration: NsdManager.RegistrationListener? = null
 
@@ -246,6 +249,9 @@ class BatiP2pModule : Module() {
   private fun stopListening() {
     server?.let { runCatching { it.close() } }
     server = null
+    // A socket accepted and never claimed by JS (its session ended first) goes with the listener.
+    accepted.toList().forEach { conns[it]?.close("listener stopped") }
+    accepted.clear()
   }
 
   private fun newConn(
@@ -253,6 +259,7 @@ class BatiP2pModule : Module() {
     accepted: Boolean,
   ): Int {
     val id = nextId.getAndIncrement()
+    if (accepted) this.accepted.add(id)
     conns[id] =
       P2pConn(
         id,
@@ -260,6 +267,7 @@ class BatiP2pModule : Module() {
         { sendEvent("onData", mapOf("socket" to id, "bytes" to Base64.encodeToString(it, Base64.NO_WRAP))) },
         {
           conns.remove(id)
+          this.accepted.remove(id)
           if (accepted) busy.set(false)
           sendEvent("onClosed", mapOf("socket" to id, "reason" to it))
         },

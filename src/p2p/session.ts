@@ -1,3 +1,5 @@
+import { hmac } from "@noble/hashes/hmac.js";
+import { sha256 } from "@noble/hashes/sha2.js";
 import type { File } from "expo-file-system";
 
 import { batiCrypto } from "@/modules/bati-crypto";
@@ -7,7 +9,7 @@ import { fromBase64 } from "@/src/multiplayer/envelope";
 import { RelayPool } from "@/src/nostrRelay";
 import { reportError } from "@/src/reportError";
 
-import { Channel, type ChannelEnd, ignore, startRouting } from "./channel";
+import { Channel, type ChannelEnd, closeUnclaimed, ignore, startRouting } from "./channel";
 import { CODE_MINUTES, encodeCode, type PairingCode } from "./code";
 import { currentSession, setCurrentSession } from "./current";
 import { type AnnouncedFile, BYE, type Frame } from "./frames";
@@ -26,6 +28,7 @@ import {
   received,
   replaceOutbox,
   WINDOW,
+  wipe,
   writeBlock,
 } from "./transfer";
 
@@ -43,9 +46,10 @@ export type SessionCause =
 
 export type SessionView =
   | { step: "code"; text: string; expiresAt: number }
-  | { step: "waiting" }
+  /** `sas`: B's check number while A decides, the same as on A's screen if it is really B. */
+  | { step: "waiting"; sas?: string }
   /** `again`: the device is the one already linked, back after a reinstall (U2b). */
-  | { step: "confirm"; name: string; suffix: string; again: boolean }
+  | { step: "confirm"; name: string; suffix: string; again: boolean; sas: string }
   | { step: "connected"; name: string }
   | { step: "receiving"; name: string; done: number; total: number }
   | { step: "ended"; cause: SessionCause };
@@ -85,6 +89,9 @@ const RETRY_MS = 2_000;
 const MAX_BAD_BLOCKS = 3;
 const MAX_PASSES = 3;
 const OFFER_EVERY_MS = 10_000;
+/** C1: what a stranger gets before the token is checked. */
+const PRE_PAIR_BYTES = 1024;
+const PRE_PAIR_MS = 5_000;
 /** The higher ID waits this long before dialling too, so the two rarely cross (`take`). */
 const HIGHER_DIALS_AFTER_MS = 3_000;
 
@@ -96,8 +103,48 @@ const fromHex = (value: string) =>
   Uint8Array.from(value.match(/../g) ?? [], (b) => Number.parseInt(b, 16));
 
 /** A stable port per link, so the last known address still answers next session (D3). */
-export const preferredPort = (secret: string) =>
-  40_000 + (Number.parseInt(secret.slice(0, 4), 16) % 20_000);
+export const preferredPort = (secret: string) => {
+  // Through an HMAC: the port says nothing of the secret (security audit 08/11).
+  const mac = hmac(sha256, fromHex(secret), new TextEncoder().encode("bati/p2p/port"));
+  return 40_000 + ((((mac[0] ?? 0) << 8) | (mac[1] ?? 0)) % 20_000);
+};
+
+/**
+ * Six digits both screens show while A decides (L4): from both device IDs and the token, so a
+ * stranger who saw the code and connected first makes A show other digits than B, and B shows none.
+ */
+export function checkNumber(idA: Uint8Array, idB: Uint8Array, token: Uint8Array): string {
+  const tag = new TextEncoder().encode("bati/p2p/sas");
+  const digest = sha256(new Uint8Array([...tag, ...idA, ...idB, ...token]));
+  const n = new DataView(digest.buffer, digest.byteOffset).getUint32(0) % 1_000_000;
+  const digits = String(n).padStart(6, "0");
+  return `${digits.slice(0, 3)} ${digits.slice(3)}`;
+}
+
+/** Literal addresses a code or NSD may send this device to: its own networks only (audit 08/11). */
+export function isLocalAddress(host: string): boolean {
+  const h = host.toLowerCase().split("%")[0] ?? "";
+  if (h.includes(":")) return /^fe[89ab]/.test(h) || /^f[cd]/.test(h) || (__DEV__ && h === "::1");
+  const [a = 0, b = 0] = h.split(".").map(Number);
+  return (
+    a === 10 ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168) ||
+    (a === 169 && b === 254) ||
+    // Tests and emulators run on loopback; a release never dials its own device.
+    (__DEV__ && a === 127)
+  );
+}
+
+/** What an error report may carry: no installId, no device ID (they name the hero's devices). */
+function scrubbed(error: unknown): Error {
+  const message = error instanceof Error ? error.message : String(error);
+  return new Error(
+    message
+      .replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, "<id>")
+      .replace(/[0-9a-f]{64}/gi, "<id>"),
+  );
+}
 
 export function openSession(role: Role, hooks: SessionHooks = {}): Session {
   currentSession()?.cancel();
@@ -136,6 +183,9 @@ export class Session {
   private pool: RelayPool | null = null;
   /** Whether the channel's socket was dialled here, and who dialled the last one accepted. */
   private channelMine = false;
+  private helloSeen = false;
+  private sas: string | undefined;
+  private codeView: SessionView | null = null;
   private acceptedFrom: string | null = null;
 
   constructor(role: Role, hooks: SessionHooks) {
@@ -165,7 +215,7 @@ export class Session {
       else if (this.role.kind === "scan") await this.dialCode(this.role.code);
       else await this.meet(this.role.link);
     } catch (error) {
-      reportError("p2p.start", error);
+      reportError("p2p.start", scrubbed(error));
       this.end("interrupted");
     }
   }
@@ -187,7 +237,8 @@ export class Session {
       name: await p2p.deviceName(),
       lan: { port, addresses: await p2p.localAddresses(false) },
     });
-    this.show({ step: "code", text, expiresAt: this.expiresAt });
+    this.codeView = { step: "code", text, expiresAt: this.expiresAt };
+    this.show(this.codeView);
     this.later(CODE_MINUTES * 60_000, () => {
       if (this.role.kind === "show") this.end("codeExpired");
     });
@@ -195,7 +246,9 @@ export class Session {
 
   private async dialCode(code: PairingCode): Promise<void> {
     const pin = hex(code.deviceId);
-    const targets = code.lan.addresses.map((host) => ({ host, port: code.lan.port }));
+    const targets = code.lan.addresses
+      .filter(isLocalAddress)
+      .map((host) => ({ host, port: code.lan.port }));
     this.myHalf = await randomHalf();
     const socket = await this.dialUntil(targets, pin, () => []);
     if (socket === null) return;
@@ -237,7 +290,7 @@ export class Session {
     const found: Target[] = [];
     this.subscriptions.push(
       p2p.addListener("onFound", ({ name, host, port: at }) => {
-        if (names.has(name)) found.push({ host, port: at, via: "nsd" });
+        if (names.has(name) && isLocalAddress(host)) found.push({ host, port: at, via: "nsd" });
       }),
     );
     await p2p.browse();
@@ -377,11 +430,26 @@ export class Session {
       this.queue = this.queue
         .then(() => this.handle(frame))
         .catch((error: unknown) => {
-          reportError("p2p.frame", error);
+          reportError("p2p.frame", scrubbed(error));
           this.end("interrupted");
         });
     };
-    channel.onEnd = (cause) => this.end(causeOfChannel(cause));
+    channel.onEnd = (cause) => {
+      // Before A's yes, a socket that goes away is only that socket: the code stays shown.
+      if (this.role.kind === "show") this.dropStranger();
+      else this.end(causeOfChannel(cause));
+    };
+    if (this.role.kind === "show") {
+      // C1: before the token is checked, 1 KB and 5 s, then the socket goes and the code stays.
+      channel.maxBytes = PRE_PAIR_BYTES;
+      this.later(PRE_PAIR_MS, () => {
+        if (this.channel === channel && this.pending === null) this.dropStranger();
+      });
+    }
+    if (this.role.kind === "scan") {
+      const { code } = this.role;
+      this.sas = checkNumber(code.deviceId, fromHex(this.me), code.token);
+    }
     (async () => {
       const name = await p2p.deviceName();
       await channel.send({
@@ -399,21 +467,26 @@ export class Session {
       }
       if (this.role.kind === "sync") await this.announce();
     })().catch((error: unknown) => {
-      reportError("p2p.attach", error);
+      reportError("p2p.attach", scrubbed(error));
       this.end("interrupted");
     });
   }
 
   private handle(frame: Frame): Promise<void> {
+    // A, before the hero said yes: a hello, then a pair, and nothing else (audit 08/11).
+    if (this.role.kind === "show" && frame.type !== "hello" && frame.type !== "pair") {
+      this.dropStranger();
+      return Promise.resolve();
+    }
     switch (frame.type) {
       case "hello":
+        // Once per channel: the name the hero confirms is the name kept.
+        if (this.helloSeen) return Promise.resolve();
+        this.helloSeen = true;
         if (this.role.kind !== "scan") this.peerName = frame.name;
-        // B waits for A's yes before anything reads as syncing (emulator, 08/11).
-        this.show(
-          this.role.kind === "scan"
-            ? { step: "waiting" }
-            : { step: "connected", name: this.peerName },
-        );
+        // A keeps its code on screen until the token is right; B waits for A's yes.
+        if (this.role.kind === "scan") this.show({ step: "waiting", sas: this.sas });
+        else if (this.role.kind === "sync") this.show({ step: "connected", name: this.peerName });
         return Promise.resolve();
       case "pair":
         return this.paired(frame.token, frame.random, frame.installId);
@@ -439,20 +512,19 @@ export class Session {
   /** A: B read the code. The token decides, then the hero does (L4, L5). */
   private async paired(token: Uint8Array, random: Uint8Array, peerInstall: string): Promise<void> {
     const fresh = Math.floor(Date.now() / 1000) <= this.expiresAt;
-    if (
-      this.role.kind !== "show" ||
-      this.token === null ||
-      !fresh ||
-      hex(token) !== hex(this.token)
-    ) {
+    if (this.role.kind !== "show" || this.token === null || this.pending !== null) return;
+    if (!fresh || hex(token) !== hex(this.token)) {
+      // A wrong token costs that socket only: a stranger cannot kill the code with one packet.
       await this.channel?.send({ type: "bye", reason: BYE.codeExpired });
-      this.end("codeExpired");
+      this.dropStranger();
       return;
     }
+    const sas = checkNumber(fromHex(this.me), fromHex(this.peerId), this.token);
     this.token = null;
+    if (this.channel) this.channel.maxBytes = null;
     this.pending = { random, installId: peerInstall };
     const again = (await readLink())?.peerInstallId === peerInstall;
-    this.show({ step: "confirm", name: this.peerName, suffix: idSuffix(this.peerId), again });
+    this.show({ step: "confirm", name: this.peerName, suffix: idSuffix(this.peerId), again, sas });
   }
 
   /** A: the hero's answer to "Link {name}?". Nothing is pinned before it (L4). */
@@ -502,6 +574,8 @@ export class Session {
   }
 
   private async becomeLinked(link: Link): Promise<void> {
+    // A new device replaces the link: the old one's file must never read as the new one's.
+    if ((await readLink())?.peerInstallId !== link.peerInstallId) wipe();
     await saveLink(link);
     this.role = { kind: "sync", link };
     await this.hooks.onLinked?.(link);
@@ -562,7 +636,8 @@ export class Session {
   private async serve(indexes: number[]): Promise<void> {
     const served = this.served;
     if (served === null) return;
-    for (const index of indexes) {
+    // One window at a time: a peer asking for 65k blocks in one frame gets eight (audit 08/11).
+    for (const index of indexes.slice(0, WINDOW)) {
       if (index >= served.described.blocks.length) return;
       await this.channel?.send({
         type: "block",
@@ -622,7 +697,9 @@ export class Session {
     await Promise.race([this.firstAnnounce, this.whenEnded()]);
     if (this.ended) throw new PeerGone();
     const file = received();
-    return file ? { name: file.file.name, sha: file.sha, size: file.file.size } : null;
+    // Only this link's peer: a file from a device linked before is not this one's (audit 08/11).
+    if (file === null || file.file.name !== peerFileName(this.role.link)) return null;
+    return { name: file.file.name, sha: file.sha, size: file.file.size };
   }
 
   /** What this device offers: its outbox, as listed beside the peer's file (S2). */
@@ -662,6 +739,23 @@ export class Session {
       : new Promise((resolve) => this.endedListeners.push(resolve));
   }
 
+  /**
+   * A, before the hero's yes: this socket goes, the listener and the code stay, so a stranger who
+   * connects, stalls or floods costs the hero nothing but a moment (audit 08/11).
+   */
+  private dropStranger(): void {
+    const old = this.channel;
+    if (old === null || this.role.kind !== "show") return;
+    old.onEnd = () => undefined;
+    old.end("closed");
+    this.channel = null;
+    this.peerId = "";
+    this.peerName = "";
+    this.helloSeen = false;
+    this.pending = null;
+    if (this.codeView) this.show(this.codeView);
+  }
+
   cancel(): void {
     this.channel?.send({ type: "bye", reason: BYE.cancel }).catch(ignore);
     this.end("cancelled");
@@ -674,6 +768,7 @@ export class Session {
     for (const subscription of this.subscriptions) subscription.remove();
     this.pool?.close();
     this.channel?.end("closed");
+    closeUnclaimed();
     const p2p = batiP2p();
     p2p.stopDiscovery().catch(ignore);
     p2p.stopListening().catch(ignore);

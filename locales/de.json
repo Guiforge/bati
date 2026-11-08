@@ -2446,7 +2446,9 @@
     "copySaved": "Gespeichert als {{name}}.",
     "deleteCopyTitle": "Diese Kopie löschen?",
     "deleteCopyBody": "Sie enthält den Verlauf dieses Geräts von vor der Übernahme des anderen. Gelöscht ist sie weg.",
-    "restoreHint": "Um eine zurückzuholen: speichere sie, dann Einstellungen › Sicherung wiederherstellen."
+    "restoreHint": "Um eine zurückzuholen: speichere sie, dann Einstellungen › Sicherung wiederherstellen.",
+    "sasOnA": "Prüfe, ob {{name}} dieselbe Zahl zeigt, dann verknüpfe:",
+    "sasOnB": "Prüfe, ob {{name}} diese Zahl zeigt:"
   },
   "whats_new": {
     "title": "Neu in {{version}}",

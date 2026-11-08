@@ -22,8 +22,17 @@ type Sink = { data(bytes: Uint8Array): void; closed(): void };
  * of a dialled socket can arrive before `dial` resolves: they wait here until the socket has a channel.
  */
 const sinks = new Map<number, Sink>();
-const early = new Map<number, { chunks: Uint8Array[]; closed: boolean }>();
+const early = new Map<number, { chunks: Uint8Array[]; bytes: number; closed: boolean }>();
+/** Bytes held for a socket nobody claimed yet: more is a peer talking to no one, and it goes. */
+const EARLY_BYTES = 64 * 1024;
 let routing = false;
+
+/** A session ending closes every socket it never claimed (security audit 08/11). */
+export function closeUnclaimed(): void {
+  const p2p = batiP2p();
+  for (const socket of early.keys()) p2p.close(socket).catch(ignore);
+  early.clear();
+}
 
 export function startRouting(): void {
   if (routing) return;
@@ -33,15 +42,24 @@ export function startRouting(): void {
     const sink = sinks.get(socket);
     if (sink) sink.data(fromBase64(bytes));
     else {
-      const held = early.get(socket) ?? { chunks: [], closed: false };
-      held.chunks.push(fromBase64(bytes));
+      const held = early.get(socket) ?? { chunks: [], bytes: 0, closed: false };
+      const chunk = fromBase64(bytes);
+      held.chunks.push(chunk);
+      held.bytes += chunk.length;
       early.set(socket, held);
+      if (held.bytes > EARLY_BYTES) {
+        early.delete(socket);
+        p2p.close(socket).catch(ignore);
+      }
     }
   });
   p2p.addListener("onClosed", ({ socket }) => {
     const sink = sinks.get(socket);
     if (sink) sink.closed();
-    else early.set(socket, { chunks: early.get(socket)?.chunks ?? [], closed: true });
+    else {
+      const held = early.get(socket);
+      early.set(socket, { chunks: held?.chunks ?? [], bytes: held?.bytes ?? 0, closed: true });
+    }
   });
 }
 
@@ -59,6 +77,9 @@ export class Channel {
   private readonly timer: ReturnType<typeof setInterval>;
   private ended = false;
   onFrame: (frame: Frame) => void = () => undefined;
+  /** Bytes this channel may still receive, `null` for no cap: a stranger before pairing (C1). */
+  maxBytes: number | null = null;
+  private received = 0;
   onEnd: (cause: ChannelEnd) => void = () => undefined;
 
   constructor(socket: number) {
@@ -94,6 +115,11 @@ export class Channel {
 
   private receive(bytes: Uint8Array): void {
     this.lastHeard = Date.now();
+    this.received += bytes.length;
+    if (this.maxBytes !== null && this.received > this.maxBytes) {
+      this.end("bad");
+      return;
+    }
     const joined = new Uint8Array(this.buffer.length + bytes.length);
     joined.set(this.buffer);
     joined.set(bytes, this.buffer.length);

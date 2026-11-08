@@ -206,11 +206,12 @@ function bodyFor(c: Ctx): ReactNode {
         name={view.name}
         suffix={view.suffix}
         again={view.again}
+        sas={view.sas}
         onAnswer={(yes) => session.confirm(yes)}
       />
     );
   if (view?.step === "waiting" && c.step !== "show")
-    return <Waiting sync={c.mode === "sync"} name={c.name} onCancel={c.close} />;
+    return <Waiting sync={c.mode === "sync"} name={c.name} sas={view.sas} onCancel={c.close} />;
   if (view?.step === "connected" || view?.step === "receiving")
     return (
       <Syncing
@@ -241,11 +242,13 @@ function Confirm({
   name,
   suffix,
   again,
+  sas,
   onAnswer,
 }: {
   name: string;
   suffix: string;
   again: boolean;
+  sas: string;
   onAnswer: (yes: boolean) => void;
 }) {
   const { t } = useTranslation();
@@ -254,6 +257,7 @@ function Confirm({
       <Text testID="p2p-confirm" color="text" fontSize="5" accessibilityLiveRegion="polite">
         {again ? t("p2p.confirmAgain", { name }) : t("p2p.confirm", { name, suffix })}
       </Text>
+      <CheckNumber testID="p2p-sas-a" label={t("p2p.sasOnA", { name })} sas={sas} />
       <AppButton testID="p2p-link" onPress={() => onAnswer(true)}>
         {t("p2p.confirmCta")}
       </AppButton>
@@ -264,13 +268,48 @@ function Confirm({
   );
 }
 
-function Waiting({ sync, name, onCancel }: { sync: boolean; name: string; onCancel: () => void }) {
+/**
+ * The six digits both screens show while A decides (L4). Large and spaced: two people compare
+ * them across a table; read digit by digit by TalkBack.
+ */
+function CheckNumber({ testID, label, sas }: { testID: string; label: string; sas: string }) {
+  return (
+    <YStack gap="1" items="center">
+      <Text color="textSecondary" fontSize="3" style={{ textAlign: "center" }}>
+        {label}
+      </Text>
+      <Text
+        testID={testID}
+        color="text"
+        fontSize={32}
+        fontWeight="700"
+        accessibilityLabel={sas.replace(/\s/g, "").split("").join(" ")}
+        style={{ fontFamily: "monospace", letterSpacing: 4 }}
+      >
+        {sas}
+      </Text>
+    </YStack>
+  );
+}
+
+function Waiting({
+  sync,
+  name,
+  sas,
+  onCancel,
+}: {
+  sync: boolean;
+  name: string;
+  sas?: string;
+  onCancel: () => void;
+}) {
   const { t } = useTranslation();
   return (
     <Message
       testID="p2p-waiting"
       text={sync ? t("p2p.waitOther", { name }) : t("p2p.waitConfirm", { name })}
     >
+      {sas ? <CheckNumber testID="p2p-sas-b" label={t("p2p.sasOnB", { name })} sas={sas} /> : null}
       <AppButton testID="p2p-cancel" variant="outline" onPress={onCancel}>
         {t("common.cancel")}
       </AppButton>

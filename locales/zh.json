@@ -2316,7 +2316,9 @@
     "copySaved": "已保存为 {{name}}。",
     "deleteCopyTitle": "删除这个副本？",
     "deleteCopyBody": "它保存着这台设备在采用另一台的历史之前的记录。删除后无法找回。",
-    "restoreHint": "要恢复某个副本：先保存，再到 设置 › 恢复备份。"
+    "restoreHint": "要恢复某个副本：先保存，再到 设置 › 恢复备份。",
+    "sasOnA": "确认{{name}}显示的是同一个数字，然后关联：",
+    "sasOnB": "确认{{name}}显示的是这个数字："
   },
   "whats_new": {
     "title": "{{version}} 有什么新",

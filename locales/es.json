@@ -2547,7 +2547,9 @@
     "copySaved": "Guardada como {{name}}.",
     "deleteCopyTitle": "¿Borrar esta copia?",
     "deleteCopyBody": "Guarda el historial de este dispositivo de antes de tomar el del otro. Una vez borrada, se pierde.",
-    "restoreHint": "Para recuperar una: guárdala y luego Ajustes › Restaurar una copia."
+    "restoreHint": "Para recuperar una: guárdala y luego Ajustes › Restaurar una copia.",
+    "sasOnA": "Comprueba que {{name}} muestra el mismo número y luego vincula:",
+    "sasOnB": "Comprueba que {{name}} muestra este número:"
   },
   "whats_new": {
     "title": "Novedades de la {{version}}",

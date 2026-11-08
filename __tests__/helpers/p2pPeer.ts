@@ -19,6 +19,7 @@ export type P2pPeer = {
   session: typeof import("../../src/p2p/session");
   link: typeof import("../../src/p2p/link");
   transfer: typeof import("../../src/p2p/transfer");
+  sync: typeof import("../../src/p2pSync");
   fs: ReturnType<typeof makeExpoFs>;
 };
 
@@ -69,6 +70,7 @@ export function p2pPeer(
       session: require("../../src/p2p/session"),
       link: require("../../src/p2p/link"),
       transfer: require("../../src/p2p/transfer"),
+      sync: require("../../src/p2pSync"),
       fs: expoFs,
     };
   });

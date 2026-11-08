@@ -91,7 +91,7 @@ All copy goes in `locales/*.json`, six languages, following `docs/product/writin
 | A5 | Someone else scans the code (a photo, a screen behind) | A sees "Link {their name} ({last 4 of its ID})?" and taps "Not this one". Nothing is pinned. | unit P2, node X3 |
 | A5b | Two devices with the same name ("Pixel 7") | The last 4 characters of the device ID follow the name in the confirmation and in Settings | UI U3 |
 | A6 | Code carries a swapped device ID (forged) | TLS fails, then `codeExpired` | node X4 |
-| A7 | The two devices are on different Wi-Fis at pairing | `notInSight` or `blocked` after 30 s. Pairing is LAN-only by design, so a code sent from far away never pairs. | node X5, D3 |
+| A7 | The two devices are on different Wi-Fis at pairing | `notInSight` or `blocked` after 60 s. Pairing is LAN-only by design, so a code sent from far away never pairs. | node X5, D3 |
 | A8 | Guest Wi-Fi with client isolation | `blocked`, which suggests the hotspot | D3 |
 | A9 | Encryption off on A or B | The existing password step first (rule L9) | UI U5 |
 | A10 | B is a new phone (onboarding done, maybe a session already) | Exactly as a new device joining a server today: B listens before it sends (`holdBack`, first contact, `deviceSync.ts:780`), then the existing prompt asks to take {name}'s history or merge. Nothing on B is dropped without that answer | unit S1, S1b (B with 1 session keeps it after a merge), node X6, D1 |
@@ -108,7 +108,7 @@ All copy goes in `locales/*.json`, six languages, following `docs/product/writin
 | --- | --- | --- | --- |
 | B1 | Both open the sync sheet | It starts by itself, then the result line (rule U4) | unit S3, node X1, D1 |
 | B2 | Launch, or "Sync now" outside the sheet | Launch never tries P2P, and a sync outside the sheet returns `notNow` silently (rule S7) | unit S4 |
-| B3 | "Sync now", the other is closed | "Open Bati on {name} too. Sync starts by itself." After 30 s, `notInSight` with "Try again" | UI U7, node X5 |
+| B3 | "Sync now", the other is closed | "Open Bati on {name} too. Sync starts by itself." After 60 s, `notInSight` with "Try again" | UI U7, node X5 |
 | B4 | Both tap "Sync now" together | One session, converges in one tap each (rule S2b) | node X11 |
 | B5 | Both edited since last time | The existing merge, through the prompt | unit S2, node X7 |
 | B6 | Hero leaves the app, or the screen goes off mid-transfer | `interrupted`: "Nothing was lost. Try again." The `.part` is kept, and the next session resumes. The screen is kept awake while the sheet is open. | node X13, D4 |

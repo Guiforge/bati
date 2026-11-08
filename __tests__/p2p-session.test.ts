@@ -116,13 +116,13 @@ describe("pairing (L4, L5)", () => {
     const swapped = { ...read.code, deviceId: new Uint8Array(32).fill(7) };
     const scanning = open(b, { kind: "scan", code: swapped });
     // Ends at the 30 s search: the only device there failed the pin.
-    expect(await viewOf(scanning.views, (v) => v.step === "ended", 35_000)).toEqual({
+    expect(await viewOf(scanning.views, (v) => v.step === "ended", 8_000)).toEqual({
       step: "ended",
       cause: "notInSight",
     });
     expect(shown.views.some((v) => v.step === "confirm")).toBe(false);
     shown.session.cancel();
-  }, 40_000);
+  }, 15_000);
 });
 
 describe("transfer (T1 to T5, S2, S4)", () => {
@@ -312,12 +312,12 @@ describe("over the internet, two different networks (C1 to C3)", () => {
     const { dialer, listener, dialerLink, listenerLink } = apart({ advertise: ["127.0.0.2"] });
     const onL = open(listener, { kind: "sync", link: listenerLink, internet: true });
     const onD = open(dialer, { kind: "sync", link: dialerLink, internet: true });
-    expect(await viewOf(onD.views, (v) => v.step === "ended", 35_000)).toEqual({
+    expect(await viewOf(onD.views, (v) => v.step === "ended", 8_000)).toEqual({
       step: "ended",
       cause: "unreachable",
     });
     onL.session.cancel();
-  }, 40_000);
+  }, 15_000);
 
   test("the switch off on one side: no meeting, and that side sends nothing to any relay (C3, N7)", async () => {
     const relays = fakeRelays();
@@ -325,11 +325,11 @@ describe("over the internet, two different networks (C1 to C3)", () => {
     const { dialer, listener, dialerLink, listenerLink } = apart();
     const onL = open(listener, { kind: "sync", link: listenerLink });
     const onD = open(dialer, { kind: "sync", link: dialerLink, internet: true });
-    expect(await viewOf(onD.views, (v) => v.step === "ended", 35_000)).toEqual({
+    expect(await viewOf(onD.views, (v) => v.step === "ended", 8_000)).toEqual({
       step: "ended",
       cause: "notInSight",
     });
     expect(relays.published).toEqual([]);
     onL.session.cancel();
-  }, 40_000);
+  }, 15_000);
 });

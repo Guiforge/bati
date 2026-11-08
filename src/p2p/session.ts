@@ -74,7 +74,12 @@ export class PeerGone extends Error {
   }
 }
 
-const SEARCH_MS = 30_000;
+/**
+ * How long a sheet looks for the other device before saying it is not in sight: long enough to
+ * walk to the other device and open Bati there (30 s was missed on two emulators, 08/11). Tests
+ * shorten it.
+ */
+export const timing = { searchMs: 60_000 };
 const ACK_MS = 60_000;
 const RETRY_MS = 2_000;
 const MAX_BAD_BLOCKS = 3;
@@ -212,7 +217,7 @@ export class Session {
     const internet = this.role.kind === "sync" && this.role.internet === true;
     if (this.me > link.peerId) {
       // The lower ID's dial says why nobody met (blocked, unreachable); this side only waits.
-      this.later(SEARCH_MS, () => {
+      this.later(timing.searchMs, () => {
         if (this.channel === null) this.end("notInSight");
       });
       // shortcut: the name is the one of the hour the sheet opened; a session open across the
@@ -253,7 +258,7 @@ export class Session {
     const p2p = batiP2p();
     const tried = new Set<string>();
     const silent = new Set<Target["via"]>();
-    const deadline = Date.now() + SEARCH_MS;
+    const deadline = Date.now() + timing.searchMs;
     const queue = [...known];
     while (!this.ended && this.channel === null && Date.now() < deadline) {
       queue.push(...more());

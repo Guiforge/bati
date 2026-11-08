@@ -72,6 +72,8 @@ export function p2pPeer(
       fs: expoFs,
     };
   });
+  // Seconds, not a minute: two peers on loopback meet at once, and "not in sight" is a test too.
+  peer.session.timing.searchMs = 6_000;
   return peer;
 }
 

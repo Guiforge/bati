@@ -169,7 +169,7 @@ Each rule has a number that a test reuses. The file is `__tests__/p2p-*.test.ts`
   - It returns only once the peer's announcement has arrived and its file is received and verified, or the peer
     announced an empty outbox.
   - There is no total deadline, since a large file takes time, but silence ends it (C4) with `interrupted`.
-  - Before any peer is connected, it waits at most 30 s, then `notInSight`.
+  - Before any peer is connected, it waits at most 60 s, then `notInSight`: time to walk to the other device and open Bati there.
 
   It returns two entries: the peer file and our own outbox.
   - Both have `modified: 0`, `etag` set to their SHA-256, and `size` set.
@@ -329,7 +329,7 @@ this device".
 
 | Cause | Message | Action |
 | --- | --- | --- |
-| No peer after 30 s | `notInSight`: "{name} isn't in sight. Open Bati on it, on the same Wi-Fi." | "Try again" |
+| No peer after 60 s | `notInSight`: "{name} isn't in sight. Open Bati on it, on the same Wi-Fi." | "Try again" |
 | Peer announced on NSD, TCP unreachable | `blocked`: "This Wi-Fi keeps devices from reaching each other (a guest network, a VPN). Try another network, or your phone's hotspot." | "Try again" |
 | Expired, used or unknown token (L5) | `codeExpired`: "This code doesn't work anymore. Show a new one on the other device." When the clock is the cause (L3): "Check the date and time on both devices." | "Show a new code" |
 | A check character does not match (text code) | `codeTypo`: "There's a typo in group {n}. Check it and try again." | none, the field stays filled |

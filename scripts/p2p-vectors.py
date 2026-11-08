@@ -167,6 +167,7 @@ def main() -> None:
         bytes([len(file_name)]) + file_name + struct.pack(">Q", len(file)) + whole + struct.pack(">I", len(blocks)) + b"".join(blocks)
     )
     name_b = "Pixel".encode()
+    install_b = bytes.fromhex("fedcba9876543210fedcba9876543210")
     frames = {
         "note": NOTE,
         "blockBytes": BLOCK,
@@ -180,7 +181,7 @@ def main() -> None:
             {"type": "ack", "hex": frame(5, whole).hex(), "sha256": whole.hex()},
             {"type": "ping", "hex": frame(6, b"").hex()},
             {"type": "bye", "hex": frame(7, bytes([3])).hex(), "reason": 3},
-            {"type": "pair", "hex": frame(8, token + r_b).hex(), "token": token.hex(), "random": r_b.hex()},
+            {"type": "pair", "hex": frame(8, token + r_b + install_b).hex(), "token": token.hex(), "random": r_b.hex(), "installId": "fedcba98-7654-3210-fedc-ba9876543210"},
             {"type": "linked", "hex": frame(9, r_a).hex(), "random": r_a.hex()},
         ],
         "refused": [

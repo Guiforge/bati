@@ -26,8 +26,8 @@ export type Frame =
   | { type: "ack"; sha256: Uint8Array }
   | { type: "ping" }
   | { type: "bye"; reason: number }
-  /** B to A on a first connection: the code's token, and B's half of the link secret (L4). */
-  | { type: "pair"; token: Uint8Array; random: Uint8Array }
+  /** B to A on a first connection: the code's token, B's half of the link secret (L4), B's installId. */
+  | { type: "pair"; token: Uint8Array; random: Uint8Array; installId: string }
   /** A to B once the hero confirmed: A's half (L4). */
   | { type: "linked"; random: Uint8Array };
 
@@ -123,7 +123,7 @@ function bodyOf(frame: Frame): Uint8Array {
     case "bye":
       return Uint8Array.of(frame.reason);
     case "pair":
-      return Uint8Array.from([...frame.token, ...frame.random]);
+      return Uint8Array.from([...frame.token, ...frame.random, ...uuidBytes(frame.installId)]);
     case "linked":
       return frame.random;
   }
@@ -162,7 +162,7 @@ function parseBody(type: (typeof TYPES)[number], body: Uint8Array): Frame | null
 }
 
 /** The frames whose body has one exact length. */
-const FIXED = { ack: 32, ping: 0, bye: 1, pair: 64, linked: 32 } as const;
+const FIXED = { ack: 32, ping: 0, bye: 1, pair: 80, linked: 32 } as const;
 
 function parseFixed(type: keyof typeof FIXED, body: Uint8Array): Frame | null {
   if (body.length !== FIXED[type]) return null;
@@ -174,7 +174,12 @@ function parseFixed(type: keyof typeof FIXED, body: Uint8Array): Frame | null {
     case "bye":
       return { type, reason: body[0] ?? 0 };
     case "pair":
-      return { type, token: body.slice(0, 32), random: body.slice(32) };
+      return {
+        type,
+        token: body.slice(0, 32),
+        random: body.slice(32, 64),
+        installId: uuidOf(body.subarray(64)),
+      };
     case "linked":
       return { type, random: body.slice() };
   }
@@ -211,4 +216,12 @@ function text(bytes: Uint8Array): string | null {
     // Not UTF-8: not from Bati, and the frame is refused, which closes the link.
     return null;
   }
+}
+
+const uuidBytes = (uuid: string) =>
+  Array.from(uuid.replace(/-/g, "").match(/../g) ?? [], (b) => Number.parseInt(b, 16));
+
+function uuidOf(bytes: Uint8Array): string {
+  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }

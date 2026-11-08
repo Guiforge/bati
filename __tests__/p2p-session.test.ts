@@ -1,0 +1,245 @@
+import fs from "node:fs";
+import { readCode } from "../src/p2p/code";
+import type { SessionView } from "../src/p2p/session";
+import { disk } from "../test/node/harness/fakeExpoFs";
+import { type Lan, makeLan } from "./helpers/nodeBatiP2p";
+import { fileOf, type P2pPeer, p2pPeer, viewOf } from "./helpers/p2pPeer";
+
+jest.setTimeout(30_000);
+
+type Opened = {
+  peer: P2pPeer;
+  views: SessionView[];
+  session: ReturnType<P2pPeer["session"]["openSession"]>;
+};
+
+function open(
+  peer: P2pPeer,
+  role: Parameters<P2pPeer["session"]["openSession"]>[0],
+  onPeerFile?: () => void,
+): Opened {
+  const views: SessionView[] = [];
+  const session = peer.session.openSession(role, {
+    onChange: (view) => views.push(view),
+    onPeerFile,
+  });
+  return { peer, views, session };
+}
+
+/** A shows a code, B reads it, A says yes: both hold the link. */
+async function pair(a: P2pPeer, b: P2pPeer) {
+  const shown = open(a, { kind: "show" });
+  const code = await viewOf(shown.views, (v) => v.step === "code").catch((e) => {
+    throw new Error(`${e} ${JSON.stringify(a.reports.map((r) => String(r.error)))}`);
+  });
+  if (code.step !== "code") throw new Error("no code");
+  const read = readCode(code.text, Math.floor(Date.now() / 1000));
+  if (!read.ok) throw new Error(read.reason);
+  const scanning = open(b, { kind: "scan", code: read.code });
+  await viewOf(shown.views, (v) => v.step === "confirm");
+  return { shown, scanning, code: code.text };
+}
+
+const ended = (o: Opened) => viewOf(o.views, (v) => v.step === "ended");
+
+afterEach(() => {
+  disk.available = Number.MAX_SAFE_INTEGER;
+});
+
+describe("pairing (L4, L5)", () => {
+  test("A confirms, then both hold the same secret and each other's pinned ID", async () => {
+    const lan = makeLan();
+    const a = p2pPeer(lan, "Pixel A");
+    const b = p2pPeer(lan, "Pixel B");
+    const { shown, scanning } = await pair(a, b);
+    const confirm = shown.views.find((v) => v.step === "confirm");
+    expect(confirm).toEqual({
+      step: "confirm",
+      name: "Pixel B",
+      suffix: b.p2p.identity.id.slice(-4).toUpperCase(),
+    });
+    // Nothing pinned before the hero answers (L4).
+    expect(await a.link.readLink()).toBeNull();
+    await shown.session.confirm(true);
+    await viewOf(scanning.views, () => b.secure.has("bati.p2p.link"));
+    const linkA = await a.link.readLink();
+    const linkB = await b.link.readLink();
+    expect(linkA?.peerId).toBe(b.p2p.identity.id);
+    expect(linkB?.peerId).toBe(a.p2p.identity.id);
+    expect(linkA?.secret).toBe(linkB?.secret);
+    expect(linkA?.name).toBe("Pixel B");
+    expect(linkB?.name).toBe("Pixel A");
+    expect(linkB?.addresses).toEqual([expect.objectContaining({ host: "127.0.0.1" })]);
+    shown.session.cancel();
+    scanning.session.cancel();
+  });
+
+  test("'Not this one' pins nothing on A, and B is told the code no longer works", async () => {
+    const lan = makeLan();
+    const a = p2pPeer(lan, "A");
+    const b = p2pPeer(lan, "B");
+    const { shown, scanning } = await pair(a, b);
+    await shown.session.confirm(false);
+    expect(await ended(scanning)).toEqual({ step: "ended", cause: "codeExpired" });
+    expect(await a.link.readLink()).toBeNull();
+    expect(await b.link.readLink()).toBeNull();
+  });
+
+  test("a code with another token is refused, and nothing is pinned (L5)", async () => {
+    const lan = makeLan();
+    const a = p2pPeer(lan, "A");
+    const b = p2pPeer(lan, "B");
+    const shown = open(a, { kind: "show" });
+    const code = await viewOf(shown.views, (v) => v.step === "code");
+    if (code.step !== "code") throw new Error("no code");
+    const read = readCode(code.text, Math.floor(Date.now() / 1000));
+    if (!read.ok) throw new Error(read.reason);
+    const forged = { ...read.code, token: new Uint8Array(32) };
+    const scanning = open(b, { kind: "scan", code: forged });
+    expect(await ended(scanning)).toEqual({ step: "ended", cause: "codeExpired" });
+    expect(await ended(shown)).toEqual({ step: "ended", cause: "codeExpired" });
+    expect(await a.link.readLink()).toBeNull();
+  });
+
+  test("a code naming another device ID never connects (A6)", async () => {
+    const lan = makeLan();
+    const a = p2pPeer(lan, "A");
+    const b = p2pPeer(lan, "B");
+    jest.spyOn(Date, "now");
+    const shown = open(a, { kind: "show" });
+    const code = await viewOf(shown.views, (v) => v.step === "code");
+    if (code.step !== "code") throw new Error("no code");
+    const read = readCode(code.text, Math.floor(Date.now() / 1000));
+    if (!read.ok) throw new Error(read.reason);
+    const swapped = { ...read.code, deviceId: new Uint8Array(32).fill(7) };
+    const scanning = open(b, { kind: "scan", code: swapped });
+    // Ends at the 30 s search: the only device there failed the pin.
+    expect(await viewOf(scanning.views, (v) => v.step === "ended", 35_000)).toEqual({
+      step: "ended",
+      cause: "notInSight",
+    });
+    expect(shown.views.some((v) => v.step === "confirm")).toBe(false);
+    shown.session.cancel();
+  }, 40_000);
+});
+
+describe("transfer (T1 to T5, S2, S4)", () => {
+  async function linked() {
+    const lan = makeLan();
+    const a = p2pPeer(lan, "A");
+    const b = p2pPeer(lan, "B");
+    const { shown, scanning } = await pair(a, b);
+    await shown.session.confirm(true);
+    await viewOf(scanning.views, () => b.secure.has("bati.p2p.link"));
+    shown.session.cancel();
+    scanning.session.cancel();
+    const linkA = await a.link.readLink();
+    const linkB = await b.link.readLink();
+    if (!linkA || !linkB) throw new Error("not linked");
+    return { lan, a, b, linkA, linkB };
+  }
+
+  test("a written file reaches the peer whole, verified, under its pinned name, and the write waits for the ack", async () => {
+    const { a, b, linkA, linkB } = await linked();
+    const passes: number[] = [];
+    const onA = open(a, { kind: "sync", link: linkA });
+    const onB = open(b, { kind: "sync", link: linkB }, () => passes.push(1));
+    // Both outboxes are empty: each one's first pass sees nothing (S2).
+    expect(await onB.session.peerFile()).toBeNull();
+    const { file, bytes } = fileOf(a, 300 * 1024 + 17);
+    const name = `bati-${linkB.peerInstallId}.batb`;
+    const sha = await onA.session.send(file, name).catch((e) => {
+      throw new Error(
+        `${e} A:${JSON.stringify(onA.views)} B:${JSON.stringify(onB.views)} ${[...a.reports, ...b.reports].map((r) => `${r.context} ${String(r.error)}`)}`,
+      );
+    });
+    expect(sha).toMatch(/^[0-9a-f]{64}$/);
+    const got = b.transfer.received();
+    expect(got?.sha).toBe(sha);
+    expect(got?.file.name).toBe(name);
+    expect(bytesOf(got?.file.uri)).toEqual(bytes);
+    // The arrival asked for a second pass (S2b).
+    expect(passes.length).toBe(2);
+    onA.session.cancel();
+    onB.session.cancel();
+  });
+
+  test("a file under any other name is refused and nothing is written (S5)", async () => {
+    const { a, b, linkA, linkB } = await linked();
+    const onA = open(a, { kind: "sync", link: linkA });
+    const onB = open(b, { kind: "sync", link: linkB });
+    await onB.session.peerFile();
+    const { file } = fileOf(a, 1000);
+    await expect(
+      onA.session.send(file, "bati-00000000-0000-0000-0000-000000000000.batb"),
+    ).rejects.toThrow();
+    expect(await ended(onB)).toEqual({ step: "ended", cause: "interrupted" });
+    expect(b.transfer.received()).toBeNull();
+  });
+
+  test("a full phone says so before a byte is written (B11)", async () => {
+    const { a, b, linkA, linkB } = await linked();
+    const onA = open(a, { kind: "sync", link: linkA });
+    const onB = open(b, { kind: "sync", link: linkB });
+    await onB.session.peerFile();
+    disk.available = 10;
+    const { file } = fileOf(a, 1000);
+    await expect(onA.session.send(file, `bati-${linkB.peerInstallId}.batb`)).rejects.toThrow();
+    expect(await ended(onB)).toEqual({ step: "ended", cause: "noSpace" });
+  });
+
+  test("blocks that do not match their hash are asked again, and three end the session (T2)", async () => {
+    const { a, b, linkA, linkB } = await linked();
+    const onA = open(a, { kind: "sync", link: linkA });
+    const onB = open(b, { kind: "sync", link: linkB });
+    await onB.session.peerFile();
+    const { file } = fileOf(a, 3 * 128 * 1024);
+    const name = `bati-${linkB.peerInstallId}.batb`;
+    // The disk changes under the announced hashes: every block A reads is now wrong.
+    jest.spyOn(a.transfer, "readBlock").mockResolvedValue(new Uint8Array(128 * 1024).fill(9));
+    await expect(onA.session.send(file, name)).rejects.toThrow();
+    expect(await ended(onB)).toEqual({ step: "ended", cause: "interrupted" });
+    expect(b.transfer.received()).toBeNull();
+  });
+
+  test("a cut halfway leaves a .part that the next session resumes (T4, B6)", async () => {
+    const { lan, a, b, linkA, linkB } = await linked();
+    const size = 40 * 128 * 1024;
+    const { file, bytes } = fileOf(a, size, 3);
+    const name = `bati-${linkB.peerInstallId}.batb`;
+    const first = open(a, { kind: "sync", link: linkA });
+    const firstB = open(b, { kind: "sync", link: linkB });
+    await firstB.session.peerFile();
+    const sending = first.session.send(file, name).catch(() => "cut");
+    await viewOf(firstB.views, (v) => v.step === "receiving" && v.done >= 10 * 128 * 1024);
+    a.p2p.cutAll();
+    expect(await sending).toBe("cut");
+    expect(b.transfer.received()).toBeNull();
+    const before = lanBytes(lan);
+    // Next session: A's outbox is announced again, and B asks only for what it lacks.
+    const second = open(a, { kind: "sync", link: linkA });
+    const secondB = open(b, { kind: "sync", link: linkB });
+    await secondB.session.peerFile();
+    const got = b.transfer.received();
+    expect(bytesOf(got?.file.uri)).toEqual(bytes);
+    expect(lanBytes(lan) - before).toBeLessThan(size * 0.95);
+    second.session.cancel();
+    secondB.session.cancel();
+  });
+
+  test("a write with no peer connected throws, so nothing is marked sent (S4)", async () => {
+    const { a, linkA } = await linked();
+    const onA = open(a, { kind: "sync", link: linkA });
+    const { file } = fileOf(a, 100);
+    await expect(onA.session.send(file, "x.batb")).rejects.toThrow(
+      "The other device is not connected",
+    );
+    onA.session.cancel();
+  });
+});
+
+/** Every byte that crossed the Wi-Fi so far, both ways. */
+const lanBytes = (lan: Lan) => lan.seen.reduce((sum, chunk) => sum + chunk.length, 0);
+
+const bytesOf = (uri: string | undefined) =>
+  new Uint8Array(fs.readFileSync(decodeURI((uri ?? "").replace(/^file:\/\//, ""))));

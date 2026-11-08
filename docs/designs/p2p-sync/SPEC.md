@@ -257,7 +257,7 @@ every integer here.
 | 5 | ack | sha 32 |
 | 6 | ping | none |
 | 7 | bye | reason u8: 1 cancel, 2 codeExpired, 3 notThisOne, 4 versionMismatch, 5 badBlocks, 6 noSpace, 7 busy |
-| 8 | pair | token 32 ‖ random 32 (B to A, first frame after hello on a first connection, L4) |
+| 8 | pair | token 32 ‖ random 32 ‖ installId 16 (B to A, first frame after hello on a first connection, L4) |
 | 9 | linked | random 32 (A to B, once the hero confirmed, L4) |
 
 Frozen vectors in `__tests__/fixtures/p2p/`:

@@ -14,47 +14,42 @@ const toHex = (bytes: Uint8Array) =>
 
 const file = Uint8Array.from({ length: vectors.file.size }, (_, i) => (i * 31 + 7) % 251);
 
+type Vector = (typeof vectors.frames)[number];
+const bytesOf = (v: Vector, key: "instanceId" | "sha256" | "bytes" | "token" | "random") =>
+  fromHex((v as Partial<Record<typeof key, string>>)[key] ?? "");
+
+/** What each frozen vector decodes to, written from the JSON rather than from the code under test. */
+const build: Record<string, (v: Vector) => Frame> = {
+  hello: (v) => ({ type: "hello", instanceId: bytesOf(v, "instanceId"), name: v.name ?? "" }),
+  announce: (v) => ({
+    type: "announce",
+    file: {
+      name: v.name ?? "",
+      size: v.size ?? 0,
+      sha256: bytesOf(v, "sha256"),
+      blocks: (v.blocks ?? []).map(fromHex),
+    },
+  }),
+  announceEmpty: () => ({ type: "announce", file: null }),
+  want: (v) => ({ type: "want", indexes: v.indexes ?? [] }),
+  block: (v) => ({ type: "block", index: v.index ?? 0, bytes: bytesOf(v, "bytes") }),
+  ack: (v) => ({ type: "ack", sha256: bytesOf(v, "sha256") }),
+  ping: () => ({ type: "ping" }),
+  bye: (v) => ({ type: "bye", reason: v.reason ?? 0 }),
+  pair: (v) => ({
+    type: "pair",
+    token: bytesOf(v, "token"),
+    random: bytesOf(v, "random"),
+    installId: v.installId ?? "",
+  }),
+  linked: (v) => ({ type: "linked", random: bytesOf(v, "random") }),
+};
+
 const expected: Record<string, Frame> = Object.fromEntries(
   vectors.frames.map((v) => {
-    switch (v.type) {
-      case "hello":
-        return [
-          v.type,
-          { type: "hello", instanceId: fromHex(v.instanceId ?? ""), name: v.name ?? "" },
-        ];
-      case "announce":
-        return [
-          v.type,
-          {
-            type: "announce",
-            file: {
-              name: v.name ?? "",
-              size: v.size ?? 0,
-              sha256: fromHex(v.sha256 ?? ""),
-              blocks: (v.blocks ?? []).map(fromHex),
-            },
-          },
-        ];
-      case "announceEmpty":
-        return [v.type, { type: "announce", file: null }];
-      case "want":
-        return [v.type, { type: "want", indexes: v.indexes ?? [] }];
-      case "block":
-        return [v.type, { type: "block", index: v.index ?? 0, bytes: fromHex(v.bytes ?? "") }];
-      case "ack":
-        return [v.type, { type: "ack", sha256: fromHex(v.sha256 ?? "") }];
-      case "ping":
-        return [v.type, { type: "ping" }];
-      case "pair":
-        return [
-          v.type,
-          { type: "pair", token: fromHex(v.token ?? ""), random: fromHex(v.random ?? "") },
-        ];
-      case "linked":
-        return [v.type, { type: "linked", random: fromHex(v.random ?? "") }];
-      default:
-        return [v.type, { type: "bye", reason: v.reason ?? 0 }];
-    }
+    const make = build[v.type];
+    if (!make) throw new Error(`No expectation for ${v.type}`);
+    return [v.type, make(v)];
   }),
 );
 

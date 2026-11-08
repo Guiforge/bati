@@ -3,8 +3,9 @@
  * for uploads and downloads. A device of the Node harness gets one of these, rooted in its own temporary
  * folder, so two devices never see each other's files except through a server.
  *
- * Only what the data code calls is here: File (uri, name, exists, size, delete, copy, move, text, write,
- * info, upload, downloadFileAsync), Directory (uri, exists, list, create) and Paths (cache, basename).
+ * Only what the data code calls is here: File (uri, name, exists, size, delete, copy, move, text, textSync,
+ * write, info, open, upload, downloadFileAsync), Directory (uri, exists, list, create, delete) and Paths
+ * (cache, document, basename, availableDiskSpace).
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -45,8 +46,17 @@ export class File {
     const stat = fs.statSync(toPath(this.uri));
     return { exists: true, size: stat.size, modificationTime: stat.mtimeMs };
   }
+  textSync(): string {
+    return fs.readFileSync(toPath(this.uri), "utf8");
+  }
+  open(mode: string = FileMode.ReadWrite): FileHandle {
+    return new FileHandle(toPath(this.uri), mode);
+  }
   text(): Promise<string> {
     return Promise.resolve(fs.readFileSync(toPath(this.uri), "utf8"));
+  }
+  writeSync(content: string | Uint8Array): void {
+    this.write(content);
   }
   write(content: string | Uint8Array): void {
     fs.mkdirSync(path.dirname(toPath(this.uri)), { recursive: true });
@@ -109,6 +119,47 @@ export class File {
   }
 }
 
+export const FileMode = { ReadOnly: "r", ReadWrite: "rw" } as const;
+
+/** expo-file-system's random access handle: an offset that moves with each read and write. */
+class FileHandle {
+  private fd: number | null;
+  offset: number | null = 0;
+  constructor(file: string, mode: string) {
+    this.fd = fs.openSync(file, mode === FileMode.ReadOnly ? "r" : "r+");
+  }
+  get size(): number | null {
+    return this.fd === null ? null : fs.fstatSync(this.fd).size;
+  }
+  private use(): number {
+    if (this.fd === null) throw new Error("FileHandle is closed");
+    return this.fd;
+  }
+  readBytes(length: number): Promise<Uint8Array> {
+    const fd = this.use();
+    const buffer = Buffer.alloc(length);
+    const read = fs.readSync(fd, buffer, 0, length, this.offset ?? 0);
+    this.offset = (this.offset ?? 0) + read;
+    return Promise.resolve(new Uint8Array(buffer.subarray(0, read)));
+  }
+  writeBytes(bytes: Uint8Array): Promise<void> {
+    const fd = this.use();
+    // As on Android: past the end, the write lands at the end.
+    const at = Math.min(this.offset ?? 0, fs.fstatSync(fd).size);
+    fs.writeSync(fd, bytes, 0, bytes.length, at);
+    this.offset = at + bytes.length;
+    return Promise.resolve();
+  }
+  close(): void {
+    if (this.fd !== null) fs.closeSync(this.fd);
+    this.fd = null;
+    this.offset = null;
+  }
+}
+
+/** Free space the fake disk reports; a test lowers it to play a full phone. */
+export const disk = { available: Number.MAX_SAFE_INTEGER };
+
 export class Directory {
   uri: string;
   constructor(...parts: Entry[]) {
@@ -122,6 +173,9 @@ export class Directory {
   }
   create(): void {
     fs.mkdirSync(toPath(this.uri), { recursive: true });
+  }
+  delete(): void {
+    fs.rmSync(toPath(this.uri), { recursive: true });
   }
   list(): (File | Directory)[] {
     return fs.readdirSync(toPath(this.uri)).map((name) => {
@@ -137,9 +191,14 @@ export function makeExpoFs(cache: string) {
   return {
     File,
     Directory,
+    FileMode,
     Paths: {
       cache: new Directory(toUri(cache)),
+      document: new Directory(toUri(path.join(cache, "..", "document"))),
       basename: (p: string) => path.basename(toPath(p)),
+      get availableDiskSpace() {
+        return disk.available;
+      },
     },
     UploadType: { BINARY_CONTENT: 0 },
   };

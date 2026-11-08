@@ -229,6 +229,21 @@ describe("transfer (T1 to T5, S2, S4)", () => {
     secondB.session.cancel();
   });
 
+  test("with mDNS dropped by the router, the address kept at pairing still meets, whichever ID is lower (B19)", async () => {
+    // Four pairs: the IDs are random, so both orders (the code's shower lower or higher) come up.
+    for (let round = 0; round < 4; round++) {
+      const { lan, a, b, linkA, linkB } = await linked();
+      lan.mdnsBlocked = true;
+      expect(linkB.addresses.length + linkA.addresses.length).toBeGreaterThan(0);
+      const onA = open(a, { kind: "sync", link: linkA });
+      const onB = open(b, { kind: "sync", link: linkB });
+      expect(await onB.session.peerFile()).toBeNull();
+      expect(await onA.session.peerFile()).toBeNull();
+      onA.session.cancel();
+      onB.session.cancel();
+    }
+  }, 60_000);
+
   test("a write with no peer connected throws, so nothing is marked sent (S4)", async () => {
     const { a, linkA } = await linked();
     const onA = open(a, { kind: "sync", link: linkA });

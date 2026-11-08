@@ -111,6 +111,12 @@ Each rule has a number that a test reuses. The file is `__tests__/p2p-*.test.ts`
   2. then NSD results, in arrival order.
 
   The first address that passes the TLS pin wins. An address that fails is not retried in the same session.
+
+  Both devices listen on the link's port (derived from the link secret, so a kept address stays good) and both
+  dial: the lower device ID at once, through kept addresses, NSD and the meeting note; the higher one after 3 s,
+  through kept addresses only. Whoever learnt an address at pairing can reach the other on a Wi-Fi that drops mDNS
+  (PLAN.md B19). The higher ID announces on NSD and publishes the offer. When two connections cross, both devices
+  keep the one the lower ID started. Each side keeps where it reached the other, on the link's port, first next time.
 - **D4.** Each announcement carries a random instance id, drawn at each sheet opening. A known peer seen with a new
   instance id has restarted: the current connection is dropped and a new one is made.
 

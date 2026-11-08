@@ -19,9 +19,16 @@ export type Lan = {
   browsers: Set<(found: P2pEvents["onFound"]) => void>;
   /** What every device on this Wi-Fi saw: each TLS record and NSD name, for the privacy capture. */
   seen: Buffer[];
+  /** A router that drops mDNS while devices still reach each other (B19). */
+  mdnsBlocked: boolean;
 };
 
-export const makeLan = (): Lan => ({ services: new Map(), browsers: new Set(), seen: [] });
+export const makeLan = (): Lan => ({
+  services: new Map(),
+  browsers: new Set(),
+  seen: [],
+  mdnsBlocked: false,
+});
 
 type Identity = { key: string; cert: string; id: string };
 
@@ -237,6 +244,7 @@ export function nodeBatiP2p(
       return Promise.resolve();
     },
     announce: (name, port) => {
+      if (lan.mdnsBlocked) return Promise.resolve();
       announced = name;
       lan.seen.push(Buffer.from(name));
       lan.services.set(name, { host, port });
@@ -244,6 +252,7 @@ export function nodeBatiP2p(
       return Promise.resolve();
     },
     browse: () => {
+      if (lan.mdnsBlocked) return Promise.resolve();
       browser = (found) => emit("onFound", found);
       lan.browsers.add(browser);
       for (const [name, at] of lan.services) browser({ name, ...at });

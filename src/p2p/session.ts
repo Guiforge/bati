@@ -80,6 +80,8 @@ const RETRY_MS = 2_000;
 const MAX_BAD_BLOCKS = 3;
 const MAX_PASSES = 3;
 const OFFER_EVERY_MS = 10_000;
+/** The higher ID waits this long before dialling too, so the two rarely cross (`take`). */
+const HIGHER_DIALS_AFTER_MS = 3_000;
 
 /** An address to dial, and how it was learnt: kept, found on this Wi-Fi, or read from a meeting note. */
 type Target = { host: string; port: number; via?: "nsd" | "internet" };
@@ -127,6 +129,9 @@ export class Session {
   private announced: () => void = () => undefined;
   private readonly subscriptions: { remove(): void }[] = [];
   private pool: RelayPool | null = null;
+  /** Whether the channel's socket was dialled here, and who dialled the last one accepted. */
+  private channelMine = false;
+  private acceptedFrom: string | null = null;
 
   constructor(role: Role, hooks: SessionHooks) {
     this.role = role;
@@ -147,12 +152,13 @@ export class Session {
       startRouting();
       this.me = await p2p.deviceId();
       this.subscriptions.push(
-        p2p.addListener("onConnected", ({ socket, peerId }) => this.accepted(socket, peerId)),
+        p2p.addListener("onConnected", ({ socket, peerId, address }) =>
+          this.take(socket, peerId, false, address),
+        ),
       );
       if (this.role.kind === "show") await this.showCode();
       else if (this.role.kind === "scan") await this.dialCode(this.role.code);
-      else if (this.me < this.role.link.peerId) await this.dialPeer(this.role.link);
-      else await this.listenForPeer(this.role.link);
+      else await this.meet(this.role.link);
     } catch (error) {
       reportError("p2p.start", error);
       this.end("interrupted");
@@ -185,29 +191,54 @@ export class Session {
   private async dialCode(code: PairingCode): Promise<void> {
     const pin = hex(code.deviceId);
     const targets = code.lan.addresses.map((host) => ({ host, port: code.lan.port }));
+    this.myHalf = await randomHalf();
     const socket = await this.dialUntil(targets, pin, () => []);
     if (socket === null) return;
-    this.myHalf = await randomHalf();
-    this.attach(socket.id, pin);
     this.peerName = code.name;
+    this.take(socket.id, pin, true);
   }
 
-  private async dialPeer(link: Link): Promise<void> {
+  /**
+   * Both devices listen on the link's port, and both dial (D3, B19): the lower ID at once, through
+   * the kept addresses, NSD and the meeting note; the higher one after 3 s through the kept
+   * addresses alone. Whichever learnt an address at pairing can then reach the other, even on a
+   * Wi-Fi that drops mDNS. The higher ID announces on NSD and publishes the offer, so a name is
+   * never announced twice. Two connections that cross are settled in `take`.
+   */
+  private async meet(link: Link): Promise<void> {
     const p2p = batiP2p();
-    const names = new Set(
-      [-1, 0, 1].map((d) => nsdName(fromHex(link.secret), hourOf(Date.now() / 1000) + d)),
-    );
+    const secret = fromHex(link.secret);
+    const port = await p2p.listen([link.peerId], false, preferredPort(link.secret));
+    const internet = this.role.kind === "sync" && this.role.internet === true;
+    if (this.me > link.peerId) {
+      // The lower ID's dial says why nobody met (blocked, unreachable); this side only waits.
+      this.later(SEARCH_MS, () => {
+        if (this.channel === null) this.end("notInSight");
+      });
+      // shortcut: the name is the one of the hour the sheet opened; a session open across the
+      // hour keeps it, which the peer's ±1 h browse still finds. Re-announce if sessions last hours.
+      await p2p.announce(nsdName(secret, hourOf(Date.now() / 1000)), port);
+      if (internet) await this.publishOffers(link, port);
+      this.later(HIGHER_DIALS_AFTER_MS, () => {
+        this.dialUntil(link.addresses, link.peerId, () => [])
+          .then((socket) => {
+            if (socket) this.take(socket.id, link.peerId, true);
+          })
+          .catch(ignore);
+      });
+      return;
+    }
+    const names = new Set([-1, 0, 1].map((d) => nsdName(secret, hourOf(Date.now() / 1000) + d)));
     const found: Target[] = [];
     this.subscriptions.push(
-      p2p.addListener("onFound", ({ name, host, port }) => {
-        if (names.has(name)) found.push({ host, port, via: "nsd" });
+      p2p.addListener("onFound", ({ name, host, port: at }) => {
+        if (names.has(name)) found.push({ host, port: at, via: "nsd" });
       }),
     );
     await p2p.browse();
-    if (this.role.kind === "sync" && this.role.internet) this.readOffers(link, found);
+    if (internet) this.readOffers(link, found);
     const socket = await this.dialUntil(link.addresses, link.peerId, () => found.splice(0));
-    if (socket === null) return;
-    this.attach(socket.id, link.peerId);
+    if (socket) this.take(socket.id, link.peerId, true);
   }
 
   /**
@@ -224,7 +255,7 @@ export class Session {
     const silent = new Set<Target["via"]>();
     const deadline = Date.now() + SEARCH_MS;
     const queue = [...known];
-    while (!this.ended && Date.now() < deadline) {
+    while (!this.ended && this.channel === null && Date.now() < deadline) {
       queue.push(...more());
       const target = queue.shift();
       if (target === undefined) {
@@ -243,20 +274,9 @@ export class Session {
         if (target.via && String(error).includes("UNREACHABLE")) silent.add(target.via);
       }
     }
-    if (!this.ended) this.end(causeOfSilence(silent));
+    // Met by the other side's dial meanwhile: nothing to say.
+    if (!this.ended && this.channel === null) this.end(causeOfSilence(silent));
     return null;
-  }
-
-  private async listenForPeer(link: Link): Promise<void> {
-    const p2p = batiP2p();
-    const port = await p2p.listen([link.peerId], false, preferredPort(link.secret));
-    // shortcut: the name is the one of the hour the sheet opened; a session open across the hour
-    // keeps it, which the peer's ±1 h browse still finds. Re-announce if sessions ever last hours.
-    await p2p.announce(nsdName(fromHex(link.secret), hourOf(Date.now() / 1000)), port);
-    if (this.role.kind === "sync" && this.role.internet) await this.publishOffers(link, port);
-    this.later(SEARCH_MS, () => {
-      if (this.channel === null) this.end("notInSight");
-    });
   }
 
   /** Listening device, internet on: the offer goes out every 10 s until the peer connects (C1, C5). */
@@ -295,12 +315,51 @@ export class Session {
     });
   }
 
-  private accepted(socket: number, peerId: string): void {
-    if (this.ended || this.channel !== null || this.role.kind === "scan") {
+  /**
+   * A socket up, dialled by this device (`mine`) or accepted. One channel per session: when two
+   * cross (both dialled at once), both devices keep the one the lower ID started, so they agree
+   * without a word; the other is closed before it carried anything but a hello.
+   */
+  private take(socket: number, peerId: string, mine: boolean, address?: string): void {
+    const close = (): void => {
       batiP2p().close(socket).catch(ignore);
+    };
+    if (this.ended || (this.role.kind === "scan" && !mine)) {
+      close();
       return;
     }
+    const lowerStarted = (s: { mine: boolean; peerId: string }) => this.me < s.peerId === s.mine;
+    if (this.channel !== null) {
+      const keepNew =
+        this.role.kind === "sync" &&
+        lowerStarted({ mine, peerId }) &&
+        !lowerStarted({ mine: this.channelMine, peerId: this.peerId });
+      if (!keepNew) {
+        close();
+        return;
+      }
+      const old = this.channel;
+      old.onEnd = () => undefined;
+      old.end("closed");
+      this.channel = null;
+      this.incoming = null;
+    }
+    this.channelMine = mine;
+    if (address && !mine) this.acceptedFrom = address;
     this.attach(socket, peerId);
+    this.remember().catch(ignore);
+  }
+
+  /** D3: where the peer was reached this time goes first next time, on the link's port. */
+  private async remember(): Promise<void> {
+    if (this.role.kind !== "sync") return;
+    const { link } = this.role;
+    const host = this.channelMine ? this.dialledAt?.host : this.acceptedFrom;
+    if (!host) return;
+    const here = { host, port: preferredPort(link.secret) };
+    const addresses = [here, ...link.addresses.filter((a) => a.host !== host)].slice(0, 4);
+    this.role = { ...this.role, link: { ...link, addresses } };
+    await saveLink(this.role.link);
   }
 
   private attach(socket: number, peerId: string): void {
@@ -403,7 +462,9 @@ export class Session {
       peerInstallId: pending.installId,
       secret: hex(secret),
       name: this.peerName,
-      addresses: [],
+      addresses: this.acceptedFrom
+        ? [{ host: this.acceptedFrom, port: preferredPort(hex(secret)) }]
+        : [],
     });
     await batiP2p().setPins([this.peerId], false);
     await this.channel.send({ type: "linked", random: mine });
@@ -420,7 +481,10 @@ export class Session {
       peerInstallId: code.installId,
       secret: hex(secret),
       name: code.name,
-      addresses: this.dialledAt ? [this.dialledAt] : [],
+      // Next time A listens on the link's port, not the code's.
+      addresses: this.dialledAt
+        ? [{ host: this.dialledAt.host, port: preferredPort(hex(secret)) }]
+        : [],
     });
     await this.announce();
   }

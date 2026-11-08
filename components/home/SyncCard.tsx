@@ -137,7 +137,7 @@ export function SyncCard() {
     return (
       <SyncNotice
         testID="home-sync-apart"
-        title={t("p2p.apartTitle")}
+        title={t("p2p.apartTitle", { days: apart.days })}
         body={t("p2p.apartBody", { name: apart.name, days: apart.days })}
         onClose={() => {
           setApart(null);

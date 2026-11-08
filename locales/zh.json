@@ -2309,8 +2309,14 @@
     "internetSwitch": "通过互联网互相找到",
     "internetNote": "公共 Nostr 中继帮助两台设备互相找到，并能看到它们的 IP 地址。你的历史记录从不经过中继。",
     "internetNoteWifi": "公共 Nostr 中继帮助两台设备互相找到，并能看到它们的 IP 地址。使用移动数据时，它会和其他同步一样等待 Wi-Fi。",
-    "apartTitle": "有一段时间没同步了",
-    "apartBody": "上次与{{name}}同步是在 {{days}} 天前。在两台设备上都打开 Bati 即可补上。"
+    "apartTitle": "你的设备已经 {{days}} 天没有同步了",
+    "apartBody": "上次与{{name}}同步是在 {{days}} 天前。在两台设备上都打开 Bati 即可补上。",
+    "privacyLine": "加密，直接在你的两台设备之间传输。不经过互联网。",
+    "saveCopyAs": "另存为",
+    "copySaved": "已保存为 {{name}}。",
+    "deleteCopyTitle": "删除这个副本？",
+    "deleteCopyBody": "它保存着这台设备在采用另一台的历史之前的记录。删除后无法找回。",
+    "restoreHint": "要恢复某个副本：先保存，再到 设置 › 恢复备份。"
   },
   "whats_new": {
     "title": "{{version}} 有什么新",

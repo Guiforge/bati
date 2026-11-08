@@ -104,7 +104,17 @@ jest.mock("@/src/p2p/link", () => ({
   internetOn: () => Promise.resolve(mockInternet),
   setInternet: (on: boolean) => mockSetInternet(on),
 }));
-let mockKept: { name: string; delete: jest.Mock }[] = [];
+let mockKept: { name: string; uri?: string; delete: jest.Mock }[] = [];
+const mockPick = jest.fn((_name: string) => Promise.resolve("content://picked"));
+const mockWrite = jest.fn((_uri: string, _path: string) =>
+  Promise.resolve({ name: "kept.batb", bytes: 10 }),
+);
+jest.mock("@/modules/bati-save", () => ({
+  batiSave: () => ({
+    pickTarget: (name: string) => mockPick(name),
+    writeTo: (uri: string, path: string) => mockWrite(uri, path),
+  }),
+}));
 jest.mock("@/src/p2pSync", () => ({ keptCopies: () => mockKept }));
 
 jest.mock("@/stores/sync", () => {
@@ -588,10 +598,29 @@ describe("the linked device in Settings", () => {
     mockKept = [file];
     await status();
     see("Copy from 2026-11-08 14:03");
-    mockKept = [];
+    // The only copy from before the swap: a tap asks, it never deletes.
     await press("p2p-copy-delete");
+    expect(file.delete).not.toHaveBeenCalled();
+    expect(mockDialog?.title).toBe("Delete this copy?");
+    mockKept = [];
+    await act(async () => mockDialog?.onConfirm());
     expect(file.delete).toHaveBeenCalledTimes(1);
     await waitFor(() => see("No copy kept."));
+  });
+
+  test("a kept copy saves out of the app, so the restore door can read it (S6)", async () => {
+    const file = {
+      name: "bati-1-kept-20261108T140312-ab12.batb",
+      uri: "file:///p2p/kept/x",
+      delete: jest.fn(),
+    };
+    mockKept = [file];
+    await status();
+    see("To bring one back: save it, then Settings › Restore a backup.");
+    await press("p2p-copy-save");
+    expect(mockPick).toHaveBeenCalledWith(file.name);
+    await waitFor(() => expect(mockWrite).toHaveBeenCalledWith("content://picked", file.uri));
+    await waitFor(() => see("Saved as kept.batb."));
   });
 });
 

@@ -8,6 +8,7 @@ import { FormSheet } from "@/components/common/FormSheet";
 import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import { Wifi } from "@/components/icons";
 import { SettingRow } from "@/components/settings/SettingRow";
+import { batiSave } from "@/modules/bati-save";
 import { syncWifiOnly } from "@/src/deviceSync";
 import { P2P_INTERNET_ENABLED } from "@/src/p2p/flag";
 import { idSuffix, internetOn, setInternet } from "@/src/p2p/link";
@@ -44,6 +45,19 @@ export function P2pStatus({ open, account, onClose, onSyncNow, onForget, onLinkO
   const [wifiOnly, setWifiOnly] = useState(false);
   const { ask, dialog } = useConfirmDialog();
   const who = { name: account.name, suffix: idSuffix(account.peerId) };
+
+  const [saved, setSaved] = useState<string | null>(null);
+  /** Android's "Save as": the copy leaves app storage, where nothing but Bati can reach it. */
+  const saveAs = (file: { name: string; uri: string }) => {
+    setSaved(null);
+    batiSave()
+      .pickTarget(file.name)
+      .then((target) => (target === null ? null : batiSave().writeTo(target, file.uri)))
+      .then((written) => {
+        if (written) setSaved(t("p2p.copySaved", { name: written.name }));
+      })
+      .catch((e) => reportError("p2p.copySave", e));
+  };
 
   const reload = () => {
     try {
@@ -110,27 +124,65 @@ export function P2pStatus({ open, account, onClose, onSyncNow, onForget, onLinkO
                   {t("p2p.copyLabel", { when: keptWhen(file.name) })}
                 </Text>
                 <AppButton
+                  testID="p2p-copy-save"
+                  variant="outline"
+                  size="2"
+                  onPress={() => saveAs(file)}
+                >
+                  {t("p2p.saveCopyAs")}
+                </AppButton>
+                <AppButton
                   testID="p2p-copy-delete"
                   variant="outline"
                   size="2"
-                  onPress={() => {
-                    try {
-                      file.delete();
-                    } catch (e) {
-                      reportError("p2p.copyDelete", e);
-                    }
-                    reload();
-                  }}
+                  onPress={() =>
+                    // The only copy from before the swap: never gone on one tap (Yann, persona audit 08/11).
+                    ask({
+                      title: t("p2p.deleteCopyTitle"),
+                      body: t("p2p.deleteCopyBody"),
+                      cancelLabel: t("common.cancel"),
+                      confirmLabel: t("p2p.deleteCopy"),
+                      destructive: true,
+                      onConfirm: () => {
+                        try {
+                          file.delete();
+                        } catch (e) {
+                          reportError("p2p.copyDelete", e);
+                        }
+                        reload();
+                      },
+                    })
+                  }
                 >
                   {t("p2p.deleteCopy")}
                 </AppButton>
               </YStack>
             ))
           )}
+          {copies.length === 0 ? null : (
+            <Text testID="p2p-copies-restore" color="textSecondary" fontSize="2">
+              {t("p2p.restoreHint")}
+            </Text>
+          )}
+          {saved === null ? null : (
+            <Text
+              testID="p2p-copy-saved"
+              color="textSecondary"
+              fontSize="2"
+              accessibilityLiveRegion="polite"
+            >
+              {saved}
+            </Text>
+          )}
         </YStack>
 
-        <Pressable testID="p2p-link-other" accessibilityRole="button" onPress={onLinkOther}>
-          <Text color="textSecondary" fontSize="3" textDecorationLine="underline" py="2">
+        <Pressable
+          testID="p2p-link-other"
+          accessibilityRole="button"
+          onPress={onLinkOther}
+          style={{ minHeight: 48, justifyContent: "center" }}
+        >
+          <Text color="textSecondary" fontSize="3" textDecorationLine="underline">
             {t("p2p.linkOther")}
           </Text>
         </Pressable>

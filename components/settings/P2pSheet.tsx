@@ -372,8 +372,14 @@ function TextLink({
   testID: string;
 }) {
   return (
-    <Pressable testID={testID} accessibilityRole="button" onPress={onPress}>
-      <Text color="textSecondary" fontSize="3" textDecorationLine="underline" py="2">
+    // 48 dp tall: a link is a target like any button (Inès, persona audit 08/11).
+    <Pressable
+      testID={testID}
+      accessibilityRole="button"
+      onPress={onPress}
+      style={{ minHeight: 48, justifyContent: "center" }}
+    >
+      <Text color="textSecondary" fontSize="3" textDecorationLine="underline">
         {children}
       </Text>
     </Pressable>
@@ -407,7 +413,8 @@ function ShowCode({
             color="text"
             fontSize="5"
             select="text"
-            style={{ textAlign: "center" }}
+            // Monospace: l, I, 1, O and 0 must not look alike in a code read aloud or typed.
+            style={{ textAlign: "center", fontFamily: "monospace" }}
           >
             {groupCode(text)}
           </Text>
@@ -431,6 +438,14 @@ function ShowCode({
       )}
       <Text color="textSecondary" fontSize="3" style={{ textAlign: "center" }}>
         {t("p2p.qrNote")}
+      </Text>
+      <Text
+        testID="p2p-privacy-line"
+        color="textSecondary"
+        fontSize="3"
+        style={{ textAlign: "center" }}
+      >
+        {t("p2p.privacyLine")}
       </Text>
       {asText ? null : (
         <TextLink testID="p2p-as-text" onPress={onToggle}>
@@ -509,9 +524,15 @@ function TypeStep({ onCode }: { onCode: (code: PairingCode) => void }) {
   return (
     <YStack gap="3">
       <Text color="text">{t("p2p.typeHint")}</Text>
+      {/* The button first: a pasted code grows the field, and it pushed the button off a small screen. */}
+      <AppButton testID="p2p-type-use" disabled={typed.trim() === ""} onPress={submit}>
+        {t("p2p.typeCta")}
+      </AppButton>
       <Input
         testID="p2p-type-field"
-        minH={44}
+        accessibilityLabel={t("p2p.typeHint")}
+        minH={48}
+        maxH={200}
         bg="background"
         borderColor="borderStrong"
         color="text"
@@ -523,6 +544,7 @@ function TypeStep({ onCode }: { onCode: (code: PairingCode) => void }) {
         importantForAutofill="no"
         multiline
         py={8}
+        style={{ fontFamily: "monospace" }}
         value={typed}
         onChangeText={(v) => {
           setTyped(v);
@@ -534,9 +556,6 @@ function TypeStep({ onCode }: { onCode: (code: PairingCode) => void }) {
           {problem}
         </Text>
       )}
-      <AppButton testID="p2p-type-use" disabled={typed.trim() === ""} onPress={submit}>
-        {t("p2p.typeCta")}
-      </AppButton>
     </YStack>
   );
 }

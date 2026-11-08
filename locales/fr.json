@@ -2539,9 +2539,15 @@
     "internetOff": "La synchro reste sur le même Wi-Fi. Tu peux changer ça dans les Réglages.",
     "internetSwitch": "Se trouver par internet",
     "internetNote": "Des relais Nostr publics aident les deux appareils à se trouver, et voient leurs adresses IP. Ton historique ne passe jamais par eux.",
-    "internetNoteWifi": "Des relais Nostr publics aident les deux appareils à se trouver, et voient leurs adresses IP. En données mobiles, elle attend le Wi-Fi, comme le reste de la synchro.",
-    "apartTitle": "Pas de synchro depuis un moment",
-    "apartBody": "Dernière synchro avec {{name}} il y a {{days}} jours. Ouvre Bati sur les deux pour rattraper."
+    "internetNoteWifi": "Des relais Nostr publics aident les deux appareils à se trouver, et voient leurs adresses IP. En données mobiles, cette recherche attend le Wi-Fi, comme le reste de la synchro.",
+    "apartTitle": "Tes appareils ne se sont pas vus depuis {{days}} jours",
+    "apartBody": "Dernière synchro avec {{name}} il y a {{days}} jours. Ouvre Bati sur les deux pour rattraper.",
+    "privacyLine": "Chiffré, directement entre tes deux appareils. Rien ne part sur internet.",
+    "saveCopyAs": "Enregistrer sous",
+    "copySaved": "Enregistrée sous {{name}}.",
+    "deleteCopyTitle": "Supprimer cette copie ?",
+    "deleteCopyBody": "Elle garde l'historique de cet appareil d'avant qu'il prenne celui de l'autre. Une fois supprimée, elle est perdue.",
+    "restoreHint": "Pour en remettre une : enregistre-la, puis Réglages › Restaurer une sauvegarde."
   },
   "whats_new": {
     "title": "Nouveautés de la {{version}}",

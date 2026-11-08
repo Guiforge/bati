@@ -2439,8 +2439,14 @@
     "internetSwitch": "Über das Internet finden",
     "internetNote": "Öffentliche Nostr-Relays helfen beiden Geräten, sich zu finden, und sehen ihre IP-Adressen. Dein Verlauf geht nie über sie.",
     "internetNoteWifi": "Öffentliche Nostr-Relays helfen beiden Geräten, sich zu finden, und sehen ihre IP-Adressen. Im Mobilfunknetz wartet es auf WLAN, wie die übrige Synchronisierung.",
-    "apartTitle": "Länger nicht synchronisiert",
-    "apartBody": "Zuletzt mit {{name}} vor {{days}} Tagen synchronisiert. Öffne Bati auf beiden Geräten, um aufzuholen."
+    "apartTitle": "Deine Geräte haben sich seit {{days}} Tagen nicht gesehen",
+    "apartBody": "Zuletzt mit {{name}} vor {{days}} Tagen synchronisiert. Öffne Bati auf beiden Geräten, um aufzuholen.",
+    "privacyLine": "Verschlüsselt, direkt zwischen deinen beiden Geräten. Nichts geht ins Internet.",
+    "saveCopyAs": "Speichern unter",
+    "copySaved": "Gespeichert als {{name}}.",
+    "deleteCopyTitle": "Diese Kopie löschen?",
+    "deleteCopyBody": "Sie enthält den Verlauf dieses Geräts von vor der Übernahme des anderen. Gelöscht ist sie weg.",
+    "restoreHint": "Um eine zurückzuholen: speichere sie, dann Einstellungen › Sicherung wiederherstellen."
   },
   "whats_new": {
     "title": "Neu in {{version}}",

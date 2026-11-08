@@ -249,8 +249,13 @@ function ServerStatusSheet({
         </AppButton>
         {account.kind === "folder" ? null : <ConnectionTest run={onTest} />}
         {P2P_SYNC_ENABLED && onDevice ? (
-          <Pressable testID="sync-use-device" accessibilityRole="button" onPress={onDevice}>
-            <Text color="textSecondary" fontSize="3" textDecorationLine="underline" py="2">
+          <Pressable
+            testID="sync-use-device"
+            accessibilityRole="button"
+            onPress={onDevice}
+            style={{ minHeight: 48, justifyContent: "center" }}
+          >
+            <Text color="textSecondary" fontSize="3" textDecorationLine="underline">
               {t("p2p.door")}
             </Text>
           </Pressable>

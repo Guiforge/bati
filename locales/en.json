@@ -2437,8 +2437,14 @@
     "internetSwitch": "Find each other through the internet",
     "internetNote": "Public Nostr relays help both devices find each other, and see their IP addresses. Your history never goes through them.",
     "internetNoteWifi": "Public Nostr relays help both devices find each other, and see their IP addresses. On mobile data it waits for Wi-Fi, like the rest of sync.",
-    "apartTitle": "Not synced for a while",
-    "apartBody": "Last synced with {{name}} {{days}} days ago. Open Bati on both to catch up."
+    "apartTitle": "Your devices haven't met for {{days}} days",
+    "apartBody": "Last synced with {{name}} {{days}} days ago. Open Bati on both to catch up.",
+    "privacyLine": "Encrypted, straight between your two devices. Nothing goes to the internet.",
+    "saveCopyAs": "Save as",
+    "copySaved": "Saved as {{name}}.",
+    "deleteCopyTitle": "Delete this copy?",
+    "deleteCopyBody": "It holds this device's history from before it took the other one's. Once deleted, it is gone.",
+    "restoreHint": "To bring one back: save it, then Settings › Restore a backup."
   },
   "whats_new": {
     "title": "What's new in {{version}}",

@@ -195,7 +195,9 @@ Each rule has a number that a test reuses. The file is `__tests__/p2p-*.test.ts`
     The swap only goes ahead once that save has succeeded. A copy that would live only on the device being
     replaced does not count;
   - the copy also stays in `Paths.document/p2p/kept/` (the last 3), listed in Settings under "Copies kept before a
-    swap", with "Save as", "Restore" and "Delete". With none, the list says "No copy kept.";
+    swap", with "Save as" and "Delete" (asked first: it is the only copy from before the swap). It comes back
+    through the existing door: save it, then Settings › Restore a backup, which checks and keeps copies before
+    swapping as every restore does. With none, the list says "No copy kept.";
   - `p2p/in/` is emptied once a received file is read, and a `.part` is deleted after 24 h or when the source sha
     changes, so `p2p/` never holds more than the outbox, one incoming file and 3 kept copies;
   - if any of this fails, the swap does not happen.

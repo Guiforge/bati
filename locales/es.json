@@ -2540,8 +2540,14 @@
     "internetSwitch": "Encontrarse por internet",
     "internetNote": "Relés públicos de Nostr ayudan a los dos dispositivos a encontrarse y ven sus direcciones IP. Tu historial nunca pasa por ellos.",
     "internetNoteWifi": "Relés públicos de Nostr ayudan a los dos dispositivos a encontrarse y ven sus direcciones IP. Con datos móviles espera a la Wi-Fi, como el resto de la sincronización.",
-    "apartTitle": "Sin sincronizar desde hace tiempo",
-    "apartBody": "Última sincronización con {{name}} hace {{days}} días. Abre Bati en los dos para ponerte al día."
+    "apartTitle": "Tus dispositivos no se ven desde hace {{days}} días",
+    "apartBody": "Última sincronización con {{name}} hace {{days}} días. Abre Bati en los dos para ponerte al día.",
+    "privacyLine": "Cifrado, directamente entre tus dos dispositivos. Nada va a internet.",
+    "saveCopyAs": "Guardar como",
+    "copySaved": "Guardada como {{name}}.",
+    "deleteCopyTitle": "¿Borrar esta copia?",
+    "deleteCopyBody": "Guarda el historial de este dispositivo de antes de tomar el del otro. Una vez borrada, se pierde.",
+    "restoreHint": "Para recuperar una: guárdala y luego Ajustes › Restaurar una copia."
   },
   "whats_new": {
     "title": "Novedades de la {{version}}",

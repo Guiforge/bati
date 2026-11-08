@@ -37,12 +37,14 @@ export type ReadCode =
 export function encodeCode(code: PairingCode): string {
   const name = new TextEncoder().encode(code.name);
   if (name.length > MAX_NAME_BYTES) throw new Error("Device name is too long");
-  const lan = [
-    code.lan.port >> 8,
-    code.lan.port & 0xff,
-    ...code.lan.addresses.flatMap(addressBytes),
-  ];
-  if (lan.length > 255) throw new Error("Too many addresses for one route");
+  // As many addresses as one route holds, in the order given: a phone with a VPN and a hotspot
+  // can report more than fit, and a code must still be made (code review 08/11).
+  const lan = [code.lan.port >> 8, code.lan.port & 0xff];
+  for (const address of code.lan.addresses) {
+    const bytes = addressBytes(address);
+    if (lan.length + bytes.length > 255) break;
+    lan.push(...bytes);
+  }
   const bytes = [
     CODE_VERSION,
     ...u32(code.expiresAt),

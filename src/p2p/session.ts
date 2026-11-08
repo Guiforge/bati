@@ -85,6 +85,7 @@ export class PeerGone extends Error {
  */
 export const timing = { searchMs: 60_000 };
 const ACK_MS = 60_000;
+const ACK_CHECK_MS = 2_000;
 const RETRY_MS = 2_000;
 const MAX_BAD_BLOCKS = 3;
 const MAX_PASSES = 3;
@@ -92,6 +93,8 @@ const OFFER_EVERY_MS = 10_000;
 /** C1: what a stranger gets before the token is checked. */
 const PRE_PAIR_BYTES = 1024;
 const PRE_PAIR_MS = 5_000;
+/** A channel that ends this soon after opening may be the loser of two crossed dials. */
+const CROSS_GRACE_MS = 3_000;
 /** The higher ID waits this long before dialling too, so the two rarely cross (`take`). */
 const HIGHER_DIALS_AFTER_MS = 3_000;
 
@@ -168,7 +171,7 @@ export class Session {
   /** A, while a code is shown: the token it holds, and what B sent with it. */
   private token: Uint8Array | null = null;
   private expiresAt = 0;
-  private pending: { random: Uint8Array; installId: string } | null = null;
+  private pending: { random: Uint8Array; installId: string; token: Uint8Array } | null = null;
   /** B, during pairing: its half of the secret. */
   private myHalf: Uint8Array | null = null;
   private dialledAt: { host: string; port: number } | null = null;
@@ -184,6 +187,7 @@ export class Session {
   /** Whether the channel's socket was dialled here, and who dialled the last one accepted. */
   private channelMine = false;
   private helloSeen = false;
+  private ackDeadline = 0;
   private sas: string | undefined;
   private codeView: SessionView | null = null;
   private acceptedFrom: string | null = null;
@@ -273,7 +277,7 @@ export class Session {
       this.later(timing.searchMs, () => {
         if (this.channel === null) this.end("notInSight");
       });
-      // shortcut: the name is the one of the hour the sheet opened; a session open across the
+      // ponytail: the name is the one of the hour the sheet opened; a session open across the
       // hour keeps it, which the peer's ±1 h browse still finds. Re-announce if sessions last hours.
       await p2p.announce(nsdName(secret, hourOf(Date.now() / 1000)), port);
       if (internet) await this.publishOffers(link, port);
@@ -308,32 +312,43 @@ export class Session {
     pin: string,
     more: () => Target[],
   ): Promise<{ id: number } | null> {
-    const p2p = batiP2p();
-    const tried = new Set<string>();
     const silent = new Set<Target["via"]>();
     const deadline = Date.now() + timing.searchMs;
-    const queue = [...known];
+    const targets: Target[] = [];
+    const add = (t: Target) => {
+      if (!targets.some((o) => o.host === t.host && o.port === t.port)) targets.push(t);
+    };
+    for (const t of known) add(t);
+    // Every address again on each pass, every 2 s: the other device may open its sheet a minute
+    // after this one, and one failed dial must not be final (code review 08/11).
     while (!this.ended && this.channel === null && Date.now() < deadline) {
-      queue.push(...more());
-      const target = queue.shift();
-      if (target === undefined) {
-        await new Promise((resolve) => setTimeout(resolve, RETRY_MS));
-        continue;
-      }
-      const key = `${target.host}:${target.port}`;
-      if (tried.has(key)) continue;
-      tried.add(key);
+      for (const t of more()) add(t);
+      const id = await this.dialPass(targets, pin, silent);
+      if (id !== null) return { id };
+      await new Promise((resolve) => setTimeout(resolve, RETRY_MS));
+    }
+    // Met by the other side's dial meanwhile: nothing to say.
+    if (!this.ended && this.channel === null) this.end(causeOfSilence(silent));
+    return null;
+  }
+
+  /** One try at each address, in order; the socket of the first that passes the pin. */
+  private async dialPass(
+    targets: Target[],
+    pin: string,
+    silent: Set<Target["via"]>,
+  ): Promise<number | null> {
+    for (const target of [...targets]) {
+      if (this.ended || this.channel !== null) return null;
       try {
-        const id = await p2p.dial(target.host, target.port, pin);
+        const id = await batiP2p().dial(target.host, target.port, pin);
         this.dialledAt = { host: target.host, port: target.port };
-        return { id };
+        return id;
       } catch (error) {
         // Expected while the other device is not there yet; only a found-but-silent one is news.
         if (target.via && String(error).includes("UNREACHABLE")) silent.add(target.via);
       }
     }
-    // Met by the other side's dial meanwhile: nothing to say.
-    if (!this.ended && this.channel === null) this.end(causeOfSilence(silent));
     return null;
   }
 
@@ -346,14 +361,18 @@ export class Session {
     const publish = async () => {
       if (this.ended || this.channel !== null) return;
       const now = Math.floor(Date.now() / 1000);
-      await pool.publish(
-        await sealOffer(secret, { expiresAt: now + OFFER_SECONDS, port, addresses }, now),
-      );
-      this.later(OFFER_EVERY_MS, () => {
-        publish().catch(ignore);
-      });
+      try {
+        await pool.publish(
+          await sealOffer(secret, { expiresAt: now + OFFER_SECONDS, port, addresses }, now),
+        );
+      } finally {
+        // A relay that fails once must not stop the offers, nor the session (code review 08/11).
+        this.later(OFFER_EVERY_MS, () => {
+          publish().catch(ignore);
+        });
+      }
     };
-    await publish();
+    publish().catch(ignore);
   }
 
   /** Dialling device, internet on: every offer of this link and hour ±1 becomes an address to try. */
@@ -424,6 +443,7 @@ export class Session {
     const p2p = batiP2p();
     p2p.stopDiscovery().catch(ignore);
     this.peerId = peerId;
+    this.helloSeen = false;
     const channel = new Channel(socket);
     this.channel = channel;
     channel.onFrame = (frame) => {
@@ -437,8 +457,16 @@ export class Session {
     channel.onEnd = (cause) => {
       // Before A's yes, a socket that goes away is only that socket: the code stays shown.
       if (this.role.kind === "show") this.dropStranger();
-      else this.end(causeOfChannel(cause));
+      else if (this.role.kind === "sync" && Date.now() - openedAt < CROSS_GRACE_MS) {
+        // Two dials crossed and the other side closed this one: its winner may still be on its
+        // way here. Wait for it before calling the session lost (code review 08/11).
+        if (this.channel === channel) this.channel = null;
+        this.later(CROSS_GRACE_MS, () => {
+          if (this.channel === null) this.end(causeOfChannel(cause));
+        });
+      } else if (this.channel === channel) this.end(causeOfChannel(cause));
     };
+    const openedAt = Date.now();
     if (this.role.kind === "show") {
       // C1: before the token is checked, 1 KB and 5 s, then the socket goes and the code stays.
       channel.maxBytes = PRE_PAIR_BYTES;
@@ -450,6 +478,7 @@ export class Session {
       const { code } = this.role;
       this.sas = checkNumber(code.deviceId, fromHex(this.me), code.token);
     }
+    channel.open();
     (async () => {
       const name = await p2p.deviceName();
       await channel.send({
@@ -520,9 +549,9 @@ export class Session {
       return;
     }
     const sas = checkNumber(fromHex(this.me), fromHex(this.peerId), this.token);
+    this.pending = { random, installId: peerInstall, token: this.token };
     this.token = null;
     if (this.channel) this.channel.maxBytes = null;
-    this.pending = { random, installId: peerInstall };
     const again = (await readLink())?.peerInstallId === peerInstall;
     this.show({ step: "confirm", name: this.peerName, suffix: idSuffix(this.peerId), again, sas });
   }
@@ -636,6 +665,7 @@ export class Session {
   private async serve(indexes: number[]): Promise<void> {
     const served = this.served;
     if (served === null) return;
+    this.ackDeadline = Date.now() + ACK_MS;
     // One window at a time: a peer asking for 65k blocks in one frame gets eight (audit 08/11).
     for (const index of indexes.slice(0, WINDOW)) {
       if (index >= served.described.blocks.length) return;
@@ -721,7 +751,17 @@ export class Session {
       this.sending = { sha, done: resolve };
     });
     await this.channel.send({ type: "announce", file: this.served.described });
-    const timeout = new Promise<"late">((resolve) => this.later(ACK_MS, () => resolve("late")));
+    // The peer asks for blocks as it goes: each want moves the deadline, so a long history is not
+    // cut at 60 s while it is still arriving (code review 08/11).
+    this.ackDeadline = Date.now() + ACK_MS;
+    const timeout = new Promise<"late">((resolve) => {
+      const check = () => {
+        if (this.ended || this.sending?.sha !== sha) return;
+        if (Date.now() > this.ackDeadline) resolve("late");
+        else this.later(ACK_CHECK_MS, check);
+      };
+      this.later(ACK_CHECK_MS, check);
+    });
     const outcome = await Promise.race([
       acked,
       timeout,
@@ -752,6 +792,8 @@ export class Session {
     this.peerId = "";
     this.peerName = "";
     this.helloSeen = false;
+    // B left while A was deciding: its code was not used, so it works again (code review 08/11).
+    if (this.pending !== null) this.token = this.pending.token;
     this.pending = null;
     if (this.codeView) this.show(this.codeView);
   }

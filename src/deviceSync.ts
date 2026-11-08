@@ -1,4 +1,4 @@
-import { Directory, File } from "expo-file-system";
+import type { File } from "expo-file-system";
 import * as SecureStore from "expo-secure-store";
 
 import {
@@ -10,8 +10,7 @@ import {
   validateBackup,
 } from "@/db/backup";
 import { honourTombstones, keptSessions, mergePeer } from "@/db/merge";
-import { deletePreference, getPreference, setPreference } from "@/db/preferences";
-import { autoBackupFolder } from "@/src/autoBackup";
+import { deletePreference, getPreference, preferences, setPreference } from "@/db/preferences";
 import {
   CIPHER_READS,
   encryptionStatus,
@@ -1053,8 +1052,9 @@ export async function keepThisDeviceOnServer(): Promise<string> {
     // S6: no server to hold it. It stays here, and goes to the backup folder when there is one;
     // without one the swap has asked for "Save a copy" first (p2pSwapNeedsSavedCopy).
     await keepHere(snapshot, name);
-    const folder = await autoBackupFolder();
-    if (folder !== null) await snapshot.copy(new File(new Directory(folder), name));
+    // The folder's tree URI, not its label: the same write as a folder account (code review 08/11).
+    const folder = await preferences.getBackupFolderUri();
+    if (folder !== null) await folderRemote(folder).write(snapshot, name);
   } else await remoteFor(account).write(snapshot, name);
   snapshot.delete();
   return name;
@@ -1065,7 +1065,7 @@ export async function keepThisDeviceOnServer(): Promise<string> {
  * copy"), since the one kept here would be on the very device being replaced.
  */
 export async function p2pSwapNeedsSavedCopy(): Promise<boolean> {
-  return (await syncAccount())?.kind === "p2p" && (await autoBackupFolder()) === null;
+  return (await syncAccount())?.kind === "p2p" && (await preferences.getBackupFolderUri()) === null;
 }
 
 /** Names of the devices whose first merge already left a kept copy of this one on the server. */

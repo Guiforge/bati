@@ -168,8 +168,12 @@ export class RelayPool {
     let sent = 0;
     for (const socket of sockets) {
       if (socket === null) continue;
-      socket.send(JSON.stringify(["EVENT", event]));
-      sent++;
+      try {
+        socket.send(JSON.stringify(["EVENT", event]));
+        sent++;
+      } catch {
+        // A relay closing under the send is a relay down: the others still get it.
+      }
     }
     return sent;
   }
@@ -180,6 +184,7 @@ export class RelayPool {
     for (const url of this.urls) {
       this.open(url)
         .then((socket) => socket?.send(JSON.stringify(["REQ", id, filter])))
+        // A relay that closed meanwhile is a relay down; the subscription lives on the others.
         .catch(() => undefined);
     }
     return {

@@ -75,7 +75,7 @@ class BatiP2pModule : Module() {
       Name("BatiP2p")
       Events("onConnected", "onData", "onClosed", "onFound")
 
-      // shortcut: a zero-argument Coroutine is ambiguous in this expo-modules-core, so these run on the
+      // ponytail: a zero-argument Coroutine is ambiguous in this expo-modules-core, so these run on the
       // module queue; they are quick (the Keystore key is made once).
       AsyncFunction("deviceId") { P2pCore.idOf(identity().first[0]) }
 
@@ -393,7 +393,7 @@ class BatiP2pModule : Module() {
 
   private fun browse() {
     if (discovery != null) return
-    // shortcut: no WifiManager.MulticastLock is taken, and it is untested whether discovery needs
+    // ponytail: no WifiManager.MulticastLock is taken, and it is untested whether discovery needs
     // one. SPEC §5: add it, with CHANGE_WIFI_MULTICAST_STATE and its justification in
     // __tests__/android-permissions.test.ts, only if a phone test shows discovery fails without it.
     val l =

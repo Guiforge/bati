@@ -76,3 +76,18 @@ describe("pairing code v1 (L3, L6), against the frozen vectors", () => {
     expect(readCode(v?.text ?? "", (v?.expiresAt ?? 0) - 600 + 30).ok).toBe(true);
   });
 });
+
+test("a phone reporting more addresses than a route holds still gets a code (code review 08/11)", () => {
+  const many = Array.from({ length: 20 }, (_, i) => `fd00::${i + 1}`);
+  const text = encodeCode({
+    expiresAt: 2_000_000_000,
+    token: new Uint8Array(32),
+    installId: "01234567-89ab-cdef-0123-456789abcdef",
+    deviceId: new Uint8Array(32),
+    name: "Pixel",
+    lan: { port: 40_000, addresses: ["192.168.1.2", ...many] },
+  });
+  const read = readCode(text, 2_000_000_000 - 60);
+  expect(read.ok && read.code.lan.addresses[0]).toBe("192.168.1.2");
+  expect(read.ok && read.code.lan.addresses.length).toBeLessThan(21);
+});

@@ -86,20 +86,31 @@ export class Channel {
     this.p2p = batiP2p();
     this.socket = socket;
     startRouting();
-    sinks.set(socket, { data: (bytes) => this.receive(bytes), closed: () => this.end("closed") });
     this.timer = setInterval(() => {
       if (Date.now() - this.lastHeard > SILENCE_MS) this.end("interrupted");
       else this.send({ type: "ping" }).catch(ignore);
     }, PING_EVERY_MS);
     this.raw(Uint8Array.of(PROTOCOL_VERSION)).catch(ignore);
-    const held = early.get(socket);
-    early.delete(socket);
-    // After the constructor: the session sets onFrame and onEnd first, on the next tick.
-    if (held) {
-      setTimeout(() => {
-        for (const chunk of held.chunks) this.receive(chunk);
-        if (held.closed) this.end("closed");
-      }, 0);
+  }
+
+  /**
+   * Starts reading, once the session has set `onFrame` and `onEnd`: first what arrived before
+   * anyone claimed the socket, in order, then the rest. Until then new bytes join the held ones,
+   * so nothing overtakes them (code review 08/11: a timer here let later bytes in first).
+   */
+  open(): void {
+    const held = early.get(this.socket);
+    early.delete(this.socket);
+    for (const chunk of held?.chunks ?? []) this.receive(chunk);
+    if (held?.closed) {
+      this.end("closed");
+      return;
+    }
+    if (!this.ended) {
+      sinks.set(this.socket, {
+        data: (bytes) => this.receive(bytes),
+        closed: () => this.end("closed"),
+      });
     }
   }
 

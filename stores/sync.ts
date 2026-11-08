@@ -101,10 +101,17 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     const outcome = await syncNow(options).then(
       (result) => ({ result, failure: result.peerFailure ?? null }),
       (error: unknown) => {
+        // The other device closed its sheet: how P2P works, not a failure to report or to count
+        // toward "failing for days" (code review 08/11). The sheet says it in its own words.
+        if (error instanceof Error && error.name === "PeerGone") return null;
         reportError("sync.run", error);
         return { result: get().result, failure: failureFrom(error) };
       },
     );
+    if (outcome === null) {
+      set({ running: false });
+      return;
+    }
     const health = await recordSyncOutcome(outcome.failure).catch((error: unknown) => {
       reportError("sync.health", error);
       return null;

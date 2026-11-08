@@ -257,6 +257,21 @@ describe("transfer (T1 to T5, S2, S4)", () => {
     }
   }, 60_000);
 
+  test("a device that opens its sheet seconds after the other still meets it (code review 08/11)", async () => {
+    for (let round = 0; round < 2; round++) {
+      const { a, b, linkA, linkB } = await linked();
+      const first = round === 0 ? { peer: a, link: linkA } : { peer: b, link: linkB };
+      const second = round === 0 ? { peer: b, link: linkB } : { peer: a, link: linkA };
+      const early = open(first.peer, { kind: "sync", link: first.link });
+      await new Promise((resolve) => setTimeout(resolve, 3_500));
+      const late = open(second.peer, { kind: "sync", link: second.link });
+      expect(await late.session.peerFile()).toBeNull();
+      expect(await early.session.peerFile()).toBeNull();
+      early.session.cancel();
+      late.session.cancel();
+    }
+  }, 40_000);
+
   test("a write with no peer connected throws, so nothing is marked sent (S4)", async () => {
     const { a, linkA } = await linked();
     const onA = open(a, { kind: "sync", link: linkA });
@@ -411,6 +426,27 @@ describe("a stranger during pairing (security audit 08/11)", () => {
     expect(closedAt).toBeGreaterThan(0);
     await realPairs(lan, shown, read);
   }, 20_000);
+});
+
+describe("B leaves while A decides (code review 08/11)", () => {
+  test("the code was not used, so it works again for the next device", async () => {
+    const lan = makeLan();
+    const a = p2pPeer(lan, "A");
+    const b = p2pPeer(lan, "B");
+    const { shown, scanning, code } = await pair(a, b);
+    b.p2p.cutAll();
+    await viewOf(shown.views, () => shown.views.filter((v) => v.step === "code").length === 2);
+    scanning.session.cancel();
+    const read = readCode(code, Math.floor(Date.now() / 1000));
+    if (!read.ok) throw new Error(read.reason);
+    const c = p2pPeer(lan, "C");
+    const retry = open(c, { kind: "scan", code: read.code });
+    const confirms = () => shown.views.filter((v) => v.step === "confirm").length;
+    await viewOf(shown.views, () => confirms() === 2);
+    expect(confirms()).toBe(2);
+    shown.session.cancel();
+    retry.session.cancel();
+  });
 });
 
 describe("addresses and check numbers", () => {

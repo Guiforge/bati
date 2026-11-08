@@ -85,14 +85,20 @@ export function P2pSheet({ open, mode, onClose, onLinked }: Props) {
       setStep("choose");
       return;
     }
+    let closed = false;
     Promise.all([readLink(), internetRoute()])
       .then(([link, found]) => {
+        // Closed while these were read: no session for a sheet that is gone (code review 08/11).
+        if (closed) return;
         if (link === null) return setStep("choose");
         setPeer(link.name);
         setRoute(found);
         start({ kind: "sync", link, internet: found.internet }, "sync");
       })
       .catch((e) => reportError("p2p.link", e));
+    return () => {
+      closed = true;
+    };
   }, [open, mode]);
 
   const close = () => {

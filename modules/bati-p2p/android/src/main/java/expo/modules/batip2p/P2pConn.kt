@@ -49,7 +49,7 @@ class P2pConn(
     try {
       socket.close()
     } catch (_: IOException) {
-      // shortcut: a failing close leaves nothing to recover, the socket is gone either way
+      // ponytail: a failing close leaves nothing to recover, the socket is gone either way
     }
     onClosed(reason)
   }

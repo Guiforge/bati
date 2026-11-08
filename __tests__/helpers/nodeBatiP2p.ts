@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import crypto from "node:crypto";
 import fs from "node:fs";
+import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import tls from "node:tls";
@@ -84,6 +85,7 @@ export function nodeBatiP2p(
   const sockets = new Map<number, tls.TLSSocket>();
   let next = 1;
   let server: tls.Server | null = null;
+  const fronts: net.Server[] = [];
   let pins: { list: string[]; any: boolean } = { list: [], any: false };
   let announced: string | null = null;
   let browser: ((found: P2pEvents["onFound"]) => void) | null = null;
@@ -92,7 +94,6 @@ export function nodeBatiP2p(
     const id = next++;
     sockets.set(id, socket);
     socket.on("data", (chunk: Buffer) => {
-      lan.seen.push(chunk);
       emit("onData", { socket: id, bytes: chunk.toString("base64") });
     });
     let closed = false;
@@ -147,25 +148,44 @@ export function nodeBatiP2p(
           },
         );
         server.on("tlsClientError", () => undefined);
-        const bound = server as tls.Server;
-        bound.once("error", (error: NodeJS.ErrnoException) => {
-          if (error.code === "EADDRINUSE" && port !== 0) bound.listen(0, host);
-          else reject(error);
+        // What the Wi-Fi carries is recorded by a pass-through in front of the TLS server: the bytes
+        // as they are on the air, ciphertext and all, for the privacy capture.
+        const inner = server;
+        inner.listen(0, "127.0.0.1", () => {
+          const at = inner.address();
+          const innerPort = typeof at === "object" && at ? at.port : 0;
+          const front = net.createServer((outside) => {
+            const inside = net.connect(innerPort, "127.0.0.1");
+            outside.on("data", (chunk: Buffer) => lan.seen.push(chunk));
+            inside.on("data", (chunk: Buffer) => lan.seen.push(chunk));
+            outside.pipe(inside).pipe(outside);
+            outside.on("error", () => inside.destroy());
+            inside.on("error", () => outside.destroy());
+            outside.on("close", () => inside.destroy());
+            inside.on("close", () => outside.destroy());
+          });
+          fronts.push(front);
+          front.once("error", (error: NodeJS.ErrnoException) => {
+            if (error.code === "EADDRINUSE" && port !== 0) front.listen(0, host);
+            else reject(error);
+          });
+          front.once("listening", () => {
+            const address = front.address();
+            resolve(typeof address === "object" && address ? address.port : 0);
+          });
+          front.listen(port, host);
         });
-        bound.once("listening", () => {
-          const address = bound.address();
-          resolve(typeof address === "object" && address ? address.port : 0);
-        });
-        bound.listen(port, host);
       }),
     setPins: (list, any) => {
       pins = { list, any };
       return Promise.resolve();
     },
     stopListening: async () => {
-      const closing = server;
+      const closing = [server, ...fronts.splice(0)].filter((s) => s !== null);
       server = null;
-      if (closing) await new Promise<void>((resolve) => closing.close(() => resolve()));
+      await Promise.all(
+        closing.map((s) => new Promise<void>((resolve) => s.close(() => resolve()))),
+      );
     },
     dial: (to, port, pin) =>
       new Promise((resolve, reject) => {

@@ -8,6 +8,7 @@ import { reportError } from "@/src/reportError";
 
 import { Channel, type ChannelEnd, ignore, startRouting } from "./channel";
 import { CODE_MINUTES, encodeCode, type PairingCode } from "./code";
+import { currentSession, setCurrentSession } from "./current";
 import { type AnnouncedFile, BYE, type Frame } from "./frames";
 import { idSuffix, type Link, peerFileName, saveLink } from "./link";
 import { hourOf, linkSecret, nsdName } from "./names";
@@ -81,15 +82,10 @@ const fromHex = (value: string) =>
 export const preferredPort = (secret: string) =>
   40_000 + (Number.parseInt(secret.slice(0, 4), 16) % 20_000);
 
-let current: Session | null = null;
-
-/** The session the sync sheet holds open, if any: what the P2P `Remote` talks through. */
-export const currentSession = () => current;
-
 export function openSession(role: Role, hooks: SessionHooks = {}): Session {
-  current?.cancel();
+  currentSession()?.cancel();
   const session = new Session(role, hooks);
-  current = session;
+  setCurrentSession(session);
   session.start().catch(ignore);
   return session;
 }
@@ -556,7 +552,7 @@ export class Session {
     p2p.stopDiscovery().catch(ignore);
     p2p.stopListening().catch(ignore);
     for (const listener of this.endedListeners) listener();
-    if (current === this) current = null;
+    if (currentSession() === this) setCurrentSession(null);
     this.show({ step: "ended", cause });
   }
 

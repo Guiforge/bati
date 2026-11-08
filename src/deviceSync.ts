@@ -1,4 +1,4 @@
-import type { File } from "expo-file-system";
+import { Directory, File } from "expo-file-system";
 import * as SecureStore from "expo-secure-store";
 
 import {
@@ -11,6 +11,7 @@ import {
 } from "@/db/backup";
 import { honourTombstones, keptSessions, mergePeer } from "@/db/merge";
 import { deletePreference, getPreference, setPreference } from "@/db/preferences";
+import { autoBackupFolder } from "@/src/autoBackup";
 import {
   CIPHER_READS,
   encryptionStatus,
@@ -48,6 +49,9 @@ import {
 } from "@/src/cloudSync";
 import { folderLabel, folderPath, folderRemote } from "@/src/folderSync";
 import { fileFor, installId, PEER_FILE } from "@/src/installId";
+import { forgetLink, type Link } from "@/src/p2p/link";
+import { wipe as wipeP2p } from "@/src/p2p/transfer";
+import { keepHere, type P2pAccount, p2pRemote } from "@/src/p2pSync";
 import { reportError } from "@/src/reportError";
 
 /**
@@ -120,7 +124,9 @@ const MAX_PEERS = 16;
 export type SyncAccount =
   | ({ kind: "nextcloud" } & NextcloudAccount)
   | { kind: "webdav"; url: string; user: string; password: string; label?: string }
-  | { kind: "folder"; uri: string };
+  | { kind: "folder"; uri: string }
+  /** The other device itself, while both have the sync sheet open (src/p2pSync.ts). */
+  | P2pAccount;
 
 export async function syncAccount(): Promise<SyncAccount | null> {
   const value = await SecureStore.getItemAsync(STORE_ACCOUNT);
@@ -159,6 +165,7 @@ function davRemote(target: DavTarget): Remote {
 }
 
 function remoteFor(account: SyncAccount): Remote {
+  if (account.kind === "p2p") return p2pRemote(account);
   if (account.kind === "folder") {
     return {
       id: account.uri,
@@ -176,6 +183,7 @@ function remoteFor(account: SyncAccount): Remote {
 
 /** What the Settings row shows: the preset's name, the folder's, or the server's host. */
 export function accountLabel(account: SyncAccount): string {
+  if (account.kind === "p2p") return account.name;
   if (account.kind === "folder") return folderLabel(account.uri);
   if (account.kind === "webdav" && account.label) return account.label;
   const address = account.kind === "nextcloud" ? account.server : account.url;
@@ -297,7 +305,7 @@ async function verified(account: SyncAccount): Promise<void> {
  */
 export async function testConnection(): Promise<DiagnosticStep[]> {
   const account = candidate ?? (await syncAccount());
-  if (account === null || account.kind === "folder") return [];
+  if (account === null || account.kind === "folder" || account.kind === "p2p") return [];
   if (account.kind === "nextcloud") return diagnoseServer(nextcloudTarget(account), account);
   return diagnoseServer(webdavTarget(account.url, account.user, account.password));
 }
@@ -338,12 +346,30 @@ export async function connectFolder(uri?: string): Promise<SyncAccount | null> {
 }
 
 /**
+ * The other device, once the two are linked (SPEC.md S1): replaces any other account, through the
+ * same disconnect, so a WebDAV or folder account and P2P never run side by side.
+ */
+export async function connectP2p(link: Link): Promise<SyncAccount> {
+  const current = await syncAccount();
+  if (current !== null && !(current.kind === "p2p" && current.peerId === link.peerId)) {
+    await disconnectSync({ keepLink: true });
+  }
+  return remember({ kind: "p2p", peerId: link.peerId, name: link.name });
+}
+
+/**
  * Forgets the account on this phone, and every file sync left on it: another device's history in
  * plaintext has no business outliving the sync that fetched it. The app password stays valid on
  * the server until the hero revokes it there, and the files there stay theirs.
  */
-export async function disconnectSync(): Promise<void> {
+export async function disconnectSync(options: { keepLink?: boolean } = {}): Promise<void> {
   const account = await syncAccount();
+  // L7: forgetting the other device drops its pinned ID and its files. A new link replacing it
+  // keeps the one just made.
+  if (!options.keepLink) {
+    await forgetLink();
+    wipeP2p();
+  }
   // Nextcloud can take back the app password it gave; any other server keeps it until the hero
   // removes it there, and the stop message says so.
   if (account?.kind === "nextcloud") await revokeNextcloudAppPassword(account);
@@ -398,7 +424,8 @@ async function localState(): Promise<string> {
 export async function prepareSyncAtLaunch(): Promise<void> {
   try {
     const account = await syncAccount();
-    if (account === null || (await encryptionStatus()) !== "on") return;
+    // D1: P2P never syncs at launch, so a snapshot sealed now would wait for nothing.
+    if (account === null || account.kind === "p2p" || (await encryptionStatus()) !== "on") return;
     const { changed, now } = await changedSinceUpload(remoteFor(account));
     if (!changed) return;
     await writeSyncSnapshot();
@@ -999,9 +1026,23 @@ export async function keepThisDeviceOnServer(): Promise<string> {
     .padStart(4, "0");
   const name = `bati-${await installId()}-kept-${stamp}-${tail}.batb`;
   const snapshot = await writeSyncSnapshot();
-  await remoteFor(account).write(snapshot, name);
+  if (account.kind === "p2p") {
+    // S6: no server to hold it. It stays here, and goes to the backup folder when there is one;
+    // without one the swap has asked for "Save a copy" first (p2pSwapNeedsSavedCopy).
+    await keepHere(snapshot, name);
+    const folder = await autoBackupFolder();
+    if (folder !== null) await snapshot.copy(new File(new Directory(folder), name));
+  } else await remoteFor(account).write(snapshot, name);
   snapshot.delete();
   return name;
+}
+
+/**
+ * S6: a swap on P2P with no backup folder needs a copy the hero saved elsewhere first ("Save a
+ * copy"), since the one kept here would be on the very device being replaced.
+ */
+export async function p2pSwapNeedsSavedCopy(): Promise<boolean> {
+  return (await syncAccount())?.kind === "p2p" && (await autoBackupFolder()) === null;
 }
 
 /** Names of the devices whose first merge already left a kept copy of this one on the server. */

@@ -80,6 +80,62 @@ def typo(shown: str, group: int) -> str:
     return " ".join(parts)
 
 
+
+# BIP-340 Schnorr, the reference implementation's arithmetic, for the meeting note's signature.
+P_FIELD = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F
+N_ORDER = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141
+G_POINT = (
+    0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798,
+    0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8,
+)
+
+
+def point_add(a, b):
+    if a is None:
+        return b
+    if b is None:
+        return a
+    if a[0] == b[0] and a[1] != b[1]:
+        return None
+    if a == b:
+        lam = (3 * a[0] * a[0] * pow(2 * a[1], P_FIELD - 2, P_FIELD)) % P_FIELD
+    else:
+        lam = ((b[1] - a[1]) * pow(b[0] - a[0], P_FIELD - 2, P_FIELD)) % P_FIELD
+    x = (lam * lam - a[0] - b[0]) % P_FIELD
+    return (x, (lam * (a[0] - x) - a[1]) % P_FIELD)
+
+
+def point_mul(point, k):
+    result = None
+    for i in range(256):
+        if (k >> i) & 1:
+            result = point_add(result, point)
+        point = point_add(point, point)
+    return result
+
+
+def tagged(tag: str, msg: bytes) -> bytes:
+    t = hashlib.sha256(tag.encode()).digest()
+    return hashlib.sha256(t + t + msg).digest()
+
+
+def schnorr_pub(sk: bytes) -> bytes:
+    return point_mul(G_POINT, int.from_bytes(sk, "big"))[0].to_bytes(32, "big")
+
+
+def schnorr_sign(msg: bytes, sk: bytes, aux: bytes) -> bytes:
+    d0 = int.from_bytes(sk, "big")
+    pub = point_mul(G_POINT, d0)
+    d = d0 if pub[1] % 2 == 0 else N_ORDER - d0
+    t = bytes(x ^ y for x, y in zip(d.to_bytes(32, "big"), tagged("BIP0340/aux", aux)))
+    k0 = int.from_bytes(tagged("BIP0340/nonce", t + pub[0].to_bytes(32, "big") + msg), "big") % N_ORDER
+    r = point_mul(G_POINT, k0)
+    k = k0 if r[1] % 2 == 0 else N_ORDER - k0
+    rx = r[0].to_bytes(32, "big")
+    e = int.from_bytes(tagged("BIP0340/challenge", rx + pub[0].to_bytes(32, "big") + msg), "big") % N_ORDER
+    return rx + ((k + e * d) % N_ORDER).to_bytes(32, "big")
+
+
 def main() -> None:
     if OUT.exists() and any(OUT.iterdir()) and "--force" not in sys.argv:
         sys.exit(f"{OUT} already holds frozen vectors; a new format is a new version")
@@ -192,7 +248,45 @@ def main() -> None:
         ],
     }
 
-    for filename, data in (("code-v1.json", codes), ("names-v1.json", names), ("frames-v1.json", frames)):
+    offer_key = hkdf(link, b"", b"bati/p2p/offer/v1")
+    plain = bytearray(256)
+    plain[0] = 1
+    plain[1:5] = struct.pack(">I", 1_794_052_920)
+    plain[5:7] = struct.pack(">H", 47_000)
+    plain[7] = 2
+    plain[8:13] = bytes([4, 192, 168, 1, 23])
+    plain[13:30] = bytes([6]) + bytes.fromhex("2a0104a0000000001c2d3e4f5a6b7c8d")
+    event_sk = hashlib.sha256(b"meeting key").digest()
+    pubkey = schnorr_pub(event_sk).hex()
+    created = 1_794_052_800
+    tag = hmac.new(link, b"bati/p2p/rdv" + struct.pack(">Q", 498_348), hashlib.sha256).digest()[:16].hex()
+    content = "c2VhbGVkIGJ5IGJhdGktY3J5cHRv"
+    serial = json.dumps([0, pubkey, created, 21059, [["x", tag]], content], separators=(",", ":"), ensure_ascii=False)
+    event_id = hashlib.sha256(serial.encode()).digest()
+    meeting = {
+        "note": NOTE,
+        "linkBytes": link.hex(),
+        "tags": [
+            {"hour": h, "tag": hmac.new(link, b"bati/p2p/rdv" + struct.pack(">Q", h), hashlib.sha256).digest()[:16].hex()}
+            for h in hours
+        ],
+        "sealBytes": offer_key.hex(),
+        "offer": {"expiresAt": 1_794_052_920, "port": 47_000, "addresses": ["192.168.1.23", "2a01:4a0::1c2d:3e4f:5a6b:7c8d"]},
+        "plain": bytes(plain).hex(),
+        "event": {
+            "signerSeed": event_sk.hex(),
+            "aux": "00" * 32,
+            "pubkey": pubkey,
+            "created_at": created,
+            "kind": 21059,
+            "tags": [["x", tag]],
+            "content": content,
+            "id": event_id.hex(),
+            "sig": schnorr_sign(event_id, event_sk, bytes(32)).hex(),
+        },
+    }
+
+    for filename, data in (("code-v1.json", codes), ("names-v1.json", names), ("frames-v1.json", frames), ("meeting-v1.json", meeting)):
         (OUT / filename).write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
 
 

@@ -30,6 +30,12 @@
 // the server holds bytes it cannot read. The policy's "Syncing your devices" section and the front
 // page's privacy band say so.
 //
+// A third landed with device-to-device sync (issue #232, docs/designs/p2p-sync/): `src/nostrRelay.ts`,
+// public Nostr relays used only so two linked devices on different networks find each other. Behind
+// its own flag until the privacy policy names the relays, off until the hero says yes on both
+// devices, and what it sends is sealed under the link: a relay sees an IP and an opaque tag for an
+// hour. `new WebSocket(...)` was not matched by the call pattern before it; it is now.
+//
 // expo-file-system transfers natively, and those calls are a socket all the same: the front page
 // says a lint rule refuses every connection outside these modules, and without the last two
 // entries below that sentence was not true.
@@ -38,7 +44,10 @@
 // `.ts` style module rather than a `.json` one — see docs/designs/map-immersion.md.
 language js
 
-`$fn($...)` where {
+or {
+  `$fn($...)`,
+  `new $fn($...)`
+} where {
   $fn <: or {
     `fetch`,
     `XMLHttpRequest`,
@@ -53,5 +62,6 @@ language js
   $filename <: not r".*__tests__.*",
   $filename <: not r".*src/updateCheck\.ts",
   $filename <: not r".*src/cloudSync\.ts",
-  register_diagnostic(span=$fn, message="No network from JavaScript outside src/updateCheck.ts and src/cloudSync.ts. Map tiles are fetched natively by MapLibre; the version check and device sync are the JS requests this app makes; all three are named in the privacy policy and all three are off by default. Anything else breaks the promise the manifest used to enforce. See .biome/plugins/noJsNetwork.grit.")
+  $filename <: not r".*src/nostrRelay\.ts",
+  register_diagnostic(span=$fn, message="No network from JavaScript outside src/updateCheck.ts, src/cloudSync.ts and src/nostrRelay.ts. Map tiles are fetched natively by MapLibre; the version check, device sync to a server and the meeting of two linked devices are the JS requests this app makes; all four are named in the privacy policy and all four are off by default. Anything else breaks the promise the manifest used to enforce. See .biome/plugins/noJsNetwork.grit.")
 }

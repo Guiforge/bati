@@ -7,6 +7,7 @@ import { FormSheet } from "@/components/common/FormSheet";
 import { Input } from "@/components/common/Input";
 import { ConnectionTest } from "@/components/settings/ConnectionTest";
 import type { DiagnosticStep } from "@/src/cloudSync";
+import { P2P_SYNC_ENABLED } from "@/src/p2p/flag";
 
 type Props = {
   open: boolean;
@@ -32,6 +33,8 @@ type Props = {
    * hero" for both engines. `folder` is where it writes now, `null` while it is off.
    */
   local?: { folder: string | null; onPress: () => void; gpsNotice?: boolean };
+  /** The third door, "My other device": the caller checks encryption, then opens the pairing sheet. */
+  onDevice?: () => void;
 };
 
 /** Where Round Sync serves rclone to Bati, on the phone itself. */
@@ -48,6 +51,15 @@ function webdavLabelFor(url: string): string | undefined {
   if (/^https?:\/\/(127\.0\.0\.1|localhost)(:|\/|$)/i.test(url)) return "Round Sync";
   return undefined;
 }
+
+/** The third door only exists where device sync does; choosing it closes this sheet first. */
+const deviceDoor = (onDevice: (() => void) | undefined, close: () => void) =>
+  P2P_SYNC_ENABLED && onDevice
+    ? () => {
+        close();
+        onDevice();
+      }
+    : undefined;
 
 type Mode = "nextcloud" | "webdav" | "folder";
 type Step = { kind: "pick" } | { kind: "form"; mode: Mode } | { kind: "notListed" };
@@ -75,6 +87,7 @@ export function SyncSetupSheet({
   onTest,
   backupFolder,
   local,
+  onDevice,
 }: Props) {
   const { t } = useTranslation();
   const [step, setStep] = useState<Step>({ kind: "pick" });
@@ -155,6 +168,7 @@ export function SyncSetupSheet({
             local?.onPress();
           }}
           onDoor={(mode) => setStep({ kind: "form", mode })}
+          onDevice={deviceDoor(onDevice, close)}
           onNotListed={() => setStep({ kind: "notListed" })}
         />
       ) : step.kind === "notListed" ? (
@@ -196,6 +210,7 @@ function Doors({
   local,
   onLocal,
   onDoor,
+  onDevice,
   onNotListed,
 }: {
   context: "onboarding" | "settings";
@@ -203,6 +218,7 @@ function Doors({
   local: { folder: string | null; gpsNotice?: boolean } | undefined;
   onLocal: () => void;
   onDoor: (mode: Mode) => void;
+  onDevice: (() => void) | undefined;
   onNotListed: () => void;
 }) {
   const { t } = useTranslation();
@@ -257,6 +273,16 @@ function Doors({
           </Text>
         </YStack>
       ))}
+      {onDevice ? (
+        <YStack gap="1">
+          <AppButton testID="sync-door-device" variant="outline" onPress={onDevice}>
+            {t("p2p.door")}
+          </AppButton>
+          <Text color="textSecondary" fontSize="2" px="2">
+            {t("p2p.doorNote")}
+          </Text>
+        </YStack>
+      ) : null}
       <Pressable testID="sync-not-listed" accessibilityRole="button" onPress={onNotListed}>
         <Text color="textSecondary" fontSize="3" textDecorationLine="underline" py="2">
           {t("sync.pick.notListed")}

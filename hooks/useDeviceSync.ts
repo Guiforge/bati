@@ -122,6 +122,11 @@ export function useDeviceSync() {
 
   return {
     account,
+    /** After the pairing sheet made the other device the account. */
+    reloadAccount: () =>
+      syncAccount()
+        .then(setAccount)
+        .catch((error: unknown) => reportError("sync.account", error)),
     lost,
     backupFolder,
     running,

@@ -4,13 +4,15 @@ import { batiCrypto } from "@/modules/bati-crypto";
 import { batiP2p } from "@/modules/bati-p2p";
 import { installId } from "@/src/installId";
 import { fromBase64 } from "@/src/multiplayer/envelope";
+import { RelayPool } from "@/src/nostrRelay";
 import { reportError } from "@/src/reportError";
 
 import { Channel, type ChannelEnd, ignore, startRouting } from "./channel";
 import { CODE_MINUTES, encodeCode, type PairingCode } from "./code";
 import { currentSession, setCurrentSession } from "./current";
 import { type AnnouncedFile, BYE, type Frame } from "./frames";
-import { idSuffix, type Link, peerFileName, saveLink } from "./link";
+import { idSuffix, type Link, peerFileName, readLink, saveLink } from "./link";
+import { MEETING_KIND, meetingTag, OFFER_SECONDS, openOffer, sealOffer } from "./meeting";
 import { hourOf, linkSecret, nsdName } from "./names";
 import {
   blockIsRight,
@@ -35,12 +37,15 @@ export type SessionCause =
   | "versionMismatch"
   | "interrupted"
   | "noSpace"
+  /** Met through the internet, and no address it gave answered (C2). */
+  | "unreachable"
   | "cancelled";
 
 export type SessionView =
   | { step: "code"; text: string; expiresAt: number }
   | { step: "waiting" }
-  | { step: "confirm"; name: string; suffix: string }
+  /** `again`: the device is the one already linked, back after a reinstall (U2b). */
+  | { step: "confirm"; name: string; suffix: string; again: boolean }
   | { step: "connected"; name: string }
   | { step: "receiving"; name: string; done: number; total: number }
   | { step: "ended"; cause: SessionCause };
@@ -50,7 +55,8 @@ export type Role =
   | { kind: "show" }
   /** B: read A's code. */
   | { kind: "scan"; code: PairingCode }
-  | { kind: "sync"; link: Link };
+  /** `internet`: the hero turned on "Find each other through the internet" here (Phase 2). */
+  | { kind: "sync"; link: Link; internet?: boolean };
 
 export type SessionHooks = {
   onChange?: (view: SessionView) => void;
@@ -73,6 +79,10 @@ const ACK_MS = 60_000;
 const RETRY_MS = 2_000;
 const MAX_BAD_BLOCKS = 3;
 const MAX_PASSES = 3;
+const OFFER_EVERY_MS = 10_000;
+
+/** An address to dial, and how it was learnt: kept, found on this Wi-Fi, or read from a meeting note. */
+type Target = { host: string; port: number; via?: "nsd" | "internet" };
 
 const randomHalf = async () => fromBase64(await batiCrypto().randomBytes(32));
 const fromHex = (value: string) =>
@@ -116,6 +126,7 @@ export class Session {
   private firstAnnounce: Promise<void>;
   private announced: () => void = () => undefined;
   private readonly subscriptions: { remove(): void }[] = [];
+  private pool: RelayPool | null = null;
 
   constructor(role: Role, hooks: SessionHooks) {
     this.role = role;
@@ -186,13 +197,14 @@ export class Session {
     const names = new Set(
       [-1, 0, 1].map((d) => nsdName(fromHex(link.secret), hourOf(Date.now() / 1000) + d)),
     );
-    const found: { host: string; port: number }[] = [];
+    const found: Target[] = [];
     this.subscriptions.push(
       p2p.addListener("onFound", ({ name, host, port }) => {
-        if (names.has(name)) found.push({ host, port });
+        if (names.has(name)) found.push({ host, port, via: "nsd" });
       }),
     );
     await p2p.browse();
+    if (this.role.kind === "sync" && this.role.internet) this.readOffers(link, found);
     const socket = await this.dialUntil(link.addresses, link.peerId, () => found.splice(0));
     if (socket === null) return;
     this.attach(socket.id, link.peerId);
@@ -203,13 +215,13 @@ export class Session {
    * (D3). An address that fails is not tried again in this session. `null` once the session ended.
    */
   private async dialUntil(
-    known: { host: string; port: number }[],
+    known: Target[],
     pin: string,
-    more: () => { host: string; port: number }[],
+    more: () => Target[],
   ): Promise<{ id: number } | null> {
     const p2p = batiP2p();
     const tried = new Set<string>();
-    let seenButUnreachable = false;
+    const silent = new Set<Target["via"]>();
     const deadline = Date.now() + SEARCH_MS;
     const queue = [...known];
     while (!this.ended && Date.now() < deadline) {
@@ -224,15 +236,14 @@ export class Session {
       tried.add(key);
       try {
         const id = await p2p.dial(target.host, target.port, pin);
-        this.dialledAt = target;
+        this.dialledAt = { host: target.host, port: target.port };
         return { id };
       } catch (error) {
         // Expected while the other device is not there yet; only a found-but-silent one is news.
-        if (!known.includes(target) && String(error).includes("UNREACHABLE"))
-          seenButUnreachable = true;
+        if (target.via && String(error).includes("UNREACHABLE")) silent.add(target.via);
       }
     }
-    if (!this.ended) this.end(seenButUnreachable ? "blocked" : "notInSight");
+    if (!this.ended) this.end(causeOfSilence(silent));
     return null;
   }
 
@@ -242,8 +253,45 @@ export class Session {
     // shortcut: the name is the one of the hour the sheet opened; a session open across the hour
     // keeps it, which the peer's ±1 h browse still finds. Re-announce if sessions ever last hours.
     await p2p.announce(nsdName(fromHex(link.secret), hourOf(Date.now() / 1000)), port);
+    if (this.role.kind === "sync" && this.role.internet) await this.publishOffers(link, port);
     this.later(SEARCH_MS, () => {
       if (this.channel === null) this.end("notInSight");
+    });
+  }
+
+  /** Listening device, internet on: the offer goes out every 10 s until the peer connects (C1, C5). */
+  private async publishOffers(link: Link, port: number): Promise<void> {
+    const pool = new RelayPool();
+    this.pool = pool;
+    const secret = fromHex(link.secret);
+    const addresses = await batiP2p().localAddresses(true);
+    const publish = async () => {
+      if (this.ended || this.channel !== null) return;
+      const now = Math.floor(Date.now() / 1000);
+      await pool.publish(
+        await sealOffer(secret, { expiresAt: now + OFFER_SECONDS, port, addresses }, now),
+      );
+      this.later(OFFER_EVERY_MS, () => {
+        publish().catch(ignore);
+      });
+    };
+    await publish();
+  }
+
+  /** Dialling device, internet on: every offer of this link and hour ±1 becomes an address to try. */
+  private readOffers(link: Link, found: Target[]): void {
+    const pool = new RelayPool();
+    this.pool = pool;
+    const secret = fromHex(link.secret);
+    const hour = hourOf(Date.now() / 1000);
+    const tags = [hour - 1, hour, hour + 1].map((h) => meetingTag(secret, h));
+    pool.subscribe({ kinds: [MEETING_KIND], "#x": tags }, (event) => {
+      openOffer(secret, event, Math.floor(Date.now() / 1000))
+        .then((offer) => {
+          for (const host of offer?.addresses ?? [])
+            found.push({ host, port: offer?.port ?? 0, via: "internet" });
+        })
+        .catch(ignore);
     });
   }
 
@@ -334,7 +382,8 @@ export class Session {
     }
     this.token = null;
     this.pending = { random, installId: peerInstall };
-    this.show({ step: "confirm", name: this.peerName, suffix: idSuffix(this.peerId) });
+    const again = (await readLink())?.peerInstallId === peerInstall;
+    this.show({ step: "confirm", name: this.peerName, suffix: idSuffix(this.peerId), again });
   }
 
   /** A: the hero's answer to "Link {name}?". Nothing is pinned before it (L4). */
@@ -547,6 +596,7 @@ export class Session {
     this.ended = true;
     for (const timer of this.timers) clearTimeout(timer);
     for (const subscription of this.subscriptions) subscription.remove();
+    this.pool?.close();
     this.channel?.end("closed");
     const p2p = batiP2p();
     p2p.stopDiscovery().catch(ignore);
@@ -559,6 +609,15 @@ export class Session {
   get linkedTo(): Link | null {
     return this.role.kind === "sync" ? this.role.link : null;
   }
+}
+
+/**
+ * Found on this Wi-Fi and silent is a Wi-Fi that keeps devices apart; met only through the internet
+ * and silent is a network in between (carrier NAT, C2); nothing found is nobody there.
+ */
+function causeOfSilence(silent: Set<Target["via"]>): SessionCause {
+  if (silent.has("nsd")) return "blocked";
+  return silent.has("internet") ? "unreachable" : "notInSight";
 }
 
 function causeOfChannel(cause: ChannelEnd): SessionCause {

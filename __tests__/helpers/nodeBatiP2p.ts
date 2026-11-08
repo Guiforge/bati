@@ -73,7 +73,7 @@ export type NodeP2p = BatiP2p & {
 
 export function nodeBatiP2p(
   lan: Lan,
-  options: { name?: string; identity?: Identity; host?: string } = {},
+  options: { name?: string; identity?: Identity; host?: string; advertise?: string[] } = {},
 ): NodeP2p {
   const identity = options.identity ?? makeIdentity();
   const host = options.host ?? "127.0.0.1";
@@ -115,7 +115,7 @@ export function nodeBatiP2p(
     },
     deviceId: () => Promise.resolve(identity.id),
     deviceName: () => Promise.resolve(options.name ?? "Node device"),
-    localAddresses: () => Promise.resolve([host]),
+    localAddresses: () => Promise.resolve(options.advertise ?? [host]),
     listen: (list, any, port) =>
       new Promise((resolve, reject) => {
         pins = { list, any };

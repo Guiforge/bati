@@ -2,7 +2,8 @@ import fs from "node:fs";
 import { readCode } from "../src/p2p/code";
 import type { SessionView } from "../src/p2p/session";
 import { disk } from "../test/node/harness/fakeExpoFs";
-import { type Lan, makeLan } from "./helpers/nodeBatiP2p";
+import { fakeRelays } from "./helpers/fakeRelays";
+import { type Lan, makeIdentity, makeLan } from "./helpers/nodeBatiP2p";
 import { fileOf, type P2pPeer, p2pPeer, viewOf } from "./helpers/p2pPeer";
 
 jest.setTimeout(30_000);
@@ -57,6 +58,7 @@ describe("pairing (L4, L5)", () => {
       step: "confirm",
       name: "Pixel B",
       suffix: b.p2p.identity.id.slice(-4).toUpperCase(),
+      again: false,
     });
     // Nothing pinned before the hero answers (L4).
     expect(await a.link.readLink()).toBeNull();
@@ -243,3 +245,76 @@ const lanBytes = (lan: Lan) => lan.seen.reduce((sum, chunk) => sum + chunk.lengt
 
 const bytesOf = (uri: string | undefined) =>
   new Uint8Array(fs.readFileSync(decodeURI((uri ?? "").replace(/^file:\/\//, ""))));
+
+describe("over the internet, two different networks (C1 to C3)", () => {
+  const original = globalThis.WebSocket;
+  afterEach(() => {
+    globalThis.WebSocket = original;
+  });
+
+  /** Two devices already linked, each on a Wi-Fi of its own: NSD can never find the other. */
+  function apart(options: { advertise?: string[] } = {}) {
+    const one = makeIdentity();
+    const two = makeIdentity();
+    const [low, high] = one.id < two.id ? [one, two] : [two, one];
+    // The higher ID listens (and publishes the offer); the lower one dials.
+    const dialer = p2pPeer(makeLan(), "dialer", { identity: low });
+    const listener = p2pPeer(makeLan(), "listener", { identity: high, ...options });
+    const secret = "ab".repeat(32);
+    const linkOf = (peer: P2pPeer, install: string) => ({
+      peerId: peer.p2p.identity.id,
+      peerInstallId: install,
+      secret,
+      name: peer.name,
+      addresses: [],
+    });
+    return {
+      dialer,
+      listener,
+      dialerLink: linkOf(listener, "11111111-1111-1111-1111-111111111111"),
+      listenerLink: linkOf(dialer, "22222222-2222-2222-2222-222222222222"),
+    };
+  }
+
+  test("they meet through a relay and connect directly (C1)", async () => {
+    const relays = fakeRelays();
+    globalThis.WebSocket = relays.FakeSocket as unknown as typeof WebSocket;
+    const { dialer, listener, dialerLink, listenerLink } = apart();
+    const onL = open(listener, { kind: "sync", link: listenerLink, internet: true });
+    const onD = open(dialer, { kind: "sync", link: dialerLink, internet: true });
+    expect(await onD.session.peerFile()).toBeNull();
+    expect(onD.views.some((v) => v.step === "connected")).toBe(true);
+    // What the relay carried: notes of one kind, one tag, and no address in the clear.
+    expect(relays.published.length).toBeGreaterThan(0);
+    expect(JSON.stringify(relays.published)).not.toContain("127.0.0.1");
+    onL.session.cancel();
+    onD.session.cancel();
+  });
+
+  test("met, but the address it gave does not answer: 'unreachable' (C2)", async () => {
+    const relays = fakeRelays();
+    globalThis.WebSocket = relays.FakeSocket as unknown as typeof WebSocket;
+    const { dialer, listener, dialerLink, listenerLink } = apart({ advertise: ["127.0.0.2"] });
+    const onL = open(listener, { kind: "sync", link: listenerLink, internet: true });
+    const onD = open(dialer, { kind: "sync", link: dialerLink, internet: true });
+    expect(await viewOf(onD.views, (v) => v.step === "ended", 35_000)).toEqual({
+      step: "ended",
+      cause: "unreachable",
+    });
+    onL.session.cancel();
+  }, 40_000);
+
+  test("the switch off on one side: no meeting, and that side sends nothing to any relay (C3, N7)", async () => {
+    const relays = fakeRelays();
+    globalThis.WebSocket = relays.FakeSocket as unknown as typeof WebSocket;
+    const { dialer, listener, dialerLink, listenerLink } = apart();
+    const onL = open(listener, { kind: "sync", link: listenerLink });
+    const onD = open(dialer, { kind: "sync", link: dialerLink, internet: true });
+    expect(await viewOf(onD.views, (v) => v.step === "ended", 35_000)).toEqual({
+      step: "ended",
+      cause: "notInSight",
+    });
+    expect(relays.published).toEqual([]);
+    onL.session.cancel();
+  }, 40_000);
+});

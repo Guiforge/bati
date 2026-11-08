@@ -22,10 +22,14 @@ export type P2pPeer = {
   fs: ReturnType<typeof makeExpoFs>;
 };
 
-export function p2pPeer(lan: Lan, name: string): P2pPeer {
+export function p2pPeer(
+  lan: Lan,
+  name: string,
+  radio: Parameters<typeof nodeBatiP2p>[1] = {},
+): P2pPeer {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), `bati-p2p-${name}-`));
   const secure = new Map<string, string>();
-  const p2p = nodeBatiP2p(lan, { name });
+  const p2p = nodeBatiP2p(lan, { name, ...radio });
   const reports: P2pPeer["reports"] = [];
   const expoFs = makeExpoFs(path.join(dir, "cache"));
   let peer!: P2pPeer;

@@ -29,8 +29,25 @@ export function saveLink(link: Link): Promise<void> {
   return SecureStore.setItemAsync(STORE_LINK, JSON.stringify({ v: 1, links: [link] }));
 }
 
-export function forgetLink(): Promise<void> {
-  return SecureStore.deleteItemAsync(STORE_LINK);
+export async function forgetLink(): Promise<void> {
+  await SecureStore.deleteItemAsync(STORE_LINK);
+  await SecureStore.deleteItemAsync(STORE_INTERNET);
+}
+
+/**
+ * "Find each other through the internet" on this device (PLAN.md §1). Off until the hero says yes,
+ * and per device: a meeting needs it on both, which the hint after `notInSight` says (C3).
+ */
+const STORE_INTERNET = "bati.p2p.internet";
+
+export async function internetOn(): Promise<boolean> {
+  return (await SecureStore.getItemAsync(STORE_INTERNET)) === "on";
+}
+
+export function setInternet(on: boolean): Promise<void> {
+  return on
+    ? SecureStore.setItemAsync(STORE_INTERNET, "on")
+    : SecureStore.deleteItemAsync(STORE_INTERNET);
 }
 
 /** The name the peer's file has, the only one accepted from it (S5). */

@@ -167,7 +167,8 @@ function decodeName(bytes: Uint8Array): string | null {
   }
 }
 
-function addressBytes(address: string): number[] {
+/** `family ‖ bytes` of an IP address, as the code and the meeting note carry it. Throws on anything else. */
+export function addressBytes(address: string): number[] {
   if (address.includes(":")) return [6, ...ipv6Bytes(address)];
   const parts = address.split(".").map(Number);
   if (parts.length !== 4 || parts.some((p) => !Number.isInteger(p) || p < 0 || p > 255)) {
@@ -192,7 +193,7 @@ function ipv6Bytes(address: string): number[] {
 }
 
 /** RFC 5952 short form: lowercase, the longest run of zero groups as "::". */
-function ipv6Text(bytes: Uint8Array): string {
+export function ipv6Text(bytes: Uint8Array): string {
   const groups = Array.from(
     { length: 8 },
     (_, i) => ((bytes[2 * i] ?? 0) << 8) | (bytes[2 * i + 1] ?? 0),

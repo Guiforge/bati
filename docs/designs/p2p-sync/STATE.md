@@ -30,10 +30,10 @@ Issue [#232](https://github.com/Guiforge/bati/issues/232). Branch `feat/p2p-sync
 | 3. Frozen vectors, red first | done: `scripts/p2p-vectors.py` (stdlib only), code, names, frames; 34 tests in `__tests__/p2p-{code,names,frames}.test.ts`. Kotlin read-back comes with the module (step 6) |
 | 3b. Full plan: every situation, setting and test ([PLAN.md](PLAN.md)), SPEC §4, §6, §7 aligned | done |
 | 3c. Persona audit of the updated SPEC and PLAN, one round by a fresh agent | done: passes with fixes, all applied. A10 was wording (`holdBack` already listens first), now held by test S1b. Text code gets a check character per group (`codeTypo`); vectors to regenerate in step 4 |
-| 4. Unit tests, then code | to do |
-| 5. Node stage `test/node/p2p/` | to do |
-| 6. Native module, screens, locales, privacy | to do |
+| 4. Unit tests, then code | done: `src/p2p/{channel,transfer,session,meeting,current}.ts`, `src/p2pSync.ts`, `src/nostrRelay.ts`, the `deviceSync` wiring; jest over a Node double with real TLS (`__tests__/helpers/nodeBatiP2p.ts`) and an in-memory relay. The protocol is TypeScript, Kotlin carries only key, TLS and NSD |
+| 5. Node stage `test/node/p2p/` | done: two harness devices with the real data code converge over P2P (new phone, tablet that trained first, later sessions), S7, and a wire capture with no name, installId, session or plain database |
+| 6. Native module, screens, locales, privacy | module done (6 JVM tests, compiles, not yet run on a device); screens and locales in progress; privacy text ships with the release that turns the flag on, held by `__tests__/p2p-privacy-gate.test.ts` |
 | 7. Emulators, then two phones in release | to do |
-| 8. Phase 2: Nostr meeting, IPv6 listener, PLAN.md table C | after the merge |
+| 8. Phase 2: Nostr meeting, IPv6 listener, PLAN.md table C | engine done behind `EXPO_PUBLIC_P2P_INTERNET`: meeting vectors (BIP-340 from the independent Python), relay pool, `unreachable`; the question and the switch on screen to do. Ships only at 70 % in D5 |
 | 9. D5 measured apart, then Tor or Wi-Fi Direct decided | after Phase 2 |
 | 10. Reply on #232, drafted and shown to Guillaume first | to do |

@@ -50,6 +50,7 @@ jest.mock("@/hooks/useBackup", () => ({
 }));
 jest.mock("@/src/backupFiles", () => ({
   peerScratch: (name: string, kind: string) => ({ uri: `file:///db/${name}.${kind}` }),
+  saveBackupAs: () => mockSaveBackupAs(),
 }));
 
 const mockRemembered: string[] = [];
@@ -97,11 +98,18 @@ jest.mock("@/src/deviceSync", () => ({
       mockRemembered.push(`${peer.name}@${peer.comparison.fingerprint}`);
     }),
   keepThisDeviceOnServer: () => mockKeepCopy(),
+  p2pSwapNeedsSavedCopy: () => Promise.resolve(mockNeedsSavedCopy),
   joinPeer: (peer: string) => {
     mockJoinedPeers.push(peer);
     return Promise.resolve(mockJoinOpens);
   },
 }));
+
+// S6 (B20): on the other device with no backup folder, a swap needs a copy the hero saved elsewhere.
+let mockNeedsSavedCopy = false;
+const mockSaveBackupAs = jest.fn(
+  (): Promise<{ name: string } | null | "noPicker"> => Promise.resolve({ name: "bati.batb" }),
+);
 
 /** A restore's word for after its reload; `mockRestoreAsked` is whether one was left. */
 let mockRestored: { village: string; sessions: number } | null = null;
@@ -174,6 +182,8 @@ beforeEach(() => {
   mockToasts.length = 0;
   mockJoinedPeers.length = 0;
   mockKeepCopy.mockClear();
+  mockNeedsSavedCopy = false;
+  mockSaveBackupAs.mockClear();
   for (const name of Object.keys(mockAnnounced)) delete mockAnnounced[name];
   mockReload.mockClear();
   mockMerge = { result: "cannot" };
@@ -210,6 +220,7 @@ test("ahead: taking its version adopts that device's file, after a copy of this 
 
   await waitFor(() => expect(mockAlerts.map((a) => a.title)).toEqual(["sync.aheadTitle"]));
   press("sync.take");
+  await waitFor(() => expect(mockAdopted).toHaveLength(1));
   expect(mockAdopted.map((a) => a.uri)).toEqual(["file:///db/bati-tab.batb.plain"]);
   expect(mockKeepCopy).not.toHaveBeenCalled();
   await mockAdopted[0]?.before();
@@ -263,9 +274,42 @@ test("diverged: taking first sends this device's copy away", async () => {
 
   await waitFor(() => expect(mockAlerts).toHaveLength(1));
   press("sync.take");
+  await waitFor(() => expect(mockAdopted).toHaveLength(1));
   await mockAdopted[0]?.before();
   expect(mockKeepCopy).toHaveBeenCalledTimes(1);
   expect(mockRemembered).toEqual([]);
+});
+
+// U10 (S6, B20): the swap button appears only after "Save a copy" worked.
+test("on the other device without a backup folder, the swap waits for a saved copy", async () => {
+  mockNeedsSavedCopy = true;
+  await render(<SyncPrompt />);
+  await syncFound({
+    name: "bati-tab.batb",
+    etag: "e",
+    state: "ahead",
+    comparison: comparison(2, 0, "f1"),
+  });
+  await waitFor(() => expect(mockAlerts.map((a) => a.title)).toEqual(["sync.aheadTitle"]));
+  press("sync.take");
+
+  // The only way forward is "Save a copy": no swap button yet, nothing adopted.
+  await waitFor(() => expect(mockDialog?.confirmLabel).toBe("p2p.saveCta"));
+  expect(mockDialog?.title).toBe("p2p.saveFirstTitle");
+  expect(mockAdopted).toHaveLength(0);
+
+  // The hero backed out of the picker: asked again, still nothing adopted.
+  mockSaveBackupAs.mockResolvedValueOnce(null);
+  await act(async () => press("p2p.saveCta"));
+  await waitFor(() => expect(mockDialog?.confirmLabel).toBe("p2p.saveCta"));
+  expect(mockAdopted).toHaveLength(0);
+
+  await act(async () => press("p2p.saveCta"));
+  await waitFor(() => expect(mockDialog?.confirmLabel).toBe("sync.take"));
+  expect(mockSaveBackupAs).toHaveBeenCalledTimes(2);
+  expect(mockAdopted).toHaveLength(0);
+  press("sync.take");
+  expect(mockAdopted.map((a) => a.uri)).toEqual(["file:///db/bati-tab.batb.plain"]);
 });
 
 test("a device that can be merged is merged, not asked, and the app reloads to read it", async () => {

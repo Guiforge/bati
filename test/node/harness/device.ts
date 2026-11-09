@@ -14,6 +14,12 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import {
+  type Lan,
+  makeLan,
+  type NodeP2p,
+  nodeBatiP2p,
+} from "../../../__tests__/helpers/nodeBatiP2p";
 import { clientMock, createTestDb } from "../../../__tests__/helpers/testDb";
 import { SCHEMA_VERSION } from "../../../db/schemaVersion";
 import { makeExpoFs } from "./fakeExpoFs";
@@ -30,6 +36,11 @@ export type App = {
   adventure: typeof import("../../../src/adventureFile");
   unlock: typeof import("../../../src/vaultUnlock");
   completed: typeof import("../../../db/completed");
+  p2p: {
+    session: typeof import("../../../src/p2p/session");
+    link: typeof import("../../../src/p2p/link");
+    transfer: typeof import("../../../src/p2p/transfer");
+  };
 };
 
 export type Device = {
@@ -39,6 +50,8 @@ export type Device = {
   /** The live database, for what a test seeds or reads straight. */
   sqlite: ReturnType<typeof createTestDb>["sqlite"];
   secure: Map<string, string>;
+  /** This device's bati-p2p: real TLS on loopback, on the Wi-Fi passed to `newDevice`. */
+  radio: NodeP2p;
   /**
    * A copy of this device's database in a file of its own: what Android restores onto a new phone (the database
    * travels with the app's backup, the keystore does not).
@@ -58,7 +71,12 @@ const DB_NAME = `bati.v${SCHEMA_VERSION}.db`;
 let counter = 0;
 
 /** `restoreFrom`: a database copied from another phone, with an empty secure store: Android's restore onto a new one. */
-export async function newDevice(name: string, restoreFrom?: string): Promise<Device> {
+export async function newDevice(
+  name: string,
+  restoreFrom?: string,
+  lan: Lan = makeLan(),
+): Promise<Device> {
+  const radio = nodeBatiP2p(lan, { name });
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), `bati-node-${name}-`));
   const dbDir = path.join(dir, "SQLite");
   fs.mkdirSync(dbDir, { recursive: true });
@@ -97,6 +115,7 @@ export async function newDevice(name: string, restoreFrom?: string): Promise<Dev
       batiCrypto: () =>
         jest.requireActual("../../../__tests__/helpers/nodeBatiCrypto").nodeBatiCrypto,
     }));
+    jest.doMock("@/modules/bati-p2p", () => ({ batiP2p: () => radio, BatiP2pModule: radio }));
     jest.doMock("@/modules/bati-save", () => ({
       batiSave: () => {
         throw new Error("no save screen in Node");
@@ -117,6 +136,11 @@ export async function newDevice(name: string, restoreFrom?: string): Promise<Dev
       adventure: require("../../../src/adventureFile"),
       unlock: require("../../../src/vaultUnlock"),
       completed: require("../../../db/completed"),
+      p2p: {
+        session: require("../../../src/p2p/session"),
+        link: require("../../../src/p2p/link"),
+        transfer: require("../../../src/p2p/transfer"),
+      },
     };
   });
   // Since SDK 58, requiring the app's modules in a fresh registry runs Expo's global install again, which puts
@@ -140,6 +164,7 @@ export async function newDevice(name: string, restoreFrom?: string): Promise<Dev
     app,
     sqlite: test.sqlite,
     secure,
+    radio,
     copyOfDatabase() {
       const file = path.join(
         os.tmpdir(),

@@ -1,0 +1,22 @@
+{
+  "note": "Frozen. Written once by scripts/p2p-vectors.py, never regenerated: a change of format is a new version. See docs/designs/p2p-sync/SPEC.md section 2.",
+  "rA": "317f28e28bd41460fa9fec3f11993640037e30ce2360b08294b7773709e4f4c1",
+  "rB": "6d50c9d1a88bbe7f6420dc07cbc7bdd02e9bfb7dfec29c0b5a8226b362bb5e87",
+  "idA": "49093beb633cbc86b9a3ed5f2537f728206eed0b1f147576cd255fb04b06aa66",
+  "idB": "84e94c9ea99e12be7f1e2094202d15b9fddff1a217396573aca30135a63da265",
+  "derivedLink": "843e1fba7b4508861aed09dfc1469506d65993a08d996010ee35c98c086ffd59",
+  "nsd": [
+    {
+      "hour": 498348,
+      "name": "12ec543185ea958a8a667e3f5df3dc66"
+    },
+    {
+      "hour": 498349,
+      "name": "cc1a916d7d672c7226053b3345f138a2"
+    },
+    {
+      "hour": 498350,
+      "name": "db5057c8ba8d13e03080b6d3548bb065"
+    }
+  ]
+}

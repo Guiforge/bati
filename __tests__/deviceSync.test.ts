@@ -265,7 +265,14 @@ function mockOpen(
 const mockMerges: string[] = [];
 /** The preferences table, as a Map: the lost-sync marker lives there, not in SecureStore. */
 const mockPrefs = new Map<string, string>();
+let mockBackupUri: string | null = null;
+const mockKeepHere = jest.fn((_snapshot: unknown, _name: string) => Promise.resolve());
+jest.mock("@/src/p2pSync", () => ({
+  ...jest.requireActual("@/src/p2pSync"),
+  keepHere: (snapshot: unknown, name: string) => mockKeepHere(snapshot, name),
+}));
 jest.mock("@/db/preferences", () => ({
+  preferences: { getBackupFolderUri: () => Promise.resolve(mockBackupUri) },
   getPreference: (key: string) => Promise.resolve(mockPrefs.get(key) ?? null),
   setPreference: (key: string, value: string) =>
     Promise.resolve().then(() => {
@@ -327,6 +334,7 @@ import {
   connectWebDav,
   disconnectSync,
   dismissMergeCard,
+  dismissP2pApart,
   forgetLostSync,
   forgetPeer,
   joinPeer,
@@ -334,6 +342,8 @@ import {
   lastMerge,
   lostSync,
   mergeWithPeer,
+  p2pApart,
+  p2pSwapNeedsSavedCopy,
   prepareSyncAtLaunch,
   recordSyncOutcome,
   rememberAnswer,
@@ -2313,5 +2323,70 @@ describe("error branches", () => {
         expect.any(Error),
       );
     });
+  });
+});
+
+describe("two linked devices apart for two weeks (E1)", () => {
+  const DAY = 86_400_000;
+  const linked = () =>
+    mockSecure.set(
+      "bati.sync.account",
+      JSON.stringify({ kind: "p2p", peerId: "ab", name: "Pixel 7" }),
+    );
+
+  test("said after 14 days without a sync, closed until the next one, and never for a server", async () => {
+    mockSecure.clear();
+    linked();
+    const synced = Date.now() - 15 * DAY;
+    mockSecure.set(
+      "bati.sync.health",
+      JSON.stringify({ lastSuccessAt: synced, failure: null, failingSince: null }),
+    );
+    expect(await p2pApart()).toEqual({ name: "Pixel 7", days: 15 });
+    expect(await p2pApart(synced + 13 * DAY)).toBeNull();
+    await dismissP2pApart();
+    expect(await p2pApart()).toBeNull();
+    // A sync, then two more weeks apart: the card comes back for the new gap.
+    mockSecure.set(
+      "bati.sync.health",
+      JSON.stringify({ lastSuccessAt: synced + DAY, failure: null, failingSince: null }),
+    );
+    expect(await p2pApart(synced + 16 * DAY)).toEqual({ name: "Pixel 7", days: 15 });
+    mockSecure.set("bati.sync.account", JSON.stringify({ kind: "folder", uri: "content://x" }));
+    expect(await p2pApart()).toBeNull();
+  });
+
+  test("a link never synced has no 'last synced' to speak of", async () => {
+    mockSecure.clear();
+    linked();
+    expect(await p2pApart()).toBeNull();
+  });
+});
+
+describe("a swap over P2P keeps this device's copy (S6)", () => {
+  const linked = () =>
+    mockSecure.set(
+      "bati.sync.account",
+      JSON.stringify({ kind: "p2p", peerId: "ab", name: "Pixel 7" }),
+    );
+
+  test("here, and in the backup folder by its tree URI, not its label (code review 08/11)", async () => {
+    mockSecure.clear();
+    linked();
+    mockBackupUri =
+      "content://com.android.externalstorage.documents/tree/primary%3ADocuments%2FBati";
+    mockUploads.length = 0;
+    const name = await keepThisDeviceOnServer();
+    expect(mockKeepHere).toHaveBeenCalledWith(expect.anything(), name);
+    expect(mockUploads).toContain(name);
+    expect(await p2pSwapNeedsSavedCopy()).toBe(false);
+    mockBackupUri = null;
+  });
+
+  test("with no backup folder, the swap asks for a saved copy first", async () => {
+    mockSecure.clear();
+    linked();
+    mockBackupUri = null;
+    expect(await p2pSwapNeedsSavedCopy()).toBe(true);
   });
 });

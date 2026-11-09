@@ -23,7 +23,9 @@ const mockState = {
     failingSince: number | null;
   },
   merge: null as null | { sessions: number; kept: string | null; seen: boolean },
+  apart: null as null | { name: string; days: number },
 };
+const mockApartClosed = jest.fn(() => Promise.resolve());
 const mockForgot = jest.fn(() => Promise.resolve());
 jest.mock("@/src/deviceSync", () => ({
   lostSync: () => Promise.resolve(mockState.lost),
@@ -31,6 +33,8 @@ jest.mock("@/src/deviceSync", () => ({
   lastMerge: () => Promise.resolve(mockState.merge),
   forgetLostSync: () => mockForgot(),
   dismissMergeCard: () => Promise.resolve(),
+  p2pApart: () => Promise.resolve(mockState.apart),
+  dismissP2pApart: () => mockApartClosed(),
 }));
 jest.mock("@/src/reportError", () => ({ reportError: () => {} }));
 
@@ -96,6 +100,16 @@ test("sessions that arrived by merge are shown until the card is closed", async 
   await card();
   await waitFor(() => expect(screen.getByTestId("home-sync-merged")).toBeTruthy());
   expect(screen.getByText("sync.card.mergedKept")).toBeTruthy();
+});
+
+test("two weeks apart from the linked device: said once, with no alarm, and closed for good (E1)", async () => {
+  mockState.apart = { name: "Pixel 7", days: 15 };
+  await card();
+  await waitFor(() => expect(screen.getByTestId("home-sync-apart")).toBeTruthy());
+  await fireEvent.press(screen.getByTestId("home-sync-apart-close"));
+  expect(mockApartClosed).toHaveBeenCalled();
+  expect(screen.queryByTestId("home-sync-apart")).toBeNull();
+  mockState.apart = null;
 });
 
 test("nothing at all while sync is fine", async () => {

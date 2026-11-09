@@ -9,6 +9,7 @@ import { FormSheet } from "@/components/common/FormSheet";
 import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import { Wifi } from "@/components/icons";
 import { ConnectionTest } from "@/components/settings/ConnectionTest";
+import { P2pStatus } from "@/components/settings/P2pStatus";
 import { SettingRow } from "@/components/settings/SettingRow";
 import type { DiagnosticStep, SyncFailure } from "@/src/cloudSync";
 import {
@@ -21,6 +22,7 @@ import {
   syncFolderOf,
   syncWifiOnly,
 } from "@/src/deviceSync";
+import { P2P_SYNC_ENABLED } from "@/src/p2p/flag";
 import { reportError } from "@/src/reportError";
 import { failureMessage, syncAgo } from "@/src/syncWords";
 import { useSyncStore } from "@/stores/sync";
@@ -49,6 +51,11 @@ type Props = {
   onTest: () => Promise<DiagnosticStep[]>;
   /** The automatic backup, as the extra copy kept on this phone: where, or `null` while off. */
   local: { folder: string | null; onPress: () => void };
+  /**
+   * "My other device": for a server or folder account the way over to it (the caller asks before
+   * replacing), for a linked device the way to link a different one.
+   */
+  onDevice?: () => void;
 };
 
 /**
@@ -58,7 +65,23 @@ type Props = {
  * The technical hero asked for a view of it; the one who is not asked for "2 min ago" instead of
  * a server address (docs/design/audits/2026-09-26-sync-journeys.md, F6).
  */
-export function SyncStatusSheet({
+export function SyncStatusSheet(props: Props) {
+  const { account } = props;
+  return account.kind === "p2p" ? (
+    <P2pStatus
+      open={props.open}
+      account={account}
+      onClose={props.onClose}
+      onSyncNow={props.onSyncNow}
+      onForget={props.onStop}
+      onLinkOther={() => props.onDevice?.()}
+    />
+  ) : (
+    <ServerStatusSheet {...props} account={account} />
+  );
+}
+
+function ServerStatusSheet({
   open,
   account,
   onClose,
@@ -66,6 +89,7 @@ export function SyncStatusSheet({
   onStop,
   onTest,
   local,
+  onDevice,
 }: Props) {
   const { t } = useTranslation();
   const running = useSyncStore((s) => s.running);
@@ -224,6 +248,18 @@ export function SyncStatusSheet({
           {t("sync.now")}
         </AppButton>
         {account.kind === "folder" ? null : <ConnectionTest run={onTest} />}
+        {P2P_SYNC_ENABLED && onDevice ? (
+          <Pressable
+            testID="sync-use-device"
+            accessibilityRole="button"
+            onPress={onDevice}
+            style={{ minHeight: 48, justifyContent: "center" }}
+          >
+            <Text color="textSecondary" fontSize="3" textDecorationLine="underline">
+              {t("p2p.door")}
+            </Text>
+          </Pressable>
+        ) : null}
         <AppButton testID="sync-stop" variant="outline" onPress={confirmStop}>
           {t("sync.stopCta")}
         </AppButton>

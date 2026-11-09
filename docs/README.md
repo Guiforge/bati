@@ -88,6 +88,7 @@ refused as well as the one taken, which is the half a commit message never keeps
 | Doc | What it covers |
 | --- | --- |
 | [multiplayer/](designs/multiplayer/STATE.md) | Lot 0: the QR scanner with no Google code, the sealed envelope, the sealed link, pairing |
+| [p2p-sync/](designs/p2p-sync/STATE.md) | Device-to-device sync on the same Wi-Fi, after Syncthing (issue #232): spec and audit |
 | [expeditions.md](designs/expeditions.md) | Walking, running, riding: two currencies that cannot be exchanged, and the road they build |
 | [gps-without-google.md](designs/gps-without-google.md) | The local Expo module on Android's `LocationManager`, and why `INTERNET` came back |
 | [map-immersion.md](designs/map-immersion.md) | The map style, and the one tile host |

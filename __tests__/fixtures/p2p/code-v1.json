@@ -1,0 +1,81 @@
+{
+  "note": "Frozen. Written once by scripts/p2p-vectors.py, never regenerated: a change of format is a new version. See docs/designs/p2p-sync/SPEC.md section 2.",
+  "now": 1794052500,
+  "valid": [
+    {
+      "case": "one LAN route, IPv4 and IPv6",
+      "text": "AWrvEsAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHwEjRWeJq83vASNFZ4mrze9JCTvrYzy8hrmj7V8lN_coIG7tCx8UdXbNJV-wSwaqZhJQaXhlbCBkZSBHdWlsbGF1bWUBARihFQTAqAEXBv6AAAAAAAAAHC0-T1prfI0",
+      "hex": "016aef12c0000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f0123456789abcdef0123456789abcdef49093beb633cbc86b9a3ed5f2537f728206eed0b1f147576cd255fb04b06aa6612506978656c206465204775696c6c61756d65010118a11504c0a8011706fe800000000000001c2d3e4f5a6b7c8d",
+      "expiresAt": 1794052800,
+      "token": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "installId": "01234567-89ab-cdef-0123-456789abcdef",
+      "deviceId": "49093beb633cbc86b9a3ed5f2537f728206eed0b1f147576cd255fb04b06aa66",
+      "name": "Pixel de Guillaume",
+      "lan": {
+        "port": 41237,
+        "addresses": ["192.168.1.23", "fe80::1c2d:3e4f:5a6b:7c8d"]
+      }
+    },
+    {
+      "case": "an unknown route next to the LAN one is skipped",
+      "text": "AWrvEsAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHwEjRWeJq83vASNFZ4mrze9JCTvrYzy8hrmj7V8lN_coIG7tCx8UdXbNJV-wSwaqZgNUYWICCQMBAgMBGKEVBMCoARcG_oAAAAAAAAAcLT5PWmt8jQ",
+      "expiresAt": 1794052800,
+      "token": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "installId": "01234567-89ab-cdef-0123-456789abcdef",
+      "deviceId": "49093beb633cbc86b9a3ed5f2537f728206eed0b1f147576cd255fb04b06aa66",
+      "name": "Tab",
+      "lan": {
+        "port": 41237,
+        "addresses": ["192.168.1.23", "fe80::1c2d:3e4f:5a6b:7c8d"]
+      }
+    }
+  ],
+  "grouped": {
+    "case": "the text fallback: groups of 4 plus a check character; the field strips whitespace only, since '-' is base64url",
+    "shown": "AWrvK EsAAm AQID6 BAUGX BwgJm CgsMA DQ4PO EBESE ExQVu FhcYN GRobr HB0ef HwEjx RWeJY q83vj ASNFG Z4mrH ze9JJ CTvrg Yzy8Z hrmj9 7V8lQ N_coC IG7tC Cx8Uf dXbNe JV-w8 SwaqS ZhJQr aXhlX bCBkX ZSBHP dWlsm bGF1P bWUBD ARihd FQTA2 qAEXc Bv6AZ AAAAY AAAAy HC0-W T1pr- fI0h",
+    "typed": "AWrvK\nEsAAm\nAQID6 BAUGX BwgJm CgsMA DQ4PO EBESE ExQVu FhcYN GRobr HB0ef HwEjx RWeJY q83vj ASNFG Z4mrH ze9JJ CTvrg Yzy8Z hrmj9 7V8lQ N_coC IG7tC Cx8Uf dXbNe JV-w8 SwaqS ZhJQr aXhlX bCBkX ZSBHP dWlsm bGF1P bWUBD ARihd FQTA2 qAEXc Bv6AZ AAAAY AAAAy HC0-W T1pr- fI0h",
+    "text": "AWrvEsAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHwEjRWeJq83vASNFZ4mrze9JCTvrYzy8hrmj7V8lN_coIG7tCx8UdXbNJV-wSwaqZhJQaXhlbCBkZSBHdWlsbGF1bWUBARihFQTAqAEXBv6AAAAAAAAAHC0-T1prfI0",
+    "typo": {
+      "group": 3,
+      "typed": "AWrvK EsAAm AQID6 AAUGX BwgJm CgsMA DQ4PO EBESE ExQVu FhcYN GRobr HB0ef HwEjx RWeJY q83vj ASNFG Z4mrH ze9JJ CTvrg Yzy8Z hrmj9 7V8lQ N_coC IG7tC Cx8Uf dXbNe JV-w8 SwaqS ZhJQr aXhlX bCBkX ZSBHP dWlsm bGF1P bWUBD ARihd FQTA2 qAEXc Bv6AZ AAAAY AAAAy HC0-W T1pr- fI0h"
+    }
+  },
+  "refused": [
+    {
+      "case": "expired",
+      "reason": "expired",
+      "now": 1794052801,
+      "text": "AWrvEsAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHwEjRWeJq83vASNFZ4mrze9JCTvrYzy8hrmj7V8lN_coIG7tCx8UdXbNJV-wSwaqZhJQaXhlbCBkZSBHdWlsbGF1bWUBARihFQTAqAEXBv6AAAAAAAAAHC0-T1prfI0"
+    },
+    {
+      "case": "unknown version",
+      "reason": "version",
+      "text": "AmrvEsAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHwEjRWeJq83vASNFZ4mrze9JCTvrYzy8hrmj7V8lN_coIG7tCx8UdXbNJV-wSwaqZgFBAQEYoRUEwKgBFwb-gAAAAAAAABwtPk9aa3yN"
+    },
+    {
+      "case": "no route this build knows",
+      "reason": "version",
+      "text": "AWrvEsAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHwEjRWeJq83vASNFZ4mrze9JCTvrYzy8hrmj7V8lN_coIG7tCx8UdXbNJV-wSwaqZgFBAQkDAQID"
+    },
+    {
+      "case": "name over 32 bytes",
+      "reason": "malformed",
+      "text": "AWrvEsAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHwEjRWeJq83vASNFZ4mrze9JCTvrYzy8hrmj7V8lN_coIG7tCx8UdXbNJV-wSwaqZiLDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpAQEYoRUEwKgBFwb-gAAAAAAAABwtPk9aa3yN"
+    },
+    {
+      "case": "truncated",
+      "reason": "malformed",
+      "text": "AWrvEsAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHwEjRWeJq83vASNFZ4mrze9JCTvrYzy8hrmj7V8lN_coIG7tCx8UdXbNJV-wSwaqZhJQaXhlbCBkZSBHdWlsbGF1bWUBARihFQTAqAEXBv6AAAAAAAAAHC0-T1o"
+    },
+    {
+      "case": "trailing bytes",
+      "reason": "malformed",
+      "text": "AWrvEsAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHwEjRWeJq83vASNFZ4mrze9JCTvrYzy8hrmj7V8lN_coIG7tCx8UdXbNJV-wSwaqZhJQaXhlbCBkZSBHdWlsbGF1bWUBARihFQTAqAEXBv6AAAAAAAAAHC0-T1prfI0A"
+    },
+    {
+      "case": "not base64url",
+      "reason": "malformed",
+      "text": "not a code!"
+    }
+  ]
+}

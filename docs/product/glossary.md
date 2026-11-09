@@ -223,6 +223,11 @@ Decisions nobody has taken yet.
   are chosen. **Enregistrer un fichier** / *Save a file* for Android's Save as, **Envoyer à une autre
   app** / *Send to another app* for the share sheet.
 
+- **Appareil** / *device* for a phone or tablet that runs Bati, in device sync ("My other device",
+  "Forget this device"). Never "pair" or "companion": a *companion* is a multiplayer player, and the
+  copy says *link* / *lier* / *verknüpfen* / *vincular* / *связать* / *连接* for two devices. German
+  *Gerät*, Spanish *dispositivo*, Russian *устройство*, Chinese *设备*.
+
 ## Settled on 2026-10-17
 
 - **Partie** / *playthrough* / *Durchgang* / *partida* / ru *прохождение*, D-34. The hero *leaves* a

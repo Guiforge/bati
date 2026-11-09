@@ -14,7 +14,7 @@ import { SessionRecoveryCard } from "@/components/session/SessionRecoveryCard";
 import { lightWeekReason, lightWeekUntil } from "@/db/lightWeek";
 import { getActivePause } from "@/db/pause";
 import { useSessionRecovery } from "@/hooks/useSessionRecovery";
-import { lastMerge, lostSync, syncHealth } from "@/src/deviceSync";
+import { lastMerge, lostSync, p2pApart, syncHealth } from "@/src/deviceSync";
 import { passwordCheckDue } from "@/src/passwordReminders";
 import { protectCardVisible } from "@/src/protectHero";
 import { reminderCardKind } from "@/src/reminders";
@@ -74,6 +74,7 @@ function Slot({ onLightWeekAnswered }: { onLightWeekAnswered?: () => void }) {
         lightWeekReason(new Date()),
         getActivePause(),
         lightWeekUntil(new Date()),
+        p2pApart(),
       ])
         .then(
           ([
@@ -88,6 +89,7 @@ function Slot({ onLightWeekAnswered }: { onLightWeekAnswered?: () => void }) {
             lightWeek,
             pause,
             weekUntil,
+            apart,
           ]) => {
             if (cancelled) return;
             const sync = syncNoticeKind({
@@ -96,6 +98,7 @@ function Slot({ onLightWeekAnswered }: { onLightWeekAnswered?: () => void }) {
               failure,
               failingSince: health.failingSince,
               merge,
+              apart,
               now: Date.now(),
             });
             const due: [NoticeKind, boolean][] = [

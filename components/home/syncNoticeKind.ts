@@ -4,7 +4,7 @@ import type { LastMerge } from "@/src/deviceSync";
 /** Failing for this long, sync stops being a detail of Settings and says so on Home. */
 const FAILING_FOR_MS = 3 * 24 * 60 * 60 * 1000;
 
-export type SyncNoticeKind = "lost" | "waiting" | "failing" | "merged";
+export type SyncNoticeKind = "lost" | "waiting" | "failing" | "merged" | "apart";
 
 /**
  * Which sync card is due, the most serious first. One source: `SyncCard` draws from it and
@@ -16,6 +16,8 @@ export function syncNoticeKind(input: {
   failure: SyncFailure | null;
   failingSince: number | null;
   merge: Pick<LastMerge, "seen"> | null;
+  /** The linked device, two weeks without a sync (P2P only, E1). */
+  apart?: { name: string; days: number } | null;
   now: number;
 }): SyncNoticeKind | null {
   if (input.lost !== null) return "lost";
@@ -28,5 +30,5 @@ export function syncNoticeKind(input: {
     return "failing";
   }
   if (input.merge !== null && !input.merge.seen) return "merged";
-  return null;
+  return input.apart ? "apart" : null;
 }

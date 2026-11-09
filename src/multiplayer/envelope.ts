@@ -65,7 +65,12 @@ export function fromHex(value: string, length: number): Uint8Array {
 }
 
 export function toBase64(bytes: Uint8Array): string {
-  return btoa(String.fromCharCode(...bytes));
+  // In chunks: spreading a 128 KiB block into one call overflows the stack (src/p2p blocks).
+  let binary = "";
+  for (let at = 0; at < bytes.length; at += 8192) {
+    binary += String.fromCharCode(...bytes.subarray(at, at + 8192));
+  }
+  return btoa(binary);
 }
 
 export function fromBase64(value: string): Uint8Array {

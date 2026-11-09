@@ -1,0 +1,93 @@
+{
+  "note": "Frozen. Written once by scripts/p2p-vectors.py, never regenerated: a change of format is a new version. See docs/designs/p2p-sync/SPEC.md section 2.",
+  "blockBytes": 131072,
+  "file": {
+    "size": 307200,
+    "pattern": "byte i = (i * 31 + 7) % 251",
+    "sha256": "eeb05699ef0e719dfdd9c98a1d2af9d1b174982ae5e78ee235e268fe2c515641",
+    "blocks": [
+      "7fe0c2541f6e32775146f2225823ea0219cb16fbf74878def0205d7565577262",
+      "50fad81be08431ca4c4995d36cc5afc69716e8aa6702cbb030dec558a1c6c9e1",
+      "09f63f83fdfa728bf85178e163aff23ca91eaec162f71d6829d471caed11048e"
+    ]
+  },
+  "frames": [
+    {
+      "type": "hello",
+      "hex": "000000170100112233445566778899aabbccddeeff05506978656c",
+      "instanceId": "00112233445566778899aabbccddeeff",
+      "name": "Pixel"
+    },
+    {
+      "type": "announce",
+      "hex": "000000bc022e626174692d30313233343536372d383961622d636465662d303132332d3435363738396162636465662e62617462000000000004b000eeb05699ef0e719dfdd9c98a1d2af9d1b174982ae5e78ee235e268fe2c515641000000037fe0c2541f6e32775146f2225823ea0219cb16fbf74878def0205d756557726250fad81be08431ca4c4995d36cc5afc69716e8aa6702cbb030dec558a1c6c9e109f63f83fdfa728bf85178e163aff23ca91eaec162f71d6829d471caed11048e",
+      "name": "bati-01234567-89ab-cdef-0123-456789abcdef.batb",
+      "size": 307200,
+      "sha256": "eeb05699ef0e719dfdd9c98a1d2af9d1b174982ae5e78ee235e268fe2c515641",
+      "blocks": [
+        "7fe0c2541f6e32775146f2225823ea0219cb16fbf74878def0205d7565577262",
+        "50fad81be08431ca4c4995d36cc5afc69716e8aa6702cbb030dec558a1c6c9e1",
+        "09f63f83fdfa728bf85178e163aff23ca91eaec162f71d6829d471caed11048e"
+      ]
+    },
+    {
+      "type": "announceEmpty",
+      "hex": "000000020200"
+    },
+    {
+      "type": "want",
+      "hex": "0000000d03000000020000000000000002",
+      "indexes": [0, 2]
+    },
+    {
+      "type": "block",
+      "hex": "0000001504000000025f7e9dbcdbfa1e3d5c7b9ab9d8f71b3a",
+      "index": 2,
+      "bytes": "5f7e9dbcdbfa1e3d5c7b9ab9d8f71b3a"
+    },
+    {
+      "type": "ack",
+      "hex": "0000002105eeb05699ef0e719dfdd9c98a1d2af9d1b174982ae5e78ee235e268fe2c515641",
+      "sha256": "eeb05699ef0e719dfdd9c98a1d2af9d1b174982ae5e78ee235e268fe2c515641"
+    },
+    {
+      "type": "ping",
+      "hex": "0000000106"
+    },
+    {
+      "type": "bye",
+      "hex": "000000020703",
+      "reason": 3
+    },
+    {
+      "type": "pair",
+      "hex": "0000005108000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f6d50c9d1a88bbe7f6420dc07cbc7bdd02e9bfb7dfec29c0b5a8226b362bb5e87fedcba9876543210fedcba9876543210",
+      "token": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "random": "6d50c9d1a88bbe7f6420dc07cbc7bdd02e9bfb7dfec29c0b5a8226b362bb5e87",
+      "installId": "fedcba98-7654-3210-fedc-ba9876543210"
+    },
+    {
+      "type": "linked",
+      "hex": "0000002109317f28e28bd41460fa9fec3f11993640037e30ce2360b08294b7773709e4f4c1",
+      "random": "317f28e28bd41460fa9fec3f11993640037e30ce2360b08294b7773709e4f4c1"
+    }
+  ],
+  "refused": [
+    {
+      "case": "frame over 256 KiB",
+      "hex": "0004000104"
+    },
+    {
+      "case": "unknown type",
+      "hex": "0000000163"
+    },
+    {
+      "case": "zero length",
+      "hex": "00000000"
+    },
+    {
+      "case": "pair with a short body",
+      "hex": "0000002108000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"
+    }
+  ]
+}

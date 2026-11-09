@@ -7,7 +7,7 @@ import { useToast } from "@/components/common/Toast";
 import { useConfirmDialog } from "@/components/common/useConfirmDialog";
 import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
 import { useBackup } from "@/hooks/useBackup";
-import { peerScratch } from "@/src/backupFiles";
+import { peerScratch, saveBackupAs } from "@/src/backupFiles";
 import { failureOf } from "@/src/cloudSync";
 import {
   announcedPeers,
@@ -15,6 +15,7 @@ import {
   keepThisDeviceOnServer,
   mergeWithPeer,
   type Peer,
+  p2pSwapNeedsSavedCopy,
   rememberAnnounced,
   rememberAnswer,
   rememberMergeNotice,
@@ -158,6 +159,36 @@ export function SyncPrompt() {
     ]);
   };
 
+  /**
+   * "Take its version". On the other device with no backup folder, the copy kept before the swap
+   * would sit on the very phone being replaced, so a copy saved elsewhere comes first (S6, B20):
+   * the swap button only exists after "Save a copy" worked.
+   */
+  const take = (plain: ReturnType<typeof peerScratch>) => {
+    const swap = () => runAdopt(plain, () => keepThisDeviceOnServer().then(() => undefined));
+    const save = () =>
+      saveBackupAs()
+        .then((saved) => {
+          if (saved === null || saved === "noPicker") return askSave();
+          ask(t("p2p.saveFirstTitle"), t("p2p.saved"), [
+            { text: t("sync.later"), cancel: true },
+            { text: t("sync.take"), onPress: swap },
+          ]);
+        })
+        .catch((e) => {
+          reportError("p2p.saveCopy", e);
+          askSave();
+        });
+    const askSave = () =>
+      ask(t("p2p.saveFirstTitle"), t("p2p.saveFirst"), [
+        { text: t("sync.later"), cancel: true },
+        { text: t("p2p.saveCta"), onPress: save },
+      ]);
+    p2pSwapNeedsSavedCopy()
+      .then((needs) => (needs ? askSave() : swap()))
+      .catch((e) => reportError("p2p.swapGate", e));
+  };
+
   /** The hero's choice, as before the merge existed, for the one case it cannot handle. */
   const offerChoice = (peer: ComparedPeer) => {
     const plain = peerScratch(peer.name, "plain");
@@ -171,7 +202,7 @@ export function SyncPrompt() {
         { text: t("sync.later"), cancel: true },
         {
           text: t("sync.take"),
-          onPress: () => runAdopt(plain, () => keepThisDeviceOnServer().then(() => undefined)),
+          onPress: () => take(plain),
         },
       ]);
       return;
@@ -189,7 +220,7 @@ export function SyncPrompt() {
         },
         {
           text: t("sync.take"),
-          onPress: () => runAdopt(plain, () => keepThisDeviceOnServer().then(() => undefined)),
+          onPress: () => take(plain),
         },
       ],
     );

@@ -9,6 +9,7 @@ import {
   syncNow,
   syncWifiOnly,
 } from "@/src/deviceSync";
+import { currentSession } from "@/src/p2p/current";
 import { reportError } from "@/src/reportError";
 
 /**
@@ -80,10 +81,17 @@ export const useSyncStore = create<SyncState>((set, get) => ({
       set({ running: false });
       return;
     }
-    // A folder another app replicates costs no data here: only a server does.
+    // S7: the other device is a sync target only while the sync sheet holds a session open; a
+    // launch or a stray run has nothing to talk to, and says nothing.
+    if (account.kind === "p2p" && currentSession() === null) {
+      set({ running: false });
+      return;
+    }
+    // A folder another app replicates costs no data here, nor a device on the same Wi-Fi.
     const waitForWifi =
       !options.force &&
       account.kind !== "folder" &&
+      account.kind !== "p2p" &&
       (await syncWifiOnly().catch(() => false)) &&
       (await onMeteredNetwork().catch(() => false));
     if (waitForWifi) {
@@ -93,10 +101,17 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     const outcome = await syncNow(options).then(
       (result) => ({ result, failure: result.peerFailure ?? null }),
       (error: unknown) => {
+        // The other device closed its sheet: how P2P works, not a failure to report or to count
+        // toward "failing for days" (code review 08/11). The sheet says it in its own words.
+        if (error instanceof Error && error.name === "PeerGone") return null;
         reportError("sync.run", error);
         return { result: get().result, failure: failureFrom(error) };
       },
     );
+    if (outcome === null) {
+      set({ running: false });
+      return;
+    }
     const health = await recordSyncOutcome(outcome.failure).catch((error: unknown) => {
       reportError("sync.health", error);
       return null;

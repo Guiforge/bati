@@ -11,6 +11,7 @@ import {
   type EncryptionSheetMode,
 } from "@/components/settings/EncryptionSheet";
 import { LastBackupLine } from "@/components/settings/LastBackupLine";
+import { P2pSheet } from "@/components/settings/P2pSheet";
 import { PasswordCheckFlow } from "@/components/settings/PasswordCheckFlow";
 import { SettingRow } from "@/components/settings/SettingRow";
 import { SyncSetupSheet } from "@/components/settings/SyncSetupSheet";
@@ -19,6 +20,8 @@ import { hasGpsHistory } from "@/db/gps";
 import { useBackupEncryption } from "@/hooks/useBackupEncryption";
 import { type ConnectNext, useDeviceSync } from "@/hooks/useDeviceSync";
 import { i18n } from "@/i18n";
+import { accountLabel } from "@/src/deviceSync";
+import { P2P_SYNC_ENABLED } from "@/src/p2p/flag";
 import { answerPasswordCheck } from "@/src/passwordReminders";
 import { reportError } from "@/src/reportError";
 
@@ -168,6 +171,39 @@ export function BackupSecurityRows({
   };
 
   const [statusOpen, setStatusOpen] = useState(false);
+  // "My other device": the pairing sheet (`pair`) or one more sync with the linked device (`sync`).
+  const [p2pOpen, setP2pOpen] = useState<"pair" | "sync" | null>(null);
+  // Encryption was off when the hero chose it: the password comes first (rule L9), then the sheet.
+  const [pairAfterEncrypt, setPairAfterEncrypt] = useState(false);
+
+  const startPairing = () => {
+    if (encryption.status === "on") setP2pOpen("pair");
+    else {
+      setPairAfterEncrypt(true);
+      openEncryptionSheet({ kind: encryption.status === "locked" ? "unlock" : "enable" });
+    }
+  };
+
+  /** The third door. A server, a folder or an earlier link is replaced, and the hero is told first. */
+  const chooseDevice = () => {
+    setSetupOpen(false);
+    setStatusOpen(false);
+    const current = deviceSync.account;
+    if (current === null) return startPairing();
+    ask({
+      title: t("p2p.title"),
+      body:
+        current.kind === "p2p"
+          ? t("p2p.replaceLink", { name: current.name })
+          : t("p2p.replaceServer", { server: accountLabel(current) }),
+      cancelLabel:
+        current.kind === "p2p"
+          ? t("common.cancel")
+          : t("p2p.keepServer", { server: accountLabel(current) }),
+      confirmLabel: t("p2p.replaceCta"),
+      onConfirm: startPairing,
+    });
+  };
   const openSync = () => {
     if (deviceSync.account === null) setSetupOpen(true);
     else setStatusOpen(true);
@@ -261,7 +297,13 @@ export function BackupSecurityRows({
           onClose={() => setStatusOpen(false)}
           local={{ folder: autoFolder, onPress: onLocalCopy }}
           onTest={deviceSync.testConnection}
+          onDevice={chooseDevice}
           onSyncNow={() => {
+            if (deviceSync.account?.kind === "p2p") {
+              setStatusOpen(false);
+              setP2pOpen("sync");
+              return;
+            }
             deviceSync.syncNow().catch((e) => reportError("sync.now", e));
           }}
           onStop={() => {
@@ -280,10 +322,19 @@ export function BackupSecurityRows({
         onConnectFolder={(uri) => deviceSync.connectFolder(uri).then(follow)}
         backupFolder={deviceSync.backupFolder}
         local={{ folder: autoFolder, onPress: onLocalCopy, gpsNotice }}
+        onDevice={chooseDevice}
         onConnectDav={(url, user, password, label) =>
           deviceSync.connectDav(url, user, password, label).then(follow)
         }
       />
+      {P2P_SYNC_ENABLED ? (
+        <P2pSheet
+          open={p2pOpen !== null}
+          mode={p2pOpen ?? "pair"}
+          onClose={() => setP2pOpen(null)}
+          onLinked={deviceSync.reloadAccount}
+        />
+      ) : null}
       <BackupSecretSheet
         request={{ open: joining !== null, wrong: joining?.wrong ?? false }}
         title={t("sync.joinTitle")}
@@ -307,6 +358,10 @@ export function BackupSecurityRows({
         onClose={() => {
           if (encryptionSheet === null) return;
           setEncryptionSheet(null);
+          if (pairAfterEncrypt) {
+            setPairAfterEncrypt(false);
+            if (encryption.status === "on") setP2pOpen("pair");
+          }
           if (syncAfterEncrypt) abandonConnect();
         }}
       />

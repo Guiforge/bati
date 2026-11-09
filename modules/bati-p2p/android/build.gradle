@@ -1,0 +1,25 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'com.guiforge.bati'
+version = '0.1.0'
+
+android {
+  namespace "expo.modules.batip2p"
+  defaultConfig {
+    // Read by expo-module-gradle-plugin as the maven artifact version; configuration fails without it.
+    versionName '0.1.0'
+  }
+}
+
+dependencies {
+  // JVM unit tests of P2pCore, which has nothing from Android in it on purpose: see src/test.
+  // Run in CI (.github/workflows/kotlin.yml) and locally with
+  // `cd android && ./gradlew :bati-p2p:testDebugUnitTest`.
+  testImplementation 'junit:junit:4.13.2'
+  // Test certificates only; it never reaches the app.
+  testImplementation 'org.bouncycastle:bcpkix-jdk18on:1.81'
+  testImplementation 'org.bouncycastle:bcprov-jdk18on:1.81'
+}

@@ -154,6 +154,29 @@ def cat_pose(shape):
     }
 
 
+def thread_pose(phase):
+    """Seen from the threading side's front, slightly above; head to the left. phase: "table",
+    "open" (threading arm to the ceiling) or "thread" (= A). Orange = the threading arm (near the
+    camera), blue = the planted arm. The planted hand, the knees and the feet never move."""
+    planted_hand, thread_floor = (200, 650), (440, 745)
+    knees, feet = [(560, 595), (650, 482)], [(915, 560), (800, 478)]
+    hips = {"table": (525, 330), "open": (525, 325), "thread": (515, 292)}[phase]
+    p_sh = {"table": (230, 345), "open": (240, 350), "thread": (322, 405)}[phase]   # planted shoulder
+    t_sh = {"table": (305, 372), "open": (300, 330), "thread": (300, 515)}[phase]   # threading shoulder
+    head = {"table": (130, 330), "open": (170, 270), "thread": (175, 525)}[phase]
+    if phase == "thread":
+        planted = [p_sh, (340, 598), planted_hand]                    # bent, forearm on the floor
+        threading = [t_sh, lerp(t_sh, thread_floor, 0.5), thread_floor]  # straight along the floor, palm up
+    else:
+        planted = [p_sh, lerp(p_sh, planted_hand, 0.5), planted_hand]
+        t_hand = (330, 680) if phase == "table" else (352, 70)
+        threading = [t_sh, lerp(t_sh, t_hand, 0.5), t_hand]
+    mid = lerp(p_sh, t_sh, 0.5)
+    legs = [[hips, knees[0], feet[0]], [add(hips, (40, -20)), knees[1], feet[1]]]
+    return {"head": head, "torso": [mid, hips], "far": [planted, legs[1]], "near": [threading, legs[0]],
+            "props": [[(0, 600), (1024, 600), (1024, 1024), (0, 1024)]]}
+
+
 # Each exercise: the key poses of one rep in order (the last returns to the first, so a loop
 # closes), the time of each in seconds, and which key pose the shipped picture A already shows.
 EXERCISES = {
@@ -170,6 +193,11 @@ EXERCISES = {
     "cat_cow": {"rep_s": 6, "a_key": "k4", "keys": {
         "k1": cat_pose(0), "k2": cat_pose(-1), "k3": cat_pose(0), "k4": cat_pose(1)},
         "times": [0.0, 1.5, 3.0, 4.5, 6.0], "same": {"k3": "k1"}},
+    # Time-based and one-sided: one side's cycle, 8 s (decision in its motion sheet).
+    "thread_the_needle": {"rep_s": 8, "a_key": "k3", "keys": {
+        "k1": thread_pose("table"), "k2": thread_pose("open"), "k3": thread_pose("thread"), "k4": thread_pose("thread")},
+        # k4 holds the thread (coach, round 1: the hold has to be a key of its own or the return starts at 4 s).
+        "times": [0.0, 2.0, 4.0, 5.5, 8.0], "same": {"k4": "k3"}},
 }
 
 
@@ -473,8 +501,11 @@ POSE_TEXT = {
     ("pushups", "k2"): "The hero is now HALFWAY down a push-up: elbows bent about 100 degrees, pointing back towards the feet, close to the ribs; body lowered by about half, still one rigid straight line from head to heels; head in line with the spine.",
     ("cat_cow", "k2"): "The hero is now in the COW position: the lower and middle back curve gently DOWN into a soft U, the belly sinking towards the floor, the bottom lifting, the chest moving forward and up between the straight arms, the head lifted to look forward. Arms straight.",
     ("cat_cow", "k1"): "The hero is now in a NEUTRAL tabletop: the back is flat and straight like a table from the tailbone to the back of the head, no dip and no hump; head in line with the spine, eyes to the floor just ahead of the hands. Arms straight.",
+    ("thread_the_needle", "k2"): "The hero is now in the OPEN position of thread the needle, on hands and knees: the threading arm (the one that lies along the floor in image 1) is lifted straight up to the ceiling, hand above its shoulder; the chest and head turn open towards that raised hand, eyes on the hand; the other arm is straight, its hand flat on the floor under its shoulder; the back is long, hips high over the knees.",
+    ("thread_the_needle", "k1"): "The hero is now in a TABLETOP on hands and knees: both arms straight, both hands flat on the floor under the shoulders, the back flat like a table from the tailbone to the head, head in line with the spine, eyes to the floor; hips high over the knees.",
 }
 NEVER = {
+    "thread_the_needle": "The knees, shins and feet stay exactly where they are in image 1 and the hips stay stacked over the knees. The planted hand (the one flat on the floor near the head in image 1) stays on its spot.",
     "dip": "The hands stay on exactly the same spots of the bars as in image 1, gripping them. The bars do not move. The legs keep the same bent shape, feet behind, off the floor.",
     "chin_up": "Both hands stay on exactly the same spots of the bar, with the palms facing the hero's own face (underhand grip: from the camera we see the backs of the hands and the knuckles over the bar). The bar does not move. No swing.",
     "pushups": "The hands stay flat on exactly the same spots of the floor as in image 1 and the toes stay on exactly the same spot. The body pivots on the toes.",

@@ -369,3 +369,10 @@ effect, and an audit. Exactness comes first, style second; the scoring brief now
 - **Curtsy:** the lot 2 flip-book (crossed legs, edited on the app's picture) now has a key-pose video
   too. The redraw-as-new still fails.
 - Ledger total: 65.95 $.
+- **Bear crawl, solved in three-quarter front view:** the side swap had failed 6 times, the top view read
+  as wall climbing, and the straight front view scored 3/5. Two new tries (N29, N30) read clearly as a
+  crawl. The mirror would have turned the hero round, so the next step was drawn on A as "the other
+  diagonal forward". N32 scored 4 on every line of the blind score. The fit on the floor band wanted to
+  shrink it 9 %, but the band holds the moving hands, so the picture stays as drawn: the scorer saw the
+  same scale. 16 tries in all.
+- Ledger total: 66.23 $.

@@ -2251,6 +2251,25 @@ POSE_TEXT[("bear_crawl", "k1")] += (" The camera is at chest height, slightly ab
     "forward hand is only half a forearm ahead of the other. The knees are CLEARLY off the floor, a full hand of dark floor "
     "visible under each knee; the forward knee (left of the picture) is pulled up near its elbow, the other knee is back "
     "behind it, so the two knees are at clearly different depths.")
+POSE_TEXT[("bear_crawl", "bq")] = (
+    "THREE-QUARTER FRONT view, the camera at chest height in front of the hero and a little to the picture's left: a bear "
+    "crawl, the hero crawling towards the camera. On hands and feet, the back flat and level like a table, the head up, the "
+    "knees bent and clearly off the floor. The diagonal is OBVIOUS: the hero's LEFT hand (on the right of the picture) is "
+    "placed a full forearm FORWARD and, at the same moment, the hero's RIGHT knee (on the left of the picture) is pulled "
+    "forward right under the chest, near the right elbow; the other hand stays back under its shoulder and the other leg "
+    "stays back, its knee far behind. A plain dark floor and background, a soft shadow under the body, the whole hero in "
+    "the frame with a margin.")
+# The three-quarter view reads best (blind 3/5 from the front); its mirror would turn the hero round, so the
+# next step is drawn on A instead of mirrored.
+POSE_TEXT[("bear_crawl", "k1")] = POSE_TEXT[("bear_crawl", "bq")]
+_seq("bear_crawl", "k1", 2, {"k1": _crawl_front(1), "k2": _crawl_front(1)}, {})
+FLOPS.pop("bear_crawl", None)
+POSE_TEXT[("bear_crawl", "k2")] = (
+    "The hero takes the NEXT STEP of the bear crawl, same camera, same place in the frame, still facing the same way: the "
+    "OTHER diagonal is now forward. The hand that is back in image 2 is now a full forearm FORWARD, and the hand that is "
+    "forward in image 2 is now back under its shoulder. The knee that is back in image 2 is now pulled forward under the "
+    "chest near its elbow, and the knee that is forward in image 2 is now back. Knees off the floor, back flat. Ignore "
+    "image 1's limb positions: it only gives the camera.")
 NEVER["bear_crawl"] = "The camera, the framing and the scale do not change."
 VIDEO_MOTION["bear_crawl"] = ("Bear crawl seen from the front, crawling towards the camera on hands and feet with the knees "
     "hovering: opposite hand and knee step forward together, then the other pair, the back flat.")

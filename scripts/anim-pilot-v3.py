@@ -2,6 +2,8 @@
 """Pilot v3: animate an exercise from key poses (mannequin -> drawn poses -> flip-book -> video).
 
     python3 scripts/anim-pilot-v3.py refs [slug...]          # mannequin key poses, onion skin, stick GIF (free)
+    python3 scripts/anim-pilot-v3.py check [slug...]         # anatomy rules over every guide (free)
+    python3 scripts/anim-pilot-v3.py selftest                # the rules catch what they must (free)
 
 v1 (branch anim-pilot, in ~/bati-archives/2026-11-04-branches.bundle) gave FLUX 3 Video only the
 two end pictures and the model invented the path between them. Here the path is fixed first, as
@@ -17,6 +19,7 @@ import math
 import os
 import pathlib
 import shutil
+import statistics
 import subprocess
 import sys
 
@@ -74,8 +77,10 @@ def dip_pose(lift):
     d = (hip[0] - 500, hip[1] - 555)
     head = add(shoulder, lerp((80, -62), (58, -78), lift))
     arms = [[shoulder, ik(shoulder, h, 100, 128, +1), h] for h in hands]  # +1: elbow goes back
-    legs = [[add(hip, (5, 0)), add((595, 615), d), add((572, 770), d), add((470, 815), d)],
-            [add(hip, (-8, 0)), add((580, 622), d), add((556, 762), d), add((448, 826), d)]]
+    # Hip, knee, ankle. Until the anatomy check there was a joint mid-thigh, and the shin read as a long
+    # foot pointing backwards.
+    legs = [[add(hip, (5, 0)), add((572, 770), d), add((470, 815), d)],
+            [add(hip, (-8, 0)), add((556, 762), d), add((448, 826), d)]]
     return {
         "head": head, "torso": [shoulder, hip],
         "far": [arms[1], legs[1]], "near": [arms[0], legs[0]],
@@ -95,7 +100,9 @@ def chin_pose(lift):
     # Placed by hand, not by IK: a front view foreshortens the upper arm (the elbow comes towards
     # the camera), so fixed 2D bone lengths flare the elbows sideways. Top = A's own elbows.
     straight = [lerp(sh, h, 0.5) for sh, h in zip(shoulders, hands)]
-    middle = [(352, 335 + drop), (636, 318 + drop)]
+    # Halfway the forearm is upright and the upper arm points at the camera. The elbows used to sit
+    # 90 px lower, which made the forearm 250 px long against 157 in the hang.
+    middle = [(368, 247 + drop), (622, 224 + drop)]
     top = [(392, 378), (614, 362)]
     elbows = ([lerp(a, b, lift * 2) for a, b in zip(straight, middle)] if lift <= 0.5
               else [lerp(a, b, lift * 2 - 1) for a, b in zip(middle, top)])
@@ -179,7 +186,9 @@ def thread_pose(phase):
         t_hand = (330, 680) if phase == "table" else (352, 70)
         threading = [t_sh, lerp(t_sh, t_hand, 0.5), t_hand]
     mid = lerp(p_sh, t_sh, 0.5)
-    legs = [[hips, knees[0], feet[0]], [add(hips, (40, -20)), knees[1], feet[1]]]
+    # Knee, ankle, toes: the shin used to run to the toes, half as long again as the thigh.
+    legs = [[hips, knees[0], lerp(knees[0], feet[0], 0.8), feet[0]],
+            [add(hips, (40, -20)), knees[1], lerp(knees[1], feet[1], 0.8), feet[1]]]
     # The threading arm is the FAR one (blue): in A it passes under the chest and comes out palm up on the
     # camera side, while the near arm is the one planted by the head. v1 had them swapped, and the open
     # pose raised the near arm, which never threads (caught by Guillaume on the flip-book).
@@ -256,8 +265,10 @@ LOT1 = {
     # Front view. A = top; drawn: dead hang (feet near the bottom edge).
     "pullups": ("k1", 4, _guide(
         (525, 395), [(527, 500), (520, 675)],
-        near=[[(600, 520), (624, 381), (648, 242)], [(545, 690), (550, 860), (540, 1010)]],
-        far=[[(455, 520), (424, 381), (392, 242)], [(495, 690), (490, 860), (500, 1010)]],
+        # In a hang the shoulders ride up beside the ears: the arms start there, not at the chest (they
+        # were half as long again as the body).
+        near=[[(590, 430), (619, 336), (648, 242)], [(545, 690), (550, 860), (540, 1010)]],
+        far=[[(465, 430), (428, 336), (392, 242)], [(495, 690), (490, 860), (500, 1010)]],
         props=[((240, 236), (820, 250))])),
     # Side view facing left, under a low bar. A = top (chest at the bar); drawn: bottom (arms straight).
     "inverted_row": ("k1", 3, _guide(
@@ -304,14 +315,15 @@ LOT2 = {
     # Side, facing right, split stance. A = bottom (back knee near the floor); drawn: top.
     "lunge": ("k2", 3, (0.74, 480, 940), _guide(
         (500, -39), [(478, 103), (478, 430)],
-        near=[[(478, 110), (450, 230), (480, 330)], [(478, 430), (606, 650), (734, 868), (819, 946)]],
+        near=[[(478, 110), (450, 230), (480, 330)], [(478, 430), (606, 650), (752, 900), (826, 946)]],
         far=[[(470, 105), (440, 225), (470, 320)], [(470, 430), (330, 650), (179, 868)]],
         props=FLOOR(950))),
     # Side, lying, head left. A = top (hips up); drawn: bottom (hips on the floor).
     "glute_bridge": ("k1", 2, None, _guide(
-        (142, 478), [(284, 535), (480, 560)],
-        near=[[(284, 540), (390, 600), (480, 640)], [(480, 560), (770, 380), (796, 592)]],
-        far=[[(280, 530), (380, 590), (470, 630)], [(470, 555), (750, 390), (770, 600)]],
+        # The hips come down where A's torso length puts them: at x 480 the thigh was 340 px, the shin 215.
+        (142, 478), [(284, 535), (603, 565)],
+        near=[[(284, 540), (390, 600), (480, 640)], [(603, 565), (738, 385), (796, 592)]],
+        far=[[(280, 530), (380, 590), (470, 630)], [(593, 560), (720, 395), (770, 600)]],
         props=FLOOR(660))),
     # Side, lying, one leg extended up. A = top; drawn: bottom (hips down, the leg stays extended).
     "single_leg_glute_bridge": ("k1", 3, None, _guide(
@@ -388,14 +400,14 @@ LOT3 = {
     # Seated V, side-on. A = twisted to one side; drawn: twisted to the other side.
     "russian_twist": ("k1", 2, None, _guide(
         (215, 300), [(240, 420), (313, 720)],
-        near=[[(260, 430), (330, 560), (420, 600)], [(313, 720), (540, 449), (981, 648)]],
-        far=[[(220, 425), (300, 560), (410, 610)], [(305, 715), (530, 460), (960, 660)]],
+        near=[[(260, 430), (330, 560), (420, 600)], [(313, 720), (540, 449), (893, 608), (981, 648)]],
+        far=[[(220, 425), (300, 560), (410, 610)], [(305, 715), (530, 460), (874, 620), (960, 660)]],
         props=FLOOR(790))),
     # Front three-quarter, under a bar. A = legs raised; drawn: dead hang, legs straight down. Zoomed.
     "hanging_leg_raise": ("k2", 3, (0.78, 350, 130), _guide(
         (343, 392), [(360, 450), (360, 640)],
-        near=[[(420, 450), (450, 300), (478, 151)], [(370, 640), (370, 830), (370, 1010)]],
-        far=[[(300, 450), (260, 280), (222, 108)], [(350, 640), (345, 830), (345, 1010)]],
+        near=[[(410, 385), (444, 268), (478, 151)], [(370, 640), (370, 830), (370, 1010)]],
+        far=[[(308, 380), (265, 244), (222, 108)], [(350, 640), (345, 830), (345, 1010)]],
         props=[[(0, 70), (1024, 232), (1024, 250), (0, 88)]])),
 }
 for _slug, (_a_key, _rep, _zoom, _pose) in LOT3.items():
@@ -417,15 +429,15 @@ LOT4 = {
         props=[((0, 140), (1024, 158))])),
     # Back view, under a bar. A = active hang (shoulders down); drawn: passive hang (shoulders shrugged).
     "scapular_pullup": ("k2", 2, None, _guide(
-        (535, 330), [(535, 330), (535, 540)],
+        (535, 295), [(535, 330), (535, 540)],
         near=[[(625, 300), (622, 210), (620, 114)], [(560, 540), (555, 700), (530, 885)]],
         far=[[(445, 300), (420, 210), (392, 114)], [(510, 540), (505, 700), (490, 885)]],
         props=[((0, 105), (1024, 123))])),
     # Front, under a bar. A = toes at the bar; drawn: dead hang. Zoomed.
     "toes_to_bar": ("k2", 3, (0.7, 512, 100), _guide(
         (512, 380), [(512, 450), (512, 700)],
-        near=[[(640, 450), (725, 280), (811, 108)], [(530, 700), (530, 930), (530, 1150)]],
-        far=[[(380, 450), (300, 280), (213, 108)], [(494, 700), (494, 930), (494, 1150)]],
+        near=[[(610, 390), (710, 249), (811, 108)], [(530, 700), (530, 930), (530, 1150)]],
+        far=[[(414, 390), (314, 249), (213, 108)], [(494, 700), (494, 930), (494, 1150)]],
         props=[((0, 100), (1024, 118))])),
     # Side, leaning back from a door, holding a towel. A = top (pulled in); drawn: bottom (arms straight).
     "towel_door_row": ("k1", 3, None, _guide(
@@ -557,6 +569,9 @@ def draw(slug, key):
     - white joint dots at elbows, wrists, knees and ankles; a 4th limb point is the hand or foot,
       drawn thinner, so heel up / heel down and pointed toes read;
     - `pins`: white rings on the points that never move (hands, feet, knees on the floor).
+    v3 (anatomy pass): a grey shoulder line and pelvis line join the two sides' joints through the spine; a
+    foot is a wedge with a heel, a hand a narrower wedge; a bent knee or elbow carries a bump on the outside
+    of the bend (kneecap, point of the elbow). Same colours, so the prompts' legend still holds.
     v1 notes kept: a thin torso and a dark outline on the near limbs, so a straight arm in front of
     the body does not sink into the torso band (dip, round 3)."""
     from PIL import Image, ImageDraw
@@ -572,15 +587,27 @@ def draw(slug, key):
     def dot(p, r, colour):
         d.ellipse((p[0] - r, p[1] - r, p[0] + r, p[1] + r), fill=colour)
 
-    def limb(points, colour, width=30, outline=0):
+    def limb(points, colour, leg, width=30, outline=0):
         bones, end = (points[:-1], points[-1]) if len(points) > 3 else (points, None)
+        (a, b, c_), flex = bones, abs(_ang(*bones[:2], *bones[1:]))
+        k = math.dist(b, lerp(a, c_, 0.5)) or 1
         for w, c in ((width + 2 * outline, artloop.BG), (width, colour)) if outline else ((width, colour),):
             d.line(bones, fill=c, width=w, joint="curve")
             for p in bones:
                 dot(p, w / 2, c)
-            if end:  # hand or foot
-                d.line([bones[-1], end], fill=c, width=round(w * 0.6))
-                dot(end, w * 0.3, c)
+            if flex > 20:  # kneecap, point of the elbow: a bump on the outside of the bend
+                dot((b[0] + (b[0] - (a[0] + c_[0]) / 2) / k * width * 0.4, b[1] + (b[1] - (a[1] + c_[1]) / 2) / k * width * 0.4),
+                    w * 0.36, c)
+            if end:  # hand or foot: a wedge, wide at the wrist or heel and narrow at the tips
+                (x0, y0), (x1, y1) = bones[-1], end
+                n = math.dist(bones[-1], end) or 1
+                ux, uy, o = (x1 - x0) / n, (y1 - y0) / n, (w - width) / 2
+                wide, tip = width * (0.45 if leg else 0.36) + o, width * 0.2 + o
+                d.polygon([(x0 - uy * wide, y0 + ux * wide), (x0 + uy * wide, y0 - ux * wide),
+                           (x1 + uy * tip, y1 - ux * tip), (x1 - uy * tip, y1 + ux * tip)], fill=c)
+                dot(end, tip, c)
+                if leg:  # the heel, behind the ankle
+                    dot((x0 - ux * width * 0.3, y0 - uy * width * 0.3), wide, c)
         for p in bones[1:]:
             dot(p, 6, "white")
 
@@ -590,9 +617,15 @@ def draw(slug, key):
         dot(b, width / 2, colour)
 
     for points in pose["far"]:
-        limb(points, artloop.FAR)
+        limb(points, artloop.FAR, points is pose["far"][-1])
     spine = smooth(pose["torso"])
     n = len(spine)
+    # Shoulder line and pelvis line, from one side's joint to the other's through the spine: in a front
+    # view the limbs no longer float beside the trunk, and the width of the shoulders and hips reads.
+    for i, at in ((0, spine[0]), (-1, spine[-1])):
+        if len(pose["near"]) > 1 or i:
+            d.line([pose["far"][i][0], at, pose["near"][i][0]], fill=artloop.TORSO, width=30, joint="curve")
+            dot(pose["far"][i][0], 15, artloop.TORSO)
     d.line(spine, fill=artloop.TORSO, width=40, joint="curve")
     blob(spine[0], spine[max(1, n // 3)], 66, artloop.TORSO)       # chest
     blob(spine[-1], spine[min(n - 2, n - 1 - n // 6)], 58, artloop.TORSO)  # pelvis
@@ -608,7 +641,7 @@ def draw(slug, key):
         d.polygon([(x + fx * 66, y + fy * 66), (x + fx * 36 - fy * 16, y + fy * 36 + fx * 16),
                    (x + fx * 36 + fy * 16, y + fy * 36 - fx * 16)], fill=artloop.TORSO)
     for points in pose["near"]:
-        limb(points, artloop.NEAR, outline=7)
+        limb(points, artloop.NEAR, points is pose["near"][-1], outline=7)
     for p in pose.get("pins", ()):
         d.ellipse((p[0] - 22, p[1] - 22, p[0] + 22, p[1] + 22), outline="white", width=5)
     out = PILOT / "refs" / slug / f"{key}.png"
@@ -728,7 +761,7 @@ CAP = float(os.environ.get("ANIM_CAP", "65.67"))
 FLUX3_IMAGE = "https://api.bfl.ai/v1/flux-3-image"
 FLUX3_VIDEO = "https://api.bfl.ai/v1/flux-3-video"
 OPENAI_EDITS = "https://api.openai.com/v1/images/edits"
-OPENAI_MODEL = "gpt-image-2.5-sunburst"
+OPENAI_MODEL = os.environ.get("ANIM_OPENAI_MODEL", "gpt-image-2.5-sunburst")
 # Per 1M tokens, standard tier (developers.openai.com/api/docs/pricing, read 2026-11-10): the
 # Images API returns token usage, not a price, so the cost is computed from it.
 OPENAI_PRICE = {"image_in": 8.0, "text_in": 5.0, "image_out": 30.0}
@@ -1172,6 +1205,7 @@ VIDEO_MOTION.update({
 # when it points at the camera and looks shorter.
 SEG = {"torso": 250, "neck": 34, "head": 40, "thigh": 225, "shin": 215, "foot": 62,
        "upper": 140, "fore": 125, "hand": 38}
+BONES = {"arm": ("upper", "fore", "hand"), "leg": ("thigh", "shin", "foot")}
 
 
 def step(p, deg, length):
@@ -1209,9 +1243,13 @@ def fk(hip, trunk, *, near_arm, far_arm, near_leg, far_leg, arc=0, back=1, head=
     head_c = step(step(sh, h, SEG["neck"]), h, SEG["head"])
 
     def side(arm, leg, at):
-        return [chain(add(sh, at[0]), arm, ("upper", "fore", "hand")), chain(add(hip, at[1]), leg, ("thigh", "shin", "foot"))]
+        return [chain(add(sh, at[0]), arm, BONES["arm"]), chain(add(hip, at[1]), leg, BONES["leg"])]
 
-    return {"head": head_c, "face": face, "torso": spine, "near": side(near_arm, near_leg, near_at),
+    # What this pose declares as pointing at the camera: check() lets nothing else look shorter.
+    short = {f"{s} {bone}": a[1] for s, specs in (("near", (near_arm, near_leg)), ("far", (far_arm, far_leg)))
+             for spec, kind in zip(specs, BONES) if not isinstance(spec, dict)
+             for a, bone in zip(spec, BONES[kind]) if isinstance(a, tuple)} | ({"torso": torso} if torso != 1 else {})
+    return {"head": head_c, "face": face, "torso": spine, "near": side(near_arm, near_leg, near_at), "short": short,
             "far": side(far_arm, far_leg, far_at), "props": list(props), "pins": list(pins)}
 
 
@@ -1224,7 +1262,7 @@ def _row(theta, ankle, hand, bend):
     """Inverted row: one rigid body pivoting on the heels, hands on the bar."""
     hip = step(ankle, theta, SEG["thigh"] + SEG["shin"])
     arm = {"to": hand, "bend": bend, "end": 270}
-    leg = {"to": ankle, "bend": 1, "end": theta - 50}
+    leg = {"to": ankle, "bend": 1, "end": theta - 60}
     return fk(hip, theta, face=(0.3, -1),
               near_arm=arm, far_arm={**arm, "to": add(hand, (14, 0))}, near_leg=leg, far_leg=leg,
               far_at=((0, -12), (0, -12)), props=[((360, 462), (1000, 478))] + FLOOR(820), pins=[hand, ankle])
@@ -1233,12 +1271,14 @@ def _row(theta, ankle, hand, bend):
 FRONT = (((-70, 0), (-42, 0)), ((70, 0), (42, 0)))  # front view: the hero's right side is image left
 WALL = [((780, 0), (1024, 1024))] + FLOOR(900)
 BENCH = [((90, 615), (330, 640)), ((105, 640), (125, 880)), ((295, 640), (315, 880))] + FLOOR(880)
-ROW_ANKLE, ROW_HAND = (160, 800), (830, 468)
+# The bar sits over the chest. At x 830 it was past the shoulders, over the face, and at the top the
+# elbows had nowhere to go but beyond the head.
+ROW_ANKLE, ROW_HAND = (160, 800), (720, 468)
 _row_bottom = solve(lambda t: math.dist(step(ROW_ANKLE, t, 690), ROW_HAND), 338, 360, 262)
 
 
 def _wall(hip, trunk):
-    arm = {"to": (782, 300), "bend": -1, "end": 280}
+    arm = {"to": (782, 300), "bend": 1, "end": 280}  # elbows down: -1 folded them up, backwards
     leg = {"to": (295, 898), "bend": -1, "end": 5}
     return fk(hip, trunk, face=(1, 0), near_arm=arm, far_arm={**arm, "to": (782, 285)}, near_leg=leg,
               far_leg={**leg, "to": (307, 890)}, props=WALL, pins=[(782, 300), (295, 898)])
@@ -1265,7 +1305,7 @@ def _crunch(trunk, arc, head, face, arms):
 
 def _climber(near_in):
     arm = {"to": (705, 840), "bend": 1, "end": 0}
-    tuck, back = (30, 160, 170), {"to": (85, 824), "bend": -1, "end": 70}
+    tuck, back = (30, 160, 140), {"to": (85, 824), "bend": -1, "end": 70}
     return fk((450, 640), 352, face=(0.6, 1), near_arm=arm, far_arm={**arm, "to": (717, 832)},
               near_leg=tuck if near_in else back, far_leg=back if near_in else tuck, props=FLOOR(845), pins=[(705, 840)])
 
@@ -1281,18 +1321,20 @@ def _superman(arms, far_arms):
 V2 = {
     "wall_pushup": ("k2", 2, "fresh", {"k1": _wall((445, 485), 290), "k2": _wall(rot((445, 485), (295, 898), 12), 302)}),
     "pike_pushup": ("k2", 3, "fresh", {"k1": _pike((470, 445), 52, 75), "k2": _pike((492, 452), 74, 85)}),
-    "inverted_row": ("k2", 3, "fresh", {"k1": _row(_row_bottom, ROW_ANKLE, ROW_HAND, -1), "k2": _row(334, ROW_ANKLE, ROW_HAND, 1)}),
+    "inverted_row": ("k2", 3, "fresh", {"k1": _row(_row_bottom, ROW_ANKLE, ROW_HAND, -1), "k2": _row(334, ROW_ANKLE, ROW_HAND, -1)}),
     "bulgarian_split_squat": ("k2", 3, "fresh", {"k1": _bulgarian((490, 440), 272), "k2": _bulgarian((455, 610), 282)}),
     "crunch": ("k2", 2, "fresh", {"k1": _crunch(181, 0, None, (0, -1), (250, 107)),
                                   "k2": _crunch(202, 22, 214, (-0.3, -1), (280, 136))}),
     "reverse_crunch": ("k2", 2, "fresh", {
         "k1": fk((560, 770), 180, face=(0, -1), near_arm=(2, 0), far_arm=(4, 0), near_leg=(270, 0, 0),
                  far_leg=(272, 2, 2), props=FLOOR(800), pins=[(310, 770)]),
-        "k2": fk((560, 712), 195, arc=25, face=(0, -1), near_arm={"to": (440, 790), "bend": 1, "end": 0},
-                 far_arm={"to": (452, 782), "bend": 1, "end": 0}, near_leg=(240, 330, 330), far_leg=(242, 332, 332),
-                 props=FLOOR(800))}),
+        # Only the hips lift: the shoulders and the head stay on k1's spots (they used to rise 120 px, the
+        # arms standing under them like props).
+        "k2": fk((553, 712), 166, arc=25, head=180, face=(0, -1), near_arm=(2, 0), far_arm=(4, 0),
+                 near_leg=(240, 330, 330), far_leg=(242, 332, 332), props=FLOOR(800), pins=[(310, 770)])}),
     "superman_w": ("k2", 2, "fresh", {"k1": _superman((342, 340, 340), (340, 338, 338)),
-                                      "k2": _superman((160, 300, 300), (158, 298, 298))}),
+                                      # A W: the elbows point out at the camera, so the upper arm is short.
+                                      "k2": _superman(((170, 0.35), 350, 350), ((168, 0.35), 348, 348))}),
     "mountain_climber": ("k1", 1, "fresh", {"k1": _climber(True), "k2": _climber(False)}),
     # Seen from directly above, on the back on a mat, head at the top: the other side is the mirror image.
     "bicycle_crunch": ("k1", 2, "mirror", {
@@ -1427,7 +1469,7 @@ EXERCISES["dead_bug"]["keys"] = {
     "k1": EXERCISES["dead_bug"]["keys"]["k1"], "k2": None, "k3": None,
     # The other side: the arm and leg nearest the camera extend, the far ones come back up.
     "k4": _guide((250, 592), [(336, 606), (563, 648)],
-                 near=[[(340, 600), (215, 640), (90, 660)], [(563, 648), (785, 655), (1000, 650)]],
+                 near=[[(340, 600), (215, 616), (90, 632)], [(563, 648), (775, 654), (983, 650)]],
                  far=[[(330, 600), (355, 475), (380, 345)], [(555, 645), (560, 480), (730, 480)]],
                  props=FLOOR(700))}
 EXERCISES["pistol_squat"] = {"rep_s": 4, "a_key": "k2", "times": [0.0, 2.0, 4.0], "same": {}, "keys": {
@@ -1488,13 +1530,15 @@ POSE_TEXT[("bicycle_crunch", "k1")] += " The RIGHT elbow is NOT behind the head:
 # from its guide with a style reference only (no picture of that exercise), the other keys are drawn
 # with the guide FIRST and the new A second as the hero (`fresh_key`): with A first, both models anchor
 # to A's pose and the side swaps never happen.
-STYLE_REF = PILOT / "A" / "squat_orig.png" if (PILOT / "A" / "squat_orig.png").exists() else PILOT / "A" / "squat.png"
+STYLE_REF = pathlib.Path(os.environ["ANIM_STYLE_REF"]) if os.environ.get("ANIM_STYLE_REF") else (
+    PILOT / "A" / "squat_orig.png" if (PILOT / "A" / "squat_orig.png").exists() else PILOT / "A" / "squat.png")
+HERO = os.environ.get("ANIM_HERO", "an athletic hero of the same kind")  # Guillaume, 10/11: "un personnage masculin"
 NEW = ("Draw a new square illustration for a fitness app. Image 1 is only a pose guide: a jointed mannequin "
        "(grey torso, spine, neck and head, the head's wedge is the nose; orange limbs are the side nearest the "
        "camera, blue limbs the far side; white dots are joints; white rings mark contact points; grey shapes are "
        "the floor and equipment). Nothing of its colours or flat shapes appears in the result. Image 2 is a STYLE "
        "reference only: draw in exactly its comic-book art style, line work, colouring and lighting, on a plain "
-       "dark background, with an athletic hero of the same kind in sports clothes. Do not copy image 2's pose, "
+       "dark background, with " + HERO + " in sports clothes. Do not copy image 2's pose, "
        "framing or props: the pose, the camera angle and where the body sits in the frame all come from image 1, "
        "and the whole body fits in the frame with a margin. One person only, two arms, two legs.")
 SAME = ("Image 1 is only a pose guide: a jointed mannequin (grey torso, spine, neck and head, the head's wedge is "
@@ -1535,13 +1579,15 @@ def fresh_key(slug, key, n, base=None):
 
 
 def _archer(bottom):
+    # Each arm is 416 px in both keys (the far one grew to 490 at the bottom, the near forearm shrank to
+    # 128), and the top is centred between the hands.
     if bottom:  # chest lowered over the near (orange, picture right) hand, the far arm straight out
-        return _guide((660, 470), [(650, 560), (560, 640)],
-                      near=[[(740, 560), (840, 620), (847, 748)], [(580, 640), (610, 660), (634, 662)]],
-                      far=[[(560, 560), (330, 650), (108, 748)], [(520, 640), (430, 655), (364, 662)]], props=FLOOR(760))
-    return _guide((520, 300), [(520, 430), (515, 600)],
-                  near=[[(620, 430), (735, 590), (847, 748)], [(560, 600), (600, 640), (634, 662)]],
-                  far=[[(420, 430), (265, 590), (108, 748)], [(470, 600), (420, 640), (364, 662)]], props=FLOOR(760))
+        return _guide((612, 525), [(602, 618), (548, 652)],
+                      near=[[(700, 624), (847, 545), (847, 748)], [(566, 652), (606, 660), (634, 662)]],
+                      far=[[(504, 612), (306, 680), (108, 748)], [(524, 650), (432, 658), (364, 662)]], props=FLOOR(760))
+    return _guide((478, 300), [(478, 430), (497, 600)],
+                  near=[[(578, 430), (712, 589), (847, 748)], [(540, 600), (590, 640), (634, 662)]],
+                  far=[[(378, 430), (243, 589), (108, 748)], [(455, 600), (410, 640), (364, 662)]], props=FLOOR(760))
 
 
 def _curtsy(bottom):
@@ -1558,18 +1604,21 @@ def _slgb(top):
     hip = (560, 600) if top else (560, 768)
     trunk = 145 if top else 180
     leg = 325 if top else 335
-    return fk(hip, trunk, head=180, face=(0, -1), near_arm={"to": (530, 785), "bend": 1, "end": 0},
-              far_arm={"to": (540, 778), "bend": 1, "end": 0}, near_leg=(leg, leg, leg - 30),
+    arm = 9 if top else 2  # flat on the floor along the body (an ik arm put the elbow under the floor)
+    return fk(hip, trunk, head=180, face=(0, -1), near_arm=(arm, arm, arm),
+              far_arm=(arm - 1, arm - 1, arm - 1), near_leg=(leg, leg, leg - 30),
               far_leg={"to": (735, 775), "bend": -1, "end": 0}, props=FLOOR(790), pins=[(735, 775)])
 
 
 def _bear(near_hand_forward):
-    hf, hb, ff, fb = (720, 800), (640, 800), (470, 800), (390, 800)
+    # Feet behind the hips and on their balls, knees under the belly. They were ahead of the hips, flat,
+    # which sent the knees to the wrists and bent the ankles 60 degrees past flat.
+    hf, hb, ff, fb = (720, 800), (640, 800), (330, 752), (250, 752)
     nh, fh = (hf, hb) if near_hand_forward else (hb, hf)
     nf, ff_ = (fb, ff) if near_hand_forward else (ff, fb)  # opposite foot goes with the forward hand
-    return fk((420, 520), 0, head=345, face=(1, 0.3), near_arm={"to": nh, "bend": 1, "end": 0},
-              far_arm={"to": add(fh, (10, -8)), "bend": 1, "end": 0}, near_leg={"to": nf, "bend": -1, "end": 0},
-              far_leg={"to": add(ff_, (10, -8)), "bend": -1, "end": 0}, props=FLOOR(805))
+    return fk((420, 545), 0, head=345, face=(1, 0.3), near_arm={"to": nh, "bend": 1, "end": 0},
+              far_arm={"to": add(fh, (10, -8)), "bend": 1, "end": 0}, near_leg={"to": nf, "bend": -1, "end": 60},
+              far_leg={"to": add(ff_, (10, -8)), "bend": -1, "end": 60}, props=FLOOR(805))
 
 
 def _flutter(near_high):
@@ -1579,12 +1628,14 @@ def _flutter(near_high):
 
 
 def _wgs(up):
-    pins = [(620, 880), (700, 880), (20, 870)]
-    legs = dict(near_leg={"to": (700, 880), "bend": -1, "end": 0}, far_leg={"to": (20, 870), "bend": 1, "end": 60})
+    # The back knee points at the floor (bend +1 bent it backwards) and the back foot stands on its ball
+    # (it went through the floor); the whole hero sits 40 px to the right so that leg stays long.
+    pins = [(660, 880), (740, 880), (40, 832)]
+    legs = dict(near_leg={"to": (740, 880), "bend": -1, "end": 0}, far_leg={"to": (40, 832), "bend": -1, "end": 65})
     if up:
-        return fk((430, 800), 340, head=330, face=(0.2, -1), near_arm={"to": (620, 880), "bend": 1, "end": 0},
+        return fk((470, 800), 340, head=330, face=(0.2, -1), near_arm={"to": (660, 880), "bend": 1, "end": 0},
                   far_arm=(270, 270, 270), **legs, props=FLOOR(885), pins=pins)
-    return fk((430, 800), 5, head=15, face=(0.3, 1), near_arm={"to": (620, 880), "bend": 1, "end": 0},
+    return fk((470, 800), 5, head=15, face=(0.3, 1), near_arm={"to": (660, 880), "bend": 1, "end": 0},
               far_arm=((100, 0.4), 0, 0), **legs, props=FLOOR(885), pins=pins)
 
 
@@ -1592,9 +1643,9 @@ def _pistol(bottom):
     arms = dict(near_arm=(182, 180, 180), far_arm=(184, 182, 182))
     if bottom:
         return fk((820, 790), 250, face=(-1, 0), **arms, near_leg={"to": (722, 916), "bend": 1, "end": 180},
-                  far_leg=(178, 180, 175), props=FLOOR(930), pins=[(722, 916)])
+                  far_leg=(178, 178, 215), props=FLOOR(930), pins=[(722, 916)])
     return fk((712, 480), 268, face=(-1, 0), **arms, near_leg={"to": (722, 916), "bend": 1, "end": 180},
-              far_leg=(150, 165, 170), props=FLOOR(930), pins=[(722, 916)])
+              far_leg=(152, 150, 190), props=FLOOR(930), pins=[(722, 916)])  # (150, 165): a knee bent backwards
 
 
 V3 = {  # slug: a_key, rep seconds, keys (in order), times, same
@@ -1614,7 +1665,7 @@ for _slug, (_a_key, _rep, _keys, _times, _same) in V3.items():
     EXERCISES[_slug] = {"rep_s": _rep, "a_key": _a_key, "mode": "new", "keys": _keys, "same": _same,
                         "times": _times or [0.0, _rep / 2, float(_rep)]}
 # Bicycle crunch, again from above, with the crossing elbow ON the knee in the guide.
-V2["bicycle_crunch"][3]["k1"] = fk((512, 640), 268, torso=0.85, near_at=FRONT[0], far_at=FRONT[1], near_arm=(35, 215),
+V2["bicycle_crunch"][3]["k1"] = fk((512, 640), 268, torso=0.85, near_at=FRONT[0], far_at=FRONT[1], near_arm=(35, 190),
                                    far_arm=(330, 200), near_leg=(92, 92, 90), far_leg=((282, 0.55), (70, 0.5), (80, 0.4)),
                                    props=[[(340, 120), (684, 120), (684, 960), (340, 960)]])
 EXERCISES["bicycle_crunch"]["mode"] = "new"
@@ -1688,6 +1739,152 @@ POSE_TEXT[("curtsy_squat", "k2")] = ("Three-quarter front view, the hero facing 
 POSE_TEXT[("cat_cow", "k2")] += " The head lifts only a little, eyes forward and slightly down, the neck long; the hands do not move forward."
 POSE_TEXT[("worlds_greatest_stretch", "k2")] += " Show the forearm clearly: from the elbow on the floor next to the inner arch of the front foot, the forearm and hand lie flat on the floor pointing forward."
 POSE_TEXT[("bear_crawl", "k2")] += " The step must be obvious: the forward hand of image 2 is now clearly BEHIND the other hand, by a full forearm length, and the same for the feet."
+
+
+# --- anatomy (2026-11-10, Guillaume: "impossible, not human" guides mislead the image models) --------
+# Degrees. A signed limit needs to know where the belly is, so it holds in side views only; elsewhere
+# (front, back, top, three-quarter) the same limit is applied to the size of the angle.
+LIMITS = {
+    "elbow": (-5, 160),       # 0 = straight, below 0 = bent the wrong way
+    "knee": (-5, 160),
+    "shoulder": (-100, 200),  # upper arm against the trunk: + = forward, 180 = overhead, - = behind
+    "hip": (-50, 150),        # thigh against the trunk: + = forward
+    "wrist": (-100, 100),     # hand against the forearm, either way
+    "ankle": (-10, 125),      # foot against the shin: 90 = flat-footed, 0 = toes pointed, - = toes behind
+    "neck": (-60, 70),        # + = chin to the chest
+    "spine": (-60, 100),      # the whole back: + = rounded, - = arched
+    "vertebra": (-30, 30),    # one joint of the spine
+    "head": (0.4, 3.0),       # head centre to the top of the spine (a traced one starts at the shoulder joint)
+    "bone": 0.15,             # a bone of an fk guide against SEG at the pose's own scale
+    "traced": 0.50,           # the same for a hand-placed guide: it follows a drawn hero, in perspective
+    "keys": 0.12,             # the same bone between two keys of one exercise
+    "short": 0.05,            # the least a bone allowed to foreshorten may show
+}
+# Side views, by where the belly is: +1 = like a hero standing and facing right (so also on the back
+# head left, face down head right), -1 = the mirror. A slug that is not here is not a side view.
+SIDE = (dict.fromkeys("dip pushups cat_cow wall_pushup pike_pushup table_row lunge glute_bridge single_leg_glute_bridge "
+                      "bulgarian_split_squat single_leg_deadlift crunch reverse_crunch dead_bug dragon_flag russian_twist "
+                      "towel_door_row superman_w bear_crawl flutter_kicks mountain_climber worlds_greatest_stretch".split(), 1)
+        | dict.fromkeys("knee_pushup inverted_row pistol_squat".split(), -1))
+# Bones a guide may show shorter than they are, as "thigh" (both sides) or "near thigh" (an fk guide
+# also declares its own, per bone, as (angle, scale)). A limb with such a bone is out of the picture
+# plane, where a 2D angle says nothing: only its lengths are checked.
+LOOSE = {
+    "dip": "shin",                                  # knees bent, the shins point away behind the bars
+    "chin_up": "upper",                             # front view: the elbows come towards the camera
+    "thread_the_needle": "upper, fore, thigh, far shin, far foot",  # seen from above, the body turning
+    "diamond_pushup": "upper, fore, thigh, shin",   # three-quarter front at the bottom: every limb folds in depth
+    "archer_pushup": "torso, thigh, shin, near upper",    # camera low in front of the head: the body points away
+    "standing_calf_raise": "torso, head, thigh",    # legs only: the frame cuts the thighs
+    "dead_bug": "near thigh, near shin",            # the bent leg tips towards the camera in A
+    "worlds_greatest_stretch": "near thigh, far upper",   # the front knee opens beside the chest, the far arm with the turned chest
+}
+
+
+def _ang(a, b, c, d):
+    """Signed degrees from the direction a->b to the direction c->d (image axes: + = clockwise)."""
+    u, v = (b[0] - a[0], b[1] - a[1]), (d[0] - c[0], d[1] - c[1])
+    return math.degrees(math.atan2(u[0] * v[1] - u[1] * v[0], u[0] * v[0] + u[1] * v[1]))
+
+
+def _limbs(pose):
+    for side in ("near", "far"):
+        for kind, pts in zip(list(BONES)[-len(pose[side]):], pose[side]):  # a lone limb is a leg (calf raise)
+            yield side, kind, pts
+
+
+def bone_lengths(pose):
+    """{bone: px}. The torso is its chord: a curved spine is drawn longer, it does not grow."""
+    out = {"torso": math.dist(pose["torso"][0], pose["torso"][-1])}
+    for side, kind, pts in _limbs(pose):
+        out.update({f"{side} {name}": math.dist(a, b) for name, a, b in zip(BONES[kind], pts, pts[1:])})
+    return out
+
+
+def check(pose, view=0, loose=()):
+    """What is not human in one pose, as a list of sentences (empty = fine). view: SIDE's +1 or -1,
+    or 0 for a view where only sizes can be judged. loose: bone names allowed to foreshorten."""
+    bad, short, torso = [], pose.get("short", {}), pose["torso"]
+    free = lambda b: b in short or b in loose or b.split()[-1] in loose  # noqa: E731
+    lens = bone_lengths(pose)
+    ratios = [v / SEG[b.split()[-1]] for b, v in lens.items() if not free(b) and b.split()[-1] not in ("hand", "foot")]
+    scale = statistics.median(ratios) if ratios else 1.0
+    tol = LIMITS["bone" if "short" in pose else "traced"]
+    for b, v in lens.items():
+        r = v / (SEG[b.split()[-1]] * scale)
+        lo, hi = ((short[b] - tol, short[b] + tol) if b in short else
+                  (LIMITS["short"], 1 + tol) if free(b) else (1 - tol, 1 + tol))
+        if not lo <= r <= hi:
+            bad.append(f"{b}: {r:.2f} of its length (allowed {lo:.2f} to {hi:.2f})")
+
+    def test(name, where, a, sign):
+        lo, hi = LIMITS[name]
+        a = a * sign if sign else abs(a)
+        if not (lo <= a <= hi or lo <= a + 360 <= hi if sign else a <= max(-lo, hi)):
+            bad.append(f"{where}: {a:.0f} deg (allowed {lo} to {hi}{'' if sign else ', size only'})")
+
+    for side, kind, pts in _limbs(pose):
+        if any(free(f"{side} {n}") for n in BONES[kind]):
+            continue
+        root, mid, end = ("shoulder", "elbow", "wrist") if kind == "arm" else ("hip", "knee", "ankle")
+        trunk = torso[:2] if kind == "arm" else torso[-2:]
+        test(root, f"{side} {root}", _ang(*trunk, *pts[:2]), -view)
+        test(mid, f"{side} {mid}", _ang(*pts[:2], *pts[1:3]), view if kind == "leg" else -view)
+        if len(pts) > 3:
+            test(end, f"{side} {end}", _ang(*pts[1:3], *pts[2:4]), -view)
+    if "head" not in loose:
+        test("neck", "neck", _ang(torso[1], torso[0], torso[0], pose["head"]), view)
+        r, (lo, hi) = math.dist(torso[0], pose["head"]) / ((SEG["neck"] + SEG["head"]) * scale), LIMITS["head"]
+        if not lo <= r <= hi:
+            bad.append(f"head: {r:.2f} of its distance to the shoulders (allowed {lo} to {hi})")
+    turns = [_ang(a, b, b, c) for a, b, c in zip(torso, torso[1:], torso[2:])]
+    test("spine", "spine", sum(turns), -view)
+    if turns:
+        test("vertebra", "sharpest spine joint", max(turns, key=abs), 1)
+    return bad
+
+
+def violations(slug):
+    """{key: [sentences]} for every guide of the exercise that breaks a rule; "keys" holds the bones
+    whose length changes from one key to another without being declared foreshortened."""
+    loose = [b.strip() for b in LOOSE.get(slug, "").split(",") if b.strip()]
+    poses = {k: p for k, p in EXERCISES[slug]["keys"].items() if p is not None}
+    out = {k: check(p, SIDE.get(slug, 0), loose) for k, p in poses.items()}
+    lens = {k: bone_lengths(p) for k, p in poses.items()}
+    out["keys"] = []
+    for b in sorted(set.intersection(*(set(v) for v in lens.values()))) if lens else ():
+        if b in loose or b.split()[-1] in loose or any(b in p.get("short", {}) for p in poses.values()):
+            continue
+        (lo, klo), (hi, khi) = min((v[b], k) for k, v in lens.items()), max((v[b], k) for k, v in lens.items())
+        if hi > lo * (1 + LIMITS["keys"]):
+            out["keys"].append(f"{b}: {lo:.0f} px in {klo}, {hi:.0f} px in {khi}")
+    return {k: v for k, v in out.items() if v}
+
+
+def report(slug):
+    found = violations(slug)
+    for k, lines in sorted(found.items()):
+        for line in lines:
+            print(f"  ! {slug} {k}: {line}")
+    return found
+
+
+def selftest():
+    def squat(bend=-1, foot=0, ankle=(560, 900)):  # side view facing right, feet flat
+        leg = {"to": ankle, "bend": bend, "end": foot}
+        return fk((440, 660), 300, near_arm=(20, 350, 350), far_arm=(22, 352, 352), near_leg=leg, far_leg=leg)
+    assert check(squat(), 1) == [], check(squat(), 1)
+    assert check(_zoomed(squat(), (0.7, 500, 900)), 1) == [], "a smaller hero is the same hero"
+    assert any("knee" in v for v in check(squat(bend=1), 1)), "knees bent backwards"
+    assert not any("knee" in v for v in check(squat(bend=1), 0)), "a front view cannot tell"
+    assert any("ankle" in v for v in check(squat(foot=180), 1)), "toes pointing behind"
+    assert any("shin" in v for v in check(squat(ankle=(800, 1040)), 1)), "an out-of-reach foot stretches the shin"
+    bent = squat()
+    bent["far"][0] = chain(bent["far"][0][0], (20, 200), BONES["arm"])
+    assert any("far elbow" in v for v in check(bent, 1)), "an elbow folded backwards"
+    bent = fk((440, 660), 300, arc=-110, near_arm=(20, 350), far_arm=(22, 352), near_leg=(40, 130), far_leg=(40, 130))
+    assert any("spine" in v for v in check(bent, 1)), "a back arched in two"
+    print("selftest ok")
 
 
 CREDITS = "https://api.bfl.ai/v1/credits"
@@ -1822,7 +2019,17 @@ def shift_down(src, dy):
 
 def main():
     command, *rest = sys.argv[1:] or ["help"]
-    if command == "refs":
+    force = "--force" in rest
+    rest = [r for r in rest if r != "--force"]
+    if command in ("pose", "fresh", "new", "newkey") and rest and report(rest[0]) and not force:
+        sys.exit(f"{rest[0]}: the guide breaks the anatomy rules above. Fix it, or pass --force to pay anyway.")
+    if command == "check":  # check [slug...]: anatomy violations of every guide (free); exit 1 if any
+        found = [slug for slug in rest or EXERCISES if report(slug)]
+        print(f"{len(found)} of {len(rest or EXERCISES)} exercises with violations")
+        sys.exit(1 if found else 0)
+    elif command == "selftest":
+        selftest()
+    elif command == "refs":
         for slug in rest or EXERCISES:
             print(refs(slug))
     elif command == "stick-media":
@@ -1843,6 +2050,7 @@ def main():
                     magick(a, "-resize", "1024x1024", g, "-compose", "blend", "-define", "compose:args=55",
                            "-composite", g.with_name(f"{k}_over_A.png"))
                     print(g)
+            report(slug)
     elif command == "pose":  # pose <slug> <key> <route F|O> <n>...: candidates in parallel
         import concurrent.futures
         base = rest.pop(rest.index("--base") + 1) if "--base" in rest else None

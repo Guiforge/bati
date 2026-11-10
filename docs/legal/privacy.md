@@ -265,7 +265,8 @@ around you, and a network name is a location by another route.
 from your library and keeps a pointer to it on your device; the image itself is never copied or
 sent. If you give a photo to an exercise, a quest, an adventure or a boss you made (as its cover or
 its picture), the app shrinks it and stores it in the database like the rest of your data, so it travels with your
-backups and an encrypted sync. It also travels in a quest or adventure file when you share one: such
+backups and an encrypted sync. It also travels in a quest or adventure file when you share one, or in a pack of several of the things
+you made: such
 a file holds that quest or adventure (its cover photo included), its quests, the exercises you made
 for them, the boss you made for the adventure (its name, its lines and its pictures) and their photos
 as they are stored, and

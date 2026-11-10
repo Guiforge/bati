@@ -10,7 +10,7 @@ import { VillagerSays } from "@/components/chorus/VillagerLine";
 import { AppButton, AppIconButton } from "@/components/common/AppButton";
 import { Paragraph } from "@/components/common/Paragraph";
 import { SectionLabel } from "@/components/common/SectionLabel";
-import { ChevronLeft, ChevronRight } from "@/components/icons";
+import { ChevronLeft, ChevronRight, Share2 } from "@/components/icons";
 import { ImportFileButton } from "@/components/quests/QuestFileButtons";
 import { getBuildingIconAsset } from "@/constants/assetMap";
 import { fade, rawColors } from "@/constants/rawColors";
@@ -273,7 +273,30 @@ export default function ForgeScreen(): ReactNode {
           createLabel={t("exercise_editor.title_new")}
         />
 
-        {/* The one way in for a file someone sent: a quest or an adventure, the preview reads which. */}
+        {/* The way out for everything at once, once there is something to send (`app/pack-share.tsx`). */}
+        {made !== null && !nothingYet ? (
+          <YStack gap="2">
+            <AppButton
+              testID="forge-share"
+              variant="outline"
+              fontSize={16}
+              icon={<Share2 size={18} color="text" strokeWidth={2.5} />}
+              onPress={() => router.push("/pack-share" as never)}
+            >
+              {t("forge.share")}
+            </AppButton>
+            <Text
+              testID="forge-share-hint"
+              fontSize={13}
+              color="textSecondary"
+              style={{ textAlign: "center" }}
+            >
+              {t("forge.share_hint")}
+            </Text>
+          </YStack>
+        ) : null}
+
+        {/* The one way in for a file someone sent: a quest, an adventure or a pack, the preview reads which. */}
         <YStack gap="2">
           <ImportFileButton
             label="forge.import"

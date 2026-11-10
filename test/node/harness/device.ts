@@ -34,6 +34,12 @@ export type App = {
   dbBackup: typeof import("../../../db/backup");
   quest: typeof import("../../../src/questFile");
   adventure: typeof import("../../../src/adventureFile");
+  pack: typeof import("../../../src/packFile");
+  /** The editors' own writers: what a hero makes before sharing it. */
+  exercises: typeof import("../../../db/exercises");
+  quests: typeof import("../../../db/quests");
+  heroAdventures: typeof import("../../../db/heroAdventures");
+  heroBosses: typeof import("../../../db/heroBosses");
   unlock: typeof import("../../../src/vaultUnlock");
   completed: typeof import("../../../db/completed");
   p2p: {
@@ -134,6 +140,11 @@ export async function newDevice(
       dbBackup: require("../../../db/backup"),
       quest: require("../../../src/questFile"),
       adventure: require("../../../src/adventureFile"),
+      pack: require("../../../src/packFile"),
+      exercises: require("../../../db/exercises"),
+      quests: require("../../../db/quests"),
+      heroAdventures: require("../../../db/heroAdventures"),
+      heroBosses: require("../../../db/heroBosses"),
       unlock: require("../../../src/vaultUnlock"),
       completed: require("../../../db/completed"),
       p2p: {

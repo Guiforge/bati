@@ -1,4 +1,4 @@
-import { File, Paths } from "expo-file-system";
+import { Directory, File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { isBundledArt } from "@/constants/assetMap";
 import { type TransactionTx, transactionOrFallback } from "@/db/client";
@@ -64,10 +64,21 @@ const MAX_NAME = 120;
 const MAX_IMAGE_SIDE = 1_024;
 const MAX_SLOTS = 40;
 export const MAX_FILE_BYTES = 8_000_000;
+/**
+ * The largest pack (`src/packFile.ts`) this version reads: four times a quest file. Twice what it
+ * writes (`MAX_WRITTEN_BYTES` there), so that a later version can write bigger packs without the
+ * phones still on this one refusing them. Measured on 2026-11-10, release build, x86_64 emulator
+ * with 2.4 GB: a 31 MB pack of 480 photos was on screen 11 s after the tap, cold start included,
+ * for 90 MB over the idle app. ponytail: read whole in memory, so this is a phone's ceiling and
+ * not a format's; past it, the answer is a streamed reader, not a bigger number.
+ */
+export const MAX_PACK_BYTES = 32_000_000;
+/** One suffix for every file Bati writes; the `kind` inside says which it is. */
+export const FILE_SUFFIX = ".bati.json";
 
 type QuestText = { en: string; fr: string; de: string; es: string; ru: string; zh: string };
 
-type OwnMovement = {
+export type OwnMovement = {
   uuid: string;
   name: string;
   description: string;
@@ -83,7 +94,7 @@ type OwnMovement = {
   secondsPerRep: number;
 };
 
-type Slot = {
+export type Slot = {
   movement: { official: string } | { own: OwnMovement };
   target: {
     type: QuestTemplate["exercises"][number]["baseTarget"]["type"];
@@ -140,6 +151,25 @@ function nameOf(uuid: string | null, what: string): string {
   return uuid;
 }
 
+/** A hero's own movement as a file carries it, whole. */
+export function movementToFile(ex: Exercise): OwnMovement {
+  return {
+    uuid: nameOf(ex.uuid, `Exercise ${ex.id}`),
+    // A hero writes in one language and the row repeats it in all four.
+    name: ex.enName,
+    description: ex.enDescription,
+    image: ex.imagePath,
+    muscles: ex.muscles,
+    style: ex.style,
+    difficulty: ex.difficulty,
+    equipment: ex.equipment,
+    pattern: ex.pattern,
+    measure: ex.measure,
+    perSide: ex.perSide,
+    secondsPerRep: ex.secondsPerRep,
+  };
+}
+
 export function questToFile(quest: QuestTemplate, catalogue: readonly Exercise[]): QuestFile {
   const byId = new Map(catalogue.map((e) => [e.id, e]));
   return {
@@ -172,25 +202,7 @@ export function questToFile(quest: QuestTemplate, catalogue: readonly Exercise[]
     slots: quest.exercises.flatMap((slot) => {
       const ex = byId.get(slot.exerciseId);
       if (!ex) return [];
-      const movement = isUserExercise(ex)
-        ? {
-            own: {
-              uuid: nameOf(ex.uuid, `Exercise ${ex.id}`),
-              // A hero writes in one language and the row repeats it in all four.
-              name: ex.enName,
-              description: ex.enDescription,
-              image: ex.imagePath,
-              muscles: ex.muscles,
-              style: ex.style,
-              difficulty: ex.difficulty,
-              equipment: ex.equipment,
-              pattern: ex.pattern,
-              measure: ex.measure,
-              perSide: ex.perSide,
-              secondsPerRep: ex.secondsPerRep,
-            },
-          }
-        : { official: ex.enName };
+      const movement = isUserExercise(ex) ? { own: movementToFile(ex) } : { official: ex.enName };
       return [{ movement, target: { ...slot.baseTarget } }];
     }),
   };
@@ -199,7 +211,7 @@ export function questToFile(quest: QuestTemplate, catalogue: readonly Exercise[]
 /**
  * The title as a file name, which is what the receiver sees in their chat, so it says which file
  * it is. Cut at 50 letters: a file name is 255 bytes on Android, and four-byte letters plus the
- * longest suffix (`.bati-adventure.json`, 20 bytes) reach it at 58.
+ * suffix reach it at 61.
  */
 export function fileStem(title: string, fallback: string): string {
   return (
@@ -208,10 +220,24 @@ export function fileStem(title: string, fallback: string): string {
   );
 }
 
-/** Writes `json` to the cache under `fileName` and hands it to the share sheet. */
-export async function shareJsonFile(fileName: string, json: string): Promise<void> {
+/**
+ * Writes `json` to the cache as `<stem>.bati.json` and hands it to the share sheet.
+ *
+ * The name says whose file it is; the extension stays `.json` so that Android types it
+ * `application/json`. A bare `.bati` was tried on 2026-11-10 and taken back: Android has no type
+ * for it, so the file travelled as `application/octet-stream`, which Google Wallet claims too on
+ * a Google image (API 35). A tap then opened a chooser of two, and a file sent to Wallet first
+ * came back unreadable, where nothing but Bati answered `application/json` on that image.
+ *
+ * The files shared before are cleared first: a pack is up to 16 MB written, and the share sheet
+ * has long since copied what it sent.
+ */
+export async function shareJsonFile(stem: string, json: string): Promise<void> {
   if (!(await Sharing.isAvailableAsync())) throw new Error("No share sheet available");
-  const file = new File(Paths.cache, fileName);
+  for (const old of new Directory(Paths.cache).list()) {
+    if (old instanceof File && old.name.endsWith(FILE_SUFFIX)) old.delete();
+  }
+  const file = new File(Paths.cache, `${stem}${FILE_SUFFIX}`);
   if (file.exists) file.delete();
   file.create();
   await file.write(json);
@@ -225,7 +251,7 @@ export async function shareJsonFile(fileName: string, json: string): Promise<voi
 
 /** Writes the file `questToShare` returned and hands it to the share sheet. */
 export async function shareQuest(json: string, title: string): Promise<void> {
-  await shareJsonFile(`${fileStem(title, "quest")}.bati-quest.json`, json);
+  await shareJsonFile(fileStem(title, "quest"), json);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -349,7 +375,7 @@ export function safeImage(value: unknown, art?: "exercise" | "quest"): string | 
   return art && isBundledArt(art, value) ? value : null;
 }
 
-function ownMovement(value: unknown): OwnMovement {
+export function ownMovement(value: unknown): OwnMovement {
   if (!isRecord(value)) throw new QuestFileError("not_a_quest");
   if (!Array.isArray(value.muscles)) throw new QuestFileError("not_a_quest");
   return {
@@ -372,11 +398,26 @@ function ownMovement(value: unknown): OwnMovement {
   };
 }
 
-function slot(value: unknown): Slot {
+/**
+ * The hero movements a pack lists once (`src/packFile.ts`), by uuid: its quests name them as
+ * `{ ref }` instead of carrying each one whole, photo included, in every slot.
+ */
+export type OwnedMovements = ReadonlyMap<string, OwnMovement>;
+
+/** A pack's slot names its movement; a quest file's carries it. Neither reads the other's form. */
+function slotMovement(movement: Record<string, unknown>, owned?: OwnedMovements) {
+  if ("official" in movement) return null;
+  if (!owned) return ownMovement(movement.own);
+  const listed = owned.get(uuid(movement.ref));
+  if (!listed) throw new QuestFileError("not_a_quest");
+  return listed;
+}
+
+function slot(value: unknown, owned?: OwnedMovements): Slot {
   if (!isRecord(value) || !isRecord(value.movement) || !isRecord(value.target)) {
     throw new QuestFileError("not_a_quest");
   }
-  const own = "official" in value.movement ? null : ownMovement(value.movement.own);
+  const own = slotMovement(value.movement, owned);
   const movement: Slot["movement"] = own ? { own } : { official: name(value.movement.official) };
   const type = oneOf(questTargetTypes, value.target.type);
   // The widest range the type allows: a seed movement's style is only known on this phone, and
@@ -390,8 +431,11 @@ function slot(value: unknown): Slot {
 /** What a quest file and an adventure's embedded quest share: the quest and its slots. */
 export type QuestBody = Pick<QuestFile, "quest" | "slots">;
 
-/** The `quest` and `slots` of a file, checked field by field (R66 to R68). */
-export function parseQuestBody(data: unknown): QuestBody {
+/**
+ * The `quest` and `slots` of a file, checked field by field (R66 to R68). `owned` is a pack's
+ * list of movements: its slots are then read as references into it.
+ */
+export function parseQuestBody(data: unknown, owned?: OwnedMovements): QuestBody {
   if (!isRecord(data) || !isRecord(data.quest)) throw new QuestFileError("not_a_quest");
   if (!Array.isArray(data.slots) || data.slots.length === 0 || data.slots.length > MAX_SLOTS) {
     throw new QuestFileError("not_a_quest");
@@ -407,9 +451,10 @@ export function parseQuestBody(data: unknown): QuestBody {
       roundRestSeconds: q.roundRestSeconds == null ? null : count(q.roundRestSeconds, REST_RANGE),
       image: safeImage(q.image, "quest"),
     },
-    slots: data.slots.map(slot),
+    slots: data.slots.map((s) => slot(s, owned)),
   };
-  refuseRepeatedUuids([body]);
+  // A pack's movements are listed once and checked there: a uuid cannot name two of them.
+  if (!owned) refuseRepeatedUuids([body]);
   return body;
 }
 
@@ -680,9 +725,7 @@ export async function writeImportedQuest(
   },
 ): Promise<number> {
   const { catalogue, existing, written } = ctx;
-  const mine = new Map(
-    catalogue.flatMap((e) => (isUserExercise(e) && e.uuid !== null ? [[e.uuid, e] as const] : [])),
-  );
+  const byId = new Map(catalogue.map((e) => [e.id, e]));
   const q = body.quest;
   const head = {
     enTitle: q.title.en,
@@ -717,29 +760,10 @@ export async function writeImportedQuest(
       continue;
     }
     const own = s.movement.own;
-    const here = mine.get(own.uuid);
-    if (here?.retiredAt) await unretireUserExercise(here.id, tx);
-    const exerciseId =
-      written.get(own.uuid) ??
-      here?.id ??
-      (await createUserExercise(
-        {
-          name: own.name,
-          description: own.description,
-          imagePath: own.image,
-          muscles: own.muscles,
-          style: own.style,
-          difficulty: own.difficulty,
-          equipment: own.equipment,
-          pattern: own.pattern,
-          measure: own.measure,
-          perSide: own.perSide,
-          secondsPerRep: own.secondsPerRep,
-        },
-        { uuid: own.uuid, exec: tx },
-      ));
-    written.set(own.uuid, exerciseId);
-    slots.push({ exerciseId, images: [], baseTarget: s.target, style: here?.style ?? own.style });
+    const exerciseId = await writeOwnMovement(tx, own, { catalogue, written });
+    // The style of the row the slot lands on: the receiver's copy, or the one a pack merged it into.
+    const style = byId.get(exerciseId)?.style ?? own.style;
+    slots.push({ exerciseId, images: [], baseTarget: s.target, style });
   }
 
   if (existing) {
@@ -754,7 +778,43 @@ export async function writeImportedQuest(
 }
 
 /**
- * Reads a Bati file (a quest or an adventure) at `uri` as parsed JSON, nothing checked yet: one the picker returned, or one another app opened Bati with (a
+ * A hero movement from a file, as a row of this phone: the one already written for this import
+ * (`written`, which a pack also seeds with the hero's same-name movement it was told to use), the
+ * receiver's own copy by uuid, left as it is and brought back if retired, or a new row.
+ */
+export async function writeOwnMovement(
+  tx: TransactionTx,
+  own: OwnMovement,
+  ctx: { catalogue: readonly Exercise[]; written: Map<string, number> },
+): Promise<number> {
+  const done = ctx.written.get(own.uuid);
+  if (done !== undefined) return done;
+  const here = ctx.catalogue.find((e) => isUserExercise(e) && e.uuid === own.uuid);
+  if (here?.retiredAt) await unretireUserExercise(here.id, tx);
+  const id =
+    here?.id ??
+    (await createUserExercise(
+      {
+        name: own.name,
+        description: own.description,
+        imagePath: own.image,
+        muscles: own.muscles,
+        style: own.style,
+        difficulty: own.difficulty,
+        equipment: own.equipment,
+        pattern: own.pattern,
+        measure: own.measure,
+        perSide: own.perSide,
+        secondsPerRep: own.secondsPerRep,
+      },
+      { uuid: own.uuid, exec: tx },
+    ));
+  ctx.written.set(own.uuid, id);
+  return id;
+}
+
+/**
+ * Reads a Bati file (a quest, an adventure or a pack) at `uri` as parsed JSON, nothing checked yet: one the picker returned, or one another app opened Bati with (a
  * `content://` from a chat or from Files). Read at once, the grant to a
  * `content://` lasts as long as the activity that received it.
  */
@@ -765,24 +825,28 @@ export function readBatiFile(uri: string): unknown {
   // day iOS ships, accept the picker's own copies here.
   if (!uri.startsWith("content://")) throw new QuestFileError("unreadable");
   const file = new File(uri);
-  if (file.size != null && file.size > MAX_FILE_BYTES) throw new QuestFileError("not_a_quest");
+  if (file.size != null && file.size > MAX_PACK_BYTES) throw new QuestFileError("not_a_quest");
   // Never `file.text()`: a provider that reports no size (a chat app's, often) would stream a
   // file of any length into memory. One byte past the limit is enough to know it is too big.
-  // `readBytesSync`: at most 8 MB, a few milliseconds.
   let bytes: Uint8Array;
   const handle = file.open();
   try {
-    bytes = handle.readBytesSync(MAX_FILE_BYTES + 1);
+    bytes = handle.readBytesSync(MAX_PACK_BYTES + 1);
   } finally {
     handle.close();
   }
-  if (bytes.length > MAX_FILE_BYTES) throw new QuestFileError("not_a_quest");
-  const raw = new TextDecoder().decode(bytes);
+  if (bytes.length > MAX_PACK_BYTES) throw new QuestFileError("not_a_quest");
+  let data: unknown;
   try {
-    return JSON.parse(raw);
+    data = JSON.parse(new TextDecoder().decode(bytes));
   } catch {
     throw new QuestFileError("unreadable");
   }
+  // The kind is only known once the file is read, so the read allows a pack's size and the limit
+  // of a quest or an adventure is held here.
+  const pack = isRecord(data) && data.kind === "bati-pack";
+  if (!pack && bytes.length > MAX_FILE_BYTES) throw new QuestFileError("not_a_quest");
+  return data;
 }
 
 /**

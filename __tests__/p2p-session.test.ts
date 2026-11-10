@@ -225,10 +225,25 @@ describe("transfer (T1 to T5, S2, S4)", () => {
     const first = open(a, { kind: "sync", link: linkA });
     const firstB = open(b, { kind: "sync", link: linkB });
     await firstB.session.peerFile();
+    // Blocks from 20 on wait for the cut, and the cut waits out CROSS_GRACE_MS (3 s): inside it a
+    // closed channel waits for a crossed dial, and on a loaded runner that dial landed after
+    // cutAll(), carried the rest of the file, and the send came back with its hash, not "cut".
+    let releaseHeld = () => {};
+    const held = new Promise<void>((resolve) => {
+      releaseHeld = resolve;
+    });
+    const readBlock = a.transfer.readBlock;
+    const holding = jest.spyOn(a.transfer, "readBlock").mockImplementation(async (f, index) => {
+      if (index >= 20) await held;
+      return readBlock(f, index);
+    });
     const sending = first.session.send(file, name).catch(() => "cut");
     await viewOf(firstB.views, (v) => v.step === "receiving" && v.done >= 10 * 128 * 1024);
+    await new Promise((resolve) => setTimeout(resolve, 3_200));
     a.p2p.cutAll();
+    releaseHeld();
     expect(await sending).toBe("cut");
+    holding.mockRestore();
     expect(b.transfer.received()).toBeNull();
     const before = lanBytes(lan);
     // Next session: A's outbox is announced again, and B asks only for what it lacks.

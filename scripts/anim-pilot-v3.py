@@ -654,7 +654,8 @@ def draft(slug, n, expect=0.30):
     ex, frames = EXERCISES[slug], rep_frames(slug)
     keys = list(frames)
     scale = 5 / ex["rep_s"]
-    times = [round(t * scale, 2) for t in ex["times"]]
+    # Kept keys only (a halfway pose that never passed is skipped), each at its sheet time scaled to 5 s.
+    times = [round(t * scale, 2) for t in rep_times(slug, frames)]
     keyframes = [[t, keyframe_jpeg(frames[k])] for t, k in zip(times, [*keys, keys[0]])]
     prompt = f"{VIDEO_BASE} {VIDEO_MOTION[slug]}"
     payload = {"mode": "i2v", "prompt": prompt, "duration": 5, "aspect_ratio": "1:1", "generate_audio": False,

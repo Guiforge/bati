@@ -68,6 +68,17 @@ fix:
   feet and planted hand stay put.
 - The final checklist was filled before this fix.
 
+Videos were then made on request for chin-ups and Thread the Needle, 2 drafts each, 1.20 $. Only
+the coach audited them.
+
+- **Chin-ups:** keyed on the two end poses only (hang, top, hang). Draft 2 does one clean rep and
+  passes every line; draft 1 did two pulls with a leg swing.
+- **Thread the Needle:** keyed on the corrected poses. Draft 4 has the right arm and holds its
+  timing. It fails style and fixed points because the still's lighter background comes in at
+  2.2 s.
+
+Ledger total after these videos: 5.67 $.
+
 - **Candidates:** 41 in total (16 F, 25 O) for 8 accepted drawn poses. Accepted per route: F 1
   of 16, O 7 of 25.
 - **Spend:** 4.33 $ of the 15 $ cap. That breaks down into 2.53 $ for poses (BFL 2.57 $ and

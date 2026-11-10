@@ -211,3 +211,42 @@ Deviations:
 - Only the coach audited the new videos; the three-auditor checklist covers the old media only.
 - Towel Door Row: retired in the app on its own branch `retire-towel-door-row`, not merged. The
   Cellar Hauler quest now has Table Row twice.
+
+## v3 (same day, Guillaume's second review)
+
+Guillaume asked for eleven exercises to be redrawn "as if it were a new exercise", with no picture
+of the old version: cat-cow, wall push-up, archer, pike, inverted row, curtsy squat, single-leg
+bridge, bear crawl, flutter kicks, world's greatest stretch and pistol squat. He also asked for:
+
+- the bicycle crunch, redrawn with the mannequin;
+- more pictures for the reverse crunch, the dead bug and the mountain climber;
+- a fix for the zoom on the superman W.
+
+How:
+
+- **A new still from the guide.** Image 1 is the mannequin, image 2 a style reference only (the
+  squat still).
+  - Every new still came out with the same heroine, the style reference's kind of hero.
+- **The other key pose with the guide first.** Image 1 is the guide, image 2 the new still as the
+  hero and the scene (`fresh_key`).
+  - With the still first, both models copy its pose. With the guide first, the flutter kicks
+    swap passed for the first time.
+- **Slides undone by a fit.** `align_scale.py` fits a scale and a shift on the parts that never
+  move, and applies them to the drawing. It was used for the superman reach (the "zoom" was a
+  40 px slide), the pike top, the pistol top and the reverse crunch extension.
+
+| | Exercises |
+|---|---|
+| Redrawn as new and animated | cat-cow, wall push-up, pike push-up, inverted row, single-leg glute bridge, pistol squat, bicycle crunch (from above, mirrored), flutter kicks |
+| More pictures | reverse crunch (legs extended long, as a third phase), mountain climber (near knee, plank, far knee, plank) |
+| Re-aligned | superman W, with a new video and no zoom |
+| Failed, old version kept | curtsy squat (both models always draw a side lunge), archer (the plank seen from the front is never framed right), bear crawl next step, world's greatest stretch elbow down, dead bug other side (third failure) |
+| New videos kept after the coach's audit | 10 |
+
+Ledger total: 55.06 $ of the 65.67 $ cap (v3: 10.80 $).
+
+Defects left:
+
+- The pistol top's head touches the top edge.
+- The reverse crunch's toes touch the right edge in the extension.
+- The bicycle crunch and the flutter kicks videos do two cycles instead of one; they loop evenly.

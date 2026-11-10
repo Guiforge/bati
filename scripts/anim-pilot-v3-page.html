@@ -200,6 +200,8 @@ function section(slug, ex) {
   if (ex.summary) s.append(el("p", { text: ex.summary }));
   const f = el("div", { class: "formats" });
   for (const [k, l] of FORMATS) f.append(formatCard(slug, ex, k, l));
+  // The step 2 mannequin, shown for reference: not a candidate format, so not in the picks.
+  if (ex.formats?.stick) f.append(formatCard(slug, ex, "stick", "Mannequin (pose guide)"));
   s.append(f);
   if (ex.route) {
     const kv = el("dl", { class: "kv" });

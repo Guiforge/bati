@@ -301,6 +301,207 @@ def page():
                       "kb": sum(kb(SITE / f) for f in files)}))
 
 
+# --- paid calls (step 3 and 5) -------------------------------------------------------------------
+# Every call goes through spend(): it refuses to start once the ledger is within one call of the
+# cap, logs the provider's own cost figure, and keeps the file exactly as the API sent it.
+
+import base64  # noqa: E402
+import datetime  # noqa: E402
+import hashlib  # noqa: E402
+import json  # noqa: E402
+import threading  # noqa: E402
+import urllib.error  # noqa: E402
+import urllib.request  # noqa: E402
+
+sys.path.insert(0, str(ROOT / "scripts"))
+from lib.flux import _json, _poll  # noqa: E402
+
+LEDGER = PILOT / "pilot-ledger.json"
+ORIGINALS = PILOT / "originals"
+CAP = 15.0
+FLUX3_IMAGE = "https://api.bfl.ai/v1/flux-3-image"
+FLUX3_VIDEO = "https://api.bfl.ai/v1/flux-3-video"
+OPENAI_EDITS = "https://api.openai.com/v1/images/edits"
+OPENAI_MODEL = "gpt-image-2.5-sunburst"
+# Per 1M tokens, standard tier (developers.openai.com/api/docs/pricing, read 2026-11-10): the
+# Images API returns token usage, not a price, so the cost is computed from it.
+OPENAI_PRICE = {"image_in": 8.0, "text_in": 5.0, "image_out": 30.0}
+_lock = threading.Lock()
+
+
+def env_key(name):
+    """The key from the environment, else from .env here or in the main checkout (a worktree has none)."""
+    if os.environ.get(name):
+        return os.environ[name]
+    for env in (ROOT / ".env", ROOT.parents[2] / ".env", pathlib.Path.home() / ".config" / "bati" / "openai.env"):
+        if env.is_file():
+            for line in env.read_text().splitlines():
+                k, _, v = line.strip().partition("=")
+                if k.strip().removeprefix("export ").strip() == name and v.strip():
+                    return v.strip().strip("\"'")
+    sys.exit(f"STOP: {name} is missing (environment or .env)")
+
+
+def sha(data):
+    return hashlib.sha256(data if isinstance(data, bytes) else pathlib.Path(data).read_bytes()).hexdigest()
+
+
+def ledger():
+    return json.loads(LEDGER.read_text()) if LEDGER.is_file() else []
+
+
+def spent():
+    return round(sum(e.get("cost_usd") or 0 for e in ledger()), 4)
+
+
+def log(entry):
+    with _lock:
+        rows = ledger()
+        rows.append(entry)
+        LEDGER.write_text(json.dumps(rows, indent=1, ensure_ascii=False) + "\n")
+
+
+def guard(next_cost):
+    if spent() + next_cost > CAP:
+        sys.exit(f"STOP: budget, {spent():.2f} $ spent, next call ~{next_cost:.2f} $, cap {CAP} $")
+
+
+def keep_original(raw, ext):
+    """The file as the API sent it, never re-encoded: that is what carries the C2PA signature."""
+    digest = sha(raw)
+    ORIGINALS.mkdir(parents=True, exist_ok=True)
+    (ORIGINALS / f"{digest[:16]}{ext}").write_bytes(raw)
+    return digest
+
+
+def ext_of(raw):
+    return ".png" if raw[:4] == b"\x89PNG" else ".webp" if raw[8:12] == b"WEBP" else ".mp4" if raw[4:8] == b"ftyp" else ".jpg"
+
+
+def png_bytes(path, px=0):
+    args = ["magick", str(path), *(["-resize", f"{px}x{px}"] if px else []), "png:-"]
+    return subprocess.run(args, check=True, capture_output=True).stdout
+
+
+def now():
+    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def flux3_edit(prompt, refs, out, *, step, slug, key, route, expect=0.06):
+    guard(expect)
+    api_key = env_key("BFL_API_KEY")
+    images = [base64.b64encode(png_bytes(r, 1024)).decode("ascii") for r in refs]
+    payload = {"prompt": prompt, "images": images, "aspect_ratio": "1:1", "resolution": "1k",
+               "grounding": False, "safety_tolerance": 4}
+    entry = {"provider": "bfl", "model": "flux-3-image", "endpoint": FLUX3_IMAGE, "step": step, "slug": slug,
+             "key": key, "route": route, "prompt": prompt,
+             "params": {k: v for k, v in payload.items() if k not in ("images", "prompt")},
+             "inputs": [{"name": str(pathlib.Path(r).relative_to(PILOT)), "sha256": sha(r), "sent_as": "1024px PNG"} for r in refs],
+             "date": now()}
+    try:
+        submitted = _json(FLUX3_IMAGE, api_key, payload)
+        url = _poll(submitted["polling_url"], api_key)
+        with urllib.request.urlopen(url, timeout=120) as response:
+            raw = response.read()
+    except Exception as error:  # a refused request is logged (unbilled by BFL) and the batch goes on
+        log({**entry, "error": str(error)[:500], "cost_usd": 0})
+        print(f"  x {slug} {key} {route}: {error}", file=sys.stderr)
+        return None
+    kind = ext_of(raw)
+    digest = keep_original(raw, kind)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["magick", f"{kind[1:]}:-", str(out)], input=raw, check=True)
+    cost = round(float(submitted.get("cost") or 0) / 100, 4)  # BFL bills in credits, 1 credit = 0.01 $
+    log({**entry, "file": str(out.relative_to(PILOT)), "signed_original": {"file": f"{digest[:16]}{kind}", "sha256": digest},
+         "api_cost_credits": submitted.get("cost"), "input_mp": submitted.get("input_mp"),
+         "output_mp": submitted.get("output_mp"), "cost_usd": cost})
+    print(f"  ok {out}  {cost:.3f} $")
+    return out
+
+
+def openai_edit(prompt, refs, out, *, step, slug, key, route, quality="high", expect=0.25):
+    guard(expect)
+    api_key = env_key("OPENAI_API_KEY")
+    images = [{"image_url": "data:image/png;base64," + base64.b64encode(png_bytes(r, 1024)).decode("ascii")} for r in refs]
+    payload = {"model": OPENAI_MODEL, "prompt": prompt, "images": images, "size": "1024x1024",
+               "quality": quality, "output_format": "png", "n": 1}
+    entry = {"provider": "openai", "model": OPENAI_MODEL, "endpoint": OPENAI_EDITS, "step": step, "slug": slug,
+             "key": key, "route": route, "prompt": prompt,
+             "params": {k: v for k, v in payload.items() if k not in ("images", "prompt")},
+             "inputs": [{"name": str(pathlib.Path(r).relative_to(PILOT)), "sha256": sha(r), "sent_as": "1024px PNG"} for r in refs],
+             "date": now()}
+    request = urllib.request.Request(OPENAI_EDITS, data=json.dumps(payload).encode(), method="POST",
+                                     headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(request, timeout=600) as response:
+            body = json.loads(response.read())
+    except urllib.error.HTTPError as error:
+        detail = error.read().decode(errors="replace")[:500]
+        log({**entry, "error": f"{error.code} {detail}", "cost_usd": 0})
+        print(f"  x {slug} {key} {route}: {error.code} {detail}", file=sys.stderr)
+        return None
+    raw = base64.b64decode(body["data"][0]["b64_json"])
+    u = body.get("usage", {})
+    ind, outd = u.get("input_tokens_details", {}), u.get("output_tokens_details", {})
+    image_out = outd.get("image_tokens", u.get("output_tokens", 0))
+    cost = round((ind.get("image_tokens", 0) * OPENAI_PRICE["image_in"] + ind.get("text_tokens", 0) * OPENAI_PRICE["text_in"]
+                  + image_out * OPENAI_PRICE["image_out"]) / 1e6, 4)
+    kind = ext_of(raw)
+    digest = keep_original(raw, kind)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["magick", f"{kind[1:]}:-", "-resize", "1280x1280", str(out)], input=raw, check=True)
+    log({**entry, "file": str(out.relative_to(PILOT)), "signed_original": {"file": f"{digest[:16]}{kind}", "sha256": digest},
+         "usage": u, "cost_usd": cost, "cost_basis": "usage tokens x list price per 1M"})
+    print(f"  ok {out}  {cost:.3f} $")
+    return out
+
+
+# The edit prompt (the user's idea, kept close to its words), then what the pose is, then what must
+# never move. The auditors never see these.
+EDIT = ("Redraw image 1, changing only the pose so it matches the pose in image 2. Image 2 is only a "
+        "pose guide (a jointed mannequin: grey torso and head, orange limbs nearest the camera, blue "
+        "limbs on the far side); nothing of its colours, shapes or flat style appears in the result. "
+        "Same hero, same face, same hair, same outfit, same background, same lighting, same effects, "
+        "same framing, same scale and same camera angle as image 1, in the same comic-book art style "
+        "and line work. One person only, two arms, two legs.")
+POSE_TEXT = {
+    ("dip", "k1"): "The hero is now at the TOP of a dip: both arms fully straight and vertical, shoulders directly above the hands, pressed down away from the ears, torso tilted slightly forward, chest proud. The body is higher than in image 1, held up by the arms.",
+    ("dip", "k2"): "The hero is now HALFWAY down a dip: elbows bent about 120 degrees and pointing straight back behind the body, not out to the sides, shoulders down away from the ears, torso tilted forward.",
+    ("chin_up", "k1"): "The hero now hangs at the BOTTOM of a chin-up: both arms fully straight, body vertical and still below the bar, head well below the bar, legs straight and together. The whole body is lower than in image 1; the feet may leave the bottom of the frame.",
+    ("chin_up", "k2"): "The hero is now HALFWAY up a chin-up: elbows bent about 90 degrees, pointing down and slightly forward in front of the body, head about halfway between the hang and the bar, below the bar, legs straight and together.",
+    ("pushups", "k3"): "The hero is now at the BOTTOM of a push-up: chest almost touching the floor, lower than the elbow joints; elbows bent and pointing back towards the feet, close to the ribs; one rigid straight line from head to heels, hips neither raised nor sagging; neck long, head in line with the spine.",
+    ("pushups", "k2"): "The hero is now HALFWAY down a push-up: elbows bent about 100 degrees, pointing back towards the feet, close to the ribs; body lowered by about half, still one rigid straight line from head to heels; head in line with the spine.",
+    ("cat_cow", "k2"): "The hero is now in the COW position: the lower and middle back curve gently DOWN into a soft U, the belly sinking towards the floor, the bottom lifting, the chest moving forward and up between the straight arms, the head lifted to look forward. Arms straight.",
+    ("cat_cow", "k1"): "The hero is now in a NEUTRAL tabletop: the back is flat and straight like a table from the tailbone to the back of the head, no dip and no hump; head in line with the spine, eyes to the floor just ahead of the hands. Arms straight.",
+}
+NEVER = {
+    "dip": "The hands stay on exactly the same spots of the bars as in image 1, gripping them. The bars do not move. The legs keep the same bent shape, feet behind, off the floor.",
+    "chin_up": "Both hands stay on exactly the same spots of the bar, with the palms facing the hero's own face (underhand grip: from the camera we see the backs of the hands and the knuckles over the bar). The bar does not move. No swing.",
+    "pushups": "The hands stay flat on exactly the same spots of the floor as in image 1 and the toes stay on exactly the same spot. The body pivots on the toes.",
+    "cat_cow": "Both hands stay flat on exactly the same spots of the floor, under the shoulders, and both knees and feet stay exactly where they are, knees under the hips. Only the spine and head change.",
+}
+
+
+def edit_prompt(slug, key):
+    return f"{EDIT} {POSE_TEXT[(slug, key)]} {NEVER[slug]}"
+
+
+def candidate(slug, key, route, n):
+    """One candidate for one key pose: image 1 = A, image 2 = the mannequin pose."""
+    a, ref = PILOT / "A" / f"{slug}.png", PILOT / "refs" / slug / f"{key}.png"
+    out = PILOT / "poses" / slug / f"{key}_{route}{n}.png"
+    if out.exists():
+        print(f"  = {out} exists")
+        return out
+    prompt = edit_prompt(slug, key)
+    fn = flux3_edit if route == "F" else openai_edit
+    made = fn(prompt, (a, ref), out, step="pose", slug=slug, key=key, route=route)
+    if made:
+        onion = out.with_name(out.stem + "_onion.png")
+        magick(a, made, "-resize", "1280x1280!", "-compose", "blend", "-define", "compose:args=50", "-composite", onion)
+    return made
+
+
 def main():
     command, *rest = sys.argv[1:] or ["help"]
     if command == "refs":
@@ -311,6 +512,17 @@ def main():
         print(json.dumps({slug: stick_media(slug) for slug in rest or EXERCISES}, indent=1))
     elif command == "page":
         page()
+    elif command == "pose":  # pose <slug> <key> <route F|O> <n>...: candidates in parallel
+        import concurrent.futures
+        slug, key, route, *ns = rest
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+            list(pool.map(lambda n: candidate(slug, key, route, int(n)), ns))
+        print(f"spent {spent():.3f} $")
+    elif command == "spent":
+        rows = ledger()
+        for prov in ("bfl", "openai"):
+            print(prov, round(sum(r.get("cost_usd") or 0 for r in rows if r["provider"] == prov), 3))
+        print("total", spent(), "calls", len(rows))
     else:
         sys.exit(__doc__)
 

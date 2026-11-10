@@ -1969,6 +1969,156 @@ VIDEO_MOTION.update({
 POSE_TEXT[("burpee", "k2")] += " The back stays FLAT and long from the hips to the head, chest forward over the knees, not rounded."
 
 
+# --- v6 (2026-11-10, Guillaume's third review): decompose each gesture into 4 to 8 pictures before any
+# video, so the video model has less to invent. The in-between guides come from the same fk helpers
+# with their parameters interpolated (bones keep their length, pins stay put); the key poses were checked
+# against the CC0 key poses of open-exercise-figures (figures/0499, 0459, 0872, 1604, 3224, 3361: their
+# angles, read as references only, nothing copied into the pictures).
+def _lerp(a, b, t):
+    return a + (b - a) * t
+
+
+def _seq(slug, a_key, rep, keys, same):
+    """An exercise as an ordered loop: `keys` in order, `same` names the keys that reuse another key's picture."""
+    n = len(keys)
+    EXERCISES[slug] = {"rep_s": rep, "a_key": a_key, "mode": "new", "keys": keys, "same": same,
+                       "times": [round(rep * i / n, 3) for i in range(n + 1)]}
+
+
+_PT, _PB = ((470, 445), 52, 75), ((492, 452), 74, 85)  # pike top, bottom: hip, trunk, head
+_pike_at = lambda t: _pike(tuple(round(_lerp(a, b, t)) for a, b in zip(_PT[0], _PB[0])),  # noqa: E731
+                           _lerp(_PT[1], _PB[1], t), _lerp(_PT[2], _PB[2], t))
+_seq("pike_pushup", "k4", 3, {"k1": _pike_at(0), "k2": _pike_at(1 / 3), "k3": _pike_at(2 / 3), "k4": _pike_at(1),
+                              "k5": None, "k6": None}, {"k5": "k3", "k6": "k2"})
+_row_at = lambda t: _row(_lerp(_row_bottom, 334, t), ROW_ANKLE, ROW_HAND, -1)  # noqa: E731
+_seq("inverted_row", "k3", 3, {"k1": _row_at(0), "k2": _row_at(0.5), "k3": _row_at(1), "k4": None}, {"k4": "k2"})
+_seq("bicycle_crunch", "k1", 2, {
+    "k1": None,
+    # Between the two sides: shoulders curled up square, both elbows wide, both knees half bent at the same height.
+    "k2": fk((512, 640), 270, torso=0.85, near_at=FRONT[0], far_at=FRONT[1], near_arm=(250, 330), far_arm=(290, 210),
+             near_leg=((95, 0.7), (92, 0.75), (90, 0.4)), far_leg=((85, 0.7), (88, 0.75), (90, 0.4)),
+             props=[[(340, 120), (684, 120), (684, 960), (340, 960)]]),
+    "k3": None, "k4": None}, {"k4": "k2"})
+_jack_half = fk((512, 470), 270, near_at=FRONT[0], far_at=FRONT[1], near_arm=(160, 161, 161), far_arm=(20, 19, 19),
+                near_leg=(100, 98, (95, 0.4)), far_leg=(80, 82, (85, 0.4)), props=FLOOR(960))  # airborne, no pins
+_seq("jumping_jack", "k3", 1, {"k1": _jack(False), "k2": _jack_half, "k3": _jack(True), "k4": None}, {"k4": "k2"})
+
+
+def _wipers_at(tip):
+    """From above; tip 1 = legs tipped to the hero's right like A, 0 = legs straight up at the camera."""
+    s = max(0.08, 0.55 * tip)
+    return fk((512, 600), 270, near_at=FRONT[0], far_at=FRONT[1], near_arm=(180, 180, 180), far_arm=(0, 0, 0),
+              near_leg=((160, s), (160, s), (160, max(0.08, 0.3 * tip))),
+              far_leg=((150, s), (150, s), (150, max(0.08, 0.3 * tip))),
+              props=[[(300, 140), (724, 140), (724, 900), (300, 900)]])
+
+
+_seq("windshield_wipers", "k1", 4, {"k1": _wipers_at(1), "k2": _wipers_at(0.5), "k3": _wipers_at(0), "k4": None,
+                                    "k5": None, "k6": None, "k7": None, "k8": None}, {"k6": "k4", "k7": "k3", "k8": "k2"})
+_flutter_mid = fk((560, 765), 200, head=195, face=(0.3, -1), near_arm=(100, 5, 5), far_arm=(98, 3, 3),
+                  near_leg=(342, 342, 315), far_leg=(343, 343, 316), props=FLOOR(800), pins=[(560, 765)])
+_seq("flutter_kicks", "k1", 1, {"k1": _flutter(True), "k2": _flutter_mid, "k3": _flutter(False), "k4": None}, {"k4": "k2"})
+_rc = V2["reverse_crunch"][3]
+_seq("reverse_crunch", "k3", 3, {
+    "k1": _rc["k1"],
+    "k2": fk((556, 741), 173, arc=12, head=180, face=(0, -1), near_arm=(2, 0), far_arm=(4, 0),
+             near_leg=(255, 345, 345), far_leg=(257, 347, 347), props=FLOOR(800), pins=[(310, 770)]),
+    "k3": _rc["k2"], "k4": None, "k5": None,
+    # 40 degrees up, not 20: at 20 the feet reached the right edge and the old drawing was cropped there.
+    "k6": fk((560, 770), 180, face=(0, -1), near_arm=(2, 0), far_arm=(4, 0), near_leg=(320, 320, 312),
+             far_leg=(322, 322, 314), props=FLOOR(800), pins=[(310, 770)])}, {"k4": "k2", "k5": "k1"})
+_skater_air = fk((512, 500), 270, near_at=FRONT[0], far_at=FRONT[1], near_arm=((150, 0.9), (165, 0.9)),
+                 far_arm=((30, 0.9), (15, 0.9)), near_leg=((95, 0.8), (100, 0.75), (95, 0.4)),
+                 far_leg=((80, 0.8), (75, 0.75), (85, 0.4)), props=FLOOR(900))  # mid-hop, both feet off the floor
+_seq("skater_hop", "k1", 1, {"k1": None, "k2": _skater_air, "k3": None, "k4": None}, {})
+
+
+def _wgs_down():
+    """World's greatest stretch, start and between: the same lunge, both hands flat inside the front foot."""
+    return fk((470, 800), 8, head=20, face=(0.3, 1), near_arm={"to": (660, 880), "bend": 1, "end": 0},
+              far_arm={"to": (676, 872), "bend": 1, "end": 0}, near_leg={"to": (740, 880), "bend": -1, "end": 0},
+              far_leg={"to": (40, 832), "bend": -1, "end": 65}, props=FLOOR(885), pins=[(660, 880), (740, 880), (40, 832)])
+
+
+def _xform(pose, s, anchor, to, flip=False, floor=None):
+    """The same pose mirrored (flip) and scaled by s about `anchor`, which lands on `to`."""
+    def P(p):
+        x = (2 * anchor[0] - p[0]) if flip else p[0]
+        return (round(to[0] + (x - anchor[0]) * s), round(to[1] + (p[1] - anchor[1]) * s))
+    face = pose["face"] and ((-pose["face"][0], pose["face"][1]) if flip else pose["face"])
+    return {**pose, "head": P(pose["head"]), "face": face, "torso": [P(p) for p in pose["torso"]],
+            "near": [[P(p) for p in c] for c in pose["near"]], "far": [[P(p) for p in c] for c in pose["far"]],
+            "props": FLOOR(floor) if floor else [[P(p) for p in poly] for poly in pose["props"]],
+            "pins": [P(p) for p in pose["pins"]]}
+
+
+def _wgs_left(phase):
+    """World's greatest stretch on the app's picture (Guillaume reviewed that one): the hero faces LEFT.
+    phase 0 = both hands down, 1 = the far arm straight up (A). The elbow-to-instep pose is left out: it
+    failed twice and is the picture that "breaks at the end". In the mannequin's proportions the shoulders
+    sit an arm's length above the floor, so the trunk is lower than in A's comic drawing."""
+    f, b = (300, 895), (905, 872)
+    legs = dict(near_leg={"to": f, "bend": 1, "end": 180}, far_leg={"to": b, "bend": 1, "end": 125})
+    near = {"to": (262, 862), "bend": -1, "end": 180}
+    if phase == 0:
+        return fk((520, 700), 198, head=170, face=(-0.5, 1), near_arm={**near, "to": (225, 862)},
+                  far_arm={"to": (255, 856), "bend": -1, "end": 180}, **legs, props=FLOOR(900), pins=[(225, 862), f, b])
+    # Halfway: straight and diagonal, up and forward. Pointed at the camera (short) it read as a hand lifting off.
+    up = (272, 272, 272) if phase == 1 else (225, 225, 225)
+    return fk((520, 690), 200, head=230 if phase == 1 else 195, face=(-0.3, -1) if phase == 1 else (-0.6, 0.2),
+              near_arm=near, far_arm=up, **legs, props=FLOOR(900), pins=[(262, 862), f, b])
+
+
+# v6 retry 1 (blind scores): what the first pair missed.
+_V6_RETRY = {
+    ("inverted_row", "k1"): " The head is exactly as in image 2: in profile, in line with the body, the back of the head level with the back, eyes on the bar above; the chin is NOT lifted and the face does NOT turn to the camera.",
+    ("windshield_wipers", "k2"): " Seen from above the raised legs are strongly FORESHORTENED: from the hips they look only about a third as long as in image 2, ending close to the hips, the soles half turned to the camera.",
+    ("skater_hop", "k2"): " A clear GAP of floor under both feet: the hero is well above the floor, the shadow small and separate below. One arm swings across in front of the body and the other back, like a speed skater, not both out to the sides.",
+}
+SIDE["worlds_greatest_stretch"] = -1  # the app's hero faces left
+_seq("worlds_greatest_stretch", "k3", 4, {"k1": _wgs_left(0), "k2": _wgs_left(0.5), "k3": _wgs_left(1), "k4": None}, {"k4": "k2"})
+EXERCISES["superman_w"]["zoom_fix"] = "k1 re-fitted on A by the legs: it was 7 % smaller, the video zoomed"
+FLOPS = {  # slug: {key: key it is the mirror of} (front and top views: exact and free)
+    "bicycle_crunch": {"k3": "k1"}, "windshield_wipers": {"k4": "k2", "k5": "k1"}, "skater_hop": {"k3": "k1", "k4": "k2"},
+}
+POSE_TEXT.update({
+    ("pike_pushup", "k2"): "The hero is a THIRD of the way down a pike push-up: hips high in an upside-down V, legs straight, the elbows starting to bend backwards along the body, the head a little lower than in the top position, still well above the floor between the hands.",
+    ("pike_pushup", "k3"): "The hero is TWO THIRDS of the way down a pike push-up: hips high, legs straight, the elbows clearly bent and pointing back towards the feet, the top of the head halfway between the shoulders' top position and the floor, in front of the hands.",
+    ("inverted_row", "k1"): "The BOTTOM of an inverted row: hanging under the bar on straight arms, the arms perpendicular to the body, the bar above the chest; the body one straight plank from the heels to the head. The head stays IN LINE with the body, the back of the head level with the back, the face turned UP to the bar in profile; the hero does not look at the camera.",
+    ("inverted_row", "k2"): "HALFWAY up an inverted row: the elbows bent at 90 degrees, pointing down to the floor, the chest halfway to the bar; the body one straight plank. The head stays IN LINE with the body, face up to the bar in profile; the hero does not look at the camera.",
+    ("inverted_row", "k3"): "The TOP of an inverted row: the chest touching the bar, the elbows bent and behind the body, the body one straight plank. The head stays IN LINE with the body, the neck long, face up in profile, just past the bar; the head is NOT tilted back and the hero does not look at the camera.",
+    ("bicycle_crunch", "k2"): "Seen from directly above: the hero is BETWEEN two bicycle crunch sides. Shoulders curled up off the mat and square, both hands behind the head, both elbows wide; both knees half bent at the same height, the legs passing each other, both feet off the mat. " + FRONT_NOTE,
+    ("jumping_jack", "k2"): "The hero is HALFWAY through a jumping jack, in the air: both arms straight out to the sides, level with the shoulders; the feet off the floor, apart about shoulder width, knees soft.",
+    ("windshield_wipers", "k2"): "Seen from directly above: the same windshield wiper, now the legs, straight and together, are tipped only HALFWAY to the hero's right, about 20 degrees from vertical, the feet much closer to above the hips than in image 2. Arms out in a T, shoulders flat. " + FRONT_NOTE,
+    ("windshield_wipers", "k3"): "Seen from directly above: the legs, straight and together, now point STRAIGHT UP at the camera, so they look very short, the soles of both shoes facing the camera just below the hips. Arms out in a T, shoulders flat. " + FRONT_NOTE,
+    ("flutter_kicks", "k2"): "The legs PASS each other in a flutter kick: both straight legs at the SAME height, about 15 degrees above the floor, side by side. Same forearms, same hips.",
+    ("reverse_crunch", "k2"): "The hero is HALFWAY into a reverse crunch: the knees, bent at 90 degrees, are drawn towards the chest, the hips just starting to roll up off the floor; the head, shoulders and arms flat on the same spots.",
+    ("reverse_crunch", "k6"): "The hero EXTENDS both legs: the back flat on the floor, both legs straight and together, pointing away and up at about 40 degrees above the floor, toes pointed; arms along the sides, head and shoulders on the same spots. The whole hero fits inside the frame: the feet end well before the right edge, as small as in image 2.",
+    ("skater_hop", "k2"): "Front view, facing the camera: the hero is IN THE AIR in the middle of a skater hop, crossing from one side of the picture to the other: centred, both feet off the floor, the legs close together and slightly bent, the arms swinging across the body, the hero a little higher than when landing.",
+    ("worlds_greatest_stretch", "k1"): "Side view facing right: the START of the world's greatest stretch. A deep lunge, the front foot flat, the back leg long and straight on the ball of the foot; BOTH hands flat on the floor inside the front foot, the arms straight, the chest low over the front thigh, eyes to the floor.",
+    ("worlds_greatest_stretch", "k2"): "Same deep lunge: the arm farther from the camera bends and that ELBOW drops to the floor beside the inside of the front foot, the forearm flat on the floor; the near hand stays flat on its spot; the chest low over the front thigh. Every limb stays whole and attached; the back knee stays off the floor.",
+})
+POSE_TEXT[("worlds_greatest_stretch", "k2")] = ("HALFWAY through the rotation of the world's greatest stretch, same deep lunge: one hand stays flat on the "
+    "floor inside the front foot; the other arm is fully STRAIGHT and raised HALFWAY, pointing diagonally up and forward at about 45 degrees, "
+    "the hand high above the head's level, open; the chest half turned open; eyes follow the hand.")
+for _k, _extra in _V6_RETRY.items():
+    POSE_TEXT[_k] += _extra
+NEVER.update({
+    "pike_pushup": "Both hands stay flat on exactly the same spots and both feet stay on exactly the same spot of the floor: the feet do not slide. The camera, the framing and the scale do not change.",
+    "inverted_row": "Both hands stay on exactly the same spots of the bar and both heels on exactly the same spot of the floor. The bar does not move. The camera, the framing and the scale do not change.",
+    "bicycle_crunch": "The hips stay on the same spot of the mat. The camera, the framing and the scale do not change.",
+    "jumping_jack": "The camera, the framing and the scale do not change; the hero stays centred.",
+    "windshield_wipers": "The shoulders, the arms and the head stay exactly where they are. The camera, the framing and the scale do not change.",
+    "reverse_crunch": "The head, shoulders and arms stay on exactly the same spots. The camera, the framing and the scale do not change.",
+    "skater_hop": "The camera, the framing and the scale do not change.",
+})
+VIDEO_MOTION.update({
+    "pike_pushup": "One slow pike push-up. The hands and the feet never move, not even a little: the feet stay planted. The hips stay high; only the elbows bend and straighten.",
+    "inverted_row": "One slow inverted row under a low bar. The hands never move on the bar and the heels never move on the floor; the body stays one straight plank and the head stays in line with it, face up.",
+    "bicycle_crunch": "Bicycle crunch seen from above: one elbow meets the opposite knee, both pass through the middle, then the other elbow meets the other knee. The hips stay on the mat. Nothing else happens.",
+})
+
+
 CREDITS = "https://api.bfl.ai/v1/credits"
 
 
@@ -2172,6 +2322,19 @@ def main():
         print(adopt(rest[0], pathlib.Path(rest[1])))
     elif command == "mirror":
         print(mirror(rest[0]))
+    elif command == "flop":  # flop <slug>...: every FLOPS key, from the accepted picture (or A) it mirrors
+        acc = json.loads(ACCEPTED.read_text())
+        for slug in rest:
+            for dst, src in FLOPS[slug].items():
+                rel = acc.get(slug, {}).get(src) if src != EXERCISES[slug]["a_key"] else None
+                srcp, out = PILOT / rel if rel else PILOT / "A" / f"{slug}.png", PILOT / "poses" / slug / f"{dst}_F1.png"
+                magick(srcp, "-flop", out)
+                log({"provider": "local", "model": "imagemagick", "step": "mirror", "slug": slug, "key": dst,
+                     "file": str(out.relative_to(PILOT)), "inputs": [{"name": str(srcp.relative_to(PILOT)), "sha256": sha(srcp)}],
+                     "date": now(), "cost_usd": 0})
+                acc.setdefault(slug, {})[dst] = str(out.relative_to(PILOT))
+                print(out)
+        ACCEPTED.write_text(json.dumps(acc, indent=1))
     elif command == "credits":  # the BFL balance: the video endpoint returns no cost field
         print(_json(CREDITS, env_key("BFL_API_KEY"))["credits"])
     elif command == "encode":  # encode <slug> <clip.mp4> [crf]

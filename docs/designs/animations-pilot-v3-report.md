@@ -270,3 +270,50 @@ Defects left:
 - **The BFL account ran out of credits.** HTTP 402 refused the videos of the jumping jack, calf raise and burpee, and nothing was billed. Their flip-books are done.
 - Ledger total: 60.73 $ (cap raised to 75.67 $ by Guillaume).
 - A web research note, from weak sources, is kept in the cache (`tools/research-notes.md`).
+
+## v6: each gesture broken down before any video (2026-11-10)
+
+Guillaume's third review asked for more pictures per movement before the video, a fix for the zoom
+effect, and an audit. Exactness comes first, style second; the scoring brief now says so.
+
+- **Where the "zoom" came from.** A new audit (`tools/vstab.py` in the cache) fits every video frame
+  onto the first on a region that never moves. On the superman, the fault was in the stills, not in the
+  video model: the reach pose was 7 % smaller than A. The video interpolated between the two, so it
+  zoomed. The pose is now fitted on the legs. On the pike, the hands stayed put and the feet slid 21 px.
+  That is the model inventing leg motion, which stabilising cannot fix. Every new picture is now fitted
+  onto A before it is accepted (`tools/v6_align.py`). Only pike k1 and the reverse crunch extension
+  needed it.
+- **More pictures per gesture.** The in-between guides come from the same fk helpers, with their
+  parameters interpolated, so bones keep their length and pins stay put. Mirrors are free for front and
+  top views (`flop` command). Each exercise now has:
+  - **Pike:** 6 pictures.
+  - **Inverted row:** 4. The head is in line with the body and the face is up. There is a new top
+    picture, and the bottom picture is drawn on it.
+  - **Bicycle crunch:** 4, with a middle position.
+  - **Jumping jack:** 4, with the arms level in the air.
+  - **Windshield wipers:** 8, with half and vertical positions.
+  - **Flutter kicks:** 4, with the legs crossing.
+  - **Reverse crunch:** 6. The sequence now returns through the tabletop before the extension. The
+    extension is at 40 degrees, because at 20 degrees the feet left the frame.
+  - **Skater hop:** 4, with an airborne picture.
+  - **World's greatest stretch:** 4, on the app's picture. The guides face left, and that hero has its
+    own facing in the anatomy rules. The elbow-to-instep pose is dropped: it failed twice and was the
+    picture that broke the end.
+- **Reference poses.** The CC0 key poses of open-exercise-figures (`figures/*.json`, downloaded as data
+  only) were read as references. Nothing from them is in the pictures. The other datasets cannot be used
+  for the pictures:
+  - **hasaneyldrm/exercises-dataset:** the media are (c) Gym visual, with permission to redistribute
+    only. Its text is MIT.
+  - **Open-Exercise-Art:** the artwork is GPL-3.
+  - **free-exercise-db:** public domain, but not needed this round.
+- **Picks:** 2 candidates per pose, gpt-image-2.6-sunburst, scored blind. Claude overrode the scorer
+  twice:
+  - **Inverted row bottom (N24):** the scorer gave every candidate a 3 for a slightly lifted chin. N24
+    is the cleanest profile.
+  - **Windshield wipers half-way (N21):** the retries bent the knees. N21 is straight but less
+    foreshortened, and straight legs matter more.
+
+  The skater's airborne picture keeps both arms wide (3 of 5, 4 tries).
+- **Videos:** the BFL account is still at 0 credits. The site videos of these ten exercises no longer
+  match their pictures, so they were set aside as `video_v5.mp4`.
+- Ledger total: 63.41 $ (cap raised to 80.73 $ by Guillaume, 20 $ more on OpenAI).

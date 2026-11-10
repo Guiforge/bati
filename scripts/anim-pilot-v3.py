@@ -2104,6 +2104,67 @@ POSE_TEXT[("worlds_greatest_stretch", "k2")] = ("HALFWAY through the rotation of
     "the hand high above the head's level, open; the chest half turned open; eyes follow the hand.")
 for _k, _extra in _V6_RETRY.items():
     POSE_TEXT[_k] += _extra
+
+
+# --- v7 (2026-11-10): the side swaps that failed seen from the side (dead bug 5 times, bear crawl 6) are
+# redrawn from directly above, where the other side is A mirrored, exact and free. New A, male hero.
+_MAT = [[(340, 120), (684, 120), (684, 960), (340, 960)]]
+
+
+def _bug(side):
+    """From above, head at the top. side 0 = start (both arms at the ceiling, both knees 90/90: limbs
+    pointing at the camera look short); 1 = hero's left arm overhead on the floor, right leg long."""
+    up_arm, up_leg = ((180, 0.15), (180, 0.15), (180, 0.1)), ((90, 0.15), (90, 0.95), (90, 0.3))
+    if side == 0:
+        return fk((512, 600), 270, near_at=FRONT[0], far_at=FRONT[1], near_arm=up_arm, far_arm=((0, 0.15), (0, 0.15), (0, 0.1)),
+                  near_leg=up_leg, far_leg=up_leg, props=_MAT)
+    return fk((512, 600), 270, near_at=FRONT[0], far_at=FRONT[1], near_arm=up_arm, far_arm=(272, 270, 270),
+              near_leg=(92, 90, (90, 0.4)), far_leg=up_leg, props=_MAT)
+
+
+def _crawl(step):
+    """Bear crawl from above, face down, crawling to the top of the picture. step 1: the hero's right hand
+    (picture right, far) and left foot (picture left, near) forward; 0: hands and feet level."""
+    fwd_arm, back_arm = ((270, 0.45), (270, 0.4), (270, 0.2)), ((90, 0.12), (270, 0.12), (270, 0.2))
+    fwd_leg, back_leg = ((270, 0.3), (90, 0.55), (90, 0.2)), ((90, 0.12), (90, 0.6), (90, 0.2))
+    mid_arm, mid_leg = ((270, 0.25), (270, 0.25), (270, 0.2)), ((90, 0.05), (90, 0.6), (90, 0.2))
+    near_arm, far_arm, near_leg, far_leg = ((back_arm, fwd_arm, fwd_leg, back_leg) if step else (mid_arm, mid_arm, mid_leg, mid_leg))
+    return _xform(fk((512, 640), 270, torso=0.9, near_at=FRONT[0], far_at=FRONT[1], near_arm=near_arm, far_arm=far_arm,
+                     near_leg=near_leg, far_leg=far_leg, props=FLOOR(1000)), 1.0, (512, 640), (512, 600))
+
+
+_bug_fit = lambda side: _xform(_bug(side), 0.68, (512, 600), (512, 560))  # noqa: E731  the long leg and the overhead arm in frame
+_seq("dead_bug", "k2", 4, {"k1": _bug_fit(0), "k2": _bug_fit(1), "k3": None, "k4": None}, {"k3": "k1"})
+# Bear crawl from above was tried (v7) and read as wall climbing (blind score 1/5): it keeps its v3 setup.
+FLOPS.update({"dead_bug": {"k4": "k2"}})
+TOP_NOTE = ("Seen from DIRECTLY ABOVE, the camera looking straight down at the floor. In this guide the orange limbs "
+            "are on the left of the picture and the blue limbs on the right.")
+POSE_TEXT.update({
+    ("dead_bug", "k2"): "Seen from directly above, the hero lying on the back on a dark mat, head at the top of the picture: a dead bug. "
+        "The arm on the LEFT of the picture points straight up at the camera (it looks short, the hand above the shoulder); the arm "
+        "on the RIGHT of the picture reaches straight overhead, lying just above the floor past the head. The leg on the RIGHT of "
+        "the picture is bent 90/90: the knee straight above the hip (the thigh looks short) and the shin level, pointing to the "
+        "feet; the leg on the LEFT of the picture is straight and long, just above the mat. Lower back flat on the mat. The whole hero is SMALL in the frame, about two thirds of the picture's height from the overhead hand to the heel, with a clear margin at the top and bottom. The bent leg's shin points DOWN the picture towards the feet, never out to the side. " + TOP_NOTE,
+    ("dead_bug", "k1"): "The hero is now in the START of the dead bug, still seen from directly above: BOTH arms point straight up at "
+        "the camera (short, hands above the shoulders) and BOTH legs are bent 90/90, knees above the hips, shins level pointing "
+        "to the feet, the two legs side by side. Head and shoulders on the same spots.",
+    ("bear_crawl", "k1"): "Seen from directly above, the hero on hands and feet, face down, crawling towards the top of the picture: "
+        "a bear crawl, back flat and level, knees bent and hovering just above the floor. The hand on the RIGHT of the picture is "
+        "forward (towards the top), the hand on the LEFT is back under its shoulder; the foot on the LEFT of the picture is "
+        "forward under the hip, the foot on the RIGHT is back. We see the back of the head, the back and the soles of the shoes. " + TOP_NOTE,
+    ("bear_crawl", "k2"): "The hero is now BETWEEN two steps of the bear crawl, still from directly above: both hands level under "
+        "the shoulders and both feet level, knees hovering, back flat.",
+})
+NEVER.update({
+    "dead_bug": "Head and shoulders stay on exactly the same spots of the mat. The camera, the framing and the scale do not change.",
+    "bear_crawl": "The camera, the framing and the scale do not change; the hero stays at the same place in the frame.",
+})
+VIDEO_MOTION.update({
+    "dead_bug": "Dead bug seen from above, lying on the back: from both arms up and both knees at 90/90, one arm lowers overhead "
+        "as the opposite leg extends long, both return, then the other arm and the other leg. The back stays flat.",
+    "bear_crawl": "Bear crawl seen from above, on hands and feet with the knees hovering: opposite hand and foot step forward "
+        "together, then the other pair. The hero stays at the same place in the frame.",
+})
 NEVER.update({
     "pike_pushup": "Both hands stay flat on exactly the same spots and both feet stay on exactly the same spot of the floor: the feet do not slide. The camera, the framing and the scale do not change.",
     "inverted_row": "Both hands stay on exactly the same spots of the bar and both heels on exactly the same spot of the floor. The bar does not move. The camera, the framing and the scale do not change.",

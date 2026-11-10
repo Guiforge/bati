@@ -324,3 +324,13 @@ effect, and an audit. Exactness comes first, style second; the scoring brief now
 
   Dead bug's other side failed a 5th time, guide-first included: the model keeps A's arms and legs.
   Ledger total: 63.97 $.
+
+## v7: side swaps redrawn from above (2026-11-10)
+
+- **Dead bug:** solved from directly above, after 5 failures from the side. It has a new A (male hero,
+  try 2) and a start pose drawn guide-first. The other side is A mirrored. The loop has 4 pictures:
+  start, one side, start, other side. The first A try put the straight leg on the same side as the
+  overhead arm; the guide's left/right note fixed it.
+- **Bear crawl from above:** rejected (blind score 1/5). Both tries read as a man climbing a wall. It
+  keeps its v3 setup.
+- Ledger total: 64.54 $.

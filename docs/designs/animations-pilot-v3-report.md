@@ -355,3 +355,7 @@ effect, and an audit. Exactness comes first, style second; the scoring brief now
   audited poses (`tools/keys_video.py` in the cache): every pose held, a 0.25 s cross-fade into the
   next, two reps, 384 px, 22 to 59 KB. Nothing is invented between poses, so nothing slides or zooms.
   They stand in until a BFL top-up makes the smooth model videos. The page says what they are.
+- **Coach audit of the 12 key-pose videos** (blind, from 0.2 s control sheets): 11 kept outright. The
+  coach rejected the bicycle crunch, reading the same side twice, and flagged that read as unsure.
+  The file order is A (knee on the picture right), middle, A mirrored (knee on the left), middle, so
+  the alternation is right. Claude kept it over the scorer.

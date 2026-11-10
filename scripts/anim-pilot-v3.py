@@ -707,7 +707,7 @@ VIDEO_MOTION["thread_the_needle"] = (
     "of the head rest on the floor; hold, then return to the tabletop.")
 # --- full run, lot 1: what each drawn pose is, what never moves, and the video's motion -----------
 POSE_TEXT.update({
-    ("diamond_pushup", "k2"): "The hero is now at the BOTTOM of a diamond push-up: chest lowered to a fist above the hands, elbows bent and pointing back along the ribs, close to the body, never flared out; one rigid straight line from head to heels; head neutral.",
+    ("diamond_pushup", "k2"): "The hero is now at the BOTTOM of a diamond push-up: chest lowered to a fist above the hands, elbows bent and pointing back along the ribs, close to the body, never flared out; both arms stay clearly visible and readable, the near upper arm drawn along the side of the ribs with its elbow behind the shoulder, the far arm partly visible beside it; one rigid straight line from head to heels, hips level with the shoulders; head neutral.",
     ("knee_pushup", "k1"): "The hero is now at the TOP of a knee push-up: both arms fully straight, hands under the shoulders, one straight line from the head through the hips to the knees, hips neither raised nor sagging; head neutral, eyes to the floor ahead of the hands.",
     ("wall_pushup", "k1"): "The hero is now at the TOP of a wall push-up: both arms fully straight, the body leaning back from the wall in one straight line from head to heels, heels down; the chest is now an arm's length from the wall.",
     ("archer_pushup", "k1"): "The hero is now at the TOP of an archer push-up: both arms fully straight and wide apart, the chest centred between the two hands, body in one straight plank; the head is centred too.",
@@ -718,7 +718,7 @@ POSE_TEXT.update({
 })
 NEVER.update({
     "diamond_pushup": "Both hands stay flat on exactly the same spot of the floor, close together in a diamond, and the toes stay on exactly the same spot. The body pivots on the toes.",
-    "knee_pushup": "Both hands stay flat on exactly the same spots of the floor and both knees stay on exactly the same spot, feet raised behind. The body pivots on the knees.",
+    "knee_pushup": "Both hands stay flat on exactly the same spots of the floor and both knees stay on exactly the same spot of the floor as in image 1, with the shins and raised feet at the same angle as in image 1. The body pivots on the knees: only the torso, head and arms move.",
     "wall_pushup": "Both hands stay flat on exactly the same spots of the wall and both feet stay flat on exactly the same spot of the floor. The wall does not move.",
     "archer_pushup": "Both hands stay flat on exactly the same spots of the floor, very wide apart, and the feet stay on exactly the same spot.",
     "pike_pushup": "Both hands stay flat on exactly the same spots of the floor and both feet stay on exactly the same spot; the legs stay straight and the hips stay high.",

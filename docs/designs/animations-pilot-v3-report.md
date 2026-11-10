@@ -351,3 +351,7 @@ effect, and an audit. Exactness comes first, style second; the scoring brief now
 - Ledger total: 65.52 $.
 - **Videos without BFL:** OpenAI's video endpoint answered 404 and the key lists no Sora or video model,
   so no clip was made and nothing was billed. The videos wait for a BFL top-up.
+- **Key-pose videos (no model).** Each of the 12 reworked gestures now has an MP4 made only from its
+  audited poses (`tools/keys_video.py` in the cache): every pose held, a 0.25 s cross-fade into the
+  next, two reps, 384 px, 22 to 59 KB. Nothing is invented between poses, so nothing slides or zooms.
+  They stand in until a BFL top-up makes the smooth model videos. The page says what they are.

@@ -452,6 +452,60 @@ for _slug, (_a_key, _rep, _zoom, _pose) in LOT4.items():
                         "times": [0.0, _rep / 2, float(_rep)], "same": {}}
 
 
+# --- full run, lot 5: jumps and timed movements ----------------------------------------------------
+# Left out (findings): burpee and jumping_jack (their stills already show two heroes), superman (a
+# hold), wrist_circles (a circle that two poses cannot show), wardens_walk (a landscape, an outing).
+LOT5 = {
+    # Front. A = on one leg, the other bent behind; drawn: the mirror (other leg).
+    "skater_hop": ("k1", 2, None, _guide(
+        (452, 128), [(480, 260), (480, 555)],
+        near=[[(540, 270), (620, 380), (560, 470)], [(500, 555), (530, 750), (560, 939)]],
+        far=[[(420, 270), (330, 380), (300, 480)], [(460, 555), (430, 640), (440, 683)]],
+        props=FLOOR(950))),
+    # Front. A = star in the air; drawn: the crouch it jumps from.
+    "star_jump": ("k2", 2, None, _guide(
+        (510, 380), [(510, 470), (510, 650)],
+        near=[[(570, 480), (600, 600), (590, 720)], [(550, 650), (560, 760), (540, 880)]],
+        far=[[(450, 480), (420, 600), (430, 720)], [(470, 650), (460, 760), (480, 880)]],
+        props=FLOOR(890))),
+    # Three-quarter, crawling. A = one hand and the opposite foot forward; drawn: the other pair forward.
+    "bear_crawl": ("k1", 2, None, _guide(
+        (738, 354), [(640, 420), (330, 450)],
+        near=[[(650, 430), (600, 590), (620, 738)], [(330, 450), (300, 560), (240, 674)]],
+        far=[[(700, 420), (790, 580), (887, 738)], [(340, 445), (230, 560), (119, 674)]],
+        props=FLOOR(760))),
+    # Side, propped on the elbows, legs up. A = one leg high, one low; drawn: swapped.
+    "flutter_kicks": ("k1", 1, None, _guide(
+        (180, 400), [(240, 470), (520, 560)],
+        near=[[(240, 475), (200, 560), (260, 600)], [(520, 560), (700, 540), (911, 420)]],
+        far=[[(235, 470), (195, 555), (250, 595)], [(515, 555), (700, 470), (879, 500)]],
+        props=FLOOR(620))),
+    # Front three-quarter. A = one knee up; drawn: the other knee up.
+    "high_knees": ("k1", 1, None, _guide(
+        (512, 110), [(510, 230), (500, 450)],
+        near=[[(560, 240), (600, 330), (620, 260)], [(520, 450), (530, 680), (520, 896)]],
+        far=[[(450, 240), (410, 330), (400, 420)], [(480, 450), (440, 470), (430, 640)]],
+        props=FLOOR(905))),
+    # Side, high plank, head left. A = plank; drawn: one knee driven to the chest.
+    "mountain_climber": ("k1", 1, None, _guide(
+        (119, 363), [(230, 430), (653, 491)],
+        near=[[(230, 440), (180, 580), (119, 704)], [(653, 491), (420, 560), (520, 690)]],
+        far=[[(240, 430), (240, 570), (247, 704)], [(650, 485), (800, 590), (951, 693)]],
+        props=FLOOR(710))),
+    # Three-quarter, deep lunge. A = arm reaching up, chest open; drawn: elbow down to the front instep.
+    "worlds_greatest_stretch": ("k1", 2, None, _guide(
+        (300, 640), [(360, 680), (560, 690)],
+        near=[[(370, 700), (340, 790), (330, 880)], [(560, 690), (300, 820), (290, 994)]],
+        far=[[(350, 690), (290, 790), (226, 887)], [(560, 690), (700, 740), (845, 781)]],
+        props=FLOOR(1000))),
+}
+for _slug, (_a_key, _rep, _zoom, _pose) in LOT5.items():
+    _other = "k2" if _a_key == "k1" else "k1"
+    EXERCISES[_slug] = {"rep_s": _rep, "a_key": _a_key, "zoom": _zoom,
+                        "keys": {"k1": None, "k2": None} | {_other: _zoomed(_pose, _zoom) if _zoom else _pose},
+                        "times": [0.0, _rep / 2, float(_rep)], "same": {}}
+
+
 def zoom_a(slug):
     """A zoomed out around the feet (EXERCISES[slug]["zoom"] = scale, cx, cy), the edges filled with
     A's own mirrored background: a standing pose then fits the frame. Flip-book only."""
@@ -1000,9 +1054,9 @@ VIDEO_MOTION.update({
 # --- full run, lot 4 ------------------------------------------------------------------------------
 POSE_TEXT.update({
     ("negative_pullup", "k2"): "The hero now hangs at the BOTTOM of a negative pull-up: both arms fully straight, body vertical and still below the bar, head well below the bar, legs straight and together. The bar and the hands stay exactly where they are in image 1.",
-    ("scapular_pullup", "k1"): "The hero now hangs PASSIVELY at the start of a scapular pull-up: arms straight, shoulders relaxed and shrugged up towards the ears so the head sinks a little between the arms, the body hanging slightly lower than in image 1. The bar and the hands stay exactly where they are in image 1.",
+    ("scapular_pullup", "k1"): "The hero now hangs PASSIVELY at the start of a scapular pull-up: arms straight, the shoulders clearly shrugged right up to the ears so the upper arms press against the sides of the head and the head sinks deep between the arms, the shoulder blades spread apart and high on the back, the whole body hanging visibly lower than in image 1 (by about a hand's width). The bar and the hands stay exactly where they are in image 1.",
     ("toes_to_bar", "k1"): "The hero now hangs at the BOTTOM of a toes-to-bar: both arms straight, body vertical and still, both legs together hanging straight down under the hips. The bar and the hands stay exactly where they are in image 1.",
-    ("towel_door_row", "k1"): "The hero is now at the BOTTOM of a towel door row: both arms fully straight holding the towel, the body leaning further back in one straight line from the heels to the head, feet on the same spot.",
+    ("towel_door_row", "k2"): "The hero is now at the BOTTOM of a towel door row: both arms fully straight holding the towel, the body leaning further back in one straight line from the heels to the head, feet on the same spot.",
     ("handstand_pushup", "k1"): "The hero is now at the TOP of a handstand push-up against the wall: both arms fully straight, the head well above the floor between the arms, the body straight and vertical upside down, heels against the wall.",
     ("superman_w", "k2"): "The hero is now lying FLAT face down at the bottom of a superman W: chest, arms and legs resting on the floor, the arms still bent in a W beside the head.",
     ("jump_squat", "k1"): "The hero is now at the BOTTOM of the squat before the jump: both feet flat on the floor, knees bent and pushed out over the toes, hips back and down, chest up, hands clasped at the chest.",
@@ -1012,7 +1066,7 @@ NEVER.update({
     "scapular_pullup": "Both hands stay on exactly the same spots of the bar and the arms stay straight. The bar does not move.",
     "toes_to_bar": "Both hands stay on exactly the same spots of the bar. The bar does not move. No swing.",
     "towel_door_row": "Both hands stay on the towel at the same spot by the door handle and both feet stay on exactly the same spot. The door does not move.",
-    "handstand_pushup": "Both hands stay flat on exactly the same spots of the floor and the heels stay against the wall. The wall does not move.",
+    "handstand_pushup": "Both hands stay flat on exactly the same spots of the floor, shoulder width, exactly as far apart as in image 1; the arms are vertical, not splayed. The heels stay against the wall and simply slide up it as the arms straighten. The wall, the floor and the background do not change.",
     "superman_w": "The hips stay on exactly the same spot of the floor.",
     "jump_squat": "The camera and the background do not move; the feet land where they took off.",
 })
@@ -1024,6 +1078,34 @@ VIDEO_MOTION.update({
     "handstand_pushup": "One slow handstand push-up against a wall. The hands never move and the heels stay on the wall. From straight arms the body lowers until the head nearly touches the floor, then presses back up.",
     "superman_w": "One slow superman W lying face down. The hips never move. The chest and legs lift off the floor as the arms pull into a W, then lower back down.",
     "jump_squat": "One jump squat. From a squat with the feet flat the hero jumps straight up, both feet leaving the floor, and lands softly back in the squat.",
+})
+# --- full run, lot 5 ------------------------------------------------------------------------------
+POSE_TEXT.update({
+    ("skater_hop", "k2"): "The hero now lands the OTHER WAY in a skater hop: the legs SWAP. The leg that stands on the floor in image 1 is now the one bent and lifted behind; the leg that is lifted behind in image 1 now stands on the floor, knee softly bent. The arms swing the other way too.",
+    ("star_jump", "k1"): "The hero is now in the CROUCH before a star jump: both feet flat on the floor close together, knees bent, hips low, chest up, both arms down with the hands near the knees.",
+    ("bear_crawl", "k2"): "The hero now takes the NEXT STEP of a bear crawl: the hand and foot that are forward in image 1 are now back, and the other hand and the opposite foot are now forward; knees stay a hand above the floor, back flat.",
+    ("flutter_kicks", "k2"): "The legs now SWAP in a flutter kick: the leg that is higher in image 1 is now the lower one, and the lower one is now the higher one; both legs stay straight and off the floor.",
+    ("high_knees", "k2"): "The hero now drives the OTHER KNEE up in high knees: the legs SWAP. The leg that stands on the floor in image 1 is now lifted with the knee at hip height; the leg whose knee is up in image 1 now stands on the floor. The arms swing the other way.",
+    ("mountain_climber", "k2"): "The hero now drives one knee in for a mountain climber: from the same high plank, one knee is pulled forward towards the chest under the body, its foot off the floor; the other leg stays straight back with the toes on the floor; hips stay level with the shoulders.",
+    ("worlds_greatest_stretch", "k2"): "The hero now drops the raised arm for a world's greatest stretch: in the same deep lunge, the arm that reaches up in image 1 comes down so its elbow touches the floor beside the inside of the front foot, chest low and facing the floor, the other hand still flat on the floor.",
+})
+NEVER.update({
+    "skater_hop": "The camera, framing and background do not move.",
+    "star_jump": "The camera, framing and background do not move; the feet land where they took off.",
+    "bear_crawl": "The camera, framing and background do not move; the hero stays at the same place in the frame.",
+    "flutter_kicks": "The hips, elbows and upper body stay exactly where they are in image 1.",
+    "high_knees": "The camera, framing and background do not move; the hero stays at the same place in the frame.",
+    "mountain_climber": "Both hands stay flat on exactly the same spots of the floor and the back foot stays on exactly the same spot.",
+    "worlds_greatest_stretch": "The front foot, the back foot and the hand on the floor stay on exactly the same spots.",
+})
+VIDEO_MOTION.update({
+    "skater_hop": "One skater hop cycle. The hero hops sideways from one leg to the other, landing softly on one foot with the other leg swinging behind, then hops back.",
+    "star_jump": "One star jump. From a crouch the hero jumps up, spreading arms and legs into a star in the air, and lands softly back in the crouch.",
+    "bear_crawl": "One bear crawl step on all fours with the knees just off the floor. Opposite hand and foot step forward together, then the other pair, the back staying flat.",
+    "flutter_kicks": "Flutter kicks propped on the elbows. The straight legs alternate up and down in small kicks, the hips and upper body staying still.",
+    "high_knees": "High knees on the spot. One knee drives up to hip height, then the other, the arms swinging in opposition.",
+    "mountain_climber": "One mountain climber from a high plank. The hands and the back foot stay put. One knee drives towards the chest, then returns to the plank.",
+    "worlds_greatest_stretch": "One slow world's greatest stretch in a deep lunge. The feet and the planted hand stay put. The elbow drops to the inside of the front foot, then the arm sweeps up to the ceiling as the chest opens.",
 })
 CREDITS = "https://api.bfl.ai/v1/credits"
 

@@ -1887,6 +1887,88 @@ def selftest():
     print("selftest ok")
 
 
+# --- v5 (2026-11-10): the moving exercises still without an animation ----------------------------
+# Cameras from the web research notes: front for jumping jack, top for windshield wipers (the other side
+# mirrored), side for burpee and calf raise.
+def _jack(star):
+    if star:
+        return fk((512, 500), 270, near_at=FRONT[0], far_at=FRONT[1], near_arm=(225, 230, 230), far_arm=(315, 310, 310),
+                  near_leg=(108, 106, (100, 0.4)), far_leg=(72, 74, (80, 0.4)), props=FLOOR(960))
+    return fk((512, 515), 270, near_at=FRONT[0], far_at=FRONT[1], near_arm=(95, 92, 92), far_arm=(85, 88, 88),
+              near_leg=(93, 91, (90, 0.4)), far_leg=(87, 89, (90, 0.4)), props=FLOOR(960), pins=[(470, 950), (554, 950)])
+
+
+def _wipers():
+    """From directly above, lying on the back, head at the top, arms out in a T, both legs raised and tipped
+    together to the hero's right (left of the picture); the legs point at the camera, so they look short."""
+    return fk((512, 600), 270, near_at=FRONT[0], far_at=FRONT[1], near_arm=(180, 180, 180), far_arm=(0, 0, 0),
+              near_leg=((160, 0.55), (160, 0.55), (160, 0.3)), far_leg=((150, 0.55), (150, 0.55), (150, 0.3)),
+              props=[[(300, 140), (724, 140), (724, 900), (300, 900)]])
+
+
+def _burpee(k):
+    """Side view facing right; floor at 980 so the jump fits the frame."""
+    hand, foot = (640, 968), (485, 958)
+    if k == "stand":
+        return fk((480, 520), 272, face=(1, 0.2), near_arm=(95, 93, 93), far_arm=(97, 95, 95),
+                  near_leg={"to": foot, "bend": -1, "end": 0}, far_leg={"to": add(foot, (12, -8)), "bend": -1, "end": 0},
+                  props=FLOOR(980), pins=[foot])
+    if k == "squat":
+        return fk((380, 760), 350, face=(1, 0.6), near_arm={"to": hand, "bend": 1, "end": 0},
+                  far_arm={"to": add(hand, (12, -8)), "bend": 1, "end": 0}, near_leg={"to": foot, "bend": -1, "end": 20},
+                  far_leg={"to": add(foot, (12, -8)), "bend": -1, "end": 20}, props=FLOOR(980), pins=[hand, foot])
+    if k == "plank":
+        return fk((410, 780), 345, face=(0.6, 1), near_arm={"to": hand, "bend": 1, "end": 0},
+                  far_arm={"to": add(hand, (12, -8)), "bend": 1, "end": 0}, near_leg={"to": (40, 925), "bend": -1, "end": 75},
+                  far_leg={"to": (52, 917), "bend": -1, "end": 75}, props=FLOOR(980), pins=[hand])
+    return fk((480, 515), 270, face=(1, -0.3), near_arm=(292, 290, 290), far_arm=(288, 286, 286),
+              near_leg=(94, 90, (75, 0.6)), far_leg=(92, 88, (75, 0.6)), props=FLOOR(980))
+
+
+def _calf(up):
+    hip, ankle = ((500, 420), (505, 860)) if up else ((500, 450), (505, 890))
+    leg = {"to": ankle, "bend": -1, "end": 45 if up else 0}
+    return fk(hip, 272, face=(1, 0), near_arm=(95, 92, 92), far_arm=(97, 94, 94), near_leg=leg,
+              far_leg={**leg, "to": add(ankle, (12, -8))}, props=FLOOR(920), pins=[(549, 905) if up else (567, 890)])
+
+
+V5 = {  # slug: a_key, rep seconds, mode, keys, times
+    "jumping_jack": ("k2", 1, "new", {"k1": _jack(False), "k2": _jack(True)}, None),
+    "windshield_wipers": ("k1", 4, "mirror", {"k1": _wipers(), "k2": None}, None),
+    "burpee": ("k2", 4, "new", {"k1": _burpee("stand"), "k2": _burpee("squat"), "k3": _burpee("plank"),
+                                "k4": _burpee("jump")}, [0.0, 1.0, 2.0, 3.0, 4.0]),
+    "standing_calf_raise": ("k1", 2, "new", {"k1": _calf(True), "k2": _calf(False)}, None),
+}
+for _slug, (_a_key, _rep, _mode, _keys, _times) in V5.items():
+    EXERCISES[_slug] = {"rep_s": _rep, "a_key": _a_key, "mode": _mode, "keys": _keys, "same": {},
+                        "times": _times or [0.0, _rep / 2, float(_rep)]}
+POSE_TEXT.update({
+    ("jumping_jack", "k2"): "Front view, the hero facing the camera: the OPEN star position of a jumping jack. Feet wide apart, a little wider than the shoulders, on the balls of the feet, knees soft; both arms straight, raised high in a V above the head; torso tall.",
+    ("jumping_jack", "k1"): "The hero is now in the CLOSED position of the jumping jack: standing tall, feet together, arms straight down by the sides.",
+    ("windshield_wipers", "k1"): "Seen from directly above, the hero lying on the back on a dark mat, head at the top of the picture: windshield wipers. Arms straight out to the sides in a T, palms flat on the mat; both legs raised straight and together, tipped as one to the hero's RIGHT (left of the picture) at about 45 degrees, the feet off the mat; shoulders flat on the mat. " + FRONT_NOTE,
+    ("burpee", "k2"): "Side view facing right: the SQUAT of a burpee. Feet flat, knees bent deep, hips low behind the heels, both hands flat on the floor in front of the feet, shoulder-width apart, back flat, eyes ahead on the floor.",
+    ("burpee", "k1"): "The hero is now STANDING tall at the start of the burpee, feet flat on the same spot, arms by the sides.",
+    ("burpee", "k3"): "The hero is now in a HIGH PLANK of the burpee: hands flat on the same spots under the shoulders, both legs jumped straight back, on the balls of the feet, the body one straight line from head to heels, no sagging hips.",
+    ("burpee", "k4"): "The hero now JUMPS at the end of the burpee: the whole body straight in the air, both feet off the floor above the same spot, toes pointed down, both arms straight overhead.",
+    ("standing_calf_raise", "k1"): "Side view facing right, the whole body: the TOP of a standing calf raise. Standing tall, legs straight, high on the balls of both feet, the heels lifted well off the floor, the calf muscles clearly contracted; arms by the sides.",
+    ("standing_calf_raise", "k2"): "The hero is now at the BOTTOM of the calf raise: both heels down flat on the floor, the whole sole of each shoe flat, legs straight, the body lower by the height of the heel lift; the balls of the feet on the same spots.",
+})
+NEVER.update({
+    "jumping_jack": "The camera, the framing and the background do not move.",
+    "burpee": "The camera, the framing and the background do not move; the hands land on the same spots in the squat and the plank.",
+    "standing_calf_raise": "The balls of both feet stay on exactly the same spots of the floor.",
+})
+VIDEO_MOTION.update({
+    "jumping_jack": "Jumping jacks at an easy pace: feet jump apart as the arms swing up overhead, then back together as the arms come down.",
+    "windshield_wipers": "One slow windshield wiper seen from above, lying on the back with the arms out: the straight legs, together, tip down to one side, come back through the middle and tip to the other side; the shoulders stay flat.",
+    "burpee": "One burpee: from standing, squat and put the hands down, jump the feet back to a plank, jump the feet back in to the squat, then jump up with the arms overhead and land softly.",
+    "standing_calf_raise": "One slow standing calf raise, the whole body: the heels rise high onto the balls of the feet, then lower flat to the floor; the knees stay straight.",
+})
+
+
+POSE_TEXT[("burpee", "k2")] += " The back stays FLAT and long from the hips to the head, chest forward over the knees, not rounded."
+
+
 CREDITS = "https://api.bfl.ai/v1/credits"
 
 

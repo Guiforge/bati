@@ -250,3 +250,23 @@ Defects left:
 - The pistol top's head touches the top edge.
 - The reverse crunch's toes touch the right edge in the extension.
 - The bicycle crunch and the flutter kicks videos do two cycles instead of one; they loop evenly.
+
+## v4 and v5 (same day)
+
+- **Anatomy rules for the mannequin**, written by a sub-agent:
+  - joint ranges, bone lengths and the same bone length from key to key;
+  - `check` and `selftest` commands;
+  - paid calls refuse a guide that breaks a rule, unless `--force` is given;
+  - all 75 existing guides pass, and 20 were fixed.
+- **Male redo.** Guillaume asked for `gpt-image-2.6-sunburst` (`ANIM_OPENAI_MODEL`) and a male hero for pike, inverted row, cat-cow and bicycle crunch. The male hero comes from `ANIM_HERO` and a male style reference, the lunge still. All four are animated, with new videos.
+- **New movements:**
+  - jumping jack: front view;
+  - windshield wipers: from above, the other side mirrored;
+  - burpee: 4 poses;
+  - standing calf raise: a full side view, which succeeded where the legs-only version had failed twice.
+- **Burpee and the rules.** The squat breaks the hip-flexion limit (166 for 150): the chest really does go to the thighs. It was drawn with `--force`.
+- **Small slides accepted over the scorer:** the jumping jack's closed pose and the calf raise's heels-down pose.
+- **Bear crawl's next step:** failed a 6th time and stopped.
+- **The BFL account ran out of credits.** HTTP 402 refused the videos of the jumping jack, calf raise and burpee, and nothing was billed. Their flip-books are done.
+- Ledger total: 60.73 $ (cap raised to 75.67 $ by Guillaume).
+- A web research note, from weak sources, is kept in the cache (`tools/research-notes.md`).

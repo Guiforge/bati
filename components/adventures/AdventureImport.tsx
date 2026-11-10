@@ -13,7 +13,7 @@ import { Paragraph } from "@/components/common/Paragraph";
 import { useToast } from "@/components/common/Toast";
 import { Download, Info } from "@/components/icons";
 import { ImportArrives, ImportClashes } from "@/components/quests/ImportNotes";
-import { ADVENTURE_ASSETS, getAdventureAsset, getBossAsset } from "@/constants/assetMap";
+import { getAdventureAsset, getBossAsset } from "@/constants/assetMap";
 import { BOSS_LINE_MOMENTS, type HeroBossLines } from "@/db/bossVoice";
 import type { Monster } from "@/db/heroAdventures";
 import {
@@ -21,6 +21,7 @@ import {
   AdventureFileError,
   type AdventurePreview,
   importAdventure,
+  shownCover,
 } from "@/src/adventureFile";
 import { releaseIncomingFile } from "@/src/incomingFile";
 import { reportError } from "@/src/reportError";
@@ -53,7 +54,7 @@ export function AdventureImport({
   const { existing, running } = preview;
   // A run under way forces the copy, so the chips are not offered and the button says "add".
   const updating = existing !== null && !asCopy && !running;
-  const cover = coverKey(adventure);
+  const cover = shownCover(adventure);
   const end = shownEnd(adventure.end, preview);
 
   // No try/finally: the React Compiler does not compile a function that has one.
@@ -152,26 +153,7 @@ export function AdventureImport({
           ))}
         </YStack>
 
-        <YStack gap="2">
-          <Text color="textSecondary" fontSize={14}>
-            {preview.monster
-              ? t("adventures.editor_summary_boss", {
-                  name: bossLabel(end, monsterName(preview.monster, language)),
-                })
-              : t("adventures.editor_end_route")}
-          </Text>
-          <BossPortrait monster={preview.monster} end={end} />
-          {/* What the boss will say, one tap away: a line from a friend is no surprise in the
-              middle of a set once it can be read, but the page opens on the decision (what
-              arrives, what is already here) and the closing line stays the hero's to spoil.
-              A boss this version lacks arrives as a route, with none. */}
-          <BossLines end={end} known={preview.monster !== null} />
-          {preview.monsterUnknown ? (
-            <Text testID="adventure-import-boss-unknown" color="textSecondary" fontSize={13}>
-              {t("adventures.import_boss_unknown")}
-            </Text>
-          ) : null}
-        </YStack>
+        <EndPreview preview={preview} end={end} language={language} />
       </ScrollView>
 
       <YStack px="4" pt="2" pb="3">
@@ -189,6 +171,45 @@ export function AdventureImport({
         </AppButton>
       </YStack>
     </>
+  );
+}
+
+/**
+ * How the adventure ends. The boss is the surprise of someone else's adventure: the page says one
+ * waits and opens on the decision (what arrives, what is already here). Its name, its picture and
+ * what it will say are one tap away, for the hero who would rather look before filing a stranger's
+ * pictures. A boss this version lacks arrives as a route.
+ */
+function EndPreview({
+  preview,
+  end,
+  language,
+}: {
+  preview: AdventurePreview;
+  end: AdventureFile["adventure"]["end"];
+  language: AppLanguage;
+}) {
+  const { t } = useTranslation();
+  return (
+    <YStack gap="2">
+      <Text testID="adventure-import-end" color="textSecondary" fontSize={14}>
+        {preview.monster ? t("packs.adventure_boss") : t("adventures.editor_end_route")}
+      </Text>
+      {preview.monster ? (
+        <Fold testID="adventure-import-boss-toggle" size={14} title={t("packs.see_boss")}>
+          <Text testID="adventure-import-boss-name" color="text" fontWeight="600">
+            {bossLabel(end, monsterName(preview.monster, language))}
+          </Text>
+          <BossPortrait monster={preview.monster} end={end} />
+          <BossLines end={end} known />
+        </Fold>
+      ) : null}
+      {preview.monsterUnknown ? (
+        <Text testID="adventure-import-boss-unknown" color="textSecondary" fontSize={13}>
+          {t("adventures.import_boss_unknown")}
+        </Text>
+      ) : null}
+    </YStack>
   );
 }
 
@@ -265,14 +286,6 @@ function shownEnd(
 /** The name the file's sender gave their boss, else the painted one's. */
 function bossLabel(end: AdventureFile["adventure"]["end"], painted: string): string {
   return (end.kind === "boss" && end.name) || painted;
-}
-
-/** The file's photo, else its bundled cover when this version has that art, else the default cover. */
-function coverKey({ photo, cover }: AdventureFile["adventure"]): string {
-  if (photo) return photo;
-  return cover !== null && Object.hasOwn(ADVENTURE_ASSETS, cover)
-    ? cover
-    : (Object.keys(ADVENTURE_ASSETS)[0] ?? "");
 }
 
 /** The import, or the sentence that says why it failed. Never rejects. */

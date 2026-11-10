@@ -2,7 +2,7 @@ import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView } from "react-native";
+import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Spinner, Text, XStack, YStack } from "tamagui";
 import { AdventureImport } from "@/components/adventures/AdventureImport";
@@ -13,8 +13,10 @@ import { Chip } from "@/components/common/Chip";
 import { Input } from "@/components/common/Input";
 import { Paragraph } from "@/components/common/Paragraph";
 import { useToast } from "@/components/common/Toast";
-import { Check, ChevronLeft, Download, Info } from "@/components/icons";
+import { ChevronLeft, Download, Info } from "@/components/icons";
 import { ImportClashes } from "@/components/quests/ImportNotes";
+import { PackImport } from "@/components/quests/PackImport";
+import { TickRow } from "@/components/quests/TickRow";
 import { getExerciseThumb, getQuestThumb } from "@/constants/assetMap";
 import { MIN_STEPS } from "@/db/heroAdventures";
 import type { QuestTemplate } from "@/db/quests";
@@ -28,6 +30,13 @@ import {
 } from "@/src/adventureFile";
 import { localizedName, localizedTitle, seededLanguage } from "@/src/i18n/localized";
 import { incomingFile, releaseIncomingFile } from "@/src/incomingFile";
+import {
+  type PackFile,
+  PackFileError,
+  type PackPreview,
+  parsePackData,
+  previewPack,
+} from "@/src/packFile";
 import {
   editQuestFile,
   type ImportedQuest,
@@ -46,19 +55,20 @@ import { isSessionLive, useSessionStore } from "@/stores/session";
 import { type AppLanguage, useSettingsStore } from "@/stores/settings";
 
 /** What the file turned out to be. Null while that is unknown: a refusal before the kind is read. */
-type FileKind = "quest" | "adventure";
+type FileKind = "quest" | "adventure" | "pack";
 
 type Loaded =
   | { status: "loading" }
   // `message` is an i18n key: the sentence depends on the kind, which a size or a read can refuse before it is known.
   | { status: "refused"; kind: FileKind | null; message: string }
   | { status: "ready"; file: QuestFile; preview: QuestPreview }
-  | { status: "adventure"; file: AdventureFile; preview: AdventurePreview };
+  | { status: "adventure"; file: AdventureFile; preview: AdventurePreview }
+  | { status: "pack"; file: PackFile; preview: PackPreview };
 
 /**
- * A quest or an adventure someone sent, shown before it is filed with the hero's own. The file
- * says which it is (`kind`), and the screen shows the matching preview: this one for a quest,
- * `AdventureImport` for an adventure.
+ * A quest, an adventure or a pack someone sent, shown before it is filed with the hero's own. The
+ * file says which it is (`kind`), and the screen shows the matching preview: this one for a quest,
+ * `AdventureImport` for an adventure, `PackImport` for a pack.
  *
  * Every door to an import ends here: the editor's button (`ImportFileButton`, through the
  * picker) and a file tapped in a chat or a download, which Android opens Bati with
@@ -290,6 +300,9 @@ function OtherStates({
   if (loaded.status === "adventure") {
     return <AdventureImport file={loaded.file} preview={loaded.preview} language={language} />;
   }
+  if (loaded.status === "pack") {
+    return <PackImport file={loaded.file} preview={loaded.preview} language={language} />;
+  }
   return null;
 }
 
@@ -302,18 +315,18 @@ function playsQuest(
 }
 
 function galleryOf(loaded: Loaded): string {
-  const adventure =
-    loaded.status === "adventure" || (loaded.status === "refused" && loaded.kind === "adventure");
-  return adventure ? "/adventures" : "/quests";
+  const kind = loaded.status === "refused" ? loaded.kind : loaded.status;
+  if (kind === "pack") return "/forge";
+  return kind === "adventure" ? "/adventures" : "/quests";
 }
 
 /** The header names the file once it is known, never the door that opened the screen. */
 function headerTitle(loaded: Loaded): string {
-  if (loaded.status === "ready") return "quests.import_title";
-  if (loaded.status === "adventure") return "adventures.import_title";
-  if (loaded.status !== "refused") return "common.file_received";
-  if (loaded.kind === "quest") return "quests.import_title";
-  return loaded.kind === "adventure" ? "adventures.import_title" : "common.file_received";
+  const kind =
+    loaded.status === "refused" ? loaded.kind : loaded.status === "ready" ? "quest" : loaded.status;
+  if (kind === "quest") return "quests.import_title";
+  if (kind === "adventure") return "adventures.import_title";
+  return kind === "pack" ? "packs.import_title" : "common.file_received";
 }
 
 const refused = (kind: FileKind | null, message: string): Loaded => ({
@@ -346,7 +359,20 @@ async function load(uri: string | null, language: AppLanguage): Promise<Loaded> 
   }
   if (isRecord(data) && data.kind === "bati-adventure") return loadAdventure(data, language);
   if (isRecord(data) && data.kind === "bati-quest") return loadQuest(data);
+  if (isRecord(data) && data.kind === "bati-pack") return loadPack(data, language);
   return refused(null, "adventures.import_not_an_adventure");
+}
+
+async function loadPack(data: unknown, language: AppLanguage): Promise<Loaded> {
+  try {
+    const file = await parsePackData(data);
+    return { status: "pack", file, preview: await previewPack(file, language) };
+  } catch (error) {
+    if (error instanceof PackFileError) return refused("pack", `packs.import_${error.reason}`);
+    // Not the file's fault: a database that did not answer.
+    reportError("quests.import.read", error);
+    return refused("pack", "packs.import_unreadable");
+  }
 }
 
 async function loadAdventure(data: unknown, language: AppLanguage): Promise<Loaded> {
@@ -561,48 +587,14 @@ function SlotRow({
   }
 
   return (
-    <Pressable
+    <TickRow
       testID={`quest-import-slot-${index}`}
+      title={label}
+      note={available ? formatTarget(target, language) : t("quests.import_missing_movement")}
+      image={getExerciseThumb(exercise?.imagePath ?? own?.image ?? "")}
+      on={on}
       disabled={!available}
-      accessibilityRole="checkbox"
-      accessibilityState={{ checked: on, disabled: !available }}
-      accessibilityLabel={label}
-      onPress={onToggle}
-    >
-      <XStack
-        gap="3"
-        items="center"
-        p="2"
-        rounded="4"
-        borderWidth={1}
-        borderColor="borderStrong"
-        opacity={on ? 1 : 0.5}
-      >
-        <Image
-          source={getExerciseThumb(exercise?.imagePath ?? own?.image ?? "")}
-          style={{ width: 48, height: 48, borderRadius: 8 }}
-        />
-        <YStack flex={1}>
-          <Text color="text" fontWeight="600" numberOfLines={2}>
-            {label}
-          </Text>
-          <Text fontSize={13} color="textSecondary" numberOfLines={1}>
-            {available ? formatTarget(target, language) : t("quests.import_missing_movement")}
-          </Text>
-        </YStack>
-        <YStack
-          width={28}
-          height={28}
-          rounded="2"
-          borderWidth={2}
-          borderColor="borderStrong"
-          bg={`${on ? "primary" : "transparent"}`}
-          items="center"
-          justify="center"
-        >
-          {on ? <Check size={18} color="white" strokeWidth={3} /> : null}
-        </YStack>
-      </XStack>
-    </Pressable>
+      onToggle={onToggle}
+    />
   );
 }

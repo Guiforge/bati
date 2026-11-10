@@ -96,6 +96,8 @@ describe("Forge page", () => {
     await screen.findByTestId("forge-quests-new");
     expect(screen.queryByText(/yet\.$/)).toBeNull();
     expect(screen.queryByTestId("forge-quests-all")).toBeNull();
+    // Nothing made, nothing to send: the way out for everything is not offered.
+    expect(screen.queryByTestId("forge-share")).toBeNull();
 
     // Quests, then adventures, then bosses, then exercises, then the import.
     const order = [
@@ -131,6 +133,9 @@ describe("Forge page", () => {
     mockQuests.mockResolvedValue([quest(10, "hero")]);
     await render(wrap(<ForgeScreen />));
     await screen.findByText("Quest 10");
+    // One thing made is enough to send: the share button opens the list to tick from.
+    await fireEvent.press(screen.getByTestId("forge-share"));
+    expect(mockRouter.push).toHaveBeenCalledWith("/pack-share");
     expect(screen.getByText("You haven't written an adventure yet.")).toBeTruthy();
     expect(screen.getByText("You haven't made an exercise yet.")).toBeTruthy();
     expect(screen.getByText("You haven't made a boss yet.")).toBeTruthy();

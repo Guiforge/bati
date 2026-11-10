@@ -317,3 +317,10 @@ effect, and an audit. Exactness comes first, style second; the scoring brief now
 - **Videos:** the BFL account is still at 0 credits. The site videos of these ten exercises no longer
   match their pictures, so they were set aside as `video_v5.mp4`.
 - Ledger total: 63.41 $ (cap raised to 80.73 $ by Guillaume, 20 $ more on OpenAI).
+- **Retry 2 (same day).** Three retries:
+  - **Inverted row bottom:** N26 scored 4 on every line, with the head in line. It replaces N24.
+  - **Skater hop airborne:** the guide now swings one arm across the chest. N26 scored 4 on every line.
+  - **Windshield wipers half-way:** every retry still reads as bent knees, so N21 stays.
+
+  Dead bug's other side failed a 5th time, guide-first included: the model keeps A's arms and legs.
+  Ledger total: 63.97 $.

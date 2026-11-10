@@ -2027,8 +2027,9 @@ _seq("reverse_crunch", "k3", 3, {
     # 40 degrees up, not 20: at 20 the feet reached the right edge and the old drawing was cropped there.
     "k6": fk((560, 770), 180, face=(0, -1), near_arm=(2, 0), far_arm=(4, 0), near_leg=(320, 320, 312),
              far_leg=(322, 322, 314), props=FLOOR(800), pins=[(310, 770)])}, {"k4": "k2", "k5": "k1"})
-_skater_air = fk((512, 500), 270, near_at=FRONT[0], far_at=FRONT[1], near_arm=((150, 0.9), (165, 0.9)),
-                 far_arm=((30, 0.9), (15, 0.9)), near_leg=((95, 0.8), (100, 0.75), (95, 0.4)),
+# One arm swings across in front of the chest, the other back (short: it points away from the camera).
+_skater_air = fk((512, 500), 270, near_at=FRONT[0], far_at=FRONT[1], near_arm=((40, 0.8), (10, 0.8)),
+                 far_arm=((100, 0.5), (120, 0.5)), near_leg=((95, 0.8), (100, 0.75), (95, 0.4)),
                  far_leg=((80, 0.8), (75, 0.75), (85, 0.4)), props=FLOOR(900))  # mid-hop, both feet off the floor
 _seq("skater_hop", "k1", 1, {"k1": None, "k2": _skater_air, "k3": None, "k4": None}, {})
 
@@ -2071,8 +2072,8 @@ def _wgs_left(phase):
 
 # v6 retry 1 (blind scores): what the first pair missed.
 _V6_RETRY = {
-    ("inverted_row", "k1"): " The head is exactly as in image 2: in profile, in line with the body, the back of the head level with the back, eyes on the bar above; the chin is NOT lifted and the face does NOT turn to the camera.",
-    ("windshield_wipers", "k2"): " Seen from above the raised legs are strongly FORESHORTENED: from the hips they look only about a third as long as in image 2, ending close to the hips, the soles half turned to the camera.",
+    ("inverted_row", "k1"): " The CHIN is slightly TUCKED, the neck long and straight, the top of the head pointing to the right along the body line, the eyes looking up at the bar only by turning the eyes; the head is exactly as in image 2: in profile, in line with the body, the back of the head level with the back, eyes on the bar above; the chin is NOT lifted and the face does NOT turn to the camera.",
+    ("windshield_wipers", "k2"): " Seen from above the raised legs are strongly FORESHORTENED: from the hips they look only about a third as long as in image 2, ending close to the hips, the soles half turned to the camera. The KNEES are LOCKED STRAIGHT: each leg is one straight line from hip to heel, no bend.",
     ("skater_hop", "k2"): " A clear GAP of floor under both feet: the hero is well above the floor, the shadow small and separate below. One arm swings across in front of the body and the other back, like a speed skater, not both out to the sides.",
 }
 SIDE["worlds_greatest_stretch"] = -1  # the app's hero faces left

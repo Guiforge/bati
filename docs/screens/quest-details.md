@@ -64,4 +64,4 @@ The current implementation uses the shared card language and tokenized dark surf
 - The share button (hero quests only) reads the file back before anything leaves, then asks first, as an
   adventure does: the photos in the file (`quests.share_photos_*` or `share_no_photo`) and the ones that
   do not fit the byte budget and stay on the phone (`share_photos_left_*`). Share opens the system sheet
-  with `<title>.bati-quest.json`. See R125 in [data rules](../testing/data-rules.md).
+  with `<title>.bati`. See R125 in [data rules](../testing/data-rules.md).

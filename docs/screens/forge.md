@@ -3,9 +3,9 @@ title: Forge
 type: screen
 route: /forge
 status: active
-updated: 2026-10-21
+updated: 2026-11-10
 related: [boss-editor.md, quests.md, adventures.md, exercises.md, adventure-editor.md, village.md, ../product/glossary.md]
-sources: [app/forge.tsx, components/forge/ForgeButton.tsx, components/quests/QuestFileButtons.tsx, components/chorus/VillagerLine.tsx]
+sources: [app/forge.tsx, app/pack-share.tsx, components/quests/PackImport.tsx, components/forge/ForgeButton.tsx, components/quests/QuestFileButtons.tsx, components/chorus/VillagerLine.tsx]
 ---
 
 # Forge (`/forge`)
@@ -48,8 +48,19 @@ Then one column, never a grid. In this order, the most frequent first:
 3. **Your bosses**: the last three, "See all" (`/bosses`), and **New boss** (`/bosses/edit`), the
    [boss editor](boss-editor.md). A boss only exists to end an adventure, so it follows them.
 4. **Your exercises**: the same as quests; "See all" opens the catalogue on the hero's own (`?mine=1`).
-5. **Import a received file**: the one door for a quest or an adventure file. The preview screen
-   reads which it is (`/quest-import`). The editors no longer carry an import link.
+5. **Share my creations** (`forge-share`, only once the hero has made something): opens
+   `/pack-share`, the list of everything they made and still use (adventures, quests, bosses,
+   exercises), all ticked, with "All" and "None" per section. Share prepares one `.bati` file
+   (`packToShare`), says in a dialog how many things it holds, how many photos go with it and how
+   many stay, then opens the share sheet. What a ticked thing needs comes along unasked. See R131
+   to R134 in [data rules](../testing/data-rules.md).
+6. **Import a received file**: the one door for a quest, an adventure or a pack. The preview screen
+   reads which it is (`/quest-import`). The editors no longer carry an import link. A pack opens on
+   a list to tick (`PackImport`): what is new is ticked, what the hero already has is not (ticking
+   it replaces theirs), a movement named like one of theirs lands on theirs unless they choose
+   "Keep both", and what a ticked adventure or quest brings is ticked and locked. A boss is hidden
+   behind "See the boss", in a pack and in the preview of a single adventure alike: the file's
+   sender meant it as a surprise, and the hero can still look before filing a stranger's picture.
 
 The page asserts nothing before it has read (the state is `null` until the four lists are in; the
 buttons are there, the sentences are not), and a failed read is reported (`reportError("forge.load")`)

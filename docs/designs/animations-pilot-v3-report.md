@@ -345,3 +345,7 @@ effect, and an audit. Exactness comes first, style second; the scoring brief now
 - **Wrist circles** stay a still on purpose. The app's picture is a first-person view of two fists, the
   mannequin cannot guide a hand on its own, and the movement reads from the still and one line of text.
 - Ledger total: 65.38 $.
+- **Curtsy squat from behind:** rejected (blind score 1/5). Both tries are a diagonal lunge, with no
+  crossing. Claude first read them as a crossing and was wrong. The curtsy keeps its v3 setup. From
+  the front, from the side and from behind, the models do not draw a curtsy from a guide.
+- Ledger total: 65.52 $.

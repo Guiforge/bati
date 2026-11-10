@@ -2177,7 +2177,9 @@ POSE_TEXT.update({
 POSE_TEXT[("muscle_up", "k1")] += (" The BAR stays at exactly the same height and place in the picture as in image 2, about a third "
     "of the way down from the top: it does NOT move up. The hero hangs BELOW it, the head under the bar, the feet near the bottom "
     "of the picture.")
-NEVER["muscle_up"] = "Both hands stay on exactly the same spot of the bar; the bar does not move. The camera, the framing and the scale do not change."
+# Curtsy squat from behind was tried (v7): both tries drew a diagonal lunge with no crossing (blind
+# score 1/5), as every front view did. It keeps its v3 setup.
+NEVER["muscle_up"] ="Both hands stay on exactly the same spot of the bar; the bar does not move. The camera, the framing and the scale do not change."
 VIDEO_MOTION["muscle_up"] = ("One slow strict muscle-up on a straight bar: from a dead hang, pull the chest to the bar, turn the "
     "wrists over as the chest passes above the bar, press out of the dip to locked arms, then lower back the same way to the hang. "
     "The hands never move on the bar.")

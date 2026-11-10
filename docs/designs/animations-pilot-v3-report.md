@@ -379,3 +379,7 @@ effect, and an audit. Exactness comes first, style second; the scoring brief now
 - **Coach audit, curtsy and bear crawl videos:** the bear crawl is kept, though its alternation is subtle
   at 180 px. The curtsy is rejected (shallow dip, legs already crossed when standing), so it falls back
   to its lot 2 flip-book. It is the one moving exercise without a passing animation.
+- **Curtsy, last try:** a feet-together standing start drawn on the lot 2 hero came out right (N31). It
+  showed that the lot 2 bottom is not a curtsy either: the back leg goes out to the side, not behind and
+  across. So no curtsy video is published. Every image model tried (front, three-quarter, side, behind)
+  draws a lunge for this pose. Ledger total: 66.37 $.

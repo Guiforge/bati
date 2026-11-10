@@ -271,6 +271,94 @@ for _slug, (_a_key, _rep, _pose) in LOT1.items():
                         "times": [0.0, _rep / 2, float(_rep)], "same": {}}
 
 
+# --- full run, lot 2: lower body ------------------------------------------------------------------
+# Guides are written on A's own geometry. For a standing pose whose head would leave A's frame
+# (squat, lunge, curtsy), A is zoomed out around the feet first (`zoom`, flip-book only, like
+# Thread the Needle's shifted A), and the guide gets the same transform.
+
+def _zoomed(pose, z):
+    s, cx, cy = z
+    f = lambda p: (round(cx + s * (p[0] - cx)), round(cy + s * (p[1] - cy)))  # noqa: E731
+    out = {"head": f(pose["head"]), "torso": [f(p) for p in pose["torso"]],
+           "near": [[f(p) for p in limb] for limb in pose["near"]],
+           "far": [[f(p) for p in limb] for limb in pose["far"]], "props": []}
+    for shape in pose["props"]:
+        out["props"].append(tuple(f(p) for p in shape) if len(shape) == 2 else [f(p) for p in shape])
+    return out
+
+
+LOT2 = {
+    # 3/4 front, facing right. A = bottom (k2); drawn: standing top. Zoomed: head would leave the frame.
+    "squat": ("k2", 3, (0.78, 480, 880), _guide(
+        (405, 240), [(400, 330), (395, 522)],
+        near=[[(430, 335), (540, 335), (650, 330)], [(440, 520), (525, 665), (540, 825)]],
+        far=[[(380, 330), (490, 322), (600, 315)], [(350, 525), (345, 690), (341, 853)]],
+        props=FLOOR(885))),
+    # Side, facing right, split stance. A = bottom (back knee near the floor); drawn: top.
+    "lunge": ("k2", 3, (0.74, 480, 940), _guide(
+        (500, -39), [(478, 103), (478, 430)],
+        near=[[(478, 110), (450, 230), (480, 330)], [(478, 430), (606, 650), (734, 868), (819, 946)]],
+        far=[[(470, 105), (440, 225), (470, 320)], [(470, 430), (330, 650), (179, 868)]],
+        props=FLOOR(950))),
+    # Side, lying, head left. A = top (hips up); drawn: bottom (hips on the floor).
+    "glute_bridge": ("k1", 2, None, _guide(
+        (142, 478), [(284, 535), (480, 560)],
+        near=[[(284, 540), (390, 600), (480, 640)], [(480, 560), (770, 380), (796, 592)]],
+        far=[[(280, 530), (380, 590), (470, 630)], [(470, 555), (750, 390), (770, 600)]],
+        props=FLOOR(660))),
+    # Side, lying, one leg extended up. A = top; drawn: bottom (hips down, the leg stays extended).
+    "single_leg_glute_bridge": ("k1", 3, None, _guide(
+        (94, 663), [(250, 660), (470, 660)],
+        near=[[(250, 665), (380, 690), (520, 700)], [(470, 660), (776, 503), (905, 390)]],
+        far=[[(245, 655), (370, 685), (510, 695)], [(465, 655), (677, 520), (734, 691)]],
+        props=FLOOR(705))),
+    # Legs only, front three-quarter. A = top (on the toes); drawn: bottom (heels down).
+    "standing_calf_raise": ("k1", 1, None, _guide(
+        (430, -60), [(430, -20), (430, 60)],
+        near=[[(560, 100), (560, 370), (590, 780), (690, 880)]],
+        far=[[(310, 100), (300, 370), (330, 780), (440, 880)]],
+        props=FLOOR(885))),
+    # Front view. A = bottom (back leg crossed behind); drawn: top. Zoomed.
+    "curtsy_squat": ("k2", 3, (0.75, 480, 920), _guide(
+        (478, -32), [(484, 110), (470, 320)],
+        near=[[(577, 110), (560, 200), (478, 195)], [(500, 320), (610, 515), (720, 711)]],
+        far=[[(392, 110), (400, 200), (470, 195)], [(440, 320), (395, 615), (350, 910)]],
+        props=FLOOR(920))),
+    # Side, facing right, back foot on a bench. A = bottom; drawn: top.
+    "bulgarian_split_squat": ("k2", 3, None, _guide(
+        (500, 85), [(470, 190), (450, 486)],
+        near=[[(470, 195), (450, 330), (450, 450)], [(450, 486), (600, 680), (683, 862), (768, 876)]],
+        far=[[(465, 190), (440, 325), (440, 445)], [(445, 486), (330, 660), (185, 648)]],
+        props=[((125, 630), (300, 660)), ((130, 660), (150, 900)), ((270, 660), (290, 900))] + FLOOR(885))),
+    # Side, facing right, balance on one leg. A = bottom (hinged); drawn: top (upright).
+    "single_leg_deadlift": ("k2", 4, None, _guide(
+        (595, 170), [(580, 265), (575, 455)],
+        near=[[(585, 270), (595, 390), (600, 500)], [(575, 455), (585, 630), (592, 805), (648, 833)]],
+        far=[[(575, 265), (580, 385), (585, 495)], [(565, 455), (540, 640), (510, 790)]],
+        props=FLOOR(840))),
+}
+for _slug, (_a_key, _rep, _zoom, _pose) in LOT2.items():
+    _other = "k2" if _a_key == "k1" else "k1"
+    EXERCISES[_slug] = {"rep_s": _rep, "a_key": _a_key, "zoom": _zoom,
+                        "keys": {"k1": None, "k2": None} | {_other: _zoomed(_pose, _zoom) if _zoom else _pose},
+                        "times": [0.0, _rep / 2, float(_rep)], "same": {}}
+
+
+def zoom_a(slug):
+    """A zoomed out around the feet (EXERCISES[slug]["zoom"] = scale, cx, cy), the edges filled with
+    A's own mirrored background: a standing pose then fits the frame. Flip-book only."""
+    s, cx, cy = EXERCISES[slug]["zoom"]
+    src, out = PILOT / "A" / f"{slug}.png", PILOT / "A" / f"{slug}_z.png"
+    k = 1280 / 1024
+    # Edge, not mirror: a mirror fill reflected the hero's head upside down above it.
+    magick(src, "-resize", "1280x1280!", "-virtual-pixel", "edge", "-distort", "SRT",
+           f"{cx * k},{cy * k} {s} 0 {cx * k},{cy * k}", out)
+    log({"provider": "local", "model": "imagemagick", "step": "align", "slug": slug, "file": str(out.relative_to(PILOT)),
+         "inputs": [{"name": str(src.relative_to(PILOT)), "sha256": sha(src)}],
+         "params": {"zoom_out_scale": s, "centre_at_1024": [cx, cy], "fill": "edge"}, "date": now(), "cost_usd": 0})
+    return out
+
+
 def unique_keys(slug):
     """The key poses that need a drawing of their own: the rest reuse one (same position, other direction)."""
     return [k for k in EXERCISES[slug]["keys"] if k not in EXERCISES[slug]["same"]]
@@ -539,6 +627,12 @@ def openai_edit(prompt, refs, out, *, step, slug, key, route, quality="high", ex
         log({**entry, "error": f"{error.code} {detail}", "cost_usd": 0})
         print(f"  x {slug} {key} {route}: {error.code} {detail}", file=sys.stderr)
         return None
+    except (TimeoutError, urllib.error.URLError) as error:
+        # A read timeout killed a whole batch once (lunge, lot 2). Whether OpenAI billed it is
+        # unknown: logged at 0 with the reason, checked against the usage page if it matters.
+        log({**entry, "error": f"no answer: {error}", "cost_usd": 0, "cost_basis": "unknown, request timed out"})
+        print(f"  x {slug} {key} {route}: no answer: {error}", file=sys.stderr)
+        return None
     raw = base64.b64decode(body["data"][0]["b64_json"])
     u = body.get("usage", {})
     ind, outd = u.get("input_tokens_details", {}), u.get("output_tokens_details", {})
@@ -736,6 +830,37 @@ VIDEO_MOTION.update({
     "inverted_row": "One slow inverted row under a low bar. The hands never move on the bar and the heels never move on the floor; the body stays one straight plank. From the chest at the bar the body lowers to straight arms, then pulls back up to the bar.",
     "table_row": "One slow table row lying under a table. The hands never move on the table edge and the feet never move on the floor; the hips stay up in line with the shoulders and knees. From the chest close to the table the body lowers to straight arms, then pulls back up.",
 })
+# --- full run, lot 2: lower body ------------------------------------------------------------------
+POSE_TEXT.update({
+    ("squat", "k1"): "The hero is now STANDING at the top of a squat: legs straight, hips over the feet, chest up, both arms still reaching straight forward at shoulder height; the whole body is taller than in image 1 and the head stays fully inside the frame.",
+    ("lunge", "k1"): "The hero is now at the TOP of a lunge in the same split stance: both legs nearly straight, torso upright, hands on the hips, hips between the feet; the body is taller than in image 1 and the head stays fully inside the frame.",
+    ("glute_bridge", "k2"): "The hero is now at the BOTTOM of a glute bridge: the hips lowered to just touch the floor, knees still bent, feet flat where they are, shoulders, head and arms flat on the floor.",
+    ("single_leg_glute_bridge", "k2"): "The hero is now at the BOTTOM of a single-leg glute bridge: the hips lowered to just touch the floor, the working foot flat where it is with the knee bent, and the free leg still straight and extended, lowered together with the hips.",
+    ("standing_calf_raise", "k2"): "The legs are now at the BOTTOM of a calf raise: both heels lowered flat to the floor, knees straight, the balls of the feet on the same spots; the legs are a little lower in the frame than in image 1.",
+    ("curtsy_squat", "k1"): "The hero is now at the TOP of a curtsy squat, standing tall in the same crossed stance: the back foot still crossed behind the front foot on its toes, both legs nearly straight, torso upright, hands clasped at the chest; the body is taller than in image 1 and the head stays fully inside the frame.",
+    ("bulgarian_split_squat", "k1"): "The hero is now at the TOP of a Bulgarian split squat: the front leg nearly straight, hips higher, torso upright, the back foot still resting on the bench, arms down by the sides.",
+    ("single_leg_deadlift", "k1"): "The hero is now at the TOP of a single-leg deadlift: standing upright on the same leg, the free foot just off the floor slightly behind, torso vertical, arms hanging down by the sides.",
+})
+NEVER.update({
+    "squat": "Both feet stay flat on exactly the same spots of the floor; the heels never lift.",
+    "lunge": "The front foot and the back foot stay on exactly the same spots of the floor: the stance does not change.",
+    "glute_bridge": "Both feet stay flat on exactly the same spots of the floor and the shoulders and head stay on the same spot.",
+    "single_leg_glute_bridge": "The working foot stays flat on exactly the same spot of the floor and the shoulders and head stay on the same spot.",
+    "standing_calf_raise": "The balls of both feet stay on exactly the same spots of the floor.",
+    "curtsy_squat": "Both feet stay on exactly the same spots of the floor, the back foot crossed behind the front one.",
+    "bulgarian_split_squat": "The front foot stays flat on exactly the same spot of the floor and the back foot stays on the bench, which does not move.",
+    "single_leg_deadlift": "The standing foot stays flat on exactly the same spot of the floor.",
+})
+VIDEO_MOTION.update({
+    "squat": "One slow bodyweight squat with the arms reaching forward. The feet never move and the heels stay down. From standing the hips go back and down, knees over the toes, then the hero stands back up.",
+    "lunge": "One slow static lunge in a fixed split stance, hands on the hips. The feet never move. From nearly straight legs both knees bend until the back knee is a hand above the floor, then the hero rises back up.",
+    "glute_bridge": "One slow glute bridge lying on the back. The feet, shoulders and head never move. The hips lift until shoulders, hips and knees make one line, then lower to just touch the floor.",
+    "single_leg_glute_bridge": "One slow single-leg glute bridge lying on the back, one leg extended. The working foot, shoulders and head never move. The hips lift until level, the free leg rising in line, then lower to just touch the floor.",
+    "standing_calf_raise": "One slow standing calf raise, legs only. The balls of the feet never move and the knees stay straight. The heels rise high onto the balls of the feet, then lower flat to the floor.",
+    "curtsy_squat": "One slow curtsy squat in a fixed crossed stance, hands at the chest. The feet never move. From standing tall the knees bend, the back knee lowering towards the floor behind, then the hero rises back up.",
+    "bulgarian_split_squat": "One slow Bulgarian split squat, back foot on a bench. The front foot and the bench never move. From a nearly straight front leg the hero lowers until the back knee is close to the floor, then rises back up.",
+    "single_leg_deadlift": "One slow single-leg deadlift. The standing foot never moves. From upright on one leg the hero hinges forward with a straight back as the free leg rises behind, until torso and free leg are nearly horizontal, then returns upright.",
+})
 CREDITS = "https://api.bfl.ai/v1/credits"
 
 
@@ -881,6 +1006,8 @@ def main():
             if not a.exists():
                 a.parent.mkdir(parents=True, exist_ok=True)
                 magick(ROOT / f"assets/images/exercises/{slug}.webp", a)
+            if EXERCISES[slug].get("zoom"):
+                a = zoom_a(slug)
             for k, pose in EXERCISES[slug]["keys"].items():
                 if pose is not None:
                     g = draw(slug, k)

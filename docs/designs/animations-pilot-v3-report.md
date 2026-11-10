@@ -376,3 +376,6 @@ effect, and an audit. Exactness comes first, style second; the scoring brief now
   shrink it 9 %, but the band holds the moving hands, so the picture stays as drawn: the scorer saw the
   same scale. 16 tries in all.
 - Ledger total: 66.23 $.
+- **Coach audit, curtsy and bear crawl videos:** the bear crawl is kept, though its alternation is subtle
+  at 180 px. The curtsy is rejected (shallow dip, legs already crossed when standing), so it falls back
+  to its lot 2 flip-book. It is the one moving exercise without a passing animation.

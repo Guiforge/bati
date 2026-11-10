@@ -14,7 +14,7 @@
         {
           "action": "VIEW",
           "category": ["DEFAULT"],
-          "data": [{ "mimeType": "application/json" }]
+          "data": [{ "mimeType": "application/json" }, { "mimeType": "application/octet-stream" }]
         },
         {
           "action": "VIEW",

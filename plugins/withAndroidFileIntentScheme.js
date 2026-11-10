@@ -1,10 +1,13 @@
 const { withAndroidManifest } = require("expo/config-plugins");
 
 /**
- * Keep the quest-file intent filter free of any scheme.
+ * Keep the Bati-file intent filter free of any scheme.
  *
- * `app.json` claims `application/json` on ACTION_VIEW so a quest file tapped in a chat or in Files
- * opens Bati (`app/+native-intent.tsx`). A filter that names a MIME type and no scheme matches
+ * `app.json` claims two MIME types on ACTION_VIEW so a file tapped in a chat or in Files opens Bati
+ * (`app/+native-intent.tsx`): `application/octet-stream`, which is how a `.bati` file travels
+ * (Android has no type for the extension, and a provider's URI seldom shows the name, so the
+ * extension itself cannot be what the filter matches), and `application/json` for the
+ * `.bati-quest.json` and `.bati-adventure.json` files sent before the extension changed (2026-11). A filter that names a MIME type and no scheme matches
  * `content:` and `file:` URIs, which is what every chat app hands over. expo-dev-client's
  * `withGeneratedAndroidScheme` appends `exp+bati` to every VIEW filter of the activity, ours
  * included, and a filter that names a scheme matches only that scheme: the file would never reach

@@ -720,7 +720,7 @@ describe("writing an adventure file", () => {
 
   test("the file is named for the adventure, in at most 255 bytes", () => {
     const stem = load().quest.fileStem("😀".repeat(100), "adventure");
-    expect(utf8(`${stem}.bati-adventure.json`)).toBeLessThanOrEqual(255);
+    expect(utf8(`${stem}.bati`)).toBeLessThanOrEqual(255);
     expect(load().quest.fileStem("   ", "adventure")).toBe("adventure");
   });
 });

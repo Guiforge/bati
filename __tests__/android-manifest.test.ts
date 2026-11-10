@@ -54,17 +54,20 @@ test("MainActivity forwards back to JS on Android 13 to 15, without re-entering 
 });
 
 /**
- * A quest file tapped in a chat or in Files opens Bati on the import preview. The filter names a
- * MIME type and no scheme, which is what lets it match `content:` and `file:` URIs: expo-dev-client
+ * A Bati file tapped in a chat or in Files opens Bati on the import preview. A `.bati` file has no
+ * type Android knows, so it arrives as `application/octet-stream`; the files sent before the
+ * extension changed are `application/json`. The filter names both MIME types and no scheme, which is what lets it match `content:` and `file:` URIs: expo-dev-client
  * appends `exp+bati` to every VIEW filter, and `plugins/withAndroidFileIntentScheme.js` takes it
  * back out. With the scheme in, the filter matches nothing a chat app sends.
  */
-test("MainActivity opens JSON files, with no scheme narrowing the filter", () => {
+test("MainActivity opens Bati files, with no scheme narrowing the filter", () => {
   const filters = [
     ...main("AndroidManifest.xml").matchAll(/<intent-filter[^>]*>([\s\S]*?)<\/intent-filter>/g),
   ].map((m) => m[1] ?? "");
   const json = filters.filter((f) => f.includes('android:mimeType="application/json"'));
   expect(json).toHaveLength(1);
+  // The same filter: the plugin strips the scheme from the one that names `application/json`.
+  expect(json[0]).toContain('android:mimeType="application/octet-stream"');
   expect(json[0]).toContain('android:name="android.intent.action.VIEW"');
   expect(json[0]).toContain('android:name="android.intent.category.DEFAULT"');
   expect(json[0]).not.toContain("android:scheme");

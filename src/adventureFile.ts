@@ -86,7 +86,7 @@ const LAST_READABLE = 2;
 /** A bundled art key or a boss key: never a path, never a URL. */
 const KEY_RE = /^[a-z0-9_]{1,64}$/;
 /** What a photo the file does not carry reads as, in the receiver's quest. */
-const PLACEHOLDER = "assets/placeholder.jpg";
+export const PLACEHOLDER = "assets/placeholder.jpg";
 
 export type AdventureFile = {
   kind: typeof KIND;
@@ -140,6 +140,17 @@ export type AdventureFile = {
   }[];
 };
 
+export type BossEnd = Extract<AdventureFile["adventure"]["end"], { kind: "boss" }>;
+
+/**
+ * What a pack lists once (`src/packFile.ts`), by uuid: its adventures name a hero quest and a hero
+ * boss as `{ ref }` instead of carrying each one whole in every step.
+ */
+export type Owned = {
+  quests: ReadonlyMap<string, QuestBody>;
+  bosses: ReadonlyMap<string, BossEnd>;
+};
+
 /** Every reason a file is refused. The screen says each one as `adventures.import_<reason>`. */
 export const ADVENTURE_FILE_REFUSALS = [
   "unreadable",
@@ -173,24 +184,43 @@ function key(value: unknown): string {
   return value;
 }
 
-function step(value: unknown): AdventureFile["steps"][number] {
-  if (!isRecord(value) || !isRecord(value.quest)) throw new AdventureFileError("not_an_adventure");
-  const q = value.quest;
+/** A pack's step names its hero quest; an adventure file's carries it. Neither reads the other's form. */
+function stepQuest(
+  q: Record<string, unknown>,
+  owned?: Owned,
+): AdventureFile["steps"][number]["quest"] {
   const official = Object.hasOwn(q, "official");
-  if (official === Object.hasOwn(q, "own")) throw new AdventureFileError("not_an_adventure");
+  if (official === Object.hasOwn(q, owned ? "ref" : "own")) {
+    throw new AdventureFileError("not_an_adventure");
+  }
+  if (official) return { official: name(q.official) };
+  if (!owned) return { own: parseQuestBody(q.own) };
+  const listed = owned.quests.get(uuid(q.ref));
+  if (!listed) throw new AdventureFileError("not_an_adventure");
+  return { own: listed };
+}
+
+function step(value: unknown, owned?: Owned): AdventureFile["steps"][number] {
+  if (!isRecord(value) || !isRecord(value.quest)) throw new AdventureFileError("not_an_adventure");
   return {
-    quest: official ? { official: name(q.official) } : { own: parseQuestBody(q.own) },
+    quest: stepQuest(value.quest, owned),
     narrative: clip(text(value.narrative, MAX_STEP_TEXT, true), MAX_STEP_TEXT),
     outro: clip(text(value.outro, MAX_STEP_TEXT, true), MAX_STEP_TEXT),
   };
 }
 
-function end(value: unknown): AdventureFile["adventure"]["end"] {
+function end(value: unknown, owned?: Owned): AdventureFile["adventure"]["end"] {
   if (!isRecord(value) || typeof value.kind !== "string")
     throw new AdventureFileError("not_an_adventure");
   if (value.kind === "route") return { kind: "route" };
   // A kind this version lacks is a newer Bati's.
   if (value.kind !== "boss") throw new AdventureFileError("newer");
+  // A pack's adventure names the boss the hero made; a painted monster is still read below.
+  if (owned && value.ref !== undefined) {
+    const listed = owned.bosses.get(uuid(value.ref));
+    if (!listed) throw new AdventureFileError("not_an_adventure");
+    return listed;
+  }
   // A well-formed key this version lacks is kept and handled at preview: it arrives as a route.
   const boss: Extract<AdventureFile["adventure"]["end"], { kind: "boss" }> = {
     kind: "boss",
@@ -246,6 +276,14 @@ function read(data: unknown): AdventureFile {
     throw new AdventureFileError("not_an_adventure");
   }
   if (data.version > LAST_READABLE) throw new AdventureFileError("newer");
+  return readBody(data);
+}
+
+/** The `adventure` and `steps` of a file, which is also all a pack holds of one. */
+function readBody(data: unknown, owned?: Owned): AdventureFile {
+  if (!isRecord(data) || !isRecord(data.adventure)) {
+    throw new AdventureFileError("not_an_adventure");
+  }
   // The length is read before any element, so a million-element array costs nothing.
   if (!Array.isArray(data.steps) || data.steps.length < MIN_STEPS) {
     throw new AdventureFileError("not_an_adventure");
@@ -264,12 +302,31 @@ function read(data: unknown): AdventureFile {
       // URL, a picture or a path is no Bati's file.
       cover: a.cover === null ? null : key(a.cover),
       ...coverPhoto(a.photo),
-      end: end(a.end),
+      end: end(a.end, owned),
     },
-    steps: data.steps.map(step),
+    steps: data.steps.map((s) => step(s, owned)),
   };
-  refuseRepeatedUuids(file.steps.flatMap((s) => ("own" in s.quest ? [s.quest.own] : [])));
+  // A pack's quests are listed once and checked there: a uuid cannot name two of them.
+  if (!owned)
+    refuseRepeatedUuids(file.steps.flatMap((s) => ("own" in s.quest ? [s.quest.own] : [])));
   return file;
+}
+
+/**
+ * One adventure of a pack, its hero quests and its hero boss read from the pack's own lists. Throws
+ * an `AdventureFileError` or, from the quest readers, a `QuestFileError`.
+ */
+export function parseAdventureBody(data: unknown, owned: Owned): AdventureFile {
+  return readBody(data, owned);
+}
+
+/** A boss a pack lists: the `end` of an adventure, with the uuid it is named by. */
+export function parseBoss(value: unknown): BossEnd & { bossUuid: string } {
+  const boss = end(value);
+  if (boss.kind !== "boss" || boss.bossUuid === undefined) {
+    throw new AdventureFileError("not_an_adventure");
+  }
+  return { ...boss, bossUuid: boss.bossUuid };
 }
 
 /** A photo that is not a vouched-for `data:` image is dropped, never a reason to refuse the file: the cover key stands. */
@@ -308,15 +365,19 @@ export type AdventureToFile = {
 
 const utf8Length = (s: string) => new TextEncoder().encode(s).length;
 
-type Picture = { stored: string; cover: boolean; refs: { image: string | null }[] };
+/**
+ * A picture set aside until the budget decides. `cover`: left out, it reads as no picture at all
+ * (null), where a movement's stays the placeholder.
+ */
+export type Picture = { stored: string; cover: boolean; refs: { image: string | null }[] };
 
 /**
  * The end as the file carries it: a boss always with its voice, empty or not. A boss the hero
  * created travels whole (name, lines, weakness, resistance, uuid, and its pictures as the placeholder
  * until the budget decides, `withBossArt`); a painted one travels as the monster alone.
  */
-function fileEnd(
-  { end }: HeroAdventureDraft,
+export function fileEnd(
+  { end }: Pick<HeroAdventureDraft, "end">,
   boss: HeroBoss | null,
 ): AdventureFile["adventure"]["end"] {
   if (end.kind !== "boss") return end;
@@ -339,6 +400,34 @@ function fileEnd(
 /** The order the pictures are put back in under the budget (D8): the cover, the boss, the quests, then its other forms. */
 const BOSS_FORMS_LAST: readonly BossArtState[] = ["wounded", "defeated", "legendary"];
 
+/** One form of a boss's art as the budget writes it: put back, or removed from the file. */
+export function artRef(boss: BossEnd, form: BossArtState): Picture["refs"][number] {
+  return {
+    get image() {
+      return boss.art?.[form] ?? null;
+    },
+    set image(value: string | null) {
+      if (value === null) {
+        if (boss.art) delete boss.art[form];
+        if (boss.art && Object.keys(boss.art).length === 0) delete boss.art;
+      } else boss.art = { ...boss.art, [form]: value };
+    },
+  };
+}
+
+/** An adventure's own photo as the budget writes it: put back, or removed so `cover` stands. */
+export function photoRef(adventure: { photo?: string }): Picture["refs"][number] {
+  return {
+    get image() {
+      return adventure.photo ?? null;
+    },
+    set image(value: string | null) {
+      if (value === null) delete adventure.photo;
+      else adventure.photo = value;
+    },
+  };
+}
+
 /**
  * The boss's pictures among the others: `fresh` right after the cover, `wounded`, `defeated` and
  * `legendary` after everything else, since each of those has a fallback (the normal picture). One
@@ -355,18 +444,7 @@ function withBossArt(
   const entry = (form: BossArtState): [string, Picture][] => {
     const stored = art[form];
     if (!stored || !boss.art?.[form]) return [];
-    const ref: Picture["refs"][number] = {
-      get image() {
-        return boss.art?.[form] ?? null;
-      },
-      set image(value: string | null) {
-        if (value === null) {
-          if (boss.art) delete boss.art[form];
-          if (boss.art && Object.keys(boss.art).length === 0) delete boss.art;
-        } else boss.art = { ...boss.art, [form]: value };
-      },
-    };
-    return [[`boss:${form}`, { stored, cover: true, refs: [ref] }]];
+    return [[`boss:${form}`, { stored, cover: true, refs: [artRef(boss, form)] }]];
   };
   const all = [...pictures];
   const head = all.filter(([k]) => k.startsWith("adventure:"));
@@ -382,6 +460,39 @@ function withBossArt(
  * sent, and the string is read back by `parseAdventureData` before it is returned.
  */
 export async function adventureToFile(id: number): Promise<AdventureToFile | null> {
+  const aside = await adventureAside(id);
+  if (!aside) return null;
+  const { file, stepsLeft } = aside;
+  const { photos, leftOut } = putPicturesBack(
+    file,
+    withBossArt(file, aside.boss?.art, withCoverPhoto(file, aside.photo, aside.pictures)),
+  );
+
+  const json = JSON.stringify(file);
+  try {
+    parseAdventureData(JSON.parse(json));
+  } catch (error) {
+    const reason = error instanceof AdventureFileError ? error.reason : String(error);
+    throw new Error(`adventure file fails its own reader: ${reason}`);
+  }
+  return { file, json, photos, leftOut, stepsLeft };
+}
+
+/**
+ * The adventure as its file, every picture set aside under the placeholder: what
+ * `adventureToFile` then fills under its budget, and what a pack takes the head and the steps from
+ * (`src/packFile.ts`), its pictures filled under the pack's own. Null when fewer than two steps
+ * can travel.
+ */
+export async function adventureAside(id: number): Promise<{
+  file: AdventureFile;
+  pictures: Map<string, Picture>;
+  stepsLeft: number;
+  /** The adventure's own photo, when its cover is one. */
+  photo: string | null;
+  /** The boss the hero made that it ends on, pictures included. */
+  boss: HeroBoss | null;
+} | null> {
   const draft = await loadHeroAdventureDraft(id);
   if (!draft?.uuid)
     throw new Error(`Adventure ${id} is not an adventure of the hero, or has no uuid`);
@@ -432,20 +543,7 @@ export async function adventureToFile(id: number): Promise<AdventureToFile | nul
     },
     steps,
   };
-
-  const { photos, leftOut } = putPicturesBack(
-    file,
-    withBossArt(file, boss?.art, withCoverPhoto(file, ownPhoto, pictures)),
-  );
-
-  const json = JSON.stringify(file);
-  try {
-    parseAdventureData(JSON.parse(json));
-  } catch (error) {
-    const reason = error instanceof AdventureFileError ? error.reason : String(error);
-    throw new Error(`adventure file fails its own reader: ${reason}`);
-  }
-  return { file, json, photos, leftOut, stepsLeft };
+  return { file, pictures, stepsLeft, photo: ownPhoto, boss };
 }
 
 export type QuestToShare = { file: QuestFile; json: string; photos: number; leftOut: number };
@@ -485,17 +583,11 @@ function withCoverPhoto(
   pictures: ReadonlyMap<string, Picture>,
 ): ReadonlyMap<string, Picture> {
   if (!photo) return pictures;
-  const ref: Picture["refs"][number] = {
-    get image() {
-      return file.adventure.photo ?? null;
-    },
-    set image(value: string | null) {
-      if (value === null) delete file.adventure.photo;
-      else file.adventure.photo = value;
-    },
-  };
   return new Map([
-    [`adventure:${file.adventure.uuid}`, { stored: photo, cover: true, refs: [ref] }],
+    [
+      `adventure:${file.adventure.uuid}`,
+      { stored: photo, cover: true, refs: [photoRef(file.adventure)] },
+    ],
     ...pictures,
   ]);
 }
@@ -504,7 +596,7 @@ function withCoverPhoto(
  * A hero quest as the receiver's reader would return it, its pictures set aside under the
  * placeholder, or null when that reader would refuse it.
  */
-function ownBody(
+export function ownBody(
   quest: QuestTemplate,
   catalogue: Awaited<ReturnType<typeof listExercises>>,
 ): { body: QuestBody; aside: { key: string; stored: string; slot: number | "cover" }[] } | null {
@@ -529,15 +621,16 @@ function ownBody(
 }
 
 /** Puts each picture back in every occurrence while the file stays under the limit, in step order. */
-function putPicturesBack(
+export function putPicturesBack(
   file: object,
   pictures: ReadonlyMap<string, Picture>,
+  limit = MAX_FILE_BYTES,
 ): { photos: number; leftOut: number } {
   // The budget is exact: a picture replaces the placeholder inside the same quotes, and base64 is
   // ASCII that JSON does not escape, so each replacement adds `length - PLACEHOLDER.length` bytes.
   const base = utf8Length(JSON.stringify(file));
-  if (base > MAX_FILE_BYTES) throw new Error("adventure file is over the limit before any photo");
-  let budget = MAX_FILE_BYTES - base;
+  if (base > limit) throw new Error("file is over the limit before any photo");
+  let budget = limit - base;
   let photos = 0;
   let leftOut = 0;
   for (const { stored, cover, refs } of pictures.values()) {
@@ -577,9 +670,17 @@ function ownOf(body: QuestBody, slot: number): { image: string | null } {
   return movement.own;
 }
 
+/** What a preview draws for the adventure: the file's photo, else its bundled cover when this version has that art, else the default cover. */
+export function shownCover({ photo, cover }: AdventureFile["adventure"]): string {
+  if (photo) return photo;
+  return cover !== null && Object.hasOwn(ADVENTURE_ASSETS, cover)
+    ? cover
+    : (Object.keys(ADVENTURE_ASSETS)[0] ?? "");
+}
+
 /** Writes the file `adventureToFile` returned and hands it to the share sheet. */
 export async function shareAdventure(json: string, title: string): Promise<void> {
-  await shareJsonFile(`${fileStem(title, "adventure")}.bati-adventure.json`, json);
+  await shareJsonFile(fileStem(title, "adventure"), json);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -638,24 +739,41 @@ function stepStatuses(
   });
 }
 
+/** Whether enough of the adventure's steps exist on this phone for it to be filed (`MIN_STEPS`). */
+export function canFile(
+  file: AdventureFile,
+  catalogue: Awaited<ReturnType<typeof listExercises>>,
+  templates: readonly QuestTemplate[],
+): boolean {
+  return (
+    stepStatuses(file, catalogue, templates).filter((s) => s.status !== "missing").length >=
+    MIN_STEPS
+  );
+}
+
 /**
  * The boss a file carries as a creation of the hero's: one with a name, a line, a picture, a weakness
  * or a resistance, named as the sender named it (a file from a dev build, with no uuid, names it after
  * the adventure so a second import finds it). A painted monster with no voice is no creation: it
  * arrives as the monster, exactly as before.
  */
-function carriedBoss(
-  file: AdventureFile,
-): { uuid: string; draft: Omit<HeroBossDraft, "monster"> } | null {
+function carriedBoss(file: AdventureFile) {
   const e = file.adventure.end;
-  if (e.kind !== "boss") return null;
+  return e.kind === "boss" ? carriedEnd(e, file.adventure.uuid) : null;
+}
+
+/** `carriedBoss` on the boss alone, which is how a pack lists one that no adventure of it ends on. */
+export function carriedEnd(
+  e: BossEnd,
+  fallbackUuid: string,
+): { uuid: string; draft: Omit<HeroBossDraft, "monster"> } | null {
   const lines = e.lines ?? noBossLines();
   const art = e.art ?? {};
   const speaks = BOSS_LINE_MOMENTS.some((m) => lines[m].length > 0);
   if (!e.name && !speaks && Object.keys(art).length === 0 && !e.weakness && !e.resistance)
     return null;
   return {
-    uuid: e.bossUuid ?? file.adventure.uuid,
+    uuid: e.bossUuid ?? fallbackUuid,
     draft: {
       name: e.name ?? "",
       weakness: e.weakness ?? null,
@@ -739,6 +857,46 @@ export async function importAdventure(
     listQuestTemplates(),
     listMonsters(),
   ]);
+  const write = transactionOrFallback((tx) =>
+    writeImportedAdventure(tx, file, {
+      catalogue,
+      templates,
+      monsters,
+      written: new Map(),
+      brought: new Map(),
+      asCopy,
+    }),
+  );
+
+  // After the transaction, whatever its outcome: the writers invalidate as they go, so a read in
+  // between may have cached rows a rollback then took back.
+  return write.finally(() => {
+    invalidateExercisesCache();
+    invalidateQuestTemplates();
+    invalidateAdventures();
+  });
+}
+
+/**
+ * The transaction body of an adventure import, written in `tx`. `written` and `brought` map a
+ * movement and a quest uuid to the row already made for it: a pack shares them between its quests
+ * and its adventures, so what two of them name is one row. Refuses, before it writes anything, an
+ * adventure fewer than two of whose steps exist here. The caller owns the transaction and the
+ * cache invalidation.
+ */
+export async function writeImportedAdventure(
+  tx: TransactionTx,
+  file: AdventureFile,
+  ctx: {
+    catalogue: Awaited<ReturnType<typeof listExercises>>;
+    templates: readonly QuestTemplate[];
+    monsters: readonly Monster[];
+    written: Map<string, number>;
+    brought: Map<string, number>;
+    asCopy: boolean;
+  },
+): Promise<{ id: number; updated: boolean }> {
+  const { catalogue, templates, monsters, written, brought, asCopy } = ctx;
   const statuses = stepStatuses(file, catalogue, templates);
   const kept = file.steps.flatMap((s, i) => {
     const st = statuses[i];
@@ -756,44 +914,33 @@ export async function importAdventure(
       ? a.cover
       : (Object.keys(ADVENTURE_ASSETS)[0] as AdventureAssetKey));
 
-  const write = transactionOrFallback(async (tx) => {
-    const written = new Map<string, number>();
-    const brought = new Map<string, number>();
-    const steps: HeroAdventureDraft["steps"] = [];
-    for (const { step: s, quest } of kept) {
-      // Not on this phone, so it is a hero quest the file carries (a seed one would be "here").
-      const questId = quest?.id ?? (await bring(tx, s, { catalogue, written, brought }));
-      steps.push({ questId, narrative: s.narrative, outro: s.outro });
+  const steps: HeroAdventureDraft["steps"] = [];
+  for (const { step: s, quest } of kept) {
+    // Not on this phone when the import began, so it is a hero quest the file carries (a seed one
+    // would be "here"), or one an earlier part of a pack just wrote.
+    const questId = quest?.id ?? (await bring(tx, s, { catalogue, written, brought }));
+    steps.push({ questId, narrative: s.narrative, outro: s.outro });
+  }
+  const draft: HeroAdventureDraft = {
+    title: a.title,
+    description: a.description,
+    imagePath: cover,
+    end: monster ? { kind: "boss", monster: monster.key } : { kind: "route" },
+    steps,
+  };
+  const carried = monster ? carriedBoss(file) : null;
+  if (monster && carried && draft.end.kind === "boss") {
+    // A boss already here (by uuid) is kept as it is, never rewritten: the file has no say over
+    // what the hero edited, as for a quest.
+    if (!(await getHeroBossByUuid(carried.uuid, tx))) {
+      await createHeroBoss(
+        { ...carried.draft, monster: monster.key },
+        { uuid: carried.uuid, exec: tx },
+      );
     }
-    const draft: HeroAdventureDraft = {
-      title: a.title,
-      description: a.description,
-      imagePath: cover,
-      end: monster ? { kind: "boss", monster: monster.key } : { kind: "route" },
-      steps,
-    };
-    const carried = monster ? carriedBoss(file) : null;
-    if (monster && carried && draft.end.kind === "boss") {
-      // A boss already here (by uuid) is kept as it is, never rewritten: the file has no say over
-      // what the hero edited, as for a quest.
-      if (!(await getHeroBossByUuid(carried.uuid, tx))) {
-        await createHeroBoss(
-          { ...carried.draft, monster: monster.key },
-          { uuid: carried.uuid, exec: tx },
-        );
-      }
-      draft.end.heroBoss = carried.uuid;
-    }
-    return fileHeroAdventure(draft, asCopy ? uuidv7() : a.uuid, tx);
-  });
-
-  // After the transaction, whatever its outcome: the writers invalidate as they go, so a read in
-  // between may have cached rows a rollback then took back.
-  return write.finally(() => {
-    invalidateExercisesCache();
-    invalidateQuestTemplates();
-    invalidateAdventures();
-  });
+    draft.end.heroBoss = carried.uuid;
+  }
+  return fileHeroAdventure(draft, asCopy ? uuidv7() : a.uuid, tx);
 }
 
 /** The quest a step carries, written once however many steps name it. */

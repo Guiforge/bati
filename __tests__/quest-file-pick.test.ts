@@ -14,15 +14,26 @@ const mockOpen = jest.fn();
 const mockShare = jest.fn();
 const mockQuest = jest.fn();
 
-jest.mock("expo-file-system", () => ({
-  File: Object.assign(
+/** What the cache holds before a share: plain objects, made `File`s by the mock below. */
+const mockCached = jest.fn((): object[] => []);
+
+jest.mock("expo-file-system", () => {
+  const File = Object.assign(
     function File(...parts: unknown[]) {
       return mockOpen(...parts);
     },
     { pickFileAsync: (...args: unknown[]) => mockPick(...args) },
-  ),
-  Paths: { cache: "file:///cache" },
-}));
+  );
+  return {
+    File,
+    Directory: function Directory() {
+      return {
+        list: () => mockCached().map((f) => Object.assign(Object.create(File.prototype), f)),
+      };
+    },
+    Paths: { cache: "file:///cache" },
+  };
+});
 jest.mock("expo-sharing", () => ({
   isAvailableAsync: () => Promise.resolve(true),
   shareAsync: (...args: unknown[]) => mockShare(...args),
@@ -92,20 +103,40 @@ test("the picker hands back the uri it chose, unread", async () => {
 });
 
 test("a file of excessive size is refused before it is read", async () => {
-  const file = opened(9_000_000);
+  const file = opened(33_000_000);
   mockOpen.mockReturnValue(file);
   expect(await refusal(read("content://chat/1"))).toBe("not_a_quest");
+  expect(file.open).not.toHaveBeenCalled();
   expect(file.text).not.toHaveBeenCalled();
   expect(mockOpen).toHaveBeenCalledWith("content://chat/1");
+});
+
+// The read allows a pack's 32 MB, because the kind is inside the file. A quest or an adventure is
+// still held to 8 MB once it is known to be one.
+test("only a pack may be larger than a quest file", () => {
+  const padded = (kind: string) => JSON.stringify({ kind, pad: "x".repeat(8_000_050) });
+  const thrown = (kind: string) => {
+    mockOpen.mockReturnValue(opened(null, padded(kind)));
+    try {
+      readBatiFile("content://chat/big");
+    } catch (error) {
+      return error instanceof QuestFileError ? error.reason : error;
+    }
+    return null;
+  };
+  expect(thrown("bati-quest")).toBe("not_a_quest");
+  expect(thrown("bati-adventure")).toBe("not_a_quest");
+  expect(thrown("something-else")).toBe("not_a_quest");
+  expect(thrown("bati-pack")).toBeNull();
 });
 
 // A chat app's provider often reports no size. Refusing those refused most files a hero is sent,
 // so the read is bounded instead: at most the limit plus one byte, never the whole file.
 test("a file of unknown size is read to the limit plus one byte, never whole", async () => {
-  const big = opened(null, "x".repeat(8_000_050));
+  const big = opened(null, "x".repeat(32_000_050));
   mockOpen.mockReturnValue(big);
   expect(await refusal(read("content://chat/2"))).toBe("not_a_quest");
-  expect(big.handle.readBytesSync).toHaveBeenCalledWith(8_000_001);
+  expect(big.handle.readBytesSync).toHaveBeenCalledWith(32_000_001);
   expect(big.handle.close).toHaveBeenCalled();
   expect(big.text).not.toHaveBeenCalled();
 
@@ -162,23 +193,34 @@ describe("sharing a quest", () => {
   };
 
   test("the file is named after the quest, in letters and digits", async () => {
-    expect(await sharedAs("Porch forge: day 2!")).toBe("Porch-forge-day-2.bati-quest.json");
-    expect(await sharedAs("***")).toBe("quest.bati-quest.json");
+    expect(await sharedAs("Porch forge: day 2!")).toBe("Porch-forge-day-2.bati");
+    expect(await sharedAs("***")).toBe("quest.bati");
   });
 
   // A file name is 255 bytes on Android. A long title in four-byte letters overflowed it, and the
   // share failed with nothing for the hero to fix.
   test("a long title is cut to 50 letters, never mid-letter", async () => {
-    expect(await sharedAs("a".repeat(200))).toBe(`${"a".repeat(50)}.bati-quest.json`);
+    expect(await sharedAs("a".repeat(200))).toBe(`${"a".repeat(50)}.bati`);
     const wide = "\u{1D4D0}".repeat(100);
-    const stem = (await sharedAs(wide)).replace(".bati-quest.json", "");
+    const stem = (await sharedAs(wide)).replace(".bati", "");
     expect([...stem]).toHaveLength(50);
     expect(stem).toBe("\u{1D4D0}".repeat(50));
     // A cut that lands on a separator does not leave it dangling.
-    expect(await sharedAs(`${"b".repeat(49)} tail`)).toBe(`${"b".repeat(49)}.bati-quest.json`);
+    expect(await sharedAs(`${"b".repeat(49)} tail`)).toBe(`${"b".repeat(49)}.bati`);
   });
 
-  // 60 four-byte letters and the 16-byte suffix made 256 bytes, one past Android's 255: the cut
+  // A pack is up to 32 MB and the share sheet copies what it sends: the file shared before is
+  // cleared, and nothing else in the cache is touched.
+  test("the files shared before are cleared, and only those", async () => {
+    const old = { name: "Porch-forge.bati", delete: jest.fn() };
+    const thumb = { name: "map-thumb.png", delete: jest.fn() };
+    mockCached.mockReturnValueOnce([old, thumb]);
+    await sharedAs("Porch forge");
+    expect(old.delete).toHaveBeenCalled();
+    expect(thumb.delete).not.toHaveBeenCalled();
+  });
+
+  // 60 four-byte letters and the old 16-byte suffix made 256 bytes, one past Android's 255: the cut
   // once counted the stem alone.
   test("the whole file name fits in 255 bytes, suffix included", async () => {
     const name = await sharedAs("\u{1D4D0}".repeat(100));

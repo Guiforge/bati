@@ -37,7 +37,6 @@ import {
 } from "@/src/adventureFile";
 import {
   isRecord,
-  MAX_PACK_BYTES,
   movementToFile,
   type OwnMovement,
   ownMovement,
@@ -62,11 +61,18 @@ import type { AppLanguage } from "@/stores/settings";
  * previews and the writers of `questFile` and `adventureFile` are the ones that run.
  *
  * Held to what those files are held to (R66 to R68, R122 to R125), plus a cap on each list and a
- * size of its own (`MAX_PACK_BYTES`). Nothing here is written before the hero has seen the list
+ * size of its own (`MAX_PACK_BYTES` read, `MAX_WRITTEN_BYTES` written). Nothing here is written before the hero has seen the list
  * and ticked what comes in (`components/quests/PackImport.tsx`).
  */
 const KIND = "bati-pack";
 const VERSION = 1;
+/**
+ * The largest pack this version writes: about 250 photos, and under what a mail carries once it
+ * has encoded the attachment. Half of what it reads (`MAX_PACK_BYTES`). Measured on 2026-11-10,
+ * same emulator: a pack filled to this limit from 485 photos took 10 s to prepare and 80 MB over
+ * the list it was ticked from. Photos past it stay on the phone, and the dialog says how many.
+ */
+const MAX_WRITTEN_BYTES = 16_000_000;
 /** Far past what a hero writes by hand; the size limit is what a real pack meets first. */
 const MAX_MOVEMENTS = 1_000;
 const MAX_QUESTS = 300;
@@ -374,7 +380,7 @@ export async function packToShare(pick: PackPick): Promise<PackToShare> {
   const { photos, leftOut } = putPicturesBack(
     wire,
     new Map([...set.photos, ...set.covers, ...set.movements, ...set.fresh, ...set.forms]),
-    MAX_PACK_BYTES,
+    MAX_WRITTEN_BYTES,
   );
   const json = JSON.stringify(wire);
   let back: PackFile;

@@ -279,6 +279,34 @@ describe("a pack", () => {
     expect(title()).toBe("Iron morning");
   });
 
+  test("photos past what a pack may weigh stay on the phone, and the file is still one its reader takes", async () => {
+    // 45 photos of 390,000 characters: more than the 16,000,000 bytes a pack is written in.
+    const heavy = (seed: number) => {
+      const small = Buffer.from(photo(seed).split(",")[1] ?? "", "base64");
+      const body = Buffer.alloc(292_000);
+      small.copy(body);
+      body.writeUInt32BE(seed, body.length - 4);
+      return `data:image/jpeg;base64,${body.toString("base64")}`;
+    };
+    const ids: number[] = [];
+    for (let i = 0; i < 45; i++) ids.push(await movement(a, `Heavy ${i}`, heavy(i + 1)));
+
+    const out = await a.app.pack.packToShare({
+      movements: ids,
+      quests: [],
+      bosses: [],
+      adventures: [],
+    });
+
+    expect(out.counts.movements).toBe(45);
+    expect(out.photos + out.leftOut).toBe(45);
+    expect(out.leftOut).toBeGreaterThan(0);
+    expect(Buffer.byteLength(out.json)).toBeLessThanOrEqual(16_000_000);
+    // Every movement travels, the ones past the limit without their photo.
+    const { file } = await received(out.json);
+    expect(file.movements.filter((m) => m.image.startsWith("data:"))).toHaveLength(out.photos);
+  });
+
   // Not held here: that a failure halfway leaves nothing behind. This harness's
   // `transactionOrFallback` runs the body with no BEGIN (better-sqlite3 has no async transaction,
   // see `__tests__/helpers/testDb.ts`), so a rollback can only be seen on a device.

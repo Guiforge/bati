@@ -206,6 +206,9 @@ export function PackImport({
         stickySectionHeadersEnabled={false}
         // A screenful and a half: the default ten cut the first screen short on a tall phone.
         initialNumToRender={20}
+        // Two screens each way, not the default ten: a row's photo is a `data:` string of 50 KB that
+        // every mounted row holds several times over, and a full pack has 250 of them.
+        windowSize={5}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24, gap: 8 }}
         renderSectionHeader={({ section }) => (
           <TickHeader

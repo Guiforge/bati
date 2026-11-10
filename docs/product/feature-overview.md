@@ -96,8 +96,11 @@ A finished session as a picture, an outing as a GPX, a quest the hero wrote as a
     `.json`, and those files still open). Android has no type for it and a provider's URI seldom
     shows the name, so the file arrives as `application/octet-stream` and Bati claims that type:
     it is then offered for any unknown file on the phone, and refuses politely what is not its
-    own. That price was refused once and accepted on 2026-11-10: almost nothing else claims the
-    type, so a tapped file opens Bati instead of offering a text editor beside it.
+    own. That price was refused once and accepted on 2026-11-10, for a file that says whose
+    it is. It does not open Bati alone everywhere: on a Google emulator image (API 35) Google
+    Wallet answers `application/octet-stream` too, so the tap shows a chooser of two, and a file
+    sent to Wallet first came back to Bati unreadable. On that same image nothing but Bati
+    answered `application/json`. Not yet tried on a phone with a chat app.
   - **Everything at once**: the Forge's "Share my creations" sends a pack, one `.bati` file with
     the adventures, quests, bosses and exercises the hero ticked (`src/packFile.ts`), each listed
     once and named by uuid where it is used. The receiver ticks what comes in; what they already

@@ -202,6 +202,9 @@ export default function PackShareScreen(): ReactNode {
             stickySectionHeadersEnabled={false}
             // A screenful and a half: the default ten cut the first screen short on a tall phone.
             initialNumToRender={20}
+            // Two screens each way, not the default ten: a row's photo is a `data:` string of 50 KB that
+            // every mounted row holds several times over, and a full pack has 250 of them.
+            windowSize={5}
             contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24, gap: 8 }}
             renderSectionHeader={({ section }) => (
               <TickHeader
@@ -233,12 +236,17 @@ export default function PackShareScreen(): ReactNode {
             <AppButton
               testID="pack-share-confirm"
               disabled={busy || picked === 0}
+              // A full pack takes seconds to prepare: the button says it is at work.
               icon={
-                <Share2
-                  size={18}
-                  color={`${busy || picked === 0 ? "textSecondary" : "white"}`}
-                  strokeWidth={2.5}
-                />
+                busy ? (
+                  <Spinner testID="pack-share-busy" size="small" color="textSecondary" />
+                ) : (
+                  <Share2
+                    size={18}
+                    color={`${picked === 0 ? "textSecondary" : "white"}`}
+                    strokeWidth={2.5}
+                  />
+                )
               }
               onPress={() => {
                 onShare().catch((error: unknown) => reportError("packs.share", error));

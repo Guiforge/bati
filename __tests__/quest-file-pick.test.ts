@@ -209,7 +209,7 @@ describe("sharing a quest", () => {
     expect(await sharedAs(`${"b".repeat(49)} tail`)).toBe(`${"b".repeat(49)}.bati`);
   });
 
-  // A pack is up to 32 MB and the share sheet copies what it sends: the file shared before is
+  // A pack is up to 16 MB and the share sheet copies what it sends: the file shared before is
   // cleared, and nothing else in the cache is touched.
   test("the files shared before are cleared, and only those", async () => {
     const old = { name: "Porch-forge.bati", delete: jest.fn() };

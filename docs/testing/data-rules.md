@@ -666,7 +666,8 @@ Invariant: `parsePackData(JSON.parse(json))` of what `packToShare` wrote holds w
 needs, each once.
 
 **R132. Limits on read (pack):** the rules of R67, R68 and R123 for each movement, quest, boss and
-adventure, and: the file <= 32,000,000 bytes (`MAX_PACK_BYTES`; the read allows that size because the kind
+adventure, and: the file <= 32,000,000 bytes (`MAX_PACK_BYTES`, twice what this version writes, so a later one can write
+bigger packs without the phones still on this one refusing them; the read allows that size because the kind
 is only known once the file is parsed, and a quest or adventure file over 8,000,000 is still refused);
 at most 1000 movements, 300 quests, 100 bosses and 100 adventures (more is `newer`, the length read before
 any element); a list left out is empty, and a pack with nothing in it is `not_a_pack`; a uuid listed twice
@@ -696,7 +697,8 @@ except the rollback: that harness runs the body with no BEGIN, so a failure half
 
 **R134. Bati never writes a pack it would refuse (R125 for packs):** each quest goes through `ownBody` and
 each movement ticked alone through `ownMovement`, written as parsed, and one the reader refuses stays out.
-Pictures go back in under `MAX_PACK_BYTES`, each charged once: adventure photos, quest covers, movement
+Pictures go back in under `MAX_WRITTEN_BYTES` (16,000,000, about 250 photos and under a mail attachment),
+each charged once: adventure photos, quest covers, movement
 photos, the bosses' normal picture, then their other forms; one that does not fit or that `safeImage` would
 drop counts in `leftOut`. The string is read back by `parsePackData` before it leaves, and the hero is told
 how many things the file holds, how many photos go with it and how many stay, before the share sheet opens.

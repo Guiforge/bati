@@ -65,9 +65,12 @@ const MAX_IMAGE_SIDE = 1_024;
 const MAX_SLOTS = 40;
 export const MAX_FILE_BYTES = 8_000_000;
 /**
- * A pack (`src/packFile.ts`) holds everything a hero made, so it gets four times the room: about
- * 500 photos. ponytail: read and parsed whole in memory, so this is a phone's ceiling and not a
- * format's; past it, the answer is a streamed reader, not a bigger number.
+ * The largest pack (`src/packFile.ts`) this version reads: four times a quest file. Twice what it
+ * writes (`MAX_WRITTEN_BYTES` there), so that a later version can write bigger packs without the
+ * phones still on this one refusing them. Measured on 2026-11-10, release build, x86_64 emulator
+ * with 2.4 GB: a 31 MB pack of 480 photos was on screen 11 s after the tap, cold start included,
+ * for 90 MB over the idle app. ponytail: read whole in memory, so this is a phone's ceiling and
+ * not a format's; past it, the answer is a streamed reader, not a bigger number.
  */
 export const MAX_PACK_BYTES = 32_000_000;
 /** One suffix for every file Bati writes; the `kind` inside says which it is. */
@@ -220,10 +223,11 @@ export function fileStem(title: string, fallback: string): string {
 /**
  * Writes `json` to the cache as `<stem>.bati` and hands it to the share sheet.
  *
- * `.bati` and not `.json`: Android has no type for it, so the file travels as
- * `application/octet-stream`, which almost nothing but Bati claims (`app.json`), where a `.json`
- * offered a text editor beside it. The files shared before are cleared first: a pack is up to
- * 32 MB, and the share sheet has long since copied what it sent.
+ * `.bati` and not `.json`: the file says whose it is, and Android, which has no type for the
+ * extension, hands it over as `application/octet-stream`, which Bati claims (`app.json`). Not
+ * alone: on a Google image (API 35, 2026-11-10) Google Wallet answers that type too, so a tapped
+ * file opens a chooser of two. The files shared before are cleared first: a pack is up to
+ * 16 MB written, and the share sheet has long since copied what it sent.
  */
 export async function shareJsonFile(stem: string, json: string): Promise<void> {
   if (!(await Sharing.isAvailableAsync())) throw new Error("No share sheet available");

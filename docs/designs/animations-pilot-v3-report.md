@@ -349,3 +349,5 @@ effect, and an audit. Exactness comes first, style second; the scoring brief now
   crossing. Claude first read them as a crossing and was wrong. The curtsy keeps its v3 setup. From
   the front, from the side and from behind, the models do not draw a curtsy from a guide.
 - Ledger total: 65.52 $.
+- **Videos without BFL:** OpenAI's video endpoint answered 404 and the key lists no Sora or video model,
+  so no clip was made and nothing was billed. The videos wait for a BFL top-up.

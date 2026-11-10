@@ -359,3 +359,6 @@ effect, and an audit. Exactness comes first, style second; the scoring brief now
   coach rejected the bicycle crunch, reading the same side twice, and flagged that read as unsure.
   The file order is A (knee on the picture right), middle, A mirrored (knee on the left), middle, so
   the alternation is right. Claude kept it over the scorer.
+- **Bicycle crunch re-audit:** a second blind coach, on a large sheet (one frame every 0.4 s), read the
+  sides frame by frame. It confirmed the alternation (right, middle, left, middle, twice, loop closed)
+  and kept the video. All 12 key-pose videos now pass the coach audit.

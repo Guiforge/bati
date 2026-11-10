@@ -95,6 +95,7 @@ refused as well as the one taken, which is the half a commit message never keeps
 | [error-breadcrumbs.md](designs/error-breadcrumbs.md) | `reportError` and what reaches a feedback mail |
 | [warmup-prep.md](designs/warmup-prep.md) | The wait before the first warm-up movement and the start screen, 10 s or GO (the sword it replaced) |
 | [rappels.md](designs/rappels.md) | Local training reminders: your days, your hour, six promises not to nag, and no Firebase |
+| [animations-pilot-v3-report.md](designs/animations-pilot-v3-report.md) | Animated exercise illustrations pilot: key poses, flip-books vs video, cost per pose, what blocked |
 
 ## 🖼️ Content & Assets — [content/](content/README.md)
 

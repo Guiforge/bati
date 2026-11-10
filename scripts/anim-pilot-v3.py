@@ -626,6 +626,11 @@ VIDEO_MOTION = {
                "From a dead hang on straight arms the body rises until the chin is above the bar, then lowers under control "
                "back to straight arms.",
 }
+VIDEO_MOTION["thread_the_needle"] = (
+    "One slow thread the needle on one side, on hands and knees. The knees, feet and the planted hand never move and the "
+    "hips stay over the knees. From a flat tabletop the free arm lifts straight up to the ceiling as the chest turns open "
+    "towards it, then sweeps down and slides under the chest along the floor, palm up, until that shoulder and the side "
+    "of the head rest on the floor; hold, then return to the tabletop.")
 CREDITS = "https://api.bfl.ai/v1/credits"
 
 

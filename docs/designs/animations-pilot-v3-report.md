@@ -362,3 +362,10 @@ effect, and an audit. Exactness comes first, style second; the scoring brief now
 - **Bicycle crunch re-audit:** a second blind coach, on a large sheet (one frame every 0.4 s), read the
   sides frame by frame. It confirmed the alternation (right, middle, left, middle, twice, loop closed)
   and kept the video. All 12 key-pose videos now pass the coach audit.
+- **Bear crawl from the front:** the camera sits low in front of the head, and the next step is the
+  picture mirrored. It is the first view that reads as a crawl. The best pair (N27) scored 3/3/4/3 blind:
+  under the bar, because the hand-knee opposition is subtle. It is on the page marked "below the bar",
+  for Guillaume to judge. 12 tries in all, from the side, from above and from the front.
+- **Curtsy:** the lot 2 flip-book (crossed legs, edited on the app's picture) now has a key-pose video
+  too. The redraw-as-new still fails.
+- Ledger total: 65.95 $.

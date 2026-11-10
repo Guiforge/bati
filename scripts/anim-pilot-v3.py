@@ -2227,6 +2227,35 @@ VIDEO_MOTION.update({
 })
 
 
+# Bear crawl from the FRONT (v7): camera low in front of the head, the hero crawling towards it. The next
+# step is the picture mirrored, exact. From above it read as wall climbing; from the side the swap failed.
+def _crawl_front(step):
+    fwd, back = ((95, 0.55), (95, 0.55), (90, 0.2)), ((95, 0.4), (95, 0.4), (90, 0.2))
+    near_arm, far_arm = (back, fwd) if step else (fwd, fwd)
+    return fk((512, 420), 90, torso=0.35, head=270, face=(0, 1), near_at=FRONT[0], far_at=FRONT[1],
+              near_arm=near_arm, far_arm=far_arm, near_leg=((92, 0.5), (95, 0.5), (90, 0.3)),
+              far_leg=((88, 0.35), (85, 0.4), (90, 0.3)), props=FLOOR(900))
+
+
+LOOSE["bear_crawl"] = "torso, upper, fore, thigh, shin"  # the whole body points at the camera
+_seq("bear_crawl", "k1", 2, {"k1": _crawl_front(1), "k2": None}, {})
+FLOPS["bear_crawl"] = {"k2": "k1"}
+POSE_TEXT[("bear_crawl", "k1")] = (
+    "FRONT view, the camera low on the floor in front of the hero, who crawls TOWARDS the camera: a bear crawl. On hands "
+    "and feet, the knees bent and hovering a hand above the floor, the back flat and level, the head up looking at the "
+    "camera. The hand on the RIGHT of the picture is placed FORWARD (closer to the camera, bigger) and the hand on the LEFT "
+    "of the picture is back under its shoulder; behind, the knee on the LEFT of the picture is forward under the belly and "
+    "the knee on the RIGHT is back. We see the face, the shoulders, both arms, and the bent legs behind the body. A plain "
+    "dark floor and background; the whole hero inside the frame with a margin.")
+POSE_TEXT[("bear_crawl", "k1")] += (" The camera is at chest height, slightly above, NOT on the floor: no giant foreground hand. The "
+    "forward hand is only half a forearm ahead of the other. The knees are CLEARLY off the floor, a full hand of dark floor "
+    "visible under each knee; the forward knee (left of the picture) is pulled up near its elbow, the other knee is back "
+    "behind it, so the two knees are at clearly different depths.")
+NEVER["bear_crawl"] = "The camera, the framing and the scale do not change."
+VIDEO_MOTION["bear_crawl"] = ("Bear crawl seen from the front, crawling towards the camera on hands and feet with the knees "
+    "hovering: opposite hand and knee step forward together, then the other pair, the back flat.")
+
+
 CREDITS = "https://api.bfl.ai/v1/credits"
 
 

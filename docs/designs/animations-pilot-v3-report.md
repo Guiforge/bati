@@ -114,3 +114,48 @@ Ledger total after these videos: 5.67 $.
 - **Fix framing first:** frame stills for the whole movement, and redraw the stills the auditors
   flagged.
 - **Formats:** MP4 for video, and strips of 3 panels at most for 180 px.
+
+## Full run (same day, after Guillaume approved the plan)
+
+The plan: hard-cut flip-books for every moving exercise, and a video only where it passes the
+audit. The cap was 60 $ on top of the pilot. The run went in five lots, each with this sequence:
+guides, OpenAI edits, blind scoring, up to two retries, flip-books, two video drafts, a coach
+audit of the videos, and a final checklist from three auditors.
+
+| | Exercises |
+|---|---|
+| Attempted (pilot 5 + 37) | 42 |
+| Animated as flip-books | 34 |
+| With a kept video | 30 |
+| Failed after retries, keep their still | 8: knee push-up, calf raise, crunch, bicycle crunch, towel door row, bear crawl, flutter kicks, world's greatest stretch |
+| Not attempted | 7: windshield wipers (side camera hides the sweep), muscle-up, burpee, jumping jack (the still already shows two heroes), superman (a hold), wrist circles (a circle), warden's walk (a landscape) |
+| Holds and stretches, still by plan | 17 |
+
+Ledger total: 30.16 $ (pilot 5.67 $, full run 24.49 $).
+
+What the full run showed:
+
+- **End poses work.** Most first tries passed when the pose to draw is the other end of the
+  movement.
+- **Side swaps fail.** When the other pose means swapping legs, or swapping the hand-and-foot
+  pairs, both models redraw A. This failed for the bicycle crunch, bear crawl and flutter kicks,
+  all seen from the side. It worked twice, both from the front: skater hop and high knees.
+- **Fixed points are the usual reason for a fail.** The pose comes out right but a foot or hand
+  slides 20 to 50 px.
+  - When OpenAI slides the whole frame, it is measured on the bars and undone for free.
+  - On floor exercises the slide is in the body itself, and cannot be undone.
+- **Zooming A out in its frame lets standing and hanging poses fit.** This is done for the
+  flip-book only; the still in the app does not change. It was used for squat, lunge, curtsy,
+  hanging leg raise, negative pull-up and toes to bar.
+- **Video timing is often off.** The coach found the timing off by half a second to a second, and
+  a few drafts doing two reps. Videos were kept for 30 of the 34 animated exercises.
+- **Stills to redraw before the next pass:** squat (half depth), curtsy (not crossed), cat-cow
+  (shallow cat), chin-up top, and the five exercises whose still could not be animated.
+
+Deviations from the protocol:
+
+- The mannequin guides of the full run were not audited separately; the pose scorer sees them.
+- Bear crawl, flutter kicks and world's greatest stretch stopped after one retry instead of two,
+  because the same failure came back on both routes.
+- The towel door row got a second, independent scoring. I thought the overlay looked aligned; the
+  second scoring was stricter.

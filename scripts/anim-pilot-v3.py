@@ -1087,7 +1087,7 @@ POSE_TEXT.update({
     ("flutter_kicks", "k2"): "The legs now SWAP in a flutter kick: the leg that is higher in image 1 is now the lower one, and the lower one is now the higher one; both legs stay straight and off the floor.",
     ("high_knees", "k2"): "The hero now drives the OTHER KNEE up in high knees: the legs SWAP. The leg that stands on the floor in image 1 is now lifted with the knee at hip height; the leg whose knee is up in image 1 now stands on the floor. The arms swing the other way.",
     ("mountain_climber", "k2"): "The hero now drives one knee in for a mountain climber: from the same high plank, one knee is pulled forward towards the chest under the body, its foot off the floor; the other leg stays straight back with the toes on the floor; hips stay level with the shoulders.",
-    ("worlds_greatest_stretch", "k2"): "The hero now drops the raised arm for a world's greatest stretch: in the same deep lunge, the arm that reaches up in image 1 comes down so its elbow touches the floor beside the inside of the front foot, chest low and facing the floor, the other hand still flat on the floor.",
+    ("worlds_greatest_stretch", "k2"): "The hero now drops the raised arm for a world's greatest stretch: in the same deep lunge, the arm that reaches up to the sky in image 1 comes all the way down, bent, its ELBOW pressed to the floor just inside the front foot, the forearm flat on the floor, the chest low and turned to face the floor; the other hand stays flat on the floor where it is in image 1. Exactly two arms.",
 })
 NEVER.update({
     "skater_hop": "The camera, framing and background do not move.",

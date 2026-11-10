@@ -466,8 +466,8 @@ EDIT = ("Redraw image 1, changing only the pose so it matches the pose in image 
         "and line work. One person only, two arms, two legs.")
 POSE_TEXT = {
     ("dip", "k1"): "The hero is now at the TOP of a dip: both arms fully straight and vertical, shoulders directly above the hands, pressed down away from the ears, torso tilted slightly forward, chest proud. The body is higher than in image 1, held up by the arms.",
-    ("dip", "k2"): "The hero is now HALFWAY down a dip: elbows bent about 120 degrees and pointing straight back behind the body, not out to the sides, shoulders down away from the ears, torso tilted forward.",
-    ("chin_up", "k1"): "The hero now hangs at the BOTTOM of a chin-up: both arms fully straight, body vertical and still below the bar, head well below the bar, legs straight and together. The whole body is lower than in image 1; the feet may leave the bottom of the frame.",
+    ("dip", "k2"): "The hero is now HALFWAY up from the bottom of a dip: the whole body is clearly HIGHER than in image 1, by about half of a forearm length, elbows only partly bent (about 120 degrees) and pointing straight back behind the body, not out to the sides, shoulders down away from the ears, torso tilted slightly forward. The legs keep exactly the same bent shape as in image 1 and simply rise with the hips.",
+    ("chin_up", "k1"): "The hero now hangs at the BOTTOM of a chin-up: both arms fully straight, elbows straight, body vertical and still below the bar, head well below the bar, legs straight and together. The shoulders are pulled DOWN, away from the ears: a long visible neck between the shoulders, not shrugged. The bar and the hands stay at exactly the same height and position in the picture as in image 1: do not move the camera or the bar up to fit the body. The whole body is lower than in image 1, so the shins and feet leave the bottom of the frame.",
     ("chin_up", "k2"): "The hero is now HALFWAY up a chin-up: elbows bent about 90 degrees, pointing down and slightly forward in front of the body, head about halfway between the hang and the bar, below the bar, legs straight and together.",
     ("pushups", "k3"): "The hero is now at the BOTTOM of a push-up: chest almost touching the floor, lower than the elbow joints; elbows bent and pointing back towards the feet, close to the ribs; one rigid straight line from head to heels, hips neither raised nor sagging; neck long, head in line with the spine.",
     ("pushups", "k2"): "The hero is now HALFWAY down a push-up: elbows bent about 100 degrees, pointing back towards the feet, close to the ribs; body lowered by about half, still one rigid straight line from head to heels; head in line with the spine.",
@@ -486,20 +486,229 @@ def edit_prompt(slug, key):
     return f"{EDIT} {POSE_TEXT[(slug, key)]} {NEVER[slug]}"
 
 
-def candidate(slug, key, route, n):
-    """One candidate for one key pose: image 1 = A, image 2 = the mannequin pose."""
-    a, ref = PILOT / "A" / f"{slug}.png", PILOT / "refs" / slug / f"{key}.png"
+BETWEEN = ("Image 3 shows the same hero at the other end of this movement. The new pose is exactly HALFWAY "
+           "between the pose of image 1 and the pose of image 3, as the pose guide in image 2 shows: clearly "
+           "different from both, the body at the middle height between them. Keep image 1's framing.")
+
+
+def candidate(slug, key, route, n, base=None, between=None):
+    """One candidate for one key pose: image 1 = A (or an accepted pose nearer to this one), image 2 =
+    the mannequin pose, and for a middle pose optionally image 3 = the accepted pose at the other end:
+    with A alone, both models stayed next to A's pose for every halfway pose (dip, chin-up)."""
+    a, ref = (PILOT / base if base else PILOT / "A" / f"{slug}.png"), PILOT / "refs" / slug / f"{key}.png"
     out = PILOT / "poses" / slug / f"{key}_{route}{n}.png"
     if out.exists():
         print(f"  = {out} exists")
         return out
-    prompt = edit_prompt(slug, key)
+    prompt = edit_prompt(slug, key) + (" " + BETWEEN if between else "")
     fn = flux3_edit if route == "F" else openai_edit
-    made = fn(prompt, (a, ref), out, step="pose", slug=slug, key=key, route=route)
+    refs = (a, ref, PILOT / between) if between else (a, ref)
+    made = fn(prompt, refs, out, step="pose", slug=slug, key=key, route=route)
     if made:
         onion = out.with_name(out.stem + "_onion.png")
         magick(a, made, "-resize", "1280x1280!", "-compose", "blend", "-define", "compose:args=50", "-composite", onion)
     return made
+
+
+ACCEPTED = PILOT / "accepted.json"  # {slug: {key: candidate path relative to PILOT}}, written as poses pass
+
+
+def rep_frames(slug):
+    """The drawn pose for each key of one rep, A where A is that key, a shared pose where two keys are one position."""
+    ex, acc = EXERCISES[slug], json.loads(ACCEPTED.read_text()).get(slug, {})
+    out = {}
+    for k in ex["keys"]:
+        src = ex["same"].get(k, k)
+        if src == ex["a_key"]:
+            out[k] = PILOT / "A" / f"{slug}.png"
+        elif src in acc:
+            out[k] = PILOT / acc[src]
+        # else: no drawing passed for this key (halfway dip and chin-up): it is left out and its time
+        # goes to the pose before it, so the rep still runs at the catalogue tempo.
+    return out
+
+
+def rep_times(slug, frames):
+    """The start time of each kept key, plus the rep's end."""
+    ex = EXERCISES[slug]
+    times = dict(zip(ex["keys"], ex["times"]))
+    return [times[k] for k in frames] + [ex["times"][-1]]
+
+
+def flipbook(slug, size=384, fade_cs=15):
+    """Step 4: per-pose WebP 512, a fade flip-book and a hard-cut flip-book at the catalogue tempo
+    (each with its 0.5x twin), and the comic strip."""
+    ex, d = EXERCISES[slug], SITE / slug
+    d.mkdir(parents=True, exist_ok=True)
+    frames = rep_frames(slug)
+    keys = list(frames)
+    tmp = PILOT / "tmp" / slug
+    tmp.mkdir(parents=True, exist_ok=True)
+    small = {}
+    for k, f in frames.items():
+        magick(f, "-resize", "512x512", "-quality", "82", d / f"pose_{k}.webp")
+        small[k] = tmp / f"{k}.png"
+        magick(f, "-resize", f"{size}x{size}", small[k])
+    t = rep_times(slug, frames)
+    seg = [round((t[i + 1] - t[i]) * 100) for i in range(len(keys))]
+    # Hard cuts: each pose for its whole segment.
+    anim([small[k] for k in keys], seg, d / "cuts.webp", size)
+    # Fade: each pose held, then a 150 ms cross-fade (3 frames) into the next, looping to k1.
+    fr, dl = [], []
+    for i, k in enumerate(keys):
+        nxt = keys[(i + 1) % len(keys)]
+        fr.append(small[k]); dl.append(seg[i] - fade_cs)
+        for j, pct in enumerate((25, 50, 75)):
+            m = tmp / f"{k}_{nxt}_{pct}.png"
+            magick(small[nxt], small[k], "-compose", "blend", "-define", f"compose:args={pct}", "-composite", m)
+            fr.append(m); dl.append(fade_cs // 3)
+    anim(fr, dl, d / "fade.webp", size)
+    # Comic strip: the key poses side by side, small gold numbers, one wide still.
+    tiles = []
+    for i, k in enumerate(keys, 1):
+        t = tmp / f"strip_{k}.png"
+        magick(frames[k], "-resize", "320x320", "-fill", "#E2B54A", "-stroke", "#0B0F19", "-strokewidth", "2",
+               "-font", "DejaVu-Sans-Bold", "-pointsize", "34", "-gravity", "northwest", "-annotate", "+10+4", str(i), t)
+        tiles.append(t)
+    magick(*tiles, "-background", "#0B0F19", "-splice", "4x0", "+append", "-chop", "4x0", "-quality", "82", d / "strip.webp")
+    # Contact sheet (key poses in order) and the onion skin of every distinct drawn pose.
+    magick(*[frames[k] for k in keys], "-resize", "400x400", "+append", "-quality", "80", d / "contact.webp")
+    distinct = list(dict.fromkeys(frames.values()))
+    magick(*distinct, "-resize", "640x640", "-evaluate-sequence", "mean", "-quality", "82", d / "onion.webp")
+    return {name: kb(d / f"{name}.webp") for name in ("fade", "cuts", "strip", "contact", "onion")}
+
+
+VIDEO_BASE = ("Locked-off static camera, no camera movement, no zoom, no cut. The background, lighting, character, "
+              "outfit and art style stay exactly as in the keyframes. One person only, two arms, two legs. "
+              "Smooth, controlled, even tempo. Full range of motion.")
+VIDEO_MOTION = {
+    "pushups": "One slow push-up. The body stays one rigid straight line from head to heels and pivots on the toes; "
+               "the hands and toes never move. The elbows bend back along the ribs until the chest is a fist above the floor, "
+               "then the arms press back to straight.",
+    "cat_cow": "One slow cat-cow on hands and knees. The hands and knees never move and the arms stay straight. "
+               "From a flat back the belly sinks and the head lifts (cow), the back returns flat, then the spine rounds up "
+               "towards the ceiling with the head tucked down (cat), and returns flat.",
+    "dip": "One slow dip between parallel bars. The hands never leave their spot on the bars and the bent legs keep their shape. "
+           "From straight arms the body lowers, elbows travelling straight back, until the shoulders reach elbow height, "
+           "then presses back up to straight arms.",
+    "chin_up": "One slow chin-up with palms facing the hero. The hands never move on the bar and the straight legs never swing. "
+               "From a dead hang on straight arms the body rises until the chin is above the bar, then lowers under control "
+               "back to straight arms.",
+}
+CREDITS = "https://api.bfl.ai/v1/credits"
+
+
+def keyframe_jpeg(path):
+    """960 px JPEG, raw base64: the format the previous pilot confirmed for flux-3-video keyframes."""
+    jpg = subprocess.run(["magick", str(path), "-resize", "960x960", "-quality", "93", "jpg:-"], check=True, capture_output=True).stdout
+    return base64.b64encode(jpg).decode("ascii")
+
+
+def draft(slug, n, expect=0.30):
+    """One FLUX 3 Video draft: i2v, 5 s, 1:1, no audio, every key pose as a keyframe at the sheet's
+    times scaled to 5 s, the first keyframe repeated at 5 s so the clip loops."""
+    out = PILOT / "clips" / slug / f"d{n}.mp4"
+    if out.exists():
+        return out
+    guard(expect)
+    ex, frames = EXERCISES[slug], rep_frames(slug)
+    keys = list(frames)
+    scale = 5 / ex["rep_s"]
+    times = [round(t * scale, 2) for t in ex["times"]]
+    keyframes = [[t, keyframe_jpeg(frames[k])] for t, k in zip(times, [*keys, keys[0]])]
+    prompt = f"{VIDEO_BASE} {VIDEO_MOTION[slug]}"
+    payload = {"mode": "i2v", "prompt": prompt, "duration": 5, "aspect_ratio": "1:1", "generate_audio": False,
+               "draft": True, "safety_tolerance": 4, "keyframes": keyframes}
+    api_key = env_key("BFL_API_KEY")
+    entry = {"provider": "bfl", "model": "flux-3-video", "endpoint": FLUX3_VIDEO, "step": "video-draft", "slug": slug,
+             "draft": n, "prompt": prompt, "params": {k: v for k, v in payload.items() if k not in ("keyframes", "prompt")},
+             "keyframes": [{"t": t, "key": k, "name": str(pathlib.Path(frames[k]).relative_to(PILOT)), "sha256": sha(frames[k]),
+                            "sent_as": "960px JPEG q93"} for t, k in zip(times, [*keys, keys[0]])],
+             "date": now()}
+    before = _json(CREDITS, api_key)["credits"]
+    try:
+        submitted = _json(FLUX3_VIDEO, api_key, payload)
+        url = _poll(submitted["polling_url"], api_key, timeout=1800.0)
+        with urllib.request.urlopen(url, timeout=300) as response:
+            raw = response.read()
+    except Exception as error:
+        log({**entry, "error": str(error)[:500], "cost_usd": 0})
+        print(f"  x {slug} d{n}: {error}", file=sys.stderr)
+        return None
+    digest = keep_original(raw, ".mp4")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_bytes(raw)
+    cost = submitted.get("cost")
+    log({**entry, "file": str(out.relative_to(PILOT)), "signed_original": {"file": f"{digest[:16]}.mp4", "sha256": digest},
+         "api_cost_credits": cost, "credits_before": before,
+         "cost_usd": round(float(cost) / 100, 4) if cost is not None else expect,
+         "cost_basis": "API cost field" if cost is not None else "estimate, no cost field: check credits_before against the balance"})
+    control_sheet(out)
+    print(f"  ok {out}  cost field {cost}")
+    return out
+
+
+def ff(*args):
+    subprocess.run(["ffmpeg", "-v", "error", "-y", *map(str, args)], check=True)
+
+
+def control_sheet(clip):
+    """One frame every 0.2 s with its time under it: what the coach audits."""
+    frames = clip.with_suffix("")
+    frames.mkdir(exist_ok=True)
+    for old in frames.glob("f*.png"):
+        old.unlink()
+    ff("-i", clip, "-vf", "fps=5,scale=200:-1", frames / "f%03d.png")
+    labelled = []
+    for i, png in enumerate(sorted(frames.glob("f*.png"))):
+        labelled += ["-label", f"{i * 0.2:.1f} s", str(png)]
+    subprocess.run(["montage", *labelled, "-tile", "5x", "-geometry", "+3+3", "-background", "#202024",
+                    "-fill", "white", "-pointsize", "14", str(clip.with_suffix(".sheet.jpg"))], check=True)
+
+
+def ssim(a, b):
+    out = subprocess.run(["ffmpeg", "-i", str(a), "-i", str(b), "-lavfi", "ssim", "-f", "null", "-"],
+                         capture_output=True, text=True).stderr
+    return float(out.rsplit("All:", 1)[1].split()[0])
+
+
+def encode(slug, clip, crf=28):
+    """The kept draft: the first 5 s (keyframes 0 to 5 are the same picture, so that is the loop),
+    MP4 H.264 384 px yuv420p +faststart, animated WebP 384 px at 12 fps, and the seam's SSIM."""
+    clip, d = pathlib.Path(clip), SITE / slug
+    d.mkdir(parents=True, exist_ok=True)
+    mp4, webp = d / "video.mp4", d / "video.webp"
+    ff("-i", clip, "-t", "5", "-an", "-vf", "scale=384:384:flags=lanczos", "-c:v", "libx264", "-preset", "veryslow",
+       "-crf", crf, "-pix_fmt", "yuv420p", "-movflags", "+faststart", mp4)
+    ff("-i", mp4, "-vf", "fps=12", "-loop", "0", "-quality", "70", "-c:v", "libwebp", webp)
+    tmp = PILOT / "tmp" / slug
+    tmp.mkdir(parents=True, exist_ok=True)
+    ff("-i", mp4, "-vf", "select=eq(n\\,0)", "-frames:v", "1", tmp / "first.png")
+    ff("-sseof", "-0.05", "-i", mp4, "-frames:v", "1", "-update", "1", tmp / "last.png")
+    seam = ssim(tmp / "first.png", tmp / "last.png")
+    ff("-i", mp4, "-vf", "setpts=2*PTS", "-an", "-c:v", "libx264", "-crf", crf, "-pix_fmt", "yuv420p", "-movflags", "+faststart",
+       d / "video_slow.mp4")
+    return {"mp4_kb": kb(mp4), "webp_kb": kb(webp), "seam_ssim": round(seam, 4), "crf": crf}
+
+
+def shift_down(src, dy):
+    """Undo a vertical re-framing: move the picture down dy px (at 1280) so its bar lands back on
+    A's, and fill the band uncovered at the top by stretching the top rows of plain background.
+    Chin-up hang, route O: the model kept the scale and the hands' x but slid the scene up to fit
+    the feet in frame; the sheet accepts the feet leaving the frame instead."""
+    out = src.with_name(src.stem + "a.png")
+    # The band is the top rows mirrored: its last row is the source's first, so the seam matches
+    # row for row (a plain stretch left a visible edge, which flickers in a flip-book).
+    band = 70  # rows of empty background at the top of the source
+    magick(src, "-resize", "1280x1280!", "(", "+clone", "-crop", f"1280x{band}+0+0", "+repage", "-flip", "-resize", f"1280x{dy}!", ")",
+           "(", "-clone", "0", "-crop", f"1280x{1280 - dy}+0+0", "+repage", ")", "-delete", "0", "-append", out)
+    a = PILOT / "A" / f"{src.parent.name}.png"
+    magick(a, out, "-resize", "1280x1280!", "-compose", "blend", "-define", "compose:args=50", "-composite",
+           out.with_name(out.stem + "_onion.png"))
+    log({"provider": "local", "model": "imagemagick", "step": "align", "slug": src.parent.name, "file": str(out.relative_to(PILOT)),
+         "inputs": [{"name": str(src.relative_to(PILOT)), "sha256": sha(src)}], "params": {"shift_down_px_at_1280": dy},
+         "date": now(), "cost_usd": 0})
+    return out
 
 
 def main():
@@ -508,16 +717,32 @@ def main():
         for slug in rest or EXERCISES:
             print(refs(slug))
     elif command == "stick-media":
-        import json
         print(json.dumps({slug: stick_media(slug) for slug in rest or EXERCISES}, indent=1))
     elif command == "page":
         page()
     elif command == "pose":  # pose <slug> <key> <route F|O> <n>...: candidates in parallel
         import concurrent.futures
+        base = rest.pop(rest.index("--base") + 1) if "--base" in rest else None
+        between = rest.pop(rest.index("--between") + 1) if "--between" in rest else None
+        rest = [r for r in rest if r not in ("--base", "--between")]
         slug, key, route, *ns = rest
         with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
-            list(pool.map(lambda n: candidate(slug, key, route, int(n)), ns))
+            list(pool.map(lambda n: candidate(slug, key, route, int(n), base, between), ns))
         print(f"spent {spent():.3f} $")
+    elif command == "draft":  # draft <slug> <n>...
+        import concurrent.futures
+        slug, *ns = rest
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+            list(pool.map(lambda n: draft(slug, int(n)), ns))
+        print(f"spent {spent():.3f} $")
+    elif command == "credits":  # the BFL balance: the video endpoint returns no cost field
+        print(_json(CREDITS, env_key("BFL_API_KEY"))["credits"])
+    elif command == "encode":  # encode <slug> <clip.mp4> [crf]
+        print(json.dumps(encode(rest[0], rest[1], int(rest[2]) if len(rest) > 2 else 28)))
+    elif command == "flipbook":
+        print(json.dumps({slug: flipbook(slug) for slug in rest or EXERCISES}))
+    elif command == "shift":  # shift <candidate.png> <dy at 1280>
+        print(shift_down(pathlib.Path(rest[0]), int(rest[1])))
     elif command == "spent":
         rows = ledger()
         for prov in ("bfl", "openai"):

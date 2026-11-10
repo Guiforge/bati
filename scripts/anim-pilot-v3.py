@@ -344,6 +344,114 @@ for _slug, (_a_key, _rep, _zoom, _pose) in LOT2.items():
                         "times": [0.0, _rep / 2, float(_rep)], "same": {}}
 
 
+# --- full run, lot 3: core ------------------------------------------------------------------------
+# windshield_wipers is left out: its still shows the hero side-on, so the legs' side-to-side sweep
+# would travel towards and away from the camera, which this framing cannot show (camera finding).
+LOT3 = {
+    # Side, lying, head left. A = top (shoulders curled up); drawn: bottom (shoulders down).
+    "crunch": ("k1", 2, None, _guide(
+        (110, 610), [(240, 640), (430, 660)],
+        near=[[(240, 630), (190, 540), (130, 590)], [(430, 660), (540, 398), (640, 796)]],
+        far=[[(235, 625), (200, 545), (140, 580)], [(425, 655), (560, 420), (839, 740)]],
+        props=FLOOR(705))),
+    # Side, lying, head right. A = one side (elbow to the opposite knee); drawn: the other side.
+    "bicycle_crunch": ("k1", 2, None, _guide(
+        (770, 505), [(700, 530), (577, 600)],
+        near=[[(700, 530), (650, 470), (760, 460)], [(577, 600), (500, 430), (620, 520)]],
+        far=[[(705, 520), (800, 560), (770, 480)], [(570, 595), (340, 520), (150, 470)]],
+        props=FLOOR(680))),
+    # Side, lying, head left. A = top (hips curled up); drawn: bottom (hips down, thighs vertical).
+    "reverse_crunch": ("k2", 2, None, _guide(
+        (114, 634), [(250, 650), (560, 640)],
+        near=[[(250, 655), (450, 690), (780, 650)], [(560, 640), (560, 420), (790, 420)]],
+        far=[[(245, 650), (440, 685), (770, 645)], [(550, 635), (545, 430), (775, 430)]],
+        props=FLOOR(700))),
+    # Side, lying, head left. A = extended (one arm overhead, the other leg long); drawn: start.
+    "dead_bug": ("k2", 2, None, _guide(
+        (250, 592), [(336, 606), (563, 648)],
+        near=[[(340, 600), (370, 480), (400, 350)], [(563, 648), (570, 470), (740, 470)]],
+        far=[[(330, 600), (355, 475), (380, 345)], [(555, 645), (560, 480), (730, 480)]],
+        props=FLOOR(700))),
+    # Side, on a bench, head left. A = top (body raised at an angle); drawn: lowered, just above the bench.
+    "dragon_flag": ("k1", 4, None, _guide(
+        (208, 626), [(321, 660), (540, 615)],
+        near=[[(321, 660), (250, 610), (151, 654)], [(540, 615), (740, 590), (940, 560)]],
+        far=[[(315, 655), (245, 605), (145, 650)], [(535, 610), (735, 580), (935, 548)]],
+        props=[((122, 682), (890, 740)), ((140, 740), (190, 905)), ((820, 740), (870, 905))])),
+    # Seated V, side-on. A = twisted to one side; drawn: twisted to the other side.
+    "russian_twist": ("k1", 2, None, _guide(
+        (215, 300), [(240, 420), (313, 720)],
+        near=[[(260, 430), (330, 560), (420, 600)], [(313, 720), (540, 449), (981, 648)]],
+        far=[[(220, 425), (300, 560), (410, 610)], [(305, 715), (530, 460), (960, 660)]],
+        props=FLOOR(790))),
+    # Front three-quarter, under a bar. A = legs raised; drawn: dead hang, legs straight down. Zoomed.
+    "hanging_leg_raise": ("k2", 3, (0.78, 350, 130), _guide(
+        (343, 392), [(360, 450), (360, 640)],
+        near=[[(420, 450), (450, 300), (478, 151)], [(370, 640), (370, 830), (370, 1010)]],
+        far=[[(300, 450), (260, 280), (222, 108)], [(350, 640), (345, 830), (345, 1010)]],
+        props=[[(0, 70), (1024, 232), (1024, 250), (0, 88)]])),
+}
+for _slug, (_a_key, _rep, _zoom, _pose) in LOT3.items():
+    _other = "k2" if _a_key == "k1" else "k1"
+    EXERCISES[_slug] = {"rep_s": _rep, "a_key": _a_key, "zoom": _zoom,
+                        "keys": {"k1": None, "k2": None} | {_other: _zoomed(_pose, _zoom) if _zoom else _pose},
+                        "times": [0.0, _rep / 2, float(_rep)], "same": {}}
+
+
+# --- full run, lot 4: bar, wall and floor leftovers ----------------------------------------------
+# muscle_up is left out: its still already shows two heroes (below and above the bar), a two-panel
+# strip in one picture, so there is no single pose to edit from (finding).
+LOT4 = {
+    # Front, under a bar. A = top; drawn: dead hang. Zoomed so the legs fit.
+    "negative_pullup": ("k1", 5, (0.78, 512, 149), _guide(
+        (512, 360), [(512, 440), (510, 690)],
+        near=[[(600, 440), (620, 300), (640, 149)], [(530, 690), (525, 880), (520, 1080)]],
+        far=[[(420, 440), (400, 300), (384, 149)], [(490, 690), (485, 880), (480, 1080)]],
+        props=[((0, 140), (1024, 158))])),
+    # Back view, under a bar. A = active hang (shoulders down); drawn: passive hang (shoulders shrugged).
+    "scapular_pullup": ("k2", 2, None, _guide(
+        (535, 330), [(535, 330), (535, 540)],
+        near=[[(625, 300), (622, 210), (620, 114)], [(560, 540), (555, 700), (530, 885)]],
+        far=[[(445, 300), (420, 210), (392, 114)], [(510, 540), (505, 700), (490, 885)]],
+        props=[((0, 105), (1024, 123))])),
+    # Front, under a bar. A = toes at the bar; drawn: dead hang. Zoomed.
+    "toes_to_bar": ("k2", 3, (0.7, 512, 100), _guide(
+        (512, 380), [(512, 450), (512, 700)],
+        near=[[(640, 450), (725, 280), (811, 108)], [(530, 700), (530, 930), (530, 1150)]],
+        far=[[(380, 450), (300, 280), (213, 108)], [(494, 700), (494, 930), (494, 1150)]],
+        props=[((0, 100), (1024, 118))])),
+    # Side, leaning back from a door, holding a towel. A = top (pulled in); drawn: bottom (arms straight).
+    "towel_door_row": ("k1", 3, None, _guide(
+        (200, 250), [(240, 380), (420, 690)],
+        near=[[(245, 385), (390, 405), (535, 421)], [(420, 690), (530, 840), (648, 990)]],
+        far=[[(235, 375), (380, 395), (528, 412)], [(410, 690), (520, 845), (630, 985)]],
+        props=[((660, 0), (680, 1024))])),
+    # Back view, upside down against a wall. A = bottom (head near the floor); drawn: top (arms straight).
+    "handstand_pushup": ("k2", 5, None, _guide(
+        (512, 690), [(512, 570), (512, 315)],
+        near=[[(585, 570), (630, 730), (683, 882)], [(530, 315), (530, 170), (530, 30)]],
+        far=[[(440, 570), (385, 730), (327, 882)], [(494, 315), (494, 170), (494, 30)]],
+        props=FLOOR(890))),
+    # Side, lying face down, head left. A = top (chest and legs lifted, arms in a W); drawn: flat.
+    "superman_w": ("k1", 4, None, _guide(
+        (220, 630), [(320, 640), (570, 650)],
+        near=[[(330, 640), (400, 610), (270, 625)], [(570, 650), (750, 650), (920, 650)]],
+        far=[[(320, 635), (390, 600), (265, 615)], [(560, 645), (740, 642), (910, 642)]],
+        props=FLOOR(670))),
+    # Front. A = in the air; drawn: the squat it jumps from (feet on the floor).
+    "jump_squat": ("k2", 2, None, _guide(
+        (515, 450), [(515, 560), (490, 760)],
+        near=[[(600, 560), (580, 640), (520, 600)], [(530, 760), (610, 820), (580, 960)]],
+        far=[[(430, 560), (450, 640), (510, 600)], [(450, 760), (370, 820), (400, 960)]],
+        props=FLOOR(965))),
+}
+for _slug, (_a_key, _rep, _zoom, _pose) in LOT4.items():
+    _other = "k2" if _a_key == "k1" else "k1"
+    EXERCISES[_slug] = {"rep_s": _rep, "a_key": _a_key, "zoom": _zoom,
+                        "keys": {"k1": None, "k2": None} | {_other: _zoomed(_pose, _zoom) if _zoom else _pose},
+                        "times": [0.0, _rep / 2, float(_rep)], "same": {}}
+
+
 def zoom_a(slug):
     """A zoomed out around the feet (EXERCISES[slug]["zoom"] = scale, cx, cy), the edges filled with
     A's own mirrored background: a standing pose then fits the frame. Flip-book only."""
@@ -860,6 +968,62 @@ VIDEO_MOTION.update({
     "curtsy_squat": "One slow curtsy squat in a fixed crossed stance, hands at the chest. The feet never move. From standing tall the knees bend, the back knee lowering towards the floor behind, then the hero rises back up.",
     "bulgarian_split_squat": "One slow Bulgarian split squat, back foot on a bench. The front foot and the bench never move. From a nearly straight front leg the hero lowers until the back knee is close to the floor, then rises back up.",
     "single_leg_deadlift": "One slow single-leg deadlift. The standing foot never moves. From upright on one leg the hero hinges forward with a straight back as the free leg rises behind, until torso and free leg are nearly horizontal, then returns upright.",
+})
+# --- full run, lot 3: core ------------------------------------------------------------------------
+POSE_TEXT.update({
+    ("crunch", "k2"): "The hero is now at the BOTTOM of a crunch: lying flat on the back, shoulders and head resting on the floor, hands still lightly behind the head with the elbows out, knees still bent and feet flat on the floor.",
+    ("bicycle_crunch", "k2"): "The hero now does the OTHER SIDE of a bicycle crunch: the legs SWAP. The leg with the white bandage at the ankle, which is extended in image 1, is now BENT with its knee pulled in towards the chest; the leg that was bent in image 1 is now extended long just above the floor, and the shoulders twist the other way so the opposite elbow reaches towards that bent knee; BOTH hands stay behind the head, fingers at the back of the head, and never touch the legs.",
+    ("reverse_crunch", "k1"): "The hero is now at the BOTTOM of a reverse crunch: lying flat, hips and lower back resting on the floor, thighs vertical, knees bent at 90 degrees with the shins level and the feet in the air, arms flat along the floor by the sides.",
+    ("dead_bug", "k1"): "The hero is now in the START position of a dead bug: lying flat on the back, lower back pressed to the floor, both arms pointing straight up to the ceiling above the shoulders, both knees bent at 90 degrees above the hips with the shins level.",
+    ("dragon_flag", "k2"): "The hero is now at the BOTTOM of a dragon flag: the body stays one rigid straight line from the shoulders to the feet and is lowered until it is just above the bench, nearly horizontal; only the upper back and shoulders rest on the bench, hands still gripping the bench behind the head.",
+    ("russian_twist", "k2"): "The hero now twists to the OTHER SIDE in a Russian twist: same seated V with the torso leaning back at the same angle as in image 1 (not sitting up straight), a straight back, the hips exactly where they are in image 1, knees bent and feet on the floor, the clasped hands now beside the opposite hip and the chest and shoulders turned that way.",
+    ("hanging_leg_raise", "k1"): "The hero now hangs at the BOTTOM of a hanging leg raise: both arms straight, both legs hanging straight down together under the hips, body still and vertical below the bar. The bar and the hands stay exactly where they are in image 1.",
+})
+NEVER.update({
+    "crunch": "Both feet stay flat on exactly the same spots of the floor and the hips stay on the floor.",
+    "bicycle_crunch": "The hips stay on the same spot of the floor and the hands stay behind the head.",
+    "reverse_crunch": "The shoulders, head and arms stay flat on exactly the same spot of the floor.",
+    "dead_bug": "The head, shoulders and lower back stay on exactly the same spot of the floor.",
+    "dragon_flag": "The upper back and shoulders stay on exactly the same spot of the bench and the hands keep gripping the bench behind the head. The bench does not move.",
+    "russian_twist": "The hips stay on exactly the same spot of the floor and both feet stay on the same spots.",
+    "hanging_leg_raise": "Both hands stay on exactly the same spots of the bar. The bar does not move. No swing.",
+})
+VIDEO_MOTION.update({
+    "crunch": "One slow crunch lying on the back, knees bent, hands lightly behind the head. The feet and hips never move. The shoulders curl up off the floor, then lower back down.",
+    "bicycle_crunch": "One slow bicycle crunch cycle lying on the back, hands behind the head. The hips never move. One knee comes in as the opposite elbow twists towards it while the other leg extends, then the legs and the twist switch sides.",
+    "reverse_crunch": "One slow reverse crunch lying on the back. The shoulders, head and arms never move. With the knees bent at 90 degrees the hips curl up off the floor bringing the knees towards the chest, then lower back down.",
+    "dead_bug": "One slow dead bug lying on the back. The back stays pressed to the floor. From both arms up and both knees at 90 degrees, one arm reaches overhead to the floor as the opposite leg extends long, then both return.",
+    "dragon_flag": "One slow dragon flag on a bench, gripping it behind the head. The shoulders never leave the bench and the body stays one rigid straight line. The body lowers from raised to just above the bench, then rises back.",
+    "russian_twist": "One slow Russian twist in a seated V, feet on the floor. The hips and feet never move. The clasped hands and the shoulders turn to one side, then across to the other side.",
+    "hanging_leg_raise": "One slow hanging leg raise. The hands never move on the bar and the body does not swing. From a dead hang the knees and legs lift up in front of the body, then lower back down to hang straight.",
+})
+# --- full run, lot 4 ------------------------------------------------------------------------------
+POSE_TEXT.update({
+    ("negative_pullup", "k2"): "The hero now hangs at the BOTTOM of a negative pull-up: both arms fully straight, body vertical and still below the bar, head well below the bar, legs straight and together. The bar and the hands stay exactly where they are in image 1.",
+    ("scapular_pullup", "k1"): "The hero now hangs PASSIVELY at the start of a scapular pull-up: arms straight, shoulders relaxed and shrugged up towards the ears so the head sinks a little between the arms, the body hanging slightly lower than in image 1. The bar and the hands stay exactly where they are in image 1.",
+    ("toes_to_bar", "k1"): "The hero now hangs at the BOTTOM of a toes-to-bar: both arms straight, body vertical and still, both legs together hanging straight down under the hips. The bar and the hands stay exactly where they are in image 1.",
+    ("towel_door_row", "k1"): "The hero is now at the BOTTOM of a towel door row: both arms fully straight holding the towel, the body leaning further back in one straight line from the heels to the head, feet on the same spot.",
+    ("handstand_pushup", "k1"): "The hero is now at the TOP of a handstand push-up against the wall: both arms fully straight, the head well above the floor between the arms, the body straight and vertical upside down, heels against the wall.",
+    ("superman_w", "k2"): "The hero is now lying FLAT face down at the bottom of a superman W: chest, arms and legs resting on the floor, the arms still bent in a W beside the head.",
+    ("jump_squat", "k1"): "The hero is now at the BOTTOM of the squat before the jump: both feet flat on the floor, knees bent and pushed out over the toes, hips back and down, chest up, hands clasped at the chest.",
+})
+NEVER.update({
+    "negative_pullup": "Both hands stay on exactly the same spots of the bar. The bar does not move. No swing.",
+    "scapular_pullup": "Both hands stay on exactly the same spots of the bar and the arms stay straight. The bar does not move.",
+    "toes_to_bar": "Both hands stay on exactly the same spots of the bar. The bar does not move. No swing.",
+    "towel_door_row": "Both hands stay on the towel at the same spot by the door handle and both feet stay on exactly the same spot. The door does not move.",
+    "handstand_pushup": "Both hands stay flat on exactly the same spots of the floor and the heels stay against the wall. The wall does not move.",
+    "superman_w": "The hips stay on exactly the same spot of the floor.",
+    "jump_squat": "The camera and the background do not move; the feet land where they took off.",
+})
+VIDEO_MOTION.update({
+    "negative_pullup": "One slow negative pull-up. The hands never move on the bar and the legs never swing. From the chin above the bar the body lowers very slowly to a dead hang on straight arms, then returns to the top.",
+    "scapular_pullup": "One slow scapular pull-up. The hands never move and the arms stay straight. From a relaxed hang with the shoulders up by the ears, the shoulder blades pull down and the body rises a little, then relaxes back.",
+    "toes_to_bar": "One slow toes-to-bar. The hands never move on the bar and the body does not swing. From a dead hang the straight legs lift until the toes touch the bar, then lower back down.",
+    "towel_door_row": "One slow towel door row. The feet and the towel by the handle never move. From straight arms leaning back the hero pulls the chest towards the door, then lowers back to straight arms.",
+    "handstand_pushup": "One slow handstand push-up against a wall. The hands never move and the heels stay on the wall. From straight arms the body lowers until the head nearly touches the floor, then presses back up.",
+    "superman_w": "One slow superman W lying face down. The hips never move. The chest and legs lift off the floor as the arms pull into a W, then lower back down.",
+    "jump_squat": "One jump squat. From a squat with the feet flat the hero jumps straight up, both feet leaving the floor, and lands softly back in the squat.",
 })
 CREDITS = "https://api.bfl.ai/v1/credits"
 

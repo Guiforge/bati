@@ -1,0 +1,5 @@
+- During a session or on the pause screen, "I'm stopping, it hurts" ends the session and keeps your sets.
+- In the Forge, "Share my creations" puts your quests, adventures, bosses and exercises in one file. Whoever receives it ticks what they keep.
+- A late-evening session in the week of the clock change counts in the right week again for rest advice.
+- A backup saved to cloud storage is no longer refused and then deleted.
+- Libraries brought up to date.

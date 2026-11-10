@@ -204,6 +204,73 @@ EXERCISES = {
 }
 
 
+# --- full run, lot 1 ------------------------------------------------------------------------------
+# From the pilot: an exercise that travels up and down gets its two end poses only (0 of 12 halfway
+# poses passed). A already shows one end, so each exercise needs one drawing: its pose guide is
+# written here, on A's geometry (1024 canvas), and A's own key has no mannequin (None).
+
+def _guide(head, torso, near, far, props=()):
+    return {"head": head, "torso": torso, "near": near, "far": far, "props": list(props)}
+
+
+FLOOR = lambda y: [[(0, y), (1024, y), (1024, 1024), (0, 1024)]]  # noqa: E731
+
+LOT1 = {
+    # Three-quarter front view, facing the camera's right. A = top; drawn: bottom.
+    "diamond_pushup": ("k1", 3, _guide(
+        (870, 610), [(735, 640), (356, 600)],
+        near=[[(780, 640), (850, 610), (768, 732)], [(356, 600), (213, 640), (128, 668)]],
+        far=[[(690, 620), (560, 600), (668, 732)], [(356, 600), (220, 655), (140, 690)]],
+        props=FLOOR(740))),
+    # Side view facing left, on the knees. A = bottom; drawn: top (arms straight).
+    "knee_pushup": ("k2", 3, _guide(
+        (175, 380), [(315, 425), (560, 520)],
+        near=[[(315, 430), (305, 545), (293, 661)], [(560, 520), (677, 583), (919, 562)]],
+        far=[[(300, 420), (275, 500), (250, 583)], [(560, 515), (670, 570), (900, 548)]],
+        props=FLOOR(670))),
+    # Side view facing right, hands on the wall. A = bottom; drawn: top (arms straight, body back).
+    "wall_pushup": ("k2", 2, _guide(
+        (515, 275), [(470, 350), (342, 599)],
+        near=[[(470, 352), (600, 322), (725, 293)], [(342, 599), (271, 738), (185, 904)]],
+        far=[[(465, 345), (590, 305), (712, 270)], [(335, 600), (262, 742), (175, 900)]],
+        props=[((614, 0), (1024, 1024))])),
+    # Front view. A = bottom, shifted over the bent arm; drawn: top, centred, both arms straight.
+    "archer_pushup": ("k2", 3, _guide(
+        (520, 300), [(520, 430), (515, 600)],
+        near=[[(620, 430), (735, 590), (847, 748)], [(560, 600), (600, 640), (634, 662)]],
+        far=[[(420, 430), (265, 590), (108, 748)], [(470, 600), (420, 640), (364, 662)]],
+        props=FLOOR(760))),
+    # Side view facing right, hips high. A = bottom (head near the floor); drawn: top (arms straight).
+    "pike_pushup": ("k2", 3, _guide(
+        (790, 590), [(700, 470), (526, 256)],
+        near=[[(705, 475), (800, 625), (896, 775)], [(526, 256), (284, 469), (142, 711)]],
+        far=[[(690, 465), (580, 630), (469, 797)], [(515, 262), (270, 480), (125, 720)]],
+        props=FLOOR(800))),
+    # Front view. A = top; drawn: dead hang (feet near the bottom edge).
+    "pullups": ("k1", 4, _guide(
+        (525, 395), [(527, 500), (520, 675)],
+        near=[[(600, 520), (624, 381), (648, 242)], [(545, 690), (550, 860), (540, 1010)]],
+        far=[[(455, 520), (424, 381), (392, 242)], [(495, 690), (490, 860), (500, 1010)]],
+        props=[((240, 236), (820, 250))])),
+    # Side view facing left, under a low bar. A = top (chest at the bar); drawn: bottom (arms straight).
+    "inverted_row": ("k1", 3, _guide(
+        (290, 380), [(380, 460), (593, 647)],
+        near=[[(385, 462), (420, 330), (469, 199)], [(593, 647), (735, 772), (853, 876)]],
+        far=[[(375, 455), (365, 325), (355, 193)], [(585, 650), (725, 780), (840, 880)]],
+        props=[((0, 172), (1024, 186))] + FLOOR(890))),
+    # Side view facing left, lying under a table, knees bent. A = bottom (arms straight); drawn: top.
+    "table_row": ("k2", 3, _guide(
+        (200, 410), [(262, 395), (535, 400)],
+        near=[[(262, 398), (330, 470), (293, 321)], [(535, 400), (677, 392), (762, 662)]],
+        far=[[(255, 392), (320, 455), (280, 318)], [(530, 405), (665, 400), (748, 660)]],
+        props=[((80, 300), (1000, 330))] + FLOOR(700))),
+}
+for _slug, (_a_key, _rep, _pose) in LOT1.items():
+    _other = "k2" if _a_key == "k1" else "k1"
+    EXERCISES[_slug] = {"rep_s": _rep, "a_key": _a_key, "keys": {"k1": None, "k2": None} | {_other: _pose},
+                        "times": [0.0, _rep / 2, float(_rep)], "same": {}}
+
+
 def unique_keys(slug):
     """The key poses that need a drawing of their own: the rest reuse one (same position, other direction)."""
     return [k for k in EXERCISES[slug]["keys"] if k not in EXERCISES[slug]["same"]]
@@ -349,7 +416,8 @@ from lib.flux import _json, _poll  # noqa: E402
 
 LEDGER = PILOT / "pilot-ledger.json"
 ORIGINALS = PILOT / "originals"
-CAP = 15.0
+# Pilot: 15 $. Full run, approved 2026-11-10: 60 $ on top of the pilot's 5.67 $ (ledger total cap).
+CAP = float(os.environ.get("ANIM_CAP", "65.67"))
 FLUX3_IMAGE = "https://api.bfl.ai/v1/flux-3-image"
 FLUX3_VIDEO = "https://api.bfl.ai/v1/flux-3-video"
 OPENAI_EDITS = "https://api.openai.com/v1/images/edits"
@@ -580,6 +648,8 @@ def flipbook(slug, size=384, fade_cs=15):
     tmp = PILOT / "tmp" / slug
     tmp.mkdir(parents=True, exist_ok=True)
     small = {}
+    if not (d / "still.webp").exists():
+        magick(PILOT / "A" / f"{slug}.png", "-resize", "512x512", "-quality", "82", d / "still.webp")
     for k, f in frames.items():
         magick(f, "-resize", "512x512", "-quality", "82", d / f"pose_{k}.webp")
         small[k] = tmp / f"{k}.png"
@@ -635,6 +705,37 @@ VIDEO_MOTION["thread_the_needle"] = (
     "hips stay over the knees. From a flat tabletop the free arm lifts straight up to the ceiling as the chest turns open "
     "towards it, then sweeps down and slides under the chest along the floor, palm up, until that shoulder and the side "
     "of the head rest on the floor; hold, then return to the tabletop.")
+# --- full run, lot 1: what each drawn pose is, what never moves, and the video's motion -----------
+POSE_TEXT.update({
+    ("diamond_pushup", "k2"): "The hero is now at the BOTTOM of a diamond push-up: chest lowered to a fist above the hands, elbows bent and pointing back along the ribs, close to the body, never flared out; one rigid straight line from head to heels; head neutral.",
+    ("knee_pushup", "k1"): "The hero is now at the TOP of a knee push-up: both arms fully straight, hands under the shoulders, one straight line from the head through the hips to the knees, hips neither raised nor sagging; head neutral, eyes to the floor ahead of the hands.",
+    ("wall_pushup", "k1"): "The hero is now at the TOP of a wall push-up: both arms fully straight, the body leaning back from the wall in one straight line from head to heels, heels down; the chest is now an arm's length from the wall.",
+    ("archer_pushup", "k1"): "The hero is now at the TOP of an archer push-up: both arms fully straight and wide apart, the chest centred between the two hands, body in one straight plank; the head is centred too.",
+    ("pike_pushup", "k1"): "The hero is now at the TOP of a pike push-up: both arms fully straight, the body an upside-down V with the hips as the highest point, legs straight, head between the arms looking back towards the feet; the head is now well above the floor.",
+    ("pullups", "k2"): "The hero now hangs at the BOTTOM of a pull-up: both arms fully straight, elbows straight, body vertical and still below the bar, head well below the bar, legs straight and together; shoulders pulled slightly down away from the ears. The bar and the hands stay at exactly the same height and position in the picture as in image 1: do not move the camera or the bar to fit the body. The whole body is lower than in image 1, so the feet reach the bottom edge of the frame.",
+    ("inverted_row", "k2"): "The hero is now at the BOTTOM of an inverted row: both arms fully straight, hanging under the bar, the body one straight line from head to heels at a lower angle, hips not sagging, heels on the same spot of the floor. The bar and the hands stay at exactly the same place in the picture as in image 1.",
+    ("table_row", "k1"): "The hero is now at the TOP of a table row: the chest pulled up close to the underside of the table, elbows bent and pointing down past the body, hips up so the shoulders, hips and knees make one straight line; feet flat on the floor where they are in image 1.",
+})
+NEVER.update({
+    "diamond_pushup": "Both hands stay flat on exactly the same spot of the floor, close together in a diamond, and the toes stay on exactly the same spot. The body pivots on the toes.",
+    "knee_pushup": "Both hands stay flat on exactly the same spots of the floor and both knees stay on exactly the same spot, feet raised behind. The body pivots on the knees.",
+    "wall_pushup": "Both hands stay flat on exactly the same spots of the wall and both feet stay flat on exactly the same spot of the floor. The wall does not move.",
+    "archer_pushup": "Both hands stay flat on exactly the same spots of the floor, very wide apart, and the feet stay on exactly the same spot.",
+    "pike_pushup": "Both hands stay flat on exactly the same spots of the floor and both feet stay on exactly the same spot; the legs stay straight and the hips stay high.",
+    "pullups": "Both hands stay on exactly the same spots of the bar, overhand grip, palms facing away from the hero. The bar does not move. No swing.",
+    "inverted_row": "Both hands stay on exactly the same spots of the bar and both heels stay on exactly the same spot of the floor. The bar does not move.",
+    "table_row": "Both hands stay on exactly the same spot of the table edge and both feet stay flat on exactly the same spot of the floor. The table does not move.",
+})
+VIDEO_MOTION.update({
+    "diamond_pushup": "One slow diamond push-up. The hands stay together on the floor and the toes never move; the body stays one rigid line and pivots on the toes. The elbows bend back along the ribs until the chest is a fist above the hands, then the arms press back to straight.",
+    "knee_pushup": "One slow knee push-up. The hands and knees never move; the body stays one straight line from head to knees and pivots on the knees. The elbows bend until the chest is close to the floor, then the arms press back to straight.",
+    "wall_pushup": "One slow wall push-up. The hands stay on the wall and the feet stay on the floor; the body stays one straight line leaning into the wall. The elbows bend until the chest is close to the wall, then the arms press back to straight.",
+    "archer_pushup": "One slow archer push-up to one side. The hands and feet never move. From straight wide arms the chest lowers towards one hand as that elbow bends while the other arm stays straight out to the side, then presses back up to the centre.",
+    "pike_pushup": "One slow pike push-up. The hands and feet never move and the hips stay high in an upside-down V. The elbows bend until the top of the head nearly touches the floor in front of the hands, then the arms press back to straight.",
+    "pullups": "One slow pull-up with an overhand grip. The hands never move on the bar and the straight legs never swing. From the chin over the bar the body lowers under control to a dead hang on straight arms, then pulls back up until the chin is above the bar.",
+    "inverted_row": "One slow inverted row under a low bar. The hands never move on the bar and the heels never move on the floor; the body stays one straight plank. From the chest at the bar the body lowers to straight arms, then pulls back up to the bar.",
+    "table_row": "One slow table row lying under a table. The hands never move on the table edge and the feet never move on the floor; the hips stay up in line with the shoulders and knees. From the chest close to the table the body lowers to straight arms, then pulls back up.",
+})
 CREDITS = "https://api.bfl.ai/v1/credits"
 
 
@@ -774,6 +875,18 @@ def main():
         print(json.dumps({slug: stick_media(slug) for slug in rest or EXERCISES}, indent=1))
     elif command == "page":
         page()
+    elif command == "guide":  # guide <slug>...: the pose guide of each key that has one, and it over A
+        for slug in rest:
+            a = PILOT / "A" / f"{slug}.png"
+            if not a.exists():
+                a.parent.mkdir(parents=True, exist_ok=True)
+                magick(ROOT / f"assets/images/exercises/{slug}.webp", a)
+            for k, pose in EXERCISES[slug]["keys"].items():
+                if pose is not None:
+                    g = draw(slug, k)
+                    magick(a, "-resize", "1024x1024", g, "-compose", "blend", "-define", "compose:args=55",
+                           "-composite", g.with_name(f"{k}_over_A.png"))
+                    print(g)
     elif command == "pose":  # pose <slug> <key> <route F|O> <n>...: candidates in parallel
         import concurrent.futures
         base = rest.pop(rest.index("--base") + 1) if "--base" in rest else None

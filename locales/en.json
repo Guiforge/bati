@@ -1391,7 +1391,7 @@
     "bosses_empty": "You haven't made a boss yet.",
     "see_all": "See all",
     "import": "Import a received file",
-    "import_hint": "A quest, an adventure or a whole pack someone sent you, as a .bati file. You can also tap it directly in your chat.",
+    "import_hint": "A quest, an adventure or a whole pack someone sent you, as a .bati.json file. You can also tap it directly in your chat.",
     "share": "Share my creations",
     "share_hint": "One file with what you choose, photos included.",
     "import_failed": "The file could not be opened. Try again.",

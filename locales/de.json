@@ -1391,7 +1391,7 @@
     "bosses_empty": "Du hast noch keinen Boss erstellt.",
     "see_all": "Alles anzeigen",
     "import": "Erhaltene Datei importieren",
-    "import_hint": "Eine Quest, ein Abenteuer oder ein ganzes Paket, das dir jemand geschickt hat, als .bati-Datei. Du kannst sie auch direkt im Chat antippen.",
+    "import_hint": "Eine Quest, ein Abenteuer oder ein ganzes Paket, das dir jemand geschickt hat, als .bati.json-Datei. Du kannst sie auch direkt im Chat antippen.",
     "share": "Meine Kreationen teilen",
     "share_hint": "Eine einzige Datei mit dem, was du auswählst, Fotos inklusive.",
     "import_failed": "Die Datei konnte nicht geöffnet werden. Versuch es noch einmal.",

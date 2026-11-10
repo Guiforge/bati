@@ -175,7 +175,7 @@ async function imported() {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockParams.n = holdIncomingFile("content://chat/everything.bati");
+  mockParams.n = holdIncomingFile("content://chat/everything.bati.json");
   mockSettings.language = "en";
   mockRead.mockResolvedValue(raw);
   mockPreview.mockResolvedValue(preview());

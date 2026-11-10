@@ -78,7 +78,7 @@ A finished session as a picture, an outing as a GPX, a quest the hero wrote as a
 - **Journal thumbnails**: with the map turned on, a run's thumbnail is its line over a still map,
   drawn once by MapLibre's snapshotter and cached (`src/gps/mapThumb.ts`). Both are framed by
   `traceBounds`, so the line lands on its roads.
-- **Quests**: a hero's own quest is shared as a `.bati` file through the share sheet,
+- **Quests**: a hero's own quest is shared as a `.bati.json` file through the share sheet,
   and imported from the new-quest editor (`src/questFile.ts`). Seed movements travel by name,
   the hero's own travel whole with their photo. The quest and each hero movement carry their
   uuid v7 (migration 0066, also what device sync matches hero content by): a second import of
@@ -88,20 +88,19 @@ A finished session as a picture, an outing as a GPX, a quest the hero wrote as a
   privacy policy change, and Android's Quick Share already carries a file between two phones in
   the room.
   - **Opening one**: tapping the file in a chat, a mail or Files opens Bati (an ACTION_VIEW filter
-    on `application/octet-stream` and `application/json`, `app/+native-intent.tsx`), and so does the Forge's import button
+    on `application/json` and `application/octet-stream`, `app/+native-intent.tsx`), and so does the Forge's import button
     (`/forge`), through the picker. Both land on one preview (`app/quest-import.tsx`): the hero renames the
     quest, unticks the movements they do not want, and, for a quest they already have, chooses
     between updating it and keeping both. A seed movement this version lacks is shown and left
-    out, instead of refusing the whole quest. The extension is `.bati` since 2026-11 (it was
-    `.json`, and those files still open). Android has no type for it and a provider's URI seldom
-    shows the name, so the file arrives as `application/octet-stream` and Bati claims that type:
-    it is then offered for any unknown file on the phone, and refuses politely what is not its
-    own. That price was refused once and accepted on 2026-11-10, for a file that says whose
-    it is. It does not open Bati alone everywhere: on a Google emulator image (API 35) Google
-    Wallet answers `application/octet-stream` too, so the tap shows a chooser of two, and a file
-    sent to Wallet first came back to Bati unreadable. On that same image nothing but Bati
-    answered `application/json`. Not yet tried on a phone with a chat app.
-  - **Everything at once**: the Forge's "Share my creations" sends a pack, one `.bati` file with
+    out, instead of refusing the whole quest. The extension stays `.json`, behind a name that says
+    whose file it is (`<title>.bati.json`). A bare `.bati` was tried on 2026-11-10 and taken
+    back: Android has no type for it, so the file travelled as `application/octet-stream`,
+    which Google Wallet answers too on a Google image (API 35). A tap opened a chooser of two,
+    and a file sent to Wallet first came back to Bati unreadable, where nothing but Bati
+    answered `application/json` on that image. The filter still claims `application/octet-stream`
+    as well, for the file a chat app stored and typed again: Bati is then offered beside
+    Wallet instead of not at all. Not yet tried on a phone with a chat app.
+  - **Everything at once**: the Forge's "Share my creations" sends a pack, one `.bati.json` file with
     the adventures, quests, bosses and exercises the hero ticked (`src/packFile.ts`), each listed
     once and named by uuid where it is used. The receiver ticks what comes in; what they already
     have is left alone unless they tick it, and a movement named like one of theirs is merged

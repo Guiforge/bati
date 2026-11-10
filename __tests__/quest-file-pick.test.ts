@@ -193,26 +193,26 @@ describe("sharing a quest", () => {
   };
 
   test("the file is named after the quest, in letters and digits", async () => {
-    expect(await sharedAs("Porch forge: day 2!")).toBe("Porch-forge-day-2.bati");
-    expect(await sharedAs("***")).toBe("quest.bati");
+    expect(await sharedAs("Porch forge: day 2!")).toBe("Porch-forge-day-2.bati.json");
+    expect(await sharedAs("***")).toBe("quest.bati.json");
   });
 
   // A file name is 255 bytes on Android. A long title in four-byte letters overflowed it, and the
   // share failed with nothing for the hero to fix.
   test("a long title is cut to 50 letters, never mid-letter", async () => {
-    expect(await sharedAs("a".repeat(200))).toBe(`${"a".repeat(50)}.bati`);
+    expect(await sharedAs("a".repeat(200))).toBe(`${"a".repeat(50)}.bati.json`);
     const wide = "\u{1D4D0}".repeat(100);
-    const stem = (await sharedAs(wide)).replace(".bati", "");
+    const stem = (await sharedAs(wide)).replace(".bati.json", "");
     expect([...stem]).toHaveLength(50);
     expect(stem).toBe("\u{1D4D0}".repeat(50));
     // A cut that lands on a separator does not leave it dangling.
-    expect(await sharedAs(`${"b".repeat(49)} tail`)).toBe(`${"b".repeat(49)}.bati`);
+    expect(await sharedAs(`${"b".repeat(49)} tail`)).toBe(`${"b".repeat(49)}.bati.json`);
   });
 
   // A pack is up to 16 MB and the share sheet copies what it sends: the file shared before is
   // cleared, and nothing else in the cache is touched.
   test("the files shared before are cleared, and only those", async () => {
-    const old = { name: "Porch-forge.bati", delete: jest.fn() };
+    const old = { name: "Porch-forge.bati.json", delete: jest.fn() };
     const thumb = { name: "map-thumb.png", delete: jest.fn() };
     mockCached.mockReturnValueOnce([old, thumb]);
     await sharedAs("Porch forge");

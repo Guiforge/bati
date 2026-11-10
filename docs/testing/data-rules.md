@@ -659,8 +659,8 @@ is used: a quest's slot is `{official}` or `{ref}` into `movements`, an adventur
 `bosses` (a boss is the `end` of R122 with `bossUuid` required). A movement five quests use travels once,
 photo included. The reader resolves every reference as it goes and returns ordinary quest bodies and
 adventure files, so the previews and the writers of R69 and R124 are the ones that run. Every file Bati
-writes is named `<stem>.bati` since 2026-11 (a quest and an adventure by their title, a pack by the day) and
-shared as `application/octet-stream`; the kind is read inside the file, never from its name.
+writes is named `<stem>.bati.json` (a quest and an adventure by their title, a pack by the day) and shared as
+`application/json`; the kind is read inside the file, never from its name.
 `src/packFile.ts`, `src/questFile.ts` (`shareJsonFile`).
 Invariant: `parsePackData(JSON.parse(json))` of what `packToShare` wrote holds what was ticked and what it
 needs, each once.

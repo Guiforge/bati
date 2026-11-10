@@ -50,7 +50,7 @@ Then one column, never a grid. In this order, the most frequent first:
 4. **Your exercises**: the same as quests; "See all" opens the catalogue on the hero's own (`?mine=1`).
 5. **Share my creations** (`forge-share`, only once the hero has made something): opens
    `/pack-share`, the list of everything they made and still use (adventures, quests, bosses,
-   exercises), all ticked, with "All" and "None" per section. Share prepares one `.bati` file
+   exercises), all ticked, with "All" and "None" per section. Share prepares one `.bati.json` file
    (`packToShare`), says in a dialog how many things it holds, how many photos go with it and how
    many stay, then opens the share sheet. What a ticked thing needs comes along unasked. See R131
    to R134 in [data rules](../testing/data-rules.md).

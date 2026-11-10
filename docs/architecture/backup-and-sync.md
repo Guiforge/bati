@@ -398,7 +398,7 @@ title: existing doctrine, not a regression.
 
 ### Adventure files
 
-Sharing an adventure as a `.bati` file, alone or in a pack, changes nothing here. An import is an ordinary write of
+Sharing an adventure as a `.bati.json` file, alone or in a pack, changes nothing here. An import is an ordinary write of
 the hero's rows (`exercises`, `quests`, `adventures`, `adventure_steps`), all merged tables matched by
 uuid, so nothing in the fingerprint or in `mergePeer` was touched. The same file imported on two devices
 is the same adventure, the same quests and the same movements on both, and they converge by `updatedAt`

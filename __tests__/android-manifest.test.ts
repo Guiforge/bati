@@ -54,9 +54,9 @@ test("MainActivity forwards back to JS on Android 13 to 15, without re-entering 
 });
 
 /**
- * A Bati file tapped in a chat or in Files opens Bati on the import preview. A `.bati` file has no
- * type Android knows, so it arrives as `application/octet-stream`; the files sent before the
- * extension changed are `application/json`. The filter names both MIME types and no scheme, which is what lets it match `content:` and `file:` URIs: expo-dev-client
+ * A Bati file tapped in a chat or in Files opens Bati on the import preview. It is a `.json`, so it
+ * arrives as `application/json`, or as `application/octet-stream` when a chat app typed it again.
+ * The filter names both MIME types and no scheme, which is what lets it match `content:` and `file:` URIs: expo-dev-client
  * appends `exp+bati` to every VIEW filter, and `plugins/withAndroidFileIntentScheme.js` takes it
  * back out. With the scheme in, the filter matches nothing a chat app sends.
  */

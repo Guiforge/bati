@@ -1460,7 +1460,7 @@
     "bosses_empty": "Aún no has creado ningún jefe.",
     "see_all": "Ver todo",
     "import": "Importar un archivo recibido",
-    "import_hint": "Una misión, una aventura o un lote entero que alguien te envió, en un archivo .bati. También puedes tocarlo en el chat.",
+    "import_hint": "Una misión, una aventura o un lote entero que alguien te envió, en un archivo .bati.json. También puedes tocarlo en el chat.",
     "share": "Compartir mis creaciones",
     "share_hint": "Un solo archivo con lo que elijas, fotos incluidas.",
     "import_failed": "No se pudo abrir el archivo. Inténtalo de nuevo.",

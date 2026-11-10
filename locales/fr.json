@@ -1480,7 +1480,7 @@
     "bosses_empty": "Tu n'as pas encore créé de boss.",
     "see_all": "Tout voir",
     "import": "Importer un fichier reçu",
-    "import_hint": "Une quête, une aventure ou tout un lot qu'on t'a envoyé, en fichier .bati. Tu peux aussi appuyer dessus directement dans ta conversation.",
+    "import_hint": "Une quête, une aventure ou tout un lot qu'on t'a envoyé, en fichier .bati.json. Tu peux aussi appuyer dessus directement dans ta conversation.",
     "share": "Partager mes créations",
     "share_hint": "Un seul fichier avec ce que tu choisis, photos comprises.",
     "import_failed": "Le fichier n'a pas pu être ouvert. Réessaie.",

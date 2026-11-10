@@ -74,7 +74,7 @@ export const MAX_FILE_BYTES = 8_000_000;
  */
 export const MAX_PACK_BYTES = 32_000_000;
 /** One suffix for every file Bati writes; the `kind` inside says which it is. */
-export const FILE_SUFFIX = ".bati";
+export const FILE_SUFFIX = ".bati.json";
 
 type QuestText = { en: string; fr: string; de: string; es: string; ru: string; zh: string };
 
@@ -211,7 +211,7 @@ export function questToFile(quest: QuestTemplate, catalogue: readonly Exercise[]
 /**
  * The title as a file name, which is what the receiver sees in their chat, so it says which file
  * it is. Cut at 50 letters: a file name is 255 bytes on Android, and four-byte letters plus the
- * suffix reach it at 62.
+ * suffix reach it at 61.
  */
 export function fileStem(title: string, fallback: string): string {
   return (
@@ -221,13 +221,16 @@ export function fileStem(title: string, fallback: string): string {
 }
 
 /**
- * Writes `json` to the cache as `<stem>.bati` and hands it to the share sheet.
+ * Writes `json` to the cache as `<stem>.bati.json` and hands it to the share sheet.
  *
- * `.bati` and not `.json`: the file says whose it is, and Android, which has no type for the
- * extension, hands it over as `application/octet-stream`, which Bati claims (`app.json`). Not
- * alone: on a Google image (API 35, 2026-11-10) Google Wallet answers that type too, so a tapped
- * file opens a chooser of two. The files shared before are cleared first: a pack is up to
- * 16 MB written, and the share sheet has long since copied what it sent.
+ * The name says whose file it is; the extension stays `.json` so that Android types it
+ * `application/json`. A bare `.bati` was tried on 2026-11-10 and taken back: Android has no type
+ * for it, so the file travelled as `application/octet-stream`, which Google Wallet claims too on
+ * a Google image (API 35). A tap then opened a chooser of two, and a file sent to Wallet first
+ * came back unreadable, where nothing but Bati answered `application/json` on that image.
+ *
+ * The files shared before are cleared first: a pack is up to 16 MB written, and the share sheet
+ * has long since copied what it sent.
  */
 export async function shareJsonFile(stem: string, json: string): Promise<void> {
   if (!(await Sharing.isAvailableAsync())) throw new Error("No share sheet available");
@@ -240,9 +243,9 @@ export async function shareJsonFile(stem: string, json: string): Promise<void> {
   await file.write(json);
 
   await Sharing.shareAsync(file.uri, {
-    mimeType: "application/octet-stream",
+    mimeType: "application/json",
     dialogTitle: file.name,
-    UTI: "public.data",
+    UTI: "public.json",
   });
 }
 

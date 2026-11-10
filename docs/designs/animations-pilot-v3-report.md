@@ -159,3 +159,55 @@ Deviations from the protocol:
   because the same failure came back on both routes.
 - The towel door row got a second, independent scoring. I thought the overlay looked aligned; the
   second scoring was stricter.
+
+## v2 redo (same day, after Guillaume's review)
+
+Guillaume went through the page exercise by exercise. He picked formats for the ones that work,
+asked for redraws of the rest, a better mannequin, the pistol squat, and the Towel Door Row out of
+the sessions.
+
+**Mannequin v2.** Poses are now written as joint angles (forward kinematics, `fk()` in the
+script) rather than hand-placed points, so bones keep their length from pose to pose. It has:
+
+- a 9-point spine with chest and pelvis blocks;
+- a neck, and a nose wedge that shows where the head looks;
+- joint dots, plus hands and feet;
+- rings on the points that never move.
+
+**New route: redraw the still too.** Image 1 is the mannequin and image 2 the shipped still, used
+only for the hero and the style. The new still is scored blind, then the other key pose is
+edited from it as before.
+
+**Mirror for the other side.** In a front or top view, the other side of the movement is the
+still flipped: free and exact. This fixes the side swap that both models keep failing.
+
+| | Exercises |
+|---|---|
+| Redrawn from scratch, still included | 12: wall push-up, pike push-up, inverted row, Bulgarian split squat, crunch, reverse crunch, superman W, mountain climber, bicycle crunch (seen from above, mirrored), skater hop (front, mirrored), high knees (front, mirrored), and the dip's bottom |
+| Fixed on the old still | cat-cow (gentle cow, deep cat), single-leg glute bridge (the guide had the legs swapped), knee push-up, world's greatest stretch |
+| New | pistol squat |
+| New videos kept after the coach's audit | 16 |
+| Still failing after 2 retries | calf raise (feet slide), dead bug's other side (the arms never swap), flutter kicks (the legs never swap), bear crawl (hands slide) |
+
+Ledger total: 44.26 $ of the 65.67 $ cap (v2: 14.10 $). Three video drafts hit HTTP 429 when
+batches ran in parallel. They were not billed, and one batch at a time avoids it.
+
+What v2 showed:
+
+- **A new still beats an edit of a bad one.** 9 of 12 fresh stills passed by the second try.
+  The failures were mostly my own guide's mistakes.
+- **Side swaps seen from the side still fail,** even with colour-coded near and far limbs and
+  explicit text. Mirroring a front view is the way around it, wherever the camera allows it.
+- **The archer video** keeps the feet still now, but it does two reps instead of one. Guillaume
+  can compare it with the old video.
+
+Deviations:
+
+- Two calls went against the blind scorer. The inverted row still: my guide put the bar too
+  low, and the drawings were right. The Bulgarian top: the sheet's checkpoint asked for the rear
+  knee pointing down, which is wrong at the top.
+- The world's greatest stretch mannequin was not shown to Guillaume before drawing. The scorer
+  saw it.
+- Only the coach audited the new videos; the three-auditor checklist covers the old media only.
+- Towel Door Row: retired in the app on its own branch `retire-towel-door-row`, not merged. The
+  Cellar Hauler quest now has Table Row twice.

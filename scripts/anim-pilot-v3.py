@@ -16,6 +16,7 @@ import importlib.util
 import math
 import os
 import pathlib
+import shutil
 import subprocess
 import sys
 
@@ -140,15 +141,21 @@ def cat_pose(shape):
     knees = [(468, 702), (420, 660)]
     feet = [(118, 678), (245, 622)]
     pick = (lambda cow, mid, cat: lerp(mid, cat, shape) if shape >= 0 else lerp(mid, cow, -shape))
-    hip = pick((418, 392), (420, 398), (432, 410))         # cat tucks the pelvis under
-    back = pick((560, 420), (556, 366), (565, 255))        # sags in cow, domes in cat
-    shoulder = pick((690, 340), (692, 335), (692, 325))
-    head = pick((842, 262), (842, 338), (848, 405))        # looks up / ahead / down
-    arms = [[add(shoulder, (6, 6)), lerp(add(shoulder, (6, 6)), hands[0], 0.5), hands[0]],
-            [add(shoulder, (60, -10)), lerp(add(shoulder, (60, -10)), hands[1], 0.5), hands[1]]]
+    hip = pick((418, 392), (420, 398), (436, 418))         # cat tucks the pelvis under
+    shoulder = pick((692, 338), (692, 335), (690, 335))
+    # v2: five spine points. Cow is a gentle sag (Guillaume, 10/11: v1's cow bent "too much, it looks
+    # odd"), cat a deep even dome from tailbone to neck (the still's cat was flagged as too shallow).
+    lift = pick((-30, 0), (0, 0), (85, 0))[0]                                # + = up (dome), - = down (sag)
+    spine = [shoulder] + [(round(shoulder[0] + (hip[0] - shoulder[0]) * t),
+                           round(shoulder[1] + (hip[1] - shoulder[1]) * t - lift * math.sin(math.pi * t)))
+                          for t in (0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875)] + [hip]
+    head = pick((835, 268), (842, 338), (820, 440))        # looks up / ahead / tucked to the chest
+    face = {-1: (1, -0.6), 0: (1, 0.4), 1: (0.2, 1)}[round(shape)]
+    arms = [[add(shoulder, (6, 6)), lerp(add(shoulder, (6, 6)), hands[0], 0.5), hands[0], add(hands[0], (40, 0))],
+            [add(shoulder, (60, -10)), lerp(add(shoulder, (60, -10)), hands[1], 0.5), hands[1], add(hands[1], (40, 0))]]
     legs = [[hip, knees[0], feet[0]], [add(hip, (-30, -14)), knees[1], feet[1]]]
     return {
-        "head": head, "torso": [shoulder, back, hip],
+        "head": head, "face": face, "torso": spine, "pins": [hands[0], knees[0], feet[0]],
         "far": [arms[1], legs[1]], "near": [arms[0], legs[0]],
         "props": [[(0, 690), (1024, 690), (1024, 1024), (0, 1024)]],
     }
@@ -526,11 +533,32 @@ def unique_keys(slug):
     return [k for k in EXERCISES[slug]["keys"] if k not in EXERCISES[slug]["same"]]
 
 
+def smooth(points, steps=12):
+    """A Catmull-Rom curve through the points: a spine of several joints bends as one back."""
+    if len(points) < 3:
+        return list(points)
+    pts = [points[0], *points, points[-1]]
+    out = []
+    for i in range(1, len(pts) - 2):
+        p0, p1, p2, p3 = pts[i - 1], pts[i], pts[i + 1], pts[i + 2]
+        for j in range(steps):
+            t = j / steps
+            out.append(tuple(0.5 * (2 * p1[c] + (-p0[c] + p2[c]) * t + (2 * p0[c] - 5 * p1[c] + 4 * p2[c] - p3[c]) * t * t
+                                    + (-p0[c] + 3 * p1[c] - 3 * p2[c] + p3[c]) * t ** 3) for c in (0, 1)))
+    return out + [points[-1]]
+
+
 def draw(slug, key):
-    """art-loop.py's mannequin (same colours, same joints), with two changes for a side view: a
-    thinner torso and a dark outline on the near limbs. In art-loop's drawing a straight arm in
-    front of the body sank into the 80 px torso band, and both auditors read the dip's top as an
-    arm folded against the body (round 3)."""
+    """Mannequin v2 (2026-11-10, Guillaume: "more joints"). art-loop.py's colours, plus:
+
+    - the torso is a spine through every point given (shoulders first, pelvis last), drawn as one
+      curve with a chest block, a pelvis block and vertebra ticks, so a rounded or arched back reads;
+    - a neck, and a nose wedge on the head when the pose gives `face` (the direction it looks);
+    - white joint dots at elbows, wrists, knees and ankles; a 4th limb point is the hand or foot,
+      drawn thinner, so heel up / heel down and pointed toes read;
+    - `pins`: white rings on the points that never move (hands, feet, knees on the floor).
+    v1 notes kept: a thin torso and a dark outline on the near limbs, so a straight arm in front of
+    the body does not sink into the torso band (dip, round 3)."""
     from PIL import Image, ImageDraw
     pose = EXERCISES[slug]["keys"][key]
     image = Image.new("RGB", (1024, 1024), artloop.BG)
@@ -541,19 +569,48 @@ def draw(slug, key):
         else:
             d.polygon(shape, fill="#1F2533")
 
+    def dot(p, r, colour):
+        d.ellipse((p[0] - r, p[1] - r, p[0] + r, p[1] + r), fill=colour)
+
     def limb(points, colour, width=30, outline=0):
+        bones, end = (points[:-1], points[-1]) if len(points) > 3 else (points, None)
         for w, c in ((width + 2 * outline, artloop.BG), (width, colour)) if outline else ((width, colour),):
-            d.line(points, fill=c, width=w, joint="curve")
-            for x, y in points:
-                d.ellipse((x - w / 2, y - w / 2, x + w / 2, y + w / 2), fill=c)
+            d.line(bones, fill=c, width=w, joint="curve")
+            for p in bones:
+                dot(p, w / 2, c)
+            if end:  # hand or foot
+                d.line([bones[-1], end], fill=c, width=round(w * 0.6))
+                dot(end, w * 0.3, c)
+        for p in bones[1:]:
+            dot(p, 6, "white")
+
+    def blob(a, b, width, colour):
+        d.line([a, b], fill=colour, width=width)
+        dot(a, width / 2, colour)
+        dot(b, width / 2, colour)
 
     for points in pose["far"]:
         limb(points, artloop.FAR)
-    limb(pose["torso"], artloop.TORSO, width=62)
+    spine = smooth(pose["torso"])
+    n = len(spine)
+    d.line(spine, fill=artloop.TORSO, width=40, joint="curve")
+    blob(spine[0], spine[max(1, n // 3)], 66, artloop.TORSO)       # chest
+    blob(spine[-1], spine[min(n - 2, n - 1 - n // 6)], 58, artloop.TORSO)  # pelvis
+    for p in spine[2:-2:max(1, n // 8)]:
+        dot(p, 5, "#4B5263")                                         # vertebrae
     x, y = pose["head"]
-    d.ellipse((x - 46, y - 46, x + 46, y + 46), fill=artloop.TORSO)
+    d.line([spine[0], (x, y)], fill=artloop.TORSO, width=26)         # neck
+    dot((x, y), 46, artloop.TORSO)
+    if pose.get("face"):
+        fx, fy = pose["face"]
+        k = 1 / max(1e-6, math.hypot(fx, fy))
+        fx, fy = fx * k, fy * k
+        d.polygon([(x + fx * 66, y + fy * 66), (x + fx * 36 - fy * 16, y + fy * 36 + fx * 16),
+                   (x + fx * 36 + fy * 16, y + fy * 36 - fx * 16)], fill=artloop.TORSO)
     for points in pose["near"]:
         limb(points, artloop.NEAR, outline=7)
+    for p in pose.get("pins", ()):
+        d.ellipse((p[0] - 22, p[1] - 22, p[0] + 22, p[1] + 22), outline="white", width=5)
     out = PILOT / "refs" / slug / f"{key}.png"
     out.parent.mkdir(parents=True, exist_ok=True)
     image.save(out)
@@ -814,8 +871,9 @@ def openai_edit(prompt, refs, out, *, step, slug, key, route, quality="high", ex
 # The edit prompt (the user's idea, kept close to its words), then what the pose is, then what must
 # never move. The auditors never see these.
 EDIT = ("Redraw image 1, changing only the pose so it matches the pose in image 2. Image 2 is only a "
-        "pose guide (a jointed mannequin: grey torso and head, orange limbs nearest the camera, blue "
-        "limbs on the far side); nothing of its colours, shapes or flat style appears in the result. "
+        "pose guide (a jointed mannequin: grey torso, spine, neck and head, the head's wedge is the nose; "
+        "orange limbs nearest the camera, blue limbs on the far side, white dots are elbows, wrists, knees "
+        "and ankles, white rings mark the contact points that never move); nothing of its colours, shapes or flat style appears in the result. "
         "Same hero, same face, same hair, same outfit, same background, same lighting, same effects, "
         "same framing, same scale and same camera angle as image 1, in the same comic-book art style "
         "and line work. One person only, two arms, two legs.")
@@ -1107,6 +1165,324 @@ VIDEO_MOTION.update({
     "mountain_climber": "One mountain climber from a high plank. The hands and the back foot stay put. One knee drives towards the chest, then returns to the plank.",
     "worlds_greatest_stretch": "One slow world's greatest stretch in a deep lunge. The feet and the planted hand stay put. The elbow drops to the inside of the front foot, then the arm sweeps up to the ceiling as the chest opens.",
 })
+# --- v2 redo (2026-11-10, after Guillaume's review of the full run) -------------------------------
+# Mannequin v2 is posed by joint angles (forward kinematics) instead of hand-placed points: bones
+# keep their length from pose to pose, which hand-placed guides did not guarantee. Angles are in
+# degrees on the image: 0 = right, 90 = down, 180 = left, 270 = up. A bone may be (angle, scale)
+# when it points at the camera and looks shorter.
+SEG = {"torso": 250, "neck": 34, "head": 40, "thigh": 225, "shin": 215, "foot": 62,
+       "upper": 140, "fore": 125, "hand": 38}
+
+
+def step(p, deg, length):
+    r = math.radians(deg)
+    return (round(p[0] + math.cos(r) * length), round(p[1] + math.sin(r) * length))
+
+
+def chain(root, spec, bones):
+    """A limb from root: a list of bone angles, or {"to": point, "bend": +1|-1, "end": angle} when
+    the hand or foot must land on a fixed spot (two-bone IK, then the hand or foot at `end`)."""
+    if isinstance(spec, dict):
+        pts = [root, ik(root, spec["to"], SEG[bones[0]], SEG[bones[1]], spec["bend"]), spec["to"]]
+        if "end" in spec:
+            pts.append(step(spec["to"], spec["end"], SEG[bones[2]]))
+        return pts
+    pts = [root]
+    for a, bone in zip(spec, bones):
+        deg, scale = a if isinstance(a, tuple) else (a, 1.0)
+        pts.append(step(pts[-1], deg, SEG[bone] * scale))
+    return pts
+
+
+def fk(hip, trunk, *, near_arm, far_arm, near_leg, far_leg, arc=0, back=1, head=None, face=None,
+       torso=1.0, near_at=((0, 0), (0, 0)), far_at=((14, -10), (14, -10)), props=(), pins=()):
+    """A mannequin from its hip, the trunk's angle and each limb. arc bends the spine towards the
+    back (+, rounded) or the front (-, arched); `back` flips which side is the back. near_at/far_at
+    offset each side's shoulder and hip: depth in a side view, width in a front view."""
+    sh = step(hip, trunk, SEG["torso"] * torso)
+    r = math.radians(trunk)
+    bx, by = back * math.sin(r), -back * math.cos(r)
+    spine = [sh] + [(round(sh[0] + (hip[0] - sh[0]) * t + bx * arc * math.sin(math.pi * t)),
+                     round(sh[1] + (hip[1] - sh[1]) * t + by * arc * math.sin(math.pi * t)))
+                    for t in (0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875)] + [hip]
+    h = trunk if head is None else head
+    head_c = step(step(sh, h, SEG["neck"]), h, SEG["head"])
+
+    def side(arm, leg, at):
+        return [chain(add(sh, at[0]), arm, ("upper", "fore", "hand")), chain(add(hip, at[1]), leg, ("thigh", "shin", "foot"))]
+
+    return {"head": head_c, "face": face, "torso": spine, "near": side(near_arm, near_leg, near_at),
+            "far": side(far_arm, far_leg, far_at), "props": list(props), "pins": list(pins)}
+
+
+def solve(f, lo, hi, target, n=400):
+    """The angle in [lo, hi] where f(angle) is closest to target (a scan: these are one-off guides)."""
+    return min((lo + (hi - lo) * i / n for i in range(n + 1)), key=lambda a: abs(f(a) - target))
+
+
+def _row(theta, ankle, hand, bend):
+    """Inverted row: one rigid body pivoting on the heels, hands on the bar."""
+    hip = step(ankle, theta, SEG["thigh"] + SEG["shin"])
+    arm = {"to": hand, "bend": bend, "end": 270}
+    leg = {"to": ankle, "bend": 1, "end": theta - 50}
+    return fk(hip, theta, face=(0.3, -1),
+              near_arm=arm, far_arm={**arm, "to": add(hand, (14, 0))}, near_leg=leg, far_leg=leg,
+              far_at=((0, -12), (0, -12)), props=[((360, 462), (1000, 478))] + FLOOR(820), pins=[hand, ankle])
+
+
+FRONT = (((-70, 0), (-42, 0)), ((70, 0), (42, 0)))  # front view: the hero's right side is image left
+WALL = [((780, 0), (1024, 1024))] + FLOOR(900)
+BENCH = [((90, 615), (330, 640)), ((105, 640), (125, 880)), ((295, 640), (315, 880))] + FLOOR(880)
+ROW_ANKLE, ROW_HAND = (160, 800), (830, 468)
+_row_bottom = solve(lambda t: math.dist(step(ROW_ANKLE, t, 690), ROW_HAND), 338, 360, 262)
+
+
+def _wall(hip, trunk):
+    arm = {"to": (782, 300), "bend": -1, "end": 280}
+    leg = {"to": (295, 898), "bend": -1, "end": 5}
+    return fk(hip, trunk, face=(1, 0), near_arm=arm, far_arm={**arm, "to": (782, 285)}, near_leg=leg,
+              far_leg={**leg, "to": (307, 890)}, props=WALL, pins=[(782, 300), (295, 898)])
+
+
+def _pike(hip, trunk, head):
+    arm = {"to": (690, 878), "bend": 1, "end": 0}
+    leg = {"to": (310, 856), "bend": -1, "end": 20}
+    return fk(hip, trunk, head=head, face=(0.3, 1), near_arm=arm, far_arm={**arm, "to": (700, 868)}, near_leg=leg,
+              far_leg={**leg, "to": (322, 848)}, props=FLOOR(880), pins=[(690, 878), (310, 856)])
+
+
+def _bulgarian(hip, trunk):
+    return fk(hip, trunk, face=(1, 0), near_arm=(100, 92), far_arm=(98, 90),
+              near_leg={"to": (640, 858), "bend": -1, "end": 0}, far_leg={"to": (300, 598), "bend": -1, "end": 190},
+              props=BENCH, pins=[(640, 858), (300, 598)])
+
+
+def _crunch(trunk, arc, head, face, arms):
+    leg = {"to": (770, 780), "bend": -1, "end": 15}
+    return fk((540, 768), trunk, arc=arc, head=head, face=face, near_arm=arms, far_arm=tuple(a - 3 for a in arms),
+              near_leg=leg, far_leg={**leg, "to": (782, 772)}, props=FLOOR(800), pins=[(770, 780)])
+
+
+def _climber(near_in):
+    arm = {"to": (705, 840), "bend": 1, "end": 0}
+    tuck, back = (30, 160, 170), {"to": (85, 824), "bend": -1, "end": 70}
+    return fk((450, 640), 352, face=(0.6, 1), near_arm=arm, far_arm={**arm, "to": (717, 832)},
+              near_leg=tuck if near_in else back, far_leg=back if near_in else tuck, props=FLOOR(845), pins=[(705, 840)])
+
+
+def _superman(arms, far_arms):
+    return fk((440, 770), 352, arc=-15, head=340, face=(1, -0.3), near_arm=arms, far_arm=far_arms,
+              near_leg=(176, 178, 178), far_leg=(177, 179, 179), props=FLOOR(800))
+
+
+# slug: a_key, rep seconds, mode, every key's guide. Modes: "fresh" redraws A too (Guillaume: "redraw
+# all, even our image"); "mirror" = a front or top view whose other side is A flipped, free and exact
+# (both models failed every side swap seen from the side); "edit" keeps A.
+V2 = {
+    "wall_pushup": ("k2", 2, "fresh", {"k1": _wall((445, 485), 290), "k2": _wall(rot((445, 485), (295, 898), 12), 302)}),
+    "pike_pushup": ("k2", 3, "fresh", {"k1": _pike((470, 445), 52, 75), "k2": _pike((492, 452), 74, 85)}),
+    "inverted_row": ("k2", 3, "fresh", {"k1": _row(_row_bottom, ROW_ANKLE, ROW_HAND, -1), "k2": _row(334, ROW_ANKLE, ROW_HAND, 1)}),
+    "bulgarian_split_squat": ("k2", 3, "fresh", {"k1": _bulgarian((490, 440), 272), "k2": _bulgarian((455, 610), 282)}),
+    "crunch": ("k2", 2, "fresh", {"k1": _crunch(181, 0, None, (0, -1), (250, 107)),
+                                  "k2": _crunch(202, 22, 214, (-0.3, -1), (280, 136))}),
+    "reverse_crunch": ("k2", 2, "fresh", {
+        "k1": fk((560, 770), 180, face=(0, -1), near_arm=(2, 0), far_arm=(4, 0), near_leg=(270, 0, 0),
+                 far_leg=(272, 2, 2), props=FLOOR(800), pins=[(310, 770)]),
+        "k2": fk((560, 712), 195, arc=25, face=(0, -1), near_arm={"to": (440, 790), "bend": 1, "end": 0},
+                 far_arm={"to": (452, 782), "bend": 1, "end": 0}, near_leg=(240, 330, 330), far_leg=(242, 332, 332),
+                 props=FLOOR(800))}),
+    "superman_w": ("k2", 2, "fresh", {"k1": _superman((342, 340, 340), (340, 338, 338)),
+                                      "k2": _superman((160, 300, 300), (158, 298, 298))}),
+    "mountain_climber": ("k1", 1, "fresh", {"k1": _climber(True), "k2": _climber(False)}),
+    # Seen from directly above, on the back on a mat, head at the top: the other side is the mirror image.
+    "bicycle_crunch": ("k1", 2, "mirror", {
+        "k1": fk((512, 640), 268, torso=0.85, near_at=FRONT[0], far_at=FRONT[1], near_arm=(20, 215), far_arm=(330, 200),
+                 near_leg=(92, 92, 90), far_leg=((285, 0.6), (70, 0.5), (80, 0.4)), props=[[(340, 120), (684, 120), (684, 960), (340, 960)]]),
+        "k2": None}),
+    "skater_hop": ("k1", 1, "mirror", {
+        "k1": fk((380, 550), 265, near_at=FRONT[0], far_at=FRONT[1], near_arm=((160, 0.9), (175, 0.9)),
+                 far_arm=((130, 0.9), (160, 0.9)), near_leg=((95, 0.75), (88, 0.75), (90, 0.3)),
+                 far_leg=((115, 0.8), (160, 0.7), (170, 0.4)), props=FLOOR(900), pins=[(345, 880)]),
+        "k2": None}),
+    "high_knees": ("k1", 1, "mirror", {
+        "k1": fk((512, 520), 270, near_at=FRONT[0], far_at=FRONT[1], near_arm=((95, 0.9), (100, 0.7)),
+                 far_arm=((95, 0.7), (262, 0.75)), near_leg=((95, 0.35), (95, 1.0), (95, 0.4)),
+                 far_leg=(90, 90, (92, 0.5)), props=FLOOR(980)),
+        "k2": None}),
+}
+for _slug, (_a_key, _rep, _mode, _keys) in V2.items():
+    EXERCISES[_slug] = {"rep_s": _rep, "a_key": _a_key, "mode": _mode, "keys": _keys,
+                        "times": [0.0, _rep / 2, float(_rep)], "same": {}}
+
+
+FRESH = ("Draw a new square illustration for a fitness app. Image 1 is only a pose guide: a jointed mannequin "
+         "(grey torso, spine, neck and head, the head's wedge is the nose; orange limbs are the side nearest "
+         "the camera, blue limbs the far side; white dots are elbows, wrists, knees and ankles; white rings "
+         "mark contact points; grey shapes are the floor and equipment). Nothing of its colours or flat "
+         "shapes appears in the result. Image 2 shows the hero: draw this same hero, same face, hair, skin, "
+         "build, outfit, shoes and glow effects, in the same comic-book art style, line work and colouring, "
+         "on the same kind of plain dark background with the same lighting. Do not copy image 2's pose or "
+         "framing: the pose, the camera angle and where the body sits in the frame all come from image 1, "
+         "and the whole body fits in the frame with a margin. One person only, two arms, two legs.")
+FRONT_NOTE = ("In this front view the orange limbs are the hero's RIGHT arm and leg (on the left of the picture) "
+              "and the blue limbs the hero's LEFT arm and leg.")
+POSE_TEXT.update({
+    ("wall_pushup", "k2"): "Side view, the hero faces a wall on the right: the BOTTOM of a wall push-up. The body is one straight line from the heels to the head, leaning towards the wall, the chest close to it; elbows bent, pointing down and back, hands flat on the wall at shoulder height; feet flat on the floor about a leg's length from the wall.",
+    ("wall_pushup", "k1"): "The hero is now at the TOP of the wall push-up: both arms straight, the body one straight line leaning a little less towards the wall, further from it.",
+    ("pike_pushup", "k2"): "Side view facing right: the BOTTOM of a pike push-up. Hips high, the body an upside-down V; hands flat on the floor shoulder-width apart, elbows bent and pointing back; the top of the head almost touching the floor just in front of the hands; legs straight, heels lifted, on the balls of the feet.",
+    ("pike_pushup", "k1"): "The hero is now at the TOP of the pike push-up: both arms fully straight, the head between the arms well above the floor, hips high, the body an upside-down V, legs straight.",
+    ("inverted_row", "k2"): "Side view, head to the right: the TOP of an inverted row under a waist-high bar. The body is one rigid straight plank from the heels to the head, heels on the floor, toes up; hands grip the bar overhand just above the chest, the chest touching the bar, elbows bent and pointing down towards the floor and back towards the feet.",
+    ("inverted_row", "k1"): "The hero is now at the BOTTOM of the inverted row: both arms fully straight, hanging from the bar, the body still one rigid straight plank from the heels to the head, just above the floor.",
+    ("bulgarian_split_squat", "k2"): "Side view facing right: the BOTTOM of a Bulgarian split squat. The REAR foot rests on top of a bench behind the hero, laces down, sole up; the rear knee bent and almost touching the floor; the front foot flat on the floor well in front, the front knee bent about 90 degrees over the ankle, front thigh close to level; torso upright, leaning very slightly forward; arms relaxed by the sides.",
+    ("bulgarian_split_squat", "k1"): "The hero is now at the TOP of the Bulgarian split squat: the front leg straight, the body tall and upright, the rear foot still resting laces down on the bench with that knee bent and pointing at the floor.",
+    ("crunch", "k2"): "Side view, lying on the back, head to the left: the TOP of a crunch. The knees bent, feet flat on the floor; the shoulder blades and head curled up off the floor, the upper back rounded, the lower back still flat on the floor; fingertips lightly behind the ears, elbows wide.",
+    ("crunch", "k1"): "The hero is now at the BOTTOM of the crunch: the head and shoulders back down, the whole back flat on the floor, knees still bent, feet flat, fingertips behind the ears.",
+    ("reverse_crunch", "k2"): "Side view, lying on the back, head to the left: the TOP of a reverse crunch. Arms flat on the floor along the sides, palms down; the hips curled up off the floor, the knees pulled in over the chest, the shins pointing up, the lower back rounded off the floor; the head and shoulders stay on the floor.",
+    ("reverse_crunch", "k1"): "The hero is now at the START of the reverse crunch: the whole back flat on the floor, the knees bent at 90 degrees straight above the hips with the shins level, arms flat on the floor along the sides.",
+    ("superman_w", "k2"): "Side view, lying face down, head to the right: the W position of a superman W pull. The chest and head are lifted a hand's width off the floor, the legs straight and lifted a little; both elbows pulled back and down to the sides of the ribs like a pull-up, the forearms pointing forward, the hands beside the shoulders, thumbs up; eyes to the floor ahead.",
+    ("superman_w", "k1"): "The hero now reaches the arms out for the start of the superman W: both arms straight forward past the head, hands off the floor, the chest and legs still lifted, the eyes to the floor ahead.",
+    ("mountain_climber", "k1"): "Side view facing right: a mountain climber. A high plank on straight arms, hands flat under the shoulders; the knee NEAREST the camera driven forward under the chest, that foot off the floor; the far leg straight back on the ball of the foot; the back flat, hips level with the shoulders.",
+    ("mountain_climber", "k2"): "The legs SWITCH: the leg NEAREST the camera is now straight back, on the ball of the foot, and the knee FARTHEST from the camera is driven forward under the chest, partly hidden behind the near arm; the back flat, hips level.",
+    ("bicycle_crunch", "k1"): "Seen from directly above, the hero lying on the back on a dark mat, head at the top of the picture, feet at the bottom. A bicycle crunch: the shoulders curled up off the mat with the trunk twisted; fingertips behind the head; the hero's RIGHT elbow (left of the picture) crosses towards the hero's LEFT knee, which is pulled up to the chest; the hero's RIGHT leg is straight and long, just above the mat. " + FRONT_NOTE,
+    ("skater_hop", "k1"): "Front view, the hero facing the camera: the landing of a skater hop. The hero has just bounded sideways and lands on the RIGHT foot (left of the picture), that knee bent, hips back, the chest leaning forward; the LEFT leg swings behind the landing leg, crossing behind it, that foot off the floor; the LEFT arm swings across in front of the body and the RIGHT arm swings out to the side. The hero stands in the left half of the frame. " + FRONT_NOTE,
+    ("high_knees", "k1"): "Front view, the hero facing the camera: running in place with high knees. The RIGHT knee is driven up to hip height in front of the body (left of the picture), that foot off the floor under the knee; the LEFT leg straight on the ball of the foot; the LEFT arm bent at 90 degrees swinging forward and up, the RIGHT arm bent and swinging back; torso tall. " + FRONT_NOTE,
+})
+NEVER.update({
+    "wall_pushup": "The hands stay flat on exactly the same spots of the wall and the feet on the same spots of the floor.",
+    "pike_pushup": "The hands and feet stay on exactly the same spots of the floor.",
+    "inverted_row": "The hands stay on exactly the same spots of the bar and the heels on the same spot of the floor. The bar does not move.",
+    "bulgarian_split_squat": "The front foot stays flat on exactly the same spot and the rear foot stays on the same spot of the bench. The bench does not move.",
+    "crunch": "The feet stay flat on the same spot and the hips and lower back stay on the floor.",
+    "reverse_crunch": "The head, shoulders and arms stay on exactly the same spots of the floor.",
+    "superman_w": "The hips and legs stay exactly where they are; only the arms move.",
+    "mountain_climber": "Both hands stay flat on exactly the same spots of the floor; the shoulders stay over the hands.",
+})
+VIDEO_MOTION.update({
+    "wall_pushup": "One slow wall push-up. The hands on the wall and the feet on the floor never move; the straight body leans in as the elbows bend, then the arms press it back.",
+    "pike_pushup": "One slow pike push-up. The hands and feet never move; the hips stay high; the elbows bend and the head lowers towards the floor in front of the hands, then the arms press back to straight.",
+    "inverted_row": "One slow inverted row. The heels and the hands on the bar never move; the rigid straight body pulls up until the chest touches the bar, then lowers to straight arms.",
+    "bulgarian_split_squat": "One slow Bulgarian split squat. The front foot and the rear foot on the bench never move; the hips lower straight down until the rear knee nearly touches the floor, then rise.",
+    "crunch": "One slow crunch on the back. The feet and lower back never move; the head and shoulders curl up off the floor, then lower.",
+    "reverse_crunch": "One slow reverse crunch on the back. The head, shoulders and arms never move; the knees pull in over the chest as the hips curl off the floor, then lower back to 90 degrees.",
+    "superman_w": "One slow superman W pull, lying face down with the chest lifted. The hips and legs never move; the straight arms reach forward, then the elbows pull back to the ribs like a pull-up, then reach forward again.",
+    "mountain_climber": "Mountain climbers at an easy pace. The hands never move and the hips stay level; the near knee drives under the chest while the far leg is back, then the legs switch, one knee at a time.",
+    "bicycle_crunch": "One slow bicycle crunch seen from above. The right elbow comes to the left knee as the right leg extends, then the left elbow comes to the right knee as the left leg extends.",
+    "skater_hop": "Skater hops at an easy pace: a bound sideways landing on one foot, the other leg sweeping behind, then a bound back to the other side.",
+    "high_knees": "High knees at an easy pace, running in place: one knee up to hip height, then the other, arms pumping opposite.",
+})
+
+
+def fresh(slug, n):
+    """A new A for a "fresh" exercise: image 1 = the mannequin of A's key, image 2 = the shipped still
+    (the hero's identity and the style only). The old A is kept as A/<slug>_orig.png on adoption."""
+    ex = EXERCISES[slug]
+    key = ex["a_key"]
+    guide = draw(slug, key)
+    still = PILOT / "A" / (f"{slug}_orig.png" if (PILOT / "A" / f"{slug}_orig.png").exists() else f"{slug}.png")
+    out = PILOT / "poses" / slug / f"A_O{n}.png"
+    if out.exists():
+        return out
+    made = openai_edit(f"{FRESH} {POSE_TEXT[(slug, key)]}", (guide, still), out, step="pose", slug=slug, key="A", route="O")
+    if made:
+        magick(guide, made, "-resize", "1280x1280!", "-compose", "blend", "-define", "compose:args=50", "-composite",
+               out.with_name(out.stem + "_onion.png"))
+    return made
+
+
+def adopt(slug, cand):
+    """The accepted new A replaces the cached A (the shipped still in assets/ is never touched)."""
+    a, orig = PILOT / "A" / f"{slug}.png", PILOT / "A" / f"{slug}_orig.png"
+    if not orig.exists():
+        shutil.copy(a, orig)
+    magick(cand, "-resize", "1024x1024", a)
+    return a
+
+
+def mirror(slug):
+    """k2 of a "mirror" exercise: A flipped left to right, logged as a local step."""
+    ex = EXERCISES[slug]
+    other = "k2" if ex["a_key"] == "k1" else "k1"
+    src, out = PILOT / "A" / f"{slug}.png", PILOT / "poses" / slug / f"{other}_M1.png"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    magick(src, "-flop", out)
+    log({"provider": "local", "model": "imagemagick", "step": "mirror", "slug": slug, "key": other,
+         "file": str(out.relative_to(PILOT)), "inputs": [{"name": str(src.relative_to(PILOT)), "sha256": sha(src)}],
+         "date": now(), "cost_usd": 0})
+    acc = json.loads(ACCEPTED.read_text())
+    acc.setdefault(slug, {})[other] = str(out.relative_to(PILOT))
+    ACCEPTED.write_text(json.dumps(acc, indent=1))
+    return out
+
+
+# v2 edits that keep A (Guillaume's review, 10/11). The pilot and lot guides re-render through the v2
+# mannequin as they are; these change keys, add keys or fix a guide.
+_slgb = EXERCISES["single_leg_glute_bridge"]["keys"]["k2"]
+# The lot-2 guide had the raised leg on the NEAR side, but in A it is the far one, behind the bent
+# working leg: the drawn bottom swapped the legs (Guillaume: "the legs got inverted").
+_slgb["near"], _slgb["far"] = [_slgb["near"][0], _slgb["far"][1]], [_slgb["far"][0], _slgb["near"][1]]
+_slgb["pins"] = [_slgb["near"][1][-1]]
+EXERCISES["dip"]["keys"]["k3"] = {**dip_pose(0), "face": (1, 0), "pins": [(535, 495)]}
+EXERCISES["dead_bug"].update({"rep_s": 4, "times": [0.0, 1.0, 2.0, 3.0, 4.0], "same": {"k3": "k1"}})
+EXERCISES["dead_bug"]["keys"] = {
+    "k1": EXERCISES["dead_bug"]["keys"]["k1"], "k2": None, "k3": None,
+    # The other side: the arm and leg nearest the camera extend, the far ones come back up.
+    "k4": _guide((250, 592), [(336, 606), (563, 648)],
+                 near=[[(340, 600), (215, 640), (90, 660)], [(563, 648), (785, 655), (1000, 650)]],
+                 far=[[(330, 600), (355, 475), (380, 345)], [(555, 645), (560, 480), (730, 480)]],
+                 props=FLOOR(700))}
+EXERCISES["pistol_squat"] = {"rep_s": 4, "a_key": "k2", "times": [0.0, 2.0, 4.0], "same": {}, "keys": {
+    # Side view facing left, arms forward. A = bottom; drawn: top, standing tall on one leg.
+    "k1": fk((712, 480), 268, face=(-1, 0), near_arm=(182, 180, 180), far_arm=(184, 182, 182),
+             near_leg={"to": (722, 916), "bend": 1, "end": 180}, far_leg=(150, 165, 170),
+             props=FLOOR(930), pins=[(722, 916)]),
+    "k2": None}}
+for _s, _pins in {"knee_pushup": [(293, 661), (677, 583)], "standing_calf_raise": [(690, 880), (440, 880)],
+                  "bear_crawl": [], "flutter_kicks": [(240, 475)], "worlds_greatest_stretch": [(330, 880), (290, 994), (845, 781)]}.items():
+    for _k, _g in EXERCISES[_s]["keys"].items():
+        if _g is not None:
+            _g["pins"] = _pins
+POSE_TEXT.update({
+    ("dip", "k3"): "The hero is now at the BOTTOM of a dip: the body lowered between the bars, elbows bent about 90 degrees and pointing straight back, the upper arms close to level, shoulders just above elbow height and pressed down away from the ears, torso tilted slightly forward, chest proud. The legs keep exactly the same bent shape as in image 1, feet together behind, off the floor, and simply move down with the hips.",
+    ("cat_cow", "k2"): "The hero is now in a GENTLE cow position: the middle of the back dips only slightly into a shallow, soft curve, the belly relaxed, the tailbone tilting up a little, the chest moving forward, the head lifted to look forward and slightly up. Arms straight. A mild arch, not a deep sway.",
+    ("cat_cow", "k4"): "The hero is now in the CAT position: the whole back rounds UP into a deep, even dome from the tailbone to the neck, like an angry cat, the middle of the back the highest point; the tailbone tucks under, the belly draws in, the head drops between the straight arms, chin towards the chest, eyes to the knees.",
+    ("single_leg_glute_bridge", "k2"): "The hero is now at the BOTTOM of a single-leg glute bridge: the hips lowered all the way, the buttocks resting on the floor, the back flat on the floor. Same legs as image 1: the leg FARTHER from the camera (with the silver shin guard and the glowing shoe) stays straight and extended in the air, lowered with the hips, passing BEHIND the other leg; the leg NEAREST the camera (white sock, foot flat) stays bent with its foot flat on the floor where it is in image 1.",
+    ("dead_bug", "k4"): "The hero now does the OTHER SIDE of the dead bug: the arm NEAREST the camera, which points to the ceiling in image 1, now reaches straight overhead to rest just above the floor behind the head; the arm FARTHER from the camera now points straight up to the ceiling. The leg NEAREST the camera, bent in image 1, now extends long and straight just above the floor; the leg FARTHER from the camera is now bent at 90 degrees above the hips, shin level. Lower back pressed to the floor.",
+    ("pistol_squat", "k1"): "The hero is now at the TOP of a pistol squat: standing tall on the one leg whose foot is flat on the floor, that leg fully straight; the other leg held straight out in front, off the floor, a little lower than in image 1; both arms still straight forward at shoulder height; torso upright.",
+    ("standing_calf_raise", "k2"): "Focus on the calves: the legs are now at the BOTTOM of a calf raise, both heels pressed flat on the floor, the whole sole of each shoe flat and level, the calf muscles relaxed and long; knees straight; the balls of the feet on the same spots; the legs and knees are lower in the frame than in image 1 by about the height of a heel lift.",
+    ("bear_crawl", "k2"): "The hero now takes the NEXT STEP of a bear crawl, as the guide shows: the hand NEAREST the camera is now back under its shoulder and the hand FARTHER from the camera reaches forward; the foot NEAREST the camera steps forward under the hip and the foot FARTHER from the camera is back. Knees a hand above the floor, back flat.",
+    ("flutter_kicks", "k2"): "The legs now SWAP in a flutter kick, as the guide shows: the leg NEAREST the camera is now the HIGHER one and the leg FARTHER from the camera the LOWER one; both legs stay straight and off the floor.",
+})
+NEVER.setdefault("pistol_squat", "The standing foot stays flat on exactly the same spot of the floor.")
+VIDEO_MOTION.update({
+    "pistol_squat": "One slow pistol squat on one leg. The standing foot never moves; the free leg is held straight forward off the floor; the hips lower all the way down, then rise back to standing tall.",
+    "dead_bug": "Two slow dead bug reps, one per side, lying on the back with the lower back pressed to the floor: one arm reaches overhead as the opposite leg extends, both return; then the other arm and the other leg.",
+    "archer_pushup": "One slow archer push-up to one side. The hands and both feet never move at all, the toes stay planted on the same spot for the whole clip. From straight wide arms the chest lowers towards one hand as that elbow bends while the other arm stays straight out to the side, then presses back up to the centre.",
+})
+
+
+# Retry 1 of the fresh stills (blind scores, 10/11): each line names what the first pair missed.
+POSE_TEXT[("inverted_row", "k2")] += " The bar is LOW, at standing hip height, in the middle of the picture, NOT at head height; the body is a low diagonal close to the floor, about 25 degrees from horizontal, the elbows clearly pointing down to the floor."
+POSE_TEXT[("crunch", "k2")] += " Curl HIGH: the shoulder blades clearly lifted well off the floor, the upper back rounded so the torso rises at about 35 degrees from the floor, chin slightly tucked, eyes to the knees. It must not look like lying flat."
+POSE_TEXT[("reverse_crunch", "k2")] += " The hips and lower back are clearly LIFTED off the floor by a hand's width, the pelvis rolled up towards the ribs, the knees over the face and chest, the shins angled up and back towards the head."
+POSE_TEXT[("superman_w", "k2")] += " The forearms point FORWARD, level with the floor, the open hands beside and a little in front of the head; both straight legs lifted and visible separately."
+POSE_TEXT[("bicycle_crunch", "k1")] += " The crossing must be obvious: the RIGHT elbow reaches over the stomach and touches the LEFT knee in the middle of the body, the shoulders clearly twisted; the bent knee is on the picture RIGHT, the straight leg on the picture LEFT."
+
+
+# Retry 1 of the v2 edits (blind scores, 10/11).
+POSE_TEXT[("dead_bug", "k4")] += " BOTH arms must change compared with image 1: the arm that lies overhead in image 1 now points straight up to the ceiling, and the arm that points up in image 1 now lies overhead behind the head. The legs swap too."
+POSE_TEXT[("flutter_kicks", "k2")] += " The change must be obvious: the leg that is HIGH in image 1 is now LOW, a hand above the floor, and the leg that is LOW in image 1 is now HIGH, raised to about 45 degrees."
+POSE_TEXT[("worlds_greatest_stretch", "k2")] += " The hand of that arm is NOT on the floor: the whole forearm lies flat on the floor, the elbow touching the floor right beside the inside of the front foot, the chest dropped low over the front thigh."
+POSE_TEXT[("bear_crawl", "k2")] += " In image 1 one hand is forward of the other: in the new pose the OTHER hand is the forward one, and the same for the feet."
+POSE_TEXT[("knee_pushup", "k1")] += " Do not move the hands or knees at all: draw the hands and knees exactly over their pixels in image 1."
+POSE_TEXT[("standing_calf_raise", "k2")] += " Do not move the feet sideways or change their size: the toes of each shoe stay exactly over their pixels in image 1; only the heels come down."
+
+
+# Retry 2 (last) of the fresh stills.
+POSE_TEXT[("inverted_row", "k2")] += " Think of a sturdy bar at the height of a dining table: standing next to it, it would reach the hero's hips. The feet are far from the bar, so the body slopes gently, the head much lower than a standing head."
+POSE_TEXT[("superman_w", "k2")] += " The chest and shoulders are lifted HIGH off the floor, the upper body clearly raised like a banana shape, the elbows tucked in to the sides of the ribs."
+POSE_TEXT[("bicycle_crunch", "k1")] += " The RIGHT elbow is NOT behind the head: it is in front of the body, across the belly, touching the LEFT knee."
+
+
 CREDITS = "https://api.bfl.ai/v1/credits"
 
 
@@ -1275,6 +1651,16 @@ def main():
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
             list(pool.map(lambda n: draft(slug, int(n)), ns))
         print(f"spent {spent():.3f} $")
+    elif command == "fresh":  # fresh <slug> <n>...: new A candidates (route O)
+        import concurrent.futures
+        slug, *ns = rest
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+            list(pool.map(lambda n: fresh(slug, int(n)), ns))
+        print(f"spent {spent():.3f} $")
+    elif command == "adopt":  # adopt <slug> <candidate.png>
+        print(adopt(rest[0], pathlib.Path(rest[1])))
+    elif command == "mirror":
+        print(mirror(rest[0]))
     elif command == "credits":  # the BFL balance: the video endpoint returns no cost field
         print(_json(CREDITS, env_key("BFL_API_KEY"))["credits"])
     elif command == "encode":  # encode <slug> <clip.mp4> [crf]

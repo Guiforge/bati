@@ -65,12 +65,14 @@ def lerp(a, b, t):
 def dip_pose(lift):
     """Side view facing right. lift 0 = A (bottom), 1 = top. Hands fixed on the bar."""
     hands = [(535, 495), (522, 495)]  # near, far
-    shoulder = lerp((535, 355), (528, 266), lift)
-    hip = lerp((515, 560), (512, 470), lift)
+    # Forward lean from the hands up: about 15 degrees at the top, A's own 11 at the bottom. It also
+    # keeps the near arm clear of the torso, so the stick figure shows the arm working.
+    shoulder = lerp((535, 355), (537, 266), lift)
+    hip = lerp((500, 555), (483, 463), lift)
     # Slight forward lean everywhere, a little more at the bottom: the shoulders lead the hips.
-    d = (hip[0] - 515, hip[1] - 560)
-    head = add(shoulder, lerp((80, -62), (70, -66), lift))
-    arms = [[shoulder, ik(shoulder, h, 100, 135, +1), h] for h in hands]  # +1: elbow goes back
+    d = (hip[0] - 500, hip[1] - 555)
+    head = add(shoulder, lerp((80, -62), (58, -78), lift))
+    arms = [[shoulder, ik(shoulder, h, 100, 128, +1), h] for h in hands]  # +1: elbow goes back
     legs = [[add(hip, (5, 0)), add((595, 615), d), add((572, 770), d), add((470, 815), d)],
             [add(hip, (-8, 0)), add((580, 622), d), add((556, 762), d), add((448, 826), d)]]
     return {
@@ -114,10 +116,12 @@ def push_pose(depth):
     """Side view facing right. depth 0 = A (top), 1 = bottom. The body pivots on the toes, rigid."""
     toe = PUSH_TOP["toe"]
     p = {k: rot(v, toe, 12.6 * depth) for k, v in PUSH_TOP.items()}
-    hands = [(702, 738), (790, 712)]  # near, far
+    # The neck stays long: the head keeps its height above the body line instead of tipping with it.
+    p["head"] = add(p["head"], (0, round(-22 * depth)))
+    hands = [(702, 738), (748, 724)]  # near, far: the far hand beside the near one, not splayed ahead
     # Elbows back along the ribs (towards the feet), never flared up past the shoulder.
-    arms = [[add(p["shoulder"], (6, 4)), ik(add(p["shoulder"], (6, 4)), hands[0], 85, 105, +1), hands[0]],
-            [add(p["shoulder"], (22, -6)), ik(add(p["shoulder"], (22, -6)), hands[1], 85, 105, +1), hands[1]]]
+    arms = [[add(p["shoulder"], (6, 4)), ik(add(p["shoulder"], (6, 4)), hands[0], 90, 95, +1), hands[0]],
+            [add(p["shoulder"], (36, -8)), ik(add(p["shoulder"], (36, -8)), hands[1], 90, 95, +1), hands[1]]]
     leg = [p["hip"], p["knee"], p["ankle"], p["toe"]]
     return {
         "head": p["head"], "torso": [p["shoulder"], p["hip"]],
@@ -175,12 +179,37 @@ def unique_keys(slug):
 
 
 def draw(slug, key):
-    name = f"{slug}_{key}"
-    artloop.POSES[name] = EXERCISES[slug]["keys"][key]  # a new slug only, never an existing entry
-    src = artloop.draw_ref(name)
+    """art-loop.py's mannequin (same colours, same joints), with two changes for a side view: a
+    thinner torso and a dark outline on the near limbs. In art-loop's drawing a straight arm in
+    front of the body sank into the 80 px torso band, and both auditors read the dip's top as an
+    arm folded against the body (round 3)."""
+    from PIL import Image, ImageDraw
+    pose = EXERCISES[slug]["keys"][key]
+    image = Image.new("RGB", (1024, 1024), artloop.BG)
+    d = ImageDraw.Draw(image)
+    for shape in pose["props"]:
+        if len(shape) == 2:
+            d.rectangle(shape, fill=artloop.PROP)
+        else:
+            d.polygon(shape, fill="#1F2533")
+
+    def limb(points, colour, width=30, outline=0):
+        for w, c in ((width + 2 * outline, artloop.BG), (width, colour)) if outline else ((width, colour),):
+            d.line(points, fill=c, width=w, joint="curve")
+            for x, y in points:
+                d.ellipse((x - w / 2, y - w / 2, x + w / 2, y + w / 2), fill=c)
+
+    for points in pose["far"]:
+        limb(points, artloop.FAR)
+    limb(pose["torso"], artloop.TORSO, width=62)
+    x, y = pose["head"]
+    d.ellipse((x - 46, y - 46, x + 46, y + 46), fill=artloop.TORSO)
+    for points in pose["near"]:
+        limb(points, artloop.NEAR, outline=7)
     out = PILOT / "refs" / slug / f"{key}.png"
     out.parent.mkdir(parents=True, exist_ok=True)
-    subprocess.run(["magick", str(src), *artloop.REPRODUCIBLE, str(out)], check=True)
+    image.save(out)
+    subprocess.run(["magick", str(out), *artloop.REPRODUCIBLE, str(out)], check=True)
     return out
 
 
@@ -223,11 +252,65 @@ def refs(slug):
     return d
 
 
+SITE = PILOT / "site"
+
+
+def kb(path):
+    return round(pathlib.Path(path).stat().st_size / 1024)
+
+
+def anim(frames, delays_cs, out, size=384, quality=80):
+    """Animated WebP, one delay per frame in 1/100 s, plus a 0.5x twin (delays doubled): an image
+    cannot change its own speed, so the page swaps the file."""
+    for target, factor in ((out, 1), (out.with_name(out.stem + "_slow.webp"), 2)):
+        args = []
+        for f, dl in zip(frames, delays_cs):
+            args += ["-delay", str(dl * factor), f]
+        magick(*args, "-resize", f"{size}x{size}", "-loop", "0", "-quality", str(quality), target)
+    return out
+
+
+def rel(path):
+    return str(pathlib.Path(path).relative_to(SITE))
+
+
+def stick_media(slug):
+    """The mannequin flip-book (step 2) at the real tempo, for the page."""
+    ex, d = EXERCISES[slug], SITE / slug
+    d.mkdir(parents=True, exist_ok=True)
+    keys = list(ex["keys"])
+    frames = [PILOT / "refs" / slug / f"{k}.png" for k in keys]
+    delays = [round((ex["times"][i + 1] - ex["times"][i]) * 100) for i in range(len(keys))]
+    out = anim(frames, delays, d / "stick.webp")
+    still = d / "still.webp"
+    magick(PILOT / "A" / f"{slug}.png", "-resize", "512x512", "-quality", "82", still)
+    for name in ("strip", "onion"):
+        magick(PILOT / "refs" / slug / f"{name}.png", "-quality", "80", d / f"mannequin_{name}.webp")
+    return {"stick": {"src": rel(out), "slow": rel(out.with_name("stick_slow.webp")), "kb": kb(out), "alt": "mannequin flip-book"},
+            "still": {"src": rel(still), "kb": kb(still), "alt": "current still image"}}
+
+
+def page():
+    import json
+    state = json.loads((PILOT / "state.json").read_text())
+    template = (ROOT / "scripts" / "anim-pilot-v3-page.html").read_text()
+    data = json.dumps(state, ensure_ascii=False).replace("</", "<\\/")
+    (SITE / "index.html").write_text(template.replace("__DATA__", data))
+    files = sorted(str(f.relative_to(SITE)) for f in SITE.rglob("*") if f.is_file() and f.name != "index.html")
+    print(json.dumps({"page": str(SITE / "index.html"), "files": files,
+                      "kb": sum(kb(SITE / f) for f in files)}))
+
+
 def main():
     command, *rest = sys.argv[1:] or ["help"]
     if command == "refs":
         for slug in rest or EXERCISES:
             print(refs(slug))
+    elif command == "stick-media":
+        import json
+        print(json.dumps({slug: stick_media(slug) for slug in rest or EXERCISES}, indent=1))
+    elif command == "page":
+        page()
     else:
         sys.exit(__doc__)
 

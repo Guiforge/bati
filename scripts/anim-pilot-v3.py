@@ -2137,6 +2137,50 @@ _bug_fit = lambda side: _xform(_bug(side), 0.68, (512, 600), (512, 560))  # noqa
 _seq("dead_bug", "k2", 4, {"k1": _bug_fit(0), "k2": _bug_fit(1), "k3": None, "k4": None}, {"k3": "k1"})
 # Bear crawl from above was tried (v7) and read as wall climbing (blind score 1/5): it keeps its v3 setup.
 FLOPS.update({"dead_bug": {"k4": "k2"}})
+
+
+# Muscle-up (v7): the app's picture is two panels with two heroes, so the whole gesture is new, side view
+# facing right, hands fixed on one bar. Drawn at full size around BAR, then scaled to fit hang and lockout.
+_BAR = (560, 400)
+
+
+def _mu(shoulder, trunk, legs, bend):
+    hip = step(shoulder, trunk + 180, SEG["torso"])
+    arm = {"to": _BAR, "bend": bend}  # no hand bone: the hand is wrapped round the bar
+    pose = fk(hip, trunk, head=trunk, face=(1, -0.2), near_arm=arm, far_arm={**arm, "to": add(_BAR, (12, -6))},
+              near_leg=legs, far_leg=tuple(a + 3 for a in legs), props=[((300, 396), (820, 404))], pins=[_BAR])
+    return _xform(pose, 0.64, _BAR, (530, 330), floor=None)
+
+
+SIDE["muscle_up"] = 1
+_seq("muscle_up", "k5", 6, {
+    "k1": _mu((560, 665), 270, (92, 98, 100), 1),    # dead hang, arms straight
+    "k2": _mu((520, 470), 285, (100, 110, 100), 1),  # chest to the bar, elbows down
+    "k3": _mu((600, 345), 300, (110, 120, 100), 1),  # transition: chest over the bar, elbows back
+    "k4": _mu((600, 250), 285, (100, 105, 100), 1),  # bottom of the straight-bar dip
+    "k5": _mu((585, 140), 275, (95, 95, 100), 1),    # lockout, hips at the bar (A)
+    "k6": None, "k7": None, "k8": None}, {"k6": "k4", "k7": "k3", "k8": "k2"})
+POSE_TEXT.update({
+    ("muscle_up", "k5"): "Side view facing right, a single straight pull-up bar seen end-on as a short horizontal bar: the TOP of a "
+        "muscle-up. The hero is ABOVE the bar, both arms straight and locked, hands gripping the bar under the shoulders, the bar "
+        "touching the front of the hips; torso upright, legs straight and together hanging below the bar, toes pointed. Bare "
+        "dark background, no floor visible, the whole body and the bar inside the frame with a margin.",
+    ("muscle_up", "k1"): "The hero is now in a DEAD HANG under the same bar: arms straight overhead, hands on the same spot of the "
+        "bar, the body hanging straight below it, legs together, feet off the floor.",
+    ("muscle_up", "k2"): "The hero now PULLS: the chest is up at the bar, just below it, the elbows bent and pointing down, the body "
+        "leaning slightly back, legs a little in front; the hands on the same spot of the bar.",
+    ("muscle_up", "k3"): "The TRANSITION of the muscle-up: the chest goes OVER the bar, the shoulders just above it and forward, the "
+        "elbows sharply bent and pointing back, the wrists turned over on top of the bar; the hips still below the bar.",
+    ("muscle_up", "k4"): "The hero is now at the BOTTOM of a straight-bar dip ABOVE the bar: the shoulders well above the bar, the "
+        "elbows bent about 90 degrees and pointing back, the torso leaning forward over the bar, the hips just below it.",
+})
+POSE_TEXT[("muscle_up", "k1")] += (" The BAR stays at exactly the same height and place in the picture as in image 2, about a third "
+    "of the way down from the top: it does NOT move up. The hero hangs BELOW it, the head under the bar, the feet near the bottom "
+    "of the picture.")
+NEVER["muscle_up"] = "Both hands stay on exactly the same spot of the bar; the bar does not move. The camera, the framing and the scale do not change."
+VIDEO_MOTION["muscle_up"] = ("One slow strict muscle-up on a straight bar: from a dead hang, pull the chest to the bar, turn the "
+    "wrists over as the chest passes above the bar, press out of the dip to locked arms, then lower back the same way to the hang. "
+    "The hands never move on the bar.")
 TOP_NOTE = ("Seen from DIRECTLY ABOVE, the camera looking straight down at the floor. In this guide the orange limbs "
             "are on the left of the picture and the blue limbs on the right.")
 POSE_TEXT.update({

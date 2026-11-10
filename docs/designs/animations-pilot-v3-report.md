@@ -334,3 +334,14 @@ effect, and an audit. Exactness comes first, style second; the scoring brief now
 - **Bear crawl from above:** rejected (blind score 1/5). Both tries read as a man climbing a wall. It
   keeps its v3 setup.
 - Ledger total: 64.54 $.
+- **Muscle-up (new):** the app's picture shows two panels with two different heroes, so the gesture was
+  drawn from guides. It has 8 pictures: hang, pull, transition, dip bottom, lockout, then the same way
+  down. The first lockout was drawn about 1.4 times larger than the guide. At that size the hang could
+  not fit and the video would have zoomed. So A was scaled to 0.7 around the bar, an exact image
+  operation, before the other poses were drawn. On the first try of the hang, the model moved the bar
+  up. The retry, which says the bar never moves, kept it in place. Every pick scored 4 on all four lines
+  of the blind score. The fit on the bar band was wrong (the band holds the arms and the head too), so
+  the pictures stay as drawn: the scorer checked that the bar overlays A's.
+- **Wrist circles** stay a still on purpose. The app's picture is a first-person view of two fists, the
+  mannequin cannot guide a hand on its own, and the movement reads from the still and one line of text.
+- Ledger total: 65.38 $.

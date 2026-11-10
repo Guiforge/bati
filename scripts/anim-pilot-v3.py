@@ -173,7 +173,10 @@ def thread_pose(phase):
         threading = [t_sh, lerp(t_sh, t_hand, 0.5), t_hand]
     mid = lerp(p_sh, t_sh, 0.5)
     legs = [[hips, knees[0], feet[0]], [add(hips, (40, -20)), knees[1], feet[1]]]
-    return {"head": head, "torso": [mid, hips], "far": [planted, legs[1]], "near": [threading, legs[0]],
+    # The threading arm is the FAR one (blue): in A it passes under the chest and comes out palm up on the
+    # camera side, while the near arm is the one planted by the head. v1 had them swapped, and the open
+    # pose raised the near arm, which never threads (caught by Guillaume on the flip-book).
+    return {"head": head, "torso": [mid, hips], "far": [threading, legs[1]], "near": [planted, legs[0]],
             "props": [[(0, 600), (1024, 600), (1024, 1024), (0, 1024)]]}
 
 
@@ -501,7 +504,7 @@ POSE_TEXT = {
     ("pushups", "k2"): "The hero is now HALFWAY down a push-up: elbows bent about 100 degrees, pointing back towards the feet, close to the ribs; body lowered by about half, still one rigid straight line from head to heels; head in line with the spine.",
     ("cat_cow", "k2"): "The hero is now in the COW position: the lower and middle back curve gently DOWN into a soft U, the belly sinking towards the floor, the bottom lifting, the chest moving forward and up between the straight arms, the head lifted to look forward. Arms straight.",
     ("cat_cow", "k1"): "The hero is now in a NEUTRAL tabletop: the back is flat and straight like a table from the tailbone to the back of the head, no dip and no hump; head in line with the spine, eyes to the floor just ahead of the hands. Arms straight.",
-    ("thread_the_needle", "k2"): "The hero is now in the OPEN position of thread the needle, on hands and knees: the threading arm (the one that lies along the floor in image 1) is lifted straight up to the ceiling, hand above its shoulder; the chest and head turn open towards that raised hand, eyes on the hand; the other arm is straight, its hand flat on the floor under its shoulder; the back is long, hips high over the knees.",
+    ("thread_the_needle", "k2"): "The hero is now in the OPEN position of thread the needle, on hands and knees: the arm FARTHER from the camera (the one that threads under the chest in the final pose) is lifted straight up to the ceiling, hand above its shoulder, so the chest turns open away from the camera and we see more of the upper back and that shoulder blade; the head turns to look up at the raised hand. The arm NEAREST the camera stays straight, its hand flat on the floor exactly where it is in image 1. The back is long, hips high over the knees, knees and feet exactly where they are in image 1.",
     ("thread_the_needle", "k1"): "The hero is now in a TABLETOP on hands and knees: both arms straight, both hands flat on the floor under the shoulders, the back flat like a table from the tailbone to the head, head in line with the spine, eyes to the floor; hips high over the knees.",
 }
 NEVER = {
@@ -551,7 +554,8 @@ def rep_frames(slug):
     for k in ex["keys"]:
         src = ex["same"].get(k, k)
         if src == ex["a_key"]:
-            out[k] = PILOT / "A" / f"{slug}.png"
+            # "A" in accepted.json: A moved in its frame to line up with the drawn poses (flip-book only).
+            out[k] = PILOT / acc["A"] if "A" in acc else PILOT / "A" / f"{slug}.png"
         elif src in acc:
             out[k] = PILOT / acc[src]
         # else: no drawing passed for this key (halfway dip and chin-up): it is left out and its time
@@ -727,6 +731,19 @@ def encode(slug, clip, crf=28):
     return {"mp4_kb": kb(mp4), "webp_kb": kb(webp), "seam_ssim": round(seam, 4), "crf": crf}
 
 
+def translate(src, dx, dy, out=None):
+    """Move a picture by (dx, dy) px at 1280, filling what is uncovered with its own mirrored edge
+    (plain background on these pictures). Thread the Needle: OpenAI drew the tabletop and open poses
+    about 320 px (at 1280) lower than A; moving either side the whole way crops the raised hand or
+    A's palm, so both move part of the way."""
+    out = out or src.with_name(src.stem + "t.png")
+    magick(src, "-resize", "1280x1280!", "-virtual-pixel", "mirror", "-distort", "SRT", f"0,0 1 0 {dx},{dy}", out)
+    log({"provider": "local", "model": "imagemagick", "step": "align", "slug": src.parent.name,
+         "file": str(out.relative_to(PILOT)), "inputs": [{"name": str(src.relative_to(PILOT)), "sha256": sha(src)}],
+         "params": {"translate_px_at_1280": [dx, dy]}, "date": now(), "cost_usd": 0})
+    return out
+
+
 def shift_down(src, dy):
     """Undo a vertical re-framing: move the picture down dy px (at 1280) so its bar lands back on
     A's, and fill the band uncovered at the top by stretching the top rows of plain background.
@@ -777,6 +794,8 @@ def main():
         print(json.dumps(encode(rest[0], rest[1], int(rest[2]) if len(rest) > 2 else 28)))
     elif command == "flipbook":
         print(json.dumps({slug: flipbook(slug) for slug in rest or EXERCISES}))
+    elif command == "translate":  # translate <png> <dx> <dy> [out]  (px at 1280)
+        print(translate(pathlib.Path(rest[0]), int(rest[1]), int(rest[2]), pathlib.Path(rest[3]) if len(rest) > 3 else None))
     elif command == "shift":  # shift <candidate.png> <dy at 1280>
         print(shift_down(pathlib.Path(rest[0]), int(rest[1])))
     elif command == "spent":

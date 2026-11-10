@@ -56,7 +56,17 @@ since the budget allowed it after those four.
 | Chin-ups | hang only; halfway failed 6 times | O | not made (rule) | strip |
 | Push-ups | halfway and bottom | O | d2 of 2, every line passed | cuts (ties with video at 28 Ko vs 61) |
 | Cat-Cow | neutral and cow | O | d2 of 2, every line passed | video (the only cat the coach accepts) |
-| Thread the Needle | tabletop and open | O | d1 of 2, warped arm at 2 s | cuts |
+| Thread the Needle | tabletop and open | O | removed (keyed on the wrong-arm pose) | cuts |
+
+Thread the Needle was fixed after Guillaume's review of the flip-book. The open pose raised the
+wrong arm: the mannequin had the threading arm on the near side, but in A it is the far one. The
+drawn poses also sat about 250 px lower than A (1024 scale), so the body jumped at the loop. The
+fix:
+
+- The open pose was redrawn with the far arm raised.
+- For the flip-book only, the drawn poses move up 55 px and A moves down 200 px, so the knees,
+  feet and planted hand stay put.
+- The final checklist was filled before this fix.
 
 - **Candidates:** 41 in total (16 F, 25 O) for 8 accepted drawn poses. Accepted per route: F 1
   of 16, O 7 of 25.

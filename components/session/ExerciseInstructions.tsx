@@ -1,10 +1,10 @@
-import { Image } from "expo-image";
 import { useTranslation } from "react-i18next";
 import { Modal, ScrollView } from "react-native";
 import { YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
 import { Card } from "@/components/common/Card";
+import { ExerciseLoop } from "@/components/exercises/ExerciseLoop";
 import { getExerciseAsset } from "@/constants/assetMap";
 import { useFontScaled } from "@/hooks/useFontScaled";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -34,10 +34,11 @@ export function ExerciseInstructionsBody({
   const maxHeight = useFontScaled(160);
   return (
     <YStack width="100%" gap="2" items="center">
-      <Image
-        source={getExerciseAsset(instruction.imagePath)}
-        style={{ width: artSize, height: artSize, borderRadius: 12 }}
-        contentFit="cover"
+      <ExerciseLoop
+        imagePath={instruction.imagePath}
+        still={getExerciseAsset(instruction.imagePath)}
+        side={artSize}
+        radius={12}
       />
       <AppText
         fontFamily="heading"

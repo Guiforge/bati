@@ -250,6 +250,15 @@ Generic guides push these; the stack already gives them, so skip:
 - **Context for fast-changing state.** Not used for app state here (Zustand owns it) — if
   a new `React.Context` is ever added for something that updates often (a timer, a scroll
   position), every consumer re-renders on each tick; prefer a store selector instead.
+- **Exercise loops are hard cuts on mounted frames, not a source swap.** `ExerciseLoop`
+  (`components/exercises/ExerciseLoop.tsx`) keeps every frame of a movement mounted and flips
+  `opacity` from a `setTimeout` chain of about two ticks a second; swapping one `expo-image`
+  source decodes on the JS side and flashes on Android. It reads `useIsFocused()` and
+  `useReducedMotion()`: unfocused or reduced motion is the still and no timer. Loops play in the
+  session hero, the prep screen and the instructions block only, never in lists (thumbnails stay
+  stills). 22 movements, 856 KB in `assets/images/exercises/anim/`; `scripts/anim-import.py`
+  writes the frames, `manifest.json` and `constants/exerciseFrames.ts` (generated, one literal
+  `require` per frame for Metro). See [the pilot report](../designs/animations-pilot-v3-report.md).
 
 ## Binary size
 

@@ -4519,5 +4519,10 @@
     "derived_from": "fastlane/featureGraphic-bg.jpg",
     "how": "cover-crop + left ink fade + cartouche tagline",
     "licence": "same as the source render; see that entry"
+  },
+  "assets/images/exercises/anim/*/*.webp": {
+    "derived_from": "assets/images/exercises/*.webp",
+    "how": "key poses of each movement, drawn as edits of that exercise's still (a jointed mannequin fixes the pose, FLUX 3 image or gpt-image-2.5-sunburst draws it, every candidate scored blind and accepted at 4 or more on pose, style, fixed points and anatomy), then shown as a hard-cut loop. Made by scripts/anim-pilot-v3.py and imported by scripts/anim-import.py: 480 px WebP q82, or the pilot's own 512 px flip-book frames for the earlier versions. Report: docs/designs/animations-pilot-v3-report.md",
+    "licence": "same as the stills they edit: the API account holder owns the output (BFL Developer Terms 3.b; OpenAI terms)"
   }
 }

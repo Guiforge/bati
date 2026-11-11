@@ -13,6 +13,7 @@ import { H1, H3, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
 import { FONT_CAPS } from "@/components/common/fontCaps";
+import { ExerciseLoop } from "@/components/exercises/ExerciseLoop";
 import { getExerciseAsset, getExerciseThumb } from "@/constants/assetMap";
 import { WARMUP_PICTURE_MIN_HEIGHT } from "@/constants/layout";
 import { rawColors } from "@/constants/rawColors";
@@ -186,10 +187,11 @@ function MovementIdentity({
   return (
     <>
       {instruction ? (
-        <Image
-          source={getExerciseAsset(instruction.imagePath)}
-          style={{ width: 160, height: 160, borderRadius: 16 }}
-          contentFit="cover"
+        <ExerciseLoop
+          imagePath={instruction.imagePath}
+          still={getExerciseAsset(instruction.imagePath)}
+          side={160}
+          radius={16}
         />
       ) : null}
       <YStack items="center" gap="1">

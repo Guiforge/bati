@@ -2442,6 +2442,123 @@ POSE_TEXT[("inverted_row", "k1")] += (" The body is NOT lying on the floor: the 
     "the floor; only the heels touch the floor. The arms hang straight down from the bar to the shoulders.")
 
 
+# v9 (Guillaume, 11/11: pike and row validated, "choisis 5 exos, fais les mannequins"): the five staples still on two
+# pictures, on the v8 recipe. A flat side pose, both sides on the same targets, lifted to three-quarter; six
+# pictures a rep (one end, 1/3, 2/3, the other end, 2/3, 1/3); the hands and feet that bear weight never move.
+def _bars(*ends, z=(-_HALF["arm"], _HALF["arm"]), floor=None):
+    """Bars running along the side view (dip): one line per depth, posts down to the floor at each end."""
+    out = []
+    for (x0, y), (x1, _) in [ends]:
+        for zz in z:
+            out.append(("line", _q34(x0, y, zz), _q34(x1, y, zz), 18))
+            if floor:
+                out += [("line", _q34(x, y, zz), _q34(x, floor, zz), 14) for x in (x0, x1)]
+    return out
+
+
+_PUSH_WRIST, _PUSH_ANKLE = (790, 858), (175, 832)
+_push_len = SEG["thigh"] + SEG["shin"] + SEG["torso"]
+_push_theta = lambda sh_y: math.degrees(math.asin((_PUSH_ANKLE[1] - sh_y) / _push_len))  # noqa: E731
+
+
+def _push9(t):
+    """Push-up: a rigid plank pivoting on the toes; top = arms straight under the shoulders, bottom = chest a fist
+    above the floor, elbows back along the ribs."""
+    theta = -_lerp(_push_theta(_PUSH_WRIST[1] - 262), _push_theta(_PUSH_WRIST[1] - 95), t)
+    hip = step(_PUSH_ANKLE, theta, SEG["thigh"] + SEG["shin"])
+    arm, leg = {"to": _PUSH_WRIST, "bend": 1, "end": 0}, {"to": _PUSH_ANKLE, "bend": 1, "end": 58}
+    side = fk(hip, theta, face=(0.4, 1), near_arm=arm, far_arm=arm, near_leg=leg, far_leg=leg, far_at=((0, 0), (0, 0)))
+    return _three_quarter(side, 880)
+
+
+_DIP_WRIST = (520, 440)
+
+
+def _dip9(t):
+    """Dip: hands fixed on parallel bars; top = arms straight, bottom = elbows at 90 degrees, torso leaning forward,
+    knees bent and feet behind, clear of the floor."""
+    sh = (round(_lerp(528, 590, t)), round(_lerp(_DIP_WRIST[1] - 262, _DIP_WRIST[1] - 150, t)))
+    trunk = _lerp(-80, -55, t)
+    hip = step(sh, trunk + 180, SEG["torso"])
+    arm = {"to": _DIP_WRIST, "bend": 1, "end": 0}
+    leg = (_lerp(95, 88, t), 160, 120)
+    side = fk(hip, trunk, face=(1, 0.15), near_arm=arm, far_arm=arm, near_leg=leg, far_leg=leg, far_at=((0, 0), (0, 0)))
+    out = _three_quarter(side, 1080)
+    out["props"] += _bars((330, _DIP_WRIST[1] + 8), (720, _DIP_WRIST[1] + 8), floor=1080)
+    out["pins"] = [c[2] for s in ("near", "far") for c in out[s][:1]]  # the hands: the feet hang free
+    return out
+
+
+def _feet_only(out):
+    out["pins"] = [c[2] for s in ("near", "far") for c in out[s][1:]]  # the arms move freely
+    return out
+
+
+_SQ_ANKLE = (470, 842)
+
+
+def _squat9(t):
+    """Squat: feet flat and fixed; the hips go back and down to thighs parallel, the knees forward over the toes,
+    the chest leaning about 45 degrees, the arms reaching forward for balance."""
+    hip = tuple(round(_lerp(a, b, t)) for a, b in zip((462, 403), (332, 640)))
+    trunk = _lerp(-88, -48, t)
+    leg = {"to": _SQ_ANKLE, "bend": -1, "end": 0}
+    arm = (_lerp(80, 5, t), _lerp(85, 0, t), _lerp(88, 0, t))
+    side = fk(hip, trunk, head=_lerp(-88, -68, t), face=(1, 0.1), near_arm=arm, far_arm=arm, near_leg=leg,
+              far_leg=leg, far_at=((0, 0), (0, 0)))
+    return _feet_only(_three_quarter(side, 880))
+
+
+_LU_FRONT, _LU_BACK = (650, 842), (225, 815)
+
+
+def _lunge9(t):
+    """Lunge, split stance, both feet fixed: the hips drop straight down until the front thigh is level and the
+    back knee hovers just above the floor; the torso stays upright."""
+    hip = tuple(round(_lerp(a, b, t)) for a, b in zip((440, 460), (428, 625)))
+    front = {"to": _LU_FRONT, "bend": -1, "end": 0}
+    back = {"to": _LU_BACK, "bend": -1, "end": 60}  # heel up, on the ball of the foot
+    arm = (92, 88, 90)
+    side = fk(hip, -88, face=(1, 0.1), near_arm=arm, far_arm=arm, near_leg=front, far_leg=back,
+              far_at=((0, 0), (0, 0)))
+    return _feet_only(_three_quarter(side, 880))
+
+
+_PU_BAR = (520, 120)
+_PU_WRIST, _PU_GRIP = (520, 152), 200  # wide grip: hands 200 off the midline, shoulders 85
+
+
+def _pull9(t):
+    """Pull-up, overhand: hands fixed on the bar; bottom = dead hang, arms straight; top = chin over the bar, the
+    head just behind it. Knees bent, ankles behind, the body still (no swing)."""
+    sh = tuple(round(_lerp(a, b, t)) for a, b in zip((514, _PU_WRIST[1] + 235), (470, 175)))
+    trunk = _lerp(-91, -97, t)
+    hip = step(sh, trunk + 180, SEG["torso"])
+    arm = {"to": _PU_WRIST, "bend": 1, "end": 270}  # replaced below
+    leg = (98, 165, 110)
+    side = fk(hip, trunk, head=_lerp(-92, -100, t), face=(1, -0.1), near_arm=arm, far_arm=arm, near_leg=leg,
+              far_leg=leg, far_at=((0, 0), (0, 0)))
+    out = _three_quarter(side, 1300, bar=_PU_BAR)  # hanging: no floor in frame
+    unit = lambda a, b: (lambda dx, dy, n: (dx / n, dy / n))(b[0] - a[0], b[1] - a[1], math.dist(a, b))  # noqa: E731
+    out["grip"] = (unit(_q34(*_PU_BAR, 0), _q34(_PU_BAR[0] + 70, _PU_BAR[1] - 15, 0)), out["grip"][1])  # palms away
+    # A wide-grip pull-up works in the frontal plane: each arm is solved across the body (z, y), elbows out and down.
+    for s, k in (("near", -1), ("far", 1)):
+        z0, z1 = k * _HALF["arm"], k * _PU_GRIP
+        ez, ey = ik((z0, sh[1]), (z1, _PU_WRIST[1]), SEG["upper"], SEG["fore"], k)
+        ex = _lerp(sh[0], _PU_WRIST[0], 0.5)
+        out[s][0] = [_q34(sh[0], sh[1], z0), _q34(ex, ey, ez), _q34(*_PU_WRIST, z1), _q34(_PU_WRIST[0], _PU_WRIST[1] - 38, z1)]
+    out["pins"] = [c[2] for s in ("near", "far") for c in out[s][:1]]
+    return out
+
+
+for _slug, _f, _a in (("pushups", _push9, "k1"), ("dip", _dip9, "k4"), ("squat", _squat9, "k4"),
+                      ("lunge", _lunge9, "k4"), ("pullups", _pull9, "k4")):
+    _seq(_slug, _a, 3, {"k1": _f(0), "k2": _f(1 / 3), "k3": _f(2 / 3), "k4": _f(1), "k5": None, "k6": None},
+         {"k5": "k3", "k6": "k2"})
+    SIDE.pop(_slug, None)
+    LOOSE[_slug] = "torso, upper, fore, hand, thigh, shin, foot"
+
+
 CREDITS = "https://api.bfl.ai/v1/credits"
 
 

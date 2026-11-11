@@ -2774,6 +2774,9 @@ POSE_TEXT.update({
     ("pullups", "k3"): "TWO THIRDS of the way up the pull-up: the elbows bent and out, the face just below the bar and "
         "behind it. The hands stay on exactly the same spots of the bar.",
 })
+# v9 retry (first dip k2 pair let one leg hang forward): the legs never change during a dip.
+POSE_TEXT[("dip", "k2")] += (" The LEGS are exactly as in image 2: both knees bent, both feet together BEHIND the body, "
+                             "crossed at the ankles; no leg hangs forward or down.")
 for _slug in ("pushups", "dip", "squat", "lunge", "pullups"):
     NEVER[_slug] = ("The camera, the framing, the scale and the equipment do not change; every hand or foot marked with "
                     "a white ring is drawn exactly over the same pixels as in image 2.")

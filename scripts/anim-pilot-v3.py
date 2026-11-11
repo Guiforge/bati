@@ -3451,8 +3451,8 @@ def _bicycle15(side, cam=(35, 12)):
         sh = tuple(n + k * _SH * lc for n, lc in zip(neck, lat))
         wrist = tuple(round(c + 48 * b, 1) for c, b in zip(head_c, back))[:2] + (k * 26,)  # hands behind the head
         if side == k:  # the working elbow goes to meet the opposite knee, the hand still behind the head
-            elbow = _at(sh, _v(sh, (knees[-k][0] - 40, knees[-k][1], knees[-k][2])), SEG["upper"])
-            arms.append([sh, elbow, wrist, _at(wrist, (0, 0, -k), SEG["hand"])])
+            # Real bone lengths (the anatomy check refused a stretched forearm), the elbow bent towards the knee.
+            arms.append(_limb3(sh, wrist, ("upper", "fore", "hand"), _n(_v(sh, knees[-k])), (0, 0, -k)))
         else:
             pole = _n(tuple(k * lc + 0.25 * xc for lc, xc in zip(lat, (1, 0, 0))))  # elbow out wide
             arms.append(_limb3(sh, wrist, ("upper", "fore", "hand"), pole, (0, 0, -k)))
@@ -3466,6 +3466,47 @@ _seq("bicycle_crunch", "k2", 2, {"k1": _bicycle15(0, _CAM_BIKE), "k2": _bicycle1
                                  "k4": _bicycle15(1, _CAM_BIKE)}, {"k3": "k1"})
 _seq("dead_bug", "k2", 4, {"k1": _deadbug13(0, _CAM_BUG), "k2": _deadbug13(-1, _CAM_BUG), "k3": None,
                            "k4": _deadbug13(1, _CAM_BUG)}, {"k3": "k1"})
+_HIGH_Q = ("THREE-QUARTER view from ABOVE: the camera looks down on the hero from high up and a little to the side, so "
+           "the near limbs and the far limbs read separately, never one in front of the other. ")
+POSE_TEXT.update({
+    ("bicycle_crunch", "k2"): _HIGH_Q + "A bicycle crunch." + _BACK + " BOTH hands stay behind the head, fingers "
+        "touching behind the skull, the elbows bent. The shoulders are curled up off the floor and the chest twists "
+        "towards the FAR side: the NEAR elbow comes across the body and touches the FAR knee above the belly. The FAR "
+        "knee is pulled in over the hips, the thigh nearly vertical, the shin level. The NEAR leg is straight and "
+        "extended out low, a hand above the floor. The far elbow stays wide, pointing out to the far side.",
+    ("bicycle_crunch", "k1"): "Between the two sides of the bicycle crunch: the shoulders still curled up off the floor "
+        "and square, not twisted, both hands still behind the head with both elbows wide; both knees bent at the same "
+        "height above the hips, the shins level.",
+    ("bicycle_crunch", "k4"): "The bicycle crunch on the OTHER side: the chest twists towards the NEAR side, the FAR "
+        "elbow comes across and touches the NEAR knee, pulled in over the hips; the FAR leg is straight and extended out "
+        "low; the near elbow stays wide. Both hands still behind the head. Compared with image 2, the two legs have "
+        "traded places and the chest turns the other way.",
+    ("dead_bug", "k2"): _HIGH_Q + POSE_TEXT[("dead_bug", "k2")][len(_Q):],
+})
+# v15 retry: both first dead bugs put the overhead arm and the straight leg on the SAME side, both bicycle crunches
+# kept the chest square with both elbows wide.
+POSE_TEXT[("dead_bug", "k2")] += (" OPPOSITE arm and leg: the arm reaching overhead and the straight leg are on OPPOSITE "
+    "sides of the body. The straight leg is the FAR leg, higher in the picture, seen behind the bent near leg; the bent "
+    "near leg is the lower one in the picture, its knee nearest the camera. The head stays where image 1 puts it, at the "
+    "lower left.")
+POSE_TEXT[("bicycle_crunch", "k2")] += (" The chest is clearly TURNED, not square: the near shoulder is lifted higher "
+    "than the far one and the near elbow is pulled across the body, touching or nearly touching the far knee in the "
+    "middle of the picture. The hands never leave the back of the head.")
+# Second retry: near/far did not hold, so name the anatomical sides (head on the left, face up: near = the hero's right).
+POSE_TEXT[("dead_bug", "k2")] += (" In plain words: the hero's RIGHT arm reaches back overhead, the LEFT arm points at "
+    "the ceiling; the LEFT leg is straight and low, the RIGHT leg is bent in the tabletop. Right arm overhead goes with "
+    "LEFT leg straight, never the right leg.")
+POSE_TEXT[("bicycle_crunch", "k2")] += (" In plain words: the RIGHT elbow crosses over to the LEFT knee; the LEFT knee "
+    "is pulled in, the RIGHT leg is straight and low; the left elbow points out to the side.")
+POSE_TEXT[("dead_bug", "k4")] += (" In plain words: now the LEFT arm reaches back overhead and the RIGHT arm points at "
+    "the ceiling; the RIGHT leg is straight and low and the LEFT leg is bent in the tabletop.")
+POSE_TEXT[("bicycle_crunch", "k4")] += (" In plain words: now the LEFT elbow crosses over to the RIGHT knee, pulled in; "
+    "the LEFT leg is straight and low; the right elbow points out to the side.")
+# Both first k4 tries copied image 2 (the side swap that failed in every earlier lot).
+POSE_TEXT[("bicycle_crunch", "k4")] += (" SWAP the legs compared with image 2: the leg that is straight in image 2 is now "
+    "the one pulled in with its knee high, and the knee that is pulled in in image 2 is now the straight low leg. The "
+    "chest turns the other way. The picture must NOT look like image 2.")
+NEVER["bicycle_crunch"] = NEVER["pushups"]
 for _slug in ("bicycle_crunch", "dead_bug"):
     SIDE.pop(_slug, None)
     LOOSE[_slug] = "torso, upper, fore, hand, thigh, shin, foot"

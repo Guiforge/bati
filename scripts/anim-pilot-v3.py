@@ -614,6 +614,8 @@ def draw(slug, key):
                     dot((x0 - ux * width * 0.3, y0 - uy * width * 0.3), wide, c)
         if not leg:  # the palm: a round mitten past the wrist, whatever the hand point says
             dot(lerp(bones[-1], end, 0.5) if end else bones[-1], 25 + (w - width) / 2, hand if c != artloop.BG else c)
+        if not leg and pose.get("grip") and c != artloop.BG:
+            grips.append((bones[-1], hand, c == artloop.NEAR))  # drawn last, over the pins
         for p in bones[1:]:
             dot(p, 6, "white")
 
@@ -621,6 +623,8 @@ def draw(slug, key):
         d.line([a, b], fill=colour, width=width)
         dot(a, width / 2, colour)
         dot(b, width / 2, colour)
+
+    grips = []
 
     for points in pose["far"]:
         limb(points, artloop.FAR, points is pose["far"][-1])
@@ -652,6 +656,21 @@ def draw(slug, key):
         limb(points, artloop.NEAR, points is pose["near"][-1], outline=7)
     for p in pose.get("pins", ()):
         d.ellipse((p[0] - 22, p[1] - 22, p[0] + 22, p[1] + 22), outline="white", width=5)
+    for (hx, hy), hand, near in grips:  # bar grip: four fingers wrap over the bar the way v points, the thumb under it
+        (vx, vy), (ax, ay), *z = pose["grip"]  # unit: the way the fingers go, the bar's own axis; then a scale
+        z = z[0] if z else 1
+        dark = "#0B5D2E"
+        for sgn, ln, col in ((-1.5, 58, hand), (-0.5, 64, hand), (0.5, 64, hand), (1.5, 58, hand),
+                             (-2.6, -40, "#FFFFFF" if near else "#B7C0CC")):  # negative length = the thumb, other way
+            o = sgn * 21 * z
+            sx, sy = hx + ax * o, hy + ay * o
+            e = (sx + vx * ln * z, sy + vy * ln * z)
+            d.line([(sx, sy), e], fill=dark, width=round(18 * z))
+            dot(e, 9 * z, dark)
+            d.line([(sx, sy), e], fill=col, width=round(11 * z))
+            dot(e, 5.5 * z, col)
+        for sgn in (-1.5, -0.5, 0.5, 1.5):  # knuckles, on the side the back of the hand faces
+            dot((hx + ax * sgn * 21 * z - vx * 4, hy + ay * sgn * 21 * z - vy * 4), 7 * z, dark)
     out = PILOT / "refs" / slug / f"{key}.png"
     out.parent.mkdir(parents=True, exist_ok=True)
     image.save(out)
@@ -1542,7 +1561,7 @@ STYLE_REF = pathlib.Path(os.environ["ANIM_STYLE_REF"]) if os.environ.get("ANIM_S
     PILOT / "A" / "squat_orig.png" if (PILOT / "A" / "squat_orig.png").exists() else PILOT / "A" / "squat.png")
 HERO = os.environ.get("ANIM_HERO", "an athletic hero of the same kind")  # Guillaume, 10/11: "un personnage masculin"
 NEW = ("Draw a new square illustration for a fitness app. Image 1 is only a pose guide: a jointed mannequin "
-       "(grey torso, spine and neck; the yellow disc is the head, its red-orange wedge the nose, the black dot an eye; green mittens are the hands, bright green near, dark green far; orange limbs are the side nearest the "
+       "(grey torso, spine and neck; the yellow disc is the head, its red-orange wedge the nose, the black dot an eye; green mittens are the hands, bright green near, dark green far, and where a hand holds a bar its finger strokes are the fingers wrapped over the bar towards the side they point to, with dark knuckles on the back of the hand and the white or grey stroke the thumb on the other side of the bar; orange limbs are the side nearest the "
        "camera, blue limbs the far side; white dots are joints; white rings mark contact points; grey shapes are "
        "the floor and equipment). Nothing of its colours or flat shapes appears in the result: no yellow head, no green mittens. Image 2 is a STYLE "
        "reference only: draw in exactly its comic-book art style, line work, colouring and lighting, on a plain "
@@ -1550,7 +1569,7 @@ NEW = ("Draw a new square illustration for a fitness app. Image 1 is only a pose
        "framing or props: the pose, the camera angle and where the body sits in the frame all come from image 1, "
        "and the whole body fits in the frame with a margin. One person only, two arms, two legs.")
 SAME = ("Image 1 is only a pose guide: a jointed mannequin (grey torso, spine and neck; the yellow disc is the head, its red-orange wedge the nose, "
-        "the black dot an eye; green mittens are the hands, bright green near, dark green far; orange limbs are the side nearest the camera, blue limbs the far side; white dots are joints; "
+        "the black dot an eye; green mittens are the hands, bright green near, dark green far, and where a hand holds a bar its finger strokes are the fingers wrapped over the bar towards the side they point to, with dark knuckles on the back of the hand and the white or grey stroke the thumb on the other side of the bar; orange limbs are the side nearest the camera, blue limbs the far side; white dots are joints; "
         "white rings mark contact points that never move). Nothing of its colours or flat shapes appears: no yellow head, no green mittens. Image 2 "
         "shows the hero: redraw image 2 with the same hero, outfit, background, lighting, art style, camera, "
         "framing and scale, changing ONLY the pose so that it matches image 1 exactly, limb by limb, near and far "
@@ -2157,6 +2176,7 @@ def _mu(shoulder, trunk, legs, bend):
     arm = {"to": _BAR, "bend": bend}  # no hand bone: the hand is wrapped round the bar
     pose = fk(hip, trunk, head=trunk, face=(1, -0.2), near_arm=arm, far_arm={**arm, "to": add(_BAR, (12, -6))},
               near_leg=legs, far_leg=tuple(a + 3 for a in legs), props=[((300, 396), (820, 404))], pins=[_BAR])
+    pose["grip"] = ((1, 0), (0.2, 0.98), 0.5)  # overhand, side view: the bar is end-on, so the fingers fan along a short fake depth axis; _xform leaves directions alone
     return _xform(pose, 0.64, _BAR, (530, 330), floor=None)
 
 
@@ -2331,6 +2351,8 @@ def _three_quarter(pose, floor, bar=None):
     out["props"] = [[_q34(x, floor, z) for x, z in ((-300, -700), (1300, -700), (1300, 700), (-300, 700))]]
     if bar:
         out["props"].append(("line", _q34(*bar, -320), _q34(*bar, 320), 18))
+        unit = lambda a, b: (lambda dx, dy, n: (dx / n, dy / n))(b[0] - a[0], b[1] - a[1], math.dist(a, b))  # noqa: E731
+        out["grip"] = (unit(_q34(*bar, 0), _q34(bar[0] - 50, bar[1] + 70, 0)), unit(_q34(*bar, -320), _q34(*bar, 320)))  # overhand, fingers to the feet
     return out
 
 
@@ -2402,6 +2424,18 @@ NEVER["inverted_row"] = ("The two hands are drawn EXACTLY over the hands of imag
     "nearer the LEFT post than the head is; the straight or bent arms reach from there to the shoulders. The heels "
     "are drawn exactly over the heels of image 2. The bar, the posts, the camera, the framing and the scale do not "
     "change. The face looks up at the bar in profile, not at the camera.")
+# v8 retry 4 (coach faults left): the row top had the chin over the bar, the pike bottom the head between the hands.
+POSE_TEXT[("inverted_row", "k4")] += (" The CHEST (the nipple line) touches the bar; the chin stays BELOW the bar and the "
+    "whole head stays under and just past the bar, the neck neutral in line with the body; the head never passes over "
+    "the bar.")
+POSE_TEXT[("pike_pushup", "k4")] += (" The top of the head is a hand's width IN FRONT of the line between the two hands, "
+    "NOT between them, forming a triangle with the hands; it nearly touches the floor but does not rest on it.")
+# v8 hands (Guillaume: "super sauf les mains sur la barre"): the drawn grip was underhand, fingers curling towards
+# the camera. Used to redraw only the hands, pasted back under a mask.
+_ROW_GRIP = (" Change ONLY the two hands on the bar; everything else stays exactly as in image 2. OVERHAND (pronated) "
+    "grip: the BACKS of both hands and the knuckles face the hero's head and the camera; the fingers go over the top of "
+    "the bar and down its FAR side, mostly hidden behind the bar; the thumbs wrap under the bar on the near side. The "
+    "palms face the feet. The fingers must NOT curl over the bar towards the camera.")
 # v8 retry 3 (blind coach: the bottom read as lying on the floor).
 POSE_TEXT[("inverted_row", "k1")] += (" The body is NOT lying on the floor: the hips, back and shoulders are clearly OFF "
     "the floor, a forearm's length above it under the shoulders, the whole body one rigid plank about 15 degrees up from "

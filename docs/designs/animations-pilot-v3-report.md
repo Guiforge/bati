@@ -414,3 +414,17 @@ for a three-quarter view, then for one drawing attempt.
   rises. Its other point stands: at the top the chin passes over the bar.
 - **Videos.** Key-pose cross-fades. Max zoom 1 % (pike) and 0 % (row), slide 0 px.
 - **Spend.** 1.82 $ for v8, 68.50 $ of 80.73 $ in total.
+- **Last two faults fixed.** The row top was redrawn from k2_N45 with the chin under the
+  bar (k4_N53). The pike bottom was redrawn from k3_N42 with the head near the floor, not
+  resting on it (k4_N52).
+- **Hands on the bar** (Guillaume: "super sauf les mains"). Every row picture had an
+  underhand grip, with the fingers curling over the bar towards the camera.
+  - The mannequin got a grip glyph (sub-agent): `pose["grip"] = (finger direction, bar
+    axis)`. It draws four finger strokes, knuckle dots and a thumb stroke, and the legends
+    explain it.
+  - In three-quarter the glyph alone stays ambiguous, so each frame was redrawn with only
+    the hands changing (`_ROW_GRIP`: backs of the hands to the head, fingers over the bar
+    to the far side, thumbs under).
+  - Only the hand band was pasted back, under an 8 px feathered mask (`tools/v8_paste.py`).
+    There is a faint seam at two wrists.
+- **Spend.** 69.06 $ of 80.73 $.

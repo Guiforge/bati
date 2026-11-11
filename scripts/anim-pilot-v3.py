@@ -680,6 +680,8 @@ def draw(slug, key):
         d.polygon([(x + fx * 66, y + fy * 66), (x + fx * 36 - fy * 16, y + fy * 36 + fx * 16),
                    (x + fx * 36 + fy * 16, y + fy * 36 - fx * 16)], fill="#E8590C", outline="#101420")
         dot((x + fx * 20 - fy * 14, y + fy * 20 + fx * 14), 7, "#101420")  # eye, on the face side
+    for _, a, b, w in pose.get("front", ()):  # a prop nearer the camera than the head (pull-up bar): drawn over it
+        d.line([a, b], fill=artloop.PROP, width=w)
     for points in reversed(pose["near"]):  # leg, then arm: the arm hangs outside the leg
         limb(points, artloop.NEAR, points is pose["near"][-1], outline=7)
     for p in pose.get("pins", ()):
@@ -2567,7 +2569,7 @@ _PU_WRIST, _PU_GRIP = (520, 152), 200  # wide grip: hands 200 off the midline, s
 def _pull9(t):
     """Pull-up, overhand: hands fixed on the bar; bottom = dead hang, arms straight; top = chin over the bar, the
     head just behind it. Knees bent, ankles behind, the body still (no swing)."""
-    sh = tuple(round(_lerp(a, b, t)) for a, b in zip((514, _PU_WRIST[1] + 235), (470, 175)))
+    sh = tuple(round(_lerp(a, b, t)) for a, b in zip((514, _PU_WRIST[1] + 235), (455, 148)))
     trunk = _lerp(-91, -97, t)
     hip = step(sh, trunk + 180, SEG["torso"])
     arm = {"to": _PU_WRIST, "bend": 1, "end": 270}  # replaced below
@@ -2575,6 +2577,9 @@ def _pull9(t):
     side = fk(hip, trunk, head=_lerp(-92, -100, t), face=(1, -0.1), near_arm=arm, far_arm=arm, near_leg=leg,
               far_leg=leg, far_at=((0, 0), (0, 0)))
     out = _three_quarter(side, 1300, bar=_PU_BAR)  # hanging: no floor in frame
+    # The head passes BEHIND the bar (chin over it, face just past it): the bar is nearer the camera, drawn over the head.
+    out["front"] = [p for p in out["props"] if p[0] == "line"]
+    out["props"] = [p for p in out["props"] if p[0] != "line"]
     unit = lambda a, b: (lambda dx, dy, n: (dx / n, dy / n))(b[0] - a[0], b[1] - a[1], math.dist(a, b))  # noqa: E731
     out["grip"] = (unit(_q34(*_PU_BAR, 0), _q34(_PU_BAR[0] + 70, _PU_BAR[1] - 15, 0)), out["grip"][1])  # palms away
     # A wide-grip pull-up works in the frontal plane: each arm is solved across the body (z, y), elbows out and down.

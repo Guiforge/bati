@@ -584,7 +584,7 @@
   },
   "journal": {
     "pull_deficit_title": "Ton tirage est en retard",
-    "pull_deficit_body": "{{pull}} reps de tirage contre {{push}} de poussée sur les 30 derniers jours. Le tirage à la serviette ou une barre de porte le fait remonter.",
+    "pull_deficit_body": "{{pull}} reps de tirage contre {{push}} de poussée sur les 30 derniers jours. Le rowing sous la table ou une barre de porte le fait remonter.",
     "notes": "Notes",
     "note_add": "Ajouter une note",
     "note_edit": "Modifier la note",

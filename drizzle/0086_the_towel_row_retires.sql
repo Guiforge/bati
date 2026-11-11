@@ -18,8 +18,10 @@
 -- 2. The Cellar Hauler, the one seed quest that held it, gets the Superman W in that place: the only
 --    other equipment-free horizontal pull (Table Row is already its first slot). A new slot is inserted
 --    out of the way (+1000, the unique (questId, sortOrder) index is checked row by row), the old one
---    deleted, and the new one moved to the old sortOrder. Never swapped in place: a saved quest
---    configuration is keyed by the quest_exercises id (`db/questConfig.ts`), so changing the movement
+--    deleted, and the new one moved to the old sortOrder. It lands before the Superman, two prone
+--    movements in a row, but the patterns still alternate pull, core, pull, core, which is the order
+--    `content-invariants` holds every quest to; moving it up would put two pulls together. Never
+--    swapped in place: a saved quest configuration is keyed by the quest_exercises id (`db/questConfig.ts`), so changing the movement
 --    on the old slot would hand the hero's saved Towel Door Row target to the Superman W. The orphaned
 --    key is a stale key like any edit leaves, and the config reader skips those. 10 to 12 reps, the
 --    target the two other quests give it (0073). Seed quests only, by author: a hero's own quest that

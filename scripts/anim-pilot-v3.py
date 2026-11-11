@@ -3403,6 +3403,17 @@ POSE_TEXT[("dead_bug", "k4")] += (" Compared with image 2, SWAP the sides: the a
     "must NOT look like image 2: the two arms and the two legs have traded places.")
 
 
+# v14, FLUX 3 Video trial on the comic-book loops (Guillaume, 11/11: "lance l'essai avec flux 3").
+_BD_KEEP = (" Keep exactly the comic-book rendering of the keyframes: the same black ink outlines, flat cel shading and "
+            "hatching in every frame, never a smooth or photographic look.")
+VIDEO_MOTION["mountain_climber"] = ("Mountain climbers from a high plank, fast. The hands stay put. The near knee drives "
+    "to the chest, then a quick small hop switches legs, then the far knee drives to the chest, then a hop back." + _BD_KEEP)
+VIDEO_MOTION["jump_squat"] = ("One jump squat. Standing, the hero squats down with the arms reaching forward, jumps "
+    "straight up with the body stretched and the arms swung down and back, the feet clearly off the floor, then lands "
+    "softly on the same spot back into the squat and stands up." + _BD_KEEP)
+VIDEO_MOTION["squat"] = VIDEO_MOTION["squat"] + _BD_KEEP
+
+
 CREDITS = "https://api.bfl.ai/v1/credits"
 
 

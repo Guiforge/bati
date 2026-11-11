@@ -24,6 +24,13 @@ W = 720  # every page is square: laid out at 720, drawn at S times
 S = 1.5
 GUTTER, BORDER, TILT = 12, 3, 34
 WHITE, INK = (255, 255, 255), (0, 0, 0)
+# The outer margin is the app's own background (rawColors.bgDark): a white frame against the dark
+# screen was the brightest thing on it, and the hero's fades turned it into grey wedges. The
+# gutters between panels stay white (Guillaume's choice).
+FRAME = (12, 13, 17)
+# The bottom row of panels keeps its lowest part for the exercise name the hero paints there and
+# for its bottom fade: the figures stay above it, or the plate hides the feet and hands.
+RESERVE = 0.22  # of the body box's height, added below it
 
 
 def corners(im):
@@ -218,15 +225,15 @@ def layouts(name, aspect=1.0, n=3):
 
 def badge(d, xy, n):
     x, y = xy
-    r = 15 * S
+    r = 20 * S  # readable at the instructions sheet's ~300 dp
     d.ellipse((x - r, y - r, x + r, y + r), fill=INK, outline=WHITE, width=round(2 * S))
     f = None
     for path in ("/usr/share/fonts/google-noto/NotoSans-Bold.ttf", "/usr/share/fonts/dejavu-sans-fonts/DejaVuSans-Bold.ttf"):
         if pathlib.Path(path).exists():
-            f = ImageFont.truetype(path, round(19 * S))
+            f = ImageFont.truetype(path, round(25 * S))
             break
     tw = d.textlength(str(n), font=f)
-    d.text((x - tw / 2, y - 12 * S), str(n), font=f, fill=WHITE)
+    d.text((x - tw / 2, y - 16 * S), str(n), font=f, fill=WHITE)
 
 
 def page(slug, numbers):
@@ -246,6 +253,8 @@ def page(slug, numbers):
         k_y = (b[3] - b[1]) / size[1]
         k_x = (b[2] - b[0]) / size[0]
         b = (b[0] - TILT * S * k_x, b[1] - TILT * S * k_y, b[2] + TILT * S * k_x, b[3] + TILT * S * k_y)
+        if rect[3] >= (H - GUTTER - 1) * S:  # a bottom-row panel
+            b = (b[0], b[1], b[2], b[3] + (b[3] - b[1]) * RESERVE)
         img, _ = cover(im, b, size)
         mask = Image.new("L", out.size, 0)
         ImageDraw.Draw(mask).polygon(poly, fill=255)
@@ -256,11 +265,15 @@ def page(slug, numbers):
         xs, ys = [p[0] for p in polys[k]], [p[1] for p in polys[k]]
         x0, y0, x1, y1 = min(xs), min(ys), max(xs), max(ys)
         arrow(d, (x0 + a[0] * (x1 - x0), y0 + a[1] * (y1 - y0)), (x0 + b[0] * (x1 - x0), y0 + b[1] * (y1 - y0)))
+    g = GUTTER * S
+    for edge in ((0, 0, out.width, g), (0, out.height - g, out.width, out.height), (0, 0, g, out.height),
+                 (out.width - g, 0, out.width, out.height)):
+        d.rectangle(edge, fill=FRAME)
     for k, poly in enumerate(polys):
         d.polygon(poly, outline=INK, width=round(BORDER * S))
         if numbers:
             x0, y0 = min(poly, key=lambda q: q[0] + q[1])  # the panel's top-left vertex, whatever the slant
-            badge(d, (x0 + 30 * S, y0 + 30 * S), k + 1)
+            badge(d, (x0 + 36 * S, y0 + 36 * S), k + 1)
     return out, layout, len(picks)
 
 

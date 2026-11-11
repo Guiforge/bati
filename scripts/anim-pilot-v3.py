@@ -2782,6 +2782,68 @@ for _slug in ("pushups", "dip", "squat", "lunge", "pullups"):
                     "a white ring is drawn exactly over the same pixels as in image 2.")
 
 
+# v10 drawing (Guillaume validated the mannequins; "un homme blanc pour celui-là et certaines femmes").
+_BAR_STILL = " The hands never move on the bar; the bar does not move. No swing."
+POSE_TEXT.update({
+    ("chin_up", "k4"): _Q + "The TOP of a chin-up on a straight bar running across the picture into its depth, with no "
+        "floor in view: both hands grip the bar UNDERHAND, palms facing the hero's face, shoulder-width apart; the CHIN "
+        "is just above the bar and the HEAD is BEHIND the bar, the bar passing in front of the neck; both elbows bent "
+        "and pointing down in front of the ribs; the knees bent, the feet together behind." + _BAR_STILL,
+    ("chin_up", "k1"): "The BOTTOM of the chin-up: a dead hang, both arms fully straight above the head, the underhand "
+        "grip on exactly the same spots of the bar, the head below the bar between the arms, knees bent, feet behind."
+        + _BAR_STILL,
+    ("chin_up", "k2"): "A THIRD of the way up the chin-up: the elbows starting to bend, pointing forward and down, the "
+        "head still well below the bar." + _BAR_STILL,
+    ("chin_up", "k3"): "TWO THIRDS of the way up the chin-up: the elbows well bent and down in front of the ribs, the "
+        "face just below the bar and behind it." + _BAR_STILL,
+    ("diamond_pushup", "k1"): _Q + "The TOP of a diamond push-up: both arms fully straight, the two hands flat on the floor "
+        "TOUCHING each other under the middle of the chest, thumbs and index fingers forming a diamond; the body one "
+        "rigid straight plank from the heels to the head, on the balls of the feet, looking at the floor just ahead of "
+        "the hands." + _PIKE_STILL.replace(", the hips high", ""),
+    ("diamond_pushup", "k4"): "The BOTTOM of the diamond push-up: the chest just above the hands, both elbows bent and "
+        "pointing BACK, tight along the ribs; the body still one rigid straight plank." + _PIKE_STILL.replace(", the hips high", ""),
+    ("diamond_pushup", "k2"): "A THIRD of the way down the diamond push-up: the elbows only slightly bent, tight to the "
+        "body." + _PIKE_STILL.replace(", the hips high", ""),
+    ("diamond_pushup", "k3"): "TWO THIRDS of the way down the diamond push-up: the elbows bent about 110 degrees, back "
+        "along the ribs, the chest halfway to the hands." + _PIKE_STILL.replace(", the hips high", ""),
+    ("glute_bridge", "k4"): _Q + "The TOP of a glute bridge, lying on the back on the floor, the head on the left: the "
+        "shoulders, the head and both arms flat on the floor, the arms along the body, palms down; both knees bent, both "
+        "feet flat on the floor; the hips lifted HIGH so that the shoulders, the hips and the knees make one straight "
+        "line." + _FEET,
+    ("glute_bridge", "k1"): "The BOTTOM of the glute bridge: the hips lowered to just touch the floor, the knees still "
+        "bent and pointing up, the feet flat where they are, the shoulders, head and arms flat on the floor." + _FEET,
+    ("glute_bridge", "k2"): "A THIRD of the way up the glute bridge: the hips just off the floor, a little raised."
+        + _FEET,
+    ("glute_bridge", "k3"): "TWO THIRDS of the way up the glute bridge: the hips well raised, not yet in line with the "
+        "shoulders and knees." + _FEET,
+    ("hanging_leg_raise", "k4"): _Q + "The TOP of a hanging leg raise from a straight bar running across the picture into "
+        "its depth, with no floor in view: a dead hang, both arms fully straight, both hands gripping the bar OVERHAND; "
+        "both legs STRAIGHT and together, raised in front to level with the floor, the body an L; the torso still "
+        "vertical, the head neutral. The whole body is smaller in the frame and fits with a margin." + _BAR_STILL,
+    ("hanging_leg_raise", "k1"): "The BOTTOM of the hanging leg raise: both legs straight, hanging straight down "
+        "together under the hips, the body vertical and still." + _BAR_STILL,
+    ("hanging_leg_raise", "k2"): "A THIRD of the way up the hanging leg raise: the straight legs raised about 30 degrees "
+        "in front, together." + _BAR_STILL,
+    ("hanging_leg_raise", "k3"): "TWO THIRDS of the way up the hanging leg raise: the straight legs raised about 60 "
+        "degrees in front, together." + _BAR_STILL,
+    ("single_leg_deadlift", "k4"): _Q + "The BOTTOM of a single-leg deadlift: standing on the FAR leg, its foot flat and "
+        "the knee slightly soft; the hips hinged so the torso is nearly level with the floor, the back straight; the "
+        "NEAR leg straight and raised BEHIND in line with the torso, nearly level; both arms hanging straight down "
+        "towards the floor, the head in line with the back, looking at the floor." + _FEET.replace("Both feet stay", "The standing foot stays").replace("spots", "spot"),
+    ("single_leg_deadlift", "k1"): "The TOP of the single-leg deadlift: standing upright on the same far leg, the near "
+        "foot just off the floor slightly behind, the torso vertical, the arms hanging by the sides. The standing foot "
+        "stays on exactly the same spot of the floor.",
+    ("single_leg_deadlift", "k2"): "A THIRD of the way down the single-leg deadlift: the torso tilted forward about 30 "
+        "degrees, the near leg rising behind in line with it, the arms hanging straight down. The standing foot stays on "
+        "exactly the same spot of the floor.",
+    ("single_leg_deadlift", "k3"): "TWO THIRDS of the way down the single-leg deadlift: the torso tilted forward about 60 "
+        "degrees, the near leg behind in line with it, the arms hanging straight down. The standing foot stays on "
+        "exactly the same spot of the floor.",
+})
+for _slug in ("chin_up", "diamond_pushup", "glute_bridge", "hanging_leg_raise", "single_leg_deadlift"):
+    NEVER[_slug] = NEVER["pushups"]
+
+
 CREDITS = "https://api.bfl.ai/v1/credits"
 
 

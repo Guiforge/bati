@@ -1866,7 +1866,7 @@ def check(pose, view=0, loose=()):
     free = lambda b: b in short or b in loose or b.split()[-1] in loose  # noqa: E731
     lens = bone_lengths(pose)
     ratios = [v / SEG[b.split()[-1]] for b, v in lens.items() if not free(b) and b.split()[-1] not in ("hand", "foot")]
-    scale = statistics.median(ratios) if ratios else 1.0
+    scale = statistics.median(ratios) if ratios else pose.get("zoom", 1.0)  # every bone loose: the drawn zoom
     tol = LIMITS["bone" if "short" in pose else "traced"]
     for b, v in lens.items():
         r = v / (SEG[b.split()[-1]] * scale)
@@ -2958,14 +2958,20 @@ def _qcam(x, y, z, yaw, pitch):
     return (round((x - 500) * math.cos(ya) + z * math.sin(ya) + 512), round((y - 700) * math.cos(pa) - depth * math.sin(pa) + 700))
 
 
-def _pose3(neck, hip, head_dir, near, far, face=None, floor=880, pins=(), props=(), cam=(35, 12)):
+def _pose3(neck, hip, head_dir, near, far, face=None, floor=880, pins=(), props=(), cam=(35, 12), zoom=1.0, centre=(512, 540)):
     """A mannequin from 3D points. `near`/`far` are [arm, leg] chains of 3D points; the spine runs from the neck (the
-    middle of the shoulders) to the middle of the hips. `cam` = (yaw, pitch); the default is the 3/4 of every lot."""
-    q = lambda p: _qcam(*p, *cam)  # noqa: E731
+    middle of the shoulders) to the middle of the hips. `cam` = (yaw, pitch); the default is the 3/4 of every lot.
+    `zoom` scales the picture about the trunk, so a body seen from high up still fills the frame; `centre` is where the
+    middle of the trunk lands."""
+    c = _qcam(*((n + h) / 2 for n, h in zip(neck, hip)), *cam)  # zoom about the middle of the trunk
+
+    def q(p):
+        x, y = _qcam(*p, *cam)
+        return (round(centre[0] + (x - c[0]) * zoom), round(centre[1] + (y - c[1]) * zoom)) if zoom != 1.0 else (x, y)
     out = {"head": q(_at(_at(neck, head_dir, SEG["neck"]), head_dir, SEG["head"])), "face": face, "short": {},
            "torso": [q(tuple(n + (h - n) * t for n, h in zip(neck, hip))) for t in (0, 0.25, 0.5, 0.75, 1)],
            "near": [[q(p) for p in c] for c in near], "far": [[q(p) for p in c] for c in far],
-           "pins": [q(p) for p in pins], "props": [[q((x, floor, z)) for x, z in ((-300, -700), (1300, -700), (1300, 700), (-300, 700))]] + list(props)}
+           "zoom": zoom, "pins": [q(p) for p in pins], "props": [[q((x, floor, z)) for x, z in ((-300, -700), (1300, -700), (1300, 700), (-300, 700))]] + list(props)}
     return out
 
 
@@ -3014,7 +3020,7 @@ def _wipers13(phi):
                   pins=[arms[0][2], arms[1][2]], cam=(-50, 32))
 
 
-def _deadbug13(side, cam=(35, 12)):
+def _deadbug13(side, cam=(35, 12), zoom=1.0):
     """Dead bug, on the back, head on the left: arms straight up, hips and knees at 90 degrees. side -1: the near arm
     reaches overhead and the far leg straightens out low; +1 the other pair; 0 the start."""
     neck, hip = (300, _FLOOR_BACK, 0), (550, _FLOOR_BACK, 0)
@@ -3033,7 +3039,7 @@ def _deadbug13(side, cam=(35, 12)):
             knee = (550, _FLOOR_BACK - 225, k * _HP)
             a = (550 + 215, _FLOOR_BACK - 225, k * _HP)
             legs.append([hp, knee, a, _at(a, (0.3, -0.95, 0), SEG["foot"])])
-    return _pose3(neck, hip, (-1, 0, 0), [arms[0], legs[0]], [arms[1], legs[1]], face=(0, -1), cam=cam)
+    return _pose3(neck, hip, (-1, 0, 0), [arms[0], legs[0]], [arms[1], legs[1]], face=(0, -1), cam=cam, zoom=zoom)
 
 
 def _climber13(near_in, far_in, hop=0):
@@ -3416,7 +3422,7 @@ VIDEO_MOTION["squat"] = VIDEO_MOTION["squat"] + _BD_KEEP
 
 # v15 (Guillaume, 11/11, review of the comic panels): "refaire le mannequin" for the bicycle crunch, hands kept on the
 # head the whole time, three-quarter view; the dead bug in three-quarter with the whole alternation.
-def _bicycle15(side, cam=(35, 12)):
+def _bicycle15(side, cam=(35, 12), zoom=1.0, centre=(512, 540)):
     """Bicycle crunch, on the back, head on the left, hands behind the head the whole time, elbows wide. The shoulders
     curl off the floor and the trunk twists so one elbow meets the opposite knee, pulled to the chest, while the other
     leg straightens low. side -1: the near elbow to the far knee; +1 the far elbow to the near knee; 0 between, square,
@@ -3425,7 +3431,7 @@ def _bicycle15(side, cam=(35, 12)):
     curl = math.radians(40)
     u = (-math.cos(curl), -math.sin(curl), 0.0)  # hips towards the neck
     neck = _at(hip, u, SEG["torso"])
-    a = math.radians(-side * 38)  # twist about the spine: the working shoulder lifts and comes across
+    a = math.radians(-side * 46)  # twist about the spine: the working shoulder lifts and comes across
     cross = (u[1], -u[0], 0.0)  # u x z
     lat = tuple(math.cos(a) * zc + math.sin(a) * cc for zc, cc in zip((0, 0, 1), cross))
     head_dir = _n((u[0] * 0.8 + 0.25, u[1] * 0.8 - 0.1, 0))
@@ -3435,9 +3441,9 @@ def _bicycle15(side, cam=(35, 12)):
         hp = (hip[0], hip[1], k * _HP)
         if side == -k or side == 0:
             reach = 1.0 if side else 0.55  # the working knee comes right to the chest; between sides both half way
-            th = math.radians(_lerp(-90, -114, reach))
+            th = math.radians(_lerp(-90, -126, reach))
             # The working knee also comes in towards the middle, where the opposite elbow meets it.
-            knee = (hp[0] + SEG["thigh"] * math.cos(th), hp[1] + SEG["thigh"] * math.sin(th), k * (15 if side else _HP))
+            knee = (hp[0] + SEG["thigh"] * math.cos(th), hp[1] + SEG["thigh"] * math.sin(th), k * (-8 if side else _HP))
             ankle = _at(knee, (0.98, 0.18, 0), SEG["shin"])
             legs.append([hp, knee, ankle, _at(ankle, (0.35, -0.94, 0), SEG["foot"])])
             knees[k] = knee
@@ -3456,57 +3462,42 @@ def _bicycle15(side, cam=(35, 12)):
         else:
             pole = _n(tuple(k * lc + 0.25 * xc for lc, xc in zip(lat, (1, 0, 0))))  # elbow out wide
             arms.append(_limb3(sh, wrist, ("upper", "fore", "hand"), pole, (0, 0, -k)))
-    return _pose3(neck, hip, head_dir, [arms[0], legs[0]], [arms[1], legs[1]], face=(0.6, -1), cam=cam)
+    return _pose3(neck, hip, head_dir, [arms[0], legs[0]], [arms[1], legs[1]], face=(0.6, -1), cam=cam, zoom=zoom, centre=centre)
+
+
+def _deadbug15(t, cam, zoom, centre=(512, 540)):
+    """_deadbug13 with the in-between positions (Guillaume: "rajouter un peu plus d'images"): t from -1 to 1, its sign
+    picks the pair (as _deadbug13's side), its size how far the arm has gone overhead and the leg has straightened."""
+    neck, hip = (300, _FLOOR_BACK, 0), (550, _FLOOR_BACK, 0)
+    s, amt = (1 if t > 0 else -1), abs(t)
+    arms, legs = [], []
+    for k in (-1, 1):
+        sh, hp = (300, _FLOOR_BACK, k * _SH), (550, _FLOOR_BACK, k * _HP)
+        u = amt if s == k else 0.0
+        ang = math.radians(_lerp(-90, -160, u))  # straight up, then back overhead, low
+        arms.append(_limb3(sh, _at(sh, (math.cos(ang), math.sin(ang), 0), 262), ("upper", "fore", "hand"), (0, 0, k),
+                           (math.cos(ang), math.sin(ang), 0)))
+        v = amt if s == -k else 0.0
+        th, sa = math.radians(_lerp(-90, -14, v)), math.radians(_lerp(0, -14, v))  # thigh, shin
+        knee = _at(hp, (math.cos(th), math.sin(th), 0), SEG["thigh"])
+        ankle = _at(knee, (math.cos(sa), math.sin(sa), 0), SEG["shin"])
+        legs.append([hp, knee, ankle, _at(ankle, (0.3 + 0.2 * v, -0.95 + 0.1 * v, 0), SEG["foot"])])
+    return _pose3(neck, hip, (-1, 0, 0), [arms[0], legs[0]], [arms[1], legs[1]], face=(0, -1), cam=cam, zoom=zoom, centre=centre)
 
 
 # Cameras higher than the lots' 35/12: from there the near and far limbs stacked, which is why the dead bug's swap
 # never read in 3/4. The bicycle crunch is nearly side-on from above, so the elbow crossing over the belly shows.
-_CAM_BIKE, _CAM_BUG = (20, 48), (40, 30)
-_seq("bicycle_crunch", "k2", 2, {"k1": _bicycle15(0, _CAM_BIKE), "k2": _bicycle15(-1, _CAM_BIKE), "k3": None,
-                                 "k4": _bicycle15(1, _CAM_BIKE)}, {"k3": "k1"})
-_seq("dead_bug", "k2", 4, {"k1": _deadbug13(0, _CAM_BUG), "k2": _deadbug13(-1, _CAM_BUG), "k3": None,
-                           "k4": _deadbug13(1, _CAM_BUG)}, {"k3": "k1"})
-_HIGH_Q = ("THREE-QUARTER view from ABOVE: the camera looks down on the hero from high up and a little to the side, so "
-           "the near limbs and the far limbs read separately, never one in front of the other. ")
-POSE_TEXT.update({
-    ("bicycle_crunch", "k2"): _HIGH_Q + "A bicycle crunch." + _BACK + " BOTH hands stay behind the head, fingers "
-        "touching behind the skull, the elbows bent. The shoulders are curled up off the floor and the chest twists "
-        "towards the FAR side: the NEAR elbow comes across the body and touches the FAR knee above the belly. The FAR "
-        "knee is pulled in over the hips, the thigh nearly vertical, the shin level. The NEAR leg is straight and "
-        "extended out low, a hand above the floor. The far elbow stays wide, pointing out to the far side.",
-    ("bicycle_crunch", "k1"): "Between the two sides of the bicycle crunch: the shoulders still curled up off the floor "
-        "and square, not twisted, both hands still behind the head with both elbows wide; both knees bent at the same "
-        "height above the hips, the shins level.",
-    ("bicycle_crunch", "k4"): "The bicycle crunch on the OTHER side: the chest twists towards the NEAR side, the FAR "
-        "elbow comes across and touches the NEAR knee, pulled in over the hips; the FAR leg is straight and extended out "
-        "low; the near elbow stays wide. Both hands still behind the head. Compared with image 2, the two legs have "
-        "traded places and the chest turns the other way.",
-    ("dead_bug", "k2"): _HIGH_Q + POSE_TEXT[("dead_bug", "k2")][len(_Q):],
-})
-# v15 retry: both first dead bugs put the overhead arm and the straight leg on the SAME side, both bicycle crunches
-# kept the chest square with both elbows wide.
-POSE_TEXT[("dead_bug", "k2")] += (" OPPOSITE arm and leg: the arm reaching overhead and the straight leg are on OPPOSITE "
-    "sides of the body. The straight leg is the FAR leg, higher in the picture, seen behind the bent near leg; the bent "
-    "near leg is the lower one in the picture, its knee nearest the camera. The head stays where image 1 puts it, at the "
-    "lower left.")
-POSE_TEXT[("bicycle_crunch", "k2")] += (" The chest is clearly TURNED, not square: the near shoulder is lifted higher "
-    "than the far one and the near elbow is pulled across the body, touching or nearly touching the far knee in the "
-    "middle of the picture. The hands never leave the back of the head.")
-# Second retry: near/far did not hold, so name the anatomical sides (head on the left, face up: near = the hero's right).
-POSE_TEXT[("dead_bug", "k2")] += (" In plain words: the hero's RIGHT arm reaches back overhead, the LEFT arm points at "
-    "the ceiling; the LEFT leg is straight and low, the RIGHT leg is bent in the tabletop. Right arm overhead goes with "
-    "LEFT leg straight, never the right leg.")
-POSE_TEXT[("bicycle_crunch", "k2")] += (" In plain words: the RIGHT elbow crosses over to the LEFT knee; the LEFT knee "
-    "is pulled in, the RIGHT leg is straight and low; the left elbow points out to the side.")
-POSE_TEXT[("dead_bug", "k4")] += (" In plain words: now the LEFT arm reaches back overhead and the RIGHT arm points at "
-    "the ceiling; the RIGHT leg is straight and low and the LEFT leg is bent in the tabletop.")
-POSE_TEXT[("bicycle_crunch", "k4")] += (" In plain words: now the LEFT elbow crosses over to the RIGHT knee, pulled in; "
-    "the LEFT leg is straight and low; the right elbow points out to the side.")
-# Both first k4 tries copied image 2 (the side swap that failed in every earlier lot).
-POSE_TEXT[("bicycle_crunch", "k4")] += (" SWAP the legs compared with image 2: the leg that is straight in image 2 is now "
-    "the one pulled in with its knee high, and the knee that is pulled in in image 2 is now the straight low leg. The "
-    "chest turns the other way. The picture must NOT look like image 2.")
-NEVER["bicycle_crunch"] = NEVER["pushups"]
+# v15b (Guillaume, 11/11, after the drawings: "il faut bien valider que tout est bien visible avec le mannequin"). The
+# bicycle crunch nearly side-on and a little above: the only view where the pulled-in thigh is seen whole (from above
+# it points at the camera) and the elbow meets the knee in the open. The dead bug from the feet end and above: the
+# straight-up arm never crosses the face, which is what made the 3/4 drawings strange. Zoomed so the body fills the
+# frame, and the dead bug gets its in-between positions.
+_CAM_BIKE, _CAM_BUG = ((10, 25), 1.15, (330, 600)), ((140, 45), 1.15, (560, 560))
+_seq("bicycle_crunch", "k2", 2, {"k1": _bicycle15(0, *_CAM_BIKE), "k2": _bicycle15(-1, *_CAM_BIKE), "k3": None,
+                                 "k4": _bicycle15(1, *_CAM_BIKE)}, {"k3": "k1"})
+_seq("dead_bug", "k3", 4, {"k1": _deadbug15(0, *_CAM_BUG), "k2": _deadbug15(-0.5, *_CAM_BUG), "k3": _deadbug15(-1, *_CAM_BUG),
+                           "k4": None, "k5": None, "k6": _deadbug15(0.5, *_CAM_BUG), "k7": _deadbug15(1, *_CAM_BUG),
+                           "k8": None}, {"k4": "k2", "k5": "k1", "k8": "k6"})
 for _slug in ("bicycle_crunch", "dead_bug"):
     SIDE.pop(_slug, None)
     LOOSE[_slug] = "torso, upper, fore, hand, thigh, shin, foot"

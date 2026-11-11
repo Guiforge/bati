@@ -2972,12 +2972,12 @@ def _pose3(neck, hip, head_dir, near, far, face=None, floor=880, pins=(), props=
 _SH, _HP = 85, 50  # half shoulder and half hip width
 
 
-def _archer13(t):
-    """Archer push-up: hands far wider than the shoulders; the body lowers and shifts towards the near hand, whose elbow
-    bends, while the far arm stays straight, reaching out sideways."""
+def _archer13(t, side=-1):
+    """Archer push-up: hands far wider than the shoulders; the body lowers and shifts towards one hand (side -1: the
+    near one), whose elbow bends, while the other arm stays straight, reaching out sideways."""
     hand_x = 800
     wrists = ((hand_x, 858, -230), (hand_x, 858, 230))
-    sz, sy = _lerp(0, -105, t), _lerp(858 - math.sqrt(262 ** 2 - (230 - _SH) ** 2), 760, t)
+    sz, sy = _lerp(0, side * 105, t), _lerp(858 - math.sqrt(262 ** 2 - (230 - _SH) ** 2), 760, t)
     ankle_c = (175, 832, 0)
     sx = ankle_c[0] + math.sqrt(690 ** 2 - (ankle_c[1] - sy) ** 2 - sz ** 2)
     neck = (sx, sy, sz)
@@ -3008,10 +3008,10 @@ def _wipers13(phi):
         root = (hip[0], hip[1], k * _HP)
         end = _at(root, d, SEG["thigh"] + SEG["shin"] - 1)
         legs.append([root, _at(root, d, SEG["thigh"]), end, _at(end, (0.8, d[1] * 0.4, d[2] * 0.4), SEG["foot"])])
-    # Seen from the feet end and from above (yaw 90, pitch 40): the legs swing left and right across the picture like
-    # a wiper; from the usual 3/4 a swing towards the camera read as the legs folded over the chest.
-    return _pose3(neck, hip, (-1, 0, 0), [arms[0], legs[0]], [arms[1], legs[1]], face=None,
-                  pins=[arms[0][2], arms[1][2]], cam=(90, 40))
+    # Three-quarter from the head end (Guillaume: "de 3/4 avec la tête d'abord"), and from above: from the usual 3/4 a
+    # swing towards the camera read as the legs folded over the chest; from the feet the head was lost.
+    return _pose3(neck, hip, (-1, 0, 0), [arms[0], legs[0]], [arms[1], legs[1]], face=(0.3, -1),
+                  pins=[arms[0][2], arms[1][2]], cam=(-50, 32))
 
 
 def _deadbug13(side):
@@ -3039,20 +3039,22 @@ def _deadbug13(side):
 def _climber13(near_in, far_in):
     """Mountain climber: the push-up top, hands fixed; each knee drives towards the chest in turn (near_in, far_in from
     0 = leg back on the toes to 1 = knee under the chest, foot off the floor)."""
+    # A plank sloping from the shoulders to the heels, the hips a little high (v13 had them at shoulder height, so the
+    # straight leg could not reach the floor and the tucked knee folded backwards onto it).
     wrist = (790, 858)
     neck = (790, 858 - 262)
-    ankle_back = (175, 832)
-    hip_y = neck[1] + 30
-    hip = (neck[0] - math.sqrt(250 ** 2 - 30 ** 2), hip_y)
+    hip = (555, 668)
+    ankle_back_x = hip[0] - math.sqrt(438 ** 2 - (832 - hip[1]) ** 2)
     arms, legs = [], []
     for k, amount in ((-1, near_in), (1, far_in)):
         arms.append(_limb3((neck[0], neck[1], k * _SH), (wrist[0], wrist[1], k * _SH), ("upper", "fore", "hand"),
                            (-1, 0, 0), (1, 0, 0)))
         root = (hip[0], hip[1], k * _HP)
-        back = (ankle_back[0], ankle_back[1], k * _HP)
-        tuck = (hip[0] + 120, 800, k * _HP)
+        back = (ankle_back_x, 832, k * _HP)
+        tuck = (hip[0] + 30, 805, k * _HP)  # the foot under the hip, the knee forward under the chest
         ankle = tuple(_lerp(b, c, amount) for b, c in zip(back, tuck))
-        legs.append(_limb3(root, ankle, ("thigh", "shin", "foot"), (0.3, 1, 0), (0.53, 0.85, 0)))
+        foot = tuple(_lerp(b, c, amount) for b, c in zip((0.53, 0.85, 0), (0.25, 0.97, 0)))
+        legs.append(_limb3(root, ankle, ("thigh", "shin", "foot"), (1, 0.35, 0), foot))
     return _pose3((neck[0], neck[1], 0), (hip[0], hip[1], 0), (0.9, 0.35, 0), [arms[0], legs[0]], [arms[1], legs[1]],
                   face=(0.4, 1), pins=[arms[0][2], arms[1][2]])
 
@@ -3093,14 +3095,20 @@ def _revcrunch13(t):
     return _pose3(neck, hip, (-1, 0, 0), [arms[0], legs[0]], [arms[1], legs[1]], face=(0, -1))
 
 
-for _slug, _f, _a in (("archer_pushup", _archer13, "k4"), ("reverse_crunch", _revcrunch13, "k4")):
+# Archer: down to one hand, back up, down to the other (Guillaume: "continue le mouvement pour faire aussi l'autre bras").
+_seq("archer_pushup", "k4", 6, {"k1": _archer13(0), "k2": _archer13(1 / 3), "k3": _archer13(2 / 3), "k4": _archer13(1),
+                                "k5": None, "k6": None, "k7": None, "k8": _archer13(1 / 3, 1), "k9": _archer13(2 / 3, 1),
+                                "k10": _archer13(1, 1), "k11": None, "k12": None},
+     {"k5": "k3", "k6": "k2", "k7": "k1", "k11": "k9", "k12": "k8"})
+for _slug, _f, _a in (("reverse_crunch", _revcrunch13, "k4"),):
     _seq(_slug, _a, 3, {"k1": _f(0), "k2": _f(1 / 3), "k3": _f(2 / 3), "k4": _f(1), "k5": None, "k6": None},
          {"k5": "k3", "k6": "k2"})
 # Alternating ones: one side, the middle, the other side; the loop comes back through the middle.
 _seq("dead_bug", "k2", 3, {"k1": _deadbug13(0), "k2": _deadbug13(-1), "k3": None, "k4": _deadbug13(1)}, {"k3": "k1"})
 _seq("bear_crawl", "k2", 2, {"k1": _bear13(0), "k2": _bear13(-1), "k3": None, "k4": _bear13(1)}, {"k3": "k1"})
-_seq("mountain_climber", "k1", 1, {"k1": _climber13(1, 0), "k2": _climber13(0.5, 0.5), "k3": _climber13(0, 1),
-                                   "k4": None}, {"k4": "k2"})
+# Between the knees, the plank (both legs back): two half-bent legs read as kneeling, not as running.
+_seq("mountain_climber", "k1", 1, {"k1": _climber13(1, 0), "k2": _climber13(0, 0), "k3": _climber13(0, 1), "k4": None},
+     {"k4": "k2"})
 _seq("windshield_wipers", "k1", 4, {"k1": _wipers13(0), "k2": _wipers13(-35), "k3": _wipers13(-70), "k4": None,
                                     "k5": None, "k6": _wipers13(35), "k7": _wipers13(70), "k8": None},
      {"k4": "k2", "k5": "k1", "k8": "k6"})

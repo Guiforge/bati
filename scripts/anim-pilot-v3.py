@@ -589,18 +589,23 @@ def draw(slug, key):
     def dot(p, r, colour):
         d.ellipse((p[0] - r, p[1] - r, p[0] + r, p[1] + r), fill=colour)
 
-    def limb(points, colour, leg, width=30, outline=0):
+    def limb(points, colour, leg, width=30, outline=0, part=None):
+        """part: None the whole limb; 0 or 1 only its upper or lower bone (by_depth paints a limb in two goes when
+        something passes between its bones); the hand or foot goes with the lower one."""
         hand = "#5BF08C" if colour == artloop.NEAR else "#1F9A55"  # green mitten: bright near, dark far
         bones, end = (points[:-1], points[-1]) if len(points) > 3 else (points, None)
         (a, b, c_), flex = bones, abs(_ang(*bones[:2], *bones[1:]))
         k = math.dist(b, lerp(a, c_, 0.5)) or 1
+        seg = bones if part is None else bones[part:part + 2]
         for w, c in ((width + 2 * outline, artloop.BG), (width, colour)) if outline else ((width, colour),):
-            d.line(bones, fill=c, width=w, joint="curve")
-            for p in bones:
+            d.line(seg, fill=c, width=w, joint="curve")
+            for p in seg:
                 dot(p, w / 2, c)
             if flex > 20:  # kneecap, point of the elbow: a bump on the outside of the bend
                 dot((b[0] + (b[0] - (a[0] + c_[0]) / 2) / k * width * 0.4, b[1] + (b[1] - (a[1] + c_[1]) / 2) / k * width * 0.4),
                     w * 0.36, c)
+            if part == 0:
+                continue
             if not leg:  # the hand: a palm past the wrist, four fingers and a thumb (a bar grip draws its own fingers)
                 hand_shape(bones, end, w - width, c if c == artloop.BG else hand)
             elif end:  # foot: a wedge, wide at the heel and narrow at the toes
@@ -614,9 +619,9 @@ def draw(slug, key):
                 dot(end, tip, hc)
                 if leg:  # the heel, behind the ankle
                     dot((x0 - ux * width * 0.3, y0 - uy * width * 0.3), wide, c)
-        if not leg and pose.get("grip") and c != artloop.BG:
+        if not leg and pose.get("grip") and c != artloop.BG and part != 0:
             grips.append((bones[-1], hand, c == artloop.NEAR))  # drawn last, over the pins
-        for p in bones[1:]:
+        for p in bones[1:2] if part == 0 else bones[1:]:
             dot(p, 6, "white")
 
     def hand_shape(bones, end, extra, colour):
@@ -654,36 +659,74 @@ def draw(slug, key):
 
     grips = []
 
-    for points in pose["far"]:
-        limb(points, artloop.FAR, points is pose["far"][-1])
     spine = smooth(pose["torso"])
     n = len(spine)
-    # Shoulder line and pelvis line, from one side's joint to the other's through the spine: in a front
-    # view the limbs no longer float beside the trunk, and the width of the shoulders and hips reads.
-    for i, at in ((0, spine[0]), (-1, spine[-1])):
-        if len(pose["near"]) > 1 or i:
-            d.line([pose["far"][i][0], at, pose["near"][i][0]], fill=artloop.TORSO, width=30, joint="curve")
-            dot(pose["far"][i][0], 15, artloop.TORSO)
-    d.line(spine, fill=artloop.TORSO, width=40, joint="curve")
-    blob(spine[0], spine[max(1, n // 3)], 66, artloop.TORSO)       # chest
-    blob(spine[-1], spine[min(n - 2, n - 1 - n // 6)], 58, artloop.TORSO)  # pelvis
-    for p in spine[2:-2:max(1, n // 8)]:
-        dot(p, 5, "#4B5263")                                         # vertebrae
     x, y = pose["head"]
-    d.line([spine[0], (x, y)], fill=artloop.TORSO, width=26)         # neck
-    dot((x, y), 50, "#101420")                                        # outline, so the head parts from the neck
-    dot((x, y), 44, "#F5C518")                                        # yellow head
-    if pose.get("face"):
-        fx, fy = pose["face"]
-        k = 1 / max(1e-6, math.hypot(fx, fy))
-        fx, fy = fx * k, fy * k
-        d.polygon([(x + fx * 66, y + fy * 66), (x + fx * 36 - fy * 16, y + fy * 36 + fx * 16),
-                   (x + fx * 36 + fy * 16, y + fy * 36 - fx * 16)], fill="#E8590C", outline="#101420")
-        dot((x + fx * 20 - fy * 14, y + fy * 20 + fx * 14), 7, "#101420")  # eye, on the face side
-    for _, a, b, w in pose.get("front", ()):  # a prop nearer the camera than the head (pull-up bar): drawn over it
-        d.line([a, b], fill=artloop.PROP, width=w)
-    for points in reversed(pose["near"]):  # leg, then arm: the arm hangs outside the leg
-        limb(points, artloop.NEAR, points is pose["near"][-1], outline=7)
+
+    def trunk():
+        # Shoulder line and pelvis line, from one side's joint to the other's through the spine: in a front
+        # view the limbs no longer float beside the trunk, and the width of the shoulders and hips reads.
+        for i, at in ((0, spine[0]), (-1, spine[-1])):
+            if len(pose["near"]) > 1 or i:
+                d.line([pose["far"][i][0], at, pose["near"][i][0]], fill=artloop.TORSO, width=30, joint="curve")
+                dot(pose["far"][i][0], 15, artloop.TORSO)
+        d.line(spine, fill=artloop.TORSO, width=40, joint="curve")
+        blob(spine[0], spine[max(1, n // 3)], 66, artloop.TORSO)       # chest
+        blob(spine[-1], spine[min(n - 2, n - 1 - n // 6)], 58, artloop.TORSO)  # pelvis
+        for p in spine[2:-2:max(1, n // 8)]:
+            dot(p, 5, "#4B5263")                                         # vertebrae
+
+    def head():
+        d.line([spine[0], (x, y)], fill=artloop.TORSO, width=26)         # neck
+        dot((x, y), 50, "#101420")                                        # outline, so the head parts from the neck
+        dot((x, y), 44, "#F5C518")                                        # yellow head
+        if pose.get("face"):
+            fx, fy = pose["face"]
+            k = 1 / max(1e-6, math.hypot(fx, fy))
+            fx, fy = fx * k, fy * k
+            d.polygon([(x + fx * 66, y + fy * 66), (x + fx * 36 - fy * 16, y + fy * 36 + fx * 16),
+                       (x + fx * 36 + fy * 16, y + fy * 36 - fx * 16)], fill="#E8590C", outline="#101420")
+            dot((x + fx * 20 - fy * 14, y + fy * 20 + fx * 14), 7, "#101420")  # eye, on the face side
+
+    def by_depth():
+        """v15c, only for a pose that carries `depths` (_pose3 with depth_sort): every bone, the trunk and the head from
+        the farthest to the nearest. By sides, a far elbow crossing in front of the chest was hidden and a near forearm
+        going behind the head was painted over the face (bicycle crunch). Colours still say the side."""
+        todo = [(pose["depths"]["torso"], trunk, None), (pose["depths"]["head"], head, None)]
+        for side, colour in (("far", artloop.FAR), ("near", artloop.NEAR)):
+            for points, depths in zip(pose[side], pose["depths"][side]):
+                todo += [(depth, (points, colour, points is pose[side][-1]), part) for part, depth in enumerate(depths)]
+        todo.sort(key=lambda item: -item[0])
+        half = []  # limbs with one bone painted so far
+        while todo:
+            _, what, part = todo.pop(0)
+            if part is None:
+                what()
+                continue
+            points, colour, leg = what
+            if todo and todo[0][2] is not None and todo[0][1][0] is points:  # its other bone comes next: the limb whole
+                todo.pop(0)
+                limb(points, colour, leg, outline=7)
+                continue
+            limb(points, colour, leg, outline=7, part=part)
+            if any(points is other for other in half):  # close the joint: the second bone's outline cut across the first
+                joint, back = points[1], points[2 if part == 0 else 0]
+                d.line([joint, lerp(joint, back, min(1, 26 / (math.dist(joint, back) or 1)))], fill=colour, width=30)
+                dot(joint, 15, colour)
+                dot(joint, 6, "white")
+            half.append(points)
+
+    if pose.get("depths"):
+        by_depth()
+    else:
+        for points in pose["far"]:
+            limb(points, artloop.FAR, points is pose["far"][-1])
+        trunk()
+        head()
+        for _, a, b, w in pose.get("front", ()):  # a prop nearer the camera than the head (pull-up bar): drawn over it
+            d.line([a, b], fill=artloop.PROP, width=w)
+        for points in reversed(pose["near"]):  # leg, then arm: the arm hangs outside the leg
+            limb(points, artloop.NEAR, points is pose["near"][-1], outline=7)
     for p in pose.get("pins", ()):
         d.ellipse((p[0] - 22, p[1] - 22, p[0] + 22, p[1] + 22), outline="white", width=5)
     for (hx, hy), hand, near in grips:  # bar grip: four fingers wrap over the bar the way v points, the thumb under it
@@ -2958,20 +3001,39 @@ def _qcam(x, y, z, yaw, pitch):
     return (round((x - 500) * math.cos(ya) + z * math.sin(ya) + 512), round((y - 700) * math.cos(pa) - depth * math.sin(pa) + 700))
 
 
-def _pose3(neck, hip, head_dir, near, far, face=None, floor=880, pins=(), props=(), cam=(35, 12), zoom=1.0, centre=(512, 540)):
+def _pose3(neck, hip, head_dir, near, far, face=None, floor=880, pins=(), props=(), cam=(35, 12), zoom=1.0, centre=(512, 540),
+           spine=None, depth_sort=False):
     """A mannequin from 3D points. `near`/`far` are [arm, leg] chains of 3D points; the spine runs from the neck (the
-    middle of the shoulders) to the middle of the hips. `cam` = (yaw, pitch); the default is the 3/4 of every lot.
-    `zoom` scales the picture about the trunk, so a body seen from high up still fills the frame; `centre` is where the
-    middle of the trunk lands."""
+    middle of the shoulders) to the middle of the hips, straight unless `spine` gives its 3D points (neck first). `cam` =
+    (yaw, pitch); the default is the 3/4 of every lot. `zoom` scales the picture about the trunk, so a body seen from
+    high up still fills the frame; `centre` is where the middle of the trunk lands. `depth_sort` adds `depths`, each
+    bone's, the trunk's and the head's distance from the camera, and draw() then paints by them instead of by sides."""
+    # Orange is the side this camera sees first, whatever the builder called it: past 90 degrees of yaw the z+ side
+    # comes round to the front, and draw() paints `near` last (dead bug v15b: the front limbs went under the trunk).
+    ya = math.radians(cam[0])
+    away = lambda side: -(side[-1][0][0] - 500) * math.sin(ya) + side[-1][0][2] * math.cos(ya)  # noqa: E731, _qcam's depth
+    if away(near) > away(far):  # of the hip joint: the pelvis never twists, so a side keeps its colour through a loop
+        near, far = far, near
     c = _qcam(*((n + h) / 2 for n, h in zip(neck, hip)), *cam)  # zoom about the middle of the trunk
 
     def q(p):
         x, y = _qcam(*p, *cam)
         return (round(centre[0] + (x - c[0]) * zoom), round(centre[1] + (y - c[1]) * zoom)) if zoom != 1.0 else (x, y)
     out = {"head": q(_at(_at(neck, head_dir, SEG["neck"]), head_dir, SEG["head"])), "face": face, "short": {},
-           "torso": [q(tuple(n + (h - n) * t for n, h in zip(neck, hip))) for t in (0, 0.25, 0.5, 0.75, 1)],
+           "torso": [q(p) for p in spine or [tuple(n + (h - n) * t for n, h in zip(neck, hip)) for t in (0, 0.25, 0.5, 0.75, 1)]],
            "near": [[q(p) for p in c] for c in near], "far": [[q(p) for p in c] for c in far],
            "zoom": zoom, "pins": [q(p) for p in pins], "props": [[q((x, floor, z)) for x, z in ((-300, -700), (1300, -700), (1300, 700), (-300, 700))]] + list(props)}
+    if depth_sort:
+        pa = math.radians(cam[1])
+
+        def deep(*points):  # along the line of sight: _qcam's depth, and lower is farther from a camera above
+            return round(sum((-(x - 500) * math.sin(ya) + z * math.cos(ya)) * math.cos(pa) + (y - 700) * math.sin(pa)
+                             for x, y, z in points) / len(points), 1)
+        out["depths"] = {"torso": deep(*(spine or (neck, hip))), "head": deep(_at(neck, head_dir, SEG["neck"] + SEG["head"])),
+                         # a lower bone counts its far end twice: the hand or foot is there, and it is the end that
+                         # lies on the head when the hands are behind it
+                         "near": [(deep(*c[:2]), deep(c[1], c[2], c[2])) for c in near],
+                         "far": [(deep(*c[:2]), deep(c[1], c[2], c[2])) for c in far]}
     return out
 
 
@@ -3428,41 +3490,55 @@ def _bicycle15(side, cam=(35, 12), zoom=1.0, centre=(512, 540)):
     leg straightens low. side -1: the near elbow to the far knee; +1 the far elbow to the near knee; 0 between, square,
     both knees bent at the same height."""
     hip = (550, _FLOOR_BACK, 0)
-    curl = math.radians(40)
-    u = (-math.cos(curl), -math.sin(curl), 0.0)  # hips towards the neck
-    neck = _at(hip, u, SEG["torso"])
-    a = math.radians(-side * 46)  # twist about the spine: the working shoulder lifts and comes across
+    # v15c: the spine curls (lower back flat, shoulders off the floor) instead of one straight line from the hips: a
+    # straight trunk put the neck too far from the hips for an elbow to reach a knee without the knee in the chest.
+    spine = [hip]
+    for deg in (4, 26, 52, 74):
+        r = math.radians(deg)
+        spine.append(tuple(round(c + d * SEG["torso"] / 4, 1) for c, d in zip(spine[-1], (-math.cos(r), -math.sin(r), 0))))
+    neck, top = spine[-1], math.radians(74)
+    u = (-math.cos(top), -math.sin(top), 0.0)  # the upper back, towards the neck
+    a = math.radians(-side * 45)  # twist about it: the working shoulder comes forward and across
     cross = (u[1], -u[0], 0.0)  # u x z
     lat = tuple(math.cos(a) * zc + math.sin(a) * cc for zc, cc in zip((0, 0, 1), cross))
-    head_dir = _n((u[0] * 0.8 + 0.25, u[1] * 0.8 - 0.1, 0))
-    head_c = _at(_at(neck, head_dir, SEG["neck"]), head_dir, SEG["head"] * 0.5)
-    legs, knees = [], {}
+    nod = top - math.radians(15)  # the head a little back from the line of the upper back, the chin off the chest
+    head_dir, face = (-math.cos(nod), -math.sin(nod), 0.0), (math.sin(nod), -math.cos(nod), 0.0)
+    head_c = _at(neck, head_dir, SEG["neck"] + SEG["head"])  # where _pose3 draws the head disc
+    arms, legs, knee = {}, [], None
+    for k in (side or -1, -(side or -1)):  # the working arm first: its elbow says where the opposite knee goes
+        sh = tuple(round(n - 20 * uc + k * _SH * lc, 1) for n, uc, lc in zip(neck, u, lat))  # joints below the neck's base
+        # Hands at the base of the skull, the fingers up along the back of the head: pointing across (as laced fingers
+        # do) the near hand lay over the whole face; this low, the forearm also passes under the chin, clear of the head.
+        wrist = tuple(round(c - 50 * fc - 45 * hc, 1) for c, fc, hc in zip(head_c, face, head_dir))[:2] + (k * 30,)
+        tip = (head_dir[0], head_dir[1], -k * 0.3)
+        if side == k:
+            hp = (hip[0], hip[1], -k * _HP)
+            deep = math.radians(-128)  # as far as a hip folds once the pelvis tips with the crunch
+            knee = (hp[0] + SEG["thigh"] * math.cos(deep), hp[1] + SEG["thigh"] * math.sin(deep), 0)
+            for _ in range(4):  # the elbow towards the knee, then the knee towards the elbow, until they settle
+                arm = _limb3(sh, wrist, ("upper", "fore", "hand"), _n(_v(sh, knee)), tip)
+                to = _n(_v(hp, arm[1]))
+                if math.atan2(to[1], to[0]) < deep:
+                    c = math.hypot(to[0], to[1])
+                    to = (math.cos(deep) * c, math.sin(deep) * c, to[2])
+                knee = _at(hp, to, SEG["thigh"])
+            arms[k] = arm
+        else:  # the elbow out wide, a little towards the face
+            arms[k] = _limb3(sh, wrist, ("upper", "fore", "hand"), _n(tuple(k * lc + 0.15 * fc for lc, fc in zip(lat, face))), tip)
     for k in (-1, 1):
         hp = (hip[0], hip[1], k * _HP)
-        if side == -k or side == 0:
-            reach = 1.0 if side else 0.55  # the working knee comes right to the chest; between sides both half way
-            th = math.radians(_lerp(-90, -126, reach))
-            # The working knee also comes in towards the middle, where the opposite elbow meets it.
-            knee = (hp[0] + SEG["thigh"] * math.cos(th), hp[1] + SEG["thigh"] * math.sin(th), k * (-8 if side else _HP))
-            ankle = _at(knee, (0.98, 0.18, 0), SEG["shin"])
-            legs.append([hp, knee, ankle, _at(ankle, (0.35, -0.94, 0), SEG["foot"])])
-            knees[k] = knee
-        else:
-            d = (0.96, -0.28, 0)  # straight, a hand above the floor
+        if side == k:
+            d = (0.975, -0.22, 0)  # straight, a hand above the floor
             ankle = _at(hp, d, SEG["thigh"] + SEG["shin"] - 1)
             legs.append([hp, _at(hp, d, SEG["thigh"]), ankle, _at(ankle, (0.45, -0.89, 0), SEG["foot"])])
-    arms = []
-    back = (head_dir[1], -head_dir[0], 0)  # from the head's centre towards the floor side of the skull
-    for k in (-1, 1):
-        sh = tuple(n + k * _SH * lc for n, lc in zip(neck, lat))
-        wrist = tuple(round(c + 48 * b, 1) for c, b in zip(head_c, back))[:2] + (k * 26,)  # hands behind the head
-        if side == k:  # the working elbow goes to meet the opposite knee, the hand still behind the head
-            # Real bone lengths (the anatomy check refused a stretched forearm), the elbow bent towards the knee.
-            arms.append(_limb3(sh, wrist, ("upper", "fore", "hand"), _n(_v(sh, knees[-k])), (0, 0, -k)))
-        else:
-            pole = _n(tuple(k * lc + 0.25 * xc for lc, xc in zip(lat, (1, 0, 0))))  # elbow out wide
-            arms.append(_limb3(sh, wrist, ("upper", "fore", "hand"), pole, (0, 0, -k)))
-    return _pose3(neck, hip, head_dir, [arms[0], legs[0]], [arms[1], legs[1]], face=(0.6, -1), cam=cam, zoom=zoom, centre=centre)
+        else:  # pulled in to the elbow; between the sides both knees half way, each over its own hip
+            th = math.radians(-100)
+            kn = knee if side else (hp[0] + SEG["thigh"] * math.cos(th), hp[1] + SEG["thigh"] * math.sin(th), k * _HP)
+            ankle = _at(kn, (1, 0.05, 0), SEG["shin"])
+            legs.append([hp, kn, ankle, _at(ankle, (0.35, -0.94, 0), SEG["foot"])])
+    f0, f1 = _qcam(*head_c, *cam), _qcam(*_at(head_c, face, 200), *cam)  # the nose points where the 3D face does
+    return _pose3(neck, hip, head_dir, [arms[-1], legs[0]], [arms[1], legs[1]], face=(f1[0] - f0[0], f1[1] - f0[1]), cam=cam,
+                  zoom=zoom, centre=centre, spine=spine[::-1], depth_sort=True)
 
 
 def _deadbug15(t, cam, zoom, centre=(512, 540)):
@@ -3472,17 +3548,23 @@ def _deadbug15(t, cam, zoom, centre=(512, 540)):
     s, amt = (1 if t > 0 else -1), abs(t)
     arms, legs = [], []
     for k in (-1, 1):
-        sh, hp = (300, _FLOOR_BACK, k * _SH), (550, _FLOOR_BACK, k * _HP)
+        # The shoulder joints sit below the top of the spine, as on a body (the shoulder line slopes): with them level
+        # with the neck the head disc was 74 px from the joint, and no camera kept a swinging arm off the face.
+        sh, hp = (340, _FLOOR_BACK, k * _SH), (550, _FLOOR_BACK, k * _HP)
         u = amt if s == k else 0.0
-        ang = math.radians(_lerp(-90, -160, u))  # straight up, then back overhead, low
-        arms.append(_limb3(sh, _at(sh, (math.cos(ang), math.sin(ang), 0), 262), ("upper", "fore", "hand"), (0, 0, k),
-                           (math.cos(ang), math.sin(ang), 0)))
+        ang = math.radians(_lerp(-90, -166, u))  # straight up, then back overhead, low
+        # Three points on one line (the IK kinked a straight arm), opening outwards at the end of the way down, as
+        # shoulders do: at shoulder width the arm lying overhead crossed the head disc.
+        d = (math.cos(ang), math.sin(ang), k * 0.25 * u * u)
+        arms.append([sh, _at(sh, d, SEG["upper"]), _at(sh, d, SEG["upper"] + SEG["fore"]),
+                     _at(sh, d, SEG["upper"] + SEG["fore"] + SEG["hand"])])
         v = amt if s == -k else 0.0
-        th, sa = math.radians(_lerp(-90, -14, v)), math.radians(_lerp(0, -14, v))  # thigh, shin
+        th, sa = math.radians(_lerp(-90, -7, v)), math.radians(_lerp(0, -7, v))  # thigh, shin: the heel just off the floor
         knee = _at(hp, (math.cos(th), math.sin(th), 0), SEG["thigh"])
         ankle = _at(knee, (math.cos(sa), math.sin(sa), 0), SEG["shin"])
         legs.append([hp, knee, ankle, _at(ankle, (0.3 + 0.2 * v, -0.95 + 0.1 * v, 0), SEG["foot"])])
-    return _pose3(neck, hip, (-1, 0, 0), [arms[0], legs[0]], [arms[1], legs[1]], face=(0, -1), cam=cam, zoom=zoom, centre=centre)
+    return _pose3(neck, hip, (-1, 0, 0), [arms[0], legs[0]], [arms[1], legs[1]], face=(0, -1), cam=cam, zoom=zoom, centre=centre,
+                  depth_sort=True)
 
 
 # Cameras higher than the lots' 35/12: from there the near and far limbs stacked, which is why the dead bug's swap
@@ -3492,7 +3574,14 @@ def _deadbug15(t, cam, zoom, centre=(512, 540)):
 # it points at the camera) and the elbow meets the knee in the open. The dead bug from the feet end and above: the
 # straight-up arm never crosses the face, which is what made the 3/4 drawings strange. Zoomed so the body fills the
 # frame, and the dead bug gets its in-between positions.
-_CAM_BIKE, _CAM_BUG = ((10, 25), 1.15, (330, 600)), ((140, 45), 1.15, (560, 560))
+# v15c (Guillaume, 11/11, on the v15b mannequins: the dead bug's front limbs "passent dessous", the bicycle's far arm
+# "fait n'importe quoi"). At yaw 140 the builder's far side was the one facing the camera; _pose3 now names the sides
+# from the camera, and both views come back to the near side, head on the left. The dead bug from the head end and
+# above: of the cameras scanned (yaw -75 to 170, pitch 15 to 60) only yaw -40 and beyond keep both arms off the face
+# through the whole swing, and from the feet a tabletop shin points at the camera. The bicycle crunch in the lots' 3/4,
+# a little higher, so the wide elbow and the knee at the elbow both show. Both are painted by depth (draw.by_depth):
+# with the hands behind the head, one forearm of each side passes behind it and one elbow crosses in front of the chest.
+_CAM_BIKE, _CAM_BUG = ((30, 32), 1.18, (370, 552)), ((-45, 40), 0.99, (497, 628))  # 0.99: at exactly 1.0 _pose3 ignores the centre
 _seq("bicycle_crunch", "k2", 2, {"k1": _bicycle15(0, *_CAM_BIKE), "k2": _bicycle15(-1, *_CAM_BIKE), "k3": None,
                                  "k4": _bicycle15(1, *_CAM_BIKE)}, {"k3": "k1"})
 _seq("dead_bug", "k3", 4, {"k1": _deadbug15(0, *_CAM_BUG), "k2": _deadbug15(-0.5, *_CAM_BUG), "k3": _deadbug15(-1, *_CAM_BUG),

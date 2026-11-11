@@ -3396,6 +3396,11 @@ POSE_TEXT.update({
 })
 for _slug in ("archer_pushup", "reverse_crunch", "dead_bug", "bear_crawl", "mountain_climber", "windshield_wipers"):
     NEVER[_slug] = NEVER["pushups"]
+# v13 retry: both first k4 tries copied image 2's side (the swap that failed five times in v3-v7).
+POSE_TEXT[("dead_bug", "k4")] += (" Compared with image 2, SWAP the sides: the arm that reaches overhead in image 2 now "
+    "points straight UP at the ceiling, and the arm that points up in image 2 now reaches back OVERHEAD; the leg that is "
+    "extended in image 2 is now bent in the tabletop, and the leg that is bent in image 2 is now extended low. The picture "
+    "must NOT look like image 2: the two arms and the two legs have traded places.")
 
 
 CREDITS = "https://api.bfl.ai/v1/credits"

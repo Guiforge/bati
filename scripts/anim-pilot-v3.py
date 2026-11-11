@@ -2600,6 +2600,67 @@ for _slug, _f, _a in (("pushups", _push9, "k1"), ("dip", _dip9, "k4"), ("squat",
     LOOSE[_slug] = "torso, upper, fore, hand, thigh, shin, foot"
 
 
+# v9 drawing (Guillaume validated the mannequins): A from the a_key guide, then the other end, then the thirds.
+_FEET = " Both feet stay on exactly the same spots of the floor."
+POSE_TEXT.update({
+    ("pushups", "k1"): _Q + "The TOP of a push-up: both arms fully straight, the hands flat on the floor under the "
+        "shoulders, the body one rigid straight plank from the heels to the head, on the balls of the feet, the head in "
+        "line with the body, looking at the floor just ahead of the hands." + _PIKE_STILL.replace(", the hips high", ""),
+    ("pushups", "k4"): "The BOTTOM of the push-up: the chest a fist's height above the floor, both elbows bent and "
+        "pointing BACK towards the feet, close to the ribs, not flared out; the body still one rigid straight plank, the "
+        "hips neither sagging nor raised." + _PIKE_STILL.replace(", the hips high", ""),
+    ("pushups", "k2"): "A THIRD of the way down the push-up: the elbows only slightly bent, the chest still high above "
+        "the floor, the body a rigid straight plank." + _PIKE_STILL.replace(", the hips high", ""),
+    ("pushups", "k3"): "TWO THIRDS of the way down the push-up: the elbows bent about 110 degrees and pointing back, "
+        "the chest halfway to the floor, the body a rigid straight plank." + _PIKE_STILL.replace(", the hips high", ""),
+    ("dip", "k4"): _Q + "The BOTTOM of a dip between two parallel bars that run away from the camera along the hero's "
+        "sides at hip height, on two posts each: each hand grips its own bar, fingers over the top and down the outside, "
+        "thumb on the inside. Both elbows bent at 90 degrees and pointing straight BACK, the upper arms level with the "
+        "floor, the forearms vertical; the torso leaning forward about 35 degrees; the knees bent, the feet together "
+        "behind, clear of the floor. The hands never move on the bars.",
+    ("dip", "k1"): "The TOP of the dip: both arms fully straight and locked, the hands beside the hips on the bars, the "
+        "torso nearly upright, the shoulders down, knees bent and feet behind, clear of the floor. The hands stay on "
+        "exactly the same spots of the bars.",
+    ("dip", "k2"): "A THIRD of the way down the dip: the elbows only slightly bent, pointing back, the torso just "
+        "starting to lean forward. The hands stay on exactly the same spots of the bars.",
+    ("dip", "k3"): "TWO THIRDS of the way down the dip: the elbows bent about 115 degrees, pointing back, the torso "
+        "leaning forward. The hands stay on exactly the same spots of the bars.",
+    ("squat", "k4"): _Q + "The BOTTOM of a bodyweight squat: the thighs level with the floor, the hips pushed back, the "
+        "knees forward over the toes, both feet flat with the heels down, the chest leaning forward about 45 degrees with "
+        "a straight back, both arms straight out in front at shoulder height for balance, looking ahead." + _FEET,
+    ("squat", "k1"): "The TOP of the squat: standing tall, legs straight, both feet flat, the arms hanging slightly in "
+        "front of the thighs." + _FEET,
+    ("squat", "k2"): "A THIRD of the way down the squat: the knees a little bent, the hips starting to go back, the arms "
+        "rising forward to about 45 degrees." + _FEET,
+    ("squat", "k3"): "TWO THIRDS of the way down the squat: the knees well bent, the hips back and halfway down, the "
+        "chest leaning, the arms nearly level in front." + _FEET,
+    ("lunge", "k4"): _Q + "The BOTTOM of a static lunge, the hero in a long split stance facing right: the FRONT foot "
+        "flat on the floor, the front thigh level with the floor and the front shin vertical; the BACK leg on the ball "
+        "of the foot, heel up, the back knee hovering just above the floor, right under the hip; the torso upright, both "
+        "arms hanging at the sides." + _FEET,
+    ("lunge", "k1"): "The TOP of the static lunge: same split stance with the feet on the same spots, both legs nearly "
+        "straight, the back heel up, the torso upright, arms at the sides." + _FEET,
+    ("lunge", "k2"): "A THIRD of the way down the lunge: both knees a little bent, the hips a third of the way down, the "
+        "torso upright." + _FEET,
+    ("lunge", "k3"): "TWO THIRDS of the way down the lunge: both knees well bent, the back knee halfway to the floor, "
+        "the torso upright." + _FEET,
+    ("pullups", "k4"): _Q + "The TOP of a wide-grip pull-up on a straight bar running across the picture into its "
+        "depth, with no floor in view: both hands grip the bar OVERHAND, wider than the shoulders, the palms facing away "
+        "from the hero; the CHIN is just above the bar and the HEAD is BEHIND the bar, the bar passing in front of the "
+        "neck; the elbows bent and pulled down and out towards the ribs; the knees bent, the feet together behind; the "
+        "body still, no swing. The hands never move on the bar.",
+    ("pullups", "k1"): "The BOTTOM of the pull-up: a dead hang, both arms fully straight above the head, the hands on "
+        "exactly the same spots of the bar, the head below the bar between the arms, the knees bent and the feet behind.",
+    ("pullups", "k2"): "A THIRD of the way up the pull-up: the elbows starting to bend outwards, the head still well "
+        "below the bar. The hands stay on exactly the same spots of the bar.",
+    ("pullups", "k3"): "TWO THIRDS of the way up the pull-up: the elbows bent and out, the face just below the bar and "
+        "behind it. The hands stay on exactly the same spots of the bar.",
+})
+for _slug in ("pushups", "dip", "squat", "lunge", "pullups"):
+    NEVER[_slug] = ("The camera, the framing, the scale and the equipment do not change; every hand or foot marked with "
+                    "a white ring is drawn exactly over the same pixels as in image 2.")
+
+
 CREDITS = "https://api.bfl.ai/v1/credits"
 
 

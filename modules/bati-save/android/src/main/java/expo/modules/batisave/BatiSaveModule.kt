@@ -61,7 +61,8 @@ class BatiSaveModule : Module() {
        * Writes `sourcePath` into the document at `uri`, truncating what is there ("wt": the plain
        * "w" mode of some providers leaves the tail of a longer old file), then reads back what the
        * provider says it holds. A size that is not the size written is a failed save, not a
-       * saved one: a provider that cut the stream short must not be thanked in a toast.
+       * saved one: a provider that cut the stream short must not be thanked in a toast. See
+       * `sizeProvesLoss` for which answers count.
        */
       AsyncFunction("discard") Coroutine { uri: String ->
         withContext(Dispatchers.IO) {
@@ -123,8 +124,7 @@ class BatiSaveModule : Module() {
               // Right, or not reported at all (some providers never do): nothing to wait for.
               if (size == null || size == written) break
             }
-            // Only a size that is reported and still wrong fails.
-            if (size != null && size != written) {
+            if (sizeProvesLoss(size, written)) {
               throw IllegalStateException("The destination holds $size bytes, $written were written")
             }
             mapOf("name" to (name ?: target.lastPathSegment ?: ""), "bytes" to written.toDouble())

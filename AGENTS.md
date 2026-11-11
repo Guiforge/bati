@@ -81,8 +81,9 @@ outside the test scope, and Expo installs its WinterCG globals (`fetch`, `URL`,
 `__ExpoImportMetaRegistry`, …) as lazy getters that require on first touch. Reading each one
 during setup forces them to resolve while that is still legal. Deleting it, or dropping a name
 from its list, fails whole suites with "You are trying to `require` a file outside of the scope
-of the test code" — **on Node 24 only**, which is what CI runs (`lts/*`) and probably not what
-you run. `nvm exec 24 npm test` before trusting a green suite that touches jest or Expo.
+of the test code", seen first on Node 24. CI runs `lts/*`, which is Node 26
+since 2026-10 (checked 2026-11-10), so run `npm test` on the current LTS before trusting a green
+suite that touches jest or Expo. F-Droid builds on Debian's Node 24, the floor SDK 58 sets.
 
 ### Strictness
 

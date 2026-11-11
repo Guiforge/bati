@@ -564,7 +564,7 @@ every statement touching `exercises` to `creator`. `AGENTS.md`, `__tests__/migra
 
 ---
 
-## 5. Quest and adventure files
+## 5. Quest, adventure and pack files
 
 **R66. Export file** = `{kind:'bati-quest', version:1, quest{uuid, title x4, description x4,
 rounds, restSeconds, roundRestSeconds, image}, slots[]}`. Official movements travel by English
@@ -651,6 +651,58 @@ throw and `json` is at most `MAX_FILE_BYTES` bytes. A quest shared alone is held
 parses the body as its receiver would (and throws when that refuses it), puts the photos back under the
 same budget, reads the string back with `parseQuestData`, and the quest screen's dialog says
 `share_photos_*` and `share_photos_left_*` before the share sheet opens.
+
+**R131. Pack file** = `{kind:'bati-pack', version:1, movements[], quests[], bosses[], adventures[]}`: what a
+hero ticked of everything they made, in one file. Each thing is listed once and named by its uuid where it
+is used: a quest's slot is `{official}` or `{ref}` into `movements`, an adventure's step `{official}` or
+`{ref}` into `quests`, and its end a route, a painted monster as in R122, or `{kind:'boss', ref}` into
+`bosses` (a boss is the `end` of R122 with `bossUuid` required). A movement five quests use travels once,
+photo included. The reader resolves every reference as it goes and returns ordinary quest bodies and
+adventure files, so the previews and the writers of R69 and R124 are the ones that run. Every file Bati
+writes is named `<stem>.bati.json` (a quest and an adventure by their title, a pack by the day) and shared as
+`application/json`; the kind is read inside the file, never from its name.
+`src/packFile.ts`, `src/questFile.ts` (`shareJsonFile`).
+Invariant: `parsePackData(JSON.parse(json))` of what `packToShare` wrote holds what was ticked and what it
+needs, each once.
+
+**R132. Limits on read (pack):** the rules of R67, R68 and R123 for each movement, quest, boss and
+adventure, and: the file <= 32,000,000 bytes (`MAX_PACK_BYTES`, twice what this version writes, so a later one can write
+bigger packs without the phones still on this one refusing them; the read allows that size because the kind
+is only known once the file is parsed, and a quest or adventure file over 8,000,000 is still refused);
+at most 1000 movements, 300 quests, 100 bosses and 100 adventures (more is `newer`, the length read before
+any element); a list left out is empty, and a pack with nothing in it is `not_a_pack`; a uuid listed twice
+in one list is `not_a_pack`; a reference to something the pack does not list is `not_a_pack`; a pack never
+carries a movement or a quest whole inside another thing, and a quest or adventure file never reads a
+reference. The lists are read 16 entries at a time with the thread handed back in between, because vouching
+for a photo decodes it. `version` > 1 is `newer`. Refusals: `unreadable`, `not_a_pack`, `newer`
+(`packs.import_<reason>`).
+Invariant: no accepted pack yields a row the quest and adventure files could not.
+
+**R133. Identity on import (pack):** by uuid, like R69 and R124, and only what the hero ticked
+(`PackChoices`). The list opens with what is new ticked and what is already here unticked: a ticked quest or
+adventure already here is updated in place (the adventure written beside it when a run is under way), and
+an unticked one is untouched, so opening a pack twice changes nothing and a borrowed uuid (R70b) overwrites
+nothing without a gesture. A movement or a boss already here is left as it is, ticked or not. A movement
+named like one of the hero's own in use (English name, trimmed, lower case) is merged by default
+(`useMine`): no row is written and every quest of the pack that names it points at the hero's, found by name
+at write time and never by an id the screen handed over; ticked, it arrives beside it. What a ticked thing
+needs arrives with it: an adventure's hero quests and its boss, a quest's hero movements. A quest arrives
+without the slots whose seed movement this build lacks; one left with none, an adventure with fewer than 2
+steps here and a boss whose monster this build lacks are skipped. Movements, quests, bosses then
+adventures, in one transaction sharing the rows they make; caches invalidated after; no `can()`, no quota.
+`src/packFile.ts` (`previewPack`, `importPack`), `components/quests/PackImport.tsx`.
+Invariant: `import(f, c); import(f, c)` leaves the same rows as `import(f, c)`; a quest an adventure names
+and the hero also ticked is one quest. Held on real SQLite in `test/node/quests/pack-import.test.ts`,
+except the rollback: that harness runs the body with no BEGIN, so a failure halfway is only seen on a device.
+
+**R134. Bati never writes a pack it would refuse (R125 for packs):** each quest goes through `ownBody` and
+each movement ticked alone through `ownMovement`, written as parsed, and one the reader refuses stays out.
+Pictures go back in under `MAX_WRITTEN_BYTES` (16,000,000, about 250 photos and under a mail attachment),
+each charged once: adventure photos, quest covers, movement
+photos, the bosses' normal picture, then their other forms; one that does not fit or that `safeImage` would
+drop counts in `leftOut`. The string is read back by `parsePackData` before it leaves, and the hero is told
+how many things the file holds, how many photos go with it and how many stay, before the share sheet opens.
+The files shared before are deleted from the cache first.
 
 ---
 

@@ -13,3 +13,8 @@ android {
     versionName '0.1.0'
   }
 }
+
+dependencies {
+  // JVM unit tests of SavedSize, run by .github/workflows/kotlin.yml.
+  testImplementation 'junit:junit:4.13.2'
+}

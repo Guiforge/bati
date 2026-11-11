@@ -201,13 +201,24 @@ const bossRaw = (lines: Record<string, string[]>) => ({
   },
 });
 
-test("the boss's lines are one tap away, every moment, with its name", async () => {
+// The boss of someone else's adventure is its surprise: the page says one waits, and nothing of
+// it (its name, its picture, its lines) is on screen until the hero asks to see it.
+test("the boss stays hidden until the hero asks: its name and picture one tap away, its lines two", async () => {
   mockRead.mockResolvedValue(
     bossRaw({ intro: ["Who dares?"], enrage: ["Enough."], defeat: ["Not like this."] }),
   );
   await mountReady({ monster: golem });
 
-  // Folded: the count says what is inside, one tap reads it.
+  expect(screen.getByText("A boss waits at the end.")).toBeTruthy();
+  expect(screen.queryByTestId("adventure-import-boss-name")).toBeNull();
+  expect(screen.queryByTestId("adventure-import-boss-art")).toBeNull();
+  expect(screen.queryByText("What it will say (3)")).toBeNull();
+
+  await fireEvent.press(screen.getByTestId("adventure-import-boss-toggle"));
+  expect(screen.getByTestId("adventure-import-boss-name")).toBeTruthy();
+  expect(screen.getByTestId("adventure-import-boss-art")).toBeTruthy();
+
+  // Folded again inside: the count says what is there, one more tap reads it.
   expect(screen.queryByTestId("adventure-import-boss-lines")).toBeNull();
   expect(screen.getByText("What it will say (3)")).toBeTruthy();
   await fireEvent.press(screen.getByTestId("adventure-import-boss-lines-toggle"));
@@ -244,8 +255,8 @@ test("the page opens on the decision: what is here, what arrives, the steps, and
   expect(at("adventure-import-title")).toBeGreaterThanOrEqual(0);
   expect(at("adventure-import-existing")).toBeGreaterThan(at("adventure-import-title"));
   expect(at("adventure-import-step-0")).toBeGreaterThan(at("adventure-import-existing"));
-  expect(at("adventure-import-boss-art")).toBeGreaterThan(at("adventure-import-step-0"));
-  expect(at("adventure-import-boss-lines-toggle")).toBeGreaterThan(at("adventure-import-boss-art"));
+  expect(at("adventure-import-end")).toBeGreaterThan(at("adventure-import-step-0"));
+  expect(at("adventure-import-boss-toggle")).toBeGreaterThan(at("adventure-import-end"));
 });
 
 test("a boss this version lacks shows no lines: it arrives as a route", async () => {

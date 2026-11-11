@@ -1,0 +1,5 @@
+- Während einer Einheit oder in der Pause beendet „Ich höre auf, es tut weh“ die Einheit und behält deine Sätze.
+- In der Schmiede packt „Meine Kreationen teilen“ deine Quests, Abenteuer, Bosse und Übungen in eine Datei. Wer sie bekommt, hakt an, was er behalten will.
+- Eine späte Einheit in der Woche der Zeitumstellung zählt für die Ruhetipps wieder zur richtigen Woche.
+- Eine Sicherung in einem Cloud-Speicher wird nicht mehr abgelehnt und gelöscht.
+- Bibliotheken aktualisiert.

@@ -8,13 +8,13 @@
       },
       "predictiveBackGestureEnabled": true,
       "package": "com.guiforge.bati",
-      "versionCode": 21304,
+      "versionCode": 21400,
       "blockedPermissions": ["android.permission.ACCESS_WIFI_STATE"],
       "intentFilters": [
         {
           "action": "VIEW",
           "category": ["DEFAULT"],
-          "data": [{ "mimeType": "application/json" }]
+          "data": [{ "mimeType": "application/json" }, { "mimeType": "application/octet-stream" }]
         },
         {
           "action": "VIEW",
@@ -148,7 +148,7 @@
     "scheme": "bati",
     "slug": "bati",
     "userInterfaceStyle": "dark",
-    "version": "2.13.4",
+    "version": "2.14.0",
     "web": {
       "favicon": "./assets/favicon.png",
       "output": "static"

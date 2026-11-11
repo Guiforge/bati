@@ -6,6 +6,19 @@ Date: 2026-11-10. Branch: worktree-better-image. Script: `scripts/anim-pilot-v3.
 `scores/`). Nothing in `assets/` or `scripts/provenance.json` changed. The comparison page, with
 the picks, is the private artifact "Bati Motion Pilot".
 
+## Outcome (2026-11-12)
+
+The flip-books shipped on the branch for a while (`ExerciseLoop`, 28 exercises), then Guillaume
+dropped them for one still per exercise: a **comic page** of 2 to 4 key poses in numbered, slanted
+panels, square so it takes the app's existing art slots. 44 exercises ship one, built with no
+generation by `scripts/bd-planches.py` from the key poses this pilot drew (kept in the pilot cache
+under `app_frames/` and `site/`); provenance wraps each previous still's entry. The loop code, its
+frames and `scripts/anim-import.py` are gone. Videos (FLUX 3 Video) were tried and rejected: some
+worked, not all. Dead bug and bicycle crunch keep their old still while their redraw goes on: every
+model, OpenAI or FLUX, kept copying the first side when asked for the other one.
+
+The rest of this report is the pilot as it stood, kept for the method and the costs.
+
 ## Recommendation
 
 - **Catalogue format: the flip-book with hard cuts**, with the comic strip as the reduced-motion

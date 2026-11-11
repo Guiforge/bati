@@ -334,7 +334,6 @@ export function ActiveExerciseView() {
   const hero = (
     <ExerciseHero
       source={getExerciseAsset(currentEx.exercise.imagePath)}
-      loopId={currentEx.exercise.imagePath}
       name={exerciseName}
       minHeight={heroMinHeight}
       fadeTo={screenBgRaw}

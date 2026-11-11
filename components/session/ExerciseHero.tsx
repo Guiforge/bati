@@ -1,10 +1,10 @@
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useState } from "react";
 import { useWindowDimensions } from "react-native";
 import Animated, { useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { YStack } from "tamagui";
 import { Recitatif } from "@/components/common/Recitatif";
-import { ExerciseLoop } from "@/components/exercises/ExerciseLoop";
 import type { ArtSource } from "@/constants/assetMap";
 import { rawColors } from "@/constants/rawColors";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -12,8 +12,6 @@ import { exerciseArtMaxHeight, HUD_HEIGHT, NAME_MIN_SIDE, titleBelowPicture } fr
 
 type ExerciseHeroProps = {
   source: ArtSource;
-  /** The exercise's image path, when the art is a movement: it may then play as a loop. */
-  loopId?: string;
   /** The movement's name, painted on the artwork rather than under it. */
   name: string;
   /** Floor for the picture band, below the HUD. The hero grows past it to fill the column. */
@@ -57,7 +55,6 @@ const FLIP_MS = 400;
  */
 export function ExerciseHero({
   source,
-  loopId,
   name,
   minHeight,
   fadeTo,
@@ -123,7 +120,12 @@ export function ExerciseHero({
             reducedMotion ? { transform: [{ scaleX }] } : flip,
           ]}
         >
-          <ExerciseLoop imagePath={loopId ?? ""} still={source} side={side} transition={150} />
+          <Image
+            source={source}
+            style={{ width: side, height: side }}
+            contentFit="cover"
+            transition={150}
+          />
           {/* The square has hard side edges when the band is wider than it is tall; fade them into
             the screen like the bottom one. */}
           {gutter > 0 ? (

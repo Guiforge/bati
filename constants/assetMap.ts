@@ -1,5 +1,4 @@
 import { type BuildingStage, buildingStage } from "@/constants/buildingLevels";
-import { EXERCISE_LOOPS, type ExerciseLoop } from "@/constants/exerciseFrames";
 import type { VillagerId, VillagerPose } from "@/constants/villagers";
 import type { BossArt } from "@/db/bossVoice";
 import { carriedImageSize, MAX_RENDER_SIDE } from "@/src/carriedImage";
@@ -632,16 +631,6 @@ export type ArtSource = number | { uri: string };
  */
 export function getExerciseAsset(id: string) {
   return carriedPhoto(id) ?? lookup(EXERCISE_ASSETS, id) ?? require("@/assets/placeholder.webp");
-}
-
-/**
- * The hard-cut loop of an exercise, or null: no loop drawn yet, or a photo the hero carried in,
- * which is theirs and stays a still. Same key rule as the getters.
- */
-export function getExerciseLoop(id: string): ExerciseLoop | null {
-  if (carriedPhoto(id)) return null;
-  const key = keyFromPath(id);
-  return Object.hasOwn(EXERCISE_LOOPS, key) ? (EXERCISE_LOOPS[key] ?? null) : null;
 }
 
 /**

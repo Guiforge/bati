@@ -187,7 +187,8 @@ export const exercises = sqliteTable(
     // Retired, not deleted. Foreign keys are off on the device — db/client.ts issues no
     // `PRAGMA foreign_keys` — and nine queries innerJoin this table, so a hard delete silently
     // removes past volume, a village level and a personal record. Hero rows are retired
-    // instead; only a row nothing has ever used is really deleted. Seed rows are always null.
+    // instead; only a row nothing has ever used is really deleted. Seed rows are null, except a
+    // movement taken out of the seed content (Towel Door Row, 0086).
     retiredAt: int({ mode: "timestamp" }),
 
     createdAt: int({ mode: "timestamp" }).$defaultFn(() => new Date()),

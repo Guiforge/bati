@@ -49,10 +49,10 @@ jest.mock("@/db/oaths", () => ({
 jest.mock("@/db/exercises", () => ({ getChainTo: (id: number) => mockGetChainTo(id) }));
 jest.mock("@/components/oath/useOathText", () => ({ useOathText: () => "15 x Pull-ups in a row" }));
 
-/** The real route, as `0032` and `0033` left it — the name comes from its summit, so it has to
- *  end on the one the catalogue actually ends on or `pathName` falls back to the movement. */
+/** The real route, as `0032`, `0033` and `0086` (Towel Door Row retired) left it — the name comes
+ *  from its summit, so it has to end on the one the catalogue actually ends on or `pathName` falls
+ *  back to the movement. */
 const PULL_PATH = [
-  "Towel Door Row",
   "Table Row",
   "Inverted Row",
   "Dead Hang",
@@ -110,7 +110,7 @@ beforeEach(() => {
 test("a sworn movement on a path shows the climb, not a bar frozen at zero", async () => {
   await mount();
 
-  expect(strip()).toHaveTextContent(/Path\sof\sthe\sPull\s·\sRung\s3\/9/i);
+  expect(strip()).toHaveTextContent(/Path\sof\sthe\sPull\s·\sRung\s3\/8/i);
   // The rungs *replace* the bar and its counter — this is what keeps the pair from creeping back.
   expect(screen.queryByTestId("oath-progress-bar")).toBeNull();
   expect(strip()).not.toHaveTextContent(/0\s\/\s15/);

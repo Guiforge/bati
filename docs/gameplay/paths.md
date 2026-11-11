@@ -22,8 +22,12 @@ Progressive overload without weights is a **harder variation**, not a bigger mul
 authors that as data — `exercises.prerequisiteExerciseId`, migration `0022` — and surfaces it as a
 **path**: a named route from an easy movement to a hard one.
 
-> *The Path of the Pull*: Towel Door Row → Table Row → Inverted Row → Dead Hang →
+> *The Path of the Pull*: Table Row → Inverted Row → Dead Hang →
 > Scapular Pull-Up → Negative Pull-Up → Chin-Up → Pull-ups → **Muscle-Up**
+
+Towel Door Row opened this path until `0086` retired it. A retired seed movement keeps its row (a
+hero's history and own quests still point at it) but leaves the pickers, the seed quests and the
+ladder; `retiredAt` is the same column hero movements use.
 
 Thirteen paths, each named after the movement it ends on. Like everything else here, position on a
 path is **derived from the session journal** on read — nothing is stored.

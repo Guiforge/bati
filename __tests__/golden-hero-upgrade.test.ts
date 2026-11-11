@@ -44,7 +44,9 @@ const FULL_EQUALITY_FROM = 54; // sampled points only: 54 is not one, 56 is the 
 // 0073 appended the Superman W to two beginner quests, so a hero who trained before it lifted
 // other movements: their records and the village levels those feed are not today's. Everything
 // else about them (sessions, XP, flame, level, achievements) still has to be the golden hero.
-const CONTENT_EQUAL_FROM = 73;
+// 0086 swapped The Cellar Hauler's Towel Door Row slot for the Superman W, same reason: a hero who
+// trained before it reached their Superman W record two sessions earlier.
+const CONTENT_EQUAL_FROM = 86;
 const CONTENT_FIGURE = /^(records\.|village\.levels\.)/;
 
 const golden = JSON.parse(

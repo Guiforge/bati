@@ -1650,6 +1650,15 @@ SAME = ("Image 1 is only a pose guide: a jointed mannequin (grey torso, spine an
         "side included. One person only, two arms, two legs.")
 
 
+# v15 (Guillaume, 11/11: "on va utiliser plutôt flux"): ANIM_ENGINE=flux draws `new` and `newkey` with FLUX 3.
+def _editor():
+    return flux3_edit if os.environ.get("ANIM_ENGINE") == "flux" else openai_edit
+
+
+def _route():
+    return "F" if os.environ.get("ANIM_ENGINE") == "flux" else "O"
+
+
 def fresh_new(slug, n):
     """v3 A: guide + style reference, no picture of this exercise."""
     key = EXERCISES[slug]["a_key"]
@@ -1657,7 +1666,8 @@ def fresh_new(slug, n):
     out = PILOT / "poses" / slug / f"A_N{n}.png"
     if out.exists():
         return out
-    made = openai_edit(f"{NEW} {POSE_TEXT[(slug, key)]}", (guide, STYLE_REF), out, step="pose", slug=slug, key="A", route="O")
+    made = _editor()(f"{NEW} {POSE_TEXT[(slug, key)]}", (guide, STYLE_REF), out, step="pose", slug=slug, key="A",
+                      route=_route())
     if made:
         magick(guide, made, "-resize", "1280x1280!", "-compose", "blend", "-define", "compose:args=50", "-composite",
                out.with_name(out.stem + "_onion.png"))
@@ -1671,8 +1681,8 @@ def fresh_key(slug, key, n, base=None):
     out = PILOT / "poses" / slug / f"{key}_N{n}.png"
     if out.exists():
         return out
-    made = openai_edit(f"{SAME} {POSE_TEXT[(slug, key)]} {NEVER.get(slug, '')}", (guide, a), out,
-                       step="pose", slug=slug, key=key, route="O")
+    made = _editor()(f"{SAME} {POSE_TEXT[(slug, key)]} {NEVER.get(slug, '')}", (guide, a), out,
+                     step="pose", slug=slug, key=key, route=_route())
     if made:
         magick(a, made, "-resize", "1280x1280!", "-compose", "blend", "-define", "compose:args=50", "-composite",
                out.with_name(out.stem + "_onion.png"))
@@ -3587,6 +3597,53 @@ _seq("bicycle_crunch", "k2", 2, {"k1": _bicycle15(0, *_CAM_BIKE), "k2": _bicycle
 _seq("dead_bug", "k3", 4, {"k1": _deadbug15(0, *_CAM_BUG), "k2": _deadbug15(-0.5, *_CAM_BUG), "k3": _deadbug15(-1, *_CAM_BUG),
                            "k4": None, "k5": None, "k6": _deadbug15(0.5, *_CAM_BUG), "k7": _deadbug15(1, *_CAM_BUG),
                            "k8": None}, {"k4": "k2", "k5": "k1", "k8": "k6"})
+# v15c texts: the cameras changed (bicycle 3/4 from the near side, dead bug 3/4 from the head end), the dead bug has eight
+# keys, and the sides are named as the hero's right and left (near/far alone did not hold). Near = the hero's RIGHT.
+_BIKE_Q = ("THREE-QUARTER view from the hero's RIGHT side, a little above: lying on the back, the head on the left of the "
+           "picture, the feet on the right. ")
+_BUG_Q = ("THREE-QUARTER view from the HEAD end and from above: lying on the back, the head at the lower left of the "
+          "picture, nearest the camera, the body and the legs going away towards the upper right. The face is never "
+          "hidden by an arm. ")
+_BIKE_ALL = (" BOTH hands stay behind the head, at the base of the skull, the whole time. The lower back stays on the "
+             "floor; the shoulders are curled up off it.")
+POSE_TEXT.update({
+    ("bicycle_crunch", "k2"): _BIKE_Q + "A bicycle crunch." + _BIKE_ALL + " The chest twists to the hero's LEFT: the "
+        "RIGHT elbow comes across the body and touches the LEFT knee above the belly. The LEFT knee is pulled in over "
+        "the hips, the shin level. The RIGHT leg is straight and low, a hand above the floor. The LEFT elbow points "
+        "out wide to the side.",
+    ("bicycle_crunch", "k1"): "Between the two sides of the bicycle crunch: the shoulders still curled up off the floor "
+        "and square, not twisted, both elbows wide; both knees bent at the same height above the hips, the shins level."
+        + _BIKE_ALL,
+    ("bicycle_crunch", "k4"): "The bicycle crunch on the OTHER side: the chest twists to the hero's RIGHT, the LEFT "
+        "elbow comes across and touches the RIGHT knee, pulled in over the hips; the LEFT leg is straight and low; the "
+        "RIGHT elbow points out wide." + _BIKE_ALL + " Compared with image 2 the legs have traded places and the chest "
+        "turns the other way: the picture must NOT look like image 2.",
+    ("dead_bug", "k3"): _BUG_Q + "A dead bug, reaching. The lower back stays pressed to the floor. The hero's RIGHT arm "
+        "is straight and reaches back OVERHEAD, low, just above the floor beyond the head; the LEFT arm points straight "
+        "up at the ceiling. The LEFT leg is straight and extended out low, just above the floor; the RIGHT leg stays in "
+        "the tabletop, hip and knee at 90 degrees, the shin level. Right arm overhead goes with LEFT leg straight.",
+    ("dead_bug", "k1"): "The START of the dead bug: both arms straight up at the ceiling above the shoulders, both legs "
+        "in the tabletop, hips and knees at 90 degrees, the shins level.",
+    ("dead_bug", "k2"): "HALFWAY into the dead bug: the RIGHT arm, still straight, is halfway between pointing up and "
+        "lying overhead; the LEFT leg is halfway straightened, the knee opening. The left arm points up, the right leg "
+        "stays in the tabletop.",
+    ("dead_bug", "k6"): "HALFWAY into the OTHER side of the dead bug: the LEFT arm, still straight, is halfway between "
+        "pointing up and lying overhead; the RIGHT leg is halfway straightened. The right arm points up, the left leg "
+        "stays in the tabletop.",
+    ("dead_bug", "k7"): "The dead bug on the OTHER side: the LEFT arm reaches back overhead, low beyond the head, and "
+        "the RIGHT leg is straight and extended out low; the RIGHT arm points straight up and the LEFT leg is in the "
+        "tabletop. Compared with image 2 the arms and the legs have traded places: the picture must NOT look like "
+        "image 2.",
+})
+NEVER["bicycle_crunch"] = NEVER["pushups"]
+# FLUX first tries (11/11): the guide's grey floor polygons came out as the background, the bicycle chest stayed square,
+# and the dead bug's two legs both rose and looked alike.
+_PLAIN = (" The background is plain and dark, one even tone with a soft floor shadow: the grey polygons of image 1 are "
+          "NOT drawn.")
+POSE_TEXT[("bicycle_crunch", "k2")] += (" The twist is the point of the picture: the right shoulder lifts higher than "
+    "the left and the RIGHT ELBOW is pulled across in front of the chest until it TOUCHES the left knee." + _PLAIN)
+POSE_TEXT[("dead_bug", "k3")] += (" The two legs must look different: the RIGHT leg is BENT, its knee pointing up at "
+    "the ceiling and its shin level; the LEFT leg is fully STRAIGHT and LOW, the heel just above the floor." + _PLAIN)
 for _slug in ("bicycle_crunch", "dead_bug"):
     SIDE.pop(_slug, None)
     LOOSE[_slug] = "torso, upper, fore, hand, thigh, shin, foot"

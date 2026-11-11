@@ -601,7 +601,9 @@ def draw(slug, key):
             if flex > 20:  # kneecap, point of the elbow: a bump on the outside of the bend
                 dot((b[0] + (b[0] - (a[0] + c_[0]) / 2) / k * width * 0.4, b[1] + (b[1] - (a[1] + c_[1]) / 2) / k * width * 0.4),
                     w * 0.36, c)
-            if end:  # hand or foot: a wedge, wide at the wrist or heel and narrow at the tips
+            if not leg:  # the hand: a palm past the wrist, four fingers and a thumb (a bar grip draws its own fingers)
+                hand_shape(bones, end, w - width, c if c == artloop.BG else hand)
+            elif end:  # foot: a wedge, wide at the heel and narrow at the toes
                 (x0, y0), (x1, y1) = bones[-1], end
                 n = math.dist(bones[-1], end) or 1
                 ux, uy, o = (x1 - x0) / n, (y1 - y0) / n, (w - width) / 2
@@ -612,12 +614,38 @@ def draw(slug, key):
                 dot(end, tip, hc)
                 if leg:  # the heel, behind the ankle
                     dot((x0 - ux * width * 0.3, y0 - uy * width * 0.3), wide, c)
-        if not leg:  # the palm: a round mitten past the wrist, whatever the hand point says
-            dot(lerp(bones[-1], end, 0.5) if end else bones[-1], 25 + (w - width) / 2, hand if c != artloop.BG else c)
         if not leg and pose.get("grip") and c != artloop.BG:
             grips.append((bones[-1], hand, c == artloop.NEAR))  # drawn last, over the pins
         for p in bones[1:]:
             dot(p, 6, "white")
+
+    def hand_shape(bones, end, extra, colour):
+        """Seen from the side the hand points along `end` (or carries on the forearm's line when the pose gives none)."""
+        w0, e0 = bones[-1], bones[-2]
+        n = math.dist(e0, w0) or 1
+        ux, uy = (w0[0] - e0[0]) / n, (w0[1] - e0[1]) / n
+        if end:
+            n = math.dist(w0, end) or 1
+            ux, uy = (end[0] - w0[0]) / n, (end[1] - w0[1]) / n
+        o, z = extra / 2, 1.6  # z: hand scale, so the hand reads as large as a real one against the forearm
+        palm = (w0[0] + ux * 14 * z, w0[1] + uy * 14 * z)
+        if pose.get("grip"):
+            dot(palm, 20 + o, colour)
+            return
+        d.polygon([(w0[0] - uy * (11 * z + o), w0[1] + ux * (11 * z + o)), (w0[0] + uy * (11 * z + o), w0[1] - ux * (11 * z + o)),
+                   (palm[0] + ux * 12 * z + uy * (15 * z + o), palm[1] + uy * 12 * z - ux * (15 * z + o)),
+                   (palm[0] + ux * 12 * z - uy * (15 * z + o), palm[1] + uy * 12 * z + ux * (15 * z + o))], fill=colour)
+        dot(palm, 13 * z + o, colour)
+        for sgn, ln in ((-1.5, 22), (-0.5, 27), (0.5, 26), (1.5, 20)):  # little finger to index
+            b0 = (palm[0] + (ux * 10 - uy * sgn * 7.5) * z, palm[1] + (uy * 10 + ux * sgn * 7.5) * z)
+            e = (b0[0] + ux * ln * z, b0[1] + uy * ln * z)
+            d.line([b0, e], fill=colour, width=round(7 * z + 2 * o))
+            dot(e, 3.5 * z + o, colour)
+        tx, ty = ux * 0.64 + uy * 0.77, uy * 0.64 - ux * 0.77  # the thumb, 50 degrees off the fingers
+        b0 = (palm[0] + uy * 11 * z, palm[1] - ux * 11 * z)
+        e = (b0[0] + tx * 20 * z, b0[1] + ty * 20 * z)
+        d.line([b0, e], fill=colour, width=round(8 * z + 2 * o))
+        dot(e, 4 * z + o, colour)
 
     def blob(a, b, width, colour):
         d.line([a, b], fill=colour, width=width)
@@ -652,7 +680,7 @@ def draw(slug, key):
         d.polygon([(x + fx * 66, y + fy * 66), (x + fx * 36 - fy * 16, y + fy * 36 + fx * 16),
                    (x + fx * 36 + fy * 16, y + fy * 36 - fx * 16)], fill="#E8590C", outline="#101420")
         dot((x + fx * 20 - fy * 14, y + fy * 20 + fx * 14), 7, "#101420")  # eye, on the face side
-    for points in pose["near"]:
+    for points in reversed(pose["near"]):  # leg, then arm: the arm hangs outside the leg
         limb(points, artloop.NEAR, points is pose["near"][-1], outline=7)
     for p in pose.get("pins", ()):
         d.ellipse((p[0] - 22, p[1] - 22, p[0] + 22, p[1] + 22), outline="white", width=5)
@@ -1561,16 +1589,16 @@ STYLE_REF = pathlib.Path(os.environ["ANIM_STYLE_REF"]) if os.environ.get("ANIM_S
     PILOT / "A" / "squat_orig.png" if (PILOT / "A" / "squat_orig.png").exists() else PILOT / "A" / "squat.png")
 HERO = os.environ.get("ANIM_HERO", "an athletic hero of the same kind")  # Guillaume, 10/11: "un personnage masculin"
 NEW = ("Draw a new square illustration for a fitness app. Image 1 is only a pose guide: a jointed mannequin "
-       "(grey torso, spine and neck; the yellow disc is the head, its red-orange wedge the nose, the black dot an eye; green mittens are the hands, bright green near, dark green far, and where a hand holds a bar its finger strokes are the fingers wrapped over the bar towards the side they point to, with dark knuckles on the back of the hand and the white or grey stroke the thumb on the other side of the bar; orange limbs are the side nearest the "
+       "(grey torso, spine and neck; the yellow disc is the head, its red-orange wedge the nose, the black dot an eye; the green shapes are the hands (palm, four fingers and a thumb), bright green near, dark green far, and where a hand holds a bar its finger strokes are the fingers wrapped over the bar towards the side they point to, with dark knuckles on the back of the hand and the white or grey stroke the thumb on the other side of the bar; orange limbs are the side nearest the "
        "camera, blue limbs the far side; white dots are joints; white rings mark contact points; grey shapes are "
-       "the floor and equipment). Nothing of its colours or flat shapes appears in the result: no yellow head, no green mittens. Image 2 is a STYLE "
+       "the floor and equipment). Nothing of its colours or flat shapes appears in the result: no yellow head, no green hands. Image 2 is a STYLE "
        "reference only: draw in exactly its comic-book art style, line work, colouring and lighting, on a plain "
        "dark background, with " + HERO + " in sports clothes. Do not copy image 2's pose, "
        "framing or props: the pose, the camera angle and where the body sits in the frame all come from image 1, "
        "and the whole body fits in the frame with a margin. One person only, two arms, two legs.")
 SAME = ("Image 1 is only a pose guide: a jointed mannequin (grey torso, spine and neck; the yellow disc is the head, its red-orange wedge the nose, "
-        "the black dot an eye; green mittens are the hands, bright green near, dark green far, and where a hand holds a bar its finger strokes are the fingers wrapped over the bar towards the side they point to, with dark knuckles on the back of the hand and the white or grey stroke the thumb on the other side of the bar; orange limbs are the side nearest the camera, blue limbs the far side; white dots are joints; "
-        "white rings mark contact points that never move). Nothing of its colours or flat shapes appears: no yellow head, no green mittens. Image 2 "
+        "the black dot an eye; the green shapes are the hands (palm, four fingers and a thumb), bright green near, dark green far, and where a hand holds a bar its finger strokes are the fingers wrapped over the bar towards the side they point to, with dark knuckles on the back of the hand and the white or grey stroke the thumb on the other side of the bar; orange limbs are the side nearest the camera, blue limbs the far side; white dots are joints; "
+        "white rings mark contact points that never move). Nothing of its colours or flat shapes appears: no yellow head, no green hands. Image 2 "
         "shows the hero: redraw image 2 with the same hero, outfit, background, lighting, art style, camera, "
         "framing and scale, changing ONLY the pose so that it matches image 1 exactly, limb by limb, near and far "
         "side included. One person only, two arms, two legs.")

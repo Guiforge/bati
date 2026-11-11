@@ -3036,21 +3036,24 @@ def _deadbug13(side):
     return _pose3(neck, hip, (-1, 0, 0), [arms[0], legs[0]], [arms[1], legs[1]], face=(0, -1))
 
 
-def _climber13(near_in, far_in):
+def _climber13(near_in, far_in, hop=0):
     """Mountain climber: the push-up top, hands fixed; each knee drives towards the chest in turn (near_in, far_in from
     0 = leg back on the toes to 1 = knee under the chest, foot off the floor)."""
     # A plank sloping from the shoulders to the heels, the hips a little high (v13 had them at shoulder height, so the
     # straight leg could not reach the floor and the tucked knee folded backwards onto it).
     wrist = (790, 858)
     neck = (790, 858 - 262)
-    hip = (555, 668)
-    ankle_back_x = hip[0] - math.sqrt(438 ** 2 - (832 - hip[1]) ** 2)
+    # hop: the legs switch in the air (Guillaume: "comme le personnage saute très légèrement, son bassin bouge"), so
+    # between knees the hips rise and the toes just leave the floor.
+    hip = (555, 668 - hop)
+    floor_y = 832 - 0.6 * hop
+    ankle_back_x = hip[0] - math.sqrt(438 ** 2 - (floor_y - hip[1]) ** 2)
     arms, legs = [], []
     for k, amount in ((-1, near_in), (1, far_in)):
         arms.append(_limb3((neck[0], neck[1], k * _SH), (wrist[0], wrist[1], k * _SH), ("upper", "fore", "hand"),
                            (-1, 0, 0), (1, 0, 0)))
         root = (hip[0], hip[1], k * _HP)
-        back = (ankle_back_x, 832, k * _HP)
+        back = (ankle_back_x, floor_y, k * _HP)
         tuck = (hip[0] + 30, 805, k * _HP)  # the foot under the hip, the knee forward under the chest
         ankle = tuple(_lerp(b, c, amount) for b, c in zip(back, tuck))
         foot = tuple(_lerp(b, c, amount) for b, c in zip((0.53, 0.85, 0), (0.25, 0.97, 0)))
@@ -3107,7 +3110,7 @@ for _slug, _f, _a in (("reverse_crunch", _revcrunch13, "k4"),):
 _seq("dead_bug", "k2", 3, {"k1": _deadbug13(0), "k2": _deadbug13(-1), "k3": None, "k4": _deadbug13(1)}, {"k3": "k1"})
 _seq("bear_crawl", "k2", 2, {"k1": _bear13(0), "k2": _bear13(-1), "k3": None, "k4": _bear13(1)}, {"k3": "k1"})
 # Between the knees, the plank (both legs back): two half-bent legs read as kneeling, not as running.
-_seq("mountain_climber", "k1", 1, {"k1": _climber13(1, 0), "k2": _climber13(0, 0), "k3": _climber13(0, 1), "k4": None},
+_seq("mountain_climber", "k1", 1, {"k1": _climber13(1, 0), "k2": _climber13(0, 0, hop=22), "k3": _climber13(0, 1), "k4": None},
      {"k4": "k2"})
 _seq("windshield_wipers", "k1", 4, {"k1": _wipers13(0), "k2": _wipers13(-35), "k3": _wipers13(-70), "k4": None,
                                     "k5": None, "k6": _wipers13(35), "k7": _wipers13(70), "k8": None},

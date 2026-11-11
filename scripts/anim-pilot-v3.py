@@ -2600,6 +2600,124 @@ for _slug, _f, _a in (("pushups", _push9, "k1"), ("dip", _dip9, "k4"), ("squat",
     LOOSE[_slug] = "torso, upper, fore, hand, thigh, shin, foot"
 
 
+# v10 (Guillaume, 11/11: lot 9 validated end to end, "on passe à d'autres exos"): five more on the same recipe.
+def _shrink(out, s, c=(512, 512)):
+    """A projected pose scaled about c: a hanging body from hands to feet is taller than the frame."""
+    p = lambda q: (round(c[0] + (q[0] - c[0]) * s), round(c[1] + (q[1] - c[1]) * s))  # noqa: E731
+    out = {**out, "head": p(out["head"]), "torso": [p(q) for q in out["torso"]], "pins": [p(q) for q in out["pins"]]}
+    for side in ("near", "far"):
+        out[side] = [[p(q) for q in chain] for chain in out[side]]
+    for k in ("props", "front"):
+        out[k] = [(x[0], p(x[1]), p(x[2]), round(x[3] * s)) if x[0] == "line" else [p(q) for q in x] for x in out.get(k, [])]
+    if out.get("grip"):
+        out["grip"] = (*out["grip"][:2], s)
+    return out
+
+
+def _unit(a, b):
+    n = math.dist(a, b) or 1
+    return ((b[0] - a[0]) / n, (b[1] - a[1]) / n)
+
+
+def _chin10(t):
+    """Chin-up, underhand, hands shoulder-width: the arms work in the side plane, elbows down in front of the ribs.
+    Bottom = dead hang; top = chin over the bar, the head behind it."""
+    sh = tuple(round(_lerp(a, b, t)) for a, b in zip((516, _PU_WRIST[1] + 258), (462, 178)))
+    trunk = _lerp(-90, -100, t)
+    hip = step(sh, trunk + 180, SEG["torso"])
+    arm = {"to": _PU_WRIST, "bend": 1, "end": 270}
+    leg = (98, 165, 110)
+    side = fk(hip, trunk, head=_lerp(-92, -100, t), face=(1, -0.1), near_arm=arm, far_arm=arm, near_leg=leg,
+              far_leg=leg, far_at=((0, 0), (0, 0)))
+    out = _three_quarter(side, 1300, bar=_PU_BAR)
+    # Palms to the face: the fingers come over the top of the bar towards the hero.
+    out["grip"] = (_unit(_q34(*_PU_BAR, 0), _q34(_PU_BAR[0] - 70, _PU_BAR[1] - 15, 0)), out["grip"][1], 0.6)
+    out["pins"] = [c[2] for s in ("near", "far") for c in out[s][:1]]
+    out["front"] = [p for p in out["props"] if p[0] == "line"]
+    out["props"] = [p for p in out["props"] if p[0] != "line"]
+    return out
+
+
+_DIA_WRIST = (_PUSH_WRIST[0] - 40, _PUSH_WRIST[1])
+
+
+def _diamond10(t):
+    """Diamond push-up: the push-up plank, hands together under the chest (thumbs and index fingers touching),
+    elbows back along the ribs."""
+    theta = -_lerp(_push_theta(_DIA_WRIST[1] - 255), _push_theta(_DIA_WRIST[1] - 100), t)
+    hip = step(_PUSH_ANKLE, theta, SEG["thigh"] + SEG["shin"])
+    arm, leg = {"to": _DIA_WRIST, "bend": 1, "end": 0}, {"to": _PUSH_ANKLE, "bend": 1, "end": 58}
+    side = fk(hip, theta, face=(0.4, 1), near_arm=arm, far_arm=arm, near_leg=leg, far_leg=leg, far_at=((0, 0), (0, 0)))
+    out = _three_quarter(side, 880)
+    for s, k in (("near", -1), ("far", 1)):  # shoulders 85 off the midline, elbows 70, hands 15: the diamond
+        (s0, e0, w0, h0) = side[s][0]
+        out[s][0] = [_q34(*s0, k * _HALF["arm"]), _q34(*e0, k * 70), _q34(*w0, k * 15), _q34(w0[0] + 12, w0[1], -k * 22)]
+    out["pins"] = [c[2] for s in ("near", "far") for c in out[s]]
+    return out
+
+
+_GB_SH, _GB_ANKLE = (300, 848), (790, 842)
+
+
+def _bridge10(t):
+    """Glute bridge, on the back: shoulders and feet fixed, the hips rise until shoulders, hips and knees line up."""
+    a = _lerp(0, -26, t)  # angle from the shoulders to the hips
+    hip = step(_GB_SH, a, SEG["torso"])
+    leg = {"to": _GB_ANKLE, "bend": -1, "end": 0}
+    arm = (2, 2, 0)  # flat on the floor along the body
+    side = fk(hip, a + 180, head=180, face=(0, -1), near_arm=arm, far_arm=arm, near_leg=leg, far_leg=leg,
+              far_at=((0, 0), (0, 0)))
+    return _feet_only(_three_quarter(side, 880))
+
+
+_HLR_BAR = (512, 120)
+_HLR_WRIST = (512, 152)
+
+
+def _hlr10(t):
+    """Hanging leg raise: a dead hang, arms straight, hands fixed; the straight legs rise together from hanging to
+    level with the floor (an L), the pelvis tilting a little."""
+    sh = (_HLR_WRIST[0] - 4, _HLR_WRIST[1] + 262)
+    trunk = _lerp(-90, -84, t)
+    hip = step(sh, trunk + 180, SEG["torso"])
+    arm = {"to": _HLR_WRIST, "bend": 1, "end": 270}
+    a = _lerp(92, 2, t)
+    leg = (a, a, a + 70)
+    side = fk(hip, trunk, face=(1, 0), near_arm=arm, far_arm=arm, near_leg=leg, far_leg=leg, far_at=((0, 0), (0, 0)))
+    out = _three_quarter(side, 1300, bar=_HLR_BAR)
+    out["grip"] = (_unit(_q34(*_HLR_BAR, 0), _q34(_HLR_BAR[0] + 70, _HLR_BAR[1] - 15, 0)), out["grip"][1])  # overhand
+    out["pins"] = [c[2] for s in ("near", "far") for c in out[s][:1]]
+    out["props"] = [p for p in out["props"] if p[0] == "line"]  # hanging: no floor
+    return _shrink(out, 0.8, (512, 420))
+
+
+_SL_FOOT = (500, 842)
+
+
+def _sldl10(t):
+    """Single-leg deadlift on the far leg: the hips hinge, the back stays straight and the near leg rises behind in
+    line with the torso until both are nearly level; the arms hang straight down."""
+    hip = tuple(round(_lerp(a, b, t)) for a, b in zip((496, 408), (462, 440)))
+    trunk = _lerp(-88, -6, t)
+    stand = {"to": _SL_FOOT, "bend": -1, "end": 0}
+    a = _lerp(100, 174, t)
+    free = (a, a, _lerp(30, 80, t))
+    arm = (90, 90, 90)
+    side = fk(hip, trunk, face=(1, _lerp(0.1, 1, t)), near_arm=arm, far_arm=arm, near_leg=free, far_leg=stand,
+              far_at=((0, 0), (0, 0)))
+    out = _three_quarter(side, 880)
+    out["pins"] = [out["far"][1][2]]
+    return out
+
+
+for _slug, _f, _a in (("chin_up", _chin10, "k4"), ("diamond_pushup", _diamond10, "k1"), ("glute_bridge", _bridge10, "k4"),
+                      ("hanging_leg_raise", _hlr10, "k4"), ("single_leg_deadlift", _sldl10, "k4")):
+    _seq(_slug, _a, 3, {"k1": _f(0), "k2": _f(1 / 3), "k3": _f(2 / 3), "k4": _f(1), "k5": None, "k6": None},
+         {"k5": "k3", "k6": "k2"})
+    SIDE.pop(_slug, None)
+    LOOSE[_slug] = "torso, upper, fore, hand, thigh, shin, foot"
+
+
 # v9 drawing (Guillaume validated the mannequins): A from the a_key guide, then the other end, then the thirds.
 _FEET = " Both feet stay on exactly the same spots of the floor."
 POSE_TEXT.update({

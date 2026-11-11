@@ -3014,7 +3014,7 @@ def _wipers13(phi):
                   pins=[arms[0][2], arms[1][2]], cam=(-50, 32))
 
 
-def _deadbug13(side):
+def _deadbug13(side, cam=(35, 12)):
     """Dead bug, on the back, head on the left: arms straight up, hips and knees at 90 degrees. side -1: the near arm
     reaches overhead and the far leg straightens out low; +1 the other pair; 0 the start."""
     neck, hip = (300, _FLOOR_BACK, 0), (550, _FLOOR_BACK, 0)
@@ -3033,7 +3033,7 @@ def _deadbug13(side):
             knee = (550, _FLOOR_BACK - 225, k * _HP)
             a = (550 + 215, _FLOOR_BACK - 225, k * _HP)
             legs.append([hp, knee, a, _at(a, (0.3, -0.95, 0), SEG["foot"])])
-    return _pose3(neck, hip, (-1, 0, 0), [arms[0], legs[0]], [arms[1], legs[1]], face=(0, -1))
+    return _pose3(neck, hip, (-1, 0, 0), [arms[0], legs[0]], [arms[1], legs[1]], face=(0, -1), cam=cam)
 
 
 def _climber13(near_in, far_in, hop=0):
@@ -3412,6 +3412,64 @@ VIDEO_MOTION["jump_squat"] = ("One jump squat. Standing, the hero squats down wi
     "straight up with the body stretched and the arms swung down and back, the feet clearly off the floor, then lands "
     "softly on the same spot back into the squat and stands up." + _BD_KEEP)
 VIDEO_MOTION["squat"] = VIDEO_MOTION["squat"] + _BD_KEEP
+
+
+# v15 (Guillaume, 11/11, review of the comic panels): "refaire le mannequin" for the bicycle crunch, hands kept on the
+# head the whole time, three-quarter view; the dead bug in three-quarter with the whole alternation.
+def _bicycle15(side, cam=(35, 12)):
+    """Bicycle crunch, on the back, head on the left, hands behind the head the whole time, elbows wide. The shoulders
+    curl off the floor and the trunk twists so one elbow meets the opposite knee, pulled to the chest, while the other
+    leg straightens low. side -1: the near elbow to the far knee; +1 the far elbow to the near knee; 0 between, square,
+    both knees bent at the same height."""
+    hip = (550, _FLOOR_BACK, 0)
+    curl = math.radians(40)
+    u = (-math.cos(curl), -math.sin(curl), 0.0)  # hips towards the neck
+    neck = _at(hip, u, SEG["torso"])
+    a = math.radians(-side * 38)  # twist about the spine: the working shoulder lifts and comes across
+    cross = (u[1], -u[0], 0.0)  # u x z
+    lat = tuple(math.cos(a) * zc + math.sin(a) * cc for zc, cc in zip((0, 0, 1), cross))
+    head_dir = _n((u[0] * 0.8 + 0.25, u[1] * 0.8 - 0.1, 0))
+    head_c = _at(_at(neck, head_dir, SEG["neck"]), head_dir, SEG["head"] * 0.5)
+    legs, knees = [], {}
+    for k in (-1, 1):
+        hp = (hip[0], hip[1], k * _HP)
+        if side == -k or side == 0:
+            reach = 1.0 if side else 0.55  # the working knee comes right to the chest; between sides both half way
+            th = math.radians(_lerp(-90, -114, reach))
+            # The working knee also comes in towards the middle, where the opposite elbow meets it.
+            knee = (hp[0] + SEG["thigh"] * math.cos(th), hp[1] + SEG["thigh"] * math.sin(th), k * (15 if side else _HP))
+            ankle = _at(knee, (0.98, 0.18, 0), SEG["shin"])
+            legs.append([hp, knee, ankle, _at(ankle, (0.35, -0.94, 0), SEG["foot"])])
+            knees[k] = knee
+        else:
+            d = (0.96, -0.28, 0)  # straight, a hand above the floor
+            ankle = _at(hp, d, SEG["thigh"] + SEG["shin"] - 1)
+            legs.append([hp, _at(hp, d, SEG["thigh"]), ankle, _at(ankle, (0.45, -0.89, 0), SEG["foot"])])
+    arms = []
+    back = (head_dir[1], -head_dir[0], 0)  # from the head's centre towards the floor side of the skull
+    for k in (-1, 1):
+        sh = tuple(n + k * _SH * lc for n, lc in zip(neck, lat))
+        wrist = tuple(round(c + 48 * b, 1) for c, b in zip(head_c, back))[:2] + (k * 26,)  # hands behind the head
+        if side == k:  # the working elbow goes to meet the opposite knee, the hand still behind the head
+            elbow = _at(sh, _v(sh, (knees[-k][0] - 40, knees[-k][1], knees[-k][2])), SEG["upper"])
+            arms.append([sh, elbow, wrist, _at(wrist, (0, 0, -k), SEG["hand"])])
+        else:
+            pole = _n(tuple(k * lc + 0.25 * xc for lc, xc in zip(lat, (1, 0, 0))))  # elbow out wide
+            arms.append(_limb3(sh, wrist, ("upper", "fore", "hand"), pole, (0, 0, -k)))
+    return _pose3(neck, hip, head_dir, [arms[0], legs[0]], [arms[1], legs[1]], face=(0.6, -1), cam=cam)
+
+
+# Cameras higher than the lots' 35/12: from there the near and far limbs stacked, which is why the dead bug's swap
+# never read in 3/4. The bicycle crunch is nearly side-on from above, so the elbow crossing over the belly shows.
+_CAM_BIKE, _CAM_BUG = (20, 48), (40, 30)
+_seq("bicycle_crunch", "k2", 2, {"k1": _bicycle15(0, _CAM_BIKE), "k2": _bicycle15(-1, _CAM_BIKE), "k3": None,
+                                 "k4": _bicycle15(1, _CAM_BIKE)}, {"k3": "k1"})
+_seq("dead_bug", "k2", 4, {"k1": _deadbug13(0, _CAM_BUG), "k2": _deadbug13(-1, _CAM_BUG), "k3": None,
+                           "k4": _deadbug13(1, _CAM_BUG)}, {"k3": "k1"})
+for _slug in ("bicycle_crunch", "dead_bug"):
+    SIDE.pop(_slug, None)
+    LOOSE[_slug] = "torso, upper, fore, hand, thigh, shin, foot"
+    FLOPS.pop(_slug, None)
 
 
 CREDITS = "https://api.bfl.ai/v1/credits"

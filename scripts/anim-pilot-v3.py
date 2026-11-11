@@ -2842,6 +2842,18 @@ POSE_TEXT.update({
 })
 for _slug in ("chin_up", "diamond_pushup", "glute_bridge", "hanging_leg_raise", "single_leg_deadlift"):
     NEVER[_slug] = NEVER["pushups"]
+# v10 retry: the first in-betweens ran ahead (chin and deadlift 1/3 as far as 2/3; leg raise legs level at 1/3 and above
+# level at 2/3). Visible landmarks instead of angles.
+POSE_TEXT[("chin_up", "k2")] += (" The arms are still NEARLY STRAIGHT, the elbows only a little bent; the top of the head "
+    "is FAR below the bar, about a forearm's length under it; the body has risen only a little from the dead hang.")
+POSE_TEXT[("hanging_leg_raise", "k2")] = ("A THIRD of the way up the hanging leg raise: both straight legs together, swung "
+    "only a little forward, the FEET still FAR BELOW the hips, clearly closer to hanging straight down than to level."
+    + _BAR_STILL)
+POSE_TEXT[("hanging_leg_raise", "k3")] = ("TWO THIRDS of the way up the hanging leg raise: both straight legs together, "
+    "slanting forward and down at about 45 degrees, the FEET still BELOW the hips, at about knee height of the hanging "
+    "body; the legs are NOT level yet and never above level." + _BAR_STILL)
+POSE_TEXT[("single_leg_deadlift", "k2")] += (" The torso is still MORE UPRIGHT than level, the head clearly above the hips; "
+    "the raised foot only knee-high behind; the hands at about knee height.")
 
 
 CREDITS = "https://api.bfl.ai/v1/credits"

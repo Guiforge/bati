@@ -2274,6 +2274,31 @@ NEVER["bear_crawl"] = "The camera, the framing and the scale do not change."
 VIDEO_MOTION["bear_crawl"] = ("Bear crawl seen from the front, crawling towards the camera on hands and feet with the knees "
     "hovering: opposite hand and knee step forward together, then the other pair, the back flat.")
 
+# v8, mannequin first (Guillaume: "fais toutes les positions avec le mannequin, puis je valide, puis on dessine").
+# Pike: v6 kept the arms bent at the top and dropped the head BEHIND the hands. Now the shoulder travels from
+# arms-straight-in-line-with-the-back to in front of the hands, head nearly on the floor, and the hip is solved
+# so the legs stay straight and the feet planted.
+_PH, _PF, _PLEG = (690, 878), (310, 856), SEG["thigh"] + SEG["shin"]
+_ARM = SEG["upper"] + SEG["fore"] - 2
+_p_hip0 = ik(_PF, _PH, _PLEG, _ARM + SEG["torso"], -1)  # top: hand, shoulder and hip in one line
+_P_S0 = tuple(round(h + (p - h) * _ARM / math.dist(_PH, _p_hip0)) for h, p in zip(_PH, _p_hip0))
+_P_S1 = (_PH[0] + 45, _PH[1] - 150)  # bottom: shoulders just in front of the hands, elbows about 75 degrees
+
+
+def _pike8(t):
+    sh = tuple(round(_lerp(a, b, t)) for a, b in zip(_P_S0, _P_S1))
+    hip = ik(_PF, sh, _PLEG, SEG["torso"], -1)
+    trunk = math.degrees(math.atan2(sh[1] - hip[1], sh[0] - hip[0]))
+    return _pike(hip, trunk, _lerp(trunk + 8, 82, t))
+
+
+_seq("pike_pushup", "k4", 3, {"k1": _pike8(0), "k2": _pike8(1 / 3), "k3": _pike8(2 / 3), "k4": _pike8(1),
+                              "k5": None, "k6": None}, {"k5": "k3", "k6": "k2"})
+# Row: same geometry as v6 (it matches free-exercise-db's photos: straight arms slanting to the feet at the
+# bottom, chest at the bar at the top), now in thirds like the pike.
+_seq("inverted_row", "k4", 3, {"k1": _row_at(0), "k2": _row_at(1 / 3), "k3": _row_at(2 / 3), "k4": _row_at(1),
+                               "k5": None, "k6": None}, {"k5": "k3", "k6": "k2"})
+
 
 CREDITS = "https://api.bfl.ai/v1/credits"
 

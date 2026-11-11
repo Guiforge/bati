@@ -590,6 +590,7 @@ def draw(slug, key):
         d.ellipse((p[0] - r, p[1] - r, p[0] + r, p[1] + r), fill=colour)
 
     def limb(points, colour, leg, width=30, outline=0):
+        hand = "#5BF08C" if colour == artloop.NEAR else "#1F9A55"  # green mitten: bright near, dark far
         bones, end = (points[:-1], points[-1]) if len(points) > 3 else (points, None)
         (a, b, c_), flex = bones, abs(_ang(*bones[:2], *bones[1:]))
         k = math.dist(b, lerp(a, c_, 0.5)) or 1
@@ -604,12 +605,15 @@ def draw(slug, key):
                 (x0, y0), (x1, y1) = bones[-1], end
                 n = math.dist(bones[-1], end) or 1
                 ux, uy, o = (x1 - x0) / n, (y1 - y0) / n, (w - width) / 2
-                wide, tip = width * (0.45 if leg else 0.36) + o, width * 0.2 + o
+                wide, tip = width * (0.45 if leg else 0.5) + o, width * 0.2 + o
+                hc = c if leg or c == artloop.BG else hand
                 d.polygon([(x0 - uy * wide, y0 + ux * wide), (x0 + uy * wide, y0 - ux * wide),
-                           (x1 + uy * tip, y1 - ux * tip), (x1 - uy * tip, y1 + ux * tip)], fill=c)
-                dot(end, tip, c)
+                           (x1 + uy * tip, y1 - ux * tip), (x1 - uy * tip, y1 + ux * tip)], fill=hc)
+                dot(end, tip, hc)
                 if leg:  # the heel, behind the ankle
                     dot((x0 - ux * width * 0.3, y0 - uy * width * 0.3), wide, c)
+        if not leg:  # the palm: a round mitten past the wrist, whatever the hand point says
+            dot(lerp(bones[-1], end, 0.5) if end else bones[-1], 25 + (w - width) / 2, hand if c != artloop.BG else c)
         for p in bones[1:]:
             dot(p, 6, "white")
 
@@ -635,13 +639,15 @@ def draw(slug, key):
         dot(p, 5, "#4B5263")                                         # vertebrae
     x, y = pose["head"]
     d.line([spine[0], (x, y)], fill=artloop.TORSO, width=26)         # neck
-    dot((x, y), 46, artloop.TORSO)
+    dot((x, y), 50, "#101420")                                        # outline, so the head parts from the neck
+    dot((x, y), 44, "#F5C518")                                        # yellow head
     if pose.get("face"):
         fx, fy = pose["face"]
         k = 1 / max(1e-6, math.hypot(fx, fy))
         fx, fy = fx * k, fy * k
         d.polygon([(x + fx * 66, y + fy * 66), (x + fx * 36 - fy * 16, y + fy * 36 + fx * 16),
-                   (x + fx * 36 + fy * 16, y + fy * 36 - fx * 16)], fill=artloop.TORSO)
+                   (x + fx * 36 + fy * 16, y + fy * 36 - fx * 16)], fill="#E8590C", outline="#101420")
+        dot((x + fx * 20 - fy * 14, y + fy * 20 + fx * 14), 7, "#101420")  # eye, on the face side
     for points in pose["near"]:
         limb(points, artloop.NEAR, points is pose["near"][-1], outline=7)
     for p in pose.get("pins", ()):
@@ -1536,16 +1542,16 @@ STYLE_REF = pathlib.Path(os.environ["ANIM_STYLE_REF"]) if os.environ.get("ANIM_S
     PILOT / "A" / "squat_orig.png" if (PILOT / "A" / "squat_orig.png").exists() else PILOT / "A" / "squat.png")
 HERO = os.environ.get("ANIM_HERO", "an athletic hero of the same kind")  # Guillaume, 10/11: "un personnage masculin"
 NEW = ("Draw a new square illustration for a fitness app. Image 1 is only a pose guide: a jointed mannequin "
-       "(grey torso, spine, neck and head, the head's wedge is the nose; orange limbs are the side nearest the "
+       "(grey torso, spine and neck; the yellow disc is the head, its red-orange wedge the nose, the black dot an eye; green mittens are the hands, bright green near, dark green far; orange limbs are the side nearest the "
        "camera, blue limbs the far side; white dots are joints; white rings mark contact points; grey shapes are "
-       "the floor and equipment). Nothing of its colours or flat shapes appears in the result. Image 2 is a STYLE "
+       "the floor and equipment). Nothing of its colours or flat shapes appears in the result: no yellow head, no green mittens. Image 2 is a STYLE "
        "reference only: draw in exactly its comic-book art style, line work, colouring and lighting, on a plain "
        "dark background, with " + HERO + " in sports clothes. Do not copy image 2's pose, "
        "framing or props: the pose, the camera angle and where the body sits in the frame all come from image 1, "
        "and the whole body fits in the frame with a margin. One person only, two arms, two legs.")
-SAME = ("Image 1 is only a pose guide: a jointed mannequin (grey torso, spine, neck and head, the head's wedge is "
-        "the nose; orange limbs are the side nearest the camera, blue limbs the far side; white dots are joints; "
-        "white rings mark contact points that never move). Nothing of its colours or flat shapes appears. Image 2 "
+SAME = ("Image 1 is only a pose guide: a jointed mannequin (grey torso, spine and neck; the yellow disc is the head, its red-orange wedge the nose, "
+        "the black dot an eye; green mittens are the hands, bright green near, dark green far; orange limbs are the side nearest the camera, blue limbs the far side; white dots are joints; "
+        "white rings mark contact points that never move). Nothing of its colours or flat shapes appears: no yellow head, no green mittens. Image 2 "
         "shows the hero: redraw image 2 with the same hero, outfit, background, lighting, art style, camera, "
         "framing and scale, changing ONLY the pose so that it matches image 1 exactly, limb by limb, near and far "
         "side included. One person only, two arms, two legs.")
@@ -2378,6 +2384,24 @@ POSE_TEXT.update({
     ("inverted_row", "k3"): "TWO THIRDS of the way up the inverted row: the elbows bent at about 90 degrees, pointing "
         "down, the chest close below the bar." + _ROW_STILL,
 })
+
+
+# v8 retry: the first in-betweens bunched up (pike 1/3 already as bent as 2/3; row 1/3 and 2/3 near the top).
+POSE_TEXT[("pike_pushup", "k2")] += (" The arms are STILL NEARLY STRAIGHT, the elbows only slightly bent; the head is "
+    "only a little below its top position, far above the floor, the shoulders still behind the hands.")
+POSE_TEXT[("pike_pushup", "k3")] += (" The head is exactly HALFWAY between the top position and the floor, not lower; "
+    "the elbows bent about 120 degrees, clearly less bent than at the bottom.")
+POSE_TEXT[("inverted_row", "k2")] += (" The arms are only SLIGHTLY bent, about 150 degrees at the elbow; the chest is "
+    "still FAR below the bar, about two thirds of an arm's length under it; the body is nearly as low as at the bottom.")
+POSE_TEXT[("inverted_row", "k3")] += (" The chest is still clearly BELOW the bar, about a forearm's length under it, NOT "
+    "touching it; the elbows bent at a right angle.")
+
+
+# v8 retry 2 (blind coach: REDO, things slide): the hands crept along the bar towards the head and the heels slid.
+NEVER["inverted_row"] = ("The two hands are drawn EXACTLY over the hands of image 2, at the same pixels on the bar, "
+    "nearer the LEFT post than the head is; the straight or bent arms reach from there to the shoulders. The heels "
+    "are drawn exactly over the heels of image 2. The bar, the posts, the camera, the framing and the scale do not "
+    "change. The face looks up at the bar in profile, not at the camera.")
 
 
 CREDITS = "https://api.bfl.ai/v1/credits"

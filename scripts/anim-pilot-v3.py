@@ -579,7 +579,9 @@ def draw(slug, key):
     image = Image.new("RGB", (1024, 1024), artloop.BG)
     d = ImageDraw.Draw(image)
     for shape in pose["props"]:
-        if len(shape) == 2:
+        if shape[0] == "line":  # a bar seen in depth: ("line", end, end, width)
+            d.line(shape[1:3], fill=artloop.PROP, width=shape[3])
+        elif len(shape) == 2:
             d.rectangle(shape, fill=artloop.PROP)
         else:
             d.polygon(shape, fill="#1F2533")
@@ -2298,6 +2300,57 @@ _seq("pike_pushup", "k4", 3, {"k1": _pike8(0), "k2": _pike8(1 / 3), "k3": _pike8
 # bottom, chest at the bar at the top), now in thirds like the pike.
 _seq("inverted_row", "k4", 3, {"k1": _row_at(0), "k2": _row_at(1 / 3), "k3": _row_at(2 / 3), "k4": _row_at(1),
                                "k5": None, "k6": None}, {"k5": "k3", "k6": "k2"})
+
+
+# v8b, three-quarter view (Guillaume: "les deux tu peux les mettre de 3/4"). The side pose is solved flat, then
+# lifted to 3D: each arm and leg stays in its own vertical plane, shoulder or hip width apart, so no bone
+# changes length; the camera turns 35 degrees towards the head and looks down 12 degrees (orthographic).
+_YAW, _PITCH, _HALF = math.radians(35), math.radians(12), {"arm": 85, "leg": 50}
+
+
+def _q34(x, y, z):
+    depth = -(x - 500) * math.sin(_YAW) + z * math.cos(_YAW)  # larger = further from the camera
+    return (round((x - 500) * math.cos(_YAW) + z * math.sin(_YAW) + 512),
+            round((y - 700) * math.cos(_PITCH) - depth * math.sin(_PITCH) + 700))
+
+
+def _three_quarter(pose, floor, bar=None):
+    """A flat side pose (no far_at offset, both sides on the same targets) seen in three-quarter."""
+    out = {**pose, "short": {}, "torso": [_q34(*p, 0) for p in pose["torso"]], "head": _q34(*pose["head"], 0)}
+    for side, z in (("near", -1), ("far", 1)):
+        out[side] = [[_q34(*p, z * _HALF[kind]) for p in chain] for chain, kind in zip(pose[side], ("arm", "leg"))]
+    fx, fy = pose["face"]
+    out["face"] = (fx * math.cos(_YAW), fy)
+    out["pins"] = [c[2] for s in ("near", "far") for c in out[s]]
+    out["props"] = [[_q34(x, floor, z) for x, z in ((-300, -700), (1300, -700), (1300, 700), (-300, 700))]]
+    if bar:
+        out["props"].append(("line", _q34(*bar, -320), _q34(*bar, 320), 18))
+    return out
+
+
+def _pike_flat(t):
+    sh = tuple(round(_lerp(a, b, t)) for a, b in zip(_P_S0, _P_S1))
+    hip = ik(_PF, sh, _PLEG, SEG["torso"], -1)
+    trunk = math.degrees(math.atan2(sh[1] - hip[1], sh[0] - hip[0]))
+    arm, leg = {"to": _PH, "bend": 1, "end": 0}, {"to": _PF, "bend": -1, "end": 20}
+    side = fk(hip, trunk, head=_lerp(trunk + 8, 82, t), face=(0.3, 1), near_arm=arm, far_arm=arm, near_leg=leg,
+              far_leg=leg, far_at=((0, 0), (0, 0)))
+    return _three_quarter(side, 880)
+
+
+def _row_flat(t):
+    theta = _lerp(_row_bottom, 334, t)
+    hip = step(ROW_ANKLE, theta, SEG["thigh"] + SEG["shin"])
+    arm, leg = {"to": ROW_HAND, "bend": -1, "end": 270}, {"to": ROW_ANKLE, "bend": 1, "end": theta - 60}
+    side = fk(hip, theta, face=(0.3, -1), near_arm=arm, far_arm=arm, near_leg=leg, far_leg=leg, far_at=((0, 0), (0, 0)))
+    return _three_quarter(side, 820, bar=ROW_HAND)
+
+
+for _slug, _f in (("pike_pushup", _pike_flat), ("inverted_row", _row_flat)):
+    _seq(_slug, "k4", 3, {"k1": _f(0), "k2": _f(1 / 3), "k3": _f(2 / 3), "k4": _f(1), "k5": None, "k6": None},
+         {"k5": "k3", "k6": "k2"})
+    SIDE.pop(_slug, None)
+    LOOSE[_slug] = "torso, upper, fore, hand, thigh, shin, foot"  # the camera turns every bone a little
 
 
 CREDITS = "https://api.bfl.ai/v1/credits"

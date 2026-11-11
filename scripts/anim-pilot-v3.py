@@ -2953,6 +2953,66 @@ POSE_TEXT[("single_leg_deadlift", "k2")] += (" The torso is still MORE UPRIGHT t
     "the raised foot only knee-high behind; the hands at about knee height.")
 
 
+# v11 drawing (Guillaume validated the mannequins; "des personnages 45/55 ans, petits cheveux poivre et sel").
+_KNEE_STILL = " The hands and the knees stay on exactly the same spots of the floor."
+POSE_TEXT.update({
+    ("knee_pushup", "k1"): _Q + "The TOP of a knee push-up: both arms fully straight, the hands flat on the floor under "
+        "the shoulders; both KNEES on the floor, the shins raised behind with the ankles crossed in the air; one straight "
+        "line from the knees to the head, the hips neither sagging nor raised, looking at the floor just ahead of the "
+        "hands." + _KNEE_STILL,
+    ("knee_pushup", "k4"): "The BOTTOM of the knee push-up: the chest a fist's height above the floor, both elbows bent "
+        "and pointing BACK along the ribs; still one straight line from the knees to the head." + _KNEE_STILL,
+    ("knee_pushup", "k2"): "A THIRD of the way down the knee push-up: the arms still NEARLY STRAIGHT, the elbows only a "
+        "little bent, the chest still high above the floor." + _KNEE_STILL,
+    ("knee_pushup", "k3"): "TWO THIRDS of the way down the knee push-up: the elbows bent about 110 degrees and pointing "
+        "back, the chest halfway to the floor." + _KNEE_STILL,
+    ("bulgarian_split_squat", "k4"): _Q + "The BOTTOM of a Bulgarian split squat: the TOP of the BACK foot rests on a "
+        "padded flat bench behind the hero; the FRONT foot flat on the floor far ahead; the front thigh level with the "
+        "floor and the front shin nearly vertical; the back knee hovering just above the floor; the torso leaning a "
+        "little forward, the arms hanging at the sides." + _FEET,
+    ("bulgarian_split_squat", "k1"): "The TOP of the Bulgarian split squat: the back foot still on the bench, the front "
+        "leg nearly straight, the torso upright, the arms at the sides." + _FEET,
+    ("bulgarian_split_squat", "k2"): "A THIRD of the way down the Bulgarian split squat: the front knee only a little "
+        "bent, the hips still high, the back knee far above the floor." + _FEET,
+    ("bulgarian_split_squat", "k3"): "TWO THIRDS of the way down the Bulgarian split squat: the front knee well bent, the "
+        "back knee halfway down to the floor." + _FEET,
+    ("toes_to_bar", "k4"): _Q + "The TOP of a toes-to-bar from a straight bar running across the picture into its depth, "
+        "with no floor in view: both hands grip the bar OVERHAND, both arms straight but slanting so the shoulders are "
+        "behind the bar; both legs STRAIGHT and together, raised all the way up so the toes TOUCH the bar beside the "
+        "hands; the body folded into an upside-down V. The whole body is smaller in the frame and fits with a margin."
+        + _BAR_STILL,
+    ("toes_to_bar", "k1"): "The BOTTOM of the toes-to-bar: a dead hang, both arms straight above, both legs straight and "
+        "hanging down together, the body vertical." + _BAR_STILL,
+    ("toes_to_bar", "k2"): "A THIRD of the way up the toes-to-bar: the straight legs swung forward, the FEET still well "
+        "BELOW the hips, the arms nearly vertical." + _BAR_STILL,
+    ("toes_to_bar", "k3"): "TWO THIRDS of the way up the toes-to-bar: the straight legs LEVEL with the floor, an L, the "
+        "arms starting to slant, the shoulders moving back." + _BAR_STILL,
+    ("jump_squat", "k4"): _Q + "The TOP of a jump squat, IN THE AIR: the body straight and stretched, both feet clearly "
+        "OFF the floor by a hand's height, the toes pointing down, both arms swung straight down and a little back. The "
+        "floor and the shadow stay where they are; only the body is up in the air.",
+    ("jump_squat", "k1"): "STANDING tall before the jump squat: legs straight, both feet flat on the floor, the arms "
+        "hanging slightly in front of the thighs, on the floor right below where the body is in image 2.",
+    ("jump_squat", "k2"): "HALFWAY DOWN into the jump squat: the knees bent, the hips going back, the arms swinging "
+        "forward to about 45 degrees; both feet flat on the floor.",
+    ("jump_squat", "k3"): "The BOTTOM of the jump squat, ready to jump: the thighs level with the floor, the hips back, "
+        "the chest leaning about 45 degrees, both arms straight out in front; both feet flat on the floor.",
+    ("single_leg_glute_bridge", "k4"): _Q + "The TOP of a single-leg glute bridge, lying on the back, the head on the "
+        "left: the shoulders, head and both arms flat on the floor, the arms along the body; the FAR foot flat on the "
+        "floor, its knee bent; the NEAR leg held STRAIGHT in the air, in line with its own thigh; the hips lifted HIGH so "
+        "the shoulders, the hips and the bent knee make one straight line. The far foot stays on exactly the same spot.",
+    ("single_leg_glute_bridge", "k1"): "The BOTTOM of the single-leg glute bridge: the hips lowered to just touch the "
+        "floor, the far foot flat where it is, the near leg still straight in line with its thigh, pointing up.",
+    ("single_leg_glute_bridge", "k2"): "A THIRD of the way up the single-leg glute bridge: the hips just off the floor, "
+        "the near leg straight in line with its thigh.",
+    ("single_leg_glute_bridge", "k3"): "TWO THIRDS of the way up the single-leg glute bridge: the hips well raised, not "
+        "yet in line, the near leg straight in line with its thigh.",
+})
+for _slug in ("knee_pushup", "bulgarian_split_squat", "toes_to_bar", "jump_squat", "single_leg_glute_bridge"):
+    NEVER[_slug] = NEVER["pushups"]
+NEVER["jump_squat"] = ("The camera, the framing, the scale and the floor do not change; the feet land on exactly the "
+                       "same spot of the floor as in image 2.")
+
+
 CREDITS = "https://api.bfl.ai/v1/credits"
 
 

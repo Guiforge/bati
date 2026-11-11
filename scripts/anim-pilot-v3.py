@@ -3323,6 +3323,81 @@ NEVER["jump_squat"] = ("The camera, the framing, the scale and the floor do not 
                        "same spot of the floor as in image 2.")
 
 
+# v13 drawing (Guillaume validated the mannequins). Archer and wipers have their own camera, said in their text.
+_FRONT_Q = ("Camera seen nearly from the FRONT of the hero and a little above (about 70 degrees round from the side "
+            "towards the head), so the width between the two hands reads across the picture. ")
+_HEAD_Q = ("THREE-QUARTER view from the HEAD end and from above: the hero lies on the back with the head nearest the "
+           "camera, the body and the legs going away from it. ")
+_ARCH_STILL = " Both hands and both feet stay on exactly the same spots of the floor."
+_BACK = " Lying on the back on the floor, the head on the left."
+POSE_TEXT.update({
+    ("archer_pushup", "k4"): _FRONT_Q + "The BOTTOM of an archer push-up to the hero's NEAR side: both hands flat on "
+        "the floor very wide, far wider than the shoulders; the body one rigid plank from the heels, lowered and shifted "
+        "over the NEAR hand, whose elbow is bent and close to the ribs, the chest near that hand; the FAR arm fully "
+        "STRAIGHT, reaching out sideways along the floor to its hand." + _ARCH_STILL,
+    ("archer_pushup", "k1"): "The TOP of the archer push-up: both arms straight, the body centred between the two very "
+        "wide hands, one rigid plank from the heels to the head." + _ARCH_STILL,
+    ("archer_pushup", "k2"): "A THIRD of the way down the archer push-up towards the NEAR hand: the near elbow a little "
+        "bent, the body starting to shift towards it, the far arm straight." + _ARCH_STILL,
+    ("archer_pushup", "k3"): "TWO THIRDS of the way down towards the NEAR hand: the near elbow well bent, the body "
+        "mostly over that hand, the far arm straight." + _ARCH_STILL,
+    ("archer_pushup", "k8"): "A THIRD of the way down the archer push-up towards the FAR hand: the far elbow a little "
+        "bent, the body starting to shift towards it, the near arm straight." + _ARCH_STILL,
+    ("archer_pushup", "k9"): "TWO THIRDS of the way down towards the FAR hand: the far elbow well bent, the body mostly "
+        "over that hand, the near arm straight." + _ARCH_STILL,
+    ("archer_pushup", "k10"): "The BOTTOM of the archer push-up to the FAR side: lowered and shifted over the FAR hand, "
+        "its elbow bent close to the ribs; the NEAR arm fully straight, reaching out sideways to its hand." + _ARCH_STILL,
+    ("reverse_crunch", "k4"): _Q + "The TOP of a reverse crunch." + _BACK + " Both arms flat on the floor along the "
+        "body, palms down; the shoulders and the head stay on the floor; the PELVIS is curled up off the floor and both "
+        "knees, bent, are pulled in over the chest, the feet together above the hips.",
+    ("reverse_crunch", "k1"): "The START of the reverse crunch, the tabletop: the hips and the knees at 90 degrees, the "
+        "thighs vertical, the shins level with the floor, the lower back and pelvis flat on the floor, the arms flat "
+        "along the body.",
+    ("reverse_crunch", "k2"): "A THIRD of the way into the reverse crunch: the knees coming a little towards the chest, "
+        "the pelvis just starting to roll off the floor.",
+    ("reverse_crunch", "k3"): "TWO THIRDS of the way into the reverse crunch: the knees close to the chest, the pelvis "
+        "lifted off the floor.",
+    ("dead_bug", "k2"): _Q + "A dead bug, reaching." + _BACK + " The NEAR arm (on the camera side) is straight and "
+        "reaches back OVERHEAD, low, just above the floor beyond the head; the FAR arm points straight up at the "
+        "ceiling. The FAR leg is straight and extended out low, just above the floor; the NEAR leg stays in the "
+        "tabletop, hip and knee at 90 degrees, the shin level. The lower back stays flat on the floor.",
+    ("dead_bug", "k1"): "The START of the dead bug: both arms straight up at the ceiling, both legs in the tabletop, hips "
+        "and knees at 90 degrees, the shins level with the floor.",
+    ("dead_bug", "k4"): "The dead bug on the OTHER side: the FAR arm reaches back overhead, low, and the NEAR leg is "
+        "straight and extended out low; the near arm points straight up and the far leg is in the tabletop.",
+    ("bear_crawl", "k2"): _Q + "A bear crawl in place: on both hands and the balls of both feet, the knees hovering a "
+        "hand's height above the floor, the back flat and level, the hips at shoulder height, looking at the floor a "
+        "little ahead. The NEAR hand is a step FORWARD and the FAR knee is pulled forward under the hip at the same "
+        "time (the opposite diagonal), the other hand and foot back.",
+    ("bear_crawl", "k1"): "The bear crawl in its NEUTRAL position: hands under the shoulders, knees under the hips "
+        "hovering a hand above the floor, back flat; no hand or knee forward. The camera, the floor and the place in the "
+        "frame do not change: the crawl is in place.",
+    ("bear_crawl", "k4"): "The bear crawl's OTHER step: the FAR hand a step forward and the NEAR knee forward under the "
+        "hip, the other pair back. In place, same spot in the frame.",
+    ("mountain_climber", "k1"): _Q + "A mountain climber: the top of a push-up, both arms straight, hands under the "
+        "shoulders, the body a plank sloping from the shoulders to the heels, the hips a little high. The NEAR knee is "
+        "driven forward under the chest, its foot off the floor behind the knee; the FAR leg is straight back, on the "
+        "ball of the foot.",
+    ("mountain_climber", "k2"): "The mountain climber SWITCHING legs: both legs straight back, the hips a little higher "
+        "than in the plank and both toes just off the floor, a small hop. The hands stay where they are.",
+    ("mountain_climber", "k3"): "The mountain climber's OTHER leg: the FAR knee driven forward under the chest, its foot "
+        "off the floor; the NEAR leg straight back on the ball of the foot. The hands stay where they are.",
+    ("windshield_wipers", "k1"): _HEAD_Q + "Windshield wipers: both arms out to the sides flat on the floor in a T, "
+        "palms down; both legs straight and TOGETHER, pointing straight up at the ceiling from the hips; the shoulders "
+        "flat on the floor.",
+    ("windshield_wipers", "k2"): "Windshield wipers: both straight legs, still together, lowered about 35 degrees "
+        "towards the hero's side NEAREST the camera; the shoulders and both arms stay flat on the floor.",
+    ("windshield_wipers", "k3"): "Windshield wipers: both straight legs, still together, lowered about 70 degrees "
+        "towards the side NEAREST the camera, the feet near the floor; the shoulders and arms stay flat.",
+    ("windshield_wipers", "k6"): "Windshield wipers: both straight legs, together, lowered about 35 degrees towards "
+        "the hero's FAR side; the shoulders and arms stay flat.",
+    ("windshield_wipers", "k7"): "Windshield wipers: both straight legs, together, lowered about 70 degrees towards the "
+        "FAR side, the feet near the floor; the shoulders and arms stay flat.",
+})
+for _slug in ("archer_pushup", "reverse_crunch", "dead_bug", "bear_crawl", "mountain_climber", "windshield_wipers"):
+    NEVER[_slug] = NEVER["pushups"]
+
+
 CREDITS = "https://api.bfl.ai/v1/credits"
 
 

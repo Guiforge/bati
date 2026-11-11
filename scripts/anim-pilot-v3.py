@@ -2718,6 +2718,103 @@ for _slug, _f, _a in (("chin_up", _chin10, "k4"), ("diamond_pushup", _diamond10,
     LOOSE[_slug] = "torso, upper, fore, hand, thigh, shin, foot"
 
 
+# v11 (Guillaume, 11/11: lot 10 validated, "on passe à la suite"): variants of validated movements.
+_KN_KNEE, _KN_WRIST = (300, 860), (695, 858)
+_kn_len = SEG["thigh"] + SEG["torso"]
+_kn_theta = lambda sh_y: math.degrees(math.asin((_KN_KNEE[1] - sh_y) / _kn_len))  # noqa: E731
+
+
+def _knee10(t):
+    """Knee push-up: the push-up plank pivoting on the knees, the shins up behind, feet crossed in the air."""
+    theta = -_lerp(_kn_theta(_KN_WRIST[1] - 262), _kn_theta(_KN_WRIST[1] - 95), t)
+    hip = step(_KN_KNEE, theta, SEG["thigh"])
+    arm = {"to": _KN_WRIST, "bend": 1, "end": 0}
+    leg = (theta + 180, 205, 250)
+    side = fk(hip, theta, face=(0.4, 1), near_arm=arm, far_arm=arm, near_leg=leg, far_leg=leg, far_at=((0, 0), (0, 0)))
+    out = _three_quarter(side, 880)
+    out["pins"] = [c[2] for c in (out["near"][0], out["far"][0])] + [c[1] for c in (out["near"][1], out["far"][1])]
+    return out
+
+
+_BU_FRONT, _BU_BACK = (650, 842), (262, 596)  # the back ankle rests on the bench, the top of the foot on it
+
+
+def _bulgarian11(t):
+    """Bulgarian split squat: the back foot on a bench, the front foot flat and fixed; the hips drop until the front
+    thigh is level and the back knee hovers above the floor; the torso a little forward."""
+    hip = tuple(round(_lerp(a, b, t)) for a, b in zip((455, 448), (425, 627)))
+    front = {"to": _BU_FRONT, "bend": -1, "end": 0}
+    back = {"to": _BU_BACK, "bend": -1, "end": 185}
+    arm = (95, 92, 90)
+    side = fk(hip, _lerp(-86, -78, t), face=(1, 0.15), near_arm=arm, far_arm=arm, near_leg=front, far_leg=back,
+              far_at=((0, 0), (0, 0)))
+    out = _feet_only(_three_quarter(side, 880))
+    x, y = _BU_BACK[0] - 10, _BU_BACK[1] + 22  # the bench: a padded top across the picture's depth, on two legs
+    out["props"] += [("line", _q34(x, y, -170), _q34(x, y, 170), 44)] + [
+        ("line", _q34(x, y, z), _q34(x, 880, z), 16) for z in (-140, 140)]
+    return out
+
+
+def _t2b10(t):
+    """Toes-to-bar: from a dead hang the straight legs swing up until the feet touch the bar beside the hands; the
+    arms stay straight and tilt so the shoulders go behind the bar, the body folds into an upside-down V."""
+    b = math.radians(_lerp(92, 120, t))
+    sh = (round(_HLR_WRIST[0] + 262 * math.cos(b)), round(_HLR_WRIST[1] + 262 * math.sin(b)))
+    trunk = _lerp(-90, -127, t)
+    hip = step(sh, trunk + 180, SEG["torso"])
+    arm = {"to": _HLR_WRIST, "bend": 1, "end": 270}
+    a = _lerp(92, -88, t)
+    leg = (a, a, a + 70)
+    side = fk(hip, trunk, face=(1, _lerp(0, 0.5, t)), near_arm=arm, far_arm=arm, near_leg=leg, far_leg=leg,
+              far_at=((0, 0), (0, 0)))
+    out = _three_quarter(side, 1300, bar=_HLR_BAR)
+    out["grip"] = (_unit(_q34(*_HLR_BAR, 0), _q34(_HLR_BAR[0] + 70, _HLR_BAR[1] - 15, 0)), out["grip"][1])
+    out["pins"] = [c[2] for s in ("near", "far") for c in out[s][:1]]
+    out["props"] = [p for p in out["props"] if p[0] == "line"]
+    return _shrink(out, 0.8, (512, 420))
+
+
+def _jump_air():
+    """Jump squat, the top of the jump: the body straight, the feet a hand's height off the floor, toes pointed, the
+    arms swung down and back."""
+    hip = (468, 262)
+    leg = (91, 90, 82)
+    arm = (112, 114, 116)
+    side = fk(hip, -88, face=(1, 0), near_arm=arm, far_arm=arm, near_leg=leg, far_leg=leg, far_at=((0, 0), (0, 0)))
+    out = _three_quarter(side, 880)
+    out["pins"] = []
+    return out
+
+
+def _slgb11(t):
+    """Single-leg glute bridge: the far foot flat and fixed, the near leg held straight in line with its thigh; the
+    hips rise until shoulders, hips and knees line up."""
+    a = _lerp(0, -26, t)
+    hip = step(_GB_SH, a, SEG["torso"])
+    knee = ik(hip, _GB_ANKLE, SEG["thigh"], SEG["shin"], -1)
+    k = math.degrees(math.atan2(knee[1] - hip[1], knee[0] - hip[0]))
+    side = fk(hip, a + 180, head=180, face=(0, -1), near_arm=(2, 2, 0), far_arm=(2, 2, 0),
+              near_leg=(k, k, k - 60), far_leg={"to": _GB_ANKLE, "bend": -1, "end": 0}, far_at=((0, 0), (0, 0)))
+    out = _three_quarter(side, 880)
+    out["pins"] = [out["far"][1][2]]
+    return out
+
+
+for _slug, _f, _a in (("knee_pushup", _knee10, "k1"), ("bulgarian_split_squat", _bulgarian11, "k4"),
+                      ("toes_to_bar", _t2b10, "k4"), ("single_leg_glute_bridge", _slgb11, "k4")):
+    _seq(_slug, _a, 3, {"k1": _f(0), "k2": _f(1 / 3), "k3": _f(2 / 3), "k4": _f(1), "k5": None, "k6": None},
+         {"k5": "k3", "k6": "k2"})
+    SIDE.pop(_slug, None)
+    LOOSE[_slug] = "torso, upper, fore, hand, thigh, shin, foot"
+# Jump squat: stand, half down, bottom, in the air; then it lands back into the bottom and rises through the half.
+# Scaled to 0.88 about the floor under the feet: standing already reaches the top of the frame, the jump would leave it.
+_jq = lambda pose: _shrink(pose, 0.88, _q34(*_SQ_ANKLE, 0))  # noqa: E731
+_seq("jump_squat", "k4", 2, {"k1": _jq(_squat9(0)), "k2": _jq(_squat9(0.5)), "k3": _jq(_squat9(1)), "k4": _jq(_jump_air()),
+                             "k5": None, "k6": None}, {"k5": "k3", "k6": "k2"})
+SIDE.pop("jump_squat", None)
+LOOSE["jump_squat"] = LOOSE["squat"]
+
+
 # v9 drawing (Guillaume validated the mannequins): A from the a_key guide, then the other end, then the thirds.
 _FEET = " Both feet stay on exactly the same spots of the floor."
 POSE_TEXT.update({

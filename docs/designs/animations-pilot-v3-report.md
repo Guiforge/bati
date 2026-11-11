@@ -428,3 +428,7 @@ for a three-quarter view, then for one drawing attempt.
   - Only the hand band was pasted back, under an 8 px feathered mask (`tools/v8_paste.py`).
     There is a faint seam at two wrists.
 - **Spend.** 69.06 $ of 80.73 $.
+- **Blind coach on the pasted hands.** SHIP. It reads the grip as overhand and the same in
+  every frame (hands 3.5, frames 4/4/4/3, progression 4, fixity 3.5, beginner 4). Its
+  reservations: a soft blur at the far wrist in frames 1 and 4, and the head still leaning
+  past the bar at the top.

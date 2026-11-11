@@ -685,7 +685,8 @@ def draw(slug, key):
     for p in pose.get("pins", ()):
         d.ellipse((p[0] - 22, p[1] - 22, p[0] + 22, p[1] + 22), outline="white", width=5)
     for (hx, hy), hand, near in grips:  # bar grip: four fingers wrap over the bar the way v points, the thumb under it
-        (vx, vy), (ax, ay), *z = pose["grip"]  # unit: the way the fingers go, the bar's own axis; then a scale
+        # unit: the way the fingers go, the bar's own axis; then a scale. Two bars (dip): the far hand has its own.
+        (vx, vy), (ax, ay), *z = pose["grip"] if near else pose.get("grip_far", pose["grip"])
         z = z[0] if z else 1
         dark = "#0B5D2E"
         for sgn, ln, col in ((-1.5, 58, hand), (-0.5, 64, hand), (0.5, 64, hand), (1.5, 58, hand),
@@ -2514,6 +2515,13 @@ def _dip9(t):
     out = _three_quarter(side, 1080)
     out["props"] += _bars((330, _DIP_WRIST[1] + 8), (720, _DIP_WRIST[1] + 8), floor=1080)
     out["pins"] = [c[2] for s in ("near", "far") for c in out[s][:1]]  # the hands: the feet hang free
+    # Hands closed on the bars: fingers over the top and down the outside, thumbs on the inside.
+    bx, by = _DIP_WRIST
+    unit = lambda a, b: (lambda dx, dy, n: (dx / n, dy / n))(b[0] - a[0], b[1] - a[1], math.dist(a, b))  # noqa: E731
+    for key, k in (("grip", -1), ("grip_far", 1)):
+        z0 = k * _HALF["arm"]
+        out[key] = (unit(_q34(bx, by, z0), _q34(bx, by + 60, z0 + k * 30)), unit(_q34(330, by, z0), _q34(720, by, z0)),
+                    0.55)  # short fingers: they curl round a bar, they do not hang past it
     return out
 
 

@@ -42,7 +42,8 @@ def from_picks(path):
         d = OUT / slug
         d.mkdir(parents=True, exist_ok=True)
         for i, k in enumerate(("k1", "k2", "k3", "k4"), 1):
-            src = PILOT / "A" / f"{slug}.png" if k == a else PILOT / keys[k]
+            # A picks file may name the A key's own picture (the comic-book conversions do); else the cached A.
+            src = PILOT / keys[k] if k in keys else PILOT / "A" / f"{slug}.png"
             subprocess.run(["magick", str(src), "-resize", "480x480!", "-quality", "82",
                             str(d / f"k{i}.webp")], check=True)
         total = CYCLE_MS.get(slug, 2950)

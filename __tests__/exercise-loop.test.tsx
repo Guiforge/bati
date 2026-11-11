@@ -45,6 +45,17 @@ describe("ExerciseLoop", () => {
   });
   afterEach(() => jest.useRealTimers());
 
+  // The renderer and expo-image's mock leave timers of their own between renders, so a count says
+  // nothing. The loop's clock is the one timeout scheduled for exactly its first step.
+  const loopClockStarted = async () => {
+    const spy = jest.spyOn(global, "setTimeout");
+    await render(<ExerciseLoop imagePath="squat" still={1} side={100} />);
+    const firstMs = EXERCISE_LOOPS.squat?.steps[0]?.[1];
+    const started = spy.mock.calls.some(([, ms]) => ms === firstMs);
+    spy.mockRestore();
+    return started;
+  };
+
   const frameOpacities = () =>
     screen
       .getByTestId("exercise-loop")
@@ -64,9 +75,8 @@ describe("ExerciseLoop", () => {
 
   test("reduced motion and an unfocused screen show the still, with no timer", async () => {
     mockReduced = true;
-    await render(<ExerciseLoop imagePath="squat" still={1} side={100} />);
+    expect(await loopClockStarted()).toBe(false);
     expect(screen.queryByTestId("exercise-loop")).toBeNull();
-    expect(jest.getTimerCount()).toBe(0);
   });
 
   test("an exercise with no loop is its still", async () => {
@@ -76,7 +86,11 @@ describe("ExerciseLoop", () => {
 
   test("stops its clock when the screen loses focus", async () => {
     mockFocused = false;
-    await render(<ExerciseLoop imagePath="squat" still={1} side={100} />);
-    expect(jest.getTimerCount()).toBe(0);
+    expect(await loopClockStarted()).toBe(false);
+    expect(screen.queryByTestId("exercise-loop")).toBeNull();
+  });
+
+  test("and the check above would see the clock if it ran", async () => {
+    expect(await loopClockStarted()).toBe(true);
   });
 });

@@ -2815,6 +2815,88 @@ SIDE.pop("jump_squat", None)
 LOOSE["jump_squat"] = LOOSE["squat"]
 
 
+# v12 (Guillaume, 11/11: lot 11 validated, "continue, on peut dépasser le budget").
+_WALL_X, _WP_ANKLE = 780, (330, 842)
+_WP_WRIST = (_WALL_X - 12, 420)
+
+
+def _wall_props(floor=880):
+    """A wall facing the hero, a plane across the picture's depth at x = _WALL_X."""
+    return [[_q34(_WALL_X, y, z) for y, z in ((90, -330), (floor, -330), (floor, 330), (90, 330))]]
+
+
+def _wallpush12(t):
+    """Wall push-up: standing back from a wall, hands on it at shoulder height; the body leans as one rigid line from
+    the heels, the elbows bend down and back until the face is near the wall."""
+    d = _lerp(262, 130, t)  # shoulder to wrist
+    theta = solve(lambda a: math.dist(step(_WP_ANKLE, a, 690), _WP_WRIST), -80, -40, d)
+    hip = step(_WP_ANKLE, theta, SEG["thigh"] + SEG["shin"])
+    arm = {"to": _WP_WRIST, "bend": -1, "end": 270}
+    leg = {"to": _WP_ANKLE, "bend": 1, "end": _lerp(5, 25, t)}
+    side = fk(hip, theta, face=(1, 0.1), near_arm=arm, far_arm=arm, near_leg=leg, far_leg=leg, far_at=((0, 0), (0, 0)))
+    out = _three_quarter(side, 880)
+    out["props"] = _wall_props() + out["props"]
+    return out
+
+
+_CR_TOE = (540, 880)
+
+
+def _calf12(t):
+    """Standing calf raise: the balls of the feet fixed, the heels rise, the whole body goes up in one straight line;
+    the arms hang at the sides."""
+    a = _lerp(14, 62, t)  # foot angle from the floor, heel up
+    ankle = (round(_CR_TOE[0] - SEG["foot"] * math.cos(math.radians(a))), round(_CR_TOE[1] - SEG["foot"] * math.sin(math.radians(a))))
+    hip = (ankle[0] - 6, ankle[1] - SEG["thigh"] - SEG["shin"] + 4)
+    leg = {"to": ankle, "bend": -1, "end": a}
+    arm = (92, 90, 90)
+    side = fk(hip, -90, face=(1, 0), near_arm=arm, far_arm=arm, near_leg=leg, far_leg=leg, far_at=((0, 0), (0, 0)))
+    out = _three_quarter(side, 880)
+    out["pins"] = [c[3] for s in ("near", "far") for c in out[s][1:]]  # the balls of the feet
+    return out
+
+
+_CRUNCH_HIP, _CRUNCH_FOOT = (560, 858), (790, 842)
+
+
+def _crunch12(t):
+    """Crunch: on the back, knees bent, feet flat; the shoulder blades curl off the floor, the lower back stays down,
+    the hands reach along the thighs towards the knees."""
+    trunk = _lerp(180, 214, t)
+    leg = {"to": _CRUNCH_FOOT, "bend": -1, "end": 0}
+    a = _lerp(4, -14, t)
+    side = fk(_CRUNCH_HIP, trunk, arc=_lerp(0, 22, t), back=-1, head=_lerp(180, 236, t), face=(_lerp(0, 0.5, t), -1),
+              near_arm=(a, a, a), far_arm=(a, a, a), near_leg=leg, far_leg=leg, far_at=((0, 0), (0, 0)))
+    return _feet_only(_three_quarter(side, 880))
+
+
+def _scap12(t):
+    """Scapular pull-up: a dead hang with straight arms; only the shoulder blades move, pulling down and back so the
+    whole body rises a few centimetres and the neck lengthens; the elbows never bend."""
+    lift = round(_lerp(0, 46, t))
+    sh = (_HLR_WRIST[0] - 4, _HLR_WRIST[1] + 262 - lift)
+    hip = step(sh, 90, SEG["torso"])
+    leg = (92, 92, 162)
+    side = fk(hip, -90, face=(1, 0), head=-90, near_arm=(270, 270, 270), far_arm=(270, 270, 270), near_leg=leg,
+              far_leg=leg, far_at=((0, 0), (0, 0)))
+    for s in ("near", "far"):  # straight arms ending on the bar: the shoulders sit higher as the blades depress
+        a0 = side[s][0][0]
+        side[s][0] = [a0, lerp(a0, _HLR_WRIST, 0.53), _HLR_WRIST, (_HLR_WRIST[0], _HLR_WRIST[1] - SEG["hand"])]
+    out = _three_quarter(side, 1300, bar=_HLR_BAR)
+    out["grip"] = (_unit(_q34(*_HLR_BAR, 0), _q34(_HLR_BAR[0] + 70, _HLR_BAR[1] - 15, 0)), out["grip"][1])
+    out["pins"] = [c[2] for s in ("near", "far") for c in out[s][:1]]
+    out["props"] = [p for p in out["props"] if p[0] == "line"]
+    return _shrink(out, 0.8, (512, 420))
+
+
+for _slug, _f, _a in (("wall_pushup", _wallpush12, "k1"), ("standing_calf_raise", _calf12, "k4"),
+                      ("crunch", _crunch12, "k4"), ("scapular_pullup", _scap12, "k4")):
+    _seq(_slug, _a, 3, {"k1": _f(0), "k2": _f(1 / 3), "k3": _f(2 / 3), "k4": _f(1), "k5": None, "k6": None},
+         {"k5": "k3", "k6": "k2"})
+    SIDE.pop(_slug, None)
+    LOOSE[_slug] = "torso, upper, fore, hand, thigh, shin, foot"
+
+
 # v9 drawing (Guillaume validated the mannequins): A from the a_key guide, then the other end, then the thirds.
 _FEET = " Both feet stay on exactly the same spots of the floor."
 POSE_TEXT.update({

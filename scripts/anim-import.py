@@ -2,6 +2,7 @@
 """Bring the validated exercise loops from the animation pilot cache into the app.
 
     scripts/anim-import.py picks <picks.json>      # six-frame loops from key pictures (lots 9-11)
+    scripts/anim-import.py loop <picks.json>       # any key order, read from the pilot (alternating loops, lot 13)
     scripts/anim-import.py site <slug> [<slug>..]  # an earlier flip-book, copied from site/<slug>/
 
 Both write assets/images/exercises/anim/<slug>/k1..kN.webp (the distinct frames), merge the slug's
@@ -49,6 +50,36 @@ def from_picks(path):
         total = CYCLE_MS.get(slug, 2950)
         manifest[slug] = [[i, round(total * WEIGHT[n] / sum(WEIGHT))] for n, i in enumerate(ORDER)]
         print(slug, "frames: 4")
+    return manifest
+
+
+def from_loop(path):
+    """A picks file naming every key's picture ({slug: {key: path}}), for loops that are not k1 k2 k3 k4 k3 k2: the
+    alternating ones (sides, legs). The step order and the rep come from the pilot's own sequence, so they are never
+    copied by hand: `keys` in order, a `same` key showing the key it repeats, equal steps over `rep_s`."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("pilot", ROOT / "scripts" / "anim-pilot-v3.py")
+    pilot = importlib.util.module_from_spec(spec)
+    sys_argv, sys.argv = sys.argv, ["x"]
+    spec.loader.exec_module(pilot)
+    sys.argv = sys_argv
+    manifest = load()
+    for slug, keys in json.loads(pathlib.Path(path).read_text()).items():
+        ex = pilot.EXERCISES[slug]
+        order = [ex["same"].get(k, k) for k in ex["keys"]]
+        distinct = list(dict.fromkeys(order))
+        d = OUT / slug
+        if d.exists():
+            for old in d.glob("k*.webp"):
+                old.unlink()
+        d.mkdir(parents=True, exist_ok=True)
+        for i, k in enumerate(distinct, 1):
+            subprocess.run(["magick", str(PILOT / keys[k]), "-resize", "480x480!", "-quality", "82",
+                            str(d / f"k{i}.webp")], check=True)
+        ms = round(ex["rep_s"] * 1000 / len(order))
+        manifest[slug] = [[distinct.index(k), ms] for k in order]
+        print(slug, "frames:", len(distinct), "steps:", len(order))
     return manifest
 
 
@@ -105,4 +136,4 @@ def write(manifest):
 
 if __name__ == "__main__":
     mode, *args = sys.argv[1:]
-    write(from_picks(args[0]) if mode == "picks" else from_site(args))
+    write(from_picks(args[0]) if mode == "picks" else from_loop(args[0]) if mode == "loop" else from_site(args))

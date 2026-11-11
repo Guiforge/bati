@@ -4,6 +4,44 @@
 export type ExerciseLoop = { frames: number[]; steps: [number, number][] };
 
 export const EXERCISE_LOOPS: Record<string, ExerciseLoop> = {
+  archer_pushup: {
+    frames: [
+      require("@/assets/images/exercises/anim/archer_pushup/k1.webp"),
+      require("@/assets/images/exercises/anim/archer_pushup/k2.webp"),
+      require("@/assets/images/exercises/anim/archer_pushup/k3.webp"),
+      require("@/assets/images/exercises/anim/archer_pushup/k4.webp"),
+      require("@/assets/images/exercises/anim/archer_pushup/k5.webp"),
+      require("@/assets/images/exercises/anim/archer_pushup/k6.webp"),
+      require("@/assets/images/exercises/anim/archer_pushup/k7.webp"),
+    ],
+    steps: [
+      [0, 500],
+      [1, 500],
+      [2, 500],
+      [3, 500],
+      [2, 500],
+      [1, 500],
+      [0, 500],
+      [4, 500],
+      [5, 500],
+      [6, 500],
+      [5, 500],
+      [4, 500],
+    ],
+  },
+  bear_crawl: {
+    frames: [
+      require("@/assets/images/exercises/anim/bear_crawl/k1.webp"),
+      require("@/assets/images/exercises/anim/bear_crawl/k2.webp"),
+      require("@/assets/images/exercises/anim/bear_crawl/k3.webp"),
+    ],
+    steps: [
+      [0, 500],
+      [1, 500],
+      [0, 500],
+      [2, 500],
+    ],
+  },
   bulgarian_split_squat: {
     frames: [
       require("@/assets/images/exercises/anim/bulgarian_split_squat/k1.webp"),
@@ -44,6 +82,19 @@ export const EXERCISE_LOOPS: Record<string, ExerciseLoop> = {
     steps: [
       [0, 1000],
       [1, 1000],
+    ],
+  },
+  dead_bug: {
+    frames: [
+      require("@/assets/images/exercises/anim/dead_bug/k1.webp"),
+      require("@/assets/images/exercises/anim/dead_bug/k2.webp"),
+      require("@/assets/images/exercises/anim/dead_bug/k3.webp"),
+    ],
+    steps: [
+      [0, 1000],
+      [1, 1000],
+      [0, 1000],
+      [2, 1000],
     ],
   },
   diamond_pushup: {
@@ -168,6 +219,19 @@ export const EXERCISE_LOOPS: Record<string, ExerciseLoop> = {
       [1, 450],
     ],
   },
+  mountain_climber: {
+    frames: [
+      require("@/assets/images/exercises/anim/mountain_climber/k1.webp"),
+      require("@/assets/images/exercises/anim/mountain_climber/k2.webp"),
+      require("@/assets/images/exercises/anim/mountain_climber/k3.webp"),
+    ],
+    steps: [
+      [0, 250],
+      [1, 250],
+      [2, 250],
+      [1, 250],
+    ],
+  },
   negative_pullup: {
     frames: [
       require("@/assets/images/exercises/anim/negative_pullup/k1.webp"),
@@ -224,6 +288,22 @@ export const EXERCISE_LOOPS: Record<string, ExerciseLoop> = {
       [3, 700],
       [2, 450],
       [1, 450],
+    ],
+  },
+  reverse_crunch: {
+    frames: [
+      require("@/assets/images/exercises/anim/reverse_crunch/k1.webp"),
+      require("@/assets/images/exercises/anim/reverse_crunch/k2.webp"),
+      require("@/assets/images/exercises/anim/reverse_crunch/k3.webp"),
+      require("@/assets/images/exercises/anim/reverse_crunch/k4.webp"),
+    ],
+    steps: [
+      [0, 500],
+      [1, 500],
+      [2, 500],
+      [3, 500],
+      [2, 500],
+      [1, 500],
     ],
   },
   scapular_pullup: {
@@ -318,6 +398,25 @@ export const EXERCISE_LOOPS: Record<string, ExerciseLoop> = {
     steps: [
       [0, 1000],
       [1, 1000],
+    ],
+  },
+  windshield_wipers: {
+    frames: [
+      require("@/assets/images/exercises/anim/windshield_wipers/k1.webp"),
+      require("@/assets/images/exercises/anim/windshield_wipers/k2.webp"),
+      require("@/assets/images/exercises/anim/windshield_wipers/k3.webp"),
+      require("@/assets/images/exercises/anim/windshield_wipers/k4.webp"),
+      require("@/assets/images/exercises/anim/windshield_wipers/k5.webp"),
+    ],
+    steps: [
+      [0, 500],
+      [1, 500],
+      [2, 500],
+      [1, 500],
+      [0, 500],
+      [3, 500],
+      [4, 500],
+      [3, 500],
     ],
   },
 };

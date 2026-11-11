@@ -3009,6 +3009,10 @@ POSE_TEXT.update({
 })
 for _slug in ("knee_pushup", "bulgarian_split_squat", "toes_to_bar", "jump_squat", "single_leg_glute_bridge"):
     NEVER[_slug] = NEVER["pushups"]
+# v11 fix (Guillaume: "effet zoom"): the hang frames came out about 0.77 the size of the feet-at-bar top, under the
+# same bar. The top and 2/3 are redrawn on the hang (--base) at its scale.
+NEVER["toes_to_bar"] += (" The hero is drawn at EXACTLY the same size as in image 2: the same head size, the same arm "
+                         "length from the hands to the shoulders, the same bar; only the pose changes.")
 NEVER["jump_squat"] = ("The camera, the framing, the scale and the floor do not change; the feet land on exactly the "
                        "same spot of the floor as in image 2.")
 

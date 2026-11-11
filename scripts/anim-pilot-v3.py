@@ -2889,8 +2889,30 @@ def _scap12(t):
     return _shrink(out, 0.8, (512, 420))
 
 
+# Back view: hands 125 off the midline, shoulder joints 70; their height puts the wrist at a full arm's reach (264.5),
+# or the IK bends the elbows outwards.
+_SC_X, _SC_GRIP = 512, 125
+_SC_ROOT_Y = round(152 + math.sqrt(264.5 ** 2 - (_SC_GRIP - 70) ** 2))
+
+
+def _scap_back12(t):
+    """Scapular pull-up seen from BEHIND (Guillaume: "scapular tu mets dos"), so the shoulder blades read. The shoulder
+    joints never move (straight arms, fixed length); the spine, head, hips and legs rise 46 px as the blades depress:
+    at the bottom the shoulders are shrugged up to the ears, at the top they sit low and the neck is long."""
+    lift = _lerp(0, 46, t)
+    sh = (_SC_X, round(_SC_ROOT_Y + 40 - lift))  # top of the spine
+    dy = _SC_ROOT_Y - sh[1]  # shoulder joints relative to the top of the spine: -40 shrugged, +6 depressed
+    hip = step(sh, 90, SEG["torso"])
+    wl, wr = (_SC_X - _SC_GRIP, 152), (_SC_X + _SC_GRIP, 152)
+    side = fk(hip, -90, head=-90, near_arm={"to": wl, "bend": 1, "end": 270}, far_arm={"to": wr, "bend": -1, "end": 270},
+              near_leg=(92, 90, 100), far_leg=(88, 90, 80), near_at=((-70, dy), (-42, 0)), far_at=((70, dy), (42, 0)),
+              props=[("line", (_SC_X - 300, 140), (_SC_X + 300, 140), 18)], pins=[wl, wr])
+    side["grip"] = ((0.0, -1.0), (1.0, 0.0), 0.6)  # from behind: the backs of the hands, the fingers over the top
+    return _shrink(side, 0.8, (512, 420))
+
+
 for _slug, _f, _a in (("wall_pushup", _wallpush12, "k1"), ("standing_calf_raise", _calf12, "k4"),
-                      ("crunch", _crunch12, "k4"), ("scapular_pullup", _scap12, "k4")):
+                      ("crunch", _crunch12, "k4"), ("scapular_pullup", _scap_back12, "k4")):
     _seq(_slug, _a, 3, {"k1": _f(0), "k2": _f(1 / 3), "k3": _f(2 / 3), "k4": _f(1), "k5": None, "k6": None},
          {"k5": "k3", "k6": "k2"})
     SIDE.pop(_slug, None)

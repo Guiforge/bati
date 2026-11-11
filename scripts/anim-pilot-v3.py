@@ -2353,6 +2353,33 @@ for _slug, _f in (("pike_pushup", _pike_flat), ("inverted_row", _row_flat)):
     LOOSE[_slug] = "torso, upper, fore, hand, thigh, shin, foot"  # the camera turns every bone a little
 
 
+_Q = ("THREE-QUARTER view: the camera is a little above the hero and turned about 35 degrees from the side towards "
+      "the hero's head, so both arms and both legs read separately, the near ones larger. ")
+_PIKE_STILL = " The hands and feet stay on exactly the same spots of the floor, the legs straight, the hips high."
+_ROW_STILL = (" The bar is a straight bar at standing hip height running into the depth of the picture; both hands grip "
+              "it overhand, shoulder-width apart, and the heels stay on the floor. The body is one rigid straight plank "
+              "from the heels to the head, the head in line with it, face up towards the bar, in profile.")
+POSE_TEXT.update({
+    ("pike_pushup", "k4"): _Q + "The BOTTOM of a pike push-up: hips high, the body an upside-down V; both hands flat on the "
+        "floor shoulder-width apart, both elbows bent about 75 degrees and pointing back towards the feet; the top of the "
+        "head nearly touches the floor just IN FRONT of the hands; legs straight, on the balls of the feet." + _PIKE_STILL,
+    ("pike_pushup", "k1"): "The TOP of the pike push-up: both arms fully straight, in one straight line with the back from "
+        "the hands to the hips, the head between the arms, well above the floor." + _PIKE_STILL,
+    ("pike_pushup", "k2"): "A THIRD of the way down the pike push-up: the elbows just starting to bend backwards, the head "
+        "a little lower than at the top, still high above the floor." + _PIKE_STILL,
+    ("pike_pushup", "k3"): "TWO THIRDS of the way down the pike push-up: the elbows clearly bent and pointing back, the "
+        "head halfway down to the floor, moving forward in front of the hands." + _PIKE_STILL,
+    ("inverted_row", "k4"): _Q + "The TOP of an inverted row: the chest touches the bar, both elbows bent and behind the "
+        "body, pointing down." + _ROW_STILL,
+    ("inverted_row", "k1"): "The BOTTOM of the inverted row: both arms fully straight, hanging from the bar, the body "
+        "low and nearly level, just above the floor." + _ROW_STILL,
+    ("inverted_row", "k2"): "A THIRD of the way up the inverted row: the elbows starting to bend, the chest a third of "
+        "the way to the bar." + _ROW_STILL,
+    ("inverted_row", "k3"): "TWO THIRDS of the way up the inverted row: the elbows bent at about 90 degrees, pointing "
+        "down, the chest close below the bar." + _ROW_STILL,
+})
+
+
 CREDITS = "https://api.bfl.ai/v1/credits"
 
 

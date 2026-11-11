@@ -2402,6 +2402,10 @@ NEVER["inverted_row"] = ("The two hands are drawn EXACTLY over the hands of imag
     "nearer the LEFT post than the head is; the straight or bent arms reach from there to the shoulders. The heels "
     "are drawn exactly over the heels of image 2. The bar, the posts, the camera, the framing and the scale do not "
     "change. The face looks up at the bar in profile, not at the camera.")
+# v8 retry 3 (blind coach: the bottom read as lying on the floor).
+POSE_TEXT[("inverted_row", "k1")] += (" The body is NOT lying on the floor: the hips, back and shoulders are clearly OFF "
+    "the floor, a forearm's length above it under the shoulders, the whole body one rigid plank about 15 degrees up from "
+    "the floor; only the heels touch the floor. The arms hang straight down from the bar to the shoulders.")
 
 
 CREDITS = "https://api.bfl.ai/v1/credits"

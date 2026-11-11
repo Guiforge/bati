@@ -383,3 +383,34 @@ effect, and an audit. Exactness comes first, style second; the scoring brief now
   showed that the lot 2 bottom is not a curtsy either: the back leg goes out to the side, not behind and
   across. So no curtsy video is published. Every image model tried (front, three-quarter, side, behind)
   draws a lunge for this pose. Ledger total: 66.37 $.
+
+## v8 (2026-11-11): pike and inverted row, mannequin first, three-quarter view
+
+Guillaume asked for every position as a mannequin first, validated before any drawing, then
+for a three-quarter view, then for one drawing attempt.
+
+- **Mannequin fixes.** The v6 pike kept the arms bent at the top and dropped the head behind
+  the hands. Now the shoulder travels from arms straight in line with the back to just in
+  front of the hands, and the hip is solved so the legs stay straight. The inverted row kept
+  its geometry, which matches free-exercise-db's photos (Unlicense). Both are six-picture
+  loops: top or bottom, 1/3, 2/3, the other end, then 2/3 and 1/3 again.
+- **Three-quarter view.** The flat side pose is lifted to 3D, each limb in its own plane at
+  shoulder or hip width so no bone changes length. It is then projected with the camera 35
+  degrees towards the head and 12 degrees above. Bones foreshorten, so the anatomy check
+  only covers the pose before projection (`LOOSE` lists every bone).
+- **Mannequin v4** (sub-agent). The head is a yellow disc with a red-orange nose and an eye
+  dot. The hands are green mittens, bright on the near side and dark on the far side. Both
+  legends forbid these colours in the result.
+- **Pike** (gpt-image-2.6-sunburst). A = A_N41; k1 N41, k2 N43, k3 N42. The first k2 was as
+  bent as k3, and the retry text spaced them. The blind coach gave **SHIP** (4/4/4/3). Its
+  fault: at the bottom the head touches the floor between the hands.
+- **Inverted row.** Every picture drawn from the first A slid the hands about 140 px along
+  the bar, and so did a top drawn from the bottom. The fix was to choose pictures that
+  share one base: A = k2_N44, k1 N49 (redrawn with the body off the floor after a coach
+  REDO), k2 N50 (elbows just bent), k3 k2_N45 (elbows at 90).
+- **Audit of the row.** The last blind coach asked to REDO for "the bar and posts move".
+  Onion skins and vstab on the right post show 0 px of drift, so this verdict is
+  overridden. The "stray base" it saw is the left post's foot, which shows once the body
+  rises. Its other point stands: at the top the chin passes over the bar.
+- **Videos.** Key-pose cross-fades. Max zoom 1 % (pike) and 0 % (row), slide 0 px.
+- **Spend.** 1.82 $ for v8, 68.50 $ of 80.73 $ in total.

@@ -153,7 +153,9 @@ test("the hero's animal follows the backup, like the village name", async () => 
 
 test("what this phone wrote to Health Connect leaves in no copy and survives a restore", async () => {
   t.sqlite.exec("DELETE FROM health_export");
-  t.sqlite.prepare("INSERT INTO health_export (sessionUuid, version) VALUES ('mine', 7)").run();
+  t.sqlite
+    .prepare("INSERT INTO health_export (sessionUuid, version) VALUES ('mine', 7), ('newer', 9)")
+    .run();
 
   const staged = path.join(dir, "health.db");
   await backup().snapshotDatabaseTo(staged);
@@ -161,6 +163,8 @@ test("what this phone wrote to Health Connect leaves in no copy and survives a r
   expect(copy.prepare("SELECT count(*) n FROM health_export").get()).toEqual({ n: 0 });
   // As if the copy came from another phone that had written its own.
   copy.prepare("INSERT INTO health_export (sessionUuid, version) VALUES ('theirs', 3)").run();
+  // An older copy: it holds 'mine' but not 'newer', a session played after it was made.
+  copy.prepare("INSERT INTO completed_sessions (uuid, performedAt) VALUES ('mine', 0)").run();
   copy.close();
 
   await backup().keepDeviceSettings(staged);
@@ -169,6 +173,8 @@ test("what this phone wrote to Health Connect leaves in no copy and survives a r
   expect(restored.prepare("SELECT sessionUuid, version FROM health_export").all()).toEqual([
     { sessionUuid: "mine", version: 7 },
   ]);
+  // 'newer' is not in the ledger any more, so it is not taken back from Health Connect: the hero
+  // never deleted it, the copy is only older.
   expect(
     restored.prepare("SELECT value FROM user_preferences WHERE key = 'healthExportSince'").get(),
   ).toBe(undefined);

@@ -8,7 +8,13 @@ import { clientMock, createTestDb } from "./helpers/testDb";
 function fakeHealthConnect() {
   const records = new Map<string, HealthRecord>();
   const calls = { upsert: 0, remove: 0, permission: 0 };
-  const state = { present: true, permitted: true, failWrites: 0 };
+  const state = {
+    present: true,
+    permitted: true,
+    failWrites: 0,
+    refused: new Set<string>(),
+    onUpsert: (): Promise<void> | undefined => undefined,
+  };
   const port: HealthPort = {
     available: () => state.present,
     hasPermission: () => {
@@ -16,8 +22,10 @@ function fakeHealthConnect() {
       return Promise.resolve(state.permitted);
     },
     requestPermission: () => Promise.resolve(state.permitted),
-    upsert: (record) => {
+    upsert: async (record) => {
       calls.upsert++;
+      await state.onUpsert();
+      if (state.refused.has(record.id)) return Promise.reject(new Error("record refused"));
       if (state.failWrites > 0) {
         state.failWrites--;
         return Promise.reject(new Error("Health Connect said no"));
@@ -163,6 +171,34 @@ describe("Health Connect export", () => {
     await sync().syncHealthConnect(hc.port);
     expect(hc.records.size).toBe(0);
     expect(t.sqlite.prepare("SELECT count(*) n FROM health_export").get()).toEqual({ n: 0 });
+  });
+
+  test("a session Health Connect refuses holds back neither the sessions after it nor the deletions", async () => {
+    const hc = fakeHealthConnect();
+    await switchedOn(hc);
+    const gone = await play([5, 5], 30);
+    await sync().syncHealthConnect(hc.port);
+    const refused = await play([15, 12], 20);
+    const later = await play([10, 10], 10);
+    hc.state.refused.add(`bati-${refused.uuid}`);
+    expect(await completed().deleteSession(gone.id)).toBe("deleted");
+
+    await expect(sync().syncHealthConnect(hc.port)).rejects.toThrow("record refused");
+
+    expect([...hc.records.keys()]).toEqual([`bati-${later.uuid}`]);
+    expect(await sync().readHealthExportState(hc.port)).toEqual({ kind: "on", pending: 1 });
+  });
+
+  test("switching off during a run stops it before the next session", async () => {
+    const hc = fakeHealthConnect();
+    await switchedOn(hc);
+    await play([15, 12], 20);
+    await play([10, 10], 10);
+    hc.state.onUpsert = () => sync().turnHealthExportOff();
+
+    await sync().syncHealthConnect(hc.port);
+
+    expect(hc.calls.upsert).toBe(1);
   });
 
   test("a restore that brings the journal back as it was rewrites nothing", async () => {

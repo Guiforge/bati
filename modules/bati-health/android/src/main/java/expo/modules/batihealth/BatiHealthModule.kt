@@ -53,7 +53,8 @@ class BatiHealthModule : Module() {
       Name("BatiHealth")
 
       // 1 unavailable (below Android 9, or no provider), 2 provider to install or update, 3 ready.
-      Function("sdkStatus") { HealthConnectClient.getSdkStatus(context) }
+      // Never throws into JS: it runs before every quiet sync. 1 = SDK_UNAVAILABLE.
+      Function("sdkStatus") { runCatching { HealthConnectClient.getSdkStatus(context) }.getOrDefault(1) }
 
       AsyncFunction("hasWritePermission") { promise: Promise ->
         settle(promise) { client().permissionController.getGrantedPermissions().contains(WRITE_EXERCISE) }
@@ -105,8 +106,8 @@ class BatiHealthModule : Module() {
       Function("openSettings") {
         val intent =
           Intent(HealthConnectClient.ACTION_HEALTH_CONNECT_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(intent)
-        true
+        // Called from a tap: a missing settings activity must not reach JS as an uncaught error.
+        runCatching { context.startActivity(intent) }.isSuccess
       }
     }
 }

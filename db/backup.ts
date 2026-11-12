@@ -1003,10 +1003,15 @@ export function keepDeviceSettings(stagedPath: string): Promise<void> {
     // What this phone wrote to Health Connect stays this phone's: a restore that took it away would
     // write every session again, and one that brought another phone's would skip sessions it never
     // wrote. The copy holds none (`dropThisPhoneOnly`); a copy from before 0087 has no table yet.
-    for (const table of THIS_PHONE_ONLY) {
-      if (!(await hasTable(conn, CANDIDATE, table))) continue;
-      await conn.execAsync(`DELETE FROM ${CANDIDATE}.${table}`);
-      await conn.execAsync(`INSERT INTO ${CANDIDATE}.${table} SELECT * FROM main.${table}`);
+    // Only rows for sessions the restored journal holds: a session the older copy lacks was not
+    // deleted by the hero, so its workout stays in Health Connect instead of being taken back.
+    const [ledger] = THIS_PHONE_ONLY;
+    if (await hasTable(conn, CANDIDATE, ledger)) {
+      await conn.execAsync(`DELETE FROM ${CANDIDATE}.${ledger}`);
+      await conn.execAsync(
+        `INSERT INTO ${CANDIDATE}.${ledger} SELECT * FROM main.${ledger}
+           WHERE sessionUuid IN (SELECT uuid FROM ${CANDIDATE}.completed_sessions)`,
+      );
     }
     // A backup from before `customAvatar` carries no photo at all, while this phone has already
     // ported its own: restoring it must not trade the hero's face for a preset.

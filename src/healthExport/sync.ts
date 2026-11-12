@@ -86,13 +86,20 @@ export function syncHealthConnect(port: HealthPort): Promise<void> {
     return running;
   }
   running = (async () => {
-    do {
-      again = false;
-      await syncOnce(port);
-    } while (again);
-  })().finally(() => {
-    running = null;
-  });
+    try {
+      do {
+        again = false;
+        try {
+          await syncOnce(port);
+        } catch (e) {
+          // A call that came during a failed run still gets its run.
+          if (!again) throw e;
+        }
+      } while (again);
+    } finally {
+      running = null;
+    }
+  })();
   return running;
 }
 
@@ -102,12 +109,25 @@ async function syncOnce(port: HealthPort): Promise<void> {
   if (since === null || !(await port.hasPermission())) return;
 
   const { write, remove, format } = await owedWork(since);
+  // One record Health Connect refuses must not hold back every session after it, nor the deletions.
+  let failure: unknown = null;
   for (const session of write) {
-    await port.upsert(toHealthRecord(session, format));
-    await markHealthExported(session.uuid, session.version);
+    // The hero can switch off while a backlog is being written: stop before the next one.
+    if ((await exportSince()) === null) return;
+    try {
+      await port.upsert(toHealthRecord(session, format));
+      await markHealthExported(session.uuid, session.version);
+    } catch (e) {
+      failure ??= e;
+    }
   }
-  if (remove.length > 0) {
-    await port.remove(remove.map(healthRecordId));
-    await forgetHealthExported(remove);
+  if (remove.length > 0 && (await exportSince()) !== null) {
+    try {
+      await port.remove(remove.map(healthRecordId));
+      await forgetHealthExported(remove);
+    } catch (e) {
+      failure ??= e;
+    }
   }
+  if (failure !== null) throw failure;
 }

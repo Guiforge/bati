@@ -147,7 +147,7 @@ EXTEND = {"curtsy_squat", "wall_pushup", "star_jump", "jump_squat", "thread_the_
           "russian_twist", "single_leg_glute_bridge", "chin_up", "pullups", "hanging_leg_raise"}
 TUNE = {
     "bear_crawl": [None, (1, 0, 0.06)],
-    "chin_up": [(1.25, 0, 0), (1.25, 0, 0.03)],
+    "chin_up": [(1.25, 0, 0), (1.25, -0.025, 0.03)],
     "crunch": [(1, 0, -0.05), (1, 0, 0.06)],
     "flutter_kicks": [None, (1, 0, 0.06)],
     "hanging_leg_raise": [(1.2, 0, 0.03), (1.1, -0.04, 0.03)],
@@ -157,8 +157,9 @@ TUNE = {
     "negative_pullup": [(1.35, -0.06, 0.04), (1.35, -0.03, 0.02)],
     "pullups": [(1.35, 0, 0.03), (1.35, 0, 0.03)],
     "reverse_crunch": [(1.1, 0, 0), (1.1, 0, 0)],
-    "russian_twist": [None, (1.12, 0, 0.07)],
+    "russian_twist": [None, (1.12, 0, 0.11)],
     "single_leg_glute_bridge": [None, (1, 0, 0.07)],
+    "skater_hop": [(1.12, 0.04, 0.02), (1.12, -0.04, 0.02)],
     "thread_the_needle": [(1.15, 0, 0), (1.25, 0, 0)],
     "toes_to_bar": [None, None, (1.25, 0, 0.03)],
     "windshield_wipers": [(0.92, 0, -0.03), (1, 0.03, 0), None],

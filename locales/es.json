@@ -3396,7 +3396,7 @@
     "fallback_title": "Sesión de Bati",
     "route": "Con el recorrido GPS",
     "route_explain": "El recorrido muestra por dónde pasaste, y las apps que permitas pueden leerlo.",
-    "route_refused": "Health Connect no dio acceso al recorrido. Tus salidas se envían sin él; puedes permitirlo con el enlace de abajo.",
+    "route_refused": "No permitido en Health Connect: tus salidas se envían sin el recorrido.",
     "history_row": "Enviar mis sesiones pasadas",
     "history_progress": "Sesiones pasadas: {{done}} de {{total}}",
     "history_stop": "Detener",

@@ -152,9 +152,7 @@ test("route refused: the option goes back to off with a calm line", async () => 
   await mount({ kind: "on", ...details() });
   await fireEvent.press(await routeSwitch());
   expect(mockRouteOn).toHaveBeenCalledTimes(1);
-  expect(
-    await screen.findByText(/Your outings go without it; you can allow it with the link below/),
-  ).toBeTruthy();
+  expect(await screen.findByText(/your outings go without the route/)).toBeTruthy();
   expect((await routeSwitch()).props["aria-checked"]).toBe(false);
 });
 

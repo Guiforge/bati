@@ -3259,7 +3259,7 @@
     "fallback_title": "Bati session",
     "route": "With the GPS route",
     "route_explain": "The route shows where you went, and the apps you allow can read it.",
-    "route_refused": "Health Connect did not allow the route. Your outings go without it; you can allow it with the link below.",
+    "route_refused": "Not allowed in Health Connect: your outings go without the route.",
     "history_row": "Send my past sessions",
     "history_progress": "Past sessions: {{done}} of {{total}}",
     "history_stop": "Stop",

@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Text, XStack } from "tamagui";
-import { AppButton } from "@/components/common/AppButton";
+import { Text } from "tamagui";
 import { Clock, Map as MapIcon } from "@/components/icons";
 import { SettingRow } from "@/components/settings/SettingRow";
 import type { HealthExportState } from "@/src/healthExport/sync";
@@ -43,22 +42,17 @@ export function HealthExportOptions({ details, busy, routeRefused, onRoute, onHi
           </Text>
 
           {history.running ? (
-            <XStack testID="health-export-history-progress" items="center" pl="3" gap="3">
-              {/* Polite: TalkBack says the count as it moves, without cutting what it is reading. */}
-              <Text flex={1} fontSize="3" color="text" aria-live="polite">
-                {t("healthExport.history_progress", {
-                  done: history.done,
-                  total: history.total,
-                })}
-              </Text>
-              <AppButton
-                testID="health-export-history-stop"
-                variant="outline"
-                onPress={() => onHistory(false)}
-              >
-                {t("healthExport.history_stop")}
-              </AppButton>
-            </XStack>
+            // The row it replaces, at its height: a run never makes the screen longer.
+            <SettingRow
+              testID="health-export-history-stop"
+              icon={<Clock size={22} color="text" />}
+              label={t("healthExport.history_progress", {
+                done: history.done,
+                total: history.total,
+              })}
+              value={t("healthExport.history_stop")}
+              onPress={() => onHistory(false)}
+            />
           ) : history.left > 0 ? (
             <SettingRow
               testID="health-export-history"

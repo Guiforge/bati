@@ -3073,7 +3073,7 @@
     "fallback_title": "Bati 训练",
     "route": "附带 GPS 路线",
     "route_explain": "路线会显示你去过的地方，你允许的应用可以读取它。",
-    "route_refused": "Health Connect 没有允许访问路线。你的户外训练会不带路线发送；你可以通过下方链接允许它。",
+    "route_refused": "Health Connect 未允许：你的户外训练会不带路线发送。",
     "history_row": "发送我过去的训练",
     "history_progress": "过去的训练：{{done}} / {{total}}",
     "history_stop": "停止",

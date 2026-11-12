@@ -13,7 +13,7 @@ import {
 import { hasPendingMigrations, migrateClient } from "./migrationRunner";
 import { SCHEMA_VERSION } from "./schemaVersion";
 import { errorTrail, sqlString } from "./sql";
-import { COMPANION_WORDS_GONE, NEVER_IN_PLAINTEXT } from "./syncTables";
+import { COMPANION_WORDS_GONE, NEVER_IN_PLAINTEXT, THIS_PHONE_ONLY } from "./syncTables";
 
 /**
  * Backup and restore, the SQL half.
@@ -100,7 +100,25 @@ export function snapshotDatabaseTo(destinationPath: string): Promise<void> {
   // Still queued, because `VACUUM INTO` is also illegal inside a transaction and the shared
   // connection is where those live. The isolated handle is about *statements*, this queue is
   // about transactions; both are needed. See `vacuumIntoFile`.
-  return serializeOnDatabase(() => vacuumIntoFile(destinationPath));
+  return serializeOnDatabase(async () => {
+    await vacuumIntoFile(destinationPath);
+    await dropThisPhoneOnly(destinationPath);
+  });
+}
+
+/**
+ * What describes this phone and no other leaves no copy: what Health Connect holds here
+ * (`THIS_PHONE_ONLY`) means nothing in a backup or on another device. Every file that leaves
+ * the database is a snapshot, so this is the one place it has to be said.
+ */
+function dropThisPhoneOnly(snapshotPath: string): Promise<void> {
+  return withIsolatedConnection(async (conn) => {
+    await conn.execAsync(`ATTACH DATABASE ${sqlString(snapshotPath)} AS ${CANDIDATE}`);
+    for (const table of THIS_PHONE_ONLY) {
+      if (await hasTable(conn, CANDIDATE, table))
+        await conn.execAsync(`DELETE FROM ${CANDIDATE}.${table}`);
+    }
+  });
 }
 
 /**
@@ -954,6 +972,9 @@ export const DEVICE_LOCAL_PREFERENCES = [
   "lightWeekRefusedAt",
   "lightWeekAcceptedAt",
   "lightWeekEndedAt",
+  // Whether this phone sends its sessions to Health Connect, and since when (src/healthExport/sync.ts):
+  // the permission lives in this phone's Android, so the switch does too.
+  "healthExportSince",
 ] as const;
 
 /**
@@ -979,6 +1000,14 @@ export function keepDeviceSettings(stagedPath: string): Promise<void> {
       `INSERT INTO ${CANDIDATE}.user_preferences (key, value, updatedAt)
          SELECT key, value, updatedAt FROM main.user_preferences WHERE key IN (${kept})`,
     );
+    // What this phone wrote to Health Connect stays this phone's: a restore that took it away would
+    // write every session again, and one that brought another phone's would skip sessions it never
+    // wrote. The copy holds none (`dropThisPhoneOnly`); a copy from before 0087 has no table yet.
+    for (const table of THIS_PHONE_ONLY) {
+      if (!(await hasTable(conn, CANDIDATE, table))) continue;
+      await conn.execAsync(`DELETE FROM ${CANDIDATE}.${table}`);
+      await conn.execAsync(`INSERT INTO ${CANDIDATE}.${table} SELECT * FROM main.${table}`);
+    }
     // A backup from before `customAvatar` carries no photo at all, while this phone has already
     // ported its own: restoring it must not trade the hero's face for a preset.
     await conn.execAsync(

@@ -3240,5 +3240,20 @@
     "share_count_other": "{{count}} creations go into the file.",
     "share_photos_one": "{{count}} photo goes with it.",
     "share_photos_other": "{{count}} photos go with it."
+  },
+  "healthExport": {
+    "row": "Devices and health data",
+    "title": "Devices and health data",
+    "switch": "Send my sessions to Health Connect",
+    "explain": "Your sessions stay on the phone. The apps you allow in Health Connect can read them.",
+    "off_keeps": "If you turn it off, sessions already sent stay in Health Connect.",
+    "refused": "Health Connect did not give the permission. You can allow Bati in its settings, with the link below.",
+    "withdrawn": "Permission removed in Android. Your sessions wait here until you allow it again.",
+    "pending_one": "{{count}} session waiting",
+    "pending_other": "{{count}} sessions waiting",
+    "open": "Open Health Connect",
+    "notes_line": "{{name}}: {{figures}}",
+    "notes_seconds": "{{count}} s",
+    "fallback_title": "Bati session"
   }
 }

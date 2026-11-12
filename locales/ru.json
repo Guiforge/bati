@@ -3490,5 +3490,22 @@
     "share_photos_few": "С ним уйдёт {{count}} фото.",
     "share_photos_many": "С ним уйдёт {{count}} фото.",
     "share_photos_other": "С ним уйдёт {{count}} фото."
+  },
+  "healthExport": {
+    "row": "Устройства и данные о здоровье",
+    "title": "Устройства и данные о здоровье",
+    "switch": "Отправлять мои тренировки в Health Connect",
+    "explain": "Тренировки остаются на телефоне. Их могут читать приложения, которым ты это разрешишь в Health Connect.",
+    "off_keeps": "Если выключить отправку, уже отправленные тренировки останутся в Health Connect.",
+    "refused": "Health Connect не дал разрешение. Ты можешь разрешить Bati в его настройках по ссылке ниже.",
+    "withdrawn": "Разрешение отозвано в Android. Тренировки ждут здесь, пока ты снова его не дашь.",
+    "pending_one": "{{count}} тренировка ждёт",
+    "pending_few": "{{count}} тренировки ждут",
+    "pending_many": "{{count}} тренировок ждут",
+    "pending_other": "{{count}} тренировок ждут",
+    "open": "Открыть Health Connect",
+    "notes_line": "{{name}}: {{figures}}",
+    "notes_seconds": "{{count}} с",
+    "fallback_title": "Тренировка Bati"
   }
 }

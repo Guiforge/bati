@@ -7,7 +7,7 @@
  *   `hero_bosses` (0079) holds the hero's rows only and is merged by uuid like a quest.
  * - `pairs` (0082) is merged by id, the later `updatedAt` wins, and only ever inside a sealed file:
  *   a plain backup has its rows removed (`scrubPairs`).
- * - `local`: stays on this device. Campaigns and boss fights cannot be replayed from another device; seed content is
+ * - `local`: stays on this device. `health_export` (0087) says what this phone's Health Connect holds. Campaigns and boss fights cannot be replayed from another device; seed content is
  *   the same on both. `pair_invites` (0084) holds a private key that has no reason to leave the phone that made it.
  * - `unused`: in the schema and read by no code (the village economy was removed, roadmap 7).
  *
@@ -42,6 +42,13 @@ export const TABLE_SYNC = {
   village_buildings: "unused",
   village_stats: "unused",
 } as const satisfies Record<string, "merged" | "local" | "unused">;
+
+/**
+ * What describes this phone's own Android and no other: emptied in every snapshot that leaves the
+ * database (`snapshotDatabaseTo`), and kept from this phone on a restore (`keepDeviceSettings`).
+ * `health_export` (0087) is what Health Connect holds here.
+ */
+export const THIS_PHONE_ONLY = ["health_export"] as const;
 
 /** What holds a key: a plaintext copy of the database has these rows removed (`scrubPairs`). */
 export const NEVER_IN_PLAINTEXT = ["pairs", "pair_invites"] as const;

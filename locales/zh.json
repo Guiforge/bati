@@ -3055,5 +3055,19 @@
     "quest_slots_other": "{{count}} 个动作",
     "share_count_other": "文件里会有 {{count}} 件作品。",
     "share_photos_other": "{{count}} 张照片会一起发出。"
+  },
+  "healthExport": {
+    "row": "设备和健康数据",
+    "title": "设备和健康数据",
+    "switch": "将我的训练发送到 Health Connect",
+    "explain": "你的训练保存在手机上。你在 Health Connect 中允许的应用可以读取它们。",
+    "off_keeps": "关闭后，已发送的训练仍会保留在 Health Connect 中。",
+    "refused": "Health Connect 没有授予权限。你可以通过下方链接，在它的设置中允许 Bati。",
+    "withdrawn": "权限已在 Android 中撤销。你的训练会在这里等待，直到你再次授权。",
+    "pending_other": "{{count}} 次训练等待发送",
+    "open": "打开 Health Connect",
+    "notes_line": "{{name}}：{{figures}}",
+    "notes_seconds": "{{count}} 秒",
+    "fallback_title": "Bati 训练"
   }
 }

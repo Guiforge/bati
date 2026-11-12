@@ -3393,6 +3393,21 @@
     "open": "Abrir Health Connect",
     "notes_line": "{{name}}: {{figures}}",
     "notes_seconds": "{{seconds}} s",
-    "fallback_title": "Sesión de Bati"
+    "fallback_title": "Sesión de Bati",
+    "route": "Con el recorrido GPS",
+    "route_explain": "El recorrido muestra por dónde pasaste, y las apps que permitas pueden leerlo.",
+    "route_refused": "Android no dio acceso al recorrido. Tus salidas se envían sin él.",
+    "history_row": "Enviar mis sesiones pasadas",
+    "history_progress": "Sesiones pasadas: {{done}} de {{total}}",
+    "history_stop": "Detener",
+    "history_question_title": "¿Enviar también tus sesiones pasadas?",
+    "history_question_body": "Las sesiones que ya están en tu diario también se envían, las más recientes primero. Puedes hacerlo más tarde desde esta pantalla.",
+    "history_yes": "Sí, enviarlas",
+    "history_later": "Ahora no",
+    "failed_one": "{{count}} sesión rechazada por Health Connect",
+    "failed_many": "{{count}} sesiones rechazadas por Health Connect",
+    "failed_other": "{{count}} sesiones rechazadas por Health Connect",
+    "detail_sent": "Enviada a Health Connect",
+    "detail_waiting": "Esperando el envío a Health Connect"
   }
 }

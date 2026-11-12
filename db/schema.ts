@@ -1275,6 +1275,10 @@ export const pairInvites = sqliteTable("pair_invites", {
 export const healthExport = sqliteTable("health_export", {
   sessionUuid: text().primaryKey(),
   version: int().notNull(),
+  // The record holds the outing's route (0088). Chosen at the first write, kept on every rewrite.
+  route: int({ mode: "boolean" }).notNull().default(false),
+  // Why Health Connect refused this version (0088); null when it holds it.
+  failed: text(),
 });
 
 /**

@@ -3508,6 +3508,22 @@
     "open": "Открыть Health Connect",
     "notes_line": "{{name}}: {{figures}}",
     "notes_seconds": "{{seconds}} с",
-    "fallback_title": "Тренировка Bati"
+    "fallback_title": "Тренировка Bati",
+    "route": "С GPS-маршрутом",
+    "route_explain": "Маршрут показывает, где ты был, и его могут читать приложения, которым ты это разрешишь.",
+    "route_refused": "Android не дал доступ к маршруту. Выходы отправляются без него.",
+    "history_row": "Отправить прошлые тренировки",
+    "history_progress": "Прошлые тренировки: {{done}} из {{total}}",
+    "history_stop": "Остановить",
+    "history_question_title": "Отправить и прошлые тренировки?",
+    "history_question_body": "Тренировки, которые уже есть в журнале, тоже уйдут, сначала самые новые. Это можно сделать и позже на этом экране.",
+    "history_yes": "Да, отправить",
+    "history_later": "Не сейчас",
+    "failed_one": "{{count}} тренировка отклонена Health Connect",
+    "failed_few": "{{count}} тренировки отклонены Health Connect",
+    "failed_many": "{{count}} тренировок отклонено Health Connect",
+    "failed_other": "{{count}} тренировок отклонено Health Connect",
+    "detail_sent": "Отправлено в Health Connect",
+    "detail_waiting": "Ждёт отправки в Health Connect"
   }
 }

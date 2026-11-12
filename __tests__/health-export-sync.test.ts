@@ -1,48 +1,5 @@
-import type { HealthPort, HealthRecord } from "../src/healthExport/port";
+import { fakeHealthConnect } from "./helpers/fakeHealthConnect";
 import { clientMock, createTestDb } from "./helpers/testDb";
-
-/**
- * Health Connect as it behaves (connect-client 1.1.0, "write data"): one record per client id, and
- * a write with the same id replaces only when its version is higher.
- */
-function fakeHealthConnect() {
-  const records = new Map<string, HealthRecord>();
-  const calls = { upsert: 0, remove: 0, permission: 0 };
-  const state = {
-    present: true,
-    permitted: true,
-    failWrites: 0,
-    refused: new Set<string>(),
-    onUpsert: (): Promise<void> | undefined => undefined,
-  };
-  const port: HealthPort = {
-    available: () => state.present,
-    hasPermission: () => {
-      calls.permission++;
-      return Promise.resolve(state.permitted);
-    },
-    requestPermission: () => Promise.resolve(state.permitted),
-    upsert: async (record) => {
-      calls.upsert++;
-      await state.onUpsert();
-      if (state.refused.has(record.id)) return Promise.reject(new Error("record refused"));
-      if (state.failWrites > 0) {
-        state.failWrites--;
-        return Promise.reject(new Error("Health Connect said no"));
-      }
-      const held = records.get(record.id);
-      if (!held || held.version < record.version) records.set(record.id, record);
-      return Promise.resolve();
-    },
-    remove: (ids) => {
-      calls.remove++;
-      for (const id of ids) records.delete(id);
-      return Promise.resolve();
-    },
-    openSettings: () => {},
-  };
-  return { records, calls, state, port };
-}
 
 describe("Health Connect export", () => {
   const t = createTestDb();
@@ -173,6 +130,8 @@ describe("Health Connect export", () => {
     expect(t.sqlite.prepare("SELECT count(*) n FROM health_export").get()).toEqual({ n: 0 });
   });
 
+  // PR 2 changed this on purpose: a refused record used to stay owed and be retried on every run
+  // forever; it is now marked failed at its version and counted, and retried once corrected.
   test("a session Health Connect refuses holds back neither the sessions after it nor the deletions", async () => {
     const hc = fakeHealthConnect();
     await switchedOn(hc);
@@ -183,10 +142,14 @@ describe("Health Connect export", () => {
     hc.state.refused.add(`bati-${refused.uuid}`);
     expect(await completed().deleteSession(gone.id)).toBe("deleted");
 
-    await expect(sync().syncHealthConnect(hc.port)).rejects.toThrow("record refused");
+    await sync().syncHealthConnect(hc.port);
 
     expect([...hc.records.keys()]).toEqual([`bati-${later.uuid}`]);
-    expect(await sync().readHealthExportState(hc.port)).toEqual({ kind: "on", pending: 1 });
+    expect(await sync().readHealthExportState(hc.port)).toMatchObject({
+      kind: "on",
+      pending: 0,
+      failed: 1,
+    });
   });
 
   test("switching off during a run stops it before the next session", async () => {
@@ -219,7 +182,7 @@ describe("Health Connect export", () => {
     await sync().syncHealthConnect(hc.port);
 
     expect(hc.calls.upsert).toBe(writes);
-    expect(await sync().readHealthExportState(hc.port)).toEqual({ kind: "on", pending: 0 });
+    expect(await sync().readHealthExportState(hc.port)).toMatchObject({ kind: "on", pending: 0 });
   });
 
   test("a session another device recorded is not written; a correction to one this phone wrote is", async () => {
@@ -256,11 +219,11 @@ describe("Health Connect export", () => {
     hc.state.failWrites = 1;
 
     await expect(sync().syncHealthConnect(hc.port)).rejects.toThrow("Health Connect said no");
-    expect(await sync().readHealthExportState(hc.port)).toEqual({ kind: "on", pending: 1 });
+    expect(await sync().readHealthExportState(hc.port)).toMatchObject({ kind: "on", pending: 1 });
 
     await sync().syncHealthConnect(hc.port);
     expect(hc.records.has(`bati-${uuid}`)).toBe(true);
-    expect(await sync().readHealthExportState(hc.port)).toEqual({ kind: "on", pending: 0 });
+    expect(await sync().readHealthExportState(hc.port)).toMatchObject({ kind: "on", pending: 0 });
   });
 
   test("switch off: nothing is written and nothing is owed, then or later", async () => {
@@ -281,13 +244,11 @@ describe("Health Connect export", () => {
     expect(hc.calls.upsert).toBe(0);
   });
 
-  test("hand-written sessions and outings are not sessions the player recorded", async () => {
+  test("a hand-written session is not one the player recorded", async () => {
     const hc = fakeHealthConnect();
     await switchedOn(hc);
     const hand = await play();
     t.sqlite.prepare("UPDATE completed_sessions SET byHand = 'session' WHERE id = ?").run(hand.id);
-    const walk = await play();
-    t.sqlite.prepare("UPDATE completed_sessions SET outing = 'walk' WHERE id = ?").run(walk.id);
 
     await sync().syncHealthConnect(hc.port);
     expect(hc.calls.upsert).toBe(0);
@@ -301,7 +262,10 @@ describe("Health Connect export", () => {
 
     await sync().syncHealthConnect(hc.port);
     expect(hc.calls.upsert).toBe(0);
-    expect(await sync().readHealthExportState(hc.port)).toEqual({ kind: "withdrawn", pending: 1 });
+    expect(await sync().readHealthExportState(hc.port)).toMatchObject({
+      kind: "withdrawn",
+      pending: 1,
+    });
 
     // Given back: the session kept waiting and goes now.
     expect(
@@ -331,6 +295,6 @@ describe("Health Connect export", () => {
 
     await sync().syncHealthConnect(hc.port);
     expect(await sync().readHealthExportState(hc.port)).toEqual({ kind: "unavailable" });
-    expect(hc.calls).toEqual({ upsert: 0, remove: 0, permission: 0 });
+    expect(hc.calls).toMatchObject({ upsert: 0, remove: 0, permission: 0 });
   });
 });

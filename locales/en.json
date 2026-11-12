@@ -3256,6 +3256,20 @@
     "open": "Open Health Connect",
     "notes_line": "{{name}}: {{figures}}",
     "notes_seconds": "{{seconds}} s",
-    "fallback_title": "Bati session"
+    "fallback_title": "Bati session",
+    "route": "With the GPS route",
+    "route_explain": "The route shows where you went, and the apps you allow can read it.",
+    "route_refused": "Android did not allow the route. Your outings go without it.",
+    "history_row": "Send my past sessions",
+    "history_progress": "Past sessions: {{done}} of {{total}}",
+    "history_stop": "Stop",
+    "history_question_title": "Send your past sessions too?",
+    "history_question_body": "The sessions already in your journal go too, newest first. You can do it later from this screen.",
+    "history_yes": "Yes, send them",
+    "history_later": "Not now",
+    "failed_one": "{{count}} session refused by Health Connect",
+    "failed_other": "{{count}} sessions refused by Health Connect",
+    "detail_sent": "Sent to Health Connect",
+    "detail_waiting": "Waiting to be sent to Health Connect"
   }
 }

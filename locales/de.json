@@ -3265,6 +3265,20 @@
     "open": "Health Connect öffnen",
     "notes_line": "{{name}}: {{figures}}",
     "notes_seconds": "{{seconds}} s",
-    "fallback_title": "Bati-Einheit"
+    "fallback_title": "Bati-Einheit",
+    "route": "Mit der GPS-Strecke",
+    "route_explain": "Die Strecke zeigt, wo du unterwegs warst, und die Apps, die du erlaubst, können sie lesen.",
+    "route_refused": "Android hat die Strecke nicht erlaubt. Deine Touren gehen ohne sie raus.",
+    "history_row": "Meine früheren Einheiten senden",
+    "history_progress": "Frühere Einheiten: {{done}} von {{total}}",
+    "history_stop": "Anhalten",
+    "history_question_title": "Auch deine früheren Einheiten senden?",
+    "history_question_body": "Die Einheiten, die schon in deinem Journal stehen, gehen mit, die neuesten zuerst. Du kannst es auch später auf diesem Bildschirm tun.",
+    "history_yes": "Ja, senden",
+    "history_later": "Jetzt nicht",
+    "failed_one": "{{count}} Einheit von Health Connect abgelehnt",
+    "failed_other": "{{count}} Einheiten von Health Connect abgelehnt",
+    "detail_sent": "An Health Connect gesendet",
+    "detail_waiting": "Wartet auf das Senden an Health Connect"
   }
 }

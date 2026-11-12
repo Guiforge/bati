@@ -17,6 +17,9 @@ function session(overrides: Partial<ExportSession> = {}): ExportSession {
     performedAt: start,
     durationSeconds: 600,
     tzOffsetMin: 60,
+    outing: null,
+    distanceM: null,
+    route: null,
     sets: [
       { enName: "Squat", seed: true, name: "Squat", type: "reps", value: 15, sides: 1, at: at(60) },
       {
@@ -178,8 +181,21 @@ describe("toHealthRecord", () => {
   test("carries nothing but a workout: no calories, heart rate, route or distance", () => {
     const record = toHealthRecord(session(), format);
     expect(Object.keys(record).sort()).toEqual(
-      ["end", "id", "notes", "offsetMinutes", "segments", "start", "title", "version"].sort(),
+      [
+        "distance",
+        "end",
+        "exerciseType",
+        "id",
+        "notes",
+        "offsetMinutes",
+        "route",
+        "segments",
+        "start",
+        "title",
+        "version",
+      ].sort(),
     );
+    expect(record).toMatchObject({ exerciseType: 13, distance: null, route: null });
     for (const s of record.segments)
       expect(Object.keys(s).sort()).toEqual(["end", "reps", "start", "type"]);
   });

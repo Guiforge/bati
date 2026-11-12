@@ -20,6 +20,8 @@ function port(available: boolean): HealthPort {
     available: () => available,
     hasPermission: () => Promise.resolve(true),
     requestPermission: () => Promise.resolve(true),
+    hasRoutePermission: () => Promise.resolve(false),
+    requestRoutePermission: () => Promise.resolve(false),
     upsert: () => Promise.resolve(),
     remove: () => Promise.resolve(),
     openSettings: () => {},

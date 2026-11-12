@@ -3394,6 +3394,21 @@
     "open": "Ouvrir Connexion Santé",
     "notes_line": "{{name}} : {{figures}}",
     "notes_seconds": "{{seconds}} s",
-    "fallback_title": "Séance Bati"
+    "fallback_title": "Séance Bati",
+    "route": "Avec le parcours GPS",
+    "route_explain": "Le parcours montre où tu es passé, et les apps que tu autorises peuvent le lire.",
+    "route_refused": "Android n'a pas donné l'accès au parcours. Tes sorties partent sans lui.",
+    "history_row": "Envoyer mes séances passées",
+    "history_progress": "Séances passées : {{done}} sur {{total}}",
+    "history_stop": "Arrêter",
+    "history_question_title": "Envoyer aussi tes séances passées ?",
+    "history_question_body": "Les séances déjà dans ton journal partent aussi, les plus récentes d'abord. Tu peux le faire plus tard depuis cet écran.",
+    "history_yes": "Oui, les envoyer",
+    "history_later": "Pas maintenant",
+    "failed_one": "{{count}} séance refusée par Connexion Santé",
+    "failed_many": "{{count}} séances refusées par Connexion Santé",
+    "failed_other": "{{count}} séances refusées par Connexion Santé",
+    "detail_sent": "Envoyée à Connexion Santé",
+    "detail_waiting": "En attente d'envoi à Connexion Santé"
   }
 }

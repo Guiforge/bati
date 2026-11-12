@@ -3070,6 +3070,19 @@
     "open": "打开 Health Connect",
     "notes_line": "{{name}}：{{figures}}",
     "notes_seconds": "{{seconds}} 秒",
-    "fallback_title": "Bati 训练"
+    "fallback_title": "Bati 训练",
+    "route": "附带 GPS 路线",
+    "route_explain": "路线会显示你去过的地方，你允许的应用可以读取它。",
+    "route_refused": "Android 没有允许访问路线。你的户外训练会不带路线发送。",
+    "history_row": "发送我过去的训练",
+    "history_progress": "过去的训练：{{done}} / {{total}}",
+    "history_stop": "停止",
+    "history_question_title": "也发送你过去的训练吗？",
+    "history_question_body": "日志里已有的训练也会发送，最新的在前。你也可以稍后在这个页面发送。",
+    "history_yes": "好，发送",
+    "history_later": "暂不",
+    "failed_other": "{{count}} 次训练被 Health Connect 拒绝",
+    "detail_sent": "已发送到 Health Connect",
+    "detail_waiting": "等待发送到 Health Connect"
   }
 }

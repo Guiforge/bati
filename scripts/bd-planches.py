@@ -53,11 +53,16 @@ def matched(frames):
 
 def extended(im, feather=40, band=10):
     """`im` in the middle of a 3x3 canvas whose outer cells stretch its outermost rows and columns (the floor goes on
-    down, the wall goes on up), blurred and faded into the picture's edges. Mirroring brought ghost limbs back in."""
+    down, the wall goes on up), blurred and faded into the picture's edges. Mirroring brought ghost limbs back in.
+    The body is left out of everything that is stretched or blurred, and stays sharp: a head near the edge otherwise
+    came back as a glow around it (Guillaume, 12/11)."""
     from PIL import ImageFilter
     w, h = im.size
+    body = body_mask(im)
+    ground = Image.composite(Image.new("RGB", im.size, tuple(round(c) for c in corners(im))), im,
+                             body.point(lambda v: 255 if v > 64 else 0).filter(ImageFilter.MaxFilter(15)))
     def line(box, size):  # a band of edge pixels averaged to one line, stretched over a cell
-        b = im.crop(box)
+        b = ground.crop(box)
         return b.resize((b.width, 1) if size[0] == w else (1, b.height), Image.BOX).resize(size, Image.BILINEAR)
     big = Image.new("RGB", (3 * w, 3 * h))
     big.paste(line((0, 0, w, band), (w, h)), (w, 0))
@@ -65,12 +70,15 @@ def extended(im, feather=40, band=10):
     big.paste(line((0, 0, band, h), (w, h)), (0, h))
     big.paste(line((w - band, 0, w, h), (w, h)), (2 * w, h))
     for (x, y), c in {(0, 0): (0, 0), (2, 0): (w - 1, 0), (0, 2): (0, h - 1), (2, 2): (w - 1, h - 1)}.items():
-        big.paste(im.getpixel(c), (x * w, y * h, (x + 1) * w, (y + 1) * h))
-    big.paste(im, (w, h))
+        big.paste(ground.getpixel(c), (x * w, y * h, (x + 1) * w, (y + 1) * h))
+    big.paste(ground, (w, h))
     blurred = big.filter(ImageFilter.GaussianBlur(24))
+    big.paste(im, (w, h))
     mask = Image.new("L", big.size, 0)
     ImageDraw.Draw(mask).rectangle((w + feather, h + feather, 2 * w - feather, 2 * h - feather), fill=255)
-    return Image.composite(big, blurred, mask.filter(ImageFilter.GaussianBlur(feather / 2)))
+    keep = Image.new("L", big.size, 0)
+    keep.paste(body.filter(ImageFilter.MaxFilter(7)).filter(ImageFilter.GaussianBlur(2)), (w, h))
+    return Image.composite(big, blurred, ImageChops.lighter(mask.filter(ImageFilter.GaussianBlur(feather / 2)), keep))
 
 
 def cover(im, box, size, shift=None, extend=False):
@@ -86,14 +94,18 @@ def cover(im, box, size, shift=None, extend=False):
     if free:  # move the body by a fraction of the panel: the crop goes the other way
         x0, y0 = x0 - shift[0] * nw, y0 - shift[1] * nh
     # Keep inside the picture where possible; a crop larger than the picture stays centred on the body instead.
-    # A hand-tuned panel (TUNE) keeps its shift: clamping would undo it, and extended() covers the overflow.
-    x0 = min(max(0, x0), im.width - nw) if nw <= im.width and not free else x0
-    y0 = min(max(0, y0), im.height - nh) if nh <= im.height and not free else y0
+    want = (x0, y0)
+    # Kept inside the picture, a hand-tuned shift included (TUNE gives it room with a little zoom): continuing the
+    # picture past its edge blurred the bodies that touch it (Guillaume, 12/11). Only EXTEND pages go past it.
+    x0 = min(max(0, x0), im.width - nw) if nw <= im.width and not extend else x0
+    y0 = min(max(0, y0), im.height - nh) if nh <= im.height and not extend else y0
     crop = (round(x0), round(y0), round(x0 + nw), round(y0 + nh))
+    if free and not extend and abs((x0 - want[0]) / nw) + abs((y0 - want[1]) / nh) > 0.01:
+        print(f"  shift cut short by {(x0 - want[0]) / nw:+.2f}, {(y0 - want[1]) / nh:+.2f}")
     # Wider or taller than the picture: the rest continues the picture's own ground, mirrored and blurred, and
     # fades into it. A flat fill of the corners' colour read as a grey bar under the feet (Guillaume, 12/11).
     inside = crop[0] >= 0 and crop[1] >= 0 and crop[2] <= im.width and crop[3] <= im.height
-    if inside or not (free or extend):
+    if inside or not extend:
         # A body touching the picture's edge smears when stretched: elsewhere the overflow stays the corners' colour.
         canvas = Image.new("RGB", (crop[2] - crop[0], crop[3] - crop[1]), tuple(round(c) for c in corners(im)))
         canvas.paste(im, (-crop[0], -crop[1]))
@@ -118,6 +130,7 @@ CONFIG = {
     "bear_crawl": ([1, 2], None),
     "mountain_climber": ([0, 1, 2], "rows"),  # one knee in, both feet down, the other knee in
     "toes_to_bar": ([0, 2, 3], "bottom3"),
+    "hanging_leg_raise": ([0, 3], None),  # legs level, the top of the raise (2 was halfway)
     "cat_cow": ([1, 3], None),  # the two extremes: back hollow, back rounded
     "single_leg_deadlift": ([0, 3], "split"),
 }
@@ -130,23 +143,23 @@ JUMPS: dict = {}
 # draws the body bigger; dx, dy move it right and down by that fraction of the panel. Mostly a body too close to a
 # panel border, or too small in its panel.
 # The ground continued past the picture (extended()) where a flat fill showed as a band: Guillaume's review, 12/11.
-EXTEND = {"curtsy_squat", "wall_pushup"}
+EXTEND = {"curtsy_squat", "wall_pushup", "star_jump", "jump_squat", "thread_the_needle", "skater_hop",
+          "russian_twist", "single_leg_glute_bridge", "chin_up", "pullups", "hanging_leg_raise"}
 TUNE = {
     "bear_crawl": [None, (1, 0, 0.06)],
     "chin_up": [(1.25, 0, 0), (1.25, 0, 0.03)],
     "crunch": [(1, 0, -0.05), (1, 0, 0.06)],
     "flutter_kicks": [None, (1, 0, 0.06)],
-    "hanging_leg_raise": [(1.3, 0, 0.03), (1.3, 0, 0.03)],
+    "hanging_leg_raise": [(1.2, 0, 0.03), (1.1, -0.04, 0.03)],
     "high_knees": [(1.12, 0, 0.03), (1.12, 0, 0.03)],
-    "jump_squat": [(1.35, 0, 0.02), (1.3, 0, 0.02), (1.15, 0, 0)],
+    "jump_squat": [(1.35, 0, 0.02), (1.3, 0, 0.02), (1.1, 0.05, 0.12)],
     "muscle_up": [(1.35, 0, 0.05), (1.35, 0, 0.02), (1.35, 0, 0.07), (1.35, 0, 0.07)],
-    "skater_hop": [(1.35, 0, 0.02), (1.35, 0, 0.02)],
-    "negative_pullup": [(1.35, 0, 0.04), (1.35, 0, 0.02)],
+    "negative_pullup": [(1.35, -0.06, 0.04), (1.35, -0.03, 0.02)],
     "pullups": [(1.35, 0, 0.03), (1.35, 0, 0.03)],
     "reverse_crunch": [(1.1, 0, 0), (1.1, 0, 0)],
     "russian_twist": [None, (1.12, 0, 0.07)],
     "single_leg_glute_bridge": [None, (1, 0, 0.07)],
-    "thread_the_needle": [(1.15, 0, 0.05), (1.25, 0, 0)],
+    "thread_the_needle": [(1.15, 0, 0), (1.25, 0, 0)],
     "toes_to_bar": [None, None, (1.25, 0, 0.03)],
     "windshield_wipers": [(0.92, 0, -0.03), (1, 0.03, 0), None],
 }
@@ -187,9 +200,8 @@ def choose(slug, frames):
     return picks, layout
 
 
-def body_box(im, pad=16):
-    """The body's box from a birefnet cutout (cached): a colour-difference mask took light vignettes and shadows for
-    the body, which left a band of nothing under the feet."""
+def body_mask(im):
+    """The body's mask from a birefnet cutout, cached by picture hash."""
     import hashlib
     MASKS.mkdir(parents=True, exist_ok=True)
     f = MASKS / (hashlib.sha1(im.tobytes()).hexdigest()[:16] + ".png")
@@ -199,7 +211,13 @@ def body_box(im, pad=16):
         if "_SESSION" not in globals():
             _SESSION = new_session("birefnet-general")
         remove(im, session=_SESSION, only_mask=True).save(f)
-    x0, y0, x1, y1 = Image.open(f).point(lambda v: 255 if v > 128 else 0).getbbox() or (0, 0, *im.size)
+    return Image.open(f).convert("L")
+
+
+def body_box(im, pad=16):
+    """The body's box from a birefnet cutout (cached): a colour-difference mask took light vignettes and shadows for
+    the body, which left a band of nothing under the feet."""
+    x0, y0, x1, y1 = body_mask(im).point(lambda v: 255 if v > 128 else 0).getbbox() or (0, 0, *im.size)
     return (max(0, x0 - pad), max(0, y0 - pad), min(im.width, x1 + pad), min(im.height, y1 + pad))
 
 

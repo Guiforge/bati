@@ -1,7 +1,9 @@
 package expo.modules.batihealth
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
@@ -57,17 +59,30 @@ class BatiHealthModule : Module() {
         settle(promise) { client().permissionController.getGrantedPermissions().contains(WRITE_EXERCISE) }
       }
 
-      // Starts Health Connect's own permission screen and returns: the answer is read with
-      // `hasWritePermission` once the app is back (modules/bati-health/index.ts). Expo's
-      // activity-result registry never delivered this result on API 35, and a screen that waits
-      // for an answer that never comes leaves the switch stuck.
+      // Asks for the permission and returns: the answer is read with `hasWritePermission` once the
+      // app is back (modules/bati-health/index.ts). From Android 14 a health permission is a runtime
+      // permission like any other, asked with `requestPermissions`; the client's contract hands back
+      // androidx's REQUEST_PERMISSIONS intent there, which only a ComponentActivity registry turns
+      // into that call, and started as it is it crashes the app. Up to Android 13 the contract's
+      // intent is Health Connect's own screen, started for result so it can see who asks.
       Function("launchPermissionRequest") {
         val activity = appContext.currentActivity ?: return@Function false
-        val intent =
-          PermissionController.createRequestPermissionResultContract().createIntent(activity, setOf(WRITE_EXERCISE))
-        // For result, though the result is not read: Health Connect identifies the asking app by
-        // its calling package, which a plain startActivity does not carry.
-        activity.runOnUiThread { activity.startActivityForResult(intent, PERMISSION_REQUEST_CODE) }
+        activity.runOnUiThread {
+          try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+              activity.requestPermissions(arrayOf(WRITE_EXERCISE), PERMISSION_REQUEST_CODE)
+            } else {
+              val intent =
+                PermissionController.createRequestPermissionResultContract().createIntent(
+                  activity,
+                  setOf(WRITE_EXERCISE),
+                )
+              activity.startActivityForResult(intent, PERMISSION_REQUEST_CODE)
+            }
+          } catch (e: ActivityNotFoundException) {
+            // Nothing to show the screen: the switch stays off, and says so.
+          }
+        }
         true
       }
 

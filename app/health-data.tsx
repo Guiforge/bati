@@ -126,8 +126,8 @@ export default function HealthDataScreen({ port = nativeHealth }: { port?: Healt
             color="primaryText"
             textDecorationLine="underline"
             px="3"
-            minH={44}
-            verticalAlign="middle"
+            // Padding, not `minH` + `verticalAlign`: that pair drew the underline through the words.
+            py="3"
             role="link"
             onPress={() => port.openSettings()}
           >

@@ -10,8 +10,6 @@ import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.metadata.Device
 import androidx.health.connect.client.records.metadata.Metadata
 import expo.modules.kotlin.Promise
-import expo.modules.kotlin.activityresult.AppContextActivityResultContract
-import expo.modules.kotlin.activityresult.AppContextActivityResultLauncher
 import expo.modules.kotlin.exception.CodedException
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
@@ -21,22 +19,7 @@ import java.time.Instant
 import java.time.ZoneOffset
 
 private val WRITE_EXERCISE = HealthPermission.getWritePermission(ExerciseSessionRecord::class)
-
-/** Health Connect's own permission screen, wrapped in the shape Expo's activity results take. */
-private class WritePermissionContract : AppContextActivityResultContract<HashSet<String>, Boolean> {
-  private val inner = PermissionController.createRequestPermissionResultContract()
-
-  override fun createIntent(
-    context: Context,
-    input: HashSet<String>,
-  ): Intent = inner.createIntent(context, input)
-
-  override fun parseResult(
-    input: HashSet<String>,
-    resultCode: Int,
-    intent: Intent?,
-  ): Boolean = inner.parseResult(resultCode, intent).contains(WRITE_EXERCISE)
-}
+private const val PERMISSION_REQUEST_CODE = 0x4843
 
 /**
  * The native half of the Health Connect export (W-04): write one exercise session, delete some,
@@ -46,7 +29,6 @@ private class WritePermissionContract : AppContextActivityResultContract<HashSet
 class BatiHealthModule : Module() {
   private val context: Context
     get() = appContext.reactContext ?: throw CodedException("no context")
-  private lateinit var permission: AppContextActivityResultLauncher<HashSet<String>, Boolean>
 
   private fun client() = HealthConnectClient.getOrCreate(context)
 
@@ -75,14 +57,18 @@ class BatiHealthModule : Module() {
         settle(promise) { client().permissionController.getGrantedPermissions().contains(WRITE_EXERCISE) }
       }
 
-      AsyncFunction("requestWritePermission") { promise: Promise ->
-        appContext.mainQueue.launch {
-          try {
-            promise.resolve(permission.launch(hashSetOf(WRITE_EXERCISE)))
-          } catch (e: Exception) {
-            promise.reject(CodedException(e.message ?: e.javaClass.simpleName, e))
-          }
-        }
+      // Starts Health Connect's own permission screen and returns: the answer is read with
+      // `hasWritePermission` once the app is back (modules/bati-health/index.ts). Expo's
+      // activity-result registry never delivered this result on API 35, and a screen that waits
+      // for an answer that never comes leaves the switch stuck.
+      Function("launchPermissionRequest") {
+        val activity = appContext.currentActivity ?: return@Function false
+        val intent =
+          PermissionController.createRequestPermissionResultContract().createIntent(activity, setOf(WRITE_EXERCISE))
+        // For result, though the result is not read: Health Connect identifies the asking app by
+        // its calling package, which a plain startActivity does not carry.
+        activity.runOnUiThread { activity.startActivityForResult(intent, PERMISSION_REQUEST_CODE) }
+        true
       }
 
       // Inserts, or updates the record with the same client id when `version` is higher: Health
@@ -106,12 +92,6 @@ class BatiHealthModule : Module() {
           Intent(HealthConnectClient.ACTION_HEALTH_CONNECT_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(intent)
         true
-      }
-
-      RegisterActivityContracts {
-        // No fallback work: a result that arrives after the activity was recreated is read again by
-        // the settings screen when it next comes to the foreground.
-        permission = registerForActivityResult(WritePermissionContract()) { _, _ -> }
       }
     }
 }

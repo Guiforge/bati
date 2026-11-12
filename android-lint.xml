@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Path-scoped lint ignores for generated output, read through plugins/withAndroidLint.js. Each entry
+  names one check and one path Expo's prebuild writes, so the check keeps watching everything else.
+  Beside the baseline, outside android/, because `prebuild clean` deletes android/.
+-->
+<lint>
+    <!--
+      minSdk is 26 since W-04 (plugins/withAndroidMinSdk.js), and Expo's prebuild still writes the
+      adaptive icon into mipmap-anydpi-v26. The folder is regenerated on every prebuild, so it cannot
+      be merged into mipmap-anydpi by hand; the qualifier is merely redundant, never wrong.
+    -->
+    <issue id="ObsoleteSdkInt">
+        <ignore regexp="res/mipmap-anydpi-v26" />
+    </issue>
+</lint>

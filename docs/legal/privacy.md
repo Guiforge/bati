@@ -6,7 +6,7 @@ head_title: "Privacy policy for Bati"
 description: "Bati collects nothing about you. No account, no server of ours, no analytics. Offline first, with three exceptions, all off by default: the map, which tells a tile host roughly where you go, a daily question to GitHub about a newer version, and device sync, which sends your history encrypted to a server you choose."
 type: legal
 status: active
-updated: 2026-11-04
+updated: 2026-11-12
 permalink: /privacy/
 related: [../planning/roadmap.md]
 ---
@@ -287,6 +287,15 @@ Nothing else in the app asks for it, and every backup opens with its password wi
 **Camera (optional).** Only when you open the duo challenge's scanner, to read a companion's code
 on the screen in front of you. The picture is read on your phone, line by line, and never kept or
 sent. Bati asks for it at that moment, not before; a link works without it.
+
+**Health Connect, write exercise sessions (optional, off by default).** If you turn it on in
+Settings > Devices and health data, Bati writes each session you finish on this phone to Health
+Connect, Android's health store on the phone: the quest's name, when it started and ended, and the
+reps you did. It happens on the phone, between two apps, and nothing is sent anywhere. The apps
+you allow in Health Connect can read these sessions; which ones is your choice, in Health Connect.
+Bati asks for this one permission and reads nothing from Health Connect: no heart rate, no steps,
+no weight, no calories. Turning it off stops the writing; sessions already written stay in Health
+Connect, where you can delete them. On a phone without Health Connect the setting does not appear.
 
 ## Crash reports
 
@@ -628,6 +637,17 @@ sauvegarde s'ouvre avec son mot de passe sans elle.
 **Caméra (facultatif).** Seulement quand vous ouvrez le scanner du défi à deux, pour lire le code
 d'un compagnon sur l'écran devant vous. L'image est lue sur votre téléphone et n'est jamais
 gardée ni envoyée. Bati la demande à ce moment-là, pas avant ; un lien marche sans elle.
+
+**Connexion Santé, écrire des séances d'exercice (facultatif, désactivé par défaut).** Si vous
+l'activez dans Réglages > Appareils et données santé, Bati écrit chaque séance terminée sur ce
+téléphone dans Connexion Santé, l'espace santé d'Android sur le téléphone : le nom de la quête, son
+début et sa fin, et les répétitions faites. Cela se passe sur le téléphone, entre deux applications,
+et rien n'est envoyé nulle part. Les applications que vous autorisez dans Connexion Santé peuvent
+lire ces séances ; lesquelles, c'est vous qui le choisissez, dans Connexion Santé. Bati demande
+cette seule autorisation et ne lit rien dans Connexion Santé : ni fréquence cardiaque, ni pas, ni
+poids, ni calories. Désactiver l'option arrête l'écriture ; les séances déjà écrites restent dans
+Connexion Santé, où vous pouvez les supprimer. Sur un téléphone sans Connexion Santé, le réglage
+n'apparaît pas.
 
 ## Rapports de crash
 

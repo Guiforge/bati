@@ -25,6 +25,7 @@ import { LanguageWatch } from "@/components/LanguageWatch";
 import { SyncPrompt } from "@/components/SyncPrompt";
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { installCrashHandler, recordCrash } from "@/src/crashLog";
+import { keepHealthExportInStep, syncHealthConnectQuietly } from "@/src/healthExport/inStep";
 import { keepRemindersInStep, replanRemindersNow } from "@/src/reminders";
 import { reportError } from "@/src/reportError";
 import { AppBackground } from "@/src/ui/AppBackground";
@@ -112,6 +113,9 @@ export default function RootLayout() {
     // A cold start is where a merge or a restore lands (both end in a reload), and where a tap on
     // a reminder is marked opened. Non-blocking, like the widgets.
     replanRemindersNow().catch((e) => reportError("reminders.replan", e));
+    // Sessions owed to Health Connect since the last run: a write refused or cut short, a merge, a
+    // restore. Silent and non-blocking.
+    syncHealthConnectQuietly();
     // The "lines said recently" ring, so the first rest of a fresh session is not where the
     // repetition shows. Nothing waits on it: an unhydrated ring costs one possible repeat.
     hydrateChorus().catch((e) => reportError("chorus.hydrate", e));
@@ -129,6 +133,12 @@ export default function RootLayout() {
   // reminders again.
   useEffect(() => {
     const subscription = keepRemindersInStep();
+    return () => subscription.remove();
+  }, []);
+
+  // A saved session, and the app coming back or going away, bring Health Connect in line.
+  useEffect(() => {
+    const subscription = keepHealthExportInStep();
     return () => subscription.remove();
   }, []);
 

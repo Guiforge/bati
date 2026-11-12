@@ -41,6 +41,7 @@ import {
 import { BackupSecretSheet } from "@/components/settings/BackupSecretSheet";
 import { BackupSecurityRows } from "@/components/settings/BackupSecurityRows";
 import { CrestAnimalRow } from "@/components/settings/CrestAnimalRow";
+import { HealthDataRow } from "@/components/settings/HealthDataRow";
 import { HeroSizeLine } from "@/components/settings/HeroSizeLine";
 import { MapStyleRow } from "@/components/settings/MapStyleRow";
 import { OutingDisplayRow } from "@/components/settings/OutingDisplayRow";
@@ -749,6 +750,8 @@ export default function SettingsScreen() {
             label={t("xp.title")}
             onPress={() => router.push("/xp" as never)}
           />
+
+          <HealthDataRow />
 
           <SettingRow
             icon={<HeartPulse size={22} color="text" />}

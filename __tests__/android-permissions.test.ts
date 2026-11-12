@@ -132,6 +132,11 @@ const ALLOWED: Record<string, string> = {
     "is tracking them would be silently absent, which is the opposite of what that notification " +
     "is for. And modules/bati-reminders, whose whole output is a notification the hero asked " +
     "for: asked when the reminder switch is turned on, never at launch (docs/designs/rappels.md).",
+  "android.permission.health.WRITE_EXERCISE":
+    "modules/bati-health - the Health Connect export (W-04), and the only Health Connect " +
+    "permission Bati holds: write exercise sessions. No read, no route, no heart rate, no steps. " +
+    "Asked by Health Connect's own screen when the hero turns the switch on in Settings > Devices " +
+    "and health data, never at launch, and absent from every phone where Health Connect is.",
   "android.permission.RECEIVE_BOOT_COMPLETED":
     "modules/bati-reminders — a reboot clears every alarm, and its receiver arms the next " +
     "reminder again. Nothing else runs at boot: the receiver reads its own SharedPreferences and " +

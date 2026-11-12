@@ -126,6 +126,7 @@
       "./plugins/withAndroidEdgeToEdgeTheme",
       "./plugins/withAndroidReleaseSigning",
       "./plugins/withAndroidGradleMemory",
+      "./plugins/withAndroidMinSdk",
       "./plugins/withAndroidReleaseFlags",
       "./plugins/withAndroidKeepRules",
       "./plugins/withAndroidTrimPermissions",

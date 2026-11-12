@@ -1,0 +1,42 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+      Health Connect export (W-04), declared here so it travels with the module: delete the module
+      and the app's permission list goes back to what it was. Write only: no read, no route, no heart
+      rate. See docs/legal/privacy.md.
+    -->
+    <uses-permission android:name="android.permission.health.WRITE_EXERCISE" />
+
+    <!-- Android 13 and below: Health Connect is an app, and this is how its presence is checked. -->
+    <queries>
+        <package android:name="com.google.android.apps.healthdata" />
+    </queries>
+
+    <application>
+        <!--
+          Health Connect refuses to ask for a permission an app shows no privacy policy for. Both
+          doors land on Bati's own privacy screen, which reads without a network.
+        -->
+        <activity
+            android:name="expo.modules.batihealth.HealthRationaleActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <!-- Android 13 and below. -->
+            <intent-filter>
+                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+            </intent-filter>
+        </activity>
+
+        <!-- Android 14 and above. -->
+        <activity-alias
+            android:name="expo.modules.batihealth.ViewPermissionUsageActivity"
+            android:exported="true"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE"
+            android:targetActivity="expo.modules.batihealth.HealthRationaleActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+            </intent-filter>
+        </activity-alias>
+    </application>
+</manifest>

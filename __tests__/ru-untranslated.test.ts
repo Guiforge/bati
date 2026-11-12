@@ -45,6 +45,7 @@ const EXCEPTIONS: Record<string, string> = {
   "adventures.step_title": "'step: title'",
   "session.tonight_place_unnamed": "placeholder only",
   "session.tonight_pair": "'what: detail'",
+  "healthExport.notes_line": "'name: figures'",
   "journal.fig_record_latest": "'name, date'",
   "journal.sr_detail": "'title, date'",
   "journal.last_blow_hold": "'movement, value'",

@@ -9,10 +9,20 @@ type SettingRowProps = {
   value?: string;
   onPress: () => void;
   disabled?: boolean;
+  /** Set for a row that is an on/off switch: TalkBack then reads it as one, with its state. */
+  checked?: boolean;
 };
 
 /** One row of Settings: an icon, a label, and the current value on the right. */
-export function SettingRow({ testID, icon, label, value, onPress, disabled }: SettingRowProps) {
+export function SettingRow({
+  testID,
+  icon,
+  label,
+  value,
+  onPress,
+  disabled,
+  checked,
+}: SettingRowProps) {
   return (
     <Button
       testID={testID}
@@ -27,6 +37,8 @@ export function SettingRow({ testID, icon, label, value, onPress, disabled }: Se
       disabled={disabled}
       // Always said: Tamagui sends it only while true, and Android keeps a re-enabled view disabled.
       aria-disabled={disabled === true}
+      // Spread, not `role={undefined}`: that would erase the button role every other row needs.
+      {...(checked === undefined ? {} : { role: "switch" as const, "aria-checked": checked })}
       onPress={onPress}
     >
       <XStack flex={1} items="center" gap="3">

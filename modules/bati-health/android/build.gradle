@@ -1,0 +1,21 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'com.guiforge.bati'
+version = '0.1.0'
+
+android {
+  namespace "expo.modules.batihealth"
+  defaultConfig {
+    // Read by expo-module-gradle-plugin as the maven artifact version, see bati-location.
+    versionName '0.1.0'
+  }
+}
+
+dependencies {
+  // Health Connect's client, Apache-2.0 from AOSP (frameworks/support/health/connect). 1.1.0 is
+  // the latest stable; it talks to the OS provider over IPC and pulls in no Play Services.
+  implementation 'androidx.health.connect:connect-client:1.1.0'
+}

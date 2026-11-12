@@ -60,8 +60,18 @@ FAMILIES: tuple[tuple[str, str], ...] = (
 )
 
 
+def comic_pages() -> set[str]:
+    """Exercise art that is a comic page: its thumbnail is one panel, written by bd-planches.py --thumbs."""
+    import json
+
+    prov = json.loads((ROOT / "scripts" / "provenance.json").read_text())
+    return {k for k, v in prov.items() if str(v.get("how", "")).startswith("comic page")}
+
+
 def sources(glob: str, out_dir: pathlib.Path) -> list[pathlib.Path]:
-    return sorted(p for p in ROOT.glob(glob) if p.parent != out_dir)
+    comics = comic_pages()
+    return sorted(p for p in ROOT.glob(glob)
+                  if p.parent != out_dir and str(p.relative_to(ROOT)) not in comics)
 
 
 def thumbnail(path: pathlib.Path, out_dir: pathlib.Path) -> int:

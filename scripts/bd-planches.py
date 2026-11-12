@@ -5,6 +5,7 @@ the panels are the key poses drawn by scripts/anim-pilot-v3.py (the frames the f
 pilot cache) or the earlier pilots' validated flip-books.
 
     ~/.cache/bati-cutout-venv/bin/python -I scripts/bd-planches.py <out-dir>   # then copy <slug>.webp over the stills
+    ~/.cache/bati-cutout-venv/bin/python -I scripts/bd-planches.py --thumbs [slug...]   # their list thumbnails
 
 The body box comes from a birefnet cutout (rembg; the venv is uv + Python 3.12), cached by picture hash.
 """
@@ -404,7 +405,33 @@ def page(slug, numbers):
     return out, layout, len(picks)
 
 
-if __name__ == "__main__":
+# The list thumbnail is one panel of the page, not the page (four panels do not read at 36-56 px) and not the
+# still the page replaced (Guillaume, 12/11: some poses moved a lot, the old still looked like another exercise).
+# Default: the last panel, where the movement arrives.
+THUMB_PANEL: dict[str, int] = {"burpee": 2, "muscle_up": 2}  # the plank; the chest passing over the bar
+THUMBS = ROOT / "assets" / "images" / "exercises" / "thumbs"
+
+
+def thumb(slug, size=128):
+    frames = distinct_frames(slug)
+    picks, _ = choose(slug, frames)
+    im = picks[THUMB_PANEL.get(slug, -1)]
+    b = body_box(im, pad=12)
+    side = max(b[2] - b[0], b[3] - b[1]) * 1.06
+    cx, cy = (b[0] + b[2]) / 2, (b[1] + b[3]) / 2
+    sq, _ = cover(im, (cx - side / 2, cy - side / 2, cx + side / 2, cy + side / 2), (size * 2, size * 2),
+                  None, slug in EXTEND)
+    return sq.resize((size, size), Image.LANCZOS)
+
+
+if __name__ == "__main__" and sys.argv[1:2] == ["--thumbs"]:
+    slugs = sys.argv[2:] or sorted(set(MANIFEST) | {p.parent.name for p in SITE.glob("*/cuts.webp")})
+    slugs = [s for s in slugs if (ROOT / "assets" / "images" / "exercises" / f"{s}.webp").exists()
+             and s not in ("towel_door_row", "dead_bug", "bicycle_crunch") and s not in STILL_ARROWS]
+    for slug in slugs:
+        thumb(slug).save(THUMBS / f"{slug}.webp", "WEBP", quality=82)
+        print(slug)
+elif __name__ == "__main__":
     out = pathlib.Path(sys.argv[1])
     out.mkdir(parents=True, exist_ok=True)
     slugs = sys.argv[2:] or sorted(set(MANIFEST) | {p.parent.name for p in SITE.glob("*/cuts.webp")})

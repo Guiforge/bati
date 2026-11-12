@@ -48,8 +48,8 @@ describe("a 2,000-entry history", () => {
     const yields = timers.mock.calls.filter(([, ms]) => ms === 0).length;
     timers.mockRestore();
     // The figure the PR quotes.
-    console.info(
-      `history: ${ENTRIES} entries in ${seconds.toFixed(1)} s, ${yields} yields, batch ${sync().HEALTH_EXPORT_BATCH}`,
+    process.stdout.write(
+      `history: ${ENTRIES} entries in ${seconds.toFixed(1)} s, ${yields} yields, ${hc.calls.upsert} calls, batch ${sync().HEALTH_EXPORT_BATCH}\n`,
     );
 
     expect(hc.records.size).toBe(ENTRIES);

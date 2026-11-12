@@ -202,7 +202,7 @@ describe("Health Connect export: properties", () => {
       { numRuns: 200, seed: Number(process.env.FC_SEED ?? 20261112), verbose: 1 },
     );
     // The figures go in the PR: they show the property is not vacuous.
-    console.info(`property: ${JSON.stringify(seen)}`);
+    process.stdout.write(`property: ${JSON.stringify(seen)}\n`);
     expect(seen.writes).toBeGreaterThan(300);
     expect(seen.routes).toBeGreaterThan(10);
     expect(seen.syncedIn).toBeGreaterThan(10);

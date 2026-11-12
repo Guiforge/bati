@@ -128,6 +128,15 @@ describe("Health Connect export: outings, route, past sessions", () => {
       expect(hc.distances.size).toBe(0);
     });
 
+    test('a quest that no longer exists: the outing is named "Bati session"', async () => {
+      const hc = fakeHealthConnect();
+      await switchedOn(hc);
+      const { id, uuid } = await j.outing("walk", 10);
+      t.sqlite.prepare("UPDATE completed_sessions SET questId = NULL WHERE id = ?").run(id);
+      await settled(hc);
+      expect(hc.records.get(`bati-${uuid}`)?.title).toBe("Bati session");
+    });
+
     test("an outing recorded on another phone is never written on its own", async () => {
       const hc = fakeHealthConnect();
       await switchedOn(hc);
@@ -182,6 +191,18 @@ describe("Health Connect export: outings, route, past sessions", () => {
       expect(hc.records.get(`bati-${second.uuid}`)?.route).toBeNull();
       expect(hc.records.get(`bati-${first.uuid}`)?.route).toHaveLength(12);
       expect(hc.calls.upsert).toBe(3);
+    });
+
+    test("Android already allows the route, the option is off: still no route", async () => {
+      // Granted long ago, or by another app's prompt: the option is the hero's word, not Android's.
+      const hc = fakeHealthConnect();
+      hc.state.routePermitted = true;
+      await switchedOn(hc);
+      await j.outing("run", 10);
+      await sync().startHealthHistory();
+      await j.outing("walk", 3 * DAY);
+      await settled(hc);
+      expect([...hc.records.values()].map((r) => r.route)).toEqual([null, null]);
     });
 
     test("turned on later: outings already sent are not sent again", async () => {

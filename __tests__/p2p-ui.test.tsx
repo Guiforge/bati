@@ -368,7 +368,9 @@ describe("U4: the code as text, and the camera (B)", () => {
     const field = screen.getByTestId("p2p-type-field");
 
     const groups = groupCode(codeText()).split(" ");
-    const swapped = (groups[1]?.[0] === "A" ? "B" : "A") + (groups[1] ?? "").slice(1);
+    // The check character itself: a letter of the group would collide with its 6-bit check 1 time in 64.
+    const g2 = groups[1] ?? "";
+    const swapped = g2.slice(0, -1) + (g2.endsWith("A") ? "B" : "A");
     const wrong = [groups[0], swapped, ...groups.slice(2)].join(" ");
     await act(async () => fireEvent.changeText(field, wrong));
     await press("p2p-type-use");

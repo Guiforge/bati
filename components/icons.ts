@@ -8,6 +8,7 @@
 // should import "@tamagui/lucide-icons" directly. tsconfig.json maps the subpaths to the .d.ts
 // the package ships, because its exports map declares no "types" condition.
 
+export { Activity } from "@tamagui/lucide-icons/icons/Activity";
 export { AlertCircle } from "@tamagui/lucide-icons/icons/AlertCircle";
 export { AlertTriangle } from "@tamagui/lucide-icons/icons/AlertTriangle";
 export { ArchiveRestore } from "@tamagui/lucide-icons/icons/ArchiveRestore";

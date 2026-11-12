@@ -86,7 +86,7 @@ const theSwitch = () => screen.findByRole("switch", { name: /Send my sessions to
 test("off: the switch says so, and the line under it says where the data goes", async () => {
   await mount({ kind: "off" });
   expect((await theSwitch()).props["aria-checked"]).toBe(false);
-  expect(screen.getByText(/stay on the phone/)).toBeTruthy();
+  expect(screen.getByText(/Only the apps you allow in Health Connect can read them/)).toBeTruthy();
   expect(screen.queryByTestId("health-export-pending")).toBeNull();
 });
 
@@ -176,9 +176,11 @@ test("past sessions left: a quiet row starts sending them", async () => {
 test("past sessions running: progress in words, and a way to stop", async () => {
   await mount({
     kind: "on",
-    ...details({ history: { running: true, done: 142, total: 310, left: 168 } }),
+    ...details({ pending: 20, history: { running: true, done: 142, total: 310, left: 168 } }),
   });
   expect(await screen.findByText("Past sessions: 142 of 310")).toBeTruthy();
+  // The batch in flight is not "waiting": the progress already says it.
+  expect(screen.queryByTestId("health-export-pending")).toBeNull();
   expect(screen.queryByTestId("health-export-history")).toBeNull();
   await fireEvent.press(screen.getByTestId("health-export-history-stop"));
   expect(mockStop).toHaveBeenCalledTimes(1);

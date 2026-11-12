@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Text, YStack } from "tamagui";
+import { Text, XStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Clock, Map as MapIcon } from "@/components/icons";
 import { SettingRow } from "@/components/settings/SettingRow";
@@ -43,9 +43,9 @@ export function HealthExportOptions({ details, busy, routeRefused, onRoute, onHi
           </Text>
 
           {history.running ? (
-            <YStack testID="health-export-history-progress" px="3" gap="2">
+            <XStack testID="health-export-history-progress" items="center" pl="3" gap="3">
               {/* Polite: TalkBack says the count as it moves, without cutting what it is reading. */}
-              <Text fontSize="3" color="text" aria-live="polite">
+              <Text flex={1} fontSize="3" color="text" aria-live="polite">
                 {t("healthExport.history_progress", {
                   done: history.done,
                   total: history.total,
@@ -58,7 +58,7 @@ export function HealthExportOptions({ details, busy, routeRefused, onRoute, onHi
               >
                 {t("healthExport.history_stop")}
               </AppButton>
-            </YStack>
+            </XStack>
           ) : history.left > 0 ? (
             <SettingRow
               testID="health-export-history"
@@ -71,7 +71,8 @@ export function HealthExportOptions({ details, busy, routeRefused, onRoute, onHi
         </>
       ) : null}
 
-      {details.pending > 0 ? (
+      {/* While a run is on, its batch in flight would read as waiting: the progress says it. */}
+      {details.pending > 0 && !history.running ? (
         <Text testID="health-export-pending" fontSize="3" color="textSecondary" px="3">
           {t("healthExport.pending", { count: details.pending })}
         </Text>

@@ -4341,7 +4341,7 @@
     },
     {
       "name": "expo",
-      "version": "58.0.24",
+      "version": "58.0.25",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 }
@@ -4566,7 +4566,7 @@
     },
     {
       "name": "expo-sqlite",
-      "version": "58.0.16",
+      "version": "58.0.17",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 }

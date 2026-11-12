@@ -151,7 +151,7 @@ EXTEND = {"curtsy_squat", "wall_pushup", "star_jump", "jump_squat", "thread_the_
           "russian_twist", "single_leg_glute_bridge", "chin_up", "pullups", "hanging_leg_raise", "knee_pushup", "muscle_up", "jumping_jack"}
 TUNE = {
     "bear_crawl": [None, (1, 0, 0.11)],
-    "chin_up": [(1.25, 0, 0), (1.25, -0.02, 0.03)],
+    "chin_up": [(1.25, 0, 0), (1.25, 0.05, 0.03)],
     "crunch": [(1, 0, -0.05), (1, 0, 0.09)],
     "diamond_pushup": [None, (1, 0, 0.04)],
     "jumping_jack": [None, (1, 0.03, 0)],

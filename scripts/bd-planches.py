@@ -51,7 +51,29 @@ def matched(frames):
     return out
 
 
-def cover(im, box, size):
+def extended(im, feather=40, band=10):
+    """`im` in the middle of a 3x3 canvas whose outer cells stretch its outermost rows and columns (the floor goes on
+    down, the wall goes on up), blurred and faded into the picture's edges. Mirroring brought ghost limbs back in."""
+    from PIL import ImageFilter
+    w, h = im.size
+    def line(box, size):  # a band of edge pixels averaged to one line, stretched over a cell
+        b = im.crop(box)
+        return b.resize((b.width, 1) if size[0] == w else (1, b.height), Image.BOX).resize(size, Image.BILINEAR)
+    big = Image.new("RGB", (3 * w, 3 * h))
+    big.paste(line((0, 0, w, band), (w, h)), (w, 0))
+    big.paste(line((0, h - band, w, h), (w, h)), (w, 2 * h))
+    big.paste(line((0, 0, band, h), (w, h)), (0, h))
+    big.paste(line((w - band, 0, w, h), (w, h)), (2 * w, h))
+    for (x, y), c in {(0, 0): (0, 0), (2, 0): (w - 1, 0), (0, 2): (0, h - 1), (2, 2): (w - 1, h - 1)}.items():
+        big.paste(im.getpixel(c), (x * w, y * h, (x + 1) * w, (y + 1) * h))
+    big.paste(im, (w, h))
+    blurred = big.filter(ImageFilter.GaussianBlur(24))
+    mask = Image.new("L", big.size, 0)
+    ImageDraw.Draw(mask).rectangle((w + feather, h + feather, 2 * w - feather, 2 * h - feather), fill=255)
+    return Image.composite(big, blurred, mask.filter(ImageFilter.GaussianBlur(feather / 2)))
+
+
+def cover(im, box, size, shift=None, extend=False):
     """Crop `im` around `box` to the aspect of `size` (growing the box, never cutting the figure) and resize."""
     bw, bh = box[2] - box[0], box[3] - box[1]
     tw, th = size
@@ -60,13 +82,23 @@ def cover(im, box, size):
     else:
         nw, nh = bw, bw * th / tw
     x0, y0 = (box[0] + box[2]) / 2 - nw / 2, (box[1] + box[3]) / 2 - nh / 2
+    free = shift is not None
+    if free:  # move the body by a fraction of the panel: the crop goes the other way
+        x0, y0 = x0 - shift[0] * nw, y0 - shift[1] * nh
     # Keep inside the picture where possible; a crop larger than the picture stays centred on the body instead.
-    x0 = min(max(0, x0), im.width - nw) if nw <= im.width else x0
-    y0 = min(max(0, y0), im.height - nh) if nh <= im.height else y0
+    # A hand-tuned panel (TUNE) keeps its shift: clamping would undo it, and extended() covers the overflow.
+    x0 = min(max(0, x0), im.width - nw) if nw <= im.width and not free else x0
+    y0 = min(max(0, y0), im.height - nh) if nh <= im.height and not free else y0
     crop = (round(x0), round(y0), round(x0 + nw), round(y0 + nh))
-    # Wider or taller than the picture: the rest is the picture's own background, never black.
-    canvas = Image.new("RGB", (crop[2] - crop[0], crop[3] - crop[1]), tuple(round(c) for c in corners(im)))
-    canvas.paste(im, (-crop[0], -crop[1]))
+    # Wider or taller than the picture: the rest continues the picture's own ground, mirrored and blurred, and
+    # fades into it. A flat fill of the corners' colour read as a grey bar under the feet (Guillaume, 12/11).
+    inside = crop[0] >= 0 and crop[1] >= 0 and crop[2] <= im.width and crop[3] <= im.height
+    if inside or not (free or extend):
+        # A body touching the picture's edge smears when stretched: elsewhere the overflow stays the corners' colour.
+        canvas = Image.new("RGB", (crop[2] - crop[0], crop[3] - crop[1]), tuple(round(c) for c in corners(im)))
+        canvas.paste(im, (-crop[0], -crop[1]))
+    else:
+        canvas = extended(im).crop((crop[0] + im.width, crop[1] + im.height, crop[2] + im.width, crop[3] + im.height))
     return canvas.resize(size, Image.LANCZOS), crop
 
 
@@ -77,7 +109,8 @@ CONFIG = {
     "archer_pushup": ([0, 3, 0, 6], "rows"),  # centre, one side, centre again, the other: the alternation reads
     "windshield_wipers": ([0, 2, 4], "top1"),
     "jump_squat": ([0, 2, 3], "bottom3"),
-    "skater_hop": ([0, 1], None),
+    "reverse_crunch": ([0, 1], "stack"),  # one above the other: a lying body gets the width
+    "skater_hop": ([0, 2], None),  # landing on one leg, then on the other (1 was both feet down)
     "bicycle_crunch": ([0, 1, 2], "top1"),
     "worlds_greatest_stretch": ([0, 2], None),
     "burpee": ([0, 1, 2, 3], "grid"),
@@ -89,9 +122,34 @@ CONFIG = {
     "single_leg_deadlift": ([0, 3], "split"),
 }
 # Each panel framed on its own body, not one camera for the page: the positions differ too much in height.
-OWN_CROP = {"muscle_up", "toes_to_bar", "single_leg_deadlift"}
-# Jump arrows, in the panel's own fractions: (panel index, start, end).
-JUMPS = {"star_jump": [(1, (0.13, 0.78), (0.13, 0.30))], "skater_hop": [(1, (0.82, 0.93), (0.25, 0.93))]}
+OWN_CROP = {"muscle_up", "toes_to_bar", "single_leg_deadlift", "jump_squat"}
+# Jump arrows, in the panel's own fractions: (panel index, start, end). None since Guillaume's review of 12/11
+# ("enlève la flèche"): the two poses say the jump on their own.
+JUMPS: dict = {}
+# Per-panel framing from Guillaume's review of 12/11, one entry per panel in reading order: (zoom, dx, dy). zoom > 1
+# draws the body bigger; dx, dy move it right and down by that fraction of the panel. Mostly a body too close to a
+# panel border, or too small in its panel.
+# The ground continued past the picture (extended()) where a flat fill showed as a band: Guillaume's review, 12/11.
+EXTEND = {"curtsy_squat", "wall_pushup"}
+TUNE = {
+    "bear_crawl": [None, (1, 0, 0.06)],
+    "chin_up": [(1.25, 0, 0), (1.25, 0, 0.03)],
+    "crunch": [(1, 0, -0.05), (1, 0, 0.06)],
+    "flutter_kicks": [None, (1, 0, 0.06)],
+    "hanging_leg_raise": [(1.3, 0, 0.03), (1.3, 0, 0.03)],
+    "high_knees": [(1.12, 0, 0.03), (1.12, 0, 0.03)],
+    "jump_squat": [(1.35, 0, 0.02), (1.3, 0, 0.02), (1.15, 0, 0)],
+    "muscle_up": [(1.35, 0, 0.05), (1.35, 0, 0.02), (1.35, 0, 0.07), (1.35, 0, 0.07)],
+    "skater_hop": [(1.35, 0, 0.02), (1.35, 0, 0.02)],
+    "negative_pullup": [(1.35, 0, 0.04), (1.35, 0, 0.02)],
+    "pullups": [(1.35, 0, 0.03), (1.35, 0, 0.03)],
+    "reverse_crunch": [(1.1, 0, 0), (1.1, 0, 0)],
+    "russian_twist": [None, (1.12, 0, 0.07)],
+    "single_leg_glute_bridge": [None, (1, 0, 0.07)],
+    "thread_the_needle": [(1.15, 0, 0.05), (1.25, 0, 0)],
+    "toes_to_bar": [None, None, (1.25, 0, 0.03)],
+    "windshield_wipers": [(0.92, 0, -0.03), (1, 0.03, 0), None],
+}
 
 
 def distinct_frames(slug):
@@ -255,7 +313,12 @@ def page(slug, numbers):
         b = (b[0] - TILT * S * k_x, b[1] - TILT * S * k_y, b[2] + TILT * S * k_x, b[3] + TILT * S * k_y)
         if rect[3] >= (H - GUTTER - 1) * S:  # a bottom-row panel
             b = (b[0], b[1], b[2], b[3] + (b[3] - b[1]) * RESERVE)
-        img, _ = cover(im, b, size)
+        t = TUNE.get(slug, [])
+        zoom, dx, dy = t[k] if k < len(t) and t[k] else (1, 0, 0)
+        bw, bh = (b[2] - b[0]) / zoom, (b[3] - b[1]) / zoom
+        cx, cy = (b[0] + b[2]) / 2, (b[1] + b[3]) / 2
+        b = (cx - bw / 2, cy - bh / 2, cx + bw / 2, cy + bh / 2)
+        img, _ = cover(im, b, size, (dx, dy) if (zoom, dx, dy) != (1, 0, 0) else None, slug in EXTEND)
         mask = Image.new("L", out.size, 0)
         ImageDraw.Draw(mask).polygon(poly, fill=255)
         layer = Image.new("RGB", out.size, WHITE)
@@ -280,7 +343,7 @@ def page(slug, numbers):
 if __name__ == "__main__":
     out = pathlib.Path(sys.argv[1])
     out.mkdir(parents=True, exist_ok=True)
-    slugs = sorted(set(MANIFEST) | {p.parent.name for p in SITE.glob("*/cuts.webp")})
+    slugs = sys.argv[2:] or sorted(set(MANIFEST) | {p.parent.name for p in SITE.glob("*/cuts.webp")})
     # The dead bug and the bicycle crunch keep main's still until their redraw is validated.
     slugs = [s for s in slugs if (ROOT / "assets" / "images" / "exercises" / f"{s}.webp").exists()
              and s not in ("towel_door_row", "dead_bug", "bicycle_crunch")]

@@ -176,7 +176,7 @@ test("past sessions running: progress in words, and a way to stop", async () => 
     kind: "on",
     ...details({ pending: 20, history: { running: true, done: 142, total: 310, left: 168 } }),
   });
-  expect(await screen.findByText("Past sessions: 142 of 310")).toBeTruthy();
+  expect(await screen.findByText("142 of 310 sent")).toBeTruthy();
   // The batch in flight is not "waiting": the progress already says it.
   expect(screen.queryByTestId("health-export-pending")).toBeNull();
   expect(screen.queryByTestId("health-export-history")).toBeNull();
@@ -191,13 +191,13 @@ test("while past sessions go out, the count is read again every second", async (
       kind: "on",
       ...details({ history: { running: true, done: 10, total: 300, left: 290 } }),
     });
-    expect(await screen.findByText("Past sessions: 10 of 300")).toBeTruthy();
+    expect(await screen.findByText("10 of 300 sent")).toBeTruthy();
     mockState.current = {
       kind: "on",
       ...details({ history: { running: true, done: 30, total: 300, left: 270 } }),
     };
     await act(() => jest.advanceTimersByTimeAsync(1000));
-    expect(screen.getByText("Past sessions: 30 of 300")).toBeTruthy();
+    expect(screen.getByText("30 of 300 sent")).toBeTruthy();
   } finally {
     jest.useRealTimers();
   }

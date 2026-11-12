@@ -3399,7 +3399,7 @@
     "route_explain": "Le parcours montre où tu es passé, et les apps que tu autorises peuvent le lire.",
     "route_refused": "Pas autorisé dans Connexion Santé : tes sorties partent sans le parcours.",
     "history_row": "Envoyer mes séances passées",
-    "history_progress": "Séances passées : {{done}} sur {{total}}",
+    "history_progress": "{{done}} sur {{total}} envoyées",
     "history_stop": "Arrêter",
     "history_question_title": "Envoyer aussi tes séances passées ?",
     "history_question_body": "Les séances déjà dans ton journal partent aussi, les plus récentes d'abord. Tu peux le faire plus tard depuis cet écran.",

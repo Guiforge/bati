@@ -137,7 +137,10 @@ export default function HealthDataScreen({ port = nativeHealth }: { port?: Healt
       </XStack>
 
       {state === null || state.kind === "unavailable" ? null : (
-        <RNScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 24 }}>
+        <RNScrollView
+          // Gap 8: the busiest state (a run, the route refused, a count) fits at 130 % on 360x640.
+          contentContainerStyle={{ padding: 16, gap: 8, paddingBottom: 24 }}
+        >
           <SettingRow
             testID="health-export-switch"
             icon={<Activity size={22} color="text" />}

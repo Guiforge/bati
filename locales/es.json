@@ -3398,7 +3398,7 @@
     "route_explain": "El recorrido muestra por dónde pasaste, y las apps que permitas pueden leerlo.",
     "route_refused": "No permitido en Health Connect: tus salidas se envían sin el recorrido.",
     "history_row": "Enviar mis sesiones pasadas",
-    "history_progress": "Sesiones pasadas: {{done}} de {{total}}",
+    "history_progress": "{{done}} de {{total}} enviadas",
     "history_stop": "Detener",
     "history_question_title": "¿Enviar también tus sesiones pasadas?",
     "history_question_body": "Las sesiones que ya están en tu diario también se envían, las más recientes primero. Puedes hacerlo más tarde desde esta pantalla.",

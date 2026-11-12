@@ -3270,7 +3270,7 @@
     "route_explain": "Die Route zeigt, wo du unterwegs warst, und die Apps, die du erlaubst, können sie lesen.",
     "route_refused": "In Health Connect nicht erlaubt: Deine Touren gehen ohne Route raus.",
     "history_row": "Meine früheren Einheiten senden",
-    "history_progress": "Frühere Einheiten: {{done}} von {{total}}",
+    "history_progress": "{{done}} von {{total}} gesendet",
     "history_stop": "Anhalten",
     "history_question_title": "Auch deine früheren Einheiten senden?",
     "history_question_body": "Die Einheiten, die schon in deinem Journal stehen, gehen mit, die neuesten zuerst. Du kannst es auch später auf diesem Bildschirm tun.",

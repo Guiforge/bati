@@ -42,7 +42,7 @@ francés: **contact@getbati.app**
 
 # Privacy Policy for Bati
 
-**Last updated: 5 November 2026**
+**Last updated: 12 November 2026**
 
 Bati is an offline-first training app. It has no account, no server of its own, and no analytics.
 This page exists because both app stores require a privacy policy URL, and because the short
@@ -288,14 +288,21 @@ Nothing else in the app asks for it, and every backup opens with its password wi
 on the screen in front of you. The picture is read on your phone, line by line, and never kept or
 sent. Bati asks for it at that moment, not before; a link works without it.
 
-**Health Connect, write exercise sessions (optional, off by default).** If you turn it on in
-Settings > Devices and health data, Bati writes each session you finish on this phone to Health
-Connect, Android's health store on the phone: the quest's name, when it started and ended, and the
-reps you did. It happens on the phone, between two apps, and nothing is sent anywhere. The apps
-you allow in Health Connect can read these sessions; which ones is your choice, in Health Connect.
-Bati asks for this one permission and reads nothing from Health Connect: no heart rate, no steps,
-no weight, no calories. Turning it off stops the writing; sessions already written stay in Health
-Connect, where you can delete them. On a phone without Health Connect the setting does not appear.
+**Health Connect, write exercise sessions, distance and route (optional, off by default).** If you
+turn it on in Settings > Devices and health data, Bati writes each session and outing you finish on
+this phone to Health Connect, Android's health store on the phone: the quest's name, when it started
+and ended, the reps you did, and for an outing (a walk, a run, a ride) its distance. A second
+switch under it, "With the GPS route", off by default, adds an outing's route (where you went, point
+by point, with the time) to the outings sent from then on; turning it off does not remove routes
+already sent. Sessions from before you turned it on, including those that reached this phone from
+your other devices through sync, are sent only if you ask, from the same screen. It happens on the
+phone, between two apps, and nothing is sent anywhere. The apps you allow in Health Connect can
+read these records; which ones is your choice, in Health Connect. Bati asks for three permissions,
+all of them to write: exercise sessions and distance when you turn the switch on, exercise routes
+only when you turn the route on. It reads nothing from Health Connect: no heart rate, no steps, no
+weight, no calories, no elevation, no speed. Turning it off stops the writing; what is already
+written stays in Health Connect, where you can delete it. On a phone without Health Connect the
+setting does not appear.
 
 ## Crash reports
 
@@ -362,7 +369,7 @@ Questions about this policy, and anything else (a bug, an idea, a feature you wi
 
 # Politique de confidentialité de Bati
 
-**Dernière mise à jour : 5 novembre 2026**
+**Dernière mise à jour : 12 novembre 2026**
 
 Bati est une application d'entraînement hors ligne d'abord. Pas de compte, pas de serveur à nous,
 pas d'analytics. Cette page existe parce que les deux stores exigent une URL de politique de
@@ -638,16 +645,23 @@ sauvegarde s'ouvre avec son mot de passe sans elle.
 d'un compagnon sur l'écran devant vous. L'image est lue sur votre téléphone et n'est jamais
 gardée ni envoyée. Bati la demande à ce moment-là, pas avant ; un lien marche sans elle.
 
-**Connexion Santé, écrire des séances d'exercice (facultatif, désactivé par défaut).** Si vous
-l'activez dans Réglages > Appareils et données santé, Bati écrit chaque séance terminée sur ce
-téléphone dans Connexion Santé, l'espace santé d'Android sur le téléphone : le nom de la quête, son
-début et sa fin, et les répétitions faites. Cela se passe sur le téléphone, entre deux applications,
-et rien n'est envoyé nulle part. Les applications que vous autorisez dans Connexion Santé peuvent
-lire ces séances ; lesquelles, c'est vous qui le choisissez, dans Connexion Santé. Bati demande
-cette seule autorisation et ne lit rien dans Connexion Santé : ni fréquence cardiaque, ni pas, ni
-poids, ni calories. Désactiver l'option arrête l'écriture ; les séances déjà écrites restent dans
-Connexion Santé, où vous pouvez les supprimer. Sur un téléphone sans Connexion Santé, le réglage
-n'apparaît pas.
+**Connexion Santé, écrire des séances d'exercice, la distance et le parcours (facultatif, désactivé
+par défaut).** Si vous l'activez dans Réglages > Appareils et données santé, Bati écrit chaque séance
+et chaque sortie terminée sur ce téléphone dans Connexion Santé, l'espace santé d'Android sur le
+téléphone : le nom de la quête, son début et sa fin, les répétitions faites et, pour une sortie
+(marche, course, vélo), sa distance. Un second interrupteur en dessous, « Avec le parcours GPS »,
+désactivé par défaut, ajoute le parcours d'une sortie (où vous êtes passé, point par point, avec
+l'heure) aux sorties envoyées à partir de ce moment ; le désactiver ne retire pas les parcours déjà
+envoyés. Les séances antérieures à l'activation, y compris celles arrivées sur ce téléphone depuis
+vos autres appareils par la synchro, ne sont envoyées que si vous le demandez, depuis le même écran.
+Cela se passe sur le téléphone, entre deux applications, et rien n'est envoyé nulle part. Les
+applications que vous autorisez dans Connexion Santé peuvent lire ces données ; lesquelles, c'est
+vous qui le choisissez, dans Connexion Santé. Bati demande trois autorisations, toutes en écriture :
+les séances d'exercice et la distance quand vous activez l'option, les parcours seulement quand vous
+activez le parcours. Bati ne lit rien dans Connexion Santé : ni fréquence cardiaque, ni pas, ni
+poids, ni calories, ni dénivelé, ni vitesse. Désactiver l'option arrête l'écriture ; ce qui est déjà
+écrit reste dans Connexion Santé, où vous pouvez le supprimer. Sur un téléphone sans Connexion
+Santé, le réglage n'apparaît pas.
 
 ## Rapports de crash
 

@@ -243,7 +243,7 @@ cost as much thought as the takes, and by the third pass they outnumbered the fe
 | 4.8 | Stats refonte | Med-high | M | **P1** | |
 | 4.9 | Animated exercise demonstrations | High | L | P2 | Madbarz |
 | 4.10 | A skill as an oath — "my first pull-up" | High | M | P2 | calisthenics review |
-| 4.12 | Wearables: Health Connect write (W-04, PR 1 under way), then read (W-01), then a BLE heart-rate strap | Med-high | L | P2 | Spix, a hero |
+| 4.12 | Wearables: Health Connect write (W-04, PR 1 merged, PR 2 in review), then read (W-01), then a BLE heart-rate strap | Med-high | L | P2 | Spix, a hero |
 | 4.30 | Village refonte: a reason to open it | Medium | L | P2 | |
 | 4.11 | Widget refonte | Medium | M | P2 | |
 | 4.13 | Building tiers, and tiers per building | Medium | M | P2 | |
@@ -468,8 +468,16 @@ Settings > Devices and health data, off by default, and every quest session fini
 afterwards becomes one calisthenics session in Health Connect, which follows the journal (a
 correction updates it, a deletion takes it back). Write permission only, both distributions, no
 Play Services (the F-Droid scanner passes); minSdk is 26 from this PR, as decided on 2026-10-18.
-How it works: `src/healthExport/`, `modules/bati-health`. PR 2: outings with their route, sending
-past sessions, the mention in the session detail, and the store listings and Play's health form.
+How it works: `src/healthExport/`, `modules/bati-health`.
+
+PR 2 (branch `feat/w04-health-connect-comfort`) finishes W-04 on the same pipeline: GPS outings as
+walking, running or biking sessions with their distance (`WRITE_DISTANCE`, asked with the switch);
+a second switch, "With the GPS route", off by default, that asks for `WRITE_EXERCISE_ROUTE` only
+when turned on and applies to outings sent from then on; past sessions, asked once and otherwise a
+row on the same screen, sent newest first in batches and recomputed from the journal so a kill
+resumes and nothing is sent twice; one line, "sent" or "waiting", in the session detail. Three
+write permissions, nothing read. Left for Guillaume: the Play Console health declaration and Data
+safety form (`docs/store/play-health-connect.md`), before the tag that ships it.
 
 The two older pieces, as first written:
 

@@ -261,7 +261,19 @@ Decisions nobody has taken yet.
   device sync (a phone running Bati). The screen name was given; keep it to this one title, and say
   *téléphone* in its body copy.
 - **Séance en attente** / *session waiting*: a session owed to Health Connect, counted on that
-  screen only. Never *échec* or *erreur*: a refused write waits and goes later on its own.
+  screen only. Never *échec* or *erreur*: a write that failed for the moment waits and goes later
+  on its own.
+- **Séance refusée par Connexion Santé** / *session refused by Health Connect* (W-04 PR 2): one
+  Health Connect turned down for what it holds, counted on that screen only and tried again once the
+  hero corrects it. The subject is Health Connect, never the hero: no *échec*, no *erreur*, no
+  *invalide*.
+- **Avec le parcours GPS** / *With the GPS route* / *Mit der GPS-Route* / *Con el recorrido GPS* /
+  *С GPS-маршрутом* / *附带 GPS 路线*: the option that adds an outing's route to what is sent.
+  *Parcours* as in *fantôme de parcours*; never *tracé* there, which is the line drawn on Bati's own
+  map. German says *Route*, because *Strecke* is the distance (*ground covered*).
+- **Séances passées** / *past sessions*: what was in the journal before the switch went on, sent
+  only when the hero asks. They include outings, as *séance* always does. Never *historique* for
+  this action (the Journal's history is the screen), never *import* or *rattrapage*.
 
 ## Related
 

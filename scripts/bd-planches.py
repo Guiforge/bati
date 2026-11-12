@@ -135,11 +135,14 @@ CONFIG = {
     "mountain_climber": ([0, 1, 2], "rows"),  # one knee in, both feet down, the other knee in
     "toes_to_bar": ([0, 2, 3], "bottom3"),
     "hanging_leg_raise": ([0, 3], None),  # legs level, the top of the raise (2 was halfway)
+    "negative_pullup": ([0, 1], "straight"),  # Guillaume, 12/11: both centred, a straight gutter
     "cat_cow": ([1, 3], None),  # the two extremes: back hollow, back rounded
     "single_leg_deadlift": ([0, 3], "split"),
 }
 # Each panel framed on its own body, not one camera for the page: the positions differ too much in height.
 OWN_CROP = {"muscle_up", "toes_to_bar", "single_leg_deadlift", "jump_squat"}
+# One camera for the page, but each panel centred on its own body's mass (a bar's width does not count).
+CENTRE_OWN = {"negative_pullup"}
 # Jump arrows, in the panel's own fractions: (panel index, start, end). None since Guillaume's review of 12/11
 # ("enlève la flèche"): the two poses say the jump on their own.
 JUMPS: dict = {}
@@ -151,7 +154,7 @@ EXTEND = {"curtsy_squat", "wall_pushup", "star_jump", "jump_squat", "thread_the_
           "russian_twist", "single_leg_glute_bridge", "chin_up", "pullups", "hanging_leg_raise", "knee_pushup", "muscle_up", "jumping_jack"}
 TUNE = {
     "bear_crawl": [None, (1, 0, 0.11)],
-    "chin_up": [(1.25, 0, 0), (1.25, 0.05, 0.03)],
+    "chin_up": [(1.25, 0, 0), (1.25, 0.08, 0.03)],
     "crunch": [(1, 0, -0.05), (1, 0, 0.09)],
     "diamond_pushup": [None, (1, 0, 0.04)],
     "jumping_jack": [None, (1, 0.03, 0)],
@@ -160,7 +163,7 @@ TUNE = {
     "high_knees": [(1.12, 0, 0.03), (1.12, 0, 0.03)],
     "jump_squat": [(1.35, 0, 0.02), (1.3, 0, 0.02), (1.1, 0.05, 0.12)],
     "muscle_up": [(1.35, 0, 0.05), (1.35, 0, 0.02), (1.35, 0, 0.19), (1.35, 0, 0.13)],
-    "negative_pullup": [(1.35, -0.11, 0.04), (1.35, -0.05, 0.02)],
+    "negative_pullup": [(1.4, 0, 0.03), (1.4, 0, 0.02)],
     "pullups": [(1.35, 0, 0.03), (1.35, 0, 0.03)],
     "reverse_crunch": [(1.1, 0, 0), (1.1, 0, 0)],
     "russian_twist": [None, (1.12, 0, 0.11)],
@@ -278,9 +281,10 @@ def layouts(name, aspect=1.0, n=3):
         mx = W * 0.36
         return [[(L, g), (mx + t - g / 2, g), (mx - t - g / 2, H - g), (L, H - g)],
                 [(mx + t + g / 2, g), (R, g), (R, H - g), (mx - t + g / 2, H - g)]], H
-    if name == "side":
+    if name in ("side", "straight"):  # "straight": an upright gutter, for two panels that must both be centred
         H = W
         mx = W / 2
+        t = 0 if name == "straight" else t
         return [[(L, g), (mx + t - g / 2, g), (mx - t - g / 2, H - g), (L, H - g)],
                 [(mx + t + g / 2, g), (R, g), (R, H - g), (mx - t + g / 2, H - g)]], H
     H = W
@@ -361,6 +365,12 @@ def page(slug, numbers):
         rect = (round(min(xs)), round(min(ys)), round(max(xs)), round(max(ys)))
         size = (rect[2] - rect[0], rect[3] - rect[1])
         b = body_box(im) if slug in OWN_CROP else box
+        if slug in CENTRE_OWN:
+            cols = body_mask(im).point(lambda v: 1 if v > 128 else 0).resize((im.width, 1), Image.BOX)
+            weights = list(cols.getdata())
+            cx = sum(i * v for i, v in enumerate(weights)) / max(1, sum(weights))
+            half = (b[2] - b[0]) / 2
+            b = (cx - half, b[1], cx + half, b[3])
         # The slanted edges eat up to TILT pixels of the panel: keep the body clear of them.
         k_y = (b[3] - b[1]) / size[1]
         k_x = (b[2] - b[0]) / size[0]

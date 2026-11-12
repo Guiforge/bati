@@ -1,0 +1,3 @@
+- Jede Übung hat jetzt ihre eigene Comicseite, die die Bewegung Bild für Bild zeigt, in der Einheit und in der Anleitung.
+- Das Rudern mit dem Handtuch, für das man eine Tür brauchte, verschwindet aus den Übungslisten und Vorschlägen. Dein Verlauf und deine eigenen Quests behalten es.
+- Bibliotheken aktualisiert.

@@ -1,0 +1,3 @@
+- Every exercise now has its own comic page, drawing the movement panel by panel, in the session and in the instructions.
+- The towel row, which needed a door, leaves the exercise lists and suggestions. Your history and your own quests keep it.
+- Libraries brought up to date.

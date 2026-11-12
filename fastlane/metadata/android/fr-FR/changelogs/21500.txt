@@ -1,0 +1,3 @@
+- Chaque exercice a maintenant sa planche de BD, qui dessine le mouvement case par case, en séance et dans les instructions.
+- Le tirage à la serviette, qui demandait une porte, quitte les listes d'exercices et les suggestions. Ton historique et tes propres quêtes le gardent.
+- Bibliothèques mises à jour.

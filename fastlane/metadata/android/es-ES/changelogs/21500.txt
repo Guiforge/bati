@@ -1,0 +1,3 @@
+- Cada ejercicio tiene ahora su propia página de cómic, que dibuja el movimiento viñeta a viñeta, en la sesión y en las instrucciones.
+- El remo con toalla, que necesitaba una puerta, sale de las listas de ejercicios y de las sugerencias. Tu historial y tus propias misiones lo conservan.
+- Bibliotecas actualizadas.

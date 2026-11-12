@@ -931,7 +931,7 @@
     "tab_stats": "统计",
     "tab_history": "历史",
     "pull_deficit_title": "你的拉落后了",
-    "pull_deficit_body": "最近 30 天，拉 {{pull}} 次对推 {{push}} 次。毛巾划船或门框单杠能把拉练回来。",
+    "pull_deficit_body": "最近 30 天，拉 {{pull}} 次对推 {{push}} 次。桌下划船或门框单杠能把拉练回来。",
     "suggested_quests": "你的弱项",
     "pr_longest_outing": "最长户外训练",
     "record_longest_session": "最长",

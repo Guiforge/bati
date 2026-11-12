@@ -192,8 +192,11 @@ describe("a backup from an older migration", () => {
   });
 
   test("a backup that claims an older migration it cannot reach is refused before the swap", async () => {
+    // Today's schema claiming only the first migration: replaying the rest onto tables that exist
+    // fails. Dropping only the newest row stopped failing once the newest migration (0086, an
+    // UPDATE) was one a database can run twice, and the restore then rightly succeeded.
     const file = stageCurrent(
-      "DELETE FROM __drizzle_migrations WHERE created_at = (SELECT max(created_at) FROM __drizzle_migrations)",
+      "DELETE FROM __drizzle_migrations WHERE created_at > (SELECT min(created_at) FROM __drizzle_migrations)",
     );
     reports.length = 0;
 

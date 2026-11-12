@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 import { useTranslation } from "react-i18next";
-import { Modal, ScrollView } from "react-native";
+import { Modal, ScrollView, useWindowDimensions } from "react-native";
 import { YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
@@ -82,6 +82,10 @@ export function ExerciseInstructionsModal({
 }) {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
+  const { width } = useWindowDimensions();
+  // The art is a comic page of up to four panels: at 220 dp the panel numbers were unreadable.
+  // 300 within the card, less on a narrow phone (screen and card padding, 16 dp each side).
+  const artSize = Math.min(300, width - 64);
 
   if (!instruction) return null;
 
@@ -100,7 +104,7 @@ export function ExerciseInstructionsModal({
           session. Reading is its own moment, so it gets its own ground. */}
       <YStack flex={1} bg="bgDark" justify="center" items="center" p="4">
         <Card testID="session-instructions" width="100%" maxW={420} bg="surface" gap="3">
-          <ExerciseInstructionsBody instruction={instruction} artSize={220} />
+          <ExerciseInstructionsBody instruction={instruction} artSize={artSize} />
           <AppButton testID="session-instructions-close" size="3" onPress={onClose}>
             {t("common.close")}
           </AppButton>

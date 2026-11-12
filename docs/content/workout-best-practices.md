@@ -283,8 +283,9 @@ triceps +9.5 % — Kikuchi & Nakazato 2017), so "bodyweight can't build muscle" 
 real constraint is *keeping the movement hard enough as the hero gets stronger*, which is what
 the variation ladder (`exercises.prerequisiteExerciseId`) exists to solve.
 
-**The weak point is pulling.** Without a bar the vertical pull nearly disappears. Table rows,
-towel/doorway rows and slowed eccentrics cover it; the honest answer is that a doorway pull-up
+**The weak point is pulling.** Without a bar the vertical pull nearly disappears. Table rows
+and slowed eccentrics cover it (the towel door row was retired in `0086`: it needs a door shut on
+a towel, a set-up the app cannot show safely); the honest answer is that a doorway pull-up
 bar is the single highest-value object a hero can own, and the app should say so rather than
 pretend otherwise.
 

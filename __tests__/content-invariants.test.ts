@@ -375,7 +375,7 @@ describe("content invariants", () => {
     // movement is allowed to belong to no quest and to declare no pattern — these rules are
     // about the catalogue the app ships, not about what someone writes in it.
     const orphans = (await exerciseApi.listExercises())
-      .filter((e) => e.creator === "Admin")
+      .filter((e) => e.creator === "Admin" && e.retiredAt === null) // a retired movement leaves its quests (0086)
       .filter((e) => !used.has(e.id))
       .map((e) => e.enName);
 

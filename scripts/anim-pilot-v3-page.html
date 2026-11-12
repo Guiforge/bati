@@ -1,0 +1,316 @@
+<title>Bati Motion Pilot</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:wght@700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+/* Layout: one column of exercise sections, each a wrap-row of format cards; Bati's night ground, bone ink, patinated gold for picks. */
+:root {
+  --bg: #0B0F19; --panel: #131A2A; --line: #26304A; --ink: #ECE4D4; --muted: #9AA3B5;
+  --gold: #E2B54A; --gold-dim: #5E4A1E; --yes: #6FBF73; --no: #E0675A;
+  --display: "Alegreya", Georgia, serif; --body: "Inter", system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, monospace;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 64px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; letter-spacing: .01em; }
+h1 { font-size: 2.1rem; }
+h2 { font-size: 1.6rem; }
+h3 { color: var(--muted); font-family: var(--body); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; font-size: .78rem; }
+p { margin: 0; max-width: 68ch; }
+.progress { font-family: var(--mono); font-size: .8rem; color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; display: inline-block; }
+.progress b { color: var(--gold); font-weight: 400; }
+header { display: grid; gap: 14px; margin-bottom: 28px; }
+.reco { border-left: 3px solid var(--gold); padding: 4px 0 4px 14px; display: grid; gap: 4px; }
+.spend { display: grid; gap: 6px; max-width: 520px; }
+.bar { height: 10px; background: var(--panel); border-radius: 5px; overflow: hidden; border: 1px solid var(--line); }
+.bar > i { display: block; height: 100%; background: var(--gold); }
+.spend small { color: var(--muted); font-variant-numeric: tabular-nums; }
+.controls { border: 0; margin: 0; padding: 0; min-inline-size: 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+button, .seg label { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+button[aria-pressed="true"] { border-color: var(--gold); color: var(--gold); }
+section.ex { border-top: 1px solid var(--line); padding-block: 28px; display: grid; gap: 18px; }
+.ex-head { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.status { font-family: var(--mono); font-size: .75rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.status.failed { color: var(--no); border-color: var(--no); }
+.status.done { color: var(--yes); border-color: var(--yes); }
+.formats { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.fmt { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.fmt.mine { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold-dim) inset; }
+.fmt .name { display: flex; justify-content: space-between; gap: 6px; font-weight: 600; font-size: .9rem; }
+.fmt .kb { font-family: var(--mono); font-size: .75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.media { width: 100%; aspect-ratio: 1; object-fit: contain; background: #000; border-radius: 4px; display: block; }
+.media.wide { aspect-ratio: auto; }
+.sizes { display: flex; gap: 10px; align-items: end; }
+.sizes figure { margin: 0; display: grid; gap: 2px; justify-items: start; }
+.sizes figcaption { font-family: var(--mono); font-size: .68rem; color: var(--muted); }
+.s180 { width: 180px; height: 180px; max-width: 100%; object-fit: contain; background: #000; border-radius: 4px; }
+.s50 { width: 50px; height: 50px; object-fit: contain; background: #000; border-radius: 3px; }
+.empty { aspect-ratio: 1; display: grid; place-items: center; color: var(--muted); font-size: .85rem; text-align: center; padding: 12px; border: 1px dashed var(--line); border-radius: 4px; }
+.badge { font-family: var(--mono); font-size: .7rem; color: var(--gold); }
+.my-pick { border: 1px solid var(--gold-dim); border-radius: 8px; padding: 12px; display: grid; gap: 8px; }
+.my-pick .claude { color: var(--gold); }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg input:checked + label { border-color: var(--gold); color: var(--gold); }
+.seg input:focus-visible + label { outline: 2px solid var(--gold); outline-offset: 2px; }
+textarea { width: 100%; box-sizing: border-box; min-height: 3em; font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 8px; }
+details { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+details > summary { cursor: pointer; font-weight: 600; }
+details[open] > summary { margin-bottom: 10px; }
+.gallery { display: grid; gap: 10px; }
+.gallery img { width: 100%; border-radius: 4px; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; font-size: .85rem; min-width: 640px; }
+th, td { border: 1px solid var(--line); padding: 4px 6px; text-align: left; vertical-align: top; }
+th { color: var(--muted); font-weight: 600; }
+td.v { font-family: var(--mono); font-size: .75rem; cursor: pointer; white-space: nowrap; }
+td.v.y { color: var(--yes); } td.v.n { color: var(--no); } td.v.na { color: var(--muted); }
+.why { font-size: .8rem; color: var(--muted); }
+.disagree { background: rgba(226, 181, 74, .08); }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: .9rem; }
+.kv dt { color: var(--muted); } .kv dd { margin: 0; min-width: 0; }
+.md { white-space: pre-wrap; font-family: var(--mono); font-size: .78rem; color: var(--muted); max-height: 420px; overflow: auto; }
+footer { border-top: 1px solid var(--line); padding-top: 28px; display: grid; gap: 22px; }
+.summary { font-family: var(--mono); font-size: .8rem; white-space: pre-wrap; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+ul { margin: 0; padding-left: 1.2em; } li { max-width: 72ch; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="progress" id="progress"></span>
+    <h1>Bati Motion Pilot</h1>
+    <div class="reco" id="reco"></div>
+    <div class="spend" id="spend"></div>
+    <fieldset class="controls">
+      <legend class="why">Speed</legend>
+      <button type="button" id="sp1" aria-pressed="true">1x</button>
+      <button type="button" id="sp05" aria-pressed="false">0.5x</button>
+    </fieldset>
+  </header>
+  <main id="exercises"></main>
+  <footer id="footer"></footer>
+</div>
+
+<script type="application/json" id="data">"__DATA__"</script>
+<script>
+const D = JSON.parse(document.getElementById("data").textContent);
+const FORMATS = [["still", "Still image"], ["fade", "Flip-book, fade"], ["cuts", "Flip-book, cuts"], ["strip", "Comic strip"], ["video", "Video loop"]];
+const LINES = ["Anatomy", "Range", "Fixed points", "Style", "Loop", "Readable", "Useful"];
+const AUDITORS = [["coach", "Coach"], ["beginner", "Beginner"], ["art", "Art director"]];
+let slow = false;
+const picks = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") e.className = v; else if (k === "text") e.textContent = v; else e.setAttribute(k, v);
+  }
+  for (const k of kids) if (k) e.append(k);
+  return e;
+};
+
+function mediaFor(m, cls) {
+  if (!m) return null;
+  const src = slow && m.slow ? m.slow : m.src;
+  if (m.kind === "video") {
+    const v = el("video", { class: cls, src: m.src, muted: "", loop: "", autoplay: "", playsinline: "", "aria-label": m.alt || "" });
+    v.muted = true; v.playbackRate = slow ? 0.5 : 1;
+    v.addEventListener("loadedmetadata", () => { v.playbackRate = slow ? 0.5 : 1; });
+    return v;
+  }
+  return el("img", { class: cls, src, alt: m.alt || "", loading: "lazy", "data-src1": m.src, "data-src05": m.slow || m.src });
+}
+
+function formatCard(slug, ex, key, label) {
+  const m = ex.formats?.[key];
+  const card = el("div", { class: `fmt${picks[slug]?.format === key ? " mine" : ""}`, "data-format": key });
+  const name = el("div", { class: "name" }, el("span", { text: label }));
+  if (ex.claude_pick?.format === key) name.append(el("span", { class: "badge", text: "Claude's pick" }));
+  card.append(name);
+  if (!m) { card.append(el("div", { class: "empty", text: ex.pending?.[key] || "Not made yet" })); return card; }
+  card.append(mediaFor(m, `media${m.wide ? " wide" : ""}`));
+  card.append(el("span", { class: "kb", text: m.kb != null ? `${m.kb} Ko` : "" }));
+  if (m.note) card.append(el("span", { class: "why", text: m.note }));
+  const sizes = el("div", { class: "sizes" },
+    el("figure", {}, mediaFor(m.small || m, "s180"), el("figcaption", { text: "180 × 180" })),
+    el("figure", {}, mediaFor(m.small || m, "s50"), el("figcaption", { text: "50 × 50" })));
+  card.append(sizes);
+  return card;
+}
+
+function checklist(ex) {
+  const c = ex.checklist;
+  if (!c) return el("p", { class: "why", text: "Final audit (step 6) not run yet." });
+  const wrap = el("div", { class: "scroll" });
+  const t = el("table");
+  const head = el("tr", {}, el("th", { text: "Format" }), el("th", { text: "Line" }));
+  for (const [, n] of AUDITORS) head.append(el("th", { text: n }));
+  t.append(head);
+  for (const [fk, fl] of FORMATS) {
+    if (!c[fk]) continue;
+    LINES.forEach((line, i) => {
+      const tr = el("tr");
+      if (i === 0) tr.append(el("th", { text: fl, rowspan: String(LINES.length) }));
+      tr.append(el("td", { text: line }));
+      const vals = AUDITORS.map(([a]) => c[fk]?.[a]?.[line]);
+      const yes = vals.filter((v) => v?.v === "YES").length;
+      const no = vals.filter((v) => v?.v === "NO").length;
+      if (yes && no) tr.className = "disagree";
+      for (const v of vals) {
+        tr.append(verdictCell(v));
+      }
+      t.append(tr);
+    });
+  }
+  wrap.append(t);
+  return el("div", {}, wrap, el("p", { class: "why", text: "Tap a verdict for its sentence. Gold rows: the auditors disagree, kept as is." }));
+}
+
+function verdictCell(v) {
+  const td = el("td", { class: `v ${v?.v === "YES" ? "y" : v?.v === "NO" ? "n" : "na"}`, tabindex: "0", role: "button", "aria-expanded": "false" });
+  td.append(document.createTextNode(v?.v || "n/a"));
+  const why = el("div", { class: "why", text: v?.why || "" });
+  why.hidden = true; td.append(why);
+  const flip = () => { why.hidden = !why.hidden; td.style.whiteSpace = why.hidden ? "nowrap" : "normal"; td.setAttribute("aria-expanded", String(!why.hidden)); };
+  td.addEventListener("click", flip);
+  td.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); } });
+  return td;
+}
+
+function pickBox(slug, ex) {
+  const box = el("div", { class: "my-pick" });
+  if (ex.claude_pick) box.append(el("p", {}, el("strong", { class: "claude", text: `Claude's pick: ${FORMATS.find(([k]) => k === ex.claude_pick.format)?.[1] || ex.claude_pick.format}. ` }), document.createTextNode(ex.claude_pick.why || "")));
+  box.append(el("h3", { text: "Your pick" }));
+  const seg = el("div", { class: "seg", role: "radiogroup", "aria-label": `Your pick for ${ex.name}` });
+  for (const [k, l] of FORMATS) {
+    const id = `pick-${slug}-${k}`;
+    const input = el("input", { type: "radio", name: `pick-${slug}`, id, value: k });
+    if (picks[slug]?.format === k) input.checked = true;
+    input.addEventListener("change", () => savePick(slug, { format: k }));
+    seg.append(input, el("label", { for: id, text: l }));
+  }
+  const note = el("textarea", { id: `note-${slug}`, placeholder: "A short note (optional)", "aria-label": `Note for ${ex.name}` });
+  note.value = picks[slug]?.note || "";
+  let timer;
+  note.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(() => savePick(slug, { note: note.value }), 700); });
+  box.append(seg, note);
+  return box;
+}
+
+function section(slug, ex) {
+  const s = el("section", { class: "ex", id: slug });
+  s.append(el("div", { class: "ex-head" }, el("h2", { text: ex.name }), el("span", { class: `status ${ex.status || ""}`, text: ex.status_text || ex.status || "" })));
+  if (ex.summary) s.append(el("p", { text: ex.summary }));
+  const f = el("div", { class: "formats" });
+  for (const [k, l] of FORMATS) f.append(formatCard(slug, ex, k, l));
+  // The step 2 mannequin, shown for reference: not a candidate format, so not in the picks.
+  if (ex.formats?.stick) f.append(formatCard(slug, ex, "stick", "Mannequin (pose guide)"));
+  s.append(f);
+  if (ex.route) {
+    const kv = el("dl", { class: "kv" });
+    for (const [k, v] of ex.route) kv.append(el("dt", { text: k }), el("dd", { text: v }));
+    s.append(kv);
+  }
+  s.append(el("h3", { text: "Checklist, 3 auditors" }), checklist(ex));
+  const det = el("details", {}, el("summary", { text: "Details: key poses, onion skin, mannequin, motion sheet" }));
+  const g = el("div", { class: "gallery" });
+  for (const d of ex.details || []) {
+    g.append(el("h3", { text: d.label }));
+    if (d.src) g.append(el("img", { src: d.src, alt: d.label, loading: "lazy" }));
+    if (d.text) g.append(el("div", { class: "md", text: d.text }));
+  }
+  det.append(g);
+  s.append(det, pickBox(slug, ex));
+  return s;
+}
+
+function renderSummary() {
+  const out = document.getElementById("pick-summary");
+  if (!out) return;
+  const lines = Object.entries(D.exercises).map(([slug, ex]) => {
+    const p = picks[slug];
+    const f = p?.format ? FORMATS.find(([k]) => k === p.format)?.[1] : "no pick yet";
+    return `${ex.name}: ${f}${p?.note ? ` (${p.note.trim()})` : ""}`;
+  });
+  out.textContent = lines.join("\n");
+}
+
+function footer() {
+  const f = document.getElementById("footer");
+  f.replaceChildren();
+  for (const b of D.bottom || []) {
+    const box = el("div", { class: "gallery" }, el("h2", { text: b.title }));
+    if (b.table) {
+      const w = el("div", { class: "scroll" });
+      const t = el("table");
+      t.append(el("tr", {}, ...b.table[0].map((h) => el("th", { text: h }))));
+      for (const r of b.table.slice(1)) t.append(el("tr", {}, ...r.map((c) => el("td", { text: String(c) }))));
+      w.append(t); box.append(w);
+    }
+    if (b.items) box.append(el("ul", {}, ...b.items.map((i) => el("li", { text: i }))));
+    if (b.text) box.append(el("p", { text: b.text }));
+    f.append(box);
+  }
+  const copy = el("button", { type: "button", text: "Copy my picks" });
+  const pre = el("div", { class: "summary", id: "pick-summary" });
+  copy.addEventListener("click", () => {
+    navigator.clipboard.writeText(pre.textContent).then(() => { copy.textContent = "Copied"; setTimeout(() => (copy.textContent = "Copy my picks"), 1500); })
+      .catch(() => { const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); });
+  });
+  f.append(el("div", { class: "gallery" }, el("h2", { text: "My picks" }), pre, el("div", { class: "controls" }, copy)));
+  renderSummary();
+}
+
+function render() {
+  const p = D.progress;
+  const prog = document.getElementById("progress");
+  prog.replaceChildren(el("b", { text: p.step }), document.createTextNode(` · ${p.elapsed} · ${p.spent}`));
+  const reco = document.getElementById("reco");
+  reco.replaceChildren(...D.recommendation.map((l) => el("p", { text: l })));
+  const pct = Math.min(100, (D.spend.total / D.spend.cap) * 100);
+  const spend = document.getElementById("spend");
+  spend.replaceChildren(el("h3", { text: "Spend against the cap" }), el("div", { class: "bar", role: "img", "aria-label": `${D.spend.total.toFixed(2)} $ of ${D.spend.cap} $` }, el("i", { style: `width:${pct}%` })),
+    el("small", { text: `${D.spend.total.toFixed(2)} $ of ${D.spend.cap} $ · ${D.spend.detail}` }));
+  const main = document.getElementById("exercises");
+  main.replaceChildren(...Object.entries(D.exercises).map(([slug, ex]) => section(slug, ex)));
+  footer();
+}
+
+function setSpeed(isSlow) {
+  slow = isSlow;
+  document.getElementById("sp1").setAttribute("aria-pressed", String(!slow));
+  document.getElementById("sp05").setAttribute("aria-pressed", String(slow));
+  document.querySelectorAll("img[data-src1]").forEach((i) => { i.src = slow ? i.dataset.src05 : i.dataset.src1; });
+  document.querySelectorAll("video").forEach((v) => { v.playbackRate = slow ? 0.5 : 1; });
+}
+document.getElementById("sp1").addEventListener("click", () => setSpeed(false));
+document.getElementById("sp05").addEventListener("click", () => setSpeed(true));
+
+function localLoad() { try { Object.assign(picks, JSON.parse(localStorage.getItem("bati-motion-picks") || "{}")); } catch (_) { /* storage blocked: the page still works, picks just do not survive */ } }
+function localSave() { try { localStorage.setItem("bati-motion-picks", JSON.stringify(picks)); } catch (_) { /* storage blocked */ } }
+
+async function savePick(slug, patch) {
+  picks[slug] = { ...(picks[slug] || {}), ...patch };
+  localSave();
+  document.querySelectorAll(`#${slug} .fmt`).forEach((c) => {
+    c.classList.toggle("mine", c.dataset.format === picks[slug].format);
+  });
+  renderSummary();
+  if (db) { try { await db.doc(`picks/${slug}`).set({ format: picks[slug].format || "", note: picks[slug].note || "", at: new Date().toISOString() }); } catch (e) { console.warn("pick not saved to the page store", e); } }
+}
+
+localLoad();
+render();
+(async () => {
+  try {
+    db = await window.claude?.use?.("db");
+    if (!db) return;
+    const snap = await db.collection("picks").get();
+    let changed = false;
+    for (const d of snap.docs) { const v = d.data(); if (v) { picks[d.id] = { format: v.format || undefined, note: v.note || "" }; changed = true; } }
+    if (changed) { localSave(); render(); }
+  } catch (e) { console.warn("page store unavailable, picks kept in this browser only", e); }
+})();
+</script>

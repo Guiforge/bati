@@ -21,11 +21,13 @@ appId: com.guiforge.bati.dev
 - tapOn:
     id: "settings-dev"
 
-- scrollUntilVisible:
-    element:
+# The seed buttons sit near the top of the dev screen. A scroll down here started before the
+# Crests board below them had rendered (it is several screens of shields and slow to draw), went
+# past them and never came back, and the store run died before its first shot. Wait instead.
+- extendedWaitUntil:
+    visible:
       text: "3y"
     timeout: 60000
-    direction: DOWN
 - tapOn: "3y" # ~550 sessions: streaks, records, achievements, muscle balance
 # No "Max out village" step: the button is gone, the village derives from the seeded history.
 

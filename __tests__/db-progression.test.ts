@@ -171,8 +171,8 @@ describe("db/exercises — variation ladder", () => {
     test("reads easiest first and ends on the movement asked for", async () => {
       const chain = await exercisesApi().getChainTo(idOf("Pull-ups"));
 
+      // Towel Door Row was the first rung until it retired (0086).
       expect(chain?.rungs.map((r) => r.exercise.enName)).toEqual([
-        "Towel Door Row",
         "Table Row",
         "Inverted Row",
         "Dead Hang",
@@ -190,12 +190,12 @@ describe("db/exercises — variation ladder", () => {
     });
 
     test("the position climbs with each rung mastered", async () => {
-      for (let i = 0; i < 3; i++) logSet(idOf("Towel Door Row"), 12, 12);
       for (let i = 0; i < 3; i++) logSet(idOf("Table Row"), 12, 12);
+      for (let i = 0; i < 3; i++) logSet(idOf("Inverted Row"), 12, 12);
 
       const chain = await exercisesApi().getChainTo(idOf("Pull-ups"));
       expect(chain?.position).toBe(3);
-      expect(chain?.rungs[2]?.exercise.enName).toBe("Inverted Row");
+      expect(chain?.rungs[2]?.exercise.enName).toBe("Dead Hang");
     });
 
     // Rule C, 2026-09-15: this used to read "does not count as the ones below it", and a hero
@@ -204,11 +204,11 @@ describe("db/exercises — variation ladder", () => {
       for (let i = 0; i < 3; i++) logSet(idOf("Chin-Up"), 12, 12);
 
       const chain = await exercisesApi().getChainTo(idOf("Pull-ups"));
-      expect(chain?.position).toBe(8);
+      expect(chain?.position).toBe(7);
       expect(chain?.climbed).toBe(false);
       // The rungs skipped are behind, not earned: `isEarned` is still the windowed reading.
       expect(chain?.rungs[0]?.isEarned).toBe(false);
-      expect(chain?.rungs[6]?.isEarned).toBe(true);
+      expect(chain?.rungs[5]?.isEarned).toBe(true);
     });
 
     test("a hero who owned Wall Push-Up in June and trains Push-ups in September is served Push-ups", async () => {

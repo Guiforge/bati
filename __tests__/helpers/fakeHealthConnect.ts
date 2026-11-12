@@ -34,6 +34,8 @@ export function fakeHealthConnect() {
     refused: new Set<string>(),
     /** After this many landed writes, the permission is taken back in Android. */
     revokeAfterWrites: Number.POSITIVE_INFINITY,
+    /** After this many landed writes, the next call never answers: the process killed mid-batch. */
+    hangAfterWrites: Number.POSITIVE_INFINITY,
     removeThrows: false,
     onUpsert: (_record: HealthRecord): Promise<void> | undefined => undefined,
   };
@@ -94,6 +96,8 @@ export function fakeHealthConnect() {
       if (!record.distance) distances.delete(`${record.id}-distance`);
       writes.push(record.id);
       if (writes.length >= state.revokeAfterWrites) state.permitted = false;
+      // Landed in Health Connect, never marked in the ledger: the worst moment to be killed.
+      if (writes.length >= state.hangAfterWrites) await new Promise<never>(() => {});
     },
     remove: (ids) => {
       calls.remove++;

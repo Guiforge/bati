@@ -6,6 +6,7 @@ import {
   healthExportStatusOf,
   markHealthExported,
   markHealthFailed,
+  markHealthWriting,
 } from "@/db/healthExport";
 import {
   deletePreference,
@@ -90,7 +91,8 @@ async function routeOption(port: HealthPort): Promise<boolean> {
   return false;
 }
 
-async function wording() {
+/** The hero's language, the notes format and the fallback title, as the next write uses them. */
+export async function healthExportWording() {
   const language = resolveAppLanguage(await preferences.getLanguage());
   const t = (key: string, options?: Record<string, unknown>) =>
     i18n.t(key, { ...options, lng: language });
@@ -235,7 +237,7 @@ type Run = {
   port: HealthPort;
   since: Date;
   deviceId: string;
-  wording: Awaited<ReturnType<typeof wording>>;
+  wording: Awaited<ReturnType<typeof healthExportWording>>;
   /**
    * Each entry is tried once per run. One that failed for the moment (not refused) stays owed for
    * the next run, and nothing can make the loop spin on it.
@@ -254,7 +256,7 @@ async function syncOnce(port: HealthPort): Promise<void> {
     port,
     since,
     deviceId: await getDeviceId(),
-    wording: await wording(),
+    wording: await healthExportWording(),
     tried: new Set(),
     failure: null,
   };
@@ -301,10 +303,13 @@ async function writeBatch(run: Run, keys: ExportKey[]): Promise<"more" | "stoppe
   const routeOn = routeAllowed && (await routeOption(port));
   // A record keeps the route choice of its first write; a new one takes the option's.
   const withRoute = (key: ExportKey) => routeAllowed && (key.route ?? routeOn);
+  const firstWrite = new Set(keys.filter((key) => key.route === null).map((key) => key.uuid));
   for (const session of await exportSessions(keys, language, fallbackTitle, withRoute)) {
     if ((await exportSince()) === null) return "stopped";
     const record = toHealthRecord(session, format);
     try {
+      if (firstWrite.has(session.uuid))
+        await markHealthWriting(session.uuid, record.route !== null);
       await port.upsert(record);
       await markHealthExported(session.uuid, session.version, record.route !== null);
     } catch (e) {

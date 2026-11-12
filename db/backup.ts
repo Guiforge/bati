@@ -973,8 +973,12 @@ export const DEVICE_LOCAL_PREFERENCES = [
   "lightWeekAcceptedAt",
   "lightWeekEndedAt",
   // Whether this phone sends its sessions to Health Connect, and since when (src/healthExport/sync.ts):
-  // the permission lives in this phone's Android, so the switch does too.
+  // the permission lives in this phone's Android, so the switch does too. Its route option, whether
+  // past sessions were asked about (once, ever, on this phone) and a history run in progress too.
   "healthExportSince",
+  "healthExportRoute",
+  "healthHistoryAsked",
+  "healthHistoryRunning",
 ] as const;
 
 /**

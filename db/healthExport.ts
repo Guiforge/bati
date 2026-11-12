@@ -106,7 +106,8 @@ export async function healthExportPlan(deviceId: string, since: Date): Promise<H
   let failed = 0;
   let done = 0;
   for (const row of rows) {
-    if (row.written !== null) done++;
+    // -1 is a write announced, not confirmed (`markHealthWriting`).
+    if (row.written !== null && row.written >= 0) done++;
     if (owedNormally(row, deviceId, sinceMs)) owed.push(keyOf(row));
     else if (row.written === null) history.push(keyOf(row));
     else if (row.failed !== null) failed++;
@@ -223,6 +224,20 @@ async function setsOf(sessionIds: number[], language: AppLanguage) {
     bySession.set(set.sessionId, list);
   }
   return bySession;
+}
+
+/**
+ * Written before an entry's first write to Health Connect: from here on the ledger knows Health
+ * Connect may hold it. Killed between Health Connect's answer and `markHealthExported`, the app
+ * would otherwise forget a record it wrote, and a deletion in Bati would never reach it (found by
+ * the property test, `health-export-property`). Version -1 keeps the entry owed until the write
+ * is confirmed; `route` is the choice the write is about to make, kept if it has to be redone.
+ */
+export async function markHealthWriting(sessionUuid: string, route: boolean): Promise<void> {
+  await db
+    .insert(healthExport)
+    .values({ sessionUuid, version: -1, route, failed: null })
+    .onConflictDoNothing();
 }
 
 /** Health Connect now holds this entry at this version, with or without its route. */

@@ -18,7 +18,10 @@ export type ExportSet = {
 
 export type ExportSession = {
   uuid: string;
-  /** Health Connect's client record version: a higher one replaces, an equal one is ignored. */
+  /**
+   * Health Connect's client record version: an equal or higher one replaces, a lower one is ignored
+   * (measured by `scripts/health-connect-contract.sh`; the docs say "higher").
+   */
   version: number;
   title: string;
   performedAt: Date;

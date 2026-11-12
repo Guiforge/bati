@@ -31,8 +31,8 @@ export type HealthPort = {
   hasRoutePermission(): Promise<boolean>;
   requestRoutePermission(): Promise<boolean>;
   /**
-   * Inserts the session (and its distance), or replaces the records with the same ids when
-   * `version` is higher. An outing without a distance takes back the distance it had. Rejects with
+   * Inserts the session (and its distance), or replaces the records with the same ids unless
+   * `version` is lower than what Health Connect holds. An outing without a distance takes back the distance it had. Rejects with
    * `HealthRefused` when Health Connect refuses the record itself.
    */
   upsert(record: HealthRecord): Promise<void>;

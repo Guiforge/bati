@@ -11,7 +11,8 @@ export type FakeDistance = {
 /**
  * Health Connect as it behaves (connect-client 1.1.0, "write data", checked on an API 35 emulator
  * in W-04 PR 1 and by `scripts/health-connect-contract.sh`): one record per client id and class,
- * a write with the same id replaces only when its version is higher, deleting an id it lacks is
+ * a write with the same id replaces unless its version is lower (an equal one replaces too, as the
+ * contract check measured on API 35), deleting an id it lacks is
  * fine, and a write without the permission it needs is a SecurityException.
  */
 export function fakeHealthConnect() {
@@ -82,7 +83,7 @@ export function fakeHealthConnect() {
       await state.onUpsert(record);
       await check(record);
       const held = records.get(record.id);
-      if (!held || held.version < record.version) {
+      if (!held || held.version <= record.version) {
         records.set(record.id, record);
         if (record.distance) {
           distances.set(record.distance.id, {

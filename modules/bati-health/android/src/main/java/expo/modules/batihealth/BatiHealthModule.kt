@@ -33,7 +33,7 @@ private val MAIN_PERMISSIONS = setOf(WRITE_EXERCISE, WRITE_DISTANCE)
 private const val PERMISSION_REQUEST_CODE = 0x4843
 
 /** Health Connect refused the record itself: JS marks it failed instead of retrying (`HealthRefused`). */
-private const val REFUSED = "ERR_HEALTH_REFUSED"
+internal const val REFUSED = "ERR_HEALTH_REFUSED"
 
 /**
  * The native half of the Health Connect export (W-04): write one exercise session (with an outing's
@@ -107,17 +107,13 @@ class BatiHealthModule : Module() {
         true
       }
 
-      // Inserts, or updates the records with the same client ids when `version` is higher: Health
-      // Connect keeps the highest client record version and ignores an equal one. The session and
+      // Inserts, or updates the records with the same client ids: Health
+      // Connect replaces at an equal or higher client record version and ignores a lower one (the
+      // contract check measured the equal case; the docs say "higher"). The session and
       // its distance go in one request; an outing whose distance went away takes it back.
       AsyncFunction("upsertSession") { json: String, promise: Promise ->
         settle(promise) {
-          val record = JSONObject(json)
-          val records = refusedOnBadData { recordsOf(record) }
-          refusedOnBadData { client().insertRecords(records) }
-          if (record.isNull("distance")) {
-            client().deleteRecords(DistanceRecord::class, emptyList(), listOf("${record.getString("id")}-distance"))
-          }
+          upsertJson(client(), JSONObject(json))
           null
         }
       }
@@ -125,8 +121,7 @@ class BatiHealthModule : Module() {
       // Client ids of both kinds: a session's and its distance's. An id Health Connect lacks is fine.
       AsyncFunction("deleteSessions") { clientIds: List<String>, promise: Promise ->
         settle(promise) {
-          client().deleteRecords(ExerciseSessionRecord::class, emptyList(), clientIds)
-          client().deleteRecords(DistanceRecord::class, emptyList(), clientIds)
+          deleteIds(client(), clientIds)
           null
         }
       }
@@ -138,6 +133,31 @@ class BatiHealthModule : Module() {
         runCatching { context.startActivity(intent) }.isSuccess
       }
     }
+}
+
+/**
+ * One entry, as `src/healthExport/record.ts` maps it: the session, its distance when it has one,
+ * and an outing's old distance taken back when it no longer has one. Internal so the contract
+ * test (`src/androidTest`) runs this very code against the real Health Connect.
+ */
+internal suspend fun upsertJson(
+  client: HealthConnectClient,
+  record: JSONObject,
+) {
+  val records = refusedOnBadData { recordsOf(record) }
+  refusedOnBadData { client.insertRecords(records) }
+  if (record.isNull("distance")) {
+    client.deleteRecords(DistanceRecord::class, emptyList(), listOf("${record.getString("id")}-distance"))
+  }
+}
+
+/** Client ids of both kinds, a session's and its distance's. An id Health Connect lacks is fine. */
+internal suspend fun deleteIds(
+  client: HealthConnectClient,
+  clientIds: List<String>,
+) {
+  client.deleteRecords(ExerciseSessionRecord::class, emptyList(), clientIds)
+  client.deleteRecords(DistanceRecord::class, emptyList(), clientIds)
 }
 
 /**
@@ -156,7 +176,7 @@ private fun recordsOf(json: JSONObject): List<Record> {
   val session = sessionRecord(json)
   if (json.isNull("distance")) return listOf(session)
   val distance = json.getJSONObject("distance")
-  return listOf(
+  return listOf<Record>(
     session,
     DistanceRecord(
       startTime = session.startTime,

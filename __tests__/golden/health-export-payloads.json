@@ -1,0 +1,310 @@
+{
+  "a plain quest": {
+    "id": "bati-0193-quest",
+    "version": 0,
+    "exerciseType": 13,
+    "title": "Le Réveil de l'Écuyer",
+    "notes": null,
+    "start": 1794466800000,
+    "end": 1794467400000,
+    "offsetMinutes": 60,
+    "segments": [
+      {
+        "start": 1794466800000,
+        "end": 1794466890000,
+        "type": 51,
+        "reps": 15
+      },
+      {
+        "start": 1794466955000,
+        "end": 1794467000000,
+        "type": 41,
+        "reps": 0
+      },
+      {
+        "start": 1794467000000,
+        "end": 1794467120000,
+        "type": 51,
+        "reps": 12
+      }
+    ],
+    "distance": null,
+    "route": null
+  },
+  "a quest with a movement Health Connect has no type for": {
+    "id": "bati-0193-pushups",
+    "version": 0,
+    "exerciseType": 13,
+    "title": "Le Réveil de l'Écuyer",
+    "notes": "Pompes: 12, 10\nMy squat: 8",
+    "start": 1794466800000,
+    "end": 1794467400000,
+    "offsetMinutes": 60,
+    "segments": [
+      {
+        "start": 1794466860000,
+        "end": 1794466950000,
+        "type": 51,
+        "reps": 20
+      }
+    ],
+    "distance": null,
+    "route": null
+  },
+  "a run": {
+    "id": "bati-0193-run",
+    "version": 0,
+    "exerciseType": 56,
+    "title": "La Course du Messager",
+    "notes": null,
+    "start": 1794466800000,
+    "end": 1794468600000,
+    "offsetMinutes": 60,
+    "segments": [],
+    "distance": {
+      "id": "bati-0193-run-distance",
+      "meters": 5120
+    },
+    "route": null
+  },
+  "a bike ride": {
+    "id": "bati-0193-ride",
+    "version": 0,
+    "exerciseType": 8,
+    "title": "La Course du Messager",
+    "notes": null,
+    "start": 1794466800000,
+    "end": 1794470400000,
+    "offsetMinutes": 60,
+    "segments": [],
+    "distance": {
+      "id": "bati-0193-ride-distance",
+      "meters": 18400
+    },
+    "route": null
+  },
+  "a walk": {
+    "id": "bati-0193-walk",
+    "version": 0,
+    "exerciseType": 79,
+    "title": "La Course du Messager",
+    "notes": null,
+    "start": 1794466800000,
+    "end": 1794468600000,
+    "offsetMinutes": 60,
+    "segments": [],
+    "distance": {
+      "id": "bati-0193-walk-distance",
+      "meters": 2300
+    },
+    "route": null
+  },
+  "a run with its route": {
+    "id": "bati-0193-route",
+    "version": 0,
+    "exerciseType": 56,
+    "title": "La Course du Messager",
+    "notes": null,
+    "start": 1794466800000,
+    "end": 1794466920000,
+    "offsetMinutes": 60,
+    "segments": [],
+    "distance": {
+      "id": "bati-0193-route-distance",
+      "meters": 5120
+    },
+    "route": [
+      {
+        "t": 1794466800000,
+        "lat": 45.75,
+        "lon": 4.85
+      },
+      {
+        "t": 1794466820000,
+        "lat": 45.7502,
+        "lon": 4.8502
+      },
+      {
+        "t": 1794466840000,
+        "lat": 45.7504,
+        "lon": 4.8504
+      },
+      {
+        "t": 1794466860000,
+        "lat": 45.7506,
+        "lon": 4.8506
+      },
+      {
+        "t": 1794466880000,
+        "lat": 45.7508,
+        "lon": 4.8508
+      },
+      {
+        "t": 1794466900000,
+        "lat": 45.751,
+        "lon": 4.851
+      }
+    ]
+  },
+  "an outing with pauses": {
+    "id": "bati-0193-pauses",
+    "version": 0,
+    "exerciseType": 79,
+    "title": "La Course du Messager",
+    "notes": null,
+    "start": 1794466800000,
+    "end": 1794467100000,
+    "offsetMinutes": 60,
+    "segments": [],
+    "distance": {
+      "id": "bati-0193-pauses-distance",
+      "meters": 260
+    },
+    "route": [
+      {
+        "t": 1794466800000,
+        "lat": 45.75,
+        "lon": 4.85
+      },
+      {
+        "t": 1794466830000,
+        "lat": 45.7503,
+        "lon": 4.8503
+      },
+      {
+        "t": 1794466860000,
+        "lat": 45.7506,
+        "lon": 4.8506
+      },
+      {
+        "t": 1794466950000,
+        "lat": 45.7515,
+        "lon": 4.8515
+      },
+      {
+        "t": 1794466980000,
+        "lat": 45.7518,
+        "lon": 4.8518
+      },
+      {
+        "t": 1794467040000,
+        "lat": 45.7524,
+        "lon": 4.852399999999999
+      },
+      {
+        "t": 1794467070000,
+        "lat": 45.7527,
+        "lon": 4.8527
+      }
+    ]
+  },
+  "an outing with no GPS points": {
+    "id": "bati-0193-nogps",
+    "version": 0,
+    "exerciseType": 79,
+    "title": "La Course du Messager",
+    "notes": null,
+    "start": 1794466800000,
+    "end": 1794468600000,
+    "offsetMinutes": 60,
+    "segments": [],
+    "distance": null,
+    "route": null
+  },
+  "a session crossing midnight": {
+    "id": "bati-0193-midnight",
+    "version": 0,
+    "exerciseType": 13,
+    "title": "Le Réveil de l'Écuyer",
+    "notes": null,
+    "start": 1794524100000,
+    "end": 1794524700000,
+    "offsetMinutes": 60,
+    "segments": [
+      {
+        "start": 1794524100000,
+        "end": 1794524190000,
+        "type": 51,
+        "reps": 15
+      },
+      {
+        "start": 1794524255000,
+        "end": 1794524300000,
+        "type": 41,
+        "reps": 0
+      },
+      {
+        "start": 1794524300000,
+        "end": 1794524420000,
+        "type": 51,
+        "reps": 12
+      }
+    ],
+    "distance": null,
+    "route": null
+  },
+  "a session across a daylight saving change": {
+    "id": "bati-0193-dst",
+    "version": 0,
+    "exerciseType": 13,
+    "title": "Le Réveil de l'Écuyer",
+    "notes": null,
+    "start": 1792888200000,
+    "end": 1792891800000,
+    "offsetMinutes": 120,
+    "segments": [
+      {
+        "start": 1792888200000,
+        "end": 1792888290000,
+        "type": 51,
+        "reps": 15
+      },
+      {
+        "start": 1792888355000,
+        "end": 1792888400000,
+        "type": 41,
+        "reps": 0
+      },
+      {
+        "start": 1792888400000,
+        "end": 1792888520000,
+        "type": 51,
+        "reps": 12
+      }
+    ],
+    "distance": null,
+    "route": null
+  },
+  "a corrected session": {
+    "id": "bati-0193-corrected",
+    "version": 1794812400000,
+    "exerciseType": 13,
+    "title": "Le Réveil de l'Écuyer",
+    "notes": null,
+    "start": 1794466800000,
+    "end": 1794467400000,
+    "offsetMinutes": 60,
+    "segments": [
+      {
+        "start": 1794466800000,
+        "end": 1794466890000,
+        "type": 51,
+        "reps": 15
+      },
+      {
+        "start": 1794466955000,
+        "end": 1794467000000,
+        "type": 41,
+        "reps": 0
+      },
+      {
+        "start": 1794467000000,
+        "end": 1794467120000,
+        "type": 51,
+        "reps": 12
+      }
+    ],
+    "distance": null,
+    "route": null
+  }
+}

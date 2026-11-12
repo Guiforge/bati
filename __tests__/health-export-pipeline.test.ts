@@ -487,6 +487,30 @@ describe("Health Connect export: outings, route, past sessions", () => {
       expect(hc.distances.size).toBe(0);
     });
 
+    test("restoring an older backup after a run: no rewrite storm, nothing taken back", async () => {
+      const hc = fakeHealthConnect();
+      const entries = await historyFixture();
+      await switchedOn(hc);
+      await sync().startHealthHistory();
+      await settled(hc);
+      // The older copy lacks the ten newest entries; keepDeviceSettings keeps this phone's ledger
+      // rows for the entries the copy holds (db-keep-device-settings), and a reload follows.
+      const newest = entries.slice(0, 10);
+      for (const e of newest) {
+        t.sqlite.prepare("DELETE FROM health_export WHERE sessionUuid = ?").run(e.uuid);
+        t.sqlite.prepare("DELETE FROM completed_sessions WHERE id = ?").run(e.id);
+      }
+      jest.resetModules();
+      jest.doMock("../db/client", () => clientMock(t));
+      const before = hc.calls.upsert;
+
+      await sync().syncHealthConnect(hc.port);
+
+      expect(hc.calls.upsert).toBe(before);
+      expect(hc.calls.remove).toBe(0);
+      expect(hc.records.size).toBe(45);
+    });
+
     test("routes follow the option at the moment of sending", async () => {
       const hc = fakeHealthConnect();
       const old = await j.outing("run", 3 * DAY);

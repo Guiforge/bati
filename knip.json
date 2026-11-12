@@ -12,8 +12,7 @@
   "ignoreDependencies": [
     "expo-dev-client",
     "expo-updates",
-    "babel-plugin-transform-remove-console",
-    "fast-check"
+    "babel-plugin-transform-remove-console"
   ],
   "ignoreBinaries": ["xmllint", "openssl"],
   "ignoreExportsUsedInFile": true,

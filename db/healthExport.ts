@@ -50,7 +50,8 @@ function versionOf(row: { setsEditedAt: Date | null; byHandEditedAt: Date | null
  * or with the distance the hero typed for it. A session written down after the fact
  * (`byHand = 'session'`) never.
  */
-const eligible = or(isNull(completedQuest.byHand), eq(completedQuest.byHand, "distance"));
+// Functions, not constants: a module that imports this one must load against a mocked schema.
+const eligible = () => or(isNull(completedQuest.byHand), eq(completedQuest.byHand, "distance"));
 
 type Row = {
   uuid: string | null;
@@ -64,7 +65,7 @@ type Row = {
   failed: string | null;
 };
 
-const rowColumns = {
+const rowColumns = () => ({
   uuid: completedQuest.uuid,
   performedAt: completedQuest.performedAt,
   durationSeconds: completedQuest.durationSeconds,
@@ -74,7 +75,7 @@ const rowColumns = {
   written: healthExport.version,
   route: healthExport.route,
   failed: healthExport.failed,
-};
+});
 
 /** Owed by the normal path, which writes on its own: see `HealthExportPlan.owed`. */
 function owedNormally(row: Row, deviceId: string, sinceMs: number): boolean {
@@ -94,10 +95,10 @@ function keyOf(row: Row & { uuid: string }): ExportKey {
 
 export async function healthExportPlan(deviceId: string, since: Date): Promise<HealthExportPlan> {
   const rows = (await db
-    .select(rowColumns)
+    .select(rowColumns())
     .from(completedQuest)
     .leftJoin(healthExport, eq(healthExport.sessionUuid, completedQuest.uuid))
-    .where(sql`${completedQuest.uuid} IS NOT NULL AND ${eligible}`)
+    .where(sql`${completedQuest.uuid} IS NOT NULL AND ${eligible()}`)
     .orderBy(completedQuest.performedAt, completedQuest.uuid)) as (Row & { uuid: string })[];
 
   const sinceMs = since.getTime();
@@ -142,10 +143,10 @@ export async function healthExportStatusOf(
   historyRunning: boolean,
 ): Promise<"sent" | "waiting" | null> {
   const [row] = (await db
-    .select(rowColumns)
+    .select(rowColumns())
     .from(completedQuest)
     .leftJoin(healthExport, eq(healthExport.sessionUuid, completedQuest.uuid))
-    .where(sql`${completedQuest.uuid} = ${sessionUuid} AND ${eligible}`)
+    .where(sql`${completedQuest.uuid} = ${sessionUuid} AND ${eligible()}`)
     .limit(1)) as Row[];
   if (!row) return null;
   if (owedNormally(row, deviceId, since.getTime())) return "waiting";

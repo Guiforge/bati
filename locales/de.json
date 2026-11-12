@@ -3268,7 +3268,7 @@
     "fallback_title": "Bati-Einheit",
     "route": "Mit der GPS-Route",
     "route_explain": "Die Route zeigt, wo du unterwegs warst, und die Apps, die du erlaubst, können sie lesen.",
-    "route_refused": "Android hat die Route nicht erlaubt. Deine Touren gehen ohne sie raus.",
+    "route_refused": "Health Connect hat die Route nicht erlaubt. Deine Touren gehen ohne sie raus; du kannst sie über den Link unten erlauben.",
     "history_row": "Meine früheren Einheiten senden",
     "history_progress": "Frühere Einheiten: {{done}} von {{total}}",
     "history_stop": "Anhalten",

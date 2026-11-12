@@ -3397,7 +3397,7 @@
     "fallback_title": "Séance Bati",
     "route": "Avec le parcours GPS",
     "route_explain": "Le parcours montre où tu es passé, et les apps que tu autorises peuvent le lire.",
-    "route_refused": "Android n'a pas donné l'accès au parcours. Tes sorties partent sans lui.",
+    "route_refused": "Connexion Santé n'a pas donné l'accès au parcours. Tes sorties partent sans lui ; tu peux l'autoriser avec le lien plus bas.",
     "history_row": "Envoyer mes séances passées",
     "history_progress": "Séances passées : {{done}} sur {{total}}",
     "history_stop": "Arrêter",

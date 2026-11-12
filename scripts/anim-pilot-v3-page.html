@@ -14,7 +14,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--body); font-
 h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; letter-spacing: .01em; }
 h1 { font-size: 2.1rem; }
 h2 { font-size: 1.6rem; }
-h3 { font-size: 1.05rem; color: var(--muted); font-family: var(--body); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; font-size: .78rem; }
+h3 { color: var(--muted); font-family: var(--body); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; font-size: .78rem; }
 p { margin: 0; max-width: 68ch; }
 .progress { font-family: var(--mono); font-size: .8rem; color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; display: inline-block; }
 .progress b { color: var(--gold); font-weight: 400; }
@@ -24,7 +24,7 @@ header { display: grid; gap: 14px; margin-bottom: 28px; }
 .bar { height: 10px; background: var(--panel); border-radius: 5px; overflow: hidden; border: 1px solid var(--line); }
 .bar > i { display: block; height: 100%; background: var(--gold); }
 .spend small { color: var(--muted); font-variant-numeric: tabular-nums; }
-.controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.controls { border: 0; margin: 0; padding: 0; min-inline-size: 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 button, .seg label { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
 button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 button[aria-pressed="true"] { border-color: var(--gold); color: var(--gold); }
@@ -73,7 +73,7 @@ td.v.y { color: var(--yes); } td.v.n { color: var(--no); } td.v.na { color: var(
 footer { border-top: 1px solid var(--line); padding-top: 28px; display: grid; gap: 22px; }
 .summary { font-family: var(--mono); font-size: .8rem; white-space: pre-wrap; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
 ul { margin: 0; padding-left: 1.2em; } li { max-width: 72ch; }
-@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
 </style>
 
 <div class="wrap">
@@ -82,17 +82,17 @@ ul { margin: 0; padding-left: 1.2em; } li { max-width: 72ch; }
     <h1>Bati Motion Pilot</h1>
     <div class="reco" id="reco"></div>
     <div class="spend" id="spend"></div>
-    <div class="controls" role="group" aria-label="Playback speed">
-      <span class="why">Speed</span>
+    <fieldset class="controls">
+      <legend class="why">Speed</legend>
       <button type="button" id="sp1" aria-pressed="true">1x</button>
       <button type="button" id="sp05" aria-pressed="false">0.5x</button>
-    </div>
+    </fieldset>
   </header>
   <main id="exercises"></main>
   <footer id="footer"></footer>
 </div>
 
-<script type="application/json" id="data">__DATA__</script>
+<script type="application/json" id="data">"__DATA__"</script>
 <script>
 const D = JSON.parse(document.getElementById("data").textContent);
 const FORMATS = [["still", "Still image"], ["fade", "Flip-book, fade"], ["cuts", "Flip-book, cuts"], ["strip", "Comic strip"], ["video", "Video loop"]];
@@ -125,12 +125,12 @@ function mediaFor(m, cls) {
 
 function formatCard(slug, ex, key, label) {
   const m = ex.formats?.[key];
-  const card = el("div", { class: "fmt" + (picks[slug]?.format === key ? " mine" : ""), "data-format": key });
+  const card = el("div", { class: `fmt${picks[slug]?.format === key ? " mine" : ""}`, "data-format": key });
   const name = el("div", { class: "name" }, el("span", { text: label }));
   if (ex.claude_pick?.format === key) name.append(el("span", { class: "badge", text: "Claude's pick" }));
   card.append(name);
   if (!m) { card.append(el("div", { class: "empty", text: ex.pending?.[key] || "Not made yet" })); return card; }
-  card.append(mediaFor(m, "media" + (m.wide ? " wide" : "")));
+  card.append(mediaFor(m, `media${m.wide ? " wide" : ""}`));
   card.append(el("span", { class: "kb", text: m.kb != null ? `${m.kb} Ko` : "" }));
   if (m.note) card.append(el("span", { class: "why", text: m.note }));
   const sizes = el("div", { class: "sizes" },
@@ -155,17 +155,11 @@ function checklist(ex) {
       if (i === 0) tr.append(el("th", { text: fl, rowspan: String(LINES.length) }));
       tr.append(el("td", { text: line }));
       const vals = AUDITORS.map(([a]) => c[fk]?.[a]?.[line]);
-      const yes = vals.filter((v) => v?.v === "YES").length, no = vals.filter((v) => v?.v === "NO").length;
+      const yes = vals.filter((v) => v?.v === "YES").length;
+      const no = vals.filter((v) => v?.v === "NO").length;
       if (yes && no) tr.className = "disagree";
       for (const v of vals) {
-        const td = el("td", { class: "v " + (v?.v === "YES" ? "y" : v?.v === "NO" ? "n" : "na"), tabindex: "0", role: "button", "aria-expanded": "false" });
-        td.append(document.createTextNode(v?.v || "n/a"));
-        const why = el("div", { class: "why", text: v?.why || "" });
-        why.hidden = true; td.append(why);
-        const flip = () => { why.hidden = !why.hidden; td.style.whiteSpace = why.hidden ? "nowrap" : "normal"; td.setAttribute("aria-expanded", String(!why.hidden)); };
-        td.addEventListener("click", flip);
-        td.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); } });
-        tr.append(td);
+        tr.append(verdictCell(v));
       }
       t.append(tr);
     });
@@ -174,11 +168,22 @@ function checklist(ex) {
   return el("div", {}, wrap, el("p", { class: "why", text: "Tap a verdict for its sentence. Gold rows: the auditors disagree, kept as is." }));
 }
 
+function verdictCell(v) {
+  const td = el("td", { class: `v ${v?.v === "YES" ? "y" : v?.v === "NO" ? "n" : "na"}`, tabindex: "0", role: "button", "aria-expanded": "false" });
+  td.append(document.createTextNode(v?.v || "n/a"));
+  const why = el("div", { class: "why", text: v?.why || "" });
+  why.hidden = true; td.append(why);
+  const flip = () => { why.hidden = !why.hidden; td.style.whiteSpace = why.hidden ? "nowrap" : "normal"; td.setAttribute("aria-expanded", String(!why.hidden)); };
+  td.addEventListener("click", flip);
+  td.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); } });
+  return td;
+}
+
 function pickBox(slug, ex) {
   const box = el("div", { class: "my-pick" });
-  if (ex.claude_pick) box.append(el("p", {}, el("strong", { class: "claude", text: "Claude's pick: " + (FORMATS.find(([k]) => k === ex.claude_pick.format)?.[1] || ex.claude_pick.format) + ". " }), document.createTextNode(ex.claude_pick.why || "")));
+  if (ex.claude_pick) box.append(el("p", {}, el("strong", { class: "claude", text: `Claude's pick: ${FORMATS.find(([k]) => k === ex.claude_pick.format)?.[1] || ex.claude_pick.format}. ` }), document.createTextNode(ex.claude_pick.why || "")));
   box.append(el("h3", { text: "Your pick" }));
-  const seg = el("div", { class: "seg", role: "radiogroup", "aria-label": "Your pick for " + ex.name });
+  const seg = el("div", { class: "seg", role: "radiogroup", "aria-label": `Your pick for ${ex.name}` });
   for (const [k, l] of FORMATS) {
     const id = `pick-${slug}-${k}`;
     const input = el("input", { type: "radio", name: `pick-${slug}`, id, value: k });
@@ -186,7 +191,7 @@ function pickBox(slug, ex) {
     input.addEventListener("change", () => savePick(slug, { format: k }));
     seg.append(input, el("label", { for: id, text: l }));
   }
-  const note = el("textarea", { id: `note-${slug}`, placeholder: "A short note (optional)", "aria-label": "Note for " + ex.name });
+  const note = el("textarea", { id: `note-${slug}`, placeholder: "A short note (optional)", "aria-label": `Note for ${ex.name}` });
   note.value = picks[slug]?.note || "";
   let timer;
   note.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(() => savePick(slug, { note: note.value }), 700); });
@@ -196,7 +201,7 @@ function pickBox(slug, ex) {
 
 function section(slug, ex) {
   const s = el("section", { class: "ex", id: slug });
-  s.append(el("div", { class: "ex-head" }, el("h2", { text: ex.name }), el("span", { class: "status " + (ex.status || ""), text: ex.status_text || ex.status || "" })));
+  s.append(el("div", { class: "ex-head" }, el("h2", { text: ex.name }), el("span", { class: `status ${ex.status || ""}`, text: ex.status_text || ex.status || "" })));
   if (ex.summary) s.append(el("p", { text: ex.summary }));
   const f = el("div", { class: "formats" });
   for (const [k, l] of FORMATS) f.append(formatCard(slug, ex, k, l));
@@ -227,7 +232,7 @@ function renderSummary() {
   const lines = Object.entries(D.exercises).map(([slug, ex]) => {
     const p = picks[slug];
     const f = p?.format ? FORMATS.find(([k]) => k === p.format)?.[1] : "no pick yet";
-    return `${ex.name}: ${f}${p?.note ? " (" + p.note.trim() + ")" : ""}`;
+    return `${ex.name}: ${f}${p?.note ? ` (${p.note.trim()})` : ""}`;
   });
   out.textContent = lines.join("\n");
 }
@@ -238,7 +243,8 @@ function footer() {
   for (const b of D.bottom || []) {
     const box = el("div", { class: "gallery" }, el("h2", { text: b.title }));
     if (b.table) {
-      const w = el("div", { class: "scroll" }), t = el("table");
+      const w = el("div", { class: "scroll" });
+      const t = el("table");
       t.append(el("tr", {}, ...b.table[0].map((h) => el("th", { text: h }))));
       for (const r of b.table.slice(1)) t.append(el("tr", {}, ...r.map((c) => el("td", { text: String(c) }))));
       w.append(t); box.append(w);
@@ -288,9 +294,11 @@ function localSave() { try { localStorage.setItem("bati-motion-picks", JSON.stri
 async function savePick(slug, patch) {
   picks[slug] = { ...(picks[slug] || {}), ...patch };
   localSave();
-  document.querySelectorAll(`#${slug} .fmt`).forEach((c) => c.classList.toggle("mine", c.dataset.format === picks[slug].format));
+  document.querySelectorAll(`#${slug} .fmt`).forEach((c) => {
+    c.classList.toggle("mine", c.dataset.format === picks[slug].format);
+  });
   renderSummary();
-  if (db) { try { await db.doc("picks/" + slug).set({ format: picks[slug].format || "", note: picks[slug].note || "", at: new Date().toISOString() }); } catch (e) { console.warn("pick not saved to the page store", e); } }
+  if (db) { try { await db.doc(`picks/${slug}`).set({ format: picks[slug].format || "", note: picks[slug].note || "", at: new Date().toISOString() }); } catch (e) { console.warn("pick not saved to the page store", e); } }
 }
 
 localLoad();

@@ -834,7 +834,7 @@ def page():
     state = json.loads((PILOT / "state.json").read_text())
     template = (ROOT / "scripts" / "anim-pilot-v3-page.html").read_text()
     data = json.dumps(state, ensure_ascii=False).replace("</", "<\\/")
-    (SITE / "index.html").write_text(template.replace("__DATA__", data))
+    (SITE / "index.html").write_text(template.replace('"__DATA__"', data))
     files = sorted(str(f.relative_to(SITE)) for f in SITE.rglob("*") if f.is_file() and f.name != "index.html")
     print(json.dumps({"page": str(SITE / "index.html"), "files": files,
                       "kb": sum(kb(SITE / f) for f in files)}))

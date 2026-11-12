@@ -1268,6 +1268,16 @@ export const pairInvites = sqliteTable("pair_invites", {
 });
 
 /**
+ * What this phone wrote to Health Connect (0087): the session, and the client record version
+ * Health Connect holds for it. Local to the phone, out of every backup and every sync, see
+ * `src/healthExport/sync.ts`.
+ */
+export const healthExport = sqliteTable("health_export", {
+  sessionUuid: text().primaryKey(),
+  version: int().notNull(),
+});
+
+/**
  * Photos of a session or an outing (0075), by the session's uuid. A removed one keeps its row, with
  * `image` empty, so the other device learns of it. `updatedAt` and `deletedAt` are epoch seconds,
  * plain ints: compared in SQL with `unixepoch()` stamps.

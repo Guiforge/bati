@@ -36,6 +36,7 @@ export const TABLE_SYNC = {
   boss_fights: "local",
   boss_damage_log: "local",
   pair_invites: "local",
+  health_export: "local",
   resource_inventory: "unused",
   resource_transactions: "unused",
   village_buildings: "unused",

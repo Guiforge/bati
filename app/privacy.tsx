@@ -21,6 +21,7 @@ const SECTIONS = [
   "backups",
   "never",
   "permissions",
+  "health",
   "crashes",
   "sharing",
   "children",

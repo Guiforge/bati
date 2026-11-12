@@ -35,7 +35,7 @@ async function owedWork(since: Date) {
     i18n.t(key, { ...options, lng: language });
   const format: NotesFormat = {
     figure: (type, value) =>
-      type === "time" ? t("healthExport.notes_seconds", { count: value }) : `${value}`,
+      type === "time" ? t("healthExport.notes_seconds", { seconds: value }) : `${value}`,
     line: (name, figures) => t("healthExport.notes_line", { name, figures: figures.join(", ") }),
   };
   const work = await healthExportWork(

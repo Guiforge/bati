@@ -243,7 +243,7 @@ cost as much thought as the takes, and by the third pass they outnumbered the fe
 | 4.8 | Stats refonte | Med-high | M | **P1** | |
 | 4.9 | Animated exercise demonstrations | High | L | P2 | Madbarz |
 | 4.10 | A skill as an oath — "my first pull-up" | High | M | P2 | calisthenics review |
-| 4.12 | Wearables: a BLE heart-rate strap, then Health Connect both ways | Med-high | L | P2 | Spix |
+| 4.12 | Wearables: Health Connect write (W-04, PR 1 under way), then read (W-01), then a BLE heart-rate strap | Med-high | L | P2 | Spix, a hero |
 | 4.30 | Village refonte: a reason to open it | Medium | L | P2 | |
 | 4.11 | Widget refonte | Medium | M | P2 | |
 | 4.13 | Building tiers, and tiers per building | Medium | M | P2 | |
@@ -457,7 +457,21 @@ screen does not show would be a promise with no map.
 
 ### 4.11–4.15 Depth, once the loop is right
 
-**Wearables** (4.12) now means two things, in this order.
+**Wearables** (4.12) now means three pieces of work, in this order since 2026-11-12: **W-04**,
+writing sessions to Health Connect, then **W-01**, reading from it, then the BLE strap. The order
+changed because a hero asked for it: "the RPG style is great, but sometimes you also want
+out-of-game statistics". Bati is the game and the hero's health app is the notebook, so Bati
+builds no new dashboard and lets the sessions flow out instead.
+
+**W-04, status.** PR 1 (branch `feat/w04-health-connect-write`) is the foundation: one switch in
+Settings > Devices and health data, off by default, and every quest session finished on the phone
+afterwards becomes one calisthenics session in Health Connect, which follows the journal (a
+correction updates it, a deletion takes it back). Write permission only, both distributions, no
+Play Services (the F-Droid scanner passes); minSdk is 26 from this PR, as decided on 2026-10-18.
+How it works: `src/healthExport/`, `modules/bati-health`. PR 2: outings with their route, sending
+past sessions, the mention in the session detail, and the store listings and Play's health form.
+
+The two older pieces, as first written:
 
 **A BLE heart-rate strap first**, because it is the only version that shows the heart rate
 *during* the set, which is what a hero asking for a wearable usually means. Every chest strap

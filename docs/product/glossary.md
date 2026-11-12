@@ -2,7 +2,7 @@
 title: Glossary
 type: reference
 status: draft
-updated: 2026-10-29
+updated: 2026-11-12
 related: [writing.md, ../design/audits/2026-09-10-french-copy.md]
 ---
 
@@ -244,6 +244,24 @@ Decisions nobody has taken yet.
   numbers called 等级 side by side, the way `palier` settled it for French.
 - **次 / 组 / 轮** for rep / set / round, in that order and never swapped: 组 is the reps done in
   one go, 轮 is one pass through the quest, 次 is one repetition.
+
+## Settled on 2026-11-12
+
+- **Connexion Santé** / *Health Connect*: Android's health store on the phone (W-04), named the way
+  Android names it in each language, so the hero finds the same words in Android's settings. French
+  says *Connexion Santé*; German, Spanish, Russian and Chinese keep *Health Connect*. Never *Google
+  Fit*, which is another product, and never *Santé Connect*.
+- **Envoyer** / *send* / *senden* / *enviar* / *отправлять* / *发送* for what the switch does with a
+  session. Never *synchroniser* / *sync*: that word is device sync, which carries the whole journal
+  to the hero's other phone, sealed. Never *exporter*, which is a backup file.
+- **Appareils et données santé** / *Devices and health data* / *Geräte und Gesundheitsdaten* /
+  *Dispositivos y datos de salud* / *Устройства и данные о здоровье* / *设备和健康数据*: the
+  Settings screen for Health Connect, and later for a strap or a scale. There *appareils* means the
+  hero's other equipment, a watch, a scale, a strap, which is a second sense next to *appareil* in
+  device sync (a phone running Bati). The screen name was given; keep it to this one title, and say
+  *téléphone* in its body copy.
+- **Séance en attente** / *session waiting*: a session owed to Health Connect, counted on that
+  screen only. Never *échec* or *erreur*: a refused write waits and goes later on its own.
 
 ## Related
 

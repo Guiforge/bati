@@ -1382,28 +1382,33 @@
     }
   },
   "assets/images/exercises/bicycle_crunch.webp": {
-    "model": "flux-2-pro-preview",
-    "provider": "Black Forest Labs (direct API)",
+    "derived_from": "two panels: main's still as it was (see `previous`), then the other side drawn as edits of it by OpenAI gpt-image-2.5/2.6-sunburst and FLUX 3 image, the legs posed on the project's own v15c mannequin (mirrored to face the same way), by scripts/anim-pilot-v3.py; pilot ledger steps bd-alt3 to bd-alt9, 12/11",
+    "how": "comic page: 2 to 4 key poses in slanted panels, numbered in the movement's order, square 1080 px WebP q88, by scripts/bd-planches.py (no generation; body boxes from a birefnet cutout)",
     "licence": "derived work: redrawn by FLUX from line art by Bryl Lim (bryllim/workout-guide, CC BY-SA 4.0, which builds on Everkinetic, CC BY-SA 4.0), redistributed under CC BY-SA 4.0. Share-alike applies to the image, not to the app code",
-    "prompt": "Image 1 is a pale line drawing on a dark ground that fixes the exact pose and camera angle. Draw the hero in precisely this pose: the same joint angles, the same parts of the body touching the floor, the same viewpoint. Draw a real person in the style described below; nothing of the drawing itself, its thin pale lines, appears in the picture, and any object in it that the description below does not name is left out. Seen from the side, a fantasy athlete hero lying on their back with the shoulders lifted off the ground and both hands lightly behind the head. One knee is drawn in toward the chest and the opposite elbow reaches toward it, while the other leg is stretched out completely straight, its heel held just above the ground. The hero wears a fitted dark sleeveless top and knee-length dark shorts, arms and shins bare, barefoot. A thin cyan light traces the outline of the bare stomach and waist. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
-    "seed": 1019176912,
-    "width": 1280,
-    "height": 1280,
-    "generated": "2026-10-01",
-    "references": [
-      {
-        "path": "scripts/pose-refs/bicycle_crunch.traced.png",
-        "sha256": "9e4f48d6b98a0b0b704b44e021983c784c0b4a463cdba8debd7d1fef086188bb"
-      }
-    ],
-    "note": "reference re-traced on 2026-10-04 from the same workout-guide frame with the same command; the hash recorded at generation (c0b7e6e4515b2759...) differed only by the PNG time stamp, now stripped",
-    "derived_from": {
-      "source_page": "https://github.com/bryllim/workout-guide/tree/main/packages/workout-guide/assets/bicycle-crunch",
-      "image_url": "https://raw.githubusercontent.com/bryllim/workout-guide/HEAD/packages/workout-guide/assets/bicycle-crunch/frame-2.png",
-      "licence": "CC BY-SA 4.0",
-      "author": "Bryl Lim (workout-guide)"
-    },
-    "reencoded": "cwebp -q 85, from bicycle_crunch.jpg"
+    "previous": {
+      "model": "flux-2-pro-preview",
+      "provider": "Black Forest Labs (direct API)",
+      "licence": "derived work: redrawn by FLUX from line art by Bryl Lim (bryllim/workout-guide, CC BY-SA 4.0, which builds on Everkinetic, CC BY-SA 4.0), redistributed under CC BY-SA 4.0. Share-alike applies to the image, not to the app code",
+      "prompt": "Image 1 is a pale line drawing on a dark ground that fixes the exact pose and camera angle. Draw the hero in precisely this pose: the same joint angles, the same parts of the body touching the floor, the same viewpoint. Draw a real person in the style described below; nothing of the drawing itself, its thin pale lines, appears in the picture, and any object in it that the description below does not name is left out. Seen from the side, a fantasy athlete hero lying on their back with the shoulders lifted off the ground and both hands lightly behind the head. One knee is drawn in toward the chest and the opposite elbow reaches toward it, while the other leg is stretched out completely straight, its heel held just above the ground. The hero wears a fitted dark sleeveless top and knee-length dark shorts, arms and shins bare, barefoot. A thin cyan light traces the outline of the bare stomach and waist. The entire background is one unbroken field of very dark navy-black (#0B0F19), as dark as a night sky, filling the frame edge to edge behind the figure, with a soft vignette and a crisp rim light tracing the silhouette, holding no scenery, no floor line and no horizon. Drawn as a clean Franco-Belgian graphic-novel illustration: confident black ink outlines and flat cel-shaded colour with simple hard-edged shadows — clear rather than dramatic, the styling a light finish over what is first and foremost an instructional diagram. One athletic hero in plain fitted dark training clothes, arms and lower legs bare so that every joint angle is plainly visible, wearing no armour, no cape and no hood, carrying no weapon, with nothing else in frame beyond the single surface the movement itself requires. A single figure in one position, the complete body inside the frame with clear margin on all four sides, nothing cropped at any edge, the pose large and centred and reading instantly and unambiguously as the exercise it is. Square 1:1 composition, the camera square to the plane of the movement at the height of the body's centre, anatomically correct with textbook form. All four corners are empty background and the artwork is unsigned, bearing no caption, no logo, no watermark and no artist's mark.",
+      "seed": 1019176912,
+      "width": 1280,
+      "height": 1280,
+      "generated": "2026-10-01",
+      "references": [
+        {
+          "path": "scripts/pose-refs/bicycle_crunch.traced.png",
+          "sha256": "9e4f48d6b98a0b0b704b44e021983c784c0b4a463cdba8debd7d1fef086188bb"
+        }
+      ],
+      "note": "reference re-traced on 2026-10-04 from the same workout-guide frame with the same command; the hash recorded at generation (c0b7e6e4515b2759...) differed only by the PNG time stamp, now stripped",
+      "derived_from": {
+        "source_page": "https://github.com/bryllim/workout-guide/tree/main/packages/workout-guide/assets/bicycle-crunch",
+        "image_url": "https://raw.githubusercontent.com/bryllim/workout-guide/HEAD/packages/workout-guide/assets/bicycle-crunch/frame-2.png",
+        "licence": "CC BY-SA 4.0",
+        "author": "Bryl Lim (workout-guide)"
+      },
+      "reencoded": "cwebp -q 85, from bicycle_crunch.jpg"
+    }
   },
   "assets/images/exercises/bulgarian_split_squat.webp": {
     "derived_from": "the key poses of the movement, drawn as edits of the previous still (see `previous`): FLUX 3 image or gpt-image-2.5/2.6 on a jointed mannequin, by scripts/anim-pilot-v3.py",
@@ -1558,20 +1563,25 @@
     }
   },
   "assets/images/exercises/dead_bug.webp": {
-    "model": "flux-2-pro",
-    "provider": "Black Forest Labs (direct API)",
-    "licence": "derived work: redrawn by FLUX from line art by Bryl Lim (bryllim/workout-guide, CC BY-SA 4.0, which builds on Everkinetic, CC BY-SA 4.0), redistributed under CC BY-SA 4.0. Share-alike applies to the image, not to the app code",
-    "reference": "everkinetic frame `dead-bug-2` via bryllim/workout-guide",
-    "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
-    "prompt": "The athlete lies flat on his back, seen from the side; the whole back, both shoulder blades and the head stay pressed down. One arm is straight and points straight up, fingers open, that hand the highest thing in the picture. The opposite leg is folded so the knee is straight above the hip and the shin is level. The other arm lies flat on the ground stretched back past the head. The remaining leg is straight and stretched out low, its heel one hand's width above the ground, and its shoe stops well short of the edge of the picture. Exactly two arms and two legs, four limbs in all. The shorts stop above the knee and the shins are bare skin",
-    "seed": 22,
-    "restyle": {
+    "derived_from": "three key poses (start, one side, the other) drawn by OpenAI gpt-image-2.6-sunburst (images/edits) on the project's own jointed mannequin (scripts/anim-pilot-v3.py, _deadbug15, seen from the side), with the hero of the pilot's own earlier dead bug sheet (gpt-image, text only) as the person and style reference; pilot ledger steps db-freshA-26 and db-freshA2-26, 12/11. Nothing of the previous still (see `previous`) is in it",
+    "how": "comic page: 2 to 4 key poses in slanted panels, numbered in the movement's order, square 1080 px WebP q88, by scripts/bd-planches.py (no generation; body boxes from a birefnet cutout)",
+    "licence": "OpenAI terms: the API customer owns the output. No third-party source: the pose is the project's own mannequin and the person its own earlier generation. Shipped with the rest of assets/ under CC BY-SA 4.0",
+    "previous": {
       "model": "flux-2-pro",
       "provider": "Black Forest Labs (direct API)",
-      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance2`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
-      "background": "forge",
-      "seed": 1234,
-      "licence": "restyle of the render above — same licence, no new source introduced"
+      "licence": "derived work: redrawn by FLUX from line art by Bryl Lim (bryllim/workout-guide, CC BY-SA 4.0, which builds on Everkinetic, CC BY-SA 4.0), redistributed under CC BY-SA 4.0. Share-alike applies to the image, not to the app code",
+      "reference": "everkinetic frame `dead-bug-2` via bryllim/workout-guide",
+      "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
+      "prompt": "The athlete lies flat on his back, seen from the side; the whole back, both shoulder blades and the head stay pressed down. One arm is straight and points straight up, fingers open, that hand the highest thing in the picture. The opposite leg is folded so the knee is straight above the hip and the shin is level. The other arm lies flat on the ground stretched back past the head. The remaining leg is straight and stretched out low, its heel one hand's width above the ground, and its shoe stops well short of the edge of the picture. Exactly two arms and two legs, four limbs in all. The shorts stop above the knee and the shins are bare skin",
+      "seed": 22,
+      "restyle": {
+        "model": "flux-2-pro",
+        "provider": "Black Forest Labs (direct API)",
+        "pipeline": "exospipeline regen/ambiance.py (batch `ambiance2`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
+        "background": "forge",
+        "seed": 1234,
+        "licence": "restyle of the render above — same licence, no new source introduced"
+      }
     }
   },
   "assets/images/exercises/dead_hang.webp": {

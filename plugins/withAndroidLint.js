@@ -88,6 +88,12 @@ const { withAppBuildGradle, withGradleProperties } = require("expo/config-plugin
  * separate ids, so both have to be named. Order matters: severity overrides are applied in the
  * order they are written, so these must come *after* `warningsAsErrors`.
  *
+ * ## `lintConfig`: one check, one generated path
+ *
+ * `android-lint.xml` at the repo root ignores a check on a single path Expo's prebuild writes, and
+ * nowhere else: since minSdk 26, `ObsoleteSdkInt` on `mipmap-anydpi-v26`. Scoped by path rather
+ * than a `disable`, so the check still reads every version test in our own code.
+ *
  * ## The baseline lives outside `android/`
  *
  * CI and `.github/workflows/kotlin.yml` both run `npx expo prebuild -p android --clean`, which
@@ -125,6 +131,7 @@ const LINT_BLOCK = `    lint {
         warningsAsErrors = true
         informational 'LintBaseline', 'LintBaselineFixed'
         baseline = file("$rootDir/../android-lint-baseline.xml")
+        lintConfig = file("$rootDir/../android-lint.xml")
         textReport = true
     }
 `;

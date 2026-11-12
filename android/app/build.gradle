@@ -121,6 +121,7 @@ android {
         warningsAsErrors = true
         informational 'LintBaseline', 'LintBaselineFixed'
         baseline = file("$rootDir/../android-lint-baseline.xml")
+        lintConfig = file("$rootDir/../android-lint.xml")
         textReport = true
     }
     buildTypes {

@@ -15,8 +15,8 @@ type Props = {
 };
 
 /**
- * What sits under the Health Connect switch while it is on: "with the GPS route", the past
- * sessions (a row, or their progress and a way to stop), and the counts. Progress lives here and
+ * What sits under the Health Connect switch: while it is on, "with the GPS route" and the past
+ * sessions (a row, or their progress and a way to stop); on or withdrawn, the counts. Progress lives here and
  * nowhere else in the app.
  */
 export function HealthExportOptions({ details, busy, routeRefused, onRoute, onHistory }: Props) {
@@ -24,44 +24,51 @@ export function HealthExportOptions({ details, busy, routeRefused, onRoute, onHi
   const { route, history } = details;
   return (
     <>
-      <SettingRow
-        testID="health-export-route"
-        icon={<MapIcon size={22} color="text" />}
-        label={t("healthExport.route")}
-        value={route ? t("common.on") : t("common.off")}
-        checked={route}
-        disabled={busy}
-        onPress={onRoute}
-      />
-      <Text fontSize="3" color="textSecondary" px="3">
-        {routeRefused && !route ? t("healthExport.route_refused") : t("healthExport.route_explain")}
-      </Text>
-
-      {history.running ? (
-        <XStack testID="health-export-history-progress" items="center" px="3" gap="3">
-          {/* Polite: TalkBack says the count as it moves, without cutting what it is reading. */}
-          <Text flex={1} fontSize="3" color="text" aria-live="polite">
-            {t("healthExport.history_progress", {
-              done: history.done,
-              total: history.total,
-            })}
+      {/* Only while the switch reads on: withdrawn, it reads off and offers nothing under it. */}
+      {details.kind === "on" ? (
+        <>
+          <SettingRow
+            testID="health-export-route"
+            icon={<MapIcon size={22} color="text" />}
+            label={t("healthExport.route")}
+            value={route ? t("common.on") : t("common.off")}
+            checked={route}
+            disabled={busy}
+            onPress={onRoute}
+          />
+          <Text fontSize="3" color="textSecondary" px="3">
+            {routeRefused && !route
+              ? t("healthExport.route_refused")
+              : t("healthExport.route_explain")}
           </Text>
-          <AppButton
-            testID="health-export-history-stop"
-            variant="outline"
-            onPress={() => onHistory(false)}
-          >
-            {t("healthExport.history_stop")}
-          </AppButton>
-        </XStack>
-      ) : history.left > 0 ? (
-        <SettingRow
-          testID="health-export-history"
-          icon={<Clock size={22} color="text" />}
-          label={t("healthExport.history_row")}
-          disabled={busy}
-          onPress={() => onHistory(true)}
-        />
+
+          {history.running ? (
+            <XStack testID="health-export-history-progress" items="center" px="3" gap="3">
+              {/* Polite: TalkBack says the count as it moves, without cutting what it is reading. */}
+              <Text flex={1} fontSize="3" color="text" aria-live="polite">
+                {t("healthExport.history_progress", {
+                  done: history.done,
+                  total: history.total,
+                })}
+              </Text>
+              <AppButton
+                testID="health-export-history-stop"
+                variant="outline"
+                onPress={() => onHistory(false)}
+              >
+                {t("healthExport.history_stop")}
+              </AppButton>
+            </XStack>
+          ) : history.left > 0 ? (
+            <SettingRow
+              testID="health-export-history"
+              icon={<Clock size={22} color="text" />}
+              label={t("healthExport.history_row")}
+              disabled={busy}
+              onPress={() => onHistory(true)}
+            />
+          ) : null}
+        </>
       ) : null}
 
       {details.pending > 0 ? (

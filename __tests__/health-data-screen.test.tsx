@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import { TamaguiProvider } from "tamagui";
 
 import HealthDataScreen from "@/app/health-data";
@@ -131,6 +131,17 @@ test("the route option and past sessions exist only while the switch is on", asy
   expect(screen.queryByTestId("health-export-history")).toBeNull();
 });
 
+test("withdrawn in Android: the switch reads off, so nothing is offered under it", async () => {
+  await mount({
+    kind: "withdrawn",
+    ...details({ pending: 1, history: { running: false, done: 0, total: 5, left: 5 } }),
+  });
+  expect((await theSwitch()).props["aria-checked"]).toBe(false);
+  expect(screen.queryByTestId("health-export-route")).toBeNull();
+  expect(screen.queryByTestId("health-export-history")).toBeNull();
+  expect(screen.getByText("1 session waiting")).toBeTruthy();
+});
+
 test("on: the route option is a switch, off by default, with its one line", async () => {
   await mount({ kind: "on", ...details() });
   expect((await routeSwitch()).props["aria-checked"]).toBe(false);
@@ -169,6 +180,25 @@ test("past sessions running: progress in words, and a way to stop", async () => 
   expect(screen.queryByTestId("health-export-history")).toBeNull();
   await fireEvent.press(screen.getByTestId("health-export-history-stop"));
   expect(mockStop).toHaveBeenCalledTimes(1);
+});
+
+test("while past sessions go out, the count is read again every second", async () => {
+  jest.useFakeTimers();
+  try {
+    await mount({
+      kind: "on",
+      ...details({ history: { running: true, done: 10, total: 300, left: 290 } }),
+    });
+    expect(await screen.findByText("Past sessions: 10 of 300")).toBeTruthy();
+    mockState.current = {
+      kind: "on",
+      ...details({ history: { running: true, done: 30, total: 300, left: 270 } }),
+    };
+    await act(() => jest.advanceTimersByTimeAsync(1000));
+    expect(screen.getByText("Past sessions: 30 of 300")).toBeTruthy();
+  } finally {
+    jest.useRealTimers();
+  }
 });
 
 test("nothing left to send: no row", async () => {

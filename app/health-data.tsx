@@ -35,16 +35,12 @@ import { reportError } from "@/src/reportError";
  * permission taken back in Android's own settings turns one off here, with a line saying so.
  * Settings links here only where Health Connect is available.
  */
-export default function HealthDataScreen({ port = nativeHealth }: { port?: HealthPort }) {
-  const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
-  const haptics = useHaptics();
+/**
+ * What the screen shows, read on every focus, every return to the app, and every second while past
+ * sessions go out (the count moves; here only, never on another screen).
+ */
+function useHealthExportState(port: HealthPort) {
   const [state, setState] = useState<HealthExportState | null>(null);
-  // Health Connect's answer to the last tap, not a state of its own: only this visit says it.
-  const [refused, setRefused] = useState(false);
-  const [routeRefused, setRouteRefused] = useState(false);
-  const [asking, setAsking] = useState(false);
-  const [busy, setBusy] = useState(false);
 
   // `useCallback` because `useFocusEffect` runs again for every new function it is handed.
   const refresh = useCallback(() => {
@@ -62,6 +58,26 @@ export default function HealthDataScreen({ port = nativeHealth }: { port?: Healt
     return () => subscription.remove();
   }, [refresh]);
 
+  const sending = state?.kind === "on" && state.history.running;
+  useEffect(() => {
+    if (!sending) return;
+    const timer = setInterval(refresh, 1000);
+    return () => clearInterval(timer);
+  }, [sending, refresh]);
+
+  return [state, refresh] as const;
+}
+
+export default function HealthDataScreen({ port = nativeHealth }: { port?: HealthPort }) {
+  const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
+  const haptics = useHaptics();
+  const [state, refresh] = useHealthExportState(port);
+  // Health Connect's answer to the last tap, not a state of its own: only this visit says it.
+  const [refused, setRefused] = useState(false);
+  const [routeRefused, setRouteRefused] = useState(false);
+  const [asking, setAsking] = useState(false);
+  const [busy, setBusy] = useState(false);
   const on = state?.kind === "on";
 
   /** One change at a time, then the state read again. */

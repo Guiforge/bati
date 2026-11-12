@@ -18,7 +18,7 @@ import {
 import { i18n } from "@/i18n";
 import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
 import { reportError } from "@/src/reportError";
-import { type HealthPort, isHealthRefused } from "./port";
+import type { HealthPort } from "./port";
 import { healthRecordIds, type NotesFormat, toHealthRecord } from "./record";
 
 /**
@@ -37,12 +37,12 @@ export const HEALTH_HISTORY_ASKED = "healthHistoryAsked";
 export const HEALTH_HISTORY_RUNNING = "healthHistoryRunning";
 
 /**
- * Entries written between two yields to the UI. Each entry is its own Health Connect call (one
- * session, plus its distance), so one refused record never refuses its neighbours and a long route
- * never meets another in the same request; twenty calls keep a frame budget's worth of JS between
- * yields. Health Connect asks for at most 1,000 records per write request and publishes no figure
- * for its call quotas, only that foreground is the looser one: a rate-limited call leaves the entry
- * owed and the next run picks it up.
+ * Entries per batch: one Health Connect call (`upsertMany`, at most 40 records with distances, an
+ * entry with a route in a call of its own), then a yield to the UI. Health Connect rations calls,
+ * not records: on an API 35 emulator it answered "API call quota exceeded" after about a thousand
+ * calls in a few minutes, while it takes up to 1,000 records in one request. Twenty entries keep a
+ * batch small enough to redo one by one when a record in it is refused, and a 2,000-entry history
+ * to about a hundred calls.
  */
 export const HEALTH_EXPORT_BATCH = 20;
 
@@ -262,16 +262,16 @@ async function syncOnce(port: HealthPort): Promise<void> {
   };
   for (;;) {
     const step = await nextBatch(run);
-    // Switched off, or the permission taken back: a pause, not an error. Nothing is lost.
+    // Switched off: nothing to say. Paused by a failed call: said below, nothing lost.
     if (step === "stopped") return;
-    if (step === "done") break;
+    if (step === "done" || step === "paused") break;
     await yieldToUi();
   }
   if (run.failure !== null) throw run.failure;
 }
 
 /** One batch. Recomputed from the journal each time: a session finished meanwhile goes first. */
-async function nextBatch(run: Run): Promise<"more" | "done" | "stopped"> {
+async function nextBatch(run: Run): Promise<"more" | "done" | "stopped" | "paused"> {
   // The hero can switch off while a backlog is being written: stop before the next batch.
   if ((await exportSince()) === null) return "stopped";
   const plan = await healthExportPlan(run.deviceId, run.since);
@@ -296,7 +296,12 @@ async function nextBatch(run: Run): Promise<"more" | "done" | "stopped"> {
   return "done";
 }
 
-async function writeBatch(run: Run, keys: ExportKey[]): Promise<"more" | "stopped"> {
+/**
+ * One Health Connect call for the whole batch (Health Connect rations calls, not records). A call
+ * that fails for the moment (quota, permission taken back) pauses the run: every entry stays owed,
+ * the error goes up, and the next run, or the retry a minute later (`inStep.ts`), resumes it.
+ */
+async function writeBatch(run: Run, keys: ExportKey[]): Promise<"more" | "stopped" | "paused"> {
   const { port } = run;
   const { language, format, fallbackTitle } = run.wording;
   const routeAllowed = await port.hasRoutePermission();
@@ -304,23 +309,29 @@ async function writeBatch(run: Run, keys: ExportKey[]): Promise<"more" | "stoppe
   // A record keeps the route choice of its first write; a new one takes the option's.
   const withRoute = (key: ExportKey) => routeAllowed && (key.route ?? routeOn);
   const firstWrite = new Set(keys.filter((key) => key.route === null).map((key) => key.uuid));
-  for (const session of await exportSessions(keys, language, fallbackTitle, withRoute)) {
-    if ((await exportSince()) === null) return "stopped";
-    const record = toHealthRecord(session, format);
-    try {
-      if (firstWrite.has(session.uuid))
-        await markHealthWriting(session.uuid, record.route !== null);
-      await port.upsert(record);
-      await markHealthExported(session.uuid, session.version, record.route !== null);
-    } catch (e) {
-      if (isHealthRefused(e)) {
-        await markHealthFailed(session.uuid, session.version, e.message);
-        reportError("healthExport.refused", e);
-        continue;
-      }
-      run.failure ??= e;
-      // Permission taken back mid-run: pause. Nothing is lost, the next run resumes.
-      if (!(await port.hasPermission())) return "stopped";
+  const sessions = await exportSessions(keys, language, fallbackTitle, withRoute);
+  // The hero can switch off while a backlog is being written: nothing more after that.
+  if ((await exportSince()) === null) return "stopped";
+
+  const records = sessions.map((session) => toHealthRecord(session, format));
+  for (const record of records) {
+    const uuid = record.id.replace(/^bati-/, "");
+    if (firstWrite.has(uuid)) await markHealthWriting(uuid, record.route !== null);
+  }
+  let refusals: (string | null)[];
+  try {
+    refusals = await port.upsertMany(records);
+  } catch (e) {
+    run.failure ??= e;
+    return "paused";
+  }
+  for (const [i, session] of sessions.entries()) {
+    const refusal = refusals[i] ?? null;
+    if (refusal === null) {
+      await markHealthExported(session.uuid, session.version, records[i]?.route != null);
+    } else {
+      await markHealthFailed(session.uuid, session.version, refusal);
+      reportError("healthExport.refused", new Error(refusal));
     }
   }
   return "more";

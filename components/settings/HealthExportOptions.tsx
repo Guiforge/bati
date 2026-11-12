@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Text, XStack } from "tamagui";
+import { Text, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Clock, Map as MapIcon } from "@/components/icons";
 import { SettingRow } from "@/components/settings/SettingRow";
@@ -43,9 +43,9 @@ export function HealthExportOptions({ details, busy, routeRefused, onRoute, onHi
           </Text>
 
           {history.running ? (
-            <XStack testID="health-export-history-progress" items="center" px="3" gap="3">
+            <YStack testID="health-export-history-progress" px="3" gap="2">
               {/* Polite: TalkBack says the count as it moves, without cutting what it is reading. */}
-              <Text flex={1} fontSize="3" color="text" aria-live="polite">
+              <Text fontSize="3" color="text" aria-live="polite">
                 {t("healthExport.history_progress", {
                   done: history.done,
                   total: history.total,
@@ -58,7 +58,7 @@ export function HealthExportOptions({ details, busy, routeRefused, onRoute, onHi
               >
                 {t("healthExport.history_stop")}
               </AppButton>
-            </XStack>
+            </YStack>
           ) : history.left > 0 ? (
             <SettingRow
               testID="health-export-history"

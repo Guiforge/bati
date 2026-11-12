@@ -190,7 +190,7 @@ describe("Health Connect export: outings, route, past sessions", () => {
       await settled(hc);
       expect(hc.records.get(`bati-${second.uuid}`)?.route).toBeNull();
       expect(hc.records.get(`bati-${first.uuid}`)?.route).toHaveLength(12);
-      expect(hc.calls.upsert).toBe(3);
+      expect(hc.writes).toHaveLength(3);
     });
 
     test("Android already allows the route, the option is off: still no route", async () => {
@@ -310,13 +310,14 @@ describe("Health Connect export: outings, route, past sessions", () => {
       await historyFixture();
       await switchedOn(hc);
       await sync().startHealthHistory();
-      // The 23rd write lands in Health Connect and the process dies before the ledger hears of it.
-      hc.state.hangAfterWrites = 23;
+      // The second call lands in Health Connect (records 21 to 40) and the process dies before the
+      // ledger hears of it.
+      hc.state.hangAfterWrites = 21;
       sync()
         .syncHealthConnect(hc.port)
         .catch(() => undefined);
       await new Promise((resolve) => setTimeout(resolve, 200));
-      expect(hc.writes).toHaveLength(23);
+      expect(hc.writes).toHaveLength(40);
 
       // Next start: a new process on the same database and the same Health Connect.
       hc.state.hangAfterWrites = Number.POSITIVE_INFINITY;
@@ -326,9 +327,9 @@ describe("Health Connect export: outings, route, past sessions", () => {
 
       expect(hc.records.size).toBe(45);
       expect(new Set(hc.writes).size).toBe(45);
-      // The one written but not marked is written once more at the same version, which Health
-      // Connect ignores: still one record.
-      expect(hc.writes).toHaveLength(46);
+      // The 20 written but not marked are written once more at the same version, in place: still
+      // one record each. 40 before the kill, 20 again, the last 5.
+      expect(hc.writes).toHaveLength(65);
     });
 
     test("killed between Health Connect's answer and the ledger, then deleted: still taken back", async () => {
@@ -370,7 +371,7 @@ describe("Health Connect export: outings, route, past sessions", () => {
       await switchedOn(hc);
       await sync().startHealthHistory();
       hc.state.onUpsert = () => {
-        if (hc.writes.length === 4) return sync().stopHealthHistory();
+        if (hc.calls.upsert === 2) return sync().stopHealthHistory();
       };
       await settled(hc);
       const sent = hc.records.size;
@@ -393,7 +394,7 @@ describe("Health Connect export: outings, route, past sessions", () => {
       await sync().startHealthHistory();
       let fresh = "";
       hc.state.onUpsert = async () => {
-        if (hc.writes.length !== 3 || fresh) return;
+        if (hc.calls.upsert !== 1 || fresh) return;
         fresh = (await j.quest(1)).uuid;
         sync()
           .syncHealthConnect(hc.port)
@@ -433,19 +434,21 @@ describe("Health Connect export: outings, route, past sessions", () => {
       expect(await sync().readHealthExportState(hc.port)).toMatchObject({ failed: 2 });
     });
 
-    test("a transient failure leaves the entry owed and the run on, then it goes", async () => {
+    test("a call that fails for the moment (a quota) pauses the run; nothing lost, it resumes", async () => {
       const hc = fakeHealthConnect();
       await historyFixture();
       await switchedOn(hc);
       await sync().startHealthHistory();
-      hc.state.failOnCall = 7;
-      await expect(sync().syncHealthConnect(hc.port)).rejects.toThrow("Rate limited");
-      expect(hc.records.size).toBe(44);
-      // Tried once, it is now this phone's to send: owed on the normal path, retried silently.
+      hc.state.failOnCall = 2;
+      await expect(sync().syncHealthConnect(hc.port)).rejects.toThrow("API call quota exceeded");
+      // Paused after the failed call: no third call spent against a quota that just said no.
+      expect(hc.calls.upsert).toBe(2);
+      expect(hc.records.size).toBe(20);
+      // The 20 of the failed call were announced: they are owed on the normal path now.
       expect(await sync().readHealthExportState(hc.port)).toMatchObject({
         failed: 0,
-        pending: 1,
-        history: { done: 44, total: 45, left: 0 },
+        pending: 20,
+        history: { running: true, done: 20, total: 45, left: 5 },
       });
       await settled(hc);
       expect(hc.records.size).toBe(45);
@@ -457,13 +460,14 @@ describe("Health Connect export: outings, route, past sessions", () => {
       await historyFixture();
       await switchedOn(hc);
       await sync().startHealthHistory();
-      hc.state.revokeAfterWrites = 10;
-      await sync().syncHealthConnect(hc.port);
-      expect(hc.records.size).toBe(10);
+      // Taken back in Android once the first call has landed.
+      hc.state.revokeAfterWrites = 1;
+      await expect(sync().syncHealthConnect(hc.port)).rejects.toThrow("SecurityException");
+      expect(hc.records.size).toBe(20);
       expect(hc.calls.forbidden).toBe(1);
       expect(await sync().readHealthExportState(hc.port)).toMatchObject({
         kind: "withdrawn",
-        history: { running: true, done: 10 },
+        history: { running: true, done: 20 },
       });
 
       hc.state.revokeAfterWrites = Number.POSITIVE_INFINITY;
@@ -564,7 +568,7 @@ describe("Health Connect export: outings, route, past sessions", () => {
       await switchedOn(hc);
       await sync().startHealthHistory();
       hc.state.onUpsert = () => {
-        if (hc.writes.length === 5) return sync().turnHealthExportOff();
+        if (hc.calls.upsert === 1) return sync().turnHealthExportOff();
       };
       await sync().syncHealthConnect(hc.port);
       const sent = hc.calls.upsert;

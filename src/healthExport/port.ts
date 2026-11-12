@@ -3,20 +3,6 @@ import type { HealthRecord } from "./record";
 export type { HealthRecord };
 
 /**
- * Health Connect turned this one record down for what it holds (bad data), not for the moment it
- * was asked in. Retrying the same version would be refused again: the entry is marked failed and
- * the run goes on. Any other error (permission, rate limit, Health Connect busy) leaves it owed.
- */
-export class HealthRefused extends Error {
-  override name = "HealthRefused";
-}
-
-/** By name, not `instanceof`: one class per module registry, and jest makes several. */
-export function isHealthRefused(e: unknown): e is HealthRefused {
-  return e instanceof Error && e.name === "HealthRefused";
-}
-
-/**
  * Health Connect as the export sees it. `modules/bati-health` is the real one; the tests use a fake
  * that keeps records by client id the way Health Connect does.
  */
@@ -31,11 +17,12 @@ export type HealthPort = {
   hasRoutePermission(): Promise<boolean>;
   requestRoutePermission(): Promise<boolean>;
   /**
-   * Inserts the session (and its distance), or replaces the records with the same ids unless
-   * `version` is lower than what Health Connect holds. An outing without a distance takes back the distance it had. Rejects with
-   * `HealthRefused` when Health Connect refuses the record itself.
+   * Writes a batch of entries, each a session and its distance, replacing the records with the same
+   * ids unless `version` is lower than what Health Connect holds; an outing without a distance takes
+   * back the one it had. Answers per entry: null when written, or why Health Connect refused it for
+   * what it holds. Rejects for anything else (permission, quota), and then nothing is known written.
    */
-  upsert(record: HealthRecord): Promise<void>;
+  upsertMany(records: HealthRecord[]): Promise<(string | null)[]>;
   /** Deletes by client id, sessions and distances alike. An id Health Connect lacks is fine. */
   remove(clientIds: string[]): Promise<void>;
   openSettings(): void;

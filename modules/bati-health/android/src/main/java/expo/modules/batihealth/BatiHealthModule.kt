@@ -20,6 +20,7 @@ import expo.modules.kotlin.exception.CodedException
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import kotlinx.coroutines.launch
+import org.json.JSONArray
 import org.json.JSONObject
 import java.time.Instant
 import java.time.ZoneOffset
@@ -31,9 +32,6 @@ private const val WRITE_ROUTE = HealthPermission.PERMISSION_WRITE_EXERCISE_ROUTE
 /** What the main switch asks for, together. The route is asked alone, by its own option. */
 private val MAIN_PERMISSIONS = setOf(WRITE_EXERCISE, WRITE_DISTANCE)
 private const val PERMISSION_REQUEST_CODE = 0x4843
-
-/** Health Connect refused the record itself: JS marks it failed instead of retrying (`HealthRefused`). */
-internal const val REFUSED = "ERR_HEALTH_REFUSED"
 
 /**
  * The native half of the Health Connect export (W-04): write one exercise session (with an outing's
@@ -54,9 +52,6 @@ class BatiHealthModule : Module() {
     appContext.backgroundCoroutineScope.launch {
       try {
         promise.resolve(block())
-      } catch (e: CodedException) {
-        // Keeps its code: ERR_HEALTH_REFUSED is how JS tells a refusal from a bad moment.
-        promise.reject(e)
       } catch (e: Exception) {
         promise.reject(CodedException(e.message ?: e.javaClass.simpleName, e))
       }
@@ -107,15 +102,11 @@ class BatiHealthModule : Module() {
         true
       }
 
-      // Inserts, or updates the records with the same client ids: Health
-      // Connect replaces at an equal or higher client record version and ignores a lower one (the
-      // contract check measured the equal case; the docs say "higher"). The session and
-      // its distance go in one request; an outing whose distance went away takes it back.
-      AsyncFunction("upsertSession") { json: String, promise: Promise ->
-        settle(promise) {
-          upsertJson(client(), JSONObject(json))
-          null
-        }
+      // Writes a batch of entries and answers, per entry, null (written) or why Health Connect
+      // refused it. Rejects only for what is not the entries' fault (permission, quota), which
+      // leaves all of them owed. See `upsertMany`.
+      AsyncFunction("upsertSessions") { json: String, promise: Promise ->
+        settle(promise) { upsertMany(client(), JSONArray(json)) }
       }
 
       // Client ids of both kinds: a session's and its distance's. An id Health Connect lacks is fine.
@@ -136,20 +127,60 @@ class BatiHealthModule : Module() {
 }
 
 /**
- * One entry, as `src/healthExport/record.ts` maps it: the session, its distance when it has one,
- * and an outing's old distance taken back when it no longer has one. Internal so the contract
- * test (`src/androidTest`) runs this very code against the real Health Connect.
+ * Entries as `src/healthExport/record.ts` maps them, written in as few Health Connect calls as
+ * possible: Health Connect rations *calls* (an API 35 emulator answered "API call quota exceeded"
+ * after about a thousand in a few minutes), not records. Every entry without a route goes in one
+ * `insertRecords`; an entry with a route goes alone, since a long one is heavy. A record Health
+ * Connect replaces at an equal or higher client record version and ignores at a lower one (the
+ * contract check measured the equal case; the docs say "higher").
+ *
+ * Answers, per entry, null when written or the reason it was refused for what it holds (a record's
+ * constructor `require()`s it, or the service throws IllegalArgumentException): a refused call is
+ * retried one entry at a time to find the culprit. Any other failure throws and leaves the whole
+ * batch owed. Outings whose distance went away have it taken back, in one call.
+ *
+ * Internal so the contract test (`src/androidTest`) runs this very code on a real Health Connect.
  */
-internal suspend fun upsertJson(
+internal suspend fun upsertMany(
   client: HealthConnectClient,
-  record: JSONObject,
-) {
-  val records = refusedOnBadData { recordsOf(record) }
-  refusedOnBadData { client.insertRecords(records) }
-  if (record.isNull("distance")) {
-    client.deleteRecords(DistanceRecord::class, emptyList(), listOf("${record.getString("id")}-distance"))
+  entries: JSONArray,
+): List<String?> {
+  val refused = MutableList<String?>(entries.length()) { null }
+  val built = mutableListOf<Pair<Int, List<Record>>>()
+  for (i in 0 until entries.length()) {
+    try {
+      built += i to recordsOf(entries.getJSONObject(i))
+    } catch (e: IllegalArgumentException) {
+      refused[i] = e.message ?: "refused"
+    }
   }
+  val (alone, together) = built.partition { (i, _) -> !entries.getJSONObject(i).isNull("route") }
+  for (group in listOf(together) + alone.map { listOf(it) }) {
+    if (group.isEmpty()) continue
+    try {
+      client.insertRecords(group.flatMap { it.second })
+    } catch (e: IllegalArgumentException) {
+      for ((i, records) in group) {
+        try {
+          client.insertRecords(records)
+        } catch (one: IllegalArgumentException) {
+          refused[i] = one.message ?: "refused"
+        }
+      }
+    }
+  }
+  val distancesGone =
+    (0 until entries.length())
+      .map { entries.getJSONObject(it) }
+      .filterIndexed { i, entry -> refused[i] == null && entry.isNull("distance") && isOuting(entry) }
+      .map { "${it.getString("id")}-distance" }
+  if (distancesGone.isNotEmpty()) client.deleteRecords(DistanceRecord::class, emptyList(), distancesGone)
+  return refused
 }
+
+/** A quest never had a distance: no call is spent taking one back. */
+private fun isOuting(entry: JSONObject) =
+  entry.getInt("exerciseType") != ExerciseSessionRecord.EXERCISE_TYPE_CALISTHENICS
 
 /** Client ids of both kinds, a session's and its distance's. An id Health Connect lacks is fine. */
 internal suspend fun deleteIds(
@@ -159,18 +190,6 @@ internal suspend fun deleteIds(
   client.deleteRecords(ExerciseSessionRecord::class, emptyList(), clientIds)
   client.deleteRecords(DistanceRecord::class, emptyList(), clientIds)
 }
-
-/**
- * A record's constructor `require()`s what Health Connect would refuse (segments overlapping or
- * outside the session, a route point outside it, a distance over 1,000 km), and the service throws
- * the same for what it checks itself: that is the record's fault, not the moment's.
- */
-private inline fun <T> refusedOnBadData(block: () -> T): T =
-  try {
-    block()
-  } catch (e: IllegalArgumentException) {
-    throw CodedException(REFUSED, e.message ?: "refused", e)
-  }
 
 private fun recordsOf(json: JSONObject): List<Record> {
   val session = sessionRecord(json)

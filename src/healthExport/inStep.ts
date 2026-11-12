@@ -11,10 +11,24 @@ import { syncHealthConnect } from "./sync";
  */
 const AFTER_VICTORY_MS = 3000;
 
-/** One sync, silent: a refusal stays owed and is said nowhere but the setting's pending count. */
+/**
+ * After a failed run (Health Connect's call quota, mostly), one more a minute later: its quota
+ * refills over minutes, and a history run should not wait for the hero to leave the app.
+ */
+export const RETRY_AFTER_MS = 60_000;
+let retry: ReturnType<typeof setTimeout> | null = null;
+
+/** One sync, silent: what failed stays owed and is said nowhere but the setting's counts. */
 export function syncHealthConnectQuietly(port: HealthPort = nativeHealth): void {
   if (!port.available()) return;
-  syncHealthConnect(port).catch((e: unknown) => reportError("healthExport.sync", e));
+  syncHealthConnect(port).catch((e: unknown) => {
+    reportError("healthExport.sync", e);
+    if (retry !== null) return;
+    retry = setTimeout(() => {
+      retry = null;
+      syncHealthConnectQuietly(port);
+    }, RETRY_AFTER_MS);
+  });
 }
 
 /**

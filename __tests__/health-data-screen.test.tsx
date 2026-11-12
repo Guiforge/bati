@@ -51,7 +51,7 @@ const port: HealthPort = {
   requestPermission: () => Promise.resolve(true),
   hasRoutePermission: () => Promise.resolve(false),
   requestRoutePermission: () => Promise.resolve(false),
-  upsert: () => Promise.resolve(),
+  upsertMany: () => Promise.resolve([]),
   remove: () => Promise.resolve(),
   openSettings,
 };

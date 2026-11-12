@@ -35,7 +35,7 @@ function native(granted: boolean) {
     hasWritePermission: jest.fn(() => Promise.resolve(granted)),
     hasRoutePermission: jest.fn(() => Promise.resolve(granted)),
     launchPermissionRequest: jest.fn((_route: boolean) => true),
-    upsertSession: jest.fn((_json: string) => Promise.resolve()),
+    upsertSessions: jest.fn((_json: string) => Promise.resolve<(string | null)[]>([null])),
     deleteSessions: jest.fn((_ids: string[]) => Promise.resolve()),
     openSettings: jest.fn(() => true),
   };
@@ -56,7 +56,7 @@ test("without the module, Health Connect is absent and every call is a quiet no"
   expect(await port.requestPermission()).toBe(false);
   expect(await port.hasRoutePermission()).toBe(false);
   expect(await port.requestRoutePermission()).toBe(false);
-  await expect(port.upsert({} as never)).resolves.toBeUndefined();
+  expect(await port.upsertMany([{} as never, {} as never])).toEqual([null, null]);
   await expect(port.remove(["x"])).resolves.toBeUndefined();
   expect(() => port.openSettings()).not.toThrow();
 });
@@ -123,11 +123,11 @@ test("a record crosses as JSON, deletions by client id, and the settings link op
     route: [{ t: 1, lat: 48.85, lon: 2.35 }],
   };
 
-  await port.upsert(record);
+  expect(await port.upsertMany([record])).toEqual([null]);
   await port.remove(["bati-u"]);
   port.openSettings();
 
-  expect(JSON.parse(String(fake.upsertSession.mock.calls[0]?.[0]))).toEqual(record);
+  expect(JSON.parse(String(fake.upsertSessions.mock.calls[0]?.[0]))).toEqual([record]);
   expect(fake.deleteSessions).toHaveBeenCalledWith(["bati-u"]);
   expect(fake.openSettings).toHaveBeenCalledTimes(1);
   expect(await port.hasPermission()).toBe(true);
@@ -157,17 +157,12 @@ test("the main switch asks for exercise and distance, not the route", async () =
   expect(fake.launchPermissionRequest).toHaveBeenCalledWith(false);
 });
 
-test("a record Health Connect refuses comes back as HealthRefused; any other error as it was", async () => {
+test("per entry, the module says why one was refused; a failed call rejects as it was", async () => {
   const fake = native(true);
   mockNative = fake;
   const port = load();
-  fake.upsertSession.mockRejectedValueOnce(
-    Object.assign(new Error("segments overlap"), { code: "ERR_HEALTH_REFUSED" }),
-  );
-  await expect(port.upsert({} as never)).rejects.toMatchObject({
-    name: "HealthRefused",
-    message: "segments overlap",
-  });
-  fake.upsertSession.mockRejectedValueOnce(new Error("Rate limited request quota"));
-  await expect(port.upsert({} as never)).rejects.toMatchObject({ name: "Error" });
+  fake.upsertSessions.mockResolvedValueOnce([null, "segments overlap"]);
+  expect(await port.upsertMany([{} as never, {} as never])).toEqual([null, "segments overlap"]);
+  fake.upsertSessions.mockRejectedValueOnce(new Error("API call quota exceeded"));
+  await expect(port.upsertMany([{} as never])).rejects.toThrow("API call quota exceeded");
 });

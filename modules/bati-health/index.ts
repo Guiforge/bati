@@ -1,7 +1,7 @@
 // Via `expo` rather than `expo-modules-core`, for the reason given in modules/bati-location.
 import { requireOptionalNativeModule } from "expo";
 import { AppState } from "react-native";
-import { type HealthPort, type HealthRecord, HealthRefused } from "@/src/healthExport/port";
+import type { HealthPort, HealthRecord } from "@/src/healthExport/port";
 
 /**
  * The native half of the Health Connect export (W-04): `modules/bati-health/android`.
@@ -16,7 +16,8 @@ type BatiHealthNativeModule = {
   hasRoutePermission(): Promise<boolean>;
   /** `route` asks for the route permission alone; otherwise exercise and distance together. */
   launchPermissionRequest(route: boolean): boolean;
-  upsertSession(json: string): Promise<void>;
+  /** Per entry: null when written, or why Health Connect refused it. */
+  upsertSessions(json: string): Promise<(string | null)[]>;
   deleteSessions(clientIds: string[]): Promise<void>;
   openSettings(): boolean;
 };
@@ -62,27 +63,14 @@ async function requestPermission(route: boolean): Promise<boolean> {
   return route ? native.hasRoutePermission() : native.hasWritePermission();
 }
 
-/** What the module rejects with when Health Connect refuses the record itself (BatiHealthModule.kt). */
-const REFUSED = "ERR_HEALTH_REFUSED";
-
-async function upsert(record: HealthRecord): Promise<void> {
-  try {
-    await native?.upsertSession(JSON.stringify(record));
-  } catch (e) {
-    if ((e as { code?: unknown } | null)?.code === REFUSED) {
-      throw new HealthRefused(e instanceof Error ? e.message : REFUSED);
-    }
-    throw e;
-  }
-}
-
 export const nativeHealth: HealthPort = {
   available: () => native?.sdkStatus() === SDK_AVAILABLE,
   hasPermission: async () => (native ? native.hasWritePermission() : false),
   requestPermission: () => requestPermission(false),
   hasRoutePermission: async () => (native ? native.hasRoutePermission() : false),
   requestRoutePermission: () => requestPermission(true),
-  upsert,
+  upsertMany: async (records: HealthRecord[]) =>
+    native ? native.upsertSessions(JSON.stringify(records)) : records.map(() => null),
   remove: async (clientIds: string[]) => native?.deleteSessions(clientIds),
   openSettings: () => {
     native?.openSettings();

@@ -14,8 +14,14 @@ panels, square so it takes the app's existing art slots. 44 exercises ship one, 
 generation by `scripts/bd-planches.py` from the key poses this pilot drew (kept in the pilot cache
 under `app_frames/` and `site/`); provenance wraps each previous still's entry. The loop code, its
 frames and `scripts/anim-import.py` are gone. Videos (FLUX 3 Video) were tried and rejected: some
-worked, not all. Dead bug and bicycle crunch keep their old still while their redraw goes on: every
-model, OpenAI or FLUX, kept copying the first side when asked for the other one.
+worked, not all. Dead bug and bicycle crunch followed on 12/11 (46 pages): every model, OpenAI or FLUX,
+kept copying the first side when asked for the other one, until the other side was posed on a mannequin.
+The dead bug was redrawn from scratch: the mannequin validated first (seen from the side, where the arm
+on the floor stays beside the head), then one side, then the rest, by `gpt-image-2.6-sunburst`. The
+bicycle crunch keeps main's still and adds its other side, edited from it on the mirrored v15c
+mannequin. Two traps on the way: an edit asked of OpenAI comes back almost identical to image 1, and a
+mark that changes leg (the bicycle's ankle wrap) is not a leg that changed: check which leg is drawn in
+front. Their source poses are under `bd_src/` in the pilot cache.
 
 The rest of this report is the pilot as it stood, kept for the method and the costs.
 

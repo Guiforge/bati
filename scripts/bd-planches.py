@@ -23,6 +23,11 @@ MASKS = PILOT / "masks"
 # Frames redrawn after the flip-book shipped, by frame index: toes to bar's top had its shoes on backwards
 # (Guillaume, 12/11), redrawn by FLUX 3 from that frame, logged in the pilot ledger (step feet-fix).
 REDRAWN = {"toes_to_bar": {3: "feet_fix/toes_to_bar/flux1.png"}}
+# Key poses picked for the page alone (k1, k2... in order), for the movements whose flip-book never passed
+# (Guillaume, 12/11). Takes precedence over the flip-book. Dead bug: start, one side, the other, drawn by gpt-image-2.6
+# on a jointed mannequin seen from the side (step 1 the mannequin, step 2 one side, both validated before the rest).
+# Bicycle crunch: main's still, then the other side redrawn from it on the v15c mannequin, mirrored to face the same way.
+BD_SRC = PILOT / "bd_src"
 STILLS = PILOT / "stills"  # <slug>.webp, main's single illustration where it reads better than a page
 MANIFEST = json.loads((FRAMES / "manifest.json").read_text())
 W = 720  # every page is square: laid out at 720, drawn at S times
@@ -128,7 +133,8 @@ CONFIG = {
     "jump_squat": ([0, 2, 3], "bottom3"),
     "reverse_crunch": ([0, 1], "stack"),  # one above the other: a lying body gets the width
     "skater_hop": ([0, 2], None),  # landing on one leg, then on the other (1 was both feet down)
-    "bicycle_crunch": ([0, 1, 2], "top1"),
+    "bicycle_crunch": ([0, 1], None),  # main's twist, then the other side (bd_src)
+    "dead_bug": ([0, 1, 0, 2], "rows"),  # start, one side, start again, the other (bd_src), like the archer push-up
     "worlds_greatest_stretch": ([0, 2], None),
     "burpee": ([0, 1, 2, 3], "grid"),
     "muscle_up": ([0, 1, 2, 4], "grid"),
@@ -141,7 +147,7 @@ CONFIG = {
     "single_leg_deadlift": ([0, 3], "split"),
 }
 # Each panel framed on its own body, not one camera for the page: the positions differ too much in height.
-OWN_CROP = {"muscle_up", "toes_to_bar", "single_leg_deadlift", "jump_squat"}
+OWN_CROP = {"muscle_up", "toes_to_bar", "single_leg_deadlift", "jump_squat", "bicycle_crunch"}
 # One camera for the page, but each panel centred on its own body's mass (a bar's width does not count).
 CENTRE_OWN = {"negative_pullup"}
 # Jump arrows, in the panel's own fractions: (panel index, start, end). None since Guillaume's review of 12/11
@@ -152,12 +158,13 @@ JUMPS: dict = {}
 # panel border, or too small in its panel.
 # The ground continued past the picture (extended()) where a flat fill showed as a band: Guillaume's review, 12/11.
 EXTEND = {"curtsy_squat", "wall_pushup", "star_jump", "jump_squat", "thread_the_needle", "skater_hop",
-          "russian_twist", "single_leg_glute_bridge", "chin_up", "pullups", "hanging_leg_raise", "knee_pushup", "muscle_up", "jumping_jack"}
+          "russian_twist", "single_leg_glute_bridge", "chin_up", "pullups", "hanging_leg_raise", "knee_pushup", "muscle_up", "jumping_jack", "dead_bug", "bicycle_crunch"}
 TUNE = {
     "bear_crawl": [None, (1, 0, 0.11)],
     "chin_up": [(1.25, 0, 0), (1.25, 0.08, 0.03)],
     "crunch": [(1, 0, -0.05), (1, 0, 0.09)],
     "diamond_pushup": [None, (1, 0, 0.04)],
+    "dead_bug": [(1.15, 0.05, 0.06), (1.15, 0.01, 0.06), (1.15, 0.05, 0.06), (1.15, 0.01, 0.06)],
     "jumping_jack": [None, (1, 0.03, 0)],
     "flutter_kicks": [None, (1, 0, 0.06)],
     "hanging_leg_raise": [(1.2, 0, 0.03), (1.1, -0.04, 0.03)],
@@ -178,7 +185,9 @@ TUNE = {
 
 def distinct_frames(slug):
     """The movement's distinct positions, in the order the loop first shows them."""
-    if slug in MANIFEST:
+    if (BD_SRC / slug).is_dir():
+        frames = [Image.open(f).convert("RGB") for f in sorted((BD_SRC / slug).glob("k*.webp"))]
+    elif slug in MANIFEST:
         steps = MANIFEST[slug]
         order = list(dict.fromkeys(i for i, _ in steps))
         frames = [Image.open(FRAMES / slug / f"k{i + 1}.webp").convert("RGB") for i in order]
@@ -427,7 +436,7 @@ def thumb(slug, size=128):
 if __name__ == "__main__" and sys.argv[1:2] == ["--thumbs"]:
     slugs = sys.argv[2:] or sorted(set(MANIFEST) | {p.parent.name for p in SITE.glob("*/cuts.webp")})
     slugs = [s for s in slugs if (ROOT / "assets" / "images" / "exercises" / f"{s}.webp").exists()
-             and s not in ("towel_door_row", "dead_bug", "bicycle_crunch") and s not in STILL_ARROWS]
+             and s != "towel_door_row" and s not in STILL_ARROWS]
     for slug in slugs:
         thumb(slug).save(THUMBS / f"{slug}.webp", "WEBP", quality=82)
         print(slug)
@@ -435,9 +444,7 @@ elif __name__ == "__main__":
     out = pathlib.Path(sys.argv[1])
     out.mkdir(parents=True, exist_ok=True)
     slugs = sys.argv[2:] or sorted(set(MANIFEST) | {p.parent.name for p in SITE.glob("*/cuts.webp")})
-    # The dead bug and the bicycle crunch keep main's still until their redraw is validated.
-    slugs = [s for s in slugs if (ROOT / "assets" / "images" / "exercises" / f"{s}.webp").exists()
-             and s not in ("towel_door_row", "dead_bug", "bicycle_crunch")]
+    slugs = [s for s in slugs if (ROOT / "assets" / "images" / "exercises" / f"{s}.webp").exists() and s != "towel_door_row"]
     for slug in slugs:
         im, layout, n = page(slug, True)
         im.save(out / f"{slug}.webp", quality=88)

@@ -19,6 +19,10 @@ PILOT = pathlib.Path.home() / ".cache" / "bati-anim-pilot-v3"
 FRAMES = PILOT / "app_frames"  # <slug>/k<i>.webp and manifest.json, as assets/images/exercises/anim/ had them
 SITE = PILOT / "site"  # <slug>/cuts.webp, the earlier pilots' flip-books
 MASKS = PILOT / "masks"
+# Frames redrawn after the flip-book shipped, by frame index: toes to bar's top had its shoes on backwards
+# (Guillaume, 12/11), redrawn by FLUX 3 from that frame, logged in the pilot ledger (step feet-fix).
+REDRAWN = {"toes_to_bar": {3: "feet_fix/toes_to_bar/flux1.png"}}
+STILLS = PILOT / "stills"  # <slug>.webp, main's single illustration where it reads better than a page
 MANIFEST = json.loads((FRAMES / "manifest.json").read_text())
 W = 720  # every page is square: laid out at 720, drawn at S times
 S = 1.5
@@ -144,22 +148,22 @@ JUMPS: dict = {}
 # panel border, or too small in its panel.
 # The ground continued past the picture (extended()) where a flat fill showed as a band: Guillaume's review, 12/11.
 EXTEND = {"curtsy_squat", "wall_pushup", "star_jump", "jump_squat", "thread_the_needle", "skater_hop",
-          "russian_twist", "single_leg_glute_bridge", "chin_up", "pullups", "hanging_leg_raise"}
+          "russian_twist", "single_leg_glute_bridge", "chin_up", "pullups", "hanging_leg_raise", "knee_pushup", "muscle_up"}
 TUNE = {
-    "bear_crawl": [None, (1, 0, 0.06)],
-    "chin_up": [(1.25, 0, 0), (1.25, -0.025, 0.03)],
+    "bear_crawl": [None, (1, 0, 0.11)],
+    "chin_up": [(1.25, 0, 0), (1.25, -0.05, 0.03)],
     "crunch": [(1, 0, -0.05), (1, 0, 0.06)],
     "flutter_kicks": [None, (1, 0, 0.06)],
     "hanging_leg_raise": [(1.2, 0, 0.03), (1.1, -0.04, 0.03)],
     "high_knees": [(1.12, 0, 0.03), (1.12, 0, 0.03)],
     "jump_squat": [(1.35, 0, 0.02), (1.3, 0, 0.02), (1.1, 0.05, 0.12)],
-    "muscle_up": [(1.35, 0, 0.05), (1.35, 0, 0.02), (1.35, 0, 0.07), (1.35, 0, 0.07)],
+    "muscle_up": [(1.35, 0, 0.05), (1.35, 0, 0.02), (1.35, 0, 0.19), (1.35, 0, 0.07)],
     "negative_pullup": [(1.35, -0.06, 0.04), (1.35, -0.03, 0.02)],
     "pullups": [(1.35, 0, 0.03), (1.35, 0, 0.03)],
     "reverse_crunch": [(1.1, 0, 0), (1.1, 0, 0)],
     "russian_twist": [None, (1.12, 0, 0.11)],
     "single_leg_glute_bridge": [None, (1, 0, 0.07)],
-    "skater_hop": [(1.12, 0.04, 0.02), (1.12, -0.04, 0.02)],
+    "skater_hop": [(1.2, 0.08, 0.02), (1.2, -0.11, 0.02)],
     "thread_the_needle": [(1.15, 0, 0), (1.25, 0, 0)],
     "toes_to_bar": [None, None, (1.25, 0, 0.03)],
     "windshield_wipers": [(0.92, 0, -0.03), (1, 0.03, 0), None],
@@ -172,6 +176,8 @@ def distinct_frames(slug):
         steps = MANIFEST[slug]
         order = list(dict.fromkeys(i for i, _ in steps))
         frames = [Image.open(FRAMES / slug / f"k{i + 1}.webp").convert("RGB") for i in order]
+        for i, f in REDRAWN.get(slug, {}).items():  # a frame redrawn since, at the frame's own size
+            frames[order.index(i)] = Image.open(PILOT / f).convert("RGB").resize(frames[0].size, Image.LANCZOS)
     else:
         raw = [f.convert("RGB").resize((480, 480), Image.LANCZOS) for f in ImageSequence.Iterator(Image.open(SITE / slug / "cuts.webp"))]
         seen, frames = set(), []
@@ -313,7 +319,34 @@ def badge(d, xy, n):
     d.text((x - tw / 2, y - 16 * S), str(n), font=f, fill=WHITE)
 
 
+# Main's single illustration kept, with a two-way arrow along the movement, where Guillaume found it read better
+# than a page (12/11): (start, end) in fractions of the picture.
+STILL_ARROWS = {"standing_calf_raise": ((0.80, 0.69), (0.80, 0.41))}
+
+
+def double_arrow(d, a, b):
+    """The comic arrow with a head at both ends: up and down, the way the heels go."""
+    import math
+    ang = math.atan2(b[1] - a[1], b[0] - a[0])
+    ux, uy, px, py = math.cos(ang), math.sin(ang), -math.sin(ang), math.cos(ang)
+    w, hl, hw = 16 * S, 46 * S, 30 * S
+    na, nb = (a[0] + hl * ux, a[1] + hl * uy), (b[0] - hl * ux, b[1] - hl * uy)
+    side = lambda q, k: (q[0] + px * k, q[1] + py * k)
+    shape = [a, side(na, hw), side(na, w / 2), side(nb, w / 2), side(nb, hw), b,
+             side(nb, -hw), side(nb, -w / 2), side(na, -w / 2), side(na, -hw)]
+    d.polygon(shape, fill=WHITE, outline=INK, width=round((BORDER + 1) * S))
+
+
+def still_page(slug):
+    out = Image.open(STILLS / f"{slug}.webp").convert("RGB").resize((round(W * S), round(W * S)), Image.LANCZOS)
+    a, b = STILL_ARROWS[slug]
+    double_arrow(ImageDraw.Draw(out), (a[0] * out.width, a[1] * out.height), (b[0] * out.width, b[1] * out.height))
+    return out, "still", 1
+
+
 def page(slug, numbers):
+    if slug in STILL_ARROWS:
+        return still_page(slug)
     frames = distinct_frames(slug)
     picks, layout = choose(slug, frames)
     box = union_box(picks)

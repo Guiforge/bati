@@ -2387,26 +2387,22 @@
     }
   },
   "assets/images/exercises/standing_calf_raise.webp": {
-    "derived_from": "the key poses of the movement, drawn as edits of the previous still (see `previous`): FLUX 3 image or gpt-image-2.5/2.6 on a jointed mannequin, by scripts/anim-pilot-v3.py",
-    "how": "comic page: 2 to 4 key poses in slanted panels, numbered in the movement's order, square 1080 px WebP q88, by scripts/bd-planches.py (no generation; body boxes from a birefnet cutout)",
+    "model": "flux-2-pro",
+    "provider": "Black Forest Labs (direct API)",
     "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
-    "previous": {
+    "reference": "none — text-only prompt",
+    "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
+    "prompt": "Strict side view of one athlete standing at the very top of a standing calf raise, facing left, the whole body from head to shoes inside the frame. The body is one straight vertical line: legs straight, knees locked, back upright, head up, arms hanging relaxed at the sides. The athlete stands on flat bare ground and nothing at all is placed under the feet. Each shoe touches the ground at its front tip only. The back of each shoe is lifted, and the heel is as far above the ground as the shoe is long, so the underside of each shoe is plainly visible from the tip right back to the heel, and open dark ground shows under both heels. The two feet are level with each other. Plain fitted dark short-sleeved t-shirt, dark shorts above the knee, bare shins, dark low-cut training shoes",
+    "note": "two panels generated separately and assembled by regen/diptych.py",
+    "restyle": {
       "model": "flux-2-pro",
       "provider": "Black Forest Labs (direct API)",
-      "licence": "BFL Developer Terms §3.b (EU §4.b): the API account holder owns the output, personal or commercial use",
-      "reference": "none — text-only prompt",
-      "pipeline": "exospipeline regen/neuf.py — the style, background and framing blocks are fixed in regen/gen.py and shared by every illustration",
-      "prompt": "Strict side view of one athlete standing at the very top of a standing calf raise, facing left, the whole body from head to shoes inside the frame. The body is one straight vertical line: legs straight, knees locked, back upright, head up, arms hanging relaxed at the sides. The athlete stands on flat bare ground and nothing at all is placed under the feet. Each shoe touches the ground at its front tip only. The back of each shoe is lifted, and the heel is as far above the ground as the shoe is long, so the underside of each shoe is plainly visible from the tip right back to the heel, and open dark ground shows under both heels. The two feet are level with each other. Plain fitted dark short-sleeved t-shirt, dark shorts above the knee, bare shins, dark low-cut training shoes",
-      "note": "two panels generated separately and assembled by regen/diptych.py",
-      "restyle": {
-        "model": "flux-2-pro",
-        "provider": "Black Forest Labs (direct API)",
-        "pipeline": "exospipeline regen/ambiance.py (batch `ambiance2`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
-        "background": "braise",
-        "seed": 1234,
-        "licence": "restyle of the render above — same licence, no new source introduced"
-      }
-    }
+      "pipeline": "exospipeline regen/ambiance.py (batch `ambiance2`) — dark-fantasy restyle, image-to-image from the neutral render described above; pose, camera, framing and equipment locked by prompt",
+      "background": "braise",
+      "seed": 1234,
+      "licence": "restyle of the render above — same licence, no new source introduced"
+    },
+    "edited": "a two-way white comic arrow drawn beside the calves, resized to 1080 px WebP q88, by scripts/bd-planches.py (STILL_ARROWS; Guillaume preferred this still to a comic page, 12/11)"
   },
   "assets/images/exercises/standing_forward_fold.webp": {
     "model": "flux-2-pro",
@@ -2555,7 +2551,7 @@
     "licence": "same as the full-size picture; see that entry"
   },
   "assets/images/exercises/toes_to_bar.webp": {
-    "derived_from": "the key poses of the movement, drawn as edits of the previous still (see `previous`): FLUX 3 image or gpt-image-2.5/2.6 on a jointed mannequin, by scripts/anim-pilot-v3.py",
+    "derived_from": "the key poses of the movement, drawn as edits of the previous still (see `previous`): FLUX 3 image or gpt-image-2.5/2.6 on a jointed mannequin, by scripts/anim-pilot-v3.py; panel 3's frame redrawn once more by FLUX 3 image (flux-3-image, BFL direct API) from that frame, to put the shoes the right way round (pilot ledger, step feet-fix, 12/11)",
     "how": "comic page: 2 to 4 key poses in slanted panels, numbered in the movement's order, square 1080 px WebP q88, by scripts/bd-planches.py (no generation; body boxes from a birefnet cutout)",
     "licence": "derived work: redrawn by FLUX from line art by Bryl Lim (bryllim/workout-guide, CC BY-SA 4.0, which builds on Everkinetic, CC BY-SA 4.0), redistributed under CC BY-SA 4.0. Share-alike applies to the image, not to the app code",
     "previous": {

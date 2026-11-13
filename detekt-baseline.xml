@@ -1,0 +1,72 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComplexCondition:BatiP2pModule.kt$BatiP2pModule$a.isLinkLocalAddress || P2pCore.isUla(a) || (global &amp;&amp; P2pCore.isGlobalV6(a))</ID>
+    <ID>ComplexCondition:BatiP2pModule.kt$BatiP2pModule$addr is Inet6Address &amp;&amp; addr.isLinkLocalAddress &amp;&amp; addr.scopeId == 0 &amp;&amp; addr.scopedInterface == null</ID>
+    <ID>ComplexCondition:ReminderScheduler.kt$ReminderScheduler$snooze != null &amp;&amp; store.enabled &amp;&amp; !paused &amp;&amp; snooze.first == today &amp;&amp; dueToday(store) != "no"</ID>
+    <ID>CyclomaticComplexMethod:BatiRemindersModule.kt$BatiRemindersModule$override fun definition()</ID>
+    <ID>CyclomaticComplexMethod:BatiSaveModule.kt$BatiSaveModule$override fun definition()</ID>
+    <ID>EmptyFunctionBlock:BatiLocationService.kt$BatiLocationService${}</ID>
+    <ID>EmptyFunctionBlock:BatiLocationService.kt$BatiLocationService.&lt;no name provided&gt;${}</ID>
+    <ID>EmptyFunctionBlock:BatiP2pModule.kt$BatiP2pModule.&lt;no name provided&gt;${}</ID>
+    <ID>InstanceOfCheckForException:BatiP2pModule.kt$BatiP2pModule$e is SocketTimeoutException</ID>
+    <ID>LongMethod:BatiCryptoModule.kt$BatiCryptoModule$override fun definition()</ID>
+    <ID>LongMethod:BatiLocationModule.kt$BatiLocationModule$override fun definition()</ID>
+    <ID>LongMethod:BatiRemindersModule.kt$BatiRemindersModule$override fun definition()</ID>
+    <ID>LongMethod:BatiSaveModule.kt$BatiSaveModule$override fun definition()</ID>
+    <ID>LongParameterList:BatiCryptoV3.kt$BatiCryptoV3$( masterKey: ByteArray, input: File, output: File, slots: List&lt;Slot&gt;, installId: ByteArray, counter: Long, )</ID>
+    <ID>LongParameterList:BatiCryptoV3.kt$BatiCryptoV3$( masterKey: ByteArray, secret: ByteArray, kind: Int, gen: Long, memoryKib: Long = 0, passes: Int = 0, lanes: Int = 0, )</ID>
+    <ID>LongParameterList:BatiCryptoV3.kt$BatiCryptoV3$( password: ByteArray, salt: ByteArray, memoryKib: Int, passes: Int, lanes: Int, length: Int = 32, secret: ByteArray? = null, ad: ByteArray? = null, )</ID>
+    <ID>LongParameterList:BatiCryptoV3.kt$BatiCryptoV3.Header$( val installId: ByteArray, /** Unsigned 64-bit, as a decimal string: JS numbers stop being exact at 2^53. */ val counter: String, val sealedAt: Long, val slots: List&lt;Slot&gt;, val fileSalt: ByteArray, val noncePrefix: ByteArray, val check: ByteArray, val bytes: ByteArray, )</ID>
+    <ID>LongParameterList:BatiCryptoV3.kt$BatiCryptoV3.Slot$( val kind: Int, val gen: Long, /** Argon2id memory in KiB, time and lanes; zero for a slot that has none. */ val memoryKib: Long, val passes: Int, val lanes: Int, val salt: ByteArray, val wrapped: ByteArray, )</ID>
+    <ID>LongParameterList:HealthConnectContractTest.kt$HealthConnectContractTest$( version: Long, clientId: String = id, title: String = "Le Réveil de l'Écuyer", start: Instant = Instant.now().minus(2, ChronoUnit.HOURS).truncatedTo(ChronoUnit.SECONDS), outing: Boolean = false, meters: Double? = null, route: Int = 0, badSegment: Boolean = false, )</ID>
+    <ID>LoopWithTooManyJumpStatements:BatiP2pModule.kt$BatiP2pModule$while</ID>
+    <ID>LoopWithTooManyJumpStatements:ReminderScheduler.kt$ReminderScheduler$for</ID>
+    <ID>NestedBlockDepth:BatiCryptoV3.kt$BatiCryptoV3$fun openFile( masterKey: ByteArray, input: File, output: File, )</ID>
+    <ID>NestedBlockDepth:BatiHealthModule.kt$internal suspend fun upsertMany( client: HealthConnectClient, entries: JSONArray, ): List&lt;String?&gt;</ID>
+    <ID>NestedBlockDepth:BatiP2pModule.kt$BatiP2pModule$private fun localAddresses(global: Boolean): List&lt;String&gt;</ID>
+    <ID>ReturnCount:BatiCryptoV3.kt$BatiCryptoV3$fun parse(prefix: ByteArray): Parsed</ID>
+    <ID>ReturnCount:BatiLocationService.kt$BatiLocationService$private fun awaitConsumer()</ID>
+    <ID>ReturnCount:BatiLocationService.kt$BatiLocationService$private fun startTracking(intent: Intent)</ID>
+    <ID>ReturnCount:BatiRemindersModule.kt$BatiRemindersModule$private fun markOpened(intent: Intent)</ID>
+    <ID>ReturnCount:ReminderScheduler.kt$ReminderScheduler$fun areEnabled(context: Context): Boolean</ID>
+    <ID>ReturnCount:ReminderScheduler.kt$ReminderScheduler$private fun post( context: Context, due: Due, )</ID>
+    <ID>ReturnCount:ReminderScheduler.kt$ReminderScheduler$private fun postable(store: ReminderStore): List&lt;JSONObject&gt;</ID>
+    <ID>ReturnCount:ReminderStore.kt$LocalDay$fun instant( date: String, time: String, ): Long</ID>
+    <ID>ReturnCount:ReminderStore.kt$ReminderStore$fun log(): MutableList&lt;JSONObject&gt;</ID>
+    <ID>SwallowedException:BatiCryptoModule.kt$BatiCryptoModule$error: BatiCryptoV3.LowMemoryException</ID>
+    <ID>SwallowedException:BatiCryptoV3.kt$BatiCryptoV3$e: GeneralSecurityException</ID>
+    <ID>SwallowedException:BatiCryptoV3.kt$BatiCryptoV3$e: RuntimeException</ID>
+    <ID>SwallowedException:BatiHealthModule.kt$BatiHealthModule$e: ActivityNotFoundException</ID>
+    <ID>SwallowedException:BatiHealthModule.kt$e: IllegalArgumentException</ID>
+    <ID>SwallowedException:BatiP2pModule.kt$BatiP2pModule$e: IOException</ID>
+    <ID>SwallowedException:BatiSaveModule.kt$BatiSaveModule$error: ActivityNotFoundException</ID>
+    <ID>ThrowsCount:BatiCryptoCore.kt$BatiCryptoCore$internal fun writeAtomically( output: File, write: (OutputStream) -&gt; Unit, )</ID>
+    <ID>ThrowsCount:BatiCryptoV3.kt$BatiCryptoV3$fun openFile( masterKey: ByteArray, input: File, output: File, )</ID>
+    <ID>ThrowsCount:BatiP2pModule.kt$BatiP2pModule$private fun dial( host: String, port: Int, pin: String, ): Int</ID>
+    <ID>TooGenericExceptionCaught:BatiCryptoCore.kt$BatiCryptoCore$error: Throwable</ID>
+    <ID>TooGenericExceptionCaught:BatiCryptoV3.kt$BatiCryptoV3$e: RuntimeException</ID>
+    <ID>TooGenericExceptionCaught:BatiCryptoV3.kt$BatiCryptoV3$error: Throwable</ID>
+    <ID>TooGenericExceptionCaught:BatiHealthModule.kt$BatiHealthModule$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:BatiLocationModule.kt$BatiLocationModule$error: RuntimeException</ID>
+    <ID>TooGenericExceptionCaught:BatiLocationService.kt$BatiLocationService$error: RuntimeException</ID>
+    <ID>TooGenericExceptionCaught:BatiSaveModule.kt$BatiSaveModule$error: Exception</ID>
+    <ID>TooGenericExceptionCaught:BatiScannerView.kt$BatiScannerView$e: Exception</ID>
+    <ID>TooManyFunctions:BatiCryptoCore.kt$BatiCryptoCore</ID>
+    <ID>TooManyFunctions:BatiCryptoV3.kt$BatiCryptoV3</ID>
+    <ID>TooManyFunctions:BatiLocationService.kt$BatiLocationService : ServiceLocationListener</ID>
+    <ID>TooManyFunctions:BatiP2pModule.kt$BatiP2pModule : Module</ID>
+    <ID>TooManyFunctions:ReminderScheduler.kt$ReminderScheduler</ID>
+    <ID>UseCheckOrError:BatiCryptoCore.kt$BatiCryptoCore$throw IllegalStateException("Could not move the decrypted file into place")</ID>
+    <ID>UseCheckOrError:BatiCryptoCore.kt$BatiCryptoCore$throw IllegalStateException("Could not move the sealed file into place")</ID>
+    <ID>UseCheckOrError:BatiCryptoCore.kt$BatiCryptoCore$throw IllegalStateException("Short write: ${part.length()} of $written bytes")</ID>
+    <ID>UseCheckOrError:BatiCryptoV3.kt$BatiCryptoV3$throw IllegalStateException("Could not move the decrypted file into place")</ID>
+    <ID>UseCheckOrError:BatiCryptoV3.kt$BatiCryptoV3$throw IllegalStateException("built a header this version cannot read")</ID>
+    <ID>UseCheckOrError:BatiSaveModule.kt$BatiSaveModule$throw IllegalStateException("Could not open the destination")</ID>
+    <ID>UseCheckOrError:BatiSaveModule.kt$BatiSaveModule$throw IllegalStateException("The destination holds $size bytes, $written were written")</ID>
+    <ID>UseRequire:BatiCryptoCore.kt$BatiCryptoCore$throw IllegalArgumentException("Truncated encrypted file")</ID>
+    <ID>UseRequire:BatiCryptoV3.kt$BatiCryptoV3$throw IllegalArgumentException("Truncated encrypted file")</ID>
+    <ID>UseRequire:BatiCryptoV3.kt$BatiCryptoV3$throw IllegalArgumentException("slot")</ID>
+  </CurrentIssues>
+</SmellBaseline>

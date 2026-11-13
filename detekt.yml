@@ -1,0 +1,9 @@
+# detekt's defaults, minus the rules that only make noise here. Read by scripts/detekt.sh.
+style:
+  # 80 hits, nearly all bit masks, byte lengths, ports and clock fields in crypto and p2p, where a
+  # named constant per literal reads worse than the literal beside its RFC comment.
+  MagicNumber:
+    active: false
+  # ktlint owns line length (.editorconfig); two tools enforcing one rule disagree eventually.
+  MaxLineLength:
+    active: false

@@ -73,6 +73,12 @@ dev, `--no-dev --minify` and `.perf` release workflows.
   lints debug and adds entries CI never reports), never by hand, and treat it like the coverage
   thresholds: shrink it, never widen it to make a build pass.
 
+- **Kotlin** under `modules/*/android` has two pinned CLI jars, run at commit and in
+  [`kotlin.yml`](.github/workflows/kotlin.yml): `scripts/ktlint.sh` for style, `scripts/detekt.sh`
+  for static analysis (swallowed catches, empty blocks, complexity). `detekt-baseline.xml` is a
+  ratchet like the lint baseline: shrink it, never widen it or switch a rule off in `detekt.yml`
+  to make a build pass.
+
 Run the relevant checks before finishing a change. If you move files or change imports,
 run the type/style check again.
 

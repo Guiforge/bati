@@ -59,6 +59,15 @@ repos:
         pass_filenames: false
         files: \.kt$
 
+      # Check only: detekt rewrites nothing. A new finding is fixed, or baselined on purpose
+      # (`scripts/detekt.sh --create-baseline`), never by widening detekt.yml to pass.
+      - id: detekt
+        name: detekt
+        entry: ./scripts/detekt.sh
+        language: system
+        pass_filenames: false
+        files: (\.kt|^detekt\.yml|^detekt-baseline\.xml)$
+
       # Play refuses the whole upload over one description a few characters too long, and it says
       # so after the tag. These two suites take two seconds, so they run at commit, not at push.
       - id: store-listing

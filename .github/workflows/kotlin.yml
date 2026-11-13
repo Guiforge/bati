@@ -22,6 +22,9 @@ on:
       - "__tests__/fixtures/backup/**"
       - ".editorconfig"
       - "scripts/ktlint.sh"
+      - "scripts/detekt.sh"
+      - "detekt.yml"
+      - "detekt-baseline.xml"
       - ".github/workflows/kotlin.yml"
   pull_request:
     paths:
@@ -30,6 +33,9 @@ on:
       - "__tests__/fixtures/backup/**"
       - ".editorconfig"
       - "scripts/ktlint.sh"
+      - "scripts/detekt.sh"
+      - "detekt.yml"
+      - "detekt-baseline.xml"
       - ".github/workflows/kotlin.yml"
 
 permissions:
@@ -55,6 +61,10 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
+
+      # Static analysis after the style and before Gradle: a CLI jar, a few seconds, no build.
+      - name: Detekt
+        run: ./scripts/detekt.sh
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:

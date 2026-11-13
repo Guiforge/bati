@@ -1,0 +1,2 @@
+- Connexion Santé : un interrupteur, dans Réglages > Appareils et données santé, envoie tes séances et tes sorties avec leur distance. Le parcours GPS seulement si tu le demandes, tes séances passées quand tu veux. Bati n'y lit rien.
+- Android 7 n'est plus pris en charge : il faut Android 8 ou plus récent.

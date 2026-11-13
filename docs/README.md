@@ -46,6 +46,7 @@ Single, up-to-date entry point for all Bati (fitness RPG) documentation.
 | Doc | What it covers |
 | --- | --- |
 | [roadmap.md](planning/roadmap.md) | ⭐ The only planning page — guardrails, open work, parking lot, closed decisions |
+| [play-health-connect.md](store/play-health-connect.md) | Play Console: Health Connect declaration and Data safety answers, ready to paste (W-04) |
 
 ## 🎮 Gameplay Systems — [gameplay/](gameplay/README.md)
 

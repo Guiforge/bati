@@ -88,6 +88,7 @@ import m0084 from "./0084_pair_invites.sql";
 import m0085 from "./0085_duo_weeks.sql";
 import m0086 from "./0086_the_towel_row_retires.sql";
 import m0087 from "./0087_health_export.sql";
+import m0088 from "./0088_health_export_route_failed.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -181,5 +182,6 @@ export default {
     m0085,
     m0086,
     m0087,
+    m0088,
   },
 };

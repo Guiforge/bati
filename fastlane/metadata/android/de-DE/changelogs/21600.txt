@@ -1,0 +1,2 @@
+- Health Connect: Ein Schalter in Einstellungen > Geräte und Gesundheitsdaten sendet deine Einheiten und Touren mit ihrer Strecke. Die GPS-Route nur auf Wunsch, frühere Einheiten wann du willst. Bati liest dort nichts.
+- Android 7 wird nicht mehr unterstützt: Android 8 oder neuer ist nötig.

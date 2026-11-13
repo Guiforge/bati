@@ -15,6 +15,7 @@ CE QUE TU TROUVES DEDANS
 • Des rappels : les jours que tu choisis, programmés sur le téléphone, sans serveur
 • Des sauvegardes : en fichier, ou automatiques dans un dossier que tu choisis, chiffrées si tu le demandes
 • Une synchro : un seul héros sur plusieurs téléphones
+• Connexion Santé, éteint par défaut : Bati y écrit tes séances et sorties, avec leur distance, le parcours GPS seulement si tu le demandes, et n'y lit rien
 • Six langues : français, anglais, allemand, espagnol, russe, chinois
 • Un journal : historique, records, flamme, équilibre musculaire
 
@@ -31,7 +32,7 @@ Les trois éteintes, l'app ne fait aucune requête réseau. Seuls deux fichiers 
 La position n'est lue que pendant une sortie, par un module GPS écrit pour cette app sur le service de localisation d'Android. Pas de services Google Play, pas de SDK tiers, rien qui téléphone ailleurs.
 
 AU POIDS DU CORPS D'ABORD
-Le catalogue d'exercices est construit autour de ce qui se fait sans matériel, et s'adapte si tu en possèdes. Les échauffements sont dynamiques et calibrés sur la séance qui suit : un échauffement de cinq minutes devant un entraînement de six, personne ne le fait deux fois.
+Le catalogue d'exercices est construit autour de ce qui se fait sans matériel, et s'adapte si tu en possèdes. Les échauffements sont dynamiques et calibrés sur la séance qui suit.
 
 PAS UN DISPOSITIF MÉDICAL
 Bati est une app d'entraînement. Elle n'est pas un dispositif médical et ne diagnostique, ne traite ni ne prévient aucune maladie. En cas de blessure, de problème de santé ou de doute sur l'effort, parles-en à un médecin avant de commencer.

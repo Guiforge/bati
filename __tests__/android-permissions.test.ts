@@ -133,10 +133,16 @@ const ALLOWED: Record<string, string> = {
     "is for. And modules/bati-reminders, whose whole output is a notification the hero asked " +
     "for: asked when the reminder switch is turned on, never at launch (docs/designs/rappels.md).",
   "android.permission.health.WRITE_EXERCISE":
-    "modules/bati-health - the Health Connect export (W-04), and the only Health Connect " +
-    "permission Bati holds: write exercise sessions. No read, no route, no heart rate, no steps. " +
-    "Asked by Health Connect's own screen when the hero turns the switch on in Settings > Devices " +
-    "and health data, never at launch, and absent from every phone where Health Connect is.",
+    "modules/bati-health - the Health Connect export (W-04): write exercise sessions. Write only, " +
+    "nothing read, no heart rate, no steps. Asked by Health Connect's own screen, together with " +
+    "WRITE_DISTANCE, when the hero turns the switch on in Settings > Devices and health data, " +
+    "never at launch, and absent from every phone where Health Connect is.",
+  "android.permission.health.WRITE_DISTANCE":
+    "modules/bati-health - an outing's distance, its own record in Health Connect beside the " +
+    "session (W-04 PR 2). Asked with WRITE_EXERCISE by the same switch, on the same screen.",
+  "android.permission.health.WRITE_EXERCISE_ROUTE":
+    "modules/bati-health - an outing's GPS route, only when the hero turns 'with the GPS route' " +
+    "on under the switch (off by default). Asked at that tap and nowhere else.",
   "android.permission.RECEIVE_BOOT_COMPLETED":
     "modules/bati-reminders — a reboot clears every alarm, and its receiver arms the next " +
     "reminder again. Nothing else runs at boot: the receiver reads its own SharedPreferences and " +
@@ -218,6 +224,19 @@ describe("Android permissions", () => {
           unaccounted.join("\n"),
       );
     }
+  });
+
+  test("Health Connect: exactly the three write permissions, nothing read, nothing else", () => {
+    // W-04's promise in one line: no heart rate, no steps, no calories, no read of any kind. A
+    // health permission added anywhere, by us or a dependency, fails here even if justified above.
+    const health = [...declaredPermissions().keys()]
+      .filter((name) => name.startsWith("android.permission.health."))
+      .sort();
+    expect(health).toEqual([
+      "android.permission.health.WRITE_DISTANCE",
+      "android.permission.health.WRITE_EXERCISE",
+      "android.permission.health.WRITE_EXERCISE_ROUTE",
+    ]);
   });
 
   test("nothing is both allowed and stripped", () => {

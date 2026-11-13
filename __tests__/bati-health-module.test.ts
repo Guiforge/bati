@@ -33,8 +33,9 @@ function native(granted: boolean) {
   return {
     sdkStatus: jest.fn(() => 3),
     hasWritePermission: jest.fn(() => Promise.resolve(granted)),
-    launchPermissionRequest: jest.fn(() => true),
-    upsertSession: jest.fn((_json: string) => Promise.resolve()),
+    hasRoutePermission: jest.fn(() => Promise.resolve(granted)),
+    launchPermissionRequest: jest.fn((_route: boolean) => true),
+    upsertSessions: jest.fn((_json: string) => Promise.resolve<(string | null)[]>([null])),
     deleteSessions: jest.fn((_ids: string[]) => Promise.resolve()),
     openSettings: jest.fn(() => true),
   };
@@ -53,7 +54,9 @@ test("without the module, Health Connect is absent and every call is a quiet no"
   expect(port.available()).toBe(false);
   expect(await port.hasPermission()).toBe(false);
   expect(await port.requestPermission()).toBe(false);
-  await expect(port.upsert({} as never)).resolves.toBeUndefined();
+  expect(await port.hasRoutePermission()).toBe(false);
+  expect(await port.requestRoutePermission()).toBe(false);
+  expect(await port.upsertMany([{} as never, {} as never])).toEqual([null, null]);
   await expect(port.remove(["x"])).resolves.toBeUndefined();
   expect(() => port.openSettings()).not.toThrow();
 });
@@ -115,14 +118,51 @@ test("a record crosses as JSON, deletions by client id, and the settings link op
     end: 2,
     offsetMinutes: 60,
     segments: [],
+    exerciseType: 79,
+    distance: { id: "bati-u-distance", meters: 4200 },
+    route: [{ t: 1, lat: 48.85, lon: 2.35 }],
   };
 
-  await port.upsert(record);
+  expect(await port.upsertMany([record])).toEqual([null]);
   await port.remove(["bati-u"]);
   port.openSettings();
 
-  expect(JSON.parse(String(fake.upsertSession.mock.calls[0]?.[0]))).toEqual(record);
+  expect(JSON.parse(String(fake.upsertSessions.mock.calls[0]?.[0]))).toEqual([record]);
   expect(fake.deleteSessions).toHaveBeenCalledWith(["bati-u"]);
   expect(fake.openSettings).toHaveBeenCalledTimes(1);
   expect(await port.hasPermission()).toBe(true);
+});
+
+test("the route is asked on its own, and read back as the route permission", async () => {
+  const fake = native(true);
+  mockNative = fake;
+  const port = load();
+
+  const answer = port.requestRoutePermission();
+  for (const l of [...mockListeners]) l("background");
+  for (const l of [...mockListeners]) l("active");
+
+  expect(await answer).toBe(true);
+  expect(fake.launchPermissionRequest).toHaveBeenCalledWith(true);
+  expect(fake.hasRoutePermission).toHaveBeenCalledTimes(1);
+  expect(fake.hasWritePermission).not.toHaveBeenCalled();
+});
+
+test("the main switch asks for exercise and distance, not the route", async () => {
+  const fake = native(true);
+  mockNative = fake;
+  const answer = load().requestPermission();
+  jest.advanceTimersByTime(2000);
+  expect(await answer).toBe(true);
+  expect(fake.launchPermissionRequest).toHaveBeenCalledWith(false);
+});
+
+test("per entry, the module says why one was refused; a failed call rejects as it was", async () => {
+  const fake = native(true);
+  mockNative = fake;
+  const port = load();
+  fake.upsertSessions.mockResolvedValueOnce([null, "segments overlap"]);
+  expect(await port.upsertMany([{} as never, {} as never])).toEqual([null, "segments overlap"]);
+  fake.upsertSessions.mockRejectedValueOnce(new Error("API call quota exceeded"));
+  await expect(port.upsertMany([{} as never])).rejects.toThrow("API call quota exceeded");
 });

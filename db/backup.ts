@@ -973,8 +973,12 @@ export const DEVICE_LOCAL_PREFERENCES = [
   "lightWeekAcceptedAt",
   "lightWeekEndedAt",
   // Whether this phone sends its sessions to Health Connect, and since when (src/healthExport/sync.ts):
-  // the permission lives in this phone's Android, so the switch does too.
+  // the permission lives in this phone's Android, so the switch does too. Its route option, whether
+  // past sessions were asked about (once, ever, on this phone) and a history run in progress too.
   "healthExportSince",
+  "healthExportRoute",
+  "healthHistoryAsked",
+  "healthHistoryRunning",
 ] as const;
 
 /**
@@ -1005,11 +1009,17 @@ export function keepDeviceSettings(stagedPath: string): Promise<void> {
     // wrote. The copy holds none (`dropThisPhoneOnly`); a copy from before 0087 has no table yet.
     // Only rows for sessions the restored journal holds: a session the older copy lacks was not
     // deleted by the hero, so its workout stays in Health Connect instead of being taken back.
+    // By the copy's own columns: a copy made before 0088 has two, and the migrations that follow
+    // the restore add the rest with their defaults. `SELECT *` refused such a restore outright.
     const [ledger] = THIS_PHONE_ONLY;
     if (await hasTable(conn, CANDIDATE, ledger)) {
+      const row = await conn.getFirstAsync<{ columns: string }>(
+        `SELECT group_concat(name, ', ') AS columns FROM pragma_table_info(${sqlString(ledger)}, ${sqlString(CANDIDATE)})`,
+      );
+      const columns = row?.columns ?? "sessionUuid, version";
       await conn.execAsync(`DELETE FROM ${CANDIDATE}.${ledger}`);
       await conn.execAsync(
-        `INSERT INTO ${CANDIDATE}.${ledger} SELECT * FROM main.${ledger}
+        `INSERT INTO ${CANDIDATE}.${ledger} (${columns}) SELECT ${columns} FROM main.${ledger}
            WHERE sessionUuid IN (SELECT uuid FROM ${CANDIDATE}.completed_sessions)`,
       );
     }

@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { Skeleton } from "@/components/common/Skeleton";
+import { HealthExportLine } from "@/components/journal/HealthExportLine";
 import { KillReport } from "@/components/journal/KillReport";
 import {
   NBackButton,
@@ -145,6 +146,7 @@ export default function SessionDetailScreen() {
             <QuestLog data={loaded.log} onChanged={() => load(sessionId)} />
           )}
           <YStack px={11} mt={24} gap={8}>
+            <HealthExportLine sessionUuid={loaded.log.session.uuid} reload={loaded} />
             <HandActions
               session={loaded.log.session}
               onCorrect={() => setSheet("entry")}

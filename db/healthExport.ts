@@ -1,75 +1,119 @@
-import { and, eq, inArray, isNull, notInArray, or, sql } from "drizzle-orm";
+import { eq, inArray, isNull, notInArray, or, sql } from "drizzle-orm";
 import type { ExportSession } from "@/src/healthExport/record";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedName, localizedTitle } from "@/src/i18n/localized";
 import { db, schema } from "./client";
+import { pointsOf } from "./gps";
 import { ADMIN_CREATOR } from "./schema";
 
 const { completedQuest, completedExercises, exercises, quests, healthExport } = schema;
 
-/** What Health Connect is owed: sessions to write or rewrite, and records to take back. */
-export type HealthExportWork = { write: ExportSession[]; remove: string[] };
+/** One journal entry the export could write, and what this phone's Health Connect holds of it. */
+export type ExportKey = {
+  uuid: string;
+  version: number;
+  /** Whether the record Health Connect holds carries the route; null when never written. */
+  route: boolean | null;
+};
 
 /**
- * The version a session is written at: when its sets were last corrected, here or on another
- * device (`setsEditedAt` travels with sync, the later side wins), so it only ever goes up.
+ * What Health Connect is owed, derived from the journal every time, never queued: the ledger only
+ * says what Health Connect already holds.
+ *
+ * - `owed`: the normal path. Entries this phone already wrote whose version went up (a correction,
+ *   here or merged by sync), and entries this phone recorded after the switch went on.
+ * - `history`: what a "send my past sessions" run would write, newest first: every eligible entry
+ *   Health Connect does not hold yet, whichever phone recorded it.
+ * - `remove`: records whose entry left the journal.
  */
-function versionOf(setsEditedAt: Date | null): number {
-  return setsEditedAt?.getTime() ?? 0;
+export type HealthExportPlan = {
+  owed: ExportKey[];
+  history: ExportKey[];
+  remove: string[];
+  /** Entries Health Connect refused at their current version. */
+  failed: number;
+  /** Eligible entries, and how many of them this phone has written or tried. */
+  total: number;
+  done: number;
+};
+
+/**
+ * The version an entry is written at: when it was last corrected, its sets or (an outing) its typed
+ * distance, here or on another device. Both stamps travel with sync and only go up.
+ */
+function versionOf(row: { setsEditedAt: Date | null; byHandEditedAt: Date | null }): number {
+  return Math.max(row.setsEditedAt?.getTime() ?? 0, row.byHandEditedAt?.getTime() ?? 0);
 }
 
 /**
- * Derived from the journal every time, never queued: the ledger only says what Health Connect
- * already holds.
- *
- * A session is owed when this phone recorded it in the session player (`originDevice`, nothing
- * typed by hand, not an outing) and it ended after the switch was turned on, or when this phone
- * already wrote it and its sets were corrected since. A record is taken back when its session is
- * no longer in the journal, deleted here or through sync.
+ * What can be sent: performed in Bati's session player. A quest session, or an outing, measured
+ * or with the distance the hero typed for it. A session written down after the fact
+ * (`byHand = 'session'`) never.
  */
-export async function healthExportWork(
-  deviceId: string,
-  since: Date,
-  language: AppLanguage,
-  fallbackTitle: string,
-): Promise<HealthExportWork> {
-  const rows = await db
-    .select({ session: completedQuest, quest: quests, written: healthExport.version })
+// Functions, not constants: a module that imports this one must load against a mocked schema.
+const eligible = () => or(isNull(completedQuest.byHand), eq(completedQuest.byHand, "distance"));
+
+type Row = {
+  uuid: string | null;
+  performedAt: Date;
+  durationSeconds: number | null;
+  originDevice: string | null;
+  setsEditedAt: Date | null;
+  byHandEditedAt: Date | null;
+  written: number | null;
+  route: boolean | null;
+  failed: string | null;
+};
+
+const rowColumns = () => ({
+  uuid: completedQuest.uuid,
+  performedAt: completedQuest.performedAt,
+  durationSeconds: completedQuest.durationSeconds,
+  originDevice: completedQuest.originDevice,
+  setsEditedAt: completedQuest.setsEditedAt,
+  byHandEditedAt: completedQuest.byHandEditedAt,
+  written: healthExport.version,
+  route: healthExport.route,
+  failed: healthExport.failed,
+});
+
+/** Owed by the normal path, which writes on its own: see `HealthExportPlan.owed`. */
+function owedNormally(row: Row, deviceId: string, sinceMs: number): boolean {
+  if (row.written !== null) return row.written < versionOf(row);
+  const endedMs = row.performedAt.getTime() + (row.durationSeconds ?? 0) * 1000;
+  // Seconds, like the journal: a session ending in the switch's own second counts.
+  return row.originDevice === deviceId && endedMs >= Math.floor(sinceMs / 1000) * 1000;
+}
+
+function keyOf(row: Row & { uuid: string }): ExportKey {
+  return {
+    uuid: row.uuid,
+    version: versionOf(row),
+    route: row.written === null ? null : !!row.route,
+  };
+}
+
+export async function healthExportPlan(deviceId: string, since: Date): Promise<HealthExportPlan> {
+  const rows = (await db
+    .select(rowColumns())
     .from(completedQuest)
-    .leftJoin(quests, eq(quests.id, completedQuest.questId))
     .leftJoin(healthExport, eq(healthExport.sessionUuid, completedQuest.uuid))
-    .where(
-      and(
-        eq(completedQuest.originDevice, deviceId),
-        isNull(completedQuest.byHand),
-        isNull(completedQuest.outing),
-        or(
-          sql`${healthExport.sessionUuid} IS NOT NULL`,
-          sql`${completedQuest.performedAt} + coalesce(${completedQuest.durationSeconds}, 0) >= ${Math.floor(since.getTime() / 1000)}`,
-        ),
-      ),
-    )
-    .orderBy(completedQuest.performedAt);
+    .where(sql`${completedQuest.uuid} IS NOT NULL AND ${eligible()}`)
+    .orderBy(completedQuest.performedAt, completedQuest.uuid)) as (Row & { uuid: string })[];
 
-  const owed = rows.filter(
-    (r) =>
-      r.session.uuid !== null &&
-      (r.written === null || r.written < versionOf(r.session.setsEditedAt)),
-  );
-  const sets = await setsOf(
-    owed.map((r) => r.session.id),
-    language,
-  );
-
-  const write = owed.map(({ session, quest }) => ({
-    uuid: session.uuid ?? "",
-    version: versionOf(session.setsEditedAt),
-    title: quest ? localizedTitle(quest, language) : fallbackTitle,
-    performedAt: session.performedAt,
-    durationSeconds: session.durationSeconds,
-    tzOffsetMin: session.tzOffsetMin,
-    sets: sets.get(session.id) ?? [],
-  }));
+  const sinceMs = since.getTime();
+  const owed: ExportKey[] = [];
+  const history: ExportKey[] = [];
+  let failed = 0;
+  let done = 0;
+  for (const row of rows) {
+    // -1 is a write announced, not confirmed (`markHealthWriting`).
+    if (row.written !== null && row.written >= 0) done++;
+    if (owedNormally(row, deviceId, sinceMs)) owed.push(keyOf(row));
+    else if (row.written === null) history.push(keyOf(row));
+    else if (row.failed !== null) failed++;
+  }
+  history.reverse();
 
   const gone = await db
     .select({ uuid: healthExport.sessionUuid })
@@ -84,7 +128,79 @@ export async function healthExportWork(
       ),
     );
 
-  return { write, remove: gone.map((r) => r.uuid) };
+  return { owed, history, remove: gone.map((r) => r.uuid), failed, total: rows.length, done };
+}
+
+/**
+ * What the session detail says about one entry: "sent" when Health Connect holds its current
+ * version, "waiting" when the export owes it, nothing otherwise (never sent, refused, or not this
+ * phone's to send on its own).
+ */
+export async function healthExportStatusOf(
+  sessionUuid: string,
+  deviceId: string,
+  since: Date,
+  historyRunning: boolean,
+): Promise<"sent" | "waiting" | null> {
+  const [row] = (await db
+    .select(rowColumns())
+    .from(completedQuest)
+    .leftJoin(healthExport, eq(healthExport.sessionUuid, completedQuest.uuid))
+    .where(sql`${completedQuest.uuid} = ${sessionUuid} AND ${eligible()}`)
+    .limit(1)) as Row[];
+  if (!row) return null;
+  if (owedNormally(row, deviceId, since.getTime())) return "waiting";
+  if (row.written === null) return historyRunning ? "waiting" : null;
+  return row.failed === null ? "sent" : null;
+}
+
+/**
+ * The entries behind `keys`, in the same order, as the mapper takes them. `withRoute` says, per
+ * entry, whether its record carries the route; the fixes are only read for those.
+ */
+export async function exportSessions(
+  keys: readonly ExportKey[],
+  language: AppLanguage,
+  fallbackTitle: string,
+  withRoute: (key: ExportKey) => boolean,
+): Promise<ExportSession[]> {
+  if (keys.length === 0) return [];
+  const rows = await db
+    .select({ session: completedQuest, quest: quests })
+    .from(completedQuest)
+    .leftJoin(quests, eq(quests.id, completedQuest.questId))
+    .where(
+      inArray(
+        completedQuest.uuid,
+        keys.map((k) => k.uuid),
+      ),
+    );
+  const byUuid = new Map(rows.map((r) => [r.session.uuid, r]));
+  const sets = await setsOf(
+    rows.filter((r) => r.session.outing === null).map((r) => r.session.id),
+    language,
+  );
+
+  const sessions: ExportSession[] = [];
+  for (const key of keys) {
+    const row = byUuid.get(key.uuid);
+    if (!row) continue;
+    const { session, quest } = row;
+    const route = session.outing !== null && withRoute(key);
+    sessions.push({
+      uuid: key.uuid,
+      version: key.version,
+      title: quest ? localizedTitle(quest, language) : fallbackTitle,
+      performedAt: session.performedAt,
+      durationSeconds: session.durationSeconds,
+      tzOffsetMin: session.tzOffsetMin,
+      sets: session.outing === null ? (sets.get(session.id) ?? []) : [],
+      outing: session.outing,
+      distanceM: session.outing === null ? null : session.leaguesM,
+      route: route ? await pointsOf(key.uuid) : null,
+    });
+  }
+  return sessions;
 }
 
 async function setsOf(sessionIds: number[], language: AppLanguage) {
@@ -111,12 +227,48 @@ async function setsOf(sessionIds: number[], language: AppLanguage) {
   return bySession;
 }
 
-/** Health Connect now holds this session at this version. */
-export async function markHealthExported(sessionUuid: string, version: number): Promise<void> {
+/**
+ * Written before an entry's first write to Health Connect: from here on the ledger knows Health
+ * Connect may hold it. Killed between Health Connect's answer and `markHealthExported`, the app
+ * would otherwise forget a record it wrote, and a deletion in Bati would never reach it (found by
+ * the property test, `health-export-property`). Version -1 keeps the entry owed until the write
+ * is confirmed; `route` is the choice the write is about to make, kept if it has to be redone.
+ */
+export async function markHealthWriting(sessionUuid: string, route: boolean): Promise<void> {
   await db
     .insert(healthExport)
-    .values({ sessionUuid, version })
-    .onConflictDoUpdate({ target: healthExport.sessionUuid, set: { version } });
+    .values({ sessionUuid, version: -1, route, failed: null })
+    .onConflictDoNothing();
+}
+
+/** Health Connect now holds this entry at this version, with or without its route. */
+export async function markHealthExported(
+  sessionUuid: string,
+  version: number,
+  route = false,
+): Promise<void> {
+  await db
+    .insert(healthExport)
+    .values({ sessionUuid, version, route, failed: null })
+    .onConflictDoUpdate({
+      target: healthExport.sessionUuid,
+      set: { version, route, failed: null },
+    });
+}
+
+/**
+ * Health Connect refused this version of the entry. Not tried again until it changes; whatever an
+ * earlier version left in Health Connect stays, and so does its route choice.
+ */
+export async function markHealthFailed(
+  sessionUuid: string,
+  version: number,
+  reason: string,
+): Promise<void> {
+  await db
+    .insert(healthExport)
+    .values({ sessionUuid, version, failed: reason })
+    .onConflictDoUpdate({ target: healthExport.sessionUuid, set: { version, failed: reason } });
 }
 
 /** Health Connect no longer holds these. */

@@ -1,0 +1,2 @@
+- Health Connect: one switch, in Settings > Devices and health data, sends your sessions and outings with their distance. The GPS route only if you ask, your past sessions when you want. Bati reads nothing there.
+- Android 7 is no longer supported: Android 8 or later is needed.

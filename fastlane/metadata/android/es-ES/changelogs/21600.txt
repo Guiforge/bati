@@ -1,0 +1,2 @@
+- Health Connect: un interruptor, en Ajustes > Dispositivos y datos de salud, envía tus sesiones y salidas con su distancia. El recorrido GPS solo si lo pides, tus sesiones pasadas cuando quieras. Bati no lee nada allí.
+- Android 7 ya no es compatible: hace falta Android 8 o posterior.

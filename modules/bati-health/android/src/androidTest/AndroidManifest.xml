@@ -1,0 +1,9 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+      The contract check's own test APK, never Bati: it writes through the module's code and reads
+      back to see what Health Connect really holds. The read permissions exist only here.
+    -->
+    <uses-permission android:name="android.permission.health.READ_EXERCISE" />
+    <uses-permission android:name="android.permission.health.READ_DISTANCE" />
+    <uses-permission android:name="android.permission.health.READ_EXERCISE_ROUTES" />
+</manifest>

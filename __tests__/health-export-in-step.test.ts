@@ -20,7 +20,9 @@ function port(available: boolean): HealthPort {
     available: () => available,
     hasPermission: () => Promise.resolve(true),
     requestPermission: () => Promise.resolve(true),
-    upsert: () => Promise.resolve(),
+    hasRoutePermission: () => Promise.resolve(false),
+    requestRoutePermission: () => Promise.resolve(false),
+    upsertMany: () => Promise.resolve([]),
     remove: () => Promise.resolve(),
     openSettings: () => {},
   };
@@ -56,4 +58,22 @@ test("without Health Connect nothing is scheduled or called", () => {
   jest.advanceTimersByTime(10_000);
   expect(mockSyncHealthConnect).not.toHaveBeenCalled();
   watch.remove();
+});
+
+test("a failed run is tried once more a minute later, and only once at a time", async () => {
+  const { syncHealthConnectQuietly, RETRY_AFTER_MS } =
+    require("../src/healthExport/inStep") as typeof import("../src/healthExport/inStep");
+  mockSyncHealthConnect
+    .mockRejectedValueOnce(new Error("API call quota exceeded"))
+    .mockRejectedValueOnce(new Error("API call quota exceeded"));
+  syncHealthConnectQuietly(port(true));
+  syncHealthConnectQuietly(port(true));
+  await jest.advanceTimersByTimeAsync(0);
+  expect(mockSyncHealthConnect).toHaveBeenCalledTimes(2);
+
+  await jest.advanceTimersByTimeAsync(RETRY_AFTER_MS);
+  // Two failures, one retry: never a pile of timers.
+  expect(mockSyncHealthConnect).toHaveBeenCalledTimes(3);
+  await jest.advanceTimersByTimeAsync(RETRY_AFTER_MS * 3);
+  expect(mockSyncHealthConnect).toHaveBeenCalledTimes(3);
 });

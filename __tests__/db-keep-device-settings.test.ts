@@ -200,3 +200,60 @@ test("the Health Connect switch is this phone's: a restore neither brings nor dr
   restored.close();
   t.sqlite.exec("DELETE FROM user_preferences WHERE key = 'healthExportSince'");
 });
+
+test("a backup from before 0088 restores: the ledger is copied by the columns the copy has", async () => {
+  t.sqlite.exec("DELETE FROM health_export");
+  t.sqlite
+    .prepare(
+      "INSERT INTO health_export (sessionUuid, version, route, failed) VALUES ('mine', 7, 1, NULL)",
+    )
+    .run();
+  const staged = path.join(dir, "pr1.db");
+  await backup().snapshotDatabaseTo(staged);
+  // The copy a build with 0087 and not 0088 wrote: its ledger has two columns.
+  const copy = new Database(staged);
+  copy.exec(
+    "DROP TABLE health_export; CREATE TABLE health_export (sessionUuid text PRIMARY KEY NOT NULL, version integer NOT NULL)",
+  );
+  copy.prepare("INSERT INTO completed_sessions (uuid, performedAt) VALUES ('mine', 0)").run();
+  copy.close();
+
+  await backup().keepDeviceSettings(staged);
+
+  const restored = new Database(staged);
+  expect(restored.prepare("SELECT * FROM health_export").all()).toEqual([
+    { sessionUuid: "mine", version: 7 },
+  ]);
+  restored.close();
+  t.sqlite.exec("DELETE FROM health_export");
+});
+
+test("the route option, the past sessions question and a history run stay this phone's", async () => {
+  for (const [key, value] of [
+    ["healthExportRoute", "1"],
+    ["healthHistoryAsked", "1"],
+    ["healthHistoryRunning", "1"],
+  ] as const) {
+    setPref(t.sqlite, key, value);
+  }
+  const staged = path.join(dir, "options.db");
+  await backup().snapshotDatabaseTo(staged);
+  const copy = new Database(staged);
+  copy.exec("DELETE FROM user_preferences WHERE key LIKE 'health%'");
+  copy.close();
+
+  await backup().keepDeviceSettings(staged);
+
+  const restored = new Database(staged);
+  expect(
+    restored
+      .prepare("SELECT key, value FROM user_preferences WHERE key LIKE 'health%' ORDER BY key")
+      .all(),
+  ).toEqual([
+    { key: "healthExportRoute", value: "1" },
+    { key: "healthHistoryAsked", value: "1" },
+    { key: "healthHistoryRunning", value: "1" },
+  ]);
+  restored.close();
+  t.sqlite.exec("DELETE FROM user_preferences WHERE key LIKE 'health%'");
+});

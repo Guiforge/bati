@@ -15,11 +15,12 @@ LO QUE ENCONTRARÁS
 • Recordatorios: los días que eliges, programados en el teléfono, sin servidor
 • Copias de seguridad: como archivo, o automáticas en una carpeta que elijas, cifradas si lo pides
 • Sincronización: un solo héroe en varios móviles
+• Health Connect, desactivado por defecto: sesiones y salidas con su distancia, el recorrido GPS solo si lo pides, Bati no lee nada
 • Seis idiomas: español, inglés, francés, alemán, ruso, chino
 • Un diario: historial, récords, tu llama, equilibrio muscular
 
 TU ENTRENAMIENTO SE QUEDA EN TU MÓVIL
-Sin cuenta. Sin registro. Sin servidor nuestro. Sin analíticas, sin anuncios, sin ningún tipo de rastreo. Tus sesiones, tus récords y el trazado GPS de una salida viven en una base de datos en tu dispositivo. La copia de seguridad del sistema de tu móvil puede llevársela, como los datos de cualquier app, y puedes desactivarla. Desinstalar la app la borra del móvil, no las copias que hayas hecho en otro sitio.
+Sin cuenta. Sin registro. Sin servidor nuestro. Sin analíticas, sin anuncios, sin ningún tipo de rastreo. Tus sesiones, tus récords y el trazado GPS de una salida viven en una base de datos en tu dispositivo. La copia de seguridad del sistema de tu móvil puede llevársela, y puedes desactivarla. Desinstalar la app la borra del móvil, no las copias que hayas hecho en otro sitio.
 
 Tres funciones usan la red, cada una tras su propio interruptor en Ajustes, y las tres empiezan desactivadas:
 • El mapa bajo la ruta de una salida. El móvil pide a OpenFreeMap (datos de OpenStreetMap, servidos desde tiles.openfreemap.org) teselas de la zona por la que vas. Eso le indica al servidor más o menos dónde estuviste, con tu dirección IP y la hora. Desactivado, la ruta se dibuja sobre un fondo liso.
@@ -28,10 +29,10 @@ Tres funciones usan la red, cada una tras su propio interruptor en Ajustes, y la
 
 Con las tres desactivadas, la app no hace ninguna petición de red. Solo dos archivos del código pueden hacer una desde JavaScript, y una regla de lint rechaza cualquier otra antes de publicarse.
 
-La ubicación solo se lee durante una salida, mediante un módulo GPS propio sobre el servicio de ubicación de Android. Sin servicios de Google Play, sin SDK de terceros, nada que llame a casa.
+La ubicación solo se lee durante una salida, mediante un módulo GPS propio sobre el servicio de ubicación de Android. Sin servicios de Google Play, sin SDK de terceros.
 
 PRIMERO EL PESO CORPORAL
-El catálogo de ejercicios se basa en lo que puedes hacer sin material, y se adapta si tienes algo. Los calentamientos son dinámicos y se ajustan a la sesión que tienes delante, porque nadie repite un calentamiento de cinco minutos antes de un entrenamiento de seis.
+El catálogo de ejercicios se basa en lo que puedes hacer sin material, y se adapta si tienes algo. Los calentamientos son dinámicos y se ajustan a la sesión que tienes delante.
 
 NO ES UN PRODUCTO SANITARIO
 Bati es una app de entrenamiento. No es un producto sanitario y no diagnostica, trata ni previene ninguna enfermedad. Si tienes una lesión, un problema de salud o dudas sobre hacer ejercicio, consulta a un médico antes de empezar.

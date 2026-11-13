@@ -11,9 +11,13 @@ import type { HealthPort, HealthRecord } from "@/src/healthExport/port";
  */
 type BatiHealthNativeModule = {
   sdkStatus(): number;
+  /** Writing exercise sessions and distance, both. */
   hasWritePermission(): Promise<boolean>;
-  launchPermissionRequest(): boolean;
-  upsertSession(json: string): Promise<void>;
+  hasRoutePermission(): Promise<boolean>;
+  /** `route` asks for the route permission alone; otherwise exercise and distance together. */
+  launchPermissionRequest(route: boolean): boolean;
+  /** Per entry: null when written, or why Health Connect refused it. */
+  upsertSessions(json: string): Promise<(string | null)[]>;
   deleteSessions(clientIds: string[]): Promise<void>;
   openSettings(): boolean;
 };
@@ -51,19 +55,22 @@ function backFromHealthConnect(): Promise<void> {
 }
 
 /** Shows Health Connect's permission screen, then reads what the hero answered. */
-async function requestPermission(): Promise<boolean> {
+async function requestPermission(route: boolean): Promise<boolean> {
   if (!native) return false;
   const back = backFromHealthConnect();
-  if (!native.launchPermissionRequest()) return false;
+  if (!native.launchPermissionRequest(route)) return false;
   await back;
-  return native.hasWritePermission();
+  return route ? native.hasRoutePermission() : native.hasWritePermission();
 }
 
 export const nativeHealth: HealthPort = {
   available: () => native?.sdkStatus() === SDK_AVAILABLE,
   hasPermission: async () => (native ? native.hasWritePermission() : false),
-  requestPermission,
-  upsert: async (record: HealthRecord) => native?.upsertSession(JSON.stringify(record)),
+  requestPermission: () => requestPermission(false),
+  hasRoutePermission: async () => (native ? native.hasRoutePermission() : false),
+  requestRoutePermission: () => requestPermission(true),
+  upsertMany: async (records: HealthRecord[]) =>
+    native ? native.upsertSessions(JSON.stringify(records)) : records.map(() => null),
   remove: async (clientIds: string[]) => native?.deleteSessions(clientIds),
   openSettings: () => {
     native?.openSettings();

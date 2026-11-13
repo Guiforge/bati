@@ -225,22 +225,21 @@ class BatiP2pModule : Module() {
     return s.localPort
   }
 
+  // Any failure, not only IOException: this runs on its own thread, where an uncaught throw kills
+  // the app, and a `busy` left set refuses every later guest.
+  @Suppress("TooGenericExceptionCaught", "SwallowedException")
   private fun serve(raw: SSLSocket) {
     try {
       raw.soTimeout = 5000
       raw.startHandshake()
       raw.soTimeout = 0
+      // Read before newConn, so a failure here leaves no registered connection behind.
+      val peer = peerId(raw)
+      val address = raw.inetAddress?.hostAddress ?: ""
       val id = newConn(raw, true)
-      sendEvent(
-        "onConnected",
-        mapOf(
-          "socket" to id,
-          "peerId" to peerId(raw),
-          "address" to (raw.inetAddress?.hostAddress ?: ""),
-        ),
-      )
+      sendEvent("onConnected", mapOf("socket" to id, "peerId" to peer, "address" to address))
       conns[id]?.start()
-    } catch (e: IOException) {
+    } catch (e: Exception) {
       runCatching { raw.close() }
       busy.set(false)
     }

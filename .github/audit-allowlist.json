@@ -1,1 +1,6 @@
-[]
+[
+  {
+    "id": "GHSA-fc5q-39xc-vjpf",
+    "reason": "picomatch <=4.0.7 (ReDoS on single-branch repeated extglobs) arrives only through build and test tooling: @expo/metro-config, Jest (jest-util, jest-message-util, jest-haste-map), @parcel/watcher, anymatch, micromatch, fdir. It matches this repository's own globs on the developer's and CI's machine, never inside the app, and nothing in app code imports it. Same case as braces (GHSA-vfj7-8cjw-p6xm) on 2026-10-17. No fixed release exists (4.0.7 is the latest). Checked 2026-11-17; delete when picomatch publishes a fix and the tree takes it."
+  }
+]

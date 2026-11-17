@@ -87,6 +87,8 @@ export type CompletedSessionInput = {
    * caller that is not an outing.
    */
   movingSeconds?: number | null;
+  /** Gap seconds this GPS outing was paid (`0089`, R-02). Omitted by every caller that is not an outing. */
+  untracedSeconds?: number | null;
   /** Metres climbed, from the same reading as `leaguesM` (`0052`). Omitted by a workout. */
   ascentM?: number | null;
   /**
@@ -158,6 +160,8 @@ export type CompletedSession = {
    */
   leaguesM: number | null;
   movingSeconds: number | null;
+  /** Gap seconds the day paid (`0089`, R-02); null when none or not an outing. */
+  untracedSeconds: number | null;
   ascentM: number | null;
   outing: Locomotion | null;
   /** Which part is the hero's word (`0078`): null when everything was measured. */
@@ -302,6 +306,8 @@ export async function createCompletedSession(input: CompletedSessionInput): Prom
         uuid: input.uuid ?? uuidv7(performedAt.getTime()),
         leaguesM: input.leaguesM ?? null,
         movingSeconds: input.movingSeconds ?? null,
+        // Undefined leaves the column NULL, as for every caller that is not an outing.
+        untracedSeconds: input.untracedSeconds,
         ascentM: input.ascentM ?? null,
         outing: input.outing ?? null,
         ...handColumns(input),
@@ -700,6 +706,7 @@ export async function listCompletedSessions(
       recordsJson: completedQuest.recordsJson,
       leaguesM: completedQuest.leaguesM,
       movingSeconds: completedQuest.movingSeconds,
+      untracedSeconds: completedQuest.untracedSeconds,
       ascentM: completedQuest.ascentM,
       outing: completedQuest.outing,
       byHand: completedQuest.byHand,
@@ -724,6 +731,7 @@ export async function listCompletedSessions(
     records: parseRecords(r.recordsJson),
     leaguesM: r.leaguesM ?? null,
     movingSeconds: r.movingSeconds ?? null,
+    untracedSeconds: r.untracedSeconds ?? null,
     ascentM: r.ascentM ?? null,
     outing: r.outing ?? null,
     byHand: r.byHand ?? null,
@@ -836,10 +844,29 @@ export const isMeasured = () => sql`(${completedQuest.byHand} IS NULL)`;
  */
 export const OUTING_COUNTS_AFTER_SECONDS = 10 * 60;
 
+/**
+ * Seconds of ground an outing row was credited: moving time plus the gaps the day paid (R-02),
+ * or the clock when no fix ever locked. The one reading of "how long was this walk worth", so the
+ * flame, the day's decay and the habit cannot disagree with what was paid.
+ */
+export const creditedOutingSecondsSql = () =>
+  sql`COALESCE(${completedQuest.movingSeconds} + COALESCE(${completedQuest.untracedSeconds}, 0), ${completedQuest.durationSeconds})`;
+
+/** `creditedOutingSecondsSql()` for a row already in memory. */
+export function creditedOutingSeconds(row: {
+  movingSeconds: number | null;
+  untracedSeconds?: number | null;
+  durationSeconds: number | null;
+}): number {
+  return row.movingSeconds === null
+    ? (row.durationSeconds ?? 0)
+    : row.movingSeconds + (row.untracedSeconds ?? 0);
+}
+
 /** Ten minutes on the road, or any workout at all. See `isWorkout` above. */
 export const countsAsSession = () =>
   sql`(${completedQuest.outing} IS NULL
-    OR COALESCE(${completedQuest.movingSeconds}, ${completedQuest.durationSeconds}) >= ${OUTING_COUNTS_AFTER_SECONDS})`;
+    OR ${creditedOutingSecondsSql()} >= ${OUTING_COUNTS_AFTER_SECONDS})`;
 
 /** R1's outing: strictly more than two minutes, and at least a kilometre. */
 const PLAY_OUTING_OVER_SECONDS = 2 * 60;
@@ -1048,9 +1075,7 @@ function startOfLocalDay(now = new Date()): Date {
 export async function outingSecondsToday(excludeSessionId: number | null): Promise<number> {
   const [row] = await db
     .select({
-      seconds: sum(
-        sql`COALESCE(${completedQuest.movingSeconds}, ${completedQuest.durationSeconds})`,
-      ),
+      seconds: sum(creditedOutingSecondsSql()),
     })
     .from(completedQuest)
     .where(
@@ -1071,18 +1096,21 @@ export const UNTRACED_PAID_SECONDS_PER_DAY = 2 * 3600;
 
 /**
  * Seconds of today's outings that nothing witnessed: no GPS, or no fix ever locked, with the
- * distance typed after or not. A session written down is not among them (it has its own flat pay).
+ * distance typed after or not, plus the gaps of GPS outings the day paid (`untracedSeconds`, R-02). A session written down is not among them (it has its own flat pay).
  * The day pays at most `UNTRACED_PAID_SECONDS_PER_DAY` of them: once going out without GPS is a
  * button, a timer left on a table must not pay four hours (`UNWITNESSED_OUTING_MAX_SECONDS`).
  */
 export async function untracedSecondsToday(excludeSessionId: number | null): Promise<number> {
   const [row] = await db
-    .select({ seconds: sum(completedQuest.durationSeconds) })
+    .select({
+      seconds: sum(
+        sql`CASE WHEN ${completedQuest.movingSeconds} IS NULL THEN ${completedQuest.durationSeconds} ELSE COALESCE(${completedQuest.untracedSeconds}, 0) END`,
+      ),
+    })
     .from(completedQuest)
     .where(
       and(
         sql`${completedQuest.outing} IS NOT NULL`,
-        sql`${completedQuest.movingSeconds} IS NULL`,
         sql`(${completedQuest.byHand} IS NULL OR ${completedQuest.byHand} = 'distance')`,
         gte(completedQuest.performedAt, startOfLocalDay()),
         excludeSessionId === null ? undefined : ne(completedQuest.id, excludeSessionId),
@@ -1124,6 +1152,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
       sessionPerformedAt: completedQuest.performedAt,
       leaguesM: completedQuest.leaguesM,
       movingSeconds: completedQuest.movingSeconds,
+      untracedSeconds: completedQuest.untracedSeconds,
       ascentM: completedQuest.ascentM,
       outing: completedQuest.outing,
       byHand: completedQuest.byHand,
@@ -1148,6 +1177,7 @@ export async function getCompletedSessionById(id: number): Promise<CompletedSess
     performedAt: head.sessionPerformedAt,
     leaguesM: head.leaguesM,
     movingSeconds: head.movingSeconds,
+    untracedSeconds: head.untracedSeconds,
     ascentM: head.ascentM,
     outing: head.outing,
     byHand: head.byHand,

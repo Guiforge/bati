@@ -620,6 +620,14 @@ export const completedQuest = sqliteTable(
     movingSeconds: int(),
 
     /**
+     * Seconds of this GPS outing the signal did not witness and the day still paid (0089, R-02):
+     * the gaps over 30 s, bounded by the clock and by the daily unwitnessed cap. Written once at
+     * save, next to `movingSeconds`. Null before 0089, on an outing with no GPS at all (its
+     * `durationSeconds` is the unwitnessed time) and on every workout.
+     */
+    untracedSeconds: int(),
+
+    /**
      * Metres climbed on this outing (0052), from the same reading as `leaguesM` and written by the
      * same single writer at save. Null on a workout, on every outing saved before 0052, and on one
      * whose receiver never reported an altitude.

@@ -1,0 +1,12 @@
+-- R-02: the seconds of a GPS outing that the signal did not witness and the day still paid.
+--
+-- An outing whose GPS went quiet for more than 30 s (a building, a tunnel) used to be paid nothing
+-- for the silence, while the same walk with GPS switched off was paid its whole clock, up to two
+-- hours a day. Keeping the GPS on was the worse choice. The silence is now paid as unwitnessed
+-- time, under the same daily cap, with no distance or pace invented for it.
+--
+-- The column holds the paid part only, written once at save next to `movingSeconds`, so the
+-- next outing of the day can see how much of the cap is spent and how much ground the day already
+-- credited. Null on every outing saved before 0089, on outings with no GPS at all (their
+-- `durationSeconds` is the unwitnessed time), and on every workout.
+ALTER TABLE `completed_sessions` ADD `untracedSeconds` integer;

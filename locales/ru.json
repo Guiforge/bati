@@ -782,6 +782,7 @@
     "target_reached": "Цель достигнута!",
     "total_time": "Общее время",
     "total_time_moving": "из них {{moving}} в движении",
+    "total_time_no_signal": "и {{time}} без сигнала, засчитано как неизмеренное время",
     "up_next": "Далее",
     "victory_title": "Задание выполнено!",
     "village_growth_cta": "Посмотреть деревню",

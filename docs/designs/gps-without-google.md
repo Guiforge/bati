@@ -270,6 +270,13 @@ permission ratchet would vouch for a dependency Bati does not control.
    becomes the paymaster. Product call: does the reward clock key on movement only, or does
    accuracy loss pause the trace but never the credit? Decide before step 6 builds the
    aggregates.
+   Settled for holes on 2026-11-17 (R-02): a silence over `maxGapMs` (between fixes, or after
+   the last one until the session ends) is paid as unwitnessed time, the same as a walk with the
+   GPS off, under the same two hours a day (`UNTRACED_PAID_SECONDS_PER_DAY`), and only on a pure
+   outing. It is bounded by the session clock less the moving time, so a manual pause or a kill
+   pays nothing. No distance or pace is invented; the paid part is stored in
+   `completed_sessions.untracedSeconds` (0089) and counts toward the flame, the day's decay and
+   the duration goal (`goalClockMs`).
 7. Time-mode quest design: step 1 needs its own design doc — quest schema, session store,
    damage conversion, Home — before any GPS step is scheduled.
 

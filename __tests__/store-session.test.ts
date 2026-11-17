@@ -3144,6 +3144,113 @@ describe("an outing without GPS", () => {
 });
 
 /**
+ * R-02: the silence of a GPS outing (a building, a tunnel) is paid like a walk with the GPS off,
+ * under the same two hours a day. Keeping the GPS on must never pay less than switching it off.
+ */
+describe("an outing whose GPS went quiet", () => {
+  const walkSlot = {
+    exercise: {
+      id: 30,
+      enName: "Warden's Walk",
+      muscles: [],
+      style: "expedition",
+      secondsPerRep: 1,
+      locomotion: "walk",
+    },
+    target: { type: "time", value: 1200 },
+  };
+  const walk = {
+    id: 42,
+    rounds: 1,
+    restSeconds: 0,
+    roundRestSeconds: null,
+    enTitle: "The round",
+    frTitle: "La ronde",
+    exercises: [walkSlot],
+  } as unknown as Quest;
+  const mixed = {
+    ...walk,
+    id: 43,
+    exercises: [
+      walkSlot,
+      {
+        exercise: { id: 2, enName: "Push-up", muscles: [], style: "reps", locomotion: null },
+        target: { type: "reps", value: 10 },
+      },
+    ],
+  } as unknown as Quest;
+  const completed = () => require("@/db/completed") as { createCompletedSession: jest.Mock };
+
+  /** Five minutes walked, then fifteen inside with no fix, the trace's last fix at the end. */
+  async function finish(quest: Quest, { pausedMs = 0 } = {}) {
+    (computeSessionXp as jest.Mock).mockClear();
+    completed().createCompletedSession.mockClear();
+    useSessionStore.setState({ status: "idle" });
+    jest.spyOn(useExpeditionStore.getState(), "begin").mockResolvedValue(true);
+    await useSessionStore.getState().startSession(quest, "medium", {});
+    const start = Date.now() - 20 * 60_000;
+    useSessionStore.setState({ startTime: start, totalPausedTime: pausedMs });
+    useExpeditionStore.setState({
+      track: {
+        ...EMPTY,
+        startedAt: start,
+        lastAt: start + 20 * 60_000,
+        distanceM: 420,
+        movingMs: 5 * 60_000,
+        gapMs: 15 * 60_000,
+      },
+    });
+    useSessionStore.getState().completeExercise(20 * 60);
+    const result = await useSessionStore.getState().saveSession(null);
+    return {
+      result,
+      xp: (computeSessionXp as jest.Mock).mock.calls[0]?.[0],
+      row: completed().createCompletedSession.mock.calls[0]?.[0],
+    };
+  }
+
+  beforeEach(() => {
+    (untracedSecondsToday as jest.Mock).mockResolvedValue(0);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    useExpeditionStore.setState({ track: EMPTY });
+    (untracedSecondsToday as jest.Mock).mockResolvedValue(0);
+  });
+
+  test("pays the fifteen silent minutes beside the five walked, and writes them down", async () => {
+    const { result, xp, row } = await finish(walk);
+    expect(xp.outing.seconds).toBe(20 * 60);
+    expect(row.untracedSeconds).toBe(15 * 60);
+    // The distance is what the fixes saw, nothing invented across the hole.
+    expect(row.leaguesM).toBe(420);
+    expect(row.movingSeconds).toBe(5 * 60);
+    expect(row.durationSeconds).toBe(20 * 60);
+    expect(result?.outing).toMatchObject({ movingSeconds: 300, gapSeconds: 900, measured: true });
+  });
+
+  test("shares the day's two hours with walks that had no GPS", async () => {
+    (untracedSecondsToday as jest.Mock).mockResolvedValue(7200 - 5 * 60);
+    const { xp, row } = await finish(walk);
+    expect(xp.outing.seconds).toBe(10 * 60);
+    expect(row.untracedSeconds).toBe(5 * 60);
+  });
+
+  test("pays nothing of a silence the clock did not run through (a manual pause)", async () => {
+    const { xp, row } = await finish(walk, { pausedMs: 15 * 60_000 });
+    expect(xp.outing.seconds).toBe(5 * 60);
+    expect(row.untracedSeconds).toBeNull();
+  });
+
+  test("a mixed quest's indoor sets are not a silence to pay", async () => {
+    const { xp, row } = await finish(mixed);
+    expect(xp.outing.seconds).toBe(5 * 60);
+    expect(row.untracedSeconds).toBeNull();
+  });
+});
+
+/**
  * The oath's card says what the row received. A flat bonus is clamped at the session ceiling, so
  * on a session worth 1900 XP the oath adds 100, and "+250 XP" would be a figure nobody was paid.
  */

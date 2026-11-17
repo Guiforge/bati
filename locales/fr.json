@@ -1211,6 +1211,7 @@
     "target_reached": "Objectif atteint !",
     "total_time": "Temps total",
     "total_time_moving": "dont {{moving}} en mouvement",
+    "total_time_no_signal": "et {{time}} sans signal, compté comme du temps non mesuré",
     "up_next": "À suivre",
     "victory_title": "Quête accomplie !",
     "village_growth_cta": "Voir ton village",

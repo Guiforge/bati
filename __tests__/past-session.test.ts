@@ -443,6 +443,21 @@ describe("a session written down", () => {
       insert.run(at + 3, 5400, "walk", null, "session"); // written down: does not
       expect(await completed().untracedSecondsToday(null)).toBe(5400);
     });
+
+    test("counts the silence a GPS outing was paid (R-02), in the cap and in the day's ground", async () => {
+      const today = new Date();
+      today.setHours(0, 0, 1, 0);
+      const at = Math.floor(today.getTime() / 1000);
+      t.sqlite
+        .prepare(
+          `INSERT INTO completed_sessions (userLevel, xpEarned, performedAt, durationSeconds, outing,
+             movingSeconds, untracedSeconds) VALUES ('medium', 0, ?, ?, ?, ?, ?)`,
+        )
+        .run(at, 1200, "walk", 300, 900);
+      expect(await completed().untracedSecondsToday(null)).toBe(900);
+      // Five walked and fifteen paid: the next outing of the day decays against twenty minutes.
+      expect(await completed().outingSecondsToday(null)).toBe(1200);
+    });
   });
 
   describe("the page that opens it", () => {

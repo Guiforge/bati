@@ -661,10 +661,19 @@ export function VictoryView() {
                 </AppText>
                 {/* The wait for the sky and the red lights are in the total (D-58); the moving time is
                   what XP is paid in, said once the two differ by a minute. */}
-                {result?.outing?.measured && durationSeconds - result.outing.seconds >= 60 ? (
+                {result?.outing?.measured && durationSeconds - result.outing.movingSeconds >= 60 ? (
                   <AppText fontSize={11} color="textSecondary">
                     {t("session.total_time_moving", {
-                      moving: formatTime(result.outing.seconds),
+                      moving: formatTime(result.outing.movingSeconds),
+                    })}
+                  </AppText>
+                ) : null}
+                {/* The silence is paid like a walk with the GPS off (R-02): said, or the XP line
+                  below would price more minutes than it calls moving. */}
+                {result?.outing?.measured && result.outing.gapSeconds > 0 ? (
+                  <AppText testID="victory-gap-paid" fontSize={11} color="textSecondary">
+                    {t("session.total_time_no_signal", {
+                      time: formatTime(result.outing.gapSeconds),
                     })}
                   </AppText>
                 ) : null}
@@ -716,7 +725,7 @@ export function VictoryView() {
                     {result.outing.measured
                       ? t("session.xp_outing_rate", {
                           // The clock the time card prints beside it, not a rounded "2 min" that disagreed.
-                          moving: formatTime(result.outing.seconds),
+                          moving: formatTime(result.outing.movingSeconds),
                           effort: formatDurationEstimate(result.outing.effortSeconds, language),
                           rate: rateOf(result.outing.locomotion),
                         })

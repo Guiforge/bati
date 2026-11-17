@@ -1117,7 +1117,7 @@
     },
     {
       "name": "@expo/cli",
-      "version": "58.1.20",
+      "version": "58.1.21",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 },
@@ -1266,7 +1266,7 @@
     },
     {
       "name": "@expo/metro-config",
-      "version": "58.0.22",
+      "version": "58.0.23",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 }
@@ -1338,7 +1338,7 @@
     },
     {
       "name": "@expo/router-server",
-      "version": "58.0.22",
+      "version": "58.0.23",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 }
@@ -3502,7 +3502,7 @@
     },
     {
       "name": "babel-preset-expo",
-      "version": "58.0.25",
+      "version": "58.0.26",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 }
@@ -4341,7 +4341,7 @@
     },
     {
       "name": "expo",
-      "version": "58.0.25",
+      "version": "58.0.26",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 }
@@ -4381,7 +4381,7 @@
     },
     {
       "name": "expo-file-system",
-      "version": "58.0.13",
+      "version": "58.0.14",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 }
@@ -4525,7 +4525,7 @@
     },
     {
       "name": "expo-router",
-      "version": "58.0.31",
+      "version": "58.0.32",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 },
@@ -4566,7 +4566,7 @@
     },
     {
       "name": "expo-sqlite",
-      "version": "58.0.17",
+      "version": "58.0.18",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"], "text": 2 }
@@ -6368,7 +6368,7 @@
     },
     {
       "name": "noxcturnal",
-      "version": "0.1.12",
+      "version": "0.1.14",
       "license": "MIT",
       "notices": [
         {
@@ -6718,7 +6718,7 @@
     },
     {
       "name": "postcss",
-      "version": "8.5.32",
+      "version": "8.5.33",
       "license": "MIT",
       "notices": [
         {

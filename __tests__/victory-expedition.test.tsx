@@ -175,6 +175,8 @@ async function mountVictory({
     locomotion: "walk" | "run" | "ride";
     measured: boolean;
     clockSeconds?: number;
+    movingSeconds?: number;
+    gapSeconds?: number;
   } | null;
   /** The records the save found, as `saveSession` reports them. */
   newRecords?: unknown[];
@@ -374,7 +376,14 @@ describe("VictoryView, the walk it just celebrated", () => {
 
     await mountVictory({
       sessionSeconds: 52 * 60,
-      outing: { seconds: 720, effortSeconds: 720, locomotion: "walk", measured: true },
+      outing: {
+        seconds: 720,
+        effortSeconds: 720,
+        locomotion: "walk",
+        measured: true,
+        movingSeconds: 720,
+        gapSeconds: 0,
+      },
     });
 
     expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(/of which 12:00 moving/);
@@ -389,12 +398,39 @@ describe("VictoryView, the walk it just celebrated", () => {
   test("says what the walk was counted as, not just what it paid", async () => {
     // Same clock as the "of which" line of the time card: 97 s read "2 min" here and "1:37" there.
     await mountVictory({
-      outing: { seconds: 3600, effortSeconds: 900, locomotion: "walk", measured: true },
+      outing: {
+        seconds: 3600,
+        effortSeconds: 900,
+        locomotion: "walk",
+        measured: true,
+        movingSeconds: 3600,
+        gapSeconds: 0,
+      },
     });
 
     expect(screen.getByTestId("victory-stat-row")).toHaveTextContent(
       /60:00 moving · counted as 15 min of effort/,
     );
+    expect(screen.queryByTestId("victory-gap-paid")).toBeNull();
+  });
+
+  test("a walk through a building says the silence apart from the moving time (R-02)", async () => {
+    await mountVictory({
+      sessionSeconds: 20 * 60,
+      outing: {
+        seconds: 1200,
+        effortSeconds: 300,
+        locomotion: "walk",
+        measured: true,
+        movingSeconds: 300,
+        gapSeconds: 900,
+      },
+    });
+
+    const row = screen.getByTestId("victory-stat-row");
+    expect(row).toHaveTextContent(/of which 5:00 moving/);
+    expect(row).toHaveTextContent(/and 15:00 without signal, counted as unmeasured time/);
+    expect(row).toHaveTextContent(/5:00 moving · counted as 5 min of effort/);
   });
 
   test("an outing nothing measured says clock time, never moving time", async () => {

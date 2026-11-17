@@ -42,7 +42,11 @@ import { formatDistance, formatElevation, formatRate } from "@/constants/distanc
 import { CONTENT_MAX_WIDTH } from "@/constants/layout";
 import { rawColors } from "@/constants/rawColors";
 import { formatDuration } from "@/db";
-import { type CompletedSession, OUTING_COUNTS_AFTER_SECONDS } from "@/db/completed";
+import {
+  type CompletedSession,
+  creditedOutingSeconds,
+  OUTING_COUNTS_AFTER_SECONDS,
+} from "@/db/completed";
 import type { VariationStep } from "@/db/exercises";
 import { type FallenRecord, type MuscleShift, type QuestStanding, sessionReps } from "@/db/journal";
 import { MUSCLE_LABELS } from "@/db/labels";
@@ -319,9 +323,7 @@ function WhatItMoved({ data }: { data: QuestLogData }) {
   const outing = session.outing != null;
   // The same rule the flame reads (`countsAsSession`). Said first on an outing: a walker who read
   // only what an outing does not pay concluded that her walks did not count at all.
-  const keepsFlame =
-    outing &&
-    (session.movingSeconds ?? session.durationSeconds ?? 0) >= OUTING_COUNTS_AFTER_SECONDS;
+  const keepsFlame = outing && creditedOutingSeconds(session) >= OUTING_COUNTS_AFTER_SECONDS;
 
   return (
     <NBlock testID="journal-moved" mt={6} gap={11}>

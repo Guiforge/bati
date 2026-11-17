@@ -14,7 +14,7 @@ import {
 import { isOutdoors, isOutingSession } from "@/db/expeditions";
 import type { DistanceUnit } from "@/db/preferences";
 import type { Locomotion } from "@/db/schema";
-import { METRES_PER_LEAGUE, type OutingGoal, type TrackState } from "@/src/gps/track";
+import { goalClockMs, METRES_PER_LEAGUE, type OutingGoal, type TrackState } from "@/src/gps/track";
 
 /**
  * The figures of a live outing, as pure functions of the track: which ones the hero's view puts in
@@ -220,10 +220,10 @@ export function figureText(metric: OutingMetric, ctx: FigureContext, live: boole
     case "remaining": {
       const goal = ctx.goal;
       if (goal === null) return "...";
-      // Moving seconds, the clock `goalReached` and the goal bar read.
+      // The clock `goalReached` and the goal bar read (`goalClockMs`).
       return goal.type === "distance"
         ? formatDistance(Math.max(0, goal.metres - track.distanceM), unit, language)
-        : formatClock(Math.max(0, goal.seconds * 1000 - track.movingMs));
+        : formatClock(Math.max(0, goal.seconds * 1000 - goalClockMs(track)));
     }
     case "lap":
       // Accepted: a stop of 40 s or more makes this climb, then fall back when the reducer takes

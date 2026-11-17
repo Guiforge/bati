@@ -624,6 +624,13 @@
       "when": 1794787200000,
       "tag": "0088_health_export_route_failed",
       "breakpoints": true
+    },
+    {
+      "idx": 89,
+      "version": "6",
+      "when": 1794873600000,
+      "tag": "0089_outing_untraced_seconds",
+      "breakpoints": true
     }
   ]
 }

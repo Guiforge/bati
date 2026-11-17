@@ -407,6 +407,49 @@ describe("holes in time", () => {
   });
 });
 
+/** R-02: a gap is not moving time and not distance, but it is time the hero was out. */
+describe("the time a hole holds", () => {
+  const walkedTen = () => walked(1.4, 10);
+
+  test("fifteen minutes inside a building are fifteen minutes of gap, and no metre", () => {
+    const before = walkedTen();
+    const state = accept(
+      before,
+      fix({ t: walkEnd(10) + 900_000, distFromPrev: 30, lat: 48.4728 + northOf(44) }),
+    );
+    expect(state.gapMs).toBe(900_000);
+    expect(state.movingMs).toBe(before.movingMs);
+    expect(state.distanceM).toBe(before.distanceM);
+    expect(credited(state)?.gapSeconds).toBe(900);
+  });
+
+  test("a jump in space is not a gap in time", () => {
+    const state = accept(started(), fix({ t: T0 + 5000, distFromPrev: 900 }));
+    expect(state.gapMs).toBe(0);
+  });
+
+  test("a clock that goes back is not a gap", () => {
+    const state = accept(walkedTen(), fix({ t: walkEnd(10) - 3_600_000, distFromPrev: 20 }));
+    expect(state.gapMs).toBe(0);
+  });
+
+  test("a walk that ends in the building is paid the silence after its last fix", () => {
+    const state = walkedTen();
+    const credit = credited(state, null, walkEnd(10) + 900_000);
+    expect(credit?.gapSeconds).toBe(900);
+    expect(credit?.movingSeconds).toBe(10);
+    expect(credit?.leaguesM).toBe(Math.round(state.distanceM));
+    // The trace still ends at its last fix: the session, which holds the clock, extends it.
+    expect(credit?.elapsedSeconds).toBe(10);
+  });
+
+  test("a short wait between the last fix and the end is not a gap", () => {
+    const credit = credited(walkedTen(), null, walkEnd(10) + RULES.maxGapMs);
+    expect(credit?.gapSeconds).toBe(0);
+    expect(credit?.elapsedSeconds).toBe(10);
+  });
+});
+
 describe("teleports", () => {
   test("a jump is not distance, and it breaks the line", () => {
     let state = started();

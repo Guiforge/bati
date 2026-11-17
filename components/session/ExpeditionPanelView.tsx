@@ -20,7 +20,7 @@ import {
   metricLabelKey,
   resolvePlaces,
 } from "@/src/gps/liveFigures";
-import type { OutingGoal, TrackState } from "@/src/gps/track";
+import { goalClockMs, type OutingGoal, type TrackState } from "@/src/gps/track";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -411,12 +411,12 @@ export function ExpeditionPanelView({
       {noGps && goal?.type === "time" ? (
         <GoalBar goal={goal} metres={0} seconds={recorded} reached={recorded >= goal.seconds} />
       ) : acquiring ? null : (
-        // Moving seconds, the clock `goalReached` reads: the recorded total counts red lights,
+        // The clock `goalReached` reads (`goalClockMs`): the recorded total counts red lights,
         // and filled the bar minutes before the goal was met.
         <GoalBar
           goal={goal}
           metres={track.distanceM}
-          seconds={Math.floor(track.movingMs / 1000)}
+          seconds={Math.floor(goalClockMs(track) / 1000)}
           reached={goalReached}
         />
       )}

@@ -139,6 +139,12 @@ export type TrackState = {
   distanceM: number;
   /** Milliseconds of moving time; a pause does not advance it. */
   movingMs: number;
+  /**
+   * Milliseconds of silence between two fixes longer than `maxGapMs` (R-02): a building, a
+   * tunnel. Not moving time and never distance, but time the hero was out, so the session pays it
+   * as unwitnessed time under the day's cap, as it pays a walk with the GPS off.
+   */
+  gapMs: number;
   /** Metres of climb credited, descents not subtracted. See `RULES.climbThresholdM`. */
   ascentM: number;
   paused: boolean;
@@ -177,6 +183,7 @@ export type TrackState = {
 export const EMPTY: TrackState = {
   distanceM: 0,
   movingMs: 0,
+  gapMs: 0,
   ascentM: 0,
   paused: false,
   points: 0,
@@ -219,9 +226,11 @@ function openGate(state: TrackState, fix: LocationFix): TrackState {
  * A hole, in space or in time: it leaves the line broken, its length uncounted and its duration
  * unpaid, and the next fix starts a fresh anchor rather than resuming the old one.
  */
-function teleport(state: TrackState, fix: LocationFix): TrackState {
+function teleport(state: TrackState, fix: LocationFix, elapsed: number): TrackState {
   return {
     ...state,
+    // Only a hole in time is time the hero was out; a jump in space or a clock that went back is not.
+    gapMs: state.gapMs + (elapsed > RULES.maxGapMs ? elapsed : 0),
     segments: state.segments + 1,
     points: state.points + 1,
     lastAt: fix.t,
@@ -324,7 +333,7 @@ export function accept(state: TrackState, fix: LocationFix): TrackState {
 
   const elapsed = state.lastAt === null ? 0 : fix.t - state.lastAt;
   if (breaksRun(fix, state.lastAt)) {
-    return teleport(state, fix);
+    return teleport(state, fix, elapsed);
   }
 
   const fromAnchorM = state.anchor === null ? 0 : metresBetween(state.anchor, fix);
@@ -409,6 +418,11 @@ export function accept(state: TrackState, fix: LocationFix): TrackState {
 export type Credit = {
   leaguesM: number;
   movingSeconds: number;
+  /**
+   * Seconds of silence over `maxGapMs`, between fixes and after the last one until the session
+   * ended (R-02). Raw: the session bounds it by its clock and by the day's unwitnessed cap.
+   */
+  gapSeconds: number;
   elapsedSeconds: number;
   /** Whole metres climbed, null when the receiver never reported an altitude. */
   ascentM: number | null;
@@ -428,12 +442,22 @@ export type Credit = {
  * A phone left outside with a working GPS is *not* this case and must not become it: the gate
  * opens within seconds and the reducer then credits no moving time, which is a real zero.
  */
-export function credited(track: TrackState, tappedAt: number | null = null): Credit | null {
+export function credited(
+  track: TrackState,
+  tappedAt: number | null = null,
+  endedAt: number | null = null,
+): Credit | null {
   if (track.startedAt === null) return null;
+
+  // A walk that ends inside the building has no fix to close its gap: the silence after the last
+  // fix, when it is longer than a pause between fixes, is the same hole (R-02).
+  const lastAt = track.lastAt ?? track.startedAt;
+  const trailingMs = endedAt !== null && endedAt - lastAt > RULES.maxGapMs ? endedAt - lastAt : 0;
 
   return {
     leaguesM: Math.round(track.distanceM),
     movingSeconds: Math.floor(track.movingMs / 1000),
+    gapSeconds: Math.floor((track.gapMs + trailingMs) / 1000),
     // A phone that never gave a height has no opinion about the hill, and zero would be one.
     ascentM: track.climbFrom === null ? null : Math.round(track.ascentM),
     // From the tap on start (D-58), not from the first fix good enough to trust: the minutes spent
@@ -442,11 +466,7 @@ export function credited(track: TrackState, tappedAt: number | null = null): Cre
     // trace's own first fix is the start, as before.
     elapsedSeconds: Math.max(
       0,
-      Math.floor(
-        ((track.lastAt ?? track.startedAt) -
-          Math.min(tappedAt ?? track.startedAt, track.startedAt)) /
-          1000,
-      ),
+      Math.floor((lastAt - Math.min(tappedAt ?? track.startedAt, track.startedAt)) / 1000),
     ),
   };
 }
@@ -457,9 +477,18 @@ export function credited(track: TrackState, tappedAt: number | null = null): Cre
  */
 export type OutingGoal = { type: "time"; seconds: number } | { type: "distance"; metres: number };
 
+/**
+ * The clock a duration goal is measured on: moving time plus the gaps (R-02). The bar, the
+ * "remaining" figure and the buzz all read this one. The day's cap on gaps is not known live, so
+ * a long gap can meet the goal on screen and be paid less at save.
+ */
+export function goalClockMs(track: TrackState): number {
+  return track.movingMs + track.gapMs;
+}
+
 export function goalReached(goal: OutingGoal | null, track: TrackState): boolean {
   if (goal === null) return false;
   return goal.type === "time"
-    ? track.movingMs >= goal.seconds * 1000
+    ? goalClockMs(track) >= goal.seconds * 1000
     : track.distanceM >= goal.metres;
 }

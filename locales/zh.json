@@ -859,6 +859,7 @@
     "victory_see_all": "查看全部",
     "victory_note": "今晚有什么想记下的吗？",
     "total_time_moving": "其中移动 {{moving}}",
+    "total_time_no_signal": "另有 {{time}} 无信号，按未测量时间计入",
     "xp_outing_rate_timed": "计时 {{time}} · 计为 {{effort}} 的努力（户外一分钟值 {{rate}}）",
     "xp_outing_capped": "你今天 {{hours}} 小时的未测量时间已经算过了。",
     "objective_label": "目标",

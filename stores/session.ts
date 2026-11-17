@@ -300,6 +300,10 @@ export type SaveResult = {
     measured: boolean;
     /** The outing's clock before the daily allowance for unmeasured time capped `seconds`. */
     clockSeconds: number;
+    /** On a measured outing, what moved; `seconds` adds the paid silence to it. */
+    movingSeconds: number;
+    /** Seconds of GPS silence paid as unmeasured time (R-02), already inside `seconds`. */
+    gapSeconds: number;
   } | null;
   campaign: {
     adventureId: number;
@@ -777,17 +781,24 @@ function setTimer(slot: { target: Target; exercise: Pick<Exercise, "perSide"> } 
  *   clock reads the ten minutes since the hero pressed resume while the trace reads the whole
  *   hour. Both halves of `sessionClock` read the trace now. See `src/gps/track.ts`.
  */
-function measureGround(quest: Quest | null, startTime: number | null): Ground {
+function measureGround(
+  quest: Quest | null,
+  startTime: number | null,
+  endTime: number | null,
+): Ground {
   if (!isExpedition(quest)) return NO_GROUND;
 
   // Null from `credited` means the run had no witness at all - no fix ever locked - so the app
   // has no opinion and the clock decides, exactly as it does for a workout. See `src/gps/track`.
-  return credited(useExpeditionStore.getState().track, startTime) ?? NO_GROUND;
+  return (
+    credited(useExpeditionStore.getState().track, startTime, endTime ?? Date.now()) ?? NO_GROUND
+  );
 }
 
 const NO_GROUND: Ground = {
   leaguesM: null,
   movingSeconds: null,
+  gapSeconds: null,
   elapsedSeconds: null,
   ascentM: null,
 };
@@ -796,6 +807,8 @@ const NO_GROUND: Ground = {
 type Ground = {
   leaguesM: number | null;
   movingSeconds: number | null;
+  /** Raw seconds of GPS silence over 30 s (R-02); bounded by `payableGapSeconds`. */
+  gapSeconds: number | null;
   elapsedSeconds: number | null;
   ascentM: number | null;
 };
@@ -852,9 +865,15 @@ function sessionClock({
 }): { durationSeconds: number; effortCeilingSeconds: number } {
   const moving = ground.movingSeconds;
   const onTheRoad = ground.elapsedSeconds;
+  const gaps = payableGapSeconds(quest, ground, measuredSeconds);
   const durationSeconds =
     moving !== null && onTheRoad !== null
-      ? Math.min(onTheRoad, moving + OUTING_STOPPAGE_ALLOWANCE_SECONDS)
+      ? // The trace ends at its last fix; a walk finished inside the building lasted past it by
+        // the silence it was paid for, which the clock has already bounded (R-02).
+        Math.min(
+          Math.max(onTheRoad, moving + gaps),
+          moving + gaps + OUTING_STOPPAGE_ALLOWANCE_SECONDS,
+        )
       : isOutingSession(quest)
         ? // No fix ever locked. A quest is bounded by twice its own estimate, which for an outing
           // is a suggestion nobody chose: it turned a 45-minute walk against a 15-minute slot into
@@ -891,7 +910,7 @@ export function recordedDurationSeconds(): number {
 
   return sessionClock({
     quest,
-    ground: measureGround(quest, startTime),
+    ground: measureGround(quest, startTime, endTime),
     measuredSeconds: clockSeconds(startTime, endTime, totalPausedTime),
     restTakenSeconds,
   }).durationSeconds;
@@ -928,6 +947,19 @@ function pricedSets(
 /** The sets XP prices one at a time. Ground is not among them — see `outingLegSeconds`. */
 function toXpSets(quest: Quest, results: CompletedExerciseInput[]): XpSet[] {
   return pricedSets(quest, results).filter((set) => set.exercise.style !== NON_REP_STYLE);
+}
+
+/**
+ * The GPS silence this session may be paid for, before the day's cap (R-02).
+ *
+ * A pure outing only: a mixed quest's push-ups done indoors are a gap too, and they are already
+ * paid as sets. Bounded by the session's own clock less what moved, which leaves out a manual
+ * pause, the downtime of a walk the OS killed and a clock that jumped forward: none of them is on
+ * the clock, so none of them is paid, exactly as for a walk with the GPS off.
+ */
+function payableGapSeconds(quest: Quest, ground: Ground, measuredSeconds: number): number {
+  if (!isOutingSession(quest) || ground.movingSeconds === null || !ground.gapSeconds) return 0;
+  return Math.min(ground.gapSeconds, Math.max(0, measuredSeconds - ground.movingSeconds));
 }
 
 /**
@@ -974,16 +1006,30 @@ async function outingLedger(
   results: CompletedExerciseInput[],
   ground: Ground,
   effortCeilingSeconds: number,
+  measuredSeconds: number,
   savedSessionId: number | null,
 ): Promise<{
   outing: OutingLeg | null;
   atTarget: OutingLeg | null;
   prior: number;
+  /** Seconds of GPS silence this session was paid, under the day's cap (R-02); null for none. */
+  untracedSeconds: number | null;
   /** The same leg with what it was actually worth, for the victory screen's conversion line. */
-  priced: (OutingLeg & { effortSeconds: number; measured: boolean; clockSeconds: number }) | null;
+  priced:
+    | (OutingLeg & {
+        effortSeconds: number;
+        measured: boolean;
+        clockSeconds: number;
+        /** What moved, apart from the paid silence `seconds` also holds. */
+        movingSeconds: number;
+        gapSeconds: number;
+      })
+    | null;
 }> {
   const locomotion = pricedLocomotion(quest);
-  if (locomotion === null) return { outing: null, atTarget: null, prior: 0, priced: null };
+  if (locomotion === null) {
+    return { outing: null, atTarget: null, prior: 0, untracedSeconds: null, priced: null };
+  }
 
   const outing: OutingLeg = {
     seconds: outingLegSeconds(quest, results, ground.movingSeconds, effortCeilingSeconds),
@@ -995,23 +1041,35 @@ async function outingLedger(
   const clockSeconds = outing.seconds;
   // Time nothing witnessed (no GPS, or no fix ever locked) is paid up to two hours a day. Going
   // out without GPS is a button now; a timer left running on a table must not pay four hours.
-  if (ground.movingSeconds === null) {
+  // The silences of a GPS outing (R-02) are the same time and share the same two hours: keeping
+  // the GPS on must never pay less than switching it off.
+  const movingSeconds = outing.seconds;
+  const gap = payableGapSeconds(quest, ground, measuredSeconds);
+  let paidGapSeconds = 0;
+  if (ground.movingSeconds === null || gap > 0) {
     const room = Math.max(
       0,
       UNTRACED_PAID_SECONDS_PER_DAY - (await untracedSecondsToday(savedSessionId)),
     );
-    outing.seconds = Math.min(outing.seconds, room);
+    if (ground.movingSeconds === null) outing.seconds = Math.min(outing.seconds, room);
+    else {
+      paidGapSeconds = Math.min(gap, room);
+      outing.seconds += paidGapSeconds;
+    }
   }
 
   return {
     outing,
     atTarget: { seconds: outingGoalSeconds(quest), locomotion },
     prior,
+    untracedSeconds: paidGapSeconds > 0 ? paidGapSeconds : null,
     priced: {
       ...outing,
       effortSeconds: Math.round(outingEffortSeconds(outing, prior)),
       measured: ground.movingSeconds !== null,
       clockSeconds,
+      movingSeconds,
+      gapSeconds: paidGapSeconds,
     },
   };
 }
@@ -2188,7 +2246,7 @@ export const useSessionStore = create<SessionState>()(
       // This, not a sum over `gps_points`, is what the road is paid in: the raw sum counts drift
       // while the hero stood still and counts the length of a teleport the reducer broke the line
       // at, so the village would grow by a number the recap never showed. See `db/gps.ts`.
-      const ground = measureGround(get().quest, get().startTime);
+      const ground = measureGround(get().quest, get().startTime, get().endTime);
 
       // The ground stopped being covered when the session ended, which is earlier than this: the
       // subscriber at the bottom of this file ends the tracking the moment `status` becomes
@@ -2233,11 +2291,12 @@ export const useSessionStore = create<SessionState>()(
       const sets = toXpSets(quest, results);
 
       // The ground, priced once for the whole session and against what the day already paid for.
-      const { outing, atTarget, prior, priced } = await outingLedger(
+      const { outing, atTarget, prior, priced, untracedSeconds } = await outingLedger(
         quest,
         results,
         ground,
         effortCeilingSeconds,
+        measuredSeconds,
         get().savedSessionId,
       );
 
@@ -2293,6 +2352,8 @@ export const useSessionStore = create<SessionState>()(
         // distance still holds them, the replayed clock does not, and the pace between the two
         // is wrong with nothing on screen saying so. One writer, at save, like `leaguesM`.
         movingSeconds: ground.movingSeconds,
+        // The silence the day paid (R-02), so the next outing sees the cap and the decay it spent.
+        untracedSeconds,
         // Beside them, from the same reading: what the recap and the journal print for the climb.
         ascentM: ground.ascentM,
         // Which kind of session this was, decided here because here is the last place the quest

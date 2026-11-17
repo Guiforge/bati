@@ -11,7 +11,7 @@ import { gte } from "drizzle-orm";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
 import { localizedTitle } from "@/src/i18n/localized";
 import { db, schema } from "./client";
-import { OUTING_COUNTS_AFTER_SECONDS } from "./completed";
+import { creditedOutingSeconds, OUTING_COUNTS_AFTER_SECONDS } from "./completed";
 import { dayKey } from "./dates";
 import { formatDurationEstimate } from "./estimate";
 import type { HomeOffer } from "./homeOffer";
@@ -68,6 +68,8 @@ export type ReminderSession = {
   /** The hero's word, not Bati's measure (`0078`); null when everything was measured. */
   byHand?: string | null;
   movingSeconds: number | null;
+  /** Gap seconds the day paid (`0089`); absent on rows built before it. */
+  untracedSeconds?: number | null;
   durationSeconds: number | null;
 };
 
@@ -89,10 +91,7 @@ export function trainedOn(row: Pick<ReminderSession, "outing" | "byHand">): bool
 
 /** `countsAsSession()` for a row in memory: a workout, or ten minutes on the road. */
 export function countsAsSessionRow(row: ReminderSession): boolean {
-  return (
-    row.outing === null ||
-    (row.movingSeconds ?? row.durationSeconds ?? 0) >= OUTING_COUNTS_AFTER_SECONDS
-  );
+  return row.outing === null || creditedOutingSeconds(row) >= OUTING_COUNTS_AFTER_SECONDS;
 }
 
 /** One day the native side posted, as its journal keeps it (the last ten). */
@@ -546,6 +545,7 @@ export async function getReminderSessions(now: Date): Promise<ReminderSession[]>
       outing: completedQuest.outing,
       byHand: completedQuest.byHand,
       movingSeconds: completedQuest.movingSeconds,
+      untracedSeconds: completedQuest.untracedSeconds,
       durationSeconds: completedQuest.durationSeconds,
     })
     .from(completedQuest)

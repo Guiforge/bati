@@ -85,6 +85,7 @@ function log(over: Partial<QuestLogData["session"]> = {}, trace = [line]): Quest
       performedAt: new Date(2026, 8, 20),
       leaguesM: 1200,
       movingSeconds: 1700,
+      untracedSeconds: null,
       ascentM: null,
       outing: "walk",
       byHand: null,

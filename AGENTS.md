@@ -82,7 +82,9 @@ dev, `--no-dev --minify` and `.perf` release workflows.
 Run the relevant checks before finishing a change. If you move files or change imports,
 run the type/style check again.
 
-[`jest.setup.ts`](jest.setup.ts) exists for one reason: jest 30 refuses a `require` that happens
+[`jest.setup.ts`](jest.setup.ts) does two things. It gives each test file its own `os.tmpdir()`,
+removed after the file, because helpers that `mkdtemp` and never clean up left ~100 folders in
+`$TMPDIR` a run. And it works around this: jest 30 refuses a `require` that happens
 outside the test scope, and Expo installs its WinterCG globals (`fetch`, `URL`,
 `__ExpoImportMetaRegistry`, …) as lazy getters that require on first touch. Reading each one
 during setup forces them to resolve while that is still legal. Deleting it, or dropping a name

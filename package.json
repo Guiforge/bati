@@ -79,7 +79,7 @@
     "typescript": "~7.0.2"
   },
   "jest": {
-    "maxWorkers": "25%",
+    "maxWorkers": 6,
     "workerIdleMemoryLimit": "1GB",
     "moduleNameMapper": {
       "^@/assets/(.+\\.(?:webp|png|jpe?g|wav))$": "<rootDir>/node_modules/.cache/jest-asset-stubs/$1.json",

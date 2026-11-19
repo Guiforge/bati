@@ -79,7 +79,7 @@ jobs:
       - run: npx tsc --noEmit --project tsconfig.json
       # Pillow decodes the boss art for __tests__/boss-art-frames.test.ts, which fails in CI without it.
       - run: sudo apt-get update -q && sudo apt-get install -y --no-install-recommends python3-pil
-      - run: npm test -- --coverage
+      - run: npm test -- --coverage --maxWorkers=4
       - run: npm run deadcode
 
       # The same drift check ci.yml runs, and it belongs here too: scripts/release.sh regenerates

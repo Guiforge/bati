@@ -9,7 +9,7 @@
     "@noble/curves": "2.4.0",
     "@noble/hashes": "2.4.0",
     "@scure/bip39": "^2.4.0",
-    "@tamagui/animations-react-native": "3.2.3",
+    "@tamagui/animations-react-native": "3.3.2",
     "@tamagui/config": "3.2.3",
     "@tamagui/lucide-icons": "^1.144.4",
     "date-fns": "^4.4.0",

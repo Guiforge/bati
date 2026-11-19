@@ -193,6 +193,7 @@
     "screenshots": "bash scripts/screenshots.sh",
     "start": "expo start",
     "test": "jest",
+    "test:quick": "jest --onlyChanged",
     "test:watch": "jest --watch",
     "web": "expo start --web"
   },

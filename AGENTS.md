@@ -303,6 +303,11 @@ Managed by [prek](https://github.com/j178/prek) via [`.pre-commit-config.yaml`](
   `licenses:check` runs when `package-lock.json` is staged.
 - **pre-push**: `npm test`.
 
+- While working: `npm run test:quick` (`jest --onlyChanged`) runs only the suites that import an
+  uncommitted file. A loop, never a gate: suites that read through `fs` are outside its graph, so
+  a `drizzle/*.sql` change finds 1 suite of the ~60 that migrate a database. The pre-push and CI
+  run everything, and splitting the suite into a daily and a heavy tier was weighed on
+  2026-11-19 and refused: the heavy suites are the data-safety and sync ones.
 - Run everything by hand: `npx prek run --all-files`
 - Skip once: `git commit --no-verify`
 - Coming from the old husky setup? Run `git config --unset core.hooksPath` once.

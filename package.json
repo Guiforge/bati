@@ -40,7 +40,7 @@
     "i18next": "^26.6.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "react-i18next": "^17.1.10",
+    "react-i18next": "^18.0.1",
     "react-native": "0.88.1",
     "react-native-android-widget": "^0.26.0",
     "react-native-gesture-handler": "~3.3.0",

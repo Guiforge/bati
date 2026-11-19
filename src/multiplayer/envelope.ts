@@ -1,4 +1,5 @@
 import { batiCrypto } from "@/modules/bati-crypto";
+import { fromBase64 } from "@/src/base64";
 
 /**
  * The sealed envelope, v1: one format for every transport (QR, link, file, later a relay). Byte
@@ -73,9 +74,7 @@ export function toBase64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
-export function fromBase64(value: string): Uint8Array {
-  return Uint8Array.from(atob(value), (c) => c.charCodeAt(0));
-}
+export { fromBase64 };
 
 /** What a link fragment and a QR carry: base64url with no padding, nothing a URL has to escape. */
 export function toBase64Url(bytes: Uint8Array): string {

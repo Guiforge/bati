@@ -1,3 +1,7 @@
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+
 // Expo installs its WinterCG globals (`fetch`, `URL`, `TextDecoder`, …) as lazy getters that
 // `require()` the implementation on first touch — see expo/src/winter/installGlobal.ts. jest 30
 // added `throwIfBetweenTests`, which rejects any `require` that happens outside the test scope,
@@ -33,3 +37,19 @@ jest.mock("expo-audio", () => ({
   }),
   setAudioModeAsync: () => Promise.resolve(),
 }));
+
+// Each test file gets its own temp folder, removed after it. Helpers like p2pPeer and
+// makeIdentity mkdtemp under os.tmpdir() and never clean up: ~100 folders a run piled up in
+// $TMPDIR. Core modules are shared by every file of a worker, so the real tmpdir is put back.
+// Made on first use: a file whose tests are all skipped never runs afterAll.
+const realTmpdir = os.tmpdir;
+let fileTmp: string | undefined;
+os.tmpdir = () => {
+  const file = path.basename(expect.getState().testPath ?? "unknown");
+  fileTmp ??= fs.mkdtempSync(path.join(realTmpdir(), `bati-jest-${file}-`));
+  return fileTmp;
+};
+afterAll(() => {
+  os.tmpdir = realTmpdir;
+  if (fileTmp) fs.rmSync(fileTmp, { recursive: true, force: true });
+});

@@ -79,9 +79,10 @@
     "typescript": "~7.0.2"
   },
   "jest": {
-    "maxWorkers": "25%",
+    "maxWorkers": 6,
     "workerIdleMemoryLimit": "1GB",
     "moduleNameMapper": {
+      "^@/assets/(.+\\.(?:webp|png|jpe?g|wav))$": "<rootDir>/node_modules/.cache/jest-asset-stubs/$1.json",
       "^@/(.*)$": "<rootDir>/$1"
     },
     "preset": "jest-expo",
@@ -167,7 +168,8 @@
     },
     "setupFilesAfterEnv": [
       "<rootDir>/jest.setup.ts"
-    ]
+    ],
+    "globalSetup": "<rootDir>/__tests__/helpers/assetStubs.js"
   },
   "main": "index.ts",
   "name": "bati",
@@ -191,6 +193,7 @@
     "screenshots": "bash scripts/screenshots.sh",
     "start": "expo start",
     "test": "jest",
+    "test:quick": "jest --onlyChanged",
     "test:watch": "jest --watch",
     "web": "expo start --web"
   },

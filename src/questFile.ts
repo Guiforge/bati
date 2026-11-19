@@ -35,6 +35,7 @@ import { hasExif } from "@/db/sessionPhotos";
 import { clampToRange, REST_RANGE, ROUNDS_RANGE, type Target, targetRangeFor } from "@/db/targets";
 import { UUID_V7_RE, uuidv7 } from "@/db/uuid";
 import { NON_REP_STYLE } from "@/db/workUnits";
+import { fromBase64 } from "@/src/base64";
 import { imageSize, type Size } from "@/src/carriedImage";
 
 /**
@@ -339,7 +340,7 @@ export { imageSize };
 /** The size of a carried picture, or null when its base64 is broken, its header unreadable or it still holds EXIF. */
 function carriedSize(base64: string): Size | null {
   try {
-    const picture = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+    const picture = fromBase64(base64);
     // A photo that still carries its EXIF (camera, date, GPS) is someone's location: never kept
     // here, never written back out. The apps' own encoder strips it, so ours never has any.
     return hasExif(picture) ? null : imageSize(picture);

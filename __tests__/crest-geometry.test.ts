@@ -83,8 +83,20 @@ function dense(d: string): Pt[] {
 }
 
 const OUTLINE = dense(SHIELD);
-const distToOutline = ([x, y]: Pt) =>
-  Math.min(...OUTLINE.map(([a, b]) => Math.hypot(a - x, b - y)));
+// Thousands of points times thousands of outline points: an indexed loop, because the Hermes
+// Babel preset turns for-of and destructuring into helpers that made this one test take 12 s.
+const OUT_X = OUTLINE.map((p) => p[0]);
+const OUT_Y = OUTLINE.map((p) => p[1]);
+const distToOutline = (p: Pt) => {
+  let min = Number.POSITIVE_INFINITY;
+  for (let i = 0; i < OUT_X.length; i++) {
+    const dx = (OUT_X[i] ?? 0) - p[0];
+    const dy = (OUT_Y[i] ?? 0) - p[1];
+    const d2 = dx * dx + dy * dy;
+    if (d2 < min) min = d2;
+  }
+  return Math.sqrt(min);
+};
 
 describe("crest border", () => {
   it("is the same width everywhere: the inset line stays at one distance from the outline", () => {

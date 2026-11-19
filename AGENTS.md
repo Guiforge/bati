@@ -82,7 +82,9 @@ dev, `--no-dev --minify` and `.perf` release workflows.
 Run the relevant checks before finishing a change. If you move files or change imports,
 run the type/style check again.
 
-[`jest.setup.ts`](jest.setup.ts) exists for one reason: jest 30 refuses a `require` that happens
+[`jest.setup.ts`](jest.setup.ts) does two things. It gives each test file its own `os.tmpdir()`,
+removed after the file, because helpers that `mkdtemp` and never clean up left ~100 folders in
+`$TMPDIR` a run. And it works around this: jest 30 refuses a `require` that happens
 outside the test scope, and Expo installs its WinterCG globals (`fetch`, `URL`,
 `__ExpoImportMetaRegistry`, …) as lazy getters that require on first touch. Reading each one
 during setup forces them to resolve while that is still legal. Deleting it, or dropping a name
@@ -301,6 +303,11 @@ Managed by [prek](https://github.com/j178/prek) via [`.pre-commit-config.yaml`](
   `licenses:check` runs when `package-lock.json` is staged.
 - **pre-push**: `npm test`.
 
+- While working: `npm run test:quick` (`jest --onlyChanged`) runs only the suites that import an
+  uncommitted file. A loop, never a gate: suites that read through `fs` are outside its graph, so
+  a `drizzle/*.sql` change finds 1 suite of the ~60 that migrate a database. The pre-push and CI
+  run everything, and splitting the suite into a daily and a heavy tier was weighed on
+  2026-11-19 and refused: the heavy suites are the data-safety and sync ones.
 - Run everything by hand: `npx prek run --all-files`
 - Skip once: `git commit --no-verify`
 - Coming from the old husky setup? Run `git config --unset core.hooksPath` once.

@@ -14,10 +14,12 @@ describe("pickNotice", () => {
       "sync",
       "lightWeek",
       "rhythm",
+      "breakOffer",
       "whatsNew",
       "update",
       "protect",
       "reminder",
+      "zone",
       "passwordCheck",
       null,
     ]);

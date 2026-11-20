@@ -15,10 +15,17 @@ import {
   REMINDER_HORIZON_DAYS,
   REMINDER_LATE_MINUTES,
   REMINDER_PAUSE_DAYS,
+  type ReminderDays,
+  type ReminderSession,
   reminderPrefs,
+  setReminderDays,
   shouldAskAboutReminders,
+  suggestDays,
+  suggestTime,
+  type Weekday,
 } from "@/db/reminders";
 import { i18n } from "@/i18n";
+import { requestNotificationPermission } from "@/modules/bati-location";
 import * as Reminders from "@/modules/bati-reminders";
 import { resolveAppLanguage } from "@/src/i18n/deviceLanguage";
 import { type SessionStatus, useSessionStore } from "@/stores/session";
@@ -175,4 +182,64 @@ export async function reminderCardKind(now = new Date()): Promise<ReminderCardKi
     getSessionAggregates(),
   ]);
   return !dismissed && Object.keys(days).length === 0 && totalSessions > 0 ? "offer" : null;
+}
+
+/**
+ * Turns the reminders on: the one writer, for Settings' switch and for the victory screen's offer.
+ * Asks Android for the permission, and without it changes nothing (false). The first time, the days
+ * the journal says the hero trains on at the usual hour; days already chosen are kept.
+ */
+export async function enableReminders(
+  days: ReminderDays,
+  sessions: readonly ReminderSession[],
+  weeklyOath: number | null,
+  now = new Date(),
+): Promise<boolean> {
+  if (!(await requestNotificationPermission()).granted) return false;
+  const chosen =
+    Object.keys(days).length > 0
+      ? days
+      : Object.fromEntries(
+          suggestDays(sessions, now, weeklyOath).map((d) => [d, suggestTime(sessions)]),
+        );
+  Reminders.setEnabled(true);
+  await setReminderDays(chosen);
+  await reminderPrefs.setStreakFrom(dayKey(now));
+  await replanRemindersNow();
+  return true;
+}
+
+/** The victory screens that offer the reminder: the hero's 1st completed session, and the 3rd. */
+export const WIN_OFFER_SESSIONS = [1, 3];
+/** "Not now" answers after which the victory screen stops asking. */
+export const WIN_OFFER_MAX_NOT_NOWS = 2;
+
+/**
+ * What the victory screen offers right after a session was kept: the weekdays to remind on, or null
+ * when it stays quiet (reminders on, days chosen, the Home offer closed, two "Not now", or any
+ * other session than the 1st and 3rd). Same rules as `ReminderCard`'s offer, plus the moment.
+ */
+export async function winReminderOffer(now = new Date()): Promise<{
+  days: Weekday[];
+  sessions: ReminderSession[];
+} | null> {
+  if (!Reminders.isAvailable() || Reminders.getState().enabled) return null;
+  const [days, dismissed, notNows, { totalSessions }, sessions] = await Promise.all([
+    getReminderDays(),
+    reminderPrefs.offerDismissed(),
+    reminderPrefs.winNotNows(),
+    getSessionAggregates(),
+    getReminderSessions(now),
+  ]);
+  if (
+    dismissed ||
+    notNows >= WIN_OFFER_MAX_NOT_NOWS ||
+    Object.keys(days).length > 0 ||
+    !WIN_OFFER_SESSIONS.includes(totalSessions)
+  ) {
+    return null;
+  }
+  // ponytail: the weekly oath is not read here, so a hero with a 4-a-week oath is offered the
+  // default three days; Settings' gap line says so. Read `getOath` when someone reports it.
+  return { days: suggestDays(sessions, now, null), sessions };
 }

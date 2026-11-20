@@ -78,7 +78,9 @@ jest.mock("@/db/pause", () => ({ getActivePause: async () => null }));
 let mockQuota = 2;
 jest.mock("@/db/streaks", () => ({ getWeeklyQuota: async () => mockQuota }));
 jest.mock("@/src/deviceSync", () => ({ syncAccount: async () => null }));
+// The real writer (`enableReminders`) runs on the mocks above; only the replan is observed.
 jest.mock("@/src/reminders", () => ({
+  ...jest.requireActual("@/src/reminders"),
   replanRemindersNow: jest.fn().mockResolvedValue(undefined),
 }));
 
@@ -133,7 +135,7 @@ test("turning it on asks the permission, then ticks days from the history and pl
   await act(async () => {
     await fireEvent.press(screen.getByTestId("settings-reminder-switch"));
   });
-  await waitFor(() => expect(replanRemindersNow).toHaveBeenCalled());
+  await waitFor(() => expect(setReminderDays).toHaveBeenCalled());
   expect(requestNotificationPermission).toHaveBeenCalledTimes(1);
   expect(Reminders.setEnabled).toHaveBeenCalledWith(true);
   // No history, no oath: Monday, Wednesday, Friday, at 18:00.

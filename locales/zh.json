@@ -1,6 +1,7 @@
 {
   "dark": "暗色",
   "home": {
+    "break_offer": "要离开一阵子吗？休息一下，你的火焰会等你。",
     "start": "开始",
     "details": "详情",
     "kicker_day_one": "第一天",
@@ -2333,6 +2334,9 @@
     "all_releases": "所有版本的说明"
   },
   "reminders": {
+    "win_on": "提醒已开启。你可以在设置里修改日期。",
+    "win_yes": "提醒我",
+    "win_ask": "{{days}}再练一次？",
     "adventure": {
       "0": "{{adventure}} 的第 {{n}} 章在等你。",
       "1": "{{adventure}}，第 {{n}} 章，从你停下的地方继续。",
@@ -2837,6 +2841,8 @@
     "layout_bigmap_note": "地图铺满屏幕，大号数据叠在上面。"
   },
   "pause": {
+    "zone_offer_title": "这个部位先保护一阵子？",
+    "zone_offer_done": "好了。这些动作暂时先放一边。",
     "title": "休整与养护",
     "row_off": "关闭",
     "row_pause": "休整至 {{date}}",

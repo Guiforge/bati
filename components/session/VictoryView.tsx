@@ -21,6 +21,7 @@ import { ChevronRight } from "@/components/icons";
 import { SessionNotebook } from "@/components/journal/SessionNotebook";
 import { useConfirmForget } from "@/components/journal/useConfirmForget";
 import { DuoVictoryLine } from "@/components/multiplayer/DuoVictoryLine";
+import { ReminderAfterWin } from "@/components/session/ReminderAfterWin";
 import { ShareButton } from "@/components/share/ShareButton";
 import { getBossAsset, getQuestAsset } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
@@ -890,6 +891,8 @@ export function VictoryView() {
               </AppButton>
             </YStack>
           )}
+
+          {!!result && !tooShort && !saveError && <ReminderAfterWin />}
 
           {/* Everything below the feeling is one tap away and costs nothing until asked for: the
             milestone and the chart read the journal, so they are not even mounted before. */}

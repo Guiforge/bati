@@ -1,6 +1,7 @@
 {
   "dark": "Oscuro",
   "home": {
+    "break_offer": "¿Te vas a ausentar un tiempo? Haz una pausa, tu llama espera.",
     "light_week_on": "Semana ligera hasta el {{date}}: cada misión lleva una ronda menos.",
     "light_week_end": "Volver al ritmo normal",
     "pause_on": "En pausa hasta el {{date}}",
@@ -2566,6 +2567,9 @@
     "all_releases": "Las notas de todas las versiones"
   },
   "reminders": {
+    "win_on": "Recordatorio activado. Puedes cambiar los días en Ajustes.",
+    "win_yes": "Recuérdamelo",
+    "win_ask": "¿Entrenar de nuevo: {{days}}?",
     "adventure": {
       "0": "La etapa {{n}} de {{adventure}} te espera.",
       "1": "{{adventure}}, etapa {{n}}. Sigue donde lo dejaste.",
@@ -2722,6 +2726,8 @@
     "layout_bigmap_note": "El mapa llena la pantalla y tu cifra grande va encima."
   },
   "pause": {
+    "zone_offer_done": "Hecho. Esos ejercicios quedan apartados por ahora.",
+    "zone_offer_title": "¿Cuidar esta zona un tiempo?",
     "title": "Pausa y zona en reposo",
     "row_off": "Desactivada",
     "row_pause": "Pausa hasta el {{date}}",

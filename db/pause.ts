@@ -9,7 +9,7 @@ import {
 import { dayKey } from "./dates";
 import { listExercises } from "./exercises";
 import { isMuscleCode } from "./muscles";
-import { preferences, setPreference } from "./preferences";
+import { getPreference, preferences, setPreference } from "./preferences";
 import { clearCached } from "./queryCache";
 import type { MuscleCode } from "./schema";
 import { putExerciseBack, setExerciseAside } from "./setAside";
@@ -32,6 +32,17 @@ export async function getActivePause(now = new Date()): Promise<PausePeriod | nu
   const today = dayKey(now);
   return (await getPausePeriods()).find((p) => p.from <= today && today < p.until) ?? null;
 }
+
+/** Closed for a week: the break offer on Home comes back if the hero is still away after that. */
+const BREAK_OFFER_QUIET_DAYS = 7;
+
+export async function breakOfferQuiet(now = new Date()): Promise<boolean> {
+  const closedOn = await getPreference("breakOfferClosedOn");
+  return !!closedOn && closedOn > dayKey(addDays(now, -BREAK_OFFER_QUIET_DAYS));
+}
+
+export const closeBreakOffer = (now = new Date()) =>
+  setPreference("breakOfferClosedOn", dayKey(now));
 
 /**
  * Pause from today until `returnOn` (a local `yyyy-MM-dd`), the day the hero trains again. Never

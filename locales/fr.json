@@ -516,6 +516,7 @@
     "muscles": "Muscles"
   },
   "home": {
+    "break_offer": "Tu t'absentes un moment ? Fais une pause, ta flamme attend.",
     "light_week_on": "Semaine légère jusqu'au {{date}} : chaque quête se fait en un tour de moins.",
     "light_week_end": "Revenir au rythme normal",
     "pause_on": "En pause jusqu'au {{date}}",
@@ -2566,6 +2567,9 @@
     "all_releases": "Les notes de toutes les versions"
   },
   "reminders": {
+    "win_on": "Rappel activé. Tu peux changer les jours dans les Réglages.",
+    "win_yes": "Rappelle-moi",
+    "win_ask": "S'entraîner de nouveau {{days}} ?",
     "adventure": {
       "0": "L'étape {{n}} de {{adventure}} t'attend.",
       "1": "{{adventure}}, étape {{n}}. Tu reprends là où tu en étais.",
@@ -2722,6 +2726,8 @@
     "layout_bigmap_note": "La carte remplit l'écran, ton grand chiffre posé dessus."
   },
   "pause": {
+    "zone_offer_done": "C'est fait. Ces exercices sont mis de côté pour l'instant.",
+    "zone_offer_title": "Ménager cette zone un moment ?",
     "title": "Pause et zone ménagée",
     "row_off": "Désactivée",
     "row_pause": "Pause jusqu'au {{date}}",

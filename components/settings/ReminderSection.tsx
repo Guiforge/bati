@@ -27,18 +27,16 @@ import {
   type ReminderSession,
   reminderPrefs,
   setReminderDays,
-  suggestDays,
   suggestTime,
   WEEKDAYS,
   type Weekday,
 } from "@/db/reminders";
 import { getWeeklyQuota } from "@/db/streaks";
 import { useHaptics } from "@/hooks/useHaptics";
-import { requestNotificationPermission } from "@/modules/bati-location";
 import * as Reminders from "@/modules/bati-reminders";
 import { syncAccount } from "@/src/deviceSync";
 import type { AppLanguage } from "@/src/i18n/deviceLanguage";
-import { replanRemindersNow } from "@/src/reminders";
+import { enableReminders, replanRemindersNow } from "@/src/reminders";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -195,26 +193,14 @@ export function ReminderSection({ onLayout }: { onLayout?: (event: LayoutChangeE
   };
 
   const turnOn = async () => {
-    const answer = await requestNotificationPermission();
-    if (!answer.granted) {
+    // Shown at once for the days it keeps or picks; the refresh reads back what was saved.
+    if (!(await enableReminders(view.days, view.sessions, view.weeklyOath))) {
       haptics.warning();
       setNote("denied");
       return;
     }
     setNote(null);
-    // The first time, the days the journal says the hero trains on, at half an hour before the
-    // usual hour. Days already chosen (on another device, or before) are kept as they are.
-    const days =
-      Object.keys(view.days).length > 0
-        ? view.days
-        : Object.fromEntries(
-            suggestDays(view.sessions, new Date(), view.weeklyOath).map((d) => [
-              d,
-              suggestTime(view.sessions),
-            ]),
-          );
-    Reminders.setEnabled(true);
-    await commit(days);
+    refresh();
   };
 
   const turnOff = async () => {

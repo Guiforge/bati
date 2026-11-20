@@ -7,6 +7,9 @@
  * second card, which pushed "Voir la quête" below the fold at 130 % text. It shares the light
  * week's rank (the offer and the running week never coexist) and so outranks the backup card.
  *
+ * "breakOffer" (a flame a week idle, `src/breakOffer.ts`) is time-sensitive, so it sits above the
+ * housekeeping cards; "zone" (the zone being spared) is information only and the quietest but one.
+ *
  * A-01 "recul" inserts between "sync" and "lightWeek" ("semaine légère", E-03, is in).
  */
 export const NOTICE_ORDER = [
@@ -14,10 +17,12 @@ export const NOTICE_ORDER = [
   "sync",
   "lightWeek",
   "rhythm",
+  "breakOffer",
   "whatsNew",
   "update",
   "protect",
   "reminder",
+  "zone",
   "passwordCheck",
 ] as const;
 

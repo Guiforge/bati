@@ -586,6 +586,13 @@ export default function AdventureEditor() {
                 {t("adventures.editor_frozen")}
               </Text>
             ) : null}
+            {/* Said before Save, not only after it: the error lands below the fold and the hero
+                saw only the scroll jump (audit 2026-11-20, F9). */}
+            {!frozen && !stepsMissing && steps.length < 2 ? (
+              <Text testID="editor-steps-hint" fontSize={13} color="textSecondary">
+                {t("adventures.editor_steps_hint")}
+              </Text>
+            ) : null}
 
             {steps.map((step, i) => {
               const quest = catalogue.questsById.get(step.questId) ?? null;

@@ -1,0 +1,338 @@
+# The screens audit.yaml never reached: the Forge and its editors, the journal's sub-pages, and
+# the Settings rows that open a screen of their own (pause, set aside, XP, what's new...).
+#
+# A third run rather than more steps in audit.yaml: that flow ends inside a boss fight it cannot
+# leave, and every step added before it is one more chance to lose its place. Same contract:
+# nothing asserted, every tap optional, back-to-tabs between sections.
+appId: com.guiforge.bati.dev
+tags:
+  - audit
+---
+- runFlow: subflows/boot-dev-client.yaml
+- extendedWaitUntil:
+    visible:
+      id: "onboarding-presentation-continue"
+    timeout: 120000
+- runFlow: subflows/complete-onboarding.yaml
+- runFlow: subflows/seed-hero.yaml
+
+# --- The Forge --------------------------------------------------------------
+- tapOn:
+    id: "tab-quests"
+    optional: true
+- tapOn:
+    id: "forge-open"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "forge-screen"
+    timeout: 15000
+    optional: true
+- takeScreenshot: 60-forge
+- scroll
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 61-forge-scrolled
+- scrollUntilVisible:
+    element:
+      id: "forge-bosses-new"
+    direction: DOWN
+    optional: true
+- tapOn:
+    id: "forge-bosses-new"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "boss-editor"
+    timeout: 10000
+    optional: true
+- takeScreenshot: 62-boss-editor
+- runFlow: subflows/back-to-tabs.yaml
+
+- tapOn:
+    id: "tab-quests"
+    optional: true
+- tapOn:
+    id: "forge-open"
+    optional: true
+- scrollUntilVisible:
+    element:
+      id: "forge-exercises-new"
+    direction: DOWN
+    optional: true
+- tapOn:
+    id: "forge-exercises-new"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: 63-exercise-new
+- scroll
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 64-exercise-new-scrolled
+- runFlow: subflows/back-to-tabs.yaml
+
+- tapOn:
+    id: "tab-quests"
+    optional: true
+- tapOn:
+    id: "forge-open"
+    optional: true
+- tapOn:
+    id: "forge-adventures-new"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: 65-adventure-editor
+- runFlow: subflows/back-to-tabs.yaml
+
+# --- Journal sub-pages ------------------------------------------------------
+- tapOn:
+    id: "tab-journal"
+    optional: true
+- tapOn:
+    id: "journal-tab-stats"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 8000
+- scrollUntilVisible:
+    element:
+      id: "journal-chip-lifetime"
+    direction: DOWN
+    optional: true
+- tapOn:
+    id: "journal-chip-lifetime"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: 66-journal-lifetime
+- back
+- scrollUntilVisible:
+    element:
+      id: "journal-chip-achievements"
+    direction: DOWN
+    optional: true
+- tapOn:
+    id: "journal-chip-achievements"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: 67-journal-achievements
+- back
+# Not here: the bosses chip (only once a boss has fallen, the seeded hero has none) and the
+# chronicle door (only inside the year-end window, `chronicleWindow`). Both are noted in the ledger.
+# Re-enter the tab rather than `back`: a back from a tap that opened nothing leaves the Journal.
+- tapOn:
+    id: "tab-journal"
+    optional: true
+- tapOn:
+    id: "journal-tab-stats"
+    optional: true
+- scrollUntilVisible:
+    element:
+      id: "journal-work-link"
+    direction: DOWN
+    optional: true
+- tapOn:
+    id: "journal-work-link"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: 69-journal-balance
+# Balance keeps the tab bar, so back-to-tabs would stop here and leave it on the Journal's stack.
+- back
+- runFlow: subflows/back-to-tabs.yaml
+
+# --- Settings, row by row ---------------------------------------------------
+# Each detour starts from a fresh Settings: a `back` that missed leaves the next scroll looking
+# for a row on the wrong screen.
+- tapOn:
+    id: "tab-home"
+    optional: true
+- tapOn:
+    id: "home-settings"
+- scrollUntilVisible:
+    element:
+      id: "settings-reminder"
+    direction: DOWN
+    optional: true
+- takeScreenshot: 71-settings-reminder
+- tapOn:
+    id: "settings-reminder-switch"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 72-settings-reminder-on
+- scrollUntilVisible:
+    element:
+      id: "settings-pause"
+    direction: DOWN
+    optional: true
+- tapOn:
+    id: "settings-pause"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: 73-pause
+- back
+- scrollUntilVisible:
+    element:
+      id: "settings-set-aside"
+    direction: DOWN
+    optional: true
+- tapOn:
+    id: "settings-set-aside"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: 74-set-aside
+- back
+- scrollUntilVisible:
+    element:
+      id: "settings-outing-display"
+    direction: DOWN
+    optional: true
+- tapOn:
+    id: "settings-outing-display"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: 75-outing-display
+- back
+- scrollUntilVisible:
+    element:
+      id: "settings-sync"
+    direction: DOWN
+    optional: true
+- tapOn:
+    id: "settings-sync"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: 76-sync-sheet
+- back
+- scrollUntilVisible:
+    element:
+      id: "settings-encrypt-backup"
+    direction: DOWN
+    optional: true
+- tapOn:
+    id: "settings-encrypt-backup"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: 77-encryption-sheet
+- back
+- scrollUntilVisible:
+    element:
+      id: "settings-health-data"
+    direction: DOWN
+    optional: true
+- tapOn:
+    id: "settings-health-data"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: 78-health-data
+- back
+- scrollUntilVisible:
+    element:
+      id: "settings-xp"
+    direction: DOWN
+    optional: true
+- tapOn:
+    id: "settings-xp"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: 79-xp
+- back
+- scrollUntilVisible:
+    element:
+      id: "settings-version-notes"
+    direction: DOWN
+    optional: true
+- tapOn:
+    id: "settings-version-notes"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: 80-whats-new
+- runFlow: subflows/back-to-tabs.yaml
+
+# --- The two confirmations that cost a hero something -----------------------
+# Each is opened and cancelled: the dialog is the shot, the data stays.
+# Twice: a second tap on the active tab pops its stack to the root.
+- tapOn:
+    id: "tab-journal"
+    optional: true
+- tapOn:
+    id: "tab-journal"
+    optional: true
+- tapOn:
+    id: "journal-tab-history"
+    optional: true
+- tapOn:
+    id: "journal-session-card"
+    index: 0
+    optional: true
+- scrollUntilVisible:
+    element:
+      id: "journal-forget-session"
+    direction: DOWN
+    optional: true
+- tapOn:
+    id: "journal-forget-session"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 81-confirm-forget-session
+- tapOn:
+    id: "confirm-dialog-cancel"
+    optional: true
+- runFlow: subflows/back-to-tabs.yaml
+
+# Last: a session cannot be left without quitting it.
+- tapOn:
+    id: "tab-quests"
+    optional: true
+- tapOn:
+    id: "quests-quest-card"
+    index: 0
+    optional: true
+- tapOn:
+    id: "quest-start"
+    optional: true
+- tapOn:
+    id: "narrative-confirm"
+    optional: true
+- tapOn:
+    id: "session-skip-warmup"
+    optional: true
+- tapOn:
+    id: "session-start-go"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "session-pause"
+    timeout: 20000
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "session-complete-exercise"
+    timeout: 20000
+    optional: true
+- tapOn:
+    id: "session-pause"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "session-quit"
+    timeout: 8000
+    optional: true
+- tapOn:
+    id: "session-quit"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: 82-confirm-quit-session

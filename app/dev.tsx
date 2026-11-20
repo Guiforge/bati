@@ -356,7 +356,9 @@ export default function DevScreen() {
           <Text fontSize="4" fontWeight="700" color="text">
             Boss fight
           </Text>
-          <AppButton onPress={() => runBossFight(false)}>Jump to boss fight</AppButton>
+          <AppButton testID="dev-boss-fight" onPress={() => runBossFight(false)}>
+            Jump to boss fight
+          </AppButton>
           <AppButton variant="outline" onPress={() => runBossFight(true)}>
             Jump to boss fight (1 HP)
           </AppButton>

@@ -292,6 +292,8 @@ tags:
     element:
       id: "dev-seed-expedition"
     direction: DOWN
+    speed: 80
+    timeout: 90000
     optional: true
 - tapOn:
     id: "dev-seed-expedition"
@@ -443,6 +445,9 @@ tags:
     optional: true
 
 # --- The boss arena ---------------------------------------------------------
+# A relaunch, not a tab tap: whatever Continue opens after the victory (a feast, a level) hides
+# the tab bar, and the arena went unphotographed behind it on 2026-11-20.
+- runFlow: subflows/relaunch.yaml
 - tapOn:
     id: "tab-home"
     optional: true
@@ -454,13 +459,17 @@ tags:
     direction: DOWN
 - tapOn:
     id: "settings-dev"
+# By id and with time: the crest board above it is several screens tall, and the default 20 s
+# scroll gave up in the middle of it on 2026-11-20.
 - scrollUntilVisible:
     element:
-      text: "Jump to boss fight"
+      id: "dev-boss-fight"
     direction: DOWN
+    speed: 80
+    timeout: 90000
     optional: true
 - tapOn:
-    text: "Jump to boss fight"
+    id: "dev-boss-fight"
     optional: true
 - extendedWaitUntil:
     visible:

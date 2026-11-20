@@ -76,9 +76,10 @@ describe("HomeHeader", () => {
     expect(StyleSheet.flatten(xp.props.style).color).toBe(rawColors.resourceGold);
   });
 
-  it("keeps the avatar and the crest but no level line or XP before the first victory", async () => {
+  it("keeps the avatar and the castle but no level, XP or tier before the first victory", async () => {
     const view = await mount(false);
-    await view.findByTestId("home-village-tier");
+    await view.findByTestId("home-village");
+    expect(view.queryByTestId("home-village-tier")).toBeNull();
     expect(view.queryByText(/45/)).toBeNull();
     expect(view.queryByText(/10.*100/)).toBeNull();
     expect(view.getByTestId("home-settings")).toBeTruthy();

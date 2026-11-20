@@ -165,19 +165,23 @@ export function HomeHeader({ showLevel }: { showLevel: boolean | null }) {
         >
           <Castle size={16} color="textSecondary" />
           {/* "Tier 12", not a bare 12 next to a castle: the audit's strangers read it as a count.
-              Shrinks to fit the 44 dp cell instead of wrapping at large fonts. */}
-          <AppText
-            variant="label"
-            testID="home-village-tier"
-            fontSize={10}
-            fontWeight="700"
-            color="textSecondary"
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.6}
-          >
-            {t("village.tier", { tier })}
-          </AppText>
+              Shrinks to fit the 44 dp cell instead of wrapping at large fonts. Hidden with the
+              level until the first session (`showLevel`): "Tier 1" on day one is game words
+              before the game (audit 2026-11-20, F12). The castle still opens the village. */}
+          {showLevel ? (
+            <AppText
+              variant="label"
+              testID="home-village-tier"
+              fontSize={10}
+              fontWeight="700"
+              color="textSecondary"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.6}
+            >
+              {t("village.tier", { tier })}
+            </AppText>
+          ) : null}
         </YStack>
       )}
     </XStack>

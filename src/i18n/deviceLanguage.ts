@@ -41,12 +41,6 @@ export const MACHINE_TRANSLATED: Localized<boolean> = {
   zh: true,
 };
 
-/** The language after this one, wrapping: what one tap on the settings row moves to. */
-export function nextAppLanguage(language: AppLanguage): AppLanguage {
-  const index = APP_LANGUAGES.indexOf(language);
-  return APP_LANGUAGES[(index + 1) % APP_LANGUAGES.length] ?? "en";
-}
-
 /** A value in every language the app ships. A table missing one is a compile error. */
 export type Localized<T = string> = Record<AppLanguage, T>;
 

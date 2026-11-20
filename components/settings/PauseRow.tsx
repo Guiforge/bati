@@ -47,6 +47,7 @@ export function PauseRow() {
       testID="settings-pause"
       icon={<Pause size={22} color="text" />}
       label={t("pause.title")}
+      opens
       value={value}
       onPress={() => router.push("/pause" as never)}
     />

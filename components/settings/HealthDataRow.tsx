@@ -17,6 +17,7 @@ export function HealthDataRow() {
       testID="settings-health-data"
       icon={<Activity size={22} color="text" />}
       label={t("healthExport.row")}
+      opens
       onPress={() => router.push("/health-data" as never)}
     />
   );

@@ -47,6 +47,7 @@ import { BackupSecurityRows } from "@/components/settings/BackupSecurityRows";
 import { CrestAnimalRow } from "@/components/settings/CrestAnimalRow";
 import { HealthDataRow } from "@/components/settings/HealthDataRow";
 import { HeroSizeLine } from "@/components/settings/HeroSizeLine";
+import { LanguageSheet } from "@/components/settings/LanguageSheet";
 import { MapStyleRow } from "@/components/settings/MapStyleRow";
 import { OutingDisplayRow } from "@/components/settings/OutingDisplayRow";
 import { PauseRow } from "@/components/settings/PauseRow";
@@ -66,7 +67,7 @@ import { useBugReport, versionLabel } from "@/hooks/useBugReport";
 import { useHaptics } from "@/hooks/useHaptics";
 import { encodeAvatar } from "@/src/customAvatar";
 import { UPDATE_CHECK_OFFERED } from "@/src/distribution";
-import { LANGUAGE_NAMES, MACHINE_TRANSLATED, nextAppLanguage } from "@/src/i18n/deviceLanguage";
+import { type AppLanguage, LANGUAGE_NAMES, MACHINE_TRANSLATED } from "@/src/i18n/deviceLanguage";
 import { reportError } from "@/src/reportError";
 import { releaseNotes } from "@/src/whatsNew";
 import { useSettingsStore } from "@/stores/settings";
@@ -177,6 +178,7 @@ function DevFooter() {
       testID="settings-dev"
       icon={<Wrench size={22} color="text" />}
       label="Dev tools"
+      opens
       // `as never`: same typed-route caveat as the pushes above.
       onPress={() => router.push("/dev" as never)}
     />
@@ -477,9 +479,10 @@ export default function SettingsScreen() {
 
   // One writer: the store already swaps i18n and pokes the widgets. Calling
   // `i18n.changeLanguage` here too was a second one, silently racing the first.
-  // One tap, the next language, the way the equipment row cycles its four states.
-  const cycleLanguage = () => {
-    setLanguage(nextAppLanguage(language)).catch((e) => reportError("settings.language", e));
+  const [languageOpen, setLanguageOpen] = useState(false);
+  const pickLanguage = (next: AppLanguage) => {
+    setLanguageOpen(false);
+    setLanguage(next).catch((e) => reportError("settings.language", e));
   };
 
   return (
@@ -530,10 +533,18 @@ export default function SettingsScreen() {
           <SectionLabel px="1">{t("settings.preferences")}</SectionLabel>
 
           <SettingRow
+            testID="settings-language"
             icon={<Languages size={22} color="text" />}
             label={t("settings.language")}
             value={LANGUAGE_NAMES[language]}
-            onPress={cycleLanguage}
+            opens
+            onPress={() => setLanguageOpen(true)}
+          />
+          <LanguageSheet
+            open={languageOpen}
+            current={language}
+            onPick={pickLanguage}
+            onClose={() => setLanguageOpen(false)}
           />
 
           {MACHINE_TRANSLATED[language] ? (
@@ -545,6 +556,7 @@ export default function SettingsScreen() {
           <SettingRow
             icon={<Vibrate size={22} color="text" />}
             label={t("settings.haptics")}
+            checked={hapticsEnabled}
             value={hapticsEnabled ? t("common.on") : t("common.off")}
             onPress={() => {
               const next = !hapticsEnabled;
@@ -564,6 +576,7 @@ export default function SettingsScreen() {
             testID="settings-sound"
             icon={<Volume2 size={22} color="text" />}
             label={t("settings.sound")}
+            checked={soundEnabled}
             value={soundEnabled ? t("common.on") : t("common.off")}
             onPress={() => {
               haptics.selection();
@@ -577,6 +590,7 @@ export default function SettingsScreen() {
             testID="settings-villagers"
             icon={<MessagesSquare size={22} color="text" />}
             label={t("settings.villagers")}
+            checked={villagersEnabled}
             value={villagersEnabled ? t("common.on") : t("common.off")}
             onPress={() => {
               haptics.selection();
@@ -604,6 +618,7 @@ export default function SettingsScreen() {
           <SettingRow
             icon={<Flame size={22} color="text" />}
             label={t("settings.warmup")}
+            checked={warmupEnabled}
             value={warmupEnabled ? t("common.on") : t("common.off")}
             onPress={() => {
               haptics.selection();
@@ -648,6 +663,7 @@ export default function SettingsScreen() {
             testID="settings-map-tiles"
             icon={<MapIcon size={22} color="text" />}
             label={t("settings.map_tiles")}
+            checked={mapTilesEnabled}
             value={onOffLabel(mapTilesEnabled, t)}
             onPress={() => {
               haptics.selection();
@@ -684,6 +700,7 @@ export default function SettingsScreen() {
           <SettingRow
             icon={<Swords size={22} color="text" />}
             label={t("oath.screen_title")}
+            opens
             onPress={openOath}
           />
 
@@ -745,6 +762,7 @@ export default function SettingsScreen() {
           <SettingRow
             icon={<Bug size={22} color="text" />}
             label={t("settings.feedback")}
+            opens
             value={
               crashCount > 0
                 ? t("settings.report_bug_count", { count: crashCount })
@@ -757,6 +775,7 @@ export default function SettingsScreen() {
             testID="settings-xp"
             icon={<Zap size={22} color="text" />}
             label={t("xp.title")}
+            opens
             onPress={() => router.push("/xp" as never)}
           />
 
@@ -765,6 +784,7 @@ export default function SettingsScreen() {
           <SettingRow
             icon={<HeartPulse size={22} color="text" />}
             label={t("safety.title")}
+            opens
             // `as never`: the typed-route union is generated by the dev server and does not know
             // this screen until it restarts — same idiom as the oath push above.
             onPress={() => router.push("/safety" as never)}
@@ -773,12 +793,14 @@ export default function SettingsScreen() {
           <SettingRow
             icon={<ShieldCheck size={22} color="text" />}
             label={t("settings.privacy")}
+            opens
             onPress={() => router.push("/privacy" as never)}
           />
 
           <SettingRow
             icon={<ScrollText size={22} color="text" />}
             label={t("credits.title")}
+            opens
             value={t("credits.open")}
             onPress={() => router.push("/credits")}
           />
@@ -793,6 +815,7 @@ export default function SettingsScreen() {
                 testID="settings-update-check"
                 icon={<Download size={22} color="text" />}
                 label={t("settings.update_check")}
+                checked={updateCheckEnabled}
                 value={onOffLabel(updateCheckEnabled, t)}
                 onPress={() => {
                   haptics.selection();

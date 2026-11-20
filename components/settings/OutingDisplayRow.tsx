@@ -22,6 +22,7 @@ export function OutingDisplayRow() {
       testID="settings-outing-display"
       icon={<SlidersHorizontal size={22} color="text" />}
       label={t("settings.outing_display")}
+      opens
       value={
         customised ? t("settings.outing_display_custom") : t("settings.outing_display_default")
       }

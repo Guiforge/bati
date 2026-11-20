@@ -1,9 +1,7 @@
 import { getLocales } from "expo-localization";
 import {
   APP_LANGUAGES,
-  type AppLanguage,
   getDevicePreferredAppLanguage,
-  nextAppLanguage,
   resolveAppLanguage,
 } from "@/src/i18n/deviceLanguage";
 import { localizedText } from "@/src/i18n/localized";
@@ -49,21 +47,6 @@ describe("resolveAppLanguage", () => {
     mockLocales("es-ES", "en");
     expect(resolveAppLanguage("de", "es")).toBe("de");
     expect(resolveAppLanguage("de", "en")).toBe("es");
-  });
-});
-
-describe("nextAppLanguage", () => {
-  // One tap on the settings row. Wrapping is the part that breaks when a language is appended:
-  // the last one must lead back to the first, or the row strands the hero there.
-  it("visits every language once and comes back to where it started", () => {
-    const seen: AppLanguage[] = [];
-    let language: AppLanguage = APP_LANGUAGES[0];
-    for (let i = 0; i < APP_LANGUAGES.length; i++) {
-      seen.push(language);
-      language = nextAppLanguage(language);
-    }
-    expect(seen).toEqual([...APP_LANGUAGES]);
-    expect(language).toBe(APP_LANGUAGES[0]);
   });
 });
 

@@ -33,6 +33,7 @@ export function SetAsideRow() {
       testID="settings-set-aside"
       icon={<EyeOff size={22} color="text" />}
       label={t("setAside.title")}
+      opens
       value={count === null ? undefined : count === 0 ? t("setAside.none") : String(count)}
       onPress={() => router.push("/set-aside" as never)}
     />

@@ -30,6 +30,7 @@ export function CrestAnimalRow() {
         testID="settings-crest-animal"
         icon={<Crest crest={crest} size={24} />}
         label={t("settings.crest_animal")}
+        opens
         value={t(`village.crest_the_${crest.animal}`)}
         onPress={() => setView("pick")}
       />

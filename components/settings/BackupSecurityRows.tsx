@@ -256,6 +256,7 @@ export function BackupSecurityRows({
         testID="settings-sync"
         icon={<CloudUpload size={22} color="text" />}
         label={t("shelter.row")}
+        opens
         value={shelterValue}
         disabled={disabled || deviceSync.running}
         onPress={openSync}
@@ -285,6 +286,7 @@ export function BackupSecurityRows({
         testID="settings-encrypt-backup"
         icon={<Lock size={22} color="text" />}
         label={t("backup.encryption")}
+        opens
         value={encryptionValue}
         disabled={disabled}
         onPress={onEncryptionRow}

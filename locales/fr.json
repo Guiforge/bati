@@ -438,6 +438,7 @@
     "title_edit": "Modifier l'exercice",
     "name_label": "Nom",
     "name_placeholder": "Squat de l'archer",
+    "name_taken": "Le catalogue a déjà un exercice de ce nom.",
     "description_label": "Comment le faire",
     "description_placeholder": "Pieds larges, transfère ton poids sur une jambe, garde l'autre tendue.",
     "details": "Détails",

@@ -30,6 +30,18 @@ jest.mock("@/db/exercises", () => ({
   updateUserExercise: (...args: unknown[]) => mockUpdate(...args),
   getExerciseById: (...args: unknown[]) => mockGetById(...args),
   isUserExercise: (ex: { creator: string }) => ex.creator !== "Admin",
+  listExercises: async () => [
+    {
+      id: 900,
+      creator: "Admin",
+      enName: "Wall Sit",
+      frName: "Chaise",
+      deName: null,
+      esName: null,
+      ruName: null,
+      zhName: null,
+    },
+  ],
   SECONDS_PER_REP_RANGE: { min: 1, max: 10 },
   DEFAULT_USER_EXERCISE_DRAFT: {
     muscles: [],
@@ -127,6 +139,17 @@ describe("exercise editor", () => {
     await act(async () => fireEvent.changeText(editor.getByTestId("exercise-name"), "Archer"));
     expect(await leave()).toBe(false);
     expect(editor.getByText("quests.editor_discard_title")).toBeTruthy();
+  });
+
+  it("says when the catalogue already has the name, whatever the case, and still saves", async () => {
+    const editor = await mountEditor();
+    await act(async () => fireEvent.changeText(editor.getByTestId("exercise-name"), "Archer"));
+    expect(editor.queryByTestId("exercise-name-taken")).toBeNull();
+
+    await act(async () => fireEvent.changeText(editor.getByTestId("exercise-name"), " wall sit "));
+    await waitFor(() => expect(editor.getByTestId("exercise-name-taken")).toBeTruthy());
+    await act(async () => fireEvent.press(editor.getByTestId("exercise-save")));
+    await waitFor(() => expect(mockCreate).toHaveBeenCalled());
   });
 
   it("lets its own save leave without asking", async () => {

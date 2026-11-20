@@ -560,6 +560,7 @@
     "title_edit": "Übung bearbeiten",
     "name_label": "Name",
     "name_placeholder": "Bogenschützen-Kniebeuge",
+    "name_taken": "Im Katalog gibt es schon eine Übung mit diesem Namen.",
     "description_label": "So geht's",
     "description_placeholder": "Breiter Stand, Gewicht auf ein Bein verlagern, das andere gestreckt lassen.",
     "details": "Details",

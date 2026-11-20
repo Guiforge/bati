@@ -560,6 +560,7 @@
     "title_edit": "Edit exercise",
     "name_label": "Name",
     "name_placeholder": "Archer squat",
+    "name_taken": "The catalogue already has an exercise with this name.",
     "description_label": "How to do it",
     "description_placeholder": "Wide stance, shift your weight over one leg, keep the other straight.",
     "details": "Details",

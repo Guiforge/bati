@@ -581,6 +581,7 @@
     "title_edit": "Editar el ejercicio",
     "name_label": "Nombre",
     "name_placeholder": "Sentadilla del arquero",
+    "name_taken": "El catálogo ya tiene un ejercicio con este nombre.",
     "description_label": "Cómo se hace",
     "description_placeholder": "Pies separados, lleva el peso a una pierna y mantén la otra estirada.",
     "details": "Detalles",

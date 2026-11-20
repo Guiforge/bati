@@ -539,6 +539,7 @@
     "title_edit": "编辑动作",
     "name_label": "名字",
     "name_placeholder": "弓箭手深蹲",
+    "name_taken": "目录里已有同名动作。",
     "description_label": "怎么做",
     "description_placeholder": "宽站姿，重心移到一条腿上，另一条腿伸直。",
     "details": "详情",

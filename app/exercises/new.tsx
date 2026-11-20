@@ -19,6 +19,7 @@ import {
   DEFAULT_USER_EXERCISE_DRAFT,
   getExerciseById,
   isUserExercise,
+  listExercises,
   SECONDS_PER_REP_RANGE,
   type UserExerciseDraft,
   updateUserExercise,
@@ -33,6 +34,7 @@ import {
   muscleCodes,
   questTargetTypes,
 } from "@/db/schema";
+import { localizedName } from "@/src/i18n/localized";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -67,8 +69,26 @@ export default function ExerciseEditor() {
   const params = useLocalSearchParams<{ id?: string }>();
   const parsedId = params.id ? Number(params.id) : Number.NaN;
   const editingId = Number.isInteger(parsedId) ? parsedId : null;
+  // Said, not refused: a hero may want their own "Wall sit" beside the game's, but should know it is
+  // there (audit 2026-11-20, F8). Names in English and in the app's language, this exercise aside.
+  const [takenNames, setTakenNames] = useState<Set<string> | null>(null);
+  useEffect(() => {
+    listExercises()
+      .then((all) =>
+        setTakenNames(
+          new Set(
+            all
+              .filter((ex) => ex.id !== editingId)
+              .flatMap((ex) => [ex.enName, localizedName(ex, language)])
+              .map((n) => n.trim().toLowerCase()),
+          ),
+        ),
+      )
+      .catch((error: unknown) => reportError("exercises.editor.names", error));
+  }, [editingId, language]);
 
   const [name, setName] = useState("");
+  const nameTaken = takenNames?.has(name.trim().toLowerCase()) ?? false;
   const [description, setDescription] = useState("");
   const [details, setDetails] = useState<Details>(DEFAULT_USER_EXERCISE_DRAFT);
   const [showDetails, setShowDetails] = useState(false);
@@ -209,6 +229,11 @@ export default function ExerciseEditor() {
                 onChangeText={setName}
                 placeholder={t("exercise_editor.name_placeholder")}
               />
+              {nameTaken ? (
+                <Text testID="exercise-name-taken" fontSize={13} color="textSecondary">
+                  {t("exercise_editor.name_taken")}
+                </Text>
+              ) : null}
 
               <Text fontWeight="700" fontSize={13} color="textSecondary">
                 {t("exercise_editor.description_label")}
@@ -223,6 +248,25 @@ export default function ExerciseEditor() {
                 numberOfLines={4}
                 height={110}
               />
+
+              {/* Out of the fold: a hold saved as reps arrived in its quest as "10 reps" (audit
+                  2026-11-20, F8). */}
+              <YStack gap="2">
+                <Text fontSize={12} color="textSecondary">
+                  {t("exercise_editor.measure")}
+                </Text>
+                <XStack gap="2">
+                  {questTargetTypes.map((measure) => (
+                    <Chip
+                      key={measure}
+                      testID={`exercise-measure-${measure}`}
+                      label={t(measure === "reps" ? "quests.config_reps" : "quests.config_seconds")}
+                      tone={details.measure === measure ? "primary" : "default"}
+                      onPress={() => setDetails((d) => ({ ...d, measure }))}
+                    />
+                  ))}
+                </XStack>
+              </YStack>
             </YStack>
           </Card>
 
@@ -316,25 +360,6 @@ export default function ExerciseEditor() {
                         label={EQUIPMENT_LABELS[equipment][language]}
                         tone={details.equipment === equipment ? "primary" : "default"}
                         onPress={() => setDetails((d) => ({ ...d, equipment }))}
-                      />
-                    ))}
-                  </XStack>
-                </YStack>
-
-                <YStack gap="2">
-                  <Text fontSize={12} color="textSecondary">
-                    {t("exercise_editor.measure")}
-                  </Text>
-                  <XStack gap="2">
-                    {questTargetTypes.map((measure) => (
-                      <Chip
-                        key={measure}
-                        testID={`exercise-measure-${measure}`}
-                        label={t(
-                          measure === "reps" ? "quests.config_reps" : "quests.config_seconds",
-                        )}
-                        tone={details.measure === measure ? "primary" : "default"}
-                        onPress={() => setDetails((d) => ({ ...d, measure }))}
                       />
                     ))}
                   </XStack>

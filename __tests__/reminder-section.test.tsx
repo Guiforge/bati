@@ -259,6 +259,30 @@ test("a pause of a week, and the way back", async () => {
   expect(Reminders.resume).toHaveBeenCalled();
 });
 
+test('after a pause, a reminder more than a week out names its month, so English never reads "8 Tuesday"', async () => {
+  mockNative.state = {
+    enabled: true,
+    resumeDate: format(addDays(new Date(), 10), "yyyy-MM-dd"),
+    plannedOn: null,
+    log: [],
+  };
+  mockDays = {
+    sun: "18:00",
+    mon: "18:00",
+    tue: "18:00",
+    wed: "18:00",
+    thu: "18:00",
+    fri: "18:00",
+    sat: "18:00",
+  };
+  await mount();
+  const line = await screen.findByText(/^reminders\.next /);
+  const { day } = JSON.parse(String(line.props.children).replace(/^reminders\.next /, "")) as {
+    day: string;
+  };
+  expect(day).toMatch(/^[A-Z][a-z]+day, [A-Z][a-z]{2} \d{1,2}$/);
+});
+
 test("sound and vibration lead to the channel's own settings", async () => {
   await mount();
   await fireEvent.press(screen.getByTestId("settings-reminder-sound"));

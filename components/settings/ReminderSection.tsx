@@ -117,11 +117,12 @@ function capitalized(text: string): string {
   return text.charAt(0).toLocaleUpperCase() + text.slice(1);
 }
 
-/** "Saturday", or "Saturday 17" once it is more than a week out, after a pause. */
+/** "Saturday", or "Saturday, Jan 17" once it is more than a week out, after a pause. The month is
+ * not decoration: without it English writes "17 Saturday". */
 function weekdayLabel(key: string, language: AppLanguage): string {
   const far = dayOf(key).getTime() - Date.now() > 6 * 24 * 60 * 60 * 1000;
   const options: Intl.DateTimeFormatOptions = far
-    ? { weekday: "long", day: "numeric" }
+    ? { weekday: "long", day: "numeric", month: "short" }
     : { weekday: "long" };
   return capitalized(getDateTimeFormat(language, options).format(dayOf(key)));
 }
@@ -453,9 +454,11 @@ function PauseRow({
 }) {
   const { t } = useTranslation();
   if (resumeDate !== null && resumeDate > today) {
-    const date = getDateTimeFormat(language, { weekday: "long", day: "numeric" }).format(
-      dayOf(resumeDate),
-    );
+    const date = getDateTimeFormat(language, {
+      weekday: "long",
+      day: "numeric",
+      month: "short",
+    }).format(dayOf(resumeDate));
     return (
       <XStack px="3" items="center" gap="3">
         <Text flex={1} fontSize="3" color="text" testID="settings-reminder-paused">

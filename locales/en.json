@@ -2537,7 +2537,7 @@
     "check_change": "Change my days",
     "check_off": "Turn off",
     "check_fine": "They're fine",
-    "pause_row": "Pause",
+    "pause_row": "Mute reminders",
     "elsewhere": "Done elsewhere?"
   },
   "setAside": {
@@ -2553,6 +2553,7 @@
     "none": "None",
     "empty": "Nothing set aside. On an exercise's page, \"Don't suggest again\" takes it out of your quests and warm-ups.",
     "browse": "Browse exercises",
+    "zone": "Spare a zone for a while",
     "since": "Since {{date}}",
     "until": "Until {{date}}",
     "limits": "Quests of your own stay as you made them. Setting a rung aside stops its path climbing there.",
@@ -2612,7 +2613,7 @@
     "layout_bigmap_note": "The map fills the screen, your big figure sits on top."
   },
   "pause": {
-    "title": "Pause and zone",
+    "title": "Break and spared zone",
     "row_off": "Off",
     "row_pause": "Break until {{date}}",
     "row_zone": "Sparing {{zones}}",

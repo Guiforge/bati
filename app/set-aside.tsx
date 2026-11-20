@@ -131,6 +131,16 @@ export default function SetAsideScreen() {
               {t("setAside.browse")}
             </AppButton>
             {allJumps}
+            {/* A sore knee lands here first, and this list is for good; the zone is the same need
+                for a while (audit 2026-11-20, F3). */}
+            <AppButton
+              testID="set-aside-zone"
+              fullWidth={false}
+              variant="outline"
+              onPress={() => router.push("/pause" as never)}
+            >
+              {t("setAside.zone")}
+            </AppButton>
           </Card>
         ) : (
           <>

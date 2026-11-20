@@ -240,13 +240,13 @@ async function mount() {
 }
 
 describe("ProtectCard", () => {
-  test("one tap opens Settings", async () => {
+  test("one tap opens Settings at its backup section", async () => {
     await mount();
     await waitFor(() => expect(screen.getByTestId("home-protect")).toBeTruthy());
     await act(async () => {
       await fireEvent.press(screen.getByTestId("home-protect"));
     });
-    expect(mockPush).toHaveBeenCalledWith("/settings");
+    expect(mockPush).toHaveBeenCalledWith("/settings?section=backup");
   });
 
   test("the cross closes it and remembers today", async () => {

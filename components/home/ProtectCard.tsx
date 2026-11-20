@@ -45,7 +45,7 @@ export function ProtectCard() {
 
   const open = () => {
     haptics.selection();
-    router.push("/settings" as never);
+    router.push("/settings?section=backup" as never);
   };
 
   const close = () => {

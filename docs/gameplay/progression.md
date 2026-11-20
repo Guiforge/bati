@@ -342,7 +342,7 @@ the first launch. Gaps already closed before it stay breaks, so no past `current
 
 ### A pause is a day the flame does not live
 
-Settings, "Pause and zone" (`app/pause.tsx`, `db/pause.ts`, M-04). The hero says the day they come
+Settings, "Break and spared zone" (`app/pause.tsx`, `db/pause.ts`, M-04). The hero says the day they come
 back, up to 56 days. The list of pauses is the preference `pause_goal` (`constants/pause.ts`, never
 trimmed: the flame needs the past) and `flameTimeline` leaves a paused day out of the timeline
 altogether: it is neither lit nor idle, a "week" is seven days that are not paused, and the days

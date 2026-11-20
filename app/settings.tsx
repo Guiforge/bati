@@ -4,7 +4,11 @@ import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView as RNScrollView, type ScrollViewInstance } from "react-native";
+import {
+  type LayoutChangeEvent,
+  ScrollView as RNScrollView,
+  type ScrollViewInstance,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, useTheme, XStack, YStack } from "tamagui";
 import { Button } from "@/components/common/Button";
@@ -285,10 +289,17 @@ export default function SettingsScreen() {
   // until the hero scrolls by hand.
   const { section } = useLocalSearchParams<{ section?: string }>();
   const scrollRef = useRef<ScrollViewInstance>(null);
-  const anchor = useRef({ wanted: section === "reminder", group: 0, row: -1 });
+  // `section=backup` is the same door for Home's "Android isn't backing up Bati" card (audit
+  // 2026-11-20, F1): it opened the top of Settings, three screens above what it was about.
+  const anchor = useRef({ wanted: true, group: 0, rows: {} as Record<string, number> });
   const scrollToAnchor = () => {
-    const { wanted, group, row } = anchor.current;
-    if (wanted && row >= 0) scrollRef.current?.scrollTo({ y: group + row, animated: false });
+    const row = anchor.current.wanted ? anchor.current.rows[section ?? ""] : undefined;
+    if (row !== undefined)
+      scrollRef.current?.scrollTo({ y: anchor.current.group + row, animated: false });
+  };
+  const placeSection = (name: string) => (event: LayoutChangeEvent) => {
+    anchor.current.rows[name] = event.nativeEvent.layout.y;
+    scrollToAnchor();
   };
 
   const {
@@ -678,16 +689,13 @@ export default function SettingsScreen() {
 
           {/* Above the backup, below the oath it can serve (docs/designs/rappels.md). Renders
               nothing on a build without the reminders' native half. */}
-          <ReminderSection
-            onLayout={(event) => {
-              anchor.current.row = event.nativeEvent.layout.y;
-              scrollToAnchor();
-            }}
-          />
+          <ReminderSection onLayout={placeSection("reminder")} />
 
-          <SectionLabel px="1" mt="2">
-            {t("backup.section")}
-          </SectionLabel>
+          <YStack onLayout={placeSection("backup")}>
+            <SectionLabel px="1" mt="2">
+              {t("backup.section")}
+            </SectionLabel>
+          </YStack>
 
           <BackupSecurityRows
             disabled={backupBusy}
@@ -746,6 +754,7 @@ export default function SettingsScreen() {
           />
 
           <SettingRow
+            testID="settings-xp"
             icon={<Zap size={22} color="text" />}
             label={t("xp.title")}
             onPress={() => router.push("/xp" as never)}

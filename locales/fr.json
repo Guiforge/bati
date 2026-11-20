@@ -2645,7 +2645,7 @@
     "check_change": "Changer mes jours",
     "check_off": "Couper",
     "check_fine": "Ils me vont",
-    "pause_row": "Mettre en pause",
+    "pause_row": "Couper les rappels",
     "elsewhere": "Fait ailleurs ?"
   },
   "setAside": {
@@ -2661,6 +2661,7 @@
     "none": "Aucun",
     "empty": "Rien d'écarté. Sur la fiche d'un exercice, « Ne plus me proposer » le sort de tes quêtes et de tes échauffements.",
     "browse": "Parcourir les exercices",
+    "zone": "Ménager une zone un temps",
     "since": "Depuis le {{date}}",
     "until": "Jusqu'au {{date}}",
     "limits": "Tes propres quêtes restent telles que tu les as faites. Écarter une étape arrête sa voie à cette hauteur.",
@@ -2720,7 +2721,7 @@
     "layout_bigmap_note": "La carte remplit l'écran, ton grand chiffre posé dessus."
   },
   "pause": {
-    "title": "Pause et zone",
+    "title": "Pause et zone ménagée",
     "row_off": "Désactivée",
     "row_pause": "Pause jusqu'au {{date}}",
     "row_zone": "On ménage : {{zones}}",

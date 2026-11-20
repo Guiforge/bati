@@ -127,6 +127,9 @@ export default function TabsLayout() {
         options={{
           tabBarButtonTestID: "tab-journal",
           title: t("tabs.journal"),
+          // Same answer as Quests: a session, a balance or a records page left open here made the
+          // tab reopen on it instead of the Journal (audit 2026-11-20, F10).
+          popToTopOnBlur: true,
           tabBarIcon: ({ focused, size }) => (
             <Scroll
               color={`${focused ? "primaryText" : "text"}`}

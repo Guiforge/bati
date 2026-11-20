@@ -2645,7 +2645,7 @@
     "check_change": "Cambiar mis días",
     "check_off": "Apagar",
     "check_fine": "Me van bien",
-    "pause_row": "Pausar",
+    "pause_row": "Silenciar recordatorios",
     "elsewhere": "¿Hecho fuera?"
   },
   "setAside": {
@@ -2661,6 +2661,7 @@
     "none": "Ninguno",
     "empty": "Nada apartado. En la página de un ejercicio, «No proponérmelo más» lo saca de tus misiones y calentamientos.",
     "browse": "Ver ejercicios",
+    "zone": "Dejar una zona en reposo un tiempo",
     "since": "Desde el {{date}}",
     "until": "Hasta el {{date}}",
     "limits": "Tus propias misiones no cambian. Apartar una etapa detiene su senda en ese punto.",
@@ -2720,7 +2721,7 @@
     "layout_bigmap_note": "El mapa llena la pantalla y tu cifra grande va encima."
   },
   "pause": {
-    "title": "Pausa y zona",
+    "title": "Pausa y zona en reposo",
     "row_off": "Desactivada",
     "row_pause": "Pausa hasta el {{date}}",
     "row_zone": "Cuidando: {{zones}}",

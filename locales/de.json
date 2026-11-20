@@ -2622,7 +2622,7 @@
     "row_zone": "Geschont: {{zones}}",
     "pause_title": "Ich mache Pause",
     "pause_body": "Wähle den Tag deiner Rückkehr, höchstens 8 Wochen. Deine Flamme wartet auf dich, dein Schwur und dein Abenteuer bleiben stehen, und die Erinnerungen schweigen bis dahin.",
-    "pause_weeks": "Wochen weg",
+    "pause_days": "Tage weg",
     "pause_back_on": "Zurück am {{date}}",
     "pause_start": "Pause beginnen",
     "pause_active": "Pause bis {{date}}. Du verlierst nichts, solange du weg bist.",

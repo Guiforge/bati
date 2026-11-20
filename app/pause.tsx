@@ -1,4 +1,4 @@
-import { addWeeks } from "date-fns";
+import { addDays } from "date-fns";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,6 +10,7 @@ import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
 import { Paragraph } from "@/components/common/Paragraph";
 import { ScreenBackButton } from "@/components/common/ScreenBackButton";
+import { Stepper } from "@/components/common/Stepper";
 import { Pause } from "@/components/icons";
 import { shortDate } from "@/components/journal/journalFormat";
 import {
@@ -35,17 +36,14 @@ import { replanRemindersNow } from "@/src/reminders";
 import { reportError } from "@/src/reportError";
 import { useSettingsStore } from "@/stores/settings";
 
-const PAUSE_WEEKS = Array.from({ length: PAUSE_MAX_DAYS / 7 }, (_, i) => i + 1);
 const ZONE_WEEKS = Array.from({ length: ZONE_MAX_WEEKS }, (_, i) => i + 1);
 
 /**
  * M-04: "Je fais une pause" and "Je ménage une zone", one screen and two cards.
  *
- * The return date is picked in weeks from today (up to eight), the same unit the zone uses: the
- * hero says how long, and the screen says the day it lands on.
- *
- * ponytail: no free calendar picker. Ceiling: a hero who wants a return date that is not a whole
- * number of weeks away. Add one when someone asks; `startPause` already takes any day.
+ * The break is picked in days from today (up to eight weeks): the hero says how long, and the
+ * screen says the day it lands on. It was whole weeks, and a ten-day holiday cost fourteen
+ * (audit 2026-11-20, F6). The zone stays in weeks: soreness is not booked to the day.
  *
  * On return there is no card of its own: the NoticeSlot (P-05) does not exist yet, so the pause
  * ends silently on its date and Home speaks as it always does. Give it a line there when it lands.
@@ -57,7 +55,7 @@ export default function PauseScreen() {
   const language = useSettingsStore((s) => s.language);
   const [pause, setPause] = useState<PausePeriod | null>(null);
   const [zone, setZone] = useState<Zone | null>(null);
-  const [pauseWeeks, setPauseWeeks] = useState(2);
+  const [pauseDays, setPauseDays] = useState(14);
   const [zoneWeeks, setZoneWeeks] = useState(2);
   const [groups, setGroups] = useState<MuscleCode[]>([]);
   const [busy, setBusy] = useState(false);
@@ -134,23 +132,16 @@ export default function PauseScreen() {
           ) : (
             <>
               <Paragraph color="textSecondary">{t("pause.pause_body")}</Paragraph>
-              <Text fontSize="3" color="text">
-                {t("pause.pause_weeks")}
-              </Text>
-              <XStack gap="2" flexWrap="wrap">
-                {PAUSE_WEEKS.map((w) => (
-                  <Chip
-                    key={w}
-                    testID={`pause-weeks-${w}`}
-                    label={String(w)}
-                    tone={w === pauseWeeks ? "primary" : "default"}
-                    onPress={() => setPauseWeeks(w)}
-                  />
-                ))}
-              </XStack>
+              <Stepper
+                label={t("pause.pause_days")}
+                value={pauseDays}
+                min={1}
+                max={PAUSE_MAX_DAYS}
+                onChange={setPauseDays}
+              />
               <Text fontSize="3" color="textSecondary">
                 {t("pause.pause_back_on", {
-                  date: shortDate(language, addWeeks(new Date(), pauseWeeks)),
+                  date: shortDate(language, addDays(new Date(), pauseDays)),
                 })}
               </Text>
               <AppButton
@@ -158,7 +149,7 @@ export default function PauseScreen() {
                 fullWidth={false}
                 disabled={busy}
                 onPress={() =>
-                  run(() => startPause(dayKey(addWeeks(new Date(), pauseWeeks))), "pause.start")
+                  run(() => startPause(dayKey(addDays(new Date(), pauseDays))), "pause.start")
                 }
               >
                 {t("pause.pause_start")}

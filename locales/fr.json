@@ -2728,7 +2728,7 @@
     "row_zone": "On ménage : {{zones}}",
     "pause_title": "Je fais une pause",
     "pause_body": "Choisis le jour de ton retour, 8 semaines au plus. Ta flamme t'attend, ton serment et ton aventure restent en place, et les rappels se taisent jusque-là.",
-    "pause_weeks": "Semaines d'absence",
+    "pause_days": "Jours d'absence",
     "pause_back_on": "Retour le {{date}}",
     "pause_start": "Commencer la pause",
     "pause_active": "En pause jusqu'au {{date}}. Tu ne perds rien pendant ton absence.",

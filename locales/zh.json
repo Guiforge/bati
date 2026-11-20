@@ -2843,7 +2843,7 @@
     "row_zone": "养护 {{zones}}",
     "pause_title": "我要休整一阵",
     "pause_body": "选一天作为你回来的日子，最长 8 周。你的火焰等着你，誓言和冒险暂停，提醒也保持安静，直到那天。",
-    "pause_weeks": "离开几周",
+    "pause_days": "离开几天",
     "pause_back_on": "{{date}} 回来",
     "pause_start": "开始休整",
     "pause_active": "休整至 {{date}}。你不在的时候，什么都不会丢。",

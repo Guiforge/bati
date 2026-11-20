@@ -2728,7 +2728,7 @@
     "row_zone": "Cuidando: {{zones}}",
     "pause_title": "Hago una pausa",
     "pause_body": "Elige el día de tu vuelta, 8 semanas como máximo. Tu llama te espera, tu juramento y tu aventura se quedan quietos y los recordatorios callan hasta entonces.",
-    "pause_weeks": "Semanas fuera",
+    "pause_days": "Días fuera",
     "pause_back_on": "Vuelta el {{date}}",
     "pause_start": "Empezar la pausa",
     "pause_active": "En pausa hasta el {{date}}. No pierdes nada mientras estás fuera.",

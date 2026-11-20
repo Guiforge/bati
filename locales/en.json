@@ -2620,7 +2620,7 @@
     "row_zone": "Sparing {{zones}}",
     "pause_title": "I'm taking a break",
     "pause_body": "Pick the day you'll be back, up to 8 weeks. Your flame waits for you, your oath and adventure stand still, and reminders stay quiet until then.",
-    "pause_weeks": "Weeks away",
+    "pause_days": "Days away",
     "pause_back_on": "Back on {{date}}",
     "pause_start": "Start the break",
     "pause_active": "On a break until {{date}}. Nothing is lost while you're away.",

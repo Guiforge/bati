@@ -1391,6 +1391,8 @@
     "tonight_pair": "{{what}} : {{detail}}",
     "tonight_badge_after": "après",
     "tonight_badge_record": "record",
+    "tonight_badge_new": "nouveau",
+    "moment_level_up": "Niveau gagné",
     "tonight_epilogue": "Ta campagne est terminée.",
     "tonight_anniversary_one": "Ton village a un an.",
     "tonight_anniversary_other": "Ton village a {{count}} ans.",

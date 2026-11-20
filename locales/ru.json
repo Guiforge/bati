@@ -933,6 +933,8 @@
     "tonight_pair": "{{what}}: {{detail}}",
     "tonight_badge_after": "после",
     "tonight_badge_record": "рекорд",
+    "tonight_badge_new": "новое",
+    "moment_level_up": "Новый уровень",
     "tonight_epilogue": "Твоя кампания завершена.",
     "tonight_anniversary_one": "Твоей деревне исполнился {{count}} год.",
     "tonight_anniversary_few": "Твоей деревне исполнилось {{count}} года.",

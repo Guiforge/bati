@@ -855,6 +855,8 @@
     "tonight_pair": "{{what}}：{{detail}}",
     "tonight_badge_after": "之后",
     "tonight_badge_record": "纪录",
+    "tonight_badge_new": "新",
+    "moment_level_up": "升级",
     "tonight_epilogue": "你的战役已完成。",
     "tonight_anniversary_other": "你的村庄 {{count}} 岁了。",
     "victory_see_all": "查看全部",

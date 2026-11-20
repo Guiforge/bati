@@ -18,6 +18,7 @@ import { InkGauge } from "@/components/common/InkGauge";
 import { Recitatif } from "@/components/common/Recitatif";
 import { useToast } from "@/components/common/Toast";
 import { ChevronRight } from "@/components/icons";
+import { WhereItSits } from "@/components/journal/QuestLog";
 import { SessionNotebook } from "@/components/journal/SessionNotebook";
 import { useConfirmForget } from "@/components/journal/useConfirmForget";
 import { DuoVictoryLine } from "@/components/multiplayer/DuoVictoryLine";
@@ -30,6 +31,7 @@ import { fade, rawColors } from "@/constants/rawColors";
 import { TRIVIAL_SESSION_SECONDS } from "@/constants/sessionFloor";
 import { getAdventureStepOutroNarrative } from "@/db/adventures-narrative";
 import {
+  getCompletedSessionById,
   UNTRACED_PAID_SECONDS_PER_DAY,
   updateSessionFeedback,
   updateSessionNotes,
@@ -39,6 +41,7 @@ import { COAT_RARE_KEY } from "@/db/crestEvents";
 import { countsAsDeed } from "@/db/deed";
 import { formatDuration, formatDurationEstimate } from "@/db/estimate";
 import { isOutingSession } from "@/db/expeditions";
+import { getQuestStanding, type QuestStanding } from "@/db/journal";
 import { preferences } from "@/db/preferences";
 import { createQuestFromOuting } from "@/db/quests";
 import type { FeedbackCode, Locomotion } from "@/db/schema";
@@ -59,10 +62,11 @@ import { useSettingsStore } from "@/stores/settings";
 import { useUserStore } from "@/stores/user";
 import { goOn, seeVillage } from "./destinations";
 import { ExpeditionSummary } from "./ExpeditionSummary";
-import { type Feast, feastKey, tonight } from "./feasts";
+import { type Feast, feastKey, headlineKinds, headlineOf, tonight } from "./feasts";
 import { NextMilestone } from "./NextMilestone";
 import { ProgressionChart } from "./ProgressionChart";
 import { TonightList } from "./TonightList";
+import { VillageMoment } from "./VictoryMoment";
 
 /** The big feasts that are a card when another one holds the screen, and are marked seen as such. */
 const RELEGATED_KINDS: Feast["kind"][] = ["legendary", "age", "anniversary"];
@@ -203,6 +207,8 @@ export function VictoryView() {
   const cue = useChorusStore((s) => s.cue);
 
   const [result, setResult] = useState<SaveResult | null>(null);
+  /** Where this run sits among the hero's own, read with the save so both land in one frame. */
+  const [standing, setStanding] = useState<QuestStanding | null>(null);
   const [saveError, setSaveError] = useState(false);
   /** Null until a short session is decided; the auto-save waits on it. */
   const [keepShort, setKeepShort] = useState<boolean | null>(null);
@@ -266,6 +272,7 @@ export function VictoryView() {
   // The one that opens full screen after "Continue". Once it has opened, "Tonight" stops
   // announcing it (the phone has shown it).
   const bigFeast = feasts.find((f) => f.size === "large");
+  const headline = result ? headlineOf(result) : "xp";
   const [feastOpened, setFeastOpened] = useState(false);
   // Read only for the reveal line of Tonight, which draws the same shield as the big feast.
   // Undefined until read: Tonight keeps the place and draws no shield before it knows the border.
@@ -295,6 +302,15 @@ export function VictoryView() {
     setSaveError(false);
     try {
       const r = await saveSession(null);
+      // The journal's own ranking (`getQuestStanding`), not a second one. A failed read is a
+      // victory without its comparison, never without its save.
+      const place = await getCompletedSessionById(r.sessionId)
+        .then((s) => (s ? getQuestStanding(s) : null))
+        .catch((e: unknown) => {
+          reportError("victory.standing", e);
+          return null;
+        });
+      setStanding(place);
       setResult(r);
       success();
     } catch {
@@ -642,6 +658,76 @@ export function VictoryView() {
             </YStack>
           )}
 
+          {/* The hero's level bar, filling with this session's XP */}
+          {/* A spacer of the card's height holds its place until the save lands: the card itself
+            mounts only with data, and must not push the feel buttons from under the finger. */}
+          {/* Held for the hero's answer: the question takes the level card's slot, above the fold,
+            and no reward is drawn for a session that may be discarded. */}
+          {tooShort ? (
+            <YStack width="100%" maxW={520} items="center" gap="3" py="4">
+              <AppText color="text" fontSize={18} fontWeight="700">
+                {t("session.summary_too_short_title")}
+              </AppText>
+              <AppText color="textSecondary" fontSize={14} style={{ textAlign: "center" }}>
+                {/* A walk is not held, it is walked. The shared line says "you held out for", the
+                  verb of a plank, which reads as faint praise after ninety seconds outdoors. */}
+                {t(
+                  isOutingSession(quest)
+                    ? "session.summary_too_short_body_outing"
+                    : "session.summary_too_short_body",
+                  { duration: formatDuration(durationSeconds, language) },
+                )}
+              </AppText>
+              <AppButton
+                variant="outline"
+                borderColor="error"
+                onPress={() => {
+                  // Discard is the existing quit path: nothing was written, so there is nothing
+                  // to undo, and the session state has to be cleared either way. Home rather than
+                  // back, because back from here is the session that just ended.
+                  quitSession();
+                  router.dismissTo("/");
+                }}
+              >
+                {t("session.summary_too_short_discard")}
+              </AppButton>
+            </YStack>
+          ) : (
+            <>
+              {/* Level crossed and no village event: the bar sweeps from empty, under its name. */}
+              {result && headline === "level" ? (
+                <AppText
+                  testID="victory-moment-level"
+                  fontFamily="body"
+                  fontWeight="700"
+                  color="resourceGold"
+                  fontSize={13}
+                  letterSpacing={2}
+                >
+                  {t("session.moment_level_up").toUpperCase()}
+                </AppText>
+              ) : null}
+              {result && headline === "village" ? (
+                <VillageMoment
+                  result={result}
+                  villageName={villageName}
+                  language={language}
+                  onViewVillage={handleViewVillage}
+                />
+              ) : (
+                <HeroLevelBar heroXp={result ? result.heroXp : null} language={language} />
+              )}
+            </>
+          )}
+
+          {/* The hero's own past for this quest: the journal's "Where it sits", said once the save
+            lands. Absent on a first run (second of one is not a place). */}
+          {!!result && !!standing && (
+            <YStack testID="victory-standing" width="100%" maxW={520}>
+              <WhereItSits standing={standing} />
+            </YStack>
+          )}
+
           {/* Stat row: Time · XP */}
           {!tooShort && (
             <XStack testID="victory-stat-row" width="100%" maxW={520} gap="3">
@@ -759,44 +845,6 @@ export function VictoryView() {
             </XStack>
           )}
 
-          {/* The hero's level bar, filling with this session's XP */}
-          {/* A spacer of the card's height holds its place until the save lands: the card itself
-            mounts only with data, and must not push the feel buttons from under the finger. */}
-          {/* Held for the hero's answer: the question takes the level card's slot, above the fold,
-            and no reward is drawn for a session that may be discarded. */}
-          {tooShort ? (
-            <YStack width="100%" maxW={520} items="center" gap="3" py="4">
-              <AppText color="text" fontSize={18} fontWeight="700">
-                {t("session.summary_too_short_title")}
-              </AppText>
-              <AppText color="textSecondary" fontSize={14} style={{ textAlign: "center" }}>
-                {/* A walk is not held, it is walked. The shared line says "you held out for", the
-                  verb of a plank, which reads as faint praise after ninety seconds outdoors. */}
-                {t(
-                  isOutingSession(quest)
-                    ? "session.summary_too_short_body_outing"
-                    : "session.summary_too_short_body",
-                  { duration: formatDuration(durationSeconds, language) },
-                )}
-              </AppText>
-              <AppButton
-                variant="outline"
-                borderColor="error"
-                onPress={() => {
-                  // Discard is the existing quit path: nothing was written, so there is nothing
-                  // to undo, and the session state has to be cleared either way. Home rather than
-                  // back, because back from here is the session that just ended.
-                  quitSession();
-                  router.dismissTo("/");
-                }}
-              >
-                {t("session.summary_too_short_discard")}
-              </AppButton>
-            </YStack>
-          ) : (
-            <HeroLevelBar heroXp={result ? result.heroXp : null} language={language} />
-          )}
-
           {/* Feedback — above the fold: this answer is what steers the next
             session's difficulty, and below the fold a hurried hero never saw it (audit §06-B).
             Under the level bar and above "Tonight": that list arrives with the save and has no
@@ -867,13 +915,13 @@ export function VictoryView() {
             nothing at all on a night where nothing rose. "See your village" only when it grew. */}
           {!!result && (
             <TonightList
-              feasts={feastOpened ? feasts.filter((f) => f !== bigFeast) : feasts}
+              feasts={feasts.filter(
+                (f) =>
+                  !(feastOpened && f === bigFeast) && !headlineKinds(headline).includes(f.kind),
+              )}
               villageName={villageName}
               crest={crest}
               epilogue={result.campaign?.isFinished === true && outroSettled && !outroNarrative}
-              onViewVillage={
-                result.tierUp || result.villageGrowth.length > 0 ? handleViewVillage : undefined
-              }
             />
           )}
 

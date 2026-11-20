@@ -907,6 +907,8 @@
     "tonight_pair": "{{what}}: {{detail}}",
     "tonight_badge_after": "after",
     "tonight_badge_record": "record",
+    "tonight_badge_new": "new",
+    "moment_level_up": "Level up",
     "tonight_epilogue": "Your campaign is complete.",
     "tonight_anniversary_one": "Your village is one year old.",
     "tonight_anniversary_other": "Your village is {{count}} years old.",

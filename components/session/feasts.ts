@@ -174,3 +174,14 @@ export const tonight = (result: SaveResult, boss: FeastFacts["boss"] = null) =>
 
 /** The one feast that opens full screen after "Continue", or none. */
 export const bigFeastOf = (result: SaveResult) => tonight(result).find((f) => f.size === "large");
+
+/** The one thing the screen opens on: the village's event, else a level, else the bar filling. */
+export type Headline = "village" | "level" | "xp";
+
+export const headlineOf = (
+  r: Pick<SaveResult, "tierUp" | "villageGrowth" | "levelUp">,
+): Headline => (r.tierUp || r.villageGrowth.length > 0 ? "village" : r.levelUp ? "level" : "xp");
+
+/** What the headline already says, so "Tonight" does not say it again. */
+export const headlineKinds = (h: Headline): Feast["kind"][] =>
+  h === "village" ? ["growth", "tier"] : h === "level" ? ["level"] : [];

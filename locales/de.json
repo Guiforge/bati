@@ -907,6 +907,8 @@
     "tonight_pair": "{{what}}: {{detail}}",
     "tonight_badge_after": "danach",
     "tonight_badge_record": "Rekord",
+    "tonight_badge_new": "neu",
+    "moment_level_up": "Stufe aufgestiegen",
     "tonight_epilogue": "Deine Kampagne ist abgeschlossen.",
     "tonight_anniversary_one": "Dein Dorf ist ein Jahr alt.",
     "tonight_anniversary_other": "Dein Dorf ist {{count}} Jahre alt.",

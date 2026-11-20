@@ -34,7 +34,16 @@ jest.mock("expo-router", () => ({
   useIsFocused: () => true,
 }));
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
+const mockGetStanding = jest.fn().mockResolvedValue(null);
+jest.mock("@/db/journal", () => ({ getQuestStanding: (...a: unknown[]) => mockGetStanding(...a) }));
+jest.mock("@/components/journal/QuestLog", () => ({
+  WhereItSits: ({ standing }: { standing: { rank: number } }) => {
+    const { Text } = require("react-native");
+    return <Text testID="stub-sits">{`rank ${standing.rank}`}</Text>;
+  },
+}));
 jest.mock("@/db/completed", () => ({
+  getCompletedSessionById: jest.fn().mockResolvedValue({ id: 42 }),
   updateSessionFeedback: (...args: unknown[]) => mockUpdateSessionFeedback(...args),
   updateSessionNotes: (...args: unknown[]) => mockUpdateSessionNotes(...args),
 }));
@@ -265,9 +274,9 @@ describe("VictoryView order and fold", () => {
     await release();
 
     const order = [
+      "victory-moment-village",
       "victory-stat-row",
       "feedback-glyph-easy",
-      "tonight-view-village",
       "victory-see-all",
     ];
     const at = order.map((id) => position(view, id));
@@ -420,7 +429,7 @@ describe("VictoryView village navigation", () => {
     const { view, release } = await mountWithPendingSave(null, 12 * 60, grew);
     await release();
 
-    await fireEvent.press(view.getByTestId("tonight-view-village"));
+    await fireEvent.press(view.getByTestId("victory-moment-village"));
 
     expect(mockQuitSession).not.toHaveBeenCalled();
     // The levels travel with the codes: the village plays the rise from one rung to the next.
@@ -444,12 +453,48 @@ describe("VictoryView village navigation", () => {
   it("offers the village on a night it grew, and only then", async () => {
     const quiet = await mountWithPendingSave();
     await quiet.release();
-    expect(quiet.view.queryByTestId("tonight-view-village")).toBeNull();
+    expect(quiet.view.queryByTestId("victory-moment-village")).toBeNull();
     await quiet.view.unmount();
 
     const tier = await mountWithPendingSave(null, 12 * 60, { tierUp: { oldTier: 2, newTier: 3 } });
     await tier.release();
-    expect(tier.view.getByTestId("tonight-view-village")).toBeTruthy();
+    expect(tier.view.getByTestId("victory-moment-village")).toBeTruthy();
+  });
+
+  it("opens on one headline: the village over a level, a level over the bar", async () => {
+    const level = { oldLevel: 4, newLevel: 5 };
+    const both = await mountWithPendingSave(null, 12 * 60, {
+      tierUp: { oldTier: 2, newTier: 3 },
+      levelUp: level,
+    });
+    await both.release();
+    expect(both.view.getByTestId("victory-moment-village")).toBeTruthy();
+    expect(both.view.queryByTestId("victory-moment-level")).toBeNull();
+    expect(both.view.queryByTestId("victory-level-fill")).toBeNull();
+    await both.view.unmount();
+
+    const lvl = await mountWithPendingSave(null, 12 * 60, { levelUp: level });
+    await lvl.release();
+    expect(lvl.view.getByTestId("victory-moment-level")).toBeTruthy();
+    expect(lvl.view.queryByTestId("victory-moment-village")).toBeNull();
+    await lvl.view.unmount();
+
+    const plain = await mountWithPendingSave();
+    await plain.release();
+    expect(plain.view.queryByTestId("victory-moment-level")).toBeNull();
+    expect(plain.view.queryByTestId("victory-moment-village")).toBeNull();
+  });
+
+  it("puts the hero's own past under the headline, and nothing on a first run", async () => {
+    mockGetStanding.mockResolvedValueOnce({ rank: 3 });
+    const ranked = await mountWithPendingSave();
+    await ranked.release();
+    expect(ranked.view.getByTestId("stub-sits").props.children).toBe("rank 3");
+    await ranked.view.unmount();
+
+    const first = await mountWithPendingSave();
+    await first.release();
+    expect(first.view.queryByTestId("victory-standing")).toBeNull();
   });
 });
 

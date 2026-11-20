@@ -150,6 +150,40 @@ describe("RestView", () => {
     jest.useRealTimers();
   });
 
+  describe("a boss fight", () => {
+    it("keeps the boss on screen during the rest, with its health, and none without a fight", async () => {
+      const quiet = await mountRest();
+      expect(quiet.queryByTestId("rest-boss")).toBeNull();
+      await quiet.unmount();
+
+      await act(() => {
+        useSessionStore.setState({
+          bossFight: {
+            id: 1,
+            adventureId: 1,
+            totalHp: 200,
+            currentHp: 120,
+            weaknessMuscle: null,
+            resistanceMuscle: null,
+            imagePath: "assets/placeholder.jpg",
+            enName: "Ember Drake",
+            frName: "Drake de braise",
+            deName: "Drake",
+            esName: "Drake",
+            ruName: "Drake",
+            zhName: "Drake",
+            tier: 0,
+            shiny: false,
+          } as unknown as NonNullable<ReturnType<typeof useSessionStore.getState>["bossFight"]>,
+        });
+      });
+      const view = await mountRest();
+      const strip = view.getByTestId("rest-boss");
+      expect(within(strip).getByText("Ember Drake")).toBeTruthy();
+      expect(within(strip).getByTestId("boss-hp-fill")).toBeTruthy();
+    });
+  });
+
   describe("where the hero is, and the way to replace what comes next", () => {
     it("says the round and the exercise about to start, on a move rest", async () => {
       const view = await mountRest();

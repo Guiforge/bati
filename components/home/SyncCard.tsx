@@ -179,6 +179,7 @@ function SyncNotice({
             size="2"
             circular
             chromeless
+            hitSlop={8}
             onPress={onClose}
             icon={<X size={18} color="textSecondary" />}
             accessibilityRole="button"

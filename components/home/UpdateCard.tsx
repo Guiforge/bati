@@ -72,6 +72,7 @@ export function UpdateCard() {
           size="2"
           circular
           chromeless
+          hitSlop={8}
           onPress={() => {
             haptics.selection();
             dismiss();

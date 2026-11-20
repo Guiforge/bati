@@ -570,6 +570,8 @@
     "save_failed": "动作保存失败。"
   },
   "exercises": {
+    "progress_open": "显示这些训练",
+    "progress_caption": "近期每次训练的最佳一组。金色是纪录。",
     "your_numbers": "你的数据",
     "mine": "我的",
     "filter_group_mine": "你的",
@@ -921,6 +923,10 @@
     "kept_body": "XP 永不收回，等级永不下降。规则改动从当天起生效。"
   },
   "journal": {
+    "records_when": "{{when}} · 上次 {{last}}",
+    "records_this_week": "本周刷新",
+    "records_empty": "完成第一个任务后，你的纪录会出现在这里。",
+    "wall_all_records": "全部纪录",
     "title": "日记",
     "session_not_found": "找不到这次训练",
     "forget": "从日记中移除",

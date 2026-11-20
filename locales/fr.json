@@ -469,6 +469,8 @@
     "save_failed": "Impossible d'enregistrer l'exercice."
   },
   "exercises": {
+    "progress_open": "Afficher ces séances",
+    "progress_caption": "Meilleure série de chaque séance récente. L'or marque le record.",
     "your_numbers": "Tes chiffres",
     "mine": "Les miens",
     "filter_group_mine": "À toi",
@@ -584,6 +586,10 @@
     "kept_body": "Aucun XP n'est jamais repris, aucun niveau ne redescend. Quand une règle change, elle s'applique à partir de ce jour-là."
   },
   "journal": {
+    "records_when": "{{when}} · dernier {{last}}",
+    "records_this_week": "Battu cette semaine",
+    "records_empty": "Tes records apparaîtront ici après ta première quête.",
+    "wall_all_records": "Tous les records",
     "pull_deficit_title": "Ton tirage est en retard",
     "pull_deficit_body": "{{pull}} reps de tirage contre {{push}} de poussée sur les 30 derniers jours. Le rowing sous la table ou une barre de porte le fait remonter.",
     "notes": "Notes",

@@ -107,6 +107,29 @@ describe("db/personalRecords", () => {
     expect(records[1]).toMatchObject({ type: "time", best: 40, last: 40 });
   });
 
+  test("getExerciseSessionBests gives the newest 12 sessions of one unit, oldest first", async () => {
+    const { getExerciseSessionBests } =
+      require("../db/personalRecords") as typeof import("../db/personalRecords");
+    const now = Math.floor(Date.now() / 1000);
+    const exerciseId = firstExerciseId(t);
+    for (let i = 1; i <= 14; i++) {
+      t.sqlite.exec(`
+        INSERT INTO completed_sessions (id, performedAt) VALUES (${i}, ${now + i * 60});
+        INSERT INTO completed_exercises (sessionId, exerciseId, resultType, resultValue, performedAt, sortOrder) VALUES
+          (${i}, ${exerciseId}, 'reps', ${i}, ${now + i * 60}, 0),
+          (${i}, ${exerciseId}, 'reps', ${i + 100}, ${now + i * 60 + 1}, 1),
+          (${i}, ${exerciseId}, 'time', 30, ${now + i * 60}, 2);
+      `);
+    }
+
+    const points = await getExerciseSessionBests(exerciseId, "reps");
+
+    // Best set per session, the hold kept out, the two oldest sessions cut.
+    expect(points.map((p) => p.sessionId)).toEqual([3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]);
+    expect(points[0]?.best).toBe(103);
+    expect(await getExerciseSessionBests(exerciseId + 9999, "reps")).toEqual([]);
+  });
+
   test("getMovementRecords leaves outings out, they have no record to beat", async () => {
     const { getMovementRecords } =
       require("../db/personalRecords") as typeof import("../db/personalRecords");

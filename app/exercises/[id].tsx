@@ -16,6 +16,7 @@ import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { StatusBand } from "@/components/common/StatusBand";
 import { Tag } from "@/components/common/Tag";
 import { useToast } from "@/components/common/Toast";
+import { ProgressTrail } from "@/components/exercises/ProgressTrail";
 import { ChevronLeft, ChevronRight, Dumbbell, Timer } from "@/components/icons";
 import { shortDate } from "@/components/journal/journalFormat";
 import { recordWhen } from "@/components/journal/stats/wall";
@@ -526,44 +527,47 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
               {loggedHere.map(({ type, ghost }) => (
                 // Two halves that wrap as wholes. One flat wrapping row broke wherever the width
                 // ran out, and "Record 1,000 reps" left its "Aug 15" alone on the next line.
-                <XStack key={type} items="baseline" gap="2" flexWrap="wrap">
-                  <XStack items="baseline" gap="2">
-                    <Text fontSize={12} color="textSecondary">
-                      {t("session.ghost_last_label")}
-                    </Text>
-                    <Text fontSize={15} fontWeight="700" color="text">
-                      {formatSlotTarget(
-                        { target: { type, value: ghost.last }, exercise },
-                        language,
-                      )}
-                    </Text>
-                    <Text fontSize={12} color="textSecondary">
-                      {shortDate(language, new Date(ghost.at), now)}
-                    </Text>
-                  </XStack>
-                  {ghost.best > ghost.last ? (
-                    <XStack testID="exercise-record" items="baseline" gap="2">
-                      <Text fontSize={12} color="textSecondary" opacity={0.5}>
-                        ·
-                      </Text>
-                      {/* The Journal's word and the Journal's date. This line said "best 60s"
-                          with no date while the wall two taps away said "Record 1:00 · 10 months
-                          ago" about the same hold, and an undated number reads as tonight's. */}
+                <YStack key={type} gap="2">
+                  <XStack items="baseline" gap="2" flexWrap="wrap">
+                    <XStack items="baseline" gap="2">
                       <Text fontSize={12} color="textSecondary">
-                        {t("exercises.record_label")}
+                        {t("session.ghost_last_label")}
                       </Text>
-                      <Text fontSize={15} fontWeight="700" color="resourceGold">
+                      <Text fontSize={15} fontWeight="700" color="text">
                         {formatSlotTarget(
-                          { target: { type, value: ghost.best }, exercise },
+                          { target: { type, value: ghost.last }, exercise },
                           language,
                         )}
                       </Text>
                       <Text fontSize={12} color="textSecondary">
-                        {recordWhen(t, language, new Date(ghost.bestAt), now)}
+                        {shortDate(language, new Date(ghost.at), now)}
                       </Text>
                     </XStack>
-                  ) : null}
-                </XStack>
+                    {ghost.best > ghost.last ? (
+                      <XStack testID="exercise-record" items="baseline" gap="2">
+                        <Text fontSize={12} color="textSecondary" opacity={0.5}>
+                          ·
+                        </Text>
+                        {/* The Journal's word and the Journal's date. This line said "best 60s"
+                          with no date while the wall two taps away said "Record 1:00 · 10 months
+                          ago" about the same hold, and an undated number reads as tonight's. */}
+                        <Text fontSize={12} color="textSecondary">
+                          {t("exercises.record_label")}
+                        </Text>
+                        <Text fontSize={15} fontWeight="700" color="resourceGold">
+                          {formatSlotTarget(
+                            { target: { type, value: ghost.best }, exercise },
+                            language,
+                          )}
+                        </Text>
+                        <Text fontSize={12} color="textSecondary">
+                          {recordWhen(t, language, new Date(ghost.bestAt), now)}
+                        </Text>
+                      </XStack>
+                    ) : null}
+                  </XStack>
+                  <ProgressTrail exercise={exercise} type={type} record={ghost.best} />
+                </YStack>
               ))}
             </YStack>
           )}

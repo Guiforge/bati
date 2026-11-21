@@ -140,7 +140,7 @@ function BandNotice({
  * tile into an invisible mode, and it took five taps to leave with a number.
  *
  * Every tile says its kind in plain words with an icon, and carries its goal as a visible chip from
- * day one: the game name lives in the accessibility label. The tiles share the row between them
+ * day one: the game name is a second line on the 84 dp layout and always in the accessibility label. The tiles share the row between them
  * (flex), so three or fewer leave no hole, and more than fit scroll.
  */
 export function QuickActions() {
@@ -152,6 +152,9 @@ export function QuickActions() {
   const { width: windowWidth, height: screenHeight } = useWindowDimensions();
   // In step with the font: a name over two lines and the goal chip no longer fit 72 dp at 130 %,
   // and the tile cut them (persona audit 2, 14).
+  // The world's name is a second line only where 84 dp leaves room: at 72 the kind, the name and
+  // the 24 dp chip add up to 8 dp more than the tile has inside its padding.
+  const showWorldName = screenHeight >= SHORT_SCREEN;
   const tileHeight = useFontScaled(screenHeight < SHORT_SCREEN ? TILE_HEIGHT_SHORT : TILE_HEIGHT);
   const router = useRouter();
   const language = useSettingsStore((s) => s.language);
@@ -462,6 +465,17 @@ export function QuickActions() {
                   </AppText>
                   <Play size={12} color="textSecondary" />
                 </XStack>
+                {showWorldName ? (
+                  <AppText
+                    testID={`home-outing-name-${quest.id}`}
+                    fontSize={11}
+                    color="textSecondary"
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {name}
+                  </AppText>
+                ) : null}
                 {/* The goal, and the way to change it: 24 dp tall, 44 with its slop. Always there,
                     day one included: the tap runs it, so the hero must be able to read it. */}
                 <XStack
@@ -472,9 +486,9 @@ export function QuickActions() {
                   items="center"
                   justify="center"
                   rounded={12}
-                  bg="surface2"
+                  bg="bgLight"
                   borderWidth={1}
-                  borderColor="borderStrong"
+                  borderColor="textSecondary"
                   opacity="press:0.7"
                   hitSlop={{ top: 10, bottom: 10, left: 6, right: 6 }}
                   onPress={() => setGoalFor(quest.id)}

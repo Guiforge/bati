@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, userEvent, waitFor } from "@testing-library/react-native";
+import { Dimensions } from "react-native";
 import { TamaguiProvider } from "tamagui";
 import { QuickActions } from "@/components/home/QuickActions";
 import { NON_REP_STYLE } from "@/db/workUnits";
@@ -210,6 +211,21 @@ it("names the movement, so the hero can see which one is the run", async () => {
   expect(screen.getByText("Walk")).toBeTruthy();
   // The quest title would leave the hero tapping to find out which one they want.
   expect(screen.queryByText("La Parole Doit Passer")).toBeNull();
+  // The world's name rides under the plain word, on one truncated line.
+  expect(screen.getByText("Course du Messager").props.numberOfLines).toBe(1);
+});
+
+it("drops the world's name under 700 dp, where the tile has no room for a third line", async () => {
+  const spy = jest
+    .spyOn(Dimensions, "get")
+    .mockReturnValue({ width: 360, height: 640, scale: 2, fontScale: 1 });
+  try {
+    await renderRow();
+    await screen.findByText("Run");
+    expect(screen.queryByText("Course du Messager")).toBeNull();
+  } finally {
+    spy.mockRestore();
+  }
 });
 
 it("says it starts, rather than wearing the label it had when it only opened a screen", async () => {

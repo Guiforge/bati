@@ -1292,7 +1292,7 @@ describe("the crest follows the journal, not the device", () => {
 
     await merge().mergePeer(file);
 
-    expect(await disclosure()).toEqual({ level: true, outingGoals: true, oathStrip: true });
+    expect(await disclosure()).toEqual({ level: true, oathStrip: true });
   });
 
   function prefValue(key: string) {

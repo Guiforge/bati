@@ -31,12 +31,12 @@ describe("disclosure", () => {
   }
 
   test("0, 1 and 3 sessions", async () => {
-    expect(await read()).toEqual({ level: false, outingGoals: false, oathStrip: false });
+    expect(await read()).toEqual({ level: false, oathStrip: false });
     log(1);
-    expect(await read()).toEqual({ level: true, outingGoals: true, oathStrip: false });
+    expect(await read()).toEqual({ level: true, oathStrip: false });
     log(2);
     log(3);
-    expect(await read()).toEqual({ level: true, outingGoals: true, oathStrip: true });
+    expect(await read()).toEqual({ level: true, oathStrip: true });
   });
 
   test("one outing alone opens the level", async () => {
@@ -46,7 +46,7 @@ describe("disclosure", () => {
 
   test("three short walks open the level but not the oath", async () => {
     for (const id of [1, 2, 3]) log(id, { outing: "walk", seconds: 180 });
-    expect(await read()).toEqual({ level: true, outingGoals: true, oathStrip: false });
+    expect(await read()).toEqual({ level: true, oathStrip: false });
   });
 
   test("deleting a session takes the count back", async () => {

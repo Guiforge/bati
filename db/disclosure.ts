@@ -6,8 +6,6 @@ import { countSessions } from "./completed";
 export type Disclosure = {
   /** Level line and XP bar in the strip: after the first victory. */
   level: boolean;
-  /** Goal chips on the outing tiles: hidden on day one. */
-  outingGoals: boolean;
   /** Oath strip under the stage: from three sessions. */
   oathStrip: boolean;
 };
@@ -25,7 +23,6 @@ export const OATH_AFTER_SESSIONS = 3;
 export function disclosureFor(victories: number, counted: number): Disclosure {
   return {
     level: victories >= 1,
-    outingGoals: victories >= 1,
     oathStrip: counted >= OATH_AFTER_SESSIONS,
   };
 }

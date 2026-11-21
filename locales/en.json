@@ -1,6 +1,7 @@
 {
   "dark": "Dark",
   "home": {
+    "break_offer": "Away for a while? Take a break, your flame waits.",
     "light_week_on": "Light week until {{date}}: every quest runs one round shorter.",
     "light_week_end": "Back to the normal rhythm",
     "pause_on": "On a break until {{date}}",
@@ -2470,6 +2471,9 @@
     "all_releases": "Every version's notes"
   },
   "reminders": {
+    "win_on": "Reminder on. You can change the days in Settings.",
+    "win_yes": "Remind me",
+    "win_ask": "Train again on {{days}}?",
     "adventure": {
       "0": "Step {{n}} of {{adventure}} awaits.",
       "1": "{{adventure}}, step {{n}}. Pick up where you left off.",
@@ -2621,6 +2625,11 @@
     "layout_bigmap_note": "The map fills the screen, your big figure sits on top."
   },
   "pause": {
+    "zone_offer_done": "Done. Back to those exercises on {{date}}.",
+    "zone_offer_title": "Rest {{zones}} for a while?",
+    "zone_offer_title_none": "Rest a zone for a while?",
+    "zone_offer_start": "Rest them",
+    "zone_resume": "Resume now",
     "title": "Break and spared zone",
     "row_off": "Off",
     "row_pause": "Break until {{date}}",

@@ -21,6 +21,7 @@ import { ChevronRight } from "@/components/icons";
 import { SessionNotebook } from "@/components/journal/SessionNotebook";
 import { useConfirmForget } from "@/components/journal/useConfirmForget";
 import { DuoVictoryLine } from "@/components/multiplayer/DuoVictoryLine";
+import { ReminderAfterWin } from "@/components/session/ReminderAfterWin";
 import { ShareButton } from "@/components/share/ShareButton";
 import { getBossAsset, getQuestAsset } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
@@ -910,6 +911,8 @@ export function VictoryView() {
               ))}
             </XStack>
           </Card>
+
+          {!!result && !tooShort && !saveError && <ReminderAfterWin />}
 
           {/* "Tonight": what the save changed. It arrives with the save and says nothing before it,
             nothing at all on a night where nothing rose. "See your village" only when it grew. */}

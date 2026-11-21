@@ -677,4 +677,7 @@ export const reminderPrefs = {
   setStreakFrom: (day: string) => setPreference("reminderStreakFrom", day),
   offerDismissed: async () => (await getPreference("reminderOfferDismissed")) === "true",
   dismissOffer: () => setPreference("reminderOfferDismissed", "true"),
+  /** How many times the victory screen's "Train again on ...?" got a "Not now". Two end the asking. */
+  winNotNows: async () => Number(await getPreference("reminderWinNotNow")) || 0,
+  setWinNotNows: (count: number) => setPreference("reminderWinNotNow", String(count)),
 };

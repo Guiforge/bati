@@ -968,6 +968,9 @@ export const DEVICE_LOCAL_PREFERENCES = [
   "reminderAskedAt",
   "reminderStreakFrom",
   "reminderOfferDismissed",
+  "reminderWinNotNow",
+  // Home's "Away for a while?" card: the day this phone closed it (db/pause.ts).
+  "breakOfferClosedOn",
   // Home's light-week answers (db/lightWeek.ts): the offer and the week are this phone's.
   "lightWeekRefusedAt",
   "lightWeekAcceptedAt",

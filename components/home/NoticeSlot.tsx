@@ -1,19 +1,22 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
+import { BreakOfferCard } from "@/components/home/BreakOfferCard";
 import { LightWeekCard } from "@/components/home/LightWeekCard";
 import { type NoticeKind, pickNotice } from "@/components/home/noticeOrder";
 import { PasswordCheckCard } from "@/components/home/PasswordCheckCard";
 import { ProtectCard } from "@/components/home/ProtectCard";
 import { ReminderCard } from "@/components/home/ReminderCard";
 import { RhythmLine } from "@/components/home/RhythmLine";
+import { SparedZoneLine } from "@/components/home/SparedZoneLine";
 import { SyncCard } from "@/components/home/SyncCard";
 import { syncNoticeKind } from "@/components/home/syncNoticeKind";
 import { UpdateCard } from "@/components/home/UpdateCard";
 import { WhatsNewCard } from "@/components/home/WhatsNewCard";
 import { SessionRecoveryCard } from "@/components/session/SessionRecoveryCard";
 import { lightWeekReason, lightWeekUntil } from "@/db/lightWeek";
-import { getActivePause } from "@/db/pause";
+import { getActivePause, getZone, type Zone } from "@/db/pause";
 import { useSessionRecovery } from "@/hooks/useSessionRecovery";
+import { breakOfferDue } from "@/src/breakOffer";
 import { lastMerge, lostSync, p2pApart, syncHealth } from "@/src/deviceSync";
 import { passwordCheckDue } from "@/src/passwordReminders";
 import { protectCardVisible } from "@/src/protectHero";
@@ -58,6 +61,7 @@ function Slot({ onLightWeekAnswered }: { onLightWeekAnswered?: () => void }) {
   const welcoming = useChorusStore((s) => s.current?.moment === "comeback");
   // Null until the first read lands: a loading slot asserts nothing.
   const [present, setPresent] = useState<ReadonlySet<NoticeKind> | null>(null);
+  const [zone, setZone] = useState<Zone | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -75,6 +79,8 @@ function Slot({ onLightWeekAnswered }: { onLightWeekAnswered?: () => void }) {
         getActivePause(),
         lightWeekUntil(new Date()),
         p2pApart(),
+        breakOfferDue(),
+        getZone(),
       ])
         .then(
           ([
@@ -90,6 +96,8 @@ function Slot({ onLightWeekAnswered }: { onLightWeekAnswered?: () => void }) {
             pause,
             weekUntil,
             apart,
+            breakOffer,
+            sparedZone,
           ]) => {
             if (cancelled) return;
             const sync = syncNoticeKind({
@@ -105,12 +113,15 @@ function Slot({ onLightWeekAnswered }: { onLightWeekAnswered?: () => void }) {
               ["sync", sync !== null],
               ["lightWeek", lightWeek !== null],
               ["rhythm", pause !== null || weekUntil !== null],
+              ["breakOffer", breakOffer],
               ["whatsNew", notes && releaseNotes(language).length > 0],
               ["update", update !== null],
               ["protect", protect],
               ["reminder", reminder !== null],
+              ["zone", sparedZone !== null],
               ["passwordCheck", password],
             ];
+            setZone(sparedZone);
             setPresent(new Set(due.filter(([, on]) => on).map(([kind]) => kind)));
           },
         )
@@ -154,6 +165,10 @@ function Slot({ onLightWeekAnswered }: { onLightWeekAnswered?: () => void }) {
       return <ProtectCard />;
     case "reminder":
       return <ReminderCard />;
+    case "breakOffer":
+      return <BreakOfferCard />;
+    case "zone":
+      return zone ? <SparedZoneLine zone={zone} /> : null;
     case "passwordCheck":
       return <PasswordCheckCard />;
     case null:

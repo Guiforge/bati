@@ -7,6 +7,7 @@ import { YStack } from "tamagui";
 import { VillagerSays } from "@/components/chorus/VillagerLine";
 import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
+import { SparedZoneOffer } from "@/components/session/SparedZoneOffer";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
 
@@ -100,6 +101,7 @@ export function PainStopView() {
       ) : saved ? (
         <>
           <VillagerSays villager="herbalist" pose="talk" shown={t("session.pain_stop_line")} />
+          {hasSets ? <SparedZoneOffer /> : null}
           {safetyLink}
           <AppButton testID="pain-stop-continue" onPress={leave}>
             {t("session.continue")}

@@ -39,6 +39,7 @@ const mockReads = {
   password: false,
   lightWeek: "under" as string | null,
   rhythm: false,
+  breakOffer: false,
 };
 jest.mock("@/src/deviceSync", () => ({
   lostSync: async () => mockReads.lost,
@@ -57,7 +58,8 @@ jest.mock("@/db/lightWeek", () => ({
   lightWeekReason: async () => mockReads.lightWeek,
   lightWeekUntil: async () => (mockReads.rhythm ? new Date() : null),
 }));
-jest.mock("@/db/pause", () => ({ getActivePause: async () => null }));
+jest.mock("@/db/pause", () => ({ getActivePause: async () => null, getZone: async () => null }));
+jest.mock("@/src/breakOffer", () => ({ breakOfferDue: async () => mockReads.breakOffer }));
 jest.mock("@/src/passwordReminders", () => ({ passwordCheckDue: async () => mockReads.password }));
 
 // The cards are stubs: what is asked is who gets the slot, each card has its own test.
@@ -69,6 +71,7 @@ jest.mock("@/components/session/SessionRecoveryCard", () => ({
   },
 }));
 jest.mock("@/components/home/LightWeekCard", () => ({ LightWeekCard: stub("home-light-week") }));
+jest.mock("@/components/home/BreakOfferCard", () => ({ BreakOfferCard: stub("home-break-offer") }));
 jest.mock("@/components/home/RhythmLine", () => ({ RhythmLine: stub("home-rhythm") }));
 jest.mock("@/components/home/SyncCard", () => ({ SyncCard: stub("home-sync-lost") }));
 jest.mock("@/components/home/WhatsNewCard", () => ({ WhatsNewCard: stub("home-whats-new-open") }));
@@ -88,6 +91,7 @@ const ALL = [
   "home-sync-lost",
   "home-light-week",
   "home-rhythm",
+  "home-break-offer",
   "home-whats-new-open",
   "home-update-dismiss",
   "home-protect",
@@ -115,6 +119,7 @@ beforeEach(() => {
     password: true,
     lightWeek: "under",
     rhythm: false,
+    breakOffer: false,
   });
   useSettingsStore.setState({ updateCheckEnabled: true });
 });
@@ -135,7 +140,8 @@ describe("NoticeSlot", () => {
     mockRecovery.recoverableSession = null;
     const order: [Partial<typeof mockReads>, string][] = [
       [{ lost: null }, "home-light-week"],
-      [{ lightWeek: null }, "home-whats-new-open"],
+      [{ lightWeek: null, breakOffer: true }, "home-break-offer"],
+      [{ breakOffer: false }, "home-whats-new-open"],
       [{ notes: false }, "home-update-dismiss"],
       [{ update: null }, "home-protect"],
       [{ protect: false }, "home-reminder-offer"],

@@ -1,6 +1,7 @@
 {
   "dark": "Dunkel",
   "home": {
+    "break_offer": "Eine Weile weg? Mach eine Pause, deine Flamme wartet.",
     "light_week_on": "Leichte Woche bis {{date}}: Jede Quest hat eine Runde weniger.",
     "light_week_end": "Zurück zum normalen Rhythmus",
     "pause_on": "Pause bis {{date}}",
@@ -2472,6 +2473,9 @@
     "all_releases": "Notizen aller Versionen"
   },
   "reminders": {
+    "win_on": "Erinnerung an. Die Tage kannst du in den Einstellungen ändern.",
+    "win_yes": "Erinnere mich",
+    "win_ask": "Wieder trainieren am {{days}}?",
     "adventure": {
       "0": "Etappe {{n}} von {{adventure}} wartet.",
       "1": "{{adventure}}, Etappe {{n}}. Mach weiter, wo du aufgehört hast.",
@@ -2623,6 +2627,11 @@
     "layout_bigmap_note": "Die Karte füllt den Bildschirm, deine große Zahl liegt obenauf."
   },
   "pause": {
+    "zone_offer_done": "Erledigt. Diese Übungen sind ab {{date}} wieder da.",
+    "zone_offer_title": "{{zones}} eine Weile ausruhen lassen?",
+    "zone_offer_title_none": "Eine Zone eine Weile ausruhen lassen?",
+    "zone_offer_start": "Ausruhen lassen",
+    "zone_resume": "Jetzt wieder aufnehmen",
     "title": "Pause und Schonzone",
     "row_off": "Aus",
     "row_pause": "Pause bis {{date}}",

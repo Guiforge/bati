@@ -632,7 +632,7 @@ describe("RestView", () => {
     expect(rested.queryByTestId("rest-pain-rule")).toBeNull();
     // A normal rest gains nothing.
     expect(rested.queryByTestId("session-pain-stop")).toBeNull();
-    rested.unmount();
+    await rested.unmount();
 
     useSessionStore.setState({ lastSetSkipped: true });
     const skipped = await mountRest();

@@ -17,7 +17,7 @@ mockI18n.init({
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 
 jest.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (k: string, o?: Record<string, unknown>) => mockI18n.t(k, o) }),
+  useTranslation: () => ({ t: (k: string, o?: Record<string, unknown>) => mockI18n.t(k, o ?? {}) }),
 }));
 
 const bear = {
@@ -40,7 +40,7 @@ describe("the crest line in Russian", () => {
   });
 
   it("the big feast title does the same", () => {
-    const t = ((k: string, o?: Record<string, unknown>) => mockI18n.t(k, o)) as never;
+    const t = ((k: string, o?: Record<string, unknown>) => mockI18n.t(k, o ?? {})) as never;
     expect(revealTitle(t, { animal: "bear" } as never, "Заря")).toBe(
       "Медведь стережёт деревню Заря.",
     );

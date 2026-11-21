@@ -230,7 +230,7 @@ export default function PairingScreen() {
 
         {note !== null ? (
           <Text color="text" testID="pairing-note" accessibilityLiveRegion="polite">
-            {t(`duo.${note.key}`, note.values)}
+            {t(`duo.${note.key}`, note.values ?? {})}
           </Text>
         ) : null}
 

@@ -9,6 +9,7 @@
     "This Font Software is licensed under the SIL Open Font License, Version 1.1.\nThis license is copied below, and is also available with a FAQ at:\nhttps://scripts.sil.org/OFL\n\n-----------------------------------------------------------\nSIL OPEN FONT LICENSE Version 1.1 - 26 February 2007\n-----------------------------------------------------------\n\nPREAMBLE\nThe goals of the Open Font License (OFL) are to stimulate worldwide\ndevelopment of collaborative font projects, to support the font creation\nefforts of academic and linguistic communities, and to provide a free and\nopen framework in which fonts may be shared and improved in partnership\nwith others.\n\nThe OFL allows the licensed fonts to be used, studied, modified and\nredistributed freely as long as they are not sold by themselves. The\nfonts, including any derivative works, can be bundled, embedded, \nredistributed and/or sold with any software provided that any reserved\nnames are not used by derivative works. The fonts and derivatives,\nhowever, cannot be released under any other type of license. The\nrequirement for fonts to remain under this license does not apply\nto any document created using the fonts or their derivatives.\n\nDEFINITIONS\n\"Font Software\" refers to the set of files released by the Copyright\nHolder(s) under this license and clearly marked as such. This may\ninclude source files, build scripts and documentation.\n\n\"Reserved Font Name\" refers to any names specified as such after the\ncopyright statement(s).\n\n\"Original Version\" refers to the collection of Font Software components as\ndistributed by the Copyright Holder(s).\n\n\"Modified Version\" refers to any derivative made by adding to, deleting,\nor substituting -- in part or in whole -- any of the components of the\nOriginal Version, by changing formats or by porting the Font Software to a\nnew environment.\n\n\"Author\" refers to any designer, engineer, programmer, technical\nwriter or other person who contributed to the Font Software.\n\nPERMISSION & CONDITIONS\nPermission is hereby granted, free of charge, to any person obtaining\na copy of the Font Software, to use, study, copy, merge, embed, modify,\nredistribute, and sell modified and unmodified copies of the Font\nSoftware, subject to the following conditions:\n\n1) Neither the Font Software nor any of its individual components,\nin Original or Modified Versions, may be sold by itself.\n\n2) Original or Modified Versions of the Font Software may be bundled,\nredistributed and/or sold with any software, provided that each copy\ncontains the above copyright notice and this license. These can be\nincluded either as stand-alone text files, human-readable headers or\nin the appropriate machine-readable metadata fields within text or\nbinary files as long as those fields can be easily viewed by the user.\n\n3) No Modified Version of the Font Software may use the Reserved Font\nName(s) unless explicit written permission is granted by the corresponding\nCopyright Holder. This restriction only applies to the primary font name as\npresented to the users.\n\n4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font\nSoftware shall not be used to promote, endorse or advertise any\nModified Version, except to acknowledge the contribution(s) of the\nCopyright Holder(s) and the Author(s) or with their explicit written\npermission.\n\n5) The Font Software, modified or unmodified, in part or in whole,\nmust be distributed entirely under this license, and must not be\ndistributed under any other license. The requirement for fonts to\nremain under this license does not apply to any document created\nusing the Font Software.\n\nTERMINATION\nThis license becomes null and void if any of the above conditions are\nnot met.\n\nDISCLAIMER\nTHE FONT SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND,\nEXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF\nMERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT\nOF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE\nCOPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,\nINCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL\nDAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING\nFROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM\nOTHER DEALINGS IN THE FONT SOFTWARE.",
     "The MIT License (MIT)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies\nof the Software, and to permit persons to whom the Software is furnished to do\nso, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.",
     "MIT License\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.",
+    "# Blue Oak Model License\n\nVersion 1.0.0\n\n## Purpose\n\nThis license gives everyone as much permission to work with\nthis software as possible, while protecting contributors\nfrom liability.\n\n## Acceptance\n\nIn order to receive this license, you must agree to its\nrules.  The rules of this license are both obligations\nunder that agreement and conditions to your license.\nYou must not do anything with this software that triggers\na rule that you cannot or will not follow.\n\n## Copyright\n\nEach contributor licenses you to do everything with this\nsoftware that would otherwise infringe that contributor's\ncopyright in it.\n\n## Notices\n\nYou must ensure that everyone who gets a copy of\nany part of this software from you, with or without\nchanges, also gets the text of this license or a link to\n<https://blueoakcouncil.org/license/1.0.0>.\n\n## Excuse\n\nIf anyone notifies you in writing that you have not\ncomplied with [Notices](#notices), you can keep your\nlicense by taking all practical steps to comply within 30\ndays after the notice.  If you do not do so, your license\nends immediately.\n\n## Patent\n\nEach contributor licenses you to do everything with this\nsoftware that would otherwise infringe any patent claims\nthey can license or become able to license.\n\n## Reliability\n\nNo contributor can revoke this license.\n\n## No Liability\n\n***As far as the law allows, this software comes as is,\nwithout any warranty or condition, and no contributor\nwill be liable to anyone for any damages related to this\nsoftware or this license, under any kind of legal claim.***",
     "The ISC License\n\nPermission to use, copy, modify, and/or distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\nANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\nACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR\nIN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.",
     "ISC License\n\nPermission to use, copy, modify, and/or distribute this software\nfor any purpose with or without fee is hereby granted, provided\nthat the above copyright notice and this permission notice\nappear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES\nOF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE\nLIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES\nOR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,\nWHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,\nARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.",
     "Permission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.",
@@ -33,7 +34,6 @@
     "A. HISTORY OF THE SOFTWARE\n==========================\n\nPython was created in the early 1990s by Guido van Rossum at Stichting\nMathematisch Centrum (CWI, see http://www.cwi.nl) in the Netherlands\nas a successor of a language called ABC.  Guido remains Python's\nprincipal author, although it includes many contributions from others.\n\nIn 1995, Guido continued his work on Python at the Corporation for\nNational Research Initiatives (CNRI, see http://www.cnri.reston.va.us)\nin Reston, Virginia where he released several versions of the\nsoftware.\n\nIn May 2000, Guido and the Python core development team moved to\nBeOpen.com to form the BeOpen PythonLabs team.  In October of the same\nyear, the PythonLabs team moved to Digital Creations, which became\nZope Corporation.  In 2001, the Python Software Foundation (PSF, see\nhttps://www.python.org/psf/) was formed, a non-profit organization\ncreated specifically to own Python-related Intellectual Property.\nZope Corporation was a sponsoring member of the PSF.\n\nAll Python releases are Open Source (see http://www.opensource.org for\nthe Open Source Definition).  Historically, most, but not all, Python\nreleases have also been GPL-compatible; the table below summarizes\nthe various releases.\n\n    Release         Derived     Year        Owner       GPL-\n                    from                                compatible? (1)\n\n    0.9.0 thru 1.2              1991-1995   CWI         yes\n    1.3 thru 1.5.2  1.2         1995-1999   CNRI        yes\n    1.6             1.5.2       2000        CNRI        no\n    2.0             1.6         2000        BeOpen.com  no\n    1.6.1           1.6         2001        CNRI        yes (2)\n    2.1             2.0+1.6.1   2001        PSF         no\n    2.0.1           2.0+1.6.1   2001        PSF         yes\n    2.1.1           2.1+2.0.1   2001        PSF         yes\n    2.1.2           2.1.1       2002        PSF         yes\n    2.1.3           2.1.2       2002        PSF         yes\n    2.2 and above   2.1.1       2001-now    PSF         yes\n\nFootnotes:\n\n(1) GPL-compatible doesn't mean that we're distributing Python under\n    the GPL.  All Python licenses, unlike the GPL, let you distribute\n    a modified version without making your changes open source.  The\n    GPL-compatible licenses make it possible to combine Python with\n    other software that is released under the GPL; the others don't.\n\n(2) According to Richard Stallman, 1.6.1 is not GPL-compatible,\n    because its license has a choice of law clause.  According to\n    CNRI, however, Stallman's lawyer has told CNRI's lawyer that 1.6.1\n    is \"not incompatible\" with the GPL.\n\nThanks to the many outside volunteers who have worked under Guido's\ndirection to make these releases possible.\n\nB. TERMS AND CONDITIONS FOR ACCESSING OR OTHERWISE USING PYTHON\n===============================================================\n\nPYTHON SOFTWARE FOUNDATION LICENSE VERSION 2\n--------------------------------------------\n\n1. This LICENSE AGREEMENT is between the Python Software Foundation\n(\"PSF\"), and the Individual or Organization (\"Licensee\") accessing and\notherwise using this software (\"Python\") in source or binary form and\nits associated documentation.\n\n2. Subject to the terms and conditions of this License Agreement, PSF hereby\ngrants Licensee a nonexclusive, royalty-free, world-wide license to reproduce,\nanalyze, test, perform and/or display publicly, prepare derivative works,\ndistribute, and otherwise use Python alone or in any derivative version,\nprovided, however, that PSF's License Agreement and PSF's notice of copyright,\ni.e., \"Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,\n2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020 Python Software Foundation;\nAll Rights Reserved\" are retained in Python alone or in any derivative version\nprepared by Licensee.\n\n3. In the event Licensee prepares a derivative work that is based on\nor incorporates Python or any part thereof, and wants to make\nthe derivative work available to others as provided herein, then\nLicensee hereby agrees to include in any such work a brief summary of\nthe changes made to Python.\n\n4. PSF is making Python available to Licensee on an \"AS IS\"\nbasis.  PSF MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR\nIMPLIED.  BY WAY OF EXAMPLE, BUT NOT LIMITATION, PSF MAKES NO AND\nDISCLAIMS ANY REPRESENTATION OR WARRANTY OF MERCHANTABILITY OR FITNESS\nFOR ANY PARTICULAR PURPOSE OR THAT THE USE OF PYTHON WILL NOT\nINFRINGE ANY THIRD PARTY RIGHTS.\n\n5. PSF SHALL NOT BE LIABLE TO LICENSEE OR ANY OTHER USERS OF PYTHON\nFOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES OR LOSS AS\nA RESULT OF MODIFYING, DISTRIBUTING, OR OTHERWISE USING PYTHON,\nOR ANY DERIVATIVE THEREOF, EVEN IF ADVISED OF THE POSSIBILITY THEREOF.\n\n6. This License Agreement will automatically terminate upon a material\nbreach of its terms and conditions.\n\n7. Nothing in this License Agreement shall be deemed to create any\nrelationship of agency, partnership, or joint venture between PSF and\nLicensee.  This License Agreement does not grant permission to use PSF\ntrademarks or trade name in a trademark sense to endorse or promote\nproducts or services of Licensee, or any third party.\n\n8. By copying, installing or otherwise using Python, Licensee\nagrees to be bound by the terms and conditions of this License\nAgreement.\n\nBEOPEN.COM LICENSE AGREEMENT FOR PYTHON 2.0\n-------------------------------------------\n\nBEOPEN PYTHON OPEN SOURCE LICENSE AGREEMENT VERSION 1\n\n1. This LICENSE AGREEMENT is between BeOpen.com (\"BeOpen\"), having an\noffice at 160 Saratoga Avenue, Santa Clara, CA 95051, and the\nIndividual or Organization (\"Licensee\") accessing and otherwise using\nthis software in source or binary form and its associated\ndocumentation (\"the Software\").\n\n2. Subject to the terms and conditions of this BeOpen Python License\nAgreement, BeOpen hereby grants Licensee a non-exclusive,\nroyalty-free, world-wide license to reproduce, analyze, test, perform\nand/or display publicly, prepare derivative works, distribute, and\notherwise use the Software alone or in any derivative version,\nprovided, however, that the BeOpen Python License is retained in the\nSoftware, alone or in any derivative version prepared by Licensee.\n\n3. BeOpen is making the Software available to Licensee on an \"AS IS\"\nbasis.  BEOPEN MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR\nIMPLIED.  BY WAY OF EXAMPLE, BUT NOT LIMITATION, BEOPEN MAKES NO AND\nDISCLAIMS ANY REPRESENTATION OR WARRANTY OF MERCHANTABILITY OR FITNESS\nFOR ANY PARTICULAR PURPOSE OR THAT THE USE OF THE SOFTWARE WILL NOT\nINFRINGE ANY THIRD PARTY RIGHTS.\n\n4. BEOPEN SHALL NOT BE LIABLE TO LICENSEE OR ANY OTHER USERS OF THE\nSOFTWARE FOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES OR LOSS\nAS A RESULT OF USING, MODIFYING OR DISTRIBUTING THE SOFTWARE, OR ANY\nDERIVATIVE THEREOF, EVEN IF ADVISED OF THE POSSIBILITY THEREOF.\n\n5. This License Agreement will automatically terminate upon a material\nbreach of its terms and conditions.\n\n6. This License Agreement shall be governed by and interpreted in all\nrespects by the law of the State of California, excluding conflict of\nlaw provisions.  Nothing in this License Agreement shall be deemed to\ncreate any relationship of agency, partnership, or joint venture\nbetween BeOpen and Licensee.  This License Agreement does not grant\npermission to use BeOpen trademarks or trade names in a trademark\nsense to endorse or promote products or services of Licensee, or any\nthird party.  As an exception, the \"BeOpen Python\" logos available at\nhttp://www.pythonlabs.com/logos.html may be used according to the\npermissions granted on that web page.\n\n7. By copying, installing or otherwise using the software, Licensee\nagrees to be bound by the terms and conditions of this License\nAgreement.\n\nCNRI LICENSE AGREEMENT FOR PYTHON 1.6.1\n---------------------------------------\n\n1. This LICENSE AGREEMENT is between the Corporation for National\nResearch Initiatives, having an office at 1895 Preston White Drive,\nReston, VA 20191 (\"CNRI\"), and the Individual or Organization\n(\"Licensee\") accessing and otherwise using Python 1.6.1 software in\nsource or binary form and its associated documentation.\n\n2. Subject to the terms and conditions of this License Agreement, CNRI\nhereby grants Licensee a nonexclusive, royalty-free, world-wide\nlicense to reproduce, analyze, test, perform and/or display publicly,\nprepare derivative works, distribute, and otherwise use Python 1.6.1\nalone or in any derivative version, provided, however, that CNRI's\nLicense Agreement and CNRI's notice of copyright, i.e., \"Copyright (c)\n1995-2001 Corporation for National Research Initiatives; All Rights\nReserved\" are retained in Python 1.6.1 alone or in any derivative\nversion prepared by Licensee.  Alternately, in lieu of CNRI's License\nAgreement, Licensee may substitute the following text (omitting the\nquotes): \"Python 1.6.1 is made available subject to the terms and\nconditions in CNRI's License Agreement.  This Agreement together with\nPython 1.6.1 may be located on the Internet using the following\nunique, persistent identifier (known as a handle): 1895.22/1013.  This\nAgreement may also be obtained from a proxy server on the Internet\nusing the following URL: http://hdl.handle.net/1895.22/1013\".\n\n3. In the event Licensee prepares a derivative work that is based on\nor incorporates Python 1.6.1 or any part thereof, and wants to make\nthe derivative work available to others as provided herein, then\nLicensee hereby agrees to include in any such work a brief summary of\nthe changes made to Python 1.6.1.\n\n4. CNRI is making Python 1.6.1 available to Licensee on an \"AS IS\"\nbasis.  CNRI MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR\nIMPLIED.  BY WAY OF EXAMPLE, BUT NOT LIMITATION, CNRI MAKES NO AND\nDISCLAIMS ANY REPRESENTATION OR WARRANTY OF MERCHANTABILITY OR FITNESS\nFOR ANY PARTICULAR PURPOSE OR THAT THE USE OF PYTHON 1.6.1 WILL NOT\nINFRINGE ANY THIRD PARTY RIGHTS.\n\n5. CNRI SHALL NOT BE LIABLE TO LICENSEE OR ANY OTHER USERS OF PYTHON\n1.6.1 FOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES OR LOSS AS\nA RESULT OF MODIFYING, DISTRIBUTING, OR OTHERWISE USING PYTHON 1.6.1,\nOR ANY DERIVATIVE THEREOF, EVEN IF ADVISED OF THE POSSIBILITY THEREOF.\n\n6. This License Agreement will automatically terminate upon a material\nbreach of its terms and conditions.\n\n7. This License Agreement shall be governed by the federal\nintellectual property law of the United States, including without\nlimitation the federal copyright law, and, to the extent such\nU.S. federal law does not apply, by the law of the Commonwealth of\nVirginia, excluding Virginia's conflict of law provisions.\nNotwithstanding the foregoing, with regard to derivative works based\non Python 1.6.1 that incorporate non-separable material that was\npreviously distributed under the GNU General Public License (GPL), the\nlaw of the Commonwealth of Virginia shall govern this License\nAgreement only as to issues arising under or with respect to\nParagraphs 4, 5, and 7 of this License Agreement.  Nothing in this\nLicense Agreement shall be deemed to create any relationship of\nagency, partnership, or joint venture between CNRI and Licensee.  This\nLicense Agreement does not grant permission to use CNRI trademarks or\ntrade name in a trademark sense to endorse or promote products or\nservices of Licensee, or any third party.\n\n8. By clicking on the \"ACCEPT\" button where indicated, or by copying,\ninstalling or otherwise using Python 1.6.1, Licensee agrees to be\nbound by the terms and conditions of this License Agreement.\n\n        ACCEPT\n\nCWI LICENSE AGREEMENT FOR PYTHON 0.9.0 THROUGH 1.2\n--------------------------------------------------\n\nCopyright (c) 1991 - 1995, Stichting Mathematisch Centrum Amsterdam,\nThe Netherlands.  All rights reserved.\n\nPermission to use, copy, modify, and distribute this software and its\ndocumentation for any purpose and without fee is hereby granted,\nprovided that the above copyright notice appear in all copies and that\nboth that copyright notice and this permission notice appear in\nsupporting documentation, and that the name of Stichting Mathematisch\nCentrum or CWI not be used in advertising or publicity pertaining to\ndistribution of the software without specific, written prior\npermission.\n\nSTICHTING MATHEMATISCH CENTRUM DISCLAIMS ALL WARRANTIES WITH REGARD TO\nTHIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND\nFITNESS, IN NO EVENT SHALL STICHTING MATHEMATISCH CENTRUM BE LIABLE\nFOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\nACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT\nOF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.",
     "Permission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to\ndeal in the Software without restriction, including without limitation the\nrights to use, copy, modify, merge, publish, distribute, sublicense, and/or\nsell copies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING\nFROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS\nIN THE SOFTWARE.",
     "All rights reserved.\n\nRedistribution and use in source and binary forms, with or without\nmodification, are permitted provided that the following conditions are met:\n\n* Redistributions of source code must retain the above copyright notice, this\n  list of conditions and the following disclaimer.\n\n* Redistributions in binary form must reproduce the above copyright notice,\n  this list of conditions and the following disclaimer in the documentation\n  and/or other materials provided with the distribution.\n\n* Neither the name of babel-plugin-istanbul nor the names of its\n  contributors may be used to endorse or promote products derived from\n  this software without specific prior written permission.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\"\nAND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE\nIMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE\nDISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE\nFOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL\nDAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR\nSERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER\nCAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,\nOR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\nOF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.",
-    "(MIT)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies\nof the Software, and to permit persons to whom the Software is furnished to do\nso, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.",
     "(MIT)\n\nOriginal code Copyright Julian Gruber <julian@juliangruber.com>\n\nPort to TypeScript Copyright Isaac Z. Schlueter <i@izs.me>\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies\nof the Software, and to permit persons to whom the Software is furnished to do\nso, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.",
     "The MIT License (MIT)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in\nall copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\nTHE SOFTWARE.",
     "Apache License\n                           Version 2.0, January 2004\n                        http://www.apache.org/licenses/\n\n   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\n\n   1. Definitions.\n\n      \"License\" shall mean the terms and conditions for use, reproduction,\n      and distribution as defined by Sections 1 through 9 of this document.\n\n      \"Licensor\" shall mean the copyright owner or entity authorized by\n      the copyright owner that is granting the License.\n\n      \"Legal Entity\" shall mean the union of the acting entity and all\n      other entities that control, are controlled by, or are under common\n      control with that entity. For the purposes of this definition,\n      \"control\" means (i) the power, direct or indirect, to cause the\n      direction or management of such entity, whether by contract or\n      otherwise, or (ii) ownership of fifty percent (50%) or more of the\n      outstanding shares, or (iii) beneficial ownership of such entity.\n\n      \"You\" (or \"Your\") shall mean an individual or Legal Entity\n      exercising permissions granted by this License.\n\n      \"Source\" form shall mean the preferred form for making modifications,\n      including but not limited to software source code, documentation\n      source, and configuration files.\n\n      \"Object\" form shall mean any form resulting from mechanical\n      transformation or translation of a Source form, including but\n      not limited to compiled object code, generated documentation,\n      and conversions to other media types.\n\n      \"Work\" shall mean the work of authorship, whether in Source or\n      Object form, made available under the License, as indicated by a\n      copyright notice that is included in or attached to the work\n      (an example is provided in the Appendix below).\n\n      \"Derivative Works\" shall mean any work, whether in Source or Object\n      form, that is based on (or derived from) the Work and for which the\n      editorial revisions, annotations, elaborations, or other modifications\n      represent, as a whole, an original work of authorship. For the purposes\n      of this License, Derivative Works shall not include works that remain\n      separable from, or merely link (or bind by name) to the interfaces of,\n      the Work and Derivative Works thereof.\n\n      \"Contribution\" shall mean any work of authorship, including\n      the original version of the Work and any modifications or additions\n      to that Work or Derivative Works thereof, that is intentionally\n      submitted to Licensor for inclusion in the Work by the copyright owner\n      or by an individual or Legal Entity authorized to submit on behalf of\n      the copyright owner. For the purposes of this definition, \"submitted\"\n      means any form of electronic, verbal, or written communication sent\n      to the Licensor or its representatives, including but not limited to\n      communication on electronic mailing lists, source code control systems,\n      and issue tracking systems that are managed by, or on behalf of, the\n      Licensor for the purpose of discussing and improving the Work, but\n      excluding communication that is conspicuously marked or otherwise\n      designated in writing by the copyright owner as \"Not a Contribution.\"\n\n      \"Contributor\" shall mean Licensor and any individual or Legal Entity\n      on behalf of whom a Contribution has been received by Licensor and\n      subsequently incorporated within the Work.\n\n   2. Grant of Copyright License. Subject to the terms and conditions of\n      this License, each Contributor hereby grants to You a perpetual,\n      worldwide, non-exclusive, no-charge, royalty-free, irrevocable\n      copyright license to reproduce, prepare Derivative Works of,\n      publicly display, publicly perform, sublicense, and distribute the\n      Work and such Derivative Works in Source or Object form.\n\n   3. Grant of Patent License. Subject to the terms and conditions of\n      this License, each Contributor hereby grants to You a perpetual,\n      worldwide, non-exclusive, no-charge, royalty-free, irrevocable\n      (except as stated in this section) patent license to make, have made,\n      use, offer to sell, sell, import, and otherwise transfer the Work,\n      where such license applies only to those patent claims licensable\n      by such Contributor that are necessarily infringed by their\n      Contribution(s) alone or by combination of their Contribution(s)\n      with the Work to which such Contribution(s) was submitted. If You\n      institute patent litigation against any entity (including a\n      cross-claim or counterclaim in a lawsuit) alleging that the Work\n      or a Contribution incorporated within the Work constitutes direct\n      or contributory patent infringement, then any patent licenses\n      granted to You under this License for that Work shall terminate\n      as of the date such litigation is filed.\n\n   4. Redistribution. You may reproduce and distribute copies of the\n      Work or Derivative Works thereof in any medium, with or without\n      modifications, and in Source or Object form, provided that You\n      meet the following conditions:\n\n      (a) You must give any other recipients of the Work or\n          Derivative Works a copy of this License; and\n\n      (b) You must cause any modified files to carry prominent notices\n          stating that You changed the files; and\n\n      (c) You must retain, in the Source form of any Derivative Works\n          that You distribute, all copyright, patent, trademark, and\n          attribution notices from the Source form of the Work,\n          excluding those notices that do not pertain to any part of\n          the Derivative Works; and\n\n      (d) If the Work includes a \"NOTICE\" text file as part of its\n          distribution, then any Derivative Works that You distribute must\n          include a readable copy of the attribution notices contained\n          within such NOTICE file, excluding those notices that do not\n          pertain to any part of the Derivative Works, in at least one\n          of the following places: within a NOTICE text file distributed\n          as part of the Derivative Works; within the Source form or\n          documentation, if provided along with the Derivative Works; or,\n          within a display generated by the Derivative Works, if and\n          wherever such third-party notices normally appear. The contents\n          of the NOTICE file are for informational purposes only and\n          do not modify the License. You may add Your own attribution\n          notices within Derivative Works that You distribute, alongside\n          or as an addendum to the NOTICE text from the Work, provided\n          that such additional attribution notices cannot be construed\n          as modifying the License.\n\n      You may add Your own copyright statement to Your modifications and\n      may provide additional or different license terms and conditions\n      for use, reproduction, or distribution of Your modifications, or\n      for any such Derivative Works as a whole, provided Your use,\n      reproduction, and distribution of the Work otherwise complies with\n      the conditions stated in this License.\n\n   5. Submission of Contributions. Unless You explicitly state otherwise,\n      any Contribution intentionally submitted for inclusion in the Work\n      by You to the Licensor shall be under the terms and conditions of\n      this License, without any additional terms or conditions.\n      Notwithstanding the above, nothing herein shall supersede or modify\n      the terms of any separate license agreement you may have executed\n      with Licensor regarding such Contributions.\n\n   6. Trademarks. This License does not grant permission to use the trade\n      names, trademarks, service marks, or product names of the Licensor,\n      except as required for reasonable and customary use in describing the\n      origin of the Work and reproducing the content of the NOTICE file.\n\n   7. Disclaimer of Warranty. Unless required by applicable law or\n      agreed to in writing, Licensor provides the Work (and each\n      Contributor provides its Contributions) on an \"AS IS\" BASIS,\n      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or\n      implied, including, without limitation, any warranties or conditions\n      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A\n      PARTICULAR PURPOSE. You are solely responsible for determining the\n      appropriateness of using or redistributing the Work and assume any\n      risks associated with Your exercise of permissions under this License.\n\n   8. Limitation of Liability. In no event and under no legal theory,\n      whether in tort (including negligence), contract, or otherwise,\n      unless required by applicable law (such as deliberate and grossly\n      negligent acts) or agreed to in writing, shall any Contributor be\n      liable to You for damages, including any direct, indirect, special,\n      incidental, or consequential damages of any character arising as a\n      result of this License or out of the use or inability to use the\n      Work (including but not limited to damages for loss of goodwill,\n      work stoppage, computer failure or malfunction, or any and all\n      other commercial damages or losses), even if such Contributor\n      has been advised of the possibility of such damages.\n\n   9. Accepting Warranty or Additional Liability. While redistributing\n      the Work or Derivative Works thereof, You may choose to offer,\n      and charge a fee for, acceptance of support, warranty, indemnity,\n      or other liability obligations and/or rights consistent with this\n      License. However, in accepting such obligations, You may act only\n      on Your own behalf and on Your sole responsibility, not on behalf\n      of any other Contributor, and only if You agree to indemnify,\n      defend, and hold each Contributor harmless for any liability\n      incurred by, or claims asserted against, such Contributor by reason\n      of your accepting any such warranty or additional liability.\n\n   END OF TERMS AND CONDITIONS\n\n   APPENDIX: How to apply the Apache License to your work.\n\n      To apply the Apache License to your work, attach the following\n      boilerplate notice, with the fields enclosed by brackets \"[]\"\n      replaced with your own identifying information. (Don't include\n      the brackets!)  The text should be enclosed in the appropriate\n      comment syntax for the file format. We also recommend that a\n      file or class name and description of purpose be included on the\n      same \"printed page\" as the copyright notice for easier\n      identification within third-party archives.\n\n   Copyright [yyyy] [name of copyright owner]\n\n   Licensed under the Apache License, Version 2.0 (the \"License\");\n   you may not use this file except in compliance with the License.\n   You may obtain a copy of the License at\n\n       http://www.apache.org/licenses/LICENSE-2.0\n\n   Unless required by applicable law or agreed to in writing, software\n   distributed under the License is distributed on an \"AS IS\" BASIS,\n   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n   See the License for the specific language governing permissions and\n   limitations under the License.",
@@ -72,7 +72,6 @@
     "MIT License\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n\n[others]: https://github.com/json5/json5/contributors",
     "Mozilla Public License Version 2.0\n==================================\n\n1. Definitions\n--------------\n\n1.1. \"Contributor\"\nmeans each individual or legal entity that creates, contributes to\nthe creation of, or owns Covered Software.\n\n1.2. \"Contributor Version\"\nmeans the combination of the Contributions of others (if any) used\nby a Contributor and that particular Contributor's Contribution.\n\n1.3. \"Contribution\"\nmeans Covered Software of a particular Contributor.\n\n1.4. \"Covered Software\"\nmeans Source Code Form to which the initial Contributor has attached\nthe notice in Exhibit A, the Executable Form of such Source Code\nForm, and Modifications of such Source Code Form, in each case\nincluding portions thereof.\n\n1.5. \"Incompatible With Secondary Licenses\"\nmeans\n\n(a) that the initial Contributor has attached the notice described\nin Exhibit B to the Covered Software; or\n\n(b) that the Covered Software was made available under the terms of\nversion 1.1 or earlier of the License, but not also under the\nterms of a Secondary License.\n\n1.6. \"Executable Form\"\nmeans any form of the work other than Source Code Form.\n\n1.7. \"Larger Work\"\nmeans a work that combines Covered Software with other material, in\na separate file or files, that is not Covered Software.\n\n1.8. \"License\"\nmeans this document.\n\n1.9. \"Licensable\"\nmeans having the right to grant, to the maximum extent possible,\nwhether at the time of the initial grant or subsequently, any and\nall of the rights conveyed by this License.\n\n1.10. \"Modifications\"\nmeans any of the following:\n\n(a) any file in Source Code Form that results from an addition to,\ndeletion from, or modification of the contents of Covered\nSoftware; or\n\n(b) any new file in Source Code Form that contains any Covered\nSoftware.\n\n1.11. \"Patent Claims\" of a Contributor\nmeans any patent claim(s), including without limitation, method,\nprocess, and apparatus claims, in any patent Licensable by such\nContributor that would be infringed, but for the grant of the\nLicense, by the making, using, selling, offering for sale, having\nmade, import, or transfer of either its Contributions or its\nContributor Version.\n\n1.12. \"Secondary License\"\nmeans either the GNU General Public License, Version 2.0, the GNU\nLesser General Public License, Version 2.1, the GNU Affero General\nPublic License, Version 3.0, or any later versions of those\nlicenses.\n\n1.13. \"Source Code Form\"\nmeans the form of the work preferred for making modifications.\n\n1.14. \"You\" (or \"Your\")\nmeans an individual or a legal entity exercising rights under this\nLicense. For legal entities, \"You\" includes any entity that\ncontrols, is controlled by, or is under common control with You. For\npurposes of this definition, \"control\" means (a) the power, direct\nor indirect, to cause the direction or management of such entity,\nwhether by contract or otherwise, or (b) ownership of more than\nfifty percent (50%) of the outstanding shares or beneficial\nownership of such entity.\n\n2. License Grants and Conditions\n--------------------------------\n\n2.1. Grants\n\nEach Contributor hereby grants You a world-wide, royalty-free,\nnon-exclusive license:\n\n(a) under intellectual property rights (other than patent or trademark)\nLicensable by such Contributor to use, reproduce, make available,\nmodify, display, perform, distribute, and otherwise exploit its\nContributions, either on an unmodified basis, with Modifications, or\nas part of a Larger Work; and\n\n(b) under Patent Claims of such Contributor to make, use, sell, offer\nfor sale, have made, import, and otherwise transfer either its\nContributions or its Contributor Version.\n\n2.2. Effective Date\n\nThe licenses granted in Section 2.1 with respect to any Contribution\nbecome effective for each Contribution on the date the Contributor first\ndistributes such Contribution.\n\n2.3. Limitations on Grant Scope\n\nThe licenses granted in this Section 2 are the only rights granted under\nthis License. No additional rights or licenses will be implied from the\ndistribution or licensing of Covered Software under this License.\nNotwithstanding Section 2.1(b) above, no patent license is granted by a\nContributor:\n\n(a) for any code that a Contributor has removed from Covered Software;\nor\n\n(b) for infringements caused by: (i) Your and any other third party's\nmodifications of Covered Software, or (ii) the combination of its\nContributions with other software (except as part of its Contributor\nVersion); or\n\n(c) under Patent Claims infringed by Covered Software in the absence of\nits Contributions.\n\nThis License does not grant any rights in the trademarks, service marks,\nor logos of any Contributor (except as may be necessary to comply with\nthe notice requirements in Section 3.4).\n\n2.4. Subsequent Licenses\n\nNo Contributor makes additional grants as a result of Your choice to\ndistribute the Covered Software under a subsequent version of this\nLicense (see Section 10.2) or under the terms of a Secondary License (if\npermitted under the terms of Section 3.3).\n\n2.5. Representation\n\nEach Contributor represents that the Contributor believes its\nContributions are its original creation(s) or it has sufficient rights\nto grant the rights to its Contributions conveyed by this License.\n\n2.6. Fair Use\n\nThis License is not intended to limit any rights You have under\napplicable copyright doctrines of fair use, fair dealing, or other\nequivalents.\n\n2.7. Conditions\n\nSections 3.1, 3.2, 3.3, and 3.4 are conditions of the licenses granted\nin Section 2.1.\n\n3. Responsibilities\n-------------------\n\n3.1. Distribution of Source Form\n\nAll distribution of Covered Software in Source Code Form, including any\nModifications that You create or to which You contribute, must be under\nthe terms of this License. You must inform recipients that the Source\nCode Form of the Covered Software is governed by the terms of this\nLicense, and how they can obtain a copy of this License. You may not\nattempt to alter or restrict the recipients' rights in the Source Code\nForm.\n\n3.2. Distribution of Executable Form\n\nIf You distribute Covered Software in Executable Form then:\n\n(a) such Covered Software must also be made available in Source Code\nForm, as described in Section 3.1, and You must inform recipients of\nthe Executable Form how they can obtain a copy of such Source Code\nForm by reasonable means in a timely manner, at a charge no more\nthan the cost of distribution to the recipient; and\n\n(b) You may distribute such Executable Form under the terms of this\nLicense, or sublicense it under different terms, provided that the\nlicense for the Executable Form does not attempt to limit or alter\nthe recipients' rights in the Source Code Form under this License.\n\n3.3. Distribution of a Larger Work\n\nYou may create and distribute a Larger Work under terms of Your choice,\nprovided that You also comply with the requirements of this License for\nthe Covered Software. If the Larger Work is a combination of Covered\nSoftware with a work governed by one or more Secondary Licenses, and the\nCovered Software is not Incompatible With Secondary Licenses, this\nLicense permits You to additionally distribute such Covered Software\nunder the terms of such Secondary License(s), so that the recipient of\nthe Larger Work may, at their option, further distribute the Covered\nSoftware under the terms of either this License or such Secondary\nLicense(s).\n\n3.4. Notices\n\nYou may not remove or alter the substance of any license notices\n(including copyright notices, patent notices, disclaimers of warranty,\nor limitations of liability) contained within the Source Code Form of\nthe Covered Software, except that You may alter any license notices to\nthe extent required to remedy known factual inaccuracies.\n\n3.5. Application of Additional Terms\n\nYou may choose to offer, and to charge a fee for, warranty, support,\nindemnity or liability obligations to one or more recipients of Covered\nSoftware. However, You may do so only on Your own behalf, and not on\nbehalf of any Contributor. You must make it absolutely clear that any\nsuch warranty, support, indemnity, or liability obligation is offered by\nYou alone, and You hereby agree to indemnify every Contributor for any\nliability incurred by such Contributor as a result of warranty, support,\nindemnity or liability terms You offer. You may include additional\ndisclaimers of warranty and limitations of liability specific to any\njurisdiction.\n\n4. Inability to Comply Due to Statute or Regulation\n---------------------------------------------------\n\nIf it is impossible for You to comply with any of the terms of this\nLicense with respect to some or all of the Covered Software due to\nstatute, judicial order, or regulation then You must: (a) comply with\nthe terms of this License to the maximum extent possible; and (b)\ndescribe the limitations and the code they affect. Such description must\nbe placed in a text file included with all distributions of the Covered\nSoftware under this License. Except to the extent prohibited by statute\nor regulation, such description must be sufficiently detailed for a\nrecipient of ordinary skill to be able to understand it.\n\n5. Termination\n--------------\n\n5.1. The rights granted under this License will terminate automatically\nif You fail to comply with any of its terms. However, if You become\ncompliant, then the rights granted under this License from a particular\nContributor are reinstated (a) provisionally, unless and until such\nContributor explicitly and finally terminates Your grants, and (b) on an\nongoing basis, if such Contributor fails to notify You of the\nnon-compliance by some reasonable means prior to 60 days after You have\ncome back into compliance. Moreover, Your grants from a particular\nContributor are reinstated on an ongoing basis if such Contributor\nnotifies You of the non-compliance by some reasonable means, this is the\nfirst time You have received notice of non-compliance with this License\nfrom such Contributor, and You become compliant prior to 30 days after\nYour receipt of the notice.\n\n5.2. If You initiate litigation against any entity by asserting a patent\ninfringement claim (excluding declaratory judgment actions,\ncounter-claims, and cross-claims) alleging that a Contributor Version\ndirectly or indirectly infringes any patent, then the rights granted to\nYou by any and all Contributors for the Covered Software under Section\n2.1 of this License shall terminate.\n\n5.3. In the event of termination under Sections 5.1 or 5.2 above, all\nend user license agreements (excluding distributors and resellers) which\nhave been validly granted by You or Your distributors under this License\nprior to termination shall survive termination.\n\n************************************************************************\n* *\n* 6. Disclaimer of Warranty *\n* ------------------------- *\n* *\n* Covered Software is provided under this License on an \"as is\" *\n* basis, without warranty of any kind, either expressed, implied, or *\n* statutory, including, without limitation, warranties that the *\n* Covered Software is free of defects, merchantable, fit for a *\n* particular purpose or non-infringing. The entire risk as to the *\n* quality and performance of the Covered Software is with You. *\n* Should any Covered Software prove defective in any respect, You *\n* (not any Contributor) assume the cost of any necessary servicing, *\n* repair, or correction. This disclaimer of warranty constitutes an *\n* essential part of this License. No use of any Covered Software is *\n* authorized under this License except under this disclaimer. *\n* *\n************************************************************************\n\n************************************************************************\n* *\n* 7. Limitation of Liability *\n* -------------------------- *\n* *\n* Under no circumstances and under no legal theory, whether tort *\n* (including negligence), contract, or otherwise, shall any *\n* Contributor, or anyone who distributes Covered Software as *\n* permitted above, be liable to You for any direct, indirect, *\n* special, incidental, or consequential damages of any character *\n* including, without limitation, damages for lost profits, loss of *\n* goodwill, work stoppage, computer failure or malfunction, or any *\n* and all other commercial damages or losses, even if such party *\n* shall have been informed of the possibility of such damages. This *\n* limitation of liability shall not apply to liability for death or *\n* personal injury resulting from such party's negligence to the *\n* extent applicable law prohibits such limitation. Some *\n* jurisdictions do not allow the exclusion or limitation of *\n* incidental or consequential damages, so this exclusion and *\n* limitation may not apply to You. *\n* *\n************************************************************************\n\n8. Litigation\n-------------\n\nAny litigation relating to this License may be brought only in the\ncourts of a jurisdiction where the defendant maintains its principal\nplace of business and such litigation shall be governed by laws of that\njurisdiction, without reference to its conflict-of-law provisions.\nNothing in this Section shall prevent a party's ability to bring\ncross-claims or counter-claims.\n\n9. Miscellaneous\n----------------\n\nThis License represents the complete agreement concerning the subject\nmatter hereof. If any provision of this License is held to be\nunenforceable, such provision shall be reformed only to the extent\nnecessary to make it enforceable. Any law or regulation which provides\nthat the language of a contract shall be construed against the drafter\nshall not be used to construe this License against a Contributor.\n\n10. Versions of the License\n---------------------------\n\n10.1. New Versions\n\nMozilla Foundation is the license steward. Except as provided in Section\n10.3, no one other than the license steward has the right to modify or\npublish new versions of this License. Each version will be given a\ndistinguishing version number.\n\n10.2. Effect of New Versions\n\nYou may distribute the Covered Software under the terms of the version\nof the License under which You originally received the Covered Software,\nor under the terms of any subsequent version published by the license\nsteward.\n\n10.3. Modified Versions\n\nIf you create software not governed by this License, and you want to\ncreate a new license for such software, you may create and use a\nmodified version of this License if you rename the license and remove\nany references to the name of the license steward (except to note that\nsuch modified license differs from this License).\n\n10.4. Distributing Source Code Form that is Incompatible With Secondary\nLicenses\n\nIf You choose to distribute Source Code Form that is Incompatible With\nSecondary Licenses under the terms of this version of the License, the\nnotice described in Exhibit B of this License must be attached.\n\nExhibit A - Source Code Form License Notice\n-------------------------------------------\n\nThis Source Code Form is subject to the terms of the Mozilla Public\nLicense, v. 2.0. If a copy of the MPL was not distributed with this\nfile, You can obtain one at https://mozilla.org/MPL/2.0/.\n\nIf it is not possible or desirable to put the notice in a particular\nfile, then You may include the notice in a location (such as a LICENSE\nfile in a relevant directory) where a recipient would be likely to look\nfor such a notice.\n\nYou may add additional accurate notices of copyright ownership.\n\nExhibit B - \"Incompatible With Secondary Licenses\" Notice\n---------------------------------------------------------\n\nThis Source Code Form is \"Incompatible With Secondary Licenses\", as\ndefined by the Mozilla Public License, v. 2.0.",
     "Based on Underscore.js, copyright Jeremy Ashkenas,\nDocumentCloud and Investigative Reporters & Editors <http://underscorejs.org/>\n\nThis software consists of voluntary contributions made by many\nindividuals. For exact contribution history, see the revision history\navailable at https://github.com/lodash/lodash\n\nThe following license applies to all parts of this software except as\ndocumented below:\n\n====\n\nPermission is hereby granted, free of charge, to any person obtaining\na copy of this software and associated documentation files (the\n\"Software\"), to deal in the Software without restriction, including\nwithout limitation the rights to use, copy, modify, merge, publish,\ndistribute, sublicense, and/or sell copies of the Software, and to\npermit persons to whom the Software is furnished to do so, subject to\nthe following conditions:\n\nThe above copyright notice and this permission notice shall be\nincluded in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND,\nEXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\nMERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND\nNONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE\nLIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION\nOF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION\nWITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\n====\n\nCopyright and related rights for sample code are waived via CC0. Sample\ncode is defined as all source code displayed within the prose of the\ndocumentation.\n\nCC0: http://creativecommons.org/publicdomain/zero/1.0/\n\n====\n\nFiles located in the node_modules and vendor directories are externally\nmaintained libraries used by this software which have their own\nlicenses; we recommend you read them, as their terms may differ from the\nterms above.",
-    "# Blue Oak Model License\n\nVersion 1.0.0\n\n## Purpose\n\nThis license gives everyone as much permission to work with\nthis software as possible, while protecting contributors\nfrom liability.\n\n## Acceptance\n\nIn order to receive this license, you must agree to its\nrules.  The rules of this license are both obligations\nunder that agreement and conditions to your license.\nYou must not do anything with this software that triggers\na rule that you cannot or will not follow.\n\n## Copyright\n\nEach contributor licenses you to do everything with this\nsoftware that would otherwise infringe that contributor's\ncopyright in it.\n\n## Notices\n\nYou must ensure that everyone who gets a copy of\nany part of this software from you, with or without\nchanges, also gets the text of this license or a link to\n<https://blueoakcouncil.org/license/1.0.0>.\n\n## Excuse\n\nIf anyone notifies you in writing that you have not\ncomplied with [Notices](#notices), you can keep your\nlicense by taking all practical steps to comply within 30\ndays after the notice.  If you do not do so, your license\nends immediately.\n\n## Patent\n\nEach contributor licenses you to do everything with this\nsoftware that would otherwise infringe any patent claims\nthey can license or become able to license.\n\n## Reliability\n\nNo contributor can revoke this license.\n\n## No Liability\n\n***As far as the law allows, this software comes as is,\nwithout any warranty or condition, and no contributor\nwill be liable to anyone for any damages related to this\nsoftware or this license, under any kind of legal claim.***",
     "BSD License\n\nRedistribution and use in source and binary forms, with or without modification,\nare permitted provided that the following conditions are met:\n\n * Redistributions of source code must retain the above copyright notice, this\n   list of conditions and the following disclaimer.\n\n * Redistributions in binary form must reproduce the above copyright notice,\n   this list of conditions and the following disclaimer in the documentation\n   and/or other materials provided with the distribution.\n\n * Neither the name Naitik Shah nor the names of its contributors may be used to\n   endorse or promote products derived from this software without specific\n   prior written permission.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND\nANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED\nWARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE\nDISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR\nANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES\n(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;\nLOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON\nANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\nSOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.",
     "CC0 1.0 Universal\n\nStatement of Purpose\n\nThe laws of most jurisdictions throughout the world automatically confer\nexclusive Copyright and Related Rights (defined below) upon the creator and\nsubsequent owner(s) (each and all, an \"owner\") of an original work of\nauthorship and/or a database (each, a \"Work\").\n\nCertain owners wish to permanently relinquish those rights to a Work for the\npurpose of contributing to a commons of creative, cultural and scientific\nworks (\"Commons\") that the public can reliably and without fear of later\nclaims of infringement build upon, modify, incorporate in other works, reuse\nand redistribute as freely as possible in any form whatsoever and for any\npurposes, including without limitation commercial purposes. These owners may\ncontribute to the Commons to promote the ideal of a free culture and the\nfurther production of creative, cultural and scientific works, or to gain\nreputation or greater distribution for their Work in part through the use and\nefforts of others.\n\nFor these and/or other purposes and motivations, and without any expectation\nof additional consideration or compensation, the person associating CC0 with a\nWork (the \"Affirmer\"), to the extent that he or she is an owner of Copyright\nand Related Rights in the Work, voluntarily elects to apply CC0 to the Work\nand publicly distribute the Work under its terms, with knowledge of his or her\nCopyright and Related Rights in the Work and the meaning and intended legal\neffect of CC0 on those rights.\n\n1. Copyright and Related Rights. A Work made available under CC0 may be\nprotected by copyright and related or neighboring rights (\"Copyright and\nRelated Rights\"). Copyright and Related Rights include, but are not limited\nto, the following:\n\n  i. the right to reproduce, adapt, distribute, perform, display, communicate,\n  and translate a Work;\n\n  ii. moral rights retained by the original author(s) and/or performer(s);\n\n  iii. publicity and privacy rights pertaining to a person's image or likeness\n  depicted in a Work;\n\n  iv. rights protecting against unfair competition in regards to a Work,\n  subject to the limitations in paragraph 4(a), below;\n\n  v. rights protecting the extraction, dissemination, use and reuse of data in\n  a Work;\n\n  vi. database rights (such as those arising under Directive 96/9/EC of the\n  European Parliament and of the Council of 11 March 1996 on the legal\n  protection of databases, and under any national implementation thereof,\n  including any amended or successor version of such directive); and\n\n  vii. other similar, equivalent or corresponding rights throughout the world\n  based on applicable law or treaty, and any national implementations thereof.\n\n2. Waiver. To the greatest extent permitted by, but not in contravention of,\napplicable law, Affirmer hereby overtly, fully, permanently, irrevocably and\nunconditionally waives, abandons, and surrenders all of Affirmer's Copyright\nand Related Rights and associated claims and causes of action, whether now\nknown or unknown (including existing as well as future claims and causes of\naction), in the Work (i) in all territories worldwide, (ii) for the maximum\nduration provided by applicable law or treaty (including future time\nextensions), (iii) in any current or future medium and for any number of\ncopies, and (iv) for any purpose whatsoever, including without limitation\ncommercial, advertising or promotional purposes (the \"Waiver\"). Affirmer makes\nthe Waiver for the benefit of each member of the public at large and to the\ndetriment of Affirmer's heirs and successors, fully intending that such Waiver\nshall not be subject to revocation, rescission, cancellation, termination, or\nany other legal or equitable action to disrupt the quiet enjoyment of the Work\nby the public as contemplated by Affirmer's express Statement of Purpose.\n\n3. Public License Fallback. Should any part of the Waiver for any reason be\njudged legally invalid or ineffective under applicable law, then the Waiver\nshall be preserved to the maximum extent permitted taking into account\nAffirmer's express Statement of Purpose. In addition, to the extent the Waiver\nis so judged Affirmer hereby grants to each affected person a royalty-free,\nnon transferable, non sublicensable, non exclusive, irrevocable and\nunconditional license to exercise Affirmer's Copyright and Related Rights in\nthe Work (i) in all territories worldwide, (ii) for the maximum duration\nprovided by applicable law or treaty (including future time extensions), (iii)\nin any current or future medium and for any number of copies, and (iv) for any\npurpose whatsoever, including without limitation commercial, advertising or\npromotional purposes (the \"License\"). The License shall be deemed effective as\nof the date CC0 was applied by Affirmer to the Work. Should any part of the\nLicense for any reason be judged legally invalid or ineffective under\napplicable law, such partial invalidity or ineffectiveness shall not\ninvalidate the remainder of the License, and in such case Affirmer hereby\naffirms that he or she will not (i) exercise any of his or her remaining\nCopyright and Related Rights in the Work or (ii) assert any associated claims\nand causes of action with respect to the Work, in either case contrary to\nAffirmer's express Statement of Purpose.\n\n4. Limitations and Disclaimers.\n\n  a. No trademark or patent rights held by Affirmer are waived, abandoned,\n  surrendered, licensed or otherwise affected by this document.\n\n  b. Affirmer offers the Work as-is and makes no representations or warranties\n  of any kind concerning the Work, express, implied, statutory or otherwise,\n  including without limitation warranties of title, merchantability, fitness\n  for a particular purpose, non infringement, or the absence of latent or\n  other defects, accuracy, or the present or absence of errors, whether or not\n  discoverable, all to the greatest extent permissible under applicable law.\n\n  c. Affirmer disclaims responsibility for clearing rights of other persons\n  that may apply to the Work or any use thereof, including without limitation\n  any person's Copyright and Related Rights in the Work. Further, Affirmer\n  disclaims responsibility for obtaining any necessary consents, permissions\n  or other rights required for any use of the Work.\n\n  d. Affirmer understands and acknowledges that Creative Commons is not a\n  party to this document and has no duty or obligation with respect to this\n  CC0 or use of the Work.\n\nFor more information, please see\n<http://creativecommons.org/publicdomain/zero/1.0/>",
     "You may use the Forge project under the terms of either the BSD License or the\nGNU General Public License (GPL) Version 2.\n\nThe BSD License is recommended for most projects. It is simple and easy to\nunderstand and it places almost no restrictions on what you can do with the\nForge project.\n\nIf the GPL suits your project better you are also free to use Forge under\nthat license.\n\nYou don't have to do anything special to choose one license or the other and\nyou don't have to notify anyone which license you are using. You are free to\nuse this project in commercial projects as long as the copyright header is\nleft intact.\n\nIf you are a commercial entity and use this set of libraries in your\ncommercial software then reasonable payment to Digital Bazaar, if you can\nafford it, is not required but is expected and would be appreciated. If this\nlibrary saves you time, then it's saving you money. The cost of developing\nthe Forge software was on the order of several hundred hours and tens of\nthousands of dollars. We are attempting to strike a balance between helping\nthe development community while not being taken advantage of by lucrative\ncommercial entities for our efforts.\n\n-------------------------------------------------------------------------------\nNew BSD License (3-clause)\nCopyright (c) 2010, Digital Bazaar, Inc.\nAll rights reserved.\n\nRedistribution and use in source and binary forms, with or without\nmodification, are permitted provided that the following conditions are met:\n    * Redistributions of source code must retain the above copyright\n      notice, this list of conditions and the following disclaimer.\n    * Redistributions in binary form must reproduce the above copyright\n      notice, this list of conditions and the following disclaimer in the\n      documentation and/or other materials provided with the distribution.\n    * Neither the name of Digital Bazaar, Inc. nor the\n      names of its contributors may be used to endorse or promote products\n      derived from this software without specific prior written permission.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND\nANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED\nWARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE\nDISCLAIMED. IN NO EVENT SHALL DIGITAL BAZAAR BE LIABLE FOR ANY\nDIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES\n(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;\nLOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND\nON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\nSOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n\n-------------------------------------------------------------------------------\n        GNU GENERAL PUBLIC LICENSE\n           Version 2, June 1991\n\n Copyright (C) 1989, 1991 Free Software Foundation, Inc.\n 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA\n Everyone is permitted to copy and distribute verbatim copies\n of this license document, but changing it is not allowed.\n\n          Preamble\n\n  The licenses for most software are designed to take away your\nfreedom to share and change it.  By contrast, the GNU General Public\nLicense is intended to guarantee your freedom to share and change free\nsoftware--to make sure the software is free for all its users.  This\nGeneral Public License applies to most of the Free Software\nFoundation's software and to any other program whose authors commit to\nusing it.  (Some other Free Software Foundation software is covered by\nthe GNU Lesser General Public License instead.)  You can apply it to\nyour programs, too.\n\n  When we speak of free software, we are referring to freedom, not\nprice.  Our General Public Licenses are designed to make sure that you\nhave the freedom to distribute copies of free software (and charge for\nthis service if you wish), that you receive source code or can get it\nif you want it, that you can change the software or use pieces of it\nin new free programs; and that you know you can do these things.\n\n  To protect your rights, we need to make restrictions that forbid\nanyone to deny you these rights or to ask you to surrender the rights.\nThese restrictions translate to certain responsibilities for you if you\ndistribute copies of the software, or if you modify it.\n\n  For example, if you distribute copies of such a program, whether\ngratis or for a fee, you must give the recipients all the rights that\nyou have.  You must make sure that they, too, receive or can get the\nsource code.  And you must show them these terms so they know their\nrights.\n\n  We protect your rights with two steps: (1) copyright the software, and\n(2) offer you this license which gives you legal permission to copy,\ndistribute and/or modify the software.\n\n  Also, for each author's protection and ours, we want to make certain\nthat everyone understands that there is no warranty for this free\nsoftware.  If the software is modified by someone else and passed on, we\nwant its recipients to know that what they have is not the original, so\nthat any problems introduced by others will not reflect on the original\nauthors' reputations.\n\n  Finally, any free program is threatened constantly by software\npatents.  We wish to avoid the danger that redistributors of a free\nprogram will individually obtain patent licenses, in effect making the\nprogram proprietary.  To prevent this, we have made it clear that any\npatent must be licensed for everyone's free use or not licensed at all.\n\n  The precise terms and conditions for copying, distribution and\nmodification follow.\n\n        GNU GENERAL PUBLIC LICENSE\n   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION\n\n  0. This License applies to any program or other work which contains\na notice placed by the copyright holder saying it may be distributed\nunder the terms of this General Public License.  The \"Program\", below,\nrefers to any such program or work, and a \"work based on the Program\"\nmeans either the Program or any derivative work under copyright law:\nthat is to say, a work containing the Program or a portion of it,\neither verbatim or with modifications and/or translated into another\nlanguage.  (Hereinafter, translation is included without limitation in\nthe term \"modification\".)  Each licensee is addressed as \"you\".\n\nActivities other than copying, distribution and modification are not\ncovered by this License; they are outside its scope.  The act of\nrunning the Program is not restricted, and the output from the Program\nis covered only if its contents constitute a work based on the\nProgram (independent of having been made by running the Program).\nWhether that is true depends on what the Program does.\n\n  1. You may copy and distribute verbatim copies of the Program's\nsource code as you receive it, in any medium, provided that you\nconspicuously and appropriately publish on each copy an appropriate\ncopyright notice and disclaimer of warranty; keep intact all the\nnotices that refer to this License and to the absence of any warranty;\nand give any other recipients of the Program a copy of this License\nalong with the Program.\n\nYou may charge a fee for the physical act of transferring a copy, and\nyou may at your option offer warranty protection in exchange for a fee.\n\n  2. You may modify your copy or copies of the Program or any portion\nof it, thus forming a work based on the Program, and copy and\ndistribute such modifications or work under the terms of Section 1\nabove, provided that you also meet all of these conditions:\n\n    a) You must cause the modified files to carry prominent notices\n    stating that you changed the files and the date of any change.\n\n    b) You must cause any work that you distribute or publish, that in\n    whole or in part contains or is derived from the Program or any\n    part thereof, to be licensed as a whole at no charge to all third\n    parties under the terms of this License.\n\n    c) If the modified program normally reads commands interactively\n    when run, you must cause it, when started running for such\n    interactive use in the most ordinary way, to print or display an\n    announcement including an appropriate copyright notice and a\n    notice that there is no warranty (or else, saying that you provide\n    a warranty) and that users may redistribute the program under\n    these conditions, and telling the user how to view a copy of this\n    License.  (Exception: if the Program itself is interactive but\n    does not normally print such an announcement, your work based on\n    the Program is not required to print an announcement.)\n\nThese requirements apply to the modified work as a whole.  If\nidentifiable sections of that work are not derived from the Program,\nand can be reasonably considered independent and separate works in\nthemselves, then this License, and its terms, do not apply to those\nsections when you distribute them as separate works.  But when you\ndistribute the same sections as part of a whole which is a work based\non the Program, the distribution of the whole must be on the terms of\nthis License, whose permissions for other licensees extend to the\nentire whole, and thus to each and every part regardless of who wrote it.\n\nThus, it is not the intent of this section to claim rights or contest\nyour rights to work written entirely by you; rather, the intent is to\nexercise the right to control the distribution of derivative or\ncollective works based on the Program.\n\nIn addition, mere aggregation of another work not based on the Program\nwith the Program (or with a work based on the Program) on a volume of\na storage or distribution medium does not bring the other work under\nthe scope of this License.\n\n  3. You may copy and distribute the Program (or a work based on it,\nunder Section 2) in object code or executable form under the terms of\nSections 1 and 2 above provided that you also do one of the following:\n\n    a) Accompany it with the complete corresponding machine-readable\n    source code, which must be distributed under the terms of Sections\n    1 and 2 above on a medium customarily used for software interchange; or,\n\n    b) Accompany it with a written offer, valid for at least three\n    years, to give any third party, for a charge no more than your\n    cost of physically performing source distribution, a complete\n    machine-readable copy of the corresponding source code, to be\n    distributed under the terms of Sections 1 and 2 above on a medium\n    customarily used for software interchange; or,\n\n    c) Accompany it with the information you received as to the offer\n    to distribute corresponding source code.  (This alternative is\n    allowed only for noncommercial distribution and only if you\n    received the program in object code or executable form with such\n    an offer, in accord with Subsection b above.)\n\nThe source code for a work means the preferred form of the work for\nmaking modifications to it.  For an executable work, complete source\ncode means all the source code for all modules it contains, plus any\nassociated interface definition files, plus the scripts used to\ncontrol compilation and installation of the executable.  However, as a\nspecial exception, the source code distributed need not include\nanything that is normally distributed (in either source or binary\nform) with the major components (compiler, kernel, and so on) of the\noperating system on which the executable runs, unless that component\nitself accompanies the executable.\n\nIf distribution of executable or object code is made by offering\naccess to copy from a designated place, then offering equivalent\naccess to copy the source code from the same place counts as\ndistribution of the source code, even though third parties are not\ncompelled to copy the source along with the object code.\n\n  4. You may not copy, modify, sublicense, or distribute the Program\nexcept as expressly provided under this License.  Any attempt\notherwise to copy, modify, sublicense or distribute the Program is\nvoid, and will automatically terminate your rights under this License.\nHowever, parties who have received copies, or rights, from you under\nthis License will not have their licenses terminated so long as such\nparties remain in full compliance.\n\n  5. You are not required to accept this License, since you have not\nsigned it.  However, nothing else grants you permission to modify or\ndistribute the Program or its derivative works.  These actions are\nprohibited by law if you do not accept this License.  Therefore, by\nmodifying or distributing the Program (or any work based on the\nProgram), you indicate your acceptance of this License to do so, and\nall its terms and conditions for copying, distributing or modifying\nthe Program or works based on it.\n\n  6. Each time you redistribute the Program (or any work based on the\nProgram), the recipient automatically receives a license from the\noriginal licensor to copy, distribute or modify the Program subject to\nthese terms and conditions.  You may not impose any further\nrestrictions on the recipients' exercise of the rights granted herein.\nYou are not responsible for enforcing compliance by third parties to\nthis License.\n\n  7. If, as a consequence of a court judgment or allegation of patent\ninfringement or for any other reason (not limited to patent issues),\nconditions are imposed on you (whether by court order, agreement or\notherwise) that contradict the conditions of this License, they do not\nexcuse you from the conditions of this License.  If you cannot\ndistribute so as to satisfy simultaneously your obligations under this\nLicense and any other pertinent obligations, then as a consequence you\nmay not distribute the Program at all.  For example, if a patent\nlicense would not permit royalty-free redistribution of the Program by\nall those who receive copies directly or indirectly through you, then\nthe only way you could satisfy both it and this License would be to\nrefrain entirely from distribution of the Program.\n\nIf any portion of this section is held invalid or unenforceable under\nany particular circumstance, the balance of the section is intended to\napply and the section as a whole is intended to apply in other\ncircumstances.\n\nIt is not the purpose of this section to induce you to infringe any\npatents or other property right claims or to contest validity of any\nsuch claims; this section has the sole purpose of protecting the\nintegrity of the free software distribution system, which is\nimplemented by public license practices.  Many people have made\ngenerous contributions to the wide range of software distributed\nthrough that system in reliance on consistent application of that\nsystem; it is up to the author/donor to decide if he or she is willing\nto distribute software through any other system and a licensee cannot\nimpose that choice.\n\nThis section is intended to make thoroughly clear what is believed to\nbe a consequence of the rest of this License.\n\n  8. If the distribution and/or use of the Program is restricted in\ncertain countries either by patents or by copyrighted interfaces, the\noriginal copyright holder who places the Program under this License\nmay add an explicit geographical distribution limitation excluding\nthose countries, so that distribution is permitted only in or among\ncountries not thus excluded.  In such case, this License incorporates\nthe limitation as if written in the body of this License.\n\n  9. The Free Software Foundation may publish revised and/or new versions\nof the General Public License from time to time.  Such new versions will\nbe similar in spirit to the present version, but may differ in detail to\naddress new problems or concerns.\n\nEach version is given a distinguishing version number.  If the Program\nspecifies a version number of this License which applies to it and \"any\nlater version\", you have the option of following the terms and conditions\neither of that version or of any later version published by the Free\nSoftware Foundation.  If the Program does not specify a version number of\nthis License, you may choose any version ever published by the Free Software\nFoundation.\n\n  10. If you wish to incorporate parts of the Program into other free\nprograms whose distribution conditions are different, write to the author\nto ask for permission.  For software which is copyrighted by the Free\nSoftware Foundation, write to the Free Software Foundation; we sometimes\nmake exceptions for this.  Our decision will be guided by the two goals\nof preserving the free status of all derivatives of our free software and\nof promoting the sharing and reuse of software generally.\n\n          NO WARRANTY\n\n  11. BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY\nFOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW.  EXCEPT WHEN\nOTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES\nPROVIDE THE PROGRAM \"AS IS\" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED\nOR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  THE ENTIRE RISK AS\nTO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE\nPROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING,\nREPAIR OR CORRECTION.\n\n  12. IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING\nWILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR\nREDISTRIBUTE THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES,\nINCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING\nOUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED\nTO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY\nYOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER\nPROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE\nPOSSIBILITY OF SUCH DAMAGES.",
@@ -138,7 +137,7 @@
     },
     {
       "name": "@babel/generator",
-      "version": "7.29.13",
+      "version": "7.29.15",
       "license": "MIT",
       "notices": [
         {
@@ -182,7 +181,7 @@
     },
     {
       "name": "@babel/helper-create-regexp-features-plugin",
-      "version": "7.29.10",
+      "version": "7.29.14",
       "license": "MIT",
       "notices": [
         {
@@ -215,7 +214,7 @@
     },
     {
       "name": "@babel/helper-member-expression-to-functions",
-      "version": "7.29.7",
+      "version": "7.29.14",
       "license": "MIT",
       "notices": [
         {
@@ -237,7 +236,7 @@
     },
     {
       "name": "@babel/helper-module-transforms",
-      "version": "7.29.13",
+      "version": "7.29.14",
       "license": "MIT",
       "notices": [
         {
@@ -303,7 +302,7 @@
     },
     {
       "name": "@babel/helper-string-parser",
-      "version": "7.29.14",
+      "version": "7.29.15",
       "license": "MIT",
       "notices": [
         {
@@ -336,7 +335,7 @@
     },
     {
       "name": "@babel/helper-wrap-function",
-      "version": "7.29.7",
+      "version": "7.29.15",
       "license": "MIT",
       "notices": [
         {
@@ -347,7 +346,7 @@
     },
     {
       "name": "@babel/helpers",
-      "version": "7.29.13",
+      "version": "7.29.15",
       "license": "MIT",
       "notices": [
         {
@@ -361,18 +360,7 @@
     },
     {
       "name": "@babel/parser",
-      "version": "7.29.13",
-      "license": "MIT",
-      "notices": [
-        {
-          "copyright": ["Copyright (C) 2012-2014 by various contributors (see AUTHORS)"],
-          "text": 1
-        }
-      ]
-    },
-    {
-      "name": "@babel/parser",
-      "version": "7.29.14",
+      "version": "7.29.15",
       "license": "MIT",
       "notices": [
         {
@@ -394,7 +382,7 @@
     },
     {
       "name": "@babel/plugin-proposal-export-default-from",
-      "version": "7.29.7",
+      "version": "7.29.15",
       "license": "MIT",
       "notices": [
         {
@@ -669,7 +657,7 @@
     },
     {
       "name": "@babel/plugin-transform-block-scoping",
-      "version": "7.29.13",
+      "version": "7.29.15",
       "license": "MIT",
       "notices": [
         {
@@ -691,7 +679,7 @@
     },
     {
       "name": "@babel/plugin-transform-class-static-block",
-      "version": "7.29.7",
+      "version": "7.29.14",
       "license": "MIT",
       "notices": [
         {
@@ -724,7 +712,7 @@
     },
     {
       "name": "@babel/plugin-transform-export-namespace-from",
-      "version": "7.29.7",
+      "version": "7.29.15",
       "license": "MIT",
       "notices": [
         {
@@ -746,7 +734,7 @@
     },
     {
       "name": "@babel/plugin-transform-for-of",
-      "version": "7.29.13",
+      "version": "7.29.15",
       "license": "MIT",
       "notices": [
         {
@@ -768,7 +756,7 @@
     },
     {
       "name": "@babel/plugin-transform-modules-commonjs",
-      "version": "7.29.7",
+      "version": "7.29.14",
       "license": "MIT",
       "notices": [
         {
@@ -933,7 +921,7 @@
     },
     {
       "name": "@babel/plugin-transform-regenerator",
-      "version": "7.29.8",
+      "version": "7.29.15",
       "license": "MIT",
       "notices": [
         {
@@ -980,7 +968,7 @@
     },
     {
       "name": "@babel/plugin-transform-typescript",
-      "version": "7.29.9",
+      "version": "7.29.15",
       "license": "MIT",
       "notices": [
         {
@@ -1013,7 +1001,7 @@
     },
     {
       "name": "@babel/runtime",
-      "version": "7.29.13",
+      "version": "7.29.15",
       "license": "MIT",
       "notices": [
         {
@@ -1035,7 +1023,7 @@
     },
     {
       "name": "@babel/traverse",
-      "version": "7.29.13",
+      "version": "7.29.15",
       "license": "MIT",
       "notices": [
         {
@@ -1046,18 +1034,7 @@
     },
     {
       "name": "@babel/types",
-      "version": "7.29.11",
-      "license": "MIT",
-      "notices": [
-        {
-          "copyright": ["Copyright (c) 2014-present Sebastian McKenzie and other contributors"],
-          "text": 0
-        }
-      ]
-    },
-    {
-      "name": "@babel/types",
-      "version": "7.29.14",
+      "version": "7.29.15",
       "license": "MIT",
       "notices": [
         {
@@ -1471,6 +1448,12 @@
       "notices": [{ "copyright": ["Copyright (c) 2015, Contributors"], "text": 3 }]
     },
     {
+      "name": "@isaacs/nonrecursive-glob-match",
+      "version": "1.1.0",
+      "license": "BlueOak-1.0.0",
+      "notices": [{ "copyright": [], "text": 9 }]
+    },
+    {
       "name": "@isaacs/ttlcache",
       "version": "1.4.1",
       "license": "ISC",
@@ -1480,7 +1463,7 @@
             "Copyright (c) 2022-2023 - Isaac Z. Schlueter and Contributors",
             "copyright notice and this permission notice appear in all copies."
           ],
-          "text": 9
+          "text": 10
         }
       ]
     },
@@ -1488,7 +1471,7 @@
       "name": "@istanbuljs/load-nyc-config",
       "version": "1.1.0",
       "license": "ISC",
-      "notices": [{ "copyright": ["Copyright (c) 2019, Contributors"], "text": 10 }]
+      "notices": [{ "copyright": ["Copyright (c) 2019, Contributors"], "text": 11 }]
     },
     {
       "name": "@istanbuljs/schema",
@@ -1867,7 +1850,7 @@
       "version": "0.3.13",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright 2024 Justin Ridgewell <justin@ridgewell.name>"], "text": 11 }
+        { "copyright": ["Copyright 2024 Justin Ridgewell <justin@ridgewell.name>"], "text": 12 }
       ]
     },
     {
@@ -1875,15 +1858,15 @@
       "version": "2.3.5",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright 2024 Justin Ridgewell <justin@ridgewell.name>"], "text": 11 }
+        { "copyright": ["Copyright 2024 Justin Ridgewell <justin@ridgewell.name>"], "text": 12 }
       ]
     },
     {
       "name": "@jridgewell/resolve-uri",
-      "version": "3.1.2",
+      "version": "3.1.3",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright 2019 Justin Ridgewell <jridgewell@google.com>"], "text": 11 }
+        { "copyright": ["Copyright 2019 Justin Ridgewell <jridgewell@google.com>"], "text": 12 }
       ]
     },
     {
@@ -1891,7 +1874,7 @@
       "version": "0.3.11",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright 2024 Justin Ridgewell <justin@ridgewell.name>"], "text": 11 }
+        { "copyright": ["Copyright 2024 Justin Ridgewell <justin@ridgewell.name>"], "text": 12 }
       ]
     },
     {
@@ -1899,7 +1882,7 @@
       "version": "1.6.0",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright 2024 Justin Ridgewell <justin@ridgewell.name>"], "text": 11 }
+        { "copyright": ["Copyright 2024 Justin Ridgewell <justin@ridgewell.name>"], "text": 12 }
       ]
     },
     {
@@ -1907,12 +1890,12 @@
       "version": "0.3.31",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright 2024 Justin Ridgewell <justin@ridgewell.name>"], "text": 11 }
+        { "copyright": ["Copyright 2024 Justin Ridgewell <justin@ridgewell.name>"], "text": 12 }
       ]
     },
     {
       "name": "@legendapp/list",
-      "version": "3.7.1",
+      "version": "3.7.3",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2022 Moo.do LLC"], "text": 4 }]
     },
@@ -1927,14 +1910,14 @@
       "version": "1.0.0",
       "license": "BSD-2-Clause",
       "notices": [
-        { "copyright": ["Copyright (C) 2008 Apple Inc. All Rights Reserved."], "text": 12 }
+        { "copyright": ["Copyright (C) 2008 Apple Inc. All Rights Reserved."], "text": 13 }
       ]
     },
     {
       "name": "@maplibre/maplibre-gl-style-spec",
       "version": "26.4.4",
       "license": "ISC",
-      "notices": [{ "copyright": ["Copyright (c) 2020, MapLibre contributors"], "text": 13 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020, MapLibre contributors"], "text": 14 }]
     },
     {
       "name": "@maplibre/maplibre-react-native",
@@ -1946,7 +1929,7 @@
             "Copyright (c) 2022 MapLibre contributors",
             "Copyright (c) 2015-2020 Mapbox"
           ],
-          "text": 14
+          "text": 15
         }
       ]
     },
@@ -1955,7 +1938,7 @@
       "version": "2.4.0",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright (c) 2022 Paul Miller (https://paulmillr.com)"], "text": 15 }
+        { "copyright": ["Copyright (c) 2022 Paul Miller (https://paulmillr.com)"], "text": 16 }
       ]
     },
     {
@@ -1963,7 +1946,7 @@
       "version": "2.4.0",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright (c) 2022 Paul Miller (https://paulmillr.com)"], "text": 15 }
+        { "copyright": ["Copyright (c) 2022 Paul Miller (https://paulmillr.com)"], "text": 16 }
       ]
     },
     {
@@ -2240,7 +2223,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) 2022 Patricio Palladino, Paul Miller (paulmillr.com)"],
-          "text": 15
+          "text": 16
         }
       ]
     },
@@ -2253,7 +2236,7 @@
           "copyright": [
             "Copyright (c) 2017-2023 Haydn Paterson (sinclair) <haydn.developer@gmail.com>"
           ],
-          "text": 16
+          "text": 17
         }
       ]
     },
@@ -2261,341 +2244,341 @@
       "name": "@sinclair/typebox",
       "version": "0.34.52",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2017-2026 Haydn Paterson"], "text": 17 }]
+      "notices": [{ "copyright": ["Copyright (c) 2017-2026 Haydn Paterson"], "text": 18 }]
     },
     {
       "name": "@sinonjs/commons",
       "version": "3.0.1",
       "license": "BSD-3-Clause",
-      "notices": [{ "copyright": ["Copyright (c) 2018, Sinon.JS"], "text": 18 }]
+      "notices": [{ "copyright": ["Copyright (c) 2018, Sinon.JS"], "text": 19 }]
     },
     {
       "name": "@sinonjs/fake-timers",
-      "version": "15.4.0",
+      "version": "15.5.0",
       "license": "BSD-3-Clause",
       "notices": [
         {
           "copyright": [
             "Copyright (c) 2010-2014, Christian Johansen, christian@cjohansen.no. All rights reserved."
           ],
-          "text": 19
+          "text": 20
         }
       ]
     },
     {
       "name": "@tamagui/accordion",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/adapt",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/alert-dialog",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2022 WorkOS"], "text": 4 }]
     },
     {
       "name": "@tamagui/animate",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/animate-presence",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 },
-        { "copyright": ["Copyright (c) 2018 Framer B.V."], "text": 21 }
+        { "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 },
+        { "copyright": ["Copyright (c) 2018 Framer B.V."], "text": 22 }
       ]
     },
     {
       "name": "@tamagui/animation-helpers",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/animations-css",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/animations-motion",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/animations-react-native",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/animations-reanimated",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/avatar",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/button",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/card",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/checkbox",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/checkbox-headless",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/collapsible",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/collection",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/compose-refs",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/config",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/config-default",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/constants",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/context-menu",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/core",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/create-context",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/create-menu",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/create-system-font",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/create-theme",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/cubic-bezier-animator",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/dialog",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2022 WorkOS"], "text": 4 }]
     },
     {
       "name": "@tamagui/dismissable",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/dom",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/element",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 22 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 23 }]
     },
     {
       "name": "@tamagui/fake-react-native",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/field",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2023 Tamagui"], "text": 4 }]
     },
     {
       "name": "@tamagui/floating",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/focus-guard",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/focus-scope",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/focusable",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/font-size",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/form",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/get-font-sized",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/get-token",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/group",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/helpers",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/helpers-icon",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/helpers-tamagui",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/image",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/input",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/is-equal-shallow",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2025 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2025 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/label",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/linear-gradient",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/list-item",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/lucide-icons",
@@ -2605,357 +2588,357 @@
     },
     {
       "name": "@tamagui/menu",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/native",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/normalize-css-color",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/polyfill-dev",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/popover",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/popper",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/portal",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/progress",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/radio-group",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/radio-headless",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/react-native-media-driver",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/react-native-pan-responder",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/react-native-types",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/react-native-use-pressable",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/react-native-use-responder-events",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/remove-scroll",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/roving-focus",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/scroll-view",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/select",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/separator",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/shapes",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/sheet",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/shorthands",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/simple-hash",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/slider",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/spacer",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/spinner",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/stacks",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/start-transition",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/style-grammar",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 4 }]
     },
     {
       "name": "@tamagui/switch",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/switch-headless",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/tabs",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/tabs-headless",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/text",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/theme",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/themes",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/toast",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/toggle-group",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/tooltip",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/types",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/ui",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/use-async",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2025 Tamagui"], "text": 4 }]
     },
     {
       "name": "@tamagui/use-callback-ref",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/use-constant",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/use-controllable-state",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/use-debounce",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/use-did-finish-ssr",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/use-direction",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/use-element-layout",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/use-escape-keydown",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2021 Radix"], "text": 4 }]
     },
     {
       "name": "@tamagui/use-event",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/use-force-update",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/use-presence",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/use-previous",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/use-window-dimensions",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/visually-hidden",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/web",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@tamagui/z-index-stack",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "@testing-library/react-native",
@@ -2973,7 +2956,7 @@
             "Copyright (c) 2017 TurfJS",
             "COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER"
           ],
-          "text": 23
+          "text": 24
         }
       ]
     },
@@ -2987,7 +2970,7 @@
             "Copyright (c) 2017 TurfJS",
             "COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER"
           ],
-          "text": 23
+          "text": 24
         }
       ]
     },
@@ -3001,7 +2984,7 @@
             "Copyright (c) 2017 TurfJS",
             "COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER"
           ],
-          "text": 23
+          "text": 24
         }
       ]
     },
@@ -3015,7 +2998,7 @@
             "Copyright (c) 2017 TurfJS",
             "COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER"
           ],
-          "text": 23
+          "text": 24
         }
       ]
     },
@@ -3029,7 +3012,7 @@
             "Copyright (c) 2017 TurfJS",
             "COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER"
           ],
-          "text": 23
+          "text": 24
         }
       ]
     },
@@ -3043,7 +3026,7 @@
             "Copyright (c) 2017 TurfJS",
             "COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER"
           ],
-          "text": 23
+          "text": 24
         }
       ]
     },
@@ -3051,97 +3034,97 @@
       "name": "@types/babel__core",
       "version": "7.20.5",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 24 }]
+      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 25 }]
     },
     {
       "name": "@types/babel__generator",
       "version": "7.27.0",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 24 }]
+      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 25 }]
     },
     {
       "name": "@types/babel__template",
       "version": "7.4.4",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 24 }]
+      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 25 }]
     },
     {
       "name": "@types/babel__traverse",
       "version": "7.28.0",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 24 }]
+      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 25 }]
     },
     {
       "name": "@types/better-sqlite3",
       "version": "9.6.0",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 24 }]
+      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 25 }]
     },
     {
       "name": "@types/geojson",
       "version": "7946.0.16",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 24 }]
+      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 25 }]
     },
     {
       "name": "@types/istanbul-lib-coverage",
       "version": "2.0.6",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 24 }]
+      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 25 }]
     },
     {
       "name": "@types/istanbul-lib-report",
       "version": "3.0.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 24 }]
+      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 25 }]
     },
     {
       "name": "@types/istanbul-reports",
       "version": "3.0.4",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 24 }]
+      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 25 }]
     },
     {
       "name": "@types/node",
       "version": "26.6.6",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 24 }]
+      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 25 }]
     },
     {
       "name": "@types/react",
       "version": "19.3.0",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 24 }]
+      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 25 }]
     },
     {
       "name": "@types/react-reconciler",
       "version": "0.34.1",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 24 }]
+      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 25 }]
     },
     {
       "name": "@types/react-test-renderer",
       "version": "19.3.1",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 24 }]
+      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 25 }]
     },
     {
       "name": "@types/stack-utils",
       "version": "2.0.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 24 }]
+      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 25 }]
     },
     {
       "name": "@types/yargs",
       "version": "17.0.35",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 24 }]
+      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 25 }]
     },
     {
       "name": "@types/yargs-parser",
       "version": "21.0.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 24 }]
+      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 25 }]
     },
     {
       "name": "@ungap/structured-clone",
@@ -3153,7 +3136,7 @@
             "Copyright (c) 2021, Andrea Giammarchi, @WebReflection",
             "copyright notice and this permission notice appear in all copies."
           ],
-          "text": 25
+          "text": 26
         }
       ]
     },
@@ -3167,7 +3150,7 @@
             "Copyright 2019 - present Christopher J. Brody and other contributors, as listed in: https://github.com/xmldom/xmldom/graphs/contributors",
             "Copyright 2012 - 2017 @jindw <jindw@xidea.org> and other contributors, as listed in: https://github.com/jindw/xmldom/graphs/contributors"
           ],
-          "text": 26
+          "text": 27
         }
       ]
     },
@@ -3181,7 +3164,7 @@
             "Copyright 2019 - present Christopher J. Brody and other contributors, as listed in: https://github.com/xmldom/xmldom/graphs/contributors",
             "Copyright 2012 - 2017 @jindw <jindw@xidea.org> and other contributors, as listed in: https://github.com/jindw/xmldom/graphs/contributors"
           ],
-          "text": 26
+          "text": 27
         }
       ]
     },
@@ -3209,7 +3192,7 @@
             "Copyright (c) 2014 Jonathan Ong <me@jongleberry.com>",
             "Copyright (c) 2015 Douglas Christopher Wilson <doug@somethingdoug.com>"
           ],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -3223,7 +3206,7 @@
             "Copyright (c) 2014 Jonathan Ong <me@jongleberry.com>",
             "Copyright (c) 2015 Douglas Christopher Wilson <doug@somethingdoug.com>"
           ],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -3234,7 +3217,7 @@
       "notices": [
         {
           "copyright": ["Copyright (C) 2012-2022 by various contributors (see AUTHORS)"],
-          "text": 28
+          "text": 29
         }
       ]
     },
@@ -3243,7 +3226,7 @@
       "version": "7.1.4",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright (c) 2013 Nathan Rajlich <nathan@tootallnate.net>"], "text": 27 }
+        { "copyright": ["Copyright (c) 2013 Nathan Rajlich <nathan@tootallnate.net>"], "text": 28 }
       ]
     },
     {
@@ -3274,7 +3257,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -3285,7 +3268,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -3296,20 +3279,20 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
     {
       "name": "ansi-regex",
-      "version": "6.5.0",
+      "version": "6.6.0",
       "license": "MIT",
       "notices": [
         {
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -3320,7 +3303,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -3331,7 +3314,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -3342,7 +3325,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -3355,7 +3338,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -3369,7 +3352,7 @@
             "Copyright (c) 2019 Elan Shanker, Paul Miller (https://paulmillr.com)",
             "copyright notice and this permission notice appear in all copies."
           ],
-          "text": 9
+          "text": 10
         }
       ]
     },
@@ -3383,14 +3366,14 @@
       "name": "argparse",
       "version": "2.0.1",
       "license": "Python-2.0",
-      "notices": [{ "copyright": [], "text": 30 }]
+      "notices": [{ "copyright": [], "text": 31 }]
     },
     {
       "name": "asap",
       "version": "2.0.6",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright 2009–2014 Contributors. All rights reserved."], "text": 31 }
+        { "copyright": ["Copyright 2009–2014 Contributors. All rights reserved."], "text": 32 }
       ]
     },
     {
@@ -3417,7 +3400,7 @@
       "name": "babel-plugin-istanbul",
       "version": "8.0.0",
       "license": "BSD-3-Clause",
-      "notices": [{ "copyright": ["Copyright (c) 2016, Istanbul Code Coverage"], "text": 32 }]
+      "notices": [{ "copyright": ["Copyright (c) 2016, Istanbul Code Coverage"], "text": 33 }]
     },
     {
       "name": "babel-plugin-jest-hoist",
@@ -3524,17 +3507,6 @@
     },
     {
       "name": "balanced-match",
-      "version": "1.0.2",
-      "license": "MIT",
-      "notices": [
-        {
-          "copyright": ["Copyright (c) 2013 Julian Gruber &lt;julian@juliangruber.com&gt;"],
-          "text": 33
-        }
-      ]
-    },
-    {
-      "name": "balanced-match",
       "version": "4.0.4",
       "license": "MIT",
       "notices": [{ "copyright": [], "text": 34 }]
@@ -3547,13 +3519,13 @@
     },
     {
       "name": "baseline-browser-mapping",
-      "version": "2.11.35",
+      "version": "2.11.39",
       "license": "Apache-2.0",
       "notices": [{ "copyright": [], "text": 36 }]
     },
     {
       "name": "better-sqlite3",
-      "version": "13.0.3",
+      "version": "13.2.0",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2017 Joshua Wise"], "text": 2 }]
     },
@@ -3567,7 +3539,7 @@
       "name": "boolbase",
       "version": "1.0.0",
       "license": "ISC",
-      "notices": [{ "copyright": ["Felix Boehm (declared in package.json)"], "text": 9 }]
+      "notices": [{ "copyright": ["Felix Boehm (declared in package.json)"], "text": 10 }]
     },
     {
       "name": "bplist-creator",
@@ -3589,14 +3561,6 @@
     },
     {
       "name": "brace-expansion",
-      "version": "2.1.7",
-      "license": "MIT",
-      "notices": [
-        { "copyright": ["Copyright (c) 2013 Julian Gruber <julian@juliangruber.com>"], "text": 4 }
-      ]
-    },
-    {
-      "name": "brace-expansion",
       "version": "5.0.12",
       "license": "MIT",
       "notices": [
@@ -3611,7 +3575,7 @@
     },
     {
       "name": "browserslist",
-      "version": "4.29.5",
+      "version": "4.29.6",
       "license": "MIT",
       "notices": [
         {
@@ -3619,7 +3583,7 @@
             "Copyright 2014 Andrey Sitnik <andrey@sitnik.es> and other contributors",
             "COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER"
           ],
-          "text": 23
+          "text": 24
         }
       ]
     },
@@ -3647,7 +3611,7 @@
             "Copyright (c) 2012-2014 TJ Holowaychuk <tj@vision-media.ca>",
             "Copyright (c) 2015 Jed Watson <jed.watson@me.com>"
           ],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -3658,7 +3622,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -3669,7 +3633,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -3682,13 +3646,13 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
     {
       "name": "caniuse-lite",
-      "version": "1.0.30001823",
+      "version": "1.0.30001826",
       "license": "CC-BY-4.0",
       "notices": [{ "copyright": [], "text": 40 }]
     },
@@ -3699,7 +3663,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -3710,7 +3674,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -3728,7 +3692,7 @@
     },
     {
       "name": "ci-info",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2016 Thomas Watson Steen"], "text": 2 }]
     },
@@ -3758,7 +3722,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -3795,7 +3759,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) 2014 TJ Holowaychuk &lt;tj@vision-media.ca&gt;"],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -3804,12 +3768,6 @@
       "version": "1.0.3",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2019 Simen Bekkhus"], "text": 43 }]
-    },
-    {
-      "name": "color",
-      "version": "4.2.3",
-      "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2012 Heather Arthur"], "text": 44 }]
     },
     {
       "name": "color-convert",
@@ -3837,28 +3795,20 @@
       "name": "color-name",
       "version": "1.1.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2015 Dmitry Ivanov"], "text": 21 }]
+      "notices": [{ "copyright": ["Copyright (c) 2015 Dmitry Ivanov"], "text": 22 }]
     },
     {
       "name": "color-name",
       "version": "1.1.4",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2015 Dmitry Ivanov"], "text": 21 }]
-    },
-    {
-      "name": "color-string",
-      "version": "1.9.1",
-      "license": "MIT",
-      "notices": [
-        { "copyright": ["Copyright (c) 2011 Heather Arthur <fayearthur@gmail.com>"], "text": 44 }
-      ]
+      "notices": [{ "copyright": ["Copyright (c) 2015 Dmitry Ivanov"], "text": 22 }]
     },
     {
       "name": "commander",
       "version": "12.1.0",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright (c) 2011 TJ Holowaychuk <tj@vision-media.ca>"], "text": 27 }
+        { "copyright": ["Copyright (c) 2011 TJ Holowaychuk <tj@vision-media.ca>"], "text": 28 }
       ]
     },
     {
@@ -3866,7 +3816,7 @@
       "version": "2.20.3",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright (c) 2011 TJ Holowaychuk <tj@vision-media.ca>"], "text": 27 }
+        { "copyright": ["Copyright (c) 2011 TJ Holowaychuk <tj@vision-media.ca>"], "text": 28 }
       ]
     },
     {
@@ -3874,7 +3824,7 @@
       "version": "7.2.0",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright (c) 2011 TJ Holowaychuk <tj@vision-media.ca>"], "text": 27 }
+        { "copyright": ["Copyright (c) 2011 TJ Holowaychuk <tj@vision-media.ca>"], "text": 28 }
       ]
     },
     {
@@ -3888,7 +3838,7 @@
             "Copyright (c) 2014 Jeremiah Senkpiel <fishrock123@rocketmail.com>",
             "Copyright (c) 2015 Douglas Christopher Wilson <doug@somethingdoug.com>"
           ],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -3902,7 +3852,7 @@
             "Copyright (c) 2014 Jonathan Ong <me@jongleberry.com>",
             "Copyright (c) 2014-2015 Douglas Christopher Wilson <doug@somethingdoug.com>"
           ],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -3918,7 +3868,7 @@
             "Copyright (c) 2011-2014 TJ Holowaychuk",
             "Copyright (c) 2015 Douglas Christopher Wilson"
           ],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -3926,7 +3876,7 @@
       "name": "content-type",
       "version": "2.1.0",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2015 Douglas Christopher Wilson"], "text": 27 }]
+      "notices": [{ "copyright": ["Copyright (c) 2015 Douglas Christopher Wilson"], "text": 28 }]
     },
     {
       "name": "convert-source-map",
@@ -3988,7 +3938,7 @@
     },
     {
       "name": "csstype",
-      "version": "3.2.3",
+      "version": "3.2.4",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2017-2018 Fredrik Nicol"], "text": 47 }]
     },
@@ -4070,7 +4020,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -4079,7 +4029,7 @@
       "version": "2.0.0",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright (c) 2014-2018 Douglas Christopher Wilson"], "text": 27 }
+        { "copyright": ["Copyright (c) 2014-2018 Douglas Christopher Wilson"], "text": 28 }
       ]
     },
     {
@@ -4109,7 +4059,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -4173,7 +4123,7 @@
     },
     {
       "name": "electron-to-chromium",
-      "version": "1.5.478",
+      "version": "1.5.492",
       "license": "ISC",
       "notices": [{ "copyright": ["Copyright 2018 Kilian Valkhof"], "text": 53 }]
     },
@@ -4186,7 +4136,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -4208,15 +4158,15 @@
     },
     {
       "name": "encodeurl",
-      "version": "1.0.2",
+      "version": "1.0.4",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2016 Douglas Christopher Wilson"], "text": 27 }]
+      "notices": [{ "copyright": ["Copyright (c) 2016 Douglas Christopher Wilson"], "text": 28 }]
     },
     {
       "name": "encodeurl",
-      "version": "2.0.1",
+      "version": "2.0.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2016 Douglas Christopher Wilson"], "text": 27 }]
+      "notices": [{ "copyright": ["Copyright (c) 2016 Douglas Christopher Wilson"], "text": 28 }]
     },
     {
       "name": "entities",
@@ -4257,7 +4207,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Luke Edwards <luke.edwards05@gmail.com> (lukeed.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -4272,7 +4222,7 @@
             "Copyright (c) 2015 Andreas Lubbe",
             "Copyright (c) 2015 Tiancheng \"Timothy\" Gu"
           ],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -4294,7 +4244,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -4303,7 +4253,7 @@
       "version": "1.8.1",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright (c) 2014-2016 Douglas Christopher Wilson"], "text": 27 }
+        { "copyright": ["Copyright (c) 2014-2016 Douglas Christopher Wilson"], "text": 28 }
       ]
     },
     {
@@ -4315,7 +4265,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -4639,7 +4589,7 @@
       "name": "fdir",
       "version": "6.5.0",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright 2023 Abdullah Atta"], "text": 26 }]
+      "notices": [{ "copyright": ["Copyright 2023 Abdullah Atta"], "text": 27 }]
     },
     {
       "name": "fetch-nodeshim",
@@ -4673,7 +4623,7 @@
           "copyright": [
             "Copyright (c) 2014-2017 Douglas Christopher Wilson <doug@somethingdoug.com>"
           ],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -4684,7 +4634,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -4740,13 +4690,13 @@
             "Copyright (c) 2015-2023 Isaac Z. Schlueter and Contributors",
             "copyright notice and this permission notice appear in all copies."
           ],
-          "text": 9
+          "text": 10
         }
       ]
     },
     {
       "name": "framer-motion",
-      "version": "14.10.1",
+      "version": "14.14.0",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2018 Framer B.V."], "text": 2 }]
     },
@@ -4760,7 +4710,7 @@
             "Copyright (c) 2012 TJ Holowaychuk <tj@vision-media.ca>",
             "Copyright (c) 2016-2017 Douglas Christopher Wilson <doug@somethingdoug.com>"
           ],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -4775,7 +4725,7 @@
       "version": "1.0.0-beta.2",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright 2018 Logan Smyth <loganfsmyth@gmail.com>"], "text": 26 }
+        { "copyright": ["Copyright 2018 Logan Smyth <loganfsmyth@gmail.com>"], "text": 27 }
       ]
     },
     {
@@ -4799,13 +4749,13 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
     {
       "name": "gifted-charts-core",
-      "version": "0.1.83",
+      "version": "0.1.85",
       "license": "MIT",
       "notices": [{ "copyright": ["Abhinandan Kushwaha (declared in package.json)"], "text": 4 }]
     },
@@ -4819,7 +4769,7 @@
             "Copyright (c) 2009-2023 Isaac Z. Schlueter and Contributors",
             "copyright notice and this permission notice appear in all copies."
           ],
-          "text": 9
+          "text": 10
         }
       ]
     },
@@ -4831,17 +4781,9 @@
     },
     {
       "name": "graceful-fs",
-      "version": "4.2.11",
-      "license": "ISC",
-      "notices": [
-        {
-          "copyright": [
-            "Copyright (c) 2011-2022 Isaac Z. Schlueter, Ben Noordhuis, and Contributors",
-            "copyright notice and this permission notice appear in all copies."
-          ],
-          "text": 9
-        }
-      ]
+      "version": "4.2.12",
+      "license": "BlueOak-1.0.0",
+      "notices": [{ "copyright": [], "text": 9 }]
     },
     {
       "name": "has-flag",
@@ -4850,7 +4792,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -4861,7 +4803,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -4951,7 +4893,7 @@
       "version": "7.0.6",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright (c) 2013 Nathan Rajlich <nathan@tootallnate.net>"], "text": 27 }
+        { "copyright": ["Copyright (c) 2013 Nathan Rajlich <nathan@tootallnate.net>"], "text": 28 }
       ]
     },
     {
@@ -4964,11 +4906,11 @@
       "name": "hyphenate-style-name",
       "version": "1.1.0",
       "license": "BSD-3-Clause",
-      "notices": [{ "copyright": ["Copyright (c) 2015, Espen Hovlandsdal"], "text": 18 }]
+      "notices": [{ "copyright": ["Copyright (c) 2015, Espen Hovlandsdal"], "text": 19 }]
     },
     {
       "name": "i18next",
-      "version": "26.7.2",
+      "version": "27.2.2",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2011-present i18next"], "text": 2 }]
     },
@@ -4989,7 +4931,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -5006,7 +4948,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -5043,12 +4985,6 @@
       "notices": [{ "copyright": ["Copyright (c) 2015 JD Ballard"], "text": 35 }]
     },
     {
-      "name": "is-arrayish",
-      "version": "0.3.4",
-      "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2015 JD Ballard"], "text": 35 }]
-    },
-    {
       "name": "is-core-module",
       "version": "2.18.0",
       "license": "MIT",
@@ -5058,7 +4994,7 @@
             "Copyright (c) 2014 Dave Justice",
             "COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER"
           ],
-          "text": 23
+          "text": 24
         }
       ]
     },
@@ -5071,7 +5007,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -5088,7 +5024,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -5099,7 +5035,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -5124,7 +5060,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -5135,7 +5071,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -5149,7 +5085,7 @@
             "Copyright (c) Isaac Z. Schlueter and Contributors",
             "copyright notice and this permission notice appear in all copies."
           ],
-          "text": 9
+          "text": 10
         }
       ]
     },
@@ -5712,7 +5648,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -5735,7 +5671,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -5768,7 +5704,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -5790,7 +5726,7 @@
             "Copyright (c) 2010-2023 Isaac Z. Schlueter and Contributors",
             "copyright notice and this permission notice appear in all copies."
           ],
-          "text": 9
+          "text": 10
         }
       ]
     },
@@ -5798,7 +5734,7 @@
       "name": "lru-cache",
       "version": "11.5.3",
       "license": "BlueOak-1.0.0",
-      "notices": [{ "copyright": [], "text": 72 }]
+      "notices": [{ "copyright": [], "text": 9 }]
     },
     {
       "name": "lru-cache",
@@ -5810,7 +5746,7 @@
             "Copyright (c) Isaac Z. Schlueter and Contributors",
             "copyright notice and this permission notice appear in all copies."
           ],
-          "text": 9
+          "text": 10
         }
       ]
     },
@@ -5823,7 +5759,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -5832,14 +5768,14 @@
       "version": "1.0.12",
       "license": "BSD-3-Clause",
       "notices": [
-        { "copyright": ["Copyright (c) 2014, Naitik Shah. All rights reserved."], "text": 73 }
+        { "copyright": ["Copyright (c) 2014, Naitik Shah. All rights reserved."], "text": 72 }
       ]
     },
     {
       "name": "mdn-data",
       "version": "2.0.14",
       "license": "CC0-1.0",
-      "notices": [{ "copyright": [], "text": 74 }]
+      "notices": [{ "copyright": [], "text": 73 }]
     },
     {
       "name": "memoize-one",
@@ -6064,7 +6000,7 @@
             "Copyright (c) 2014 Jonathan Ong <me@jongleberry.com>",
             "Copyright (c) 2015-2022 Douglas Christopher Wilson <doug@somethingdoug.com>"
           ],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -6078,7 +6014,7 @@
             "Copyright (c) 2014 Jonathan Ong <me@jongleberry.com>",
             "Copyright (c) 2015-2022 Douglas Christopher Wilson <doug@somethingdoug.com>"
           ],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -6092,7 +6028,7 @@
             "Copyright (c) 2014 Jonathan Ong <me@jongleberry.com>",
             "Copyright (c) 2015 Douglas Christopher Wilson <doug@somethingdoug.com>"
           ],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -6106,7 +6042,7 @@
             "Copyright (c) 2014 Jonathan Ong <me@jongleberry.com>",
             "Copyright (c) 2015 Douglas Christopher Wilson <doug@somethingdoug.com>"
           ],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -6117,7 +6053,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -6128,7 +6064,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -6147,23 +6083,9 @@
     },
     {
       "name": "minimatch",
-      "version": "10.2.6",
+      "version": "11.0.9",
       "license": "BlueOak-1.0.0",
       "notices": [{ "copyright": [], "text": 65 }]
-    },
-    {
-      "name": "minimatch",
-      "version": "9.0.9",
-      "license": "ISC",
-      "notices": [
-        {
-          "copyright": [
-            "Copyright (c) 2011-2023 Isaac Z. Schlueter and Contributors",
-            "copyright notice and this permission notice appear in all copies."
-          ],
-          "text": 9
-        }
-      ]
     },
     {
       "name": "minimist",
@@ -6182,11 +6104,11 @@
       "name": "minipass",
       "version": "7.1.3",
       "license": "BlueOak-1.0.0",
-      "notices": [{ "copyright": [], "text": 72 }]
+      "notices": [{ "copyright": [], "text": 9 }]
     },
     {
       "name": "motion",
-      "version": "14.10.1",
+      "version": "14.14.0",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2024 [Motion](https://motion.dev) B.V."], "text": 2 }
@@ -6194,7 +6116,7 @@
     },
     {
       "name": "motion-dom",
-      "version": "14.10.1",
+      "version": "14.14.0",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2024 [Motion](https://motion.dev) B.V."], "text": 2 }
@@ -6244,7 +6166,7 @@
             "Copyright 2017 Andrey Sitnik <andrey@sitnik.ru>",
             "COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER"
           ],
-          "text": 23
+          "text": 24
         }
       ]
     },
@@ -6271,7 +6193,7 @@
             "Copyright (c) 2012-2014 Isaac Z. Schlueter",
             "Copyright (c) 2014-2015 Douglas Christopher Wilson"
           ],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -6286,7 +6208,7 @@
             "Copyright (c) 2012-2014 Isaac Z. Schlueter",
             "Copyright (c) 2014-2015 Douglas Christopher Wilson"
           ],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -6301,7 +6223,7 @@
             "Copyright (c) 2012-2014 Isaac Z. Schlueter",
             "Copyright (c) 2014-2015 Douglas Christopher Wilson"
           ],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -6314,7 +6236,7 @@
           "copyright": [
             "Copyright (c) 2017 [Node.js API collaborators](https://github.com/nodejs/node-addon-api#collaborators)"
           ],
-          "text": 21
+          "text": 22
         }
       ]
     },
@@ -6327,7 +6249,7 @@
           "copyright": [
             "Copyright (c) 2017 [Node.js API collaborators](https://github.com/nodejs/node-addon-api#collaborators)"
           ],
-          "text": 21
+          "text": 22
         }
       ]
     },
@@ -6341,7 +6263,7 @@
       "name": "node-forge",
       "version": "1.4.3",
       "license": "(BSD-3-Clause OR GPL-2.0)",
-      "notices": [{ "copyright": [], "text": 75 }]
+      "notices": [{ "copyright": [], "text": 74 }]
     },
     {
       "name": "node-int64",
@@ -6351,12 +6273,12 @@
     },
     {
       "name": "node-releases",
-      "version": "2.0.63",
+      "version": "2.0.65",
       "license": "MIT",
       "notices": [
         {
           "copyright": ["Copyright (c) 2017 Sergey Rubanov (https://github.com/chicoxyzzy)"],
-          "text": 76
+          "text": 75
         }
       ]
     },
@@ -6392,7 +6314,7 @@
             "Copyright (c) npm, Inc.",
             "copyright notice and this permission notice appear in all copies."
           ],
-          "text": 9
+          "text": 10
         }
       ]
     },
@@ -6403,7 +6325,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -6417,7 +6339,7 @@
       "name": "nullthrows",
       "version": "1.1.1",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2016 Andres Suarez"], "text": 21 }]
+      "notices": [{ "copyright": ["Copyright (c) 2016 Andres Suarez"], "text": 22 }]
     },
     {
       "name": "ob1",
@@ -6452,7 +6374,7 @@
             "Copyright (c) 2013 Jonathan Ong <me@jongleberry.com>",
             "Copyright (c) 2014 Douglas Christopher Wilson <doug@somethingdoug.com>"
           ],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -6466,7 +6388,7 @@
             "Copyright (c) 2013 Jonathan Ong <me@jongleberry.com>",
             "Copyright (c) 2014 Douglas Christopher Wilson <doug@somethingdoug.com>"
           ],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -6474,7 +6396,7 @@
       "name": "on-headers",
       "version": "1.1.0",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2014 Douglas Christopher Wilson"], "text": 27 }]
+      "notices": [{ "copyright": ["Copyright (c) 2014 Douglas Christopher Wilson"], "text": 28 }]
     },
     {
       "name": "onetime",
@@ -6496,7 +6418,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -6509,7 +6431,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -6520,7 +6442,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -6531,7 +6453,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -6544,7 +6466,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -6555,7 +6477,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -6566,7 +6488,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -6585,7 +6507,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -6598,7 +6520,7 @@
           "copyright": [
             "Copyright (c) Kevin Mårtensson <kevinmartensson@gmail.com> (github.com/kevva)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -6612,7 +6534,7 @@
             "Copyright (c) 2014 Jonathan Ong <me@jongleberry.com>",
             "Copyright (c) 2014-2017 Douglas Christopher Wilson <doug@somethingdoug.com>"
           ],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -6623,7 +6545,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -6634,7 +6556,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -6648,13 +6570,13 @@
       "name": "path-scurry",
       "version": "1.11.1",
       "license": "BlueOak-1.0.0",
-      "notices": [{ "copyright": [], "text": 72 }]
+      "notices": [{ "copyright": [], "text": 9 }]
     },
     {
       "name": "path-scurry",
       "version": "2.0.2",
       "license": "BlueOak-1.0.0",
-      "notices": [{ "copyright": [], "text": 72 }]
+      "notices": [{ "copyright": [], "text": 9 }]
     },
     {
       "name": "picocolors",
@@ -6666,7 +6588,7 @@
             "Copyright (c) 2021-2024 Oleksii Raspopov, Kostiantyn Denysov, Anton Verinov",
             "copyright notice and this permission notice appear in all copies."
           ],
-          "text": 77
+          "text": 76
         }
       ]
     },
@@ -6695,7 +6617,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -6706,7 +6628,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) 2010-2017 Nathan Rajlich <nathan@tootallnate.net>"],
-          "text": 78
+          "text": 77
         }
       ]
     },
@@ -6714,7 +6636,7 @@
       "name": "pngjs",
       "version": "3.4.0",
       "license": "MIT",
-      "notices": [{ "copyright": [], "text": 79 }]
+      "notices": [{ "copyright": [], "text": 78 }]
     },
     {
       "name": "postcss",
@@ -6726,7 +6648,7 @@
             "Copyright 2013 Andrey Sitnik <andrey@sitnik.es>",
             "COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER"
           ],
-          "text": 23
+          "text": 24
         }
       ]
     },
@@ -6784,7 +6706,7 @@
             "Copyright (c) GitHub, Inc.",
             "copyright notice and this permission notice appear in all copies."
           ],
-          "text": 9
+          "text": 10
         }
       ]
     },
@@ -6793,7 +6715,7 @@
       "version": "2.0.3",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright (c) 2017 TJ Holowaychuk <tj@vision-media.ca>"], "text": 27 }
+        { "copyright": ["Copyright (c) 2017 TJ Holowaychuk <tj@vision-media.ca>"], "text": 28 }
       ]
     },
     {
@@ -6824,7 +6746,7 @@
       "name": "quickselect",
       "version": "3.0.0",
       "license": "ISC",
-      "notices": [{ "copyright": ["Copyright (c) 2024, Vladimir Agafonkin"], "text": 80 }]
+      "notices": [{ "copyright": ["Copyright (c) 2024, Vladimir Agafonkin"], "text": 79 }]
     },
     {
       "name": "range-parser",
@@ -6836,7 +6758,7 @@
             "Copyright (c) 2012-2014 TJ Holowaychuk <tj@vision-media.ca>",
             "Copyright (c) 2015-2016 Douglas Christopher Wilson <doug@somethingdoug.com"
           ],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -6864,7 +6786,7 @@
     },
     {
       "name": "react-fast-compare",
-      "version": "3.2.2",
+      "version": "3.2.4",
       "license": "MIT",
       "notices": [
         {
@@ -6884,7 +6806,7 @@
     },
     {
       "name": "react-i18next",
-      "version": "17.1.13",
+      "version": "18.0.3",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2015-present i18next"], "text": 2 }]
     },
@@ -6932,7 +6854,7 @@
     },
     {
       "name": "react-native-drawer-layout",
-      "version": "4.2.12",
+      "version": "4.2.13",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2017 React Native Community"], "text": 4 }]
     },
@@ -6946,7 +6868,7 @@
     },
     {
       "name": "react-native-gifted-charts",
-      "version": "1.4.81",
+      "version": "1.4.83",
       "license": "MIT",
       "notices": [{ "copyright": ["Copyright (c) 2022 Abhinandan Kushwaha"], "text": 4 }]
     },
@@ -7039,7 +6961,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7078,7 +7000,7 @@
       "version": "0.8.0",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright 2014-2020 Benjamin Tan <https://ofcr.se/>"], "text": 81 }
+        { "copyright": ["Copyright 2014-2020 Benjamin Tan <https://ofcr.se/>"], "text": 80 }
       ]
     },
     {
@@ -7088,7 +7010,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Julian Viereck and Contributors, All Rights Reserved."],
-          "text": 82
+          "text": 81
         }
       ]
     },
@@ -7097,7 +7019,7 @@
       "version": "2.1.1",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright (c) 2011 Troy Goode <troygoode@gmail.com>"], "text": 83 }
+        { "copyright": ["Copyright (c) 2011 Troy Goode <troygoode@gmail.com>"], "text": 82 }
       ]
     },
     {
@@ -7113,7 +7035,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7124,7 +7046,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7135,7 +7057,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) 2024-present Cedric van Putten <me@cedric.dev>"],
-          "text": 84
+          "text": 83
         }
       ]
     },
@@ -7154,7 +7076,7 @@
       "name": "rtl-detect",
       "version": "1.1.2",
       "license": "BSD-3-Clause",
-      "notices": [{ "copyright": ["Copyright 2015 Yahoo Inc."], "text": 85 }]
+      "notices": [{ "copyright": ["Copyright 2015 Yahoo Inc."], "text": 84 }]
     },
     {
       "name": "safe-buffer",
@@ -7172,7 +7094,7 @@
       "name": "sax",
       "version": "1.6.1",
       "license": "BlueOak-1.0.0",
-      "notices": [{ "copyright": [], "text": 72 }]
+      "notices": [{ "copyright": [], "text": 9 }]
     },
     {
       "name": "scheduler",
@@ -7192,7 +7114,7 @@
             "Copyright (c) Isaac Z. Schlueter and Contributors",
             "copyright notice and this permission notice appear in all copies."
           ],
-          "text": 9
+          "text": 10
         }
       ]
     },
@@ -7206,7 +7128,7 @@
             "Copyright (c) Isaac Z. Schlueter and Contributors",
             "copyright notice and this permission notice appear in all copies."
           ],
-          "text": 9
+          "text": 10
         }
       ]
     },
@@ -7220,7 +7142,7 @@
             "Copyright (c) 2012 TJ Holowaychuk",
             "Copyright (c) 2014-2022 Douglas Christopher Wilson"
           ],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -7247,7 +7169,7 @@
             "Copyright (c) 2011 TJ Holowaychuk",
             "Copyright (c) 2014-2016 Douglas Christopher Wilson"
           ],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -7280,7 +7202,7 @@
             "Copyright (c) 2015, Wes Todd",
             "copyright notice and this permission notice appear in all copies."
           ],
-          "text": 86
+          "text": 85
         }
       ]
     },
@@ -7299,7 +7221,7 @@
           "copyright": [
             "Copyright (c) Kevin Mårtensson <kevinmartensson@gmail.com> (github.com/kevva)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7310,7 +7232,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7319,14 +7241,14 @@
       "version": "1.12.0",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright (c) 2013 James Halliday (mail@substack.net)"], "text": 87 }
+        { "copyright": ["Copyright (c) 2013 James Halliday (mail@substack.net)"], "text": 86 }
       ]
     },
     {
       "name": "signal-exit",
       "version": "3.0.7",
       "license": "ISC",
-      "notices": [{ "copyright": ["Copyright (c) 2015, Contributors"], "text": 88 }]
+      "notices": [{ "copyright": ["Copyright (c) 2015, Contributors"], "text": 87 }]
     },
     {
       "name": "signal-exit",
@@ -7337,7 +7259,7 @@
           "copyright": [
             "Copyright (c) 2015-2023 Benjamin Coe, Isaac Z. Schlueter, and Contributors"
           ],
-          "text": 88
+          "text": 87
         }
       ]
     },
@@ -7351,15 +7273,9 @@
             "Copyright (c) 2013 Joe Wollard",
             "COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER"
           ],
-          "text": 23
+          "text": 24
         }
       ]
-    },
-    {
-      "name": "simple-swizzle",
-      "version": "0.2.4",
-      "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2015 Josh Junon"], "text": 35 }]
     },
     {
       "name": "sisteransi",
@@ -7374,7 +7290,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7393,7 +7309,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) 2009-2011, Mozilla Foundation and contributors"],
-          "text": 89
+          "text": 88
         }
       ]
     },
@@ -7404,18 +7320,18 @@
       "notices": [
         {
           "copyright": ["Copyright (c) 2009-2011, Mozilla Foundation and contributors"],
-          "text": 89
+          "text": 88
         }
       ]
     },
     {
       "name": "source-map-js",
-      "version": "1.2.2",
+      "version": "1.2.4",
       "license": "BSD-3-Clause",
       "notices": [
         {
           "copyright": ["Copyright (c) 2009-2011, Mozilla Foundation and contributors"],
-          "text": 89
+          "text": 88
         }
       ]
     },
@@ -7490,7 +7406,7 @@
       "name": "stream-buffers",
       "version": "2.2.0",
       "license": "Unlicense",
-      "notices": [{ "copyright": [], "text": 90 }]
+      "notices": [{ "copyright": [], "text": 89 }]
     },
     {
       "name": "string-length",
@@ -7501,7 +7417,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7512,7 +7428,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7525,7 +7441,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7536,7 +7452,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7547,7 +7463,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7558,7 +7474,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7571,7 +7487,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7582,7 +7498,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7593,7 +7509,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7604,7 +7520,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7615,7 +7531,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7628,7 +7544,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7651,7 +7567,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7662,7 +7578,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7675,7 +7591,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7686,7 +7602,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) James Talmage <james@talmage.io> (github.com/jamestalmage)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7704,9 +7620,9 @@
     },
     {
       "name": "tamagui",
-      "version": "3.2.3",
+      "version": "3.3.3",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 20 }]
+      "notices": [{ "copyright": ["Copyright (c) 2020 Nate Wienert"], "text": 21 }]
     },
     {
       "name": "terminal-link",
@@ -7715,13 +7631,13 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
     {
       "name": "terser",
-      "version": "5.51.2",
+      "version": "5.51.4",
       "license": "BSD-2-Clause",
       "notices": [
         {
@@ -7730,7 +7646,7 @@
             "copyright notice, this list of conditions and the following",
             "copyright notice, this list of conditions and the following"
           ],
-          "text": 91
+          "text": 90
         }
       ]
     },
@@ -7762,14 +7678,14 @@
       "name": "tinyqueue",
       "version": "3.0.0",
       "license": "ISC",
-      "notices": [{ "copyright": ["Copyright (c) 2017, Vladimir Agafonkin"], "text": 80 }]
+      "notices": [{ "copyright": ["Copyright (c) 2017, Vladimir Agafonkin"], "text": 79 }]
     },
     {
       "name": "tmpl",
       "version": "1.0.5",
       "license": "BSD-3-Clause",
       "notices": [
-        { "copyright": ["Copyright (c) 2014, Naitik Shah. All rights reserved."], "text": 73 }
+        { "copyright": ["Copyright (c) 2014, Naitik Shah. All rights reserved."], "text": 72 }
       ]
     },
     {
@@ -7813,7 +7729,7 @@
       "name": "tslib",
       "version": "2.9.1",
       "license": "0BSD",
-      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 92 }]
+      "notices": [{ "copyright": ["Copyright (c) Microsoft Corporation."], "text": 91 }]
     },
     {
       "name": "type-detect",
@@ -7837,7 +7753,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https:/sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7848,7 +7764,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)"],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -7856,7 +7772,7 @@
       "name": "typescript",
       "version": "7.0.2",
       "license": "Apache-2.0",
-      "notices": [{ "copyright": [], "text": 93 }, { "copyright": [], "text": 94 }]
+      "notices": [{ "copyright": [], "text": 92 }, { "copyright": [], "text": 93 }]
     },
     {
       "name": "ua-parser-js",
@@ -7913,7 +7829,7 @@
       "notices": [
         {
           "copyright": ["Copyright (c) 2015 Douglas Christopher Wilson <doug@somethingdoug.com>"],
-          "text": 27
+          "text": 28
         }
       ]
     },
@@ -7934,7 +7850,7 @@
     },
     {
       "name": "update-browserslist-db",
-      "version": "1.3.4",
+      "version": "1.4.0",
       "license": "MIT",
       "notices": [
         {
@@ -7942,7 +7858,7 @@
             "Copyright 2022 Andrey Sitnik <andrey@sitnik.es> and other contributors",
             "COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER"
           ],
-          "text": 23
+          "text": 24
         }
       ]
     },
@@ -7984,7 +7900,7 @@
             "Copyright (c) 2013-2017 Jared Hanson",
             "COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER"
           ],
-          "text": 23
+          "text": 24
         }
       ]
     },
@@ -8005,7 +7921,7 @@
       "version": "1.1.2",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright (c) 2014-2017 Douglas Christopher Wilson"], "text": 27 }
+        { "copyright": ["Copyright (c) 2014-2017 Douglas Christopher Wilson"], "text": 28 }
       ]
     },
     {
@@ -8017,7 +7933,7 @@
           "copyright": [
             "Copyright (c) 2017 [these people](https://github.com/Rich-Harris/vlq/graphs/contributors)"
           ],
-          "text": 26
+          "text": 27
         }
       ]
     },
@@ -8025,7 +7941,7 @@
       "name": "walker",
       "version": "1.0.8",
       "license": "Apache-2.0",
-      "notices": [{ "copyright": ["Copyright 2013 Naitik Shah"], "text": 95 }]
+      "notices": [{ "copyright": ["Copyright 2013 Naitik Shah"], "text": 94 }]
     },
     {
       "name": "warn-once",
@@ -8037,13 +7953,13 @@
       "name": "wcwidth",
       "version": "1.0.1",
       "license": "MIT",
-      "notices": [{ "copyright": ["Copyright (C) 2012 by Jun Woong."], "text": 96 }]
+      "notices": [{ "copyright": ["Copyright (C) 2012 by Jun Woong."], "text": 95 }]
     },
     {
       "name": "webidl-conversions",
       "version": "3.0.1",
       "license": "BSD-2-Clause",
-      "notices": [{ "copyright": ["Copyright (c) 2014, Domenic Denicola"], "text": 97 }]
+      "notices": [{ "copyright": ["Copyright (c) 2014, Domenic Denicola"], "text": 96 }]
     },
     {
       "name": "whatwg-fetch",
@@ -8082,7 +7998,7 @@
             "Copyright (c) Isaac Z. Schlueter and Contributors",
             "copyright notice and this permission notice appear in all copies."
           ],
-          "text": 9
+          "text": 10
         }
       ]
     },
@@ -8095,7 +8011,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -8108,7 +8024,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -8121,7 +8037,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },
@@ -8133,7 +8049,7 @@
     },
     {
       "name": "ws",
-      "version": "7.5.13",
+      "version": "7.5.14",
       "license": "MIT",
       "notices": [
         { "copyright": ["Copyright (c) 2011 Einar Otto Stangvik <einaros@gmail.com>"], "text": 2 }
@@ -8141,7 +8057,7 @@
     },
     {
       "name": "ws",
-      "version": "8.22.1",
+      "version": "8.23.0",
       "license": "MIT",
       "notices": [
         {
@@ -8151,7 +8067,7 @@
             "Copyright (c) 2016 Luigi Pinca and contributors",
             "COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER"
           ],
-          "text": 98
+          "text": 97
         }
       ]
     },
@@ -8161,7 +8077,7 @@
       "license": "Apache-2.0",
       "notices": [
         { "copyright": [], "text": 36 },
-        { "copyright": ["Copyright 2012-2020 The Apache Software Foundation"], "text": 99 }
+        { "copyright": ["Copyright 2012-2020 The Apache Software Foundation"], "text": 98 }
       ]
     },
     {
@@ -8169,7 +8085,7 @@
       "version": "0.6.0",
       "license": "MIT",
       "notices": [
-        { "copyright": ["Copyright 2010, 2011, 2012, 2013. All rights reserved."], "text": 31 }
+        { "copyright": ["Copyright 2010, 2011, 2012, 2013. All rights reserved."], "text": 32 }
       ]
     },
     {
@@ -8188,7 +8104,7 @@
       "name": "y18n",
       "version": "5.0.8",
       "license": "ISC",
-      "notices": [{ "copyright": ["Copyright (c) 2015, Contributors"], "text": 100 }]
+      "notices": [{ "copyright": ["Copyright (c) 2015, Contributors"], "text": 99 }]
     },
     {
       "name": "yallist",
@@ -8200,7 +8116,7 @@
             "Copyright (c) Isaac Z. Schlueter and Contributors",
             "copyright notice and this permission notice appear in all copies."
           ],
-          "text": 9
+          "text": 10
         }
       ]
     },
@@ -8213,7 +8129,7 @@
           "copyright": [
             "Copyright 2010 James Halliday (mail@substack.net); Modified work Copyright 2014 Contributors (ben@npmjs.com)"
           ],
-          "text": 28
+          "text": 29
         }
       ]
     },
@@ -8232,7 +8148,7 @@
           "copyright": [
             "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
           ],
-          "text": 29
+          "text": 30
         }
       ]
     },

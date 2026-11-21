@@ -34,7 +34,7 @@ const exercise = { id: 1, perSide: false };
 
 const wrapped = () => (
   <TamaguiProvider config={config} defaultTheme="dark">
-    <ProgressTrail exercise={exercise} type="reps" record={8} />
+    <ProgressTrail exercise={exercise} name="Archer Push-Up" type="reps" record={8} />
   </TamaguiProvider>
 );
 
@@ -51,6 +51,13 @@ describe("ProgressTrail", () => {
     await render(wrapped());
     expect((await screen.findByTestId("exercise-progress-first")).props.children).toMatch(/6/);
     expect(screen.getByTestId("exercise-progress-last").props.children).toMatch(/7/);
+  });
+
+  test("the chart says what it shows in words", async () => {
+    mockBests.mockResolvedValue([point(5, 6), point(7, 8), point(9, 7)]);
+    await render(wrapped());
+    await screen.findByTestId("exercise-progress-reps");
+    expect(screen.getByLabelText(/Archer Push-Up.*6.*7.*8/)).toBeTruthy();
   });
 
   test("lists the sessions behind the chart, each linking to its night", async () => {

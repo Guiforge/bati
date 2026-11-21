@@ -566,7 +566,7 @@ function ExerciseContent({ exercise, onGone }: { exercise: Exercise; onGone: () 
                       </XStack>
                     ) : null}
                   </XStack>
-                  <ProgressTrail exercise={exercise} type={type} record={ghost.best} />
+                  <ProgressTrail exercise={exercise} name={title} type={type} record={ghost.best} />
                 </YStack>
               ))}
             </YStack>

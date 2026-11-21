@@ -23,12 +23,13 @@ const PAD = 8;
  * lowest and the highest of the window. A flat run is drawn mid-height, not at the floor.
  */
 function trailPoints(values: readonly number[], width: number): { x: number; y: number }[] {
-  const lo = Math.min(...values);
   const hi = Math.max(...values);
-  const span = hi - lo;
+  const span = hi - Math.min(...values);
+  // A floor below the lowest, in proportion to the range: 8 to 10 reps is a step, not a cliff.
+  const lo = Math.max(0, Math.min(...values) - 2 * span);
   return values.map((v, i) => ({
     x: PAD + (values.length === 1 ? 0 : (i / (values.length - 1)) * (width - 2 * PAD)),
-    y: span === 0 ? CHART / 2 : CHART - PAD - ((v - lo) / span) * (CHART - 2 * PAD),
+    y: span === 0 ? CHART / 2 : CHART - PAD - ((v - lo) / (hi - lo)) * (CHART - 2 * PAD),
   }));
 }
 
@@ -51,10 +52,13 @@ function curve(xy: readonly { x: number; y: number }[]): string {
  */
 export function ProgressTrail({
   exercise,
+  name,
   type,
   record,
 }: {
   exercise: { id: number; perSide: boolean };
+  /** Said in the chart's accessibility label. */
+  name: string;
   type: QuestTargetType;
   /** The standing best, so the mark means the same number the line above prints. */
   record: number;
@@ -103,7 +107,18 @@ export function ProgressTrail({
         minH={HEIGHT}
       >
         <YStack flex={1}>
-          <View style={{ height: CHART }} onLayout={onLayout(setWidth)}>
+          <View
+            style={{ height: CHART }}
+            accessible
+            accessibilityLabel={t("exercises.progress_a11y", {
+              n: points.length,
+              name,
+              from: say(firstBest),
+              to: say(lastBest),
+              record: say(record),
+            })}
+            onLayout={onLayout(setWidth)}
+          >
             {width > 0 ? (
               <Svg width={width} height={CHART}>
                 <Defs>

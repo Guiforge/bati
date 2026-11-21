@@ -592,6 +592,7 @@
   },
   "exercises": {
     "progress_open": "Show these sessions",
+    "progress_a11y": "Last {{n}} sessions of {{name}}, from {{from}} to {{to}}, record {{record}}",
     "progress_caption": "Best set of each recent session. Gold is the record.",
     "your_numbers": "Your numbers",
     "mine": "Mine",

@@ -592,6 +592,7 @@
   },
   "exercises": {
     "progress_open": "Diese Einheiten anzeigen",
+    "progress_a11y": "Letzte {{n}} Einheiten von {{name}}, von {{from}} bis {{to}}, Rekord {{record}}",
     "progress_caption": "Beste Serie jeder letzten Einheit. Gold ist der Rekord.",
     "your_numbers": "Deine Zahlen",
     "mine": "Meine",

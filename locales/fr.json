@@ -470,6 +470,7 @@
   },
   "exercises": {
     "progress_open": "Afficher ces séances",
+    "progress_a11y": "{{n}} dernières séances de {{name}}, de {{from}} à {{to}}, record {{record}}",
     "progress_caption": "Meilleure série de chaque séance récente. L'or marque le record.",
     "your_numbers": "Tes chiffres",
     "mine": "Les miens",

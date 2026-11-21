@@ -613,6 +613,7 @@
   },
   "exercises": {
     "progress_open": "Mostrar estas sesiones",
+    "progress_a11y": "Últimas {{n}} sesiones de {{name}}, de {{from}} a {{to}}, récord {{record}}",
     "progress_caption": "Mejor serie de cada sesión reciente. El oro marca el récord.",
     "your_numbers": "Tus números",
     "mine": "Míos",

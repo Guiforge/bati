@@ -571,6 +571,7 @@
   },
   "exercises": {
     "progress_open": "显示这些训练",
+    "progress_a11y": "{{name}} 最近 {{n}} 次训练,从 {{from}} 到 {{to}},纪录 {{record}}",
     "progress_caption": "近期每次训练的最佳一组。金色是纪录。",
     "your_numbers": "你的数据",
     "mine": "我的",

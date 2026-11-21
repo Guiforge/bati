@@ -1,4 +1,5 @@
 import { AppState } from "react-native";
+import { ensureMigrations } from "@/db/migrate";
 import { nativeHealth } from "@/modules/bati-health";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
@@ -21,14 +22,18 @@ let retry: ReturnType<typeof setTimeout> | null = null;
 /** One sync, silent: what failed stays owed and is said nowhere but the setting's counts. */
 export function syncHealthConnectQuietly(port: HealthPort = nativeHealth): void {
   if (!port.available()) return;
-  syncHealthConnect(port).catch((e: unknown) => {
-    reportError("healthExport.sync", e);
-    if (retry !== null) return;
-    retry = setTimeout(() => {
-      retry = null;
-      syncHealthConnectQuietly(port);
-    }, RETRY_AFTER_MS);
-  });
+  // An AppState change can land on a fresh install before the first migrations have created the
+  // tables the export reads; `ensureMigrations` is memoised, so this waits for the same run.
+  ensureMigrations()
+    .then(() => syncHealthConnect(port))
+    .catch((e: unknown) => {
+      reportError("healthExport.sync", e);
+      if (retry !== null) return;
+      retry = setTimeout(() => {
+        retry = null;
+        syncHealthConnectQuietly(port);
+      }, RETRY_AFTER_MS);
+    });
 }
 
 /**

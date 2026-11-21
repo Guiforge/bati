@@ -72,7 +72,7 @@ export function ReminderAfterWin() {
         </AppText>
       </XStack>
       <YStack gap="2">
-        <AppButton testID="victory-reminder-yes" onPress={yes}>
+        <AppButton testID="victory-reminder-yes" variant="outline" onPress={yes}>
           {t("reminders.win_yes")}
         </AppButton>
         <AppButton testID="victory-reminder-not-now" variant="outline" onPress={notNow}>

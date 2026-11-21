@@ -2726,8 +2726,11 @@
     "layout_bigmap_note": "El mapa llena la pantalla y tu cifra grande va encima."
   },
   "pause": {
-    "zone_offer_done": "Hecho. Esos ejercicios quedan apartados por ahora.",
-    "zone_offer_title": "¿Cuidar esta zona un tiempo?",
+    "zone_offer_done": "Hecho. Vuelves a esos ejercicios el {{date}}.",
+    "zone_offer_title": "¿Dejar descansar {{zones}} un tiempo?",
+    "zone_offer_title_none": "¿Dejar descansar una zona un tiempo?",
+    "zone_offer_start": "Dejarlas descansar",
+    "zone_resume": "Retomar ahora",
     "title": "Pausa y zona en reposo",
     "row_off": "Desactivada",
     "row_pause": "Pausa hasta el {{date}}",

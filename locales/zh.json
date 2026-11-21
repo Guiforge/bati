@@ -2841,8 +2841,11 @@
     "layout_bigmap_note": "地图铺满屏幕，大号数据叠在上面。"
   },
   "pause": {
-    "zone_offer_title": "这个部位先保护一阵子？",
-    "zone_offer_done": "好了。这些动作暂时先放一边。",
+    "zone_offer_title": "让{{zones}}休息一阵子？",
+    "zone_offer_title_none": "让一个部位休息一阵子？",
+    "zone_offer_start": "让它们休息",
+    "zone_resume": "现在恢复",
+    "zone_offer_done": "好了。这些动作会在{{date}}回来。",
     "title": "休整与养护",
     "row_off": "关闭",
     "row_pause": "休整至 {{date}}",

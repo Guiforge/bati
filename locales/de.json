@@ -2620,8 +2620,11 @@
     "layout_bigmap_note": "Die Karte füllt den Bildschirm, deine große Zahl liegt obenauf."
   },
   "pause": {
-    "zone_offer_done": "Erledigt. Diese Übungen sind vorerst beiseitegelegt.",
-    "zone_offer_title": "Diese Zone eine Weile schonen?",
+    "zone_offer_done": "Erledigt. Diese Übungen sind ab {{date}} wieder da.",
+    "zone_offer_title": "{{zones}} eine Weile ausruhen lassen?",
+    "zone_offer_title_none": "Eine Zone eine Weile ausruhen lassen?",
+    "zone_offer_start": "Ausruhen lassen",
+    "zone_resume": "Jetzt wieder aufnehmen",
     "title": "Pause und Schonzone",
     "row_off": "Aus",
     "row_pause": "Pause bis {{date}}",

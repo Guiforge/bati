@@ -864,6 +864,8 @@ export function VictoryView() {
             </XStack>
           </Card>
 
+          {!!result && !tooShort && !saveError && <ReminderAfterWin />}
+
           {/* "Tonight": what the save changed. It arrives with the save and says nothing before it,
             nothing at all on a night where nothing rose. "See your village" only when it grew. */}
           {!!result && (
@@ -891,8 +893,6 @@ export function VictoryView() {
               </AppButton>
             </YStack>
           )}
-
-          {!!result && !tooShort && !saveError && <ReminderAfterWin />}
 
           {/* Everything below the feeling is one tap away and costs nothing until asked for: the
             milestone and the chart read the journal, so they are not even mounted before. */}

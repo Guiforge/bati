@@ -25,6 +25,7 @@ jest.mock("@/src/reminders", () => ({
 let mockNotNows = 0;
 jest.mock("@/db/reminders", () => ({
   WEEKDAYS: ["sun", "mon", "tue", "wed", "thu", "fri", "sat"],
+  dayOf: (key: string) => new Date(`${key}T12:00:00`),
   reminderPrefs: {
     winNotNows: async () => mockNotNows,
     setWinNotNows: (n: number) => {
@@ -33,9 +34,11 @@ jest.mock("@/db/reminders", () => ({
     },
   },
 }));
-const mockStartZone = jest.fn(async (..._a: unknown[]) => undefined);
+const mockStartZone = jest.fn(async (..._a: unknown[]) => ({ until: "2026-11-28" }));
+const mockEndZone = jest.fn(async () => undefined);
 jest.mock("@/db/pause", () => ({
   getZone: async () => null,
+  endZone: () => mockEndZone(),
   startZone: (...a: unknown[]) => mockStartZone(...a),
 }));
 jest.mock("@/stores/session", () => ({
@@ -47,6 +50,7 @@ jest.mock("@/stores/session", () => ({
   },
 }));
 
+import { SparedZoneLine } from "@/components/home/SparedZoneLine";
 import { ReminderAfterWin } from "@/components/session/ReminderAfterWin";
 import { SparedZoneOffer } from "@/components/session/SparedZoneOffer";
 
@@ -111,5 +115,17 @@ describe("SparedZoneOffer", () => {
     await fireEvent.press(await screen.findByTestId("pain-stop-zone-weeks-2"));
     await fireEvent.press(screen.getByTestId("pain-stop-zone-yes"));
     await waitFor(() => expect(mockStartZone).toHaveBeenCalledWith(["chest", "arms"], 2));
+  });
+});
+
+describe("SparedZoneLine", () => {
+  test("Resume now ends the zone through the writer and the line goes", async () => {
+    mockEndZone.mockClear();
+    await wrap(
+      <SparedZoneLine zone={{ groups: ["chest"], from: "2026-11-21", until: "2026-11-28" }} />,
+    );
+    await fireEvent.press(screen.getByTestId("home-zone-resume"));
+    await waitFor(() => expect(mockEndZone).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(screen.queryByTestId("home-zone-line")).toBeNull());
   });
 });

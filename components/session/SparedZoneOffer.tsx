@@ -5,11 +5,14 @@ import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
 import { Card } from "@/components/common/Card";
 import { Chip } from "@/components/common/Chip";
+import { shortDate } from "@/components/journal/journalFormat";
 import { ZONE_MAX_GROUPS } from "@/constants/pause";
 import { MUSCLE_LABELS } from "@/db/labels";
 import { getZone, startZone } from "@/db/pause";
+import { dayOf } from "@/db/reminders";
 import { type MuscleCode, muscleCodes } from "@/db/schema";
 import { useHaptics } from "@/hooks/useHaptics";
+import { formatList } from "@/src/i18n/list";
 import { replanRemindersNow } from "@/src/reminders";
 import { reportError } from "@/src/reportError";
 import { useSessionStore } from "@/stores/session";
@@ -18,7 +21,7 @@ import { useSettingsStore } from "@/stores/settings";
 const WEEKS = [1, 2];
 
 /**
- * After "I'm stopping, it hurts", once the session is kept: spare the zone of the exercise that
+ * After "I'm stopping, it hurts", once the session is kept: rest the zone of the exercise that
  * hurt for a week or two. It writes through `startZone`, as `app/pause.tsx` does. Silent when a
  * zone is already being spared (Home says so), and the preselection can be changed before the tap.
  */
@@ -37,6 +40,7 @@ export function SparedZoneOffer() {
   const [groups, setGroups] = useState<MuscleCode[]>(hurt);
   const [weeks, setWeeks] = useState(1);
   const [state, setState] = useState<"checking" | "open" | "done" | "closed">("checking");
+  const [until, setUntil] = useState("");
 
   useEffect(() => {
     getZone()
@@ -47,7 +51,7 @@ export function SparedZoneOffer() {
   if (state === "done") {
     return (
       <AppText testID="pain-stop-zone-done" color="textSecondary">
-        {t("pause.zone_offer_done")}
+        {t("pause.zone_offer_done", { date: until })}
       </AppText>
     );
   }
@@ -60,7 +64,10 @@ export function SparedZoneOffer() {
   const spare = () => {
     haptics.selection();
     startZone(groups, weeks)
-      .then(() => replanRemindersNow())
+      .then((zone) => {
+        setUntil(shortDate(language, dayOf(zone.until)));
+        return replanRemindersNow();
+      })
       .then(() => setState("done"))
       .catch((e: unknown) => reportError("painStop.zoneStart", e));
   };
@@ -68,7 +75,14 @@ export function SparedZoneOffer() {
   return (
     <Card testID="pain-stop-zone-offer" gap="3">
       <AppText fontWeight="700" color="text">
-        {t("pause.zone_offer_title")}
+        {groups.length > 0
+          ? t("pause.zone_offer_title", {
+              zones: formatList(
+                groups.map((m) => MUSCLE_LABELS[m][language]),
+                language,
+              ),
+            })
+          : t("pause.zone_offer_title_none")}
       </AppText>
       <XStack gap="2" flexWrap="wrap">
         {muscleCodes.map((m) => (
@@ -96,7 +110,7 @@ export function SparedZoneOffer() {
       </XStack>
       <YStack gap="2">
         <AppButton testID="pain-stop-zone-yes" disabled={groups.length === 0} onPress={spare}>
-          {t("pause.zone_start")}
+          {t("pause.zone_offer_start")}
         </AppButton>
         <AppButton testID="pain-stop-zone-no" variant="outline" onPress={() => setState("closed")}>
           {t("common.not_now")}

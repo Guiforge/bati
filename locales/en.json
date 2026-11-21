@@ -2618,8 +2618,11 @@
     "layout_bigmap_note": "The map fills the screen, your big figure sits on top."
   },
   "pause": {
-    "zone_offer_done": "Done. Those exercises are set aside for now.",
-    "zone_offer_title": "Spare this zone for a while?",
+    "zone_offer_done": "Done. Back to those exercises on {{date}}.",
+    "zone_offer_title": "Rest {{zones}} for a while?",
+    "zone_offer_title_none": "Rest a zone for a while?",
+    "zone_offer_start": "Rest them",
+    "zone_resume": "Resume now",
     "title": "Break and spared zone",
     "row_off": "Off",
     "row_pause": "Break until {{date}}",

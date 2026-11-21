@@ -15,7 +15,7 @@ set -euo pipefail
 lang="${1:-en}"
 out=".audit/$lang"
 
-for flow in audit audit-more audit-fresh; do
+for flow in audit audit-more audit-timely audit-fresh; do
   AUDIT=1 FLOW=".maestro/$flow.yaml" RAW="$out/$flow" bash scripts/screenshots.sh "$lang"
 done
 

@@ -1,0 +1,143 @@
+# The three timely offers of redesign/timely-features, on a fresh hero: the reminder card on the
+# first victory, then the spared-zone offer after "I'm stopping, it hurts", then Home's zone line.
+# The break offer needs seven days of silence and is pinned by __tests__/timely-offers.test.tsx.
+appId: com.guiforge.bati.dev
+tags:
+  - audit
+---
+- runFlow: subflows/boot-dev-client.yaml
+- extendedWaitUntil:
+    visible:
+      id: "onboarding-presentation-continue"
+    timeout: 120000
+- runFlow: subflows/complete-onboarding.yaml
+
+# --- First session, to its victory --------------------------------------------
+- tapOn:
+    id: "tab-quests"
+- extendedWaitUntil:
+    visible:
+      id: "quests-quest-card"
+    timeout: 30000
+- tapOn:
+    id: "quests-quest-card"
+    index: 0
+- tapOn:
+    id: "quest-start"
+- tapOn:
+    id: "narrative-confirm"
+    optional: true
+- tapOn:
+    id: "session-skip-warmup"
+    optional: true
+- tapOn:
+    id: "session-start-go"
+    optional: true
+- repeat:
+    times: 40
+    while:
+      notVisible:
+        id: "session-victory-(continue|keep-short)"
+    commands:
+      - tapOn:
+          id: "session-complete-exercise"
+          optional: true
+      - tapOn:
+          id: "session-skip-rest"
+          optional: true
+- tapOn:
+    id: "session-victory-keep-short"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "session-victory-xp"
+    timeout: 20000
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 90-victory-first
+- scrollUntilVisible:
+    element:
+      id: "victory-reminder-offer"
+    direction: DOWN
+    optional: true
+- takeScreenshot: 91-reminder-offer
+- tapOn:
+    id: "victory-reminder-yes"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 92-reminder-on
+- tapOn:
+    id: "session-victory-continue"
+    optional: true
+
+# --- Second session, stopped because it hurts -----------------------------------
+- runFlow: subflows/back-to-tabs.yaml
+- tapOn:
+    id: "tab-quests"
+- tapOn:
+    id: "quests-quest-card"
+    index: 0
+- tapOn:
+    id: "quest-start"
+- tapOn:
+    id: "narrative-confirm"
+    optional: true
+- tapOn:
+    id: "session-skip-warmup"
+    optional: true
+- tapOn:
+    id: "session-start-go"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "session-complete-exercise"
+    timeout: 20000
+    optional: true
+- tapOn:
+    id: "session-complete-exercise"
+    optional: true
+- tapOn:
+    id: "session-skip-rest"
+    optional: true
+- tapOn:
+    id: "session-pause"
+    optional: true
+# The pause icon misses under Maestro now and then; the back key opens the same sheet.
+- runFlow:
+    when:
+      notVisible:
+        id: "session-pause-pain-stop"
+    commands:
+      - back
+- extendedWaitUntil:
+    visible:
+      id: "session-pause-pain-stop"
+    timeout: 8000
+    optional: true
+- tapOn:
+    id: "session-pause-pain-stop"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "pain-stop-zone-offer"
+    timeout: 20000
+    optional: true
+- takeScreenshot: 93-zone-offer
+- tapOn:
+    id: "pain-stop-zone-yes"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 94-zone-spared
+- tapOn:
+    id: "pain-stop-zone-done"
+    optional: true
+- runFlow: subflows/back-to-tabs.yaml
+- tapOn:
+    id: "tab-home"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: 95-home-zone-line

@@ -673,6 +673,7 @@ describe("TonightList", () => {
     expect(getByText("120 séances sur les douze derniers mois.")).toBeTruthy();
     expect(getByText(/^Niveau 6/)).toBeTruthy();
     expect(getByText(/^Pompes 14.* : 2e meilleure de tes 10 dernières$/)).toBeTruthy();
+    expect(getByText("NOUVEAU")).toBeTruthy();
     expect(getByText("Jump Squat")).toBeTruthy();
     expect(getByText(definition.frTitle)).toBeTruthy();
   });

@@ -44,7 +44,10 @@ jest.mock("@/components/journal/PastSessionSheet", () => ({
 }));
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 jest.mock("@/db", () => ({ preferences: {} }));
+// The comparison with the hero's own past is victory-view.test's; here there is none to read.
+jest.mock("@/db/journal", () => ({ getQuestStanding: jest.fn().mockResolvedValue(null) }));
 jest.mock("@/db/completed", () => ({
+  getCompletedSessionById: jest.fn().mockResolvedValue(null),
   updateSessionFeedback: jest.fn(),
   UNTRACED_PAID_SECONDS_PER_DAY: 7200,
 }));

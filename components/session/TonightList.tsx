@@ -53,6 +53,8 @@ type CardData = {
   title: string;
   body?: string[];
   art: ReactNode;
+  /** A small tag over the title: what an earned achievement is, so it is never read as standing. */
+  tag?: string;
   /** One pressable line under the body, for the card that asks something of the hero. */
   action?: ReactNode;
 };
@@ -402,6 +404,7 @@ function cardOf(
         title: localizedTitle(f.achievement.definition, language),
         body: [localizedText(f.achievement.definition, "description", language)],
         art: <AchievementIcon icon={f.achievement.definition.icon} size={32} color="text" />,
+        tag: t("session.tonight_badge_new"),
       };
     default:
       return null;
@@ -493,6 +496,17 @@ function CardRow({ card }: { card: CardData }) {
           {card.art}
         </YStack>
         <YStack flex={1} gap="1">
+          {card.tag ? (
+            <AppText
+              testID="tonight-card-new"
+              fontSize={12}
+              fontWeight="700"
+              color="resourceGold"
+              letterSpacing={1}
+            >
+              {card.tag.toUpperCase()}
+            </AppText>
+          ) : null}
           <AppText fontFamily={headingFont(card.title)} fontWeight="700" fontSize={17} color="text">
             {card.title}
           </AppText>

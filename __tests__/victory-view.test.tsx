@@ -34,7 +34,10 @@ jest.mock("expo-router", () => ({
   useIsFocused: () => true,
 }));
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
+const mockGetStanding = jest.fn().mockResolvedValue(null);
+jest.mock("@/db/journal", () => ({ getQuestStanding: (...a: unknown[]) => mockGetStanding(...a) }));
 jest.mock("@/db/completed", () => ({
+  getCompletedSessionById: jest.fn().mockResolvedValue({ id: 42 }),
   updateSessionFeedback: (...args: unknown[]) => mockUpdateSessionFeedback(...args),
   updateSessionNotes: (...args: unknown[]) => mockUpdateSessionNotes(...args),
 }));
@@ -265,9 +268,9 @@ describe("VictoryView order and fold", () => {
     await release();
 
     const order = [
+      "victory-moment-village",
       "victory-stat-row",
       "feedback-glyph-easy",
-      "tonight-view-village",
       "victory-see-all",
     ];
     const at = order.map((id) => position(view, id));
@@ -420,7 +423,7 @@ describe("VictoryView village navigation", () => {
     const { view, release } = await mountWithPendingSave(null, 12 * 60, grew);
     await release();
 
-    await fireEvent.press(view.getByTestId("tonight-view-village"));
+    await fireEvent.press(view.getByTestId("victory-moment-village"));
 
     expect(mockQuitSession).not.toHaveBeenCalled();
     // The levels travel with the codes: the village plays the rise from one rung to the next.
@@ -444,12 +447,69 @@ describe("VictoryView village navigation", () => {
   it("offers the village on a night it grew, and only then", async () => {
     const quiet = await mountWithPendingSave();
     await quiet.release();
-    expect(quiet.view.queryByTestId("tonight-view-village")).toBeNull();
+    expect(quiet.view.queryByTestId("victory-moment-village")).toBeNull();
     await quiet.view.unmount();
 
     const tier = await mountWithPendingSave(null, 12 * 60, { tierUp: { oldTier: 2, newTier: 3 } });
     await tier.release();
-    expect(tier.view.getByTestId("tonight-view-village")).toBeTruthy();
+    expect(tier.view.getByTestId("victory-moment-village")).toBeTruthy();
+  });
+
+  it("opens on one headline: the village over a level, a level over the bar", async () => {
+    const level = { oldLevel: 4, newLevel: 5 };
+    const both = await mountWithPendingSave(null, 12 * 60, {
+      tierUp: { oldTier: 2, newTier: 3 },
+      levelUp: level,
+    });
+    await both.release();
+    expect(both.view.getByTestId("victory-moment-village")).toBeTruthy();
+    expect(both.view.queryByTestId("victory-moment-level")).toBeNull();
+    expect(both.view.queryByTestId("victory-level-fill")).toBeNull();
+    await both.view.unmount();
+
+    const lvl = await mountWithPendingSave(null, 12 * 60, { levelUp: level });
+    await lvl.release();
+    expect(lvl.view.getByTestId("victory-moment-level")).toBeTruthy();
+    expect(lvl.view.queryByTestId("victory-moment-village")).toBeNull();
+    await lvl.view.unmount();
+
+    const plain = await mountWithPendingSave();
+    await plain.release();
+    expect(plain.view.queryByTestId("victory-moment-level")).toBeNull();
+    expect(plain.view.queryByTestId("victory-moment-village")).toBeNull();
+  });
+
+  it("says the gap to the best in words, only from a third session, and never a rank", async () => {
+    const standing = (over: object) => ({
+      rank: 2,
+      outOf: 5,
+      values: [115, 90, 80, 70, 60],
+      mine: 90,
+      bestAt: new Date(2026, 0, 27),
+      unit: "reps",
+      ...over,
+    });
+    const lead = async (s: object | null) => {
+      mockGetStanding.mockResolvedValueOnce(s);
+      const m = await mountWithPendingSave();
+      await m.release();
+      const json = JSON.stringify(m.view.toJSON());
+      const out = json.includes("victory-standing-text") ? json : null;
+      await m.view.unmount();
+      return out;
+    };
+
+    expect(await lead(standing({}))).toContain("session.standing_gap");
+    // A bad day: "lowest" in words with the gap under it, not a big rank.
+    const low = await lead(standing({ rank: 16, outOf: 16, mine: 60 }));
+    expect(low).toContain("session.standing_lowest");
+    expect(low).toContain("session.standing_gap");
+    expect(low).not.toContain("journal.sits_rank");
+    expect(await lead(standing({ rank: 1, mine: 115 }))).toContain("session.standing_new_best");
+    expect(await lead(standing({ rank: 2, mine: 115 }))).toContain("session.standing_equal");
+    // Two sessions, or a first one: no block at all.
+    expect(await lead(standing({ outOf: 2, rank: 2, values: [115, 90] }))).toBeNull();
+    expect(await lead(null)).toBeNull();
   });
 });
 

@@ -27,6 +27,7 @@ import { localizedName } from "@/src/i18n/localized";
 import { useChorusStore } from "@/stores/chorus";
 import { holdNeedingAnswer, useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
+import { BossRestStrip } from "./BossRestStrip";
 import { CountInput } from "./CountInput";
 import { ExerciseInstructionsModal } from "./ExerciseInstructions";
 import { SessionSwapSheet } from "./SessionSwapSheet";
@@ -53,6 +54,7 @@ export function RestView() {
   const { selection, mediumImpact } = useHaptics();
   const reducedMotion = useReducedMotion();
   const quest = useSessionStore((s) => s.quest);
+  const bossFight = useSessionStore((s) => s.bossFight);
   const currentExerciseIndex = useSessionStore((s) => s.currentExerciseIndex);
   const currentRoundIndex = useSessionStore((s) => s.currentRoundIndex);
   const skipRest = useSessionStore((s) => s.skipRest);
@@ -245,6 +247,8 @@ export function RestView() {
           {t(copy.title)}
         </H2>
       </YStack>
+
+      {bossFight ? <BossRestStrip /> : null}
 
       <YStack flex={1} px="4" gap="4">
         {/* Scrolls so the skip CTA below stays reachable: the timer, the set review and the

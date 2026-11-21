@@ -3,7 +3,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { YStack } from "tamagui";
 import { Card } from "@/components/common/Card";
 import { Paragraph } from "@/components/common/Paragraph";
-import { HUD_HEIGHT, REST_HEADER_HEIGHT } from "@/components/session/sessionArt";
+import {
+  HUD_HEIGHT,
+  REST_BOSS_STRIP_HEIGHT,
+  REST_HEADER_HEIGHT,
+} from "@/components/session/sessionArt";
 import { bossVoice } from "@/constants/bosses";
 import type { DamageResult } from "@/db/bossFights";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -91,9 +95,12 @@ export function BossTauntOverlay() {
         // Under whatever the screen puts above it, which is not the same thing on the two
         // screens the boss speaks on: the arena while the set runs, the flame header once it is
         // over, because a rest looks the same whether or not a boss is being fought. Neither is
-        // measured; both are fixed by construction in `sessionArt.ts`.
+        // measured; both are fixed by construction in `sessionArt.ts`. On a rest the boss strip
+        // fills the row under the header, so the bubble starts below it: over it, it hid the bar.
         top:
-          status === "resting" ? insets.top + REST_HEADER_HEIGHT - 8 : insets.top + HUD_HEIGHT + 16,
+          status === "resting"
+            ? insets.top + REST_HEADER_HEIGHT + REST_BOSS_STRIP_HEIGHT + 8
+            : insets.top + HUD_HEIGHT + 16,
         right: 20,
         zIndex: 1000,
       }}

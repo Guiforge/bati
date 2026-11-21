@@ -1,8 +1,8 @@
 import { act, render } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TamaguiProvider } from "tamagui";
-
 import { BossTauntOverlay } from "@/components/session/BossTauntOverlay";
+import { REST_BOSS_STRIP_HEIGHT, REST_HEADER_HEIGHT } from "@/components/session/sessionArt";
 import { BOSSES } from "@/constants/bosses";
 import type { BossFight, DamageResult } from "@/db/bossFights";
 import { useSessionStore } from "@/stores/session";
@@ -113,6 +113,22 @@ describe("BossTauntOverlay", () => {
     });
 
     expect(getByText(GOLEM.idle.en[0])).toBeTruthy();
+  });
+
+  it("on a rest the bubble starts under the boss strip, so the health bar stays whole", async () => {
+    const { getByText } = await renderOverlay();
+    await act(() => {
+      useSessionStore.setState({ status: "resting", lastDamageResult: makeHit() });
+    });
+
+    let node: { props: { style?: unknown }; parent: unknown } | null = getByText(GOLEM.idle.en[0]);
+    let top: number | undefined;
+    while (node && top === undefined) {
+      const style = ([] as { top?: number }[]).concat(node.props.style as never).flat();
+      top = style.find((st) => st && typeof st.top === "number")?.top;
+      node = node.parent as typeof node;
+    }
+    expect(top).toBeGreaterThanOrEqual(REST_HEADER_HEIGHT + REST_BOSS_STRIP_HEIGHT);
   });
 
   it("picks the pool from what the hit actually was", async () => {

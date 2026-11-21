@@ -36,12 +36,6 @@ jest.mock("expo-router", () => ({
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 const mockGetStanding = jest.fn().mockResolvedValue(null);
 jest.mock("@/db/journal", () => ({ getQuestStanding: (...a: unknown[]) => mockGetStanding(...a) }));
-jest.mock("@/components/journal/QuestLog", () => ({
-  WhereItSits: ({ standing }: { standing: { rank: number } }) => {
-    const { Text } = require("react-native");
-    return <Text testID="stub-sits">{`rank ${standing.rank}`}</Text>;
-  },
-}));
 jest.mock("@/db/completed", () => ({
   getCompletedSessionById: jest.fn().mockResolvedValue({ id: 42 }),
   updateSessionFeedback: (...args: unknown[]) => mockUpdateSessionFeedback(...args),
@@ -485,16 +479,37 @@ describe("VictoryView village navigation", () => {
     expect(plain.view.queryByTestId("victory-moment-village")).toBeNull();
   });
 
-  it("puts the hero's own past under the headline, and nothing on a first run", async () => {
-    mockGetStanding.mockResolvedValueOnce({ rank: 3 });
-    const ranked = await mountWithPendingSave();
-    await ranked.release();
-    expect(ranked.view.getByTestId("stub-sits").props.children).toBe("rank 3");
-    await ranked.view.unmount();
+  it("says the gap to the best in words, only from a third session, and never a rank", async () => {
+    const standing = (over: object) => ({
+      rank: 2,
+      outOf: 5,
+      values: [115, 90, 80, 70, 60],
+      mine: 90,
+      bestAt: new Date(2026, 0, 27),
+      unit: "reps",
+      ...over,
+    });
+    const lead = async (s: object | null) => {
+      mockGetStanding.mockResolvedValueOnce(s);
+      const m = await mountWithPendingSave();
+      await m.release();
+      const json = JSON.stringify(m.view.toJSON());
+      const out = json.includes("victory-standing-text") ? json : null;
+      await m.view.unmount();
+      return out;
+    };
 
-    const first = await mountWithPendingSave();
-    await first.release();
-    expect(first.view.queryByTestId("victory-standing")).toBeNull();
+    expect(await lead(standing({}))).toContain("session.standing_gap");
+    // A bad day: "lowest" in words with the gap under it, not a big rank.
+    const low = await lead(standing({ rank: 16, outOf: 16, mine: 60 }));
+    expect(low).toContain("session.standing_lowest");
+    expect(low).toContain("session.standing_gap");
+    expect(low).not.toContain("journal.sits_rank");
+    expect(await lead(standing({ rank: 1, mine: 115 }))).toContain("session.standing_new_best");
+    expect(await lead(standing({ rank: 2, mine: 115 }))).toContain("session.standing_equal");
+    // Two sessions, or a first one: no block at all.
+    expect(await lead(standing({ outOf: 2, rank: 2, values: [115, 90] }))).toBeNull();
+    expect(await lead(null)).toBeNull();
   });
 });
 

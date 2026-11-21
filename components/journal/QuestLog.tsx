@@ -209,7 +209,7 @@ function RecordPanel({ records }: { records: FallenRecord[] }) {
   );
 }
 
-export function WhereItSits({ standing }: { standing: QuestStanding }) {
+function WhereItSits({ standing }: { standing: QuestStanding }) {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const distanceUnit = useSettingsStore((s) => s.distanceUnit);

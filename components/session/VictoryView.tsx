@@ -18,7 +18,6 @@ import { InkGauge } from "@/components/common/InkGauge";
 import { Recitatif } from "@/components/common/Recitatif";
 import { useToast } from "@/components/common/Toast";
 import { ChevronRight } from "@/components/icons";
-import { WhereItSits } from "@/components/journal/QuestLog";
 import { SessionNotebook } from "@/components/journal/SessionNotebook";
 import { useConfirmForget } from "@/components/journal/useConfirmForget";
 import { DuoVictoryLine } from "@/components/multiplayer/DuoVictoryLine";
@@ -67,6 +66,7 @@ import { NextMilestone } from "./NextMilestone";
 import { ProgressionChart } from "./ProgressionChart";
 import { TonightList } from "./TonightList";
 import { VillageMoment } from "./VictoryMoment";
+import { VictoryStanding } from "./VictoryStanding";
 
 /** The big feasts that are a card when another one holds the screen, and are marked seen as such. */
 const RELEGATED_KINDS: Feast["kind"][] = ["legendary", "age", "anniversary"];
@@ -720,11 +720,11 @@ export function VictoryView() {
             </>
           )}
 
-          {/* The hero's own past for this quest: the journal's "Where it sits", said once the save
-            lands. Absent on a first run (second of one is not a place). */}
-          {!!result && !!standing && (
+          {/* The hero's own past for this quest: the gap to the best, said once the save
+            lands. Said in words, and only from a third session: two or three runs make no place to be. */}
+          {!!result && !!standing && standing.outOf >= 3 && (
             <YStack testID="victory-standing" width="100%" maxW={520}>
-              <WhereItSits standing={standing} />
+              <VictoryStanding standing={standing} />
             </YStack>
           )}
 

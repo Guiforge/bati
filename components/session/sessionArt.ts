@@ -65,6 +65,13 @@ export function exerciseArtMaxHeight(width: number): number {
  */
 export const REST_HEADER_HEIGHT = 102;
 
+/**
+ * The boss strip under the rest header (`BossRestStrip`), at a fixed height so the boss's taunt can
+ * start below it: the bubble is drawn by `BossTauntOverlay`, which cannot measure the strip, and
+ * over it hid half of the health bar.
+ */
+export const REST_BOSS_STRIP_HEIGHT = 56;
+
 /** A picture narrower than this cannot hold a name without hiding most of itself. */
 export const NAME_MIN_SIDE = 240;
 

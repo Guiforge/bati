@@ -1,6 +1,7 @@
 import { Image } from "expo-image";
 import { XStack, YStack } from "tamagui";
 import { AppText } from "@/components/common/AppText";
+import { FONT_CAPS } from "@/components/common/fontCaps";
 import { getBossAsset } from "@/constants/assetMap";
 import { bossDisplayName } from "@/constants/bosses";
 import { useBossArt } from "@/hooks/useBossArt";
@@ -8,6 +9,7 @@ import { useSessionStore } from "@/stores/session";
 import { useSettingsStore } from "@/stores/settings";
 import { BossHpGauge } from "./BossHpGauge";
 import { getHpPercent, getPhaseFromHp } from "./bossPhase";
+import { REST_BOSS_STRIP_HEIGHT } from "./sessionArt";
 
 /**
  * The boss during a rest: a thumbnail, its name and the same health gauge the arena draws. The
@@ -24,15 +26,30 @@ export function BossRestStrip() {
   const name = bossDisplayName(fight, language);
 
   return (
-    <XStack testID="rest-boss" px="4" gap="3" items="center" accessible accessibilityLabel={name}>
+    <XStack
+      testID="rest-boss"
+      height={REST_BOSS_STRIP_HEIGHT}
+      px="4"
+      gap="3"
+      items="center"
+      accessible
+      accessibilityLabel={name}
+    >
       <Image
         source={getBossAsset(fight.imagePath, fight.tier, isDown ? "defeated" : undefined, art)}
-        style={{ width: 56, height: 56, borderRadius: 8 }}
+        style={{ width: REST_BOSS_STRIP_HEIGHT, height: REST_BOSS_STRIP_HEIGHT, borderRadius: 8 }}
         contentFit="cover"
         accessible={false}
       />
       <YStack flex={1} gap="1">
-        <AppText fontFamily="heading" fontWeight="700" fontSize={18} color="text" numberOfLines={1}>
+        <AppText
+          fontFamily="heading"
+          fontWeight="700"
+          fontSize={18}
+          color="text"
+          numberOfLines={1}
+          maxFontSizeMultiplier={FONT_CAPS.label}
+        >
           {name}
         </AppText>
         <BossHpGauge

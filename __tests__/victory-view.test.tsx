@@ -500,10 +500,10 @@ describe("VictoryView village navigation", () => {
     };
 
     expect(await lead(standing({}))).toContain("session.standing_gap");
-    // A bad day: "lowest" in words with the gap under it, not a big rank.
+    // A bad day says the gap and nothing louder: no rank, not even "lowest" in words.
     const low = await lead(standing({ rank: 16, outOf: 16, mine: 60 }));
-    expect(low).toContain("session.standing_lowest");
     expect(low).toContain("session.standing_gap");
+    expect(low).not.toContain("session.standing_lowest");
     expect(low).not.toContain("journal.sits_rank");
     expect(await lead(standing({ rank: 1, mine: 115 }))).toContain("session.standing_new_best");
     expect(await lead(standing({ rank: 2, mine: 115 }))).toContain("session.standing_equal");

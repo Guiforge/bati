@@ -239,7 +239,7 @@ lock alive so the trace does not stop when your phone sleeps in a pocket. That i
 permanent notification during an outing is for: an app watching your position should say so, on
 screen, the whole time.
 
-**Notifications (optional).** Asked for when you turn the training reminder on in Settings, and
+**Notifications (optional).** Asked for when you turn the training reminder on, in Settings or from the card offered after your first sessions, and
 used for the outing notification above. Reminders are scheduled on your phone by Android itself,
 on the days and at the hour you chose: there are no push notifications, so there is no server that
 knows your device. To show a reminder on time and act on its two buttons, the phone keeps a small

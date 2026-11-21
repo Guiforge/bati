@@ -914,7 +914,6 @@
     "standing_new_best": "Neue Bestleistung",
     "standing_equal": "Gleichauf mit deiner besten",
     "standing_gap": "{{gap}} unter deiner besten ({{value}}, {{date}})",
-    "standing_lowest": "Die niedrigste deiner {{total}}",
     "tonight_epilogue": "Deine Kampagne ist abgeschlossen.",
     "tonight_anniversary_one": "Dein Dorf ist ein Jahr alt.",
     "tonight_anniversary_other": "Dein Dorf ist {{count}} Jahre alt.",
@@ -2648,7 +2647,7 @@
     "zone_pick": "Bereiche (einer oder zwei)",
     "zone_weeks": "Wochen",
     "zone_start": "Diese Zone schonen",
-    "zone_active": "Geschont: {{zones}}, bis {{date}}",
+    "zone_active": "Ruhen: {{zones}}, bis {{date}}",
     "zone_end": "Jetzt zurückholen",
     "safety": "Das ist keine medizinische Beratung. Wenn etwas wehtut, such dir jemanden, der sagen kann, was los ist.",
     "safety_link": "Sicher trainieren lesen"

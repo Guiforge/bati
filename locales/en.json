@@ -914,7 +914,6 @@
     "standing_new_best": "New best",
     "standing_equal": "Equal to your best",
     "standing_gap": "{{gap}} under your best ({{value}}, {{date}})",
-    "standing_lowest": "Lowest of your {{total}}",
     "tonight_epilogue": "Your campaign is complete.",
     "tonight_anniversary_one": "Your village is one year old.",
     "tonight_anniversary_other": "Your village is {{count}} years old.",
@@ -2646,7 +2645,7 @@
     "zone_pick": "Areas (one or two)",
     "zone_weeks": "Weeks",
     "zone_start": "Spare this zone",
-    "zone_active": "Sparing {{zones}} until {{date}}",
+    "zone_active": "Resting {{zones}} until {{date}}",
     "zone_end": "Bring them back now",
     "safety": "This isn't medical advice. If something hurts, see someone who can tell you what's wrong.",
     "safety_link": "Read Train safely"

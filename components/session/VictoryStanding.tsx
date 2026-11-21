@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { shortDate } from "@/components/journal/journalFormat";
-import { NBlock, NKickerQuiet, NMuted, NNum } from "@/components/journal/nocturne";
+import { NBlock, NKickerQuiet, NNum } from "@/components/journal/nocturne";
 import { formatDistance } from "@/constants/distanceFormat";
 import type { QuestStanding } from "@/db/journal";
 import { formatCount } from "@/db/targets";
@@ -26,16 +26,10 @@ export function VictoryStanding({ standing }: { standing: QuestStanding }) {
     date: shortDate(language, standing.bestAt),
   });
   const tied = best === standing.mine;
-  const lowest = !tied && standing.rank === standing.outOf;
-
+  // No "lowest of N", not even in words: the persona audit read it as the old "#16 of 16" verdict
+  // under another name. The gap to the best says the same thing without ranking the day.
   const lead =
-    standing.rank === 1
-      ? t("session.standing_new_best")
-      : tied
-        ? t("session.standing_equal")
-        : lowest
-          ? t("session.standing_lowest", { total: standing.outOf })
-          : gap;
+    standing.rank === 1 ? t("session.standing_new_best") : tied ? t("session.standing_equal") : gap;
 
   return (
     <NBlock testID="victory-standing-text" mt={6}>
@@ -43,7 +37,6 @@ export function VictoryStanding({ standing }: { standing: QuestStanding }) {
       <NNum fontSize={22} lineHeight="28px" mt={8}>
         {lead}
       </NNum>
-      {lowest ? <NMuted fontSize={12}>{gap}</NMuted> : null}
     </NBlock>
   );
 }

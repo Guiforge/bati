@@ -109,7 +109,13 @@ export function SparedZoneOffer() {
         ))}
       </XStack>
       <YStack gap="2">
-        <AppButton testID="pain-stop-zone-yes" disabled={groups.length === 0} onPress={spare}>
+        {/* Outline: Continue stays the one filled button on this screen (persona audit 2026-11-21). */}
+        <AppButton
+          testID="pain-stop-zone-yes"
+          variant="outline"
+          disabled={groups.length === 0}
+          onPress={spare}
+        >
           {t("pause.zone_offer_start")}
         </AppButton>
         <AppButton testID="pain-stop-zone-no" variant="outline" onPress={() => setState("closed")}>

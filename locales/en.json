@@ -593,6 +593,9 @@
     "save_failed": "Could not save the exercise."
   },
   "exercises": {
+    "progress_open": "Show these sessions",
+    "progress_a11y": "Last {{n}} sessions of {{name}}, from {{from}} to {{to}}, record {{record}}",
+    "progress_caption": "Best set of each recent session. Gold is the record.",
     "your_numbers": "Your numbers",
     "mine": "Mine",
     "filter_group_mine": "Yours",
@@ -958,6 +961,10 @@
     "kept_body": "No XP is ever taken back, and no level ever drops. When a rule changes it applies from that day on."
   },
   "journal": {
+    "records_when": "{{when}} · last {{last}}",
+    "records_this_week": "Set this week",
+    "records_empty": "Your records appear here after your first quest.",
+    "wall_all_records": "All records",
     "title": "Journal",
     "session_not_found": "Session not found",
     "forget": "Remove from the journal",

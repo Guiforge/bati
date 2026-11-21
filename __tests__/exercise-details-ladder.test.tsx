@@ -55,6 +55,7 @@ const mockGetExerciseHistory = jest.fn();
 jest.mock("@/db/personalRecords", () => ({
   getExerciseHistory: (ids: number[]) => mockGetExerciseHistory(ids),
   ghostKey: (id: number, type: string) => `${id}:${type}`,
+  getExerciseSessionBests: () => Promise.resolve([]),
 }));
 
 jest.mock("@/db/exercises", () => ({

@@ -218,6 +218,32 @@ export async function getExerciseHistory(
   return ghosts;
 }
 
+/** One session's best set on one movement, for the exercise page's progress chart. */
+export type SessionBestPoint = { sessionId: number; best: number; at: Date };
+
+/**
+ * The newest `limit` sessions of one movement in one unit, oldest first (the order a chart reads),
+ * each with its best set. Same fold as `getExerciseHistory` (`sessionBestsSql`), so the chart's
+ * peak and the page's "Record" are the same number.
+ */
+export async function getExerciseSessionBests(
+  exerciseId: number,
+  type: QuestTargetType,
+  limit = 12,
+): Promise<SessionBestPoint[]> {
+  const rows = await db.all<{ sessionId: number; best: number; at: number }>(sql`
+    SELECT sessionId, best, at FROM (${sessionBestsSql(
+      sql`exerciseId = ${exerciseId} AND resultType = ${type}`,
+    )})
+    WHERE best > 0
+    ORDER BY at DESC, sessionId DESC
+    LIMIT ${limit}
+  `);
+  return rows
+    .reverse()
+    .map((r) => ({ sessionId: r.sessionId, best: r.best, at: new Date(r.at * 1000) }));
+}
+
 /** One movement's standing best, and what the hero last did on it. */
 export type MovementRecord = {
   exerciseId: number;

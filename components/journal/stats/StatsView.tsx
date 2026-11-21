@@ -320,6 +320,7 @@ export function WallRow({
 
 function Wall({ stats, mode }: { stats: JournalStats; mode: Mode }) {
   const { t } = useTranslation();
+  const router = useRouter();
   // A light week asks less than the record: a target above that objective would contradict the set.
   const title =
     mode === "firstDay"
@@ -353,6 +354,15 @@ function Wall({ stats, mode }: { stats: JournalStats; mode: Mode }) {
             showTarget={!stats.lightWeek}
           />
         ))}
+        {/* The wall shows the few worth beating tonight; the rest of what stands is one tap away. */}
+        {mode === "firstDay" ? null : (
+          <NButton
+            testID="journal-wall-all-records"
+            onPress={() => router.push("/journal/records" as never)}
+          >
+            {t("journal.wall_all_records")}
+          </NButton>
+        )}
       </YStack>
     </YStack>
   );

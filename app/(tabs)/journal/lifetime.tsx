@@ -1,6 +1,8 @@
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { XStack, YStack } from "tamagui";
+import { ChevronRight } from "@/components/icons";
 import { formatHoursMinutes, shortDate } from "@/components/journal/journalFormat";
 import { NKicker, NMuted, NNum, NPage, NRule, NText } from "@/components/journal/nocturne";
 import { formatDistance } from "@/constants/distanceFormat";
@@ -59,7 +61,11 @@ function Row({
   note,
   all,
   recent,
+  onPress,
+  testID,
 }: {
+  onPress?: () => void;
+  testID?: string;
   label: string;
   note?: string;
   all: string;
@@ -67,11 +73,24 @@ function Row({
 }) {
   return (
     <YStack>
-      <XStack py={6} px={6} items="center" gap={8}>
+      <XStack
+        testID={testID}
+        onPress={onPress}
+        accessibilityRole={onPress ? "button" : undefined}
+        opacity={onPress ? "1 press:0.8" : 1}
+        minH={onPress ? 44 : undefined}
+        py={6}
+        px={6}
+        items="center"
+        gap={8}
+      >
         <YStack flex={1}>
-          <NText fontSize={14} lineHeight="20px">
-            {label}
-          </NText>
+          <XStack items="center" gap={4}>
+            <NText fontSize={14} lineHeight="20px">
+              {label}
+            </NText>
+            {onPress ? <ChevronRight size={16} color="textSecondary" /> : null}
+          </XStack>
           {note ? (
             <NMuted fontSize={10.5} lineHeight="14px">
               {note}
@@ -97,6 +116,7 @@ function Row({
  */
 export default function LifetimeScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const language = useSettingsStore((s) => s.language);
   const distanceUnit = useSettingsStore((s) => s.distanceUnit);
   const [data, setData] = useState<Lifetime | null>(null);
@@ -188,6 +208,8 @@ export default function LifetimeScreen() {
             recent={number(language, data.last30.xp)}
           />
           <Row
+            testID="journal-lifetime-records"
+            onPress={() => router.push("/journal/records" as never)}
             label={t("journal.row_records")}
             all={number(language, data.standing)}
             recent={t("journal.row_records_new", { count: data.last30.records })}

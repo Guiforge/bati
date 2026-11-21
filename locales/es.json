@@ -614,6 +614,9 @@
     "save_failed": "No se ha podido guardar el ejercicio."
   },
   "exercises": {
+    "progress_open": "Mostrar estas sesiones",
+    "progress_a11y": "Últimas {{n}} sesiones de {{name}}, de {{from}} a {{to}}, récord {{record}}",
+    "progress_caption": "Mejor serie de cada sesión reciente. El oro marca el récord.",
     "your_numbers": "Tus números",
     "mine": "Míos",
     "filter_group_mine": "Tuyos",
@@ -988,6 +991,10 @@
     "kept_body": "Nunca se quita XP ni se baja de nivel. Cuando cambia una regla, se aplica desde ese día."
   },
   "journal": {
+    "records_when": "{{when}} · último {{last}}",
+    "records_this_week": "Logrado esta semana",
+    "records_empty": "Tus récords aparecerán aquí tras tu primera misión.",
+    "wall_all_records": "Todos los récords",
     "title": "Diario",
     "session_not_found": "Sesión no encontrada",
     "forget": "Quitar del diario",

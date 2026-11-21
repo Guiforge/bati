@@ -593,6 +593,9 @@
     "save_failed": "Die Übung konnte nicht gespeichert werden."
   },
   "exercises": {
+    "progress_open": "Diese Einheiten anzeigen",
+    "progress_a11y": "Letzte {{n}} Einheiten von {{name}}, von {{from}} bis {{to}}, Rekord {{record}}",
+    "progress_caption": "Beste Serie jeder letzten Einheit. Gold ist der Rekord.",
     "your_numbers": "Deine Zahlen",
     "mine": "Meine",
     "filter_group_mine": "Deine",
@@ -958,6 +961,10 @@
     "kept_body": "Keine XP werden je zurückgenommen, und kein Level sinkt je. Ändert sich eine Regel, gilt sie ab diesem Tag."
   },
   "journal": {
+    "records_when": "{{when}} · zuletzt {{last}}",
+    "records_this_week": "Diese Woche aufgestellt",
+    "records_empty": "Deine Rekorde erscheinen hier nach deiner ersten Quest.",
+    "wall_all_records": "Alle Rekorde",
     "title": "Tagebuch",
     "session_not_found": "Einheit nicht gefunden",
     "forget": "Aus dem Tagebuch entfernen",

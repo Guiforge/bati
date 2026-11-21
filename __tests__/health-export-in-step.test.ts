@@ -8,10 +8,13 @@ const mockSyncHealthConnect = jest.fn((_port: HealthPort) => Promise.resolve());
 jest.mock("../src/healthExport/sync", () => ({
   syncHealthConnect: (port: HealthPort) => mockSyncHealthConnect(port),
 }));
+let mockMigrated: () => void = () => {};
+const mockEnsureMigrations = jest.fn(() => Promise.resolve());
+jest.mock("@/db/migrate", () => ({ ensureMigrations: () => mockEnsureMigrations() }));
 // The store is only watched here, never saved through: no database behind it.
 jest.mock("@/db/client", () => ({ db: {}, schema: {}, runMigrations: jest.fn() }));
 
-const { keepHealthExportInStep } =
+const { keepHealthExportInStep, syncHealthConnectQuietly } =
   require("../src/healthExport/inStep") as typeof import("../src/healthExport/inStep");
 const { useSessionStore } = require("../stores/session") as typeof import("../stores/session");
 
@@ -42,12 +45,12 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-test("a saved session is exported a few seconds later, never while the victory screen opens", () => {
+test("a saved session is exported a few seconds later, never while the victory screen opens", async () => {
   const watch = keepHealthExportInStep(port(true));
   useSessionStore.setState({ savedResult: saved });
   expect(mockSyncHealthConnect).not.toHaveBeenCalled();
 
-  jest.advanceTimersByTime(3000);
+  await jest.advanceTimersByTimeAsync(3000);
   expect(mockSyncHealthConnect).toHaveBeenCalledTimes(1);
   watch.remove();
 });
@@ -76,4 +79,20 @@ test("a failed run is tried once more a minute later, and only once at a time", 
   expect(mockSyncHealthConnect).toHaveBeenCalledTimes(3);
   await jest.advanceTimersByTimeAsync(RETRY_AFTER_MS * 3);
   expect(mockSyncHealthConnect).toHaveBeenCalledTimes(3);
+});
+
+test("the sync waits for the migrations: no query before the database is ready, one after", async () => {
+  mockEnsureMigrations.mockImplementationOnce(
+    () =>
+      new Promise<void>((resolve) => {
+        mockMigrated = resolve;
+      }),
+  );
+  syncHealthConnectQuietly(port(true));
+  await Promise.resolve();
+  expect(mockSyncHealthConnect).not.toHaveBeenCalled();
+
+  mockMigrated();
+  await jest.advanceTimersByTimeAsync(0);
+  expect(mockSyncHealthConnect).toHaveBeenCalledTimes(1);
 });

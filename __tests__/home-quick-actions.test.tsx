@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, userEvent, waitFor } from "@testing-library/react-native";
+import { Dimensions } from "react-native";
 import { TamaguiProvider } from "tamagui";
 import { QuickActions } from "@/components/home/QuickActions";
 import { NON_REP_STYLE } from "@/db/workUnits";
@@ -139,7 +140,7 @@ const mockPreviewGoal = jest.fn();
 function outing(id: number, frName: string, frTitle: string) {
   return {
     quest: { id, frTitle, enTitle: frTitle, imagePath: "assets/images/quests/wardens_round.jpg" },
-    exercise: { id: id * 10, frName, enName: frName },
+    exercise: { id: id * 10, frName, enName: frName, locomotion: id === 2 ? "run" : "walk" },
   };
 }
 
@@ -160,7 +161,7 @@ const CHOP = {
 function renderRow() {
   return render(
     <TamaguiProvider config={config} defaultTheme="dark">
-      <QuickActions showGoals />
+      <QuickActions />
     </TamaguiProvider>,
   );
 }
@@ -206,20 +207,25 @@ it("names the movement, so the hero can see which one is the run", async () => {
 
   await renderRow();
 
-  expect(await screen.findByText("Course du Messager")).toBeTruthy();
-  expect(screen.getByText("Marche du Veilleur")).toBeTruthy();
+  expect(await screen.findByText("Run")).toBeTruthy();
+  expect(screen.getByText("Walk")).toBeTruthy();
   // The quest title would leave the hero tapping to find out which one they want.
   expect(screen.queryByText("La Parole Doit Passer")).toBeNull();
+  // The world's name rides under the plain word, on one truncated line.
+  expect(screen.getByText("Course du Messager").props.numberOfLines).toBe(1);
 });
 
-it("breaks a long outing name between words only, never through one", async () => {
-  await renderRow();
-
-  // Audit 2026-10-03 at font scale 1.3: "Messe / nger's Run". Android's default strategy
-  // hyphenates and splits mid-word; "simple" with no hyphenation wraps on spaces.
-  const name = await screen.findByText("Course du Messager");
-  expect(name.props.textBreakStrategy).toBe("simple");
-  expect(name.props.android_hyphenationFrequency).toBe("none");
+it("drops the world's name under 700 dp, where the tile has no room for a third line", async () => {
+  const spy = jest
+    .spyOn(Dimensions, "get")
+    .mockReturnValue({ width: 360, height: 640, scale: 2, fontScale: 1 });
+  try {
+    await renderRow();
+    await screen.findByText("Run");
+    expect(screen.queryByText("Course du Messager")).toBeNull();
+  } finally {
+    spy.mockRestore();
+  }
 });
 
 it("says it starts, rather than wearing the label it had when it only opened a screen", async () => {
@@ -231,7 +237,7 @@ it("says it starts, rather than wearing the label it had when it only opened a s
 
 it("starts the outing with no goal on it, position asked before notification", async () => {
   await renderRow();
-  await screen.findByText("Course du Messager");
+  await screen.findByText("Run");
   await tapTile("Course du Messager");
 
   await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
@@ -259,7 +265,7 @@ it("rejoins a live session instead of overwriting it", async () => {
   mockSession.status = "paused";
 
   await renderRow();
-  await screen.findByText("Course du Messager");
+  await screen.findByText("Run");
   await tapTile("Course du Messager");
 
   expect(mockPush).toHaveBeenCalledWith("/session");
@@ -269,7 +275,7 @@ it("rejoins a live session instead of overwriting it", async () => {
 
 it("starts one session on a double tap, not two", async () => {
   await renderRow();
-  await screen.findByText("Course du Messager");
+  await screen.findByText("Run");
 
   await userEvent.press(tile("Course du Messager"));
   await userEvent.press(tile("Course du Messager"));
@@ -281,7 +287,7 @@ it("starts nothing when the position is refused, and says where the grant lives"
   mockRequestPermission.mockResolvedValue({ granted: false });
 
   await renderRow();
-  await screen.findByText("Course du Messager");
+  await screen.findByText("Run");
   await tapTile("Course du Messager");
 
   // No fix means no ground, and a session that measures nothing is not what the tile promised.
@@ -297,7 +303,7 @@ it("starts nothing when the position is refused, and says where the grant lives"
 it("'Go out without GPS' remembers the choice and starts the outing with no permission asked again", async () => {
   mockRequestPermission.mockResolvedValue({ granted: false });
   await renderRow();
-  await screen.findByText("Course du Messager");
+  await screen.findByText("Run");
   await tapTile("Course du Messager");
   await waitFor(() => expect(screen.getByText("Go out without GPS")).toBeTruthy());
   mockRequestPermission.mockClear();
@@ -317,7 +323,7 @@ it("with GPS off, the tap asks no permission, explains nothing, and starts witho
   mockGps = false;
   mockPermissionStatus.mockResolvedValue({ granted: false, canAskAgain: true });
   await renderRow();
-  await screen.findByText("Course du Messager");
+  await screen.findByText("Run");
   await tapTile("Course du Messager");
 
   await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
@@ -384,7 +390,7 @@ it("explains nothing to a hero who already granted the position", async () => {
   // The module's own read, asked before anything is said and prompting nothing. A hero who goes
   // out every day does not need the reason for a dialog they will never see.
   await renderRow();
-  await screen.findByText("Course du Messager");
+  await screen.findByText("Run");
   await tapTile("Course du Messager");
 
   await waitFor(() => expect(mockStartSession).toHaveBeenCalledTimes(1));
@@ -399,7 +405,7 @@ it("says why before Android asks, and only for the first tap of the process", as
   mockRequestPermission.mockResolvedValue({ granted: false });
 
   await renderRow();
-  await screen.findByText("Course du Messager");
+  await screen.findByText("Run");
   await tapTile("Course du Messager");
 
   expect(await screen.findByText(WHY)).toBeTruthy();
@@ -429,14 +435,15 @@ it("says why before Android asks, and only for the first tap of the process", as
   expect(screen.queryByText(WHY)).toBeNull();
 });
 
-it("shows no goal chip while the journal says it is day one, and the tile still starts", async () => {
+it("says walk, run and ride in plain words with the goal on every tile, day one included", async () => {
   await render(
     <TamaguiProvider config={config} defaultTheme="dark">
-      <QuickActions showGoals={false} />
+      <QuickActions />
     </TamaguiProvider>,
   );
 
-  await screen.findByText("Course du Messager");
-  expect(screen.queryByLabelText(/^Goal for/)).toBeNull();
+  await screen.findByText("Run");
+  // A goal chip per tile, each a button of its own beside the tile that starts.
+  expect(screen.getAllByLabelText(/^Goal for /).length).toBeGreaterThan(0);
   expect(tile("Course du Messager")).toBeTruthy();
 });

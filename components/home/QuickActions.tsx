@@ -8,7 +8,7 @@ import { getTokens, XStack, YStack } from "tamagui";
 import { AppButton } from "@/components/common/AppButton";
 import { AppText } from "@/components/common/AppText";
 import { SectionLabel } from "@/components/common/SectionLabel";
-import { RotateCcw, SlidersHorizontal } from "@/components/icons";
+import { Bike, Footprints, Play, RotateCcw, SlidersHorizontal, Zap } from "@/components/icons";
 import { OutingGoalSheet } from "@/components/quests/OutingGoalSheet";
 import { getQuestThumb } from "@/constants/assetMap";
 import { formatDistance } from "@/constants/distanceFormat";
@@ -45,6 +45,7 @@ import { useSettingsStore } from "@/stores/settings";
 import { useStartQuest } from "./useStartQuest";
 
 const TILE_WIDTH = 94;
+const KIND_ICON = { walk: Footprints, run: Zap, ride: Bike } as const;
 const REPLAY_WIDTH = 88;
 // 84 on a phone with room, 72 under 700 dp. The row never scrolls away, so on a 360x640 screen the
 // 12 dp go back to the scene above it instead.
@@ -138,10 +139,11 @@ function BandNotice({
  * quest screen uses and saves the answer there: the "Set up" toggle this replaced switched every
  * tile into an invisible mode, and it took five taps to leave with a number.
  *
- * `showGoals` is the journal's answer (`db/disclosure.ts`): the chips wait for the first victory,
- * and a long press on the tile opens the goal sheet whatever it says. Null while it is read.
+ * Every tile says its kind in plain words with an icon, and carries its goal as a visible chip from
+ * day one: the game name is a second line on the 84 dp layout and always in the accessibility label. The tiles share the row between them
+ * (flex), so three or fewer leave no hole, and more than fit scroll.
  */
-export function QuickActions({ showGoals }: { showGoals: boolean | null }) {
+export function QuickActions() {
   const { t } = useTranslation();
   // The row runs to the physical screen edge: the tile that does not fit is cut by the screen,
   // which reads as "there is more", instead of in mid-air inside a margin. The inset comes back as
@@ -150,6 +152,9 @@ export function QuickActions({ showGoals }: { showGoals: boolean | null }) {
   const { width: windowWidth, height: screenHeight } = useWindowDimensions();
   // In step with the font: a name over two lines and the goal chip no longer fit 72 dp at 130 %,
   // and the tile cut them (persona audit 2, 14).
+  // The world's name is a second line only where 84 dp leaves room: at 72 the kind, the name and
+  // the 24 dp chip add up to 8 dp more than the tile has inside its padding.
+  const showWorldName = screenHeight >= SHORT_SCREEN;
   const tileHeight = useFontScaled(screenHeight < SHORT_SCREEN ? TILE_HEIGHT_SHORT : TILE_HEIGHT);
   const router = useRouter();
   const language = useSettingsStore((s) => s.language);
@@ -395,20 +400,27 @@ export function QuickActions({ showGoals }: { showGoals: boolean | null }) {
         keyboardShouldPersistTaps="handled"
         // Centred past the column: on a tablet nothing scrolls and the tiles hugged the left edge.
         // flexGrow only matters when the content is narrower than the row, so a phone is unchanged.
+        // flexGrow always: the tiles (flex 1, TILE_WIDTH floor) split what a short row leaves.
         contentContainerStyle={{
           gap: 8,
           paddingHorizontal: pageInset,
-          ...(windowWidth > CONTENT_MAX_WIDTH ? { flexGrow: 1, justifyContent: "center" } : null),
+          flexGrow: 1,
+          ...(windowWidth > CONTENT_MAX_WIDTH ? { justifyContent: "center" } : null),
         }}
       >
         {outings.map(({ quest, exercise }) => {
           const name = localizedName(exercise, language);
           const goal = goals[quest.id] ?? null;
           const label = goalLabel(goal);
+          const kind = exercise.locomotion ?? "walk";
+          const KindIcon = KIND_ICON[kind];
           return (
             <YStack
               key={quest.id}
-              width={TILE_WIDTH}
+              testID={`home-outing-${quest.id}`}
+              flex={1}
+              minW={TILE_WIDTH}
+              maxW={CONTENT_MAX_WIDTH / 3}
               height={tileHeight}
               bg="surface"
               borderWidth={1}
@@ -438,43 +450,56 @@ export function QuickActions({ showGoals }: { showGoals: boolean | null }) {
                 style={StyleSheet.absoluteFill}
               />
               <YStack flex={1} justify="flex-end" p="2" gap={4}>
-                <AppText
-                  variant="label"
-                  fontSize={11}
-                  fontWeight="700"
-                  color="text"
-                  numberOfLines={2}
-                  lineHeight="14px"
-                  // Words break between words only: Android's default strategy hyphenates and
-                  // splits a long name mid-word at large font ('Messe / nger').
-                  textBreakStrategy="simple"
-                  android_hyphenationFrequency="none"
-                >
-                  {name}
-                </AppText>
-                {/* The goal, and the way to change it: 20 dp tall, 44 with its slop. */}
-                {showGoals ? (
-                  <XStack
-                    self="flex-start"
-                    height={20}
-                    px={7}
-                    gap={4}
-                    items="center"
-                    rounded={10}
-                    borderWidth={1}
-                    borderColor="borderStrong"
-                    opacity="press:0.7"
-                    hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
-                    onPress={() => setGoalFor(quest.id)}
-                    accessibilityRole="button"
-                    accessibilityLabel={t("home.goal_a11y", { quest: name, goal: label })}
+                {/* The kind in plain words, and the play mark that says this tile starts now. */}
+                <XStack items="center" gap={4}>
+                  <KindIcon size={16} color="primaryText" />
+                  <AppText
+                    variant="label"
+                    flex={1}
+                    fontSize={13}
+                    fontWeight="700"
+                    color="text"
+                    numberOfLines={1}
                   >
-                    <SlidersHorizontal size={10} color="textSecondary" />
-                    <AppText variant="label" fontSize={10} fontWeight="700" color="textSecondary">
-                      {label}
-                    </AppText>
-                  </XStack>
+                    {t(`home.kind_${kind}`)}
+                  </AppText>
+                  <Play size={12} color="textSecondary" />
+                </XStack>
+                {showWorldName ? (
+                  <AppText
+                    testID={`home-outing-name-${quest.id}`}
+                    fontSize={11}
+                    color="textSecondary"
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {name}
+                  </AppText>
                 ) : null}
+                {/* The goal, and the way to change it: 24 dp tall, 44 with its slop. Always there,
+                    day one included: the tap runs it, so the hero must be able to read it. */}
+                <XStack
+                  testID={`home-outing-goal-${quest.id}`}
+                  height={24}
+                  px="2"
+                  gap={4}
+                  items="center"
+                  justify="center"
+                  rounded={12}
+                  bg="bgLight"
+                  borderWidth={1}
+                  borderColor="textSecondary"
+                  opacity="press:0.7"
+                  hitSlop={{ top: 10, bottom: 10, left: 6, right: 6 }}
+                  onPress={() => setGoalFor(quest.id)}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("home.goal_a11y", { quest: name, goal: label })}
+                >
+                  <SlidersHorizontal size={10} color="textSecondary" />
+                  <AppText variant="label" fontSize={11} fontWeight="700" color="text">
+                    {label}
+                  </AppText>
+                </XStack>
               </YStack>
             </YStack>
           );

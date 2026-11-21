@@ -15,6 +15,7 @@ export { ArchiveRestore } from "@tamagui/lucide-icons/icons/ArchiveRestore";
 export { ArrowRight } from "@tamagui/lucide-icons/icons/ArrowRight";
 export { Award } from "@tamagui/lucide-icons/icons/Award";
 export { Bell } from "@tamagui/lucide-icons/icons/Bell";
+export { Bike } from "@tamagui/lucide-icons/icons/Bike";
 export { Bug } from "@tamagui/lucide-icons/icons/Bug";
 export { Castle } from "@tamagui/lucide-icons/icons/Castle";
 export { Check } from "@tamagui/lucide-icons/icons/Check";

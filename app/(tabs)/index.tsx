@@ -86,7 +86,7 @@ export default function HomeScreen() {
         <HomeStage key={`stage-${weekRev}`} oathStrip={disclosed?.oathStrip ?? null} />
 
         {/* The doors out, and the last quest again, in the thumb's reach */}
-        <QuickActions key={`actions-${weekRev}`} showGoals={disclosed?.outingGoals ?? null} />
+        <QuickActions key={`actions-${weekRev}`} />
       </ScrollView>
     </YStack>
   );

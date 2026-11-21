@@ -100,21 +100,21 @@ beforeEach(() => {
   mockDb.sqlite.exec("DELETE FROM user_preferences WHERE key = 'oath'");
 });
 
-test("day one: no level, no oath strip, no goal chip, no replay, at most ten targets", async () => {
+test("day one: no level, no oath strip, goal chips on the tiles, no replay, at most ten targets", async () => {
   logSessions(0);
   await mountHome();
 
   expect(screen.queryByTestId("home-oath-card")).toBeNull();
-  expect(screen.queryByLabelText(/^Goal for/)).toBeNull();
+  expect(screen.getAllByLabelText(/^Goal for/).length).toBeGreaterThan(0);
   expect(screen.queryByTestId("home-replay")).toBeNull();
   expect(screen.queryByText(/^Level \d+/)).toBeNull();
   // The day-one guide is drawn before counting: a Home nobody sees would count fewer.
   await waitFor(() => expect(screen.getByTestId("villager-line-block")).toBeTruthy());
   expect(targets().length).toBeLessThanOrEqual(10);
-  // Settings, village, stage door, Start, Details, three outing tiles. A guide on Home is a plain
+  // Settings, village, stage door, Start, Details, three outing tiles and their three goal chips. A guide on Home is a plain
   // `VillagerLine`, not the tappable cameo the Village draws, so it is not a target. Exact, so a
   // regression is loud.
-  expect(targets().map((n) => n.props?.testID ?? n.props?.accessibilityLabel)).toHaveLength(7);
+  expect(targets().map((n) => n.props?.testID ?? n.props?.accessibilityLabel)).toHaveLength(10);
 });
 
 test("after one session: the level and the goal chips are there, the oath strip is not", async () => {

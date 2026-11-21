@@ -9,7 +9,16 @@ const mockPush = jest.fn();
 jest.mock("expo-router", () => ({ useRouter: () => ({ push: mockPush }) }));
 jest.mock("react-native-svg", () => {
   const { View } = require("react-native");
-  return { __esModule: true, default: View, Circle: View, Polyline: View };
+  return {
+    __esModule: true,
+    default: View,
+    Circle: View,
+    Defs: View,
+    Line: View,
+    LinearGradient: View,
+    Path: View,
+    Stop: View,
+  };
 });
 const mockBests = jest.fn();
 jest.mock("@/db/personalRecords", () => ({
@@ -35,6 +44,13 @@ describe("ProgressTrail", () => {
     await render(wrapped());
     await waitFor(() => expect(mockBests).toHaveBeenCalled());
     expect(screen.queryByTestId("exercise-progress-reps")).toBeNull();
+  });
+
+  test("writes the first and the last value at the ends, with the unit", async () => {
+    mockBests.mockResolvedValue([point(5, 6), point(7, 8), point(9, 7)]);
+    await render(wrapped());
+    expect((await screen.findByTestId("exercise-progress-first")).props.children).toMatch(/6/);
+    expect(screen.getByTestId("exercise-progress-last").props.children).toMatch(/7/);
   });
 
   test("lists the sessions behind the chart, each linking to its night", async () => {

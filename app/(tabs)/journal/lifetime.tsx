@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { XStack, YStack } from "tamagui";
+import { ChevronRight } from "@/components/icons";
 import { formatHoursMinutes, shortDate } from "@/components/journal/journalFormat";
 import { NKicker, NMuted, NNum, NPage, NRule, NText } from "@/components/journal/nocturne";
 import { formatDistance } from "@/constants/distanceFormat";
@@ -84,9 +85,12 @@ function Row({
         gap={8}
       >
         <YStack flex={1}>
-          <NText fontSize={14} lineHeight="20px">
-            {label}
-          </NText>
+          <XStack items="center" gap={4}>
+            <NText fontSize={14} lineHeight="20px">
+              {label}
+            </NText>
+            {onPress ? <ChevronRight size={16} color="textSecondary" /> : null}
+          </XStack>
           {note ? (
             <NMuted fontSize={10.5} lineHeight="14px">
               {note}
